@@ -254,6 +254,7 @@ group("closure_compile_module") {
     "settings_page:closure_compile_module",
     "settings_ui:closure_compile_module",
     "site_settings:closure_compile_module",
+    "site_settings_page:closure_compile_module",
   ]
   if (!is_chromeos) {
     deps += [

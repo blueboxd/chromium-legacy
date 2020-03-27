@@ -35,6 +35,11 @@ void FrameTokenMessageQueue::DidProcessFrame(uint32_t frame_token) {
                                    base::NumberToString(frame_token));
     base::debug::DumpWithoutCrashing();
 
+    // TODO(reillyg): Remove this once investigation into
+    // https://crbug.com/1022321 is over.
+    LOG(ERROR) << "Got invalid frame token: " << frame_token
+               << " <= " << last_received_frame_token_;
+
     client_->OnInvalidFrameToken(frame_token);
     return;
   }
@@ -59,6 +64,10 @@ void FrameTokenMessageQueue::EnqueueOrRunFrameTokenCallback(
     base::OnceClosure callback) {
   // Zero token is invalid.
   if (!frame_token) {
+    // TODO(reillyg): Remove this once investigation into
+    // https://crbug.com/1022321 is over.
+    LOG(ERROR) << "Got invalid frame token: " << frame_token;
+
     client_->OnInvalidFrameToken(frame_token);
     return;
   }

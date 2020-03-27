@@ -112,7 +112,7 @@
 <translation id="1829244130665387512">یافتن در صفحه</translation>
 <translation id="1834891354138622109">ستون</translation>
 <translation id="1845944666972354496">برای فعال کردن دو ضربه سریع بزنید</translation>
-<translation id="1846771122725914429">صفحه‌نمایش بریل بلوتوث</translation>
+<translation id="1846771122725914429">نمایشگر بریل بلوتوث</translation>
 <translation id="1865601187525349519">پایان نوشتار</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="1902396333223336119">سلول</translation>
@@ -463,6 +463,7 @@
 <translation id="4763480195061959176">ویدئو</translation>
 <translation id="4764692524839457597">پیش‌فرض</translation>
 <translation id="4772771694153161212">زیرخط نیست</translation>
+<translation id="4784215347943747396">کنترل دستگاه تنها با ۱ یا ۲ کلید</translation>
 <translation id="4786285211967466855">عنوان سطح ۱ قبلی وجود ندارد</translation>
 <translation id="4787577491510559358">اعلام قالب‌بندی برای مورد کنونی</translation>
 <translation id="479989351350248267">جستجو</translation>
@@ -501,7 +502,7 @@
 <translation id="4997282455736854877"><ph name="NAME" />، دکمه رادیویی انتخاب شد</translation>
 <translation id="5011664330025416377">‏«Search+Space» (جستجو+فاصله) را برای فعال کردن فشار دهید</translation>
 <translation id="5020651427400641814">فعال کردن گزارش‌گیری از گفتار</translation>
-<translation id="5041394372352067729">انتقال صفحه‌نمایش بریل به بالای صفحه</translation>
+<translation id="5041394372352067729">انتقال نمایشگر بریل به بالای صفحه</translation>
 <translation id="5042770794184672516">افزایش میزان صدای گفتار</translation>
 <translation id="5042992464904238023">محتوای وب</translation>
 <translation id="5050015258024679800">عنوان قبلی سطح ۴</translation>
@@ -676,7 +677,7 @@
 <translation id="6475604559827479857">رنگ برای برجسته کردن کلمه‌:</translation>
 <translation id="6493991254603208962">کم کردن روشنایی</translation>
 <translation id="6501595918865591267">فیروزه‌ای</translation>
-<translation id="6508059270146105198">انتقال صفحه‌نمایش بریل به پایین صفحه</translation>
+<translation id="6508059270146105198">انتقال نمایشگر بریل به پایین صفحه</translation>
 <translation id="6521550811716689390">بنفش تیره</translation>
 <translation id="6536157907112457272">کتانی</translation>
 <translation id="6540201937398578274">‏در ChromeVox، کلید «جستجو» (Search) کلید تغییردهنده است. اکثر میان‌برهای ChromeVox با کلید «جستجو» شروع می‌شوند. از کلیدهای پیکان نیز برای پیمایش استفاده می‌کنید.</translation>
@@ -785,7 +786,7 @@
 <translation id="7400575256015741911">غلط املایی شناسایی شد</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">بازگشت</translation>
-<translation id="7429415133937917139">‏خروجی صفحه‌نمایش بریل قابل‌بازخوانی را در
+<translation id="7429415133937917139">‏خروجی نمایشگر بریل قابل‌بازخوانی را در
     پانل ChromeVox در بالای صفحه شبیه‌سازی می‌کند</translation>
 <translation id="7434509671034404296">برنامه‌نویس</translation>
 <translation id="743783356331413498">مثال</translation>
@@ -991,7 +992,7 @@
 <translation id="93384979447910801">سبز دریایی تیره</translation>
 <translation id="948171205378458592">کاهش سرعت گفتار</translation>
 <translation id="962913030769097253">عنوان بعدی سطح ۱</translation>
-<translation id="966588271015727539">صفحه‌نمایش بریل انتخاب کنید</translation>
+<translation id="966588271015727539">نمایشگر بریل انتخاب کنید</translation>
 <translation id="973955474346881951">فعال/غیرفعال کردن حالت چسبنده</translation>
 <translation id="985654871861528815">یک خط پایین بروید</translation>
 <translation id="992256792861109788">صورتی</translation>

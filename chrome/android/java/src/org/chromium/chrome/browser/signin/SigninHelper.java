@@ -21,6 +21,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -111,7 +112,7 @@ public class SigninHelper {
     public void validateAccountSettings(boolean accountsChanged) {
         // validateAccountsInternal accesses account list (to check whether account exists), so
         // postpone the call until account list cache in AccountManagerFacade is ready.
-        AccountManagerFacade.get().runAfterCacheIsPopulated(
+        AccountManagerFacadeProvider.getInstance().runAfterCacheIsPopulated(
                 () -> validateAccountsInternal(accountsChanged));
     }
 
@@ -213,7 +214,7 @@ public class SigninHelper {
     }
 
     private static boolean accountExists(Account account) {
-        List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        List<Account> accounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
         for (int i = 0; i < accounts.size(); i++) {
             Account a = accounts.get(i);
             if (a.equals(account)) {

@@ -135,8 +135,8 @@ void UpdateServiceOutOfProcess::RegisterApp(
                             reply:reply];
 }
 
-void UpdateServiceOutOfProcess::UpdateAll(
-    base::OnceCallback<void(Result)> callback) {
+void UpdateServiceOutOfProcess::UpdateAll(StateChangeCallback state_update,
+                                          Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   __block base::OnceCallback<void(update_client::Error)> block_callback =
@@ -153,11 +153,11 @@ void UpdateServiceOutOfProcess::UpdateAll(
 void UpdateServiceOutOfProcess::Update(const std::string& app_id,
                                        UpdateService::Priority priority,
                                        StateChangeCallback state_update,
-                                       base::OnceCallback<void(Result)> done) {
+                                       Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   __block base::OnceCallback<void(update_client::Error)> block_callback =
-      std::move(done);
+      std::move(callback);
   auto reply = ^(int error) {
     callback_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),

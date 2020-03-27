@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 
 /** Provides first run related utility functions. */
 public class FirstRunUtils {
@@ -82,7 +83,7 @@ public class FirstRunUtils {
     @VisibleForTesting
     static boolean hasGoogleAccountAuthenticator() {
         if (sHasGoogleAccountAuthenticator == null) {
-            AccountManagerFacade accountHelper = AccountManagerFacade.get();
+            AccountManagerFacade accountHelper = AccountManagerFacadeProvider.getInstance();
             sHasGoogleAccountAuthenticator = accountHelper.hasGoogleAccountAuthenticator();
         }
         return sHasGoogleAccountAuthenticator;
@@ -90,7 +91,7 @@ public class FirstRunUtils {
 
     @VisibleForTesting
     static boolean hasGoogleAccounts() {
-        return !AccountManagerFacade.get().tryGetGoogleAccounts().isEmpty();
+        return !AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts().isEmpty();
     }
 
     @SuppressLint("InlinedApi")

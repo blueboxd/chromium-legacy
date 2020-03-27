@@ -97,3 +97,14 @@ element during loading, without affecting its loading events. */
 #signin-frame-container {
   z-index: 10;
 }
+
+/* WebviewScrollShadowsHelper */
+#signin-frame.can-scroll:not(.is-scrolled):not(.scrolled-to-bottom)::before {
+  @apply --oobe-scroll-shadow-bottom;
+}
+#signin-frame.can-scroll.is-scrolled:not(.scrolled-to-bottom)::before {
+  @apply --oobe-scroll-shadow-top-and-bottom;
+}
+#signin-frame.is-scrolled.scrolled-to-bottom::before {
+  @apply --oobe-scroll-shadow-top;
+}

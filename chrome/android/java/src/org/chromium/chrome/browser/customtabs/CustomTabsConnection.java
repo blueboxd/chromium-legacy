@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -1063,6 +1064,13 @@ public class CustomTabsConnection {
     /** See {@link ClientManager#getClientPackageNameForSession(CustomTabsSessionToken)} */
     public String getClientPackageNameForSession(CustomTabsSessionToken session) {
         return mClientManager.getClientPackageNameForSession(session);
+    }
+
+    /** @return Whether the client of the {@code session} is a first-party application. */
+    public boolean isSessionFirstParty(CustomTabsSessionToken session) {
+        String packageName = getClientPackageNameForSession(session);
+        if (packageName == null) return false;
+        return ExternalAuthUtils.getInstance().isGoogleSigned(packageName);
     }
 
     @VisibleForTesting

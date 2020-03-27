@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
@@ -98,17 +99,21 @@ public class GURL {
      */
     public static void ensureNativeInitializedForGURL() {
         if (LibraryLoader.getInstance().isInitialized()) return;
-        if (sReportCallback != null && new Random().nextInt(100) < DEBUG_REPORT_PERCENTAGE) {
-            final Throwable throwable = new Throwable("This is not a crash, please ignore.");
-            // This isn't an assert, because by design this is possible, but this path is getting
-            // hit much more than expected and getting stack traces from the wild will help debug.
-            PostTask.postTask(
-                    TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> { sReportCallback.run(throwable); });
-        }
         long time = SystemClock.elapsedRealtime();
         LibraryLoader.getInstance().ensureMainDexInitialized();
-        RecordHistogram.recordTimesHistogram("Startup.Android.GURLEnsureMainDexInitialized",
-                SystemClock.elapsedRealtime() - time);
+        // Record metrics only for the UI thread where the delay in loading the library is relevant.
+        if (ThreadUtils.runningOnUiThread()) {
+            RecordHistogram.recordTimesHistogram("Startup.Android.GURLEnsureMainDexInitialized",
+                    SystemClock.elapsedRealtime() - time);
+            if (sReportCallback != null && new Random().nextInt(100) < DEBUG_REPORT_PERCENTAGE) {
+                final Throwable throwable = new Throwable("This is not a crash, please ignore.");
+                // This isn't an assert, because by design this is possible, but we would prefer
+                // this path does not get hit more than necessary and getting stack traces from the
+                // wild will help find issues.
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                        () -> { sReportCallback.run(throwable); });
+            }
+        }
     }
 
     @CalledByNative

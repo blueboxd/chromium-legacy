@@ -12,8 +12,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
@@ -46,15 +44,9 @@ class UserSelectionScreenTest : public LoginManagerTest {
                          true /* should_initialize_webui */) {}
   ~UserSelectionScreenTest() override = default;
 
-  OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
-
   void FocusUserPod(int pod_id) {
-    base::RunLoop pod_focus_wait_loop;
-    GetOobeUI()->signin_screen_handler()->SetFocusPODCallbackForTesting(
-        pod_focus_wait_loop.QuitClosure());
-    test::OobeJS().Evaluate(base::StringPrintf(
+    test::ExecuteOobeJS(base::StringPrintf(
         "$('pod-row').focusPod($('pod-row').pods[%d])", pod_id));
-    pod_focus_wait_loop.Run();
   }
 
  private:

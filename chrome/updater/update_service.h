@@ -69,38 +69,41 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
     kForeground = 2,
   };
 
+  using StateChangeCallback = base::RepeatingCallback<void(UpdateState)>;
+  using Callback = base::OnceCallback<void(Result)>;
+
   // Registers given request to the updater.
   virtual void RegisterApp(
       const RegistrationRequest& request,
       base::OnceCallback<void(const RegistrationResponse&)> callback) = 0;
 
-  // Update-checks all registered applications. Calls |callback| once the
-  // operation is complete.
-  virtual void UpdateAll(base::OnceCallback<void(Result)> callback) = 0;
+  // Initiates an update check for all registered applications. Receives state
+  // change notifications through the repeating |state_update| callback.
+  // Calls |callback| once  the operation is complete.
+  virtual void UpdateAll(StateChangeCallback state_update,
+                         Callback callback) = 0;
 
   // Updates specified product. This update may be on-demand.
   //
   // Args:
   //   |app_id|: ID of app to update.
   //   |priority|: Priority for processing this update.
-  //   |state_updates|: Callback will be invoked every time the update
+  //   |state_update|: The callback will be invoked every time the update
   //     changes state when the engine starts. It will be called on the
   //     sequence used by the update service, so this callback must not block.
   //     It will not be called again after the update has reached a terminal
-  //     state. It will not be called after the "done" callback is posted.
-  //   |done|: Posted after the update stops (successfully or otherwise).
+  //     state. It will not be called after the completion |callback| is posted.
+  //   |callback|: Posted after the update stops, successfully or otherwise.
   //
-  // |state_updates| arg:
+  // |state_update| arg:
   //    UpdateState: the new state of this update request.
   //
-  // |done| arg:
+  // |callback| arg:
   //    Result: the final result from the update engine.
-  virtual void Update(
-      const std::string& app_id,
-      Priority priority,
-      base::RepeatingCallback<void(updater::UpdateService::UpdateState)>
-          state_update,
-      base::OnceCallback<void(Result)> done) = 0;
+  virtual void Update(const std::string& app_id,
+                      Priority priority,
+                      StateChangeCallback state_update,
+                      Callback callback) = 0;
 
   // Provides a way to commit data or clean up resources before the task
   // scheduler is shutting down.

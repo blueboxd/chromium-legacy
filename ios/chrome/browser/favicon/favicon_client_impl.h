@@ -23,6 +23,8 @@ class FaviconClientImpl : public favicon::FaviconClient {
  private:
   // favicon::FaviconClient implementation.
   bool IsNativeApplicationURL(const GURL& url) override;
+  bool IsReaderModeURL(const GURL& url) override;
+  const GURL GetOriginalUrlFromReaderModeUrl(const GURL& url) override;
   base::CancelableTaskTracker::TaskId GetFaviconForNativeApplicationURL(
       const GURL& url,
       const std::vector<int>& desired_sizes_in_pixel,

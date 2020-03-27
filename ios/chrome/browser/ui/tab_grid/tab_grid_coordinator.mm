@@ -64,6 +64,8 @@
 @property(nonatomic, strong) RecentTabsMediator* remoteTabsMediator;
 // Coordinator for history, which can be started from recent tabs.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
+// YES if the TabViewController has never been shown yet.
+@property(nonatomic, assign) BOOL firstPresentation;
 @end
 
 @implementation TabGridCoordinator
@@ -214,6 +216,8 @@
         base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
     self.launchMaskView = launchScreenController.view;
     [baseViewController.view addSubview:self.launchMaskView];
+  } else {
+    self.firstPresentation = YES;
   }
 
   // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
@@ -345,8 +349,8 @@
   self.bvcContainer.currentBVC = viewController;
   self.bvcContainer.transitioningDelegate = self.legacyTransitionHandler;
   BOOL animated = !self.animationsDisabledForTesting;
-  // Never animate if the launch mask is in place.
-  if (self.launchMaskView)
+  // Never animate the first time.
+  if (self.launchMaskView || self.firstPresentation)
     animated = NO;
 
   // Extened |completion| to signal the tab switcher delegate
@@ -361,6 +365,7 @@
     }
     [self.launchMaskView removeFromSuperview];
     self.launchMaskView = nil;
+    self.firstPresentation = NO;
   };
 
   if (base::FeatureList::IsEnabled(kContainedBVC)) {

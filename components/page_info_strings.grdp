@@ -31,8 +31,11 @@
   <message name="IDS_PAGE_INFO_DEVTOOLS_PAGE" desc="Message to display in the page info bubble when the page you are on is a devtools:// page.">
     You're viewing a developer tools page
   </message>
-  <message name="IDS_PAGE_INFO_READER_MODE_PAGE" desc="Message to display in the page info bubble when the page you are viewing is the reader mode version of an article.">
-    Chrome simplified this page to make it easier to read.
+  <message name="IDS_PAGE_INFO_READER_MODE_PAGE_SECURE" desc="Message to display in the page info bubble when the page you are viewing is the reader mode version of an article which was retrieved over a secure connection.">
+    Chrome simplified this page to make it easier to read. Chrome retrieved the original page over a secure connection.
+  </message>
+  <message name="IDS_PAGE_INFO_READER_MODE_PAGE" desc="Message to display in the page info bubble when the page you are viewing is the reader mode version of an article which was retrieved over an insecure connection.">
+    Chrome simplified this page to make it easier to read. Chrome retrieved the original page over an insecure connection.
   </message>
 
   <!-- Safety Tip summary strings -->

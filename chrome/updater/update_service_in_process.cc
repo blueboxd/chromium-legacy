@@ -49,8 +49,8 @@ void UpdateServiceInProcess::RegisterApp(
       FROM_HERE, base::BindOnce(std::move(callback), RegistrationResponse(0)));
 }
 
-void UpdateServiceInProcess::UpdateAll(
-    base::OnceCallback<void(Result)> callback) {
+void UpdateServiceInProcess::UpdateAll(StateChangeCallback state_update,
+                                       Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto app_ids = persisted_data_->GetAppIds();
@@ -70,14 +70,47 @@ void UpdateServiceInProcess::UpdateAll(
             return components;
           },
           persisted_data_),
-      {}, false, std::move(callback));
+      base::BindRepeating(
+          [](StateChangeCallback state_update,
+             update_client::CrxUpdateItem crx_update_item) {
+            UpdateState update_state = UpdateState::kUnknown;
+            switch (crx_update_item.state) {
+              case update_client::ComponentState::kNew:
+                update_state = UpdateState::kNotStarted;
+                break;
+              case update_client::ComponentState::kChecking:
+                update_state = UpdateState::kCheckingForUpdates;
+                break;
+              case update_client::ComponentState::kDownloading:
+              case update_client::ComponentState::kDownloadingDiff:
+                update_state = UpdateState::kDownloading;
+                break;
+              case update_client::ComponentState::kUpdating:
+              case update_client::ComponentState::kUpdatingDiff:
+                update_state = UpdateState::kInstalling;
+                break;
+              case update_client::ComponentState::kUpdated:
+                update_state = UpdateState::kUpdated;
+                break;
+              case update_client::ComponentState::kUpToDate:
+                update_state = UpdateState::kNoUpdate;
+                break;
+              case update_client::ComponentState::kUpdateError:
+                update_state = UpdateState::kUpdateError;
+                break;
+              default:
+                break;
+            }
+            state_update.Run(update_state);
+          },
+          state_update),
+      false, std::move(callback));
 }
 
-void UpdateServiceInProcess::Update(
-    const std::string& app_id,
-    Priority priority,
-    base::RepeatingCallback<void(UpdateState)> state_update,
-    base::OnceCallback<void(Result)> done) {
+void UpdateServiceInProcess::Update(const std::string& app_id,
+                                    Priority priority,
+                                    StateChangeCallback state_update,
+                                    Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug.com/1059020): Implement.
   NOTREACHED();

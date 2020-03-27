@@ -7,6 +7,7 @@
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/tests/native_window.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gpu {
@@ -16,6 +17,7 @@ BasicVulkanTest::BasicVulkanTest() {}
 BasicVulkanTest::~BasicVulkanTest() {}
 
 void BasicVulkanTest::SetUp() {
+  platform_event_source_ = ui::PlatformEventSource::CreateDefault();
   const gfx::Rect kDefaultBounds(10, 10, 100, 100);
   window_ = CreateNativeWindow(kDefaultBounds);
   vulkan_implementation_ = CreateVulkanImplementation();
@@ -33,6 +35,7 @@ void BasicVulkanTest::TearDown() {
   window_ = gfx::kNullAcceleratedWidget;
   device_queue_->Destroy();
   vulkan_implementation_.reset();
+  platform_event_source_.reset();
 }
 
 std::unique_ptr<VulkanSurface> BasicVulkanTest::CreateViewSurface(

@@ -18,7 +18,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/point.h"
@@ -35,7 +34,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/public/tooltip_client.h"
 
 #if defined(OS_WIN)
@@ -477,32 +475,9 @@ int IndexInParent(const aura::Window* window) {
 
 }  // namespace
 
-class TooltipControllerCaptureTest : public TooltipControllerTest {
- public:
-  TooltipControllerCaptureTest() = default;
-  ~TooltipControllerCaptureTest() override = default;
-
-  void SetUp() override {
-    TooltipControllerTest::SetUp();
-    screen_position_client_ =
-        std::make_unique<wm::DefaultScreenPositionClient>(GetRootWindow());
-  }
-
-  void TearDown() override {
-    screen_position_client_.reset();
-    TooltipControllerTest::TearDown();
-  }
-
- private:
-  std::unique_ptr<wm::DefaultScreenPositionClient> screen_position_client_;
-  std::unique_ptr<display::Screen> desktop_screen_;
-
-  DISALLOW_COPY_AND_ASSIGN(TooltipControllerCaptureTest);
-};
-
 // Verifies when capture is released the TooltipController resets state.
 // Flaky on all builders.  http://crbug.com/388268
-TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
+TEST_F(TooltipControllerTest, DISABLED_CloseOnCaptureLost) {
   view_->GetWidget()->SetCapture(view_);
   RunPendingMessages();
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
@@ -521,13 +496,14 @@ TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
 // Disabled on X11 as DesktopScreenX11::GetWindowAtScreenPoint() doesn't
 // consider z-order.
 // Disabled on Windows due to failing bots. http://crbug.com/604479
-#if defined(USE_X11) || defined(OS_WIN)
+// Disabled on Ozone due to failing bots: crbug.com/1065474
+#if defined(USE_X11) || defined(OS_WIN) || defined(USE_OZONE)
 #define MAYBE_Capture DISABLED_Capture
 #else
 #define MAYBE_Capture Capture
 #endif
 // Verifies the correct window is found for tooltips when there is a capture.
-TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
+TEST_F(TooltipControllerTest, MAYBE_Capture) {
   const base::string16 tooltip_text(ASCIIToUTF16("1"));
   const base::string16 tooltip_text2(ASCIIToUTF16("2"));
 

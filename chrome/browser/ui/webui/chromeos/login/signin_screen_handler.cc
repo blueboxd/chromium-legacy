@@ -514,11 +514,6 @@ void SigninScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
   UpdateStateInternal(reason, force_update);
 }
 
-void SigninScreenHandler::SetFocusPODCallbackForTesting(
-    base::Closure callback) {
-  test_focus_pod_callback_ = callback;
-}
-
 void SigninScreenHandler::SetOfflineTimeoutForTesting(
     base::TimeDelta offline_timeout) {
   is_offline_timeout_for_test_set_ = true;
@@ -1325,8 +1320,6 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
 
   if (delegate_ && !is_same_pod_focused)
     delegate_->CheckUserStatus(account_id);
-  if (!test_focus_pod_callback_.is_null())
-    test_focus_pod_callback_.Run();
 
   focused_pod_account_id_ = std::make_unique<AccountId>(account_id);
 

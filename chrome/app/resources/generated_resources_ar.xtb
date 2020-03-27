@@ -1703,6 +1703,7 @@
 <translation id="3264544094376351444">‏خط Sans-serif</translation>
 <translation id="3264582393905923483">السياق</translation>
 <translation id="3265459715026181080">إغلاق الإطار</translation>
+<translation id="3266274118485960573">"تأكيد السلامة" قيد التشغيل.</translation>
 <translation id="3267726687589094446">متابعة السماح بعمليات التنزيل التلقائية لعدة ملفات</translation>
 <translation id="3268451620468152448">علامات التبويب المفتوحة</translation>
 <translation id="3269069891205016797">ستتم إزالة معلوماتك من الجهاز عند الخروج.</translation>
@@ -1808,6 +1809,7 @@
 <translation id="3412265149091626468">انتقال سريع إلى التحديد</translation>
 <translation id="3413122095806433232">‏جهات إصدار المرجع المصدق (CA): <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">الحجم:</translation>
+<translation id="3416468988018290825">‏عرض عناوين URL الكاملة دائمًا</translation>
 <translation id="3420501302812554910">يتطلب مفتاح الأمان الداخلي إعادة ضبط</translation>
 <translation id="3421387094817716717">المفتاح العام لمنحنى ناقص المقطع</translation>
 <translation id="3422291238483866753">طلب الإذن عند محاولة موقع إلكتروني إنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك أو تتبُّع موضع الكاميرا (مقترَح)</translation>
@@ -4163,6 +4165,7 @@
 <translation id="6586451623538375658">تبديل زر الماوس الرئيسي</translation>
 <translation id="6586604979641883411">‏يجب توفّر <ph name="REQUIRED_SPACE" /> على الأقل من المساحة الخالية لترقية نظام التشغيل Linux. يُرجى إخلاء بعض المساحة وإعادة المحاولة.</translation>
 <translation id="6588043302623806746">‏استخدام "نظام أسماء النطاقات" (DNS) الآمن</translation>
+<translation id="659005207229852190">اكتمل إعداد "تأكيد السلامة".</translation>
 <translation id="6590458744723262880">إعادة تسمية المجلد</translation>
 <translation id="6592267180249644460">‏تم التقاط سجلات WebRTC في <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">تم حِفظ بصمة الإصبع.</translation>
@@ -5423,6 +5426,7 @@
 <translation id="8249672078237421304">عرض ترجمة الصفحات المكتوبة بلغة غير لغتك</translation>
 <translation id="8251441930213048644">إعادة التحميل الآن</translation>
 <translation id="8251578425305135684">تمت إزالة الصورة المصغّرة.</translation>
+<translation id="825238165904109940">‏عرض عناوين URL الكاملة دائمًا</translation>
 <translation id="8252569384384439529">جارٍ التحميل...</translation>
 <translation id="8253198102038551905">انقر '+' للحصول على خصائص الشبكة</translation>
 <translation id="8254954272268479918">‏إيقاف تطبيق Linux (إصدار تجريبي)</translation>

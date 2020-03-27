@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.superviseduser.FilteringBehavior;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SignoutReason;
@@ -148,7 +149,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         super.onResume();
         IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
-        mProfileDataCache.update(AccountManagerFacade.get().tryGetGoogleAccountNames());
+        mProfileDataCache.update(
+                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccountNames());
         update();
     }
 
@@ -278,7 +280,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
         accountsCategory.removeAll();
 
-        List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        List<Account> accounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
         for (int i = 0; i < accounts.size(); i++) {
             Account account = accounts.get(i);
             Preference pref = new Preference(getStyledContext());
@@ -308,14 +310,15 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
             SigninUtils.logEvent(ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
 
-            AccountManagerFacade.get().createAddAccountIntent((@Nullable Intent intent) -> {
+            AccountManagerFacade accountManagerFacade = AccountManagerFacadeProvider.getInstance();
+            accountManagerFacade.createAddAccountIntent((@Nullable Intent intent) -> {
                 if (!isVisible() || !isResumed()) return;
 
                 if (intent != null) {
                     startActivity(intent);
                 } else {
-                    // AccountManagerFacade couldn't create intent, use SigninUtils to open settings
-                    // instead.
+                    // AccountManagerFacade couldn't create intent, use SigninUtils to open
+                    // settings instead.
                     SigninUtils.openSettingsForAllAccounts(getActivity());
                 }
 

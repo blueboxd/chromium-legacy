@@ -199,7 +199,9 @@ class TestingSignatureCallback : public quic::ProofSource::SignatureCallback {
   TestingSignatureCallback(bool* ok_out, std::string* signature_out)
       : ok_out_(ok_out), signature_out_(signature_out) {}
 
-  void Run(bool ok, std::string signature) override {
+  void Run(bool ok,
+           std::string signature,
+           std::unique_ptr<quic::ProofSource::Details> /*details*/) override {
     *ok_out_ = ok;
     *signature_out_ = std::move(signature);
   }

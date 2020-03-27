@@ -27,7 +27,8 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsCancelButtonShown();
   static bool IsParentAccessButtonShown();
   static void SubmitPassword(const AccountId& account_id,
-                             const std::string& password);
+                             const std::string& password,
+                             bool check_if_submittable);
   static int64_t GetUiUpdateCount();
   static bool LaunchApp(const std::string& app_id);
   static bool ClickAddUserButton();
@@ -35,6 +36,8 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool ClickGuestButton();
   static bool WaitForUiUpdate(int64_t previous_update_count);
   static int GetUsersCount();
+  static bool FocusUser(const AccountId& account_id);
+  static AccountId GetFocusedUser();
   static bool RemoveUser(const AccountId& account_id);
   static bool IsOobeDialogVisible();
   static base::string16 GetShutDownButtonLabel();

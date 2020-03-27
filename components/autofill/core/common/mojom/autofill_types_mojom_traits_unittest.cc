@@ -318,6 +318,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.text_direction = base::i18n::RIGHT_TO_LEFT;
   input.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
   input.typed_value = base::ASCIIToUTF16("TestTypedValue");
+  input.bounds = gfx::RectF(1, 2, 10, 100);
 
   base::RunLoop loop;
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());

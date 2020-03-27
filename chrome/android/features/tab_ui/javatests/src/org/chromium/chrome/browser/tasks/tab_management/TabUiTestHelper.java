@@ -356,8 +356,8 @@ public class TabUiTestHelper {
         cta.setRequestedOrientation(orientation == Configuration.ORIENTATION_LANDSCAPE
                         ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                         : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        CriteriaHelper.pollUiThread(
-                () -> orientation == cta.getResources().getConfiguration().orientation);
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                orientation, () -> cta.getResources().getConfiguration().orientation));
     }
 
     /**

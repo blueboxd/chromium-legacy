@@ -121,7 +121,8 @@ public class AccountTrackerService {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsChanged = false;
         mSyncForceRefreshedForTest = false;
-        final AccountManagerFacade accountManagerFacade = AccountManagerFacade.get();
+        final AccountManagerFacade accountManagerFacade =
+                AccountManagerFacadeProvider.getInstance();
         if (accountManagerFacade.isGooglePlayServicesAvailable()) {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS;
         } else {
@@ -229,7 +230,7 @@ public class AccountTrackerService {
         }
 
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_VALIDATING;
-        AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
             if (mSystemAccountsChanged
                     || mSystemAccountsSeedingStatus
                             != SystemAccountsSeedingStatus.SEEDING_VALIDATING) {

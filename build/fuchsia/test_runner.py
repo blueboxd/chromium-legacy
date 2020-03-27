@@ -87,7 +87,7 @@ def main():
 
   ConfigureLogging(args)
 
-  child_args = ['--test-launcher-retry-limit=0']
+  child_args = []
   if args.single_process_tests:
     child_args.append('--single-process-tests')
   if args.test_launcher_bot_mode:

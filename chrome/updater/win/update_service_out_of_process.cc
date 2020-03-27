@@ -73,21 +73,22 @@ void UpdateServiceOutOfProcess::RegisterApp(
   NOTREACHED();
 }
 
-void UpdateServiceOutOfProcess::UpdateAll(
-    base::OnceCallback<void(Result)> callback) {
+void UpdateServiceOutOfProcess::UpdateAll(StateChangeCallback state_update,
+                                          Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(sorin) the updater must be run with "--single-process" until
   // crbug.com/1053729 is resolved.
   com_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&UpdateServiceOutOfProcess::UpdateAllOnSTA,
-                                base::Unretained(this), std::move(callback)));
+                                base::Unretained(this), state_update,
+                                std::move(callback)));
 }
 
 void UpdateServiceOutOfProcess::Update(const std::string& app_id,
                                        UpdateService::Priority priority,
                                        StateChangeCallback state_update,
-                                       base::OnceCallback<void(Result)> done) {
+                                       Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(sorin) the updater must be run with "--single-process" until
@@ -99,8 +100,8 @@ void UpdateServiceOutOfProcess::Uninitialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void UpdateServiceOutOfProcess::UpdateAllOnSTA(
-    base::OnceCallback<void(Result)> callback) {
+void UpdateServiceOutOfProcess::UpdateAllOnSTA(StateChangeCallback state_update,
+                                               Callback callback) {
   DCHECK(com_task_runner_->BelongsToCurrentThread());
 
   Microsoft::WRL::ComPtr<IUnknown> server;
@@ -127,6 +128,8 @@ void UpdateServiceOutOfProcess::UpdateAllOnSTA(
     std::move(callback).Run(static_cast<Result>(hr));
     return;
   }
+
+  std::move(callback).Run(static_cast<Result>(S_OK));
 }
 
 }  // namespace updater

@@ -1703,6 +1703,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3264544094376351444">Fon Sans-serif</translation>
 <translation id="3264582393905923483">Konteks</translation>
 <translation id="3265459715026181080">Tutup Tetingkap</translation>
+<translation id="3266274118485960573">Semakan keselamatan sedang dijalankan</translation>
 <translation id="3267726687589094446">Terus membenarkan muat turun automatik berbilang fail</translation>
 <translation id="3268451620468152448">Tab Terbuka</translation>
 <translation id="3269069891205016797">Maklumat anda akan dialih keluar daripada peranti apabila anda mengelog keluar.</translation>
@@ -1808,6 +1809,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3412265149091626468">Lompat ke Pemilihan</translation>
 <translation id="3413122095806433232">Pengeluar CA: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Saiz:</translation>
+<translation id="3416468988018290825">Sentiasa paparkan URL penuh</translation>
 <translation id="3420501302812554910">Kunci keselamatan dalaman memerlukan penetapan semula</translation>
 <translation id="3421387094817716717">Kunci Awam Lengkung Eliptik</translation>
 <translation id="3422291238483866753">Tanya apabila tapak mahu membuat peta 3D bagi persekitaran anda atau menjejaki kedudukan kamera (disyorkan)</translation>
@@ -4164,6 +4166,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6586451623538375658">Tukar butang tetikus utama</translation>
 <translation id="6586604979641883411">Sekurang-kurangnya <ph name="REQUIRED_SPACE" /> ruang cakera kosong diperlukan untuk meningkatkan Linux. Sila kosongkan sedikit ruang pada peranti anda dan cuba lagi.</translation>
 <translation id="6588043302623806746">Gunakan DNS selamat</translation>
+<translation id="659005207229852190">Semakan keselamatan selesai.</translation>
 <translation id="6590458744723262880">Namakan semula folder</translation>
 <translation id="6592267180249644460">Log WebRTC dirakam <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Cap jari anda telah disimpan</translation>
@@ -5424,6 +5427,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8249672078237421304">Tawarkan untuk menterjemah halaman yang bukan dalam bahasa yang anda baca</translation>
 <translation id="8251441930213048644">Muat semula sekarang</translation>
 <translation id="8251578425305135684">Lakaran kenit dibuang.</translation>
+<translation id="825238165904109940">Sentiasa Paparkan URL Penuh</translation>
 <translation id="8252569384384439529">Memuat naik...</translation>
 <translation id="8253198102038551905">Klik '+' untuk mendapatkan sifat rangkaian</translation>
 <translation id="8254954272268479918">Matikan Linux (Beta)</translation>

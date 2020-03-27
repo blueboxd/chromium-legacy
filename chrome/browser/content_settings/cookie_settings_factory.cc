@@ -57,23 +57,33 @@ scoped_refptr<RefcountedKeyedService>
 CookieSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  base::UmaHistogramBoolean(
-      "Privacy.ThirdPartyCookieBlockingSetting",
-      profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies));
+  PrefService* prefs = profile->GetPrefs();
+
+  // Migrate BlockThirdPartyCookies to CookieControlsMode pref.
+  if (prefs->IsUserModifiablePreference(prefs::kBlockThirdPartyCookies) &&
+      prefs->GetBoolean(prefs::kBlockThirdPartyCookies) &&
+      prefs->GetInteger(prefs::kCookieControlsMode) !=
+          static_cast<int>(content_settings::CookieControlsMode::kOn)) {
+    prefs->SetInteger(
+        prefs::kCookieControlsMode,
+        static_cast<int>(content_settings::CookieControlsMode::kOn));
+  }
+
+  // Record cookie setting histograms.
+  base::UmaHistogramBoolean("Privacy.ThirdPartyCookieBlockingSetting",
+                            prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
   base::UmaHistogramEnumeration(
       "Privacy.CookieControlsSetting",
       static_cast<content_settings::CookieControlsMode>(
-          profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode)));
+          prefs->GetInteger(prefs::kCookieControlsMode)));
   // The DNT setting is only vaguely cookie-related. However, there is currently
   // no DNT-related code that is executed once per Profile lifetime, and
   // creating a new BrowserContextKeyedService to record this metric would be
   // an overkill. Hence, we put it here.
   // TODO(msramek): Find a better place for this metric.
-  base::UmaHistogramBoolean(
-      "Privacy.DoNotTrackSetting",
-      profile->GetPrefs()->GetBoolean(prefs::kEnableDoNotTrack));
+  base::UmaHistogramBoolean("Privacy.DoNotTrackSetting",
+                            prefs->GetBoolean(prefs::kEnableDoNotTrack));
   return new content_settings::CookieSettings(
-      HostContentSettingsMapFactory::GetForProfile(profile),
-      profile->GetPrefs(), profile->IsIncognitoProfile(),
-      extensions::kExtensionScheme);
+      HostContentSettingsMapFactory::GetForProfile(profile), prefs,
+      profile->IsIncognitoProfile(), extensions::kExtensionScheme);
 }

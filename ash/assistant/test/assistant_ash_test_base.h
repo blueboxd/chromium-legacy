@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/test/mocked_assistant_interaction.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -93,13 +94,17 @@ class AssistantAshTestBase : public AshTestBase {
   // Can only be used after |ShowAssistantUi| has been called.
   views::View* root_view();
 
-  // Spoof sending a request to the Assistant service,
-  // and receiving |response_text| as a response to display.
-  void MockAssistantInteractionWithResponse(const std::string& response_text);
-
-  void MockAssistantInteractionWithQueryAndResponse(
-      const std::string& query,
-      const std::string& response_text);
+  // Simulate the user entering a query.
+  // Returns a builder object that allows you to specify the query and the
+  // responses.  The interaction will be auto submitted in the destructor,
+  // meaning you should just use it and let it go out of scope.
+  // Example usage:
+  //
+  //    MockTextInteraction()
+  //       .WithQuery("a query")
+  //       .WithTextResponse("First response")
+  //       .WithTextResponse("Second response");
+  MockedAssistantInteraction MockTextInteraction();
 
   // Simulate the user entering a query followed by <return>.
   void SendQueryThroughTextField(const std::string& query);

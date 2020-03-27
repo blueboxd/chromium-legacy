@@ -1699,6 +1699,7 @@
 <translation id="3264544094376351444">Sans-serif 字体</translation>
 <translation id="3264582393905923483">上下文</translation>
 <translation id="3265459715026181080">关闭窗口</translation>
+<translation id="3266274118485960573">正在运行安全检查。</translation>
 <translation id="3267726687589094446">继续允许自动下载多个文件</translation>
 <translation id="3268451620468152448">打开的标签页</translation>
 <translation id="3269069891205016797">在您退出后，系统会自动从此设备上移除您的信息。</translation>
@@ -1804,6 +1805,7 @@
 <translation id="3412265149091626468">跳到所选部分</translation>
 <translation id="3413122095806433232">CA 证书颁发者：<ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">大小：</translation>
+<translation id="3416468988018290825">一律显示完整网址</translation>
 <translation id="3420501302812554910">需要重置内部安全密钥</translation>
 <translation id="3421387094817716717">椭圆曲线公共密钥</translation>
 <translation id="3422291238483866753">在网站想为您的周边环境创建 3D 地图或跟踪摄像头位置时询问您（推荐）</translation>
@@ -4159,6 +4161,7 @@
 <translation id="6586451623538375658">切换鼠标主按钮</translation>
 <translation id="6586604979641883411">必须有至少 <ph name="REQUIRED_SPACE" /> 的可用磁盘空间，才能升级 Linux。请在您的设备上释放一些空间，然后重试。</translation>
 <translation id="6588043302623806746">使用安全 DNS</translation>
+<translation id="659005207229852190">已完成安全检查。</translation>
 <translation id="6590458744723262880">重命名文件夹</translation>
 <translation id="6592267180249644460">WebRTC日志记录时间：<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">已捕获您的指纹</translation>
@@ -5418,6 +5421,7 @@
 <translation id="8249672078237421304">询问是否翻译非您所用语言的网页</translation>
 <translation id="8251441930213048644">立即刷新</translation>
 <translation id="8251578425305135684">已删除缩略图。</translation>
+<translation id="825238165904109940">一律显示完整网址</translation>
 <translation id="8252569384384439529">正在上传…</translation>
 <translation id="8253198102038551905">点击“+”可查看网络属性</translation>
 <translation id="8254954272268479918">关闭 Linux 虚拟机（测试版）</translation>
@@ -5532,7 +5536,7 @@
 <translation id="8408068190360279472">“<ph name="NETWORK_TYPE" />”类型的网络，正在连接</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">先询问（推荐）</translation>
-<translation id="8417548266957501132">家长的登录密码</translation>
+<translation id="8417548266957501132">家长登录密码</translation>
 <translation id="8417573335434189196">不会保护您免受危险网站、下载内容或扩展程序的侵害。Chrome 不建议您使用此设置。</translation>
 <translation id="8418445294933751433">显示为标签页(&amp;S)</translation>
 <translation id="8419098111404128271">与“<ph name="SEARCH_TEXT" />”相符的搜索结果</translation>

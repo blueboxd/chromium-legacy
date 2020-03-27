@@ -18,6 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AuthException;
 import org.chromium.net.NetworkChangeNotifier;
@@ -274,7 +275,7 @@ public final class ProfileOAuth2TokenServiceDelegate
         // ProfileOAuth2TokenServiceDelegate which is expected to be called in the UI thread
         // synchronously.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return AccountManagerFacade.get().hasAccountForName(accountName);
+            return AccountManagerFacadeProvider.getInstance().hasAccountForName(accountName);
         }
     }
 

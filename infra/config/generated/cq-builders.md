@@ -35,6 +35,8 @@ These builders must pass before a CL may land.
 
 * [chromium_presubmit](https://ci.chromium.org/p/chromium/builders/try/chromium_presubmit) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+chromium_presubmit)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+chromium_presubmit))
 
+* [fuchsia-x64-cast](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-cast) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia-x64-cast)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia-x64-cast))
+
 * [fuchsia_arm64](https://ci.chromium.org/p/chromium/builders/try/fuchsia_arm64) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia_arm64)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia_arm64))
 
 * [fuchsia_x64](https://ci.chromium.org/p/chromium/builders/try/fuchsia_x64) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia_x64)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia_x64))
@@ -211,11 +213,6 @@ builder.
   * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=package:%5Echromium$+file:ui/gl/features.gni)
 
 * [fuchsia-arm64-cast](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-cast) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia-arm64-cast)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia-arm64-cast))
-
-  Path regular expressions:
-  * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
-
-* [fuchsia-x64-cast](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-cast) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia-x64-cast)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia-x64-cast))
 
   Path regular expressions:
   * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)

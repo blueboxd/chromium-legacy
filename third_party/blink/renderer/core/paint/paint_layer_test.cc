@@ -974,6 +974,40 @@ TEST_P(ReorderOverlayOverflowControlsTest,
   EXPECT_FALSE(LayersPaintingOverlayOverflowControlsAfter(child));
 }
 
+TEST_P(ReorderOverlayOverflowControlsTest,
+       AdjustAccessingOrderForSubtreeHighestLayers) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 200px;
+        height: 200px;
+      }
+      div > div {
+        height: 300px;
+      }
+      #ancestor, #child_2 {
+        position: relative;
+      }
+      #child_1 {
+        position: absolute;
+      }
+    </style>
+    <div id='ancestor'>
+      <div id='child_1'></div>
+      <div id='child_2'>
+        <div id='descendant'></div>
+      </div>
+    </div>
+  )HTML");
+
+  InitOverflowStyle("ancestor");
+
+  auto* ancestor = GetPaintLayerByElementId("ancestor");
+  auto* child = GetPaintLayerByElementId("child_2");
+  EXPECT_TRUE(ancestor->NeedsReorderOverlayOverflowControls());
+  EXPECT_TRUE(LayersPaintingOverlayOverflowControlsAfter(child));
+}
+
 TEST_P(PaintLayerTest, SubsequenceCachingStackedLayers) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative'>

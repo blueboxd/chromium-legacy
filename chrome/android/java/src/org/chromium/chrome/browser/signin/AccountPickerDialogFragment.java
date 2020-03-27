@@ -27,7 +27,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.signin.AccountManagerDelegateException;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 
 import java.lang.annotation.Retention;
@@ -250,7 +250,7 @@ public class AccountPickerDialogFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        AccountManagerFacade.get().addObserver(mAccountsChangeObserver);
+        AccountManagerFacadeProvider.getInstance().addObserver(mAccountsChangeObserver);
         mProfileDataCache.addObserver(mProfileDataObserver);
         updateAccounts();
     }
@@ -259,7 +259,7 @@ public class AccountPickerDialogFragment extends DialogFragment {
     public void onStop() {
         super.onStop();
         mProfileDataCache.removeObserver(mProfileDataObserver);
-        AccountManagerFacade.get().removeObserver(mAccountsChangeObserver);
+        AccountManagerFacadeProvider.getInstance().removeObserver(mAccountsChangeObserver);
     }
 
     @Override
@@ -297,7 +297,7 @@ public class AccountPickerDialogFragment extends DialogFragment {
 
     private void updateAccounts() {
         try {
-            mAccounts = AccountManagerFacade.get().getGoogleAccountNames();
+            mAccounts = AccountManagerFacadeProvider.getInstance().getGoogleAccountNames();
         } catch (AccountManagerDelegateException ex) {
             Log.e(TAG, "Can't get account list", ex);
             dismissAllowingStateLoss();

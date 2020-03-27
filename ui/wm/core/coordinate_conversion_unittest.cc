@@ -7,14 +7,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 namespace wm {
 
 typedef aura::test::AuraTestBase CoordinateConversionTest;
 
 TEST_F(CoordinateConversionTest, ConvertRect) {
-  DefaultScreenPositionClient screen_position_client(root_window());
   aura::Window* w = aura::test::CreateTestWindowWithBounds(
       gfx::Rect(10, 20, 100, 200), root_window());
 

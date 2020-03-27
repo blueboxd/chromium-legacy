@@ -42,7 +42,7 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case 8:
       return "PaintPhaseDescendantOutlinesOnly";
     case 9:
-      return "PaintPhaseOverlayScrollbars";
+      return "PaintPhaseOverlayOverflowControls";
     case 10:
       return "PaintPhaseSelection";
     case 11:

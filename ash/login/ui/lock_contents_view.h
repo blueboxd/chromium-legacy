@@ -84,6 +84,7 @@ class ASH_EXPORT LockContentsView
 
     LoginBigUserView* primary_big_view() const;
     LoginBigUserView* opt_secondary_big_view() const;
+    AccountId focused_user() const;
     ScrollableUsersListView* users_list() const;
     LockScreenMediaControlsView* media_controls_view() const;
     views::View* note_action() const;
@@ -97,6 +98,10 @@ class ASH_EXPORT LockContentsView
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
     const std::vector<LockContentsView::UserState>& users() const;
+
+    // Finds and focuses User view specified by |account_id|. Returns nullptr if
+    // not found.
+    LoginBigUserView* FindUser(const AccountId& account_id);
     bool RemoveUser(const AccountId& account_id);
     bool IsOobeDialogVisible() const;
 

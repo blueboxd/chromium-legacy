@@ -1,4 +1,4 @@
-rootWebArea pageLocation=(0, 0) scrollX=0 scrollY=0
+rootWebArea pageLocation=(0, 0) scrollX=0 scrollY=0 scrollable=false
 ++genericContainer ignored
 ++++genericContainer size=(300, 150) pageLocation=(0, 0)
 ++++++button size=(250, 50) pageLocation=(25, 25) unclippedSize=(250, 50) name='Button'
@@ -10,7 +10,7 @@ rootWebArea pageLocation=(0, 0) scrollX=0 scrollY=0
 ++++++++++inlineTextBox name='Button'
 ++++genericContainer size=(300, 150) pageLocation=(0, 300)
 ++++++iframe size=(300, 100) pageLocation=(0, 300) unclippedSize=(300, 100)
-++++++++rootWebArea size=(300, 100) pageLocation=(0, 300) unclippedSize=(300, 100) scrollX=0 scrollY=0
+++++++++rootWebArea size=(300, 100) pageLocation=(0, 300) unclippedSize=(300, 100) scrollX=0 scrollY=0 scrollable=true
 ++++++++++genericContainer ignored size=(300, 100)
 ++++++++++++genericContainer size=(300, 100) pageLocation=(0, 300) unclippedSize=(300, 100)
 ++++++++++++++button size=(250, 50) pageLocation=(25, 325) unclippedSize=(250, 50) name='Ordinary Button'
@@ -18,7 +18,7 @@ rootWebArea pageLocation=(0, 0) scrollX=0 scrollY=0
 ++++++++++++++++++inlineTextBox name='Ordinary Button'
 ++++genericContainer size=(300, 150) pageLocation=(0, 450)
 ++++++iframe size=(150, 50) pageLocation=(0, 450)
-++++++++rootWebArea size=(150, 50) pageLocation=(0, 450) scrollX=150 scrollY=50
+++++++++rootWebArea size=(150, 50) pageLocation=(0, 450) scrollX=150 scrollY=50 scrollable=true
 ++++++++++genericContainer ignored
 ++++++++++++genericContainer size=(300, 100) pageLocation=(0, 450) unclippedLocation=(-150, 400) unclippedSize=(300, 100)
 ++++++++++++++button size=(250, 50) pageLocation=(0, 450) unclippedLocation=(-125, 425) unclippedSize=(250, 50) name='Scrolled Button'

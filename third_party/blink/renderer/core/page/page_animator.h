@@ -48,8 +48,6 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   HeapVector<Member<Animation>> GetAnimations(const TreeScope&);
 
  private:
-  void UpdateHitTestOcclusionData(LocalFrame& root_frame);
-
   Member<Page> page_;
   bool servicing_animations_;
   bool updating_layout_and_style_for_painting_;

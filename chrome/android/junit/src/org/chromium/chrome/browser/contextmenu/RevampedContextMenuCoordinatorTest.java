@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -45,6 +47,7 @@ public class RevampedContextMenuCoordinatorTest {
     private RevampedContextMenuCoordinator mCoordinator;
     private Activity mActivity;
     private WindowAndroid mWindow;
+    private final Profile mProfile = Mockito.mock(Profile.class);
 
     @Before
     public void setUpTest() {
@@ -74,7 +77,7 @@ public class RevampedContextMenuCoordinatorTest {
                 org.chromium.chrome.R.id.contextmenu_share_image, false));
         rawItems.add(new Pair<>(ContextMenuGroup.IMAGE, groupTwo));
 
-        mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
+        mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params, mProfile);
         ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
@@ -107,7 +110,7 @@ public class RevampedContextMenuCoordinatorTest {
                 org.chromium.chrome.R.id.contextmenu_share_link, true));
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
-        mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
+        mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params, mProfile);
         ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
@@ -128,7 +131,7 @@ public class RevampedContextMenuCoordinatorTest {
         groupOne.add(new ChromeContextMenuItem(Item.SAVE_VIDEO));
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
-        mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
+        mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params, mProfile);
         ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));

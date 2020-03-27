@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.signin.SyncPromoView;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -84,7 +84,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
             mProfileDataCache = new ProfileDataCache(mContext, imageSize);
             mProfileDataCache.addObserver(this);
             mSigninPromoController = new SigninPromoController(SigninAccessPoint.BOOKMARK_MANAGER);
-            AccountManagerFacade.get().addObserver(this);
+            AccountManagerFacadeProvider.getInstance().addObserver(this);
         } else {
             mProfileDataCache = null;
             mSigninPromoController = null;
@@ -107,7 +107,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
         AndroidSyncSettings.get().unregisterObserver(this);
 
         if (mSigninPromoController != null) {
-            AccountManagerFacade.get().removeObserver(this);
+            AccountManagerFacadeProvider.getInstance().removeObserver(this);
             mProfileDataCache.removeObserver(this);
             mSigninPromoController.onPromoDestroyed();
         }

@@ -31,6 +31,7 @@ namespace client {
 class CaptureClient;
 class DefaultCaptureClient;
 class FocusClient;
+class ScreenPositionClient;
 }
 namespace test {
 class TestWindowParentingClient;
@@ -71,16 +72,17 @@ class AuraTestHelper {
  private:
   bool setup_called_ = false;
   bool teardown_called_ = false;
-  ui::ContextFactory* context_factory_to_restore_ = nullptr;
-  std::unique_ptr<Env> env_;
   std::unique_ptr<wm::WMState> wm_state_;
-  std::unique_ptr<ui::TestContextFactories> context_factories_;
-  std::unique_ptr<WindowTreeHost> host_;
-  std::unique_ptr<TestWindowParentingClient> parenting_client_;
-  std::unique_ptr<client::DefaultCaptureClient> capture_client_;
-  std::unique_ptr<client::FocusClient> focus_client_;
-  std::unique_ptr<TestScreen> test_screen_;
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<Env> env_;
+  ui::ContextFactory* context_factory_to_restore_ = nullptr;
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
+  std::unique_ptr<TestScreen> test_screen_;
+  std::unique_ptr<WindowTreeHost> host_;
+  std::unique_ptr<client::FocusClient> focus_client_;
+  std::unique_ptr<client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<TestWindowParentingClient> parenting_client_;
+  std::unique_ptr<client::ScreenPositionClient> screen_position_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };

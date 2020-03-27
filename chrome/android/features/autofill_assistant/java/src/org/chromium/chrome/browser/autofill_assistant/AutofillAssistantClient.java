@@ -18,7 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.WebContents;
 
@@ -214,7 +214,7 @@ class AutofillAssistantClient {
         if (mAccountInitializationStarted) return;
         mAccountInitializationStarted = true;
 
-        AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
             if (mNativeClientAndroid == 0) return;
             if (accounts.size() == 1) {
                 // If there's only one account, there aren't any doubts.

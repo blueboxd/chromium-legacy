@@ -66,20 +66,6 @@ class PinRequestViewTest : public LoginTestBase,
       pin_request_widget->Close(false /* validation success */);
   }
 
-  // Simulates mouse press event on a |button|.
-  void SimulateButtonPress(views::Button* button) {
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), 0, 0);
-    view_->ButtonPressed(button, event);
-  }
-
-  // Simulates mouse press event on pin keyboard |button|.
-  void SimulatePinKeyboardPress(views::View* button) {
-    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), 0, 0);
-    button->OnEvent(&event);
-  }
-
   PinRequestView::SubmissionResult OnPinSubmitted(
       const std::string& code) override {
     ++pin_submitted_;
@@ -177,7 +163,7 @@ TEST_F(PinRequestViewTest, BackButton) {
   EXPECT_TRUE(test_api.back_button()->GetEnabled());
   EXPECT_EQ(0, back_action_);
 
-  SimulateButtonPress(test_api.back_button());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.back_button());
 
   EXPECT_EQ(1, back_action_);
   EXPECT_EQ(nullptr, PinRequestWidget::Get());
@@ -217,7 +203,7 @@ TEST_F(PinRequestViewTest, SubmitButton) {
   EXPECT_EQ(PinRequestViewState::kNormal, test_api.state());
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
-  SimulateButtonPress(test_api.submit_button());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, pin_submitted_);
   EXPECT_EQ("012346", last_code_submitted_);
@@ -230,7 +216,7 @@ TEST_F(PinRequestViewTest, HelpButton) {
   PinRequestView::TestApi test_api(view_);
   EXPECT_TRUE(test_api.help_button()->GetEnabled());
 
-  SimulateButtonPress(test_api.help_button());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.help_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, help_dialog_opened_);
 }
@@ -337,7 +323,7 @@ TEST_F(PinRequestViewTest, Backspace) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
-  SimulateButtonPress(test_api.submit_button());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, pin_submitted_);
   EXPECT_EQ("012323", last_code_submitted_);
@@ -357,13 +343,13 @@ TEST_F(PinRequestViewTest, FlexCodeInput) {
     base::RunLoop().RunUntilIdle();
   }
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
-  SimulateButtonPress(test_api.submit_button());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.submit_button());
   EXPECT_EQ(1, pin_submitted_);
   EXPECT_EQ("01234567", last_code_submitted_);
 
   // Test Backspace.
   generator->PressKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
-  SimulateButtonPress(test_api.submit_button());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.submit_button());
   EXPECT_EQ(2, pin_submitted_);
   EXPECT_EQ("0123456", last_code_submitted_);
 }
@@ -380,7 +366,7 @@ TEST_F(PinRequestViewTest, PinKeyboard) {
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   for (int i = 0; i < 6; ++i) {
-    SimulatePinKeyboardPress(test_pin_keyboard.GetButton(i));
+    SimulateMouseClickAt(GetEventGenerator(), test_pin_keyboard.GetButton(i));
     base::RunLoop().RunUntilIdle();
   }
   EXPECT_EQ(1, pin_submitted_);
@@ -416,7 +402,7 @@ TEST_F(PinRequestViewTest, ErrorState) {
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
   EXPECT_EQ(PinRequestViewState::kNormal, test_api.state());
 
-  SimulateButtonPress(test_api.submit_button());
+  SimulateMouseClickAt(GetEventGenerator(), test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, pin_submitted_);
   EXPECT_EQ("012346", last_code_submitted_);

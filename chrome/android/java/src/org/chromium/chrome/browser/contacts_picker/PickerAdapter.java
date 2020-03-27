@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 
 import java.lang.annotation.Retention;
@@ -445,7 +446,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             return coreAccountInfo.getEmail();
         }
 
-        AccountManagerFacade manager = AccountManagerFacade.get();
+        AccountManagerFacade manager = AccountManagerFacadeProvider.getInstance();
         List<Account> accounts = manager.tryGetGoogleAccounts();
         if (accounts.size() > 0) {
             return accounts.get(0).name;

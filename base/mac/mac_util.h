@@ -18,19 +18,6 @@ class FilePath;
 
 namespace mac {
 
-// Full screen modes, in increasing order of priority.  More permissive modes
-// take precedence.
-enum FullScreenMode {
-  kFullScreenModeHideAll = 0,
-  kFullScreenModeHideDock = 1,
-  kFullScreenModeAutoHideAll = 2,
-  kNumFullScreenModes = 3,
-
-  // kFullScreenModeNormal is not a valid FullScreenMode, but it is useful to
-  // other classes, so we include it here.
-  kFullScreenModeNormal = 10,
-};
-
 // Returns an sRGB color space.  The return value is a static value; do not
 // release it!
 BASE_EXPORT CGColorSpaceRef GetSRGBColorSpace();
@@ -42,26 +29,6 @@ BASE_EXPORT CGColorSpaceRef GetGenericRGBColorSpace();
 // Returns the color space being used by the main display.  The return value
 // is a static value; do not release it!
 BASE_EXPORT CGColorSpaceRef GetSystemColorSpace();
-
-// Add a full screen request for the given |mode|.  Must be paired with a
-// ReleaseFullScreen() call for the same |mode|.  This does not by itself create
-// a fullscreen window; rather, it manages per-application state related to
-// hiding the dock and menubar.  Must be called on the main thread.
-BASE_EXPORT void RequestFullScreen(FullScreenMode mode);
-
-// Release a request for full screen mode.  Must be matched with a
-// RequestFullScreen() call for the same |mode|.  As with RequestFullScreen(),
-// this does not affect windows directly, but rather manages per-application
-// state.  For example, if there are no other outstanding
-// |kFullScreenModeAutoHideAll| requests, this will reshow the menu bar.  Must
-// be called on main thread.
-BASE_EXPORT void ReleaseFullScreen(FullScreenMode mode);
-
-// Convenience method to switch the current fullscreen mode.  This has the same
-// net effect as a ReleaseFullScreen(from_mode) call followed immediately by a
-// RequestFullScreen(to_mode).  Must be called on the main thread.
-BASE_EXPORT void SwitchFullScreenModes(FullScreenMode from_mode,
-                                       FullScreenMode to_mode);
 
 // Returns true if the file at |file_path| is excluded from Time Machine
 // backups.

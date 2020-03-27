@@ -19,6 +19,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.components.browser_ui.widget.ContextMenuDialog;
@@ -94,8 +95,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                 ? PerformanceHintsObserver.getPerformanceClassForURL(
                         webContents, params.getLinkUrl())
                 : PerformanceClass.PERFORMANCE_UNKNOWN;
-        mHeaderCoordinator =
-                new RevampedContextMenuHeaderCoordinator(activity, performanceClass, params);
+        mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(
+                activity, performanceClass, params, Profile.fromWebContents(mWebContents));
 
         // The Integer here specifies the {@link ListItemType}.
         ModelList listItems = getItemList(window, items, params);
@@ -255,9 +256,10 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     }
 
     @VisibleForTesting
-    void initializeHeaderCoordinatorForTesting(Activity activity, ContextMenuParams params) {
+    void initializeHeaderCoordinatorForTesting(
+            Activity activity, ContextMenuParams params, Profile profile) {
         mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(
-                activity, PerformanceClass.PERFORMANCE_UNKNOWN, params);
+                activity, PerformanceClass.PERFORMANCE_UNKNOWN, params, profile);
     }
 
     public void clickListItemForTesting(int id) {

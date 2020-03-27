@@ -25,8 +25,8 @@ void ListMarkerPainter::PaintSymbol(const PaintInfo& paint_info,
                                     const IntRect& marker) {
   DCHECK(object);
   GraphicsContext& context = paint_info.context;
-  ScopedDarkModeElementRoleOverride ensure_inverted_like_text(
-      &context, DarkModeFilter::ElementRole::kText);
+  ScopedDarkModeElementRoleOverride list_symbol(
+      &context, DarkModeFilter::ElementRole::kListSymbol);
   Color color(object->ResolveColor(GetCSSPropertyColor()));
   if (BoxModelObjectPainter::ShouldForceWhiteBackgroundForPrintEconomy(
           object->GetDocument(), style))

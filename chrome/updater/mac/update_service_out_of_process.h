@@ -28,9 +28,6 @@ enum class Error;
 
 namespace updater {
 
-using StateChangeCallback =
-    base::RepeatingCallback<void(UpdateService::UpdateState)>;
-
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
@@ -40,14 +37,11 @@ class UpdateServiceOutOfProcess : public UpdateService {
   void RegisterApp(
       const RegistrationRequest& request,
       base::OnceCallback<void(const RegistrationResponse&)> callback) override;
-
-  // Checks all registered applications for updates. Calls |callback| once the
-  // operation is complete.
-  void UpdateAll(base::OnceCallback<void(Result)> callback) override;
+  void UpdateAll(StateChangeCallback state_update, Callback callback) override;
   void Update(const std::string& app_id,
               Priority priority,
               StateChangeCallback state_update,
-              base::OnceCallback<void(Result)> done) override;
+              Callback callback) override;
   void Uninitialize() override;
 
  private:

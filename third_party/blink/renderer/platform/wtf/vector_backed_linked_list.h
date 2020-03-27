@@ -131,13 +131,21 @@ class VectorBackedLinkedList {
   wtf_size_t size() const { return size_; }
 
   iterator begin() { return MakeIterator(UsedFirstIndex()); }
-  iterator end() { return MakeIterator(anchor_index_); }
+  const_iterator begin() const { return MakeConstIterator(UsedFirstIndex()); }
   const_iterator cbegin() const { return MakeConstIterator(UsedFirstIndex()); }
+  iterator end() { return MakeIterator(anchor_index_); }
+  const_iterator end() const { return MakeConstIterator(anchor_index_); }
   const_iterator cend() const { return MakeConstIterator(anchor_index_); }
   reverse_iterator rbegin() { return MakeReverseIterator(UsedLastIndex()); }
-  reverse_iterator rend() { return MakeReverseIterator(anchor_index_); }
+  const_reverse_iterator rbegin() const {
+    return MakeConstReverseIterator(UsedLastIndex());
+  }
   const_reverse_iterator crbegin() const {
     return MakeConstReverseIterator(UsedLastIndex());
+  }
+  reverse_iterator rend() { return MakeReverseIterator(anchor_index_); }
+  const_reverse_iterator rend() const {
+    return MakeConstReverseIterator(anchor_index_);
   }
   const_reverse_iterator crend() const {
     return MakeConstReverseIterator(anchor_index_);

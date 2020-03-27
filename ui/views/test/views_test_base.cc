@@ -78,16 +78,14 @@ void ViewsTestBase::SetUp() {
 
   testing::Test::SetUp();
   setup_called_ = true;
-  if (!views_delegate_for_setup_)
-    views_delegate_for_setup_ = std::make_unique<TestViewsDelegate>();
 
+  base::Optional<ViewsDelegate::NativeWidgetFactory> factory;
   if (native_widget_type_ == NativeWidgetType::kDesktop) {
-    ViewsDelegate::GetInstance()->set_native_widget_factory(base::BindRepeating(
-        &ViewsTestBase::CreateNativeWidgetForTest, base::Unretained(this)));
+    factory = base::BindRepeating(&ViewsTestBase::CreateNativeWidgetForTest,
+                                  base::Unretained(this));
   }
-
   test_helper_ = std::make_unique<ScopedViewsTestHelper>(
-      std::move(views_delegate_for_setup_));
+      std::move(views_delegate_for_setup_), std::move(factory));
 }
 
 void ViewsTestBase::TearDown() {

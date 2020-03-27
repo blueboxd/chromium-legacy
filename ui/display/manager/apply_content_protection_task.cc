@@ -53,23 +53,24 @@ void ApplyContentProtectionTask::Run() {
   // updated the state.
   for (DisplaySnapshot* display : hdcp_capable_displays) {
     native_display_delegate_->GetHDCPState(
-        *display, base::BindOnce(&ApplyContentProtectionTask::OnGetHDCPState,
-                                 weak_ptr_factory_.GetWeakPtr(), display));
+        *display,
+        base::BindOnce(&ApplyContentProtectionTask::OnGetHDCPState,
+                       weak_ptr_factory_.GetWeakPtr(), display->display_id()));
   }
 }
 
-void ApplyContentProtectionTask::OnGetHDCPState(DisplaySnapshot* display,
+void ApplyContentProtectionTask::OnGetHDCPState(int64_t display_id,
                                                 bool success,
                                                 HDCPState state) {
   success_ &= success;
 
   bool hdcp_enabled = state != HDCP_STATE_UNDESIRED;
-  bool hdcp_requested = GetDesiredProtectionMask(display->display_id()) &
-                        CONTENT_PROTECTION_METHOD_HDCP;
+  bool hdcp_requested =
+      GetDesiredProtectionMask(display_id) & CONTENT_PROTECTION_METHOD_HDCP;
 
   if (hdcp_enabled != hdcp_requested) {
     hdcp_requests_.emplace_back(
-        display, hdcp_requested ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED);
+        display_id, hdcp_requested ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED);
   }
 
   pending_requests_--;
@@ -91,7 +92,26 @@ void ApplyContentProtectionTask::OnGetHDCPState(DisplaySnapshot* display,
     return;
   }
 
+  std::vector<DisplaySnapshot*> displays = layout_manager_->GetDisplayStates();
+  std::vector<std::pair<DisplaySnapshot*, HDCPState>> hdcped_displays;
+  // Lookup the displays again since display configuration may have changed.
   for (const auto& pair : hdcp_requests_) {
+    auto it = std::find_if(displays.begin(), displays.end(),
+                           [id = pair.first](DisplaySnapshot* display) {
+                             return id == display->display_id();
+                           });
+    if (it == displays.end()) {
+      std::move(callback_).Run(Status::FAILURE);
+      return;
+    }
+
+    hdcped_displays.emplace_back(*it, pair.second);
+  }
+
+  // In synchronous callback execution this task can be deleted from the last
+  // invocation of SetHDCPState(), thus the for-loop should not iterate over
+  // object specific state (eg: |hdcp_requests_|).
+  for (const auto& pair : hdcped_displays) {
     native_display_delegate_->SetHDCPState(
         *pair.first, pair.second,
         base::BindOnce(&ApplyContentProtectionTask::OnSetHDCPState,

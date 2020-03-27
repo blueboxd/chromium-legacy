@@ -20,6 +20,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
 
@@ -75,12 +76,12 @@ public class ProfileOAuth2TokenServiceDelegateTest {
         mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
         mProfileOAuth2TokenServiceDelegate = new ProfileOAuth2TokenServiceDelegate(
                 0 /*nativeProfileOAuth2TokenServiceDelegateDelegate*/,
-                null /* AccountTrackerService */, AccountManagerFacade.get());
+                null /* AccountTrackerService */, AccountManagerFacadeProvider.get());
     }
 
     @After
     public void tearDown() {
-        AccountManagerFacade.resetAccountManagerFacadeForTests();
+        AccountManagerFacadeProvider.resetAccountManagerFacadeForTests();
     }
 
     @Test

@@ -28,12 +28,12 @@ class RevampedContextMenuHeaderCoordinator {
 
     private Context mContext;
 
-    RevampedContextMenuHeaderCoordinator(
-            Activity activity, @PerformanceClass int performanceClass, ContextMenuParams params) {
+    RevampedContextMenuHeaderCoordinator(Activity activity, @PerformanceClass int performanceClass,
+            ContextMenuParams params, Profile profile) {
         mContext = activity;
-        mModel = buildModel(getTitle(params), getUrl(activity, params));
-        mMediator =
-                new RevampedContextMenuHeaderMediator(activity, mModel, performanceClass, params);
+        mModel = buildModel(getTitle(params), getUrl(activity, params, profile));
+        mMediator = new RevampedContextMenuHeaderMediator(
+                activity, mModel, performanceClass, params, profile);
     }
 
     private PropertyModel buildModel(String title, CharSequence url) {
@@ -64,7 +64,7 @@ class RevampedContextMenuHeaderCoordinator {
         return "";
     }
 
-    private CharSequence getUrl(Activity activity, ContextMenuParams params) {
+    private CharSequence getUrl(Activity activity, ContextMenuParams params, Profile profile) {
         CharSequence url = params.getUrl();
         if (!TextUtils.isEmpty(url)) {
             boolean useDarkColors =
@@ -78,7 +78,7 @@ class RevampedContextMenuHeaderCoordinator {
             SpannableString spannableUrl =
                     new SpannableString(ChromeContextMenuPopulator.createUrlText(params));
             ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
-                    new ChromeAutocompleteSchemeClassifier(Profile.getLastUsedProfile());
+                    new ChromeAutocompleteSchemeClassifier(profile);
             OmniboxUrlEmphasizer.emphasizeUrl(spannableUrl, activity.getResources(),
                     chromeAutocompleteSchemeClassifier, ConnectionSecurityLevel.NONE, false,
                     useDarkColors, false);

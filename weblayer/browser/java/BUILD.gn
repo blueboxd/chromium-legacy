@@ -9,7 +9,11 @@ import("//weblayer/variables.gni")
 android_resources("weblayer_resources") {
   sources = [ "res/layout/weblayer_url_bar.xml" ]
   custom_package = "org.chromium.weblayer_private"
-  deps = [ "//components/permissions/android:java_resources" ]
+  deps = [
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//components/permissions/android:java_resources",
+    "//weblayer:components_java_strings",
+  ]
 }
 
 generate_product_config_srcjar("weblayer_product_config") {
@@ -83,6 +87,7 @@ android_library("java") {
     "//components/autofill/android:provider_java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/styles/android:java",
+    "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/util/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",

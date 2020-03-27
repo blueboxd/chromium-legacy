@@ -40,17 +40,6 @@ constexpr char kPackage[] = "package";
 constexpr char kLaunchFlags[] = "launchFlags";
 constexpr char kEndSuffix[] = "end";
 
-AppStatus GetAndroidAppStatus(const std::string& package_name) {
-  auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
-  if (!prefs) {
-    LOG(ERROR) << "ArcAppListPrefs is not available.";
-    return AppStatus::UNKNOWN;
-  }
-  std::string app_id = prefs->GetAppIdByPackageName(package_name);
-
-  return app_id.empty() ? AppStatus::UNAVAILABLE : AppStatus::AVAILABLE;
-}
-
 base::Optional<std::string> GetActivity(const std::string& package_name) {
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
   if (!prefs) {
@@ -117,7 +106,8 @@ void NotifyAndroidAppListRefreshed(
 
 }  // namespace
 
-DeviceActions::DeviceActions() = default;
+DeviceActions::DeviceActions(std::unique_ptr<DeviceActionsDelegate> delegate)
+    : delegate_(std::move(delegate)) {}
 
 DeviceActions::~DeviceActions() {
   receivers_.Clear();
@@ -196,7 +186,7 @@ void DeviceActions::SetSwitchAccessEnabled(bool enabled) {
 
 void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
                                    OpenAndroidAppCallback callback) {
-  app_info->status = GetAndroidAppStatus(app_info->package_name);
+  app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
 
   if (app_info->status != AppStatus::AVAILABLE) {
     std::move(callback).Run(false);
@@ -219,7 +209,7 @@ void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
 void DeviceActions::VerifyAndroidApp(std::vector<AndroidAppInfoPtr> apps_info,
                                      VerifyAndroidAppCallback callback) {
   for (const auto& app_info : apps_info) {
-    app_info->status = GetAndroidAppStatus(app_info->package_name);
+    app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
   }
   std::move(callback).Run(std::move(apps_info));
 }
@@ -256,7 +246,7 @@ void DeviceActions::AddAppListEventSubscriber(
 
 base::Optional<std::string> DeviceActions::GetAndroidAppLaunchIntent(
     chromeos::assistant::mojom::AndroidAppInfoPtr app_info) {
-  app_info->status = GetAndroidAppStatus(app_info->package_name);
+  app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
 
   if (app_info->status != AppStatus::AVAILABLE)
     return base::nullopt;

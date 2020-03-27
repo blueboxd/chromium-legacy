@@ -38,7 +38,6 @@
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -150,9 +149,6 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
     layout_delegate_ =
         std::make_unique<TestKeyboardLayoutDelegate>(root_window());
 
-    screen_position_client_ =
-        std::make_unique<wm::DefaultScreenPositionClient>(root_window());
-
     // Force enable the virtual keyboard.
     controller_.Initialize(
         std::make_unique<TestKeyboardUIFactory>(host()->GetInputMethod()),
@@ -164,7 +160,6 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
   void TearDown() override {
     SetTouchKeyboardEnabled(false);
     controller_.RemoveObserver(this);
-    screen_position_client_.reset();
     focus_controller_.reset();
     aura::test::AuraTestBase::TearDown();
   }
@@ -269,7 +264,6 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
   bool keyboard_disabled_ = false;
-  std::unique_ptr<wm::DefaultScreenPositionClient> screen_position_client_;
   ui::ScopedTestInputMethodFactory scoped_test_input_method_factory_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIControllerTest);
 };

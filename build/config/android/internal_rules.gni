@@ -3203,10 +3203,10 @@ if (enable_java_templates) {
         _enable_build_hooks && _requires_android &&
         (!defined(invoker.testonly) || !invoker.testonly)
     if (_enable_build_hooks_android) {
-      # This is only needed for the process_java_prebuilt step, so no header
-      # necessary.
       _java_full_deps +=
           [ "//build/android/buildhooks:build_hooks_android_java" ]
+      _java_header_deps +=
+          [ "//build/android/buildhooks:build_hooks_android_java__header" ]
     }
 
     # Don't enable coverage or lint unless the target has some non-generated

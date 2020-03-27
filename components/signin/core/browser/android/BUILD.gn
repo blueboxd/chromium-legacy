@@ -6,7 +6,7 @@ import("//build/config/android/rules.gni")
 
 generate_jni("jni_headers") {
   sources = [
-    "java/src/org/chromium/components/signin/AccountManagerFacade.java",
+    "java/src/org/chromium/components/signin/AccountManagerFacadeProvider.java",
     "java/src/org/chromium/components/signin/AccountTrackerService.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
   ]
@@ -29,6 +29,7 @@ android_library("java") {
     "java/src/org/chromium/components/signin/AccountManagerDelegate.java",
     "java/src/org/chromium/components/signin/AccountManagerDelegateException.java",
     "java/src/org/chromium/components/signin/AccountManagerFacade.java",
+    "java/src/org/chromium/components/signin/AccountManagerFacadeProvider.java",
     "java/src/org/chromium/components/signin/AccountManagerResult.java",
     "java/src/org/chromium/components/signin/AccountTrackerService.java",
     "java/src/org/chromium/components/signin/AccountUtils.java",

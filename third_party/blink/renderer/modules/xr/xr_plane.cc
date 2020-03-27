@@ -15,27 +15,31 @@ namespace blink {
 
 XRPlane::XRPlane(uint64_t id,
                  XRSession* session,
-                 const device::mojom::blink::XRPlaneDataPtr& plane_data,
+                 const device::mojom::blink::XRPlaneData& plane_data,
                  double timestamp)
     : XRPlane(id,
               session,
               mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
-                  plane_data->orientation),
-              mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose),
+                  plane_data.orientation),
               mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
-                  plane_data->polygon),
-              timestamp) {}
+                  plane_data.polygon),
+              timestamp) {
+  // No need for else - if pose is not present, the default-constructed unique
+  // ptr is fine.
+  if (plane_data.pose) {
+    SetMojoFromPlane(
+        mojo::ConvertTo<blink::TransformationMatrix>(plane_data.pose));
+  }
+}
 
 XRPlane::XRPlane(uint64_t id,
                  XRSession* session,
                  const base::Optional<Orientation>& orientation,
-                 const TransformationMatrix& pose_matrix,
                  const HeapVector<Member<DOMPointReadOnly>>& polygon,
                  double timestamp)
     : id_(id),
       polygon_(polygon),
       orientation_(orientation),
-      pose_matrix_(std::make_unique<TransformationMatrix>(pose_matrix)),
       session_(session),
       last_changed_time_(timestamp) {
   DVLOG(3) << __func__;
@@ -53,13 +57,17 @@ XRSpace* XRPlane::planeSpace() const {
   return plane_space_;
 }
 
-TransformationMatrix XRPlane::MojoFromObject() const {
-  return *pose_matrix_;
+base::Optional<TransformationMatrix> XRPlane::MojoFromObject() const {
+  if (!mojo_from_plane_) {
+    return base::nullopt;
+  }
+
+  return *mojo_from_plane_;
 }
 
 String XRPlane::orientation() const {
-  if (orientation_.has_value()) {
-    switch (orientation_.value()) {
+  if (orientation_) {
+    switch (*orientation_) {
       case Orientation::kHorizontal:
         return "Horizontal";
       case Orientation::kVertical:
@@ -109,18 +117,30 @@ ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
                                 *maybe_mojo_from_offset, id_, exception_state);
 }
 
-void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,
+void XRPlane::Update(const device::mojom::blink::XRPlaneData& plane_data,
                      double timestamp) {
   DVLOG(3) << __func__;
 
   last_changed_time_ = timestamp;
 
   orientation_ = mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
-      plane_data->orientation);
-  *pose_matrix_ =
-      mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose);
-  polygon_ = mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
-      plane_data->polygon);
+      plane_data.orientation);
+  if (plane_data.pose) {
+    SetMojoFromPlane(
+        mojo::ConvertTo<blink::TransformationMatrix>(plane_data.pose));
+  } else {
+    mojo_from_plane_ = nullptr;
+  }
+  polygon_ =
+      mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(plane_data.polygon);
+}
+
+void XRPlane::SetMojoFromPlane(const TransformationMatrix& mojo_from_plane) {
+  if (mojo_from_plane_) {
+    *mojo_from_plane_ = mojo_from_plane;
+  } else {
+    mojo_from_plane_ = std::make_unique<TransformationMatrix>(mojo_from_plane);
+  }
 }
 
 void XRPlane::Trace(Visitor* visitor) {

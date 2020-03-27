@@ -21,7 +21,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.SettingsSecureBasedIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -207,7 +207,7 @@ public abstract class RequestGenerator {
         try {
             PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
                     () -> ProcessInitializationHandler.getInstance().initializePreNative());
-            numAccounts = AccountManagerFacade.get().tryGetGoogleAccounts().size();
+            numAccounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts().size();
         } catch (Exception e) {
             Log.e(TAG, "Cannot get number of accounts.", e);
         }

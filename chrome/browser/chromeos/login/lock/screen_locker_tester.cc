@@ -124,7 +124,15 @@ bool ScreenLockerTester::IsLockShutdownButtonShown() {
 
 void ScreenLockerTester::UnlockWithPassword(const AccountId& account_id,
                                             const std::string& password) {
-  ash::LoginScreenTestApi::SubmitPassword(account_id, password);
+  ash::LoginScreenTestApi::SubmitPassword(account_id, password,
+                                          true /*check_if_submittable*/);
+  base::RunLoop().RunUntilIdle();
+}
+
+void ScreenLockerTester::ForceSubmitPassword(const AccountId& account_id,
+                                             const std::string& password) {
+  ash::LoginScreenTestApi::SubmitPassword(account_id, password,
+                                          false /*check_if_submittable*/);
   base::RunLoop().RunUntilIdle();
 }
 

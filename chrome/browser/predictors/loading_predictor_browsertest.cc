@@ -1521,15 +1521,18 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
 }
 
 class LoadingPredictorBrowserTestWithOptimizationGuide
-    : public ::testing::WithParamInterface<bool>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
       public LoadingPredictorBrowserTest {
  public:
   LoadingPredictorBrowserTestWithOptimizationGuide() {
-    feature_list_.InitWithFeatures(
-        {features::kLoadingPredictorUseOptimizationGuide,
-         optimization_guide::features::kOptimizationHints},
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kLoadingPredictorUseOptimizationGuide,
+          {{"use_predictions_for_preconnect",
+            ShouldPreconnectUsingOptimizationGuidePredictions() ? "true"
+                                                                : "false"}}},
+         {optimization_guide::features::kOptimizationHints, {}}},
         {});
-    if (GetParam()) {
+    if (IsLocalPredictionEnabled()) {
       local_predictions_feature_list_.InitAndEnableFeature(
           features::kLoadingPredictorUseLocalPredictions);
     } else {
@@ -1575,16 +1578,20 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
         optimization_guide::switches::kHintsProtoOverride, config_string);
   }
 
-  bool IsLocalPredictionEnabled() const { return GetParam(); }
+  bool IsLocalPredictionEnabled() const { return std::get<0>(GetParam()); }
+
+  bool ShouldPreconnectUsingOptimizationGuidePredictions() const {
+    return std::get<1>(GetParam());
+  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
   base::test::ScopedFeatureList local_predictions_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(UseLocalPrediction,
+INSTANTIATE_TEST_SUITE_P(,
                          LoadingPredictorBrowserTestWithOptimizationGuide,
-                         ::testing::Bool());
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 // https://crbug.com/1056693
 #if (defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS))
@@ -1677,7 +1684,7 @@ IN_PROC_BROWSER_TEST_P(
   if (IsLocalPredictionEnabled()) {
     // Should use subresources that were learned.
     expected_subresource_hosts = {"baz.com", "foo.com"};
-  } else {
+  } else if (ShouldPreconnectUsingOptimizationGuidePredictions()) {
     // Should use subresources from optimization hint.
     expected_subresource_hosts = {"subresource.com", "otherresource.com"};
   }
@@ -1760,15 +1767,19 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
         origin.GetURL()));
 
-    // Both subresource hosts should be preconnected to.
     for (auto* const host : {"subresource.com", "otherresource.com"}) {
-      preconnect_manager_observer()->WaitUntilHostLookedUp(
-          host, network_isolation_key);
-      EXPECT_TRUE(preconnect_manager_observer()->HostFound(
-          host, network_isolation_key));
+      if (ShouldPreconnectUsingOptimizationGuidePredictions()) {
+        // Both subresource hosts should be preconnected to.
+        preconnect_manager_observer()->WaitUntilHostLookedUp(
+            host, network_isolation_key);
+      }
+      EXPECT_EQ(
+          preconnect_manager_observer()->HostFound(host, network_isolation_key),
+          ShouldPreconnectUsingOptimizationGuidePredictions());
 
-      EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
-          GURL(base::StringPrintf("http://%s/", host))));
+      EXPECT_EQ(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
+                    GURL(base::StringPrintf("http://%s/", host))),
+                ShouldPreconnectUsingOptimizationGuidePredictions());
     }
 
     EXPECT_TRUE(observer->WaitForResponse());

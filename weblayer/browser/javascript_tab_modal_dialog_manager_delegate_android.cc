@@ -42,6 +42,7 @@ void JavaScriptTabModalDialogManagerDelegateAndroid::SetTabNeedsAttention(
 
 bool JavaScriptTabModalDialogManagerDelegateAndroid::IsWebContentsForemost() {
   // TODO(estade): this should also check if the browser is active/showing.
+  DCHECK(TabImpl::FromWebContents(web_contents_));
   return TabImpl::FromWebContents(web_contents_)->IsActive();
 }
 

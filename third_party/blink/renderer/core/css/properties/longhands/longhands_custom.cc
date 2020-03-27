@@ -369,6 +369,45 @@ const CSSValue* AnimationTimingFunction::InitialValue() const {
   return value;
 }
 
+const CSSValue* AspectRatio::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (range.Peek().Id() == CSSValueID::kAuto)
+    return css_property_parser_helpers::ConsumeIdent(range);
+  CSSValue* width =
+      css_property_parser_helpers::ConsumePositiveInteger(range, context);
+  if (!width)
+    return nullptr;
+  if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
+    return nullptr;
+  CSSValue* height =
+      css_property_parser_helpers::ConsumePositiveInteger(range, context);
+  if (!height)
+    return nullptr;
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+  list->Append(*width);
+  list->Append(*height);
+  return list;
+}
+
+const CSSValue* AspectRatio::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  auto& ratio = style.AspectRatio();
+  if (!ratio.has_value())
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
+
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+  list->Append(*CSSNumericLiteralValue::Create(
+      ratio->Width(), CSSPrimitiveValue::UnitType::kInteger));
+  list->Append(*CSSNumericLiteralValue::Create(
+      ratio->Height(), CSSPrimitiveValue::UnitType::kInteger));
+  return list;
+}
+
 const CSSValue* BackdropFilter::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

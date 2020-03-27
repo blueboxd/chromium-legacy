@@ -1,6 +1,6 @@
 <style>
-  :host {
-    height: 230px;
+  :host(:not([hidden])) {
+    display: inline-block;
   }
 
   #singleColoredLogo,
@@ -22,8 +22,10 @@
   }
 
   #iframe {
-    height: 200px;
-    width: 500px;
+    height: var(--height, 200px);
+    transition-duration: var(--duration, 100ms);
+    transition-property: height, width;
+    width: var(--width, 500px);
   }
 </style>
 <iron-pages selected="[[mode_]]" attr-for-selected="id">
@@ -35,7 +37,10 @@
   <div id="doodle">
     <img id="image" src="[[imageUrl_]]" hidden="[[!imageUrl_]]"></img>
     <ntp-untrusted-iframe id="iframe" path="[[iframeUrl_]]"
-        hidden="[[!iframeUrl_]]">
+        hidden="[[!iframeUrl_]]"
+        style="--duration: [[valueOrUnset_(duration_)]];
+               --height: [[valueOrUnset_(height_)]];
+               --width: [[valueOrUnset_(width_)]];">
     </ntp-untrusted-iframe>
   </div>
 </iron-pages>

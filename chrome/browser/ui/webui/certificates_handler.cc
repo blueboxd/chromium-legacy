@@ -278,7 +278,11 @@ CertificatesHandler::CertificatesHandler()
       use_hardware_backed_(false),
       file_access_provider_(base::MakeRefCounted<FileAccessProvider>()) {}
 
-CertificatesHandler::~CertificatesHandler() {}
+CertificatesHandler::~CertificatesHandler() {
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
+  select_file_dialog_ = nullptr;
+}
 
 void CertificatesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

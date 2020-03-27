@@ -574,57 +574,6 @@ try_.chromium_mac_ios_builder(
     name = 'ios13-sdk-simulator',
 )
 
-
-try_.chromium_swangle_linux_builder(
-    name = 'linux-swangle-try-tot-angle-x64'
-)
-
-try_.chromium_swangle_linux_builder(
-    name = 'linux-swangle-try-tot-angle-x86'
-)
-
-try_.chromium_swangle_linux_builder(
-    name = 'linux-swangle-try-tot-swiftshader-x64'
-)
-
-try_.chromium_swangle_linux_builder(
-    name = 'linux-swangle-try-tot-swiftshader-x86'
-)
-
-try_.chromium_swangle_linux_builder(
-    name = 'linux-swangle-try-x64'
-)
-
-try_.chromium_swangle_linux_builder(
-    name = 'linux-swangle-try-x86'
-)
-
-
-try_.chromium_swangle_windows_builder(
-    name = 'win-swangle-try-tot-angle-x64',
-)
-
-try_.chromium_swangle_windows_builder(
-    name = 'win-swangle-try-tot-angle-x86',
-)
-
-try_.chromium_swangle_windows_builder(
-    name = 'win-swangle-try-tot-swiftshader-x64',
-)
-
-try_.chromium_swangle_windows_builder(
-    name = 'win-swangle-try-tot-swiftshader-x86',
-)
-
-try_.chromium_swangle_windows_builder(
-    name = 'win-swangle-try-x64',
-)
-
-try_.chromium_swangle_windows_builder(
-    name = 'win-swangle-try-x86',
-)
-
-
 try_.chromium_win_builder(
     name = 'win-annotator-rel',
 )

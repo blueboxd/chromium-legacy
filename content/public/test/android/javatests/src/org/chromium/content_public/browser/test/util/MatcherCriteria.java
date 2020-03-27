@@ -32,7 +32,7 @@ public class MatcherCriteria<T> extends Criteria {
 
     @Override
     public final boolean isSatisfied() {
-        T actualValue = null;
+        T actualValue;
         try {
             actualValue = mActualValueCallable.call();
         } catch (Exception ex) {

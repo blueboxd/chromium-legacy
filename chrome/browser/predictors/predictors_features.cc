@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/predictors_features.h"
 
+#include "base/metrics/field_trial_params.h"
+
 namespace features {
 
 // Whether local predictions should be used to make preconnect predictions.
@@ -37,6 +39,15 @@ const base::Feature kLoadingPredictorUseOptimizationGuide{
 
 bool ShouldUseLocalPredictions() {
   return base::FeatureList::IsEnabled(kLoadingPredictorUseLocalPredictions);
+}
+
+bool ShouldUseOptimizationGuidePredictionsToPreconnect() {
+  if (!base::FeatureList::IsEnabled(kLoadingPredictorUseOptimizationGuide))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kLoadingPredictorUseOptimizationGuide, "use_predictions_for_preconnect",
+      true);
 }
 
 }  // namespace features

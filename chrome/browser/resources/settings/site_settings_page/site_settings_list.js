@@ -4,12 +4,26 @@
 
 cr.define('settings', function() {
   /**
+   * @typedef{{
+   *   route: !settings.Route,
+   *   id: settings.ContentSettingsTypes,
+   *   label: string,
+   *   icon: (string|undefined),
+   *   enabledLabel: (string|undefined),
+   *   disabledLabel: (string|undefined),
+   *   otherLabel: (string|undefined),
+   *   shouldShow: function():boolean,
+   * }}
+   */
+  /* #export */ let CategoryListItem;
+
+  /**
    * @param {string} setting Value from settings.ContentSetting.
    * @param {string} enabled Non-block label ('feature X not allowed').
    * @param {string} disabled Block label (likely just, 'Blocked').
    * @param {?string} other Tristate value (maybe, 'session only').
    */
-  function defaultSettingLabel(setting, enabled, disabled, other) {
+  /* #export */ function defaultSettingLabel(setting, enabled, disabled, other) {
     if (setting == settings.ContentSetting.BLOCK) {
       return disabled;
     }
@@ -179,5 +193,8 @@ cr.define('settings', function() {
   });
 
   // #cr_define_end
-  return {defaultSettingLabel};
+  return {
+    CategoryListItem: CategoryListItem,
+    defaultSettingLabel: defaultSettingLabel,
+  };
 });

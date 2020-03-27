@@ -737,6 +737,8 @@ cr.define('cr.login', function() {
           'pageLoaded', this.onPageLoaded_.bind(this, channel));
       channel.registerMessage(
           'getSAMLFlag', this.onGetSAMLFlag_.bind(this, channel));
+      channel.registerMessage(
+          'scrollInfo', this.onScrollInfo_.bind(this, channel));
     }
 
     sendInitializationSuccess_(channel) {
@@ -814,6 +816,22 @@ cr.define('cr.login', function() {
           domain: this.authDomain
         }
       }));
+    }
+
+    onScrollInfo_(channel, msg) {
+      const scrollTop = msg.scrollTop;
+      const scrollHeight = msg.scrollHeight;
+      const clientHeight = this.webview_.clientHeight;
+
+      if (scrollTop === undefined || scrollHeight === undefined) {
+        return;
+      }
+
+      this.webview_.classList.toggle('can-scroll', clientHeight < scrollHeight);
+      this.webview_.classList.toggle('is-scrolled', scrollTop > 0);
+      const scrolledToBottom = (scrollTop > 0) /*is-scrolled*/ &&
+          (Math.ceil(scrollTop + clientHeight) >= scrollHeight);
+      this.webview_.classList.toggle('scrolled-to-bottom', scrolledToBottom);
     }
 
     onPermissionRequest_(permissionEvent) {

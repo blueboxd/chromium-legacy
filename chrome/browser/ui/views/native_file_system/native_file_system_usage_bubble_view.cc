@@ -52,42 +52,68 @@ namespace {
 int ComputeHeadingMessageFromUsage(
     const NativeFileSystemUsageBubbleView::Usage& usage,
     base::FilePath* embedded_path) {
-  // Only writable files.
+  // Only files.
   if (usage.writable_directories.empty() &&
       usage.readable_directories.empty()) {
-    if (usage.writable_files.size() == 1) {
-      *embedded_path = usage.writable_files.front();
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_FILE_TEXT;
+    // Only writable files.
+    if (usage.readable_files.empty()) {
+      DCHECK(!usage.writable_files.empty());
+      if (usage.writable_files.size() == 1) {
+        *embedded_path = usage.writable_files.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_FILE_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT;
     }
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT;
+
+    // Only readable files.
+    if (usage.writable_files.empty()) {
+      DCHECK(!usage.readable_files.empty());
+      if (usage.readable_files.size() == 1) {
+        *embedded_path = usage.readable_files.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_FILE_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_FILES_TEXT;
+    }
   }
 
-  // Only writable directories.
-  if (usage.writable_files.empty() && usage.readable_directories.empty()) {
-    if (usage.writable_directories.size() == 1) {
-      *embedded_path = usage.writable_directories.front();
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_DIRECTORY_TEXT;
+  // Only directories.
+  if (usage.writable_files.empty() && usage.readable_files.empty()) {
+    // Only writable directories.
+    if (usage.readable_directories.empty()) {
+      DCHECK(!usage.writable_directories.empty());
+      if (usage.writable_directories.size() == 1) {
+        *embedded_path = usage.writable_directories.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_DIRECTORY_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT;
     }
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT;
+
+    // Only readable directories.
+    if (usage.writable_directories.empty()) {
+      DCHECK(!usage.readable_directories.empty());
+      if (usage.readable_directories.size() == 1) {
+        *embedded_path = usage.readable_directories.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_DIRECTORY_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
+    }
   }
 
-  // Both writable files and writable directories, but no read-only directories.
-  if (usage.readable_directories.empty()) {
+  // Only readable files and directories.
+  if (usage.writable_files.empty() && usage.writable_directories.empty()) {
+    DCHECK(!usage.readable_files.empty());
+    DCHECK(!usage.readable_directories.empty());
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_FILES_AND_DIRECTORIES_TEXT;
+  }
+
+  // Only writable files and directories.
+  if (usage.readable_files.empty() && usage.readable_directories.empty()) {
     DCHECK(!usage.writable_files.empty());
     DCHECK(!usage.writable_directories.empty());
     return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_AND_DIRECTORIES_TEXT;
   }
 
-  // Only readable directories.
-  if (usage.writable_files.empty() && usage.writable_directories.empty()) {
-    if (usage.readable_directories.size() == 1) {
-      *embedded_path = usage.readable_directories.front();
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_DIRECTORY_TEXT;
-    }
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
-  }
-
-  // Some combination of read and write access.
+  // Some combination of read and/or write access to files and/or directories.
   return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READ_AND_WRITE;
 }
 
@@ -309,7 +335,7 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
       writable_paths_model_(std::move(usage_.writable_files),
                             std::move(usage_.writable_directories)) {
   DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                                   l10n_util::GetStringUTF16(IDS_DONE));
+                                 l10n_util::GetStringUTF16(IDS_DONE));
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));

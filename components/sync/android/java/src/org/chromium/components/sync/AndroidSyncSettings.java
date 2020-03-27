@@ -19,7 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChromeSigninController;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -251,7 +251,7 @@ public class AndroidSyncSettings {
 
         // Disable the syncability of Chrome for all other accounts.
         ThreadUtils.postOnUiThread(() -> {
-            AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+            AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
                 synchronized (mLock) {
                     try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                         for (int i = 0; i < accounts.size(); i++) {

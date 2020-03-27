@@ -419,7 +419,8 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << "is_readonly=" << field.is_readonly << " "
             << "typed_value=" << field.typed_value << " "
             << "properties_mask=" << field.properties_mask << " "
-            << "label_source=" << field.label_source;
+            << "label_source=" << field.label_source << " "
+            << "bounds=" << field.bounds.ToString();
 }
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& field) {

@@ -39,6 +39,12 @@
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
 
+namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+}  // namespace base
+
 namespace gl {
 class GLShareGroup;
 }
@@ -220,10 +226,16 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
       SequenceTracker(const SequenceTracker&);
       ~SequenceTracker();
 
+      uint64_t initial_memory_ = 0u;
       uint64_t total_memory_ = 0u;
+      base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+          initial_memory_per_source_;
       base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
           peak_memory_per_source_;
     };
+    std::unique_ptr<base::trace_event::TracedValue> StartTrackingTracedValue();
+    std::unique_ptr<base::trace_event::TracedValue> StopTrackingTracedValue(
+        SequenceTracker& sequence);
     // MemoryTracker::Observer:
     void OnMemoryAllocatedChange(
         CommandBufferId id,

@@ -2847,9 +2847,8 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
           viz::AsyncHitTestReasons::kNotAsyncHitTest;
       if (surface_layer->has_pointer_events_none())
         flag |= viz::HitTestRegionFlags::kHitTestIgnore;
-      if (!surface_layer->unoccluded_for_hit_testing() &&
-          (assume_overlap ||
-           overlapping_region.Intersects(layer_screen_space_rect))) {
+      if (assume_overlap ||
+          overlapping_region.Intersects(layer_screen_space_rect)) {
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
         async_hit_test_reasons |= viz::AsyncHitTestReasons::kOverlappedRegion;
       }

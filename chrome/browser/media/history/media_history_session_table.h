@@ -30,6 +30,8 @@ class MediaHistorySessionTable : public MediaHistoryTableBase {
  public:
   static const char kTableName[];
 
+  bool DeleteURL(const GURL& url) override;
+
  private:
   friend class MediaHistoryStoreInternal;
 

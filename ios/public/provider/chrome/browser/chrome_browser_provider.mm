@@ -59,6 +59,11 @@ ChromeIdentityService* ChromeBrowserProvider::GetChromeIdentityService() {
   return nullptr;
 }
 
+ChromeTrustedVaultService*
+ChromeBrowserProvider::GetChromeTrustedVaultService() {
+  return nullptr;
+}
+
 GeolocationUpdaterProvider*
 ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
   return nullptr;

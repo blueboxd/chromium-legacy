@@ -698,7 +698,6 @@
       'latency_unittests': {},
       'libjingle_xmpp_unittests': {},
       'media_blink_unittests': {},
-      'media_service_unittests': {},
       'media_unittests': {},
       'midi_unittests': {},
       'mojo_unittests': {},
@@ -4759,6 +4758,16 @@
 
     'ios_code_coverage_tests': {
       'ios_common_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+        ],
+      },
+      'ios_eg2_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+        ],
+      },
+      'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPHONE_X_13_3',
         ],

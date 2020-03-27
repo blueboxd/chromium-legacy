@@ -1700,6 +1700,7 @@
 <translation id="3264544094376351444">‏قلم Sans-Serif</translation>
 <translation id="3264582393905923483">زمینه</translation>
 <translation id="3265459715026181080">بستن پنجره</translation>
+<translation id="3266274118485960573">«بررسی ایمنی» درحال اجرا است.</translation>
 <translation id="3267726687589094446">ادامه اجازه بارگیری خودکار چند فایل</translation>
 <translation id="3268451620468152448">برگه‌های باز</translation>
 <translation id="3269069891205016797">با خروج از سیستم، اطلاعات شما پاک می‌شوند.</translation>
@@ -1805,6 +1806,7 @@
 <translation id="3412265149091626468">پرش به انتخاب</translation>
 <translation id="3413122095806433232">‏صادرکنندگان CA: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">اندازه:</translation>
+<translation id="3416468988018290825">همیشه نشانی‌های وب کامل نشان داده شود</translation>
 <translation id="3420501302812554910">کلید امنیتی داخلی باید بازنشانی شود</translation>
 <translation id="3421387094817716717">کلید عمومی منحنی بیضوی</translation>
 <translation id="3422291238483866753">وقتی سایتی می‌خواهد نقشه سه‌بعدی از محیط ایجاد کند یا موقعیت دوربین را ردیابی کند سؤال شود (توصیه می‌شود)</translation>
@@ -4161,6 +4163,7 @@
 <translation id="6586451623538375658">جابجایی دکمه اصلی ماوس</translation>
 <translation id="6586604979641883411">‏برای ارتقای Linux، حداقل <ph name="REQUIRED_SPACE" /> فضای آزاد دیسک لازم است. لطفاً مقداری فضا در دستگاه آزاد کنید و دوباره امتحان کنید.</translation>
 <translation id="6588043302623806746">‏استفاده از DNS ایمن</translation>
+<translation id="659005207229852190">«بررسی ایمنی» کامل شده است.</translation>
 <translation id="6590458744723262880">تغییر نام پوشه</translation>
 <translation id="6592267180249644460">‏زمان ثبت گزارش WebRTC ‏<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">اثرانگشت ثبت شد</translation>
@@ -5421,6 +5424,7 @@
 <translation id="8249672078237421304">پیشنهاد ترجمه برای صفحه‌هایی که زبان آن‌ها را نمی‌دانم</translation>
 <translation id="8251441930213048644">بازخوانی در همین لحظه</translation>
 <translation id="8251578425305135684">تصویر کوچک حذف شد.</translation>
+<translation id="825238165904109940">همیشه نشانی‌های وب کامل نشان داده شود</translation>
 <translation id="8252569384384439529">درحال بارگذاری…</translation>
 <translation id="8253198102038551905">روی «+» کلیک کنید تا مشخصات شبکه را دریافت کنید</translation>
 <translation id="8254954272268479918">‏خاموش کردن Linux (بتا)</translation>

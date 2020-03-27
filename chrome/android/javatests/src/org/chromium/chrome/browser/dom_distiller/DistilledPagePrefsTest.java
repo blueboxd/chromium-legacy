@@ -17,6 +17,7 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -73,6 +74,7 @@ public class DistilledPagePrefsTest {
     @Test
     @SmallTest
     @Feature({"DomDistiller"})
+    @DisabledTest(message = "Test Suite flaky: crbug.com/1065452")
     public void testSingleObserverTheme() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
@@ -124,6 +126,7 @@ public class DistilledPagePrefsTest {
     @Test
     @SmallTest
     @Feature({"DomDistiller"})
+    @DisabledTest(message = "Test Suite flaky: crbug.com/1065452")
     public void testSingleObserverFontFamily() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
@@ -175,6 +178,7 @@ public class DistilledPagePrefsTest {
     @Test
     @SmallTest
     @Feature({"DomDistiller"})
+    @DisabledTest(message = "Test Suite flaky: crbug.com/1065452")
     public void testSingleObserverFontScaling() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);

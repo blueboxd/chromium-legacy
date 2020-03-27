@@ -633,6 +633,11 @@ const char kEnableSRPIsolatedPrerendersName[] =
 const char kEnableSRPIsolatedPrerendersDescription[] =
     "Enable Navigation Predictions on the Google SRP to be fully isolated.";
 
+const char kEnableSRPIsolatedPrerenderProbingName[] =
+    "Enable Probing on Navigation Predictor Isolated Prerenders";
+const char kEnableSRPIsolatedPrerenderProbingDescription[] =
+    "Enable probing checks for Isolated Prerenders which will block commit.";
+
 const char kDownloadAutoResumptionNativeName[] =
     "Enable download auto-resumption in native";
 const char kDownloadAutoResumptionNativeDescription[] =

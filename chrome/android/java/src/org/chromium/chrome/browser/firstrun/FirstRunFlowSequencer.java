@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ChromeSigninController;
 
@@ -106,7 +106,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected List<Account> getGoogleAccounts() {
-        return AccountManagerFacade.get().tryGetGoogleAccounts();
+        return AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
     }
 
     @VisibleForTesting

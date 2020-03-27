@@ -109,8 +109,7 @@ class AssistantClientImpl : public ash::AssistantClient,
 
   mojo::Receiver<chromeos::assistant::mojom::Client> client_receiver_{this};
 
-  DeviceActions device_actions_;
-
+  std::unique_ptr<DeviceActions> device_actions_;
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
   std::unique_ptr<AssistantWebViewFactoryImpl> assistant_web_view_factory_;

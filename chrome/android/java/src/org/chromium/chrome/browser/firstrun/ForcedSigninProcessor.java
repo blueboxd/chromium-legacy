@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -76,7 +76,7 @@ public final class ForcedSigninProcessor {
             Log.d(TAG, "Sign in disallowed");
             return;
         }
-        AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
             if (accounts.size() != 1) {
                 Log.d(TAG, "Incorrect number of accounts (%d)", accounts.size());
                 return;

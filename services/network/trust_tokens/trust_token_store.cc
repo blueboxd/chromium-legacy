@@ -152,20 +152,7 @@ bool TrustTokenStore::SetAssociation(const url::Origin& issuer,
   return true;
 }
 
-std::vector<TrustTokenKeyCommitment> TrustTokenStore::KeyCommitments(
-    const url::Origin& issuer) {
-  DCHECK(!issuer.opaque());
-  std::unique_ptr<TrustTokenIssuerConfig> config =
-      persister_->GetIssuerConfig(issuer);
-
-  if (!config)
-    return std::vector<TrustTokenKeyCommitment>();
-
-  return std::vector<TrustTokenKeyCommitment>(config->keys().begin(),
-                                              config->keys().end());
-}
-
-void TrustTokenStore::SetKeyCommitmentsAndPruneStaleState(
+void TrustTokenStore::PruneStaleIssuerState(
     const url::Origin& issuer,
     const std::vector<TrustTokenKeyCommitment>& keys) {
   DCHECK(!issuer.opaque());
@@ -181,27 +168,9 @@ void TrustTokenStore::SetKeyCommitmentsAndPruneStaleState(
   if (!config)
     config = std::make_unique<TrustTokenIssuerConfig>();
 
-  // Because of the characteristics of the protocol, this will be
-  // quite small (~3 elements).
-  google::protobuf::RepeatedPtrField<TrustTokenKeyCommitment> keys_to_add(
-      keys.begin(), keys.end());
-
-  for (TrustTokenKeyCommitment& new_key : keys_to_add) {
-    for (const TrustTokenKeyCommitment& existing_key : config->keys()) {
-      if (existing_key.key() == new_key.key()) {
-        // It's safe to break here because of the precondition that
-        // the commitments in |keys_to_add| have distinct keys.
-        *new_key.mutable_first_seen_at() = existing_key.first_seen_at();
-        break;
-      }
-    }
-  }
-
-  config->mutable_keys()->Swap(&keys_to_add);
-
   google::protobuf::RepeatedPtrField<TrustToken> filtered_tokens;
   for (auto& token : *config->mutable_tokens()) {
-    if (std::any_of(config->keys().begin(), config->keys().end(),
+    if (std::any_of(keys.begin(), keys.end(),
                     [&token](const TrustTokenKeyCommitment& key) {
                       return key.key() == token.signing_key();
                     }))
@@ -213,46 +182,13 @@ void TrustTokenStore::SetKeyCommitmentsAndPruneStaleState(
   persister_->SetIssuerConfig(issuer, std::move(config));
 }
 
-void TrustTokenStore::SetBatchSize(const url::Origin& issuer, int batch_size) {
-  DCHECK(!issuer.opaque());
-  DCHECK(batch_size > 0);
-  std::unique_ptr<TrustTokenIssuerConfig> config =
-      persister_->GetIssuerConfig(issuer);
-  if (!config)
-    config = std::make_unique<TrustTokenIssuerConfig>();
-  config->set_batch_size(batch_size);
-  persister_->SetIssuerConfig(issuer, std::move(config));
-}
-
-base::Optional<int> TrustTokenStore::BatchSize(const url::Origin& issuer) {
-  DCHECK(!issuer.opaque());
-  std::unique_ptr<TrustTokenIssuerConfig> config =
-      persister_->GetIssuerConfig(issuer);
-  if (!config)
-    return base::nullopt;
-  if (!config->has_batch_size() || config->batch_size() <= 0)
-    return base::nullopt;
-  return config->batch_size();
-}
-
-bool TrustTokenStore::AddTokens(const url::Origin& issuer,
+void TrustTokenStore::AddTokens(const url::Origin& issuer,
                                 base::span<const std::string> token_bodies,
                                 base::StringPiece issuing_key) {
   DCHECK(!issuer.opaque());
   auto config = persister_->GetIssuerConfig(issuer);
   if (!config)
-    return false;
-
-  // Only allow storing tokens with an issuing key that is currently present in
-  // this token store (i.e., the token's issuer provided this key in a
-  // previous key commitment, and the key has not yet expired).
-  bool key_is_present =
-      std::any_of(config->keys().begin(), config->keys().end(),
-                  [issuing_key](const TrustTokenKeyCommitment& commitment) {
-                    return commitment.key() == issuing_key;
-                  });
-  if (!key_is_present)
-    return false;
+    config = std::make_unique<TrustTokenIssuerConfig>();
 
   for (auto it = token_bodies.begin();
        it != token_bodies.end() &&
@@ -264,8 +200,6 @@ bool TrustTokenStore::AddTokens(const url::Origin& issuer,
   }
 
   persister_->SetIssuerConfig(issuer, std::move(config));
-
-  return true;
 }
 
 int TrustTokenStore::CountTokens(const url::Origin& issuer) {

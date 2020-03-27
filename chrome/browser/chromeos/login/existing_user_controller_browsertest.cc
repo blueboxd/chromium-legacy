@@ -1099,7 +1099,8 @@ class ExistingUserControllerAuthFailureTest
     // login, the login attempt cannot be shortcut by login manager mixin API -
     // it has to go through login UI.
     const std::string& password = user_context.GetKey()->GetSecret();
-    ash::LoginScreenTestApi::SubmitPassword(test_user_.account_id, password);
+    ash::LoginScreenTestApi::SubmitPassword(test_user_.account_id, password,
+                                            true /*check_if_submittable*/);
   }
 
   void SetUpStubAuthenticatorAndAttemptLoginWithWrongPassword() {
@@ -1110,8 +1111,8 @@ class ExistingUserControllerAuthFailureTest
     test::UserSessionManagerTestApi(UserSessionManager::GetInstance())
         .InjectAuthenticatorBuilder(std::move(authenticator_builder));
 
-    ash::LoginScreenTestApi::SubmitPassword(test_user_.account_id,
-                                            "wrong!!!!!");
+    ash::LoginScreenTestApi::SubmitPassword(test_user_.account_id, "wrong!!!!!",
+                                            true /*check_if_submittable*/);
   }
 
   // Waits for auth error message to be shown in login UI.

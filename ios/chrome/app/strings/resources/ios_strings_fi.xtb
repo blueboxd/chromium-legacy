@@ -161,6 +161,7 @@
 <translation id="2923448633003185837">Liitä ja siirry</translation>
 <translation id="292639812446257861">Merkitse lukemattomaksi</translation>
 <translation id="2958718410589002129">Salasanat</translation>
+<translation id="2964349545761222050">Estä kolmannen osapuolen evästeet</translation>
 <translation id="2969979262385602596">Kirjautuminen epäonnistui. Yritä myöhemmin uudelleen.</translation>
 <translation id="298306318844797842">Lisää maksutapa…</translation>
 <translation id="2989805286512600854">Avaa uudessa välilehdessä</translation>
@@ -304,6 +305,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4979397965658815378">Kirjaudu Google-tilillesi, niin voit käyttää kirjanmerkkejäsi, salasanojasi, historiaasi ja muuta Chrome-sisältöäsi kaikilla laitteillasi.</translation>
 <translation id="5005498671520578047">Kopioi salasana</translation>
 <translation id="5010803260590204777">Selaa verkkoa yksityisesti avaamalla incognito-välilehti.</translation>
+<translation id="5039020240289137291">Kolmannen osapuolen evästeiden estäminen</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Asenna Google Drive</translation>

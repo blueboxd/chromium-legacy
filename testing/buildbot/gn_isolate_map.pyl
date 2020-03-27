@@ -1195,10 +1195,6 @@
     "script": "//tools/perf/contrib/media_router_benchmarks/run_benchmark.py",
     "type": "script",
   },
-  "media_service_unittests": {
-    "label": "//media/mojo/services:media_service_unittests",
-    "type": "console_test_launcher",
-  },
   "media_unittests": {
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",

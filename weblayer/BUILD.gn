@@ -18,6 +18,7 @@ import("//tools/grit/repack.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
 } else if (is_mac) {
   import("//build/config/mac/rules.gni")
   import("//build/mac/tweak_info_plist.gni")
@@ -33,6 +34,12 @@ source_set("android_descriptors") {
 }
 
 if (is_android) {
+  weblayer_components_strings_java_resources =
+      [ "java/res/values/components_strings.xml" ] +
+      process_file_template(
+          android_bundle_locales_as_resources,
+          [ "java/res/values-{{source_name_part}}/components_strings.xml" ])
+
   grit("generate_components_strings") {
     source = "../components/components_strings.grd"
 
@@ -46,13 +53,8 @@ if (is_android) {
       whitelist,
     ]
     outputs =
-        [
-          "grit/components_strings.h",
-          "java/res/values/components_strings.xml",
-        ] +
-        process_file_template(
-            android_bundle_locales_as_resources,
-            [ "java/res/values-{{source_name_part}}/components_strings.xml" ]) +
+        weblayer_components_strings_java_resources +
+        [ "grit/components_strings.h" ] +
         process_file_template(locales_with_fake_bidi,
                               [ "components_strings_{{source_name_part}}.pak" ])
   }
@@ -83,6 +85,13 @@ if (is_android) {
     }
     treat_as_locale_paks = true
     deps = [ ":weblayer_locales" ]
+  }
+
+  java_strings_grd_prebuilt("components_java_strings") {
+    grit_output_dir = "$root_gen_dir/weblayer/java/res"
+    generated_files =
+        rebase_path(weblayer_components_strings_java_resources, "java/res", ".")
+    deps = [ ":generate_components_strings" ]
   }
 }
 

@@ -32,25 +32,6 @@ if (enable_android_cablev2_authenticator) {
 
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
-
-  generate_jni("jni_headers") {
-    sources = [ "java/src/org/chromium/chrome/browser/webauth/authenticator/BLEHandler.java" ]
-  }
-
-  source_set("native") {
-    sources = [ "native/cablev2_authenticator_android.cc" ]
-
-    deps = [
-      ":jni_headers",
-      "//base",
-      "//components/cbor",
-      "//components/device_event_log",
-      "//content/public/browser",
-      "//crypto",
-      "//device/fido",
-      "//third_party/boringssl",
-    ]
-  }
 } else {
   java_group("internal_java") {
     deps = [
@@ -59,8 +40,25 @@ if (enable_android_cablev2_authenticator) {
       "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
   }
-  source_set("jni_headers") {
-  }
-  source_set("native") {
-  }
+}
+
+generate_jni("jni_headers") {
+  sources = [ "java/src/org/chromium/chrome/browser/webauth/authenticator/BLEHandler.java" ]
+}
+
+# Native code cannot change between different release channels and so this is
+# always enabled.
+source_set("native") {
+  sources = [ "native/cablev2_authenticator_android.cc" ]
+
+  deps = [
+    ":jni_headers",
+    "//base",
+    "//components/cbor",
+    "//components/device_event_log",
+    "//content/public/browser",
+    "//crypto",
+    "//device/fido",
+    "//third_party/boringssl",
+  ]
 }

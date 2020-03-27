@@ -159,6 +159,8 @@ cr.define('cr.ui', function() {
   Oobe.showUserPods = function() {
     $('pod-row').maybePreselectPod();
     Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+    if (Oobe.getInstance().showingViewsLogin)
+      return;
     Oobe.resetSigninUI(true);
   };
 

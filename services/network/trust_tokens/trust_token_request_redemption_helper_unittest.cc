@@ -194,8 +194,6 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfNoTokensToRedeem) {
 TEST_F(TrustTokenRequestRedemptionHelperTest,
        RejectsIfAddingRequestHeaderFails) {
   // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -203,12 +201,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -241,8 +236,6 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
 // generating the signing/validation key pair.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyPairGenerationFails) {
   // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -250,12 +243,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyPairGenerationFails) {
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -290,8 +280,6 @@ class TrustTokenBeginRedemptionPostconditionsTest
  public:
   void SetUp() override {
     // Establish the following state:
-    // * One key initially added to the token store, so that insertion of tokens
-    // (which requires existence of a matching key) subsequently succeeds.
     // * One key commitment returned from the key commitment registry, with one
     // key, with body "".
     // * One token stored corresponding to the key "" (this will be the token
@@ -299,13 +287,9 @@ class TrustTokenBeginRedemptionPostconditionsTest
     // commitment's key so that it does not get evicted from storage after the
     // key commitment is updated to reflect the key commitment result).
     std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-    store->SetKeyCommitmentsAndPruneStaleState(
-        url::Origin::Create(GURL("https://issuer.com/")),
-        std::vector<TrustTokenKeyCommitment>(1));
-    ASSERT_TRUE(
-        store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                         std::vector<std::string>{"a token"},
-                         /*key=*/""));
+    store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                     std::vector<std::string>{"a token"},
+                     /*key=*/"");
 
     auto key_commitment_result =
         std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -360,8 +344,6 @@ TEST_F(TrustTokenBeginRedemptionPostconditionsTest, SetsLoadFlag) {
 // Sec-Trust-Token response header.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
   // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -369,12 +351,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -419,8 +398,6 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
 // the underlying cryptographic library.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
   // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -428,12 +405,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -487,8 +461,6 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
 // successfully complete, the begin/finalize methods succeed.
 TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
   // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -496,12 +468,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -555,8 +524,6 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
 // toplevel origin.
 TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
   // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -564,12 +531,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -608,124 +572,10 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
                           url::Origin::Create(GURL("https://toplevel.com/"))));
 }
 
-// Check that a successful Begin call stores the batch size obtained from the
-// key commitment registry in the trust token store.
-TEST_F(TrustTokenRequestRedemptionHelperTest, StoresBatchSize) {
-  // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
-  // * One key commitment returned from the key commitment registry, with one
-  // key, with body "".
-  // * One token stored corresponding to the key "" (this will be the token
-  // that the redemption request redeems; its key needs to match the key
-  // commitment's key so that it does not get evicted from storage after the key
-  // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
-
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->batch_size = 10;
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
-  auto getter = std::make_unique<FixedKeyCommitmentGetter>(
-      url::Origin::Create(GURL("https://issuer.com")),
-      std::move(key_commitment_result));
-
-  // Configure the cryptographer to succeed on the outbound half of the
-  // operation.
-  auto cryptographer = std::make_unique<MockCryptographer>();
-  EXPECT_CALL(*cryptographer, BeginRedemption(_, _, _))
-      .WillOnce(Return("well-formed redemption request"));
-
-  TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
-      mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
-      std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
-      std::move(cryptographer));
-
-  auto request = MakeURLRequest("https://issuer.com/");
-  request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
-
-  mojom::TrustTokenOperationStatus result =
-      ExecuteBeginOperationAndWaitForResult(&helper, request.get());
-
-  // Since this test is testing the behavior on handling the response after
-  // successfully constructing a redemption request, sanity check that the setup
-  // has correctly caused constructing the request so succeed.
-  ASSERT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
-
-  // After the operation has successfully begun, the issuer and the toplevel
-  // should be associated.
-  EXPECT_EQ(store->BatchSize(url::Origin::Create(GURL("https://issuer.com/"))),
-            10);
-}
-
-// Check that a successful Begin call stores the keys obtained from the key
-// commitment registry in the trust token store.
-TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedKeys) {
-  // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
-  // * One key commitment returned from the key commitment registry, with one
-  // key, with body "key".
-  // * One token stored corresponding to the key "key" (this will be the token
-  // that the redemption request redeems; its key needs to match the key
-  // commitment's key so that it does not get evicted from storage after the key
-  // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  TrustTokenKeyCommitment key_commitment;
-  key_commitment.set_key("key");
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>{key_commitment});
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/"key"));
-
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(
-      TrustTokenKeyCommitmentResult::Key{.body = "key"});
-  auto getter = std::make_unique<FixedKeyCommitmentGetter>(
-      url::Origin::Create(GURL("https://issuer.com")),
-      std::move(key_commitment_result));
-
-  auto cryptographer = std::make_unique<MockCryptographer>();
-  EXPECT_CALL(*cryptographer, BeginRedemption(_, _, _))
-      .WillOnce(Return("well-formed redemption request"));
-
-  TrustTokenRequestRedemptionHelper helper(
-      url::Origin::Create(GURL("https://toplevel.com/")),
-      mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
-      std::move(getter), std::make_unique<FakeKeyPairGenerator>(),
-      std::move(cryptographer));
-
-  auto request = MakeURLRequest("https://issuer.com/");
-  request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
-
-  mojom::TrustTokenOperationStatus result =
-      ExecuteBeginOperationAndWaitForResult(&helper, request.get());
-
-  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
-
-  // After the operation has successfully begun, the keys from the key
-  // commitment query should have been stored in the trust token store.
-  EXPECT_THAT(
-      store->KeyCommitments(url::Origin::Create(GURL("https://issuer.com/"))),
-      ElementsAre(Property(&TrustTokenKeyCommitment::key, "key")));
-}
-
 // Check that a successful end-to-end Begin/Finalize flow stores the obtained
 // signed redemption record (and associated key pair) in the trust token store.
 TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
   // Establish the following state:
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -733,12 +583,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();
@@ -845,8 +692,6 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   // Establish the following state:
   // * A signed redemption record is already stored for the issuer, toplevel
   // pair at hand.
-  // * One key initially added to the token store, so that insertion of tokens
-  // (which requires existence of a matching key) subsequently succeeds.
   // * One key commitment returned from the key commitment registry, with one
   // key, with body "".
   // * One token stored corresponding to the key "" (this will be the token
@@ -857,12 +702,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   store->SetRedemptionRecord(url::Origin::Create(GURL("https://issuer.com")),
                              url::Origin::Create(GURL("https://toplevel.com")),
                              SignedTrustTokenRedemptionRecord());
-  store->SetKeyCommitmentsAndPruneStaleState(
-      url::Origin::Create(GURL("https://issuer.com/")),
-      std::vector<TrustTokenKeyCommitment>(1));
-  ASSERT_TRUE(store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
-                               std::vector<std::string>{"a token"},
-                               /*key=*/""));
+  store->AddTokens(url::Origin::Create(GURL("https://issuer.com/")),
+                   std::vector<std::string>{"a token"},
+                   /*key=*/"");
 
   auto key_commitment_result =
       std::make_unique<TrustTokenKeyCommitmentResult>();

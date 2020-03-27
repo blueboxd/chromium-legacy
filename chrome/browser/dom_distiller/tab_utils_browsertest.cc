@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
@@ -16,12 +17,17 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
+#include "components/dom_distiller/content/browser/test_distillability_observer.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/favicon/content/content_favicon_driver.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -29,10 +35,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/back_forward_cache_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 namespace dom_distiller {
 namespace {
@@ -125,6 +133,47 @@ class DistilledPageObserver : public NavigationObserver {
   }
 };
 
+// FaviconUpdateWaiter waits for favicons to be changed after navigation.
+// TODO(1064318): Combine with FaviconUpdateWaiter in
+// chrome/browser/chrome_service_worker_browsertest.cc.
+class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
+ public:
+  explicit FaviconUpdateWaiter(content::WebContents* web_contents) {
+    scoped_observer_.Add(
+        favicon::ContentFaviconDriver::FromWebContents(web_contents));
+  }
+  ~FaviconUpdateWaiter() override = default;
+
+  void Wait() {
+    if (updated_)
+      return;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  void StopObserving() { scoped_observer_.RemoveAll(); }
+
+ private:
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        NotificationIconType notification_icon_type,
+                        const GURL& icon_url,
+                        bool icon_url_changed,
+                        const gfx::Image& image) override {
+    updated_ = true;
+    if (!quit_closure_.is_null())
+      std::move(quit_closure_).Run();
+  }
+
+  bool updated_ = false;
+  ScopedObserver<favicon::FaviconDriver, favicon::FaviconDriverObserver>
+      scoped_observer_{this};
+  base::OnceClosure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWaiter);
+};
+
 class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
@@ -140,6 +189,10 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  DomDistillerTabUtilsBrowserTest() {
+    feature_list_.InitAndEnableFeature(dom_distiller::kReaderMode);
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -156,6 +209,7 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   GURL article_url_;
 };
 
@@ -163,9 +217,16 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
                        DistillCurrentPageSwapsWebContents) {
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  TestDistillabilityObserver distillability_observer(initial_web_contents);
+  DistillabilityResult expected_result;
+  expected_result.is_distillable = true;
+  expected_result.is_last = false;
+  expected_result.is_mobile_friendly = false;
 
   // This blocks until the navigation has completely finished.
   ui_test_utils::NavigateToURL(browser(), article_url());
+  // This blocks until the page is found to be distillable.
+  distillability_observer.WaitForResult(expected_result);
 
   DistillCurrentPageAndView(initial_web_contents);
 
@@ -190,9 +251,16 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, UMATimesAreLogged) {
 
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  TestDistillabilityObserver distillability_observer(initial_web_contents);
+  DistillabilityResult expected_result;
+  expected_result.is_distillable = true;
+  expected_result.is_last = false;
+  expected_result.is_mobile_friendly = false;
 
   // This blocks until the navigation has completely finished.
   ui_test_utils::NavigateToURL(browser(), article_url());
+  // This blocks until the page is found to be distillable.
+  distillability_observer.WaitForResult(expected_result);
 
   // No UMA logged for distillable or distilled yet.
   histogram_tester.ExpectTotalCount(kDistillablePageHistogram, 0);
@@ -286,8 +354,15 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   int frame_routing_id = main_frame->GetRoutingID();
   GURL url2(https_server_->GetURL("/title1.html"));
 
+  TestDistillabilityObserver distillability_observer(initial_web_contents);
+  DistillabilityResult expected_result;
+  expected_result.is_distillable = true;
+  expected_result.is_last = false;
+  expected_result.is_mobile_friendly = false;
+
   // Navigate to the page
   ui_test_utils::NavigateToURL(browser(), url1);
+  distillability_observer.WaitForResult(expected_result);
 
   DistillCurrentPageAndView(initial_web_contents);
 
@@ -302,7 +377,13 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, SecurityStateIsNone) {
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  TestDistillabilityObserver distillability_observer(initial_web_contents);
+  DistillabilityResult expected_result;
+  expected_result.is_distillable = true;
+  expected_result.is_last = false;
+  expected_result.is_mobile_friendly = false;
   ui_test_utils::NavigateToURL(browser(), article_url());
+  distillability_observer.WaitForResult(expected_result);
 
   // Check security state is not NONE.
   SecurityStateTabHelper* helper =
@@ -317,6 +398,39 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, SecurityStateIsNone) {
   // Now security state should be NONE.
   helper = SecurityStateTabHelper::FromWebContents(after_web_contents);
   ASSERT_EQ(security_state::NONE, helper->GetSecurityLevel());
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
+                       FaviconFromOriginalPage) {
+  content::WebContents* initial_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  TestDistillabilityObserver distillability_observer(initial_web_contents);
+  DistillabilityResult expected_result;
+  expected_result.is_distillable = true;
+  expected_result.is_last = false;
+  expected_result.is_mobile_friendly = false;
+  FaviconUpdateWaiter waiter(initial_web_contents);
+
+  ui_test_utils::NavigateToURL(browser(), article_url());
+  // Ensure the favicon is loaded and the distillability result has also
+  // loaded before proceeding with the test.
+  waiter.Wait();
+  distillability_observer.WaitForResult(expected_result);
+
+  gfx::Image article_favicon = browser()->GetCurrentPageIcon();
+  // Remove the FaviconUpdateWaiter because we are done with
+  // initial_web_contents.
+  waiter.StopObserving();
+
+  DistillCurrentPageAndView(initial_web_contents);
+  content::WebContents* after_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(after_web_contents, nullptr);
+  DistilledPageObserver(after_web_contents).WaitUntilFinishedLoading();
+
+  gfx::Image distilled_favicon = browser()->GetCurrentPageIcon();
+  EXPECT_TRUE(gfx::test::AreImagesEqual(article_favicon, distilled_favicon));
 }
 
 }  // namespace

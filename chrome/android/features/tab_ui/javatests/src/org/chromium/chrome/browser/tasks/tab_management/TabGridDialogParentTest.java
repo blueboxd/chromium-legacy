@@ -19,12 +19,14 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -178,7 +180,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         showTextColor = mUngroupBarTextView.getTextColors();
 
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentUngroupBarAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
 
         // From show to hide.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -192,7 +195,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         });
 
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentUngroupBarAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
         Assert.assertEquals(View.INVISIBLE, mUngroupBar.getVisibility());
 
         // From hide to hover.
@@ -209,7 +213,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         hoverTextColor = mUngroupBarTextView.getTextColors();
 
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentUngroupBarAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
 
         // From hover to hide.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -223,7 +228,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         });
 
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentUngroupBarAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
         Assert.assertEquals(View.INVISIBLE, mUngroupBar.getVisibility());
 
         // From show to hover.
@@ -233,7 +239,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
                         -> mTabGridDialogParent.updateUngroupBar(
                                 TabGridDialogParent.UngroupBarStatus.SHOW));
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentUngroupBarAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(showTextColor, mUngroupBarTextView.getTextColors());
@@ -285,11 +292,12 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
             Assert.assertTrue(mPopoupWindow.isShowing());
         });
         // When the card fades out, the dialog should be brought to the top.
-        CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogContainer == parent.getChildAt(parent.getChildCount() - 1));
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                mTabGridDialogContainer, () -> parent.getChildAt(parent.getChildCount() - 1)));
         Assert.assertTrue(mAnimationCardView.getAlpha() == 0f);
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentDialogAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
 
         // Hide the dialog with zoom-in animation.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -313,7 +321,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         Assert.assertTrue(mTabGridDialogContainer.getAlpha() == 0f);
         // When the animation completes, the PopupWindow should be dismissed.
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentDialogAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
         Assert.assertFalse(mPopoupWindow.isShowing());
     }
 
@@ -341,7 +350,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         // When the animation completes, alpha of background frame and animation card should both
         // restore to 1f. Also, the PopupWindow should be dismissed.
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentDialogAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
         Assert.assertFalse(mPopoupWindow.isShowing());
         Assert.assertTrue(mBackgroundFrameView.getAlpha() == 1f);
         Assert.assertTrue(mAnimationCardView.getAlpha() == 1f);
@@ -372,7 +382,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
             Assert.assertTrue(mPopoupWindow.isShowing());
         });
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentDialogAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
         Assert.assertTrue(mAnimationCardView.getAlpha() == 0f);
         Assert.assertTrue(mBackgroundFrameView.getAlpha() == 0f);
 
@@ -397,7 +408,8 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         // When the animation completes, alpha of background frame and animation card should both
         // restore to 1f. Also, the PopupWindow should be dismissed.
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentDialogAnimatorForTesting() == null);
+                Criteria.checkThat(mTabGridDialogParent::getCurrentUngroupBarAnimatorForTesting,
+                        Matchers.nullValue()));
         Assert.assertFalse(mPopoupWindow.isShowing());
         Assert.assertTrue(mAnimationCardView.getAlpha() == 1f);
         Assert.assertTrue(mBackgroundFrameView.getAlpha() == 1f);

@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/test/views_test_helper.h"
+#include "ui/views/views_delegate.h"
 
 namespace views {
 
@@ -24,9 +26,9 @@ class ScopedViewsTestHelper {
  public:
   // Initialize with the given TestViewsDelegate instance.
   explicit ScopedViewsTestHelper(
-      std::unique_ptr<TestViewsDelegate> test_views_delegate =
-          std::make_unique<TestViewsDelegate>());
-
+      std::unique_ptr<TestViewsDelegate> test_views_delegate = nullptr,
+      base::Optional<ViewsDelegate::NativeWidgetFactory> factory =
+          base::nullopt);
   ~ScopedViewsTestHelper();
 
   // Returns the context for creating new windows. In Aura builds, this will be

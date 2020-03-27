@@ -414,3 +414,12 @@ struct ContainsHashable {
 struct SimpleNestedStruct {
   ContainsOther nested;
 };
+
+struct EnumNestedStruct {
+  enum StructEnum {
+    FIRST,
+    SECOND
+  };
+
+  [MinVersion=1] StructEnum local_enum_state_;
+};

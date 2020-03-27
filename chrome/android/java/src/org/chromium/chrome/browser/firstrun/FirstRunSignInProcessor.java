@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
@@ -69,7 +69,8 @@ public final class FirstRunSignInProcessor {
         }
 
         // TODO(https://crbug.com/795292): Move this to SigninFirstRunFragment.
-        Account account = AccountManagerFacade.get().getAccountFromName(accountName);
+        Account account =
+                AccountManagerFacadeProvider.getInstance().getAccountFromName(accountName);
         if (account == null) {
             setFirstRunFlowSignInComplete(true);
             return;

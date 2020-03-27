@@ -271,6 +271,7 @@ void LoginDisplayHostMojo::HideOobeDialog() {
     return;
   }
 
+  user_selection_screen_->OnBeforeShow();
   LoadWallpaper(focused_pod_account_id_);
   HideDialog();
 }
@@ -381,16 +382,13 @@ void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
 }
 
 void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {
-  // TODO(jdufault): Share common code between this and
-  // ViewsScreenLocker::HandleOnFocusPod See https://crbug.com/831787.
-  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
-  user_selection_screen_->CheckUserStatus(account_id);
+  user_selection_screen_->HandleFocusPod(account_id);
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
   focused_pod_account_id_ = account_id;
 }
 
 void LoginDisplayHostMojo::HandleOnNoPodFocused() {
-  NOTIMPLEMENTED();
+  user_selection_screen_->HandleNoPodFocused();
 }
 
 bool LoginDisplayHostMojo::HandleFocusLockScreenApps(bool reverse) {

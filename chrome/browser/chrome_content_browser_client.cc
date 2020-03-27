@@ -47,7 +47,6 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
-#include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -218,6 +217,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/permissions/permission_context_base.h"
+#include "components/permissions/quota_permission_context_impl.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/content/policy_blacklist_service.h"
 #include "components/policy/core/common/policy_service.h"
@@ -2654,7 +2654,7 @@ bool ChromeContentBrowserClient::ShouldUseGmsCoreGeolocationProvider() {
 
 scoped_refptr<content::QuotaPermissionContext>
 ChromeContentBrowserClient::CreateQuotaPermissionContext() {
-  return new ChromeQuotaPermissionContext();
+  return new permissions::QuotaPermissionContextImpl();
 }
 
 content::GeneratedCodeCacheSettings

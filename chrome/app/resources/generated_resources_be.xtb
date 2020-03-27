@@ -1703,6 +1703,7 @@
 <translation id="3264544094376351444">Шрыфт без засечак</translation>
 <translation id="3264582393905923483">Кантэкст</translation>
 <translation id="3265459715026181080">Закрыць акно</translation>
+<translation id="3266274118485960573">Праверка бяспекі выконваецца.</translation>
 <translation id="3267726687589094446">І далей дазваляць аўтаматычнае спампоўванне некалькіх файлаў</translation>
 <translation id="3268451620468152448">Адкрытыя ўкладкі</translation>
 <translation id="3269069891205016797">Ваша інфармацыя будзе выдалена з прылады, калі вы выйдзеце.</translation>
@@ -1808,6 +1809,7 @@
 <translation id="3412265149091626468">Перайсці да вылучэння</translation>
 <translation id="3413122095806433232">Выдаўцы ЦС: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Памер:</translation>
+<translation id="3416468988018290825">Заўсёды паказваць поўныя URL-адрасы</translation>
 <translation id="3420501302812554910">Неабходна скінуць унутраны ключ бяспекі</translation>
 <translation id="3421387094817716717">Эліптычны адкрыты ключ</translation>
 <translation id="3422291238483866753">Пытацца, калі сайт запытвае дазвол стварыць 3D-карту вашага асяроддзя і адсочваць становішча камеры (рэкамендуецца)</translation>
@@ -3533,7 +3535,7 @@
 <translation id="5734362860645681824">Размовы</translation>
 <translation id="5734697361979786483">Дадаць файлаабменнік</translation>
 <translation id="5736796278325406685">Увядзіце сапраўднае імя карыстальніка</translation>
-<translation id="5739017626473506901">Каб дапамагчы дзіцяці (<ph name="USER_NAME" />) дадаць навучальны ўліковы запіс, увайдзіце</translation>
+<translation id="5739017626473506901">Увайдзіце, каб дапамагчы дзіцяці (<ph name="USER_NAME" />) дадаць навучальны ўліковы запіс</translation>
 <translation id="5739235828260127894">Чаканне спраўджання. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Вельмі вялікі</translation>
 <translation id="574209121243317957">Вышыня голасу</translation>
@@ -4164,6 +4166,7 @@
 <translation id="6586451623538375658">Змяніць асноўную кнопку мышы</translation>
 <translation id="6586604979641883411">Для абнаўлення сістэмы Linux неабходна мець як мінімум <ph name="REQUIRED_SPACE" />. Вызваліце месца на прыладзе і паўтарыце спробу.</translation>
 <translation id="6588043302623806746">Выкарыстоўваць абароненую DNS</translation>
+<translation id="659005207229852190">Праверка бяспекі завершана.</translation>
 <translation id="6590458744723262880">Перайменаванне папкі</translation>
 <translation id="6592267180249644460">Журнал WebRTC запісаны <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Адбітак пальца дададзены</translation>
@@ -5423,6 +5426,7 @@
 <translation id="8249672078237421304">Прапаноўваць перакладаць старонкі на мовах, якія вы не ведаеце</translation>
 <translation id="8251441930213048644">Абнавіць</translation>
 <translation id="8251578425305135684">Мініяцюра выдалена.</translation>
+<translation id="825238165904109940">Заўсёды паказваць поўныя URL-адрасы</translation>
 <translation id="8252569384384439529">Ідзе запампоўванне...</translation>
 <translation id="8253198102038551905">Націсніце "+", каб праглядзець параметры сеткі</translation>
 <translation id="8254954272268479918">Выключыць Linux (бэта-версія)</translation>

@@ -238,7 +238,10 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
           mojom::XRPlanePointData::New(vertices_raw[i], vertices_raw[i + 1]));
     }
 
-    // ID
+    DVLOG(3) << __func__ << ": plane id: " << plane_id.GetUnsafeValue()
+             << ", position=" << pose.position.ToString()
+             << ", orientation=" << pose.orientation.ToString();
+
     updated_planes.push_back(mojom::XRPlaneData::New(
         plane_id.GetUnsafeValue(),
         mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),

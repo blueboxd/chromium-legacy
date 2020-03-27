@@ -39,6 +39,10 @@ class ScopedAnimationDurationScaleMode;
 class TestContextFactories;
 }
 
+namespace views {
+class TestViewsDelegate;
+}
+
 namespace wm {
 class WMState;
 }
@@ -46,7 +50,6 @@ class WMState;
 namespace ash {
 
 class AppListTestHelper;
-class AshTestViewsDelegate;
 class TestKeyboardControllerObserver;
 class TestNewWindowDelegate;
 class TestNotifierSettingsController;
@@ -150,7 +153,7 @@ class AshTestHelper {
   bool bluez_dbus_manager_initialized_ = false;
   bool power_policy_controller_initialized_ = false;
   std::unique_ptr<TestNewWindowDelegate> new_window_delegate_;
-  std::unique_ptr<AshTestViewsDelegate> test_views_delegate_;
+  std::unique_ptr<views::TestViewsDelegate> test_views_delegate_;
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;

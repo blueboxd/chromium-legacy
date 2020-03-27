@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 import java.lang.annotation.Retention;
@@ -129,7 +129,8 @@ public class SigninFragment extends SigninFragmentBase {
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
         // TODO(https://crbug.com/1002056): Change onSigninAccepted to get CoreAccountInfo.
-        Account account = AccountManagerFacade.get().getAccountFromName(accountName);
+        Account account =
+                AccountManagerFacadeProvider.getInstance().getAccountFromName(accountName);
         if (account == null) {
             callback.run();
             return;

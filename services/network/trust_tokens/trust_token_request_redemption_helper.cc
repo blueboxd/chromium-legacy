@@ -202,10 +202,6 @@ void TrustTokenRequestRedemptionHelper::UpdateTokenStoreFromKeyCommitmentResult(
   // this method, and its counterpart in TrustTokenRequestIssuanceHelper, will
   // no longer be needed.
 
-  int batch_size = result.batch_size ? *result.batch_size
-                                     : kDefaultTrustTokenIssuanceBatchSize;
-  token_store_->SetBatchSize(issuer_, batch_size);
-
   std::vector<TrustTokenKeyCommitment> commitments_to_store;
 
   for (const TrustTokenKeyCommitmentResult::Key& key : result.keys) {
@@ -215,8 +211,7 @@ void TrustTokenRequestRedemptionHelper::UpdateTokenStoreFromKeyCommitmentResult(
     commitments_to_store.emplace_back(std::move(to_store));
   }
 
-  token_store_->SetKeyCommitmentsAndPruneStaleState(
-      issuer_, std::move(commitments_to_store));
+  token_store_->PruneStaleIssuerState(issuer_, std::move(commitments_to_store));
 }
 
 base::Optional<TrustToken>

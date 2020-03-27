@@ -138,6 +138,8 @@ struct FormFieldData {
   array<mojo_base.mojom.String16> option_contents;
 
   LabelSource label_source;
+
+  gfx.mojom.RectF bounds;
 };
 
 struct ButtonTitleInfo {

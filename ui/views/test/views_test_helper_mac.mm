@@ -59,7 +59,10 @@ ViewsTestHelperMac::~ViewsTestHelperMac() {
   }
 }
 
-void ViewsTestHelperMac::SetUpTestViewsDelegate(TestViewsDelegate* delegate) {
+void ViewsTestHelperMac::SetUpTestViewsDelegate(
+    TestViewsDelegate* delegate,
+    base::Optional<ViewsDelegate::NativeWidgetFactory> factory) {
+  ViewsTestHelper::SetUpTestViewsDelegate(delegate, std::move(factory));
   delegate->set_context_factory(context_factories_.GetContextFactory());
 }
 

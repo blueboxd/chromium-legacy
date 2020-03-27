@@ -37,7 +37,7 @@ class files and runtime **.exec** files. Then we need to process them using the
   ```shell
   build/android/generate_jacoco_report.py \
      --format html \
-     --output-dir tmp/coverage_report/ \
+     --output-dir /tmp/coverage_report/ \
      --coverage-dir /tmp/coverage/ \
      --sources-json-dir out/Debug/ \
   ```
@@ -57,7 +57,7 @@ class files and runtime **.exec** files. Then we need to process them using the
   ```shell
   build/android/generate_jacoco_report.py \
     --format xml \
-    --output-file tmp/coverage_report/report.xml \
+    --output-file /tmp/coverage_report/report.xml \
     --coverage-dir /tmp/coverage/ \
     --sources-json-dir out/Debug/ \
   ```
@@ -67,7 +67,7 @@ class files and runtime **.exec** files. Then we need to process them using the
   ```shell
   build/android/generate_jacoco_report.py \
     --format csv \
-    --output-file tmp/coverage_report/report.csv \
+    --output-file /tmp/coverage_report/report.csv \
     --coverage-dir /tmp/coverage/ \
     --sources-json-dir out/Debug/ \
   ```

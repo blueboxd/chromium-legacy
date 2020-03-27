@@ -109,14 +109,21 @@ const Extension* CastExtensionSystem::LoadExtensionByManifest(
 
 const Extension* CastExtensionSystem::LoadExtension(
     const base::FilePath& extension_dir) {
+  return LoadExtension(kManifestFilename, extension_dir);
+}
+
+const Extension* CastExtensionSystem::LoadExtension(
+    const base::FilePath::CharType* manifest_file,
+    const base::FilePath& extension_dir) {
   // cast_shell only supports unpacked extensions.
   // NOTE: If you add packed extension support consider removing the flag
   // FOLLOW_SYMLINKS_ANYWHERE below. Packed extensions should not have symlinks.
   CHECK(base::DirectoryExists(extension_dir)) << extension_dir.AsUTF8Unsafe();
   int load_flags = Extension::FOLLOW_SYMLINKS_ANYWHERE;
   std::string load_error;
-  scoped_refptr<Extension> extension = file_util::LoadExtension(
-      extension_dir, Manifest::COMPONENT, load_flags, &load_error);
+  scoped_refptr<Extension> extension =
+      file_util::LoadExtension(extension_dir, manifest_file, std::string(),
+                               Manifest::COMPONENT, load_flags, &load_error);
   if (!extension.get()) {
     LOG(ERROR) << "Loading extension at " << extension_dir.value()
                << " failed with: " << load_error;

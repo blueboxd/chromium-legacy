@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -88,7 +88,7 @@ public class SignInPreference
      * Starts listening for updates to the sign-in and sync state.
      */
     public void registerForUpdates() {
-        AccountManagerFacade.get().addObserver(this);
+        AccountManagerFacadeProvider.getInstance().addObserver(this);
         IdentityServicesProvider.get().getSigninManager().addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
@@ -107,7 +107,7 @@ public class SignInPreference
      * must be matched with a call to this method.
      */
     public void unregisterForUpdates() {
-        AccountManagerFacade.get().removeObserver(this);
+        AccountManagerFacadeProvider.getInstance().removeObserver(this);
         IdentityServicesProvider.get().getSigninManager().removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);
         AndroidSyncSettings.get().unregisterObserver(this);

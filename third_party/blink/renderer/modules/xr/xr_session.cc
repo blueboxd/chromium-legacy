@@ -917,10 +917,12 @@ void XRSession::ProcessAnchorsData(
   // First, process all anchors that had their information updated (new anchors
   // are also processed here).
   for (const auto& anchor : tracked_anchors_data->updated_anchors_data) {
+    DCHECK(anchor);
+
     auto it = anchor_ids_to_anchors_.find(anchor->id);
     if (it != anchor_ids_to_anchors_.end()) {
       updated_anchors.insert(anchor->id, it->value);
-      it->value->Update(anchor);
+      it->value->Update(*anchor);
     } else {
       auto resolver_it =
           newly_created_anchor_ids_to_resolvers_.find(anchor->id);
@@ -931,7 +933,7 @@ void XRSession::ProcessAnchorsData(
       }
 
       XRAnchor* xr_anchor =
-          MakeGarbageCollected<XRAnchor>(anchor->id, this, anchor);
+          MakeGarbageCollected<XRAnchor>(anchor->id, this, *anchor);
       resolver_it->value->Resolve(xr_anchor);
       newly_created_anchor_ids_to_resolvers_.erase(resolver_it);
 

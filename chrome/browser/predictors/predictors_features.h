@@ -28,6 +28,14 @@ extern const base::Feature kLoadingPredictorUseOptimizationGuide;
 // predictions.
 bool ShouldUseLocalPredictions();
 
+// Returns whether optimization guide predictions should be used to make
+// preconnect predictions.
+//
+// In addition to checking whether the feature is enabled, this will
+// additionally check a feature parameter is specified to dictate if the
+// predictions should be used to preconnect to subresource origins.
+bool ShouldUseOptimizationGuidePredictionsToPreconnect();
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_PREDICTORS_PREDICTORS_FEATURES_H_

@@ -1703,6 +1703,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3264544094376351444">Sans-serif yazı tipi</translation>
 <translation id="3264582393905923483">Bağlam</translation>
 <translation id="3265459715026181080">Pencereyi Kapat</translation>
+<translation id="3266274118485960573">Güvenlik kontrolü çalışıyor.</translation>
 <translation id="3267726687589094446">Otomatik olarak birden fazla dosya indirilmesine izin vermeye devam et</translation>
 <translation id="3268451620468152448">Açık Sekmeler</translation>
 <translation id="3269069891205016797">Oturumu kapattığınızda bilgileriniz cihazdan kaldırılacak.</translation>
@@ -1808,6 +1809,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3412265149091626468">Seçim'e Atla</translation>
 <translation id="3413122095806433232">CA Verenler: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Boyut:</translation>
+<translation id="3416468988018290825">Her zaman URL'leri tam olarak göster</translation>
 <translation id="3420501302812554910">Dahili güvenlik anahtarının sıfırlanması gerekiyor</translation>
 <translation id="3421387094817716717">Eliptik Eğri Ortak Anahtarı</translation>
 <translation id="3422291238483866753">Bir site çevremin 3D haritasını oluşturmak veya kamera konumunu takip etmek istediğinde sor (önerilir)</translation>
@@ -4165,6 +4167,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6586451623538375658">Birincil fare düğmesini değiştir</translation>
 <translation id="6586604979641883411">Linux'un yeni sürüme geçirilmesi için en az <ph name="REQUIRED_SPACE" /> boş alan gerekiyor. Lütfen cihazınızda biraz yer açıp tekrar deneyin.</translation>
 <translation id="6588043302623806746">Güvenli DNS kullan</translation>
+<translation id="659005207229852190">Güvenlik kontrolü tamamlandı.</translation>
 <translation id="6590458744723262880">Klasörü yeniden adlandırın</translation>
 <translation id="6592267180249644460">WebRTC günlüğü yakalandı: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Parmak iziniz alındı</translation>
@@ -5424,6 +5427,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8249672078237421304">Okuduğum dilde olmayan sayfaları çevirmeyi öner</translation>
 <translation id="8251441930213048644">Şimdi yenile</translation>
 <translation id="8251578425305135684">Küçük resim kaldırıldı.</translation>
+<translation id="825238165904109940">Her Zaman URL'leri Tam Olarak Göster</translation>
 <translation id="8252569384384439529">Yükleniyor...</translation>
 <translation id="8253198102038551905">Ağ özelliklerini almak için "+" işaretini tıklayın</translation>
 <translation id="8254954272268479918">Linux'u (Beta) kapat</translation>

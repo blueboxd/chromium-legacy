@@ -92,6 +92,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  const char* GetClassName() const override;
 
   // ExtensionsContainer:
   ToolbarActionViewController* GetActionForId(

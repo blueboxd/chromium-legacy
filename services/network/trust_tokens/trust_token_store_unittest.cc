@@ -225,127 +225,19 @@ TEST(TrustTokenStore, IssuerToplevelAssociationAtNumberOfAssociationsCap) {
       url::Origin::Create(GURL("https://someotherissuer.com")), toplevel));
 }
 
-TEST(TrustTokenStore, StoresKeyCommitments) {
-  // A newly initialized store should not think
-  // any issuers have committed keys.
-
-  TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  EXPECT_TRUE(my_store.KeyCommitments(issuer).empty());
-
-  // A stored committed key should be returned
-  // by a subsequent query.
-
-  TrustTokenKeyCommitment my_commitment;
-  my_commitment.set_key("quite a secure key, this");
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{my_commitment});
-
-  EXPECT_THAT(my_store.KeyCommitments(issuer),
-              ElementsAre(EqualsProto(my_commitment)));
-}
-
-TEST(TrustTokenStore, OverwritesExistingKeyCommitments) {
-  // Overwriting an existing committed key should lead
-  // to the key's metadata being fused:
-  // - the key should still be present
-  // - the "first seen at" should not change
-  // - the expiry date should be updated
-
-  TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-
-  const std::string kMyKey = "quite a secure key, this";
-  TrustTokenKeyCommitment my_commitment;
-  my_commitment.set_key(kMyKey);
-
-  const std::string kMySerializedTime = "four o'clock";
-  const std::string kReplacementSerializedTime = "five o'clock";
-  my_commitment.set_expiry(kMySerializedTime);
-  my_commitment.set_first_seen_at(kMySerializedTime);
-
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{my_commitment});
-
-  TrustTokenKeyCommitment replacement_commitment;
-  replacement_commitment.set_key(kMyKey);
-  replacement_commitment.set_expiry(kReplacementSerializedTime);
-  replacement_commitment.set_first_seen_at(kReplacementSerializedTime);
-
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{replacement_commitment});
-
-  ASSERT_EQ(my_store.KeyCommitments(issuer).size(), 1u);
-  auto got = my_store.KeyCommitments(issuer).front();
-
-  EXPECT_TRUE(got.key() == kMyKey);
-  EXPECT_TRUE(got.first_seen_at() == kMySerializedTime);
-  EXPECT_TRUE(got.expiry() == kReplacementSerializedTime);
-}
-
-TEST(TrustTokenStore, KeyUpdateRemovesNonupdatedKeys) {
-  TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-
-  TrustTokenKeyCommitment my_commitment;
-  my_commitment.set_key("quite a secure key, this");
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{my_commitment});
-
-  // When committed keys are changed, the store should
-  // remove all keys not present in the provided set.
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>());
-
-  EXPECT_TRUE(my_store.KeyCommitments(issuer).empty());
-}
-
-TEST(TrustTokenStore, WontAddTokensWithoutMatchingIssuerState) {
-  TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-
-  // Since the store has absolutely no state stored for |issuer|---and, in
-  // particular, no commitment corresponding to the given key---the insert
-  // should fail.
-  EXPECT_FALSE(my_store.AddTokens(issuer,
-                                  std::vector<std::string>{"some token body"},
-                                  /*issuing_key=*/"key"));
-}
-
-TEST(TrustTokenStore, WontAddTokensWithoutMatchingKeyCommitment) {
-  TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
-
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  my_store.SetBatchSize(issuer, 5);
-
-  // Since the store has no commitment corresponding to the given key, even
-  // though it has some other state stored for the issuer, the insert should
-  // fail.
-  EXPECT_FALSE(
-      my_store.AddTokens(issuer, std::vector<std::string>{"some token body"},
-                         /*issuing_key=*/
-                         "some key corresponding to the"
-                         "token; since this isn't in a stored key commitment "
-                         "for |issuer|, the insert should fail"));
-}
-
 TEST(TrustTokenStore, AddingTokensRespectsCapacity) {
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-  // Add a key with an empty body.
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>(1));
 
   // Attempting to add many, many tokens corresponding to that key should be
   // successful, but the operation should only add a quantity of tokens equal to
   // the difference between the number of currently-stored tokens and the
   // capacity.
-  ASSERT_TRUE(my_store.AddTokens(
+  my_store.AddTokens(
       issuer, std::vector<std::string>(kTrustTokenPerIssuerTokenCapacity * 2),
       /*issuing_key=*/
-      ""));
+      "");
 
   EXPECT_EQ(my_store.CountTokens(issuer), kTrustTokenPerIssuerTokenCapacity);
 }
@@ -357,46 +249,36 @@ TEST(TrustTokenStore, CountsTokens) {
   // A freshly initialized store should be storing zero tokens.
   EXPECT_EQ(my_store.CountTokens(issuer), 0);
 
-  // Add a key with an empty body.
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{TrustTokenKeyCommitment()});
-
   // Add a token; the count should increase.
-  ASSERT_TRUE(my_store.AddTokens(issuer, std::vector<std::string>(1),
-                                 /*issuing_key=*/""));
+  my_store.AddTokens(issuer, std::vector<std::string>(1),
+                     /*issuing_key=*/"");
   EXPECT_EQ(my_store.CountTokens(issuer), 1);
 
   // Add two more tokens; the count should change accordingly.
-  ASSERT_TRUE(my_store.AddTokens(issuer, std::vector<std::string>(2),
-                                 /*issuing_key=*/""));
+  my_store.AddTokens(issuer, std::vector<std::string>(2),
+                     /*issuing_key=*/"");
   EXPECT_EQ(my_store.CountTokens(issuer), 3);
 }
 
 TEST(TrustTokenStore, PrunesDataAssociatedWithRemovedKeyCommitments) {
-  // Removing a committed key should result in trust tokens
-  // associated with the removed key being pruned from the store.
+  // Test that providing PruneStaleIssuerState a set of key commitments
+  // correctly evicts all tokens except those associated with keys in the
+  // provided set of commitments.
   TrustTokenStore my_store(std::make_unique<InMemoryTrustTokenPersister>());
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
 
-  TrustTokenKeyCommitment my_commitment;
-  my_commitment.set_key("quite a secure key, this");
+  my_store.AddTokens(issuer, std::vector<std::string>{"some token body"},
+                     "quite a secure key, this");
 
   TrustTokenKeyCommitment another_commitment;
   another_commitment.set_key("distinct from the first key");
 
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer,
-      std::vector<TrustTokenKeyCommitment>{my_commitment, another_commitment});
+  my_store.AddTokens(issuer, std::vector<std::string>{"some other token body"},
+                     another_commitment.key());
 
-  EXPECT_TRUE(my_store.AddTokens(issuer,
-                                 std::vector<std::string>{"some token body"},
-                                 my_commitment.key()));
-
-  EXPECT_TRUE(my_store.AddTokens(
-      issuer, std::vector<std::string>{"some other token body"},
-      another_commitment.key()));
-
-  my_store.SetKeyCommitmentsAndPruneStaleState(
+  // The prune should remove the first token added, because it corresponds to a
+  // key not in the list of commitments provided to PruneStaleIssuerState.
+  my_store.PruneStaleIssuerState(
       issuer, std::vector<TrustTokenKeyCommitment>{another_commitment});
 
   TrustToken expected_token;
@@ -410,30 +292,6 @@ TEST(TrustTokenStore, PrunesDataAssociatedWithRemovedKeyCommitments) {
                   issuer, base::BindRepeating(
                               [](const std::string& t) { return true; })),
               ElementsAre(EqualsProto(expected_token)));
-}
-
-TEST(TrustTokenStore, SetsBatchSize) {
-  // A newly initialized store should not think
-  // any issuers have associated batch sizes.
-  auto my_persister = std::make_unique<InMemoryTrustTokenPersister>();
-  auto* raw_persister = my_persister.get();
-  TrustTokenStore my_store(std::move(my_persister));
-  url::Origin issuer = url::Origin::Create(GURL("https://issuer.com"));
-
-  EXPECT_EQ(my_store.BatchSize(issuer), base::nullopt);
-
-  // Setting an issuer's batch size should mean that
-  // subsequent queries return that batch size.
-
-  my_store.SetBatchSize(issuer, 1);
-  EXPECT_THAT(my_store.BatchSize(issuer), Optional(1));
-
-  // If the issuer config is storing a bad batch size for some reason,
-  // the store's client should see nullopt.
-  auto bad_config = std::make_unique<TrustTokenIssuerConfig>();
-  bad_config->set_batch_size(-1);
-  raw_persister->SetIssuerConfig(issuer, std::move(bad_config));
-  EXPECT_EQ(my_store.BatchSize(issuer), base::nullopt);
 }
 
 TEST(TrustTokenStore, AddsTrustTokens) {
@@ -455,14 +313,12 @@ TEST(TrustTokenStore, AddsTrustTokens) {
   const std::string kMyKey = "abcdef";
   TrustTokenKeyCommitment my_commitment;
   my_commitment.set_key(kMyKey);
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{my_commitment});
 
   TrustToken expected_token;
   expected_token.set_body("some token");
   expected_token.set_signing_key(kMyKey);
-  EXPECT_TRUE(my_store.AddTokens(
-      issuer, std::vector<std::string>{expected_token.body()}, kMyKey));
+  my_store.AddTokens(issuer, std::vector<std::string>{expected_token.body()},
+                     kMyKey);
 
   EXPECT_THAT(my_store.RetrieveMatchingTokens(issuer, match_all_keys),
               ElementsAre(EqualsProto(expected_token)));
@@ -487,16 +343,12 @@ TEST(TrustTokenStore, RetrievesTrustTokensRespectingNontrivialPredicate) {
   expected_token.set_body("this one should get returned");
   expected_token.set_signing_key(kMatchingKey);
 
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{matching_commitment,
-                                                   nonmatching_commitment});
-
-  EXPECT_TRUE(my_store.AddTokens(
-      issuer, std::vector<std::string>{expected_token.body()}, kMatchingKey));
-  EXPECT_TRUE(my_store.AddTokens(
+  my_store.AddTokens(issuer, std::vector<std::string>{expected_token.body()},
+                     kMatchingKey);
+  my_store.AddTokens(
       issuer,
       std::vector<std::string>{"this one should get rejected by the predicate"},
-      kNonmatchingKey));
+      kNonmatchingKey);
 
   EXPECT_THAT(my_store.RetrieveMatchingTokens(
                   issuer, base::BindRepeating(
@@ -530,11 +382,9 @@ TEST(TrustTokenStore, DeletesSingleToken) {
   second_token.set_body("don't delete me!");
   second_token.set_signing_key(my_commitment.key());
 
-  my_store.SetKeyCommitmentsAndPruneStaleState(
-      issuer, std::vector<TrustTokenKeyCommitment>{my_commitment});
-  EXPECT_TRUE(my_store.AddTokens(
+  my_store.AddTokens(
       issuer, std::vector<std::string>{first_token.body(), second_token.body()},
-      my_commitment.key()));
+      my_commitment.key());
 
   my_store.DeleteToken(issuer, first_token);
 
@@ -642,6 +492,8 @@ TEST(TrustTokenStore, DoesNotReturnStaleRedemptionRecord) {
   EXPECT_EQ(my_store.RetrieveNonstaleRedemptionRecord(issuer, toplevel),
             base::nullopt);
 }
+
+// TODO(crbug.com/1065388) Add a test exercising the maximum batch size.
 
 }  // namespace trust_tokens
 }  // namespace network

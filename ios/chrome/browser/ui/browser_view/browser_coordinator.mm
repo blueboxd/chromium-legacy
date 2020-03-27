@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
+#import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/features.h"
@@ -81,6 +82,7 @@
                                   BrowserCoordinatorCommands,
                                   FormInputAccessoryCoordinatorNavigator,
                                   PageInfoCommands,
+                                  QRGenerationCommands,
                                   RepostFormTabHelperDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
                                   URLLoadingDelegate,
@@ -219,6 +221,8 @@
                    forProtocol:@protocol(BrowserCoordinatorCommands)];
   [self.dispatcher startDispatchingToTarget:self
                                 forProtocol:@protocol(PageInfoCommands)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forProtocol:@protocol(QRGenerationCommands)];
   [self installDelegatesForAllWebStates];
   [self installDelegatesForBrowser];
   [self addWebStateListObserver];
@@ -711,6 +715,12 @@
   params.in_incognito = self.browserState->IsOffTheRecord();
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   [self hidePageInfo];
+}
+
+#pragma mark - QRGenerationCommands
+
+- (void)generateQRCode:(GenerateQRCodeCommand*)command {
+  // TODO(crbug.com/1064990): Implement Coordinator and starting here.
 }
 
 #pragma mark - FormInputAccessoryCoordinatorNavigator

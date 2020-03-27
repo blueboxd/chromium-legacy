@@ -54,7 +54,8 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
   extensions_button_->EnableCanvasFlippingForRTLUI(false);
 
   const views::FlexSpecification hide_icon_flex_specification =
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferredSnapToZero,
+      views::FlexSpecification(views::LayoutOrientation::kHorizontal,
+                               views::MinimumFlexSizeRule::kPreferredSnapToZero,
                                views::MaximumFlexSizeRule::kPreferred)
           .WithWeight(0);
   switch (display_mode) {
@@ -577,6 +578,10 @@ int ExtensionsToolbarContainer::OnPerformDrop(
 
   OnDragExited();  // Perform clean up after dragging.
   return ui::DragDropTypes::DRAG_MOVE;
+}
+
+const char* ExtensionsToolbarContainer::GetClassName() const {
+  return "ExtensionsToolbarContainer";
 }
 
 void ExtensionsToolbarContainer::OnWidgetClosing(views::Widget* widget) {

@@ -98,8 +98,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   // Time when lock was initiated, required for metrics.
   base::TimeTicks lock_time_;
 
-  base::Optional<AccountId> focused_pod_account_id_;
-
   // Input Method Engine state used at lock screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
 

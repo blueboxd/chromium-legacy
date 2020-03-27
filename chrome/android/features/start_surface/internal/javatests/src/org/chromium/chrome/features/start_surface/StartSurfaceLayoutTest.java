@@ -771,6 +771,10 @@ public class StartSurfaceLayoutTest {
                 mUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab);
     }
 
+    private int getTabCountInCurrentTabModel() {
+        return mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount();
+    }
+
     @Test
     @MediumTest
     @Feature("TabSuggestion")
@@ -782,14 +786,8 @@ public class StartSurfaceLayoutTest {
         // TODO(meiliang): Avoid using static variable for tracking state,
         // TabSuggestionMessageService.isSuggestionAvailableForTesting(). Instead, we can add a
         // dummy MessageObserver to track the availability of the suggestions.
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
-                        && mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getCurrentModel()
-                                        .getCount()
-                                == 3);
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
 
         enterGTSWithThumbnailChecking();
 
@@ -811,14 +809,8 @@ public class StartSurfaceLayoutTest {
     public void testTabSuggestionMessageCard_review() throws InterruptedException {
         prepareTabs(3, 0, null);
 
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
-                        && mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getCurrentModel()
-                                        .getCount()
-                                == 3);
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
 
         enterGTSWithThumbnailChecking();
 
@@ -862,14 +854,8 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCardDismissAfterTabClosing() throws InterruptedException {
         prepareTabs(3, 0, mUrl);
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
-                        && mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getCurrentModel()
-                                        .getCount()
-                                == 3);
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
@@ -878,13 +864,8 @@ public class StartSurfaceLayoutTest {
         closeFirstTabInTabSwitcher();
 
         CriteriaHelper.pollUiThread(
-                ()
-                        -> !TabSuggestionMessageService.isSuggestionAvailableForTesting()
-                        && mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getCurrentModel()
-                                        .getCount()
-                                == 2);
+                () -> !TabSuggestionMessageService.isSuggestionAvailableForTesting());
+        CriteriaHelper.pollUiThread(Criteria.equals(2, this::getTabCountInCurrentTabModel));
 
         onView(withId(R.id.tab_list_view))
                 .check(TabUiTestHelper.ChildrenCountAssertion.havingTabSuggestionMessageCardCount(
@@ -956,14 +937,8 @@ public class StartSurfaceLayoutTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(3, 0, null);
 
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
-                        && mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getCurrentModel()
-                                        .getCount()
-                                == 3);
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
@@ -1597,11 +1572,8 @@ public class StartSurfaceLayoutTest {
                             : R.string.accessibility_tab_switcher_standard_stack)
         ).perform(click());
 
-        CriteriaHelper.pollUiThread(()
-                                            -> mActivityTestRule.getActivity()
-                                                       .getTabModelSelector()
-                                                       .isIncognitoSelected()
-                        == isIncognito);
+        CriteriaHelper.pollUiThread(Criteria.equals(isIncognito,
+                () -> mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected()));
     }
 
     /**
@@ -1752,14 +1724,8 @@ public class StartSurfaceLayoutTest {
         String suggestionMessage =
                 String.format(Locale.getDefault(), suggestionMessageTemplate, "3");
         prepareTabs(3, 0, mUrl);
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
-                        && mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getCurrentModel()
-                                        .getCount()
-                                == 3);
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);

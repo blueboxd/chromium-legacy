@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/debug/debugger.h"
+#include "base/memory/shared_memory_hooks.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
@@ -16,6 +17,17 @@
 // Mainline routine for running as the Cloud Print service process.
 int CloudPrintServiceProcessMain(
     const content::MainFunctionParams& parameters) {
+  // This is a hack: the Cloud Print service doesn't actually set up a sandbox,
+  // but service_manager::SandboxTypeFromCommandLine(command_line)) doesn't know
+  // about it, so it's considered sandboxed, causing shared memory hooks to be
+  // installed above. The Cloud Print service *also* doesn't set
+  // is_broker_process when initializing Mojo, so that bit also can't be used to
+  // determine whether or not to install the shared memory hooks.
+  //
+  // Since the Cloud Print service is supposed to go away at some point soon,
+  // just remove the hooks here.
+  base::SharedMemoryHooks::SetCreateHooks(nullptr, nullptr, nullptr);
+
   // Chrome disallows cookies by default. All code paths that want to use
   // cookies should go through the browser process.
   net::URLRequest::SetDefaultCookiePolicyToBlock();

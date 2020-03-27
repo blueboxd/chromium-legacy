@@ -136,62 +136,33 @@ class TrustTokenStore {
   //// Methods related to reading and writing issuer values configured via key
   //// commitment queries, such as key commitments and batch sizes:
 
-  // Returns all stored key commitments (including related metadata:
-  // see the definition of TrustTokenKeyCommitment) for the given issuer.
-  //
-  // |issuer| must not be opaque.
-  WARN_UNUSED_RESULT virtual std::vector<TrustTokenKeyCommitment>
-  KeyCommitments(const url::Origin& issuer);
-
-  // Sets the key commitments for |issuer| to exactly the keys in |keys|.
-  // If there is a key in |keys| with the same key() as a key already stored:
-  // - maintains the "first seen at" time for the key
-  // - updates the expiry date to the new expiry date, even if it is sooner
-  // than the previous expiry date
-  //
-  // Also prunes all state corresponding to keys *not* in |keys|:
+  // Given an issuer's current set |keys| of key commitments, prunes all state
+  // for |issuer| that does *not* correspond to token verification keys in
+  // |keys|:
   // - removes all stored signed tokens for |issuer| that were signed with
   // keys not in |keys|
-  // - removes all key commitments for |issuer| with keys not in |keys|
-  //
-  // It is the client's responsibility to validate the
-  // reasonableness of the given keys' expiry times. (For instance, one might
-  // wish to avoid providing keys with expiry times in the past.)
   //
   // |issuer| must not be opaque, and the commitments in |keys| must have
   // distinct keys.
-  virtual void SetKeyCommitmentsAndPruneStaleState(
+  virtual void PruneStaleIssuerState(
       const url::Origin& issuer,
       const std::vector<TrustTokenKeyCommitment>& keys);
 
-  // Returns the "batch size" (number of blinded tokens to provide per issuance
-  // request) for the given issuer, if present and greater than 0. Otherwise,
-  // returns nullopt.
-  //
-  // |issuer| must not be opaque.
-  WARN_UNUSED_RESULT virtual base::Optional<int> BatchSize(
-      const url::Origin& issuer);
-
-  // Sets the given issuer's batch size (see above).
-  //
-  // |issuer| must not be opaque; |batch_size| must be at least 1.
-  virtual void SetBatchSize(const url::Origin& issuer, int batch_size);
-
   //// Methods related to reading and writing signed tokens:
 
-  // If |issuer| does not have a stored key commitment corresponding to
-  // |issuing_key|, returns false.
-  //
-  // Otherwise, associates to the given issuer additional signed
+  // Associates to the given issuer additional signed
   // trust tokens with:
   // - token bodies given by |token_bodies|
   // - signing keys given by |issuing_key|.
   //
+  // Note: This method makes no assumption about tokens matching an issuer's
+  // current key commitments; it's the caller's responsibility to avoid using
+  // tokens issued against non-current keys.
+  //
   // |issuer| must not be opaque.
-  WARN_UNUSED_RESULT virtual bool AddTokens(
-      const url::Origin& issuer,
-      base::span<const std::string> token_bodies,
-      base::StringPiece issuing_key);
+  virtual void AddTokens(const url::Origin& issuer,
+                         base::span<const std::string> token_bodies,
+                         base::StringPiece issuing_key);
 
   // Returns the number of tokens stored for |issuer|.
   //
@@ -206,7 +177,8 @@ class TrustTokenStore {
       const url::Origin& issuer,
       base::RepeatingCallback<bool(const std::string&)> key_matcher);
 
-  // If |to_delete| is a token issued by |issuer|, deletes the token.
+  // If |to_delete| is a currently stored token issued by |issuer|, deletes the
+  // token.
   //
   // |issuer| must not be opaque.
   void DeleteToken(const url::Origin& issuer, const TrustToken& to_delete);

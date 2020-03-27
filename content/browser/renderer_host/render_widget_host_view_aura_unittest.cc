@@ -115,7 +115,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/selection_bound.h"
-#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/window_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -1000,10 +999,6 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
 // Checks that a popup is positioned correctly relative to its parent using
 // screen coordinates.
 TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
-  aura::Window* window = parent_view_->GetNativeView();
-  wm::DefaultScreenPositionClient screen_position_client(
-      window->GetRootWindow());
-
   parent_view_->SetBounds(gfx::Rect(10, 10, 800, 600));
   gfx::Rect bounds_in_screen = parent_view_->GetViewBounds();
   int horiz = bounds_in_screen.width() / 4;
@@ -1026,6 +1021,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
   EXPECT_EQ(final_bounds_in_screen.ToString(), bounds_in_screen.ToString());
 
   // Verify that setting the size does not alter the origin.
+  aura::Window* window = parent_view_->GetNativeView();
   gfx::Point original_origin = window->bounds().origin();
   view_->SetSize(gfx::Size(120, 120));
   gfx::Point new_origin = window->bounds().origin();
@@ -1051,6 +1047,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
   parent2->AddChild(view_->GetNativeView());
 
   root->SetBounds(gfx::Rect(0, 0, 800, 600));
+  // NOTE: Window::SetBounds() takes parent coordinates but
+  // RenderWidgetHostView::SetBounds() takes screen coordinates.  So |view_| is
+  // positioned at |parent2|'s origin.
   parent1->SetBounds(gfx::Rect(1, 1, 300, 300));
   parent2->SetBounds(gfx::Rect(2, 2, 200, 200));
   view_->SetBounds(gfx::Rect(3, 3, 100, 100));
@@ -1072,7 +1071,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
             msg->type());
   WidgetMsg_UpdateScreenRects::Param params;
   WidgetMsg_UpdateScreenRects::Read(msg, &params);
-  EXPECT_EQ(gfx::Rect(24, 24, 100, 100), std::get<0>(params));
+  EXPECT_EQ(gfx::Rect(21, 21, 100, 100), std::get<0>(params));
   EXPECT_EQ(gfx::Rect(1, 1, 300, 300), std::get<1>(params));
   sink_->ClearMessages();
   widget_host_->OnMessageReceived(
@@ -1086,7 +1085,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
   ASSERT_EQ(static_cast<uint32_t>(WidgetMsg_UpdateScreenRects::ID),
             msg->type());
   WidgetMsg_UpdateScreenRects::Read(msg, &params);
-  EXPECT_EQ(gfx::Rect(33, 33, 100, 100), std::get<0>(params));
+  EXPECT_EQ(gfx::Rect(30, 30, 100, 100), std::get<0>(params));
   EXPECT_EQ(gfx::Rect(10, 10, 300, 300), std::get<1>(params));
   sink_->ClearMessages();
   widget_host_->OnMessageReceived(
@@ -4838,7 +4837,6 @@ TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
   aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
-  wm::DefaultScreenPositionClient screen_position_client(root_window);
 
   const gfx::Rect orig_view_bounds = gfx::Rect(0, 300, 400, 200);
   const gfx::Rect shifted_view_bounds = gfx::Rect(0, 200, 400, 200);

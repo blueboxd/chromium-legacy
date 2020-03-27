@@ -43,6 +43,21 @@ class ASH_EXPORT LoginAuthUserView
       public views::ButtonListener,
       public chromeos::PowerManagerClient::Observer {
  public:
+  // Flags which describe the set of currently visible auth methods.
+  enum AuthMethods {
+    AUTH_NONE = 0,                     // No extra auth methods.
+    AUTH_PASSWORD = 1 << 0,            // Display password.
+    AUTH_PIN = 1 << 1,                 // Display PIN keyboard.
+    AUTH_TAP = 1 << 2,                 // Tap to unlock.
+    AUTH_ONLINE_SIGN_IN = 1 << 3,      // Force online sign-in.
+    AUTH_FINGERPRINT = 1 << 4,         // Use fingerprint to unlock.
+    AUTH_EXTERNAL_BINARY = 1 << 5,     // Authenticate via an external binary.
+    AUTH_CHALLENGE_RESPONSE = 1 << 6,  // Authenticate via challenge-response
+                                       // protocol using security token.
+    AUTH_DISABLED = 1 << 7,  // Disable all the auth methods and show a
+                             // message to user.
+  };
+
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
    public:
@@ -56,6 +71,7 @@ class ASH_EXPORT LoginAuthUserView
     views::View* disabled_auth_message() const;
     views::Button* external_binary_auth_button() const;
     views::Button* external_binary_enrollment_button() const;
+    bool HasAuthMethod(AuthMethods auth_method) const;
 
    private:
     LoginAuthUserView* const view_;
@@ -86,21 +102,6 @@ class ASH_EXPORT LoginAuthUserView
     OnEasyUnlockIconHovered on_easy_unlock_icon_hovered;
     // Called when the easy unlock icon is tapped.
     OnEasyUnlockIconTapped on_easy_unlock_icon_tapped;
-  };
-
-  // Flags which describe the set of currently visible auth methods.
-  enum AuthMethods {
-    AUTH_NONE = 0,                     // No extra auth methods.
-    AUTH_PASSWORD = 1 << 0,            // Display password.
-    AUTH_PIN = 1 << 1,                 // Display PIN keyboard.
-    AUTH_TAP = 1 << 2,                 // Tap to unlock.
-    AUTH_ONLINE_SIGN_IN = 1 << 3,      // Force online sign-in.
-    AUTH_FINGERPRINT = 1 << 4,         // Use fingerprint to unlock.
-    AUTH_EXTERNAL_BINARY = 1 << 5,     // Authenticate via an external binary.
-    AUTH_CHALLENGE_RESPONSE = 1 << 6,  // Authenticate via challenge-response
-                                       // protocol using security token.
-    AUTH_DISABLED = 1 << 7,  // Disable all the auth methods and show a
-                             // message to user.
   };
 
   LoginAuthUserView(const LoginUserInfo& user, const Callbacks& callbacks);

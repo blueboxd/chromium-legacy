@@ -931,6 +931,19 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
+    public void testSetAutocompleteText_DuplicateText() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        setTextAndVerifyNoAutocomplete("test");
+        setAutocomplete("test", "ingz");
+        setAutocomplete("test", "ingz");
+        setAutocomplete("test", "ingz");
+        assertAutocompleteSelectionRange(4, 8);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
     public void testUrlDirection() throws TimeoutException {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         assertUrlDirection(View.LAYOUT_DIRECTION_LOCALE);

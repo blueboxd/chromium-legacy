@@ -60,4 +60,9 @@ bool MediaHistoryTableBase::GetProto(sql::Statement& s,
   return protobuf.ParseFromString(value);
 }
 
+bool MediaHistoryTableBase::DeleteURL(const GURL& url) {
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace media_history

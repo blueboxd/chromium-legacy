@@ -1700,6 +1700,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3264544094376351444">Fuente Sans-serif</translation>
 <translation id="3264582393905923483">Contexto</translation>
 <translation id="3265459715026181080">Cerrar ventana</translation>
+<translation id="3266274118485960573">Se está ejecutando la verificación de seguridad.</translation>
 <translation id="3267726687589094446">Seguir permitiendo las descargas automáticas de varios archivos</translation>
 <translation id="3268451620468152448">Pestañas abiertas</translation>
 <translation id="3269069891205016797">Se quitará tu información del dispositivo cuando salgas.</translation>
@@ -1805,6 +1806,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3412265149091626468">Saltar a selección</translation>
 <translation id="3413122095806433232">Emisores de certificados: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Tamaño:</translation>
+<translation id="3416468988018290825">Mostrar siempre las URL completas</translation>
 <translation id="3420501302812554910">Debe restablecerse la llave de seguridad interna</translation>
 <translation id="3421387094817716717">Clave pública de curva elíptica</translation>
 <translation id="3422291238483866753">Preguntar cuando un sitio desee crear un mapa 3D de tu entorno o hacer un seguimiento de la posición de la cámara (recomendado)</translation>
@@ -4161,6 +4163,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6586451623538375658">Cambiar el botón principal del mouse</translation>
 <translation id="6586604979641883411">Para actualizar Linux, debes contar con, al menos, <ph name="REQUIRED_SPACE" /> de espacio libre en disco. Libera espacio de tu dispositivo y vuelve a intentarlo.</translation>
 <translation id="6588043302623806746">Usar DNS seguro</translation>
+<translation id="659005207229852190">Se completó la verificación de seguridad.</translation>
 <translation id="6590458744723262880">Cambiar nombre de carpeta</translation>
 <translation id="6592267180249644460">Fecha y hora de captura de registro de WebRTC: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Se capturó tu huella digital</translation>
@@ -5421,6 +5424,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8249672078237421304">Preguntarme si quiero traducir páginas que no estén en un idioma que puedo leer</translation>
 <translation id="8251441930213048644">Actualizar ahora</translation>
 <translation id="8251578425305135684">Miniatura eliminada.</translation>
+<translation id="825238165904109940">Mostrar siempre las URL completas</translation>
 <translation id="8252569384384439529">Subiendo…</translation>
 <translation id="8253198102038551905">Haz clic en "+" para ver las propiedades de red.</translation>
 <translation id="8254954272268479918">Cerrar Linux (Beta)</translation>

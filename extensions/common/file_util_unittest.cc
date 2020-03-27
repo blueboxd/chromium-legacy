@@ -41,6 +41,10 @@ const char manifest_content[] =
     "  \"manifest_version\": 2\n"
     "}\n";
 
+const char kCustomManifest[] = "custom_manifest.json";
+const base::FilePath::CharType kCustomManifestFilename[] =
+    FILE_PATH_LITERAL("custom_manifest.json");
+
 scoped_refptr<Extension> LoadExtensionManifest(
     const base::DictionaryValue& manifest,
     const base::FilePath& manifest_dir,
@@ -508,6 +512,33 @@ TEST_F(FileUtilTest, WarnOnPrivateKey) {
   EXPECT_THAT(error,
               testing::ContainsRegex(
                   "extension includes the key file.*ext_root.a_key.pem"));
+}
+
+// Specify a file other than manifest.json
+TEST_F(FileUtilTest, SpecifyManifestFile) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  base::FilePath ext_path = temp.GetPath().AppendASCII("ext_root");
+  ASSERT_TRUE(base::CreateDirectory(ext_path));
+
+  const char manifest[] =
+      "{\n"
+      "  \"name\": \"Test Extension\",\n"
+      "  \"version\": \"1.0\",\n"
+      "  \"manifest_version\": 2,\n"
+      "  \"description\": \"The first extension that I made.\"\n"
+      "}\n";
+  ASSERT_EQ(static_cast<int>(strlen(manifest)),
+            base::WriteFile(ext_path.AppendASCII(kCustomManifest), manifest,
+                            strlen(manifest)));
+
+  std::string error;
+  scoped_refptr<Extension> extension(file_util::LoadExtension(
+      ext_path, kCustomManifestFilename, "the_id", Manifest::EXTERNAL_PREF,
+      Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension.get()) << error;
+  ASSERT_EQ(0u, extension->install_warnings().size());
 }
 
 // Try to install an extension with a zero-length icon file.

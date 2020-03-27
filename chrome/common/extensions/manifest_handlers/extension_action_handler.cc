@@ -99,22 +99,29 @@ bool ExtensionActionHandler::Validate(
     const Extension* extension,
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
-  const ActionInfo* action = ActionInfo::GetPageActionInfo(extension);
-  const char* manifest_key = manifest_keys::kPageAction;
-  if (!action) {
-    action = ActionInfo::GetBrowserActionInfo(extension);
-    manifest_key = manifest_keys::kBrowserAction;
+  const ActionInfo* action = ActionInfo::GetAnyActionInfo(extension);
+  if (!action || action->default_icon.empty())
+    return true;
+
+  const char* manifest_key = nullptr;
+  switch (action->type) {
+    case ActionInfo::TYPE_ACTION:
+      manifest_key = manifest_keys::kAction;
+      break;
+    case ActionInfo::TYPE_BROWSER:
+      manifest_key = manifest_keys::kBrowserAction;
+      break;
+    case ActionInfo::TYPE_PAGE:
+      manifest_key = manifest_keys::kPageAction;
+      break;
   }
+  DCHECK(manifest_key);
 
   // Analyze the icons for visibility using the default toolbar color, since
   // the majority of Chrome users don't modify their theme.
-  if (action && !action->default_icon.empty() &&
-      !file_util::ValidateExtensionIconSet(
-          action->default_icon, extension, manifest_key,
-          image_util::kDefaultToolbarColor, error)) {
-    return false;
-  }
-  return true;
+  return file_util::ValidateExtensionIconSet(
+      action->default_icon, extension, manifest_key,
+      image_util::kDefaultToolbarColor, error);
 }
 
 bool ExtensionActionHandler::AlwaysParseForType(Manifest::Type type) const {

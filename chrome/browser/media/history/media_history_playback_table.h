@@ -36,6 +36,8 @@ class MediaHistoryPlaybackTable : public MediaHistoryTableBase {
 
   using MediaHistoryPlaybacks = std::vector<MediaHistoryPlayback>;
 
+  bool DeleteURL(const GURL& url) override;
+
  private:
   friend class MediaHistoryStoreInternal;
 

@@ -1703,6 +1703,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3264544094376351444">Police Sans Serif</translation>
 <translation id="3264582393905923483">Contexte</translation>
 <translation id="3265459715026181080">Fermer la fenêtre</translation>
+<translation id="3266274118485960573">Contrôle de sécurité en cours.</translation>
 <translation id="3267726687589094446">Continuer à autoriser le téléchargement automatique de plusieurs fichiers</translation>
 <translation id="3268451620468152448">Onglets ouverts</translation>
 <translation id="3269069891205016797">Les informations vous concernant seront supprimées de cet appareil dès votre déconnexion.</translation>
@@ -1808,6 +1809,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3412265149091626468">Aller à la sélection</translation>
 <translation id="3413122095806433232">Émetteurs de l'autorité de certification : <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Taille :</translation>
+<translation id="3416468988018290825">Toujours afficher les URL en entier</translation>
 <translation id="3420501302812554910">Une réinitialisation est requise pour la clé de sécurité interne</translation>
 <translation id="3421387094817716717">Clé publique de la courbe elliptique</translation>
 <translation id="3422291238483866753">Vous demander votre avis lorsqu'un site souhaite créer un plan 3D de votre environnement ou suivre la position de la caméra (recommandé)</translation>
@@ -4165,6 +4167,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6586451623538375658">Inverser le bouton principal de la souris</translation>
 <translation id="6586604979641883411">Vous devez disposer d'au moins <ph name="REQUIRED_SPACE" /> d'espace disque libre pour mettre à niveau Linux. Veuillez libérer de l'espace sur l'appareil, puis réessayer.</translation>
 <translation id="6588043302623806746">Utiliser un DNS sécurisé</translation>
+<translation id="659005207229852190">Contrôle de sécurité terminé.</translation>
 <translation id="6590458744723262880">Renommer le dossier</translation>
 <translation id="6592267180249644460">Date et heure de création du journal WebRTC : <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Votre empreinte a bien été enregistrée</translation>
@@ -5425,6 +5428,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8249672078237421304">Me proposer de traduire les pages qui sont écrites dans une langue que je ne connais pas</translation>
 <translation id="8251441930213048644">Actualiser</translation>
 <translation id="8251578425305135684">Miniature supprimée</translation>
+<translation id="825238165904109940">Toujours afficher les URL en entier</translation>
 <translation id="8252569384384439529">Importation…</translation>
 <translation id="8253198102038551905">Cliquez sur "+" pour accéder aux propriétés réseau.</translation>
 <translation id="8254954272268479918">Arrêter Linux (bêta)</translation>

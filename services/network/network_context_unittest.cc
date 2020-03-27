@@ -5415,8 +5415,6 @@ class NetworkContextMockHostTest : public NetworkContextTest {
   }
 };
 
-
-
 TEST_F(NetworkContextMockHostTest, CustomProxyUsesSpecifiedProxyList) {
   net::EmbeddedTestServer proxy_test_server;
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
@@ -6533,8 +6531,8 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
     network_context->trust_token_store()->ExecuteOrEnqueue(
         base::BindLambdaForTesting([&](TrustTokenStore* store) {
           DCHECK(store);
-          store->SetBatchSize(
-              url::Origin::Create(GURL("https://trusttoken.com/")), 10);
+          store->AddTokens(url::Origin::Create(GURL("https://trusttoken.com/")),
+                           std::vector<std::string>{"token"}, "issuing key");
           run_loop.Quit();
         }));
 
@@ -6555,12 +6553,12 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
         CreateContextWithParams(std::move(params));
 
     base::RunLoop run_loop;
-    base::Optional<int> obtained_batch_size;
+    base::Optional<int> obtained_num_tokens;
     network_context->trust_token_store()->ExecuteOrEnqueue(
         base::BindLambdaForTesting(
-            [&obtained_batch_size, &run_loop](TrustTokenStore* store) {
+            [&obtained_num_tokens, &run_loop](TrustTokenStore* store) {
               DCHECK(store);
-              obtained_batch_size = store->BatchSize(
+              obtained_num_tokens = store->CountTokens(
                   url::Origin::Create(GURL("https://trusttoken.com/")));
               run_loop.Quit();
             }));
@@ -6568,7 +6566,7 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
     // Allow the store time to initialize asynchronously.
     run_loop.Run();
 
-    EXPECT_THAT(obtained_batch_size, Optional(10));
+    EXPECT_THAT(obtained_num_tokens, Optional(1));
   }
 
   // Allow the context's backing store time to be destroyed asynchronously.

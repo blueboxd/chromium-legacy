@@ -355,11 +355,7 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = 'fuchsia-x64-cast',
-    tryjob = try_.job(
-        location_regexp = [
-            '.+/[+]/chromecast/.+',
-        ],
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_linux_builder(

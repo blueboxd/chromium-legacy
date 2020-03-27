@@ -299,4 +299,9 @@ public class Snackbar {
     public Object getActionDataForTesting() {
         return mActionData;
     }
+
+    @VisibleForTesting
+    public int getIdentifierForTesting() {
+        return mIdentifier;
+    }
 }

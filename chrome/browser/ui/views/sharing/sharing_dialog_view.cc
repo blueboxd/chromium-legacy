@@ -39,38 +39,48 @@
 
 namespace {
 
+class VectorIconView : public views::ImageView {
+ public:
+  explicit VectorIconView(const gfx::VectorIcon& icon) : icon_(icon) {}
+
+  // views::ImageView
+  void OnThemeChanged() override {
+    ImageView::OnThemeChanged();
+    constexpr int kPrimaryIconSize = 20;
+    const SkColor color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DefaultIconColor);
+    SetImage(gfx::CreateVectorIcon(icon_, kPrimaryIconSize, color));
+  }
+
+ private:
+  const gfx::VectorIcon& icon_;
+};
+
+class HeaderImageView : public NonAccessibleImageView {
+ public:
+  explicit HeaderImageView(const views::BubbleFrameView* frame_view,
+                           const SharingDialogData::HeaderIcons& icons)
+      : frame_view_(frame_view), icons_(icons) {
+    constexpr gfx::Size kHeaderImageSize(320, 100);
+    SetPreferredSize(kHeaderImageSize);
+    SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+  }
+
+  // NonAccessibleImageView
+  void OnThemeChanged() override {
+    NonAccessibleImageView::OnThemeChanged();
+    const auto* icon = color_utils::IsDark(frame_view_->GetBackgroundColor())
+                           ? icons_.dark
+                           : icons_.light;
+    SetImage(gfx::CreateVectorIcon(*icon, gfx::kPlaceholderColor));
+  }
+
+ private:
+  const views::BubbleFrameView* frame_view_;
+  const SharingDialogData::HeaderIcons icons_;
+};
+
 constexpr int kSharingDialogSpacing = 8;
-
-SkColor GetColorFromTheme() {
-  const ui::NativeTheme* native_theme =
-      ui::NativeTheme::GetInstanceForNativeUi();
-  return native_theme->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
-}
-
-std::unique_ptr<views::ImageView> CreateIconView(const gfx::ImageSkia& icon) {
-  auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(icon);
-  return icon_view;
-}
-
-gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& vector_icon) {
-  constexpr int kPrimaryIconSize = 20;
-  return gfx::CreateVectorIcon(vector_icon, kPrimaryIconSize,
-                               GetColorFromTheme());
-}
-
-gfx::ImageSkia CreateDeviceIcon(
-    const sync_pb::SyncEnums::DeviceType device_type) {
-  return CreateVectorIcon(device_type == sync_pb::SyncEnums::TYPE_TABLET
-                              ? kTabletIcon
-                              : kHardwareSmartphoneIcon);
-}
-
-gfx::ImageSkia CreateAppIcon(const SharingApp& app) {
-  return app.vector_icon ? CreateVectorIcon(*app.vector_icon)
-                         : app.image.AsImageSkia();
-}
 
 // TODO(himanshujaju): This is almost same as self share, we could unify these
 // methods once we unify our architecture and dialog views.
@@ -143,20 +153,6 @@ std::unique_ptr<views::View> CreateOriginView(const SharingDialogData& data) {
   return label;
 }
 
-std::unique_ptr<views::View> MaybeCreateImageView(
-    const gfx::VectorIcon* image) {
-  if (!image)
-    return nullptr;
-
-  constexpr gfx::Size kHeaderImageSize(320, 100);
-
-  auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetPreferredSize(kHeaderImageSize);
-  image_view->SetImage(gfx::CreateVectorIcon(*image, gfx::kPlaceholderColor));
-  image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
-  return image_view;
-}
-
 std::unique_ptr<views::View> CreateHelpOrOriginView(
     const SharingDialogData& data,
     content::WebContents* web_contents,
@@ -206,7 +202,6 @@ SharingDialogType SharingDialogView::GetDialogType() const {
 void SharingDialogView::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  button_icons_.clear();
 
   auto* provider = ChromeLayoutProvider::Get();
   gfx::Insets insets =
@@ -261,43 +256,11 @@ void SharingDialogView::ButtonPressed(views::Button* sender,
   }
 }
 
-void SharingDialogView::MaybeShowHeaderImage() {
-  views::BubbleFrameView* frame_view = GetBubbleFrameView();
-  if (!frame_view)
-    return;
-
-  // TODO(crbug.com/1013099): Merge both images using alpha blending so they
-  // work on any background color.
-  const gfx::VectorIcon* image =
-      color_utils::IsDark(frame_view->GetBackgroundColor())
-          ? data_.header_image_dark
-          : data_.header_image_light;
-
-  frame_view->SetHeaderView(MaybeCreateImageView(image));
-}
-
 void SharingDialogView::AddedToWidget() {
-  MaybeShowHeaderImage();
-}
-
-void SharingDialogView::OnThemeChanged() {
-  LocationBarBubbleDelegateView::OnThemeChanged();
-  MaybeShowHeaderImage();
-
-  if (!button_icons_.size())
-    return;
-
-  DCHECK_EQ(data_.devices.size() + data_.apps.size(), button_icons_.size());
-
-  size_t button_index = 0;
-  for (const auto& device : data_.devices) {
-    button_icons_[button_index]->SetImage(
-        CreateDeviceIcon(device->device_type()));
-    button_index++;
-  }
-  for (const auto& app : data_.apps) {
-    button_icons_[button_index]->SetImage(CreateAppIcon(app));
-    button_index++;
+  views::BubbleFrameView* frame_view = GetBubbleFrameView();
+  if (frame_view && data_.header_icons) {
+    frame_view->SetHeaderView(
+        std::make_unique<HeaderImageView>(frame_view, *data_.header_icons));
   }
 }
 
@@ -316,8 +279,11 @@ void SharingDialogView::InitListView() {
   // Devices:
   LogSharingDevicesToShow(data_.prefix, kSharingUiDialog, data_.devices.size());
   for (const auto& device : data_.devices) {
-    auto icon = CreateIconView(CreateDeviceIcon(device->device_type()));
-    button_icons_.push_back(icon.get());
+    auto icon = std::make_unique<VectorIconView>(
+        device->device_type() == sync_pb::SyncEnums::TYPE_TABLET
+            ? kTabletIcon
+            : kHardwareSmartphoneIcon);
+
     auto dialog_button = std::make_unique<HoverButton>(
         this, std::move(icon), base::UTF8ToUTF16(device->client_name()),
         GetLastUpdatedTimeInDays(device->last_updated_timestamp()));
@@ -331,8 +297,14 @@ void SharingDialogView::InitListView() {
   // Apps:
   LogSharingAppsToShow(data_.prefix, kSharingUiDialog, data_.apps.size());
   for (const auto& app : data_.apps) {
-    auto icon = CreateIconView(CreateAppIcon(app));
-    button_icons_.push_back(icon.get());
+    std::unique_ptr<views::ImageView> icon;
+    if (app.vector_icon) {
+      icon = std::make_unique<VectorIconView>(*app.vector_icon);
+    } else {
+      icon = std::make_unique<views::ImageView>();
+      icon->SetImage(app.image.AsImageSkia());
+    }
+
     auto dialog_button =
         std::make_unique<HoverButton>(this, std::move(icon), app.name,
                                       /* subtitle= */ base::string16());

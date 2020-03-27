@@ -6,7 +6,6 @@
 
 #include "cc/layers/surface_layer.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
@@ -623,27 +622,6 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
 
   return owner->OwnerType() == FrameOwnerElementType::kPortal ||
          !visible_to_hit_testing_;
-}
-
-void RemoteFrame::UpdateHitTestOcclusionData() {
-  if (!cc_layer_ || !is_surface_layer_)
-    return;
-  bool unoccluded = false;
-  if (base::FeatureList::IsEnabled(
-          blink::features::kVizHitTestOcclusionCheck)) {
-    if (LayoutEmbeddedContent* owner = OwnerLayoutObject()) {
-      if (owner->GetFrame()->IsAttached() &&
-          !owner->GetFrameView()->CanThrottleRendering()) {
-        // TODO(szager): remove this CHECK after diagnosing crash.
-        CHECK(owner->GetFrame()->GetPage());
-        HitTestResult hit_test_result(owner->HitTestForOcclusion());
-        const Node* hit_node = hit_test_result.InnerNode();
-        unoccluded = (!hit_node || hit_node == owner->GetNode());
-      }
-    }
-  }
-  static_cast<cc::SurfaceLayer*>(cc_layer_)->SetUnoccludedForHitTesting(
-      unoccluded);
 }
 
 void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,

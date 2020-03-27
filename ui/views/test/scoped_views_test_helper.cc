@@ -18,9 +18,14 @@
 namespace views {
 
 ScopedViewsTestHelper::ScopedViewsTestHelper(
-    std::unique_ptr<TestViewsDelegate> test_views_delegate)
-    : test_views_delegate_(std::move(test_views_delegate)) {
-  test_helper_->SetUpTestViewsDelegate(test_views_delegate_.get());
+    std::unique_ptr<TestViewsDelegate> test_views_delegate,
+    base::Optional<ViewsDelegate::NativeWidgetFactory> factory)
+    : test_views_delegate_(test_views_delegate
+                               ? std::move(test_views_delegate)
+                               : test_helper_->GetFallbackTestViewsDelegate()) {
+  test_helper_->SetUpTestViewsDelegate(test_views_delegate_.get(),
+                                       std::move(factory));
+  test_helper_->SetUp();
 
   ui::InitializeInputMethodForTesting();
   ui::TestClipboard::CreateForCurrentThread();

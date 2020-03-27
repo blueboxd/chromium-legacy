@@ -43,33 +43,28 @@ class UpdaterObserverImpl
   ~UpdaterObserverImpl() override = default;
 };
 
-using StateChangeCallback =
-    base::RepeatingCallback<void(updater::UpdateService::UpdateState)>;
-
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
   UpdateServiceOutOfProcess();
 
   // Overrides for updater::UpdateService.
-  // Update-checks all registered applications. Calls |callback| once the
-  // operation is complete.
   void RegisterApp(
       const RegistrationRequest& request,
       base::OnceCallback<void(const RegistrationResponse&)> callback) override;
-  void UpdateAll(base::OnceCallback<void(Result)> callback) override;
+  void UpdateAll(StateChangeCallback state_update, Callback callback) override;
   void Update(const std::string& app_id,
               Priority priority,
               StateChangeCallback state_update,
-              base::OnceCallback<void(Result)> done) override;
+              Callback callback) override;
   void Uninitialize() override;
-
-  static void ModuleStop();
 
  private:
   ~UpdateServiceOutOfProcess() override;
 
-  void UpdateAllOnSTA(base::OnceCallback<void(Result)> callback);
+  void UpdateAllOnSTA(StateChangeCallback state_update, Callback callback);
+
+  static void ModuleStop();
 
   SEQUENCE_CHECKER(sequence_checker_);
 

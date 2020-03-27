@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/test/session_flags_manager.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 
 namespace chromeos {
@@ -30,14 +31,24 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   struct TestUserInfo {
     // Creates test user with regular user type from the given |account_id|.
     explicit TestUserInfo(const AccountId& account_id)
-        : account_id(account_id), user_type(user_manager::USER_TYPE_REGULAR) {}
+        : TestUserInfo(account_id, user_manager::USER_TYPE_REGULAR) {}
 
     // Creates test user with |user_type| from the given |account_id|.
     TestUserInfo(const AccountId& account_id, user_manager::UserType user_type)
-        : account_id(account_id), user_type(user_type) {}
+        : TestUserInfo(account_id,
+                       user_type,
+                       user_manager::User::OAUTH2_TOKEN_STATUS_VALID) {}
+
+    TestUserInfo(const AccountId& account_id,
+                 user_manager::UserType user_type,
+                 user_manager::User::OAuthTokenStatus token_status)
+        : account_id(account_id),
+          user_type(user_type),
+          token_status(token_status) {}
 
     const AccountId account_id;
     const user_manager::UserType user_type;
+    const user_manager::User::OAuthTokenStatus token_status;
   };
 
   // Convenience method for creating default UserContext for an account ID. The

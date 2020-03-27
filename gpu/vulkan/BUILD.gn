@@ -79,13 +79,25 @@ if (enable_vulkan) {
 
     if (is_posix) {
       sources += [
+        "vulkan_image_linux.cc",
         "vulkan_posix_util.cc",
         "vulkan_posix_util.h",
       ]
     }
 
+    if (is_android) {
+      sources += [ "vulkan_image_android.cc" ]
+    }
+
+    if (is_win) {
+      sources += [ "vulkan_image_win.cc" ]
+    }
+
     if (is_fuchsia) {
-      sources += [ "fuchsia/vulkan_fuchsia_ext.h" ]
+      sources += [
+        "fuchsia/vulkan_fuchsia_ext.h",
+        "vulkan_image_fuchsia.cc",
+      ]
 
       public_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
 
@@ -135,6 +147,8 @@ if (enable_vulkan) {
         "//gpu/vulkan/init",
         "//testing/gmock",
         "//testing/gtest",
+        "//ui/events/platform",
+        "//ui/events/platform/x11",
         "//ui/gfx",
         "//ui/gfx:native_widget_types",
         "//ui/gfx/geometry",

@@ -83,3 +83,14 @@
   --cr-icon-button-margin-end: 0;
   --cr-icon-button-margin-start: 0;
 }
+
+/* WebviewScrollShadowsHelper */
+#oauth-enroll-auth-view.can-scroll:not(.is-scrolled):not(.scrolled-to-bottom)::before {
+  @apply --oobe-scroll-shadow-bottom;
+}
+#oauth-enroll-auth-view.can-scroll.is-scrolled:not(.scrolled-to-bottom)::before {
+  @apply --oobe-scroll-shadow-top-and-bottom;
+}
+#oauth-enroll-auth-view.is-scrolled.scrolled-to-bottom::before {
+  @apply --oobe-scroll-shadow-top;
+}

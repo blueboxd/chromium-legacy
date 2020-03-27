@@ -1119,24 +1119,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
       },

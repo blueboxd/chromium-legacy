@@ -36,6 +36,8 @@ source_set("permissions") {
     "permissions_client.h",
     "pref_names.cc",
     "pref_names.h",
+    "quota_permission_context_impl.cc",
+    "quota_permission_context_impl.h",
     "switches.cc",
     "switches.h",
   ]
@@ -50,6 +52,8 @@ source_set("permissions") {
     "//components/vector_icons",
     "//content/public/browser",
     "//services/metrics/public/cpp:ukm_builders",
+    "//ui/base",
+    "//url",
   ]
   if (is_android) {
     sources += [

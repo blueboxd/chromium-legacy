@@ -380,6 +380,9 @@ crbug.com/1041052 [ Linux ] external/wpt/2dcontext/fill-and-stroke-styles/canvas
 crbug.com/1047818 [ Linux ] external/wpt/visual-viewport/idlharness.window.html [ Skip ]
 crbug.com/1047818 [ Linux ] external/wpt/permissions/idlharness.any.worker.html [ Skip ]
 
+# Sheriff 2020-02-10
+crbug.com/1050559 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.any.worker.html?1-1000 [ Skip ]
+
 # Sheriff 2020-02-11
 crbug.com/1047818 [ Linux ] external/wpt/badging/idlharness.any.html [ Skip ]
 crbug.com/1047818 [ Linux ] external/wpt/badging/idlharness.any.worker.html [ Skip ]

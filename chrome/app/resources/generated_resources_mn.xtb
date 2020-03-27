@@ -1698,6 +1698,7 @@
 <translation id="3264544094376351444">Sans-serif фонт</translation>
 <translation id="3264582393905923483">Хам сэдэв</translation>
 <translation id="3265459715026181080">Цонхыг хаах</translation>
+<translation id="3266274118485960573">Аюулгүй байдлын шалгалт хийж байна.</translation>
 <translation id="3267726687589094446">Олон тооны файлуудыг автоматаар татаж авахыг үргэлжүүлэн зөвшөөрөх</translation>
 <translation id="3268451620468152448">Цонхнуудыг нээх</translation>
 <translation id="3269069891205016797">Энэ төхөөрөмжөөс гарах үед таны мэдээлэл устах болно.</translation>
@@ -1803,6 +1804,7 @@
 <translation id="3412265149091626468">Selection-д очих</translation>
 <translation id="3413122095806433232">Гэрчилгээжүүлэлт олгогч: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Хэмжээ:</translation>
+<translation id="3416468988018290825">Үргэлж бүтэн URL-г харуулах</translation>
 <translation id="3420501302812554910">Дотоод аюулгүй байдлын түлхүүрийг шинэчлэх шаардлагатай</translation>
 <translation id="3421387094817716717">Зууван муруй нийтийн түлхүүр</translation>
 <translation id="3422291238483866753">Сайт таны эргэн тойрны 3D газрын зургийг үүсгэх эсвэл камерын хөдөлгөөнийг хянах хүсэлтэй үед асуух (санал болгосон)</translation>
@@ -4158,6 +4160,7 @@
 <translation id="6586451623538375658">Хулганы үндсэн товчийг солих</translation>
 <translation id="6586604979641883411">Linux-г дэвшүүлэхэд хамгийн багадаа диск дээр <ph name="REQUIRED_SPACE" /> сул зайтай байх шаардлагатай. Төхөөрөмж дээрээ сул зай гаргаад дахин оролдоно уу.</translation>
 <translation id="6588043302623806746">Найдвартай DNS ашиглана уу</translation>
+<translation id="659005207229852190">Аюулгүй байдлын шалгалтыг хийж дуусгалаа.</translation>
 <translation id="6590458744723262880">Фолдерын нэрийг өөрчлөх</translation>
 <translation id="6592267180249644460">WebRTC бүртгэл <ph name="WEBRTC_LOG_CAPTURE_TIME" />-д хадгалагдлаа</translation>
 <translation id="6592808042417736307">Таны хурууны хээг авлаа</translation>
@@ -5414,6 +5417,7 @@
 <translation id="8249672078237421304">Таны орны хэлээр байхгүй хуудсыг орчуулах санал хүргүүлнэ үү</translation>
 <translation id="8251441930213048644">Яг одоо дахин ачаалах</translation>
 <translation id="8251578425305135684">Жижиг зураг устгагдсан.</translation>
+<translation id="825238165904109940">Үргэлж бүтэн URL-г харуулах</translation>
 <translation id="8252569384384439529">Байршуулж байна...</translation>
 <translation id="8253198102038551905">Сүлжээний хандалтын сонголтыг нэмэгдүүлэхийн тулд  '+' дээр дарна уу</translation>
 <translation id="8254954272268479918">Linux (Бэта)-г унтраах</translation>

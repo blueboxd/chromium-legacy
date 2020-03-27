@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -130,7 +130,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mSignInManager = null;
 
         mProfileDataCache.removeObserver(this);
-        AccountManagerFacade.get().removeObserver(this);
+        AccountManagerFacadeProvider.getInstance().removeObserver(this);
 
         mFaviconHelper.destroy();
         mFaviconHelper = null;
@@ -162,7 +162,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mSignInManager.addSignInStateObserver(this);
 
         mProfileDataCache.addObserver(this);
-        AccountManagerFacade.get().addObserver(this);
+        AccountManagerFacadeProvider.getInstance().addObserver(this);
     }
 
     private void updateRecentlyClosedTabs() {

@@ -238,6 +238,9 @@ TabImpl::~TabImpl() {
 
 // static
 TabImpl* TabImpl::FromWebContents(content::WebContents* web_contents) {
+  if (!web_contents)
+    return nullptr;
+
   return reinterpret_cast<UserData*>(
              web_contents->GetUserData(&kWebContentsUserDataKey))
       ->controller;
@@ -444,6 +447,15 @@ content::WebContents* TabImpl::OpenURLFromTab(
   source->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
   return source;
+}
+
+void TabImpl::ShowRepostFormWarningDialog(content::WebContents* source) {
+#if defined(OS_ANDROID)
+  Java_TabImpl_showRepostFormWarningDialog(base::android::AttachCurrentThread(),
+                                           java_impl_);
+#else
+  source->GetController().CancelPendingReload();
+#endif
 }
 
 void TabImpl::NavigationStateChanged(content::WebContents* source,

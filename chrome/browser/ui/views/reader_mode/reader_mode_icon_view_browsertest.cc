@@ -14,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
+#include "components/dom_distiller/content/browser/test_distillability_observer.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
@@ -32,70 +33,6 @@ namespace {
 const char* kSimpleArticlePath = "/dom_distiller/simple_article.html";
 const char* kNonArticlePath = "/dom_distiller/non_og_article.html";
 const char* kArticleTitle = "Test Page Title";
-
-class TestDistillabilityObserver
-    : public dom_distiller::DistillabilityObserver {
- public:
-  explicit TestDistillabilityObserver(content::WebContents* web_contents)
-      : web_contents_(web_contents),
-        run_loop_(std::make_unique<base::RunLoop>()) {
-    dom_distiller::AddObserver(web_contents_, this);
-  }
-
-  ~TestDistillabilityObserver() override {
-    dom_distiller::RemoveObserver(web_contents_, this);
-  }
-
-  TestDistillabilityObserver(const TestDistillabilityObserver&) = delete;
-  TestDistillabilityObserver& operator=(const TestDistillabilityObserver&) =
-      delete;
-
-  // Returns immediately if the result has already happened, otherwise
-  // waits until that result is observed.
-  void WaitForResult(const dom_distiller::DistillabilityResult& result) {
-    if (WasResultFound(result)) {
-      results_.clear();
-      return;
-    }
-
-    result_to_wait_for_ = result;
-    run_loop_->Run();
-    run_loop_ = std::make_unique<base::RunLoop>();
-    results_.clear();
-  }
-
- private:
-  void OnResult(const dom_distiller::DistillabilityResult& result) override {
-    results_.push_back(result);
-    // If we aren't waiting for anything yet, return early.
-    if (!result_to_wait_for_.has_value())
-      return;
-    // Check if this is the one we were waiting for, and if so, stop the loop.
-    if (DistillabilityResultsEqual(result, result_to_wait_for_.value()))
-      run_loop_->Quit();
-  }
-
-  bool DistillabilityResultsEqual(
-      const dom_distiller::DistillabilityResult& first,
-      const dom_distiller::DistillabilityResult& second) {
-    return first.is_distillable == second.is_distillable &&
-           first.is_last == second.is_last &&
-           first.is_mobile_friendly == second.is_mobile_friendly;
-  }
-
-  bool WasResultFound(const dom_distiller::DistillabilityResult& result) {
-    for (auto& elem : results_) {
-      if (DistillabilityResultsEqual(result, elem))
-        return true;
-    }
-    return false;
-  }
-
-  content::WebContents* web_contents_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-  base::Optional<dom_distiller::DistillabilityResult> result_to_wait_for_;
-  std::vector<dom_distiller::DistillabilityResult> results_;
-};
 
 class ReaderModeIconViewBrowserTest : public InProcessBrowserTest {
  protected:
@@ -126,7 +63,7 @@ class ReaderModeIconViewBrowserTest : public InProcessBrowserTest {
 //    to a distillable page.
 IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
                        IconVisibilityAdaptsToPageContents) {
-  TestDistillabilityObserver observer(
+  dom_distiller::TestDistillabilityObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
   dom_distiller::DistillabilityResult expected_result;
   expected_result.is_distillable = false;
@@ -189,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTestWithSettings,
                        IconVisibilityDependsOnSettingIfExperimentEnabled) {
   SetOfferReaderModeSetting(false);
 
-  TestDistillabilityObserver observer(
+  dom_distiller::TestDistillabilityObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
   dom_distiller::DistillabilityResult expected_result;
   expected_result.is_distillable = true;
@@ -245,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
 
-  TestDistillabilityObserver observer(web_contents);
+  dom_distiller::TestDistillabilityObserver observer(web_contents);
   dom_distiller::DistillabilityResult expected_result;
   expected_result.is_distillable = true;
   expected_result.is_last = false;

@@ -666,9 +666,7 @@ group("gn_all") {
       deps += [ "//chromecast:cast_shell" ]
     }
     if (enable_extensions && use_aura) {
-      deps += [
-        "//chrome/browser/resources/chromeos/accessibility/chromevox:build",
-      ]
+      deps += [ "//chrome/browser/resources/chromeos/accessibility:build" ]
     }
   }
 
@@ -697,16 +695,7 @@ group("gn_all") {
   }
 
   if (is_win || is_linux) {
-    deps += [
-      "//media/mojo/services:media_service_unittests",
-      "//mojo",
-    ]
-
-    # crbug.com/676055: media_service_unittests fails to link under Windows
-    # component builds, due to duplicate symbol definitions.
-    if (is_win && is_component_build) {
-      deps -= [ "//media/mojo/services:media_service_unittests" ]
-    }
+    deps += [ "//mojo" ]
   }
 
   if (is_mac || is_linux || is_android || is_fuchsia) {
@@ -1019,9 +1008,7 @@ if (!is_ios) {
         "//chrome:chrome",
         "//chrome/test/chromedriver",
       ]
-      deps = [
-        "//third_party/blink/tools:wpt_tests_isolate",
-      ]
+      deps = [ "//third_party/blink/tools:wpt_tests_isolate" ]
     }
   }
 

@@ -41,14 +41,14 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
     private String mPlainUrl;
 
     RevampedContextMenuHeaderMediator(Context context, PropertyModel model,
-            @PerformanceClass int performanceClass, ContextMenuParams params) {
+            @PerformanceClass int performanceClass, ContextMenuParams params, Profile profile) {
         mContext = context;
         mPlainUrl = params.getUrl();
         mModel = model;
         mModel.set(RevampedContextMenuHeaderProperties.TITLE_AND_URL_CLICK_LISTENER, this);
 
         if (!params.isImage() && !params.isVideo()) {
-            LargeIconBridge iconBridge = new LargeIconBridge(Profile.getLastUsedProfile());
+            LargeIconBridge iconBridge = new LargeIconBridge(profile);
             iconBridge.getLargeIconForStringUrl(mPlainUrl,
                     context.getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size),
                     this::onFaviconAvailable);

@@ -116,6 +116,10 @@ LoadingPredictorTabHelper::~LoadingPredictorTabHelper() = default;
 void LoadingPredictorTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Clear out prediction from previous navigation.
+  last_optimization_guide_preconnect_prediction_ = base::nullopt;
+
   if (!predictor_)
     return;
 
@@ -240,7 +244,6 @@ void LoadingPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
 
   predictor_->loading_data_collector()->RecordMainFrameLoadComplete(
       navigation_id, last_optimization_guide_preconnect_prediction_);
-  last_optimization_guide_preconnect_prediction_ = base::nullopt;
 }
 
 void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
@@ -255,20 +258,33 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
 
   ScopedOptimizationHintsReceiveStatusRecorder recorder;
 
-  if (!current_navigation_id_.is_valid()) {
-    // There is not a pending navigation, so return.
-    recorder.set_status(OptimizationHintsReceiveStatus::kAfterNavigationFinish);
-    return;
-  }
-  if (current_navigation_id_ != navigation_id) {
+  if (current_navigation_id_.is_valid() &&
+      current_navigation_id_ != navigation_id) {
     // The current navigation has either redirected or a new one has started, so
     // return.
     recorder.set_status(
         OptimizationHintsReceiveStatus::kAfterRedirectOrNextNavigationStart);
     return;
   }
+  if (!current_navigation_id_.is_valid()) {
+    // There is not a pending navigation.
+    recorder.set_status(OptimizationHintsReceiveStatus::kAfterNavigationFinish);
 
-  recorder.set_status(OptimizationHintsReceiveStatus::kBeforeNavigationFinish);
+    auto last_committed_navigation_id = NavigationID(web_contents());
+    if (!last_committed_navigation_id.is_valid() ||
+        last_committed_navigation_id != navigation_id) {
+      // This hint is no longer relevant, so return.
+      return;
+    }
+
+    // If we get here, we have not navigated away from the navigation we
+    // received hints for. Proceed to get the preconnect prediction so we can
+    // see how the predicted resources match what was actually fetched for
+    // counterfactual logging purposes.
+  } else {
+    recorder.set_status(
+        OptimizationHintsReceiveStatus::kBeforeNavigationFinish);
+  }
 
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
     return;
@@ -295,9 +311,15 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
                                      network_isolation_key);
   }
   last_optimization_guide_preconnect_prediction_ = prediction;
-  predictor_->PrepareForPageLoad(navigation_id.main_frame_url,
-                                 HintOrigin::OPTIMIZATION_GUIDE,
-                                 /*preconnectable=*/false, prediction);
+
+  // Only preconnect if the navigation is still pending and we want to use the
+  // predictions to preconnect to subresource origins.
+  if (current_navigation_id_.is_valid() &&
+      features::ShouldUseOptimizationGuidePredictionsToPreconnect()) {
+    predictor_->PrepareForPageLoad(navigation_id.main_frame_url,
+                                   HintOrigin::OPTIMIZATION_GUIDE,
+                                   /*preconnectable=*/false, prediction);
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LoadingPredictorTabHelper)

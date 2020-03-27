@@ -80,6 +80,9 @@ bool StructTraits<
   if (!data.ReadLabelSource(&out->label_source))
     return false;
 
+  if (!data.ReadBounds(&out->bounds))
+    return false;
+
   return true;
 }
 

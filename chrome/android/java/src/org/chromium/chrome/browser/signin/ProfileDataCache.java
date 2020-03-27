@@ -28,7 +28,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
 
 import java.util.HashMap;
@@ -104,7 +104,8 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     }
 
     public ProfileDataCache(Context context, @Px int imageSize, @Nullable BadgeConfig badgeConfig) {
-        this(context, imageSize, badgeConfig, AccountManagerFacade.get().getProfileDataSource());
+        this(context, imageSize, badgeConfig,
+                AccountManagerFacadeProvider.getInstance().getProfileDataSource());
     }
 
     @VisibleForTesting

@@ -15,7 +15,6 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 // Gmock matchers and actions that we use below.
 using testing::_;
@@ -72,9 +71,6 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
-    screen_position_client_.reset(
-        new wm::DefaultScreenPositionClient(root_window()));
-
     gesture_handler_ = std::make_unique<MockCastGestureHandler>();
     side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
         gesture_handler_.get(), root_window());
@@ -91,7 +87,6 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
   void TearDown() override {
     side_swipe_detector_.reset();
     gesture_handler_.reset();
-    screen_position_client_.reset();
 
     aura::test::AuraTestBase::TearDown();
   }
@@ -148,7 +143,6 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
   TestEventHandler& test_event_handler() { return *test_event_handler_; }
 
  private:
-  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
 

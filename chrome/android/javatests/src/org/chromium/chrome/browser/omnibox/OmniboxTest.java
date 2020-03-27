@@ -4,19 +4,14 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
-
 import android.annotation.SuppressLint;
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.text.Selection;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,9 +45,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
-import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResultBuilder;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
-import org.chromium.chrome.test.util.OmniboxTestUtils.TestSuggestionResultsBuilder;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -66,10 +59,7 @@ import org.chromium.net.test.ServerCertificate;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tests of the Omnibox.
@@ -317,111 +307,6 @@ public class OmniboxTest {
             urlBar.setText("G");
         });
         Assert.assertEquals("Location bar should have text.", "G", urlBar.getText().toString());
-    }
-
-    @Test
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
-    @MediumTest
-    @Feature({"Omnibox"})
-    @RetryOnFailure
-    public void testDuplicateAutocompleteTextResults()
-            throws InterruptedException, ExecutionException {
-        Map<String, List<SuggestionsResult>> suggestionsMap = buildSuggestionMap(
-                new TestSuggestionResultsBuilder()
-                        .setTextShownFor("test")
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testing", null)
-                                .setAutocompleteText("ing"))
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testz", null)
-                                .setAutocompleteText("ing"))
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testblarg", null)
-                                .setAutocompleteText("ing")));
-        checkAutocompleteText(suggestionsMap, "test", "testing", 4, 7);
-    }
-
-    private void checkAutocompleteText(
-            Map<String, List<SuggestionsResult>> suggestionsMap,
-            final String textToType, final String expectedAutocompleteText,
-            final int expectedAutocompleteStart, final int expectedAutocompleteEnd)
-            throws InterruptedException, ExecutionException {
-        final TextView urlBarView =
-                (TextView) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBarView.requestFocus();
-            urlBarView.setText("");
-        });
-
-        final LocationBarLayout locationBar =
-                ((LocationBarLayout) mActivityTestRule.getActivity().findViewById(
-                        R.id.location_bar));
-
-        final Object suggestionsProcessedSignal = new Object();
-        final AtomicInteger suggestionsLeft = new AtomicInteger(
-                suggestionsMap.get(textToType).size());
-        OnSuggestionsReceivedListener suggestionsListener = new OnSuggestionsReceivedListener() {
-            @Override
-            public void onSuggestionsReceived(
-                    List<OmniboxSuggestion> suggestions,
-                    String inlineAutocompleteText) {
-                AutocompleteCoordinatorTestUtils
-                        .getSuggestionsReceivedListenerForTest(
-                                locationBar.getAutocompleteCoordinator())
-                        .onSuggestionsReceived(suggestions, inlineAutocompleteText);
-                synchronized (suggestionsProcessedSignal) {
-                    int remaining = suggestionsLeft.decrementAndGet();
-                    if (remaining == 0) {
-                        suggestionsProcessedSignal.notifyAll();
-                    } else if (remaining < 0) {
-                        Assert.fail("Unexpected suggestions received");
-                    }
-                }
-            }
-        };
-        final TestAutocompleteController controller = new TestAutocompleteController(
-                locationBar, suggestionsListener, suggestionsMap);
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AutocompleteCoordinatorTestUtils.setAutocompleteController(
-                    locationBar.getAutocompleteCoordinator(), controller);
-        });
-
-        KeyUtils.typeTextIntoView(
-                InstrumentationRegistry.getInstrumentation(), urlBarView, textToType);
-
-        synchronized (suggestionsProcessedSignal) {
-            long endTime = SystemClock.uptimeMillis() + 3000;
-            while (suggestionsLeft.get() != 0) {
-                long waitTime = endTime - SystemClock.uptimeMillis();
-                if (waitTime <= 0) break;
-                suggestionsProcessedSignal.wait(waitTime);
-            }
-        }
-
-        CharSequence urlText = TestThreadUtils.runOnUiThreadBlocking(new Callable<CharSequence>() {
-            @Override
-            public CharSequence call() {
-                return urlBarView.getText();
-            }
-        });
-        Assert.assertEquals("URL Bar text not autocompleted as expected.", expectedAutocompleteText,
-                urlText.toString());
-        Assert.assertEquals(expectedAutocompleteStart, Selection.getSelectionStart(urlText));
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)) {
-            Assert.assertEquals(expectedAutocompleteEnd, urlText.length());
-        } else {
-            Assert.assertEquals(expectedAutocompleteEnd, Selection.getSelectionEnd(urlText));
-        }
     }
 
     /**

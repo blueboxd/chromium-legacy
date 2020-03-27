@@ -1703,6 +1703,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3264544094376351444">Font Sans-Serif</translation>
 <translation id="3264582393905923483">Context</translation>
 <translation id="3265459715026181080">Închide fereastra</translation>
+<translation id="3266274118485960573">Rulează verificarea de siguranță.</translation>
 <translation id="3267726687589094446">Permiteți în continuare descărcarea automată a mai multor fișiere</translation>
 <translation id="3268451620468152448">File deschise</translation>
 <translation id="3269069891205016797">Informațiile tale vor fi eliminate de pe dispozitiv după ce te deconectezi.</translation>
@@ -1808,6 +1809,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3412265149091626468">Accesează selecția</translation>
 <translation id="3413122095806433232">Emitenți CA: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Dimensiune:</translation>
+<translation id="3416468988018290825">Afișează întotdeauna adresele URL complete</translation>
 <translation id="3420501302812554910">Cheia de securitate internă trebuie resetată</translation>
 <translation id="3421387094817716717">Cheia publică a curburii eliptice</translation>
 <translation id="3422291238483866753">Anunță-mă dacă un site vrea să creeze o hartă 3D a lucrurilor din jur sau să urmărească poziția camerei video (recomandat)</translation>
@@ -4164,6 +4166,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6586451623538375658">Comutați butonul principal al mouse-ului</translation>
 <translation id="6586604979641883411">Pentru a face upgrade la Linux este necesar un spațiu liber pe disc de cel puțin <ph name="REQUIRED_SPACE" />. Eliberează spațiu pe dispozitiv și încearcă din nou.</translation>
 <translation id="6588043302623806746">Folosește un DNS securizat</translation>
+<translation id="659005207229852190">Verificarea de siguranță s-a finalizat.</translation>
 <translation id="6590458744723262880">Redenumește dosarul</translation>
 <translation id="6592267180249644460">Jurnal WebRTC înregistrat la <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Amprenta a fost capturată</translation>
@@ -5424,6 +5427,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8249672078237421304">Oferă traducerea paginilor care nu sunt într-o limbă pe care o cunosc</translation>
 <translation id="8251441930213048644">Actualizează acum</translation>
 <translation id="8251578425305135684">Miniatura a fost eliminată.</translation>
+<translation id="825238165904109940">Afișează întotdeauna adresele URL complete</translation>
 <translation id="8252569384384439529">Se încarcă...</translation>
 <translation id="8253198102038551905">Pentru a vedea proprietățile rețelei, dă clic pe „+”</translation>
 <translation id="8254954272268479918">Închide Linux (Beta)</translation>

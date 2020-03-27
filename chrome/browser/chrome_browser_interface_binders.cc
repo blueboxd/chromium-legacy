@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
+#include "chrome/common/pref_names.h"
 #include "components/contextual_search/buildflags.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
@@ -47,6 +48,7 @@
 #include "components/feed/buildflags.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_state/content/content_utils.h"
 #include "components/security_state/core/security_state.h"
@@ -345,12 +347,12 @@ void BindNetworkHintsHandler(
 void BindSodaContextHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::SodaContext> receiver) {
-  SodaServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(
-          frame_host->GetProcess()->GetBrowserContext()))
-      ->Create(std::move(receiver));
+  Profile* profile = Profile::FromBrowserContext(
+      frame_host->GetProcess()->GetBrowserContext());
+  PrefService* profile_prefs = profile->GetPrefs();
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
+    SodaServiceFactory::GetForProfile(profile)->Create(std::move(receiver));
 }
-
 void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<image_annotation::mojom::Annotator>(

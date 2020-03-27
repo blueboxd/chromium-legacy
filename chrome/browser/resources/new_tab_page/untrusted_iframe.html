@@ -1,5 +1,9 @@
 <style>
-  iframe {
+  :host(:not([hidden])) {
+    display: inline-block;
+  }
+
+  #iframe {
     border: none;
     border-radius: inherit;
     height: inherit;

@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -78,7 +79,8 @@ public class IdentityManagerIntegrationTest {
     }
 
     private static CoreAccountInfo createCoreAccountInfoFromEmail(String accountEmail) {
-        String accountGaiaId = AccountManagerFacade.get().getAccountGaiaId(accountEmail);
+        String accountGaiaId =
+                AccountManagerFacadeProvider.getInstance().getAccountGaiaId(accountEmail);
         return new CoreAccountInfo(new CoreAccountId(accountGaiaId), accountEmail, accountGaiaId);
     }
 

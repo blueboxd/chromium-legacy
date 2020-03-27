@@ -97,10 +97,6 @@ void SurfaceLayer::SetStretchContentToFillBounds(
   SetNeedsPushProperties();
 }
 
-void SurfaceLayer::SetUnoccludedForHitTesting(bool unoccluded) {
-  unoccluded_for_hit_testing_ = unoccluded;
-}
-
 void SurfaceLayer::SetSurfaceHitTestable(bool surface_hit_testable) {
   if (surface_hit_testable_ == surface_hit_testable)
     return;
@@ -162,7 +158,6 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
   layer_impl->SetHasPointerEventsNone(has_pointer_events_none_);
-  layer_impl->SetUnoccludedForHitTesting(unoccluded_for_hit_testing_);
 }
 
 }  // namespace cc

@@ -768,7 +768,25 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   header_spacer->SetPreferredSize(gfx::Size(0, kHeaderHeightDp));
   header->AddChildView(header_spacer);
 
-  // Back button.
+  // Main view icon.
+  auto* icon_view = new NonAccessibleView();
+  icon_view->SetPreferredSize(gfx::Size(0, kHeaderHeightDp));
+  auto icon_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
+  icon_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kEnd);
+  icon_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  icon_view->SetLayoutManager(std::move(icon_layout));
+  header->AddChildView(icon_view);
+
+  views::ImageView* icon = new views::ImageView();
+  icon->SetPreferredSize(gfx::Size(kLockIconSizeDp, kLockIconSizeDp));
+  icon->SetImage(gfx::CreateVectorIcon(kPinRequestLockIcon, SK_ColorWHITE));
+  icon_view->AddChildView(icon);
+
+  // Back button. Note that it should be the last view added to |header| in
+  // order to be clickable.
   auto* back_button_view = new NonAccessibleView();
   back_button_view->SetPreferredSize(
       gfx::Size(child_view_width + 2 * (kPinRequestViewMainHorizontalInsetDp -
@@ -797,23 +815,6 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME));
   back_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   back_button_view->AddChildView(back_button_);
-
-  // Main view icon.
-  auto* icon_view = new NonAccessibleView();
-  icon_view->SetPreferredSize(gfx::Size(0, kHeaderHeightDp));
-  auto icon_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
-  icon_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kEnd);
-  icon_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
-  icon_view->SetLayoutManager(std::move(icon_layout));
-  header->AddChildView(icon_view);
-
-  views::ImageView* icon = new views::ImageView();
-  icon->SetPreferredSize(gfx::Size(kLockIconSizeDp, kLockIconSizeDp));
-  icon->SetImage(gfx::CreateVectorIcon(kPinRequestLockIcon, SK_ColorWHITE));
-  icon_view->AddChildView(icon);
 
   auto add_spacer = [&](int height) {
     auto* spacer = new NonAccessibleView();

@@ -1703,6 +1703,7 @@
 <translation id="3264544094376351444">แบบอักษร Sans-Serif</translation>
 <translation id="3264582393905923483">บริบท</translation>
 <translation id="3265459715026181080">ปิดหน้าต่าง</translation>
+<translation id="3266274118485960573">กำลังดำเนินการตรวจสอบความปลอดภัย</translation>
 <translation id="3267726687589094446">อนุญาตการดาวน์โหลดไฟล์หลายๆ ไฟล์โดยอัตโนมัติต่อไป</translation>
 <translation id="3268451620468152448">แท็บที่เปิดอยู่</translation>
 <translation id="3269069891205016797">ระบบจะนำข้อมูลของคุณออกจากอุปกรณ์เมื่อคุณออกจากระบบ</translation>
@@ -1808,6 +1809,7 @@
 <translation id="3412265149091626468">ข้ามไปที่สิ่งที่เลือก</translation>
 <translation id="3413122095806433232">ผู้ออก CA: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">ขนาด:</translation>
+<translation id="3416468988018290825">แสดง URL แบบเต็มเสมอ</translation>
 <translation id="3420501302812554910">ต้องรีเซ็ตคีย์ความปลอดภัยภายใน</translation>
 <translation id="3421387094817716717">กุญแจสาธารณะแบบ Elliptic Curve</translation>
 <translation id="3422291238483866753">ถามเมื่อเว็บไซต์ต้องการสร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณหรือติดตามตำแหน่งของกล้อง (แนะนำ)</translation>
@@ -4164,6 +4166,7 @@
 <translation id="6586451623538375658">สลับปุ่มเมาส์หลัก</translation>
 <translation id="6586604979641883411">การอัปเกรด Linux ต้องใช้พื้นที่ดิสก์ว่างอย่างน้อย <ph name="REQUIRED_SPACE" /> โปรดลบข้อมูลบางส่วนในอุปกรณ์ แล้วลองอีกครั้ง</translation>
 <translation id="6588043302623806746">ใช้ DNS ที่ปลอดภัย</translation>
+<translation id="659005207229852190">ตรวจสอบความปลอดภัยเสร็จสิ้นแล้ว</translation>
 <translation id="6590458744723262880">เปลี่ยนชื่อโฟลเดอร์</translation>
 <translation id="6592267180249644460">บันทึก WebRTC ที่จับภาพ <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">บันทึกลายนิ้วมือของคุณได้แล้ว</translation>
@@ -5424,6 +5427,7 @@
 <translation id="8249672078237421304">เสนอให้แปลหน้าที่ไม่ได้อยู่ในภาษาที่คุณอ่านได้</translation>
 <translation id="8251441930213048644">รีเฟรชเลย</translation>
 <translation id="8251578425305135684">รูปภาพขนาดย่อถูกลบแล้ว</translation>
+<translation id="825238165904109940">แสดง URL แบบเต็มเสมอ</translation>
 <translation id="8252569384384439529">กำลังอัปโหลด...</translation>
 <translation id="8253198102038551905">คลิก "+" เพื่อดูคุณสมบัติของเครือข่าย</translation>
 <translation id="8254954272268479918">ปิด Linux (เบต้า)</translation>

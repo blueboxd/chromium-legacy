@@ -7,7 +7,7 @@ import("//chrome/common/features.gni")
 import("//chromecast/chromecast.gni")
 import("strings/accessibility_strings.gni")
 
-assert(is_chromeos)
+assert(is_chromeos || is_chromecast)
 
 accessibility_out_dir = "$root_out_dir/resources/chromeos/accessibility/"
 
@@ -16,16 +16,20 @@ group("build") {
     ":accessibility_strings",
     ":chromevox_guest_manifest",
     ":chromevox_manifest",
-    ":select_to_speak_guest_manifest",
-    ":select_to_speak_manifest",
-    ":switch_access_guest_manifest",
-    ":switch_access_manifest",
-    "autoclick:build",
     "chromevox:build",
     "common:build",
-    "select_to_speak:build",
-    "switch_access:build",
   ]
+  if (is_chromeos) {
+    deps += [
+      ":select_to_speak_guest_manifest",
+      ":select_to_speak_manifest",
+      ":switch_access_guest_manifest",
+      ":switch_access_manifest",
+      "autoclick:build",
+      "select_to_speak:build",
+      "switch_access:build",
+    ]
+  }
 }
 
 template("manifest") {
@@ -99,11 +103,13 @@ accessibility_strings("accessibility_strings") {
 
 group("browser_tests") {
   testonly = true
-  deps = [
-    "autoclick:browser_tests",
-    "chromevox:browser_tests",
-    "common:browser_tests",
-    "select_to_speak:browser_tests",
-    "switch_access:browser_tests",
-  ]
+  if (is_chromeos) {
+    deps = [
+      "autoclick:browser_tests",
+      "chromevox:browser_tests",
+      "common:browser_tests",
+      "select_to_speak:browser_tests",
+      "switch_access:browser_tests",
+    ]
+  }
 }

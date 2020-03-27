@@ -187,6 +187,13 @@ bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
       DCHECK(text_classifier_);
       return text_classifier_->ShouldInvertColor(color) ==
              DarkModeClassification::kApplyFilter;
+    case ElementRole::kListSymbol:
+      // TODO(prashant.n): Rename text_classifier_ to foreground_classifier_,
+      // so that same classifier can be used for all roles which are supposed
+      // to be at foreground.
+      DCHECK(text_classifier_);
+      return text_classifier_->ShouldInvertColor(color) ==
+             DarkModeClassification::kApplyFilter;
     case ElementRole::kBackground:
       DCHECK(background_classifier_);
       return background_classifier_->ShouldInvertColor(color) ==

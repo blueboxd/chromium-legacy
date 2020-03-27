@@ -1851,6 +1851,19 @@ LengthSize StyleBuilderConverter::ConvertIntrinsicSize(
   return LengthSize(width, height);
 }
 
+base::Optional<IntSize> StyleBuilderConverter::ConvertAspectRatio(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)
+    return base::nullopt;
+  const CSSValueList& list = To<CSSValueList>(value);
+  DCHECK_EQ(list.length(), 2u);
+  int width = To<CSSPrimitiveValue>(list.Item(0)).GetIntValue();
+  int height = To<CSSPrimitiveValue>(list.Item(1)).GetIntValue();
+  return IntSize(width, height);
+}
+
 bool StyleBuilderConverter::ConvertInternalEmptyLineHeight(
     StyleResolverState&,
     const CSSValue& value) {

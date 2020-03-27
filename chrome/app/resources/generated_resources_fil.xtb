@@ -1703,6 +1703,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3264544094376351444">Sans-serif font</translation>
 <translation id="3264582393905923483">Konteksto</translation>
 <translation id="3265459715026181080">Close Window</translation>
+<translation id="3266274118485960573">Tumatakbo ang pag-check sa kaligtasan.</translation>
 <translation id="3267726687589094446">Patuloy na payagan ang mga awtomatikong pagda-download ng maraming file</translation>
 <translation id="3268451620468152448">Mga Bukas na Tab</translation>
 <translation id="3269069891205016797">Aalisin sa device ang iyong impormasyon kapag nag-sign out ka.</translation>
@@ -1808,6 +1809,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3412265149091626468">Jump to Selection</translation>
 <translation id="3413122095806433232">Mga Nagbigay ng CA: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Laki:</translation>
+<translation id="3416468988018290825">Palaging ipakita ang mga buong URL</translation>
 <translation id="3420501302812554910">Nangangailangan ng pag-reset ang internal na security key</translation>
 <translation id="3421387094817716717">Elliptic Curve Public Key</translation>
 <translation id="3422291238483866753">Magtanong kapag gusto ng isang site na gumawa ng 3D na mapa ng iyong kapaligiran o subaybayan ang posisyon ng camera (inirerekomenda)</translation>
@@ -4164,6 +4166,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6586451623538375658">Palitan ang pangunahing button ng mouse</translation>
 <translation id="6586604979641883411">Hindi bababa sa <ph name="REQUIRED_SPACE" /> na bakanteng espasyo sa disk ang kinakailangan para ma-upgrade ang Linux. Magbakante ng ilang espasyo sa iyong device at subukan ulit.</translation>
 <translation id="6588043302623806746">Gamitin ang secure na DNS</translation>
+<translation id="659005207229852190">Tapos na ang pag-check sa kaligtasan.</translation>
 <translation id="6590458744723262880">Palitan ang pangalan ng folder</translation>
 <translation id="6592267180249644460">Na-capture ang log ng WebRTC noong <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Na-capture na ang iyong fingerprint</translation>
@@ -5424,6 +5427,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8249672078237421304">Mag-alok na isalin ang mga page na wala sa wikang nababasa mo</translation>
 <translation id="8251441930213048644">I-refresh ngayon</translation>
 <translation id="8251578425305135684">Naalis ang thumbnail.</translation>
+<translation id="825238165904109940">Palaging Ipakita ang Mga Buong URL</translation>
 <translation id="8252569384384439529">Ina-upload...</translation>
 <translation id="8253198102038551905">I-click '+' upang makita ang mga property ng network</translation>
 <translation id="8254954272268479918">I-shut down ang Linux (Beta)</translation>

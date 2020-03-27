@@ -20,6 +20,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.AuthException;
 import org.chromium.components.signin.ProfileDataSource;
@@ -213,7 +214,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         try {
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 addAccountHolderExplicitly(accountHolder);
-                AccountManagerFacade.get().waitForPendingUpdates(cacheUpdated::countDown);
+                AccountManagerFacadeProvider.getInstance().waitForPendingUpdates(
+                        cacheUpdated::countDown);
             });
 
             cacheUpdated.await();
@@ -235,7 +237,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         try {
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 removeAccountHolderExplicitly(accountHolder);
-                AccountManagerFacade.get().waitForPendingUpdates(cacheUpdated::countDown);
+                AccountManagerFacadeProvider.getInstance().waitForPendingUpdates(
+                        cacheUpdated::countDown);
             });
 
             cacheUpdated.await();

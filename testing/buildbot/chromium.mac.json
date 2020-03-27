@@ -885,24 +885,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.10"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
       },
@@ -2589,24 +2571,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
       },
@@ -4277,24 +4241,6 @@
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {
@@ -6011,24 +5957,6 @@
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {
@@ -7768,24 +7696,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
       },
@@ -9455,25 +9365,6 @@
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "isolate_coverage_data": true,
@@ -11265,24 +11156,6 @@
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.14.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_service_unittests",
-        "test_target": "//media/mojo/services:media_service_unittests"
       },
       {
         "merge": {

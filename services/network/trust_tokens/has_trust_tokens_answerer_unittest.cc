@@ -149,11 +149,8 @@ TEST(HasTrustTokensAnswerer, SuccessWithTokens) {
 
   // Populate the store, giving the issuer a key commitment for the key "issuing
   // key" and a token issued with that key.
-  TrustTokenKeyCommitment key_commitment;
-  key_commitment.set_key("issuing key");
-  raw_store->SetKeyCommitmentsAndPruneStaleState(kIssuer, {key_commitment});
-  ASSERT_TRUE(raw_store->AddTokens(kIssuer, std::vector<std::string>{"token"},
-                                   "issuing key"));
+  raw_store->AddTokens(kIssuer, std::vector<std::string>{"token"},
+                       "issuing key");
 
   mojom::HasTrustTokensResultPtr result;
 

@@ -341,6 +341,23 @@ void SigninViewController::ShowDiceAddAccountTab(
       access_point, signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
       email_hint);
 }
+
+void SigninViewController::ShowModalSigninEmailConfirmationDialog(
+    Browser* browser,
+    const std::string& last_email,
+    const std::string& email,
+    base::OnceCallback<void(SigninEmailConfirmationDialog::Action)> callback) {
+  CloseModalSignin();
+  content::WebContents* active_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  delegate_ = SigninEmailConfirmationDialog::AskForConfirmation(
+      this, active_contents, browser->profile(), last_email, email,
+      std::move(callback));
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::SIGN_IN_EMAIL_CONFIRMATION);
+}
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 content::WebContents*

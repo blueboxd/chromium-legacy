@@ -1703,6 +1703,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="3264544094376351444">Sans-serif ариби</translation>
 <translation id="3264582393905923483">Контекст</translation>
 <translation id="3265459715026181080">Терезени жабуу</translation>
+<translation id="3266274118485960573">Коопсуздук текшерилүүдө.</translation>
 <translation id="3267726687589094446">Бир нече файл автоматтык түрдө жүктөлүп алына берсин</translation>
 <translation id="3268451620468152448">Ачык өтмөктөр</translation>
 <translation id="3269069891205016797">Каттоо эсебинен чыкканыңыздан кийин, маалыматыңыз түзмөктөн өчүрүлөт.</translation>
@@ -1808,6 +1809,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="3412265149091626468">Тандоого секириңиз</translation>
 <translation id="3413122095806433232">Тастыктама берүүчүлөр: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Өлчөм:</translation>
+<translation id="3416468988018290825">URL'дер ар дайым толугу менен көрсөтүлсүн</translation>
 <translation id="3420501302812554910">Ички коопсуздук ачкычын баштапкы абалга келтирүү талап кылынат</translation>
 <translation id="3421387094817716717">Эллиптикалык ийри сызыктын жалпыга ачык ачкычы</translation>
 <translation id="3422291238483866753">Сайт айланаңыздын 3D картасын түзгөнү же камераңыздын абалын көргөнү жатканда уруксат суралсын (сунушталат)</translation>
@@ -4164,6 +4166,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6586451623538375658">Негизги чычкан баскычын алмаштыруу</translation>
 <translation id="6586604979641883411">Linux'тун жаңы версиясын жүктөп алуу үчүн кеминде <ph name="REQUIRED_SPACE" /> орун талап кылынат. Түзмөгүңүздө бир аз орун бошотуп, кайталап көрүңүз.</translation>
 <translation id="6588043302623806746">Коопсуз DNS'ти колдонуу</translation>
+<translation id="659005207229852190">Коопсуздук текшерилди.</translation>
 <translation id="6590458744723262880">Папканын аталышын өзгөртүү</translation>
 <translation id="6592267180249644460">WebRTC таржымалы кармалды <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Манжа изиңиз тартылды</translation>
@@ -5423,6 +5426,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8249672078237421304">Барактар түшүнүксүз тилде болсо, аларды которуу сунушталсын</translation>
 <translation id="8251441930213048644">Азыр жаңыртуу</translation>
 <translation id="8251578425305135684">Бармакбасым өчүрүлдү.</translation>
+<translation id="825238165904109940">URL'дер ар дайым толугу менен көрсөтүлсүн</translation>
 <translation id="8252569384384439529">Жүктөлүп берилүүдө…</translation>
 <translation id="8253198102038551905">Тармак касиеттерин ачуу үчүн "+" дегенди чыкылдатыңыз</translation>
 <translation id="8254954272268479918">Linux'ту (бета-версиясы) жабуу</translation>

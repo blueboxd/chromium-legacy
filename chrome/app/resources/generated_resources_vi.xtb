@@ -1703,6 +1703,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3264544094376351444">Phông chữ Sans-serif</translation>
 <translation id="3264582393905923483">Ngữ cảnh</translation>
 <translation id="3265459715026181080">Đóng Cửa sổ</translation>
+<translation id="3266274118485960573">Đang chạy tính năng kiểm tra an toàn.</translation>
 <translation id="3267726687589094446">Tiếp tục cho phép tự động tải nhiều tệp xuống</translation>
 <translation id="3268451620468152448">Tab đang mở</translation>
 <translation id="3269069891205016797">Thông tin của bạn sẽ được xóa khỏi thiết bị khi bạn đăng xuất.</translation>
@@ -1808,6 +1809,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3412265149091626468">Chuyển tới Phần lựa chọn</translation>
 <translation id="3413122095806433232">Nhà cung cấp CA: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Kích thước:</translation>
+<translation id="3416468988018290825">Luôn hiển thị URL đầy đủ</translation>
 <translation id="3420501302812554910">Cần phải đặt lại khóa bảo mật nội bộ</translation>
 <translation id="3421387094817716717">Khóa công khai đường cong elip</translation>
 <translation id="3422291238483866753">Hỏi khi một trang web muốn tạo bản đồ 3D về các khu vực xung quanh bạn hoặc theo dõi thông tin vị trí của máy ảnh (khuyên dùng)</translation>
@@ -4164,6 +4166,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6586451623538375658">Hoán đổi nút chuột chính</translation>
 <translation id="6586604979641883411">Cần có tối thiểu <ph name="REQUIRED_SPACE" /> dung lượng ổ đĩa trống để nâng cấp Linux. Vui lòng giải phóng một số dung lượng trên thiết bị rồi thử lại.</translation>
 <translation id="6588043302623806746">Sử dụng hệ thống tên miền (DNS) bảo mật</translation>
+<translation id="659005207229852190">Đã hoàn tất kiểm tra an toàn.</translation>
 <translation id="6590458744723262880">Đổi tên thư mục</translation>
 <translation id="6592267180249644460">Đã ghi nhật ký WebRTC vào <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Hệ thống đã ghi lại vân tay của bạn</translation>
@@ -5424,6 +5427,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8249672078237421304">Đề xuất dịch các trang không phải bằng ngôn ngữ bạn đã đọc</translation>
 <translation id="8251441930213048644">Làm mới ngay</translation>
 <translation id="8251578425305135684">Đã xóa hình thu nhỏ.</translation>
+<translation id="825238165904109940">Luôn hiển thị URL đầy đủ</translation>
 <translation id="8252569384384439529">Đang tải lên...</translation>
 <translation id="8253198102038551905">Hãy nhấp vào '+' để nhận thuộc tính mạng</translation>
 <translation id="8254954272268479918">Tắt Linux (Thử nghiệm)</translation>

@@ -23,21 +23,23 @@ class XRAnchor : public ScriptWrappable {
  public:
   XRAnchor(uint64_t id,
            XRSession* session,
-           const device::mojom::blink::XRAnchorDataPtr& anchor_data);
+           const device::mojom::blink::XRAnchorData& anchor_data);
 
   uint64_t id() const;
 
   XRSpace* anchorSpace() const;
 
-  TransformationMatrix MojoFromObject() const;
+  base::Optional<TransformationMatrix> MojoFromObject() const;
 
   void detach();
 
-  void Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data);
+  void Update(const device::mojom::blink::XRAnchorData& anchor_data);
 
   void Trace(Visitor* visitor) override;
 
  private:
+  void SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor);
+
   const uint64_t id_;
 
   Member<XRSession> session_;

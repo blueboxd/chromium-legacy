@@ -65,8 +65,8 @@ class TabImpl : public Tab,
                    const std::string& guid = std::string());
   ~TabImpl() override;
 
-  // Returns the TabImpl from the specified WebContents, or null if
-  // |web_contents| was not created by a TabImpl.
+  // Returns the TabImpl from the specified WebContents (which may be null), or
+  // null if |web_contents| was not created by a TabImpl.
   static TabImpl* FromWebContents(content::WebContents* web_contents);
 
   ProfileImpl* profile() { return profile_; }
@@ -152,6 +152,7 @@ class TabImpl : public Tab,
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
+  void ShowRepostFormWarningDialog(content::WebContents* source) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(

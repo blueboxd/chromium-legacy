@@ -28577,6 +28577,12 @@ Called by update_feature_policy_enum.py.-->
   <int value="3" label="Only normal priority frames seen."/>
 </enum>
 
+<enum name="FrameReportType">
+  <int value="0" label="Presented Frame"/>
+  <int value="1" label="Missed Deadline Frame"/>
+  <int value="2" label="Dropped Frame"/>
+</enum>
+
 <enum name="FrameSiteInstanceProcessRelationship">
   <summary>
     Used to describe the relationship between frames hosted in a process,
@@ -38861,6 +38867,7 @@ from previous Chrome versions.
   <int value="-426815606" label="HomepageTile:enabled"/>
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>
+  <int value="-419733676" label="IsolatePrerendersMustProbeOrigin:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-418676305" label="ScanningUI:enabled"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
@@ -39924,6 +39931,7 @@ from previous Chrome versions.
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
+  <int value="864024033" label="IsolatePrerendersMustProbeOrigin:enabled"/>
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="868009556" label="AutofillUpstream:enabled"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
@@ -42398,6 +42406,7 @@ Called by update_use_counter_css.py.-->
   <int value="654" label="origin-trial-test-property"/>
   <int value="655" label="subtree-visibility"/>
   <int value="656" label="math-style"/>
+  <int value="657" label="aspect-ratio"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -51322,6 +51331,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="AcroForm"/>
   <int value="2" label="Full XFA"/>
   <int value="3" label="Foreground XFA (XFAF)"/>
+</enum>
+
+<enum name="PDFVersion">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="PDF 1.0"/>
+  <int value="2" label="PDF 1.1"/>
+  <int value="3" label="PDF 1.2"/>
+  <int value="4" label="PDF 1.3"/>
+  <int value="5" label="PDF 1.4"/>
+  <int value="6" label="PDF 1.5"/>
+  <int value="7" label="PDF 1.6"/>
+  <int value="8" label="PDF 1.7"/>
+  <int value="9" label="PDF 1.8"/>
+  <int value="10" label="PDF 2.0"/>
 </enum>
 
 <enum name="PeerConnectionAnswererState">

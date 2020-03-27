@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/views_delegate.h"
 
 namespace views {
 
@@ -23,8 +25,16 @@ class ViewsTestHelper {
 
   virtual ~ViewsTestHelper() = default;
 
+  // Returns the delegate to use if the test/owner does not create one.
+  virtual std::unique_ptr<TestViewsDelegate> GetFallbackTestViewsDelegate();
+
   // Does any additional necessary setup of the provided |delegate|.
-  virtual void SetUpTestViewsDelegate(TestViewsDelegate* delegate);
+  virtual void SetUpTestViewsDelegate(
+      TestViewsDelegate* delegate,
+      base::Optional<ViewsDelegate::NativeWidgetFactory> factory);
+
+  // Does any additional necessary setup of this object or its members.
+  virtual void SetUp();
 
   // Returns a context view. In aura builds, this will be the RootWindow.
   // Everywhere else, null.

@@ -215,8 +215,6 @@ class SigninScreenHandler
   void OnWallpaperColorsChanged() override;
   void OnWallpaperBlurChanged() override;
 
-  void SetFocusPODCallbackForTesting(base::Closure callback);
-
   // To avoid spurious error messages on flaky networks, the offline message is
   // only shown if the network is offline for a threshold number of seconds.
   // This method provides an ability to reduce the threshold to zero, allowing
@@ -474,9 +472,6 @@ class SigninScreenHandler
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
-
-  // This callback captures "focusPod finished" event for tests.
-  base::Closure test_focus_pod_callback_;
 
   // True if SigninScreenHandler has already been added to OobeUI observers.
   bool oobe_ui_observer_added_ = false;

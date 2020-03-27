@@ -324,6 +324,19 @@ LoginBigUserView* LockContentsView::TestApi::opt_secondary_big_view() const {
   return view_->opt_secondary_big_view_;
 }
 
+AccountId LockContentsView::TestApi::focused_user() const {
+  if (view_->CurrentBigUserView()->public_account()) {
+    return view_->CurrentBigUserView()
+        ->public_account()
+        ->current_user()
+        .basic_user_info.account_id;
+  }
+  return view_->CurrentBigUserView()
+      ->auth_user()
+      ->current_user()
+      .basic_user_info.account_id;
+}
+
 ScrollableUsersListView* LockContentsView::TestApi::users_list() const {
   return view_->users_list_;
 }
@@ -381,29 +394,29 @@ LockContentsView::TestApi::users() const {
   return view_->users_;
 }
 
-bool LockContentsView::TestApi::RemoveUser(const AccountId& account_id) {
+LoginBigUserView* LockContentsView::TestApi::FindUser(
+    const AccountId& account_id) {
   LoginBigUserView* big_view =
       view_->TryToFindBigUser(account_id, false /*require_auth_active*/);
-  if (big_view) {
-    LoginBigUserView::TestApi user_api(big_view);
-    user_api.Remove();
-    return true;
-  }
-
+  if (big_view)
+    return big_view;
   LoginUserView* user_view = view_->TryToFindUserView(account_id);
   if (!user_view) {
     DLOG(ERROR) << "Could not find user: " << account_id.Serialize();
-    return false;
+    return nullptr;
   }
   LoginUserView::TestApi user_view_api(user_view);
   user_view_api.OnTap();
-  big_view = view_->TryToFindBigUser(account_id, false /*require_auth_active*/);
-  if (big_view) {
-    LoginBigUserView::TestApi user_api(big_view);
-    user_api.Remove();
-    return true;
-  }
-  return false;
+  return view_->TryToFindBigUser(account_id, false /*require_auth_active*/);
+}
+
+bool LockContentsView::TestApi::RemoveUser(const AccountId& account_id) {
+  LoginBigUserView* big_view = FindUser(account_id);
+  if (!big_view)
+    return false;
+  LoginBigUserView::TestApi user_api(big_view);
+  user_api.Remove();
+  return true;
 }
 
 bool LockContentsView::TestApi::IsOobeDialogVisible() const {

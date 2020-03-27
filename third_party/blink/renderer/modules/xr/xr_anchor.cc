@@ -12,17 +12,23 @@ namespace blink {
 
 XRAnchor::XRAnchor(uint64_t id,
                    XRSession* session,
-                   const device::mojom::blink::XRAnchorDataPtr& anchor_data)
-    : id_(id),
-      session_(session),
-      mojo_from_anchor_(std::make_unique<TransformationMatrix>(
-          mojo::ConvertTo<blink::TransformationMatrix>(anchor_data->pose))) {}
+                   const device::mojom::blink::XRAnchorData& anchor_data)
+    : id_(id), session_(session) {
+  // No need for else - if pose is not present, the default-constructed unique
+  // ptr is fine.
+  if (anchor_data.pose) {
+    SetMojoFromAnchor(
+        mojo::ConvertTo<blink::TransformationMatrix>(anchor_data.pose));
+  }
+}
 
-void XRAnchor::Update(
-    const device::mojom::blink::XRAnchorDataPtr& anchor_data) {
-  // Just copy, already allocated.
-  *mojo_from_anchor_ =
-      mojo::ConvertTo<blink::TransformationMatrix>(anchor_data->pose);
+void XRAnchor::Update(const device::mojom::blink::XRAnchorData& anchor_data) {
+  if (anchor_data.pose) {
+    SetMojoFromAnchor(
+        mojo::ConvertTo<blink::TransformationMatrix>(anchor_data.pose));
+  } else {
+    mojo_from_anchor_ = nullptr;
+  }
 }
 
 uint64_t XRAnchor::id() const {
@@ -40,14 +46,25 @@ XRSpace* XRAnchor::anchorSpace() const {
   return anchor_space_;
 }
 
-TransformationMatrix XRAnchor::MojoFromObject() const {
-  DCHECK(mojo_from_anchor_);
+base::Optional<TransformationMatrix> XRAnchor::MojoFromObject() const {
+  if (!mojo_from_anchor_) {
+    return base::nullopt;
+  }
 
   return *mojo_from_anchor_;
 }
 
 void XRAnchor::detach() {
   session_->xr()->xrEnvironmentProviderRemote()->DetachAnchor(id_);
+}
+
+void XRAnchor::SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor) {
+  if (mojo_from_anchor_) {
+    *mojo_from_anchor_ = mojo_from_anchor;
+  } else {
+    mojo_from_anchor_ =
+        std::make_unique<TransformationMatrix>(mojo_from_anchor);
+  }
 }
 
 void XRAnchor::Trace(Visitor* visitor) {

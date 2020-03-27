@@ -34,21 +34,14 @@ class UpdateServiceInProcess : public UpdateService {
       scoped_refptr<update_client::Configurator> config);
 
   // Overrides for updater::UpdateService.
-  // Registers given request to the updater.
   void RegisterApp(
       const RegistrationRequest& request,
       base::OnceCallback<void(const RegistrationResponse&)> callback) override;
-
-  // Update-checks all registered applications. Calls |callback| once the
-  // operation is complete.
-  void UpdateAll(base::OnceCallback<void(Result)> callback) override;
-
-  // Update-checks one registered application. Calls |state_updates| as the
-  // update is processed and |done| once the operation is complete.
+  void UpdateAll(StateChangeCallback state_update, Callback callback) override;
   void Update(const std::string& app_id,
               Priority priority,
-              base::RepeatingCallback<void(UpdateState)> state_update,
-              base::OnceCallback<void(Result)> done) override;
+              StateChangeCallback state_update,
+              Callback callback) override;
 
   void Uninitialize() override;
 

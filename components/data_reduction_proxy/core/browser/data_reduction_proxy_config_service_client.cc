@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -117,6 +118,27 @@ bool AllowInsecurePrefetchProxy() {
 std::vector<GURL> GetPrefetchProxyHosts(
     const data_reduction_proxy::PrefetchProxyConfig& prefetch_config) {
   std::vector<GURL> hosts;
+
+  // Check for a command line override and maybe early return.
+  std::string cmd_line_override =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          "prefetch-proxy-override-proxy-hosts");
+  if (!cmd_line_override.empty()) {
+    std::vector<std::string> split_cmd_line_override =
+        base::SplitString(cmd_line_override, ",", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+
+    for (const std::string& host : split_cmd_line_override) {
+      GURL url(host);
+      if (url.is_valid()) {
+        hosts.push_back(url);
+      }
+    }
+    if (!hosts.empty()) {
+      return hosts;
+    }
+  }
+
   for (const auto& proxy : prefetch_config.proxy_list()) {
     if (proxy.type() != PrefetchProxyConfig_Proxy_Type_CONNECT)
       continue;

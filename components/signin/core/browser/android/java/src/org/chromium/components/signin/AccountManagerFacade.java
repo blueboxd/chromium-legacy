@@ -29,7 +29,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.signin.util.PatternMatcher;
@@ -44,8 +43,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * AccountManagerFacade wraps our access of AccountManager in Android.
  *
- * Use the {@link #initializeAccountManagerFacade} to instantiate it.
- * After initialization, instance get be acquired by calling {@link #get}.
  */
 public class AccountManagerFacade {
     private static final String TAG = "Sync_Signin";
@@ -68,12 +65,6 @@ public class AccountManagerFacade {
     @VisibleForTesting
     public static final String ACCOUNT_RESTRICTION_PATTERNS_KEY = "RestrictAccountsToPatterns";
 
-    private static AccountManagerFacade sInstance;
-    private static AccountManagerFacade sTestingInstance;
-
-    private static final AtomicReference<AccountManagerFacade> sAtomicInstance =
-            new AtomicReference<>();
-
     private final AccountManagerDelegate mDelegate;
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
 
@@ -94,7 +85,7 @@ public class AccountManagerFacade {
     /**
      * @param delegate the AccountManagerDelegate to use as a backend
      */
-    private AccountManagerFacade(AccountManagerDelegate delegate) {
+    AccountManagerFacade(AccountManagerDelegate delegate) {
         ThreadUtils.assertOnUiThread();
         mDelegate = delegate;
         mDelegate.registerObservers();
@@ -108,62 +99,11 @@ public class AccountManagerFacade {
     }
 
     /**
-     * Initializes AccountManagerFacade singleton instance. Can only be called once.
-     * Tests can override the instance with {@link #overrideAccountManagerFacadeForTests}.
-     *
-     * @param delegate the AccountManagerDelegate to use
+     * Gets the AccountManagerFacade instance.
+     * TODO(https://crbug.com/1063851): This method should be removed after the change in clank
      */
-    @MainThread
-    public static void initializeAccountManagerFacade(AccountManagerDelegate delegate) {
-        ThreadUtils.assertOnUiThread();
-        if (sInstance != null) {
-            throw new IllegalStateException("AccountManagerFacade is already initialized!");
-        }
-        sInstance = new AccountManagerFacade(delegate);
-        if (sTestingInstance != null) return;
-        sAtomicInstance.set(sInstance);
-    }
-
-    /**
-     * Overrides AccountManagerFacade singleton instance for tests. Only for use in Tests.
-     * Overrides any previous or future calls to {@link #initializeAccountManagerFacade}.
-     *
-     * @param delegate the AccountManagerDelegate to use
-     */
-    @VisibleForTesting
-    @AnyThread
-    public static void overrideAccountManagerFacadeForTests(AccountManagerDelegate delegate) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            sTestingInstance = new AccountManagerFacade(delegate);
-            sAtomicInstance.set(sTestingInstance);
-        });
-    }
-
-    /**
-     * Resets custom AccountManagerFacade set with {@link #overrideAccountManagerFacadeForTests}.
-     * Only for use in Tests.
-     */
-    @VisibleForTesting
-    @AnyThread
-    public static void resetAccountManagerFacadeForTests() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            sTestingInstance = null;
-            sAtomicInstance.set(sInstance);
-        });
-    }
-
-    /**
-     * Singleton instance getter. Singleton must be initialized before calling this by
-     * {@link #initializeAccountManagerFacade} or {@link #overrideAccountManagerFacadeForTests}.
-     *
-     * @return a singleton instance
-     */
-    @AnyThread
-    @CalledByNative
     public static AccountManagerFacade get() {
-        AccountManagerFacade instance = sAtomicInstance.get();
-        assert instance != null : "AccountManagerFacade is not initialized!";
-        return instance;
+        return AccountManagerFacadeProvider.getInstance();
     }
 
     /**

@@ -31,7 +31,9 @@ void CookieSettingsPolicyHandler::ApplyPolicySettings(
       policies.GetValue(policy::key::kBlockThirdPartyCookies);
   if (third_party_cookie_blocking) {
     prefs->SetInteger(prefs::kCookieControlsMode,
-                      static_cast<int>(CookieControlsMode::kOff));
+                      static_cast<int>(third_party_cookie_blocking->GetBool()
+                                           ? CookieControlsMode::kOn
+                                           : CookieControlsMode::kOff));
   }
 }
 

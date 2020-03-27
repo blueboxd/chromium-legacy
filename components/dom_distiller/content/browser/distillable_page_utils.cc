@@ -51,6 +51,13 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
       base::BindOnce(OnExtractFeaturesJsResult, detector, std::move(callback)));
 }
 
+bool operator==(const DistillabilityResult& first,
+                const DistillabilityResult& second) {
+  return first.is_distillable == second.is_distillable &&
+         first.is_last == second.is_last &&
+         first.is_mobile_friendly == second.is_mobile_friendly;
+}
+
 std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result) {
   os << "DistillabilityResult: { is_distillable: " << result.is_distillable
      << ", is_last: " << result.is_last

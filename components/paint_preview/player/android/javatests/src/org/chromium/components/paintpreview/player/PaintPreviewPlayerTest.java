@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -93,6 +94,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1065441")
     public void linkClickTest() {
         initPlayerManager();
         final View playerHostView = mPlayerManager.getView();

@@ -36,8 +36,7 @@ class HTMLParserMetricsTest : public testing::Test {
   frame_test_helpers::WebViewHelper helper_;
 };
 
-// TODO(crbug/1065326): This test is flaky across platforms.
-TEST_F(HTMLParserMetricsTest, DISABLED_ReportSingleChunk) {
+TEST_F(HTMLParserMetricsTest, ReportSingleChunk) {
   // Although the tests use a mock clock, the metrics recorder checks if the
   // system has a high resolution clock before recording results. As a result,
   // the tests will fail if the system does not have a high resolution clock.
@@ -83,16 +82,11 @@ TEST_F(HTMLParserMetricsTest, DISABLED_ReportSingleChunk) {
   EXPECT_EQ(parsing_time_min_buckets.size(), 1u);
   EXPECT_EQ(parsing_time_total_buckets.size(), 1u);
   EXPECT_GT(parsing_time_max_buckets[0].min, 0);
-  // Parsing time max has more buckets, with more buckets closely spaced at the
-  // low end of time. So the bucket number should be higher than that for
-  // the min value.
-  EXPECT_GT(parsing_time_max_buckets[0].min, parsing_time_min_buckets[0].min);
-  // Can't compare total buckets with max/min because different histogram
-  // max values mean different bucket widths.
+  EXPECT_GT(parsing_time_min_buckets[0].min, 0);
+  EXPECT_GT(parsing_time_total_buckets[0].min, 0);
 }
 
-// TODO(crbug/1065326): This test is flaky across platforms.
-TEST_F(HTMLParserMetricsTest, DISABLED_HistogramReportsTwoChunks) {
+TEST_F(HTMLParserMetricsTest, HistogramReportsTwoChunks) {
   // Although the tests use a mock clock, the metrics recorder checks if the
   // system has a high resolution clock before recording results. As a result,
   // the tests will fail if the system does not have a high resolution clock.
@@ -140,8 +134,7 @@ TEST_F(HTMLParserMetricsTest, DISABLED_HistogramReportsTwoChunks) {
   histogram_tester.ExpectUniqueSample("Blink.HTMLParsing.TokensParsedAverage",
                                       55, 1);
 
-  // For parse times, expect that the times have moved from the default and
-  // the max is greater than the min for parse times.
+  // For parse times, expect that the times have moved from the default.
   std::vector<base::Bucket> parsing_time_max_buckets =
       histogram_tester.GetAllSamples("Blink.HTMLParsing.ParsingTimeMax");
   std::vector<base::Bucket> parsing_time_min_buckets =
@@ -152,10 +145,11 @@ TEST_F(HTMLParserMetricsTest, DISABLED_HistogramReportsTwoChunks) {
   EXPECT_EQ(parsing_time_min_buckets.size(), 1u);
   EXPECT_EQ(parsing_time_total_buckets.size(), 1u);
   EXPECT_GT(parsing_time_max_buckets[0].min, 0);
-  EXPECT_GT(parsing_time_max_buckets[0].min, parsing_time_min_buckets[0].min);
-  EXPECT_LE(parsing_time_max_buckets[0].min, parsing_time_total_buckets[0].min);
+  EXPECT_GT(parsing_time_min_buckets[0].min, 0);
+  EXPECT_GT(parsing_time_total_buckets[0].min, 0);
 
-  // For yields, the values should be the same because there was only one yield.
+  // For yields, the values should be the same because there was only one yield,
+  // but due to different histogram sizes we can't directly compare them.
   std::vector<base::Bucket> yield_time_max_buckets =
       histogram_tester.GetAllSamples("Blink.HTMLParsing.YieldedTimeMax");
   std::vector<base::Bucket> yield_time_min_buckets =
@@ -166,8 +160,8 @@ TEST_F(HTMLParserMetricsTest, DISABLED_HistogramReportsTwoChunks) {
   EXPECT_EQ(yield_time_min_buckets.size(), 1u);
   EXPECT_EQ(yield_time_average_buckets.size(), 1u);
   EXPECT_GT(yield_time_max_buckets[0].min, 0);
-  EXPECT_GT(yield_time_max_buckets[0].min, yield_time_min_buckets[0].min);
-  EXPECT_GT(yield_time_max_buckets[0].min, yield_time_average_buckets[0].min);
+  EXPECT_GT(yield_time_min_buckets[0].min, 0);
+  EXPECT_GT(yield_time_average_buckets[0].min, 0);
 }
 
 TEST_F(HTMLParserMetricsTest, UkmStoresValuesCorrectly) {

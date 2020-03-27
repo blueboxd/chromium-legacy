@@ -175,22 +175,8 @@ views::View* AssistantAshTestBase::root_view() {
   return result;
 }
 
-void AssistantAshTestBase::MockAssistantInteractionWithResponse(
-    const std::string& response_text) {
-  MockAssistantInteractionWithQueryAndResponse(/*query=*/"input text",
-                                               response_text);
-}
-
-void AssistantAshTestBase::MockAssistantInteractionWithQueryAndResponse(
-    const std::string& query,
-    const std::string& response_text) {
-  SendQueryThroughTextField(query);
-  auto response = std::make_unique<InteractionResponse>();
-  response->AddTextResponse(response_text)
-      ->AddResolution(InteractionResponse::Resolution::kNormal);
-  assistant_service()->SetInteractionResponse(std::move(response));
-
-  base::RunLoop().RunUntilIdle();
+MockedAssistantInteraction AssistantAshTestBase::MockTextInteraction() {
+  return MockedAssistantInteraction(test_api_.get(), assistant_service());
 }
 
 void AssistantAshTestBase::SendQueryThroughTextField(const std::string& query) {

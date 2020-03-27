@@ -29,6 +29,7 @@ ALIGNMENT_ORDER = [
     'ScaleTransformOperation',
     'RotateTransformOperation',
     'TranslateTransformOperation',
+    'base::Optional<IntSize>',
     'double',
     # Aligns like a pointer (can be 32 or 64 bits)
     'NamedGridLinesMap',

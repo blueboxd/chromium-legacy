@@ -15,6 +15,7 @@ animationIterationCount
 animationName
 animationPlayState
 animationTimingFunction
+aspectRatio
 backdropFilter
 backfaceVisibility
 background

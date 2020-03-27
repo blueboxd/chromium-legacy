@@ -63,3 +63,12 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_distillability_observer.cc",
+    "test_distillability_observer.h",
+  ]
+  deps = [ ":browser" ]
+}

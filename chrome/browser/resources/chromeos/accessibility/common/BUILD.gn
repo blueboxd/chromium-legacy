@@ -10,7 +10,7 @@ import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
-assert(is_chromeos)
+assert(is_chromeos || is_chromecast)
 
 accessibility_common_out_dir =
     "$root_out_dir/resources/chromeos/accessibility/common"
@@ -111,12 +111,14 @@ js2gtest("accessibility_tests") {
     "../chromevox/testing/mock_feedback.js",
   ]
 
-  # The test base classes generate C++ code with these deps.
-  deps = [
-    "//ash",
-    "//base",
-    "//chrome/browser/chromeos",
-    "//chrome/common",
-  ]
+  if (is_chromeos) {
+    # The test base classes generate C++ code with these deps.
+    deps = [
+      "//ash",
+      "//base",
+      "//chrome/browser/chromeos",
+      "//chrome/common",
+    ]
+  }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }

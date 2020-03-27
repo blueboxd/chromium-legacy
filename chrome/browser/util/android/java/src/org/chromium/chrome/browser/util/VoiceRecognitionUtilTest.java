@@ -20,7 +20,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class VoiceRecognitionUtilTest {
 
     @After
     public void tearDown() {
-        AccountManagerFacade.resetAccountManagerFacadeForTests();
+        AccountManagerFacadeProvider.resetAccountManagerFacadeForTests();
     }
 
     private static class IntentTestPackageManager extends MockPackageManager {

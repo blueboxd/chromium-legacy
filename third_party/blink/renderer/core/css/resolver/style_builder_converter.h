@@ -273,6 +273,9 @@ class StyleBuilderConverter {
 
   static LengthSize ConvertIntrinsicSize(StyleResolverState&, const CSSValue&);
 
+  static base::Optional<IntSize> ConvertAspectRatio(StyleResolverState&,
+                                                    const CSSValue&);
+
   static bool ConvertInternalEmptyLineHeight(StyleResolverState& state,
                                              const CSSValue& value);
 

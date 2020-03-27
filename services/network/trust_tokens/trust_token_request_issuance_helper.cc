@@ -87,13 +87,7 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
     return;
   }
 
-  int batch_size = commitment_result->batch_size
-                       ? std::min(*commitment_result->batch_size,
-                                  kMaximumTrustTokenIssuanceBatchSize)
-                       : kDefaultTrustTokenIssuanceBatchSize;
-  token_store_->SetBatchSize(issuer_, batch_size);
-
-  std::vector<TrustTokenKeyCommitment> commitments_to_store;
+  std::vector<TrustTokenKeyCommitment> obtained_commitments;
 
   for (TrustTokenKeyCommitmentResult::Key& key : commitment_result->keys) {
     if (!cryptographer_->AddKey(key.body)) {
@@ -105,11 +99,15 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
     TrustTokenKeyCommitment to_store;
     to_store.set_key(std::move(key.body));
     to_store.set_expiry(internal::TimeToString(key.expiry));
-    commitments_to_store.emplace_back(std::move(to_store));
+    obtained_commitments.emplace_back(std::move(to_store));
   }
 
-  token_store_->SetKeyCommitmentsAndPruneStaleState(
-      issuer_, std::move(commitments_to_store));
+  token_store_->PruneStaleIssuerState(issuer_, std::move(obtained_commitments));
+
+  int batch_size = commitment_result->batch_size
+                       ? std::min(*commitment_result->batch_size,
+                                  kMaximumTrustTokenIssuanceBatchSize)
+                       : kDefaultTrustTokenIssuanceBatchSize;
 
   base::Optional<std::string> maybe_blinded_tokens =
       cryptographer_->BeginIssuance(batch_size);
@@ -160,12 +158,8 @@ mojom::TrustTokenOperationStatus TrustTokenRequestIssuanceHelper::Finalize(
     return mojom::TrustTokenOperationStatus::kBadResponse;
   }
 
-  if (!token_store_->AddTokens(issuer_, base::make_span(maybe_tokens->tokens),
-                               maybe_tokens->body_of_verifying_key)) {
-    // This can fail when, during the course of the issuance, the issuer's keys
-    // were updated, making the tokens dead on arrival.
-    return mojom::TrustTokenOperationStatus::kBadResponse;
-  }
+  token_store_->AddTokens(issuer_, base::make_span(maybe_tokens->tokens),
+                          maybe_tokens->body_of_verifying_key);
 
   return mojom::TrustTokenOperationStatus::kOk;
 }

@@ -18,6 +18,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
@@ -39,7 +40,7 @@ public class SigninHelperTest {
 
     @After
     public void tearDown() {
-        AccountManagerFacade.resetAccountManagerFacadeForTests();
+        AccountManagerFacadeProvider.resetAccountManagerFacadeForTests();
     }
 
     @Test

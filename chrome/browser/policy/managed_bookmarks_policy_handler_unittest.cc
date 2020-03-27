@@ -16,11 +16,6 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
-#include "extensions/buildflags/buildflags.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/value_builder.h"
-#endif
 
 namespace policy {
 
@@ -33,7 +28,6 @@ class ManagedBookmarksPolicyHandlerTest
   }
 };
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, nullptr));
 
@@ -94,53 +88,45 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
   ASSERT_TRUE(folder_value->GetAsString(&folder_name));
   EXPECT_EQ("abc 123", folder_name);
 
-  std::unique_ptr<base::Value> expected(
-      extensions::ListBuilder()
-          .Append(extensions::DictionaryBuilder()
-                      .Set("name", "Google")
-                      .Set("url", "http://google.com/")
-                      .Build())
-          .Append(extensions::DictionaryBuilder()
-                      .Set("name", "Empty Folder")
-                      .Set("children", extensions::ListBuilder().Build())
-                      .Build())
-          .Append(
-              extensions::DictionaryBuilder()
-                  .Set("name", "Big Folder")
-                  .Set("children",
-                       extensions::ListBuilder()
-                           .Append(extensions::DictionaryBuilder()
-                                       .Set("name", "Youtube")
-                                       .Set("url", "http://youtube.com/")
-                                       .Build())
-                           .Append(extensions::DictionaryBuilder()
-                                       .Set("name", "Chromium")
-                                       .Set("url", "http://chromium.org/")
-                                       .Build())
-                           .Append(
-                               extensions::DictionaryBuilder()
-                                   .Set("name", "More Stuff")
-                                   .Set("children",
-                                        extensions::ListBuilder()
-                                            .Append(
-                                                extensions::DictionaryBuilder()
-                                                    .Set("name", "Bugs")
-                                                    .Set("url",
-                                                         "http://"
-                                                         "crbug."
-                                                         "com"
-                                                         "/")
-                                                    .Build())
-                                            .Build())
-                                   .Build())
-                           .Build())
-                  .Build())
-          .Build());
-  EXPECT_TRUE(pref_value->Equals(expected.get()));
+  // Note the protocols and ending slashes added to urls, which were not in the
+  // value set earlier.
+  base::Optional<base::Value> expected = base::JSONReader::Read(R"(
+    [
+      {
+        "name": "Google",
+        "url": "http://google.com/"
+      },
+      {
+        "name": "Empty Folder",
+        "children": []
+      },
+      {
+        "name": "Big Folder",
+        "children": [
+          {
+            "name": "Youtube",
+            "url": "http://youtube.com/"
+          },
+          {
+            "name": "Chromium",
+            "url": "http://chromium.org/"
+          },
+          {
+            "name": "More Stuff",
+            "children": [
+              {
+                "name": "Bugs",
+                "url": "http://crbug.com/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  )");
+  ASSERT_EQ(expected, *pref_value);
 }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
   EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, nullptr));
 
@@ -169,16 +155,18 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
   ASSERT_TRUE(folder_value->GetAsString(&folder_name));
   EXPECT_EQ("", folder_name);
 
-  std::unique_ptr<base::Value> expected(
-      extensions::ListBuilder()
-          .Append(extensions::DictionaryBuilder()
-                      .Set("name", "Google")
-                      .Set("url", "http://google.com/")
-                      .Build())
-          .Build());
-  EXPECT_TRUE(pref_value->Equals(expected.get()));
+  // Note the protocol and ending slash added to url, which was not in the value
+  // set earlier.
+  base::Optional<base::Value> expected = base::JSONReader::Read(R"(
+    [
+      {
+        "name": "Google",
+        "url": "http://google.com/"
+      }
+    ]
+  )");
+  ASSERT_EQ(expected, *pref_value);
 }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
   PolicyMap policy;
@@ -197,7 +185,6 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
   EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, nullptr));
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
   PolicyMap policy;
   policy.Set(
@@ -217,18 +204,19 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
-  std::unique_ptr<base::Value> expected(
-      extensions::ListBuilder()
-          .Append(extensions::DictionaryBuilder()
-                      .Set("name", "Google")
-                      .Set("url", "http://google.com/")
-                      .Build())
-          .Build());
-  EXPECT_TRUE(pref_value->Equals(expected.get()));
+  // Note the protocol and ending slash added to url, which was not in the value
+  // set earlier.
+  base::Optional<base::Value> expected = base::JSONReader::Read(R"(
+    [
+      {
+        "name": "Google",
+        "url": "http://google.com/"
+      }
+    ]
+  )");
+  ASSERT_EQ(expected, *pref_value);
 }
-#endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
   PolicyMap policy;
   policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -260,6 +248,5 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_FALSE(pref_value);
 }
-#endif
 
 }  // namespace policy

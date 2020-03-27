@@ -14,7 +14,7 @@ jumbo_source_set("clients") {
 
     "//content/renderer:*",
 
-    # TODO(xhwang): Only allow //media/mojo/services:media_service_unittests
+    # TODO(xhwang): Only allow //media/mojo/services:unit_tests
     "//media/mojo/services:*",
 
     "//media/mojo:test_support",

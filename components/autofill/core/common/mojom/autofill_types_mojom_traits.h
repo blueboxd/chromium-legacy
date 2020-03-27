@@ -153,6 +153,10 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.label_source;
   }
 
+  static gfx::RectF bounds(const autofill::FormFieldData& r) {
+    return r.bounds;
+  }
+
   static bool Read(autofill::mojom::FormFieldDataDataView data,
                    autofill::FormFieldData* out);
 };

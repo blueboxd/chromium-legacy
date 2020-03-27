@@ -1703,6 +1703,7 @@ Pretende pará-lo?</translation>
 <translation id="3264544094376351444">Tipo de letra Sans-Serif</translation>
 <translation id="3264582393905923483">Contexto</translation>
 <translation id="3265459715026181080">Fechar janela</translation>
+<translation id="3266274118485960573">A verificação de segurança está a ser executada.</translation>
 <translation id="3267726687589094446">Continuar a permitir transferências automáticas de vários ficheiros</translation>
 <translation id="3268451620468152448">Abrir Separadores</translation>
 <translation id="3269069891205016797">As suas informações serão removidas do dispositivo quando terminar sessão.</translation>
@@ -1808,6 +1809,7 @@ Pretende pará-lo?</translation>
 <translation id="3412265149091626468">Passar para a selecção</translation>
 <translation id="3413122095806433232">Emissores de AC: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Tamanho:</translation>
+<translation id="3416468988018290825">Mostrar sempre URLs completos</translation>
 <translation id="3420501302812554910">É necessário repor a chave de segurança interna</translation>
 <translation id="3421387094817716717">Chave pública curva elíptica</translation>
 <translation id="3422291238483866753">Perguntar quando um site pretender criar um mapa 3D do ambiente à sua volta ou monitorizar a posição da câmara (recomendado)</translation>
@@ -4165,6 +4167,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6586451623538375658">Trocar botão principal do rato</translation>
 <translation id="6586604979641883411">É necessário, pelo menos, <ph name="REQUIRED_SPACE" /> de espaço livre no disco para atualizar o Linux. Liberte algum espaço no dispositivo e tente novamente.</translation>
 <translation id="6588043302623806746">Utilizar o DNS seguro</translation>
+<translation id="659005207229852190">A verificação de segurança foi concluída.</translation>
 <translation id="6590458744723262880">Mudar o nome da pasta</translation>
 <translation id="6592267180249644460">Registo de WebRTC capturado <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">A sua impressão digital foi capturada.</translation>
@@ -5424,6 +5427,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8249672078237421304">Sugerir a tradução de páginas que não estejam num idioma que o utilizador saiba ler</translation>
 <translation id="8251441930213048644">Atualizar agora</translation>
 <translation id="8251578425305135684">Miniatura removida.</translation>
+<translation id="825238165904109940">Mostrar sempre URLs completos</translation>
 <translation id="8252569384384439529">A carregar…</translation>
 <translation id="8253198102038551905">Clique em "+" para aceder às propriedades de rede</translation>
 <translation id="8254954272268479918">Encerrar o Linux (Beta)</translation>

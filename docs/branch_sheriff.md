@@ -39,6 +39,12 @@ heads. You can do so by running
 
 > This only needs to be done once, though running it more than once won't hurt.
 
+You may also need to run:
+
+```
+  src $ git fetch
+```
+
 Once you've done that, you'll be able to check out branches:
 
 ```

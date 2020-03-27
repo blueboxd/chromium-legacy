@@ -78,11 +78,10 @@ void TrimD3DResources() {
 }
 #endif
 
-std::unique_ptr<base::trace_event::TracedValue>
-FormatAllocationSourcesForTracing(
+void FormatAllocationSourcesForTracing(
+    base::trace_event::TracedValue* dict,
     base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>&
         allocation_sources) {
-  auto dict = std::make_unique<base::trace_event::TracedValue>();
   dict->SetInteger("UNKNOWN",
                    allocation_sources[GpuPeakMemoryAllocationSource::UNKNOWN]);
   dict->SetInteger(
@@ -96,7 +95,6 @@ FormatAllocationSourcesForTracing(
       allocation_sources[GpuPeakMemoryAllocationSource::SHARED_IMAGE_STUB]);
   dict->SetInteger("SKIA",
                    allocation_sources[GpuPeakMemoryAllocationSource::SKIA]);
-  return dict;
 }
 
 }  // namespace
@@ -125,21 +123,18 @@ void GpuChannelManager::GpuPeakMemoryMonitor::StartGpuMemoryTracking(
   sequence_trackers_.emplace(
       sequence_num,
       SequenceTracker(current_memory_, current_memory_per_source_));
-
-  auto dict = FormatAllocationSourcesForTracing(current_memory_per_source_);
   TRACE_EVENT_ASYNC_BEGIN2("gpu", "PeakMemoryTracking", sequence_num, "start",
-                           current_memory_, "start_sources", std::move(dict));
+                           current_memory_, "start_sources",
+                           StartTrackingTracedValue());
 }
 
 void GpuChannelManager::GpuPeakMemoryMonitor::StopGpuMemoryTracking(
     uint32_t sequence_num) {
   auto sequence = sequence_trackers_.find(sequence_num);
   if (sequence != sequence_trackers_.end()) {
-    auto dict = FormatAllocationSourcesForTracing(
-        sequence->second.peak_memory_per_source_);
     TRACE_EVENT_ASYNC_END2("gpu", "PeakMemoryTracking", sequence_num, "peak",
                            sequence->second.total_memory_, "end_sources",
-                           std::move(dict));
+                           StopTrackingTracedValue(sequence->second));
     sequence_trackers_.erase(sequence);
   }
 }
@@ -157,7 +152,9 @@ GpuChannelManager::GpuPeakMemoryMonitor::SequenceTracker::SequenceTracker(
     uint64_t current_memory,
     base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
         current_memory_per_source)
-    : total_memory_(current_memory),
+    : initial_memory_(current_memory),
+      total_memory_(current_memory),
+      initial_memory_per_source_(current_memory_per_source),
       peak_memory_per_source_(std::move(current_memory_per_source)) {}
 
 GpuChannelManager::GpuPeakMemoryMonitor::SequenceTracker::SequenceTracker(
@@ -165,6 +162,52 @@ GpuChannelManager::GpuPeakMemoryMonitor::SequenceTracker::SequenceTracker(
 
 GpuChannelManager::GpuPeakMemoryMonitor::SequenceTracker::~SequenceTracker() =
     default;
+
+std::unique_ptr<base::trace_event::TracedValue>
+GpuChannelManager::GpuPeakMemoryMonitor::StartTrackingTracedValue() {
+  auto dict = std::make_unique<base::trace_event::TracedValue>();
+  FormatAllocationSourcesForTracing(dict.get(), current_memory_per_source_);
+  return dict;
+}
+
+std::unique_ptr<base::trace_event::TracedValue>
+GpuChannelManager::GpuPeakMemoryMonitor::StopTrackingTracedValue(
+    SequenceTracker& sequence) {
+  auto dict = std::make_unique<base::trace_event::TracedValue>();
+  dict->BeginDictionary("source_totals");
+  FormatAllocationSourcesForTracing(dict.get(),
+                                    sequence.peak_memory_per_source_);
+  dict->EndDictionary();
+  dict->BeginDictionary("difference");
+  int total_diff = sequence.total_memory_ - sequence.initial_memory_;
+  dict->SetInteger("TOTAL", total_diff);
+  dict->EndDictionary();
+  dict->BeginDictionary("source_difference");
+
+  for (auto it : sequence.peak_memory_per_source_) {
+    int diff = (it.second - sequence.initial_memory_per_source_[it.first]);
+    switch (it.first) {
+      case GpuPeakMemoryAllocationSource::UNKNOWN:
+        dict->SetInteger("UNKNOWN", diff);
+        break;
+      case GpuPeakMemoryAllocationSource::COMMAND_BUFFER:
+        dict->SetInteger("COMMAND_BUFFER", diff);
+        break;
+      case GpuPeakMemoryAllocationSource::SHARED_CONTEXT_STATE:
+        dict->SetInteger("SHARED_CONTEXT_STATE", diff);
+        break;
+      case GpuPeakMemoryAllocationSource::SHARED_IMAGE_STUB:
+        dict->SetInteger("SHARED_IMAGE_STUB", diff);
+        break;
+      case GpuPeakMemoryAllocationSource::SKIA:
+        dict->SetInteger("SKIA", diff);
+        break;
+    }
+  }
+
+  dict->EndDictionary();
+  return dict;
+}
 
 void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
     CommandBufferId id,

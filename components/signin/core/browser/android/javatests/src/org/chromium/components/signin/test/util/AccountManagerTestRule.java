@@ -10,6 +10,7 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
 
 import java.lang.annotation.ElementType;
@@ -52,7 +53,7 @@ public class AccountManagerTestRule implements TestRule {
                         : FakeAccountManagerDelegate.ENABLE_BLOCK_GET_ACCOUNTS;
                 mDelegate = new FakeAccountManagerDelegate(
                         mProfileDataSourceFlag, blockGetAccountsFlag);
-                AccountManagerFacade.overrideAccountManagerFacadeForTests(mDelegate);
+                AccountManagerFacadeProvider.overrideAccountManagerFacadeForTests(mDelegate);
                 statement.evaluate();
             }
         };
@@ -64,7 +65,7 @@ public class AccountManagerTestRule implements TestRule {
      */
     public void unblockGetAccountsAndWaitForAccountsPopulated() {
         mDelegate.unblockGetAccounts();
-        AccountManagerFacade.get().tryGetGoogleAccounts();
+        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
     }
 
     public void addAccount(AccountHolder accountHolder) {

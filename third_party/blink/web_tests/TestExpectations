@@ -1960,10 +1960,8 @@ crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
 crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
-crbug.com/983788 http/tests/cookies/http-get-cookie-set-in-js.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.https.html [ Pass Timeout ]
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
-crbug.com/984467 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 ### sheriff 2018-05-28
 
@@ -4299,8 +4297,6 @@ crbug.com/990331 virtual/audio-service/http/tests/media/media-source/mediasource
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
 
-crbug.com/663585 editing/pasteboard/data-transfer-items-image-png.html [ Pass Failure ]
-
 crbug.com/652536 fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/664816 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
 
@@ -5511,7 +5507,6 @@ crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Pass Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-overflow.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-display.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-image.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Pass Failure ]
@@ -6531,13 +6526,6 @@ crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-0
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-06.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-08.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-09.html [ Pass Failure ]
-
-# Sheriff 2020-02-10
-
-crbug.com/1050559 [ Linux ] external/wpt/permissions-revoke/idlharness.any.html [ Pass Failure ]
-crbug.com/1050559 [ Linux ] external/wpt/shape-detection/idlharness.https.any.html [ Pass Failure ]
-crbug.com/1050559 [ Linux ] external/wpt/video-raf/idlharness.window.html [ Pass Failure ]
-crbug.com/1050559 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.any.worker.html?1-1000 [ Pass Failure ]
 
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/elements/styles-1/edit-value-url-with-color.js [ Skip ]

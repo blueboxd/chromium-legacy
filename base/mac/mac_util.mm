@@ -29,54 +29,6 @@ namespace mac {
 
 namespace {
 
-// The current count of outstanding requests for full screen mode from browser
-// windows, plugins, etc.
-int g_full_screen_requests[kNumFullScreenModes] = { 0 };
-
-// Sets the appropriate application presentation option based on the current
-// full screen requests.  Since only one presentation option can be active at a
-// given time, full screen requests are ordered by priority.  If there are no
-// outstanding full screen requests, reverts to normal mode.  If the correct
-// presentation option is already set, does nothing.
-void SetUIMode() {
-  NSApplicationPresentationOptions current_options =
-      [NSApp presentationOptions];
-
-  // Determine which mode should be active, based on which requests are
-  // currently outstanding.  More permissive requests take precedence.  For
-  // example, plugins request |kFullScreenModeAutoHideAll|, while browser
-  // windows request |kFullScreenModeHideDock| when the fullscreen overlay is
-  // down.  Precedence goes to plugins in this case, so AutoHideAll wins over
-  // HideDock.
-  NSApplicationPresentationOptions desired_options =
-      NSApplicationPresentationDefault;
-  if (g_full_screen_requests[kFullScreenModeAutoHideAll] > 0) {
-    desired_options = NSApplicationPresentationHideDock |
-                      NSApplicationPresentationAutoHideMenuBar;
-  } else if (g_full_screen_requests[kFullScreenModeHideDock] > 0) {
-    desired_options = NSApplicationPresentationHideDock;
-  } else if (g_full_screen_requests[kFullScreenModeHideAll] > 0) {
-    desired_options = NSApplicationPresentationHideDock |
-                      NSApplicationPresentationHideMenuBar;
-  }
-
-  // Mac OS X bug: if the window is fullscreened (Lion-style) and
-  // NSApplicationPresentationDefault is requested, the result is that the menu
-  // bar doesn't auto-hide. rdar://13576498 http://www.openradar.me/13576498
-  //
-  // As a workaround, in that case, explicitly set the presentation options to
-  // the ones that are set by the system as it fullscreens a window.
-  if (desired_options == NSApplicationPresentationDefault &&
-      current_options & NSApplicationPresentationFullScreen) {
-    desired_options |= NSApplicationPresentationFullScreen |
-                       NSApplicationPresentationAutoHideMenuBar |
-                       NSApplicationPresentationAutoHideDock;
-  }
-
-  if (current_options != desired_options)
-    [NSApp setPresentationOptions:desired_options];
-}
-
 // Looks into Shared File Lists corresponding to Login Items for the item
 // representing the current application.  If such an item is found, returns a
 // retained reference to it. Caller is responsible for releasing the reference.
@@ -164,51 +116,6 @@ CGColorSpaceRef GetSystemColorSpace() {
   }
 
   return g_system_color_space;
-}
-
-// Add a request for full screen mode.  Must be called on the main thread.
-void RequestFullScreen(FullScreenMode mode) {
-  DCHECK_LT(mode, kNumFullScreenModes);
-  if (mode >= kNumFullScreenModes)
-    return;
-
-  DCHECK_GE(g_full_screen_requests[mode], 0);
-  if (mode < 0)
-    return;
-
-  g_full_screen_requests[mode] = std::max(g_full_screen_requests[mode] + 1, 1);
-  SetUIMode();
-}
-
-// Release a request for full screen mode.  Must be called on the main thread.
-void ReleaseFullScreen(FullScreenMode mode) {
-  DCHECK_LT(mode, kNumFullScreenModes);
-  if (mode >= kNumFullScreenModes)
-    return;
-
-  DCHECK_GE(g_full_screen_requests[mode], 0);
-  if (mode < 0)
-    return;
-
-  g_full_screen_requests[mode] = std::max(g_full_screen_requests[mode] - 1, 0);
-  SetUIMode();
-}
-
-// Switches full screen modes.  Releases a request for |from_mode| and adds a
-// new request for |to_mode|.  Must be called on the main thread.
-void SwitchFullScreenModes(FullScreenMode from_mode, FullScreenMode to_mode) {
-  DCHECK_LT(from_mode, kNumFullScreenModes);
-  DCHECK_LT(to_mode, kNumFullScreenModes);
-  if (from_mode >= kNumFullScreenModes || to_mode >= kNumFullScreenModes)
-    return;
-
-  DCHECK_GT(g_full_screen_requests[from_mode], 0);
-  DCHECK_GE(g_full_screen_requests[to_mode], 0);
-  g_full_screen_requests[from_mode] =
-      std::max(g_full_screen_requests[from_mode] - 1, 0);
-  g_full_screen_requests[to_mode] =
-      std::max(g_full_screen_requests[to_mode] + 1, 1);
-  SetUIMode();
 }
 
 bool GetFileBackupExclusion(const FilePath& file_path) {

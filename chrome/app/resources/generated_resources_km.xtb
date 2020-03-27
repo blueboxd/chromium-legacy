@@ -1703,6 +1703,7 @@
 <translation id="3264544094376351444">ពុម្ពអក្សរ Sans-serif</translation>
 <translation id="3264582393905923483">បរិបទ</translation>
 <translation id="3265459715026181080">បិទផ្ទាំង</translation>
+<translation id="3266274118485960573">ការពិនិត្យ​សុវត្ថិភាព​កំពុងដំណើរការ​។</translation>
 <translation id="3267726687589094446">បន្តអនុញ្ញាតការទាញយកឯកសារច្រើនដោយស្វ័យប្រវត្តិ</translation>
 <translation id="3268451620468152448">បើកផ្ទាំង</translation>
 <translation id="3269069891205016797">ព័ត៌មានរបស់អ្នកនឹងត្រូវបានលុបចេញពីឧបករណ៍នេះ នៅពេលដែលអ្នកចេញពីគណនី។</translation>
@@ -1808,6 +1809,7 @@
 <translation id="3412265149091626468">លោតទៅការជ្រើសរើស</translation>
 <translation id="3413122095806433232">អ្នកចេញផ្សាយ CA៖ <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">ទំហំ៖</translation>
+<translation id="3416468988018290825">បង្ហាញ URL ពេញលេញ​ជានិច្ច</translation>
 <translation id="3420501302812554910">តម្រូវឱ្យ​កំណត់​សោសុវត្ថិភាព​ផ្នែកខាងក្នុងឡើងវិញ</translation>
 <translation id="3421387094817716717">សោសាធារណ: Elliptic Curve</translation>
 <translation id="3422291238483866753">សួរ​នៅពេល​គេហទំព័រ​ចង់បង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានជុំវិញរបស់អ្នក ឬតាមដានទីតាំងកាមេរ៉ា (បានណែនាំ)</translation>
@@ -4165,6 +4167,7 @@
 <translation id="6586451623538375658">អូសប៊ូតុងកណ្តុរបឋម</translation>
 <translation id="6586604979641883411">តម្រូវឱ្យ​មានទំហំផ្ទុកថាស​ទំនេរ​យ៉ាងហោចណាស់ <ph name="REQUIRED_SPACE" /> ដើម្បី​ដំឡើងកំណែ Linux។ សូមបង្កើន​ទំហំផ្ទុក​មួយចំនួន​នៅលើ​ឧបករណ៍​របស់អ្នក រួចព្យាយាម​ម្ដងទៀត។</translation>
 <translation id="6588043302623806746">ប្រើ DNS សុវត្ថិភាព</translation>
+<translation id="659005207229852190">ការពិនិត្យ​សុវត្ថិភាព​បានបញ្ចប់​ហើយ។</translation>
 <translation id="6590458744723262880">ប្ដូរ​ឈ្មោះ​ថត</translation>
 <translation id="6592267180249644460">កំណត់ត្រា WebRTC បានចាប់យក <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">បានថត​ស្នាមម្រាមដៃ​របស់អ្នក​ហើយ</translation>
@@ -5424,6 +5427,7 @@
 <translation id="8249672078237421304">ផ្តល់ជូន​ការបកប្រែ​ទំព័រ​ដែល​មិនមែន​ជាភាសា​ដែល​អ្នក​អាន</translation>
 <translation id="8251441930213048644">ផ្ទុកឡើងវិញ​ឥឡូវនេះ</translation>
 <translation id="8251578425305135684">រូបតំណាងតូចត្រូវបានដកចេញ។</translation>
+<translation id="825238165904109940">បង្ហាញ URL ពេញលេញ​ជានិច្ច</translation>
 <translation id="8252569384384439529">កំពុង​បង្ហោះ...</translation>
 <translation id="8253198102038551905">ចុច '+' ដើម្បីទទួលយកលក្ខណៈសម្បត្តិបណ្តាញ</translation>
 <translation id="8254954272268479918">បិទ Linux (បេតា)</translation>

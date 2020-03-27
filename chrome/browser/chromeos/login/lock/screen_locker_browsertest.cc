@@ -220,8 +220,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
                             true /*disable_lock_screen_media*/));
 
   // Try to authenticate with password.
-  tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
-  base::RunLoop().RunUntilIdle();
+  tester.ForceSubmitPassword(user_manager::StubAccountId(), kPassword);
   EXPECT_TRUE(tester.IsLocked());
 
   // Re-enable authentication for user.

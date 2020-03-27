@@ -1704,6 +1704,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3264544094376351444">Polices sans empattement</translation>
 <translation id="3264582393905923483">Contexte</translation>
 <translation id="3265459715026181080">Fermer la fenêtre</translation>
+<translation id="3266274118485960573">La vérification de sécurité est en cours d'exécution.</translation>
 <translation id="3267726687589094446">Continuer à autoriser les téléchargements automatiques de plusieurs fichiers</translation>
 <translation id="3268451620468152448">Onglets ouverts</translation>
 <translation id="3269069891205016797">Vos données seront supprimées de l'appareil lors de la déconnexion.</translation>
@@ -1809,6 +1810,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3412265149091626468">Aller à la sélection</translation>
 <translation id="3413122095806433232">Émetteurs de l'autorité de certification : <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Taille :</translation>
+<translation id="3416468988018290825">Toujours afficher les URL en entier</translation>
 <translation id="3420501302812554910">La clé de sécurité interne doit être réinitialisée</translation>
 <translation id="3421387094817716717">Clé publique à courbe elliptique</translation>
 <translation id="3422291238483866753">Demander une autorisation lorsqu'un site veut créer une carte 3D de votre environnement ou faire le suivi de la position de l'appareil photo (recommandé)</translation>
@@ -4165,6 +4167,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6586451623538375658">Inverser les boutons de la souris</translation>
 <translation id="6586604979641883411">Un minimum de <ph name="REQUIRED_SPACE" /> d'espace est requis pour effectuer la mise à niveau de Linux. Veuillez libérer de l'espace sur votre appareil et réessayer.</translation>
 <translation id="6588043302623806746">Utiliser un DNS sécurisé</translation>
+<translation id="659005207229852190">La vérification de sécurité est terminée.</translation>
 <translation id="6590458744723262880">Renommer le dossier</translation>
 <translation id="6592267180249644460">Date de création du journal WebRTC : <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Votre empreinte digitale a été capturée</translation>
@@ -5424,6 +5427,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8249672078237421304">Me proposer de traduire les pages qui sont écrites dans une langue que je ne sais pas lire</translation>
 <translation id="8251441930213048644">Actualiser maintenant</translation>
 <translation id="8251578425305135684">Miniature supprimée.</translation>
+<translation id="825238165904109940">Toujours afficher les URL en entier</translation>
 <translation id="8252569384384439529">Téléversement en cours…</translation>
 <translation id="8253198102038551905">Cliquez sur « + » pour afficher les propriétés du réseau</translation>
 <translation id="8254954272268479918">Arrêter Linux (bêta)</translation>

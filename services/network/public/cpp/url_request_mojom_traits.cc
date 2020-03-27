@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
@@ -187,9 +188,17 @@ bool StructTraits<
       !data.ReadThrottlingProfileId(&out->throttling_profile_id) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
       !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
-      !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token) ||
-      !data.ReadTrustTokenParams(&out->trust_token_params.as_ptr())) {
+      !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token)) {
+    // Note that data.ReadTrustTokenParams is temporarily handled below.
     return false;
+  }
+
+  // Temporarily separated from the remainder of the deserialization in order to
+  // help debug crbug.com/1062637.
+  if (!data.ReadTrustTokenParams(&out->trust_token_params.as_ptr())) {
+    // We don't return false here to avoid duplicate reports.
+    out->trust_token_params = base::nullopt;
+    base::debug::DumpWithoutCrashing();
   }
 
   out->attach_same_site_cookies = data.attach_same_site_cookies();

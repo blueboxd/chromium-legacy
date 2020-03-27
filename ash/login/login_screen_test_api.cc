@@ -18,6 +18,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 
@@ -173,24 +174,25 @@ bool LoginScreenTestApi::IsParentAccessButtonShown() {
 
 // static
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
-                                        const std::string& password) {
+                                        const std::string& password,
+                                        bool check_if_submittable) {
   // It'd be better to generate keyevents dynamically and dispatch them instead
   // of reaching into the views structure, but at the time of writing I could
   // not find a good way to do this. If you know of a way feel free to change
   // this code.
+  ASSERT_TRUE(FocusUser(account_id));
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi lock_contents_test(
       lock_screen_test.contents_view());
-  LoginAuthUserView::TestApi auth_test(
-      lock_contents_test.primary_big_view()->auth_user());
+  LoginBigUserView* big_user_view = lock_contents_test.FindUser(account_id);
+  ASSERT_TRUE(big_user_view);
+  ASSERT_TRUE(big_user_view->IsAuthEnabled());
+  LoginAuthUserView::TestApi auth_test(big_user_view->auth_user());
+  if (check_if_submittable)
+    ASSERT_TRUE(auth_test.HasAuthMethod(LoginAuthUserView::AUTH_PASSWORD));
   LoginPasswordView::TestApi password_test(auth_test.password_view());
-
-  // For the time being, only the primary user is supported. To support multiple
-  // users this API needs to search all user views for the associated user and
-  // potentially activate that user so it is showing its password field.
-  CHECK_EQ(account_id,
-           auth_test.user_view()->current_user().basic_user_info.account_id);
-
+  ASSERT_EQ(account_id,
+            auth_test.user_view()->current_user().basic_user_info.account_id);
   password_test.SubmitPassword(password);
 }
 
@@ -247,6 +249,29 @@ int LoginScreenTestApi::GetUsersCount() {
   return lock_contents_test.users().size();
 }
 
+// static
+bool LoginScreenTestApi::FocusUser(const AccountId& account_id) {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  LoginBigUserView* big_user_view = lock_contents_test.FindUser(account_id);
+  if (!big_user_view)
+    return false;
+  LoginAuthUserView::TestApi auth_test(big_user_view->auth_user());
+  LoginUserView::TestApi user_test(auth_test.user_view());
+  user_test.OnTap();
+  return GetFocusedUser() == account_id;
+}
+
+// static
+AccountId LoginScreenTestApi::GetFocusedUser() {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  return lock_contents_test.focused_user();
+}
+
+// static
 bool LoginScreenTestApi::RemoveUser(const AccountId& account_id) {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi lock_contents_test(
@@ -254,6 +279,7 @@ bool LoginScreenTestApi::RemoveUser(const AccountId& account_id) {
   return lock_contents_test.RemoveUser(account_id);
 }
 
+// static
 bool LoginScreenTestApi::IsOobeDialogVisible() {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi lock_contents_test(

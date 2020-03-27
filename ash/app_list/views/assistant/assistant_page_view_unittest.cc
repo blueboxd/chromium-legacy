@@ -193,7 +193,7 @@ TEST_F(AssistantPageViewTest,
        ShouldRemainAtMinimumHeightWhenDisplayingOneLiner) {
   ShowAssistantUi();
 
-  MockAssistantInteractionWithResponse("Short one-liner");
+  MockTextInteraction().WithTextResponse("Short one-liner");
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kMinHeightEmbeddedDip, main_view()->size().height());
@@ -202,7 +202,7 @@ TEST_F(AssistantPageViewTest,
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
   ShowAssistantUi();
 
-  MockAssistantInteractionWithResponse(
+  MockTextInteraction().WithTextResponse(
       "This\ntext\nhas\na\nlot\nof\nlinebreaks.");
 
   base::RunLoop().RunUntilIdle();
@@ -212,7 +212,7 @@ TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWhenWrappingTextLine) {
   ShowAssistantUi();
 
-  MockAssistantInteractionWithResponse(
+  MockTextInteraction().WithTextResponse(
       "This is a very long text without any linebreaks. "
       "This will wrap, and should cause the Assistant view to get bigger. "
       "If it doesn't, this looks really bad. This is what caused b/134963994.");
@@ -261,7 +261,7 @@ TEST_F(AssistantPageViewTest,
        ShouldNotLoseTextfieldFocusWhenDisplayingResponse) {
   ShowAssistantUi();
 
-  MockAssistantInteractionWithResponse("The response");
+  MockTextInteraction().WithTextResponse("The response");
 
   EXPECT_HAS_FOCUS(input_text_field());
 }
@@ -269,7 +269,7 @@ TEST_F(AssistantPageViewTest,
 TEST_F(AssistantPageViewTest, ShouldNotLoseTextfieldFocusWhenResizing) {
   ShowAssistantUi();
 
-  MockAssistantInteractionWithResponse(
+  MockTextInteraction().WithTextResponse(
       "This\ntext\nis\nbig\nenough\nto\ncause\nthe\nassistant\nscreen\nto\n"
       "resize.");
 
@@ -291,7 +291,7 @@ TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelWhenOpening) {
 TEST_F(AssistantPageViewTest, ShouldDismissGreetingLabelAfterQuery) {
   ShowAssistantUi();
 
-  MockAssistantInteractionWithResponse("The response");
+  MockTextInteraction().WithTextResponse("The response");
 
   EXPECT_FALSE(greeting_label()->GetVisible());
 }
@@ -300,7 +300,7 @@ TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
   ShowAssistantUi();
 
   // Cause the label to be hidden.
-  MockAssistantInteractionWithResponse("The response");
+  MockTextInteraction().WithTextResponse("The response");
   ASSERT_FALSE(greeting_label()->GetVisible());
 
   // Close and reopen the Assistant UI.
@@ -357,8 +357,8 @@ TEST_F(AssistantPageViewTest, RememberAndShowHistory) {
   ShowAssistantUiInTextMode();
   EXPECT_HAS_FOCUS(input_text_field());
 
-  MockAssistantInteractionWithQueryAndResponse("query 1", "response 1");
-  MockAssistantInteractionWithQueryAndResponse("query 2", "response 2");
+  MockTextInteraction().WithQuery("query 1").WithTextResponse("response 1");
+  MockTextInteraction().WithQuery("query 2").WithTextResponse("response 2");
 
   EXPECT_HAS_FOCUS(input_text_field());
 

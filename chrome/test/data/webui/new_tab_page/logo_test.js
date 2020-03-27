@@ -6,7 +6,7 @@ import 'chrome://new-tab-page/logo.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
+import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageLogoTest', () => {
   /**
@@ -105,5 +105,58 @@ suite('NewTabPageLogoTest', () => {
     assertNotStyle(logo.$.singleColoredLogo, 'display', 'none');
     assertStyle(logo.$.singleColoredLogo, 'background-color', 'rgb(255, 0, 0)');
     assertStyle(logo.$.multiColoredLogo, 'display', 'none');
+  });
+
+  test('receiving resize message resizes doodle', async () => {
+    // Arrange.
+    const logo = await createLogo({content: {url: {url: 'https://foo.com'}}});
+    const transitionend = eventToPromise('transitionend', logo.$.iframe);
+
+    // Act.
+    window.postMessage(
+        {
+          cmd: 'resizeDoodle',
+          duration: '500ms',
+          height: '500px',
+          width: '700px',
+        },
+        '*');
+    await transitionend;
+
+    // Assert.
+    const transitionedProperties = window.getComputedStyle(logo.$.iframe)
+                                       .getPropertyValue('transition-property')
+                                       .trim()
+                                       .split(',')
+                                       .map(s => s.trim());
+    assertStyle(logo.$.iframe, 'transition-duration', '0.5s');
+    assertTrue(transitionedProperties.includes('height'));
+    assertTrue(transitionedProperties.includes('width'));
+    assertEquals(logo.$.iframe.offsetHeight, 500);
+    assertEquals(logo.$.iframe.offsetWidth, 700);
+    assertGE(logo.offsetHeight, 500);
+    assertGE(logo.offsetWidth, 700);
+  });
+
+  test('receiving other message does not resize doodle', async () => {
+    // Arrange.
+    const logo = await createLogo({content: {url: {url: 'https://foo.com'}}});
+    const height = logo.$.iframe.offsetHeight;
+    const width = logo.$.iframe.offsetWidth;
+
+    // Act.
+    window.postMessage(
+        {
+          cmd: 'foo',
+          duration: '500ms',
+          height: '500px',
+          width: '700px',
+        },
+        '*');
+    await flushTasks();
+
+    // Assert.
+    assertEquals(logo.$.iframe.offsetHeight, height);
+    assertEquals(logo.$.iframe.offsetWidth, width);
   });
 });

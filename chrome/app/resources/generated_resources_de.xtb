@@ -1699,6 +1699,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3264544094376351444">Schriftart Sans-Serif</translation>
 <translation id="3264582393905923483">Kontext</translation>
 <translation id="3265459715026181080">Fenster schließen</translation>
+<translation id="3266274118485960573">Der Sicherheitscheck wird ausgeführt.</translation>
 <translation id="3267726687589094446">Weiterhin automatisches Herunterladen mehrerer Dateien zulassen</translation>
 <translation id="3268451620468152448">Geöffnete Tabs</translation>
 <translation id="3269069891205016797">Ihre Daten werden von dem Gerät entfernt, wenn Sie sich abmelden.</translation>
@@ -1804,6 +1805,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3412265149091626468">Auswahl anzeigen</translation>
 <translation id="3413122095806433232">Aussteller von Zertifizierungsstellen: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Größe:</translation>
+<translation id="3416468988018290825">Immer vollständige URLs anzeigen</translation>
 <translation id="3420501302812554910">Interner Sicherheitsschlüssel muss zurückgesetzt werden</translation>
 <translation id="3421387094817716717">Öffentlicher Schlüssel für elliptische Kurven</translation>
 <translation id="3422291238483866753">Nachfragen, wenn eine Website eine 3D-Karte meiner Umgebung erstellen oder die Kameraposition verfolgen möchte (empfohlen)</translation>
@@ -2748,7 +2750,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4660540330091848931">Größenanpassung läuft</translation>
 <translation id="4660838440047236328">der Grundriss Ihres Zimmers</translation>
 <translation id="4661407454952063730">App-Daten können alle Daten sein, die eine App aufgrund der Einstellungen des Entwicklers gespeichert hat, wie z. B. Kontakte, Nachrichten und Fotos.</translation>
-<translation id="4661931051827810091">Sendet anonyme URLs einiger von Ihnen besuchter Seiten, eingeschränkte Systemdaten und einige Seiteninhalte, um neue Bedrohungen für alle Nutzer im Internet erkennen und blockieren zu können.</translation>
+<translation id="4661931051827810091">Sendet URLs einiger von Ihnen besuchter Seiten, eingeschränkte Systemdaten und einige Seiteninhalte, um neue Bedrohungen für alle Nutzer im Internet erkennen und blockieren zu können.</translation>
 <translation id="4662788913887017617">Dieses Lesezeichen für mein iPhone freigeben</translation>
 <translation id="4663373278480897665">Kameranutzung zulässig</translation>
 <translation id="4664482161435122549">PKCS #12 - Fehler beim Export</translation>
@@ -4160,6 +4162,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6586451623538375658">Primäre Maustaste tauschen</translation>
 <translation id="6586604979641883411">Für das Linux-Upgrade sind mindestens <ph name="REQUIRED_SPACE" /> freier Speicherplatz erforderlich. Geben Sie etwas Speicherplatz auf Ihrem Gerät frei und versuchen Sie es noch einmal.</translation>
 <translation id="6588043302623806746">Sicheres DNS verwenden</translation>
+<translation id="659005207229852190">Der Sicherheitscheck wurde abgeschlossen.</translation>
 <translation id="6590458744723262880">Ordner umbenennen</translation>
 <translation id="6592267180249644460">WebRTC-Protokoll erfasst am <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Ihr Fingerabdruck wurde erfasst</translation>
@@ -5419,6 +5422,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8249672078237421304">Übersetzung von fremdsprachigen Seiten anbieten</translation>
 <translation id="8251441930213048644">Jetzt aktualisieren</translation>
 <translation id="8251578425305135684">Miniaturansicht wurde entfernt.</translation>
+<translation id="825238165904109940">Immer vollständige URLs anzeigen</translation>
 <translation id="8252569384384439529">Wird hochgeladen…</translation>
 <translation id="8253198102038551905">Auf "+" klicken, um die Netzwerkeigenschaften anzuzeigen</translation>
 <translation id="8254954272268479918">Linux (Beta) herunterfahren</translation>

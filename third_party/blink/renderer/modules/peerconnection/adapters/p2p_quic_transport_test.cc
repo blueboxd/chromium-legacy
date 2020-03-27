@@ -414,7 +414,7 @@ class ProofSourceStub : public quic::ProofSource {
       uint16_t signature_algorithm,
       quiche::QuicheStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override {
-    callback->Run(true, "Test signature");
+    callback->Run(true, "Test signature", nullptr);
   }
 };
 

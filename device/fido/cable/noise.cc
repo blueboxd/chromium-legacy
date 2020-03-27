@@ -30,26 +30,6 @@ std::tuple<std::array<uint8_t, 32>, std::array<uint8_t, 32>> HKDF2(
   return std::make_tuple(a, b);
 }
 
-// HKDF3 implements the functions with the same name from Noise[1],
-// specialized to the case where |num_outputs| is three.
-//
-// [1] https://www.noiseprotocol.org/noise.html#hash-functions
-std::tuple<std::array<uint8_t, 32>,
-           std::array<uint8_t, 32>,
-           std::array<uint8_t, 32>>
-HKDF3(base::span<const uint8_t, 32> ck, base::span<const uint8_t> ikm) {
-  uint8_t output[32 * 3];
-  HKDF(output, sizeof(output), EVP_sha256(), ikm.data(), ikm.size(), ck.data(),
-       ck.size(), /*info=*/nullptr, 0);
-
-  std::array<uint8_t, 32> a, b, c;
-  memcpy(a.data(), &output[0], 32);
-  memcpy(b.data(), &output[32], 32);
-  memcpy(c.data(), &output[64], 32);
-
-  return std::make_tuple(a, b, c);
-}
-
 }  // namespace
 
 namespace device {
@@ -102,10 +82,13 @@ void Noise::MixKey(base::span<const uint8_t> ikm) {
 
 void Noise::MixKeyAndHash(base::span<const uint8_t> ikm) {
   // See https://www.noiseprotocol.org/noise.html#the-symmetricstate-object
-  std::array<uint8_t, 32> temp_h, temp_k;
-  std::tie(chaining_key_, temp_h, temp_k) = HKDF3(chaining_key_, ikm);
-  MixHash(temp_h);
-  InitializeKey(temp_k);
+  uint8_t output[32 * 3];
+  HKDF(output, sizeof(output), EVP_sha256(), ikm.data(), ikm.size(),
+       chaining_key_.data(), chaining_key_.size(), /*info=*/nullptr, 0);
+  DCHECK_EQ(chaining_key_.size(), 32u);
+  memcpy(chaining_key_.data(), output, 32);
+  MixHash(base::span<const uint8_t>(&output[32], 32));
+  InitializeKey(base::span<const uint8_t, 32>(&output[64], 32));
 }
 
 std::vector<uint8_t> Noise::EncryptAndHash(

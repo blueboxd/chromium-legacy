@@ -34,6 +34,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
@@ -60,23 +61,39 @@
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
+#include "ui/views/test/views_test_helper_aura.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_state.h"
 
 namespace ash {
 
+namespace {
+std::unique_ptr<views::TestViewsDelegate> MakeDelegate() {
+  return std::make_unique<AshTestViewsDelegate>();
+}
+}  // namespace
+
 AshTestHelper::InitParams::InitParams() = default;
 AshTestHelper::InitParams::InitParams(InitParams&&) = default;
 AshTestHelper::InitParams::~InitParams() = default;
 
-AshTestHelper::AshTestHelper() = default;
+AshTestHelper::AshTestHelper() {
+  views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
+      base::BindOnce(&MakeDelegate));
+}
 
 AshTestHelper::~AshTestHelper() {
   // Ensure the next test starts with a null display::Screen.  This must be done
   // here instead of in TearDown() since some tests test access to the Screen
   // after the shell shuts down (which they use TearDown() to trigger).
   ScreenAsh::DeleteScreenForShutdown();
+
+  // This should never have a meaningful effect, since either there is no
+  // ViewsTestHelperAura instance or the instance is currently in its
+  // destructor.
+  views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
+      base::NullCallback());
 }
 
 void AshTestHelper::SetUp(InitParams init_params) {
@@ -159,7 +176,7 @@ void AshTestHelper::SetUp(InitParams init_params) {
   if (!NewWindowDelegate::GetInstance())
     new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
   if (!views::ViewsDelegate::GetInstance())
-    test_views_delegate_ = std::make_unique<AshTestViewsDelegate>();
+    test_views_delegate_ = MakeDelegate();
 
   ShellInitParams shell_init_params;
   shell_init_params.delegate = std::move(init_params.delegate);

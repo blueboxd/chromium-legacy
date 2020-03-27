@@ -13,7 +13,6 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 using testing::_;
 using testing::Eq;
@@ -39,9 +38,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
-    screen_position_client_.reset(
-        new wm::DefaultScreenPositionClient(root_window()));
-
     triple_tap_delegate_ = std::make_unique<MockMultipleTapDetectorDelegate>();
     triple_tap_detector_ = std::make_unique<MultipleTapDetector>(
         root_window(), triple_tap_delegate_.get());
@@ -57,7 +53,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
   void TearDown() override {
     ui::SetEventTickClockForTesting(nullptr);
     triple_tap_detector_.reset();
-    screen_position_client_.reset();
     aura::test::AuraTestBase::TearDown();
   }
 
@@ -96,8 +91,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
 
  private:
   ui::GestureDetector::Config gesture_detector_config_;
-
-  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   std::unique_ptr<MultipleTapDetector> triple_tap_detector_;
   std::unique_ptr<MockMultipleTapDetectorDelegate> triple_tap_delegate_;

@@ -193,7 +193,7 @@ TEST_F(VaapiTest, VaapiProfiles) {
   EXPECT_EQ(
       VaapiWrapper::IsJpegEncodeSupported(),
       base::Contains(va_info[VAProfileJPEGBaseline], VAEntrypointEncPicture));
-};
+}
 }  // namespace media
 
 int main(int argc, char** argv) {

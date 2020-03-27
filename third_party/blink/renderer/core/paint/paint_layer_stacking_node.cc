@@ -109,21 +109,47 @@ static bool ZIndexLessThan(const PaintLayer* first, const PaintLayer* second) {
          second->GetLayoutObject().StyleRef().ZIndex();
 }
 
-static void SetIfHigher(const PaintLayer*& first, const PaintLayer* second) {
+static bool SetIfHigher(const PaintLayer*& first, const PaintLayer* second) {
   if (!second)
-    return;
+    return false;
   DCHECK_GE(second->GetLayoutObject().StyleRef().ZIndex(), 0);
   // |second| appears later in the tree, so it's higher than |first| if its
   // z-index >= |first|'s z-index.
-  if (!first || !ZIndexLessThan(second, first))
+  if (!first || !ZIndexLessThan(second, first)) {
     first = second;
+    return true;
+  }
+  return false;
 }
 
-// For finding the proper z-order of reparented overlay scrollbars.
+// For finding the proper z-order of reparented overlay overflow controls.
 struct PaintLayerStackingNode::HighestLayers {
-  const PaintLayer* highest_absolute_position = nullptr;
-  const PaintLayer* highest_fixed_position = nullptr;
-  const PaintLayer* highest_in_flow_stacked = nullptr;
+  enum LayerType {
+    kAbsolutePosition,
+    kFixedPosition,
+    kInFlowStacked,
+    kLayerTypeCount
+  };
+  std::array<const PaintLayer*, kLayerTypeCount> highest_layers = {
+      nullptr, nullptr, nullptr};
+  Vector<LayerType, kLayerTypeCount> highest_layers_order;
+
+  void UpdateOrderForSubtreeHighestLayers(LayerType type,
+                                          const PaintLayer* layer) {
+    if (SetIfHigher(highest_layers[type], layer)) {
+      auto* new_end = std::remove(highest_layers_order.begin(),
+                                  highest_layers_order.end(), type);
+      if (new_end != highest_layers_order.end()) {
+        // |highest_layers_order| doesn't have duplicate elements, std::remove
+        // will find at most one element at a time. So we don't shrink it and
+        // just update the value of the |new_end|.
+        DCHECK(new_end + 1 == highest_layers_order.end());
+        *new_end = type;
+      } else {
+        highest_layers_order.push_back(type);
+      }
+    }
+  }
 
   void Update(const PaintLayer& layer) {
     const auto& style = layer.GetLayoutObject().StyleRef();
@@ -136,17 +162,18 @@ struct PaintLayerStackingNode::HighestLayers {
       return;
 
     if (style.GetPosition() == EPosition::kAbsolute)
-      SetIfHigher(highest_absolute_position, &layer);
+      UpdateOrderForSubtreeHighestLayers(kAbsolutePosition, &layer);
     else if (style.GetPosition() == EPosition::kFixed)
-      SetIfHigher(highest_fixed_position, &layer);
+      UpdateOrderForSubtreeHighestLayers(kFixedPosition, &layer);
     else
-      SetIfHigher(highest_in_flow_stacked, &layer);
+      UpdateOrderForSubtreeHighestLayers(kInFlowStacked, &layer);
   }
 
   void Merge(HighestLayers& child) {
-    SetIfHigher(highest_absolute_position, child.highest_absolute_position);
-    SetIfHigher(highest_fixed_position, child.highest_fixed_position);
-    SetIfHigher(highest_in_flow_stacked, child.highest_in_flow_stacked);
+    for (auto layer_type : child.highest_layers_order) {
+      UpdateOrderForSubtreeHighestLayers(layer_type,
+                                         child.highest_layers[layer_type]);
+    }
   }
 };
 
@@ -231,16 +258,18 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
   }
 
   if (has_overlay_overflow_controls) {
-    const PaintLayer* layer_to_paint_overlay_overflow_controls_after =
-        subtree_highest_layers->highest_in_flow_stacked;
-    if (object.CanContainFixedPositionObjects()) {
+    const PaintLayer* layer_to_paint_overlay_overflow_controls_after = nullptr;
+    for (auto layer_type : subtree_highest_layers->highest_layers_order) {
+      if (layer_type == HighestLayers::kFixedPosition &&
+          !object.CanContainFixedPositionObjects())
+        continue;
+      if (layer_type == HighestLayers::kAbsolutePosition &&
+          !object.CanContainAbsolutePositionObjects())
+        continue;
       SetIfHigher(layer_to_paint_overlay_overflow_controls_after,
-                  subtree_highest_layers->highest_fixed_position);
+                  subtree_highest_layers->highest_layers[layer_type]);
     }
-    if (object.CanContainAbsolutePositionObjects()) {
-      SetIfHigher(layer_to_paint_overlay_overflow_controls_after,
-                  subtree_highest_layers->highest_absolute_position);
-    }
+
     if (layer_to_paint_overlay_overflow_controls_after) {
       layer_to_overlay_overflow_controls_painting_after_
           .insert(layer_to_paint_overlay_overflow_controls_after, PaintLayers())

@@ -70,14 +70,16 @@ void XRWorldInformation::ProcessPlaneInformation(
   // First, process all planes that had their information updated (new planes
   // are also processed here).
   for (const auto& plane : detected_planes_data->updated_planes_data) {
+    DCHECK(plane);
+
     auto it = plane_ids_to_planes_.find(plane->id);
     if (it != plane_ids_to_planes_.end()) {
       updated_planes.insert(plane->id, it->value);
-      it->value->Update(plane, timestamp);
+      it->value->Update(*plane, timestamp);
     } else {
       updated_planes.insert(
-          plane->id,
-          MakeGarbageCollected<XRPlane>(plane->id, session_, plane, timestamp));
+          plane->id, MakeGarbageCollected<XRPlane>(plane->id, session_, *plane,
+                                                   timestamp));
     }
   }
 

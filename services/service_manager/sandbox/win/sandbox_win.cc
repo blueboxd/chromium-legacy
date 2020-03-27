@@ -625,13 +625,23 @@ sandbox::ResultCode SetupAppContainerProfile(
 
   if (sandbox_type == SandboxType::kGpu &&
       !profile->AddImpersonationCapability(L"chromeInstallFiles")) {
-    DLOG(ERROR) << "AppContainerProfile::AddImpersonationCapability() failed";
+    DLOG(ERROR) << "AppContainerProfile::AddImpersonationCapability("
+                   "chromeInstallFiles) failed";
+    return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_CAPABILITY;
+  }
+
+  if ((sandbox_type == SandboxType::kXrCompositing ||
+       sandbox_type == SandboxType::kGpu) &&
+      !profile->AddCapability(L"lpacPnpNotifications")) {
+    DLOG(ERROR)
+        << "AppContainerProfile::AddCapability(lpacPnpNotifications) failed";
     return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_CAPABILITY;
   }
 
   if (sandbox_type == SandboxType::kXrCompositing &&
       !profile->AddCapability(L"chromeInstallFiles")) {
-    DLOG(ERROR) << "AppContainerProfile::AddCapability() failed";
+    DLOG(ERROR)
+        << "AppContainerProfile::AddCapability(chromeInstallFiles) failed";
     return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_CAPABILITY;
   }
 

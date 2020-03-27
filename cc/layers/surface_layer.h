@@ -40,9 +40,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
     return stretch_content_to_fill_bounds_;
   }
 
-  void SetUnoccludedForHitTesting(bool unoccluded);
-  bool UnoccludedForHitTesting() const { return unoccluded_for_hit_testing_; }
-
   void SetSurfaceHitTestable(bool surface_hit_testable);
 
   void SetHasPointerEventsNone(bool has_pointer_events_none);
@@ -89,13 +86,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
   // being hit testable in the renderer, a hit testable surface layer may not
   // be surface hit testable (e.g., a surface layer created by video).
   bool surface_hit_testable_ = false;
-
-  // For an out-of-process iframe, indicates whether any other content in the
-  // embedding page occludes the iframe, which will necessitate a hit test in
-  // the renderer process to target input events. A `true` values means the
-  // surface is guaranteed *not* to be occluded; a `false` value means we cannot
-  // make that guarantee.
-  bool unoccluded_for_hit_testing_ = false;
 
   // Whether or not the surface can accept pointer events. It is set to true if
   // the frame owner has pointer-events: none property.

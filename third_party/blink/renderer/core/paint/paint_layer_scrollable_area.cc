@@ -1327,20 +1327,6 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
         LayoutBlock::ScrollbarChangeContext::kStyleChange);
   }
 
-  // With overflow: scroll, scrollbars are always visible but may be disabled.
-  // When switching to another value, we need to re-enable them (see bug 11985).
-  if (HasHorizontalScrollbar() && old_style &&
-      old_style->OverflowX() == EOverflow::kScroll &&
-      GetLayoutBox()->StyleRef().OverflowX() != EOverflow::kScroll) {
-    HorizontalScrollbar()->SetEnabled(true);
-  }
-
-  if (HasVerticalScrollbar() && old_style &&
-      old_style->OverflowY() == EOverflow::kScroll &&
-      GetLayoutBox()->StyleRef().OverflowY() != EOverflow::kScroll) {
-    VerticalScrollbar()->SetEnabled(true);
-  }
-
   // FIXME: Need to detect a swap from custom to native scrollbars (and vice
   // versa).
   if (HorizontalScrollbar())

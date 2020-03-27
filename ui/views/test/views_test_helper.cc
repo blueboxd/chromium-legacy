@@ -4,9 +4,23 @@
 
 #include "ui/views/test/views_test_helper.h"
 
+#include "ui/views/test/test_views_delegate.h"
+
 namespace views {
 
-void ViewsTestHelper::SetUpTestViewsDelegate(TestViewsDelegate* delegate) {}
+std::unique_ptr<TestViewsDelegate>
+ViewsTestHelper::GetFallbackTestViewsDelegate() {
+  return std::make_unique<TestViewsDelegate>();
+}
+
+void ViewsTestHelper::SetUpTestViewsDelegate(
+    TestViewsDelegate* delegate,
+    base::Optional<ViewsDelegate::NativeWidgetFactory> factory) {
+  if (factory.has_value())
+    delegate->set_native_widget_factory(factory.value());
+}
+
+void ViewsTestHelper::SetUp() {}
 
 gfx::NativeWindow ViewsTestHelper::GetContext() {
   return nullptr;

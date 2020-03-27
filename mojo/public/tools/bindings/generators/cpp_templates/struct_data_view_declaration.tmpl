@@ -64,7 +64,7 @@ class {{struct.name}}DataView {
   {{kind|cpp_data_view_type}} {{name}}() const {
 {%-     if pf.min_version != 0 %}
     if (data_->header_.version < {{pf.min_version}})
-      return {{kind|get_qualified_name_for_kind}}{};
+      return {{kind|cpp_data_view_type}}{};
 {%-     endif %}
     return static_cast<{{kind|cpp_data_view_type}}>(data_->{{name}});
   }

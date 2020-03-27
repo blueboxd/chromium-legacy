@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 #include "chrome/browser/ui/ash/assistant/assistant_web_view_factory_impl.h"
 #include "chrome/browser/ui/ash/assistant/conversation_starters_client_impl.h"
+#include "chrome/browser/ui/ash/assistant/device_actions_delegate_impl.h"
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_client_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -70,10 +71,13 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
 
   initialized_ = true;
 
+  device_actions_ = std::make_unique<DeviceActions>(
+      std::make_unique<DeviceActionsDelegateImpl>());
+
   auto* service =
       AssistantServiceConnection::GetForProfile(profile_)->service();
   service->Init(client_receiver_.BindNewPipeAndPassRemote(),
-                device_actions_.AddReceiver());
+                device_actions_->AddReceiver());
 
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(service);

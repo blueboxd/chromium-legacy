@@ -274,8 +274,6 @@ void ContentBrowserClientImpl::OverrideWebkitPrefs(
     content::WebPreferences* prefs) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(render_view_host);
-  if (!web_contents)
-    return;
   TabImpl* tab = TabImpl::FromWebContents(web_contents);
   prefs->fullscreen_supported = tab && tab->fullscreen_delegate();
 }

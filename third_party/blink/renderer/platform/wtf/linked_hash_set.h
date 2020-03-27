@@ -1096,15 +1096,24 @@ class NewLinkedHashSet {
   wtf_size_t size() const { return list_.size(); }
   bool IsEmpty() const { return list_.empty(); }
 
+  iterator begin() { return list_.begin(); }
   const_iterator begin() const { return list_.cbegin(); }
+  const_iterator cbegin() const { return list_.cbegin(); }
+  iterator end() { return list_.end(); }
   const_iterator end() const { return list_.cend(); }
+  const_iterator cend() const { return list_.cend(); }
 
+  reverse_iterator rbegin() { return list_.rbegin(); }
   const_reverse_iterator rbegin() const { return list_.crbegin(); }
+  const_reverse_iterator crbegin() const { return list_.crbegin(); }
+  reverse_iterator rend() { return list_.rend(); }
   const_reverse_iterator rend() const { return list_.crend(); }
+  const_reverse_iterator crend() const { return list_.crend(); }
 
   const Value& front() const { return list_.front(); }
   const Value& back() const { return list_.back(); }
 
+  iterator find(ValuePeekInType);
   const_iterator find(ValuePeekInType) const;
   bool Contains(ValuePeekInType) const;
 
@@ -1192,6 +1201,16 @@ template <typename T, typename Allocator>
 inline void NewLinkedHashSet<T, Allocator>::Swap(NewLinkedHashSet& other) {
   value_to_index_.swap(other.value_to_index_);
   list_.swap(other.list_);
+}
+
+template <typename T, typename Allocator>
+typename NewLinkedHashSet<T, Allocator>::iterator
+NewLinkedHashSet<T, Allocator>::find(ValuePeekInType value) {
+  typename Map::const_iterator it = value_to_index_.find(value);
+
+  if (it == value_to_index_.end())
+    return end();
+  return list_.MakeIterator(it->value);
 }
 
 template <typename T, typename Allocator>

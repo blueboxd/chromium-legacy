@@ -16,7 +16,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -41,8 +41,9 @@ public class SigninPromoUtil {
         boolean wasSignedIn = TextUtils.isEmpty(
                 PrefServiceBridge.getInstance().getString(Pref.SYNC_LAST_ACCOUNT_NAME));
 
-        Supplier<Set<String>> accountNamesSupplier =
-                () -> new ArraySet<>(AccountManagerFacade.get().tryGetGoogleAccountNames());
+        Supplier<Set<String>> accountNamesSupplier = ()
+                -> new ArraySet<>(
+                        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccountNames());
         if (!shouldLaunchSigninPromo(preferencesManager, currentMajorVersion,
                     IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount(),
                     wasSignedIn, accountNamesSupplier)) {
@@ -51,8 +52,8 @@ public class SigninPromoUtil {
 
         SigninUtils.startSigninActivityIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
         preferencesManager.setSigninPromoLastShownVersion(currentMajorVersion);
-        preferencesManager.setSigninPromoLastAccountNames(
-                new ArraySet<>(AccountManagerFacade.get().tryGetGoogleAccountNames()));
+        preferencesManager.setSigninPromoLastAccountNames(new ArraySet<>(
+                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccountNames()));
         return true;
     }
 
@@ -106,7 +107,7 @@ public class SigninPromoUtil {
             ProfileDataCache profileDataCache, PersonalizedSigninPromoView view,
             SigninPromoController.OnDismissListener listener) {
         DisplayableProfileData profileData = null;
-        List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        List<Account> accounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
         if (accounts.size() > 0) {
             String defaultAccountName = accounts.get(0).name;
             profileDataCache.update(Collections.singletonList(defaultAccountName));

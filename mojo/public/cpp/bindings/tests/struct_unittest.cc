@@ -525,5 +525,22 @@ TEST_F(StructTest, VersionedStructConstructor) {
   EXPECT_EQ(1, reordered->c);
 }
 
+TEST_F(StructTest, EnumNestedStructTest) {
+  EnumNestedStructPtr enum_nested_struct =
+      EnumNestedStruct::New(EnumNestedStruct::StructEnum::FIRST);
+  EXPECT_EQ(EnumNestedStruct::StructEnum::FIRST,
+            enum_nested_struct->local_enum_state_);
+
+  enum_nested_struct->local_enum_state_ = EnumNestedStruct::StructEnum::SECOND;
+
+  EnumNestedStructPtr expected_output(
+      EnumNestedStruct::New(EnumNestedStruct::StructEnum::SECOND));
+
+  EnumNestedStructPtr output = SerializeAndDeserialize<EnumNestedStructPtr>(
+      std::move(enum_nested_struct));
+  EXPECT_TRUE(output.Equals(expected_output));
+  EXPECT_EQ(EnumNestedStruct::StructEnum::SECOND, output->local_enum_state_);
+}
+
 }  // namespace test
 }  // namespace mojo

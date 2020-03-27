@@ -23,11 +23,18 @@ class Database;
 class Statement;
 }  // namespace sql
 
+class GURL;
+
 namespace media_history {
 
 // Base class for all tables in the MediaHistoryTableBase.
 class MediaHistoryTableBase
     : public base::RefCountedThreadSafe<MediaHistoryTableBase> {
+ public:
+  // Deletes any row with the |url| and returns a bool whether it was
+  // successful.
+  virtual bool DeleteURL(const GURL& url);
+
  protected:
   explicit MediaHistoryTableBase(
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);

@@ -48,7 +48,7 @@
         reply(static_cast<int>(error));
       }));
 
-  _service->UpdateAll(base::BindOnce(std::move(cb)));
+  _service->UpdateAll({}, base::BindOnce(std::move(cb)));
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID

@@ -1700,6 +1700,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3264544094376351444">Shkrimi sans-serif</translation>
 <translation id="3264582393905923483">Konteksti</translation>
 <translation id="3265459715026181080">Mbyll dritaren</translation>
+<translation id="3266274118485960573">Po ekzekutohet kontrolli i sigurisë.</translation>
 <translation id="3267726687589094446">Vazhdo të lejosh shkarkimet automatike të shumë skedarëve</translation>
 <translation id="3268451620468152448">Hap skedat</translation>
 <translation id="3269069891205016797">Informacionet e tua do të hiqen nga pajisja kur të dalësh.</translation>
@@ -1805,6 +1806,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3412265149091626468">Kalo te përzgjedhja</translation>
 <translation id="3413122095806433232">Lëshuesit e autoritetit të certifikimit: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Madhësia:</translation>
+<translation id="3416468988018290825">Gjithmonë shfaq URL të plota</translation>
 <translation id="3420501302812554910">Çelësi i brendshëm i sigurisë kërkon rivendosje</translation>
 <translation id="3421387094817716717">Çelësi publik i kurbës eliptike</translation>
 <translation id="3422291238483866753">Pyet kur një sajt kërkon të krijojë një hartë 3D të ambientit tënd rrethues ose të gjurmojë pozicionin e kamerës (rekomandohet)</translation>
@@ -4161,6 +4163,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6586451623538375658">Ndërro butonin kryesor të miut</translation>
 <translation id="6586604979641883411">Kërkohen të paktën <ph name="REQUIRED_SPACE" /> hapësirë e lirë disku për përmirësimin e Linux. Liro pak hapësirë në pajisjen tënde dhe provo përsëri.</translation>
 <translation id="6588043302623806746">Përdor DNS-në e sigurt</translation>
+<translation id="659005207229852190">Kontrolli i sigurisë përfundoi.</translation>
 <translation id="6590458744723262880">Riemërto dosjen</translation>
 <translation id="6592267180249644460">Evidenca e WebRTC regjistroi <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Gjurma e gishtit tënd u regjistrua</translation>
@@ -5419,6 +5422,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8249672078237421304">Ofro përkthimin e faqeve që nuk janë në një gjuhë që e lexon</translation>
 <translation id="8251441930213048644">Rifresko tani</translation>
 <translation id="8251578425305135684">Miniatura u hoq.</translation>
+<translation id="825238165904109940">Gjithmonë shfaq URL të plota</translation>
 <translation id="8252569384384439529">Po ngarkohet...</translation>
 <translation id="8253198102038551905">Kliko "+" për të gjetur karakteristikat e rrjetit</translation>
 <translation id="8254954272268479918">Fike sistemin Linux (Beta)</translation>

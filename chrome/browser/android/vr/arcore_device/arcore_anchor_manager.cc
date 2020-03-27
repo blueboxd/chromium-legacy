@@ -101,7 +101,7 @@ void ArCoreAnchorManager::Update(ArFrame* ar_frame) {
 
     DVLOG(3) << __func__
              << ": anchor updated, anchor id=" << anchor_id.GetUnsafeValue()
-             << ", tracking state=" << tracking_state;
+             << ", tracking_state=" << tracking_state;
 
     DCHECK(!created)
         << "Anchor creation is app-initiated - we should never encounter an "

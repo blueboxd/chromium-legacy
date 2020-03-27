@@ -21,10 +21,6 @@ message TrustTokenKeyCommitment {
   // (Here and elsewhere, string times are serialized base::Times
   // converted with base::CreateTimeValue.)
   optional string expiry = 2;  // required
-
-  // The time the key was first seen. Used for enforcing key-rotation
-  // ratelimits and for comparing stored keys’ ages.
-  optional string first_seen_at = 3;  // required
 }
 
 // Message TrustToken represents a signed trust token received from

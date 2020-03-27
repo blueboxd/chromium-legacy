@@ -61,6 +61,7 @@ component("fido") {
     "cable/noise.h",
     "cable/v2_handshake.cc",
     "cable/v2_handshake.h",
+    "cbor_extract.cc",
     "client_data.cc",
     "client_data.h",
     "credential_management.cc",

@@ -119,14 +119,14 @@ void MediaHistoryKeyedService::OnURLsDeleted(
     return;
   }
 
-  // Build a set of all origins in |deleted_rows|.
+  // Build a set of all urls and origins in |deleted_rows|.
   std::set<url::Origin> origins;
   for (const history::URLRow& row : deletion_info.deleted_rows()) {
     origins.insert(url::Origin::Create(row.url()));
   }
 
   // Find any origins that do not have any more data in the history database.
-  std::set<url::Origin> no_more_origins;
+  std::set<url::Origin> deleted_origins;
   for (const url::Origin& origin : origins) {
     const auto& origin_count =
         deletion_info.deleted_urls_origin_map().find(origin.GetURL());
@@ -134,14 +134,26 @@ void MediaHistoryKeyedService::OnURLsDeleted(
     if (origin_count->second.first > 0)
       continue;
 
-    no_more_origins.insert(origin);
+    deleted_origins.insert(origin);
   }
 
-  if (!no_more_origins.empty())
-    store->DeleteAllOriginData(no_more_origins);
+  if (!deleted_origins.empty())
+    store->DeleteAllOriginData(deleted_origins);
 
-  // TODO(https://crbug.com/1024352): For any origins that still have data we
-  // should remove data by URL.
+  // Build a set of all urls in |deleted_rows| that do not have their origin in
+  // |deleted_origins|.
+  std::set<GURL> deleted_urls;
+  for (const history::URLRow& row : deletion_info.deleted_rows()) {
+    auto origin = url::Origin::Create(row.url());
+
+    if (base::Contains(deleted_origins, origin))
+      continue;
+
+    deleted_urls.insert(row.url());
+  }
+
+  if (!deleted_urls.empty())
+    store->DeleteAllURLData(deleted_urls);
 }
 
 void MediaHistoryKeyedService::SavePlayback(

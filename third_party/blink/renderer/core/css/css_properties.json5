@@ -1020,6 +1020,19 @@
       converter: "ConvertSelfOrDefaultAlignmentData",
     },
     {
+      name: "aspect-ratio",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      interpolable: false,
+      field_group: "box",
+      field_template: "external",
+      keywords: ["auto"],
+      default_value: "base::nullopt",
+      type_name: "base::Optional<IntSize>",
+      converter: "ConvertAspectRatio",
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_size.h"],
+      runtime_flag: "CSSAspectRatioProperty"
+    },
+    {
       name: "backdrop-filter",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,

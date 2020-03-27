@@ -213,6 +213,11 @@ class WebAppFrameToolbarView::ContentSettingsContainer : public views::View {
   }
 
  private:
+  // views::View:
+  const char* GetClassName() const override {
+    return "WebAppFrameToolbarView::ContentSettingsContainer";
+  }
+
   // Owned by the views hierarchy.
   std::vector<ContentSettingImageView*> content_setting_views_;
 
@@ -303,6 +308,11 @@ class WebAppFrameToolbarView::NavigationButtonContainer
   }
 
  private:
+  // views::View:
+  const char* GetClassName() const override {
+    return "WebAppFrameToolbarView::NavigationButtonContainer";
+  }
+
   // The containing browser view.
   BrowserView* const browser_view_;
 
@@ -430,6 +440,11 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   WebAppMenuButton* web_app_menu_button() { return web_app_menu_button_; }
 
  private:
+  // views::View:
+  const char* GetClassName() const override {
+    return "WebAppFrameToolbarView::ToolbarButtonContainer";
+  }
+
   // PageActionIconContainer:
   void AddPageActionIcon(views::View* icon) override {
     AddChildViewAt(icon, page_action_insertion_point_++);

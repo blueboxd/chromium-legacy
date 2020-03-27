@@ -59,6 +59,8 @@
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -531,6 +533,14 @@ bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
              ->GetDisplayNearestPoint(
                  aura::Env::GetInstance()->last_mouse_location())
              .id();
+}
+
+void AshTestBase::SimulateMouseClickAt(
+    ui::test::EventGenerator* event_generator,
+    const views::View* target_view) {
+  DCHECK(target_view);
+  event_generator->MoveMouseTo(target_view->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
 }
 
 void AshTestBase::SwapPrimaryDisplay() {

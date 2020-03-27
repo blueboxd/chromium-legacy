@@ -88,6 +88,7 @@ class MediaHistoryStoreInternal
 
   void RazeAndClose();
   void DeleteAllOriginData(const std::set<url::Origin>& origins);
+  void DeleteAllURLData(const std::set<GURL>& urls);
 
   std::set<GURL> GetURLsInTableForTest(const std::string& table);
 
@@ -457,6 +458,45 @@ void MediaHistoryStoreInternal::DeleteAllOriginData(
   DB()->CommitTransaction();
 }
 
+void MediaHistoryStoreInternal::DeleteAllURLData(const std::set<GURL>& urls) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  MediaHistoryTableBase* tables[] = {
+      playback_table_.get(),
+      session_table_.get(),
+  };
+
+  for (auto& url : urls) {
+    for (auto* table : tables) {
+      if (!table->DeleteURL(url)) {
+        DB()->RollbackTransaction();
+        return;
+      }
+    }
+  }
+
+  // The mediaImages table will not be automatically cleared when we remove
+  // single sessions so we should remove them manually.
+  sql::Statement statement(DB()->GetUniqueStatement(
+      "DELETE FROM mediaImage WHERE id IN ("
+      "  SELECT id FROM mediaImage LEFT JOIN sessionImage"
+      "  ON sessionImage.image_id = mediaImage.id"
+      "  WHERE sessionImage.session_id IS NULL)"));
+
+  if (!statement.Run()) {
+    DB()->RollbackTransaction();
+  } else {
+    DB()->CommitTransaction();
+  }
+}
+
 std::set<GURL> MediaHistoryStoreInternal::GetURLsInTableForTest(
     const std::string& table) {
   std::set<GURL> urls;
@@ -678,6 +718,12 @@ void MediaHistoryStore::DeleteAllOriginData(
   db_->db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::DeleteAllOriginData,
                                 db_, origins));
+}
+
+void MediaHistoryStore::DeleteAllURLData(const std::set<GURL>& urls) {
+  db_->db_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::DeleteAllURLData, db_, urls));
 }
 
 void MediaHistoryStore::GetURLsInTableForTest(

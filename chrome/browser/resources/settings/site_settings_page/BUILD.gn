@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -28,6 +30,7 @@ js_library("recent_site_permissions") {
 js_library("site_settings_page") {
   deps = [
     ":recent_site_permissions",
+    ":site_settings_list",
     "..:route",
     "..:router",
     "../site_settings:constants",
@@ -41,7 +44,6 @@ js_library("site_settings_page") {
 
 js_library("site_settings_list") {
   deps = [
-    ":site_settings_page",
     "..:router",
     "../site_settings:constants",
     "../site_settings:site_settings_prefs_browser_proxy",
@@ -52,19 +54,43 @@ js_library("site_settings_list") {
   ]
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [
-#    ":site_settings_list.m",
-#    ":site_settings_page.m",
-# ]
-#}
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":recent_site_permissions.m",
+    ":site_settings_list.m",
+    ":site_settings_page.m",
+  ]
+}
+
+js_library("recent_site_permissions.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings_page/recent_site_permissions.m.js" ]
+  deps = [
+    "..:route.m",
+    "..:router.m",
+    "../people_page:sync_browser_proxy.m",
+    "../prefs:prefs_behavior.m",
+    "../site_settings:constants.m",
+    "../site_settings:site_settings_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+  extra_deps = [ ":recent_site_permissions_module" ]
+}
 
 js_library("site_settings_list.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings_page/site_settings_list.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "..:router.m",
+    "../site_settings:constants.m",
+    "../site_settings:site_settings_prefs_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
   extra_deps = [ ":site_settings_list_module" ]
 }
@@ -72,28 +98,65 @@ js_library("site_settings_list.m") {
 js_library("site_settings_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings_page/site_settings_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":recent_site_permissions.m",
+    ":site_settings_list.m",
+    "..:route.m",
+    "..:router.m",
+    "../site_settings:constants.m",
+    "../site_settings:site_settings_prefs_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
   extra_deps = [ ":site_settings_page_module" ]
 }
 
-import("//tools/polymer/polymer.gni")
-
 group("polymer3_elements") {
   public_deps = [
+    ":recent_site_permissions_module",
     ":site_settings_list_module",
     ":site_settings_page_module",
   ]
+}
+
+polymer_modulizer("recent_site_permissions") {
+  js_file = "recent_site_permissions.js"
+  html_file = "recent_site_permissions.html"
+  html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/router.html|Route,Router,RouteObserverBehavior",
+                   "chrome/browser/resources/settings/site_settings/constants.html|AllSitesAction,ContentSetting,SiteSettingSource",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|RawSiteException,RecentSitePermissions",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("site_settings_list") {
   js_file = "site_settings_list.js"
   html_file = "site_settings_list.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/router.html|Route,Router",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSetting,ContentSettingsTypes",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|SiteSettingsPrefsBrowserProxy,SiteSettingsPrefsBrowserProxyImpl",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("site_settings_page") {
   js_file = "site_settings_page.js"
   html_file = "site_settings_page.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/router.html|Route,Router",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSettingsTypes",
+                   "chrome/browser/resources/settings/site_settings_page/site_settings_list.html|CategoryListItem",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }

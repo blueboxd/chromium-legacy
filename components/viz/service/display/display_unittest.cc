@@ -176,12 +176,6 @@ class DisplayTest : public testing::Test {
     return display;
   }
 
-  void TearDownDisplay() {
-    // Only call UnregisterBeginFrameSource if SetupDisplay has been called.
-    if (begin_frame_source_)
-      manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
-  }
-
   bool ShouldSendBeginFrame(CompositorFrameSinkSupport* support,
                             base::TimeTicks frame_time) {
     return support->ShouldSendBeginFrame(frame_time);
@@ -194,6 +188,12 @@ class DisplayTest : public testing::Test {
   }
 
  protected:
+  void TearDown() override {
+    // Only call UnregisterBeginFrameSource if SetupDisplay has been called.
+    if (begin_frame_source_)
+      manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
+  }
+
   void SubmitCompositorFrame(RenderPassList* pass_list,
                              const LocalSurfaceId& local_surface_id) {
     CompositorFrame frame = CompositorFrameBuilder()
@@ -520,7 +520,6 @@ TEST_F(DisplayTest, DisplayDamaged) {
               software_output_device_->damage_rect());
     EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
-  TearDownDisplay();
 }
 
 // Verifies latency info is stored only up to a limit if a swap fails.
@@ -584,8 +583,6 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   EXPECT_EQ(2u, output_surface_->num_sent_frames());
   EXPECT_EQ(expected_size,
             output_surface_->last_sent_frame()->latency_info.size());
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, UnderLatencyInfoCap) {
@@ -669,8 +666,6 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
   // swapped a frame at the current size.
   display_->DisableSwapUntilResize(base::OnceClosure());
   EXPECT_FALSE(scheduler_->swapped());
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, BackdropFilterTest) {
@@ -817,7 +812,6 @@ TEST_F(DisplayTest, BackdropFilterTest) {
           display_->renderer_for_testing()->GetLastRootScissorRectForTesting());
     }
   }
-  TearDownDisplay();
 }
 
 class CountLossDisplayClient : public StubDisplayClient {
@@ -844,7 +838,6 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
       GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
   output_surface_->context_provider()->ContextGL()->Flush();
   EXPECT_EQ(1, client.loss_count());
-  TearDownDisplay();
 }
 
 // Regression test for https://crbug.com/727162: Submitting a CompositorFrame to
@@ -901,7 +894,6 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   EXPECT_TRUE(scheduler_->damaged());
   EXPECT_FALSE(scheduler2->damaged());
   manager_.UnregisterBeginFrameSource(begin_frame_source2.get());
-  TearDownDisplay();
 }
 
 // Quads that intersect backdrop filter render pass quads should not be
@@ -982,8 +974,6 @@ TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
   for (int i = 0; i < 3; i++) {
     EXPECT_EQ(rects[i], root_render_pass->quad_list.ElementAt(i)->visible_rect);
   }
-
-  TearDownDisplay();
 }
 
 // Check if draw occlusion does not remove any DrawQuads when no quad is being
@@ -1202,8 +1192,6 @@ TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
                                     ->quad_list.ElementAt(1)
                                     ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 // Check if the draw occlusion removes a DrawQuad that is hidden behind
@@ -1259,8 +1247,6 @@ TEST_F(DisplayTest, DrawOcclusionWithSingleOverlapBehindDisjointedDrawQuads) {
                                        ->quad_list.ElementAt(1)
                                        ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 // Check if the draw occlusion removes DrawQuads that are hidden behind
@@ -1318,8 +1304,6 @@ TEST_F(DisplayTest, DrawOcclusionWithMultipleOverlapBehindDisjointedDrawQuads) {
                                        ->quad_list.ElementAt(1)
                                        ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 // Check if draw occlusion removes DrawQuads that are not shown on screen.
@@ -1449,7 +1433,6 @@ TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 // Check if draw occlusion works well with scale change transformer.
@@ -1721,7 +1704,6 @@ TEST_F(DisplayTest, CompositorFrameWithTransformer) {
                                     ->quad_list.ElementAt(1)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 // Check if draw occlusion works with transform at epsilon scale.
@@ -1734,8 +1716,8 @@ TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect(0, 0, 100, 100);
 
-  SkScalar epsilon = float(0.000000001);
-  SkScalar larger_than_epsilon = float(0.00000001);
+  SkScalar epsilon = 0.000000001f;
+  SkScalar larger_than_epsilon = 0.00000001f;
   gfx::Transform zero_scale;
   zero_scale.Scale(0, 0);
   gfx::Transform epsilon_scale;
@@ -1832,8 +1814,6 @@ TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
                                    ->quad_list.ElementAt(0)
                                    ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 // Check if draw occlusion works with transform at negative scale.
@@ -1950,8 +1930,6 @@ TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
                                    ->quad_list.ElementAt(0)
                                    ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 // Check if draw occlusion works well with rotation transform.
@@ -2082,7 +2060,6 @@ TEST_F(DisplayTest, CompositorFrameWithRotation) {
                                     ->quad_list.ElementAt(1)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 // Check if draw occlusion is handled correctly if the transform does not
@@ -2158,7 +2135,6 @@ TEST_F(DisplayTest, CompositorFrameWithPerspective) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 // Check if draw occlusion works with transparent DrawQuads.
@@ -2224,8 +2200,6 @@ TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
@@ -2290,8 +2264,6 @@ TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 // Test if draw occlusion skips 3d objects. https://crbug.com/833748
@@ -2346,7 +2318,6 @@ TEST_F(DisplayTest, CompositorFrameZTranslate) {
                                     ->quad_list.ElementAt(1)
                                     ->rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
@@ -2466,7 +2437,6 @@ TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
                   ->quad_list.ElementAt(1)
                   ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
@@ -2593,7 +2563,6 @@ TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
                   ->quad_list.ElementAt(2)
                   ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
@@ -2668,7 +2637,6 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
@@ -2736,8 +2704,6 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithClip) {
@@ -2852,7 +2818,6 @@ TEST_F(DisplayTest, CompositorFrameWithClip) {
                   ->quad_list.ElementAt(1)
                   ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 // Check if draw occlusion works with copy requests in root RenderPass only.
@@ -2900,7 +2865,6 @@ TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
@@ -3079,7 +3043,6 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                     ->quad_list.ElementAt(2)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
@@ -3256,7 +3219,6 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
                   ->quad_list.ElementAt(5)
                   ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
@@ -3359,7 +3321,6 @@ TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 // Check if draw occlusion works with very large DrawQuad. crbug.com/824528.
@@ -3401,7 +3362,6 @@ TEST_F(DisplayTest, DrawOcclusionWithLargeDrawQuad) {
                                     ->quad_list.ElementAt(0)
                                     ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
@@ -3513,8 +3473,6 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     display_->DrawAndSwap(base::TimeTicks::Now());
     RunAllPendingInMessageLoop();
   }
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, BeginFrameThrottling) {
@@ -3590,8 +3548,6 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   // the begin-frame.
   frame_time += base::TimeDelta::FromSecondsD(1.1);
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
@@ -3667,8 +3623,6 @@ TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
   frame_time = base::TimeTicks::Now();
   EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
   UpdateBeginFrameTime(support_.get(), frame_time);
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
@@ -3752,8 +3706,6 @@ TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
   frame_time = base::TimeTicks::Now();
   EXPECT_FALSE(ShouldSendBeginFrame(sub_support.get(), frame_time));
   UpdateBeginFrameTime(sub_support.get(), frame_time);
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, InvalidPresentationTimestamps) {
@@ -3880,8 +3832,6 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
     EXPECT_LE(buckets[0].min, 1000);
     EXPECT_EQ(buckets[0].count, 1);
   }
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesNotOcclude) {
@@ -3938,7 +3888,6 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesNotOcclude) {
                                         ->quad_list.ElementAt(1)
                                         ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesOcclude) {
@@ -3993,7 +3942,6 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesOcclude) {
                                         ->quad_list.ElementAt(0)
                                         ->visible_rect.ToString());
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, DrawOcclusionSplit) {
@@ -4089,7 +4037,6 @@ TEST_F(DisplayTest, DrawOcclusionSplit) {
                 quad_list.ElementAt(i + 1)->visible_rect);
     }
   }
-  TearDownDisplay();
 }
 
 // Tests cases in which occlusion culling splits are performed due to first pass
@@ -4203,7 +4150,6 @@ TEST_F(DisplayTest, FirstPassVisibleComplexityReduction) {
         expected_visible_rects[i],
         frame.render_pass_list.front()->quad_list.ElementAt(i)->visible_rect);
   }
-  TearDownDisplay();
 }
 
 // Test that the threshold we use to determine if it's worth splitting a quad or
@@ -4260,8 +4206,6 @@ TEST_F(DisplayTest, DrawOcclusionSplitDeviceScaleFactorFractional) {
   EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
   display_->RemoveOverdrawQuads(&frame);
   EXPECT_EQ(5u, frame.render_pass_list.front()->quad_list.size());
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerPartialOcclude) {
@@ -4376,7 +4320,6 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerPartialOcclude) {
     EXPECT_EQ(expected_visible_rect_3, quad_list.ElementAt(3)->visible_rect);
     EXPECT_EQ(expected_visible_rect_4, quad_list.ElementAt(4)->visible_rect);
   }
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, DisplayTransformHint) {
@@ -4439,8 +4382,6 @@ TEST_F(DisplayTest, DisplayTransformHint) {
     EXPECT_EQ(test.expected_size,
               software_output_device_->viewport_pixel_size());
   }
-
-  TearDownDisplay();
 }
 
 TEST_F(DisplayTest, DisplaySizeMismatch) {
@@ -4489,8 +4430,6 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
     // Expect there is no pending
     EXPECT_EQ(pending_presentation_group_timings_size(), 0u);
   }
-
-  TearDownDisplay();
 }
 
 }  // namespace viz

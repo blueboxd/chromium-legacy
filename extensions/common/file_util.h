@@ -46,8 +46,9 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
 void UninstallExtension(const base::FilePath& extensions_dir,
                         const std::string& id);
 
-// Loads and validates an extension from the specified directory. Returns NULL
-// on failure, with a description of the error in |error|.
+// Loads and validates an extension from the specified directory. Uses
+// the default manifest filename. Returns nullptr on failure, with a
+// description of the error in |error|.
 scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_root,
                                        Manifest::Location location,
                                        int flags,
@@ -59,6 +60,17 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_root,
                                        Manifest::Location location,
                                        int flags,
                                        std::string* error);
+
+// The same as LoadExtension except use the provided |manifest_file| and
+// |extension_id|.  If manifest_file is not specified, uses the default
+// manifest filename.
+scoped_refptr<Extension> LoadExtension(
+    const base::FilePath& extension_root,
+    const base::FilePath::CharType* manifest_file,
+    const std::string& extension_id,
+    Manifest::Location location,
+    int flags,
+    std::string* error);
 
 // Loads an extension manifest from the specified directory. Returns NULL
 // on failure, with a description of the error in |error|.

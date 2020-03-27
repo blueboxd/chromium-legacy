@@ -31,10 +31,14 @@ bool SubmitWaitVkSemaphores(VkQueue vk_queue,
                             const base::span<VkSemaphore>& vk_semaphores,
                             VkFence vk_fence) {
   DCHECK(!vk_semaphores.empty());
+  std::vector<VkPipelineStageFlags> semaphore_stages(vk_semaphores.size());
+  std::fill(semaphore_stages.begin(), semaphore_stages.end(),
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
   // Structure specifying a queue submit operation.
   VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
   submit_info.waitSemaphoreCount = vk_semaphores.size();
   submit_info.pWaitSemaphores = vk_semaphores.data();
+  submit_info.pWaitDstStageMask = semaphore_stages.data();
   const unsigned int submit_count = 1;
   return vkQueueSubmit(vk_queue, submit_count, &submit_info, vk_fence) ==
          VK_SUCCESS;

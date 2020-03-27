@@ -13,6 +13,10 @@ def main():
   parser = argparse.ArgumentParser(description=description)
   parser.add_argument('--output_dir',
                     help='Output directory for build products.')
+  parser.add_argument('--ios_simulator', action='store_true', default=False,
+                      help='Use "iphoneos" SDK instead of "macos".')
+  parser.add_argument('--asan', action='store_true', default=False,
+                      help='Make Asan build.')
   parser.add_argument('-j',
                     help='Number of parallel jobs to run.')
   (opts, extra_args) = parser.parse_known_args()
@@ -25,13 +29,25 @@ def main():
       '../../..',
       'out', 'Debug-iphonesimulator', 'obj', 'ios', 'third_party', 'webkit'));
 
-  command = ['src/Tools/Scripts/build-webkit', '--debug', '--ios-simulator']
+  command = ['src/Tools/Scripts/build-webkit', '--debug']
+
+  if opts.ios_simulator:
+    command.append('--ios-simulator')
+
   if opts.j:
     command.extend(['-jobs', opts.j])
   command.extend(extra_args)
 
   env = {'WEBKIT_OUTPUTDIR': output_dir}
   cwd = os.path.dirname(os.path.realpath(__file__))
+
+  if opts.asan:
+     config_command = ['src/Tools/Scripts/set-webkit-configuration', '--debug', '--asan']
+     proc = subprocess.Popen(config_command, cwd=cwd, env=env)
+     proc.communicate()
+     if proc.returncode:
+       return proc.returncode
+
   proc = subprocess.Popen(command, cwd=cwd, env=env)
   proc.communicate()
   return proc.returncode

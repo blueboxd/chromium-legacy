@@ -317,6 +317,26 @@
       "chromiumos_preflight"
     ]
   },
+  "ios-device-goma-canary-clobber": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "ios-device-goma-latest-clobber": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "ios-device-goma-rbe-canary-clobber": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "ios-device-goma-rbe-latest-clobber": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "linux-archive-rel-goma-canary": {
     "additional_compile_targets": [
       "all"

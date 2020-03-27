@@ -14,6 +14,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -200,14 +201,6 @@ constexpr int kAccessibilityPageDelayMs = 100;
 constexpr double kMinZoom = 0.01;
 
 constexpr char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
-
-// Used for UMA. Do not delete entries, and keep in sync with histograms.xml.
-enum PDFFeatures {
-  LOADED_DOCUMENT = 0,
-  HAS_TITLE = 1,
-  HAS_BOOKMARKS = 2,
-  FEATURES_COUNT
-};
 
 PP_Var GetLinkAtPosition(PP_Instance instance, PP_Point point) {
   pp::Var var;
@@ -1663,7 +1656,6 @@ void OutOfProcessInstance::DocumentLoadComplete(
   DCHECK_EQ(LOAD_STATE_LOADING, document_load_state_);
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
-  HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT, FEATURES_COUNT);
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
@@ -1678,27 +1670,8 @@ void OutOfProcessInstance::DocumentLoadComplete(
     OnGeometryChanged(0, 0);
   }
 
-  pp::VarDictionary metadata_message;
-  metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
-  const std::string& title = engine_->GetDocumentMetadata().title;
-  if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty()) {
-    metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
-    HistogramEnumeration("PDF.DocumentFeature", HAS_TITLE, FEATURES_COUNT);
-  }
-  metadata_message.Set(
-      pp::Var(kJSCanSerializeDocument),
-      pp::Var(IsSaveDataSizeValid(engine_->GetLoadedByteSize())));
-
-  pp::VarArray bookmarks = engine_->GetBookmarks();
-  metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
-  if (bookmarks.GetLength() > 0)
-    HistogramEnumeration("PDF.DocumentFeature", HAS_BOOKMARKS, FEATURES_COUNT);
-  PostMessage(metadata_message);
-
-  pp::VarDictionary progress_message;
-  progress_message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-  progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(100));
-  PostMessage(progress_message);
+  SendDocumentMetadata();
+  SendLoadingProgress(/*percentage=*/100);
 
   if (accessibility_state_ == ACCESSIBILITY_STATE_PENDING)
     LoadAccessibility();
@@ -1722,14 +1695,16 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
-                        1000000, 50);
-  HistogramEnumeration("PDF.HasAttachment",
-                       document_features.has_attachments ? 1 : 0, 2);
-  HistogramEnumeration("PDF.IsTagged", document_features.is_tagged ? 1 : 0, 2);
-  HistogramEnumeration("PDF.FormType",
-                       static_cast<int32_t>(document_features.form_type),
-                       static_cast<int32_t>(PDFEngine::FormType::kCount));
+  HistogramCustomCountsDeprecated("PDF.PageCount", document_features.page_count,
+                                  1, 1000000, 50);
+  HistogramEnumerationDeprecated("PDF.HasAttachment",
+                                 document_features.has_attachments ? 1 : 0, 2);
+  HistogramEnumerationDeprecated("PDF.IsTagged",
+                                 document_features.is_tagged ? 1 : 0, 2);
+  HistogramEnumerationDeprecated(
+      "PDF.FormType", static_cast<int32_t>(document_features.form_type),
+      static_cast<int32_t>(PDFEngine::FormType::kCount));
+  HistogramEnumeration("PDF.Version", engine_->GetDocumentMetadata().version);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
@@ -1786,10 +1761,7 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
 
   // Send a progress value of -1 to indicate a failure.
-  pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-  message.Set(pp::Var(kJSProgressPercentage), pp::Var(-1));
-  PostMessage(message);
+  SendLoadingProgress(-1);
 }
 
 void OutOfProcessInstance::PreviewDocumentLoadFailed() {
@@ -1851,10 +1823,7 @@ void OutOfProcessInstance::DocumentLoadProgress(uint32_t available,
   // Avoid sending too many progress messages over PostMessage.
   if (progress > last_progress_sent_ + 1) {
     last_progress_sent_ = progress;
-    pp::VarDictionary message;
-    message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-    message.Set(pp::Var(kJSProgressPercentage), pp::Var(progress));
-    PostMessage(message);
+    SendLoadingProgress(progress);
   }
 }
 
@@ -2024,6 +1993,32 @@ void OutOfProcessInstance::SendPrintPreviewLoadedNotification() {
   PostMessage(loaded_message);
 }
 
+void OutOfProcessInstance::SendDocumentMetadata() {
+  pp::VarDictionary metadata_message;
+  metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
+
+  const std::string& title = engine_->GetDocumentMetadata().title;
+  if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty())
+    metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
+
+  pp::VarArray bookmarks = engine_->GetBookmarks();
+  metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
+
+  metadata_message.Set(
+      pp::Var(kJSCanSerializeDocument),
+      pp::Var(IsSaveDataSizeValid(engine_->GetLoadedByteSize())));
+
+  PostMessage(metadata_message);
+}
+
+void OutOfProcessInstance::SendLoadingProgress(double percentage) {
+  DCHECK(percentage == -1 || (percentage >= 0 && percentage <= 100));
+  pp::VarDictionary progress_message;
+  progress_message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
+  progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(percentage));
+  PostMessage(progress_message);
+}
+
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
   // TODO(raymes): Move this function to PPB_UMA_Private.
   pp::PDF::UserMetricsRecordAction(this, pp::Var(action));
@@ -2042,20 +2037,29 @@ pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
   return pp::FloatPoint(x, y);
 }
 
-void OutOfProcessInstance::HistogramCustomCounts(const std::string& name,
-                                                 int32_t sample,
-                                                 int32_t min,
-                                                 int32_t max,
-                                                 uint32_t bucket_count) {
+template <typename T>
+void OutOfProcessInstance::HistogramEnumeration(const char* name, T sample) {
+  if (IsPrintPreview())
+    return;
+  base::UmaHistogramEnumeration(name, sample);
+}
+
+void OutOfProcessInstance::HistogramCustomCountsDeprecated(
+    const std::string& name,
+    int32_t sample,
+    int32_t min,
+    int32_t max,
+    uint32_t bucket_count) {
   if (IsPrintPreview())
     return;
 
   uma_.HistogramCustomCounts(name, sample, min, max, bucket_count);
 }
 
-void OutOfProcessInstance::HistogramEnumeration(const std::string& name,
-                                                int32_t sample,
-                                                int32_t boundary_value) {
+void OutOfProcessInstance::HistogramEnumerationDeprecated(
+    const std::string& name,
+    int32_t sample,
+    int32_t boundary_value) {
   if (IsPrintPreview())
     return;
   uma_.HistogramEnumeration(name, sample, boundary_value);

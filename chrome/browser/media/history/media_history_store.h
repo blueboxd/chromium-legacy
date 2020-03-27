@@ -125,6 +125,7 @@ class MediaHistoryStore {
   void PostTaskToDBForTest(base::OnceClosure callback);
   void EraseDatabaseAndCreateNew();
   void DeleteAllOriginData(const std::set<url::Origin>& origins);
+  void DeleteAllURLData(const std::set<GURL>& urls);
 
  private:
   scoped_refptr<MediaHistoryStoreInternal> db_;

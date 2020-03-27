@@ -1698,6 +1698,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3264544094376351444">Sans-serif şrifti</translation>
 <translation id="3264582393905923483">Məzmun</translation>
 <translation id="3265459715026181080">Pəncərəni Bağlayın</translation>
+<translation id="3266274118485960573">Təhlükəsizlik yoxlanışı icra olunur.</translation>
 <translation id="3267726687589094446">Çoxsaylı faylların avtomatik endirilməsinə icazə verməyə davam edin</translation>
 <translation id="3268451620468152448">Panelləri Açın</translation>
 <translation id="3269069891205016797">Hesabdan çıxarkən məlumatınız bu cihazdan silinəcək.</translation>
@@ -1803,6 +1804,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3412265149091626468">Seçimə Keçin</translation>
 <translation id="3413122095806433232">CA emitentləri: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Ölçü:</translation>
+<translation id="3416468988018290825">Həmişə tam URL'ləri göstərin</translation>
 <translation id="3420501302812554910">Daxili təhlükəsizlik açarı sıfırlanma tələb edir</translation>
 <translation id="3421387094817716717">Oval Əyrisi İctimai Açarı</translation>
 <translation id="3422291238483866753">Sayt ətrafınızdakı sahələrin 3D xəritəsini yaratmaq və ya kamera mövqeyini izləmək istədikdə icazə tələb edin (tövsiyə edilir)</translation>
@@ -4155,6 +4157,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6586451623538375658">Əsas siçan düyməsini Swap</translation>
 <translation id="6586604979641883411">Linux'u təkmilləşdirmək üçün yaddaşda minimum <ph name="REQUIRED_SPACE" /> boş yer tələb edilir. Cihazda yer boşaldın və yenidən cəhd edin.</translation>
 <translation id="6588043302623806746">Güvənli DNS yoxdur</translation>
+<translation id="659005207229852190">Təhlükəsizlik yoxlanışı tamamlanıb.</translation>
 <translation id="6590458744723262880">Qovluq adını dəyişin</translation>
 <translation id="6592267180249644460">WebRTC <ph name="WEBRTC_LOG_CAPTURE_TIME" /> çəkdi</translation>
 <translation id="6592808042417736307">Barmaq iziniz qeydə alınıb</translation>
@@ -5413,6 +5416,7 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8249672078237421304">Anladığınız dildə olmayan səhifələrin tərcüməsini təklif edin</translation>
 <translation id="8251441930213048644">İndi yeniləyin</translation>
 <translation id="8251578425305135684">Eskiz silindi.</translation>
+<translation id="825238165904109940">Həmişə Tam URL'ləri Göstərin</translation>
 <translation id="8252569384384439529">Yüklənir...</translation>
 <translation id="8253198102038551905">Şəbəkə xüsusiyyətlərini əldə etmək üçün '+' klikləyin</translation>
 <translation id="8254954272268479918">Linux'u (Beta) bağlayın</translation>

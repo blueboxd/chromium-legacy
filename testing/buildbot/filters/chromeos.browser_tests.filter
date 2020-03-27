@@ -7,10 +7,6 @@
 # TODO(crbug.com/977738): Enable this.
 -ChromePluginTest.InstalledPlugins
 
-# TODO(crbug.com/977740): Enable this.
--LoginUIKeyboardTest.CheckPODScreenDefault
--LoginUIKeyboardTestWithUsersAndOwner.CheckPODScreenKeyboard
-
 # TODO(crbug.com/977741): Enable this.
 -LoginUtilsTest.RlzInitialized
 

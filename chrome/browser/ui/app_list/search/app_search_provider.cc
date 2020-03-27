@@ -40,6 +40,8 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
 #include "chrome/common/string_matching/tokenized_string.h"
 #include "chrome/common/string_matching/tokenized_string_match.h"

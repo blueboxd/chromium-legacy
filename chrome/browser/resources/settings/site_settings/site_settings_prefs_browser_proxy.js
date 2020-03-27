@@ -120,7 +120,7 @@ let CookieControlsManagedState;
  *            incognito: boolean,
  *            recentPermissions: !Array<!RawSiteException>}}
  */
-let RecentSitePermissions;
+/* #export */ let RecentSitePermissions;
 
 /**
  * The chooser exception information passed from the C++ handler.

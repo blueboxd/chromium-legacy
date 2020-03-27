@@ -16,6 +16,9 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_feed_items_table.h"
+#include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
@@ -28,6 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/test_utils.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/media_position.h"
@@ -64,7 +68,9 @@ class MediaHistoryKeyedServiceTest
  public:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {history::HistoryService::kHistoryServiceUsesTaskScheduler}, {});
+        {media::kMediaFeeds,
+         history::HistoryService::kHistoryServiceUsesTaskScheduler},
+        {});
 
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -82,7 +88,7 @@ class MediaHistoryKeyedServiceTest
 
     // Sleep the thread to allow the media history store to asynchronously
     // create the database and tables.
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   MediaHistoryKeyedService* service() const { return service_.get(); }
@@ -154,6 +160,12 @@ class MediaHistoryKeyedServiceTest
     return out;
   }
 
+  void WaitForDB() {
+    base::RunLoop run_loop;
+    service()->PostTaskToDBForTest(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   std::vector<media_session::MediaImage> CreateImageVector(const GURL& url) {
     std::vector<media_session::MediaImage> images;
 
@@ -172,6 +184,24 @@ class MediaHistoryKeyedServiceTest
 
     profile()->GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled,
                                       true);
+  }
+
+  static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
+
+    {
+      auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->type = media_feeds::mojom::MediaFeedItemType::kVideo;
+      item->name = base::ASCIIToUTF16("The Video");
+      item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMinutes(20));
+      item->is_family_friendly = false;
+      item->action_status =
+          media_feeds::mojom::MediaFeedItemActionStatus::kActive;
+      items.push_back(std::move(item));
+    }
+
+    return items;
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
@@ -207,7 +237,7 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
     service()->SavePlayback(watch_time);
 
     // Wait until the playbacks have finished saving.
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   EXPECT_EQ(2, GetUserDataTableRowCount());
@@ -225,7 +255,7 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
     mock_time_task_runner_->RunUntilIdle();
 
     // Wait for the database to update.
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   EXPECT_EQ(0, GetUserDataTableRowCount());
@@ -240,6 +270,9 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
   GURL url1c("https://www.google.com/test1C");
   GURL url2a("https://example.com/test2A");
   GURL url2b("https://example.com/test2B");
+
+  GURL media_feed_1("https://www.google.com/media-feed.json");
+  GURL media_feed_2("https://example.com/media-feed.json");
 
   // Images associated with a media session do not need to be on the same origin
   // as where the playback happened.
@@ -272,6 +305,15 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
   std::set<GURL> remaining_images;
   remaining_images.insert(url2a_image);
   remaining_images.insert(shared_image);
+
+  // Create a set that has all the media feeds.
+  std::set<GURL> media_feeds;
+  media_feeds.insert(media_feed_1);
+  media_feeds.insert(media_feed_2);
+
+  // Create a set that has the remaining media feeds.
+  std::set<GURL> remaining_media_feeds;
+  remaining_media_feeds.insert(media_feed_2);
 
   // The tables should be empty.
   EXPECT_EQ(0, GetUserDataTableRowCount());
@@ -346,8 +388,23 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
                                    CreateImageVector(shared_image));
   }
 
+  // Discover the media feeds.
+  service()->DiscoverMediaFeed(media_feed_1);
+  service()->DiscoverMediaFeed(media_feed_2);
+
   // Wait until the playbacks have finished saving.
-  content::RunAllTasksUntilIdle();
+  WaitForDB();
+
+  // Store the feed data.
+  service()->StoreMediaFeedFetchResult(
+      1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
+      base::Time::Now(), std::vector<media_session::MediaImage>(), "Test");
+  service()->StoreMediaFeedFetchResult(
+      2, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
+      base::Time::Now(), std::vector<media_session::MediaImage>(), "test");
+
+  // Wait until the feed data has finished saving.
+  WaitForDB();
 
   {
     // Check that the tables have the right count in them.
@@ -356,6 +413,9 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     EXPECT_EQ(5,
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
     EXPECT_EQ(5, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    EXPECT_EQ(2,
+              stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
 
     // There are 10 session images because each session has an image with two
     // sizes.
@@ -369,6 +429,7 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
   EXPECT_EQ(all_urls, GetURLsInTable(MediaHistoryPlaybackTable::kTableName));
   EXPECT_EQ(all_urls, GetURLsInTable(MediaHistorySessionTable::kTableName));
   EXPECT_EQ(images, GetURLsInTable(MediaHistoryImagesTable::kTableName));
+  EXPECT_EQ(media_feeds, GetURLsInTable(MediaHistoryFeedsTable::kTableName));
 
   MaybeSetSavingBrowsingHistoryDisabled();
 
@@ -387,7 +448,7 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     mock_time_task_runner_->RunUntilIdle();
 
     // Wait for the database to update.
-    content::RunAllTasksUntilIdle();
+    WaitForDB();
   }
 
   {
@@ -397,6 +458,9 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
     EXPECT_EQ(2, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    EXPECT_EQ(1,
+              stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
 
     // There are 4 session images because each session has an image with two
     // sizes.
@@ -410,6 +474,222 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
   EXPECT_EQ(remaining, GetURLsInTable(MediaHistorySessionTable::kTableName));
   EXPECT_EQ(remaining_images,
             GetURLsInTable(MediaHistoryImagesTable::kTableName));
+  EXPECT_EQ(remaining_media_feeds,
+            GetURLsInTable(MediaHistoryFeedsTable::kTableName));
+}
+
+TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile(), ServiceAccessType::IMPLICIT_ACCESS);
+
+  GURL url1a("https://www.google.com/test1A");
+  GURL url1b("https://www.google.com/test1B");
+  GURL url1c("https://www.google.com/test1C");
+  GURL url2a("https://example.com/test2A");
+  GURL url2b("https://example.com/test2B");
+
+  // Images associated with a media session do not need to be on the same origin
+  // as where the playback happened.
+  GURL url1a_image("https://gstatic.com/test1A.png");
+  GURL url1c_image("https://www.google.com/test1C.png");
+  GURL url2a_image("https://examplestatic.com/test2B.png");
+  GURL shared_image("https://gstatic.com/shared.png");
+
+  GURL media_feed_1("https://www.google.com/media-feed.json");
+  GURL media_feed_2("https://example.com/media-feed.json");
+
+  // Create a set that has all the URLs.
+  std::set<GURL> all_urls;
+  all_urls.insert(url1a);
+  all_urls.insert(url1b);
+  all_urls.insert(url1c);
+  all_urls.insert(url2a);
+  all_urls.insert(url2b);
+
+  // Create a set that has the URLs that will not be deleted.
+  std::set<GURL> remaining;
+  remaining.insert(url1c);
+  remaining.insert(url2a);
+  remaining.insert(url2b);
+
+  // Create a set that has all the image URLs.
+  std::set<GURL> images;
+  images.insert(url1a_image);
+  images.insert(url1c_image);
+  images.insert(url2a_image);
+  images.insert(shared_image);
+
+  // Create a set that has the image URLs that will not be deleted.
+  std::set<GURL> remaining_images;
+  remaining_images.insert(url1c_image);
+  remaining_images.insert(url2a_image);
+  remaining_images.insert(shared_image);
+
+  // Create a set that has all the media feeds.
+  std::set<GURL> media_feeds;
+  media_feeds.insert(media_feed_1);
+  media_feeds.insert(media_feed_2);
+
+  // The tables should be empty.
+  EXPECT_EQ(0, GetUserDataTableRowCount());
+
+  // Record a playback in the database for |url1a|.
+  {
+    content::MediaPlayerWatchTime watch_time(
+        url1a, url1a.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
+        base::TimeDelta::FromMilliseconds(321), true, false);
+
+    history->AddPage(url1a, base::Time::Now(), history::SOURCE_BROWSED);
+    service()->SavePlayback(watch_time);
+
+    service()->SavePlaybackSession(url1a, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(url1a_image));
+  }
+
+  // Record a playback in the database for |url1b|.
+  {
+    content::MediaPlayerWatchTime watch_time(
+        url1b, url1b.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
+        base::TimeDelta::FromMilliseconds(321), true, false);
+
+    history->AddPage(url1b, base::Time::Now(), history::SOURCE_BROWSED);
+    service()->SavePlayback(watch_time);
+
+    service()->SavePlaybackSession(url1b, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(shared_image));
+  }
+
+  // Record a playback in the database for |url1c|.
+  {
+    content::MediaPlayerWatchTime watch_time(
+        url1c, url1c.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
+        base::TimeDelta::FromMilliseconds(321), true, false);
+
+    history->AddPage(url1c, base::Time::Now(), history::SOURCE_BROWSED);
+    service()->SavePlayback(watch_time);
+
+    service()->SavePlaybackSession(url1c, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(url1c_image));
+  }
+
+  // Record a playback in the database for |url2a|.
+  {
+    content::MediaPlayerWatchTime watch_time(
+        url2a, url2a.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
+        base::TimeDelta::FromMilliseconds(321), true, false);
+
+    history->AddPage(url2a, base::Time::Now(), history::SOURCE_BROWSED);
+    service()->SavePlayback(watch_time);
+
+    service()->SavePlaybackSession(url2a, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(url2a_image));
+  }
+
+  // Record a playback in the database for |url2b|.
+  {
+    content::MediaPlayerWatchTime watch_time(
+        url2b, url2b.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
+        base::TimeDelta::FromMilliseconds(321), true, false);
+
+    history->AddPage(url2b, base::Time::Now(), history::SOURCE_BROWSED);
+    service()->SavePlayback(watch_time);
+
+    service()->SavePlaybackSession(url2b, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(shared_image));
+  }
+
+  // Discover the media feeds.
+  service()->DiscoverMediaFeed(media_feed_1);
+  service()->DiscoverMediaFeed(media_feed_2);
+
+  // Wait until the playbacks have finished saving.
+  WaitForDB();
+
+  // Store the feed data.
+  service()->StoreMediaFeedFetchResult(
+      1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
+      base::Time::Now(), std::vector<media_session::MediaImage>(), "Test");
+  service()->StoreMediaFeedFetchResult(
+      2, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
+      base::Time::Now(), std::vector<media_session::MediaImage>(), "test");
+
+  // Wait until the feed data has finished saving.
+  WaitForDB();
+
+  {
+    // Check that the tables have the right count in them.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+    EXPECT_EQ(5,
+              stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+    EXPECT_EQ(5, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    EXPECT_EQ(2,
+              stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
+
+    // There are 10 session images because each session has an image with two
+    // sizes.
+    EXPECT_EQ(
+        10,
+        stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+    EXPECT_EQ(5, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+  }
+
+  // Check the URLs are present in the tables.
+  EXPECT_EQ(all_urls, GetURLsInTable(MediaHistoryPlaybackTable::kTableName));
+  EXPECT_EQ(all_urls, GetURLsInTable(MediaHistorySessionTable::kTableName));
+  EXPECT_EQ(images, GetURLsInTable(MediaHistoryImagesTable::kTableName));
+  EXPECT_EQ(media_feeds, GetURLsInTable(MediaHistoryFeedsTable::kTableName));
+
+  MaybeSetSavingBrowsingHistoryDisabled();
+
+  {
+    base::CancelableTaskTracker task_tracker;
+
+    // Expire url1a and url1b.
+    std::vector<history::ExpireHistoryArgs> expire_list;
+    history::ExpireHistoryArgs args;
+    args.urls.insert(url1a);
+    args.urls.insert(url1b);
+    args.SetTimeRangeForOneDay(base::Time::Now());
+    expire_list.push_back(args);
+
+    history->ExpireHistory(expire_list, base::DoNothing(), &task_tracker);
+    mock_time_task_runner_->RunUntilIdle();
+
+    // Wait for the database to update.
+    WaitForDB();
+  }
+
+  {
+    // Check that the tables have the right count in them.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+    EXPECT_EQ(3,
+              stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+    EXPECT_EQ(3, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+    EXPECT_EQ(2,
+              stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
+
+    // There are 6 session images because each session has an image with two
+    // sizes.
+    EXPECT_EQ(
+        6, stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+    EXPECT_EQ(3, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+  }
+
+  // Check we only have the remaining URLs in the tables.
+  EXPECT_EQ(remaining, GetURLsInTable(MediaHistoryPlaybackTable::kTableName));
+  EXPECT_EQ(remaining, GetURLsInTable(MediaHistorySessionTable::kTableName));
+  EXPECT_EQ(remaining_images,
+            GetURLsInTable(MediaHistoryImagesTable::kTableName));
+  EXPECT_EQ(media_feeds, GetURLsInTable(MediaHistoryFeedsTable::kTableName));
 }
 
 }  // namespace media_history

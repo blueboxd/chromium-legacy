@@ -2791,14 +2791,22 @@ bool AXObject::IsScrollableContainer() const {
 }
 
 bool AXObject::IsUserScrollable() const {
-  if (!GetScrollableAreaIfScrollable() || !GetLayoutObject())
-    return false;
+  // TODO(accessibility) Actually expose correct info on whether a doc is
+  // is scrollable or not. Unfortunately IsScrollableContainer() always returns
+  // true anyway. For now, just expose as scrollable unless overflow is hidden.
+  if (IsWebArea()) {
+    if (!GetScrollableAreaIfScrollable() || !GetLayoutObject())
+      return false;
 
-  const ComputedStyle* style = GetLayoutObject()->Style();
-  if (!style)
-    return false;
+    const ComputedStyle* style = GetLayoutObject()->Style();
+    if (!style)
+      return false;
 
-  return style->ScrollsOverflowY() || style->ScrollsOverflowX();
+    return style->ScrollsOverflowY() || style->ScrollsOverflowX();
+  }
+
+  return GetLayoutObject() && GetLayoutObject()->IsBox() &&
+         ToLayoutBox(GetLayoutObject())->CanBeScrolledAndHasScrollableArea();
 }
 
 IntPoint AXObject::GetScrollOffset() const {

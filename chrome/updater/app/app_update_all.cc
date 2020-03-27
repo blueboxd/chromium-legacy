@@ -42,14 +42,16 @@ void AppUpdateAll::Uninitialize() {
 // AppUpdateAll triggers an update of all registered applications.
 void AppUpdateAll::FirstTaskRun() {
   update_service_ = CreateUpdateService(config_);
-  update_service_->UpdateAll(base::BindOnce(
-      [](base::OnceCallback<void(int)> quit, update_client::Error error) {
-        const int err = static_cast<int>(error);
-        VLOG(0) << "UpdateAll complete: error = " << err << "(0x" << std::hex
-                << err << ").";
-        std::move(quit).Run(static_cast<int>(error));
-      },
-      base::BindOnce(&AppUpdateAll::Shutdown, this)));
+  update_service_->UpdateAll(
+      base::BindRepeating([](UpdateService::UpdateState) {}),
+      base::BindOnce(
+          [](base::OnceCallback<void(int)> quit, update_client::Error error) {
+            const int err = static_cast<int>(error);
+            VLOG(0) << "UpdateAll complete: error = " << err << "(0x"
+                    << std::hex << err << ").";
+            std::move(quit).Run(static_cast<int>(error));
+          },
+          base::BindOnce(&AppUpdateAll::Shutdown, this)));
 }
 
 scoped_refptr<App> AppUpdateAllInstance() {

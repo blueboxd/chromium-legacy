@@ -413,11 +413,6 @@ const base::Feature kSubresourceRedirect{"SubresourceRedirect",
 const base::Feature kCompositeCrossOriginIframes{
     "CompositeCrossOriginIframes", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When 'enabled', an accurate occlusion test will be performed to improve the
-// quality of viz hit test data.
-const base::Feature kVizHitTestOcclusionCheck{
-    "VizHitTestOcclusionCheck", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, beacons (and friends) have ResourceLoadPriority::kLow,
 // not ResourceLoadPriority::kVeryLow.
 const base::Feature kSetLowPriorityForBeacon{"SetLowPriorityForBeacon",

@@ -48,7 +48,7 @@ TEST_F(CookieSettingsPolicyHandlerTest, ThirdPartyCookieBlockingEnabled) {
   const base::Value* value;
   ASSERT_TRUE(store_->GetValue(prefs::kCookieControlsMode, &value));
   EXPECT_EQ(static_cast<CookieControlsMode>(value->GetInt()),
-            CookieControlsMode::kOff);
+            CookieControlsMode::kOn);
 }
 
 TEST_F(CookieSettingsPolicyHandlerTest, ThirdPartyCookieBlockingDisabled) {

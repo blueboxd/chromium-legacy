@@ -100,7 +100,6 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   deadline_in_frames_ = 0u;
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
-  layer_impl->SetUnoccludedForHitTesting(unoccluded_for_hit_testing_);
   layer_impl->SetHasPointerEventsNone(has_pointer_events_none_);
   layer_impl->SetIsReflection(is_reflection_);
 }

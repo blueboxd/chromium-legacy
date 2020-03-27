@@ -109,8 +109,10 @@ fyi_goma_canary_builder(
     name = 'ios-device-goma-canary-clobber',
     caches = [xcode_cache.x11c29],
     cores = None,
-    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
+    properties = {
+      'xcode_build_version': '11c29'
+    }
 )
 
 fyi_goma_canary_builder(
@@ -183,8 +185,10 @@ fyi_goma_rbe_canary_builder(
     name = 'ios-device-goma-rbe-canary-clobber',
     caches = [xcode_cache.x11c29],
     cores = None,
-    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
+    properties = {
+      'xcode_build_version': '11c29'
+    }
 )
 
 fyi_goma_rbe_canary_builder(
@@ -267,8 +271,10 @@ fyi_goma_latest_client_builder(
     name = 'ios-device-goma-latest-clobber',
     caches = [xcode_cache.x11c29],
     cores = None,
-    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
+    properties = {
+      'xcode_build_version': '11c29'
+    }
 )
 
 fyi_goma_latest_client_builder(
@@ -355,8 +361,10 @@ fyi_goma_rbe_latest_client_builder(
     name = 'ios-device-goma-rbe-latest-clobber',
     caches = [xcode_cache.x11c29],
     cores = None,
-    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
+    properties = {
+      'xcode_build_version': '11c29'
+    }
 )
 
 fyi_goma_rbe_latest_client_builder(

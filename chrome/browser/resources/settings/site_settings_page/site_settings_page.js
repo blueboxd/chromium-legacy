@@ -8,21 +8,7 @@
  * security site settings.
  */
 
-cr.define('settings', function() {
-  /**
-   * @typedef{{
-   *   route: !settings.Route,
-   *   id: settings.ContentSettingsTypes,
-   *   label: string,
-   *   icon: (string|undefined),
-   *   enabledLabel: (string|undefined),
-   *   disabledLabel: (string|undefined),
-   *   otherLabel: (string|undefined),
-   *   shouldShow: function():boolean,
-   * }}
-   */
-  let CategoryListItem;
-
+(function() {
   const Id = settings.ContentSettingsTypes;
 
   /**
@@ -485,7 +471,4 @@ cr.define('settings', function() {
           '';
     },
   });
-
-  // #cr_define_end
-  return {CategoryListItem};
-});
+})();

@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -148,12 +147,7 @@ void PageAnimator::UpdateAllLifecyclePhases(LocalFrame& root_frame,
   LocalFrameView* view = root_frame.View();
   base::AutoReset<bool> servicing(&updating_layout_and_style_for_painting_,
                                   true);
-  if (view->UpdateAllLifecyclePhases(reason)) {
-    // TODO(szager): Remove this scope after diagnosing crash.
-    DocumentLifecycle::CheckNoTransitionScope scope(
-        root_frame.GetDocument()->Lifecycle());
-    UpdateHitTestOcclusionData(root_frame);
-  }
+  view->UpdateAllLifecyclePhases(reason);
 }
 
 void PageAnimator::UpdateAllLifecyclePhasesExceptPaint(
@@ -173,15 +167,6 @@ void PageAnimator::UpdateLifecycleToLayoutClean(LocalFrame& root_frame,
   view->UpdateLifecycleToLayoutClean(reason);
 }
 
-void PageAnimator::UpdateHitTestOcclusionData(LocalFrame& root_frame) {
-  for (Frame* frame = &root_frame; frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsRemoteFrame())
-      continue;
-    To<RemoteFrame>(frame)->UpdateHitTestOcclusionData();
-  }
-}
-
 HeapVector<Member<Animation>> PageAnimator::GetAnimations(
     const TreeScope& tree_scope) {
   HeapVector<Member<Animation>> animations;
@@ -192,4 +177,5 @@ HeapVector<Member<Animation>> PageAnimator::GetAnimations(
   }
   return animations;
 }
+
 }  // namespace blink

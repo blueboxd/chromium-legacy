@@ -50,13 +50,6 @@ class WebContents;
 // switched to another tab). This is both a performance and quality improvement
 // since scaling and letterboxing steps can be skipped in the capture pipeline.
 //
-// Content-fullscreen (for macOS only):
-// First, the browser window will not be fullscreened. Second, the WebContents's
-// view will not be displayed in the browser window but rather in a
-// separate window, SeparateFullscreenWindow, which will be fullscreened and
-// moved to a new space. This enables the user to have both the browser window
-// and the fullscreen content displayed separately at the same time.
-
 // This class implements fullscreen behaviour.
 class FullscreenController : public ExclusiveAccessControllerBase {
  public:

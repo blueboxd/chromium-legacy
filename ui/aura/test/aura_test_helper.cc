@@ -29,6 +29,7 @@
 #include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/wm_state.h"
 
 #if defined(OS_LINUX)
@@ -55,13 +56,39 @@ AuraTestHelper* g_instance = nullptr;
 AuraTestHelper::AuraTestHelper() : AuraTestHelper(nullptr) {}
 
 AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
-    : env_(std::move(env)) {
-  // Disable animations during tests.
-  zero_duration_mode_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+    : wm_state_(std::make_unique<wm::WMState>()), env_(std::move(env)) {
+  DCHECK(!g_instance);
+  g_instance = this;
+
 #if defined(OS_LINUX)
   ui::test::EnableTestConfigForPlatformWindows();
 #endif
+
+  ui::InitializeInputMethodForTesting();
+
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&EventGeneratorDelegateAura::Create));
+
+  zero_duration_mode_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  // Some tests suites create Env globally.
+  if (Env::HasInstance())
+    context_factory_to_restore_ = Env::GetInstance()->context_factory();
+  else
+    env_ = Env::CreateInstance();
+
+  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
+  EnvTestHelper env_helper(GetEnv());
+  env_helper.ResetEnvForTesting();
+  // Unit tests generally don't want to query the system, rather use the state
+  // from RootWindow.
+  env_helper.SetInputStateLookup(nullptr);
+  env_helper.ResetEventState();
+
+  // This must be reset before creating TestScreen, which sets up the display
+  // scale factor for this test iteration.
+  display::Display::ResetForceDeviceScaleFactorForTesting();
 }
 
 AuraTestHelper::~AuraTestHelper() {
@@ -75,97 +102,77 @@ AuraTestHelper* AuraTestHelper::GetInstance() {
 }
 
 void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(
-      base::BindRepeating(&EventGeneratorDelegateAura::Create));
-
-  Env* env = GetEnv();
-
   setup_called_ = true;
 
-  wm_state_ = std::make_unique<wm::WMState>();
-
-  if (!env) {
-    // Some tests suites create Env globally rather than per test.
-    env_ = Env::CreateInstance();
-    env = env_.get();
-  }
-
-  EnvTestHelper env_helper(env);
-
-  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
-  env_helper.ResetEnvForTesting();
-
-  context_factory_to_restore_ = env->context_factory();
   if (!context_factory) {
     context_factories_ = std::make_unique<ui::TestContextFactories>(false);
     context_factory = context_factories_->GetContextFactory();
   }
-  env->set_context_factory(context_factory);
-  // Unit tests generally don't want to query the system, rather use the state
-  // from RootWindow.
-  env_helper.SetInputStateLookup(nullptr);
-  env_helper.ResetEventState();
-
-  ui::InitializeInputMethodForTesting();
+  GetEnv()->set_context_factory(context_factory);
 
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
                              : gfx::Size(800, 600));
 
-  // This must be reset before creating TestScreen, which sets up the display
-  // scale factor for this test iteration.
-  display::Display::ResetForceDeviceScaleFactorForTesting();
   test_screen_.reset(TestScreen::Create(host_size));
+  // TODO(pkasting): Seems like we should either always set the screen instance,
+  // or not create the screen/host if the test already has one; it doesn't make
+  // a lot of sense to me to potentially have multiple screens/hosts/etc. alive
+  // and be interacting with both depending on what accessors you use.
   if (!screen)
     display::Screen::SetScreenInstance(test_screen_.get());
+
   host_.reset(test_screen_->CreateHostForPrimaryDisplay());
   host_->window()->SetEventTargeter(std::make_unique<WindowTargeter>());
+  host_->SetBoundsInPixels(gfx::Rect(host_size));
 
   Window* root_window = GetContext();
   new wm::DefaultActivationClient(root_window);  // Manages own lifetime.
   focus_client_ = std::make_unique<TestFocusClient>(root_window);
   capture_client_ = std::make_unique<client::DefaultCaptureClient>(root_window);
   parenting_client_ = std::make_unique<TestWindowParentingClient>(root_window);
+  screen_position_client_ =
+      std::make_unique<wm::DefaultScreenPositionClient>(root_window);
 
   root_window->Show();
-  // Ensure width != height so tests won't confuse them.
-  host_->SetBoundsInPixels(gfx::Rect(host_size));
-
-  g_instance = this;
 }
 
 void AuraTestHelper::TearDown() {
-  g_instance = nullptr;
   teardown_called_ = true;
-  parenting_client_.reset();
-  capture_client_.reset();
-  focus_client_.reset();
-  host_.reset();
+
+  g_instance = nullptr;
 
   if (display::Screen::GetScreen() == test_screen_.get())
     display::Screen::SetScreenInstance(nullptr);
-  test_screen_.reset();
 
-  ui::ShutdownInputMethodForTesting();
-
-  context_factories_.reset();
-
-  if (env_) {
-    env_.reset();
-  } else {
-    Env* env = GetEnv();
-    env->set_context_factory(context_factory_to_restore_);
-  }
-  wm_state_.reset();
+  if (!env_)
+    Env::GetInstance()->set_context_factory(context_factory_to_restore_);
 
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
 
+  ui::ShutdownInputMethodForTesting();
+
+  // Destroy all owned objects to prevent tests from depending on their state
+  // after this returns.
+  screen_position_client_.reset();
+  parenting_client_.reset();
+  capture_client_.reset();
+  focus_client_.reset();
+  host_.reset();
+  test_screen_.reset();
+  context_factories_.reset();
+  env_.reset();
+  zero_duration_mode_.reset();
+  wm_state_.reset();
+
 #if defined(OS_WIN)
-  // NativeWindowOcclusionTrackerWin is a global instance which creates its own
-  // task runner. Since ThreadPool is destroyed together with TaskEnvironment,
-  // NativeWindowOcclusionTrackerWin instance must be deleted as well and
-  // recreated on demand in other test.
+  // TODO(pkasting): This code doesn't really belong here.
+  // NativeWindowOcclusionTrackerWin is created on demand by various tests, must
+  // be torn down before the TaskEnvironment (which our owner is responsible
+  // for), and must be torn down after all Windows (so, after e.g. |host_|).
+  // Ideally, some specific class would create it and manage its lifetime,
+  // guaranteeing the above.
   NativeWindowOcclusionTrackerWin::DeleteInstanceForTesting();
 #endif
 }

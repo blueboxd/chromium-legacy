@@ -6,19 +6,23 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/e2e_tests/live_test.h"
 #include "chrome/browser/signin/e2e_tests/test_accounts_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "components/sync/driver/sync_service.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -32,36 +36,44 @@
 namespace signin {
 namespace test {
 
-// IdentityManager observer allowing to wait for sign out events for several
-// accounts.
-// Counts both token removals and token persistent errors as sign out events.
-class SignOutTestObserver : public IdentityManager::Observer,
-                            public AccountReconcilor::Observer {
+enum class PrimarySyncAccountWait { kWaitForAdded, kWaitForCleared, kNotWait };
+
+// Observes various sign-in events and allows to wait for a specific state of
+// signed-in accounts.
+class SignInTestObserver : public IdentityManager::Observer,
+                           public AccountReconcilor::Observer {
  public:
-  explicit SignOutTestObserver(IdentityManager* identity_manager,
-                               AccountReconcilor* reconcilor)
+  explicit SignInTestObserver(IdentityManager* identity_manager,
+                              AccountReconcilor* reconcilor)
       : identity_manager_(identity_manager), reconcilor_(reconcilor) {
     identity_manager_->AddObserver(this);
     reconcilor_->AddObserver(this);
   }
-  ~SignOutTestObserver() override {
+  ~SignInTestObserver() override {
     identity_manager_->RemoveObserver(this);
     reconcilor_->RemoveObserver(this);
   }
 
   // IdentityManager::Observer:
-  void OnRefreshTokenRemovedForAccount(
-      const CoreAccountId& account_id) override {
-    ++signed_out_accounts_;
+  void OnPrimaryAccountSet(const CoreAccountInfo&) override {
+    QuitIfConditionIsSatisfied();
+  }
+  void OnPrimaryAccountCleared(const CoreAccountInfo&) override {
+    QuitIfConditionIsSatisfied();
+  }
+  void OnRefreshTokenUpdatedForAccount(const CoreAccountInfo&) override {
+    QuitIfConditionIsSatisfied();
+  }
+  void OnRefreshTokenRemovedForAccount(const CoreAccountId&) override {
     QuitIfConditionIsSatisfied();
   }
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
-      const CoreAccountInfo& account_info,
-      const GoogleServiceAuthError& error) override {
-    if (!error.IsPersistentError())
-      return;
-
-    ++signed_out_accounts_;
+      const CoreAccountInfo&,
+      const GoogleServiceAuthError&) override {
+    QuitIfConditionIsSatisfied();
+  }
+  void OnAccountsInCookieUpdated(const AccountsInCookieJarInfo&,
+                                 const GoogleServiceAuthError&) override {
     QuitIfConditionIsSatisfied();
   }
 
@@ -75,23 +87,86 @@ class SignOutTestObserver : public IdentityManager::Observer,
     }
   }
 
-  void WaitForRefreshTokenRemovedForAccounts(int expected_accounts) {
-    expected_accounts_ = expected_accounts;
+  void WaitForAccountChanges(int signed_in_accounts,
+                             PrimarySyncAccountWait primary_sync_account_wait) {
+    expected_signed_in_accounts_ = signed_in_accounts;
+    primary_sync_account_wait_ = primary_sync_account_wait;
+    are_expectations_set = true;
     QuitIfConditionIsSatisfied();
     run_loop_.Run();
   }
 
  private:
   void QuitIfConditionIsSatisfied() {
-    if (expected_accounts_ != -1 && signed_out_accounts_ >= expected_accounts_)
-      run_loop_.Quit();
+    if (!are_expectations_set)
+      return;
+
+    int accounts_with_valid_refresh_token =
+        CountAccountsWithValidRefreshToken();
+    int accounts_in_cookie = CountSignedInAccountsInCookie();
+
+    if (accounts_with_valid_refresh_token != accounts_in_cookie ||
+        accounts_with_valid_refresh_token != expected_signed_in_accounts_) {
+      return;
+    }
+
+    bool has_valid_primary_sync_account = HasValidPrimarySyncAccount();
+    switch (primary_sync_account_wait_) {
+      case PrimarySyncAccountWait::kWaitForAdded:
+        if (!has_valid_primary_sync_account)
+          return;
+        break;
+      case PrimarySyncAccountWait::kWaitForCleared:
+        if (has_valid_primary_sync_account)
+          return;
+        break;
+      case PrimarySyncAccountWait::kNotWait:
+        break;
+    }
+
+    run_loop_.Quit();
   }
 
-  signin::IdentityManager* identity_manager_;
-  AccountReconcilor* reconcilor_;
+  int CountAccountsWithValidRefreshToken() const {
+    std::vector<CoreAccountInfo> accounts_with_refresh_tokens =
+        identity_manager_->GetAccountsWithRefreshTokens();
+    int valid_accounts = 0;
+    for (const auto& account_info : accounts_with_refresh_tokens) {
+      if (!identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+              account_info.account_id)) {
+        ++valid_accounts;
+      }
+    }
+    return valid_accounts;
+  }
+
+  int CountSignedInAccountsInCookie() const {
+    signin::AccountsInCookieJarInfo accounts_in_cookie_jar =
+        identity_manager_->GetAccountsInCookieJar();
+    if (!accounts_in_cookie_jar.accounts_are_fresh)
+      return -1;
+
+    return accounts_in_cookie_jar.signed_in_accounts.size();
+  }
+
+  bool HasValidPrimarySyncAccount() const {
+    CoreAccountId primary_account_id =
+        identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSync);
+    if (primary_account_id.empty())
+      return false;
+
+    return !identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+        primary_account_id);
+  }
+
+  signin::IdentityManager* const identity_manager_;
+  AccountReconcilor* const reconcilor_;
   base::RunLoop run_loop_;
-  int signed_out_accounts_ = 0;
-  int expected_accounts_ = -1;
+
+  bool are_expectations_set = false;
+  int expected_signed_in_accounts_ = 0;
+  PrimarySyncAccountWait primary_sync_account_wait_ =
+      PrimarySyncAccountWait::kNotWait;
 };
 
 // Live tests for SignIn.
@@ -107,71 +182,82 @@ class LiveSignInTest : public signin::test::LiveTest {
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   }
 
-  void SignInFromWeb(const TestAccount& test_account) {
+  void SignInFromWeb(const TestAccount& test_account,
+                     int previously_signed_in_accounts) {
     AddTabAtIndex(0, GaiaUrls::GetInstance()->add_account_url(),
                   ui::PageTransition::PAGE_TRANSITION_TYPED);
-    SignInFromCurrentPage(test_account);
+    SignInFromCurrentPage(test_account, previously_signed_in_accounts);
   }
 
-  void SignInFromSettings(const TestAccount& test_account) {
+  void SignInFromSettings(const TestAccount& test_account,
+                          int previously_signed_in_accounts) {
     GURL settings_url("chrome://settings");
     AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
     auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(content::ExecuteScript(
         settings_tab,
         "settings.SyncBrowserProxyImpl.getInstance().startSignIn()"));
-    SignInFromCurrentPage(test_account);
+    SignInFromCurrentPage(test_account, previously_signed_in_accounts);
   }
 
-  void SignInFromCurrentPage(const TestAccount& test_account) {
-    TestIdentityManagerObserver observer(identity_manager());
-    base::RunLoop cookie_update_loop;
-    observer.SetOnAccountsInCookieUpdatedCallback(
-        cookie_update_loop.QuitClosure());
-    base::RunLoop refresh_token_update_loop;
-    observer.SetOnRefreshTokenUpdatedCallback(
-        refresh_token_update_loop.QuitClosure());
+  void SignInFromCurrentPage(const TestAccount& test_account,
+                             int previously_signed_in_accounts) {
+    SignInTestObserver observer(identity_manager(), account_reconcilor());
     login_ui_test_utils::ExecuteJsToSigninInSigninFrame(
         browser(), test_account.user, test_account.password);
-    cookie_update_loop.Run();
-    refresh_token_update_loop.Run();
+    observer.WaitForAccountChanges(previously_signed_in_accounts + 1,
+                                   PrimarySyncAccountWait::kNotWait);
   }
 
-  void TurnOnSync(const TestAccount& test_account) {
-    SignInFromSettings(test_account);
+  void TurnOnSync(const TestAccount& test_account,
+                  int previously_signed_in_accounts) {
+    SignInFromSettings(test_account, previously_signed_in_accounts);
 
-    TestIdentityManagerObserver observer(identity_manager());
-    base::RunLoop primary_account_set_loop;
-    observer.SetOnPrimaryAccountSetCallback(
-        primary_account_set_loop.QuitClosure());
-    login_ui_test_utils::ConfirmSyncConfirmationDialog(
-        browser(), base::TimeDelta::FromSeconds(3));
-    primary_account_set_loop.Run();
+    SignInTestObserver observer(identity_manager(), account_reconcilor());
+    EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
+        browser(), base::TimeDelta::FromSeconds(3)));
+    observer.WaitForAccountChanges(previously_signed_in_accounts + 1,
+                                   PrimarySyncAccountWait::kWaitForAdded);
   }
 
-  void SignOutFromWeb(size_t signed_in_accounts) {
-    TestIdentityManagerObserver observer(identity_manager());
-    base::RunLoop cookie_update_loop;
-    observer.SetOnAccountsInCookieUpdatedCallback(
-        cookie_update_loop.QuitClosure());
-    SignOutTestObserver sign_out_observer(identity_manager(),
-                                          account_reconcilor());
+  void SignOutFromWeb() {
+    SignInTestObserver observer(identity_manager(), account_reconcilor());
     AddTabAtIndex(0, GaiaUrls::GetInstance()->service_logout_url(),
                   ui::PageTransition::PAGE_TRANSITION_TYPED);
-    cookie_update_loop.Run();
-    sign_out_observer.WaitForRefreshTokenRemovedForAccounts(signed_in_accounts);
+    observer.WaitForAccountChanges(0, PrimarySyncAccountWait::kNotWait);
+  }
+
+  void TurnOffSync() {
+    GURL settings_url("chrome://settings");
+    AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
+    SignInTestObserver observer(identity_manager(), account_reconcilor());
+    auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_TRUE(content::ExecuteScript(
+        settings_tab,
+        "settings.SyncBrowserProxyImpl.getInstance().signOut(false)"));
+    observer.WaitForAccountChanges(0, PrimarySyncAccountWait::kWaitForCleared);
   }
 
   signin::IdentityManager* identity_manager() {
-    return IdentityManagerFactory::GetForProfile(browser()->profile());
+    return identity_manager(browser());
   }
 
-  syncer::SyncService* sync_service() {
-    return ProfileSyncServiceFactory::GetForProfile(browser()->profile());
+  signin::IdentityManager* identity_manager(Browser* browser) {
+    return IdentityManagerFactory::GetForProfile(browser->profile());
+  }
+
+  syncer::SyncService* sync_service() { return sync_service(browser()); }
+
+  syncer::SyncService* sync_service(Browser* browser) {
+    return ProfileSyncServiceFactory::GetForProfile(browser->profile());
   }
 
   AccountReconcilor* account_reconcilor() {
-    return AccountReconcilorFactory::GetForProfile(browser()->profile());
+    return account_reconcilor(browser());
+  }
+
+  AccountReconcilor* account_reconcilor(Browser* browser) {
+    return AccountReconcilorFactory::GetForProfile(browser->profile());
   }
 };
 
@@ -183,7 +269,7 @@ class LiveSignInTest : public signin::test::LiveTest {
 IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_SimpleSignInFlow) {
   TestAccount ta;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", ta));
-  SignInFromSettings(ta);
+  SignInFromSettings(ta, 0);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
@@ -194,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_SimpleSignInFlow) {
       accounts_in_cookie_jar.signed_in_accounts[0];
   EXPECT_TRUE(gaia::AreEmailsSame(ta.user, account.email));
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account.id));
-  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
 }
 
 // This test can pass. Marked as manual because it TIMED_OUT on Win7.
@@ -206,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_SimpleSignInFlow) {
 IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignOut) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
-  TurnOnSync(test_account);
+  TurnOnSync(test_account, 0);
 
   const CoreAccountInfo& primary_account =
       identity_manager()->GetPrimaryAccountInfo();
@@ -214,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignOut) {
   EXPECT_TRUE(gaia::AreEmailsSame(test_account.user, primary_account.email));
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
-  SignOutFromWeb(1);
+  SignOutFromWeb();
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
@@ -242,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignOut) {
 IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignInAndSignOut) {
   TestAccount test_account_1;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
-  SignInFromWeb(test_account_1);
+  SignInFromWeb(test_account_1, 0);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_1 =
       identity_manager()->GetAccountsInCookieJar();
@@ -257,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignInAndSignOut) {
 
   TestAccount test_account_2;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_2", test_account_2));
-  SignInFromWeb(test_account_2);
+  SignInFromWeb(test_account_2, 1);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_2 =
       identity_manager()->GetAccountsInCookieJar();
@@ -271,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignInAndSignOut) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_2.id));
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 
-  SignOutFromWeb(2);
+  SignOutFromWeb();
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_3 =
       identity_manager()->GetAccountsInCookieJar();
@@ -290,11 +376,11 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignInAndSignOut) {
 IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_TurnOffSync) {
   TestAccount test_account_1;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
-  TurnOnSync(test_account_1);
+  TurnOnSync(test_account_1, 0);
 
   TestAccount test_account_2;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_2", test_account_2));
-  SignInFromWeb(test_account_2);
+  SignInFromWeb(test_account_2, 1);
 
   const CoreAccountInfo& primary_account =
       identity_manager()->GetPrimaryAccountInfo();
@@ -302,24 +388,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_TurnOffSync) {
   EXPECT_TRUE(gaia::AreEmailsSame(test_account_1.user, primary_account.email));
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
-  GURL settings_url("chrome://settings");
-  AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
-  TestIdentityManagerObserver observer(identity_manager());
-  base::RunLoop cookie_update_loop;
-  observer.SetOnAccountsInCookieUpdatedCallback(
-      cookie_update_loop.QuitClosure());
-  base::RunLoop primary_account_cleared_loop;
-  observer.SetOnPrimaryAccountClearedCallback(
-      primary_account_cleared_loop.QuitClosure());
-  SignOutTestObserver sign_out_observer(identity_manager(),
-                                        account_reconcilor());
-  auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::ExecuteScript(
-      settings_tab,
-      "settings.SyncBrowserProxyImpl.getInstance().signOut(false)"));
-  primary_account_cleared_loop.Run();
-  sign_out_observer.WaitForRefreshTokenRemovedForAccounts(2);
-  cookie_update_loop.Run();
+  TurnOffSync();
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar_2 =
       identity_manager()->GetAccountsInCookieJar();
@@ -337,8 +406,9 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_TurnOffSync) {
 IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSyncWithWebAccount) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
-  SignInFromWeb(test_account);
+  SignInFromWeb(test_account, 0);
 
+  SignInTestObserver observer(identity_manager(), account_reconcilor());
   GURL settings_url("chrome://settings");
   AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
   auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -347,8 +417,9 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSyncWithWebAccount) {
       base::StringPrintf("settings.SyncBrowserProxyImpl.getInstance()."
                          "startSyncingWithEmail(\"%s\", true)",
                          test_account.user.c_str())));
-  login_ui_test_utils::CancelSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3));
+  EXPECT_TRUE(login_ui_test_utils::CancelSyncConfirmationDialog(
+      browser(), base::TimeDelta::FromSeconds(3)));
+  observer.WaitForAccountChanges(1, PrimarySyncAccountWait::kWaitForCleared);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
@@ -369,24 +440,93 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSyncWithWebAccount) {
 IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSync) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
-  SignInFromSettings(test_account);
+  SignInFromSettings(test_account, 0);
 
-  TestIdentityManagerObserver observer(identity_manager());
-  base::RunLoop cookie_update_loop;
-  observer.SetOnAccountsInCookieUpdatedCallback(
-      cookie_update_loop.QuitClosure());
-  SignOutTestObserver sign_out_observer(identity_manager(),
-                                        account_reconcilor());
-  login_ui_test_utils::CancelSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3));
-
-  cookie_update_loop.Run();
-  sign_out_observer.WaitForRefreshTokenRemovedForAccounts(1);
+  SignInTestObserver observer(identity_manager(), account_reconcilor());
+  EXPECT_TRUE(login_ui_test_utils::CancelSyncConfirmationDialog(
+      browser(), base::TimeDelta::FromSeconds(3)));
+  observer.WaitForAccountChanges(0, PrimarySyncAccountWait::kWaitForCleared);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar.accounts_are_fresh);
   EXPECT_TRUE(accounts_in_cookie_jar.signed_in_accounts.empty());
+  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+}
+
+// This test can pass. Marked as manual because it TIMED_OUT on Win7.
+// See crbug.com/1025335.
+// Enables and disables sync to account 1. Enables sync to account 2 and clicks
+// on "This wasn't me" in the email confirmation dialog. Checks that the new
+// profile is created. Checks that Sync to account 2 is enabled in the new
+// profile. Checks that account 2 was removed from the original profile.
+IN_PROC_BROWSER_TEST_F(LiveSignInTest,
+                       MANUAL_SyncSecondAccountCreateNewProfile) {
+  // Enable and disable sync for the first account.
+  TestAccount test_account_1;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
+  TurnOnSync(test_account_1, 0);
+  TurnOffSync();
+
+  // Start enable sync for the second account.
+  TestAccount test_account_2;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_2", test_account_2));
+  SignInFromSettings(test_account_2, 0);
+
+  // Set up an observer for removing the second account from the original
+  // profile.
+  SignInTestObserver original_browser_observer(identity_manager(),
+                                               account_reconcilor());
+
+  // Check there is only one profile.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_EQ(profile_manager->GetNumberOfProfiles(), 1U);
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
+
+  // Click "This wasn't me" on the email confirmation dialog and wait for a new
+  // browser and profile created.
+  EXPECT_TRUE(login_ui_test_utils::CompleteSigninEmailConfirmationDialog(
+      browser(), base::TimeDelta::FromSeconds(3),
+      SigninEmailConfirmationDialog::CREATE_NEW_USER));
+  Browser* new_browser = ui_test_utils::WaitForBrowserToOpen();
+  EXPECT_EQ(profile_manager->GetNumberOfProfiles(), 2U);
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 2U);
+  EXPECT_NE(browser()->profile(), new_browser->profile());
+
+  // Confirm sync in the new browser window.
+  SignInTestObserver new_browser_observer(identity_manager(new_browser),
+                                          account_reconcilor(new_browser));
+  EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
+      new_browser, base::TimeDelta::FromSeconds(3)));
+  new_browser_observer.WaitForAccountChanges(
+      1, PrimarySyncAccountWait::kWaitForAdded);
+
+  // Check accounts in cookies in the new profile.
+  const AccountsInCookieJarInfo& accounts_in_cookie_jar =
+      identity_manager(new_browser)->GetAccountsInCookieJar();
+  EXPECT_TRUE(accounts_in_cookie_jar.accounts_are_fresh);
+  ASSERT_EQ(1u, accounts_in_cookie_jar.signed_in_accounts.size());
+  const gaia::ListedAccount& account =
+      accounts_in_cookie_jar.signed_in_accounts[0];
+  EXPECT_TRUE(gaia::AreEmailsSame(test_account_2.user, account.email));
+
+  // Check the primary account in the new profile is set and syncing.
+  const CoreAccountInfo& primary_account =
+      identity_manager(new_browser)->GetPrimaryAccountInfo();
+  EXPECT_FALSE(primary_account.IsEmpty());
+  EXPECT_TRUE(gaia::AreEmailsSame(test_account_2.user, primary_account.email));
+  EXPECT_TRUE(identity_manager(new_browser)
+                  ->HasAccountWithRefreshToken(primary_account.account_id));
+  EXPECT_TRUE(sync_service(new_browser)->IsSyncFeatureEnabled());
+
+  // Check that the second account was removed from the original profile.
+  original_browser_observer.WaitForAccountChanges(
+      0, PrimarySyncAccountWait::kWaitForCleared);
+  const AccountsInCookieJarInfo& accounts_in_cookie_jar_2 =
+      identity_manager()->GetAccountsInCookieJar();
+  EXPECT_TRUE(accounts_in_cookie_jar_2.accounts_are_fresh);
+  ASSERT_TRUE(accounts_in_cookie_jar_2.signed_in_accounts.empty());
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }

@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -554,6 +555,8 @@ void UserSelectionScreen::Init(const user_manager::UserList& users) {
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (activity_detector && !activity_detector->HasObserver(this))
     activity_detector->AddObserver(this);
+  if (!ime_state_.get())
+    ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 }
 
 void UserSelectionScreen::OnBeforeUserRemoved(const AccountId& account_id) {
@@ -658,6 +661,45 @@ void UserSelectionScreen::CheckUserStatus(const AccountId& account_id) {
     }
     dircrypto_migration_checker_->Check(account_id);
   }
+}
+
+void UserSelectionScreen::HandleFocusPod(const AccountId& account_id) {
+  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
+  if (focused_pod_account_id_ == account_id)
+    return;
+  CheckUserStatus(account_id);
+  lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
+                                        ime_state_.get());
+  lock_screen_utils::SetKeyboardSettings(account_id);
+
+  bool use_24hour_clock = false;
+  if (user_manager::known_user::GetBooleanPref(
+          account_id, prefs::kUse24HourClock, &use_24hour_clock)) {
+    g_browser_process->platform_part()
+        ->GetSystemClock()
+        ->SetLastFocusedPodHourClockType(use_24hour_clock ? base::k24HourClock
+                                                          : base::k12HourClock);
+  }
+  focused_pod_account_id_ = account_id;
+}
+
+void UserSelectionScreen::HandleNoPodFocused() {
+  focused_pod_account_id_ = EmptyAccountId();
+  lock_screen_utils::EnforcePolicyInputMethods(std::string());
+}
+
+void UserSelectionScreen::OnAllowedInputMethodsChanged() {
+  if (focused_pod_account_id_.is_valid()) {
+    std::string user_input_method = lock_screen_utils::GetUserLastInputMethod(
+        focused_pod_account_id_.GetUserEmail());
+    lock_screen_utils::EnforcePolicyInputMethods(user_input_method);
+  } else {
+    lock_screen_utils::EnforcePolicyInputMethods(std::string());
+  }
+}
+
+void UserSelectionScreen::OnBeforeShow() {
+  input_method::InputMethodManager::Get()->SetState(ime_state_);
 }
 
 void UserSelectionScreen::OnUserStatusChecked(

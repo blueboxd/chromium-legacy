@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace base {
 class Pickle;
@@ -180,6 +181,11 @@ struct FormFieldData {
   // Password Manager doesn't use labels nor client side nor server side, so
   // label_source isn't in serialize methods.
   LabelSource label_source = LabelSource::kUnknown;
+
+  // The bounds of this field in current frame coordinates at the parse time. It
+  // is valid if not empty, will not be synced to the server side or be used for
+  // field comparison and isn't in serialize methods.
+  gfx::RectF bounds;
 };
 
 // Serialize and deserialize FormFieldData. These are used when FormData objects

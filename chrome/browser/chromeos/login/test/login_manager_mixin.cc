@@ -69,6 +69,12 @@ class TestUserRegistrationMainExtra : public ChromeBrowserMainExtraParts {
         user_type_update->SetKey(user.account_id.GetAccountIdKey(),
                                  base::Value(static_cast<int>(user.user_type)));
 
+        DictionaryPrefUpdate user_token_update(g_browser_process->local_state(),
+                                               "OAuthTokenStatus");
+        user_token_update->SetKey(
+            user.account_id.GetUserEmail(),
+            base::Value(static_cast<int>(user.token_status)));
+
         user_manager::known_user::UpdateId(user.account_id);
 
         if (user.user_type == user_manager::USER_TYPE_CHILD) {

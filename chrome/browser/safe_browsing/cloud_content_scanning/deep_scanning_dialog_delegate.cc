@@ -40,6 +40,7 @@
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
+#include "components/policy/core/common/chrome_schema.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
@@ -409,7 +410,10 @@ DeepScanningDialogDelegate::DeepScanningDialogDelegate(
     : web_contents_(web_contents),
       data_(std::move(data)),
       callback_(std::move(callback)),
-      access_point_(access_point) {
+      access_point_(access_point),
+      handler_("CheckContentCompliance",
+               prefs::kCheckContentCompliance,
+               policy::GetChromeSchema()) {
   DCHECK(web_contents_);
   result_.text_results.resize(data_.text.size(), false);
   result_.paths_results.resize(data_.paths.size(), false);

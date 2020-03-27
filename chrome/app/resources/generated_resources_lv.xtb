@@ -1703,6 +1703,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3264544094376351444">Sans-Serif fonts</translation>
 <translation id="3264582393905923483">Konteksts</translation>
 <translation id="3265459715026181080">Aizvērt logu</translation>
+<translation id="3266274118485960573">Ir sākta drošības pārbaude.</translation>
 <translation id="3267726687589094446">Atļaut vairāku failu automātisku lejupielādēšanu arī turpmāk</translation>
 <translation id="3268451620468152448">Atvērtās cilnes</translation>
 <translation id="3269069891205016797">Jūsu informācija tiks noņemta no ierīces, kad jūs izrakstīsieties.</translation>
@@ -1808,6 +1809,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3412265149091626468">Pāriet uz atlasi</translation>
 <translation id="3413122095806433232">CA izsniedzēji: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Lielums:</translation>
+<translation id="3416468988018290825">Vienmēr rādīt visus vietrāžus URL</translation>
 <translation id="3420501302812554910">Jāatiestata iekšējā drošības atslēga</translation>
 <translation id="3421387094817716717">Eliptiskas līknes publiskā atslēga</translation>
 <translation id="3422291238483866753">Vaicāt, ja vietne vēlas izveidot jūsu apkārtnes 3D karti vai izsekot kameras pozīciju (ieteicams)</translation>
@@ -4164,6 +4166,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6586451623538375658">Apmainīt galveno peles pogu</translation>
 <translation id="6586604979641883411">Lai jauninātu Linux, nepieciešama brīva vieta diskā vismaz <ph name="REQUIRED_SPACE" /> apjomā. Lūdzu, atbrīvojiet vietu savā ierīcē un mēģiniet vēlreiz.</translation>
 <translation id="6588043302623806746">Lietot drošu DNS serveri</translation>
+<translation id="659005207229852190">Drošības pārbaude tika pabeigta.</translation>
 <translation id="6590458744723262880">Mapes pārdēvēšana</translation>
 <translation id="6592267180249644460">WebRTC žurnāls — ierakstīts šādā datumā: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Jūsu pirksta nospiedums tika reģistrēts.</translation>
@@ -5423,6 +5426,7 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8249672078237421304">Piedāvāt tulkot lapas, kas nav manā valodā</translation>
 <translation id="8251441930213048644">Atsvaidzināt tūlīt</translation>
 <translation id="8251578425305135684">Sīktēls ir noņemts.</translation>
+<translation id="825238165904109940">Vienmēr rādīt visus vietrāžus URL</translation>
 <translation id="8252569384384439529">Notiek augšupielāde...</translation>
 <translation id="8253198102038551905">Noklikšķiniet uz “+”, lai iegūtu tīkla rekvizītus</translation>
 <translation id="8254954272268479918">Izslēgt Linux (Beta)</translation>

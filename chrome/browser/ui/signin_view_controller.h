@@ -13,6 +13,10 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
+#endif
+
 #if defined(OS_ANDROID)
 #error This file should only be included on desktop.
 #endif
@@ -75,6 +79,14 @@ class SigninViewController {
   void ShowDiceAddAccountTab(Browser* browser,
                              signin_metrics::AccessPoint access_point,
                              const std::string& email_hint);
+
+  // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
+  // top of the currently displayed WebContents in |browser|.
+  void ShowModalSigninEmailConfirmationDialog(
+      Browser* browser,
+      const std::string& last_email,
+      const std::string& email,
+      base::OnceCallback<void(SigninEmailConfirmationDialog::Action)> callback);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top

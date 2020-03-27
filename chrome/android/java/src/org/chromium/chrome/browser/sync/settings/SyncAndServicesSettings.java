@@ -62,7 +62,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
@@ -482,7 +482,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         }
 
         if (mCurrentSyncError == SyncError.AUTH_ERROR) {
-            AccountManagerFacade.get().updateCredentials(
+            AccountManagerFacadeProvider.getInstance().updateCredentials(
                     CoreAccountInfo.getAndroidAccountFrom(IdentityServicesProvider.get()
                                                                   .getIdentityManager()
                                                                   .getPrimaryAccountInfo()),

@@ -764,6 +764,10 @@ views::Button* LoginAuthUserView::TestApi::external_binary_enrollment_button()
   return view_->external_binary_enrollment_button_;
 }
 
+bool LoginAuthUserView::TestApi::HasAuthMethod(AuthMethods auth_method) const {
+  return view_->HasAuthMethod(auth_method);
+}
+
 LoginAuthUserView::Callbacks::Callbacks() = default;
 
 LoginAuthUserView::Callbacks::Callbacks(const Callbacks& other) = default;

@@ -121,11 +121,9 @@ ACTION_P(QuitLoop, run_loop) {
   base::PostTask(FROM_HERE, run_loop->QuitClosure());
 }
 
-// Tests MediaService built into a standalone mojo service binary (see
-// ServiceMain() in main.cc) where MediaService uses TestMojoMediaClient.
-// TestMojoMediaClient supports CDM creation using DefaultCdmFactory (only
-// supports Clear Key key system), and Renderer creation using
-// DefaultRendererFactory that always create media::RendererImpl.
+// Tests MediaService using TestMojoMediaClient, which supports CDM creation
+// using DefaultCdmFactory (only supports Clear Key key system), and Renderer
+// creation using DefaultRendererFactory that always create media::RendererImpl.
 class MediaServiceTest : public testing::Test {
  public:
   MediaServiceTest()

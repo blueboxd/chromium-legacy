@@ -135,12 +135,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         }
         assertThat(mIsAnimating, equalTo(true));
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mRecyclerView.getAlpha() == 1.0f;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(1.0f, mRecyclerView::getAlpha));
     }
 
     @Test
@@ -187,14 +182,8 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
             assertThat(mRecyclerView.getAlpha(), equalTo(1.0f));
         }
         assertThat(mIsAnimating, equalTo(true));
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // Invisibility signals the end of the animation, not alpha being zero.
-                return mRecyclerView.getVisibility() == View.INVISIBLE;
-            }
-        });
+        // Invisibility signals the end of the animation, not alpha being zero.
+        CriteriaHelper.pollUiThread(Criteria.equals(View.INVISIBLE, mRecyclerView::getVisibility));
         assertThat(mRecyclerView.getAlpha(), equalTo(0.0f));
     }
 

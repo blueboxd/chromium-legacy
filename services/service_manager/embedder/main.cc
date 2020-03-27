@@ -388,11 +388,7 @@ int Main(const MainParams& params) {
     // sandboxed process. The defines below must be in sync with the
     // implementation of mojo::NodeController::CreateSharedBuffer().
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
-    // TODO(dcheng): The separate check for |is_broker_process| should not be
-    // required, but avoid changing the behavior of IsUnsandboxedSandboxType()
-    // for now.
-    if (mojo_config.is_broker_process ||
-        service_manager::IsUnsandboxedSandboxType(
+    if (service_manager::IsUnsandboxedSandboxType(
             service_manager::SandboxTypeFromCommandLine(command_line))) {
       // Unsandboxed processes don't need shared memory brokering... because
       // they're not sandboxed.
@@ -400,6 +396,9 @@ int Main(const MainParams& params) {
       // Don't bother with hooks if direct shared memory allocation has been
       // requested.
     } else {
+      // Sanity check, since installing the shared memory hooks in a broker
+      // process will lead to infinite recursion.
+      DCHECK(!mojo_config.is_broker_process);
       // Otherwise, this is a sandboxed process that will need brokering to
       // allocate shared memory.
       base::SharedMemoryHooks::SetCreateHooks(

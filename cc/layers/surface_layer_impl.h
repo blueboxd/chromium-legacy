@@ -58,13 +58,6 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   void SetSurfaceHitTestable(bool surface_hit_testable);
   bool surface_hit_testable() const { return surface_hit_testable_; }
 
-  void SetUnoccludedForHitTesting(bool unoccluded) {
-    unoccluded_for_hit_testing_ = unoccluded;
-  }
-  bool unoccluded_for_hit_testing() const {
-    return unoccluded_for_hit_testing_;
-  }
-
   void SetHasPointerEventsNone(bool has_pointer_events_none);
   bool has_pointer_events_none() const { return has_pointer_events_none_; }
 
@@ -96,7 +89,6 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
 
   bool stretch_content_to_fill_bounds_ = false;
   bool surface_hit_testable_ = false;
-  bool unoccluded_for_hit_testing_ = false;
   bool has_pointer_events_none_ = false;
   bool is_reflection_ = false;
   bool will_draw_ = false;

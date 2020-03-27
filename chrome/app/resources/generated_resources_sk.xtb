@@ -1702,6 +1702,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3264544094376351444">Bezpätkové písmo</translation>
 <translation id="3264582393905923483">Kontext</translation>
 <translation id="3265459715026181080">Zatvoriť okno</translation>
+<translation id="3266274118485960573">Prebieha kontrola bezpečnosti.</translation>
 <translation id="3267726687589094446">Naďalej povoľovať automatické sťahovanie viacerých súborov súčasne</translation>
 <translation id="3268451620468152448">Otvorené karty</translation>
 <translation id="3269069891205016797">Po odhlásení sa vaše informácie odstránia zo zariadenia.</translation>
@@ -1807,6 +1808,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3412265149091626468">Prejsť na výber</translation>
 <translation id="3413122095806433232">Vydavatelia CA: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
+<translation id="3416468988018290825">Vždy zobrazovať celé webové adresy</translation>
 <translation id="3420501302812554910">Vyžaduje sa resetovanie interného bezpečného kľúča</translation>
 <translation id="3421387094817716717">Verejný kľúč založený na eliptickej krivke</translation>
 <translation id="3422291238483866753">Opýtať sa, keď chce web vytvoriť 3D mapu vášho okolia alebo sledovať umiestnenie kamier (odporúčané)</translation>
@@ -4163,6 +4165,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6586451623538375658">Zameniť primárne tlačidlo myši</translation>
 <translation id="6586604979641883411">Na inováciu systému Linux sa vyžaduje minimálne <ph name="REQUIRED_SPACE" /> voľného priestoru na disku. Uvoľnite priestor vo svojom zariadení a skúste to znova.</translation>
 <translation id="6588043302623806746">Používať zabezpečený server DNS</translation>
+<translation id="659005207229852190">Kontrola bezpečnosti bola dokončená.</translation>
 <translation id="6590458744723262880">Premenovanie priečinka</translation>
 <translation id="6592267180249644460">Denník WebRTC zaznamenaný <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Váš odtlačok prsta bol nasnímaný</translation>
@@ -5422,6 +5425,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8249672078237421304">Ponúkať preklad stránok, ktorým by ste nemuseli rozumieť</translation>
 <translation id="8251441930213048644">Ihneď obnoviť</translation>
 <translation id="8251578425305135684">Miniatúra odstránená.</translation>
+<translation id="825238165904109940">Vždy zobrazovať celé webové adresy</translation>
 <translation id="8252569384384439529">Nahráva sa...</translation>
 <translation id="8253198102038551905">Vlastnosti siete otvoríte kliknutím na tlačidlo plus (+)</translation>
 <translation id="8254954272268479918">Vypnúť Linux (beta)</translation>

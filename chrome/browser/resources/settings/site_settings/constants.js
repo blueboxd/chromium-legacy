@@ -123,7 +123,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/site_settings_handler.cc
    * @enum {number}
    */
-  const AllSitesAction = {
+  /* #export */ const AllSitesAction = {
     LOAD_PAGE: 0,
     RESET_PERMISSIONS: 1,
     CLEAR_DATA: 2,

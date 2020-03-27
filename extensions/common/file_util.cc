@@ -196,7 +196,8 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
                                        Manifest::Location location,
                                        int flags,
                                        std::string* error) {
-  return LoadExtension(extension_path, std::string(), location, flags, error);
+  return LoadExtension(extension_path, nullptr, std::string(), location, flags,
+                       error);
 }
 
 scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
@@ -204,8 +205,23 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
                                        Manifest::Location location,
                                        int flags,
                                        std::string* error) {
-  std::unique_ptr<base::DictionaryValue> manifest =
-      LoadManifest(extension_path, error);
+  return LoadExtension(extension_path, nullptr, extension_id, location, flags,
+                       error);
+}
+
+scoped_refptr<Extension> LoadExtension(
+    const base::FilePath& extension_path,
+    const base::FilePath::CharType* manifest_file,
+    const std::string& extension_id,
+    Manifest::Location location,
+    int flags,
+    std::string* error) {
+  std::unique_ptr<base::DictionaryValue> manifest;
+  if (!manifest_file) {
+    manifest = LoadManifest(extension_path, error);
+  } else {
+    manifest = LoadManifest(extension_path, manifest_file, error);
+  }
   if (!manifest.get())
     return nullptr;
 

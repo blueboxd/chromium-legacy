@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/enterprise/connectors/enterprise_connectors_policy_handler.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -349,6 +350,12 @@ class DeepScanningDialogDelegate {
   DeepScanningFinalResult final_result_ = DeepScanningFinalResult::SUCCESS;
 
   base::TimeTicks upload_start_time_;
+
+  // TODO(domfc): This is added here so EnterpriseConnectorsPolicyHandler's
+  // tests work. The issue is that a new string used by the handler is being
+  // removed from certain tests because it's unused in prod code for now, so
+  // |handler_| can be removed once that's no longer the case.
+  enterprise_connectors::EnterpriseConnectorsPolicyHandler handler_;
 
   base::WeakPtrFactory<DeepScanningDialogDelegate> weak_ptr_factory_{this};
 };

@@ -83,6 +83,15 @@ bool FaviconClientImpl::IsNativeApplicationURL(const GURL& url) {
   return url.SchemeIs(kChromeUIScheme);
 }
 
+bool FaviconClientImpl::IsReaderModeURL(const GURL& url) {
+  // iOS does not yet support Reader Mode.
+  return false;
+}
+
+const GURL FaviconClientImpl::GetOriginalUrlFromReaderModeUrl(const GURL& url) {
+  return url;
+}
+
 base::CancelableTaskTracker::TaskId
 FaviconClientImpl::GetFaviconForNativeApplicationURL(
     const GURL& url,

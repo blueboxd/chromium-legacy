@@ -1553,6 +1553,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityIframe) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityIframeScrollable) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-scrollable.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityIframePostEnable) {
   enable_accessibility_after_navigating_ = true;
   RunHtmlTest(FILE_PATH_LITERAL("iframe.html"));

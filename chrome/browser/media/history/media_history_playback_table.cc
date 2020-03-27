@@ -122,4 +122,14 @@ MediaHistoryPlaybackTable::GetPlaybackRows() {
   return playbacks;
 }
 
+bool MediaHistoryPlaybackTable::DeleteURL(const GURL& url) {
+  if (!CanAccessDatabase())
+    return false;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM playback WHERE url = ?"));
+  statement.BindString(0, url.spec());
+  return statement.Run();
+}
+
 }  // namespace media_history

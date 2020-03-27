@@ -162,4 +162,14 @@ MediaHistorySessionTable::GetPlaybackSessions(
   return sessions;
 }
 
+bool MediaHistorySessionTable::DeleteURL(const GURL& url) {
+  if (!CanAccessDatabase())
+    return false;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM playbackSession WHERE url = ?"));
+  statement.BindString(0, url.spec());
+  return statement.Run();
+}
+
 }  // namespace media_history

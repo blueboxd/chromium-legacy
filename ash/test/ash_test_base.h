@@ -59,6 +59,7 @@ class Rect;
 }
 
 namespace views {
+class View;
 class Widget;
 class WidgetDelegate;
 }
@@ -193,6 +194,11 @@ class AshTestBase : public testing::Test {
   // display.
   bool TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
                           const gfx::Point& point_in_screen);
+
+  // Moves the mouse to the center of the view and generates a left button click
+  // event.
+  void SimulateMouseClickAt(ui::test::EventGenerator* event_generator,
+                            const views::View* target_view);
 
  protected:
   enum UserSessionBlockReason {

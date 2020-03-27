@@ -10,6 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace ui {
+class PlatformEventSource;
+}
+
 namespace gpu {
 
 class BasicVulkanTest : public testing::Test {
@@ -25,10 +29,13 @@ class BasicVulkanTest : public testing::Test {
     return vulkan_implementation_.get();
   }
   VulkanDeviceQueue* GetDeviceQueue() { return device_queue_.get(); }
+  VkDevice device() { return device_queue_->GetVulkanDevice(); }
+  VkQueue queue() { return device_queue_->GetVulkanQueue(); }
   std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window);
 
  private:
+  std::unique_ptr<ui::PlatformEventSource> platform_event_source_;
   std::unique_ptr<VulkanImplementation> vulkan_implementation_;
   std::unique_ptr<VulkanDeviceQueue> device_queue_;
 

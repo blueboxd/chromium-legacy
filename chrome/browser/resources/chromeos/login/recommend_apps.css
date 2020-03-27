@@ -23,6 +23,11 @@
   display: none;
 }
 
+#illustration {
+  height: 264px;
+  width: 264px;
+}
+
 #app-list-view-container {
   height: 308px;
   margin-top: 23px;

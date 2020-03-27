@@ -564,6 +564,8 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
       "//ios/web_view",
       "--gn-out-dir",
       ".",
+      "--target-os",
+      "ios",
     ]
   }
 

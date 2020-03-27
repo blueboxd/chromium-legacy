@@ -268,7 +268,7 @@ void WontCompile() {
   std::move(cb).Run();
 }
 
-#elif defined(NCTEST_DISALLOW_BIND_ONCECALLBACK)  // [r"fatal error: static_assert failed due to requirement '!base::internal::IsOnceCallback<base::OnceCallback<void \(int\)> >\(\)' \"BindRepeating cannot bind OnceCallback. Use BindOnce with std::move\(\).\""]
+#elif defined(NCTEST_DISALLOW_BIND_ONCECALLBACK)  // [r"fatal error: static_assert failed due to requirement '!base::internal::IsOnceCallback<base::OnceCallback<void \(int\)> ?>\(\)' \"BindRepeating cannot bind OnceCallback. Use BindOnce with std::move\(\).\""]
 
 void WontCompile() {
   BindRepeating(BindOnce([](int) {}), 42);

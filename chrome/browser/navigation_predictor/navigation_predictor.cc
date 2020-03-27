@@ -949,11 +949,7 @@ void NavigationPredictor::NotifyPredictionUpdated(
   for (const auto& nav_score : sorted_navigation_scores) {
     top_urls.push_back(nav_score->url);
   }
-  service->OnPredictionUpdated(
-      web_contents(), document_url_,
-      NavigationPredictorKeyedService::PredictionSource::
-          kAnchorElementsParsedFromWebPage,
-      top_urls);
+  service->OnPredictionUpdated(web_contents(), document_url_, top_urls);
 }
 
 void NavigationPredictor::MaybeTakeActionOnLoad(

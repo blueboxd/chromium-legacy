@@ -162,13 +162,17 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
                                                bool skip_for_now,
                                                bool trusted,
                                                bool trusted_found,
-                                               bool choose_what_to_sync) {
+                                               bool choose_what_to_sync,
+                                               base::Value edu_login_params) {
   CHECK(!auth_code.empty());
   CHECK(!gaia_id.empty());
   CHECK(!email.empty());
 
   // TODO(sinhak): Do not depend on Profile unnecessarily.
   Profile* profile = Profile::FromWebUI(web_ui());
+
+  // TODO(anastasiian): log parent consent with RAPT:
+  // edu_login_params.FindKey("reAuthProofToken")->GetString();
 
   // TODO(sinhak): Do not depend on Profile unnecessarily. When multiprofile on
   // Chrome OS is released, get rid of |AccountManagerFactory| and get

@@ -169,17 +169,17 @@ class PasswordStore : protected PasswordStoreSync,
   // |main_task_runner_| after deletions have been completed and notification
   // have been sent out.
   void RemoveLoginsByURLAndTime(
-      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& completion);
+      base::OnceClosure completion);
 
   // Removes all logins created in the given date range. If |completion| is not
   // null, it will be posted to the |main_task_runner_| after deletions have
   // been completed and notification have been sent out.
   void RemoveLoginsCreatedBetween(base::Time delete_begin,
                                   base::Time delete_end,
-                                  const base::Closure& completion);
+                                  base::OnceClosure completion);
 
   // Removes all the stats created in the given date range.
   // If |origin_filter| is not null, only statistics for matching origins are
@@ -187,18 +187,18 @@ class PasswordStore : protected PasswordStoreSync,
   // |main_task_runner_| after deletions have been completed.
   // Should be called on the UI thread.
   void RemoveStatisticsByOriginAndTime(
-      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& completion);
+      base::OnceClosure completion);
 
   // Sets the 'skip_zero_click' flag for all logins in the database that match
   // |origin_filter| to 'true'. |completion| will be posted to the
   // |main_task_runner_| after these modifications are completed and
   // notifications are sent out.
   void DisableAutoSignInForOrigins(
-      const base::Callback<bool(const GURL&)>& origin_filter,
-      const base::Closure& completion);
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
+      base::OnceClosure completion);
 
   // Unblacklists the login with |form_digest| by deleting all the corresponding
   // blacklisted entries. If |completion| is not null, it will be posted to the
@@ -371,7 +371,8 @@ class PasswordStore : protected PasswordStoreSync,
   // list might have changed. Should only be called on the UI thread.
   virtual std::unique_ptr<StateSubscription>
   RegisterStateCallbackOnHashPasswordManager(
-      const base::Callback<void(const std::string& username)>& callback);
+      const base::RepeatingCallback<void(const std::string& username)>&
+          callback);
 
   // Shouldn't be called more than once, |notifier| must be not nullptr.
   void SetPasswordStoreSigninNotifier(
@@ -450,7 +451,7 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation to remove the given logins.
   virtual PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
-      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end) = 0;
 
@@ -461,13 +462,13 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation to remove the statistics.
   virtual bool RemoveStatisticsByOriginAndTimeImpl(
-      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
       base::Time delete_end) = 0;
 
   // Synchronous implementation to disable auto sign-in.
   virtual PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
-      const base::Callback<bool(const GURL&)>& origin_filter) = 0;
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
 
   // Synchronous implementation provided by subclasses to add the given login.
   virtual PasswordStoreChangeList AddLoginImpl(
@@ -658,21 +659,21 @@ class PasswordStore : protected PasswordStoreSync,
       const autofill::PasswordForm& new_form,
       const autofill::PasswordForm& old_primary_key);
   void RemoveLoginsByURLAndTimeInternal(
-      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& completion);
+      base::OnceClosure completion);
   void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
                                           base::Time delete_end,
-                                          const base::Closure& completion);
+                                          base::OnceClosure completion);
   void RemoveStatisticsByOriginAndTimeInternal(
-      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      const base::Closure& completion);
+      base::OnceClosure completion);
   void DisableAutoSignInForOriginsInternal(
-      const base::Callback<bool(const GURL&)>& origin_filter,
-      const base::Closure& completion);
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
+      base::OnceClosure completion);
   void UnblacklistInternal(const PasswordStore::FormDigest& form_digest,
                            base::OnceClosure completion);
   bool RemoveCompromisedCredentialsByUrlAndTimeInternal(

@@ -65,6 +65,7 @@ bool CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
 }
 
 void CascadeMap::Reset() {
+  high_priority_ = 0;
   native_property_bits_.reset();
   custom_properties_.clear();
 }

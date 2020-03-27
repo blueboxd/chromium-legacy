@@ -27,8 +27,8 @@ namespace password_manager {
 struct CredentialInfo;
 class PasswordManagerClient;
 
-typedef base::Callback<void(const CredentialInfo& credential)>
-    SendCredentialCallback;
+using SendCredentialCallback =
+    base::OnceCallback<void(const CredentialInfo& credential)>;
 
 // Sends credentials retrieved from the PasswordStore to CredentialManager API
 // clients and retrieves embedder-dependent information.
@@ -44,12 +44,12 @@ class CredentialManagerPendingRequestTaskDelegate {
   virtual PasswordManagerClient* client() const = 0;
 
   // Sends a credential to JavaScript.
-  virtual void SendCredential(const SendCredentialCallback& send_callback,
+  virtual void SendCredential(SendCredentialCallback send_callback,
                               const CredentialInfo& credential) = 0;
 
   // Updates |skip_zero_click| for |form| in the PasswordStore if required.
   // Sends a credential to JavaScript.
-  virtual void SendPasswordForm(const SendCredentialCallback& send_callback,
+  virtual void SendPasswordForm(SendCredentialCallback send_callback,
                                 CredentialMediationRequirement mediation,
                                 const autofill::PasswordForm* form) = 0;
 };
@@ -61,13 +61,12 @@ class CredentialManagerPendingRequestTask
  public:
   CredentialManagerPendingRequestTask(
       CredentialManagerPendingRequestTaskDelegate* delegate,
-      const SendCredentialCallback& callback,
+      SendCredentialCallback callback,
       CredentialMediationRequirement mediation,
       bool include_passwords,
       const std::vector<GURL>& request_federations);
   ~CredentialManagerPendingRequestTask() override;
 
-  SendCredentialCallback send_callback() const { return send_callback_; }
   const GURL& origin() const { return origin_; }
 
   // PasswordStoreConsumer:

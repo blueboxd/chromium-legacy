@@ -9,6 +9,7 @@
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/forced_extensions/installation_metrics.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
@@ -93,8 +94,9 @@ class ForcedExtensionsInstallationTrackerTest : public testing::Test {
         installation_reporter_(InstallationReporter::Get(&profile_)) {
     auto fake_timer = std::make_unique<base::MockOneShotTimer>();
     fake_timer_ = fake_timer.get();
-    tracker_ = std::make_unique<InstallationTracker>(registry_, &profile_,
-                                                     std::move(fake_timer));
+    tracker_ = std::make_unique<InstallationTracker>(registry_, &profile_);
+    metrics_ = std::make_unique<InstallationMetrics>(
+        registry_, &profile_, tracker_.get(), std::move(fake_timer));
   }
 
   void SetupForceList() {
@@ -129,6 +131,7 @@ class ForcedExtensionsInstallationTrackerTest : public testing::Test {
 
   base::MockOneShotTimer* fake_timer_;
   std::unique_ptr<InstallationTracker> tracker_;
+  std::unique_ptr<InstallationMetrics> metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(ForcedExtensionsInstallationTrackerTest);
 };
@@ -312,7 +315,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectBucketCount(
       kFailureSessionStats,
-      InstallationTracker::SessionType::SESSION_TYPE_PUBLIC_ACCOUNT, 2);
+      InstallationMetrics::SessionType::SESSION_TYPE_PUBLIC_ACCOUNT, 2);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,
@@ -336,7 +339,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectBucketCount(
       kFailureSessionStats,
-      InstallationTracker::SessionType::SESSION_TYPE_GUEST, 2);
+      InstallationMetrics::SessionType::SESSION_TYPE_GUEST, 2);
 }
 #endif  // defined(OS_CHROMEOS)
 

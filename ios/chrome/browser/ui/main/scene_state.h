@@ -7,7 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+@class SceneController;
 @class SceneState;
+@protocol BrowserInterfaceProvider;
 
 // Describes the possible scene states.
 // This is an iOS 12 compatible version of UISceneActivationState enum.
@@ -47,6 +49,13 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 @property(nonatomic, strong) UIWindow* window;
 
 @property(nonatomic, strong) UIWindowScene* scene API_AVAILABLE(ios(13));
+
+// The interface provider associated with this scene.
+@property(nonatomic, strong, readonly) id<BrowserInterfaceProvider>
+    interfaceProvider;
+
+// The controller for this scene.
+@property(nonatomic, weak) SceneController* controller;
 
 // Adds an observer to this scene state. The observers will be notified about
 // scene state changes per SceneStateObserver protocol.

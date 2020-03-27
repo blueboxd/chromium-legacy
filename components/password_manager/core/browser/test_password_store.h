@@ -99,16 +99,16 @@ class TestPasswordStore : public PasswordStore {
                          bool custom_passphrase_sync_enabled,
                          BulkCheckDone bulk_check_done) override;
   PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
-      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time begin,
       base::Time end) override;
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) override;
   PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
-      const base::Callback<bool(const GURL&)>& origin_filter) override;
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) override;
   bool RemoveStatisticsByOriginAndTimeImpl(
-      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
       base::Time delete_end) override;
   void AddSiteStatsImpl(const InteractionsStats& stats) override;

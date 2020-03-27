@@ -4,25 +4,28 @@
 
 // eslint-disable-next-line no-unused-vars
 import {assertNotReached} from '../chrome_util.js';
-import {PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
-        VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+import {
+  PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+  VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
 } from '../device/constraints_preferrer.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
 // eslint-disable-next-line no-unused-vars
 import {Intent} from '../intent.js';
 import * as metrics from '../metrics.js';
-import {IntentVideoSaver} from '../models/intent_video_saver.js';
 // eslint-disable-next-line no-unused-vars
 import {ResultSaver} from '../models/result_saver.js';
+import {VideoSaver} from '../models/video_saver.js';
 // eslint-disable-next-line no-unused-vars
 import {PerfLogger} from '../perf.js';
 import * as state from '../state.js';
 import * as toast from '../toast.js';
 import * as util from '../util.js';
+
 import {Camera} from './camera.js';
-import {PhotoResult,  // eslint-disable-line no-unused-vars
-        VideoResult,  // eslint-disable-line no-unused-vars
+import {
+  PhotoResult,  // eslint-disable-line no-unused-vars
+  VideoResult,  // eslint-disable-line no-unused-vars
 } from './camera/modes.js';
 import {ReviewResult} from './camera/review_result.js';
 
@@ -60,7 +63,7 @@ export class CameraIntent extends Camera {
         await this.intent_.appendData(new Uint8Array(buf));
       },
       startSaveVideo: async () => {
-        return await IntentVideoSaver.createIntentVideoSaver(intent);
+        return await VideoSaver.createForIntent(intent);
       },
       finishSaveVideo: async (video, savedName) => {
         this.videoResultFile_ = await video.endWrite();

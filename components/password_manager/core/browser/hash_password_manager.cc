@@ -273,7 +273,8 @@ bool HashPasswordManager::HasPasswordHash(const std::string& username,
 }
 
 std::unique_ptr<StateSubscription> HashPasswordManager::RegisterStateCallback(
-    const base::Callback<void(const std::string& username)>& callback) {
+    const base::RepeatingCallback<void(const std::string& username)>&
+        callback) {
   return state_callback_list_.Add(callback);
 }
 

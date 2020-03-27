@@ -335,6 +335,58 @@ TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsHandlesTimes) {
                       api::passwords_private::COMPROMISE_TYPE_LEAKED)));
 }
 
+// Verifies that both leaked and phished credentials are ordered correctly
+// within the list of compromised credentials. These credentials should be
+// listed before just leaked ones and have a timestamp that corresponds to the
+// most recent compromise.
+TEST_F(PasswordCheckDelegateTest,
+       GetCompromisedCredentialsDedupesLeakedAndCompromised) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername1));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername2));
+
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(1),
+                      CompromiseType::kLeaked));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername2, base::TimeDelta::FromMinutes(2),
+                      CompromiseType::kLeaked));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleOrg, kUsername1, base::TimeDelta::FromMinutes(3),
+                      CompromiseType::kPhished));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleOrg, kUsername2, base::TimeDelta::FromMinutes(4),
+                      CompromiseType::kPhished));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(5),
+                      CompromiseType::kPhished));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleOrg, kUsername2, base::TimeDelta::FromMinutes(6),
+                      CompromiseType::kLeaked));
+  RunUntilIdle();
+
+  EXPECT_THAT(
+      delegate().GetCompromisedCredentials(),
+      ElementsAre(
+          ExpectCompromisedCredential(
+              "example.com", kExampleCom, kExampleCom, kUsername1,
+              base::TimeDelta::FromMinutes(1), "1 minute ago",
+              api::passwords_private::COMPROMISE_TYPE_PHISHED_AND_LEAKED),
+          ExpectCompromisedCredential(
+              "example.org", kExampleOrg, kExampleOrg, kUsername1,
+              base::TimeDelta::FromMinutes(3), "3 minutes ago",
+              api::passwords_private::COMPROMISE_TYPE_PHISHED),
+          ExpectCompromisedCredential(
+              "example.org", kExampleOrg, kExampleOrg, kUsername2,
+              base::TimeDelta::FromMinutes(4), "4 minutes ago",
+              api::passwords_private::COMPROMISE_TYPE_PHISHED_AND_LEAKED),
+          ExpectCompromisedCredential(
+              "example.com", kExampleCom, kExampleCom, kUsername2,
+              base::TimeDelta::FromMinutes(2), "2 minutes ago",
+              api::passwords_private::COMPROMISE_TYPE_LEAKED)));
+}
+
 TEST_F(PasswordCheckDelegateTest, GetCompromisedCredentialsInjectsAndroid) {
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
   store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername2,

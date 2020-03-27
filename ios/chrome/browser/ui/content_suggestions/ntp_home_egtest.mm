@@ -206,6 +206,29 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       performAction:grey_tap()];
 }
 
+// Tests that when loading an invalid URL, the NTP is still displayed.
+// Prevents regressions from https://crbug.com/1063154 .
+- (void)testInvalidURL {
+  NSString* URL = @"app-settings://test-test-test/";
+
+  // The URL needs to be typed to trigger the bug.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      performAction:grey_typeText(URL)];
+
+  // The first suggestion is a search, the second suggestion is the URL.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(@"omnibox suggestion 1"),
+              grey_kindOfClassName(@"OmniboxPopupRowCell"),
+              grey_descendant(
+                  chrome_test_util::StaticTextWithAccessibilityLabel(URL)),
+              grey_sufficientlyVisible(), nil)] performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the fake omnibox width is correctly updated after a rotation.
 - (void)testOmniboxWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is

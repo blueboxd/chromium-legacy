@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f955827d7b31cef035f6242fef8a992489c732aa',
+  'v8_revision': '5851deb6886177deb57b8894386647458bf481d9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f2bee3043a5e55189e775b07548779d2dd4061f9',
+  'angle_revision': 'fd3480d2262442e346d81a3e5919b579765f140b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '02e15b249b12fe4e1ca5e303a5a0de0668950536',
+  'swiftshader_revision': '14b1e3f3d10a51254bc6b496037b2b62dc7efec9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4ff1b1de0e8d2e0809e63b127beef87a3269d090',
+  'devtools_frontend_revision': 'a27ec02e9e1e5c4354be3581a2bb3b7d75daa4da',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1228,7 +1228,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '123c8191bc012899722a7d16b92816581d41ca23',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '42f548873cf8580810748bd7b9cca178e524e600',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

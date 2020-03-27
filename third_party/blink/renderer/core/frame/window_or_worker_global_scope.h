@@ -51,7 +51,7 @@ class V8Function;
 typedef HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas
     ImageBitmapSourceUnion;
 
-class WindowOrWorkerGlobalScope {
+class CORE_EXPORT WindowOrWorkerGlobalScope {
   STATIC_ONLY(WindowOrWorkerGlobalScope);
 
  public:

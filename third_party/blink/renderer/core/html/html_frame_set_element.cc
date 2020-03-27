@@ -90,7 +90,7 @@ void HTMLFrameSetElement::ParseAttribute(
           EqualIgnoringASCIICase(value, "0")) {
         frameborder_ = false;
         frameborder_set_ = true;
-      } else if (DeprecatedEqualIgnoringCase(value, "yes") ||
+      } else if (EqualIgnoringASCIICase(value, "yes") ||
                  EqualIgnoringASCIICase(value, "1")) {
         frameborder_set_ = true;
       }

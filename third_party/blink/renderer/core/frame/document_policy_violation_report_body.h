@@ -32,9 +32,9 @@ class CORE_EXPORT DocumentPolicyViolationReportBody
         message_(message),
         disposition_(disposition) {}
 
-  String featureId() const { return feature_id_; }
-  String disposition() const { return disposition_; }
-  String message() const { return message_; }
+  const String& featureId() const { return feature_id_; }
+  const String& disposition() const { return disposition_; }
+  const String& message() const { return message_; }
   void BuildJSONValue(V8ObjectBuilder& builder) const override;
 
   ~DocumentPolicyViolationReportBody() override = default;

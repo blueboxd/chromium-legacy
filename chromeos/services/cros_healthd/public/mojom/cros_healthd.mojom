@@ -205,6 +205,46 @@ interface CrosHealthdDiagnosticsService {
   //                routine.
   RunNvmeSelfTestRoutine(NvmeSelfTestTypeEnum nvme_self_test_type)
       => (RunRoutineResponse response);
+
+  // Requests that the DiskRead routine is created and started on the platform.
+  // The routine will create a test file with md5 checksum, read the test file
+  // either randomly or linearly, repeatedly for a dedicated duration. If the
+  // md5 checksum of read back is validated, then the test will pass.
+  // This routine is only available if GetAvailableRoutines returned kDiskRead.
+  //
+  // The request:
+  // * |type| - type of how disk reading is performed, either linear or random.
+  //
+  // * |length_seconds| - length of time, in seconds, to run the DiskRead
+  //                      routine for. This parameter needs to be strictly
+  //                      greater than zero.
+  // * |file_size_mb| - test file size, in mega bytes, to test with DiskRead
+  //                    routine
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunDiskReadRoutine(DiskReadRoutineTypeEnum type, uint32 length_seconds,
+                     uint32 file_size_mb)
+      => (RunRoutineResponse response);
+
+  // Requests that the PrimeSearch routine is created and started on the
+  // platform. Calculate prime numbers between 3 to max_num and verify the
+  // calculation repeatedly in a duration. This routine is only available
+  // if GetAvailableRoutines returned kPrimeSearch.
+  //
+  // The request:
+  // * |length_seconds| - length of time, in seconds, to run the PrimeSearch
+  //                      routine for. This parameter needs to be strictly
+  //                      greater than zero.
+  // * |max_num| - largest number that routine will calculate prime numbers up
+  //               to.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunPrimeSearchRoutine(uint32 length_seconds, uint64 max_num)
+      => (RunRoutineResponse response);
 };
 
 // Probe interface exposed by the cros_healthd daemon.

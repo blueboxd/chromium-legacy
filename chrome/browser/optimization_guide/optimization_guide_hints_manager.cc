@@ -734,19 +734,10 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   if (!prediction.has_value())
     return;
 
-  if (prediction->prediction_source() !=
-      NavigationPredictorKeyedService::PredictionSource::
-          kAnchorElementsParsedFromWebPage) {
-    return;
-  }
-
-  const base::Optional<GURL>& source_document_url =
-      prediction->source_document_url();
-  if (!source_document_url || source_document_url->is_empty())
-    return;
+  const GURL& source_document_url = prediction->source_document_url();
 
   // We only extract next predicted navigations from Google URLs.
-  if (!IsGoogleURL(source_document_url.value()))
+  if (!IsGoogleURL(source_document_url))
     return;
 
   // Extract the target hosts and URLs. Use a flat set to remove duplicates.

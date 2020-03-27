@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
-import {VideoSaver} from './video_saver_interface.js';
+import {VideoSaver} from './video_saver.js';
 
 /**
  * Handles captured result photos and video.

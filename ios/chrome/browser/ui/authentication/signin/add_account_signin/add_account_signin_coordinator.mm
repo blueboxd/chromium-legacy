@@ -197,7 +197,6 @@ using signin_metrics::PromoAction;
   // view controller.
   self.userSigninCoordinator = [SigninCoordinator
       userSigninCoordinatorWithBaseViewController:self.baseViewController
-                                                      .presentedViewController
                                           browser:self.browser
                                          identity:identity
                                       accessPoint:self.accessPoint

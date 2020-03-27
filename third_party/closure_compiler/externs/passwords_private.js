@@ -43,6 +43,7 @@ chrome.passwordsPrivate.ExportProgressStatus = {
 chrome.passwordsPrivate.CompromiseType = {
   LEAKED: 'LEAKED',
   PHISHED: 'PHISHED',
+  PHISHED_AND_LEAKED: 'PHISHED_AND_LEAKED',
 };
 
 /**

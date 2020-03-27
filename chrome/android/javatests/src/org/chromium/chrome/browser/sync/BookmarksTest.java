@@ -90,7 +90,7 @@ public class BookmarksTest {
     @Before
     public void setUp() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mBookmarkBridge = new BookmarkBridge(Profile.getLastUsedProfile());
+            mBookmarkBridge = new BookmarkBridge(Profile.getLastUsedRegularProfile());
             // The BookmarkBridge needs to know how to handle partner bookmarks.
             // Without this call to fake that knowledge for testing, it crashes.
             mBookmarkBridge.loadEmptyPartnerBookmarkShimForTesting();

@@ -3,31 +3,17 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/app/main_controller.h"
+#import "ios/chrome/app/main_controller_private.h"
 
 #include <memory>
-#include <string>
-
-#import <CoreSpotlight/CoreSpotlight.h>
-#import <objc/objc.h>
-#import <objc/runtime.h>
-
-#include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/files/file_path.h"
-#include "base/ios/block_types.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/time/time.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/crl_set_remover.h"
 #include "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -36,21 +22,13 @@
 #include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/search_engines/template_url_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/ukm/ios/features.h"
-#include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
-#import "ios/chrome/app/application_delegate/url_opener.h"
-#include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
-#import "ios/chrome/app/main_controller_private.h"
 #import "ios/chrome/app/memory_monitor.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
-#import "ios/chrome/app/spotlight/spotlight_util.h"
-#include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/app/startup/chrome_main_starter.h"
 #include "ios/chrome/app/startup/client_registration.h"
 #import "ios/chrome/app/startup/content_suggestions_scheduler_notifications.h"
@@ -64,13 +42,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_removal_controller.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/chrome_url_util.h"
-#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
@@ -81,12 +55,8 @@
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #import "ios/chrome/browser/external_files/external_file_remover_impl.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#include "ios/chrome/browser/feature_engagement/tracker_util.h"
-#include "ios/chrome/browser/file_metadata_util.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
-#include "ios/chrome/browser/ios_chrome_io_thread.h"
-#include "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
@@ -95,47 +65,31 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/reading_list/reading_list_download_service.h"
-#import "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #include "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/share_extension/share_extension_service.h"
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
-#include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
-#import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
-#include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_controller_guts.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
-#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/multi_window_support.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
-#include "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/empty_nsurlcache.h"
@@ -143,17 +97,9 @@
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #import "ios/public/provider/chrome/browser/overrides_provider.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/web/common/features.h"
-#import "ios/web/common/web_view_creation_util.h"
-#import "ios/web/public/navigation/navigation_item.h"
-#import "ios/web/public/navigation/navigation_manager.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#import "ios/web/public/web_state.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
-#include "mojo/core/embedder/embedder.h"
 #import "net/base/mac/url_conversions.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -698,7 +644,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #pragma mark - Property implementation.
 
 - (id<BrowserInterfaceProvider>)interfaceProvider {
-  return self.sceneController.browserViewWrangler;
+  return self.appState.connectedScenes[0].interfaceProvider;
 }
 
 - (BOOL)isFirstLaunchAfterUpgrade {
@@ -1146,11 +1092,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - Helper methods backed by interfaces.
 
-- (BrowserViewController*)mainBVC {
-  DCHECK(self.interfaceProvider);
-  return self.interfaceProvider.mainInterface.bvc;
-}
-
 - (Browser*)mainBrowser {
   DCHECK(self.interfaceProvider);
   return self.interfaceProvider.mainInterface.browser;
@@ -1161,11 +1102,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return self.interfaceProvider.mainInterface.tabModel;
 }
 
-- (BrowserViewController*)otrBVC {
-  DCHECK(self.interfaceProvider);
-  return self.interfaceProvider.incognitoInterface.bvc;
-}
-
 - (TabModel*)otrTabModel {
   DCHECK(self.interfaceProvider);
   return self.interfaceProvider.incognitoInterface.tabModel;
@@ -1174,15 +1110,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (Browser*)otrBrowser {
   DCHECK(self.interfaceProvider);
   return self.interfaceProvider.incognitoInterface.browser;
-}
-
-- (BrowserViewController*)currentBVC {
-  DCHECK(self.interfaceProvider);
-  return self.interfaceProvider.currentInterface.bvc;
-}
-
-- (TabModel*)currentTabModel {
-  return self.currentBVC.tabModel;
 }
 
 - (Browser*)currentBrowser {
@@ -1259,41 +1186,58 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     disableWebUsageDuringRemoval = NO;
   }
 
-  if (disableWebUsageDuringRemoval) {
-    // Disables browsing and purges web views.
-    // Must be called only on the main thread.
-    DCHECK([NSThread isMainThread]);
-    self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
-    self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
-  } else if (showActivityIndicator) {
-    // Show activity overlay so users know that clear browsing data is in
-    // progress.
-    [self.mainBVC.dispatcher showActivityOverlay:YES];
+  for (SceneState* sceneState in self.appState.connectedScenes) {
+    // Assumes all scenes share |browserState|.
+    id<BrowserInterfaceProvider> sceneInterface = sceneState.interfaceProvider;
+    if (disableWebUsageDuringRemoval) {
+      // Disables browsing and purges web views.
+      // Must be called only on the main thread.
+      DCHECK([NSThread isMainThread]);
+      sceneInterface.mainInterface.userInteractionEnabled = NO;
+      sceneInterface.incognitoInterface.userInteractionEnabled = NO;
+    } else if (showActivityIndicator) {
+      // Show activity overlay so users know that clear browsing data is in
+      // progress.
+      // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+      // clean up.
+      id<BrowserCommands> handler = static_cast<id<BrowserCommands>>(
+          sceneInterface.mainInterface.browser->GetCommandDispatcher());
+      [handler showActivityOverlay:YES];
+    }
   }
 
+  auto removalCompletion = ^{
+    // Activates browsing and enables web views.
+    // Must be called only on the main thread.
+    DCHECK([NSThread isMainThread]);
+    for (SceneState* sceneState in self.appState.connectedScenes) {
+      // Assumes all scenes share |browserState|.
+      id<BrowserInterfaceProvider> sceneInterface =
+          sceneState.interfaceProvider;
+
+      if (showActivityIndicator) {
+        // User interaction still needs to be disabled as a way to
+        // force reload all the web states and to reset NTPs.
+        sceneInterface.mainInterface.userInteractionEnabled = NO;
+        sceneInterface.incognitoInterface.userInteractionEnabled = NO;
+
+        // TODO(crbug.com/1045047): Use HandlerForProtocol after commands
+        // protocol clean up.
+        id<BrowserCommands> handler = static_cast<id<BrowserCommands>>(
+            sceneInterface.mainInterface.browser->GetCommandDispatcher());
+        [handler showActivityOverlay:NO];
+      }
+      sceneInterface.mainInterface.userInteractionEnabled = YES;
+      sceneInterface.incognitoInterface.userInteractionEnabled = YES;
+      [sceneInterface.currentInterface setPrimary:YES];
+    }
+    // |completionBlock is run once, not once per scene.
+    if (completionBlock)
+      completionBlock();
+  };
+
   BrowsingDataRemoverFactory::GetForBrowserState(browserState)
-      ->Remove(
-          timePeriod, removeMask, base::BindOnce(^{
-            // Activates browsing and enables web views.
-            // Must be called only on the main thread.
-            DCHECK([NSThread isMainThread]);
-            if (showActivityIndicator) {
-              // User interaction still needs to be disabled as a way to
-              // force reload all the web states and to reset NTPs.
-              self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
-              self.interfaceProvider.incognitoInterface.userInteractionEnabled =
-                  NO;
-
-              [self.mainBVC.dispatcher showActivityOverlay:NO];
-            }
-            self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
-            self.interfaceProvider.incognitoInterface.userInteractionEnabled =
-                YES;
-            [self.currentBVC setPrimary:YES];
-
-            if (completionBlock)
-              completionBlock();
-          }));
+      ->Remove(timePeriod, removeMask, base::BindOnce(removalCompletion));
 }
 
 

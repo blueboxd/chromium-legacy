@@ -39,7 +39,7 @@ AffiliationDatabase::~AffiliationDatabase() {
 bool AffiliationDatabase::Init(const base::FilePath& path) {
   sql_connection_.reset(new sql::Database);
   sql_connection_->set_histogram_tag("Affiliation");
-  sql_connection_->set_error_callback(base::Bind(
+  sql_connection_->set_error_callback(base::BindRepeating(
       &AffiliationDatabase::SQLErrorCallback, base::Unretained(this)));
 
   if (!sql_connection_->Open(path))

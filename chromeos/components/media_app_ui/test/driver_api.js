@@ -7,12 +7,13 @@ let TestMessageResponseData;
 
 /**
  * @typedef {{
- *     testQuery: string,
+ *     deleteLastFile: (boolean|undefined),
+ *     navigate: (string|undefined),
+ *     overwriteLastFile: (string|undefined),
  *     pathToRoot: (Array<string>|undefined),
  *     property: (string|undefined),
  *     requestFullscreen: (boolean|undefined),
- *     overwriteLastFile: (string|undefined),
- *     deleteLastFile: (boolean|undefined)
+ *     testQuery: string,
  * }}
  */
 let TestMessageQueryData;

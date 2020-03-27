@@ -98,6 +98,22 @@ class ReceivedFileList {
   getCurrentlyWritable() {
     return this.item(this.writableFileIndex);
   }
+
+  /**
+   * Loads in the next file in the list as a writable.
+   * @return {!Promise<undefined>}
+   */
+  async loadNext() {
+    parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: 1});
+  }
+
+  /**
+   * Loads in the previous file in the list as a writable.
+   * @return {!Promise<undefined>}
+   */
+  async loadPrev() {
+    parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: -1});
+  }
 }
 
 parentMessagePipe.registerHandler(Message.LOAD_FILES, (message) => {

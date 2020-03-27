@@ -149,12 +149,11 @@ copy("chrome_camera_app_js_lib") {
 
 copy("chrome_camera_app_js_models") {
   sources = [
-    "src/js/models/file_video_saver.js",
     "src/js/models/filenamer.js",
     "src/js/models/filesystem.js",
-    "src/js/models/intent_video_saver.js",
     "src/js/models/result_saver.js",
-    "src/js/models/video_saver_interface.js",
+    "src/js/models/video_processor.js",
+    "src/js/models/video_saver.js",
   ]
 
   outputs = [ "$chrome_camera_app_dir/js/models/{{source_file_part}}" ]

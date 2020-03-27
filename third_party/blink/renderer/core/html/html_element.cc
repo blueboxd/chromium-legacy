@@ -1063,11 +1063,11 @@ static inline const AtomicString& ToValidDirValue(const AtomicString& value) {
   DEFINE_STATIC_LOCAL(const AtomicString, rtl_value, ("rtl"));
   DEFINE_STATIC_LOCAL(const AtomicString, auto_value, ("auto"));
 
-  if (DeprecatedEqualIgnoringCase(value, ltr_value))
+  if (EqualIgnoringASCIICase(value, ltr_value))
     return ltr_value;
-  if (DeprecatedEqualIgnoringCase(value, rtl_value))
+  if (EqualIgnoringASCIICase(value, rtl_value))
     return rtl_value;
-  if (DeprecatedEqualIgnoringCase(value, auto_value))
+  if (EqualIgnoringASCIICase(value, auto_value))
     return auto_value;
   return g_null_atom;
 }

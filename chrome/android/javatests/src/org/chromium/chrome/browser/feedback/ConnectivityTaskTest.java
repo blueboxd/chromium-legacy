@@ -58,7 +58,8 @@ public class ConnectivityTaskTest {
                         ConnectivityChecker.overrideUrlsForTest(
                                 mConnectivityCheckerTestRule.getGenerated204Url(),
                                 mConnectivityCheckerTestRule.getGenerated404Url());
-                        return ConnectivityTask.create(Profile.getLastUsedProfile(), TIMEOUT_MS,
+                        // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+                        return ConnectivityTask.create(Profile.getLastUsedRegularProfile(), TIMEOUT_MS,
                                 null);
                     }
                 });
@@ -120,7 +121,8 @@ public class ConnectivityTaskTest {
             ConnectivityChecker.overrideUrlsForTest(
                     mConnectivityCheckerTestRule.getGenerated204Url(),
                     mConnectivityCheckerTestRule.getGenerated404Url());
-            ConnectivityTask.create(Profile.getLastUsedProfile(), TIMEOUT_MS, callback);
+            // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+            ConnectivityTask.create(Profile.getLastUsedRegularProfile(), TIMEOUT_MS, callback);
         });
         if (!semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
             Assert.fail("Failed to acquire semaphore.");
@@ -150,7 +152,8 @@ public class ConnectivityTaskTest {
             ConnectivityChecker.overrideUrlsForTest(
                     mConnectivityCheckerTestRule.getGenerated204Url(),
                     mConnectivityCheckerTestRule.getGeneratedSlowUrl());
-            ConnectivityTask.create(Profile.getLastUsedProfile(), checkTimeoutMs, callback);
+            // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+            ConnectivityTask.create(Profile.getLastUsedRegularProfile(), checkTimeoutMs, callback);
         });
         if (!semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
             Assert.fail("Failed to acquire semaphore.");
@@ -176,7 +179,8 @@ public class ConnectivityTaskTest {
                         ConnectivityChecker.overrideUrlsForTest(
                                 mConnectivityCheckerTestRule.getGenerated204Url(),
                                 mConnectivityCheckerTestRule.getGeneratedSlowUrl());
-                        return ConnectivityTask.create(Profile.getLastUsedProfile(), TIMEOUT_MS,
+                        // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+                        return ConnectivityTask.create(Profile.getLastUsedRegularProfile(), TIMEOUT_MS,
                                 null);
                     }
                 });

@@ -321,9 +321,10 @@ public class TrustedCdnPublisherUrlTest {
         runTrustedCdnPublisherUrlTest(
                 publisherUrl, "com.example.test", "example.com", R.drawable.omnibox_https_valid);
 
+        // TODO (https://crbug.com/1063807):  Add incognito mode tests.
         OfflinePageBridge offlinePageBridge =
                 TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-                    Profile profile = Profile.getLastUsedProfile();
+                    Profile profile = Profile.getLastUsedRegularProfile();
                     return OfflinePageBridge.getForProfile(profile);
                 });
 

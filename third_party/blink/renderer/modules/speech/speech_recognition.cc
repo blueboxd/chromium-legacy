@@ -188,8 +188,6 @@ ExecutionContext* SpeechRecognition::GetExecutionContext() const {
 
 void SpeechRecognition::ContextDestroyed() {
   controller_ = nullptr;
-  session_.reset();
-  receiver_.reset();
 }
 
 bool SpeechRecognition::HasPendingActivity() const {

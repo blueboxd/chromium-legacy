@@ -15,7 +15,7 @@ namespace blink {
 class Element;
 class FullscreenOptions;
 
-class ElementFullscreen {
+class CORE_EXPORT ElementFullscreen {
   STATIC_ONLY(ElementFullscreen);
 
  public:

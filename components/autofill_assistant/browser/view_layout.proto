@@ -193,7 +193,13 @@ message VerticalExpanderAccordionProto {
 }
 
 message TextViewProto {
-  optional string text = 1;
+  oneof kind {
+    // Static text.
+    string text = 1;
+    // Dynamic text. Will update automatically to track the value. Should point
+    // to a single string value.
+    string model_identifier = 3;
+  }
   optional string text_appearance = 2;
 }
 

@@ -128,7 +128,7 @@ std::vector<InteractionsStats> StatisticsTable::GetRows(const GURL& domain) {
 }
 
 bool StatisticsTable::RemoveStatsByOriginAndTime(
-    const base::Callback<bool(const GURL&)>& origin_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   if (delete_end.is_null())

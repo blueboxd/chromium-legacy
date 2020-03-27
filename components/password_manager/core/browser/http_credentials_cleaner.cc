@@ -51,8 +51,8 @@ void HttpCredentialCleaner::OnGetPasswordStoreResults(
       const GURL origin = form->origin;
       PostHSTSQueryForHostAndNetworkContext(
           origin, network_context_getter_.Run(),
-          base::Bind(&HttpCredentialCleaner::OnHSTSQueryResult,
-                     base::Unretained(this), base::Passed(&form), form_key));
+          base::BindOnce(&HttpCredentialCleaner::OnHSTSQueryResult,
+                         base::Unretained(this), std::move(form), form_key));
       ++total_http_credentials_;
     } else {  // HTTPS
       https_credentials_map_[form_key].insert(form->password_value);

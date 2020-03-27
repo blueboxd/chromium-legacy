@@ -96,8 +96,6 @@ AtomicString FontBuilder::GenericFontFamilyName(
       return font_family_names::kWebkitCursive;
     case FontDescription::kFantasyFamily:
       return font_family_names::kWebkitFantasy;
-    case FontDescription::kPictographFamily:
-      return font_family_names::kWebkitPictograph;
   }
 }
 

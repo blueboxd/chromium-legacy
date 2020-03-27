@@ -504,14 +504,15 @@ public class CustomTabsConnectionTest {
     @SmallTest
     public void testGetSchedulerGroup() throws Exception {
         Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
+        // After M, /proc is mounted with hidepid=2, so even though the test still passes, it
+        // is not useful in practice. See crbug.com/973368 for details.
+        Assume.assumeTrue(Build.VERSION.SDK_INT < Build.VERSION_CODES.M);
         Assert.assertNotNull(CustomTabsConnection.getSchedulerGroup(Process.myPid()));
         String cgroup = CustomTabsConnection.getSchedulerGroup(Process.myPid());
         // Tests run in the foreground. Last two are from Android O.
         List<String> foregroundGroups = Arrays.asList("/", "/apps", "/top-app", "/foreground");
         Assert.assertTrue(foregroundGroups.contains(cgroup));
 
-        // On O, a background thread is still in the foreground cgroup.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
         final AtomicReference<String> backgroundThreadCgroup = new AtomicReference<>();
         Thread backgroundThread = new Thread(() -> {
             int tid = Process.myTid();

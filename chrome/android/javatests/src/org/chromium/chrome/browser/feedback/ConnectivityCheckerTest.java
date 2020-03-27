@@ -154,8 +154,9 @@ public class ConnectivityCheckerTest {
             if (useSystemStack) {
                 ConnectivityChecker.checkConnectivitySystemNetworkStack(url, timeoutMs, callback);
             } else {
+                // TODO (https://crbug.com/1063807):  Add incognito mode tests.
                 ConnectivityChecker.checkConnectivityChromeNetworkStack(
-                        Profile.getLastUsedProfile(), url, timeoutMs, callback);
+                        Profile.getLastUsedRegularProfile(), url, timeoutMs, callback);
             }
         });
 

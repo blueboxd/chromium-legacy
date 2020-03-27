@@ -211,7 +211,8 @@ public class AppBannerManagerTest {
 
     private void resetEngagementForUrl(final String url, final double engagement) {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            SiteEngagementService.getForProfile(Profile.getLastUsedProfile())
+            // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+            SiteEngagementService.getForProfile(Profile.getLastUsedRegularProfile())
                     .resetBaseScoreForUrl(url, engagement);
         });
     }

@@ -36,6 +36,16 @@ async function runTestQuery(data) {
         result = typeError.message;
       }
     }
+  } else if (data.navigate !== undefined) {
+    if (data.navigate === 'next') {
+      lastReceivedFileList.loadNext();
+      result = 'loadNext called';
+    } else if (data.navigate === 'prev') {
+      lastReceivedFileList.loadPrev();
+      result = 'loadPrev called';
+    } else {
+      result = 'nothing called';
+    }
   } else if (data.overwriteLastFile) {
     const testBlob = new Blob([data.overwriteLastFile]);
     await lastReceivedFileList.item(0).overwriteOriginal(testBlob);

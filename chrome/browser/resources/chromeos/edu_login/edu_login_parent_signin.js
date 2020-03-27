@@ -13,7 +13,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {EduAccountLoginBrowserProxyImpl} from './browser_proxy.js';
-import {ParentAccount, ParentSigninFailureResult} from './edu_login_util.js';
+import {EduLoginParams, ParentAccount, ParentSigninFailureResult} from './edu_login_util.js';
 
 Polymer({
   is: 'edu-login-parent-signin',
@@ -26,6 +26,17 @@ Polymer({
      * @type {?ParentAccount}
      */
     parent: Object,
+
+    /**
+     * Login params containing obfuscated Gaia id and Reauth Proof Token of the
+     * parent who is approving EDU login flow.
+     * @type {?EduLoginParams}
+     */
+    loginParams: {
+      type: Object,
+      value: null,
+      notify: true,
+    },
 
     /**
      * Parent's password
@@ -148,7 +159,10 @@ Polymer({
    * @param {string} result The value of ReAuthProofToken.
    */
   parentSigninSuccess_(result) {
-    // TODO(anastasiian): save RAPT
+    this.loginParams = {
+      reAuthProofToken: result,
+      parentObfuscatedGaiaId: this.parent.obfuscatedGaiaId
+    };
     this.fire('go-next');
   },
 

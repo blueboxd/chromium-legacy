@@ -764,8 +764,6 @@ CSSValueID IdentifierForFamily(const AtomicString& family) {
     return CSSValueID::kFantasy;
   if (family == font_family_names::kWebkitMonospace)
     return CSSValueID::kMonospace;
-  if (family == font_family_names::kWebkitPictograph)
-    return CSSValueID::kWebkitPictograph;
   if (family == font_family_names::kWebkitSansSerif)
     return CSSValueID::kSansSerif;
   if (family == font_family_names::kWebkitSerif)

@@ -26,6 +26,14 @@ enum DiagnosticRoutineEnum {
   kFloatingPointAccuracy = 7,
   kNvmeWearLevel = 8,
   kNvmeSelfTest = 9,
+  kDiskRead = 10,
+  kPrimeSearch = 11,
+};
+
+// Enumeration of the possible DiskRead routine's command type
+enum DiskReadRoutineTypeEnum {
+  kLinearRead,
+  kRandomRead,
 };
 
 // Enumeration of each of the possible statuses for a diagnostics routine.

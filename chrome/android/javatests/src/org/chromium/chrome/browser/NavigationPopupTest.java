@@ -57,8 +57,9 @@ public class NavigationPopupTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
+        // TODO (https://crbug.com/1063807):  Add incognito mode tests.
         TestThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mProfile = Profile.getLastUsedProfile());
+                (Runnable) () -> mProfile = Profile.getLastUsedRegularProfile());
     }
 
     // Exists solely to expose protected methods to this test.

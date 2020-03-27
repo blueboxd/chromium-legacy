@@ -63,8 +63,7 @@ class PLATFORM_EXPORT FontDescription {
     kSansSerifFamily,
     kMonospaceFamily,
     kCursiveFamily,
-    kFantasyFamily,
-    kPictographFamily
+    kFantasyFamily
   };
   static String ToString(GenericFamilyType);
 

@@ -12,7 +12,6 @@
 #include "base/task/post_task.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/url_formatter.h"
-#import "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #include "ios/chrome/app/application_mode.h"
@@ -184,6 +183,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 // YES while animating the dismissal of tab switcher.
 @property(nonatomic, assign) BOOL dismissingTabSwitcher;
 
+// Wrangler to handle BVC and tab model creation, access, and related logic.
+// Implements faetures exposed from this object through the
+// BrowserViewInformation protocol.
+@property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
 // The coordinator used to control sign-in UI flows. Lazily created the first
 // time it is accessed.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
@@ -193,8 +196,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 @implementation SceneController
 @synthesize appURLLoadingService =
     _appURLLoadingService;  //< From SceneControllerGuts
-@synthesize browserViewWrangler =
-    _browserViewWrangler;  //< From SceneControllerGuts
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
   self = [super init];
@@ -1654,7 +1655,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
   self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
   self.interfaceProvider.incognitoInterface.userInteractionEnabled = YES;
-  [self.currentInterface.bvc setPrimary:YES];
+  [self.currentInterface setPrimary:YES];
 }
 
 - (void)showTabSwitcher {

@@ -121,6 +121,25 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunNvmeSelfTestRoutineCallback
           callback) = 0;
 
+  // Requests that cros_healthd runs the Disk Read routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunDiskReadRoutine(
+      mojom::DiskReadRoutineTypeEnum type,
+      base::TimeDelta& exec_duration,
+      uint32_t file_size_mb,
+      mojom::CrosHealthdDiagnosticsService::RunDiskReadRoutineCallback
+          callback) = 0;
+
+  // Requests that cros_healthd runs the prime search routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunPrimeSearchRoutine(
+      base::TimeDelta& exec_duration,
+      uint64_t max_num,
+      mojom::CrosHealthdDiagnosticsService::RunPrimeSearchRoutineCallback
+          callback) = 0;
+
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

@@ -20,7 +20,8 @@
 #endif
 
 namespace {
-
+// Button corner radius.
+const CGFloat kButtonCornerRadius = 8;
 // Inset between button contents and edge.
 const CGFloat kButtonTitleContentInset = 8.0;
 
@@ -148,28 +149,26 @@ enum AuthenticationButtonType {
 
   // Embedded view constraints.
   AddSameConstraintsWithInsets(
-      self.unifiedConsentViewController.view, self.view,
+      self.unifiedConsentViewController.view, self.view.safeAreaLayoutGuide,
       ChromeDirectionalEdgeInsetsMake(0, 0,
-                                      2 * constants.ButtonHeight +
+                                      constants.ButtonHeight +
                                           constants.ButtonBottomPadding +
                                           constants.ButtonTopPadding,
                                       0));
 
   // Skip sign-in button constraints.
   AddSameConstraintsToSidesWithInsets(
-      self.skipSigninButton, self.view,
+      self.skipSigninButton, self.view.safeAreaLayoutGuide,
       LayoutSides::kBottom | LayoutSides::kLeading,
-      ChromeDirectionalEdgeInsetsMake(
-          0, constants.ButtonHorizontalPadding,
-          constants.ButtonBottomPadding + constants.ButtonHeight, 0));
+      ChromeDirectionalEdgeInsetsMake(0, constants.ButtonHorizontalPadding,
+                                      constants.ButtonBottomPadding, 0));
 
   // Confirmation button constraints.
   AddSameConstraintsToSidesWithInsets(
-      self.confirmationButton, self.view,
+      self.confirmationButton, self.view.safeAreaLayoutGuide,
       LayoutSides::kBottom | LayoutSides::kTrailing,
-      ChromeDirectionalEdgeInsetsMake(
-          0, 0, constants.ButtonBottomPadding + constants.ButtonHeight,
-          constants.ButtonHorizontalPadding));
+      ChromeDirectionalEdgeInsetsMake(0, 0, constants.ButtonBottomPadding,
+                                      constants.ButtonHorizontalPadding));
 
   // Gradient layer constraints.
   self.gradientView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -302,6 +301,7 @@ enum AuthenticationButtonType {
 - (void)setConfirmationStylingWithButton:(UIButton*)button {
   DCHECK(button);
   button.backgroundColor = [UIColor colorNamed:kBlueColor];
+  button.layer.cornerRadius = kButtonCornerRadius;
   [button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                forState:UIControlStateNormal];
   [button setImage:nil forState:UIControlStateNormal];

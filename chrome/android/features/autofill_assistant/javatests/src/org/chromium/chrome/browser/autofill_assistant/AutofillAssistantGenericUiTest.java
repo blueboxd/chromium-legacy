@@ -85,7 +85,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetModelValueProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.SetTextProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetUserActionsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetViewVisibilityProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShapeDrawableProto;
@@ -1084,20 +1083,14 @@ public class AutofillAssistantGenericUiTest {
                                                                         .setDateFormat(
                                                                                 "EEE, MMM d y")))))
                         .build());
-        interactions.add(
-                (InteractionProto) InteractionProto.newBuilder()
-                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
-                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
-                                        "date_string")))
-                        .addCallbacks(CallbackProto.newBuilder().setSetText(
-                                SetTextProto.newBuilder()
-                                        .setModelIdentifier("date_string")
-                                        .setViewIdentifier("text_view")))
-                        .build());
 
         GenericUserInterfaceProto genericUserInterface =
                 (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
-                        .setRootView(createTextView("", "text_view"))
+                        .setRootView(
+                                ViewProto.newBuilder()
+                                        .setIdentifier("text_view")
+                                        .setTextView(TextViewProto.newBuilder().setModelIdentifier(
+                                                "date_string")))
                         .setInteractions(
                                 InteractionsProto.newBuilder().addAllInteractions(interactions))
                         .setModel(ModelProto.newBuilder().addAllValues(modelValues))

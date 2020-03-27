@@ -3357,6 +3357,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "qr-code-generation",
+    "owners": ["seblalancette"],
+    "expiry_milestone": 88
+  },
+  {
     "name": "query-tiles",
     "owners": [ "shaktisahu", "qinmin"],
     "expiry_milestone": 86

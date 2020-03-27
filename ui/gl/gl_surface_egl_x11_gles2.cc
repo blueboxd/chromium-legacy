@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/gl_surface_egl_x11.h"
+#include "ui/gl/gl_surface_egl_x11_gles2.h"
 
 #include "ui/gfx/x/x11.h"
 #include "ui/gl/egl_util.h"
@@ -12,15 +12,16 @@ using ui::X11EventSource;
 
 namespace gl {
 
-NativeViewGLSurfaceEGLX11::NativeViewGLSurfaceEGLX11(EGLNativeWindowType window)
+NativeViewGLSurfaceEGLX11GLES2::NativeViewGLSurfaceEGLX11GLES2(
+    EGLNativeWindowType window)
     : NativeViewGLSurfaceEGL(0, nullptr), parent_window_(window) {}
 
-bool NativeViewGLSurfaceEGLX11::InitializeNativeWindow() {
+bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
   Display* x11_display = GetNativeDisplay();
   XWindowAttributes attributes;
   if (!XGetWindowAttributes(x11_display, parent_window_, &attributes)) {
     LOG(ERROR) << "XGetWindowAttributes failed for window " << parent_window_
-        << ".";
+               << ".";
     return false;
   }
 
@@ -44,7 +45,7 @@ bool NativeViewGLSurfaceEGLX11::InitializeNativeWindow() {
   return true;
 }
 
-void NativeViewGLSurfaceEGLX11::Destroy() {
+void NativeViewGLSurfaceEGLX11GLES2::Destroy() {
   NativeViewGLSurfaceEGL::Destroy();
 
   if (window_) {
@@ -55,13 +56,13 @@ void NativeViewGLSurfaceEGLX11::Destroy() {
   }
 }
 
-EGLConfig NativeViewGLSurfaceEGLX11::GetConfig() {
+EGLConfig NativeViewGLSurfaceEGLX11GLES2::GetConfig() {
   if (!config_) {
     // Get a config compatible with the window
     DCHECK(window_);
     XWindowAttributes win_attribs;
     if (!XGetWindowAttributes(GetNativeDisplay(), window_, &win_attribs)) {
-      return NULL;
+      return nullptr;
     }
 
     // Try matching the window depth with an alpha channel,
@@ -83,25 +84,19 @@ EGLConfig NativeViewGLSurfaceEGLX11::GetConfig() {
 
     EGLDisplay display = GetHardwareDisplay();
     EGLint num_configs;
-    if (!eglChooseConfig(display,
-                         config_attribs,
-                         &config_,
-                         1,
-                         &num_configs)) {
+    if (!eglChooseConfig(display, config_attribs, &config_, 1, &num_configs)) {
       LOG(ERROR) << "eglChooseConfig failed with error "
                  << GetLastEGLErrorString();
-      return NULL;
+      return nullptr;
     }
 
     if (num_configs) {
       EGLint config_depth;
-      if (!eglGetConfigAttrib(display,
-                              config_,
-                              EGL_BUFFER_SIZE,
+      if (!eglGetConfigAttrib(display, config_, EGL_BUFFER_SIZE,
                               &config_depth)) {
         LOG(ERROR) << "eglGetConfigAttrib failed with error "
                    << GetLastEGLErrorString();
-        return NULL;
+        return nullptr;
       }
 
       if (config_depth == win_attribs.depth) {
@@ -111,28 +106,24 @@ EGLConfig NativeViewGLSurfaceEGLX11::GetConfig() {
 
     // Try without an alpha channel.
     config_attribs[kAlphaSizeOffset] = 0;
-    if (!eglChooseConfig(display,
-                         config_attribs,
-                         &config_,
-                         1,
-                         &num_configs)) {
+    if (!eglChooseConfig(display, config_attribs, &config_, 1, &num_configs)) {
       LOG(ERROR) << "eglChooseConfig failed with error "
                  << GetLastEGLErrorString();
-      return NULL;
+      return nullptr;
     }
 
     if (num_configs == 0) {
       LOG(ERROR) << "No suitable EGL configs found.";
-      return NULL;
+      return nullptr;
     }
   }
   return config_;
 }
 
-bool NativeViewGLSurfaceEGLX11::Resize(const gfx::Size& size,
-                                       float scale_factor,
-                                       const gfx::ColorSpace& color_space,
-                                       bool has_alpha) {
+bool NativeViewGLSurfaceEGLX11GLES2::Resize(const gfx::Size& size,
+                                            float scale_factor,
+                                            const gfx::ColorSpace& color_space,
+                                            bool has_alpha) {
   if (size == GetSize())
     return true;
 
@@ -145,7 +136,7 @@ bool NativeViewGLSurfaceEGLX11::Resize(const gfx::Size& size,
   return true;
 }
 
-bool NativeViewGLSurfaceEGLX11::DispatchXEvent(XEvent* xev) {
+bool NativeViewGLSurfaceEGLX11GLES2::DispatchXEvent(XEvent* xev) {
   if (xev->type != Expose || xev->xexpose.window != window_)
     return false;
 
@@ -156,7 +147,7 @@ bool NativeViewGLSurfaceEGLX11::DispatchXEvent(XEvent* xev) {
   return true;
 }
 
-NativeViewGLSurfaceEGLX11::~NativeViewGLSurfaceEGLX11() {
+NativeViewGLSurfaceEGLX11GLES2::~NativeViewGLSurfaceEGLX11GLES2() {
   Destroy();
 }
 

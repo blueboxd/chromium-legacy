@@ -28,12 +28,13 @@ js_library("result_saver") {
 
 js_library("video_saver") {
   sources = [
-    "file_video_saver.js",
-    "intent_video_saver.js",
-    "video_saver_interface.js",
+    "async_writer.js",
+    "video_processor.js",
+    "video_saver.js",
   ]
   deps = [
     "..:intent",
     "../externs:w3c_fileapi",
+    "../lib:comlink",
   ]
 }

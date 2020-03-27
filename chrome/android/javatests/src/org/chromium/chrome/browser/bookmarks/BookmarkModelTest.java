@@ -52,7 +52,7 @@ public class BookmarkModelTest {
     @Before
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             mBookmarkModel = new BookmarkModel(profile);
             mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting();
         });

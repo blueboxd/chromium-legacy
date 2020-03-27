@@ -72,7 +72,7 @@ class AffiliationBackend;
 //
 //         void ShouldFillInto(const FacetURI& wi, FillDelegate* delegate) {
 //           service_->GetAffiliationsAndBranding(wi, StrategyOnCacheMiss::FAIL,
-//               base::Bind(
+//               base::BindOnce(
 //                   &ExampleAffiliatedCredentialFiller::OnAffiliationResult,
 //                   AsWeakPtr(),
 //                   delegate));

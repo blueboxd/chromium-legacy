@@ -185,8 +185,6 @@ class IsolatedPrerenderBrowserTest
     NavigationPredictorKeyedServiceFactory::GetForProfile(browser()->profile())
         ->OnPredictionUpdated(
             browser()->tab_strip_model()->GetActiveWebContents(), doc_url,
-            NavigationPredictorKeyedService::PredictionSource::
-                kAnchorElementsParsedFromWebPage,
             predicted_urls);
   }
 

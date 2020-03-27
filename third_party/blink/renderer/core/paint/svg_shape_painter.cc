@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/svg_shape_painter.h"
 
-#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
@@ -125,8 +124,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
             }
             break;
           case PT_MARKERS:
-            PaintMarkers(paint_state.GetPaintInfo(),
-                         layout_svg_shape_.VisualRectInLocalSVGCoordinates());
+            PaintMarkers(paint_state.GetPaintInfo());
             break;
           default:
             NOTREACHED();
@@ -178,8 +176,7 @@ void SVGShapePainter::FillShape(GraphicsContext& context,
 
 void SVGShapePainter::StrokeShape(GraphicsContext& context,
                                   const PaintFlags& flags) {
-  if (!layout_svg_shape_.StyleRef().SvgStyle().HasVisibleStroke())
-    return;
+  DCHECK(layout_svg_shape_.StyleRef().SvgStyle().HasVisibleStroke());
 
   switch (layout_svg_shape_.GeometryCodePath()) {
     case kRectGeometryFastPath:
@@ -200,8 +197,7 @@ void SVGShapePainter::StrokeShape(GraphicsContext& context,
   }
 }
 
-void SVGShapePainter::PaintMarkers(const PaintInfo& paint_info,
-                                   const FloatRect& bounding_box) {
+void SVGShapePainter::PaintMarkers(const PaintInfo& paint_info) {
   const Vector<MarkerPosition>* marker_positions =
       layout_svg_shape_.MarkerPositions();
   if (!marker_positions || marker_positions->IsEmpty())

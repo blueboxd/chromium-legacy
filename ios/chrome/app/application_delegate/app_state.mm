@@ -46,7 +46,10 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/scene_delegate.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/system_cookie_util.h"
@@ -456,6 +459,26 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 - (void)launchFromURLHandled:(BOOL)URLHandled {
   self.shouldPerformAdditionalDelegateHandling = !URLHandled;
+}
+
+#pragma mark - Multiwindow-related
+
+- (NSArray<SceneState*>*)connectedScenes {
+  if (IsMultiwindowSupported()) {
+    NSMutableArray* sceneStates = [[NSMutableArray alloc] init];
+    if (@available(iOS 13, *)) {
+      NSSet* connectedScenes =
+          [UIApplication sharedApplication].connectedScenes;
+      for (UIWindowScene* scene in connectedScenes) {
+        SceneDelegate* sceneDelegate =
+            base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
+        [sceneStates addObject:sceneDelegate.sceneState];
+      }
+    }
+    return sceneStates;
+  } else {
+    return @[ self.mainSceneState ];
+  }
 }
 
 #pragma mark - SafeModeCoordinatorDelegate Implementation

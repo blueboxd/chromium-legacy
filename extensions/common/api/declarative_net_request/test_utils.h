@@ -11,12 +11,11 @@
 
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "extensions/common/url_pattern.h"
 
 namespace base {
 class DictionaryValue;
-class ListValue;
-class Value;
 }  // namespace base
 
 namespace extensions {
@@ -166,23 +165,24 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
 std::unique_ptr<base::ListValue> ToListValue(
     const std::vector<std::string>& vec);
 
-// Writes the declarative |rules| in the given |extension_dir| together with the
-// manifest file. |hosts| specifies the host permissions, the extensions should
-// have. |flags| is a bitmask of ConfigFlag to configure the extension.
-void WriteManifestAndRuleset(
-    const base::FilePath& extension_dir,
-    const base::FilePath::CharType* json_rules_filepath,
-    const std::string& json_rules_filename,
-    const std::vector<TestRule>& rules,
-    const std::vector<std::string>& hosts,
-    unsigned flags = ConfigFlag::kConfig_None);
-void WriteManifestAndRuleset(
-    const base::FilePath& extension_dir,
-    const base::FilePath::CharType* json_rules_filepath,
-    const std::string& json_rules_filename,
-    const base::Value& rules,
-    const std::vector<std::string>& hosts,
-    unsigned flags = ConfigFlag::kConfig_None);
+// Returns a ListValue corresponding to a vector of TestRules.
+std::unique_ptr<base::ListValue> ToListValue(
+    const std::vector<TestRule>& rules);
+
+// Describes a single extension ruleset.
+struct TestRulesetInfo {
+  std::string relative_file_path;
+  base::Value rules_value;
+};
+
+// Writes the declarative rules specified in |ruleset_info| in the given
+// |extension_dir| together with the manifest file. |hosts| specifies the host
+// permissions, the extensions should have. |flags| is a bitmask of ConfigFlag
+// to configure the extension.
+void WriteManifestAndRuleset(const base::FilePath& extension_dir,
+                             const TestRulesetInfo& ruleset_info,
+                             const std::vector<std::string>& hosts,
+                             unsigned flags = ConfigFlag::kConfig_None);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

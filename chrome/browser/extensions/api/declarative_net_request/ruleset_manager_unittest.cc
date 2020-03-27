@@ -43,8 +43,6 @@ namespace dnr_api = api::declarative_net_request;
 namespace {
 
 constexpr char kJSONRulesFilename[] = "rules_file.json";
-const base::FilePath::CharType kJSONRulesetFilepath[] =
-    FILE_PATH_LITERAL("rules_file.json");
 
 class RulesetManagerTest : public DNRTestBase {
  public:
@@ -73,8 +71,9 @@ class RulesetManagerTest : public DNRTestBase {
     ConfigFlag flags = has_background_script
                            ? ConfigFlag::kConfig_HasBackgroundScript
                            : ConfigFlag::kConfig_None;
-    WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules, host_permissions, flags);
+
+    TestRulesetInfo info = {kJSONRulesFilename, std::move(*ToListValue(rules))};
+    WriteManifestAndRuleset(extension_dir, info, host_permissions, flags);
 
     last_loaded_extension_ =
         CreateExtensionLoader()->LoadExtension(extension_dir);

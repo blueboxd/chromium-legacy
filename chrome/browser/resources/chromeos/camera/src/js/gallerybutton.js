@@ -4,10 +4,10 @@
 
 import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {assert, assertInstanceof} from './chrome_util.js';
-import {FileVideoSaver} from './models/file_video_saver.js';
 import * as filesystem from './models/filesystem.js';
 // eslint-disable-next-line no-unused-vars
 import {ResultSaver} from './models/result_saver.js';
+import {VideoSaver} from './models/video_saver.js';
 import * as util from './util.js';
 
 /**
@@ -197,7 +197,7 @@ export class GalleryButton {
    */
   async startSaveVideo() {
     const tempFile = await filesystem.createTempVideoFile();
-    return FileVideoSaver.createFileVideoSaver(tempFile);
+    return VideoSaver.createForFile(tempFile);
   }
 
   /**

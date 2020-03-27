@@ -132,7 +132,7 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
   }
 
   pending_request_.reset(new CredentialManagerPendingRequestTask(
-      this, base::Bind(&RunGetCallback, base::Passed(&callback)), mediation,
+      this, base::BindOnce(&RunGetCallback, std::move(callback)), mediation,
       include_passwords, federations));
   // This will result in a callback to
   // PendingRequestTask::OnGetPasswordStoreResults().
@@ -157,22 +157,20 @@ GURL CredentialManagerImpl::GetOrigin() const {
   return GetLastCommittedURL().GetOrigin();
 }
 
-void CredentialManagerImpl::SendCredential(
-    const SendCredentialCallback& send_callback,
-    const CredentialInfo& info) {
+void CredentialManagerImpl::SendCredential(SendCredentialCallback send_callback,
+                                           const CredentialInfo& info) {
   DCHECK(pending_request_);
-  DCHECK(send_callback == pending_request_->send_callback());
 
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
         .LogSendCredential(GetLastCommittedURL(), info.type);
   }
-  send_callback.Run(info);
+  std::move(send_callback).Run(info);
   pending_request_.reset();
 }
 
 void CredentialManagerImpl::SendPasswordForm(
-    const SendCredentialCallback& send_callback,
+    SendCredentialCallback send_callback,
     CredentialMediationRequirement mediation,
     const autofill::PasswordForm* form) {
   CredentialInfo info;
@@ -199,7 +197,7 @@ void CredentialManagerImpl::SendPasswordForm(
     metrics_util::LogCredentialManagerGetResult(
         metrics_util::CredentialManagerGetResult::kNone, mediation);
   }
-  SendCredential(send_callback, info);
+  SendCredential(std::move(send_callback), info);
 }
 
 PasswordManagerClient* CredentialManagerImpl::client() const {

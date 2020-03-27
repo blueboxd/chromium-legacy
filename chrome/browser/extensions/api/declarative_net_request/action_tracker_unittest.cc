@@ -30,8 +30,6 @@ namespace dnr_api = api::declarative_net_request;
 namespace {
 
 constexpr char kJSONRulesFilename[] = "rules_file.json";
-const base::FilePath::CharType kJSONRulesetFilepath[] =
-    FILE_PATH_LITERAL("rules_file.json");
 
 constexpr int64_t kNavigationId = 1;
 
@@ -57,9 +55,9 @@ class ActionTrackerTest : public DNRTestBase {
 
     // Create extension directory.
     ASSERT_TRUE(base::CreateDirectory(extension_dir));
+    TestRulesetInfo info = {kJSONRulesFilename, base::ListValue()};
     WriteManifestAndRuleset(
-        extension_dir, kJSONRulesetFilepath, kJSONRulesFilename,
-        std::vector<TestRule>(),
+        extension_dir, info,
         std::vector<std::string>({URLPattern::kAllUrlsPattern}), flags);
 
     last_loaded_extension_ =

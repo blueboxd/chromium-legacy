@@ -6,6 +6,7 @@
 
 #include "base/threading/thread.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
+#include "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #import "ios/chrome/browser/tabs/tab_model.h"

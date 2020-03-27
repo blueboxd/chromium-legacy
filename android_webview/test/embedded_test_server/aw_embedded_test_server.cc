@@ -156,16 +156,12 @@ std::unique_ptr<HttpResponse> HandleSetImageResponse(
 
   bool header_exist = false;
   if (query.find("header") != query.end()) {
-    // TODO(thakis): It looks like the break in the loop should be in the if.
-    // Check and fix.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunreachable-code"
     for (const auto& header : query.at("header")) {
-      if (request.headers.find(header) != request.headers.end())
+      if (request.headers.find(header) != request.headers.end()) {
         header_exist = true;
-      break;
+        break;
+      }
     }
-#pragma GCC diagnostic pop
   }
 
   std::string decoded_resource;

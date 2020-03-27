@@ -46,6 +46,9 @@ class ChromeBrowserState;
 // YES if this interface is incognito.
 @property(nonatomic, readonly) BOOL incognito;
 
+// Sets the interface as "primary".
+- (void)setPrimary:(BOOL)primary;
+
 // Asks the implementor to clear any presented state, dismissing the omnibox if
 // |dismissOmnibox| is YES, and calling |completion| once any animations are
 // complete.

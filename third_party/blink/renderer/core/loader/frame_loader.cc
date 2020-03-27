@@ -493,7 +493,7 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
   // and that was the about:blank Document created when the browsing context
   // was created, then the navigation must be done with replacement enabled."
   if ((!state_machine_.CommittedMultipleRealLoads() &&
-       DeprecatedEqualIgnoringCase(frame_->GetDocument()->Url(), BlankURL())))
+       EqualIgnoringASCIICase(frame_->GetDocument()->Url(), BlankURL())))
     return WebFrameLoadType::kReplaceCurrentItem;
 
   if (url == document_loader_->UrlForHistory()) {
@@ -1272,7 +1272,7 @@ bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
   // We don't do this if we are submitting a form with method other than "GET",
   // explicitly reloading, currently displaying a frameset, or if the URL does
   // not have a fragment.
-  return DeprecatedEqualIgnoringCase(http_method, http_names::kGET) &&
+  return EqualIgnoringASCIICase(http_method, http_names::kGET) &&
          !IsReloadLoadType(load_type) &&
          load_type != WebFrameLoadType::kBackForward &&
          url.HasFragmentIdentifier() &&

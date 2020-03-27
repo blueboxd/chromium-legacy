@@ -117,8 +117,6 @@ namespace {
 namespace dnr_api = api::declarative_net_request;
 
 constexpr char kJSONRulesFilename[] = "rules_file.json";
-const base::FilePath::CharType kJSONRulesetFilepath[] =
-    FILE_PATH_LITERAL("rules_file.json");
 
 // Returns true if |window.scriptExecuted| is true for the given frame.
 bool WasFrameWithScriptLoaded(content::RenderFrameHost* rfh) {
@@ -359,8 +357,8 @@ class DeclarativeNetRequestBrowserTest
     base::FilePath extension_dir = temp_dir_.GetPath().AppendASCII(directory);
     EXPECT_TRUE(base::CreateDirectory(extension_dir));
 
-    WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules, hosts, flags_);
+    TestRulesetInfo info = {kJSONRulesFilename, std::move(*ToListValue(rules))};
+    WriteManifestAndRuleset(extension_dir, info, hosts, flags_);
 
     background_page_ready_listener_->Reset();
     const Extension* extension = nullptr;

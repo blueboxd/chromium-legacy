@@ -168,6 +168,8 @@ generated_interface_sources_in_core = [
   "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_character_data.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_clipboard_event.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_clipboard_event.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_color_page_popup_controller.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_color_page_popup_controller.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_comment.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_comment.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/core/v8/v8_composition_event.cc",

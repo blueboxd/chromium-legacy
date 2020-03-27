@@ -436,8 +436,6 @@ String FontDescription::ToString(GenericFamilyType familyType) {
       return "Cursive";
     case GenericFamilyType::kFantasyFamily:
       return "Fantasy";
-    case GenericFamilyType::kPictographFamily:
-      return "Pictograph";
   }
   return "Unknown";
 }

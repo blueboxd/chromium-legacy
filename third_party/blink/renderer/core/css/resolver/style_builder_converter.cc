@@ -187,8 +187,6 @@ static FontDescription::GenericFamilyType ConvertGenericFamily(
       return FontDescription::kFantasyFamily;
     case CSSValueID::kMonospace:
       return FontDescription::kMonospaceFamily;
-    case CSSValueID::kWebkitPictograph:
-      return FontDescription::kPictographFamily;
     default:
       return FontDescription::kNoFamily;
   }

@@ -13,6 +13,7 @@
 
 // #import {SamlHandler, OnHeadersReceivedDetails} from './saml_handler.m.js';
 // #import {WebviewEventManager} from './webview_event_manager.m.js';
+// #import {PasswordAttributes} from './saml_password_attributes.m.js';
 // clang-format on
 
 /**
@@ -28,11 +29,29 @@ cr.define('cr.login', function() {
   /* #ignore */ 'use strict';
 
   /**
+   * Credentials passed with 'authCompleted' message.
+   * @typedef {{
+   *   email: string,
+   *   gaiaId: string,
+   *   password: string,
+   *   usingSAML: boolean,
+   *   publicSAML: boolean,
+   *   chooseWhatToSync: boolean,
+   *   skipForNow: boolean,
+   *   sessionIndex: string,
+   *   trusted: boolean,
+   *   services: Array,
+   *   passwordAttributes: !PasswordAttributes
+   * }}
+   */
+  /* #export */ let AuthCompletedCredentials;
+
+  /**
    * Parameters for the authorization flow.
    * @typedef {{
    *   hl: string,
    *   gaiaUrl: string,
-   *   authMode: Number,
+   *   authMode: AuthMode,
    *   isLoginPrimaryAccount: boolean,
    *   email: string,
    *   constrained: string,

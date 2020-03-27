@@ -18,7 +18,13 @@ namespace chromecast {
 bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
     case DIR_CAST_HOME: {
+#if defined(OS_FUCHSIA)
+      // On Fuchsia, use the component's local /data directory.
+      base::FilePath home;
+      CHECK(base::PathService::Get(base::DIR_APP_DATA, &home));
+#else
       base::FilePath home = base::GetHomeDir();
+#endif
 #if BUILDFLAG(IS_CAST_DESKTOP_BUILD)
       // When running a development instance as a regular user, use
       // a data directory under $HOME (similar to Chrome).
@@ -43,9 +49,6 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_ANDROID)
       CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
       *result = data_dir.Append("cast_shell.conf");
-#elif defined(OS_FUCHSIA)
-      CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
-      *result = data_dir.Append(".eureka.conf");
 #else
       CHECK(base::PathService::Get(DIR_CAST_HOME, &data_dir));
       *result = data_dir.Append(".eureka.conf");
@@ -57,9 +60,6 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_ANDROID)
       CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
       *result = data_dir.Append("cast_shell.crl");
-#elif defined(OS_FUCHSIA)
-      CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
-      *result = data_dir.Append(".eureka.crl");
 #else
       CHECK(base::PathService::Get(DIR_CAST_HOME, &data_dir));
       *result = data_dir.Append(".eureka.crl");

@@ -36,7 +36,7 @@ class SVGElement;
 class SVGSVGElement;
 class SubtreeLayoutScope;
 
-class SVGDocumentExtensions final
+class CORE_EXPORT SVGDocumentExtensions final
     : public GarbageCollected<SVGDocumentExtensions> {
  public:
   explicit SVGDocumentExtensions(Document*);
@@ -49,7 +49,7 @@ class SVGDocumentExtensions final
   // needs applying.
   void AddWebAnimationsPendingSVGElement(SVGElement&);
 
-  CORE_EXPORT static void ServiceOnAnimationFrame(Document&);
+  static void ServiceOnAnimationFrame(Document&);
 
   void StartAnimations();
   void PauseAnimations();

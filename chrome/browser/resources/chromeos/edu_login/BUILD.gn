@@ -7,6 +7,11 @@ import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
+  closure_flags =
+      default_closure_args + [
+        "js_module_root=../../chrome/browser/resources/gaia_auth_host/",
+        "js_module_root=./gen/chrome/browser/resources/gaia_auth_host/",
+      ]
   deps = [
     ":app",
     ":browser_proxy",
@@ -14,6 +19,7 @@ js_type_check("closure_compile") {
     ":edu_login_parent_info",
     ":edu_login_parent_signin",
     ":edu_login_parents",
+    ":edu_login_signin",
     ":edu_login_template",
     ":edu_login_util",
     ":edu_login_welcome",
@@ -25,6 +31,7 @@ js_library("app") {
     ":edu_login_parent_info",
     ":edu_login_parent_signin",
     ":edu_login_parents",
+    ":edu_login_signin",
     ":edu_login_util",
     ":edu_login_welcome",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -51,6 +58,7 @@ js_library("edu_login_template") {
 js_library("browser_proxy") {
   deps = [
     ":edu_login_util",
+    "//chrome/browser/resources/gaia_auth_host:authenticator.m",
     "//ui/webui/resources/js:cr.m",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
@@ -83,7 +91,7 @@ js_library("edu_login_parent_signin") {
     ":edu_login_button",
     ":edu_login_template",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -93,6 +101,17 @@ js_library("edu_login_parent_info") {
     ":edu_login_template",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:icon.m",
+  ]
+}
+
+js_library("edu_login_signin") {
+  deps = [
+    ":edu_login_button",
+    ":edu_login_template",
+    "//chrome/browser/resources/gaia_auth_host:authenticator.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -150,6 +169,12 @@ polymer_modulizer("edu_login_parent_info") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("edu_login_signin") {
+  js_file = "edu_login_signin.js"
+  html_file = "edu_login_signin.html"
+  html_type = "v3-ready"
+}
+
 group("polymer3_elements") {
   public_deps = [
     ":app_module",
@@ -158,6 +183,7 @@ group("polymer3_elements") {
     ":edu_login_parent_info_module",
     ":edu_login_parent_signin_module",
     ":edu_login_parents_module",
+    ":edu_login_signin_module",
     ":edu_login_template_module",
     ":edu_login_welcome_module",
     ":icons_module",

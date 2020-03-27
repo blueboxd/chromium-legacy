@@ -321,6 +321,10 @@ const char kPageInfoRefactoringName[] = "New design of the page info";
 const char kPageInfoRefactoringDescription[] =
     "Uses the new design for the page security info.";
 
+const char kQRCodeGenerationName[] = "QR Code Generation";
+const char kQRCodeGenerationDescription[] =
+    "Allows the generation of a QR code for a page.";
+
 const char kReloadSadTabName[] = "Reload SadTab automatically";
 const char kReloadSadTabDescription[] =
     "When enabled, the first time the renderer crashes, the page is reloaded "

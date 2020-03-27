@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-import {ParentAccount} from './edu_login_util.js';
+
+import {AuthCompletedCredentials} from '../../gaia_auth_host/authenticator.m.js';
+import {EduLoginParams, ParentAccount} from './edu_login_util.js';
 
 /** @interface */
 export class EduAccountLoginBrowserProxy {
@@ -23,6 +25,32 @@ export class EduAccountLoginBrowserProxy {
    * @return {Promise<string>}
    */
   parentSignin(parent, password) {}
+
+  /** Send 'initialize' message to prepare for starting auth. */
+  loginInitialize() {}
+
+  /**
+   * Send 'authExtensionReady' message to handle tasks after auth extension
+   * loads.
+   */
+  authExtensionReady() {}
+
+  /**
+   * Send 'switchToFullTab' message to switch the UI from a constrained dialog
+   * to a full tab.
+   * @param {!string} url
+   */
+  switchToFullTab(url) {}
+
+  /**
+   * Send 'completeLogin' message to complete login.
+   * @param {!AuthCompletedCredentials} credentials
+   * @param {!EduLoginParams} eduLoginParams
+   */
+  completeLogin(credentials, eduLoginParams) {}
+
+  /** Send 'dialogClose' message to close the login dialog. */
+  dialogClose() {}
 }
 
 /**
@@ -37,6 +65,31 @@ export class EduAccountLoginBrowserProxyImpl {
   /** @override */
   parentSignin(parent, password) {
     return sendWithPromise('parentSignin', parent, password);
+  }
+
+  /** @override */
+  loginInitialize() {
+    chrome.send('initialize');
+  }
+
+  /** @override */
+  authExtensionReady() {
+    chrome.send('authExtensionReady');
+  }
+
+  /** @override */
+  switchToFullTab(url) {
+    chrome.send('switchToFullTab', [url]);
+  }
+
+  /** @override */
+  completeLogin(credentials, eduLoginParams) {
+    chrome.send('completeLogin', [credentials, eduLoginParams]);
+  }
+
+  /** @override */
+  dialogClose() {
+    chrome.send('dialogClose');
   }
 }
 

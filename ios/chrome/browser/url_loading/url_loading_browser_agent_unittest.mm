@@ -12,6 +12,8 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
@@ -169,6 +171,8 @@ TEST_F(URLLoadingBrowserAgentTest, TestSwitchToTabFromNTP) {
   web_state_list->InsertWebState(0, std::move(web_state),
                                  WebStateList::INSERT_FORCE_INDEX,
                                  WebStateOpener());
+  id mock_delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+  NewTabPageTabHelper::CreateForWebState(web_state_ptr, mock_delegate);
 
   std::unique_ptr<web::TestWebState> web_state_2 = CreateTestWebState();
   web::WebState* web_state_ptr_2 = web_state_2.get();
@@ -202,6 +206,8 @@ TEST_F(URLLoadingBrowserAgentTest, TestSwitchToClosedTab) {
                                  WebStateList::INSERT_FORCE_INDEX,
                                  WebStateOpener());
   web_state_list->ActivateWebStateAt(0);
+  id mock_delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+  NewTabPageTabHelper::CreateForWebState(web_state_ptr, mock_delegate);
 
   GURL url("http://test/2");
 

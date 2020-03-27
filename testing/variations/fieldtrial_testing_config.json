@@ -2574,6 +2574,7 @@
     "HappinessTrackingSurveysForDesktopSettings": [
         {
             "platforms": [
+                "mac",
                 "windows"
             ],
             "experiments": [
@@ -2581,7 +2582,7 @@
                     "name": "Settings_Main",
                     "params": {
                         "en_site_id": "u4ggjx6754eqhvca4nct6iytdi",
-                        "probability": "0.5",
+                        "probability": "1.0",
                         "survey": "settings"
                     },
                     "enable_features": [

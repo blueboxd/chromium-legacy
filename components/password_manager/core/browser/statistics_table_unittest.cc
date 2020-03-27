@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/statistics_table.h"
+#include <functional>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "sql/database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace password_manager {
 namespace {
@@ -135,9 +138,8 @@ TEST_F(StatisticsTableTest, RemoveStatsByOriginAndTime) {
   EXPECT_THAT(db()->GetRows(stats4.origin_domain), ElementsAre(stats4));
 
   // Remove the entry with the timestamp 1 with no origin filter.
-  EXPECT_TRUE(
-      db()->RemoveStatsByOriginAndTime(base::Callback<bool(const GURL&)>(),
-                                       base::Time(), base::Time::FromTimeT(2)));
+  EXPECT_TRUE(db()->RemoveStatsByOriginAndTime(
+      base::NullCallback(), base::Time(), base::Time::FromTimeT(2)));
   EXPECT_THAT(db()->GetAllRows(), UnorderedElementsAre(stats2, stats3, stats4));
   EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
   EXPECT_THAT(db()->GetRows(stats2.origin_domain), ElementsAre(stats2));
@@ -147,8 +149,7 @@ TEST_F(StatisticsTableTest, RemoveStatsByOriginAndTime) {
   // Remove the entries with the timestamp 2 that are NOT matching
   // |kTestDomain3|.
   EXPECT_TRUE(db()->RemoveStatsByOriginAndTime(
-      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator!=),
-                 stats3.origin_domain),
+      base::BindRepeating(std::not_equal_to<GURL>(), stats3.origin_domain),
       base::Time::FromTimeT(2), base::Time()));
   EXPECT_THAT(db()->GetAllRows(), ElementsAre(stats3));
   EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
@@ -158,9 +159,8 @@ TEST_F(StatisticsTableTest, RemoveStatsByOriginAndTime) {
 
   // Remove the entries with the timestamp 2 with no origin filter.
   // This should delete the remaining entry.
-  EXPECT_TRUE(
-      db()->RemoveStatsByOriginAndTime(base::Callback<bool(const GURL&)>(),
-                                       base::Time::FromTimeT(2), base::Time()));
+  EXPECT_TRUE(db()->RemoveStatsByOriginAndTime(
+      base::NullCallback(), base::Time::FromTimeT(2), base::Time()));
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
   EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
   EXPECT_THAT(db()->GetRows(stats2.origin_domain), IsEmpty());

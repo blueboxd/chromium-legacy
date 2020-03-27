@@ -138,6 +138,12 @@ void NewTabPageTabHelper::DidFinishNavigation(
   SetActive(IsNTPURL(web_state->GetLastCommittedURL()));
 }
 
+void NewTabPageTabHelper::DidStopLoading(web::WebState* web_state) {
+  if (IsNTPURL(web_state->GetVisibleURL())) {
+    SetActive(true);
+  }
+}
+
 #pragma mark - Private
 
 void NewTabPageTabHelper::SetActive(bool active) {

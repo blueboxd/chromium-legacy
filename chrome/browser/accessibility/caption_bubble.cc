@@ -6,13 +6,42 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+
+// CaptionBubble implementation of BubbleFrameView.
+class CaptionBubbleFrameView : public views::BubbleFrameView {
+ public:
+  CaptionBubbleFrameView()
+      : views::BubbleFrameView(gfx::Insets(), gfx::Insets()) {}
+  ~CaptionBubbleFrameView() override = default;
+
+  int NonClientHitTest(const gfx::Point& point) override {
+    // Outside of the window bounds, do nothing.
+    if (!bounds().Contains(point))
+      return HTNOWHERE;
+
+    int hit = views::BubbleFrameView::NonClientHitTest(point);
+
+    // After BubbleFrameView::NonClientHitTest processes the bubble-specific
+    // hits such as the close button and the rounded corners, it checks hits to
+    // the bubble's client view. Any hits to ClientFrameView::NonClientHitTest
+    // return HTCLIENT or HTNOWHERE. Override these to return HTCAPTION in
+    // order to make the entire widget draggable.
+    return (hit == HTCLIENT || hit == HTNOWHERE) ? HTCAPTION : hit;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CaptionBubbleFrameView);
+};
 
 namespace captions {
 
@@ -68,6 +97,17 @@ void CaptionBubble::Init() {
 
 bool CaptionBubble::ShouldShowCloseButton() const {
   return true;
+}
+
+views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
+    views::Widget* widget) {
+  CaptionBubbleFrameView* frame = new CaptionBubbleFrameView();
+  auto border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::FLOAT, views::BubbleBorder::NO_SHADOW,
+      gfx::kPlaceholderColor);
+  border->SetCornerRadius(2);
+  frame->SetBubbleBorder(std::move(border));
+  return frame;
 }
 
 void CaptionBubble::SetText(const std::string& text) {

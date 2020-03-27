@@ -33,6 +33,16 @@ public class ExternalNavigationTest {
     private static final String ABOUT_BLANK_URL = "about:blank";
     private static final String INTENT_TO_CHROME_URL =
             "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end";
+    private static final String NON_RESOLVABLE_INTENT_URL = "intent://garbage;end";
+
+    // The test server handles "echo" with a response containing "Echo" :).
+    private final String mTestServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
+    private final String mIntentToChromeWithFallbackUrl =
+            "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;S.browser_fallback_url="
+            + android.net.Uri.encode(mTestServerSiteUrl) + ";end";
+    private final String mNonResolvableIntentWithFallbackUrl =
+            "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.missing.app;S.browser_fallback_url="
+            + android.net.Uri.encode(mTestServerSiteUrl) + ";end";
 
     private class IntentInterceptor implements InstrumentationActivity.IntentInterceptor {
         public Intent mLastIntent;
@@ -65,13 +75,10 @@ public class ExternalNavigationTest {
         IntentInterceptor intentInterceptor = new IntentInterceptor();
         activity.setIntentInterceptor(intentInterceptor);
 
-        // The test server handles "echo" with a response containing "Echo" :).
-        String testServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
-
-        mActivityTestRule.navigateAndWait(testServerSiteUrl);
+        mActivityTestRule.navigateAndWait(mTestServerSiteUrl);
 
         Assert.assertNull(intentInterceptor.mLastIntent);
-        Assert.assertEquals(testServerSiteUrl, mActivityTestRule.getCurrentDisplayUrl());
+        Assert.assertEquals(mTestServerSiteUrl, mActivityTestRule.getCurrentDisplayUrl());
     }
 
     /**
@@ -125,5 +132,95 @@ public class ExternalNavigationTest {
         Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
         Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
                 intent.getDataString());
+    }
+
+    /**
+     * Tests that a navigation that redirects to an external intent with a fallback URL results in
+     * the external intent being launched.
+     */
+    @Test
+    @SmallTest
+    public void testExternalIntentWithFallbackUrlAfterRedirectLaunched() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestServer().getURL(
+                "/server-redirect?" + mIntentToChromeWithFallbackUrl);
+
+        Tab tab = mActivityTestRule.getActivity().getTab();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
+
+        intentInterceptor.waitForIntent();
+
+        // The current URL should not have changed, and the intent should have been launched.
+        Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
+        Intent intent = intentInterceptor.mLastIntent;
+        Assert.assertNotNull(intent);
+        Assert.assertEquals("com.android.chrome", intent.getPackage());
+        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
+        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
+                intent.getDataString());
+    }
+
+    /**
+     * Tests that a navigation that redirects to an external intent that can't be handled results in
+     * a failed navigation.
+     */
+    @Test
+    @SmallTest
+    public void testNonHandledExternalIntentAfterRedirectBlocked() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestServer().getURL(
+                "/server-redirect?" + NON_RESOLVABLE_INTENT_URL);
+
+        Tab tab = mActivityTestRule.getActivity().getTab();
+
+        // Note that this navigation will not result in a paint.
+        NavigationWaiter waiter = new NavigationWaiter(
+                NON_RESOLVABLE_INTENT_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
+        waiter.waitForNavigation();
+
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // The current URL should not have changed.
+        Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
+    }
+
+    /**
+     * Tests that a navigation that redirects to an external intent that can't be handled but has a
+     * fallback URL results in a navigation to the fallback URL.
+     */
+    @Test
+    @SmallTest
+    public void testNonHandledExternalIntentWithFallbackUrlAfterRedirectGoesToFallbackUrl()
+            throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestServer().getURL(
+                "/server-redirect?" + mNonResolvableIntentWithFallbackUrl);
+
+        Tab tab = mActivityTestRule.getActivity().getTab();
+
+        NavigationWaiter waiter = new NavigationWaiter(
+                mTestServerSiteUrl, tab, /*expectFailure=*/false, /*waitForPaint=*/true);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
+        waiter.waitForNavigation();
+
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // The current URL should now be the fallback URL.
+        Assert.assertEquals(mTestServerSiteUrl, mActivityTestRule.getCurrentDisplayUrl());
     }
 }

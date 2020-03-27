@@ -155,8 +155,8 @@ class ContentPasswordManagerDriverTest
         web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         autofill::mojom::PasswordAutofillAgent::Name_,
-        base::Bind(&FakePasswordAutofillAgent::BindPendingReceiver,
-                   base::Unretained(&fake_agent_)));
+        base::BindRepeating(&FakePasswordAutofillAgent::BindPendingReceiver,
+                            base::Unretained(&fake_agent_)));
   }
 
   bool WasLoggingActivationMessageSent(bool* activation_flag) {

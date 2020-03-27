@@ -13,7 +13,6 @@
  */
 export let ParentAccount;
 
-
 /**
  * Failure result of parentSignin call.
  * @typedef {{
@@ -21,3 +20,12 @@ export let ParentAccount;
  * }}
  */
 export let ParentSigninFailureResult;
+
+/**
+ * Additional EDU-specific params for 'completeLogin' call.
+ * @typedef {{
+ *   reAuthProofToken: string,
+ *   parentObfuscatedGaiaId: string,
+ * }}
+ */
+export let EduLoginParams;

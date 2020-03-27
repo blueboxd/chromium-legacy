@@ -62,9 +62,9 @@ class CredentialManagerImpl
  private:
   // CredentialManagerPendingRequestTaskDelegate:
   GURL GetOrigin() const override;
-  void SendCredential(const SendCredentialCallback& send_callback,
+  void SendCredential(SendCredentialCallback send_callback,
                       const CredentialInfo& info) override;
-  void SendPasswordForm(const SendCredentialCallback& send_callback,
+  void SendPasswordForm(SendCredentialCallback send_callback,
                         CredentialMediationRequirement mediation,
                         const autofill::PasswordForm* form) override;
   PasswordManagerClient* client() const override;

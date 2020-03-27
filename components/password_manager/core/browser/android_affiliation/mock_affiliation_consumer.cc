@@ -30,8 +30,8 @@ void MockAffiliationConsumer::ExpectFailure() {
 
 AffiliationService::ResultCallback
 MockAffiliationConsumer::GetResultCallback() {
-  return base::Bind(&MockAffiliationConsumer::OnResultCallback,
-                    base::Unretained(this));
+  return base::BindOnce(&MockAffiliationConsumer::OnResultCallback,
+                        base::Unretained(this));
 }
 
 }  // namespace password_manager

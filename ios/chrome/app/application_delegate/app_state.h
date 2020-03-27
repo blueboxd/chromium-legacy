@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol BrowserLauncher;
+@class SceneState;
 @class MainApplicationDelegate;
 @class MemoryWarningHelper;
 @class MetricsMediator;
@@ -34,6 +35,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // Window for the application, it is not set during the initialization method.
 // Set the property before calling methods related to it.
 @property(nonatomic, weak) UIWindow* window;
+
+// When multiwindow is unavailable, this is the only scene state. It is created
+// by the app delegate.
+@property(nonatomic, strong) SceneState* mainSceneState;
 
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch
@@ -79,6 +84,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // UIKit should make followup delegate calls such as
 // -performActionForShortcutItem or -openURL.
 - (void)launchFromURLHandled:(BOOL)URLHandled;
+
+// Returns a list of all connected scenes.
+- (NSArray<SceneState*>*)connectedScenes;
 
 @end
 

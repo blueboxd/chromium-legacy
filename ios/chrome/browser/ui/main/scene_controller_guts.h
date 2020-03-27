@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
@@ -18,11 +17,6 @@
 @class BrowserViewWrangler;
 
 @protocol SceneControllerGuts <WebStateListObserving>
-
-// Wrangler to handle BVC and tab model creation, access, and related logic.
-// Implements faetures exposed from this object through the
-// BrowserViewInformation protocol.
-@property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
 
 - (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
                  needRestoration:(BOOL)needsRestoration;

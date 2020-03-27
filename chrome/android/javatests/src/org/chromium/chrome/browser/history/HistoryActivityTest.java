@@ -587,7 +587,7 @@ public class HistoryActivityTest {
         int onPreferenceChangeCallCount = mTestObserver.onPreferenceChangeCallback.getCallCount();
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
-            return Profile.getLastUsedProfile().isChild()
+            return Profile.getLastUsedRegularProfile().isChild()
                     && !PrefServiceBridge.getInstance().getBoolean(
                             Pref.ALLOW_DELETING_BROWSER_HISTORY)
                     && !IncognitoUtils.isIncognitoModeEnabled();

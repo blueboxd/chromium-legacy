@@ -6,6 +6,7 @@
 
 #import "base/ios/crb_protocol_observers.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
+#import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -82,6 +83,10 @@
   _activationLevel = newLevel;
 
   [self.observers sceneState:self transitionedToActivationLevel:newLevel];
+}
+
+- (id<BrowserInterfaceProvider>)interfaceProvider {
+  return self.controller.interfaceProvider;
 }
 
 #pragma mark - debug

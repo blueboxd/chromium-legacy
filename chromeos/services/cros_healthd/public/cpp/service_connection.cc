@@ -78,6 +78,17 @@ class ServiceConnectionImpl : public ServiceConnection {
       mojom::NvmeSelfTestTypeEnum nvme_self_test_type,
       mojom::CrosHealthdDiagnosticsService::RunNvmeSelfTestRoutineCallback
           callback) override;
+  void RunDiskReadRoutine(
+      mojom::DiskReadRoutineTypeEnum type,
+      base::TimeDelta& exec_duration,
+      uint32_t file_size_mb,
+      mojom::CrosHealthdDiagnosticsService::RunDiskReadRoutineCallback callback)
+      override;
+  void RunPrimeSearchRoutine(
+      base::TimeDelta& exec_duration,
+      uint64_t max_num,
+      mojom::CrosHealthdDiagnosticsService::RunPrimeSearchRoutineCallback
+          callback) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -232,6 +243,28 @@ void ServiceConnectionImpl::RunNvmeSelfTestRoutine(
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunNvmeSelfTestRoutine(
       self_test_type, std::move(callback));
+}
+
+void ServiceConnectionImpl::RunDiskReadRoutine(
+    mojom::DiskReadRoutineTypeEnum type,
+    base::TimeDelta& exec_duration,
+    uint32_t file_size_mb,
+    mojom::CrosHealthdDiagnosticsService::RunDiskReadRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunDiskReadRoutine(
+      type, exec_duration.InSeconds(), file_size_mb, std::move(callback));
+}
+
+void ServiceConnectionImpl::RunPrimeSearchRoutine(
+    base::TimeDelta& exec_duration,
+    uint64_t max_num,
+    mojom::CrosHealthdDiagnosticsService::RunPrimeSearchRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunPrimeSearchRoutine(
+      exec_duration.InSeconds(), max_num, std::move(callback));
 }
 
 void ServiceConnectionImpl::ProbeTelemetryInfo(

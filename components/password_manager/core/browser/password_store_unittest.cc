@@ -866,7 +866,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
     scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
     store->Init(nullptr);
     store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
-                                      base::Closure());
+                                      base::NullCallback());
 
     // Set up the initial test data set.
     std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -1520,7 +1520,8 @@ TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
   store->RemoveCompromisedCredentialsByUrlAndTime(
       base::BindRepeating(std::not_equal_to<GURL>(),
                           GURL(compromised_credentials3.signon_realm)),
-      base::Time::FromTimeT(150), base::Time::FromTimeT(350), base::Closure());
+      base::Time::FromTimeT(150), base::Time::FromTimeT(350),
+      base::NullCallback());
 
   EXPECT_CALL(consumer,
               OnGetCompromisedCredentials(UnorderedElementsAre(
@@ -1577,7 +1578,8 @@ TEST_F(PasswordStoreTest, RemoveFieldInfo) {
   testing::Mock::VerifyAndClearExpectations(&consumer);
 
   store->RemoveFieldInfoByTime(base::Time::FromTimeT(150),
-                               base::Time::FromTimeT(250), base::Closure());
+                               base::Time::FromTimeT(250),
+                               base::NullCallback());
 
   EXPECT_CALL(consumer, OnGetAllFieldInfo(
                             UnorderedElementsAre(field_info1, field_info3)));

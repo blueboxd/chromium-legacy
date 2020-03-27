@@ -659,8 +659,8 @@ void PasswordAutofillManager::RequestFavicon(const GURL& url) {
   favicon::GetFaviconImageForPageURL(
       password_client_->GetFaviconService(), url,
       favicon_base::IconType::kFavicon,
-      base::BindRepeating(&PasswordAutofillManager::OnFaviconReady,
-                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PasswordAutofillManager::OnFaviconReady,
+                     weak_ptr_factory_.GetWeakPtr()),
       &favicon_tracker_);
 }
 

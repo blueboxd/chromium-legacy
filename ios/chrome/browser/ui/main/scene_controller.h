@@ -40,6 +40,10 @@
 // A temporary pointer to MainController.
 @property(nonatomic, weak) id<MainControllerGuts> mainController;
 
+// The interface provider for this scene.
+@property(nonatomic, strong, readonly) id<BrowserInterfaceProvider>
+    interfaceProvider;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_SCENE_CONTROLLER_H_

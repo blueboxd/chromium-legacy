@@ -123,7 +123,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaTextView(
   }
   return Java_AssistantViewFactory_createTextView(
       env, jcontext, jdelegate, jidentifier,
-      base::android::ConvertUTF8ToJavaString(env, proto.text()),
+      base::android::ConvertUTF8ToJavaString(
+          env, proto.has_text() ? proto.text() : std::string()),
       jtext_appearance);
 }
 
@@ -331,6 +332,30 @@ bool CreateImplicitInteractionsForView(
         return false;
       }
       break;
+    case ViewProto::kTextView: {
+      if (proto.text_view().model_identifier().empty()) {
+        break;
+      }
+      // Auto-update text view content.
+      InteractionProto implicit_set_text_interaction;
+      implicit_set_text_interaction.mutable_trigger_event()
+          ->mutable_on_value_changed()
+          ->set_model_identifier(proto.text_view().model_identifier());
+      SetTextProto set_text_callback;
+      set_text_callback.set_model_identifier(
+          proto.text_view().model_identifier());
+      set_text_callback.set_view_identifier(proto.identifier());
+      *implicit_set_text_interaction.add_callbacks()->mutable_set_text() =
+          set_text_callback;
+
+      if (!interaction_handler->AddInteractionsFromProto(
+              implicit_set_text_interaction)) {
+        VLOG(1) << "Failed to create implicit SetText interaction for "
+                << proto.identifier();
+        return false;
+      }
+      break;
+    }
     case ViewProto::kViewContainer:
       for (const auto& child : proto.view_container().views()) {
         if (!CreateImplicitInteractionsForView(child, interaction_handler)) {
@@ -338,7 +363,6 @@ bool CreateImplicitInteractionsForView(
         }
       }
       break;
-    case ViewProto::kTextView:
     case ViewProto::kDividerView:
     case ViewProto::kImageView:
       // Nothing to do, no implicit interactions necessary.

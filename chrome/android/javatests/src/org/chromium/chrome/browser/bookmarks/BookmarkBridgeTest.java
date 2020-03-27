@@ -50,7 +50,7 @@ public class BookmarkBridgeTest {
     @Before
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             mBookmarkBridge = new BookmarkBridge(profile);
             mBookmarkBridge.loadFakePartnerBookmarkShimForTesting();
         });

@@ -36,7 +36,7 @@ class ExceptionState;
 class XPathExpression;
 class XPathResult;
 
-class DocumentXPathEvaluator final
+class CORE_EXPORT DocumentXPathEvaluator final
     : public GarbageCollected<DocumentXPathEvaluator>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);

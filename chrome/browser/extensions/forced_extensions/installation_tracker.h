@@ -6,11 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_TRACKER_H_
 
 #include <map>
-#include <string>
 
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/scoped_observer.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/extension_registry.h"
@@ -32,35 +31,19 @@ namespace extensions {
 class InstallationTracker : public ExtensionRegistryObserver,
                             public InstallationReporter::Observer {
  public:
-  InstallationTracker(ExtensionRegistry* registry,
-                      Profile* profile,
-                      std::unique_ptr<base::OneShotTimer> timer =
-                          std::make_unique<base::OneShotTimer>());
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called after every force-installed extension is loaded (not only
+    // installed) or reported as failure.
+    //
+    // If there are no force-installed extensions configured, this method still
+    // gets called.
+    virtual void OnForceInstallationFinished() = 0;
+  };
+
+  InstallationTracker(ExtensionRegistry* registry, Profile* profile);
 
   ~InstallationTracker() override;
-
-  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
-  // update enums.xml (name: SessionType) when adding new
-  // entries.
-  // Type of session for current user. This enum is required as UserType enum
-  // doesn't support new regular users. See user_manager::UserType enum for
-  // description of session types other than new and existing regular users.
-  enum class SessionType {
-    // Session with Regular existing user, which has a user name and password.
-    SESSION_TYPE_REGULAR_EXISTING = 0,
-    SESSION_TYPE_GUEST = 1,
-    // Session with Regular new user, which has a user name and password.
-    SESSION_TYPE_REGULAR_NEW = 2,
-    SESSION_TYPE_PUBLIC_ACCOUNT = 3,
-    SESSION_TYPE_SUPERVISED = 4,
-    SESSION_TYPE_KIOSK_APP = 5,
-    SESSION_TYPE_CHILD = 6,
-    SESSION_TYPE_ARC_KIOSK_APP = 7,
-    SESSION_TYPE_ACTIVE_DIRECTORY = 8,
-    SESSION_TYPE_WEB_KIOSK_APP = 9,
-    // Maximum histogram value.
-    kMaxValue = SESSION_TYPE_WEB_KIOSK_APP
-  };
 
   // ExtensionRegistryObserver overrides:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -73,7 +56,14 @@ class InstallationTracker : public ExtensionRegistryObserver,
       const ExtensionId& extension_id,
       InstallationReporter::FailureReason reason) override;
 
- private:
+  // Returns true if all extensions are loaded/failed loading.
+  bool IsComplete() const;
+
+  // Add/remove observers to this object, to get notified when installation is
+  // finished.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   enum class ExtensionStatus {
     // Extension appears in force-install list, but it not installed yet.
     PENDING,
@@ -96,6 +86,14 @@ class InstallationTracker : public ExtensionRegistryObserver,
     bool is_from_store;
   };
 
+  const std::map<ExtensionId, ExtensionInfo>& extensions() const {
+    return extensions_;
+  }
+
+ private:
+  // Fire OnForceInstallationFinished() on observers.
+  void NotifyInstallationFinished();
+
   // Helper method to modify |extensions_| and bounded counter, adds extension
   // to the collection.
   void AddExtensionInfo(const ExtensionId& extension_id,
@@ -114,37 +112,12 @@ class InstallationTracker : public ExtensionRegistryObserver,
   // Loads list of force-installed extensions if available.
   void OnForcedExtensionsPrefChanged();
 
-  // Returns true only in case of some well-known misconfigurations which are
-  // easy to detect. Can return false for misconfigurations which are hard to
-  // distinguish with other errors.
-  bool IsMisconfiguration(
-      const InstallationReporter::InstallationData& installation_data,
-      const ExtensionId& id);
-
-#if defined(OS_CHROMEOS)
-  // Returns Session Type in case extension fails to install.
-  SessionType GetSessionType();
-#endif  // defined(OS_CHROMEOS)
-
-  // If |kInstallationTimeout| report time elapsed for extensions load,
-  // otherwise amount of not yet loaded extensions and reasons
-  // why they were not installed.
-  void ReportMetrics();
-
-  // Calls ReportMetrics method if there is a non-empty list of
-  // force-installed extensions, and is responsible for cleanup of
-  // installation reporter and the observers.
-  void ReportResults();
-
   // Unowned, but guaranteed to outlive this object.
   ExtensionRegistry* registry_;
   Profile* profile_;
-  // Unowned, but guaranteed to outlive this object.
   PrefService* pref_service_;
-  PrefChangeRegistrar pref_change_registrar_;
 
-  // Moment when the class was initialized.
-  base::Time start_time_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Collection of all extensions we are interested in here. Don't update
   // directly, use AddExtensionInfo/RemoveExtensionInfo/ChangeExtensionStatus
@@ -158,16 +131,15 @@ class InstallationTracker : public ExtensionRegistryObserver,
   // Tracks whether non-empty forcelist policy was received at least once.
   bool loaded_ = false;
 
-  // Tracks whether stats were already reported for the session.
-  bool reported_ = false;
+  // Tracks whether all extensions are done installing/loading.
+  bool complete_ = false;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_{this};
   ScopedObserver<InstallationReporter, InstallationReporter::Observer>
       reporter_observer_{this};
 
-  // Tracks installation reporting timeout.
-  std::unique_ptr<base::OneShotTimer> timer_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallationTracker);
 };

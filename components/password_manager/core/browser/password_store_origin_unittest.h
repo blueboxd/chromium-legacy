@@ -73,7 +73,8 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   this->delegate_.store()->AddObserver(&observer);
 
   const url::Origin origin = url::Origin::Create((GURL(origin_url)));
-  base::Callback<bool(const GURL&)> filter = base::Bind(&matchesOrigin, origin);
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      base::BindRepeating(&matchesOrigin, origin);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged(ElementsAre(PasswordStoreChange(
                             PasswordStoreChange::REMOVE, *form))));
@@ -101,8 +102,8 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   this->delegate_.store()->AddObserver(&observer);
 
   const url::Origin fitting_origin = url::Origin::Create((GURL(fitting_url)));
-  base::Callback<bool(const GURL&)> filter =
-      base::Bind(&matchesOrigin, fitting_origin);
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      base::BindRepeating(&matchesOrigin, fitting_origin);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged(ElementsAre(PasswordStoreChange(
                             PasswordStoreChange::REMOVE, *form))));
@@ -126,8 +127,8 @@ TYPED_TEST_P(PasswordStoreOriginTest,
 
   const url::Origin other_origin =
       url::Origin::Create(GURL("http://bar.example.com/"));
-  base::Callback<bool(const GURL&)> filter =
-      base::Bind(&matchesOrigin, other_origin);
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      base::BindRepeating(&matchesOrigin, other_origin);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged(_)).Times(0);
   this->delegate_.store()->RemoveLoginsByURLAndTime(
@@ -149,7 +150,8 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   this->delegate_.store()->AddObserver(&observer);
 
   const url::Origin origin = url::Origin::Create((GURL(origin_url)));
-  base::Callback<bool(const GURL&)> filter = base::Bind(&matchesOrigin, origin);
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      base::BindRepeating(&matchesOrigin, origin);
   base::Time time_after_creation_date =
       form->date_created + base::TimeDelta::FromDays(1);
   base::RunLoop run_loop;

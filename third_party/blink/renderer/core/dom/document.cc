@@ -6476,9 +6476,8 @@ KURL Document::OpenSearchDescriptionURL() {
            Traversal<HTMLLinkElement>::FirstChild(*head());
        link_element;
        link_element = Traversal<HTMLLinkElement>::NextSibling(*link_element)) {
-    if (!DeprecatedEqualIgnoringCase(link_element->GetType(),
-                                     kOpenSearchMIMEType) ||
-        !DeprecatedEqualIgnoringCase(link_element->Rel(), kOpenSearchRelation))
+    if (!EqualIgnoringASCIICase(link_element->GetType(), kOpenSearchMIMEType) ||
+        !EqualIgnoringASCIICase(link_element->Rel(), kOpenSearchRelation))
       continue;
     if (link_element->Href().IsEmpty())
       continue;

@@ -369,6 +369,62 @@ void DeviceCommandRunRoutineJob::RunImpl(CallbackWithResult succeeded_callback,
                   std::move(failed_callback)));
       break;
     }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kDiskRead: {
+      constexpr char kTypeFieldName[] = "type";
+      constexpr char kLengthSecondsFieldName[] = "lengthSeconds";
+      constexpr char kFileSizeMbFieldName[] = "fileSizeMb";
+      base::Optional<int> type = params_dict_.FindIntKey(kTypeFieldName);
+      base::Optional<int> length_seconds =
+          params_dict_.FindIntKey(kLengthSecondsFieldName);
+      base::Optional<int> file_size_mb =
+          params_dict_.FindIntKey(kFileSizeMbFieldName);
+      chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum type_enum;
+      if (!length_seconds.has_value() || length_seconds.value() < 0 ||
+          !file_size_mb.has_value() || file_size_mb.value() < 0 ||
+          !type.has_value() ||
+          !PopulateMojoEnumValueIfValid(type.value(), &type_enum)) {
+        SYSLOG(ERROR) << "Invalid parameters for disk read routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      auto exec_duration = base::TimeDelta::FromSeconds(length_seconds.value());
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunDiskReadRoutine(
+              type_enum, exec_duration, file_size_mb.value(),
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch: {
+      constexpr char kLengthSecondsFieldName[] = "lengthSeconds";
+      constexpr char kMaxNumFieldName[] = "maxNum";
+      base::Optional<int> length_seconds =
+          params_dict_.FindIntKey(kLengthSecondsFieldName);
+      base::Optional<int> max_num = params_dict_.FindIntKey(kMaxNumFieldName);
+      if (!length_seconds.has_value() || length_seconds.value() < 0 ||
+          !max_num.has_value() || max_num.value() < 0) {
+        SYSLOG(ERROR) << "Invalid parameters for prime search routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      auto exec_duration = base::TimeDelta::FromSeconds(length_seconds.value());
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunPrimeSearchRoutine(
+              exec_duration, max_num.value(),
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
   }
 }
 

@@ -154,6 +154,12 @@ class PasswordManagerSyncTest : public SyncTest {
     GURL url = embedded_test_server()->GetURL(path);
     ui_test_utils::NavigateToURL(GetBrowser(0), url);
     observer.Wait();
+    // After navigation, the password manager retrieves any matching credentials
+    // from the store(s). So before doing anything else (like filling and
+    // submitting a form), do a roundtrip to the stores to make sure the
+    // credentials have finished loading.
+    GetAllLoginsFromProfilePasswordStore();
+    GetAllLoginsFromAccountPasswordStore();
   }
 
   void FillAndSubmitPasswordForm(content::WebContents* web_contents,

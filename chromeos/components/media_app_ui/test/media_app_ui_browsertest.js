@@ -234,6 +234,30 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   testDone();
 });
 
+// Tests the IPC behind the loadNext and loadPrev functions on the received file
+// list in the untrusted context.
+TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
+  loadMultipleFiles([
+    {file: await createTestImageFile(), handle: new FakeFileSystemFileHandle()},
+    {file: await createTestImageFile(), handle: new FakeFileSystemFileHandle()}
+  ]);
+  assertEquals(entryIndex, 0);
+
+  let result = await guestMessagePipe.sendMessage('test', {navigate: 'next'});
+  assertEquals(result.testQueryResult, 'loadNext called');
+  assertEquals(entryIndex, 1);
+
+  result = await guestMessagePipe.sendMessage('test', {navigate: 'prev'});
+  assertEquals(result.testQueryResult, 'loadPrev called');
+  assertEquals(entryIndex, 0);
+
+  result = await guestMessagePipe.sendMessage('test', {navigate: 'prev'});
+  assertEquals(result.testQueryResult, 'loadPrev called');
+  assertEquals(entryIndex, 1);
+
+  testDone();
+});
+
 // Test cases injected into the guest context.
 // See implementations in media_app_guest_ui_browsertest.js.
 

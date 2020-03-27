@@ -582,6 +582,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-signin-architecture", flag_descriptions::kNewSigninArchitectureName,
      flag_descriptions::kNewSigninArchitectureDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewSigninArchitecture)},
+    {"qr-code-generation", flag_descriptions::kQRCodeGenerationName,
+     flag_descriptions::kQRCodeGenerationDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kQRCodeGeneration)},
 };
 
 // Add all switches from experimental flags to |command_line|.

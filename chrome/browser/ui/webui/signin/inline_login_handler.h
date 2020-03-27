@@ -14,6 +14,7 @@
 #include "net/cookies/canonical_cookie.h"
 
 namespace base {
+class Value;
 class DictionaryValue;
 }
 
@@ -86,7 +87,8 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
                              bool skip_for_now,
                              bool trusted,
                              bool trusted_found,
-                             bool choose_what_to_sync) = 0;
+                             bool choose_what_to_sync,
+                             base::Value edu_login_params) = 0;
 
   base::WeakPtrFactory<InlineLoginHandler> weak_ptr_factory_{this};
 

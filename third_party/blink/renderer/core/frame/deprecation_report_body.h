@@ -24,8 +24,8 @@ class CORE_EXPORT DeprecationReportBody : public LocationReportBody {
 
   ~DeprecationReportBody() override = default;
 
-  String id() const { return id_; }
-  String message() const { return message_; }
+  const String& id() const { return id_; }
+  const String& message() const { return message_; }
   ScriptValue anticipatedRemoval(ScriptState* script_state) const;
   base::Optional<base::Time> AnticipatedRemoval() const;
 

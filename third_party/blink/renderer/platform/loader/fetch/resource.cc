@@ -122,8 +122,7 @@ const char* const kHeaderPrefixesToIgnoreAfterRevalidation[] = {
 static inline bool ShouldUpdateHeaderAfterRevalidation(
     const AtomicString& header) {
   for (size_t i = 0; i < base::size(kHeadersToIgnoreAfterRevalidation); i++) {
-    if (DeprecatedEqualIgnoringCase(header,
-                                    kHeadersToIgnoreAfterRevalidation[i]))
+    if (EqualIgnoringASCIICase(header, kHeadersToIgnoreAfterRevalidation[i]))
       return false;
   }
   for (size_t i = 0; i < base::size(kHeaderPrefixesToIgnoreAfterRevalidation);

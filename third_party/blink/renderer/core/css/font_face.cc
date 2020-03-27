@@ -382,9 +382,6 @@ bool FontFace::SetFamilyValue(const CSSValue& value) {
       case CSSValueID::kMonospace:
         family = font_family_names::kWebkitMonospace;
         break;
-      case CSSValueID::kWebkitPictograph:
-        family = font_family_names::kWebkitPictograph;
-        break;
       default:
         return false;
     }

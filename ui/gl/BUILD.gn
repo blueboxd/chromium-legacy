@@ -255,8 +255,8 @@ jumbo_component("gl") {
 
   if (use_x11) {
     sources += [
-      "gl_surface_egl_x11.cc",
-      "gl_surface_egl_x11.h",
+      "gl_surface_egl_x11_gles2.cc",
+      "gl_surface_egl_x11_gles2.h",
       "gl_surface_glx_x11.cc",
       "gl_surface_glx_x11.h",
     ]

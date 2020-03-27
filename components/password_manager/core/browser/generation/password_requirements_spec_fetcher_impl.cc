@@ -182,8 +182,8 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(GURL origin,
 
   lookup->download_timer.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
-      base::BindRepeating(&PasswordRequirementsSpecFetcherImpl::OnFetchTimeout,
-                          base::Unretained(this), hash_prefix));
+      base::BindOnce(&PasswordRequirementsSpecFetcherImpl::OnFetchTimeout,
+                     base::Unretained(this), hash_prefix));
 
   lookups_in_flight_[hash_prefix] = std::move(lookup);
 }

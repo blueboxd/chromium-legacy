@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -277,7 +276,6 @@ public class ClearBrowsingDataFragmentTest {
      */
     @Test
     @LargeTest
-    @DisabledTest(message = "https://crbug.com/1062568")
     public void testDialogAboutOtherFormsOfBrowsingHistory() {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
@@ -397,7 +395,6 @@ public class ClearBrowsingDataFragmentTest {
     @Test
     @MediumTest
     @Feature({"SiteEngagement"})
-    @DisabledTest(message = "https://crbug.com/999361 and https://crbug.com/1062568")
     public void testImportantSitesDialogNoFiltering() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
@@ -448,7 +445,6 @@ public class ClearBrowsingDataFragmentTest {
     @Test
     @MediumTest
     @Feature({"SiteEngagement"})
-    @DisabledTest(message = "crbug.com/727310")
     public void testImportantSitesDialogNoopOnCancel() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
@@ -490,7 +486,6 @@ public class ClearBrowsingDataFragmentTest {
     @Test
     @MediumTest
     @Feature({"SiteEngagement"})
-    @DisabledTest(message = "crbug.com/999361")
     public void testImportantSitesDialog() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();

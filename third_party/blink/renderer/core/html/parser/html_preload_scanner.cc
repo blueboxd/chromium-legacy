@@ -520,8 +520,8 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(attribute_name, html_names::kSrcAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
     } else if (Match(attribute_name, html_names::kTypeAttr)) {
-      input_is_image_ = DeprecatedEqualIgnoringCase(attribute_value,
-                                                    input_type_names::kImage);
+      input_is_image_ =
+          EqualIgnoringASCIICase(attribute_value, input_type_names::kImage);
     }
   }
 

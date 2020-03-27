@@ -40,7 +40,7 @@ cd build
 set CC=..\..\third_party\llvm-build\Release+Asserts\bin\clang-cl.exe
 set CXX=..\..\third_party\llvm-build\Release+Asserts\bin\clang-cl.exe
 set CFLAGS=-m32
-set CXXLAGS=-m32
+set CXXFLAGS=-m32
 cmake -G Ninja ..\llvm -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_CRT_RELEASE=MT ^
     -DLLVM_ENABLE_ASSERTIONS=NO -DLLVM_ENABLE_THREADS=NO ^
     -DLLVM_ENABLE_PROJECTS=clang

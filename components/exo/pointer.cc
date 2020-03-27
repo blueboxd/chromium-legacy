@@ -537,7 +537,7 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
   if (!cursor_client)
     return;
   if (cursor_ == ui::mojom::CursorType::kCustom &&
-      cursor_client->GetCursor() == cursor_client->GetCursor()) {
+      cursor_ == cursor_client->GetCursor()) {
     // If the current cursor is still the one created by us,
     // it's our responsibility to update the cursor for the new display.
     // Don't check |focus_surface_| because it can be null while

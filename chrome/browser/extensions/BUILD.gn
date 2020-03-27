@@ -615,6 +615,8 @@ jumbo_static_library("extensions") {
     "external_provider_impl.h",
     "external_registry_loader_win.cc",
     "external_registry_loader_win.h",
+    "forced_extensions/installation_metrics.cc",
+    "forced_extensions/installation_metrics.h",
     "forced_extensions/installation_reporter.cc",
     "forced_extensions/installation_reporter.h",
     "forced_extensions/installation_reporter_factory.cc",

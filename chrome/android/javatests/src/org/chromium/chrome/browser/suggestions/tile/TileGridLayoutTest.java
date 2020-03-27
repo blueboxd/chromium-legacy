@@ -332,7 +332,8 @@ public class TileGridLayoutTest {
 
         ChromeActivity activity = mActivityTestRule.getActivity();
 
-        Profile profile = Profile.getLastUsedProfile();
+        // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+        Profile profile = Profile.getLastUsedRegularProfile();
         SuggestionsUiDelegate uiDelegate = new SuggestionsUiDelegateImpl(
                 mSuggestionsDeps.getFactory().createSuggestionSource(null),
                 mSuggestionsDeps.getFactory().createEventReporter(), null, profile, null,

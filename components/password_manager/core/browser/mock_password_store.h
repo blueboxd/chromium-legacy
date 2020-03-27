@@ -43,19 +43,20 @@ class MockPasswordStore : public PasswordStore {
                                        UpdateLoginError* error));
   MOCK_METHOD1(RemoveLoginImpl,
                PasswordStoreChangeList(const autofill::PasswordForm&));
-  MOCK_METHOD3(RemoveLoginsByURLAndTimeImpl,
-               PasswordStoreChangeList(const base::Callback<bool(const GURL&)>&,
-                                       base::Time,
-                                       base::Time));
+  MOCK_METHOD3(
+      RemoveLoginsByURLAndTimeImpl,
+      PasswordStoreChangeList(const base::RepeatingCallback<bool(const GURL&)>&,
+                              base::Time,
+                              base::Time));
   MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl,
                PasswordStoreChangeList(base::Time, base::Time));
   MOCK_METHOD3(RemoveStatisticsByOriginAndTimeImpl,
-               bool(const base::Callback<bool(const GURL&)>&,
+               bool(const base::RepeatingCallback<bool(const GURL&)>&,
                     base::Time,
                     base::Time));
-  MOCK_METHOD1(
-      DisableAutoSignInForOriginsImpl,
-      PasswordStoreChangeList(const base::Callback<bool(const GURL&)>&));
+  MOCK_METHOD1(DisableAutoSignInForOriginsImpl,
+               PasswordStoreChangeList(
+                   const base::RepeatingCallback<bool(const GURL&)>&));
   std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
       const PasswordStore::FormDigest& form) override {
     return std::vector<std::unique_ptr<autofill::PasswordForm>>();

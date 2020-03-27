@@ -274,6 +274,10 @@ extern const char kPageInfoChromeGuardDescription[];
 extern const char kPageInfoRefactoringName[];
 extern const char kPageInfoRefactoringDescription[];
 
+// Title and description for the flag to enable QR code generation for a page.
+extern const char kQRCodeGenerationName[];
+extern const char kQRCodeGenerationDescription[];
+
 // Title and description for the flag that reload the page when the renderer
 // crashes.
 extern const char kReloadSadTabName[];

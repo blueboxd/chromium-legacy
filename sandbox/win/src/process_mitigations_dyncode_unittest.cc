@@ -407,10 +407,7 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCodePolicySuccess) {
     return;
 
 // TODO(crbug.com/805414): Windows ASan hotpatching requires dynamic code.
-#if defined(ADDRESS_SANITIZER)
-  return;
-#endif
-
+#if !defined(ADDRESS_SANITIZER)
   std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_DYNAMICCODE);
 
@@ -439,6 +436,7 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCodePolicySuccess) {
       policy2->SetDelayedProcessMitigations(MITIGATION_DYNAMIC_CODE_DISABLE),
       SBOX_ALL_OK);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner2.RunTest(test_command.c_str()));
+#endif
 }
 
 // This test validates that we can meddle with dynamic code if the
@@ -483,10 +481,7 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOutPolicySuccess) {
     return;
 
 // TODO(crbug.com/805414): Windows ASan hotpatching requires dynamic code.
-#if defined(ADDRESS_SANITIZER)
-  return;
-#endif
-
+#if !defined(ADDRESS_SANITIZER)
   std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_DYNAMICCODEOPTOUT);
 
@@ -516,6 +511,7 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOutPolicySuccess) {
                 MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT),
             SBOX_ALL_OK);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner2.RunTest(test_command.c_str()));
+#endif
 }
 
 // This test validates that we CAN meddle with dynamic code if the

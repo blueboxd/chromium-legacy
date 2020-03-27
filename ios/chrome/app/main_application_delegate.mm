@@ -79,8 +79,10 @@
       // and a "scene" controller. This allows the rest of the app to be mostly
       // multiwindow-agnostic.
       _sceneState = [[SceneState alloc] init];
+      _appState.mainSceneState = _sceneState;
       _sceneController =
           [[SceneController alloc] initWithSceneState:_sceneState];
+      _sceneState.controller = _sceneController;
 
       // TODO(crbug.com/1040501): remove this.
       // This is temporary plumbing that's not supposed to be here.

@@ -204,4 +204,14 @@ TEST(CascadeMapTest, Reset) {
   EXPECT_FALSE(map.Find(x));
 }
 
+TEST(CascadeMapTest, ResetHighPrio) {
+  CascadeMap map;
+  EXPECT_FALSE(map.HighPriorityBits());
+  map.Add(CSSPropertyName(CSSPropertyID::kFontSize),
+          CascadePriority(CascadeOrigin::kAuthor));
+  EXPECT_TRUE(map.HighPriorityBits());
+  map.Reset();
+  EXPECT_FALSE(map.HighPriorityBits());
+}
+
 }  // namespace blink

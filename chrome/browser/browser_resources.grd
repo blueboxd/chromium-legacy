@@ -225,6 +225,7 @@
         <include name="IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\edu_login\edu_login_parents.js" use_base_dir="false" type ="BINDATA" compress="gzip" preprocess="true" />
         <include name="IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\edu_login\edu_login_parent_signin.js" use_base_dir="false" type ="BINDATA" compress="gzip" preprocess="true" />
         <include name="IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\edu_login\edu_login_parent_info.js" use_base_dir="false" type ="BINDATA" compress="gzip" preprocess="true" />
+        <include name="IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\edu_login\edu_login_signin.js" use_base_dir="false" type ="BINDATA" compress="gzip" />
         <include name="IDR_FAMILY_LINK_LOGO_SVG" file="resources\chromeos\family_link_logo.svg" type="BINDATA" compress="gzip" />
 
         <!-- Chrome OS Account Manager welcome screen resources -->

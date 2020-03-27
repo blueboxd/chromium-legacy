@@ -36,7 +36,7 @@ class CORE_EXPORT LocationReportBody : public ReportBody {
 
   ~LocationReportBody() override = default;
 
-  String sourceFile() const { return source_file_; }
+  const String& sourceFile() const { return source_file_; }
 
   base::Optional<uint32_t> lineNumber() const { return line_number_; }
   base::Optional<uint32_t> columnNumber() const { return column_number_; }

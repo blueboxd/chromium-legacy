@@ -24,15 +24,21 @@ Polymer({
   },
 
   /**
-   * @param {!PasswordManagerProxy.CompromisedCredential} item
    * @return {string}
    * @private
    */
-  getCompromiseType_(item) {
-    return loadTimeData.getString(
-        item.compromiseType == chrome.passwordsPrivate.CompromiseType.LEAKED ?
-            'leakedPassword' :
-            'phishedPassword');
+  getCompromiseType_() {
+    switch (this.item.compromiseType) {
+      case chrome.passwordsPrivate.CompromiseType.PHISHED:
+        return loadTimeData.getString('phishedPassword');
+      case chrome.passwordsPrivate.CompromiseType.LEAKED:
+        return loadTimeData.getString('leakedPassword');
+      case chrome.passwordsPrivate.CompromiseType.PHISHED_AND_LEAKED:
+        return loadTimeData.getString('phishedAndLeakedPassword');
+    }
+
+    assertNotReached(
+        'Can\'t find a string for type: ' + this.item.compromiseType);
   },
 
   /**

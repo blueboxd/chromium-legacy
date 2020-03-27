@@ -52,7 +52,7 @@ HttpPasswordStoreMigrator::HttpPasswordStoreMigrator(
   http_origin_domain_ = http_origin.GetOrigin();
   client_->GetProfilePasswordStore()->GetLogins(form, this);
   client_->PostHSTSQueryForHost(
-      https_origin, base::Bind(&OnHSTSQueryResultHelper, GetWeakPtr()));
+      https_origin, base::BindOnce(&OnHSTSQueryResultHelper, GetWeakPtr()));
 }
 
 HttpPasswordStoreMigrator::~HttpPasswordStoreMigrator() = default;

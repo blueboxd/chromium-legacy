@@ -115,7 +115,8 @@ public class NotificationPlatformBridgeTest {
             return TestThreadUtils.runOnUiThreadBlocking(new Callable<Double>() {
                 @Override
                 public Double call() {
-                    return SiteEngagementService.getForProfile(Profile.getLastUsedProfile())
+                    // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+                    return SiteEngagementService.getForProfile(Profile.getLastUsedRegularProfile())
                             .getScore(mPermissionTestRule.getOrigin());
                 }
             });

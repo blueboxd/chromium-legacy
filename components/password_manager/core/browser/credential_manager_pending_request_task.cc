@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
@@ -83,12 +84,12 @@ void FilterDuplicatesAndEmptyUsername(
 
 CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
     CredentialManagerPendingRequestTaskDelegate* delegate,
-    const SendCredentialCallback& callback,
+    SendCredentialCallback callback,
     CredentialMediationRequirement mediation,
     bool include_passwords,
     const std::vector<GURL>& request_federations)
     : delegate_(delegate),
-      send_callback_(callback),
+      send_callback_(std::move(callback)),
       mediation_(mediation),
       origin_(delegate_->GetOrigin()),
       include_passwords_(include_passwords) {
@@ -124,7 +125,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
   if (delegate_->GetOrigin() != origin_) {
     LogCredentialManagerGetResult(
         metrics_util::CredentialManagerGetResult::kNone, mediation_);
-    delegate_->SendCredential(send_callback_, CredentialInfo());
+    delegate_->SendCredential(std::move(send_callback_), CredentialInfo());
     return;
   }
   // Get rid of the blacklisted credentials.
@@ -180,7 +181,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     base::RecordAction(base::UserMetricsAction("CredentialManager_Autosignin"));
     LogCredentialManagerGetResult(
         metrics_util::CredentialManagerGetResult::kAutoSignIn, mediation_);
-    delegate_->SendCredential(send_callback_, info);
+    delegate_->SendCredential(std::move(send_callback_), info);
     return;
   }
 
@@ -218,7 +219,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
           std::move(local_results[0]));
     }
     LogCredentialManagerGetResult(get_result, mediation_);
-    delegate_->SendCredential(send_callback_, CredentialInfo());
+    delegate_->SendCredential(std::move(send_callback_), CredentialInfo());
     return;
   }
 
@@ -232,18 +233,24 @@ void CredentialManagerPendingRequestTask::ProcessForms(
   if (local_results.empty()) {
     LogCredentialManagerGetResult(
         metrics_util::CredentialManagerGetResult::kNoneEmptyStore, mediation_);
-    delegate_->SendCredential(send_callback_, CredentialInfo());
+    delegate_->SendCredential(std::move(send_callback_), CredentialInfo());
     return;
   }
 
+  auto repeating_send_callback =
+      base::AdaptCallbackForRepeating(std::move(send_callback_));
   if (!delegate_->client()->PromptUserToChooseCredentials(
           std::move(local_results), origin_,
           base::Bind(
               &CredentialManagerPendingRequestTaskDelegate::SendPasswordForm,
-              base::Unretained(delegate_), send_callback_, mediation_))) {
+              base::Unretained(delegate_), repeating_send_callback,
+              mediation_))) {
+    // Since PromptUserToChooseCredentials() does not invoke the callback when
+    // returning false, `repeating_send_callback` has not been run in this
+    // branch yet.
     LogCredentialManagerGetResult(
         metrics_util::CredentialManagerGetResult::kNone, mediation_);
-    delegate_->SendCredential(send_callback_, CredentialInfo());
+    delegate_->SendCredential(repeating_send_callback, CredentialInfo());
   }
 }
 

@@ -258,6 +258,7 @@ source_set("weblayer_lib_base") {
     "//content/public/common:service_names",
     "//content/public/renderer",
     "//content/public/utility",
+    "//gpu/config",
     "//net",
     "//net:net_resources",
     "//sandbox",

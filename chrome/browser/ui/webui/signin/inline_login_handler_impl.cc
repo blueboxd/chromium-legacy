@@ -587,7 +587,8 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
                                            bool skip_for_now,
                                            bool trusted,
                                            bool trusted_found,
-                                           bool choose_what_to_sync) {
+                                           bool choose_what_to_sync,
+                                           base::Value edu_login_params) {
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetURL();
 

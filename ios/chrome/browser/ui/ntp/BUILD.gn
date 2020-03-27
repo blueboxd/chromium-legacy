@@ -40,6 +40,7 @@ source_set("util") {
   ]
   deps = [
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ntp",
     "//ios/web/public",
   ]
 }

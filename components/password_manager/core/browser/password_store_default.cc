@@ -92,7 +92,7 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
 }
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
-    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   PrimaryKeyToFormMap key_to_form_map;
@@ -124,7 +124,7 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
 }
 
 PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
-    const base::Callback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   PrimaryKeyToFormMap key_to_form_map;
   PasswordStoreChangeList changes;
   if (!login_db_ || !login_db_->GetAutoSignInLogins(&key_to_form_map))
@@ -153,7 +153,7 @@ PasswordStoreChangeList PasswordStoreDefault::DisableAutoSignInForOriginsImpl(
 }
 
 bool PasswordStoreDefault::RemoveStatisticsByOriginAndTimeImpl(
-    const base::Callback<bool(const GURL&)>& origin_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   return login_db_ &&

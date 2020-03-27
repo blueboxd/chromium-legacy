@@ -62,7 +62,8 @@ public class ExternalPrerenderHandlerTest {
         final Callable<Profile> profileCallable = new Callable<Profile>() {
             @Override
             public Profile call() {
-                return Profile.getLastUsedProfile();
+                // TODO (https://crbug.com/1063807):  Add incognito mode tests.
+                return Profile.getLastUsedRegularProfile();
             }
         };
         mProfile = TestThreadUtils.runOnUiThreadBlocking(profileCallable);

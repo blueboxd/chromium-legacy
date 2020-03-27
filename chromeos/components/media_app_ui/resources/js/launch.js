@@ -51,7 +51,7 @@ guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
 });
 
 guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
-  const overwrite = /** @type{OverwriteFileMessage} */ (message);
+  const overwrite = /** @type {OverwriteFileMessage} */ (message);
   if (!currentlyWritableFile || overwrite.token !== fileToken) {
     throw new Error('File not current.');
   }
@@ -61,9 +61,8 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   await writer.close();
 });
 
-/** Handler to delete the currently focused file. */
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
-  const deleteMsg = /** @type{DeleteFileMessage} */ (message);
+  const deleteMsg = /** @type {DeleteFileMessage} */ (message);
 
   if (!currentlyWritableFile || deleteMsg.token !== fileToken) {
     throw new Error('File not current for delete.');
@@ -90,6 +89,12 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
 
   await currentDirectoryHandle.removeEntry(currentFilename);
   return {deleteResult: DeleteResult.SUCCESS};
+});
+
+guestMessagePipe.registerHandler(Message.NAVIGATE, (message) => {
+  const navigate = /** @type {NavigateMessage} */ (message);
+
+  advance(navigate.direction);
 });
 
 /** Loads the current file list into the guest. */

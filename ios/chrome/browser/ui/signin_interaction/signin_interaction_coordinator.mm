@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,13 +61,34 @@
     return;
   }
 
-  [self setupForSigninOperationWithAccessPoint:accessPoint
-                                   promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+  if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
+    self.coordinator = [SigninCoordinator
+        userSigninCoordinatorWithBaseViewController:viewController
+                                            browser:self.browser
+                                           identity:identity
+                                        accessPoint:accessPoint
+                                        promoAction:promoAction];
 
-  [self.controller signInWithIdentity:identity
-                           completion:[self callbackToClearState]];
+    __weak SigninInteractionCoordinator* weakSelf = self;
+    self.coordinator.signinCompletion =
+        ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+          if (completion) {
+            completion(signinResult == SigninCoordinatorResultSuccess);
+          }
+          [weakSelf.coordinator stop];
+          weakSelf.coordinator = nil;
+        };
+
+    [self.coordinator start];
+  } else {
+    [self setupForSigninOperationWithAccessPoint:accessPoint
+                                     promoAction:promoAction
+                        presentingViewController:viewController
+                                      completion:completion];
+
+    [self.controller signInWithIdentity:identity
+                             completion:[self callbackToClearState]];
+  }
 }
 
 - (void)reAuthenticateWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -79,12 +101,32 @@
     return;
   }
 
-  [self setupForSigninOperationWithAccessPoint:accessPoint
-                                   promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+  if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
+    self.coordinator = [SigninCoordinator
+        reAuthenticationCoordinatorWithBaseViewController:viewController
+                                                  browser:self.browser
+                                              accessPoint:accessPoint
+                                              promoAction:promoAction];
 
-  [self.controller reAuthenticateWithCompletion:[self callbackToClearState]];
+    __weak SigninInteractionCoordinator* weakSelf = self;
+    self.coordinator.signinCompletion =
+        ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+          if (completion) {
+            completion(signinResult == SigninCoordinatorResultSuccess);
+          }
+          [weakSelf.coordinator stop];
+          weakSelf.coordinator = nil;
+        };
+
+    [self.coordinator start];
+  } else {
+    [self setupForSigninOperationWithAccessPoint:accessPoint
+                                     promoAction:promoAction
+                        presentingViewController:viewController
+                                      completion:completion];
+
+    [self.controller reAuthenticateWithCompletion:[self callbackToClearState]];
+  }
 }
 
 - (void)addAccountWithAccessPoint:(signin_metrics::AccessPoint)accessPoint

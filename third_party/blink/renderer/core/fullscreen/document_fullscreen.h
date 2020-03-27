@@ -36,7 +36,7 @@ namespace blink {
 class Document;
 class Element;
 
-class DocumentFullscreen {
+class CORE_EXPORT DocumentFullscreen {
   STATIC_ONLY(DocumentFullscreen);
 
  public:

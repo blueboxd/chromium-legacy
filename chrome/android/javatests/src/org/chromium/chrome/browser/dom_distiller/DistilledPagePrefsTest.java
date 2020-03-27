@@ -47,8 +47,9 @@ public class DistilledPagePrefsTest {
 
     private void getDistilledPagePrefs() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // TODO (https://crbug.com/1063807):  Add incognito mode tests.
             DomDistillerService domDistillerService =
-                    DomDistillerServiceFactory.getForProfile(Profile.getLastUsedProfile());
+                    DomDistillerServiceFactory.getForProfile(Profile.getLastUsedRegularProfile());
             mDistilledPagePrefs = domDistillerService.getDistilledPagePrefs();
         });
     }

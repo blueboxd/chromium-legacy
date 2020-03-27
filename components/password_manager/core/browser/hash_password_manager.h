@@ -61,7 +61,8 @@ class HashPasswordManager {
   // the sign-in isn't the first change on the |kPasswordHashDataList| and
   // saving the password hash actually succeeded.
   virtual std::unique_ptr<StateSubscription> RegisterStateCallback(
-      const base::Callback<void(const std::string& username)>& callback);
+      const base::RepeatingCallback<void(const std::string& username)>&
+          callback);
 
  private:
   // Encrypts and saves |password_hash_data| to prefs. Returns true on success.

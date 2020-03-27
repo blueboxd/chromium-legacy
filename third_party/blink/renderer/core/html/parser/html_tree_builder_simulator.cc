@@ -270,9 +270,9 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
     }
   } else if (tokens_ns == SVG) {
     // FIXME: It's very fragile that we special case foreignObject here to be
-    // case-insensitive.
-    if (DeprecatedEqualIgnoringCase(tag_name,
-                                    svg_names::kForeignObjectTag.LocalName()))
+    // ASCII case-insensitive.
+    if (EqualIgnoringASCIICase(tag_name,
+                               svg_names::kForeignObjectTag.LocalName()))
       return true;
     return ThreadSafeMatch(tag_name, svg_names::kDescTag) ||
            ThreadSafeMatch(tag_name, svg_names::kTitleTag);
@@ -299,9 +299,9 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForEndTag(
     return ThreadSafeMatch(tag_name, mathml_names::kAnnotationXmlTag);
   if (tokens_ns == SVG) {
     // FIXME: It's very fragile that we special case foreignObject here to be
-    // case-insensitive.
-    if (DeprecatedEqualIgnoringCase(tag_name,
-                                    svg_names::kForeignObjectTag.LocalName()))
+    // ASCII case-insensitive.
+    if (EqualIgnoringASCIICase(tag_name,
+                               svg_names::kForeignObjectTag.LocalName()))
       return true;
     return ThreadSafeMatch(tag_name, svg_names::kDescTag) ||
            ThreadSafeMatch(tag_name, svg_names::kTitleTag);

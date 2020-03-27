@@ -5,8 +5,11 @@
       selected-parent="{{selectedParent_}}">
   </edu-login-parents>
   <edu-login-parent-signin id="[[Steps.PARENT_SIGNIN]]" slot="view"
-      parent="[[selectedParent_]]">
+      parent="[[selectedParent_]]" login-params="{{loginParams_}}">
   </edu-login-parent-signin>
   <edu-login-parent-info id="[[Steps.PARENT_INFO]]" slot="view">
   </edu-login-parent-info>
+  <edu-login-signin id="[[Steps.EDU_LOGIN]]" slot="view"
+      login-params="[[loginParams_]]">
+  </edu-login-signin>
 </cr-view-manager>

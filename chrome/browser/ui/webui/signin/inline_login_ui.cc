@@ -30,6 +30,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
+#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/grit/gaia_auth_host_resources.h"
+#include "chrome/grit/gaia_auth_host_resources_map.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -40,6 +43,9 @@
 namespace {
 
 #if defined(OS_CHROMEOS)
+constexpr char kResourcesGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/";
+
 void AddEduStrings(content::WebUIDataSource* source,
                    const base::string16& username) {
   source->AddLocalizedString("okButton", IDS_APP_OK);
@@ -134,6 +140,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
                           IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS);
   source->AddResourcePath("edu_login_parent_info.js",
                           IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS);
+  source->AddResourcePath("edu_login_signin.js",
+                          IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS);
 
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
@@ -144,7 +152,10 @@ content::WebUIDataSource* CreateWebUIDataSource() {
 #endif
   source->AddResourcePath("family_link_logo.svg", IDR_FAMILY_LINK_LOGO_SVG);
 
-  source->EnableReplaceI18nInJS();
+  webui::SetupWebUIDataSource(
+      source,
+      base::make_span(kGaiaAuthHostResources, kGaiaAuthHostResourcesSize),
+      kResourcesGeneratedPath, IDR_INLINE_LOGIN_HTML);
 #endif  // defined(OS_CHROMEOS)
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);

@@ -12,7 +12,7 @@ import {
 import {Filenamer} from '../../models/filenamer.js';
 import * as filesystem from '../../models/filesystem.js';
 // eslint-disable-next-line no-unused-vars
-import {VideoSaver} from '../../models/video_saver_interface.js';
+import {VideoSaver} from '../../models/video_saver.js';
 import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
 import {CrosImageCapture} from '../../mojo/image_capture.js';
 import {PerfEvent} from '../../perf.js';

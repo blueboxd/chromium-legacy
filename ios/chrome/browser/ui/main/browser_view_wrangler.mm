@@ -83,6 +83,10 @@
   return self.browserState->IsOffTheRecord();
 }
 
+- (void)setPrimary:(BOOL)primary {
+  [self.coordinator.viewController setPrimary:primary];
+}
+
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
   [self.coordinator clearPresentedStateWithCompletion:completion
@@ -194,7 +198,7 @@
 
   if (self.currentInterface) {
     // Tell the current BVC it moved to the background.
-    [self.currentInterface.bvc setPrimary:NO];
+    [self.currentInterface setPrimary:NO];
 
     // Data storage for the browser is always owned by the current BVC, so it
     // must be updated when switching between BVCs.

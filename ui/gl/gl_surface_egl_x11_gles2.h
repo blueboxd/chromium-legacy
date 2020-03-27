@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_GL_SURFACE_EGL_X11_H_
-#define UI_GL_GL_SURFACE_EGL_X11_H_
+#ifndef UI_GL_GL_SURFACE_EGL_X11_GLES2_H_
+#define UI_GL_GL_SURFACE_EGL_X11_GLES2_H_
 
 #include <stdint.h>
 
@@ -16,9 +16,9 @@
 namespace gl {
 
 // Encapsulates an EGL surface bound to a view using the X Window System.
-class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL {
+class GL_EXPORT NativeViewGLSurfaceEGLX11GLES2 : public NativeViewGLSurfaceEGL {
  public:
-  explicit NativeViewGLSurfaceEGLX11(EGLNativeWindowType window);
+  explicit NativeViewGLSurfaceEGLX11GLES2(EGLNativeWindowType window);
 
   // NativeViewGLSurfaceEGL overrides.
   EGLConfig GetConfig() override;
@@ -30,16 +30,16 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL {
   bool InitializeNativeWindow() override;
 
  private:
-  ~NativeViewGLSurfaceEGLX11() override;
+  ~NativeViewGLSurfaceEGLX11GLES2() override;
 
   // XEventDispatcher:
   bool DispatchXEvent(XEvent* xev) override;
 
   EGLNativeWindowType parent_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGLX11);
+  DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGLX11GLES2);
 };
 
 }  // namespace gl
 
-#endif  // UI_GL_GL_SURFACE_EGL_X11_H_
+#endif  // UI_GL_GL_SURFACE_EGL_X11_GLES2_H_

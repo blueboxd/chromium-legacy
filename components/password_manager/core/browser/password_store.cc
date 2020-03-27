@@ -197,44 +197,44 @@ void PasswordStore::RemoveLogin(const PasswordForm& form) {
 }
 
 void PasswordStore::RemoveLoginsByURLAndTime(
-    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginsByURLAndTimeInternal,
                               this, url_filter, delete_begin, delete_end,
-                              completion));
+                              std::move(completion)));
 }
 
-void PasswordStore::RemoveLoginsCreatedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    const base::Closure& completion) {
+void PasswordStore::RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                               base::Time delete_end,
+                                               base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(
       base::BindOnce(&PasswordStore::RemoveLoginsCreatedBetweenInternal, this,
-                     delete_begin, delete_end, completion));
+                     delete_begin, delete_end, std::move(completion)));
 }
 
 void PasswordStore::RemoveStatisticsByOriginAndTime(
-    const base::Callback<bool(const GURL&)>& origin_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(
       &PasswordStore::RemoveStatisticsByOriginAndTimeInternal, this,
-      origin_filter, delete_begin, delete_end, completion));
+      origin_filter, delete_begin, delete_end, std::move(completion)));
 }
 
 void PasswordStore::DisableAutoSignInForOrigins(
-    const base::Callback<bool(const GURL&)>& origin_filter,
-    const base::Closure& completion) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
+    base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(
-      &PasswordStore::DisableAutoSignInForOriginsInternal, this,
-      base::RepeatingCallback<bool(const GURL&)>(origin_filter), completion));
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::DisableAutoSignInForOriginsInternal, this,
+                     base::RepeatingCallback<bool(const GURL&)>(origin_filter),
+                     std::move(completion)));
 }
 
 void PasswordStore::Unblacklist(const PasswordStore::FormDigest& form_digest,
@@ -325,12 +325,12 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
                                   bool is_under_advanced_protection) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   if (background_task_runner_) {
-    base::Closure task = base::Bind(
+    base::OnceClosure task = base::BindOnce(
         &PasswordStore::ReportMetricsImpl, this, sync_username,
         custom_passphrase_sync_enabled,
         BulkCheckDone(prefs_ && prefs_->HasPrefPath(
                                     prefs::kLastTimePasswordCheckCompleted)));
-    background_task_runner_->PostDelayedTask(FROM_HERE, task,
+    background_task_runner_->PostDelayedTask(FROM_HERE, std::move(task),
                                              base::TimeDelta::FromSeconds(30));
   }
 
@@ -467,7 +467,8 @@ bool PasswordStore::IsAbleToSavePasswords() const {
 }
 
 void PasswordStore::ShutdownOnUIThread() {
-  ScheduleTask(base::Bind(&PasswordStore::DestroyOnBackgroundSequence, this));
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::DestroyOnBackgroundSequence, this));
   // The AffiliationService must be destroyed from the main sequence.
   affiliated_match_helper_.reset();
   shutdown_called_ = true;
@@ -495,9 +496,9 @@ PasswordStore::CreateSyncControllerDelegate() {
 void PasswordStore::CheckReuse(const base::string16& input,
                                const std::string& domain,
                                PasswordReuseDetectorConsumer* consumer) {
-  auto check_reuse_request = std::make_unique<CheckReuseRequest>(consumer);
-  ScheduleTask(base::Bind(&PasswordStore::CheckReuseImpl, this,
-                          base::Passed(&check_reuse_request), input, domain));
+  ScheduleTask(base::BindOnce(&PasswordStore::CheckReuseImpl, this,
+                              std::make_unique<CheckReuseRequest>(consumer),
+                              input, domain));
 }
 #endif
 
@@ -558,31 +559,32 @@ void PasswordStore::SaveSyncPasswordHash(
 void PasswordStore::ClearGaiaPasswordHash(const std::string& username) {
   hash_password_manager_.ClearSavedPasswordHash(username,
                                                 /*is_gaia_password=*/true);
-  ScheduleTask(base::BindRepeating(&PasswordStore::ClearGaiaPasswordHashImpl,
-                                   this, username));
+  ScheduleTask(base::BindOnce(&PasswordStore::ClearGaiaPasswordHashImpl, this,
+                              username));
 }
 
 void PasswordStore::ClearAllGaiaPasswordHash() {
   hash_password_manager_.ClearAllPasswordHash(/* is_gaia_password= */ true);
   ScheduleTask(
-      base::BindRepeating(&PasswordStore::ClearAllGaiaPasswordHashImpl, this));
+      base::BindOnce(&PasswordStore::ClearAllGaiaPasswordHashImpl, this));
 }
 
 void PasswordStore::ClearAllEnterprisePasswordHash() {
   hash_password_manager_.ClearAllPasswordHash(/* is_gaia_password= */ false);
-  ScheduleTask(base::BindRepeating(
-      &PasswordStore::ClearAllEnterprisePasswordHashImpl, this));
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::ClearAllEnterprisePasswordHashImpl, this));
 }
 
 void PasswordStore::ClearAllNonGmailPasswordHash() {
   hash_password_manager_.ClearAllNonGmailPasswordHash();
-  ScheduleTask(base::BindRepeating(
-      &PasswordStore::ClearAllNonGmailPasswordHashImpl, this));
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::ClearAllNonGmailPasswordHashImpl, this));
 }
 
 std::unique_ptr<StateSubscription>
 PasswordStore::RegisterStateCallbackOnHashPasswordManager(
-    const base::Callback<void(const std::string& username)>& callback) {
+    const base::RepeatingCallback<void(const std::string& username)>&
+        callback) {
   return hash_password_manager_.RegisterStateCallback(callback);
 }
 
@@ -597,10 +599,10 @@ void PasswordStore::SetPasswordStoreSigninNotifier(
 void PasswordStore::SchedulePasswordHashUpdate(bool should_log_metrics,
                                                bool does_primary_account_exists,
                                                bool is_signed_in) {
-  ScheduleTask(base::BindRepeating(
+  ScheduleTask(base::BindOnce(
       &PasswordStore::SaveProtectedPasswordHashImpl, this,
-      base::Passed(hash_password_manager_.RetrieveAllPasswordHashes()),
-      should_log_metrics, does_primary_account_exists, is_signed_in));
+      hash_password_manager_.RetrieveAllPasswordHashes(), should_log_metrics,
+      does_primary_account_exists, is_signed_in));
 }
 
 void PasswordStore::ScheduleEnterprisePasswordURLUpdate() {
@@ -610,9 +612,9 @@ void PasswordStore::ScheduleEnterprisePasswordURLUpdate() {
   GURL enterprise_change_password_url =
       safe_browsing::GetPasswordProtectionChangePasswordURLPref(*prefs_);
 
-  ScheduleTask(base::BindRepeating(&PasswordStore::SaveEnterprisePasswordURLs,
-                                   this, base::Passed(&enterprise_login_urls),
-                                   enterprise_change_password_url));
+  ScheduleTask(base::BindOnce(&PasswordStore::SaveEnterprisePasswordURLs, this,
+                              std::move(enterprise_login_urls),
+                              std::move(enterprise_change_password_url)));
 }
 
 #endif
@@ -888,10 +890,10 @@ void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
 }
 
 void PasswordStore::RemoveLoginsByURLAndTimeInternal(
-    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords", "PasswordStore::RemoveLoginsByURLAndTimeInternal");
   BeginTransaction();
@@ -903,14 +905,14 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
   // sync codebase needs to update metadata atomically together with the login
   // data.
   CommitTransaction();
-  if (!completion.is_null())
-    main_task_runner_->PostTask(FROM_HERE, completion);
+  if (completion)
+    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetweenInternal(
     base::Time delete_begin,
     base::Time delete_end,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords",
                "PasswordStore::RemoveLoginsCreatedBetweenInternal");
@@ -923,32 +925,32 @@ void PasswordStore::RemoveLoginsCreatedBetweenInternal(
   // sync codebase needs to update metadata atomically together with the login
   // data.
   CommitTransaction();
-  if (!completion.is_null())
-    main_task_runner_->PostTask(FROM_HERE, completion);
+  if (completion)
+    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
 void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(
-    const base::Callback<bool(const GURL&)>& origin_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords",
                "PasswordStore::RemoveStatisticsByOriginAndTimeInternal");
   RemoveStatisticsByOriginAndTimeImpl(origin_filter, delete_begin, delete_end);
-  if (!completion.is_null())
-    main_task_runner_->PostTask(FROM_HERE, completion);
+  if (completion)
+    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
 void PasswordStore::DisableAutoSignInForOriginsInternal(
-    const base::Callback<bool(const GURL&)>& origin_filter,
-    const base::Closure& completion) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
+    base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords",
                "PasswordStore::DisableAutoSignInForOriginsInternal");
   DisableAutoSignInForOriginsImpl(origin_filter);
-  if (!completion.is_null())
-    main_task_runner_->PostTask(FROM_HERE, completion);
+  if (completion)
+    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
 void PasswordStore::UnblacklistInternal(
@@ -964,7 +966,7 @@ void PasswordStore::UnblacklistInternal(
     if (form->blacklisted_by_user && !form->is_public_suffix_match)
       RemoveLoginInternal(*form);
   }
-  if (!completion.is_null())
+  if (completion)
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
@@ -976,7 +978,7 @@ bool PasswordStore::RemoveCompromisedCredentialsByUrlAndTimeInternal(
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   bool result = RemoveCompromisedCredentialsByUrlAndTimeImpl(
       url_filter, remove_begin, remove_end);
-  if (!completion.is_null())
+  if (completion)
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
   return result;
 }
@@ -986,7 +988,7 @@ void PasswordStore::RemoveFieldInfoByTimeInternal(
     base::Time remove_end,
     base::OnceClosure completion) {
   RemoveFieldInfoByTimeImpl(remove_begin, remove_end);
-  if (!completion.is_null())
+  if (completion)
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
@@ -1095,8 +1097,8 @@ void PasswordStore::FindAndUpdateAffiliatedWebLogins(
     return;
   affiliated_match_helper_->GetAffiliatedWebRealms(
       PasswordStore::FormDigest(added_or_updated_android_form),
-      base::Bind(&PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl, this,
-                 added_or_updated_android_form));
+      base::BindOnce(&PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl,
+                     this, added_or_updated_android_form));
 }
 
 void PasswordStore::ScheduleFindAndUpdateAffiliatedWebLogins(
@@ -1196,8 +1198,9 @@ void PasswordStore::UpdateAffiliatedWebLoginsImpl(
 void PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl(
     const PasswordForm& updated_android_form,
     const std::vector<std::string>& affiliated_web_realms) {
-  ScheduleTask(base::Bind(&PasswordStore::UpdateAffiliatedWebLoginsImpl, this,
-                          updated_android_form, affiliated_web_realms));
+  ScheduleTask(base::BindOnce(&PasswordStore::UpdateAffiliatedWebLoginsImpl,
+                              this, updated_android_form,
+                              affiliated_web_realms));
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>

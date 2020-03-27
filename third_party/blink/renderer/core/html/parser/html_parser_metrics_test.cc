@@ -36,7 +36,8 @@ class HTMLParserMetricsTest : public testing::Test {
   frame_test_helpers::WebViewHelper helper_;
 };
 
-TEST_F(HTMLParserMetricsTest, ReportSingleChunk) {
+// TODO(crbug/1065326): This test is flaky across platforms.
+TEST_F(HTMLParserMetricsTest, DISABLED_ReportSingleChunk) {
   // Although the tests use a mock clock, the metrics recorder checks if the
   // system has a high resolution clock before recording results. As a result,
   // the tests will fail if the system does not have a high resolution clock.
@@ -90,7 +91,8 @@ TEST_F(HTMLParserMetricsTest, ReportSingleChunk) {
   // max values mean different bucket widths.
 }
 
-TEST_F(HTMLParserMetricsTest, HistogramReportsTwoChunks) {
+// TODO(crbug/1065326): This test is flaky across platforms.
+TEST_F(HTMLParserMetricsTest, DISABLED_HistogramReportsTwoChunks) {
   // Although the tests use a mock clock, the metrics recorder checks if the
   // system has a high resolution clock before recording results. As a result,
   // the tests will fail if the system does not have a high resolution clock.

@@ -6,6 +6,8 @@
 
 #include "build/build_config.h"
 #include "content/app/resources/grit/content_resources.h"
+#include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_util.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -37,6 +39,10 @@ base::RefCountedMemory* ContentClientImpl::GetDataResourceBytes(
     int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
+}
+
+void ContentClientImpl::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+  gpu::SetKeysForCrashLogging(gpu_info);
 }
 
 gfx::Image& ContentClientImpl::GetNativeImageNamed(int resource_id) {

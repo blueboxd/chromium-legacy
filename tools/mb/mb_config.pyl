@@ -237,13 +237,13 @@
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
       'ios13-beta-simulator': 'ios_simulator_debug_static_bot',
-      'ios13-sdk-device': 'ios_device_release_static_disable_signing_bot',
-      'ios13-sdk-simulator': 'ios_simulator_debug_static_bot',
+      'ios13-sdk-device': 'ios_device_release_static_rbe_bot',
+      'ios13-sdk-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios-simulator': 'ios_error',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
       'ios-simulator-cronet': 'ios_cronet',
-      'ios-webkit-tot': 'ios_simulator_debug_static_bot',
+      'ios-webkit-tot': 'ios_simulator_debug_static_rbe_bot',
       'linux-annotator-rel': 'release_bot',
       'linux-autofill-captured-sites-rel': 'release_bot',
       'linux-bfcache-rel': 'release_bot',
@@ -340,7 +340,7 @@
       'Chromium Linux Goma Staging': 'release_bot',
       'Chromium Mac Goma Staging': 'release_bot',
       'CrWinGomaStaging': 'release_bot_x86_minimal_symbols',
-      'Chromium iOS Goma RBE ToT': 'ios_device_release_bot_compile_only',
+      'Chromium iOS Goma RBE ToT': 'ios_device_release_compile_only',
       'Chromium Linux Goma RBE ToT': 'release_bot',
       'Chromium Linux Goma RBE ToT (ATS)': 'release_bot',
       'Chromium Linux Goma RBE Staging (clobber)': 'release_bot',
@@ -471,7 +471,7 @@
     'chromium.mac': {
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
-      'ios-device': 'ios_release_device_compile_only',
+      'ios-device': 'ios_device_release_rbe_compile_only',
       'ios-simulator': 'ios_error',
       'ios-simulator-full-configs': 'ios_error',
       'WebKit Mac10.13 (retina)': 'release_bot',
@@ -884,7 +884,7 @@
       'gpu-fyi-try-mac-nvidia-retina-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-try-mac-amd-retina-dbg': 'gpu_tests_debug_bot',
       'gpu-try-mac-intel-dbg': 'gpu_tests_debug_bot',
-      'ios-device': 'ios_release_device_compile_only',
+      'ios-device': 'ios_device_release_rbe_compile_only',
       'ios-simulator': 'ios_error',
       'ios-simulator-full-configs': 'ios_error',
       'ios-simulator-cronet': 'ios_cronet',
@@ -1820,24 +1820,29 @@
     'ios_error': [ 'error'],
 
     'ios_cronet': [
-      'ios_simulator', 'debug_static_bot', 'additional_target_cpus_x86',
-      'ios_deployment_target_9_0', 'cronet_ios'
+      'additional_target_cpus_x86', 'cronet_ios', 'debug_static_bot',
+      'ios_deployment_target_9_0', 'ios_simulator'
     ],
 
-    'ios_device_release_static_disable_signing_bot': [
-      'ios_device', 'ios_disable_code_signing', 'release_bot',
+    'ios_device_release_compile_only': [
+        'compile_only', 'ios_device',  'ios_disable_code_signing', 'release_bot'
     ],
 
-    'ios_device_release_bot_compile_only': [
-      'ios_release_device', 'compile_only'
+    'ios_device_release_rbe_compile_only': [
+        'compile_only', 'ios_device',  'ios_disable_code_signing', 'ios_use_goma_rbe', 'release_bot'
+    ],
+
+    # doesn't have symbol_level=0
+    'ios_device_release_static_rbe_bot': [
+        'ios_device', 'ios_disable_code_signing', 'ios_use_goma_rbe', 'release_bot',
     ],
 
     'ios_simulator_debug_static_bot': [
-        'ios_simulator', 'debug_static_bot',
+        'debug_static_bot', 'ios_simulator',
     ],
 
-    'ios_release_device_compile_only': [
-        'ios_device', 'release_bot', 'ios_disable_code_signing', 'compile_only', 'ios_use_goma_rbe'
+    'ios_simulator_debug_static_rbe_bot': [
+        'debug_static_bot', 'ios_simulator', 'ios_use_goma_rbe'
     ],
 
     'libfuzzer_asan_debug_bot': [
@@ -2463,7 +2468,7 @@
     },
 
     'ios_device': {
-      'mixins': ['ios', 'ios_use_goma_rbe' ],
+      'mixins': ['ios'],
       'gn_args': 'target_cpu="arm64"',
     },
 
@@ -2473,12 +2478,8 @@
     },
 
     'ios_simulator': {
-      'mixins': ['ios', 'ios_use_goma_rbe'],
+      'mixins': ['ios'],
       'gn_args': 'target_cpu="x64"',
-    },
-
-    'ios_release_device': {
-      'mixins': ['ios_device', 'ios_disable_code_signing', 'release_bot'],
     },
 
     'ios_use_goma_rbe': {

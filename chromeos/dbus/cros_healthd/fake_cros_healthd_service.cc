@@ -100,6 +100,21 @@ void FakeCrosHealthdService::RunNvmeSelfTestRoutine(
   std::move(callback).Run(run_routine_response_.Clone());
 }
 
+void FakeCrosHealthdService::RunDiskReadRoutine(
+    mojom::DiskReadRoutineTypeEnum type,
+    uint32_t length_seconds,
+    uint32_t file_size_mb,
+    RunDiskReadRoutineCallback callback) {
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthdService::RunPrimeSearchRoutine(
+    uint32_t length_seconds,
+    uint64_t max_num,
+    RunPrimeSearchRoutineCallback callback) {
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
 void FakeCrosHealthdService::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories,
     ProbeTelemetryInfoCallback callback) {

@@ -6,11 +6,12 @@ import './edu_login_welcome.js';
 import './edu_login_parents.js';
 import './edu_login_parent_signin.js';
 import './edu_login_parent_info.js';
+import './edu_login_signin.js';
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ParentAccount} from './edu_login_util.js';
+import {EduLoginParams, ParentAccount} from './edu_login_util.js';
 
 /** @enum {string} */
 const Steps = {
@@ -47,9 +48,16 @@ Polymer({
 
     /**
      * Selected parent account for approving EDU login flow.
-     * @type {?ParentAccount}
+     * @private {?ParentAccount}
      */
     selectedParent_: Object,
+
+    /**
+     * Login params containing obfuscated Gaia id and Reauth Proof Token of the
+     * parent who is approving EDU login flow.
+     * @private {?EduLoginParams}
+     */
+    loginParams_: Object,
   },
 
   listeners: {

@@ -34,8 +34,6 @@ using ElementTypeMap =
     base::flat_map<proto::ElementType, dnr_api::ResourceType>;
 
 constexpr char kJSONRulesFilename[] = "rules.json";
-const base::FilePath::CharType kJSONRulesetFilepath[] =
-    FILE_PATH_LITERAL("rules.json");
 
 // Utility class to convert the proto::UrlRule format to the JSON format
 // supported by Declarative Net Request.
@@ -493,11 +491,12 @@ class DNRJsonRuleOutputStream : public subresource_filter::RuleOutputStream {
 
   bool Finish() override {
     switch (write_type_) {
-      case filter_list_converter::kExtension:
-        WriteManifestAndRuleset(output_path_, kJSONRulesetFilepath,
-                                kJSONRulesFilename, output_rules_list_,
-                                {} /* hosts */);
+      case filter_list_converter::kExtension: {
+        TestRulesetInfo info = {kJSONRulesFilename,
+                                std::move(output_rules_list_)};
+        WriteManifestAndRuleset(output_path_, info, {} /* hosts */);
         break;
+      }
       case filter_list_converter::kJSONRuleset:
         JSONFileValueSerializer(output_path_).Serialize(output_rules_list_);
         break;

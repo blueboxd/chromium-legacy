@@ -71,7 +71,7 @@ class StatisticsTable {
   // only statistics for matching origins are removed. Returns true if the SQL
   // completed successfully.
   bool RemoveStatsByOriginAndTime(
-      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
       base::Time delete_end);
 

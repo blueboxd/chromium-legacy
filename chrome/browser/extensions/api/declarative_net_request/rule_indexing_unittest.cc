@@ -38,8 +38,6 @@ namespace declarative_net_request {
 namespace {
 
 constexpr char kJSONRulesFilename[] = "rules_file.json";
-const base::FilePath::CharType kJSONRulesetFilepath[] =
-    FILE_PATH_LITERAL("rules_file.json");
 
 std::string GetParseError(ParseResult result, int rule_id) {
   ParseInfo info;
@@ -156,20 +154,17 @@ class RuleIndexingTest : public DNRTestBase {
     // Create extension directory.
     EXPECT_TRUE(base::CreateDirectory(extension_dir_));
 
-    if (rules_value_) {
-      WriteManifestAndRuleset(extension_dir_, kJSONRulesetFilepath,
-                              kJSONRulesFilename, *rules_value_,
-                              {} /* hosts */);
-    } else {
-      WriteManifestAndRuleset(extension_dir_, kJSONRulesetFilepath,
-                              kJSONRulesFilename, rules_list_, {} /* hosts */);
-    }
+    if (!rules_value_)
+      rules_value_ = ToListValue(rules_list_);
+
+    TestRulesetInfo info = {kJSONRulesFilename, std::move(*rules_value_)};
+    WriteManifestAndRuleset(extension_dir_, info, {} /* hosts */);
 
     // Overwrite the JSON rules file with some invalid json.
     if (persist_invalid_json_file_) {
       std::string data = "invalid json";
       ASSERT_EQ(static_cast<int>(data.size()),
-                base::WriteFile(extension_dir_.Append(kJSONRulesetFilepath),
+                base::WriteFile(extension_dir_.AppendASCII(kJSONRulesFilename),
                                 data.c_str(), data.size()));
     }
 

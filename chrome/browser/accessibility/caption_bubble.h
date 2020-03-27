@@ -32,6 +32,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
  protected:
   void Init() override;
   bool ShouldShowCloseButton() const override;
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override;
 
  private:
   views::Label* label_;

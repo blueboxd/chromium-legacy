@@ -354,7 +354,10 @@ ExtensionService::ExtensionService(Profile* profile,
       ready_(ready),
       shared_module_service_(new SharedModuleService(profile_)),
       extension_registrar_(profile_, this),
-      forced_extensions_tracker_(registry_, profile_) {
+      forced_extensions_tracker_(registry_, profile_),
+      forced_extensions_metrics_(registry_,
+                                 profile_,
+                                 &forced_extensions_tracker_) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::ExtensionService::ctor");
 

@@ -52,8 +52,7 @@ TSAN_TEST(FontObjectThreadedTest, GetDefaultFontData) {
     for (FontDescription::GenericFamilyType family_type :
          {FontDescription::kStandardFamily, FontDescription::kSerifFamily,
           FontDescription::kSansSerifFamily, FontDescription::kMonospaceFamily,
-          FontDescription::kCursiveFamily, FontDescription::kFantasyFamily,
-          FontDescription::kPictographFamily}) {
+          FontDescription::kCursiveFamily, FontDescription::kFantasyFamily}) {
       FontDescription font_description;
       font_description.SetComputedSize(12.0);
       font_description.SetLocale(LayoutLocale::Get("en"));

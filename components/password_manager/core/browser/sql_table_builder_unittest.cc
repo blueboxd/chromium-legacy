@@ -51,8 +51,8 @@ bool SQLTableBuilderTest::IsColumnOfType(const std::string& name,
 }
 
 void SQLTableBuilderTest::Init() {
-  db_.set_error_callback(
-      base::Bind(&SQLTableBuilderTest::PrintDBError, base::Unretained(this)));
+  db_.set_error_callback(base::BindRepeating(&SQLTableBuilderTest::PrintDBError,
+                                             base::Unretained(this)));
   ASSERT_TRUE(db_.OpenInMemory());
   // The following column must always be present, so let's add it here.
   builder_.AddColumnToUniqueKey("signon_realm", "VARCHAR NOT NULL");

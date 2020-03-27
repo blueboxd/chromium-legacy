@@ -281,7 +281,7 @@ void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,
 }
 
 PasswordStoreChangeList TestPasswordStore::RemoveLoginsByURLAndTimeImpl(
-    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time begin,
     base::Time end) {
   NOTIMPLEMENTED();
@@ -296,13 +296,13 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsCreatedBetweenImpl(
 }
 
 PasswordStoreChangeList TestPasswordStore::DisableAutoSignInForOriginsImpl(
-    const base::Callback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   NOTIMPLEMENTED();
   return PasswordStoreChangeList();
 }
 
 bool TestPasswordStore::RemoveStatisticsByOriginAndTimeImpl(
-    const base::Callback<bool(const GURL&)>& origin_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
     base::Time delete_end) {
   NOTIMPLEMENTED();

@@ -39,11 +39,25 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
     },
+
+    /** @private */
+    newOsSettingsSearch_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('newOsSettingsSearch');
+      },
+      readOnly: true,
+    },
   },
 
-  /** @return {!CrToolbarSearchFieldElement} */
+  /** @return {?CrToolbarSearchFieldElement} */
   getSearchField() {
-    return this.$.search;
+    if (this.newOsSettingsSearch_) {
+      assertNotReached(
+          'New OS Search should not be using OsToolbar.getSearchField()');
+    }
+    return /** @type {?CrToolbarSearchFieldElement} */ (
+        this.$$('cr-toolbar-search-field'));
   },
 
   /** @private */

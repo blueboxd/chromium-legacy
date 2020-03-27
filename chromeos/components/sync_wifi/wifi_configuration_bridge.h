@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chromeos/components/sync_wifi/local_network_collector.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
+#include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_metadata_observer.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_type_store.h"
@@ -27,6 +28,7 @@ class ModelTypeChangeProcessor;
 
 namespace chromeos {
 
+class NetworkConfigurationHandler;
 class NetworkMetadataStore;
 
 namespace sync_wifi {
@@ -34,11 +36,13 @@ namespace sync_wifi {
 // Receives updates to network configurations from the Chrome sync back end and
 // from the system network stack and keeps both lists in sync.
 class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
+                                public NetworkConfigurationObserver,
                                 public NetworkMetadataObserver {
  public:
   WifiConfigurationBridge(
       SyncedNetworkUpdater* synced_network_updater,
       LocalNetworkCollector* local_network_collector,
+      NetworkConfigurationHandler* network_configuration_handler,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       syncer::OnceModelTypeStoreFactory create_store_callback);
   ~WifiConfigurationBridge() override;
@@ -59,6 +63,15 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
 
   // NetworkMetadataObserver:
   void OnFirstConnectionToNetwork(const std::string& guid) override;
+
+  // NetworkConfigurationObserver::
+  void OnConfigurationModified(const std::string& service_path,
+                               const std::string& guid,
+                               base::DictionaryValue* set_properties) override;
+  void OnBeforeConfigurationRemoved(const std::string& service_path,
+                                    const std::string& guid) override;
+  void OnConfigurationRemoved(const std::string& service_path,
+                              const std::string& guid) override;
 
   // Comes from |entries_| the in-memory map.
   std::vector<NetworkIdentifier> GetAllIdsForTesting();
@@ -84,11 +97,21 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
       syncer::EntityChangeList change_list,
       std::vector<sync_pb::WifiConfigurationSpecifics> local_network_list);
 
+  void SaveNetworkToSync(
+      base::Optional<sync_pb::WifiConfigurationSpecifics> proto);
+  void RemoveNetworkFromSync(
+      base::Optional<sync_pb::WifiConfigurationSpecifics> proto);
+
   // An in-memory list of the proto's that mirrors what is on the sync server.
   // This gets updated when changes are received from the server and after local
   // changes have been committed.  On initialization of this class, it is
   // populated with the contents of |store_|.
   base::flat_map<std::string, sync_pb::WifiConfigurationSpecifics> entries_;
+
+  // Map of network |guid| to |storage_key|.  After a network is deleted, we
+  // no longer have access to its metadata so this stores the necessary
+  // information to delete it from sync.
+  base::flat_map<std::string, std::string> pending_deletes_;
 
   // The on disk store of WifiConfigurationSpecifics protos that mirrors what
   // is on the sync server.  This gets updated when changes are received from
@@ -97,6 +120,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
 
   SyncedNetworkUpdater* synced_network_updater_;
   LocalNetworkCollector* local_network_collector_;
+  NetworkConfigurationHandler* network_configuration_handler_;
   base::WeakPtr<NetworkMetadataStore> network_metadata_store_;
 
   base::WeakPtrFactory<WifiConfigurationBridge> weak_ptr_factory_{this};

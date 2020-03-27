@@ -9,7 +9,7 @@
 
 cr.define('settings', function() {
   /** @enum {string} */
-  const ResetDialogPage = {
+  /* #export */ const ResetDialogPage = {
     INITIAL: 'initial',
     NO_RESET: 'noReset',
     RESET_FAILED: 'resetFailed',

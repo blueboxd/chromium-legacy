@@ -43,7 +43,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/blockfile/stress_support.h"
-#include "net/disk_cache/blockfile/trace.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/disk_cache_test_util.h"
 
@@ -386,20 +385,6 @@ void CrashHandler(const char* file,
   base::debug::BreakDebugger();
 }
 
-bool MessageHandler(int severity, const char* file, int line,
-                    size_t message_start, const std::string& str) {
-  const size_t kMaxMessageLen = 48;
-  char message[kMaxMessageLen];
-  size_t len = std::min(str.length() - message_start, kMaxMessageLen - 1);
-
-  memcpy(message, str.c_str() + message_start, len);
-  message[len] = '\0';
-#if !defined(DISK_CACHE_TRACE_TO_LOG)
-  disk_cache::Trace("%s", message);
-#endif
-  return false;
-}
-
 // -----------------------------------------------------------------------
 
 #if defined(OS_WIN)
@@ -418,7 +403,6 @@ int main(int argc, const char* argv[]) {
 
   logging::ScopedLogAssertHandler scoped_assert_handler(
       base::Bind(CrashHandler));
-  logging::SetLogMessageHandler(MessageHandler);
 
 #if defined(OS_WIN)
   logging::LogEventProvider::Initialize(kStressCacheTraceProviderName);

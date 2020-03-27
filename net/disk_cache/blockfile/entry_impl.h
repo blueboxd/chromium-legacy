@@ -292,9 +292,6 @@ class NET_EXPORT_PRIVATE EntryImpl
   // actual cleanup.
   void GetData(int index, char** buffer, Addr* address);
 
-  // Logs this entry to the internal trace buffer.
-  void Log(const char* msg);
-
   // |net_log_| should be early since some field destructors (at least
   // ~SparseControl) can touch it.
   net::NetLogWithSource net_log_;

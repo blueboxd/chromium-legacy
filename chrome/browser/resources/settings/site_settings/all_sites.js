@@ -100,8 +100,10 @@ Polymer({
 
     /**
      * @private {?{
+     *   actionScope: string,
      *   index: number,
      *   item: !SiteGroup,
+     *   origin: string,
      *   path: string,
      *   target: !HTMLElement
      * }}
@@ -414,7 +416,7 @@ Polymer({
    * pane when its menu is opened (it is possible to open off-screen items using
    * keyboard shortcuts).
    * @param {!CustomEvent<{
-   *    index: number, item: !SiteGroup,
+   *    actionScope: string, index: number, item: !SiteGroup, origin: string,
    *    path: string, target: !HTMLElement
    *    }>} e
    * @private

@@ -14,11 +14,27 @@
 
 NavigationPredictorKeyedService::Prediction::Prediction(
     const content::WebContents* web_contents,
-    const GURL& source_document_url,
+    const base::Optional<GURL>& source_document_url,
+    const base::Optional<std::vector<std::string>>& external_app_packages_name,
+    PredictionSource prediction_source,
     const std::vector<GURL>& sorted_predicted_urls)
     : web_contents_(web_contents),
       source_document_url_(source_document_url),
-      sorted_predicted_urls_(sorted_predicted_urls) {}
+      external_app_packages_name_(external_app_packages_name),
+      prediction_source_(prediction_source),
+      sorted_predicted_urls_(sorted_predicted_urls) {
+  switch (prediction_source_) {
+    case PredictionSource::kAnchorElementsParsedFromWebPage:
+      DCHECK(!source_document_url->is_empty());
+      DCHECK(!external_app_packages_name);
+      break;
+    case PredictionSource::kExternalAndroidApp:
+      DCHECK(!web_contents_);
+      DCHECK(!source_document_url);
+      DCHECK(!external_app_packages_name->empty());
+      break;
+  }
+}
 
 NavigationPredictorKeyedService::Prediction::Prediction(
     const NavigationPredictorKeyedService::Prediction& other) = default;
@@ -29,17 +45,29 @@ NavigationPredictorKeyedService::Prediction::operator=(
 
 NavigationPredictorKeyedService::Prediction::~Prediction() = default;
 
-GURL NavigationPredictorKeyedService::Prediction::source_document_url() const {
+const base::Optional<GURL>&
+NavigationPredictorKeyedService::Prediction::source_document_url() const {
+  DCHECK_EQ(PredictionSource::kAnchorElementsParsedFromWebPage,
+            prediction_source_);
   return source_document_url_;
 }
 
-std::vector<GURL>
+const base::Optional<std::vector<std::string>>&
+NavigationPredictorKeyedService::Prediction::external_app_packages_name()
+    const {
+  DCHECK_EQ(PredictionSource::kExternalAndroidApp, prediction_source_);
+  return external_app_packages_name_;
+}
+
+const std::vector<GURL>&
 NavigationPredictorKeyedService::Prediction::sorted_predicted_urls() const {
   return sorted_predicted_urls_;
 }
 
 const content::WebContents*
 NavigationPredictorKeyedService::Prediction::web_contents() const {
+  DCHECK_EQ(PredictionSource::kAnchorElementsParsedFromWebPage,
+            prediction_source_);
   return web_contents_;
 }
 
@@ -62,20 +90,36 @@ NavigationPredictorKeyedService::~NavigationPredictorKeyedService() {
 void NavigationPredictorKeyedService::OnPredictionUpdated(
     const content::WebContents* web_contents,
     const GURL& document_url,
+    PredictionSource prediction_source,
     const std::vector<GURL>& sorted_predicted_urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  last_prediction_ =
-      Prediction(web_contents, document_url, sorted_predicted_urls);
+
+  // Currently, this method is called only for anchor elements parsed from
+  // webpage.
+  DCHECK_EQ(PredictionSource::kAnchorElementsParsedFromWebPage,
+            prediction_source);
+
+  last_prediction_ = Prediction(web_contents, document_url,
+                                /*external_app_packages_name=*/base::nullopt,
+                                prediction_source, sorted_predicted_urls);
   for (auto& observer : observer_list_) {
     observer.OnPredictionUpdated(last_prediction_);
   }
 }
 
-#ifdef OS_ANDROID
 void NavigationPredictorKeyedService::OnPredictionUpdatedByExternalAndroidApp(
     const std::vector<std::string>& external_app_packages_name,
     const std::vector<GURL>& sorted_predicted_urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (external_app_packages_name.empty() || sorted_predicted_urls.empty()) {
+    return;
+  }
+  last_prediction_ =
+      Prediction(nullptr, base::nullopt, external_app_packages_name,
+                 PredictionSource::kExternalAndroidApp, sorted_predicted_urls);
+  for (auto& observer : observer_list_) {
+    observer.OnPredictionUpdated(last_prediction_);
+  }
 
   LOCAL_HISTOGRAM_COUNTS_100(
       "NavigationPredictor.ExternalAndroidApp.CountPredictedURLs",
@@ -84,7 +128,6 @@ void NavigationPredictorKeyedService::OnPredictionUpdatedByExternalAndroidApp(
   // TODO(https://crbug.com/1014210): Notify the predicted URLs to the
   // observers.
 }
-#endif
 
 void NavigationPredictorKeyedService::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

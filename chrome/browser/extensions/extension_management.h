@@ -181,6 +181,9 @@ class ExtensionManagement : public KeyedService {
   bool CheckMinimumVersion(const Extension* extension,
                            std::string* required_version) const;
 
+  // Returns whether the profile associated with this instance is supervised.
+  bool IsChild() const { return is_child_; }
+
  private:
   using SettingsIdMap =
       std::unordered_map<ExtensionId,
@@ -252,6 +255,7 @@ class ExtensionManagement : public KeyedService {
   Profile* const profile_ = nullptr;
   PrefService* pref_service_ = nullptr;
   bool is_signin_profile_ = false;
+  bool is_child_ = false;
 
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   PrefChangeRegistrar pref_change_registrar_;

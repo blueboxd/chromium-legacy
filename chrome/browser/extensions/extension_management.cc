@@ -50,7 +50,9 @@
 namespace extensions {
 
 ExtensionManagement::ExtensionManagement(Profile* profile)
-    : profile_(profile), pref_service_(profile_->GetPrefs()) {
+    : profile_(profile),
+      pref_service_(profile_->GetPrefs()),
+      is_child_(profile_->IsChild()) {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagement::ExtensionManagement::ctor");
 #if defined(OS_CHROMEOS)

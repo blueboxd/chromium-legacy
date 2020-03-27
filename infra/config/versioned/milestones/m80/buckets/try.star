@@ -127,6 +127,7 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_ios_builder(
     name = 'ios-simulator',
+    goma_backend = None,
     tryjob = try_.job(),
 )
 

@@ -73,13 +73,13 @@ void PopulateAutocompleteMatchesFromTestData(
 }
 
 // A simple AutocompleteProvider that does nothing.
-class MockAutocompleteProvider : public AutocompleteProvider {
+class FakeAutocompleteProvider : public AutocompleteProvider {
  public:
-  explicit MockAutocompleteProvider(Type type): AutocompleteProvider(type) {}
+  explicit FakeAutocompleteProvider(Type type) : AutocompleteProvider(type) {}
 
   void Start(const AutocompleteInput& input, bool minimal_changes) override {}
 
-  // For simplicity, |MockAutocompleteProvider|'s retrieved through
+  // For simplicity, |FakeAutocompleteProvider|'s retrieved through
   // |GetProvider| have types 0, 1, ... 5. This is fine for most tests, but for
   // tests where the provider type matters (e.g. tests that involve deduping
   // document suggestions), provider types need to be consistent with
@@ -87,7 +87,7 @@ class MockAutocompleteProvider : public AutocompleteProvider {
   void SetType(Type type) { type_ = type; }
 
  private:
-  ~MockAutocompleteProvider() override {}
+  ~FakeAutocompleteProvider() override = default;
 };
 
 }  // namespace
@@ -117,8 +117,8 @@ class AutocompleteResultTest : public testing::Test {
 
     // Create the list of mock providers.  5 is enough.
     for (size_t i = 0; i < 5; ++i) {
-      mock_provider_list_.push_back(new MockAutocompleteProvider(
-              static_cast<AutocompleteProvider::Type>(i)));
+      mock_provider_list_.push_back(new FakeAutocompleteProvider(
+          static_cast<AutocompleteProvider::Type>(i)));
     }
   }
 
@@ -152,7 +152,7 @@ class AutocompleteResultTest : public testing::Test {
                                  const TestData* expected,
                                  size_t expected_size);
 
-  void SortMatchesAndVerfiyOrder(
+  void SortMatchesAndVerifyOrder(
       const std::string& input_text,
       OmniboxEventProto::PageClassification page_classification,
       const ACMatches& matches,
@@ -160,7 +160,7 @@ class AutocompleteResultTest : public testing::Test {
       const AutocompleteMatchTestData data[]);
 
   // Returns a (mock) AutocompleteProvider of given |provider_id|.
-  MockAutocompleteProvider* GetProvider(int provider_id) {
+  FakeAutocompleteProvider* GetProvider(int provider_id) {
     EXPECT_LT(provider_id, static_cast<int>(mock_provider_list_.size()));
     return mock_provider_list_[provider_id].get();
   }
@@ -172,7 +172,7 @@ class AutocompleteResultTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   // For every provider mentioned in TestData, we need a mock provider.
-  std::vector<scoped_refptr<MockAutocompleteProvider> > mock_provider_list_;
+  std::vector<scoped_refptr<FakeAutocompleteProvider>> mock_provider_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResultTest);
 };
@@ -245,7 +245,7 @@ void AutocompleteResultTest::RunTransferOldMatchesTest(const TestData* last,
   AssertResultMatches(current_result, expected, expected_size);
 }
 
-void AutocompleteResultTest::SortMatchesAndVerfiyOrder(
+void AutocompleteResultTest::SortMatchesAndVerifyOrder(
     const std::string& input_text,
     OmniboxEventProto::PageClassification page_classification,
     const ACMatches& matches,
@@ -1083,7 +1083,7 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   // is the default match despite demotion.
   // Make sure history-URL is the last match due to the logic which groups
   // searches and URLs together.
-  SortMatchesAndVerfiyOrder("a", OmniboxEventProto::HOME_PAGE, matches,
+  SortMatchesAndVerifyOrder("a", OmniboxEventProto::HOME_PAGE, matches,
                             {1, 2, 3, 0}, data);
 
   // However, in the fakebox/realbox, we do want to use the demoted score when
@@ -1092,10 +1092,10 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   // page classification of fakebox/realbox, and make sure history-title is now
   // demoted. We also make sure history-URL is the last match due to the logic
   // which groups searches and URLs together.
-  SortMatchesAndVerfiyOrder(
+  SortMatchesAndVerifyOrder(
       "a", OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
       matches, {3, 2, 0, 1}, data);
-  SortMatchesAndVerfiyOrder("a", OmniboxEventProto::NTP_REALBOX, matches,
+  SortMatchesAndVerifyOrder("a", OmniboxEventProto::NTP_REALBOX, matches,
                             {3, 2, 0, 1}, data);
 
   // Unless, the user's input looks like a URL, in which case we want to use
@@ -1103,11 +1103,11 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   // clearly trying to navigate. So here we re-sort with a page classification
   // of fakebox/realbox and an input that's a URL, and make sure history-title
   // is once again the default match.
-  SortMatchesAndVerfiyOrder(
+  SortMatchesAndVerifyOrder(
       "www.example.com",
       OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, matches,
       {1, 2, 3, 0}, data);
-  SortMatchesAndVerfiyOrder("www.example.com", OmniboxEventProto::NTP_REALBOX,
+  SortMatchesAndVerifyOrder("www.example.com", OmniboxEventProto::NTP_REALBOX,
                             matches, {1, 2, 3, 0}, data);
 }
 
@@ -1221,7 +1221,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteUnconsecutiveMatches) {
 
 struct EntityTestData {
   AutocompleteMatchType::Type type;
-  MockAutocompleteProvider* provider;
+  FakeAutocompleteProvider* provider;
   std::string destination_url;
   int relevance;
   bool allowed_to_be_default_match;
@@ -1701,15 +1701,15 @@ TEST_F(AutocompleteResultTest, DocumentSuggestionsCanMergeButNotToDefault) {
   ACMatches matches;
   PopulateAutocompleteMatches(data, base::size(data), &matches);
   matches[0].type = AutocompleteMatchType::DOCUMENT_SUGGESTION;
-  static_cast<MockAutocompleteProvider*>(matches[0].provider)
+  static_cast<FakeAutocompleteProvider*>(matches[0].provider)
       ->SetType(AutocompleteProvider::Type::TYPE_DOCUMENT);
   matches[1].type = AutocompleteMatchType::HISTORY_URL;
   matches[2].type = AutocompleteMatchType::DOCUMENT_SUGGESTION;
-  static_cast<MockAutocompleteProvider*>(matches[2].provider)
+  static_cast<FakeAutocompleteProvider*>(matches[2].provider)
       ->SetType(AutocompleteProvider::Type::TYPE_DOCUMENT);
   matches[3].type = AutocompleteMatchType::HISTORY_URL;
   matches[4].type = AutocompleteMatchType::DOCUMENT_SUGGESTION;
-  static_cast<MockAutocompleteProvider*>(matches[4].provider)
+  static_cast<FakeAutocompleteProvider*>(matches[4].provider)
       ->SetType(AutocompleteProvider::Type::TYPE_DOCUMENT);
   matches[5].type = AutocompleteMatchType::HISTORY_URL;
 

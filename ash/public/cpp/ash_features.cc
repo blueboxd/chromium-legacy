@@ -116,6 +116,9 @@ const base::Feature kDragFromShelfToHomeOrOverview{
 const base::Feature kHideShelfControlsInTabletMode{
     "HideShelfControlsInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kSystemTrayMicGainSetting{
+    "SystemTrayMicGainSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }
@@ -243,6 +246,10 @@ bool AreContextualNudgesEnabled() {
 
 bool IsCornerShortcutsEnabled() {
   return base::FeatureList::IsEnabled(kCornerShortcuts);
+}
+
+bool IsSystemTrayMicGainSettingEnabled() {
+  return base::FeatureList::IsEnabled(kSystemTrayMicGainSetting);
 }
 
 namespace {

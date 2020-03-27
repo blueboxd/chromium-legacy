@@ -96,6 +96,8 @@ jumbo_static_library("safe_browsing") {
       "trigger_creator.h",
       "ui_manager.cc",
       "ui_manager.h",
+      "user_interaction_observer.cc",
+      "user_interaction_observer.h",
     ]
     deps += [
       ":url_lookup_service_factory",

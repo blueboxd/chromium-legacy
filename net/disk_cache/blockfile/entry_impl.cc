@@ -431,7 +431,6 @@ uint32_t EntryImpl::GetHash() {
 bool EntryImpl::CreateEntry(Addr node_address,
                             const std::string& key,
                             uint32_t hash) {
-  Trace("Create entry In");
   EntryStore* entry_store = entry_.Data();
   RankingsNode* node = node_.Data();
   memset(entry_store, 0, sizeof(EntryStore) * entry_.address().num_blocks());
@@ -472,7 +471,6 @@ bool EntryImpl::CreateEntry(Addr node_address,
   backend_->ModifyStorageSize(0, static_cast<int32_t>(key.size()));
   CACHE_UMA(COUNTS, "KeySize", 0, static_cast<int32_t>(key.size()));
   node->dirty = backend_->GetCurrentEntryId();
-  Log("Create Entry ");
   return true;
 }
 
@@ -976,7 +974,6 @@ EntryImpl::~EntryImpl() {
     node_.clear_modified();
     return;
   }
-  Log("~EntryImpl in");
 
   // Save the sparse info to disk. This will generate IO for this entry and
   // maybe for a child entry, so it is important to do it before deleting this
@@ -1018,7 +1015,6 @@ EntryImpl::~EntryImpl() {
     }
   }
 
-  Trace("~EntryImpl out 0x%p", reinterpret_cast<void*>(this));
   net_log_.EndEvent(net::NetLogEventType::DISK_CACHE_ENTRY_IMPL);
   backend_->OnEntryDestroyEnd();
 }
@@ -1151,11 +1147,9 @@ int EntryImpl::InternalWriteData(int index,
   int entry_size = entry_.Data()->data_size[index];
   bool extending = entry_size < offset + buf_len;
   truncate = truncate && entry_size > offset + buf_len;
-  Trace("To PrepareTarget 0x%x", entry_.address().value());
   if (!PrepareTarget(index, offset, buf_len, truncate))
     return net::ERR_FAILED;
 
-  Trace("From PrepareTarget 0x%x", entry_.address().value());
   if (extending || truncate)
     UpdateSize(index, entry_size, offset + buf_len);
 
@@ -1612,21 +1606,6 @@ void EntryImpl::GetData(int index, char** buffer, Addr* address) {
     entry_.Data()->data_addr[index] = 0;
     entry_.Data()->data_size[index] = 0;
   }
-}
-
-void EntryImpl::Log(const char* msg) {
-  int dirty = 0;
-  if (node_.HasData()) {
-    dirty = node_.Data()->dirty;
-  }
-
-  Trace("%s 0x%p 0x%x 0x%x", msg, reinterpret_cast<void*>(this),
-        entry_.address().value(), node_.address().value());
-
-  Trace("  data: 0x%x 0x%x 0x%x", entry_.Data()->data_addr[0],
-        entry_.Data()->data_addr[1], entry_.Data()->long_key);
-
-  Trace("  doomed: %d 0x%x", doomed_, dirty);
 }
 
 }  // namespace disk_cache

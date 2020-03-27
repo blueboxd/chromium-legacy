@@ -15,3 +15,6 @@
 
 # crbug.com/1058570
 -WebRtcGetUserMediaBrowserTest.ApplyConstraintsNonDevice
+
+# crbug.com/1065184
+-RenderFrameHostImplBrowserTest.CheckIsCurrentBeforeAndAfterUnload

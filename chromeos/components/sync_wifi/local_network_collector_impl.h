@@ -46,8 +46,11 @@ class LocalNetworkCollectorImpl
   void GetAllSyncableNetworks(ProtoListCallback callback) override;
 
   // Can be called on multiple networks simultaneously.
-  void GetSyncableNetwork(const NetworkIdentifier& id,
+  void GetSyncableNetwork(const std::string& guid,
                           ProtoCallback callback) override;
+
+  base::Optional<NetworkIdentifier> GetNetworkIdentifierFromGuid(
+      const std::string& guid) override;
 
   void SetNetworkMetadataStore(
       base::WeakPtr<NetworkMetadataStore> network_metadata_store) override;

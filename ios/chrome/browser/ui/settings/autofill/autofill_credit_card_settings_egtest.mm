@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
@@ -43,8 +44,10 @@ struct DisplayStringIDToExpectedResult {
 const DisplayStringIDToExpectedResult kExpectedFields[] = {
     {IDS_IOS_AUTOFILL_CARDHOLDER, @"Test User"},
     {IDS_IOS_AUTOFILL_CARD_NUMBER, @"4111111111111111"},
-    {IDS_IOS_AUTOFILL_EXP_MONTH, @"11"},
-    {IDS_IOS_AUTOFILL_EXP_YEAR, @"2022"}};
+    {IDS_IOS_AUTOFILL_EXP_MONTH,
+     base::SysUTF8ToNSString(autofill::test::NextMonth())},
+    {IDS_IOS_AUTOFILL_EXP_YEAR,
+     base::SysUTF8ToNSString(autofill::test::NextYear())}};
 
 NSString* const kCreditCardLabelTemplate = @"Test User, %@";
 

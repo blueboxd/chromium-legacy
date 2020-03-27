@@ -16,6 +16,7 @@
 #include "base/sequence_checker.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/client_data.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
@@ -113,6 +114,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   State state_ = State::kWaitingForTouch;
   CtapMakeCredentialRequest request_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;
+  base::Optional<AndroidClientDataExtensionInput> android_client_data_ext_;
+
   // If true, the request handler may skip the first touch to select a device
   // that will require a PIN.
   bool allow_skipping_pin_touch_;

@@ -119,6 +119,8 @@ void AppServiceProxy::Initialize() {
     return;
   }
 
+  browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
+
   app_service_impl_ =
       std::make_unique<apps::AppServiceImpl>(profile_->GetPrefs());
   app_service_impl_->BindReceiver(app_service_.BindNewPipeAndPassReceiver());
@@ -173,6 +175,10 @@ apps::InstanceRegistry& AppServiceProxy::InstanceRegistry() {
   return instance_registry_;
 }
 #endif
+
+BrowserAppLauncher& AppServiceProxy::BrowserAppLauncher() {
+  return *browser_app_launcher_;
+}
 
 apps::PreferredApps& AppServiceProxy::PreferredApps() {
   return preferred_apps_;

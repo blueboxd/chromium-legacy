@@ -96,6 +96,7 @@ class AssistantOptInFlowScreenHandler
   void Initialize() override;
 
   // ash::AssistantStateObserver:
+  void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
 
   // Connect to assistant settings manager.

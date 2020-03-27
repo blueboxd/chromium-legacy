@@ -1185,16 +1185,6 @@ luci.console_view(
             short_name = 'sim',
         ),
         luci.console_view_entry(
-            builder = 'ci-m80/ios-simulator',
-            category = 'ios|week1b|m80',
-            short_name = 'sim',
-        ),
-        luci.console_view_entry(
-            builder = 'ci-m81/ios-simulator',
-            category = 'ios|week1b|m81',
-            short_name = 'sim',
-        ),
-        luci.console_view_entry(
             builder = 'ci/ios-simulator-cronet',
             category = 'ios|week1c',
             short_name = 'cro',

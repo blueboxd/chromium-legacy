@@ -218,10 +218,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-#ifndef SK_USE_LEGACY_SRGB_COLOR_FILTER
-#define SK_USE_LEGACY_SRGB_COLOR_FILTER
-#endif
-
 // We're turning this off indefinitely,
 // until we can figure out some fundamental problems with its approach.
 //

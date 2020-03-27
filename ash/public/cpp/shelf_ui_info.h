@@ -41,6 +41,9 @@ struct ASH_PUBLIC_EXPORT ScrollableShelfInfo {
 
   // Screen bounds of visible shelf icons.
   std::vector<gfx::Rect> icons_bounds_in_screen;
+
+  // Indicates whether shelf widget is animating;
+  bool is_shelf_widget_animating = false;
 };
 
 struct ASH_PUBLIC_EXPORT ShelfState {

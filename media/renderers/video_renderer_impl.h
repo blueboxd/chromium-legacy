@@ -71,6 +71,7 @@ class MEDIA_EXPORT VideoRendererImpl
   void StartPlayingFrom(base::TimeDelta timestamp) override;
   void OnTimeProgressing() override;
   void OnTimeStopped() override;
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
   size_t frames_queued_for_testing() const {
@@ -79,6 +80,8 @@ class MEDIA_EXPORT VideoRendererImpl
   size_t effective_frames_queued_for_testing() const {
     return algorithm_->effective_frames_queued();
   }
+  int min_buffered_frames_for_testing() const { return min_buffered_frames_; }
+  int max_buffered_frames_for_testing() const { return max_buffered_frames_; }
 
   // VideoRendererSink::RenderCallback implementation.
   scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
@@ -137,8 +140,14 @@ class MEDIA_EXPORT VideoRendererImpl
   // reported, and tracks what the most recently reported frame rate was.
   void ReportFrameRateIfNeeded_Locked();
 
-  // Returns true if there is no more room for additional buffered frames.
-  bool HaveReachedBufferingCap() const;
+  // Update |min_buffered_frames_| and |max_buffered_frames_| using the latest
+  // |average_frame_duration|. Should only be called when |latency_hint_| > 0.
+  void UpdateLatencyHintBufferingCaps_Locked(
+      base::TimeDelta average_frame_duration);
+
+  // Returns true if algorithm_->effective_frames_queued() >= |buffering_cap|,
+  // or when the number of ineffective frames >= kAbsoluteMaxFrames.
+  bool HaveReachedBufferingCap(size_t buffering_cap) const;
 
   // Starts or stops |sink_| respectively. Do not call while |lock_| is held.
   void StartSink();
@@ -303,21 +312,34 @@ class MEDIA_EXPORT VideoRendererImpl
   // Indicates if we've painted the first valid frame after StartPlayingFrom().
   bool painted_first_frame_;
 
-  // Current minimum and maximum for buffered frames. |min_buffered_frames_| is
-  // the number of frames required to transition from BUFFERING_HAVE_NOTHING to
+  // The number of frames required to transition from BUFFERING_HAVE_NOTHING to
   // BUFFERING_HAVE_ENOUGH.
   size_t min_buffered_frames_;
+
+  // The maximum number of frames to buffer. Always >= |min_buffered_frames_|.
+  // May be greater-than when |latency_hint_| set that decreases the minimum
+  // buffering limit.
+  size_t max_buffered_frames_;
 
   // Last Render() and last FrameReady() times respectively. Used to avoid
   // triggering underflow when background rendering.
   base::TimeTicks last_render_time_;
   base::TimeTicks last_frame_ready_time_;
 
-  // Running average of frame durations, without changes due to playback rate.
+  // Running average of frame durations.
   FrameRateEstimator fps_estimator_;
 
   // Last FPS, if any, reported to the client.
   base::Optional<int> last_reported_fps_;
+
+  // Value saved from last call to SetLatencyHint(). Used to recompute buffering
+  // limits as framerate fluctuates.
+  base::Optional<base::TimeDelta> latency_hint_;
+
+  // When latency_hint_ > 0, we make regular adjustments to buffering caps as
+  // |algorithm_->average_frame_duration()| fluctuates, but we only want to emit
+  // one MEDIA_LOG.
+  bool is_latency_hint_media_logged_ = false;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_{this};

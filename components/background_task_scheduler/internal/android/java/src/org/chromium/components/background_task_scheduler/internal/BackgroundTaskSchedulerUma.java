@@ -276,18 +276,26 @@ public class BackgroundTaskSchedulerUma extends BackgroundTaskSchedulerExternalU
 
     @VisibleForTesting
     static Set<String> getCachedUmaEntries(SharedPreferences prefs) {
-        return prefs.getStringSet(KEY_CACHED_UMA, new HashSet<String>(1));
+        Set<String> cachedUmaEntries = prefs.getStringSet(KEY_CACHED_UMA, new HashSet<>());
+        return sanitizeEntrySet(cachedUmaEntries);
     }
 
     @VisibleForTesting
     static void updateCachedUma(SharedPreferences prefs, Set<String> cachedUma) {
         ThreadUtils.assertOnUiThread();
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putStringSet(KEY_CACHED_UMA, cachedUma);
+        editor.putStringSet(KEY_CACHED_UMA, sanitizeEntrySet(cachedUma));
         editor.apply();
     }
 
     void assertNativeIsLoaded() {
         assert LibraryLoader.getInstance().isInitialized();
+    }
+
+    private static Set<String> sanitizeEntrySet(Set<String> set) {
+        if (set != null && set.contains(null)) {
+            set.remove(null);
+        }
+        return set;
     }
 }

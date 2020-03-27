@@ -459,6 +459,7 @@ namespace autotestPrivate {
     boolean isAnimating;
     boolean isOverflow;
     Bounds[] iconsBoundsInScreen;
+    boolean isShelfWidgetAnimating;
   };
 
   // Mapped to HotseatSwipeDescriptor in ash/public/cpp/shelf_ui_info.h.

@@ -650,24 +650,15 @@ class SystemWebAppManagerAdditionalSearchTermsTest
 
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAdditionalSearchTermsTest,
                        AdditionalSearchTerms) {
-  // TODO(crbug.com/1054195): Make the expectation unconditional.
-  const web_app::ProviderType provider = provider_type();
-
   WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
-      app_id, [provider](const apps::AppUpdate& update) {
-        // TODO(crbug.com/1054195): Unconditionally expect "Security".
-        if (provider == ProviderType::kBookmarkApps) {
-          EXPECT_EQ(std::vector<std::string>({"Security"}),
-                    update.AdditionalSearchTerms());
-        } else {
-          EXPECT_EQ(std::vector<std::string>({}),
-                    update.AdditionalSearchTerms());
-        }
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(std::vector<std::string>({"Security"}),
+                  update.AdditionalSearchTerms());
       });
 }
 

@@ -10,7 +10,7 @@
 
 cr.define('settings', function() {
   /** @enum {string} */
-  const BioEnrollDialogPage = {
+  /* #export */ const BioEnrollDialogPage = {
     INITIAL: 'initial',
     PIN_PROMPT: 'pinPrompt',
     ENROLLMENTS: 'enrollments',
@@ -69,7 +69,7 @@ cr.define('settings', function() {
       recentEnrollmentName_: String,
     },
 
-    /** @private {?settings.SecurityKeysBioEnrollProxyImpl} */
+    /** @private {?settings.SecurityKeysBioEnrollProxy} */
     browserProxy_: null,
 
     /** @private {number} */
@@ -111,7 +111,8 @@ cr.define('settings', function() {
       // Disable the confirm button to prevent concurrent submissions.
       this.confirmButtonDisabled_ = true;
 
-      this.$.pin.trySubmit(pin => this.browserProxy_.providePIN(pin))
+      /** @type {!SettingsSecurityKeysPinFieldElement} */ (this.$.pin)
+          .trySubmit(pin => this.browserProxy_.providePIN(pin))
           .then(
               () => {
                 // Leave confirm button disabled while enumerating fingerprints.
@@ -186,7 +187,7 @@ cr.define('settings', function() {
       assert(this.dialogPage_ == BioEnrollDialogPage.ENROLLMENTS);
 
       this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
-      this.$.arc.reset();
+      /** @type {!CrFingerprintProgressArcElement} */ (this.$.arc).reset();
       this.progressArcLabel_ =
           this.i18n('securityKeysBioEnrollmentEnrollingLabel');
 
@@ -221,10 +222,12 @@ cr.define('settings', function() {
         this.maxSamples_ = response.remaining + 1;
       }
 
-      this.$.arc.setProgress(
-          100 * (this.maxSamples_ - response.remaining - 1) / this.maxSamples_,
-          100 * (this.maxSamples_ - response.remaining) / this.maxSamples_,
-          false);
+      /** @type {!CrFingerprintProgressArcElement} */ (this.$.arc)
+          .setProgress(
+              100 * (this.maxSamples_ - response.remaining - 1) /
+                  this.maxSamples_,
+              100 * (this.maxSamples_ - response.remaining) / this.maxSamples_,
+              false);
     },
 
     /**
@@ -243,8 +246,9 @@ cr.define('settings', function() {
       }
 
       this.maxSamples_ = Math.max(this.maxSamples_, 1);
-      this.$.arc.setProgress(
-          100 * (this.maxSamples_ - 1) / this.maxSamples_, 100, true);
+      /** @type {!CrFingerprintProgressArcElement} */ (this.$.arc)
+          .setProgress(
+              100 * (this.maxSamples_ - 1) / this.maxSamples_, 100, true);
 
       assert(response.enrollment);
       this.recentEnrollmentId_ = response.enrollment.id;

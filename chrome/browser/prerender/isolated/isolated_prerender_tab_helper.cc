@@ -300,13 +300,24 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
     return;
   }
 
+  if (prediction->prediction_source() !=
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage) {
+    return;
+  }
+
   if (prediction.value().web_contents() != web_contents()) {
     // We only care about predictions in this tab.
     return;
   }
 
-  if (!google_util::IsGoogleSearchUrl(
-          prediction.value().source_document_url())) {
+  const base::Optional<GURL>& source_document_url =
+      prediction->source_document_url();
+
+  if (!source_document_url || source_document_url->is_empty())
+    return;
+
+  if (!google_util::IsGoogleSearchUrl(source_document_url.value())) {
     return;
   }
 

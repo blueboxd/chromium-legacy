@@ -40,8 +40,9 @@ struct TaskResults {
 
 // Parses |data|, a JSON blob, into a vector of PrintServers.  If |data| cannot
 // be parsed, returns data with empty list of servers.
-// This needs to run on a sequence that may block as it can be very slow.
+// This needs to not run on UI thread as it can be very slow.
 TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   TaskResults task_data;
   task_data.task_id = task_id;
 
@@ -50,9 +51,6 @@ TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
     return task_data;
   }
 
-  // This could be really slow.
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           *data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);

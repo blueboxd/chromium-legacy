@@ -207,6 +207,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   if (!was_hidden_) {
     RecordPageLoadMetrics(base::TimeTicks::Now());
     RecordTimingMetrics(timing);
+    RecordInputTimingMetrics();
   }
   ReportLayoutStability();
   return STOP_OBSERVING;
@@ -217,6 +218,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
   if (!was_hidden_) {
     RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
     RecordTimingMetrics(timing);
+    RecordInputTimingMetrics();
     was_hidden_ = true;
   }
   return CONTINUE_OBSERVING;
@@ -245,6 +247,7 @@ void UkmPageLoadMetricsObserver::OnComplete(
   if (!was_hidden_) {
     RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
     RecordTimingMetrics(timing);
+    RecordInputTimingMetrics();
   }
   ReportLayoutStability();
 }
@@ -387,22 +390,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
         timing.interactive_timing->longest_input_timestamp.value();
     builder.SetInteractiveTiming_LongestInputTimestamp4(
         longest_input_timestamp.InMilliseconds());
-  }
-  if (timing.interactive_timing->total_input_delay) {
-    base::TimeDelta total_input_delay =
-        timing.interactive_timing->total_input_delay.value();
-    builder.SetInteractiveTiming_TotalInputDelay(
-        total_input_delay.InMilliseconds());
-  }
-  if (timing.interactive_timing->total_adjusted_input_delay) {
-    base::TimeDelta total_adjusted_input_delay =
-        timing.interactive_timing->total_adjusted_input_delay.value();
-    builder.SetInteractiveTiming_TotalAdjustedInputDelay(
-        total_adjusted_input_delay.InMilliseconds());
-  }
-  if (timing.interactive_timing->num_input_events) {
-    int num_input_events = timing.interactive_timing->num_input_events;
-    builder.SetInteractiveTiming_NumInputEvents(num_input_events);
   }
   builder.SetCpuTime(total_foreground_cpu_time_.InMilliseconds());
 
@@ -605,6 +592,22 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
       "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
       LayoutShiftUmaValue(
           GetDelegate().GetMainFrameRenderData().layout_shift_score));
+}
+
+void UkmPageLoadMetricsObserver::RecordInputTimingMetrics() {
+  if (GetDelegate().GetPageInputTiming().num_input_events == 0) {
+    return;
+  }
+  ukm::builders::PageLoad(GetDelegate().GetSourceId())
+      .SetInteractiveTiming_NumInputEvents(
+          GetDelegate().GetPageInputTiming().num_input_events)
+      .SetInteractiveTiming_TotalInputDelay(
+          GetDelegate().GetPageInputTiming().total_input_delay.InMilliseconds())
+      .SetInteractiveTiming_TotalAdjustedInputDelay(
+          GetDelegate()
+              .GetPageInputTiming()
+              .total_adjusted_input_delay.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
 }
 
 base::Optional<int64_t>

@@ -84,3 +84,31 @@ TEST_F('ChromeVoxOptionsTest', 'DISABLED_NumberReadingStyleSelect', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxOptionsTest', 'SmartStickyMode', function() {
+  this.runOnOptionsPage((mockFeedback, evt) => {
+    const smartStickyModeCheckbox = evt.target.find({
+      role: chrome.automation.RoleType.CHECK_BOX,
+      attributes:
+          {name: 'Turn off sticky mode when editing text (Smart Sticky Mode)'}
+    });
+    assertNotNullNorUndefined(smartStickyModeCheckbox);
+    mockFeedback
+        .call(smartStickyModeCheckbox.focus.bind(smartStickyModeCheckbox))
+        .expectSpeech(
+            'Turn off sticky mode when editing text (Smart Sticky Mode)',
+            'Check box', 'Checked')
+        .call(() => {
+          assertEquals('true', localStorage['smartStickyMode']);
+        })
+        .call(smartStickyModeCheckbox.doDefault.bind(smartStickyModeCheckbox))
+        .expectSpeech(
+            'Turn off sticky mode when editing text (Smart Sticky Mode)',
+            'Check box', 'Not checked')
+        .call(() => {
+          assertEquals('false', localStorage['smartStickyMode']);
+        })
+
+        .replay();
+  });
+});

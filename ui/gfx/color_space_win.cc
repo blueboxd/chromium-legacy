@@ -138,6 +138,10 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
 DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
     const ColorSpace& color_space,
     bool force_yuv) {
+  // Treat invalid color space as sRGB.
+  if (!color_space.IsValid())
+    return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+
   if (color_space.GetMatrixID() == gfx::ColorSpace::MatrixID::RGB &&
       !force_yuv) {
     // For RGB, we default to FULL
@@ -223,16 +227,10 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
   }
 }
 
-DXGI_FORMAT ColorSpaceWin::GetDXGIFormat(const gfx::ColorSpace& color_space,
-                                         bool needs_alpha) {
-  // The PQ transfer function needs 10 bits. If we need an alpha channel, then
-  // we will need to bump to 16 bits.
-  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::SMPTEST2084) {
-    if (needs_alpha)
-      return DXGI_FORMAT_R16G16B16A16_UNORM;
-    else
-      return DXGI_FORMAT_R10G10B10A2_UNORM;
-  }
+DXGI_FORMAT ColorSpaceWin::GetDXGIFormat(const gfx::ColorSpace& color_space) {
+  // The PQ transfer function needs 10 bits.
+  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::SMPTEST2084)
+    return DXGI_FORMAT_R10G10B10A2_UNORM;
 
   // Non-PQ HDR color spaces use half-float.
   if (color_space.IsHDR())

@@ -11,10 +11,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/sync/model/entity_change.h"
@@ -23,6 +25,7 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
@@ -42,21 +45,29 @@ std::unique_ptr<syncer::EntityData> GenerateWifiEntityData(
 WifiConfigurationBridge::WifiConfigurationBridge(
     SyncedNetworkUpdater* synced_network_updater,
     LocalNetworkCollector* local_network_collector,
+    NetworkConfigurationHandler* network_configuration_handler,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     syncer::OnceModelTypeStoreFactory create_store_callback)
     : ModelTypeSyncBridge(std::move(change_processor)),
       synced_network_updater_(synced_network_updater),
       local_network_collector_(local_network_collector),
+      network_configuration_handler_(network_configuration_handler),
       network_metadata_store_(nullptr) {
   std::move(create_store_callback)
       .Run(syncer::WIFI_CONFIGURATIONS,
            base::BindOnce(&WifiConfigurationBridge::OnStoreCreated,
                           weak_ptr_factory_.GetWeakPtr()));
+  if (network_configuration_handler_) {
+    network_configuration_handler_->AddObserver(this);
+  }
 }
 
 WifiConfigurationBridge::~WifiConfigurationBridge() {
   if (network_metadata_store_) {
     network_metadata_store_->RemoveObserver(this);
+  }
+  if (network_configuration_handler_) {
+    network_configuration_handler_->RemoveObserver(this);
   }
 }
 
@@ -302,7 +313,87 @@ std::vector<NetworkIdentifier> WifiConfigurationBridge::GetAllIdsForTesting() {
 
 void WifiConfigurationBridge::OnFirstConnectionToNetwork(
     const std::string& guid) {
-  // TODO(jonmann): Add network to sync.
+  if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
+    // Don't have to upload a configuration that came from sync.
+    return;
+  }
+
+  local_network_collector_->GetSyncableNetwork(
+      guid, base::BindOnce(&WifiConfigurationBridge::SaveNetworkToSync,
+                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WifiConfigurationBridge::SaveNetworkToSync(
+    base::Optional<sync_pb::WifiConfigurationSpecifics> proto) {
+  if (!proto) {
+    return;
+  }
+
+  std::unique_ptr<syncer::EntityData> entity_data =
+      GenerateWifiEntityData(*proto);
+  std::string storage_key = GetStorageKey(*entity_data);
+
+  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
+      store_->CreateWriteBatch();
+  batch->WriteData(storage_key, proto->SerializeAsString());
+  change_processor()->Put(storage_key, std::move(entity_data),
+                          batch->GetMetadataChangeList());
+  entries_[storage_key] = *proto;
+  Commit(std::move(batch));
+}
+
+void WifiConfigurationBridge::OnBeforeConfigurationRemoved(
+    const std::string& service_path,
+    const std::string& guid) {
+  base::Optional<NetworkIdentifier> id =
+      local_network_collector_->GetNetworkIdentifierFromGuid(guid);
+  if (!id) {
+    return;
+  }
+
+  std::string storage_key = id->SerializeToString();
+  if (entries_.contains(storage_key))
+    pending_deletes_[guid] = storage_key;
+}
+
+void WifiConfigurationBridge::OnConfigurationRemoved(
+    const std::string& service_path,
+    const std::string& network_guid) {
+  LOG(ERROR) << "WifiConfigurationBridge::RemoveNetworkFromSync" << this;
+  if (!pending_deletes_.contains(network_guid))
+    return;
+
+  std::string storage_key = pending_deletes_[network_guid];
+
+  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
+      store_->CreateWriteBatch();
+  batch->DeleteData(storage_key);
+  change_processor()->Delete(storage_key, batch->GetMetadataChangeList());
+  entries_.erase(storage_key);
+  Commit(std::move(batch));
+}
+
+void WifiConfigurationBridge::OnConfigurationModified(
+    const std::string& service_path,
+    const std::string& guid,
+    base::DictionaryValue* set_properties) {
+  if (!set_properties)
+    return;
+
+  if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
+    // Don't have to upload a configuration that came from sync.
+    return;
+  }
+  if (set_properties->HasKey(shill::kAutoConnectProperty) ||
+      set_properties->HasKey(shill::kPriorityProperty) ||
+      set_properties->HasKey(shill::kProxyConfigProperty) ||
+      set_properties->FindPath(
+          base::StringPrintf("%s.%s", shill::kStaticIPConfigProperty,
+                             shill::kNameServersProperty))) {
+    local_network_collector_->GetSyncableNetwork(
+        guid, base::BindOnce(&WifiConfigurationBridge::SaveNetworkToSync,
+                             weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void WifiConfigurationBridge::SetNetworkMetadataStore(

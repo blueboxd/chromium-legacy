@@ -13,6 +13,7 @@
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
@@ -135,6 +136,32 @@ void SafeBrowsingUrlCheckerImpl::CheckUrl(const GURL& url,
   CheckUrlImpl(url, method, Notifier(std::move(callback)));
 }
 
+security_interstitials::UnsafeResource
+SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(const GURL& url,
+                                               SBThreatType threat_type,
+                                               const ThreatMetadata& metadata) {
+  security_interstitials::UnsafeResource resource;
+  resource.url = url;
+  resource.original_url = urls_[0].url;
+  if (urls_.size() > 1) {
+    resource.redirect_urls.reserve(urls_.size() - 1);
+    for (size_t i = 1; i < urls_.size(); ++i)
+      resource.redirect_urls.push_back(urls_[i].url);
+  }
+  resource.is_subresource = resource_type_ != ResourceType::kMainFrame;
+  resource.is_subframe = resource_type_ == ResourceType::kSubFrame;
+  resource.threat_type = threat_type;
+  resource.threat_metadata = metadata;
+  resource.callback =
+      base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
+                          weak_factory_.GetWeakPtr());
+  resource.callback_thread =
+      base::CreateSingleThreadTaskRunner(CreateTaskTraits(ThreadID::IO));
+  resource.web_contents_getter = web_contents_getter_;
+  resource.threat_source = database_manager_->GetThreatSource();
+  return resource;
+}
+
 void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
     const GURL& url,
     SBThreatType threat_type,
@@ -153,6 +180,26 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
   RecordCheckUrlTimeout(/*timed_out=*/false);
 
   TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url", url.spec());
+
+  if (base::FeatureList::IsEnabled(kDelayedWarnings)) {
+    // Delayed warnings experiment delays the warning until a user interaction
+    // happens. Create an interaction observer and continue like there wasn't
+    // a warning. The observer will create the interstitial when necessary.
+    security_interstitials::UnsafeResource unsafe_resource =
+        MakeUnsafeResource(url, threat_type, metadata);
+    unsafe_resource.is_delayed_warning = true;
+    url_checker_delegate_
+        ->StartObservingInteractionsForDelayedBlockingPageHelper(
+            unsafe_resource, resource_type_ == ResourceType::kMainFrame);
+
+    // Let the navigation continue.
+    threat_type = SB_THREAT_TYPE_SAFE;
+    state_ = STATE_DELAYED_BLOCKING_PAGE;
+    if (!RunNextCallback(true, false))
+      return;
+    // No need to call ProcessUrls, it'll return early.
+    return;
+  }
 
   if (threat_type == SB_THREAT_TYPE_SAFE ||
       threat_type == SB_THREAT_TYPE_SUSPICIOUS_SITE) {
@@ -186,25 +233,8 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 
   UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Unsafe", resource_type_);
 
-  security_interstitials::UnsafeResource resource;
-  resource.url = url;
-  resource.original_url = urls_[0].url;
-  if (urls_.size() > 1) {
-    resource.redirect_urls.reserve(urls_.size() - 1);
-    for (size_t i = 1; i < urls_.size(); ++i)
-      resource.redirect_urls.push_back(urls_[i].url);
-  }
-  resource.is_subresource = resource_type_ != ResourceType::kMainFrame;
-  resource.is_subframe = resource_type_ == ResourceType::kSubFrame;
-  resource.threat_type = threat_type;
-  resource.threat_metadata = metadata;
-  resource.callback =
-      base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
-                          weak_factory_.GetWeakPtr());
-  resource.callback_thread =
-      base::CreateSingleThreadTaskRunner(CreateTaskTraits(ThreadID::IO));
-  resource.web_contents_getter = web_contents_getter_;
-  resource.threat_source = database_manager_->GetThreatSource();
+  security_interstitials::UnsafeResource resource =
+      MakeUnsafeResource(url, threat_type, metadata);
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
   url_checker_delegate_->StartDisplayingBlockingPageHelper(
@@ -238,9 +268,13 @@ void SafeBrowsingUrlCheckerImpl::CheckUrlImpl(const GURL& url,
 void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK_NE(STATE_BLOCKED, state_);
+  if (!base::FeatureList::IsEnabled(kDelayedWarnings)) {
+    DCHECK_NE(STATE_DELAYED_BLOCKING_PAGE, state_);
+  }
 
   if (state_ == STATE_CHECKING_URL ||
-      state_ == STATE_DISPLAYING_BLOCKING_PAGE) {
+      state_ == STATE_DISPLAYING_BLOCKING_PAGE ||
+      state_ == STATE_DELAYED_BLOCKING_PAGE) {
     return;
   }
 

@@ -149,6 +149,7 @@ source_set("eg2_tests") {
     ":constants",
     ":feature_flags",
     "//base",
+    "//components/autofill/core/browser:test_support",
     "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",

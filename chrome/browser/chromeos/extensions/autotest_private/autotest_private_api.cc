@@ -4152,6 +4152,8 @@ AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
     scrollable_shelf_ui_info.is_overflow = fetched_info.is_overflow;
     scrollable_shelf_ui_info.icons_bounds_in_screen =
         ToBoundsDictionaryList(fetched_info.icons_bounds_in_screen);
+    scrollable_shelf_ui_info.is_shelf_widget_animating =
+        fetched_info.is_shelf_widget_animating;
 
     if (state.scroll_distance) {
       scrollable_shelf_ui_info.target_main_axis_offset =

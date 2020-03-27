@@ -448,29 +448,6 @@ base::Optional<base::TimeDelta> PerformanceTiming::LongestInputTimestamp()
       interactive_detector->GetLongestInputTimestamp());
 }
 
-uint64_t PerformanceTiming::TotalInputDelay() const {
-  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
-  if (!interactive_detector)
-    return 0;
-
-  return ToIntegerMilliseconds(interactive_detector->GetTotalInputDelay());
-}
-
-uint64_t PerformanceTiming::TotalAdjustedInputDelay() const {
-  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
-  if (!interactive_detector)
-    return 0;
-
-  return ToIntegerMilliseconds(
-      interactive_detector->GetTotalAdjustedInputDelay());
-}
-uint64_t PerformanceTiming::NumInputEvents() const {
-  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
-  if (!interactive_detector)
-    return 0;
-
-  return interactive_detector->GetNumInputEvents();
-}
 uint64_t PerformanceTiming::ParseStart() const {
   const DocumentParserTiming* timing = GetDocumentParserTiming();
   if (!timing)

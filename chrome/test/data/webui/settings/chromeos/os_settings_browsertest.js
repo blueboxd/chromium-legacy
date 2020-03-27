@@ -712,6 +712,29 @@ TEST_F('OSSettingsMainTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Tests for the new OS Settings Search Box
+// eslint-disable-next-line no-var
+var OSSettingsSearchBoxBrowserTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kNewOsSettingsSearch']};
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      'fake_settings_search_handler.js',
+      'fake_user_action_recorder.js',
+      'os_settings_search_box_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsSearchBoxBrowserTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Tests for the side-nav menu.
 // eslint-disable-next-line no-var
 var OSSettingsMenuTest = class extends OSSettingsBrowserTest {

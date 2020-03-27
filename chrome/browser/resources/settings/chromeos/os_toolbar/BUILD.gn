@@ -9,6 +9,8 @@ js_type_check("closure_compile") {
 }
 
 js_library("os_toolbar") {
-  deps =
-      [ "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field" ]
+  deps = [
+    "../os_settings_search_box",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",
+  ]
 }

@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "net/disk_cache/blockfile/file_lock.h"
 #include "net/disk_cache/blockfile/stress_support.h"
-#include "net/disk_cache/blockfile/trace.h"
 #include "net/disk_cache/cache_util.h"
 
 using base::TimeTicks;
@@ -339,7 +338,6 @@ bool BlockFiles::CreateBlock(FileType block_type, int block_count,
 
   Addr address(block_type, block_count, file_header.FileId(), index);
   block_address->set_value(address.value());
-  Trace("CreateBlock 0x%x", address.value());
   return true;
 }
 
@@ -355,8 +353,6 @@ void BlockFiles::DeleteBlock(Addr address, bool deep) {
   MappedFile* file = GetFile(address);
   if (!file)
     return;
-
-  Trace("DeleteBlock 0x%x", address.value());
 
   size_t size = address.BlockSize() * address.num_blocks();
   size_t offset = address.start_block() * address.BlockSize() +

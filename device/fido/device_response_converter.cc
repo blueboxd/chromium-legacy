@@ -20,6 +20,8 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_supported_options.h"
+#include "device/fido/client_data.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/opaque_attestation_statement.h"
 
@@ -88,11 +90,20 @@ ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
   if (it == decoded_map.end() || !it->second.is_map())
     return base::nullopt;
 
-  return AuthenticatorMakeCredentialResponse(
+  AuthenticatorMakeCredentialResponse response(
       transport_used,
       AttestationObject(std::move(*authenticator_data),
                         std::make_unique<OpaqueAttestationStatement>(
                             format, it->second.Clone())));
+
+  if (base::FeatureList::IsEnabled(kWebAuthPhoneSupport)) {
+    it = decoded_map.find(CBOR(kAndroidClientDataExtOutputKey));
+    if (it != decoded_map.end() && it->second.is_bytestring()) {
+      response.set_android_client_data_ext(it->second.GetBytestring());
+    }
+  }
+
+  return response;
 }
 
 base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
@@ -144,7 +155,14 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
     response.SetNumCredentials(it->second.GetUnsigned());
   }
 
-  return base::Optional<AuthenticatorGetAssertionResponse>(std::move(response));
+  if (base::FeatureList::IsEnabled(kWebAuthPhoneSupport)) {
+    it = response_map.find(CBOR(kAndroidClientDataExtOutputKey));
+    if (it != response_map.end() && it->second.is_bytestring()) {
+      response.set_android_client_data_ext(it->second.GetBytestring());
+    }
+  }
+
+  return response;
 }
 
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
@@ -229,6 +247,8 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       const std::string& extension_str = extension.GetString();
       if (extension_str == kExtensionCredProtect) {
         options.supports_cred_protect = true;
+      } else if (extension_str == kExtensionAndroidClientData) {
+        options.supports_android_client_data_ext = true;
       }
       extensions.push_back(extension_str);
     }

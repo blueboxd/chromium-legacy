@@ -3198,8 +3198,6 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/clone-intrinsic-size.html
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-av-framesize.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-negative-duration.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/preload/download-resources.html [ Failure Timeout ]
@@ -3293,7 +3291,6 @@ crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-siz
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoelement.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-a-bitrate.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-lists/list-item-definition.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure Timeout ]
@@ -4752,9 +4749,6 @@ crbug.com/1052642 virtual/cache-storage-high-priority-match/external/wpt/service
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
-
-crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
-crbug.com/746128 [ Win7 Debug ] virtual/audio-service/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Mac ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
 crbug.com/746128 [ Mac ] virtual/audio-service/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
 
@@ -6019,7 +6013,6 @@ crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-targe
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [ Failure ]
 
 # Sheriff 2019-09-12
-crbug.com/1011515 [ Win7 ] fast/harness/internals-observe-gc.html [ Failure ]
 crbug.com/731018 [ Mac ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac ] external/wpt/gyroscope/Gyroscope.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]

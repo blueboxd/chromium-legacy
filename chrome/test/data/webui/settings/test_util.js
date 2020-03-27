@@ -178,7 +178,7 @@ cr.define('test_util', function() {
     };
   }
 
-  function createOriginInfo(origin, override) {
+  /* #export */ function createOriginInfo(origin, override) {
     if (override === undefined) {
       override = {};
     }

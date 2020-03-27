@@ -159,20 +159,8 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
       }
     }
 
-    PhysicalRect mainframe_intersection_rect;
-    if (!geometry.UnclippedIntersectionRect().IsEmpty()) {
-      mainframe_intersection_rect = PhysicalRect::EnclosingRect(
-          matrix.ProjectQuad(FloatRect(geometry.UnclippedIntersectionRect()))
-              .BoundingBox());
-
-      if (mainframe_intersection_rect.IsEmpty()) {
-        mainframe_document_intersection = IntRect(
-            FlooredIntPoint(mainframe_intersection_rect.offset), IntSize());
-      } else {
-        mainframe_document_intersection =
-            EnclosingIntRect(mainframe_intersection_rect);
-      }
-    }
+    mainframe_document_intersection =
+        EnclosingIntRect(geometry.UnclippedIntersectionRect());
   } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
     // If the parent LocalFrameView is throttled and out-of-date, then we can't
     // get any useful information.
@@ -185,6 +173,11 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
        frame.GetMainFrameScrollOffset(), can_skip_sticky_frame_tracking});
 
   UpdateFrameVisibility(!viewport_intersection.IsEmpty());
+
+  if (ShouldReportMainFrameIntersection()) {
+    GetFrame().Client()->OnMainFrameDocumentIntersectionChanged(
+        mainframe_document_intersection);
+  }
 
   // We don't throttle 0x0 or display:none iframes, because in practice they are
   // sometimes used to drive UI logic.

@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+// #import {SecurityKeysResetBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysBioEnrollProxyImpl, ResetDialogPage, SetPINDialogPage, CredentialManagementDialogPage, BioEnrollDialogPage, SampleStatus, Ctap2Status} from 'chrome://settings/lazy_load.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 /**
  * A base class for all security key subpage test browser proxies to
  * inherit from. Provides a |promiseMap_| that proxies can be used to
@@ -207,6 +215,7 @@ function assertShown(allDivs, dialog, expectedID) {
 suite('SecurityKeysResetDialog', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysResetBrowserProxy();
@@ -315,6 +324,7 @@ suite('SecurityKeysResetDialog', function() {
 suite('SecurityKeysSetPINDialog', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysPINBrowserProxy();
@@ -437,7 +447,7 @@ suite('SecurityKeysSetPINDialog', function() {
     const setPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('setPIN', setPINResolver.promise);
     setNewPINEntries('1234', '1234');
-    ({oldPIN, newPIN} = await browserProxy.whenCalled('setPIN'));
+    const {oldPIN, newPIN} = await browserProxy.whenCalled('setPIN');
     assertTrue(dialog.$.pinSubmit.disabled);
     assertEquals(oldPIN, '');
     assertEquals(newPIN, '1234');
@@ -554,6 +564,7 @@ suite('SecurityKeysSetPINDialog', function() {
 suite('SecurityKeysCredentialManagement', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysCredentialBrowserProxy();
@@ -654,10 +665,10 @@ suite('SecurityKeysCredentialManagement', function() {
     assertEquals(dialog.$.credentialList.items, credentials);
 
     // Select two of the credentials and delete them.
-    Polymer.flush();
+    Polymer.dom.flush();
     assertTrue(dialog.$.confirmButton.disabled);
-    const checkboxes = Array.from(
-        Polymer.dom(dialog.$.credentialList).querySelectorAll('cr-checkbox'));
+    const checkboxes =
+        Array.from(dialog.$.credentialList.querySelectorAll('cr-checkbox'));
     assertEquals(checkboxes.length, 3);
     assertEquals(checkboxes.filter(el => el.checked).length, 0);
     checkboxes[1].click();
@@ -679,6 +690,7 @@ suite('SecurityKeysCredentialManagement', function() {
 suite('SecurityKeysBioEnrollment', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysBioEnrollProxy();
@@ -770,10 +782,8 @@ suite('SecurityKeysBioEnrollment', function() {
     assertEquals(dialog.$.enrollmentList.items, enrollments);
 
     // Delete the second enrollments and refresh the list.
-    Polymer.flush();
-    Polymer.dom(dialog.$.enrollmentList)
-        .querySelectorAll('cr-icon-button')[1]
-        .click();
+    Polymer.dom.flush();
+    dialog.$.enrollmentList.querySelectorAll('cr-icon-button')[1].click();
     const id = await browserProxy.whenCalled('deleteEnrollment');
     assertEquals(enrollments[1].id, id);
     enrollments.splice(1, 1);
@@ -834,7 +844,7 @@ suite('SecurityKeysBioEnrollment', function() {
     Polymer.dom.flush();
     assertFalse(dialog.$.arc.isComplete());
     assertFalse(dialog.$.cancelButton.hidden);
-    assert(dialog.$.confirmButton.hidden);
+    assertTrue(dialog.$.confirmButton.hidden);
 
     uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
@@ -848,8 +858,8 @@ suite('SecurityKeysBioEnrollment', function() {
       },
     });
     await uiReady;
-    assert(dialog.$.arc.isComplete());
-    assert(dialog.$.cancelButton.hidden);
+    assertTrue(dialog.$.arc.isComplete());
+    assertTrue(dialog.$.cancelButton.hidden);
     assertFalse(dialog.$.confirmButton.hidden);
 
     // Proceeding brings up rename dialog page.
@@ -903,8 +913,8 @@ suite('SecurityKeysBioEnrollment', function() {
     await uiReady;
 
     assertShown(allDivs, dialog, 'enroll');
-    assert(dialog.$.cancelButton.disabled == false);
-    assert(dialog.$.cancelButton.hidden == false);
+    assertFalse(dialog.$.cancelButton.disabled);
+    assertFalse(dialog.$.cancelButton.hidden);
 
     uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);

@@ -802,6 +802,13 @@ TEST_F(SmbServiceWithSmbfsTest, Mount) {
   }
   EXPECT_TRUE(found);
 
+  // Check that the SmbFsShare can be accessed.
+  const base::FilePath mount_path(kMountPath);
+  SmbFsShare* share = smb_service_->GetSmbFsShareForPath(mount_path);
+  ASSERT_TRUE(share);
+  EXPECT_EQ(share->mount_path(), mount_path);
+  EXPECT_EQ(share->share_url().ToString(), kShareUrl);
+
   // Check that the share was saved.
   SmbPersistedShareRegistry registry(profile_);
   base::Optional<SmbShareInfo> info = registry.Get(SmbUrl(kShareUrl));
@@ -1023,6 +1030,39 @@ TEST_F(SmbServiceWithSmbfsTest, MountExcessiveShares) {
       share_path, mount_path, base::BindOnce([](SmbMountResult result) {
         EXPECT_EQ(SmbMountResult::kTooManyOpened, result);
       })));
+}
+
+TEST_F(SmbServiceWithSmbfsTest, GetSmbFsShareForPath) {
+  CreateService(profile_);
+  WaitForSetupComplete();
+
+  ignore_result(MountBasicShare(kSharePath, kMountPath,
+                                base::BindOnce([](SmbMountResult result) {
+                                  EXPECT_EQ(SmbMountResult::kSuccess, result);
+                                })));
+  const char kMountPath2[] = "/share/mount/second_path";
+  ignore_result(MountBasicShare(kSharePath, kMountPath2,
+                                base::BindOnce([](SmbMountResult result) {
+                                  EXPECT_EQ(SmbMountResult::kSuccess, result);
+                                })));
+
+  SmbFsShare* share =
+      smb_service_->GetSmbFsShareForPath(base::FilePath(kMountPath));
+  EXPECT_EQ(share->mount_path(), base::FilePath(kMountPath));
+  share = smb_service_->GetSmbFsShareForPath(
+      base::FilePath(kMountPath).Append("foo"));
+  EXPECT_EQ(share->mount_path(), base::FilePath(kMountPath));
+
+  share = smb_service_->GetSmbFsShareForPath(base::FilePath(kMountPath2));
+  EXPECT_EQ(share->mount_path(), base::FilePath(kMountPath2));
+  share = smb_service_->GetSmbFsShareForPath(
+      base::FilePath(kMountPath2).Append("bar/baz"));
+  EXPECT_EQ(share->mount_path(), base::FilePath(kMountPath2));
+
+  EXPECT_FALSE(
+      smb_service_->GetSmbFsShareForPath(base::FilePath("/share/mount")));
+  EXPECT_FALSE(smb_service_->GetSmbFsShareForPath(
+      base::FilePath("/share/mount/third_path")));
 }
 
 }  // namespace smb_client

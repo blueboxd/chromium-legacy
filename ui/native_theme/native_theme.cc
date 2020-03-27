@@ -165,19 +165,17 @@ SkColor NativeTheme::GetSystemColor(ColorId color_id,
 
   // TODO(http://crbug.com/1057754): Remove the below restrictions.
   if (base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
-      color_scheme == NativeTheme::ColorScheme::kLight) {
-    if (!color_provider_) {
-      // Lazy init the color provider as it makes USER32 calls underneath on
-      // Windows, which isn't permitted on renderers.
-      // TODO(http://crbug.com/1057754): Handle dark and high contrast modes.
-      color_provider_ = ColorProviderManager::Get().GetColorProviderFor(
-          ColorProviderManager::ColorMode::kLight,
-          ColorProviderManager::ContrastMode::kNormal);
-    }
+      color_scheme != NativeTheme::ColorScheme::kPlatformHighContrast) {
+    auto color_mode = (color_scheme == NativeTheme::ColorScheme::kDark)
+                          ? ColorProviderManager::ColorMode::kDark
+                          : ColorProviderManager::ColorMode::kLight;
+    // TODO(http://crbug.com/1057754): Handle high contrast modes.
+    auto* color_provider = ColorProviderManager::Get().GetColorProviderFor(
+        color_mode, ColorProviderManager::ContrastMode::kNormal);
     auto color_id_map = NativeThemeColorIdToColorIdMap();
     auto result = color_id_map.find(color_id);
     if (result != color_id_map.cend())
-      return color_provider_->GetColor(result->second);
+      return color_provider->GetColor(result->second);
   }
   return GetAuraColor(color_id, this, color_scheme);
 }

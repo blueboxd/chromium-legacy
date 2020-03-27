@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -46,6 +47,12 @@ NetworkIdentifier NetworkIdentifier::DeserializeFromString(
                         base::SPLIT_WANT_NONEMPTY);
   DCHECK(pieces.size() == 2);
   return NetworkIdentifier(pieces[0], pieces[1]);
+}
+
+// static
+NetworkIdentifier NetworkIdentifier::FromNetworkState(
+    const NetworkState* network) {
+  return NetworkIdentifier(network->GetHexSsid(), network->security_class());
 }
 
 NetworkIdentifier::NetworkIdentifier(const std::string& hex_ssid,

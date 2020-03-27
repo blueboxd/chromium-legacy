@@ -584,30 +584,6 @@ TEST_F(InteractiveDetectorTest, RecordInputDelayUKM) {
       delay.InMilliseconds());
 }
 
-TEST_F(InteractiveDetectorTest, TotalInputDelay) {
-  Event event_1;
-  event_1.SetTrusted(true);
-  event_1.SetType(event_type_names::kClick);
-  base::TimeDelta delay_1 = base::TimeDelta::FromMilliseconds(10);
-  base::TimeTicks processing_start_1 = Now() + delay_1;
-  base::TimeTicks event_platform_timestamp_1 = Now();
-  GetDetector()->HandleForInputDelay(event_1, event_platform_timestamp_1,
-                                     processing_start_1);
-  Event event_2;
-  event_2.SetTrusted(true);
-  event_2.SetType(event_type_names::kClick);
-  base::TimeDelta delay_2 = base::TimeDelta::FromMilliseconds(60);
-  base::TimeTicks processing_start_2 = Now() + delay_2;
-  base::TimeTicks event_platform_timestamp_2 = Now();
-  GetDetector()->HandleForInputDelay(event_2, event_platform_timestamp_2,
-                                     processing_start_2);
-
-  EXPECT_EQ(uint64_t(2), GetDetector()->GetNumInputEvents());
-  EXPECT_EQ(int64_t(70), GetDetector()->GetTotalInputDelay().InMilliseconds());
-  EXPECT_EQ(int64_t(10),
-            GetDetector()->GetTotalAdjustedInputDelay().InMilliseconds());
-}
-
 // In tests for Total Blocking Time (TBT) we call SetTimeToInteractive() instead
 // of allowing TimeToInteractive to occur because the computation is gated
 // behind tracing being enabled, which means that they won't run by default. In

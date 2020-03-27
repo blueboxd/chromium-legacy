@@ -24,7 +24,9 @@ class SecurityTokenPinErrorGeneratorTest : public testing::Test {
  protected:
   SecurityTokenPinErrorGeneratorTest() { InitI18n(); }
 
-  ~SecurityTokenPinErrorGeneratorTest() override = default;
+  ~SecurityTokenPinErrorGeneratorTest() override {
+    ui::ResourceBundle::CleanupSharedInstance();
+  }
 
  private:
   // Initializes the i18n stack and loads the necessary strings. Uses a specific

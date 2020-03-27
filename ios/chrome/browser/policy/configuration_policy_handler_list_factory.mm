@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
@@ -23,8 +24,12 @@ using policy::SimplePolicyHandler;
 namespace {
 
 const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
+    {policy::key::kPasswordManagerEnabled,
+     password_manager::prefs::kCredentialsEnableService,
+     base::Value::Type::BOOLEAN},
     {policy::key::kSearchSuggestEnabled, prefs::kSearchSuggestEnabled,
-     base::Value::Type::BOOLEAN}};
+     base::Value::Type::BOOLEAN},
+};
 
 void PopulatePolicyHandlerParameters(
     policy::PolicyHandlerParameters* parameters) {}

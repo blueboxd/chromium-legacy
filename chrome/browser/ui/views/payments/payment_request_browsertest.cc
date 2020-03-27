@@ -147,7 +147,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
   WaitForObservedEvent();
 
   // The actual structure of the card response is unit-tested.
-  ExpectBodyContains({"4111111111111111", "Test User", "11", "2022"});
+  ExpectBodyContains(
+      {"4111111111111111", "Test User",
+       base::UTF16ToUTF8(card.Expiration2DigitMonthAsString()).c_str(),
+       base::UTF16ToUTF8(card.Expiration4DigitYearAsString()).c_str()});
   ExpectBodyContains({"John", "H.", "Doe", "Underworld", "666 Erebus St.",
                       "Apt 8", "Elysium", "CA", "91111", "US", "16502111111"});
 }

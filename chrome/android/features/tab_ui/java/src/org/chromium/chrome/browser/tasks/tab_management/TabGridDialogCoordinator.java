@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordUserAction;
@@ -144,10 +143,5 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         mMediator.hideDialog(true);
         RecordUserAction.record("TabGridDialog.Exit");
         return true;
-    }
-
-    @VisibleForTesting
-    TabGridDialogParent getTabGridDialogParentForTesting() {
-        return mParentLayout;
     }
 }

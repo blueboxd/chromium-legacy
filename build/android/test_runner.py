@@ -588,6 +588,13 @@ def AddSkiaGoldTestOptions(parser):
       help="Don't use the serve account provided by LUCI for authentication "
       'with Skia Gold, instead relying on gsutil to be pre-authenticated. '
       'Meant for testing locally instead of on the bots.')
+  parser.add_argument(
+      '--bypass-skia-gold-functionality',
+      action='store_true',
+      default=False,
+      help='Bypass all interaction with Skia Gold, effectively disabling the '
+      'image comparison portion of any tests that use Gold. Only meant to be '
+      'used in case a Gold outage occurs and cannot be fixed quickly.')
 
 
 def AddJUnitTestOptions(parser):

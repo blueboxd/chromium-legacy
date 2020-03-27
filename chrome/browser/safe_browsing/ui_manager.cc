@@ -8,12 +8,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -24,10 +26,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/ping_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -103,6 +107,44 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
 
   for (Observer& observer : observer_list_)
     observer.OnSafeBrowsingHit(resource);
+}
+
+// static
+void SafeBrowsingUIManager::StartDisplayingBlockingPage(
+    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    const security_interstitials::UnsafeResource& resource) {
+  content::WebContents* web_contents = resource.web_contents_getter.Run();
+  prerender::PrerenderContents* prerender_contents =
+      web_contents ? prerender::PrerenderContents::FromWebContents(web_contents)
+                   : nullptr;
+  if (!web_contents || prerender_contents) {
+    if (prerender_contents) {
+      prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
+    }
+    // Tab is gone or it's being prerendered.
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(resource.callback, false /*proceed*/,
+                                  false /*showed_interstitial*/));
+    return;
+  }
+
+  // With committed interstitials, if this is a main frame load, we need to
+  // get the navigation URL and referrer URL from the navigation entry now,
+  // since they are required for threat reporting, and the entry will be
+  // destroyed once the request is failed.
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials) &&
+      resource.IsMainPageLoadBlocked()) {
+    content::NavigationEntry* entry =
+        web_contents->GetController().GetPendingEntry();
+    if (entry) {
+      security_interstitials::UnsafeResource resource_copy(resource);
+      resource_copy.navigation_url = entry->GetURL();
+      resource_copy.referrer_url = entry->GetReferrer().url;
+      ui_manager->DisplayBlockingPage(resource_copy);
+      return;
+    }
+  }
+  ui_manager->DisplayBlockingPage(resource);
 }
 
 void SafeBrowsingUIManager::ShowBlockingPageForResource(

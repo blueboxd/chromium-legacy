@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "crypto/sha2.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/client_data.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
@@ -64,6 +65,8 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
 
   bool is_incognito_mode = false;
   bool is_u2f_only = false;
+
+  base::Optional<AndroidClientDataExtensionInput> android_client_data_ext;
 };
 
 struct CtapGetNextAssertionRequest {};

@@ -60,6 +60,7 @@
   X("devtools")                                                          \
   X("devtools.timeline")                                                 \
   X("devtools.timeline.async")                                           \
+  X("disk_cache")                                                        \
   X("download")                                                          \
   X("download_service")                                                  \
   X("drm")                                                               \

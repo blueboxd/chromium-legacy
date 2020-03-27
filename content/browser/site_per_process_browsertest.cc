@@ -2017,8 +2017,16 @@ class ScrollObserver : public RenderWidgetHost::InputEventObserver {
   DISALLOW_COPY_AND_ASSIGN(ScrollObserver);
 };
 
+// crbug.com/825629
+#if defined(OS_ANDROID)
+#define MAYBE_ScrollBubblingFromNestedOOPIFTest \
+  DISABLED_ScrollBubblingFromNestedOOPIFTest
+#else
+#define MAYBE_ScrollBubblingFromNestedOOPIFTest \
+  ScrollBubblingFromNestedOOPIFTest
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ScrollBubblingFromNestedOOPIFTest) {
+                       MAYBE_ScrollBubblingFromNestedOOPIFTest) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
   GURL main_url(embedded_test_server()->GetURL(

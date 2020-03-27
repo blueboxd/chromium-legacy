@@ -30,6 +30,16 @@ class COMPONENT_EXPORT(SMBFS) SmbFsHost {
 
     // Notification that the smbfs process is no longer connected via Mojo.
     virtual void OnDisconnected() = 0;
+
+    using RequestCredentialsCallback =
+        base::OnceCallback<void(bool cancel,
+                                const std::string& username,
+                                const std::string& workgroup,
+                                const std::string& password)>;
+    // Request credentials from the user. If the user dismisses the request, run
+    // |callback| with |cancel| = true. Otherwise, run |callback| with the
+    // credentials provided by the user and |cancel| = false.
+    virtual void RequestCredentials(RequestCredentialsCallback callback) = 0;
   };
 
   SmbFsHost(std::unique_ptr<chromeos::disks::MountPoint> mount_point,

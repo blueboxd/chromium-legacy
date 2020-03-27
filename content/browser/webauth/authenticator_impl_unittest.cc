@@ -466,7 +466,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   }
 
   std::string GetTestClientDataJSON(std::string type) {
-    return AuthenticatorCommon::SerializeCollectedClientDataToJson(
+    return device::SerializeCollectedClientDataToJson(
         std::move(type), GetTestOrigin().Serialize(), GetTestChallengeBytes(),
         /*is_cross_origin*/ false);
   }
@@ -475,8 +475,8 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
                                       const std::string& origin,
                                       base::span<const uint8_t> challenge,
                                       bool is_cross_origin) {
-    return AuthenticatorCommon::SerializeCollectedClientDataToJson(
-        type, origin, challenge, is_cross_origin);
+    return device::SerializeCollectedClientDataToJson(type, origin, challenge,
+                                                      is_cross_origin);
   }
 
   AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,

@@ -324,6 +324,8 @@ class MockVideoRenderer : public VideoRenderer {
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta));
   MOCK_METHOD0(OnTimeProgressing, void());
   MOCK_METHOD0(OnTimeStopped, void());
+  MOCK_METHOD1(SetLatencyHint,
+               void(base::Optional<base::TimeDelta> latency_hint));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoRenderer);

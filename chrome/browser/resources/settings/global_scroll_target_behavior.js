@@ -21,7 +21,7 @@ cr.define('settings', function() {
   let scrollTargetResolver = new PromiseResolver();
 
   /** @polymerBehavior */
-  const GlobalScrollTargetBehaviorImpl = {
+  /* #export */ const GlobalScrollTargetBehaviorImpl = {
     properties: {
       /**
        * Read only property for the scroll target.

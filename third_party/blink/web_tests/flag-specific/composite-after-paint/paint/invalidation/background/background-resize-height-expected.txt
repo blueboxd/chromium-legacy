@@ -53,12 +53,12 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image repeat-round'",
-      "position": [508, 8],
       "bounds": [60, 44],
       "backfaceVisibility": "hidden",
       "invalidations": [
         [0, 0, 60, 44]
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='test generated'",
@@ -106,6 +106,17 @@
       "invalidations": [
         [50, 0, 60, 44],
         [0, 0, 60, 44]
+      ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [508, 8, 0, 1]
       ]
     }
   ]

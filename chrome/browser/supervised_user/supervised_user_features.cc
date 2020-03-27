@@ -11,7 +11,7 @@ const base::Feature kSupervisedUserIframeFilter{
 
 const base::Feature kSupervisedUserInitiatedExtensionInstall{
     "SupervisedUserInitiatedExtensionInstall",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 const base::Feature kSupervisedUserAllowlistExtensionInstall{

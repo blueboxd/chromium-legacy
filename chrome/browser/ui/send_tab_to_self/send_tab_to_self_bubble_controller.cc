@@ -80,12 +80,16 @@ void SendTabToSelfBubbleController::OnDeviceSelected(
                                  SendTabToSelfClickResult::kClickItem);
   CreateNewEntry(web_contents_, target_device_name, target_device_guid, GURL(),
                  false);
-  show_message_ = true;
-  UpdateIcon();
 }
 
 void SendTabToSelfBubbleController::OnBubbleClosed() {
   send_tab_to_self_bubble_view_ = nullptr;
+}
+
+void SendTabToSelfBubbleController::ShowConfirmationMessage() {
+  show_message_ = true;
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
 }
 
 bool SendTabToSelfBubbleController::InitialSendAnimationShown() const {
@@ -111,11 +115,6 @@ SendTabToSelfBubbleController::SendTabToSelfBubbleController(
     : web_contents_(web_contents) {
   DCHECK(web_contents);
   FetchDeviceInfo();
-}
-
-void SendTabToSelfBubbleController::UpdateIcon() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
 }
 
 void SendTabToSelfBubbleController::FetchDeviceInfo() {

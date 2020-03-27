@@ -6,19 +6,11 @@
 #define CHROME_BROWSER_APPS_LAUNCH_SERVICE_LAUNCH_MANAGER_H_
 
 #include <string>
-#include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
-class Browser;
 class Profile;
-
-namespace base {
-class CommandLine;
-class FilePath;
-}  // namespace base
 
 namespace content {
 class WebContents;
@@ -36,19 +28,6 @@ class LaunchManager {
   // Open the application in a way specified by |params|.
   virtual content::WebContents* OpenApplication(
       const AppLaunchParams& params) = 0;
-
-  // Attempt to open |app_id| in a new window or tab. Open an empty browser
-  // window if unsuccessful. The user's preferred launch container for the app
-  // (standalone window or browser tab) is used. |callback| will be called with
-  // the container type used to open the app, kLaunchContainerNone if an empty
-  // browser window was opened.
-  virtual void LaunchApplication(
-      const std::string& app_id,
-      const base::CommandLine& command_line,
-      const base::FilePath& current_directory,
-      base::OnceCallback<void(Browser* browser,
-                              apps::mojom::LaunchContainer container)>
-          callback) = 0;
 
  protected:
   explicit LaunchManager(Profile*);

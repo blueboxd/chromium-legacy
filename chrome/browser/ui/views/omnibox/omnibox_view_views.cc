@@ -744,6 +744,12 @@ views::Button* OmniboxViewViews::GetSecondaryButtonForSelectedLine() const {
   if (selected_line == OmniboxPopupModel::kNoMatch)
     return nullptr;
 
+  // TODO(tommycli): https://crbug.com/1063071
+  // Diving into |popup_view_| was a mistake. Here's a hotfix to stop the crash,
+  // but the ultimate fix should be to move this logic into OmniboxPopupModel.
+  if (!popup_view_ || popup_view_->result_view_at(selected_line) == nullptr)
+    return nullptr;
+
   return popup_view_->result_view_at(selected_line)->GetSecondaryButton();
 }
 
@@ -790,6 +796,12 @@ bool OmniboxViewViews::MaybeTriggerSecondaryButton(const ui::KeyEvent& event) {
 
   size_t selected_line = popup_model->selected_line();
   if (selected_line == OmniboxPopupModel::kNoMatch)
+    return false;
+
+  // TODO(tommycli): https://crbug.com/1063071
+  // Diving into |popup_view_| was a mistake. Here's a hotfix to stop the crash,
+  // but the ultimate fix should be to move this logic into OmniboxPopupModel.
+  if (!popup_view_ || popup_view_->result_view_at(selected_line) == nullptr)
     return false;
 
   return popup_view_->result_view_at(selected_line)

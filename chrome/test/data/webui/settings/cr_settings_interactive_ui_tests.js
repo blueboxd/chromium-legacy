@@ -132,8 +132,8 @@ SettingsUIInteractiveTest.prototype = {
   ]),
 };
 
-// Fails on Linux CFI and Mac10.13 Tests (dbg) (see crbug/1063844).
-GEN('#if !(defined(OS_LINUX) && defined(IS_CFI)) && !(defined(OS_MACOSX) && !defined(NDEBUG))');
+// Fails on Mac10.13 Tests (dbg) (see crbug/1063844).
+GEN('#if !(defined(OS_MACOSX) && !defined(NDEBUG))');
 TEST_F('SettingsUIInteractiveTest', 'All', function() {
   mocha.run();
 });

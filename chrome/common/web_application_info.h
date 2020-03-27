@@ -88,6 +88,9 @@ struct WebApplicationInfo {
 
   // The extensions and mime types the app can handle.
   std::vector<blink::Manifest::FileHandler> file_handlers;
+
+  // Additional search terms that users can use to find the app.
+  std::vector<std::string> additional_search_terms;
 };
 
 std::ostream& operator<<(std::ostream& out,

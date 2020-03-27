@@ -14,7 +14,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.test.filters.SmallTest;
@@ -36,6 +35,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -237,7 +237,7 @@ public class ShareImageFileUtilsTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1056059")
+    @DisabledTest(message = "crbug.com/1056059")
     public void testSaveBitmap() throws IOException, TimeoutException {
         String fileName = TEST_IMAGE_FILE_NAME + "_save_bitmap";
         ShareImageFileUtils.OnImageSaveListener listener =

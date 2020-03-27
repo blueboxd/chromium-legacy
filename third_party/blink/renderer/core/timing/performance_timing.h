@@ -139,12 +139,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   base::Optional<base::TimeDelta> LongestInputDelay() const;
   // The timestamp of the event whose delay is reported by LongestInputDelay().
   base::Optional<base::TimeDelta> LongestInputTimestamp() const;
-  // The sum of all input delay.
-  uint64_t TotalInputDelay() const;
-  // The sum of all adjusted input delay.
-  uint64_t TotalAdjustedInputDelay() const;
-  // The number of user interactions.
-  uint64_t NumInputEvents() const;
 
   uint64_t ParseStart() const;
   uint64_t ParseStop() const;

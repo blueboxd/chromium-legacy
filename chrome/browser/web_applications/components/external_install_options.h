@@ -83,6 +83,10 @@ struct ExternalInstallOptions {
   // A list of app_ids that the Web App System should attempt to uninstall and
   // replace with this app (e.g maintain shelf pins, app list positions).
   std::vector<AppId> uninstall_and_replace;
+
+  // Additional keywords that will be used by the OS when searching for the app.
+  // Only affects Chrome OS.
+  std::vector<std::string> additional_search_terms;
 };
 
 std::ostream& operator<<(std::ostream& out,

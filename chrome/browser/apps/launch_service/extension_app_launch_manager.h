@@ -22,14 +22,6 @@ class ExtensionAppLaunchManager final : public LaunchManager {
   // apps::LaunchManager:
   content::WebContents* OpenApplication(const AppLaunchParams& params) override;
 
-  void LaunchApplication(
-      const std::string& app_id,
-      const base::CommandLine& command_line,
-      const base::FilePath& current_directory,
-      base::OnceCallback<void(Browser* browser,
-                              apps::mojom::LaunchContainer container)> callback)
-      override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppLaunchManager);
 };

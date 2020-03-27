@@ -71,7 +71,7 @@ void PerfOutputCall::OnIOComplete(base::Optional<std::string> result) {
   // the callback argument. Callback can safely use |result| after |this| is
   // deleted.
   std::move(done_callback_).Run(std::move(result).value_or(std::string()));
-  // The callback may delete us, so it's hammertime: Can't touch |this|.
+  // NOTE: |this| may be deleted at this point!
 }
 
 void PerfOutputCall::OnGetPerfOutput(base::Optional<uint64_t> result) {
@@ -81,6 +81,8 @@ void PerfOutputCall::OnGetPerfOutput(base::Optional<uint64_t> result) {
   if (!result.has_value() && perf_data_pipe_reader_.get()) {
     perf_data_pipe_reader_.reset();
     std::move(done_callback_).Run(std::string());
+    // NOTE: |this| may be deleted at this point!
+    return;
   }
 
   // DBus method GetPerfOutputFd returns a generated session ID back to the

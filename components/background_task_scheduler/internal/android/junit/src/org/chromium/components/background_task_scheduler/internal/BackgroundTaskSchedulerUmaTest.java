@@ -5,6 +5,7 @@
 package org.chromium.components.background_task_scheduler.internal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
@@ -13,6 +14,8 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import android.content.SharedPreferences;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +31,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
 import org.chromium.components.background_task_scheduler.TaskIds;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /** Unit tests for {@link BackgroundTaskSchedulerUma}. */
@@ -146,6 +150,28 @@ public class BackgroundTaskSchedulerUmaTest {
         assertTrue(cachedUmaEntries.contains("event:77:3"));
         assertTrue(cachedUmaEntries.contains("event:50:1"));
         assertEquals(2, cachedUmaEntries.size());
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testCacheEvent_StringStartWithNpe() {
+        // Set up preferences with a null entry.
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        HashSet<String> setWithNullValue = new HashSet<>();
+        setWithNullValue.add(null);
+        editor.putStringSet(BackgroundTaskSchedulerUma.KEY_CACHED_UMA, setWithNullValue);
+        editor.apply();
+
+        Set<String> cachedUmaEntries = BackgroundTaskSchedulerUma.getCachedUmaEntries(
+                ContextUtils.getAppSharedPreferences());
+        assertTrue(cachedUmaEntries.isEmpty());
+
+        mUmaSpy.cacheEvent("NpeTestEvent", 77);
+
+        cachedUmaEntries = BackgroundTaskSchedulerUma.getCachedUmaEntries(
+                ContextUtils.getAppSharedPreferences());
+        assertTrue(cachedUmaEntries.contains("NpeTestEvent:77:1"));
+        assertFalse(cachedUmaEntries.contains(null));
     }
 
     @Test

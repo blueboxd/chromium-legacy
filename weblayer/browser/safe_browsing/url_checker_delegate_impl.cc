@@ -43,6 +43,13 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
           base::Unretained(this), resource));
 }
 
+void UrlCheckerDelegateImpl::
+    StartObservingInteractionsForDelayedBlockingPageHelper(
+        const security_interstitials::UnsafeResource& resource,
+        bool is_main_frame) {
+  NOTREACHED() << "Delayed warnings aren't implemented for WebLayer";
+}
+
 void UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();

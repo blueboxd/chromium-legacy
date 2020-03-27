@@ -24,6 +24,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationObserver {
                                        const std::string& guid,
                                        base::DictionaryValue* set_properties);
 
+  // Called before a delete is attempted.
+  virtual void OnBeforeConfigurationRemoved(const std::string& service_path,
+                                            const std::string& guid);
+
   // Called whenever a network configuration is removed. |service_path|
   // provides the Shill current identifier for the network. |guid| will be set
   // to the corresponding GUID for the network if known at the time of removal,

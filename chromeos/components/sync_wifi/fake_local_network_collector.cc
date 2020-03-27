@@ -19,16 +19,28 @@ void FakeLocalNetworkCollector::GetAllSyncableNetworks(
   std::move(callback).Run(networks_);
 }
 
-void FakeLocalNetworkCollector::GetSyncableNetwork(const NetworkIdentifier& id,
+void FakeLocalNetworkCollector::GetSyncableNetwork(const std::string& guid,
                                                    ProtoCallback callback) {
   for (sync_pb::WifiConfigurationSpecifics proto : networks_) {
-    if (NetworkIdentifier::FromProto(proto) == id) {
+    if (NetworkIdentifier::FromProto(proto).SerializeToString() == guid) {
       std::move(callback).Run(proto);
       return;
     }
   }
 
   std::move(callback).Run(base::nullopt);
+}
+
+base::Optional<NetworkIdentifier>
+FakeLocalNetworkCollector::GetNetworkIdentifierFromGuid(
+    const std::string& guid) {
+  for (sync_pb::WifiConfigurationSpecifics proto : networks_) {
+    auto id = NetworkIdentifier::FromProto(proto);
+    if (id.SerializeToString() == guid) {
+      return id;
+    }
+  }
+  return base::nullopt;
 }
 
 void FakeLocalNetworkCollector::AddNetwork(

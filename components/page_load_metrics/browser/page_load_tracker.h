@@ -222,6 +222,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const mojom::FrameMetadata& GetMainFrameMetadata() const override;
   const mojom::FrameMetadata& GetSubframeMetadata() const override;
   const PageRenderData& GetPageRenderData() const override;
+  const mojom::InputTiming& GetPageInputTiming() const override;
   const PageRenderData& GetMainFrameRenderData() const override;
   const ui::ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;

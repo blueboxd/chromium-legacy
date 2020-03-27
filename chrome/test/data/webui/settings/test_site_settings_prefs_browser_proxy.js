@@ -5,7 +5,7 @@
 // clang-format off
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {ContentSetting,SiteSettingSource} from 'chrome://settings/lazy_load.js';
-// #import {createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.m.js';
+// #import {createSiteGroup,createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.m.js';
 // #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
 

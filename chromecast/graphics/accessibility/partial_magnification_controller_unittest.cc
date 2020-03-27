@@ -63,9 +63,8 @@ class PartialMagnificationControllerTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
-    screen_position_client_.reset(new wm::DefaultScreenPositionClient());
-    aura::client::SetScreenPositionClient(root_window(),
-                                          screen_position_client_.get());
+    screen_position_client_.reset(
+        new wm::DefaultScreenPositionClient(root_window()));
     controller_ =
         std::make_unique<PartialMagnificationController>(root_window());
   }
@@ -74,6 +73,7 @@ class PartialMagnificationControllerTest : public views::ViewsTestBase {
     // PartialMagnificationController needs to be deleted before the root window
     // is torn down by ViewsTestBase.
     controller_.reset();
+    screen_position_client_.reset();
 
     views::ViewsTestBase::TearDown();
   }

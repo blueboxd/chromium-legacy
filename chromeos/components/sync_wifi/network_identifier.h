@@ -15,6 +15,8 @@ class WifiConfigurationSpecifics;
 
 namespace chromeos {
 
+class NetworkState;
+
 namespace sync_wifi {
 
 // A unique identifier for synced networks which contains the properties
@@ -25,6 +27,7 @@ class NetworkIdentifier {
       const sync_pb::WifiConfigurationSpecifics& specifics);
   static NetworkIdentifier FromMojoNetwork(
       const network_config::mojom::NetworkStatePropertiesPtr& network);
+  static NetworkIdentifier FromNetworkState(const NetworkState* network);
   // |serialized_string| is in the format of hex_ssid and security_type
   // concatenated with an underscore.  security_type is the shill constant
   // returned from NetworkState::security_class(). For example, it would be

@@ -48,8 +48,13 @@ bool PlatformSensorProvider::UseWindowsWinrt() {
   // this Windows version has yet to be released, Win10 is being
   // provisionally used for testing. This also means sensors will
   // stream if this implementation path is enabled.
+
+  // Note the fork occurs specifically on the 19H1 build of Win10
+  // because a previous version (RS5) contains an access violation
+  // issue in the WinRT APIs which causes the client code to crash.
+  // See http://crbug.com/1063124
   return base::FeatureList::IsEnabled(features::kWinrtSensorsImplementation) &&
-         base::win::GetVersion() >= base::win::Version::WIN10;
+         base::win::GetVersion() >= base::win::Version::WIN10_19H1;
 }
 #endif
 

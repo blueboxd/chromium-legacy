@@ -772,8 +772,13 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
     extensions::ExtensionManagement* management =
         extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
     if (management && management->BlacklistedByDefault()) {
-      // We want to make sure that the ExtensionInstallBlacklist user policy is
-      // active before allowing all extensions here.
+      // The emergency extensions release allows us to control allowed
+      // extensions with two policies: ExtensionInstallWhitelist and
+      // ExtensionInstallBlacklist. We want to make sure that the
+      // ExtensionInstallBlacklist is active before allowing all extensions
+      // here. Otherwise, supervised users would have access to all extensions,
+      // an undesirable outcome. If any extension installs go through at this
+      // point, we know it must have gone through the ExtensionInstallWhitelist.
       return ExtensionState::ALLOWED;
     }
   }

@@ -7,6 +7,7 @@ per-file testing_profile*=*
 per-file javascript_browser_test.*=dtseng@chromium.org
 per-file js2gtest.*=dtseng@chromium.org
 per-file js2gtest.*=file://ui/webui/PLATFORM_OWNERS
+per-file *.js=file://ui/webui/PLATFORM_OWNERS
 
 per-file *javascript*=file://ui/webui/PLATFORM_OWNERS
 per-file *web_ui*=file://ui/webui/PLATFORM_OWNERS

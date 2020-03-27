@@ -659,8 +659,11 @@ class MetaBuildWrapper(object):
     #
     # TODO(dpranke): Also, add support for sharding and merging results.
     dimensions = []
+    swarming_pool = ''
     for k, v in self._DefaultDimensions() + self.args.dimensions:
       dimensions += ['-d', k, v]
+      if k == 'pool':
+        swarming_pool = v
 
     archive_json_path = self.ToSrcRelPath(
         '%s/%s.archive.json' % (build_dir, target))
@@ -724,7 +727,10 @@ class MetaBuildWrapper(object):
           '-S', swarming_server,
           '--tags=purpose:user-debug-mb',
       ] + dimensions
-    self._AddBaseSoftware(cmd)
+    # TODO(crbug.com/812428): Remove this once all pools have migrated to task
+    # templates.
+    if not swarming_pool.endswith('.template'):
+      self._AddBaseSoftware(cmd)
     if self.args.extra_args:
       cmd += ['--'] + self.args.extra_args
     self.Print('')

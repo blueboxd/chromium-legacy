@@ -9,7 +9,7 @@
 
 cr.define('settings', function() {
   /** @enum {string} */
-  const CredentialManagementDialogPage = {
+  /* #export */ const CredentialManagementDialogPage = {
     INITIAL: 'initial',
     PIN_PROMPT: 'pinPrompt',
     CREDENTIALS: 'credentials',
@@ -100,7 +100,8 @@ cr.define('settings', function() {
       // Disable the confirm button to prevent concurrent submissions.
       this.confirmButtonDisabled_ = true;
 
-      this.$.pin.trySubmit(pin => this.browserProxy_.providePIN(pin))
+      /** @type {!SettingsSecurityKeysPinFieldElement} */ (this.$.pin)
+          .trySubmit(pin => this.browserProxy_.providePIN(pin))
           .then(
               () => {
                 // Leave confirm button disabled while enumerating credentials.

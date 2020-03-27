@@ -11,6 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
@@ -61,8 +63,13 @@ void CreateNewEntry(content::WebContents* tab,
   const SendTabToSelfEntry* entry =
       model->AddEntry(shared_url, title, navigation_time, target_device_guid);
 
-  if (!show_notification)
+  if (!show_notification ||
+      base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation)) {
+    SendTabToSelfBubbleController* controller = send_tab_to_self::
+        SendTabToSelfBubbleController::CreateOrGetFromWebContents(tab);
+    controller->ShowConfirmationMessage();
     return;
+  }
 
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(

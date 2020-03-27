@@ -9,6 +9,7 @@
 
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
+#include "extensions/common/api/crash_report_private.h"
 
 namespace base {
 class Clock;
@@ -28,6 +29,8 @@ class CrashReportPrivateReportErrorFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  void OnConsentCheckCompleted(crash_report_private::ErrorInfo info,
+                               bool consented);
   void OnReportComplete();
 
   DISALLOW_COPY_AND_ASSIGN(CrashReportPrivateReportErrorFunction);

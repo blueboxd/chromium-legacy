@@ -9,7 +9,7 @@
 
 cr.define('settings', function() {
   /** @enum {string} */
-  const SetPINDialogPage = {
+  /* #export */ const SetPINDialogPage = {
     INITIAL: 'initial',
     NO_PIN_SUPPORT: 'noPINSupport',
     REINSERT: 'reinsert',

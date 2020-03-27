@@ -9,10 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -319,6 +317,10 @@ CreateMakeCredentialResponse(
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
+  if (response_data.android_client_data_ext()) {
+    DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
+    common_info->client_data_json = *response_data.android_client_data_ext();
+  }
   common_info->raw_id = response_data.raw_credential_id();
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
@@ -381,6 +383,10 @@ blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
+  if (response_data.android_client_data_ext()) {
+    DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
+    common_info->client_data_json = *response_data.android_client_data_ext();
+  }
   common_info->raw_id = response_data.raw_credential_id();
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
@@ -395,56 +401,6 @@ blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
       ? response->user_handle.emplace(response_data.user_entity()->id)
       : response->user_handle.emplace();
   return response;
-}
-
-std::string Base64UrlEncode(const base::span<const uint8_t> input) {
-  std::string ret;
-  base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(input.data()),
-                        input.size()),
-      base::Base64UrlEncodePolicy::OMIT_PADDING, &ret);
-  return ret;
-}
-
-// ToJSONString encodes |in| as a JSON string, using the specific escaping rules
-// required by https://github.com/w3c/webauthn/pull/1375.
-std::string ToJSONString(const std::string& in) {
-  std::string ret;
-  ret.reserve(in.size() + 2);
-  ret.push_back('"');
-
-  const char* const in_bytes = in.data();
-  // ICU uses |int32_t| for lengths.
-  const int32_t length = base::checked_cast<int32_t>(in.size());
-  int32_t offset = 0;
-
-  while (offset < length) {
-    const int32_t prior_offset = offset;
-    // Input strings must be valid UTF-8.
-    uint32_t codepoint;
-    CHECK(base::ReadUnicodeCharacter(in_bytes, length, &offset, &codepoint));
-    // offset is updated by |ReadUnicodeCharacter| to index the last byte of the
-    // codepoint. Increment it to index the first byte of the next codepoint for
-    // the subsequent iteration.
-    offset++;
-
-    if (codepoint == 0x20 || codepoint == 0x21 ||
-        (codepoint >= 0x23 && codepoint <= 0x5b) || codepoint >= 0x5d) {
-      ret.append(&in_bytes[prior_offset], &in_bytes[offset]);
-    } else if (codepoint == 0x22) {
-      ret.append("\\\"");
-    } else if (codepoint == 0x5c) {
-      ret.append("\\\\");
-    } else {
-      static const char hextable[17] = "0123456789abcdef";
-      ret.append("\\u00");
-      ret.push_back(hextable[codepoint >> 4]);
-      ret.push_back(hextable[codepoint & 15]);
-    }
-  }
-
-  ret.push_back('"');
-  return ret;
 }
 
 bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
@@ -706,49 +662,6 @@ bool AuthenticatorCommon::IsFocused() const {
 }
 
 // static
-std::string AuthenticatorCommon::SerializeCollectedClientDataToJson(
-    const std::string& type,
-    const std::string& origin,
-    base::span<const uint8_t> challenge,
-    bool is_cross_origin,
-    bool use_legacy_u2f_type_key /* = false */) {
-  std::string ret;
-  ret.reserve(128);
-
-  if (use_legacy_u2f_type_key) {
-    ret.append(R"({"typ":)");
-  } else {
-    ret.append(R"({"type":)");
-  }
-  ret.append(ToJSONString(type));
-
-  ret.append(R"(,"challenge":)");
-  ret.append(ToJSONString(Base64UrlEncode(challenge)));
-
-  ret.append(R"(,"origin":)");
-  ret.append(ToJSONString(origin));
-
-  if (is_cross_origin) {
-    ret.append(R"(,"crossOrigin":true)");
-  } else {
-    ret.append(R"(,"crossOrigin":false)");
-  }
-
-  if (base::RandDouble() < 0.2) {
-    // An extra key is sometimes added to ensure that RPs do not make
-    // unreasonably specific assumptions about the clientData JSON. This is
-    // done in the fashion of
-    // https://tools.ietf.org/html/draft-ietf-tls-grease
-    ret.append(R"(,"extra_keys_may_be_added_here":")");
-    ret.append(
-        "do not compare clientDataJSON against a template. See "
-        "https://goo.gl/yabPex\"");
-  }
-
-  ret.append("}");
-  return ret;
-}
-
 // mojom::Authenticator
 void AuthenticatorCommon::MakeCredential(
     url::Origin caller_origin,
@@ -903,23 +816,17 @@ void AuthenticatorCommon::MakeCredential(
       WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
           caller_origin_);
 
-  // Save client data to return with the authenticator response.
-  // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
-  // used to communicate with the origin.
-  if (origin_is_crypto_token_extension) {
-    // As Cryptotoken validates the origin, accept the relying party id as the
-    // origin from requests originating from Cryptotoken. The origin is provided
-    // in Cryptotoken requests as the relying party name, which should be used
-    // as part of client data.
-    client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kU2fRegisterType, *options->relying_party.name,
-        std::move(options->challenge), /*is_cross_origin=*/false,
-        /*use_legacy_u2f_type_key=*/true);
-  } else {
-    client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kCreateType, caller_origin_.Serialize(),
-        std::move(options->challenge), is_cross_origin);
-  }
+  // Cryptotoken provides the sender origin for register requests in the
+  // |relying_party| |name| attribute. (The |id| attribute contains the AppID.)
+  client_data_json_ =
+      origin_is_crypto_token_extension
+          ? device::SerializeCollectedClientDataToJson(
+                client_data::kU2fRegisterType, *options->relying_party.name,
+                options->challenge, /*is_cross_origin=*/false,
+                /*use_legacy_u2f_type_key=*/true)
+          : device::SerializeCollectedClientDataToJson(
+                client_data::kCreateType, caller_origin_.Serialize(),
+                options->challenge, is_cross_origin);
 
   // Cryptotoken requests should be proxied without UI.
   if (origin_is_crypto_token_extension || disable_ui_)
@@ -939,6 +846,18 @@ void AuthenticatorCommon::MakeCredential(
       browser_context()->IsOffTheRecord();
   // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
   ctap_make_credential_request_->is_u2f_only = origin_is_crypto_token_extension;
+
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) &&
+      !origin_is_crypto_token_extension && !is_cross_origin) {
+    // Send the unhashed origin and challenge to caBLEv2 authenticators, because
+    // the Android API requires them. It does not accept clientDataJSON or its
+    // hash.
+    // NOTE: Because Android has no way of building a clientDataJSON for
+    // cross-origin requests, we don't create the extension for those. This
+    // problem will go away once we add clientDataHash inputs to Android.
+    ctap_make_credential_request_->android_client_data_ext.emplace(
+        client_data::kCreateType, caller_origin_, options->challenge);
+  }
 
   // Compute the effective attestation conveyance preference and set
   // |attestation_requested_| for showing the attestation consent prompt later.
@@ -1035,19 +954,17 @@ void AuthenticatorCommon::GetAssertion(
       WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
           caller_origin_);
 
-  // Save client data to return with the authenticator response.
-  if (origin_is_crypto_token_extension) {
-    // As Cryptotoken validates the origin, accept the relying party id as the
-    // origin from requests originating from Cryptotoken.
-    client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kU2fSignType, options->relying_party_id,
-        std::move(options->challenge), /*is_cross_origin=*/false,
-        /*use_legacy_u2f_type_key=*/true);
-  } else {
-    client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kGetType, caller_origin_.Serialize(),
-        std::move(options->challenge), is_cross_origin);
-  }
+  // Cryptotoken provides the sender origin for U2F sign requests in the
+  // |relying_party_id| attribute.
+  client_data_json_ =
+      origin_is_crypto_token_extension
+          ? device::SerializeCollectedClientDataToJson(
+                client_data::kU2fSignType, options->relying_party_id,
+                options->challenge, /*is_cross_origin=*/false,
+                /*use_legacy_u2f_type_key=*/true)
+          : device::SerializeCollectedClientDataToJson(
+                client_data::kGetType, caller_origin_.Serialize(),
+                options->challenge, is_cross_origin);
 
   // Cryptotoken requests should be proxied without UI.
   if (origin_is_crypto_token_extension || disable_ui_)
@@ -1087,6 +1004,17 @@ void AuthenticatorCommon::GetAssertion(
       client_data_json_, std::move(options), app_id_,
       browser_context()->IsOffTheRecord());
   ctap_get_assertion_request_->is_u2f_only = origin_is_crypto_token_extension;
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) &&
+      !origin_is_crypto_token_extension && !is_cross_origin) {
+    // Send the unhashed origin and challenge to caBLEv2 authenticators, because
+    // the Android API requires them. It does not accept clientDataJSON or its
+    // hash.
+    // NOTE: Because Android has no way of building a clientDataJSON for
+    // cross-origin requests, we don't create the extension for those. This
+    // problem will go away once we add clientDataHash inputs to Android.
+    ctap_get_assertion_request_->android_client_data_ext.emplace(
+        client_data::kGetType, caller_origin_, options->challenge);
+  }
 
   StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
@@ -1273,7 +1201,7 @@ void AuthenticatorCommon::OnRegisterResponse(
         InvokeCallbackAndCleanup(
             std::move(make_credential_response_callback_),
             blink::mojom::AuthenticatorStatus::SUCCESS,
-            CreateMakeCredentialResponse(std::move(client_data_json_),
+            CreateMakeCredentialResponse(client_data_json_,
                                          std::move(*response_data),
                                          *attestation_erasure),
             Focus::kDoCheck);
@@ -1337,12 +1265,12 @@ void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
     attestation_erasure = AttestationErasureOption::kEraseAttestationAndAaguid;
   }
 
-  InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
-                           blink::mojom::AuthenticatorStatus::SUCCESS,
-                           CreateMakeCredentialResponse(
-                               std::move(client_data_json_),
-                               std::move(response_data), attestation_erasure),
-                           Focus::kDoCheck);
+  InvokeCallbackAndCleanup(
+      std::move(make_credential_response_callback_),
+      blink::mojom::AuthenticatorStatus::SUCCESS,
+      CreateMakeCredentialResponse(client_data_json_, std::move(response_data),
+                                   attestation_erasure),
+      Focus::kDoCheck);
 }
 
 void AuthenticatorCommon::OnSignResponse(
@@ -1462,8 +1390,8 @@ void AuthenticatorCommon::OnAccountSelected(
   InvokeCallbackAndCleanup(
       std::move(get_assertion_response_callback_),
       blink::mojom::AuthenticatorStatus::SUCCESS,
-      CreateGetAssertionResponse(std::move(client_data_json_),
-                                 std::move(response), echo_appid_extension));
+      CreateGetAssertionResponse(client_data_json_, std::move(response),
+                                 echo_appid_extension));
   return;
 }
 

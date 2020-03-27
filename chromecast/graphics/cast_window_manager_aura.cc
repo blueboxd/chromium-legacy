@@ -19,7 +19,6 @@
 #include "chromecast/graphics/rounded_window_corners.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -227,12 +226,10 @@ void CastWindowManagerAura::Setup() {
   aura::client::SetWindowParentingClient(tree_window, this);
   capture_client_.reset(new aura::client::DefaultCaptureClient(tree_window));
 
-  screen_position_client_ = std::make_unique<wm::DefaultScreenPositionClient>();
-
   // TODO(seantopping): Is |root_window| different from |tree_window|?
   aura::Window* root_window = tree_window->GetRootWindow();
-  aura::client::SetScreenPositionClient(root_window,
-                                        screen_position_client_.get());
+  screen_position_client_ =
+      std::make_unique<wm::DefaultScreenPositionClient>(root_window);
 
   window_tree_host_->Show();
 
@@ -300,6 +297,7 @@ void CastWindowManagerAura::TearDown() {
   capture_client_.reset();
   aura::client::SetWindowParentingClient(window_tree_host_->window(), nullptr);
   wm::SetActivationClient(window_tree_host_->window(), nullptr);
+  screen_position_client_.reset();
   aura::client::SetFocusClient(window_tree_host_->window(), nullptr);
   focus_client_.reset();
   system_gesture_event_handler_.reset();

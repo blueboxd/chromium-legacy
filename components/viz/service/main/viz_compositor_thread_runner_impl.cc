@@ -27,6 +27,7 @@
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "ui/gfx/switches.h"
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
@@ -74,6 +75,12 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
 #endif  // !defined(OS_MACOSX)
 
   CHECK(thread->StartWithOptions(thread_options));
+
+  // Setup tracing sampler profiler as early as possible.
+  thread->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
+
   return thread;
 #endif  // !defined(OS_ANDROID)
 }

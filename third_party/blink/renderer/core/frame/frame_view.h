@@ -17,7 +17,11 @@ namespace blink {
 class Frame;
 struct IntrinsicSizingInfo;
 
-class CORE_EXPORT FrameView : public EmbeddedContentView {
+// clang::lto_visibility_public is necessary to prevent the compiler from
+// performing a vtable optimization that crashes the renderer. See
+// crbug.com/1062006.
+class CORE_EXPORT [[clang::lto_visibility_public]] FrameView
+    : public EmbeddedContentView {
  public:
   FrameView(const IntRect& frame_rect) : EmbeddedContentView(frame_rect) {}
   ~FrameView() override = default;
@@ -40,6 +44,7 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   bool CanThrottleRenderingForPropagation() const;
 
   bool IsFrameView() const override { return true; }
+  virtual bool ShouldReportMainFrameIntersection() const { return false; }
 
   Frame& GetFrame() const;
   blink::mojom::FrameVisibility GetFrameVisibility() const {

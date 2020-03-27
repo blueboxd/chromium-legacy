@@ -397,6 +397,7 @@ class CertificateReportingServiceTest : public ::testing::Test {
 
     service_->Shutdown();
     service_.reset(nullptr);
+    safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
 
     histogram_test_helper_.CheckHistogram();
     event_histogram_tester_.reset();

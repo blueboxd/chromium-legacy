@@ -336,10 +336,10 @@
       <structure name="IDR_SETTINGS_HISTORY_DELETION_DIALOG_JS"
                  file="clear_browsing_data_dialog/history_deletion_dialog.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SECURITY_KEYS_PAGE_HTML"
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_SUBPAGE_HTML"
                  file="privacy_page/security_keys_subpage.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SECURITY_KEYS_PAGE_JS"
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_SUBPAGE_JS"
                  file="privacy_page/security_keys_subpage.js"
                  type="chrome_html"/>
       <structure name="IDR_SETTINGS_SECURITY_KEYS_SET_PIN_DIALOG_HTML"
@@ -372,10 +372,10 @@
       <structure name="IDR_SETTINGS_SECURITY_KEYS_BIO_ENROLL_DIALOG_JS"
                  file="privacy_page/security_keys_bio_enroll_dialog.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SECURITY_KEYS_DIALOG_BROWSER_PROXY_HTML"
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_BROWSER_PROXY_HTML"
                  file="privacy_page/security_keys_browser_proxy.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SECURITY_KEYS_DIALOG_BROWSER_PROXY_JS"
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_BROWSER_PROXY_JS"
                  file="privacy_page/security_keys_browser_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_BOOLEAN_CONTROL_BEHAVIOR_HTML"

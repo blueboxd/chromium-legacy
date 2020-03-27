@@ -88,12 +88,7 @@ RenderDocumentLevel GetRenderDocumentLevel() {
 }
 
 std::string GetRenderDocumentLevelName(RenderDocumentLevel level) {
-  for (size_t i = 0; i < render_document_level.option_count; ++i) {
-    if (level == render_document_level.options[i].value)
-      return render_document_level.options[i].name;
-  }
-  NOTREACHED();
-  return "";
+  return render_document_level.GetName(level);
 }
 
 bool CreateNewHostForSameSiteSubframe() {

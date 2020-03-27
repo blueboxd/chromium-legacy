@@ -202,7 +202,9 @@ TEST(URLPatternTest, Match3) {
   EXPECT_FALSE(pattern.match_all_urls());
   EXPECT_EQ("/foo*bar", pattern.path());
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://google.com/foobar")));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("http://www.google.com/foobar")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://www.google.com/foo?bar")));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("http://wwwgoogle.com/foobar")));
   EXPECT_TRUE(pattern.MatchesURL(
       GURL("http://monkey.images.google.com/foooobar")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("http://yahoo.com/foobar")));

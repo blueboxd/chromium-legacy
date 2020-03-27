@@ -114,7 +114,19 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
                                 const GURL& doc_url,
                                 const std::vector<GURL>& predicted_urls) {
     NavigationPredictorKeyedServiceFactory::GetForProfile(profile())
-        ->OnPredictionUpdated(web_contents, doc_url, predicted_urls);
+        ->OnPredictionUpdated(
+            web_contents, doc_url,
+            NavigationPredictorKeyedService::PredictionSource::
+                kAnchorElementsParsedFromWebPage,
+            predicted_urls);
+    task_environment()->RunUntilIdle();
+  }
+
+  void MakeExternalAndroidAppNavigationPrediction(
+      const std::vector<GURL>& predicted_urls) {
+    NavigationPredictorKeyedServiceFactory::GetForProfile(profile())
+        ->OnPredictionUpdatedByExternalAndroidApp({"com.example.foo"},
+                                                  predicted_urls);
     task_environment()->RunUntilIdle();
   }
 
@@ -416,6 +428,21 @@ TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(RequestCount(), 0);
+}
+
+// Verify that isolated prerender is not triggered if the predictions for next
+// likely navigations are provided by external Android app.
+TEST_F(IsolatedPrerenderTabHelperTest, ExternalAndroidApp) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+  MakeExternalAndroidAppNavigationPrediction({prediction_url});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(RequestCount(), 0);

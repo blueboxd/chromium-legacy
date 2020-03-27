@@ -57,7 +57,6 @@ class FakeInstallDetails : public InstallDetails {
 TEST(InstallDetailsTest, GetClientStateKeyPath) {
   FakeInstallDetails details;
 #if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  constants.app_guid = L"testguid";
   EXPECT_THAT(details.GetClientStateKeyPath(),
               StrEq(L"Software\\Google\\Update\\ClientState\\testguid"));
 #else

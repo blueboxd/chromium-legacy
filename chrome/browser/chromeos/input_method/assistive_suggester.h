@@ -8,25 +8,12 @@
 #include <string>
 
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
+#include "chrome/browser/chromeos/input_method/suggester.h"
+#include "chrome/browser/chromeos/input_method/suggestion_enums.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
-namespace autofill {
-class PersonalDataManager;
-}  // namespace autofill
-
-class Profile;
-
 namespace chromeos {
-
-// Must match with IMEAssistiveAction in enums.xml
-enum class AssistiveType {
-  kGenericAction = 0,
-  kPersonalEmail = 1,
-  kPersonalAddress = 2,
-  kPersonalPhoneNumber = 3,
-  kPersonalName = 4,
-  kMaxValue = kPersonalName,
-};
 
 // An agent to suggest assistive information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
@@ -59,37 +46,26 @@ class AssistiveSuggester {
       const ::input_method::InputMethodEngineBase::KeyboardEvent& event);
 
  private:
-  // Get the suggestion according to |text_before_cursor|.
-  base::string16 GetPersonalInfoSuggestion(
-      const base::string16& text_before_cursor);
-
   // Check if any suggestion text should be displayed according to the
   // surrounding text information.
   void Suggest(const base::string16& text, int cursor_pos, int anchor_pos);
 
-  void ShowSuggestion(const base::string16& text);
   void DismissSuggestion();
 
-  InputMethodEngine* const engine_;
+  // Check if suggestion is being shown.
+  bool IsSuggestionShown();
+
+  PersonalInfoSuggester* const personal_info_suggester_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;
 
-  // User's Chrome user profile.
-  Profile* const profile_;
-
-  // Personal data manager provided by autofill service.
-  autofill::PersonalDataManager* const personal_data_manager_;
-
-  // If we are showing a suggestion right now.
-  bool suggestion_shown_ = false;
-
-  // Assistive type of the last proposed assistive action.
-  AssistiveType proposed_action_type_ = AssistiveType::kGenericAction;
-
   // If the suggestion is dismissed by the user, this is necessary so that we
   // will not reshow the suggestion immediately after the user dismisses it.
   bool suggestion_dismissed_ = false;
+
+  // The current suggester in use, nullptr means no suggestion is shown.
+  Suggester* current_suggester_ = nullptr;
 };
 
 }  // namespace chromeos

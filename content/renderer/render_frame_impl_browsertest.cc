@@ -526,8 +526,6 @@ TEST_F(RenderFrameImplTest, MainFrameDocumentIntersectionRecorded) {
   gfx::Point viewport_offset(7, -11);
   blink::WebRect viewport_intersection(0, 11, 200, 89);
 
-  // TODO(crbug/1062006): Change to viewport_offset when blink-side changes are
-  // relanded with the chromeos-thinlto fix.
   blink::WebRect mainframe_intersection(0, 0, 200, 140);
   blink::FrameOcclusionState occlusion_state =
       blink::FrameOcclusionState::kUnknown;
@@ -537,7 +535,8 @@ TEST_F(RenderFrameImplTest, MainFrameDocumentIntersectionRecorded) {
   frame_widget()->OnMessageReceived(set_viewport_intersection_message);
   // Setting a new frame intersection in a local frame triggers the render frame
   // observer call.
-  EXPECT_EQ(observer.last_intersection_rect(), blink::WebRect(0, 0, 200, 140));
+  EXPECT_EQ(observer.last_intersection_rect(),
+            blink::WebRect(7, -11, 200, 140));
 }
 
 // Used to annotate the source of an interface request.

@@ -74,8 +74,9 @@ namespace {
 using UkmCardUploadDecisionType = ukm::builders::Autofill_CardUploadDecision;
 using UkmDeveloperEngagementType = ukm::builders::Autofill_DeveloperEngagement;
 
-const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
-const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
+// time_t representation of 9th Sep, 2001 01:46:40 GMT
+const base::Time kArbitraryTime = base::Time::FromTimeT(1000000000);
+const base::Time kMuchLaterTime = base::Time::FromTimeT(1234567890);
 
 // Used to configure form for |CreateTestCreditCardFormData|.
 struct CreditCardFormOptions {

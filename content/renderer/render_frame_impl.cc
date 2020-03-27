@@ -4867,6 +4867,11 @@ void RenderFrameImpl::DidChangePerformanceTiming() {
     observer.DidChangePerformanceTiming();
 }
 
+void RenderFrameImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
+  for (auto& observer : observers_) {
+    observer.DidObserveInputDelay(input_delay);
+  }
+}
 void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {
   for (auto& observer : observers_)
     observer.DidChangeCpuTiming(time);

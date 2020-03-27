@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
@@ -45,10 +46,15 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAutofillPaymentAppTest,
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the card details were sent to the merchant.
-  ExpectBodyContains({"\"cardNumber\": \"4111111111111111\"",
-                      "\"cardSecurityCode\": \"123\"",
-                      "\"cardholderName\": \"Test User\"",
-                      "\"expiryMonth\": \"11\"", "\"expiryYear\": \"2022\""});
+  ExpectBodyContains(
+      {"\"cardNumber\": \"4111111111111111\"", "\"cardSecurityCode\": \"123\"",
+       "\"cardholderName\": \"Test User\"",
+       base::StringPrintf(
+           "\"expiryMonth\": \"%s\"",
+           base::UTF16ToUTF8(card.Expiration2DigitMonthAsString()).c_str()),
+       base::StringPrintf(
+           "\"expiryYear\": \"%s\"",
+           base::UTF16ToUTF8(card.Expiration4DigitYearAsString()).c_str())});
 
   // Test that the billing address was sent to the merchant.
   ExpectBodyContains(

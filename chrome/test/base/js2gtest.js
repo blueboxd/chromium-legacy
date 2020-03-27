@@ -24,7 +24,7 @@ if (arguments.length != 6) {
   quit(-1);
 }
 
-[_,
+const [_,
  // Full path to the test input file, relative to the current working
  // directory.
  fullTestFilePath,
@@ -94,7 +94,7 @@ let needGenHeader = true;
  * Helpful hint pointing back to the source js.
  * @type {string}
  */
-const argHint = '// ' + arguments.join(' ');
+const argHint = '// ' + Array.from(arguments).join(' ');
 
 /**
  * @type {Array<string>}
@@ -117,6 +117,7 @@ function output(opt_string) {
 /**
  * Generates the header of the cc file to stdout.
  * @param {string?} testFixture Name of test fixture.
+ * @this {!Object}
  */
 function maybeGenHeader(testFixture) {
   if (!needGenHeader) {
@@ -181,9 +182,7 @@ ${argHint}
 }
 
 
-/**
- * @type {Array<{path: string, base: string>}
- */
+/** @type {!Array<string>} */
 const pathStack = [];
 
 
@@ -204,6 +203,7 @@ function includeFileToPath(includeFile) {
         'Only relative "foo/bar" or source-absolute "//foo/bar" paths are ' +
         'supported - not file-system absolute: "/foo/bar"');
     quit(-1);
+    return '';
   } else {
     // The include-file path is relative to the file that included it.
     const currentPath = pathStack[pathStack.length - 1];
@@ -252,8 +252,8 @@ if (depsFile) {
    * Called by the javascript in the deps file to add modules and their
    * dependencies.
    * @param {string} path Relative path to the file.
-   * @param Array<string> provides Objects provided by this file.
-   * @param Array<string> requires Objects required by this file.
+   * @param {!Array<string>} provides Objects provided by this file.
+   * @param {!Array<string>} requires Objects required by this file.
    */
   goog.addDependency = function(path, provides, requires) {
     provides.forEach(function(provide) {
@@ -373,9 +373,10 @@ function getTestDeclarationLineNumber() {
  * will invoke the |testBody| for |testFixture|.|testFunction|.
  * @param {string} testFixture The name of this test's fixture.
  * @param {string} testFunction The name of this test's function.
- * @param {Function} testBody The function body to execute for this test.
+ * @param {!Function} testBody The function body to execute for this test.
  * @param {string=} opt_preamble C++ to be generated before the TEST_F block.
  * Useful for including #ifdef blocks. See TEST_F_WITH_PREAMBLE.
+ * @this {!Object}
  */
 function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
   maybeGenHeader(testFixture);
@@ -563,7 +564,7 @@ ${testF}(${testFixture}, ${testFunction}) {
  *                 Useful for including #ifdef blocks.
  * @param {string} testFixture The name of this test's fixture.
  * @param {string} testFunction The name of this test's function.
- * @param {Function} testBody The function body to execute for this test.
+ * @param {!Function} testBody The function body to execute for this test.
  */
 function TEST_F_WITH_PREAMBLE(preamble, testFixture, testFunction, testBody) {
   TEST_F(testFixture, testFunction, testBody, preamble);

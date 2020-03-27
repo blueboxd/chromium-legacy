@@ -77,7 +77,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -1001,11 +1000,9 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
 // Checks that a popup is positioned correctly relative to its parent using
 // screen coordinates.
 TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
-  wm::DefaultScreenPositionClient screen_position_client;
-
   aura::Window* window = parent_view_->GetNativeView();
-  aura::Window* root = window->GetRootWindow();
-  aura::client::SetScreenPositionClient(root, &screen_position_client);
+  wm::DefaultScreenPositionClient screen_position_client(
+      window->GetRootWindow());
 
   parent_view_->SetBounds(gfx::Rect(10, 10, 800, 600));
   gfx::Rect bounds_in_screen = parent_view_->GetViewBounds();
@@ -1033,8 +1030,6 @@ TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
   view_->SetSize(gfx::Size(120, 120));
   gfx::Point new_origin = window->bounds().origin();
   EXPECT_EQ(original_origin.ToString(), new_origin.ToString());
-
-  aura::client::SetScreenPositionClient(root, nullptr);
 }
 
 // Checks that moving parent sends new screen bounds.
@@ -4843,8 +4838,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
   aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
-  wm::DefaultScreenPositionClient screen_position_client;
-  aura::client::SetScreenPositionClient(root_window, &screen_position_client);
+  wm::DefaultScreenPositionClient screen_position_client(root_window);
 
   const gfx::Rect orig_view_bounds = gfx::Rect(0, 300, 400, 200);
   const gfx::Rect shifted_view_bounds = gfx::Rect(0, 200, 400, 200);
@@ -4872,8 +4866,6 @@ TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
 
   // Window should be restored.
   EXPECT_EQ(view_->GetNativeView()->bounds(), orig_view_bounds);
-
-  aura::client::SetScreenPositionClient(root_window, nullptr);
 }
 #endif  // defined(OS_CHROMEOS)
 

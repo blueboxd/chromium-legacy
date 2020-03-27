@@ -50,6 +50,12 @@ class UrlCheckerDelegate
       bool is_main_frame,
       bool has_user_gesture) = 0;
 
+  // Starts observing user input events to display a SafeBrowsing interstitial
+  // page when an event is received.
+  virtual void StartObservingInteractionsForDelayedBlockingPageHelper(
+      const security_interstitials::UnsafeResource& resource,
+      bool is_main_frame) = 0;
+
   // A whitelisted URL is considered safe and therefore won't be checked with
   // the SafeBrowsing database.
   virtual bool IsUrlWhitelisted(const GURL& url) = 0;

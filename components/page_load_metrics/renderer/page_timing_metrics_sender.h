@@ -72,6 +72,7 @@ class PageTimingMetricsSender {
   void OnMainFrameDocumentIntersectionChanged(
       const blink::WebRect& intersect_rect);
 
+  void DidObserveInputDelay(base::TimeDelta input_delay);
   // Updates the timing information. Buffers |timing| to be sent over mojo
   // sometime 'soon'.
   void Update(
@@ -101,6 +102,7 @@ class PageTimingMetricsSender {
   std::unique_ptr<base::OneShotTimer> timer_;
   mojom::PageLoadTimingPtr last_timing_;
   mojom::CpuTimingPtr last_cpu_timing_;
+  mojom::InputTimingPtr input_timing_delta_;
 
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.

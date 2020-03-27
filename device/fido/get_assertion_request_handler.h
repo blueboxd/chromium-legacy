@@ -106,6 +106,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
   CtapGetAssertionRequest request_;
+  base::Optional<AndroidClientDataExtensionInput> android_client_data_ext_;
   // If true, and if at the time the request is dispatched to the first
   // authenticator no other authenticators are available, the request handler
   // will skip the initial touch that is usually required to select a PIN

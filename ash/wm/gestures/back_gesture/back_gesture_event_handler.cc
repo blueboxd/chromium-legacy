@@ -198,12 +198,19 @@ void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       /*is_source_touch_event_set_non_blocking=*/false);
 
   // Get the event target from TouchEvent since target of the GestureEvent
-  // from GetAndResetPendingGestures is nullptr.
+  // from GetAndResetPendingGestures is nullptr. The coordinate conversion is
+  // done outside the loop as the previous gesture events in a sequence may
+  // invalidate the target, for example given a sequence of
+  // {ET_GESTURE_SCROLL_END, ET_GESTURE_END} on a non-resizable window, the
+  // first gesture will trigger a minimize event which will delete the backdrop,
+  // which was the target. See http://crbug.com/1064618.
   aura::Window* target = static_cast<aura::Window*>(event->target());
+  gfx::Point screen_location = event->location();
+  ::wm::ConvertPointToScreen(target, &screen_location);
   const std::vector<std::unique_ptr<ui::GestureEvent>> gestures =
       gesture_provider_.GetAndResetPendingGestures();
   for (const auto& gesture : gestures) {
-    if (MaybeHandleBackGesture(gesture.get(), target))
+    if (MaybeHandleBackGesture(gesture.get(), screen_location))
       event->StopPropagation();
   }
 }
@@ -214,15 +221,13 @@ void BackGestureEventHandler::OnGestureEvent(GestureConsumer* consumer,
   // handled at OnTouchEvent() by calling MaybeHandleBackGesture().
 }
 
-bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
-                                                     aura::Window* target) {
+bool BackGestureEventHandler::MaybeHandleBackGesture(
+    ui::GestureEvent* event,
+    const gfx::Point& screen_location) {
   DCHECK(features::IsSwipingFromLeftEdgeToGoBackEnabled());
-  DCHECK(target);
-  gfx::Point screen_location = event->location();
-  ::wm::ConvertPointToScreen(target, &screen_location);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      going_back_started_ = CanStartGoingBack(target, screen_location);
+      going_back_started_ = CanStartGoingBack(screen_location);
       if (!going_back_started_)
         break;
       back_gesture_affordance_ = std::make_unique<BackGestureAffordance>(
@@ -334,7 +339,6 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
 }
 
 bool BackGestureEventHandler::CanStartGoingBack(
-    aura::Window* target,
     const gfx::Point& screen_location) {
   DCHECK(features::IsSwipingFromLeftEdgeToGoBackEnabled());
 
@@ -363,7 +367,7 @@ bool BackGestureEventHandler::CanStartGoingBack(
   if (!top_window && !shell->overview_controller()->InOverviewSession())
     return false;
 
-  for (aura::Window* window = target; window; window = window->parent()) {
+  for (aura::Window* window = top_window; window; window = window->parent()) {
     SkRegion* gesture_exclusion =
         window->GetProperty(kSystemGestureExclusionKey);
     if (gesture_exclusion) {
@@ -377,7 +381,7 @@ bool BackGestureEventHandler::CanStartGoingBack(
   }
 
   gfx::Rect hit_bounds_in_screen(display::Screen::GetScreen()
-                                     ->GetDisplayNearestWindow(target)
+                                     ->GetDisplayNearestWindow(top_window)
                                      .work_area());
   hit_bounds_in_screen.set_width(kStartGoingBackLeftEdgeInset);
   if (hit_bounds_in_screen.Contains(screen_location))

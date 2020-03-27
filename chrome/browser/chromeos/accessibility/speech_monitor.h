@@ -69,6 +69,8 @@ class SpeechMonitor : public content::TtsPlatform {
                            const base::Location& location = FROM_HERE);
   void ExpectNextSpeechIsNot(const std::string& text,
                              const base::Location& location = FROM_HERE);
+  void ExpectNextSpeechIsNotPattern(const std::string& pattern,
+                                    const base::Location& location = FROM_HERE);
 
   // Adds a call to be included in replay.
   void Call(std::function<void()> func,

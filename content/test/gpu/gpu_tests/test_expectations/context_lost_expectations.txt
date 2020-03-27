@@ -34,6 +34,7 @@ crbug.com/965268 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLBlockedAf
 crbug.com/965268 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ Skip ]
 crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash [ Failure ]
 crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash_OOPD [ Failure ]
+crbug.com/1064853 [ android qualcomm-adreno-(tm)-418 ] ContextLost_WebGLContextLostFromSelectElement [ Skip ]
 
 # Nexus 6
 # The Nexus 6 times out on these tests while waiting for the JS to complete

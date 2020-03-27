@@ -36,4 +36,21 @@ mojom("compositing") {
   if (use_x11) {
     enabled_features += [ "use_x11" ]
   }
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "viz.mojom.RendererSettings"
+          cpp = "::viz::RendererSettings"
+        },
+      ]
+      traits_headers = [ "//services/viz/privileged/mojom/compositing/renderer_settings_mojom_traits.h" ]
+      traits_sources = [ "//services/viz/privileged/mojom/compositing/renderer_settings_mojom_traits.cc" ]
+      traits_public_deps = [
+        "//cc",
+        "//ui/gfx/geometry/mojom",
+      ]
+    },
+  ]
 }

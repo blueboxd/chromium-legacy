@@ -57,6 +57,10 @@ chromeos::disks::DiskMountManager::MountPointInfo MakeMountPointInfo(
 class MockDelegate : public SmbFsHost::Delegate {
  public:
   MOCK_METHOD(void, OnDisconnected, (), (override));
+  MOCK_METHOD(void,
+              RequestCredentials,
+              (RequestCredentialsCallback),
+              (override));
 };
 
 class TestSmbFsBootstrapImpl : public mojom::SmbFsBootstrap {

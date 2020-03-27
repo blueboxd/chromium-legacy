@@ -95,6 +95,13 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   TestNetworkConfigurationObserver() = default;
 
   // NetworkConfigurationObserver
+  void OnBeforeConfigurationRemoved(const std::string& service_path,
+                                    const std::string& guid) override {
+    ASSERT_EQ(before_remove_configurations_.end(),
+              before_remove_configurations_.find(service_path));
+    before_remove_configurations_[service_path] = guid;
+  }
+
   void OnConfigurationRemoved(const std::string& service_path,
                               const std::string& guid) override {
     ASSERT_EQ(removed_configurations_.end(),
@@ -108,6 +115,11 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
     updated_configurations_[service_path] = guid;
   }
 
+  bool HasCalledBeforeRemoveConfiguration(const std::string& service_path) {
+    return before_remove_configurations_.find(service_path) !=
+           before_remove_configurations_.end();
+  }
+
   bool HasRemovedConfiguration(const std::string& service_path) {
     return removed_configurations_.find(service_path) !=
            removed_configurations_.end();
@@ -119,6 +131,7 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   }
 
  private:
+  std::map<std::string, std::string> before_remove_configurations_;
   std::map<std::string, std::string> removed_configurations_;
   std::map<std::string, std::string> updated_configurations_;
 
@@ -669,6 +682,9 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Removed) {
 
   EXPECT_FALSE(
       network_configuration_observer->HasRemovedConfiguration(service_path));
+  EXPECT_FALSE(
+      network_configuration_observer->HasCalledBeforeRemoveConfiguration(
+          service_path));
 
   network_configuration_handler_->RemoveConfiguration(
       service_path, base::DoNothing(), base::Bind(&ErrorCallback));
@@ -676,6 +692,9 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Removed) {
 
   EXPECT_TRUE(
       network_configuration_observer->HasRemovedConfiguration(service_path));
+  EXPECT_TRUE(
+      network_configuration_observer->HasCalledBeforeRemoveConfiguration(
+          service_path));
 
   network_configuration_handler_->RemoveObserver(
       network_configuration_observer.get());

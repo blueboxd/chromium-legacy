@@ -140,6 +140,27 @@ TEST_F(PageTimingMetricsSenderTest, SendTimingOnSendLatest) {
   metrics_sender_->SendLatest();
 }
 
+TEST_F(PageTimingMetricsSenderTest, SendInputEvents) {
+  mojom::PageLoadTiming timing;
+  InitPageLoadTimingForTest(&timing);
+  base::TimeDelta input_delay_1 = base::TimeDelta::FromMilliseconds(40);
+  base::TimeDelta input_delay_2 = base::TimeDelta::FromMilliseconds(60);
+
+  metrics_sender_->Update(timing.Clone(),
+                          PageTimingMetadataRecorder::MonotonicTiming());
+  validator_.ExpectPageLoadTiming(timing);
+
+  metrics_sender_->DidObserveInputDelay(input_delay_1);
+  validator_.UpdateExpectedInputTiming(input_delay_1);
+
+  metrics_sender_->DidObserveInputDelay(input_delay_2);
+  validator_.UpdateExpectedInputTiming(input_delay_2);
+
+  // Fire the timer to trigger sending of features via an SendTiming call.
+  metrics_sender_->mock_timer()->Fire();
+  validator_.VerifyExpectedInputTiming();
+}
+
 TEST_F(PageTimingMetricsSenderTest, SendSingleFeature) {
   mojom::PageLoadTiming timing;
   InitPageLoadTimingForTest(&timing);

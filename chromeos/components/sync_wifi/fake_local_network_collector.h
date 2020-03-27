@@ -24,8 +24,12 @@ class FakeLocalNetworkCollector : public LocalNetworkCollector {
 
   // sync_wifi::LocalNetworkCollector::
   void GetAllSyncableNetworks(ProtoListCallback callback) override;
-  void GetSyncableNetwork(const NetworkIdentifier& id,
+  // For test purposes, |guid| == serialized NetworkIdentifier.
+  void GetSyncableNetwork(const std::string& guid,
                           ProtoCallback callback) override;
+  // For test purposes, |guid| == serialized NetworkIdentifier.
+  base::Optional<NetworkIdentifier> GetNetworkIdentifierFromGuid(
+      const std::string& guid) override;
 
   void AddNetwork(sync_pb::WifiConfigurationSpecifics proto);
   void ClearNetworks();

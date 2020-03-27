@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -20,15 +22,57 @@ class SmbFsDelegateImpl : public mojom::SmbFsDelegate {
  public:
   SmbFsDelegateImpl(
       mojo::PendingReceiver<mojom::SmbFsDelegate> pending_receiver,
-      base::OnceClosure disconnect_callback)
-      : receiver_(this, std::move(pending_receiver)) {
+      base::OnceClosure disconnect_callback,
+      SmbFsHost::Delegate* delegate)
+      : receiver_(this, std::move(pending_receiver)), delegate_(delegate) {
     receiver_.set_disconnect_handler(std::move(disconnect_callback));
   }
 
   ~SmbFsDelegateImpl() override = default;
 
+  // mojom::SmbFsDelegate overrides.
+  void RequestCredentials(RequestCredentialsCallback callback) override {
+    delegate_->RequestCredentials(
+        base::BindOnce(&SmbFsDelegateImpl::OnRequestCredentialsDone,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  private:
+  void OnRequestCredentialsDone(RequestCredentialsCallback callback,
+                                bool cancel,
+                                const std::string& username,
+                                const std::string& workgroup,
+                                const std::string& password) {
+    if (cancel) {
+      std::move(callback).Run(nullptr);
+      return;
+    }
+
+    mojom::CredentialsPtr creds =
+        mojom::Credentials::New(username, workgroup, nullptr);
+    if (password.size() > mojom::Password::kMaxLength) {
+      LOG(WARNING) << "smbfs password too long";
+    } else if (!password.empty()) {
+      // Create pipe and write password.
+      base::ScopedFD pipe_read_end;
+      base::ScopedFD pipe_write_end;
+      CHECK(base::CreatePipe(&pipe_read_end, &pipe_write_end,
+                             true /* non_blocking */));
+      CHECK(base::WriteFileDescriptor(pipe_write_end.get(), password.c_str(),
+                                      password.size()));
+
+      creds->password = mojom::Password::New(
+          mojo::WrapPlatformHandle(
+              mojo::PlatformHandle(std::move(pipe_read_end))),
+          static_cast<int32_t>(password.size()));
+    }
+    std::move(callback).Run(std::move(creds));
+  }
+
   mojo::Receiver<mojom::SmbFsDelegate> receiver_;
+  SmbFsHost::Delegate* const delegate_;
+
+  base::WeakPtrFactory<SmbFsDelegateImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SmbFsDelegateImpl);
 };
@@ -47,7 +91,8 @@ SmbFsHost::SmbFsHost(
       smbfs_(std::move(smbfs_remote)),
       delegate_impl_(std::make_unique<SmbFsDelegateImpl>(
           std::move(delegate_receiver),
-          base::BindOnce(&SmbFsHost::OnDisconnect, base::Unretained(this)))) {
+          base::BindOnce(&SmbFsHost::OnDisconnect, base::Unretained(this)),
+          delegate)) {
   DCHECK(mount_point_);
   DCHECK(delegate);
 

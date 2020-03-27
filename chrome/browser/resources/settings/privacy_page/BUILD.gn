@@ -211,14 +211,14 @@ js_type_check("closure_compile_module") {
 
     #":privacy_page.m",
     ":privacy_page_browser_proxy.m",
+    ":security_keys_bio_enroll_dialog.m",
+    ":security_keys_browser_proxy.m",
+    ":security_keys_credential_management_dialog.m",
+    ":security_keys_pin_field.m",
+    ":security_keys_reset_dialog.m",
+    ":security_keys_set_pin_dialog.m",
+    ":security_keys_subpage.m",
 
-    #":security_keys_bio_enroll_dialog.m",
-    #":security_keys_browser_proxy.m",
-    #":security_keys_credential_management_dialog.m",
-    #":security_keys_pin_field.m",
-    #":security_keys_reset_dialog.m",
-    #":security_keys_set_pin_dialog.m",
-    #":security_keys_subpage.m",
     #":security_page.m",
   ]
 }
@@ -264,23 +264,33 @@ js_library("privacy_page_browser_proxy.m") {
 js_library("security_keys_bio_enroll_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_bio_enroll_dialog.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":security_keys_browser_proxy.m",
+    ":security_keys_pin_field.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_fingerprint:cr_fingerprint_progress_arc.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":security_keys_bio_enroll_dialog_module" ]
 }
 
 js_library("security_keys_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("security_keys_credential_management_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_credential_management_dialog.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":security_keys_browser_proxy.m",
+    ":security_keys_pin_field.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":security_keys_credential_management_dialog_module" ]
 }
@@ -288,7 +298,9 @@ js_library("security_keys_credential_management_dialog.m") {
 js_library("security_keys_pin_field.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_pin_field.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":security_keys_pin_field_module" ]
 }
@@ -296,7 +308,9 @@ js_library("security_keys_pin_field.m") {
 js_library("security_keys_reset_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_reset_dialog.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":security_keys_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":security_keys_reset_dialog_module" ]
 }
@@ -304,7 +318,10 @@ js_library("security_keys_reset_dialog.m") {
 js_library("security_keys_set_pin_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_set_pin_dialog.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":security_keys_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":security_keys_set_pin_dialog_module" ]
 }
@@ -312,7 +329,9 @@ js_library("security_keys_set_pin_dialog.m") {
 js_library("security_keys_subpage.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_subpage.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "..:i18n_setup.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
   ]
   extra_deps = [ ":security_keys_subpage_module" ]
 }
@@ -369,36 +388,61 @@ polymer_modulizer("security_keys_bio_enroll_dialog") {
   js_file = "security_keys_bio_enroll_dialog.js"
   html_file = "security_keys_bio_enroll_dialog.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/privacy_page/security_keys_browser_proxy.html|SecurityKeysBioEnrollProxy,SecurityKeysBioEnrollProxyImpl,Ctap2Status,SampleStatus,Enrollment,EnrollmentResponse,SampleResponse,",
+                   "ui/webui/resources/html/assert.html|assert,assertNotReached",
+                   "ui/webui/resources/html/polymer.html|afterNextRender,html,Polymer",
+                 ]
 }
 
 polymer_modulizer("security_keys_credential_management_dialog") {
   js_file = "security_keys_credential_management_dialog.js"
   html_file = "security_keys_credential_management_dialog.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/privacy_page/security_keys_browser_proxy.html|SecurityKeysCredentialBrowserProxy,SecurityKeysCredentialBrowserProxyImpl,Credential",
+                   "ui/webui/resources/html/assert.html|assert,assertNotReached",
+                 ]
 }
 
 polymer_modulizer("security_keys_pin_field") {
   js_file = "security_keys_pin_field.js"
   html_file = "security_keys_pin_field.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports =
+      settings_auto_imports +
+      [ "ui/webui/resources/html/polymer.html|afterNextRender,html,Polymer" ]
 }
 
 polymer_modulizer("security_keys_reset_dialog") {
   js_file = "security_keys_reset_dialog.js"
   html_file = "security_keys_reset_dialog.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/privacy_page/security_keys_browser_proxy.html|SecurityKeysResetBrowserProxy,SecurityKeysResetBrowserProxyImpl" ]
 }
 
 polymer_modulizer("security_keys_set_pin_dialog") {
   js_file = "security_keys_set_pin_dialog.js"
   html_file = "security_keys_set_pin_dialog.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/privacy_page/security_keys_browser_proxy.html|SecurityKeysPINBrowserProxy,SecurityKeysPINBrowserProxyImpl",
+                   "ui/webui/resources/html/polymer.html|afterNextRender,html,Polymer",
+                 ]
 }
 
 polymer_modulizer("security_keys_subpage") {
   js_file = "security_keys_subpage.js"
   html_file = "security_keys_subpage.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports =
+      settings_auto_imports + [ "ui/webui/resources/html/assert.html|assert" ]
 }
 
 polymer_modulizer("security_page") {

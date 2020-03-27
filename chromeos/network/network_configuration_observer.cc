@@ -15,6 +15,10 @@ void NetworkConfigurationObserver::OnConfigurationModified(
     const std::string& guid,
     base::DictionaryValue* set_properties) {}
 
+void NetworkConfigurationObserver::OnBeforeConfigurationRemoved(
+    const std::string& service_path,
+    const std::string& guid) {}
+
 void NetworkConfigurationObserver::OnConfigurationRemoved(
     const std::string& service_path,
     const std::string& guid) {}

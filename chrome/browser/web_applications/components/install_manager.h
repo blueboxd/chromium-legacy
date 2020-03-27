@@ -99,6 +99,10 @@ class InstallManager {
 
   // These params are a subset of ExternalInstallOptions.
   struct InstallParams {
+    InstallParams();
+    ~InstallParams();
+    InstallParams(const InstallParams&);
+
     DisplayMode user_display_mode = DisplayMode::kUndefined;
 
     // URL to be used as start_url if manifest is unavailable.
@@ -110,6 +114,8 @@ class InstallManager {
 
     bool bypass_service_worker_check = false;
     bool require_manifest = false;
+
+    std::vector<std::string> additional_search_terms;
   };
   // Starts a background web app installation process for a given
   // |web_contents|.

@@ -254,20 +254,28 @@ void BaseUIManager::DisplayBlockingPage(
                           ? resource.url
                           : GetNavigationEntryForResource(resource)->GetURL();
     AddUnsafeResource(unsafe_url, resource);
-    // With committed interstitials we just cancel the load from here, the
-    // actual interstitial will be shown from the
-    // SafeBrowsingNavigationThrottle.
+    // If the delayed warnings experiment is not enabled, with committed
+    // interstitials we just cancel the load from here, the actual interstitial
+    // will be shown from the SafeBrowsingNavigationThrottle.
     // showed_interstitial is set to false for subresources since this
     // cancellation doesn't correspond to the navigation that triggers the error
     // page (the call to LoadPostCommitErrorPage creates another navigation).
+    //
+    // If the experiment is enabled, the interstitial is shown below.
     if (!resource.callback.is_null()) {
       resource.callback_thread->PostTask(
           FROM_HERE,
           base::BindOnce(
-              resource.callback, /*proceed=*/false,
-              /*showed_interstitial=*/resource.IsMainPageLoadBlocked()));
+              resource.callback, false /* proceed */,
+              resource.IsMainPageLoadBlocked() /* showed_interstitial */));
     }
-    if (!resource.IsMainPageLoadBlocked() && !IsWhitelisted(resource)) {
+
+    if (!base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings)) {
+      DCHECK(!resource.is_delayed_warning);
+    }
+
+    if ((!resource.IsMainPageLoadBlocked() || resource.is_delayed_warning) &&
+        !IsWhitelisted(resource)) {
       // For subresource triggered interstitials, we trigger the error page
       // navigation from here since there will be no navigation to intercept
       // in the throttle.

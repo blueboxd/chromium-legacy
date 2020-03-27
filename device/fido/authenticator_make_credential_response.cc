@@ -11,6 +11,7 @@
 #include "device/fido/attestation_statement_formats.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/client_data.h"
 #include "device/fido/ec_public_key.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -107,6 +108,10 @@ std::vector<uint8_t> AsCTAPStyleCBORBytes(
   map.emplace(1, object.attestation_statement().format_name());
   map.emplace(2, object.authenticator_data().SerializeToByteArray());
   map.emplace(3, AsCBOR(object.attestation_statement()));
+  if (response.android_client_data_ext()) {
+    map.emplace(kAndroidClientDataExtOutputKey,
+                cbor::Value(*response.android_client_data_ext()));
+  }
   auto encoded_bytes = cbor::Writer::Write(cbor::Value(std::move(map)));
   DCHECK(encoded_bytes);
   return std::move(*encoded_bytes);

@@ -267,8 +267,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     return false;
   }
 
-  DXGI_FORMAT dxgi_format =
-      gfx::ColorSpaceWin::GetDXGIFormat(color_space_, has_alpha_);
+  DXGI_FORMAT dxgi_format = gfx::ColorSpaceWin::GetDXGIFormat(color_space_);
 
   if (!dcomp_surface_ && enable_dc_layers_) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSurface",
@@ -308,9 +307,8 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.Scaling = DXGI_SCALING_STRETCH;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    desc.AlphaMode = (has_alpha_ || enable_dc_layers_)
-                         ? DXGI_ALPHA_MODE_PREMULTIPLIED
-                         : DXGI_ALPHA_MODE_IGNORE;
+    desc.AlphaMode =
+        has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     desc.Flags = DirectCompositionSurfaceWin::AllowTearing()
                      ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
                      : 0;
@@ -331,8 +329,10 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     }
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {
-      swap_chain->SetColorSpace1(
+      hr = swap_chain->SetColorSpace1(
           gfx::ColorSpaceWin::GetDXGIColorSpace(color_space_));
+      DCHECK(SUCCEEDED(hr))
+          << "SetColorSpace1 failed with error " << std::hex << hr;
     }
   }
 
@@ -418,8 +418,7 @@ bool DirectCompositionChildSurfaceWin::Resize(
 
   // ResizeBuffers can't change alpha blending mode.
   if (swap_chain_ && resize_only) {
-    DXGI_FORMAT format =
-        gfx::ColorSpaceWin::GetDXGIFormat(color_space_, has_alpha_);
+    DXGI_FORMAT format = gfx::ColorSpaceWin::GetDXGIFormat(color_space_);
     UINT flags = DirectCompositionSurfaceWin::AllowTearing()
                      ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
                      : 0;

@@ -5,11 +5,12 @@
 package org.chromium.components.paintpreview.player.frame;
 
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.util.Pair;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -90,9 +91,45 @@ public class PlayerFrameMediatorTest {
                     && rb.mScaleFactor == mScaleFactor;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return mFrameGuid + ", " + mClipRect + ", " + mScaleFactor;
+        }
+    }
+
+    /**
+     * Used for keeping track of all click events that {@link PlayerFrameMediator} sends to
+     * {@link PlayerCompositorDelegate}.
+     */
+    private class ClickedPoint {
+        UnguessableToken mFrameGuid;
+        int mX;
+        int mY;
+
+        public ClickedPoint(UnguessableToken frameGuid, int x, int y) {
+            mFrameGuid = frameGuid;
+            this.mX = x;
+            this.mY = y;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) return false;
+
+            if (o == this) return true;
+
+            if (o.getClass() != this.getClass()) return false;
+
+            ClickedPoint cp = (ClickedPoint) o;
+            return cp.mFrameGuid.equals(mFrameGuid) && cp.mX == mX && cp.mY == mY;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "Click event for frame " + mFrameGuid.toString() + " on (" + mX + ", " + mY
+                    + ")";
         }
     }
 
@@ -102,6 +139,7 @@ public class PlayerFrameMediatorTest {
      */
     private class TestPlayerCompositorDelegate implements PlayerCompositorDelegate {
         List<RequestedBitmap> mRequestedBitmap = new ArrayList<>();
+        List<ClickedPoint> mClickedPoints = new ArrayList<>();
 
         @Override
         public void requestBitmap(UnguessableToken frameGuid, Rect clipRect, float scaleFactor,
@@ -111,7 +149,9 @@ public class PlayerFrameMediatorTest {
         }
 
         @Override
-        public void onClick(UnguessableToken frameGuid, Point point) {}
+        public void onClick(UnguessableToken frameGuid, int x, int y) {
+            mClickedPoints.add(new ClickedPoint(frameGuid, x, y));
+        }
     }
 
     @Before
@@ -356,6 +396,34 @@ public class PlayerFrameMediatorTest {
         mMediator.scrollBy(0, 200);
         expectedVisibleViews.clear();
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+    }
+
+    /**
+     * Tests that {@link PlayerFrameMediator} correctly relays the click events to
+     * {@link PlayerCompositorDelegate} and accounts for scroll offsets.
+     */
+    @Test
+    public void testOnClick() {
+        // Initial view port setup.
+        mMediator.setLayoutDimensions(100, 200);
+        List<ClickedPoint> expectedClickedPoints = new ArrayList<>();
+
+        // No scrolling has happened yet.
+        mMediator.onClick(15, 26);
+        expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 15, 26));
+        Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
+
+        // Scroll, and then click. The call to {@link PlayerFrameMediator} must account for the
+        // scroll offset.
+        mMediator.scrollBy(90, 100);
+        mMediator.onClick(70, 50);
+        expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 160, 150));
+        Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
+
+        mMediator.scrollBy(-40, -60);
+        mMediator.onClick(30, 80);
+        expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 80, 120));
+        Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
     }
 
     /**

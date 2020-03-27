@@ -130,6 +130,8 @@ void LaunchTerminalSettings(Profile* profile);
 // Record which terminal settings have been changed by users.
 void RecordTerminalSettingsChangesUMAs(Profile* profile);
 
+// Returns terminal setting 'background-color'.
+std::string GetTerminalSettingBackgroundColor(Profile* profile);
 }  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_TERMINAL_H_

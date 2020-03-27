@@ -9,15 +9,6 @@
 
 /**
  * @typedef {{
- *   site: string,
- *   id: string,
- *   localData: string,
- * }}
- */
-let CookieDataSummaryItem;
-
-/**
- * @typedef {{
  *   id: string,
  *   start: number,
  *   count: number,

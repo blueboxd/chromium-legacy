@@ -13,6 +13,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
@@ -73,11 +74,14 @@ class AppServiceProxy : public KeyedService,
 
   mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
-  apps::PreferredApps& PreferredApps();
 
 #if defined(OS_CHROMEOS)
   apps::InstanceRegistry& InstanceRegistry();
 #endif
+
+  BrowserAppLauncher& BrowserAppLauncher();
+
+  apps::PreferredApps& PreferredApps();
 
   // apps::IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
@@ -363,6 +367,11 @@ class AppServiceProxy : public KeyedService,
 #endif  // OS_CHROMEOS
 
   Profile* profile_;
+
+  // TODO(crbug.com/1061843): Remove BrowserAppLauncher and merge the interfaces
+  // to AppServiceProxy when publishers(ExtensionApps and WebApps) can run on
+  // Chrome.
+  std::unique_ptr<apps::BrowserAppLauncher> browser_app_launcher_;
 
   using UninstallDialogs = std::set<std::unique_ptr<apps::UninstallDialog>,
                                     base::UniquePtrComparator>;

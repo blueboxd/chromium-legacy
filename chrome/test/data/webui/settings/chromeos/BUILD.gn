@@ -5,7 +5,10 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [ ":fake_user_action_recorder" ]
+  deps = [
+    ":fake_settings_search_handler",
+    ":fake_user_action_recorder",
+  ]
 }
 
 js_library("fake_user_action_recorder") {
@@ -13,4 +16,8 @@ js_library("fake_user_action_recorder") {
     "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:cr",
   ]
+}
+
+js_library("fake_settings_search_handler") {
+  deps = [ "//ui/webui/resources/js:cr" ]
 }

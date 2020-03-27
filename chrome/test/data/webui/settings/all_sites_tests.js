@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {beforeNextRender,flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {ContentSetting,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl,LocalDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+// #import {CrSettingsPrefs,routes, Router} from 'chrome://settings/settings.js';
+// #import {createContentSettingTypeToValuePair,createOriginInfo,createRawSiteException,createSiteGroup,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+// #import {TestLocalDataBrowserProxy} from 'chrome://test/settings/test_local_data_browser_proxy.m.js';
+// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+// clang-format on
+
 suite('AllSites', function() {
   const TEST_COOKIE_LIST = {
     id: 'example',
@@ -61,7 +72,7 @@ suite('AllSites', function() {
   // Initialize a site-list before each test.
   setup(async function() {
     PolymerTest.clearBody();
-    await settings.forceLazyLoaded();
+    /* #ignore */ await settings.forceLazyLoaded();
 
     prefsVarious = test_util.createSiteSettingsPrefs([], [
       test_util.createContentSettingTypeToValuePair(
@@ -403,7 +414,8 @@ suite('AllSites', function() {
     assertTrue(
         buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
-    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
     assertEquals(1, siteEntries.length);
     const overflowMenuButton = siteEntries[0].$.overflowMenuButton;
     assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
@@ -497,7 +509,8 @@ suite('AllSites', function() {
     assertTrue(
         buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
-    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
     assertEquals(1, siteEntries.length);
     const overflowMenuButton = siteEntries[0].$.overflowMenuButton;
     assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
@@ -567,7 +580,7 @@ suite('AllSites', function() {
       function() {
         // Test when one origin has permission settings and data, clear data
         // only clears the data and cookies.
-        siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         siteGroup.origins[0].hasPermissionSettings = true;
         siteGroup.origins[0].usage = 100;
         siteGroup.origins[0].numCookies = 3;
@@ -587,7 +600,8 @@ suite('AllSites', function() {
     assertTrue(
         buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
-    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
     assertTrue(siteEntries.length >= 1);
     const clearAllButton =
         testElement.$.clearAllButton.querySelector('cr-button');
@@ -677,7 +691,8 @@ suite('AllSites', function() {
     assertTrue(
         buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
-    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
     assertEquals(1, siteEntries.length);
 
     const expandButton = siteEntries[0].$.expandIcon;
@@ -716,7 +731,7 @@ suite('AllSites', function() {
   }
 
   test('cancelling the confirm dialog on clear data works', function() {
-    siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     testElement.siteGroupMap.set(siteGroup.etldPlus1, siteGroup);
     testElement.forceListUpdate_();
     assertEquals(1, testElement.filteredList_.length);
@@ -727,7 +742,7 @@ suite('AllSites', function() {
   });
 
   test('clear single origin data via overflow menu', function() {
-    siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     siteGroup.origins[0].hasPermissionSettings = false;
     siteGroup.origins[0].usage = 100;
     siteGroup.origins[0].numCookies = 3;
@@ -742,7 +757,7 @@ suite('AllSites', function() {
   test(
       'clear single origin data via overflow menu (has permissions)',
       function() {
-        siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         siteGroup.origins[0].hasPermissionSettings = true;
         siteGroup.origins[0].usage = 100;
         siteGroup.origins[0].numCookies = 3;
@@ -774,7 +789,8 @@ suite('AllSites', function() {
     assertTrue(
         buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
-    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    const siteEntries =
+        testElement.$.listContainer.querySelectorAll('site-entry');
     assertEquals(1, siteEntries.length);
 
     const expandButton = siteEntries[0].$.expandIcon;
@@ -814,7 +830,7 @@ suite('AllSites', function() {
   }
 
   test('cancelling the confirm dialog on resetting settings works', function() {
-    siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     testElement.siteGroupMap.set(siteGroup.etldPlus1, siteGroup);
     testElement.forceListUpdate_();
     assertEquals(1, testElement.filteredList_.length);
@@ -827,7 +843,7 @@ suite('AllSites', function() {
   test(
       'clear single origin permissions via overflow menu (no usage/cookies)',
       function() {
-        siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         siteGroup.origins[0].hasPermissionSettings = true;
         siteGroup.origins[0].usage = 0;
         siteGroup.origins[0].numCookies = 0;
@@ -842,7 +858,7 @@ suite('AllSites', function() {
   test(
       'clear single origin permissions via overflow menu (has usage/cookies)',
       function() {
-        siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         siteGroup.origins[0].hasPermissionSettings = true;
         siteGroup.origins[0].usage = 100;
         siteGroup.origins[0].numCookies = 10;

@@ -190,6 +190,10 @@ bool UnifiedMessageCenterBubble::FocusOut(bool reverse) {
   return tray_->FocusQuickSettings(reverse);
 }
 
+void UnifiedMessageCenterBubble::ActivateQuickSettingsBubble() {
+  tray_->ActivateBubble();
+}
+
 void UnifiedMessageCenterBubble::FocusFirstNotification() {
   // Move focus to first notification from notification bar if it is visible.
   if (message_center_view_->IsNotificationBarVisible())

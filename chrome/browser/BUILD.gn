@@ -3106,6 +3106,8 @@ jumbo_static_library("browser") {
       "apps/app_service/app_service_proxy.h",
       "apps/app_service/app_service_proxy_factory.cc",
       "apps/app_service/app_service_proxy_factory.h",
+      "apps/app_service/browser_app_launcher.cc",
+      "apps/app_service/browser_app_launcher.h",
       "apps/app_service/dip_px_util.cc",
       "apps/app_service/dip_px_util.h",
       "apps/app_service/launch_utils.cc",

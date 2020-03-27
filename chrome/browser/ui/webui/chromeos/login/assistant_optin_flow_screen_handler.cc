@@ -275,6 +275,12 @@ void AssistantOptInFlowScreenHandler::OnDialogClosed() {
   }
 }
 
+void AssistantOptInFlowScreenHandler::OnAssistantSettingsEnabled(bool enabled) {
+  // Close the opt-in screen is the Assistant is disabled.
+  if (!enabled)
+    HandleFlowFinished();
+}
+
 void AssistantOptInFlowScreenHandler::OnAssistantStatusChanged(
     ash::mojom::AssistantState state) {
   if (state != ash::mojom::AssistantState::NOT_READY) {

@@ -347,22 +347,6 @@ class PageLoadTimingMerger {
     mojom::InteractiveTiming* target_interactive_timing =
         target_->interactive_timing.get();
 
-    target_interactive_timing->num_input_events +=
-        new_interactive_timing.num_input_events;
-
-    if (new_interactive_timing.total_input_delay.has_value()) {
-      target_interactive_timing->total_input_delay =
-          target_interactive_timing->total_input_delay.value_or(
-              base::TimeDelta()) +
-          new_interactive_timing.total_input_delay.value();
-    }
-
-    if (new_interactive_timing.total_adjusted_input_delay.has_value()) {
-      target_interactive_timing->total_adjusted_input_delay =
-          target_interactive_timing->total_adjusted_input_delay.value_or(
-              base::TimeDelta()) +
-          new_interactive_timing.total_adjusted_input_delay.value();
-    }
     if (MaybeUpdateTimeDelta(&target_interactive_timing->first_input_timestamp,
                              navigation_start_offset,
                              new_interactive_timing.first_input_timestamp)) {
@@ -409,7 +393,8 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::FrameMetadata::New()),
-      subframe_metadata_(mojom::FrameMetadata::New()) {}
+      subframe_metadata_(mojom::FrameMetadata::New()),
+      page_input_timing_(mojom::InputTiming()) {}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
@@ -436,7 +421,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr new_cpu_timing,
-    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+    mojom::InputTimingPtr input_timing_delta) {
   if (embedder_interface_->IsExtensionUrl(
           render_frame_host->GetLastCommittedURL())) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -462,7 +448,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateSubFrameMetadata(render_frame_host, std::move(new_metadata));
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
   }
-
+  UpdatePageInputTiming(*input_timing_delta);
   UpdatePageRenderData(*render_data);
   if (!is_main_frame) {
     // This path is just for the AMP metrics.
@@ -638,6 +624,14 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 
   main_frame_metadata_ = std::move(new_metadata);
   client_->OnMainFrameMetadataChanged();
+}
+
+void PageLoadMetricsUpdateDispatcher::UpdatePageInputTiming(
+    const mojom::InputTiming& input_timing_delta) {
+  page_input_timing_.num_input_events += input_timing_delta.num_input_events;
+  page_input_timing_.total_input_delay += input_timing_delta.total_input_delay;
+  page_input_timing_.total_adjusted_input_delay +=
+      input_timing_delta.total_adjusted_input_delay;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(

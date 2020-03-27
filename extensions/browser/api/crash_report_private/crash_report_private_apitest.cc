@@ -4,6 +4,7 @@
 
 #include "base/system/sys_info.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/crash/core/app/crash_reporter_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/crash_report_private/crash_report_private_api.h"
@@ -26,7 +27,17 @@ constexpr const char* kTestExtensionId = "jjeoclcdfjddkdjokiejckgcildcflpp";
 constexpr const char* kTestCrashEndpoint = "/crash";
 
 class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
-  bool GetCollectStatsConsent() override { return true; }
+ public:
+  void set_consented(bool consented) { consented_ = consented; }
+
+ private:
+  bool GetCollectStatsConsent() override {
+    // In production, GetCollectStatsConsent may be blocking due to file reads.
+    // Simulate this in our tests as well.
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    return consented_;
+  }
   void GetProductNameAndVersion(std::string* product_name,
                                 std::string* version,
                                 std::string* channel) override {
@@ -34,6 +45,8 @@ class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
     *version = "1.2.3.4";
     *channel = "Stable";
   }
+
+  bool consented_ = true;
 };
 
 std::string GetOsVersion() {
@@ -102,6 +115,7 @@ class CrashReportPrivateApiTest : public ShellApiTest {
   };
 
   const Extension* extension_;
+  MockCrashReporterClient client_;
   Report last_report_;
 
  private:
@@ -121,7 +135,6 @@ class CrashReportPrivateApiTest : public ShellApiTest {
     return http_response;
   }
 
-  MockCrashReporterClient client_;
   DISALLOW_COPY_AND_ASSIGN(CrashReportPrivateApiTest);
 };
 
@@ -257,6 +270,28 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, Throttling) {
   test_clock.Advance(base::TimeDelta::FromMinutes(2));
   EXPECT_EQ("", ExecuteScriptInBackgroundPage(browser_context(),
                                               extension_->id(), kTestScript));
+}
+
+// Ensures that reportError checks user consent for data collection on the
+// correct thread and correctly handles the case where consent is not given.
+IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, NoConsent) {
+  constexpr char kTestScript[] = R"(
+    chrome.crashReportPrivate.reportError({
+        message: "hi",
+        url: "http://www.test.com",
+      },
+      () => {
+        window.domAutomationController.send(chrome.runtime.lastError ?
+            chrome.runtime.lastError.message : "")
+      });
+  )";
+
+  client_.set_consented(false);
+  EXPECT_EQ("", ExecuteScriptInBackgroundPage(browser_context(),
+                                              extension_->id(), kTestScript));
+  // The server should not receive any reports.
+  EXPECT_EQ(last_report_.query, "");
+  EXPECT_EQ(last_report_.content, "");
 }
 
 }  // namespace extensions

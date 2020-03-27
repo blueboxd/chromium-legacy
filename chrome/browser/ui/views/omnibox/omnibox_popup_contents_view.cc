@@ -199,6 +199,14 @@ OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
   DCHECK(!base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
       << "With the WebUI omnibox popup enabled, the code should not try to "
          "fetch the child result view.";
+
+  // TODO(tommycli): https://crbug.com/1063071
+  // Making this method public was a mistake. Outside callers have no idea about
+  // our internal state, and there's now a crash in this area. For now, let's
+  // return nullptr, but the ultimate fix is orinj's OmniboxPopupModel refactor.
+  if (i >= children().size())
+    return nullptr;
+
   return static_cast<OmniboxResultView*>(children()[i]);
 }
 

@@ -8,13 +8,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "components/crash/core/app/client_upload_info.h"
 #include "components/feedback/anonymizer_tool.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/common/api/crash_report_private.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -203,10 +204,6 @@ CrashReportPrivateReportErrorFunction::
     ~CrashReportPrivateReportErrorFunction() = default;
 
 ExtensionFunction::ResponseAction CrashReportPrivateReportErrorFunction::Run() {
-  // Do not report errors if the user did not give consent for crash reporting.
-  if (!crash_reporter::GetClientCollectStatsConsent())
-    return RespondNow(NoArguments());
-
   // Ensure we don't send too many crash reports. Limit to one report per hour.
   if (!g_last_called_time.is_null() &&
       g_clock->Now() - g_last_called_time < base::TimeDelta::FromHours(1)) {
@@ -217,21 +214,40 @@ ExtensionFunction::ResponseAction CrashReportPrivateReportErrorFunction::Run() {
   const auto params = crash_report_private::ReportError::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  // Consent checking may be blocking, so do it on a separate thread to avoid
+  // blocking the UI thread.
+  PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&crash_reporter::GetClientCollectStatsConsent),
+      base::BindOnce(
+          &CrashReportPrivateReportErrorFunction::OnConsentCheckCompleted, this,
+          std::move(params->info)));
+
+  return RespondLater();
+}
+
+void CrashReportPrivateReportErrorFunction::OnConsentCheckCompleted(
+    crash_report_private::ErrorInfo info,
+    bool consented) {
+  // Do not report errors if the user did not give consent for crash reporting.
+  if (!consented) {
+    Respond(NoArguments());
+    return;
+  }
+
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetURLLoaderFactoryForBrowserProcess();
 
   // Don't anonymize the report on the UI thread as it can take some time.
   PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&AnonymizeErrorMessage, params->info.message),
+      FROM_HERE, base::BindOnce(&AnonymizeErrorMessage, info.message),
       base::BindOnce(
-          &ReportJavaScriptError, std::move(loader_factory),
-          std::move(params->info),
+          &ReportJavaScriptError, std::move(loader_factory), std::move(info),
           base::BindOnce(
               &CrashReportPrivateReportErrorFunction::OnReportComplete, this)));
-  g_last_called_time = base::Time::Now();
 
-  return RespondLater();
+  g_last_called_time = base::Time::Now();
 }
 
 void CrashReportPrivateReportErrorFunction::OnReportComplete() {

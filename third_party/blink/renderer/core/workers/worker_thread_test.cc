@@ -492,8 +492,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
 }
 
-// Disabled due to flakiness: https://crbug.com/935231
-TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
+TEST_F(WorkerThreadTest, TerminateWorkerWhileChildIsLoading) {
   ExpectReportingCalls();
   Start();
   worker_thread_->WaitForInit();

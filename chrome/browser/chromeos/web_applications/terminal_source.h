@@ -37,10 +37,6 @@ class TerminalSource : public content::URLDataSource {
   bool ShouldServeMimeTypeAsContentTypeHeader() override;
   const ui::TemplateReplacements* GetReplacements() override;
 
-  // Get theme color from terminal settings in prefs (with HTML escaping).
-  // Returns default theme '#101010' if no prefs set.
-  std::string GetThemeColorFromPrefs();
-
   Profile* profile_;
   ui::TemplateReplacements replacements_;
 

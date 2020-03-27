@@ -146,30 +146,29 @@ TEST_F(LocalNetworkCollectorImplTest,
 }
 
 TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork) {
-  helper()->ConfigureWiFiNetwork(kFredSsid, /*is_secured=*/true,
-                                 /*in_profile=*/true, /*has_connected=*/true);
-
-  NetworkIdentifier id = GeneratePskNetworkId(kFredSsid);
+  std::string guid = helper()->ConfigureWiFiNetwork(
+      kFredSsid, /*is_secured=*/true,
+      /*in_profile=*/true, /*has_connected=*/true);
   local_network_collector()->GetSyncableNetwork(
-      id, base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,
-                         base::Unretained(this), kFredSsid));
+      guid, base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,
+                           base::Unretained(this), kFredSsid));
 }
 
 TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_DoesntExist) {
-  NetworkIdentifier id = GeneratePskNetworkId(kFredSsid);
   local_network_collector()->GetSyncableNetwork(
-      id, base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,
-                         base::Unretained(this), std::string()));
+      "test_guid",
+      base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,
+                     base::Unretained(this), std::string()));
 }
 
 TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_NeverConnected) {
-  helper()->ConfigureWiFiNetwork(kFredSsid, /*is_secured=*/true,
-                                 /*in_profile=*/true, /*has_connected=*/false);
+  std::string guid = helper()->ConfigureWiFiNetwork(
+      kFredSsid, /*is_secured=*/true,
+      /*in_profile=*/true, /*has_connected=*/false);
 
-  NetworkIdentifier id = GeneratePskNetworkId(kFredSsid);
   local_network_collector()->GetSyncableNetwork(
-      id, base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,
-                         base::Unretained(this), std::string()));
+      guid, base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,
+                           base::Unretained(this), std::string()));
 }
 
 }  // namespace sync_wifi

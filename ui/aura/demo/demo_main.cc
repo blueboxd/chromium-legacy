@@ -197,8 +197,7 @@ int DemoMain() {
       test_screen->CreateHostForPrimaryDisplay());
   std::unique_ptr<DemoWindowParentingClient> window_parenting_client(
       new DemoWindowParentingClient(host->window()));
-  aura::test::TestFocusClient focus_client;
-  aura::client::SetFocusClient(host->window(), &focus_client);
+  aura::test::TestFocusClient focus_client(host->window());
 
   // Create a hierarchy of test windows.
   gfx::Rect window1_bounds(100, 100, 400, 400);

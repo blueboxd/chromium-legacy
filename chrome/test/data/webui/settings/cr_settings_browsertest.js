@@ -370,17 +370,9 @@ CrSettingsPasswordsSectionTest.prototype = {
   ]),
 };
 
-// Flakily times out on Linux CFI.
-// TODO(crbug.com/1063723): Fix this by splitting up the test suite.
-GEN('#if defined(OS_LINUX) && defined(IS_CFI)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrSettingsPasswordsSectionTest', 'MAYBE_All', function() {
+TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
   mocha.run();
 });
-GEN('#undef MAYBE_All');
 
 /**
  * Test fixture for
@@ -1478,8 +1470,7 @@ CrSettingsSiteDetailsTest.prototype = {
 
 // Disabling on debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
 // https://crbug.com/825304 - later for other platforms in crbug.com/1021219.
-// Disabling on Linux CFI due to flaky timeout (crbug.com/1031960).
-GEN('#if (!defined(NDEBUG)) || (defined(OS_LINUX) && defined(IS_CFI))');
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
@@ -1488,6 +1479,8 @@ GEN('#endif');
 TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_All', function() {
   mocha.run();
 });
+GEN('#undef MAYBE_All');
+
 
 /**
  * Test fixture for
@@ -1761,6 +1754,7 @@ CrSettingsSiteDataTest.prototype = {
   ]),
 };
 
+// Disabled for flakiness, see https://crbug.com/1061249
 TEST_F('CrSettingsSiteDataTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -2101,8 +2095,7 @@ CrSettingsMainPageTest.prototype = {
 
 // Times out on Windows Tests (dbg). See https://crbug.com/651296.
 // Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
-// Times out on Linux CFI. See http://crbug.com/929288.
-GEN('#if !defined(NDEBUG) || (defined(OS_LINUX) && defined(IS_CFI))');
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_MainPage DISABLED_MainPage');
 GEN('#else');
 GEN('#define MAYBE_MainPage MainPage');

@@ -22,16 +22,9 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/buildflags/buildflags.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/pointer/touch_ui_controller.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/commands/command_service.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension_set.h"
-#endif
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/gfx/canvas.h"
@@ -53,50 +46,6 @@ using bookmarks::BookmarkNode;
 namespace chrome {
 
 namespace {
-
-// The ways in which extensions may customize the bookmark shortcut.
-enum BookmarkShortcutDisposition {
-  BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED,
-  BOOKMARK_SHORTCUT_DISPOSITION_REMOVED,
-  BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDE_REQUESTED
-};
-
-// Indicates how the bookmark shortcut has been changed by extensions associated
-// with |profile|, if at all.
-BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::CommandService* command_service =
-      extensions::CommandService::Get(profile);
-
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  if (!registry)
-    return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
-
-  const extensions::ExtensionSet& extension_set =
-      registry->enabled_extensions();
-
-  // This flag tracks whether any extension wants the disposition to be
-  // removed.
-  bool removed = false;
-  for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
-       i != extension_set.end();
-       ++i) {
-    // Use the overridden disposition if any extension wants it.
-    if (command_service->RequestsBookmarkShortcutOverride(i->get()))
-      return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDE_REQUESTED;
-
-    if (!removed &&
-        extensions::CommandService::RemovesBookmarkShortcut(i->get())) {
-      removed = true;
-    }
-  }
-
-  if (removed)
-    return BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
-#endif
-  return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
-}
 
 #if defined(TOOLKIT_VIEWS)
 // Image source that flips the supplied source image in RTL.
@@ -186,32 +135,6 @@ bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile) {
   return IsAppsShortcutEnabled(profile) &&
          profile->GetPrefs()->GetBoolean(
              bookmarks::prefs::kShowAppsShortcutInBookmarkBar);
-}
-
-bool ShouldRemoveBookmarkThisTabUI(Profile* profile) {
-  return GetBookmarkShortcutDisposition(profile) ==
-         BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
-}
-
-bool ShouldRemoveBookmarkAllTabsUI(Profile* profile) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  if (!registry)
-    return false;
-
-  const extensions::ExtensionSet& extension_set =
-      registry->enabled_extensions();
-
-  for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
-       i != extension_set.end();
-       ++i) {
-    if (extensions::CommandService::RemovesBookmarkAllTabsShortcut(i->get()))
-      return true;
-  }
-#endif
-
-  return false;
 }
 
 int GetBookmarkDragOperation(content::BrowserContext* browser_context,

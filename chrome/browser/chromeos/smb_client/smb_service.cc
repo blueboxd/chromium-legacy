@@ -208,6 +208,19 @@ void SmbService::UnmountSmbFs(const base::FilePath& mount_path) {
   LOG(WARNING) << "Smbfs mount path not found: " << mount_path;
 }
 
+SmbFsShare* SmbService::GetSmbFsShareForPath(const base::FilePath& path) {
+  DCHECK(!path.empty());
+  DCHECK(path.IsAbsolute());
+
+  for (const auto& entry : smbfs_shares_) {
+    const base::FilePath mount_path = entry.second->mount_path();
+    if (mount_path == path || mount_path.IsParent(path)) {
+      return entry.second.get();
+    }
+  }
+  return nullptr;
+}
+
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                                        GatherSharesResponse shares_callback) {
   auto preconfigured_shares = GetPreconfiguredSharePathsForDropdown();

@@ -7,6 +7,15 @@
  * 'site-data-entry' handles showing the local storage summary for a site.
  */
 
+/**
+ * @typedef {{
+ *   site: string,
+ *   id: string,
+ *   localData: string,
+ * }}
+ */
+/* #export */ let CookieDataSummaryItem;
+
 Polymer({
   is: 'site-data-entry',
 

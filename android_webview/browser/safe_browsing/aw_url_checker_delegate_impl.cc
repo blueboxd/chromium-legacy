@@ -90,6 +90,13 @@ void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
                      ui_manager_, resource, std::move(request)));
 }
 
+void AwUrlCheckerDelegateImpl::
+    StartObservingInteractionsForDelayedBlockingPageHelper(
+        const security_interstitials::UnsafeResource& resource,
+        bool is_main_frame) {
+  NOTREACHED() << "Delayed warnings not implemented for WebView";
+}
+
 bool AwUrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
   return whitelist_manager_->IsURLWhitelisted(url);
 }

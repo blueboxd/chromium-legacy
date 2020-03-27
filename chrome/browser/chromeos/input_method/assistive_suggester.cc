@@ -4,14 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -21,10 +14,6 @@ namespace {
 
 const char kMaxTextBeforeCursorLength = 50;
 const char kKeydown[] = "keydown";
-const char kAssistEmailPrefix[] = "my email is ";
-const char kAssistNamePrefix[] = "my name is ";
-const char kAssistAddressPrefix[] = "my address is ";
-const char kAssistPhoneNumberPrefix[] = "my phone number is ";
 
 void RecordAssistiveCoverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
@@ -34,42 +23,20 @@ void RecordAssistiveSuccess(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Success", type);
 }
 
-AssistiveType ProposeAssistiveAction(const base::string16& text) {
-  AssistiveType action = AssistiveType::kGenericAction;
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistEmailPrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalEmail;
-  }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistNamePrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalName;
-  }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistAddressPrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalAddress;
-  }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistPhoneNumberPrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalPhoneNumber;
-  }
-  return action;
-}
-
 }  // namespace
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
                                        Profile* profile)
-    : engine_(engine),
-      profile_(profile),
-      personal_data_manager_(
-          autofill::PersonalDataManagerFactory::GetForProfile(profile)) {}
+    : personal_info_suggester_(new PersonalInfoSuggester(engine, profile)) {}
 
 void AssistiveSuggester::OnFocus(int context_id) {
   context_id_ = context_id;
+  personal_info_suggester_->OnFocus(context_id_);
 }
 
 void AssistiveSuggester::OnBlur() {
   context_id_ = -1;
+  personal_info_suggester_->OnBlur();
 }
 
 bool AssistiveSuggester::OnKeyEvent(
@@ -83,18 +50,21 @@ bool AssistiveSuggester::OnKeyEvent(
   // surrounding text change, which is triggered by a keydown event. As a
   // result, the next key event after suggesting would be a keyup event of the
   // same key, and that event is meaningless to us.
-  if (suggestion_shown_ && event.type == kKeydown) {
-    suggestion_shown_ = false;
-    if (event.key == "Tab" || event.key == "Right") {
-      std::string error;
-      engine_->AcceptSuggestion(context_id_, &error);
-      RecordAssistiveSuccess(proposed_action_type_);
-      return true;
+  if (IsSuggestionShown() && event.type == kKeydown) {
+    SuggestionStatus status = current_suggester_->HandleKeyEvent(event);
+    switch (status) {
+      case SuggestionStatus::kAccept:
+        RecordAssistiveSuccess(current_suggester_->GetProposeActionType());
+        current_suggester_ = nullptr;
+        return true;
+      case SuggestionStatus::kDismiss:
+        current_suggester_ = nullptr;
+        suggestion_dismissed_ = true;
+        return false;
+      default:
+        break;
     }
-    DismissSuggestion();
-    suggestion_dismissed_ = true;
   }
-
   return false;
 }
 
@@ -125,12 +95,11 @@ bool AssistiveSuggester::OnSurroundingTextChanged(const base::string16& text,
   if (context_id_ == -1)
     return false;
 
-  if (suggestion_shown_) {
-    suggestion_shown_ = false;
+  if (IsSuggestionShown()) {
     DismissSuggestion();
   }
   Suggest(text, cursor_pos, anchor_pos);
-  return suggestion_shown_;
+  return IsSuggestionShown();
 }
 
 void AssistiveSuggester::Suggest(const base::string16& text,
@@ -146,67 +115,22 @@ void AssistiveSuggester::Suggest(const base::string16& text,
     int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
     base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
-    base::string16 suggestion_text =
-        GetPersonalInfoSuggestion(text_before_cursor);
-    if (!suggestion_text.empty()) {
-      ShowSuggestion(suggestion_text);
-      suggestion_shown_ = true;
+    if (personal_info_suggester_->Suggest(text_before_cursor)) {
+      current_suggester_ = personal_info_suggester_;
+    } else {
+      current_suggester_ = nullptr;
     }
   }
 }
 
-base::string16 AssistiveSuggester::GetPersonalInfoSuggestion(
-    const base::string16& text) {
-  AssistiveType action = ProposeAssistiveAction(text);
-  if (action == AssistiveType::kGenericAction)
-    return base::EmptyString16();
-
-  proposed_action_type_ = action;
-
-  if (action == AssistiveType::kPersonalEmail)
-    return base::UTF8ToUTF16(profile_->GetProfileUserName());
-
-  auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
-  if (autofill_profiles.empty())
-    return base::EmptyString16();
-
-  // Currently, we are just picking the first candidate, will improve the
-  // strategy in the future.
-  auto* data = autofill_profiles[0];
-  base::string16 suggestion;
-  switch (action) {
-    case AssistiveType::kPersonalName:
-      suggestion = data->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
-      break;
-    case AssistiveType::kPersonalAddress:
-      suggestion = data->GetRawInfo(
-          autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
-      break;
-    case AssistiveType::kPersonalPhoneNumber:
-      suggestion =
-          data->GetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return suggestion;
-}
-
-void AssistiveSuggester::ShowSuggestion(const base::string16& text) {
-  std::string error;
-  engine_->SetSuggestion(context_id_, text, &error);
-  if (!error.empty()) {
-    LOG(ERROR) << "Fail to show suggestion. " << error;
-  }
-}
-
 void AssistiveSuggester::DismissSuggestion() {
-  std::string error;
-  engine_->DismissSuggestion(context_id_, &error);
-  if (!error.empty()) {
-    LOG(ERROR) << "Failed to dismiss suggestion. " << error;
-  }
+  if (current_suggester_)
+    current_suggester_->DismissSuggestion();
+  current_suggester_ = nullptr;
+}
+
+bool AssistiveSuggester::IsSuggestionShown() {
+  return current_suggester_ != nullptr;
 }
 
 }  // namespace chromeos

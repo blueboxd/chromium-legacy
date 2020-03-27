@@ -212,17 +212,6 @@ base::Optional<base::TimeDelta> WebPerformance::LongestInputTimestamp() const {
   return private_->timing()->LongestInputTimestamp();
 }
 
-double WebPerformance::TotalInputDelay() const {
-  return MillisecondsToSeconds(private_->timing()->TotalInputDelay());
-}
-
-double WebPerformance::TotalAdjustedInputDelay() const {
-  return MillisecondsToSeconds(private_->timing()->TotalAdjustedInputDelay());
-}
-uint64_t WebPerformance::NumInputEvents() const {
-  return private_->timing()->NumInputEvents();
-}
-
 double WebPerformance::ParseStart() const {
   return MillisecondsToSeconds(private_->timing()->ParseStart());
 }

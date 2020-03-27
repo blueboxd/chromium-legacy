@@ -5158,16 +5158,10 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   ASSERT_NE(nullptr, target_properties);
   const auto* paint_offset_translation =
       target_properties->PaintOffsetTranslation();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(nullptr, paint_offset_translation);
-    EXPECT_EQ(PhysicalOffset(60, 50), target->FirstFragment().PaintOffset());
-  } else {
-    // For SPv1, |target| is composited so we created PaintOffsetTranslation.
-    ASSERT_NE(nullptr, paint_offset_translation);
-    EXPECT_EQ(FloatSize(60, 50), paint_offset_translation->Translation2D());
-    EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kInherited,
-              paint_offset_translation->GetBackfaceVisibilityForTesting());
-  }
+  ASSERT_NE(nullptr, paint_offset_translation);
+  EXPECT_EQ(FloatSize(60, 50), paint_offset_translation->Translation2D());
+  EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kInherited,
+            paint_offset_translation->GetBackfaceVisibilityForTesting());
 
   const auto* transform = target_properties->Transform();
   ASSERT_NE(nullptr, transform);

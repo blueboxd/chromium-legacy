@@ -116,8 +116,7 @@ var CrSettingsMainPageV3Test = class extends CrSettingsV3BrowserTest {
 // Copied from Polymer 2 version of tests:
 // Times out on Windows Tests (dbg). See https://crbug.com/651296.
 // Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
-// Times out on Linux CFI. See http://crbug.com/929288.
-GEN('#if !defined(NDEBUG) || (defined(OS_LINUX) && defined(IS_CFI))');
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_MainPageV3 DISABLED_MainPageV3');
 GEN('#else');
 GEN('#define MAYBE_MainPageV3 MainPageV3');
@@ -277,7 +276,8 @@ TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuildsOld', function() {
   runMochaSuite('PersonalizationOptionsTests_AllBuilds_Old');
 });
 
-[['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
+[['AllSites', 'all_sites_tests.m.js'],
+ ['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
  ['AppearancePage', 'appearance_page_test.m.js'],
  ['AutofillPage', 'autofill_page_test.m.js'],
  ['BasicPage', 'basic_page_test.m.js'],
@@ -300,10 +300,14 @@ TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuildsOld', function() {
  ['PeoplePageSyncPage', 'people_page_sync_page_test.m.js'],
  ['Prefs', 'prefs_tests.m.js'],
  ['PrefUtil', 'pref_util_tests.m.js'],
+ ['ProtocolHandlers', 'protocol_handlers_tests.m.js'],
  ['ResetPage', 'reset_page_test.m.js'],
  ['SearchEngines', 'search_engines_page_test.m.js'],
  ['SearchPage', 'search_page_test.m.js'],
  ['Search', 'search_settings_test.m.js'],
+ ['SecurityKeysSubpage', 'security_keys_subpage_test.m.js'],
+ // Copied from P2 test: Disabled for flakiness, see https://crbug.com/1061249
+ ['SiteData', 'site_data_test.m.js', 'DISABLED_All'],
  ['SiteDataDetails', 'site_data_details_subpage_tests.m.js'],
  ['SiteDetailsPermission', 'site_details_permission_tests.m.js'],
  ['SiteEntry', 'site_entry_tests.m.js'],

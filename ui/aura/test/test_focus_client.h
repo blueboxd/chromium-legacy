@@ -18,7 +18,7 @@ namespace test {
 class TestFocusClient : public client::FocusClient,
                         public WindowObserver {
  public:
-  TestFocusClient();
+  explicit TestFocusClient(Window* root_window);
   ~TestFocusClient() override;
 
  private:
@@ -32,6 +32,7 @@ class TestFocusClient : public client::FocusClient,
   // Overridden from WindowObserver:
   void OnWindowDestroying(Window* window) override;
 
+  Window* root_window_;
   Window* focused_window_;
   ScopedObserver<Window, WindowObserver> observer_manager_;
   base::ObserverList<aura::client::FocusChangeObserver>::Unchecked

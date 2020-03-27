@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -30,8 +30,6 @@ constexpr base::FilePath::CharType kTerminalRoot[] =
 constexpr base::FilePath::CharType kDefaultFile[] =
     FILE_PATH_LITERAL("html/crosh.html");
 constexpr char kDefaultMime[] = "text/html";
-constexpr char kDefaultTheme[] = "#101010";
-constexpr char kPrefKeyTheme[] = "/hterm/profiles/default/background-color";
 
 void ReadFile(const std::string& relative_path,
               content::URLDataSource::GotDataCallback callback) {
@@ -105,8 +103,10 @@ void TerminalSource::StartDataRequest(
     path = kDefaultFile;
 
   // Replace $i8n{themeColor} in *.html.
-  if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII))
-    replacements_["themeColor"] = GetThemeColorFromPrefs();
+  if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
+    replacements_["themeColor"] = net::EscapeForHTML(
+        crostini::GetTerminalSettingBackgroundColor(profile_));
+  }
 
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
@@ -128,11 +128,4 @@ bool TerminalSource::ShouldServeMimeTypeAsContentTypeHeader() {
 
 const ui::TemplateReplacements* TerminalSource::GetReplacements() {
   return &replacements_;
-}
-
-std::string TerminalSource::GetThemeColorFromPrefs() {
-  const base::DictionaryValue* value = profile_->GetPrefs()->GetDictionary(
-      crostini::prefs::kCrostiniTerminalSettings);
-  const std::string* theme = value->FindStringKey(kPrefKeyTheme);
-  return theme ? net::EscapeForHTML(*theme) : kDefaultTheme;
 }

@@ -117,6 +117,15 @@ class WebAppDatabaseTest : public WebAppTest {
 
     app->SetFileHandlers(CreateFileHandlers(suffix));
 
+    const int num_additional_search_terms = suffix & 7;
+    std::vector<std::string> additional_search_terms(
+        num_additional_search_terms);
+    for (int i = 0; i < num_additional_search_terms; ++i) {
+      additional_search_terms[i] =
+          "Foo_" + base::NumberToString(suffix) + "_" + base::NumberToString(i);
+    }
+    app->SetAdditionalSearchTerms(std::move(additional_search_terms));
+
     WebApp::SyncData sync_data;
     sync_data.name = "Sync" + name;
     sync_data.theme_color = synced_theme_color;
@@ -310,6 +319,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->sync_data().name.empty());
   EXPECT_FALSE(app->sync_data().theme_color.has_value());
   EXPECT_TRUE(app->file_handlers().empty());
+  EXPECT_TRUE(app->additional_search_terms().empty());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -341,6 +351,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->sync_data().name.empty());
   EXPECT_FALSE(app_copy->sync_data().theme_color.has_value());
   EXPECT_TRUE(app_copy->file_handlers().empty());
+  EXPECT_TRUE(app_copy->additional_search_terms().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

@@ -5201,6 +5201,7 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
       element->SetComputedStyle(std::move(pseudo_style));
     else
       GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+    element->ClearNeedsStyleRecalc();
     return;
   }
 

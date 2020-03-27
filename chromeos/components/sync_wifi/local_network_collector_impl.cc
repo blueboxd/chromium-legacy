@@ -70,12 +70,12 @@ void LocalNetworkCollectorImpl::GetAllSyncableNetworks(
   }
 }
 
-void LocalNetworkCollectorImpl::GetSyncableNetwork(const NetworkIdentifier& id,
+void LocalNetworkCollectorImpl::GetSyncableNetwork(const std::string& guid,
                                                    ProtoCallback callback) {
   const network_config::mojom::NetworkStateProperties* network = nullptr;
   for (const network_config::mojom::NetworkStatePropertiesPtr& n :
        mojo_networks_) {
-    if (NetworkIdentifier::FromMojoNetwork(n) == id) {
+    if (n->guid == guid) {
       if (IsEligible(n)) {
         network = n.get();
       }
@@ -93,6 +93,18 @@ void LocalNetworkCollectorImpl::GetSyncableNetwork(const NetworkIdentifier& id,
   request_guid_to_single_callback_[request_guid] = std::move(callback);
 
   StartGetNetworkDetails(network, request_guid);
+}
+
+base::Optional<NetworkIdentifier>
+LocalNetworkCollectorImpl::GetNetworkIdentifierFromGuid(
+    const std::string& guid) {
+  for (const network_config::mojom::NetworkStatePropertiesPtr& network :
+       mojo_networks_) {
+    if (network->guid == guid) {
+      return NetworkIdentifier::FromMojoNetwork(network);
+    }
+  }
+  return base::nullopt;
 }
 
 void LocalNetworkCollectorImpl::SetNetworkMetadataStore(

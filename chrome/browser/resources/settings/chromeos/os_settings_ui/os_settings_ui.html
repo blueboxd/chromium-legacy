@@ -41,7 +41,9 @@
         @apply --layout-center;
         /* TODO(hsuregan): update for dark mode when needed. */
         min-height: 56px;
-        z-index: 2;
+        /* Needs to be higher than #cr-container-show-top's z-index so that the
+         * new settings search dropdown is not struck through by the shadow. */
+        z-index: 3;
       }
 
       cr-drawer {

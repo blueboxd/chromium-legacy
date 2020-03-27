@@ -1747,6 +1747,13 @@
       'ToTAndroidCFI',
       'android-code-coverage-native', # https://crbug.com/1018431
     ],
+    'modifications': {
+      'android-pie-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_instrumentation_test_apk.filter',
+        ],
+      },
+    },
   },
   'not_site_per_process_blink_web_tests': {
     'remove_from': [
@@ -2413,6 +2420,11 @@
         # TODO(https://crbug.com/884413): Re-enable this once the tests are
         # either passing or there is more capacity.
         'experiment_percentage': 0,
+      },
+      'android-pie-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_instrumentation_test_apk.filter',
+        ],
       },
     },
   },

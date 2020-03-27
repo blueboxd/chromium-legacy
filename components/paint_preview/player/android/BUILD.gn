@@ -111,6 +111,7 @@ android_library("javatests") {
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
+    "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java_test_support",
     "//url:gurl_java",
   ]

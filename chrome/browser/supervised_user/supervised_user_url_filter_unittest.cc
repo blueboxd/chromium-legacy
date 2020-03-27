@@ -336,6 +336,8 @@ TEST_F(SupervisedUserURLFilterTest, HasFilteredScheme) {
 }
 
 TEST_F(SupervisedUserURLFilterTest, HostMatchesPattern) {
+  EXPECT_TRUE(SupervisedUserURLFilter::HostMatchesPattern("www.google.com",
+                                                          "google.com"));
   EXPECT_TRUE(
       SupervisedUserURLFilter::HostMatchesPattern("www.google.com",
                                                   "*.google.com"));

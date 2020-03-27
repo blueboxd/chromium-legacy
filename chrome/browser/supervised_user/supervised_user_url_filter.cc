@@ -20,6 +20,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -244,8 +246,21 @@ bool SupervisedUserURLFilter::HasFilteredScheme(const GURL& url) {
 bool SupervisedUserURLFilter::HostMatchesPattern(
     const std::string& canonical_host,
     const std::string& pattern) {
-  std::string trimmed_pattern = pattern;
+  // If |canonical_host| starts with |www.| but |pattern| starts with neither
+  // |www.| nor |*.| then trim |www.| part of canonical host.
+  bool is_host_www =
+      base::StartsWith(canonical_host, "www.", base::CompareCase::SENSITIVE);
+  bool patern_accepts =
+      base::StartsWith(pattern, "www.", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(pattern, "*.", base::CompareCase::SENSITIVE);
+
   std::string trimmed_host = canonical_host;
+  if (is_host_www && !patern_accepts) {
+    trimmed_host = base::UTF16ToASCII(
+        url_formatter::StripWWW(base::ASCIIToUTF16(canonical_host)));
+  }
+
+  std::string trimmed_pattern = pattern;
   if (base::EndsWith(pattern, ".*", base::CompareCase::SENSITIVE)) {
     size_t registry_length = GetCanonicalHostRegistryLength(
         trimmed_host, EXCLUDE_UNKNOWN_REGISTRIES, EXCLUDE_PRIVATE_REGISTRIES);

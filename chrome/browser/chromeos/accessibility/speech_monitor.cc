@@ -214,6 +214,21 @@ void SpeechMonitor::ExpectNextSpeechIsNot(const std::string& text,
        "ExpectNextSpeechIsNot(\"" + text + "\") " + location.ToString()});
 }
 
+void SpeechMonitor::ExpectNextSpeechIsNotPattern(
+    const std::string& pattern,
+    const base::Location& location) {
+  CHECK(!replay_loop_runner_.get());
+  replay_queue_.push_back({[this, pattern]() {
+                             if (utterance_queue_.empty())
+                               return false;
+
+                             return !base::MatchPattern(
+                                 utterance_queue_.front().text, pattern);
+                           },
+                           "ExpectNextSpeechIsNotPattern(\"" + pattern +
+                               "\") " + location.ToString()});
+}
+
 void SpeechMonitor::Call(std::function<void()> func,
                          const base::Location& location) {
   CHECK(!replay_loop_runner_.get());
@@ -230,9 +245,19 @@ void SpeechMonitor::Replay() {
 }
 
 void SpeechMonitor::MaybeContinueReplay() {
+  // This method can be called prior to Replay() being called.
+  if (!replay_called_)
+    return;
+
   auto it = replay_queue_.begin();
   while (it != replay_queue_.end()) {
     if (it->first()) {
+      // Careful here; the above callback may have triggered more speech which
+      // causes |MaybeContinueReplay| to be called recursively. We have to
+      // ensure to check |replay_queue_| here.
+      if (replay_queue_.empty())
+        break;
+
       replayed_queue_.push_back(it->second);
       it = replay_queue_.erase(it);
     } else {
@@ -240,7 +265,7 @@ void SpeechMonitor::MaybeContinueReplay() {
     }
   }
 
-  if (replay_queue_.size() > 0) {
+  if (!replay_queue_.empty()) {
     base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&SpeechMonitor::MaybePrintExpectations,

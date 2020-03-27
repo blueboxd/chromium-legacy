@@ -105,20 +105,7 @@ struct InteractiveTiming {
 
   // The timestamp of the event whose delay is reported as longest_input_delay.
   mojo_base.mojom.TimeDelta? longest_input_timestamp;
-
-  // The sum of all input delay.
-  mojo_base.mojom.TimeDelta? total_input_delay;
-
-  // The sum of all adjusted input delay. We adjust each input delay by
-  // subtracting a small number, e.g. 50ms. And if the subtraction result is
-  // negative, we will use 0ms instead.
-  mojo_base.mojom.TimeDelta? total_adjusted_input_delay;
-
-  // The number of user interactions, including click, tap, key press,
-  // cancellable touchstart, or pointer down followed by a pointer up.
-  uint64 num_input_events = 0;
 };
-
 
 // PageLoadTiming contains timing metrics associated with a page load. Many of
 // the metrics here are based on the Navigation Timing spec:
@@ -274,6 +261,21 @@ struct DeferredResourceCounts {
   uint64 images_loaded_after_deferral = 0;
 };
 
+// Metrics about general input delay.
+struct InputTiming {
+  // The sum of all input delay.
+  mojo_base.mojom.TimeDelta total_input_delay;
+
+  // The sum of all adjusted input delay. We adjust each input delay by
+  // subtracting a small number, currently 50ms but subject to change in the
+  // future. And if the subtraction result is negative, we will use 0ms.
+  mojo_base.mojom.TimeDelta total_adjusted_input_delay;
+
+  // The number of user interactions, including click, tap, key press,
+  // cancellable touchstart, or pointer down followed by a pointer up.
+  uint64 num_input_events = 0;
+};
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
@@ -287,5 +289,6 @@ interface PageLoadMetrics {
                array<ResourceDataUpdate> resources,
                FrameRenderDataUpdate render_data,
                CpuTiming cpu_load_timing,
-               DeferredResourceCounts new_deferred_resource_data);
+               DeferredResourceCounts new_deferred_resource_data,
+               InputTiming input_timing_delta);
 };

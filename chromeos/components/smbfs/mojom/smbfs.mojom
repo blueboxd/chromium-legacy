@@ -29,6 +29,10 @@ interface SmbFs {
 
 // Implemented by Chrome, used from SmbFs.
 interface SmbFsDelegate {
+  // Request authentication credentials. This request is made when accessing a
+  // share fails with an authentication error. If null is returned, this
+  // indicates the request was dismissed by the user.
+  RequestCredentials() => (Credentials? credentials);
 };
 
 enum MountError {
@@ -110,4 +114,10 @@ struct MountOptions {
   // Skip attempting to connect to the share, and instead unconditionally mount
   // the share.
   bool skip_connect = false;
+};
+
+struct Credentials {
+  string username;
+  string workgroup;
+  Password? password;
 };

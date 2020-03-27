@@ -94,6 +94,7 @@ CrElementsToolbarSearchFieldTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'cr_toolbar_search_field_tests.js',
   ]),
 };
@@ -121,14 +122,7 @@ CrElementsDrawerTest.prototype = {
   ]),
 };
 
-// https://crbug.com/1013656 - Flaky on Linux CFI.
-GEN('#if defined(OS_LINUX) && defined(IS_CFI)');
-GEN('#define MAYBE_Drawer DISABLED_Drawer');
-GEN('#else');
-GEN('#define MAYBE_Drawer Drawer');
-GEN('#endif');
-
-TEST_F('CrElementsDrawerTest', 'MAYBE_Drawer', function() {
+TEST_F('CrElementsDrawerTest', 'Drawer', function() {
   mocha.run();
 });
 

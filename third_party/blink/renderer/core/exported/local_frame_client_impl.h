@@ -140,6 +140,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunContentWithCertificateErrors() override;
   void DidChangePerformanceTiming() override;
+  void DidObserveInputDelay(base::TimeDelta) override;
   void DidChangeCpuTiming(base::TimeDelta) override;
   void DidObserveLoadingBehavior(LoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;

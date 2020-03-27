@@ -2,19 +2,20 @@
 @BLINK-ALLOW:offscreen
 -->
 <div>
-  <div id="locked" style="subtree-visibility: hidden-matchable">
-    <div>child</div>
-    <div id="nested" style="subtree-visibility: hidden-matchable">nested locked element!</div>
-    <div id="nonActivatable" style="subtree-visibility: hidden">nested non activatable locked element</div>
-    <!--
-      TODO(rakina): Make display:none, visibility:hidden, aria-hidden nodes
-      in locked subtrees get ignored for accessibility/marked invisible.
-    -->
-    <div style="display:none;">display:none text</div>
-    <ul role="presentation">
-      <li>role=presentation item</li>
-    </ul>
-    <div style="visibility:hidden;">visibility:hidden text</div>
-    <div aria-hidden="true">aria-hidden text</div>
+  <div style="height:10000px;">spacer so that everything below will be offscreen (and won't get viewport-activated)</div>
+  <div id="locked" style="subtree-visibility: auto">
+    <div>child text will be in AX tree but without layout</div>
+    <div id="nested" style="subtree-visibility: auto">
+      nested activatable locked element will be in AX tree but without layout
+    </div>
   </div>
+  normal text 1
+  <div id="nonViewportActivatable" style="subtree-visibility: hidden-matchable">
+    nested non-viewport-activatable locked element will not be in AX tree
+  </div>
+  normal text 2
+  <div id="nonActivatable" style="subtree-visibility: hidden">
+    nested non-activatable locked element will not be in AX tree
+  </div>
+  normal text 3
 </div>

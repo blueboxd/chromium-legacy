@@ -10,7 +10,6 @@
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
@@ -172,24 +171,6 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
       result->new_title.emplace(l10n_util::GetStringUTF16(
           browser->window()->IsFullscreen() ? IDS_EXIT_FULLSCREEN_MAC
                                             : IDS_ENTER_FULLSCREEN_MAC));
-      break;
-    }
-    case IDC_BOOKMARK_THIS_TAB: {
-      // Extensions have the ability to hide the bookmark tab menu item.
-      // This only affects the bookmark tab menu item under the main menu.
-      // The bookmark tab menu item under the app menu has its visibility
-      // controlled by AppMenuModel.
-      result->new_hidden_state =
-          chrome::ShouldRemoveBookmarkThisTabUI(browser->profile());
-      break;
-    }
-    case IDC_BOOKMARK_ALL_TABS: {
-      // Extensions have the ability to hide the bookmark all tabs menu
-      // item.  This only affects the bookmark page menu item under the main
-      // menu.  The bookmark page menu item under the app menu has its
-      // visibility controlled by AppMenuModel.
-      result->new_hidden_state =
-          chrome::ShouldRemoveBookmarkAllTabsUI(browser->profile());
       break;
     }
     case IDC_SHOW_AS_TAB: {

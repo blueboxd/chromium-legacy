@@ -242,6 +242,13 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kMakeCredential;
 
+  // Only send the googleAndroidClientData extension to authenticators that
+  // support it.
+  if (request_.android_client_data_ext) {
+    android_client_data_ext_ = *request_.android_client_data_ext;
+    request_.android_client_data_ext.reset();
+  }
+
   // Set the rk, uv and attachment fields, which were only initialized to
   // default values up to here.  TODO(martinkr): Initialize these fields earlier
   // (in AuthenticatorImpl) and get rid of the separate
@@ -363,6 +370,10 @@ void MakeCredentialRequestHandler::DispatchRequest(
         !authenticator->Options()->supports_cred_protect) {
       request.cred_protect.reset();
     }
+    if (android_client_data_ext_ && authenticator->Options() &&
+        authenticator->Options()->supports_android_client_data_ext) {
+      request.android_client_data_ext = *android_client_data_ext_;
+    }
   }
 
   ReportMakeCredentialRequestTransport(authenticator);
@@ -482,6 +493,21 @@ void MakeCredentialRequestHandler::HandleResponse(
     FIDO_LOG(ERROR)
         << "Failing make credential request due to extensions block: "
         << cbor::DiagnosticWriter::Write(*extensions);
+    std::move(completion_callback_)
+        .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             authenticator);
+    return;
+  }
+
+  if (response->android_client_data_ext() &&
+      (!android_client_data_ext_ || !authenticator->Options() ||
+       !authenticator->Options()->supports_android_client_data_ext ||
+       !IsValidAndroidClientDataJSON(
+           *android_client_data_ext_,
+           base::StringPiece(reinterpret_cast<const char*>(
+                                 response->android_client_data_ext()->data()),
+                             response->android_client_data_ext()->size())))) {
+    FIDO_LOG(ERROR) << "Invalid androidClientData extension";
     std::move(completion_callback_)
         .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
              authenticator);
@@ -761,6 +787,10 @@ void MakeCredentialRequestHandler::DispatchRequestWithToken(
   if (request.cred_protect && authenticator_->Options() &&
       !authenticator_->Options()->supports_cred_protect) {
     request.cred_protect.reset();
+  }
+  if (android_client_data_ext_ && authenticator_->Options() &&
+      authenticator_->Options()->supports_android_client_data_ext) {
+    request.android_client_data_ext = *android_client_data_ext_;
   }
 
   ReportMakeCredentialRequestTransport(authenticator_);

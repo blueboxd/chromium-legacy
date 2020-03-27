@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
@@ -372,7 +373,8 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   }
 
   if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode())) {
-    if (DisplayLockUtilities::IsInNonActivatableLockedSubtree(*GetNode())) {
+    if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+            *GetNode(), DisplayLockActivationReason::kAccessibility)) {
       if (ignored_reasons)
         ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
       return true;
@@ -3139,7 +3141,21 @@ bool AXNodeObject::OnNativeFocusAction() {
 
   Document* document = GetDocument();
   if (IsWebArea()) {
-    document->ClearFocusedElement();
+    // If another Frame has focused content (e.g. nested iframe), then we
+    // need to clear focus for the other Document Frame.
+    // Here we set the focused element via the FocusController so that the
+    // other Frame loses focus, and the target Document Element gains focus.
+    // This fixes a scenario with Narrator Item Navigation when the user
+    // navigates from the outer UI to the document when the last focused
+    // element was within a nested iframe before leaving the document frame.
+    Page* page = document->GetPage();
+    // Elements inside a portal should not be focusable.
+    if (page && !page->InsidePortal()) {
+      page->GetFocusController().SetFocusedElement(document->documentElement(),
+                                                   document->GetFrame());
+    } else {
+      document->ClearFocusedElement();
+    }
     return true;
   }
 

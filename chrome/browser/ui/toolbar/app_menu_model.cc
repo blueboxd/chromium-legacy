@@ -698,12 +698,6 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
       return app_menu_icon_controller_->GetTypeAndSeverity().type ==
              AppMenuIconController::IconType::UPGRADE_NOTIFICATION;
     }
-#if !defined(OS_LINUX) || defined(USE_AURA)
-    case IDC_BOOKMARK_THIS_TAB:
-      return !chrome::ShouldRemoveBookmarkThisTabUI(browser_->profile());
-    case IDC_BOOKMARK_ALL_TABS:
-      return !chrome::ShouldRemoveBookmarkAllTabsUI(browser_->profile());
-#endif
     default:
       return true;
   }

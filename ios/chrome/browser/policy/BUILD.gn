@@ -20,6 +20,7 @@ source_set("policy") {
 
   deps = [
     "//base",
+    "//components/password_manager/core/common",
     "//components/policy:generated",
     "//components/policy/core/common",
     "//ios/chrome/browser",
@@ -74,6 +75,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/password_manager/core/common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/sync_preferences",

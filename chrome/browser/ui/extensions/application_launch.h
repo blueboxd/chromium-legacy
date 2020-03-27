@@ -11,6 +11,11 @@
 class Browser;
 class Profile;
 
+namespace base {
+class CommandLine;
+class FilePath;
+}  // namespace base
+
 namespace content {
 class WebContents;
 }
@@ -58,5 +63,18 @@ content::WebContents* OpenAppShortcutWindow(Profile* profile,
 // Whether the extension can be launched by sending a
 // chrome.app.runtime.onLaunched event.
 bool CanLaunchViaEvent(const extensions::Extension* extension);
+
+// Attempt to open |app_id| in a new window or tab. Open an empty browser
+// window if unsuccessful. The user's preferred launch container for the app
+// (standalone window or browser tab) is used. |callback| will be called with
+// the container type used to open the app, kLaunchContainerNone if an empty
+// browser window was opened.
+void LaunchAppWithCallback(
+    Profile* profile,
+    const std::string& app_id,
+    const base::CommandLine& command_line,
+    const base::FilePath& current_directory,
+    base::OnceCallback<void(Browser* browser,
+                            apps::mojom::LaunchContainer container)> callback);
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_

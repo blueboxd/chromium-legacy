@@ -22,7 +22,6 @@
 #include "net/disk_cache/blockfile/rankings.h"
 #include "net/disk_cache/blockfile/stats.h"
 #include "net/disk_cache/blockfile/stress_support.h"
-#include "net/disk_cache/blockfile/trace.h"
 #include "net/disk_cache/disk_cache.h"
 
 namespace base {
@@ -426,7 +425,6 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   Stats stats_;  // Usage statistics.
   std::unique_ptr<base::RepeatingTimer> timer_;  // Usage timer.
   base::WaitableEvent done_;  // Signals the end of background work.
-  scoped_refptr<TraceObject> trace_object_;  // Initializes internal tracing.
   base::WeakPtrFactory<BackendImpl> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackendImpl);

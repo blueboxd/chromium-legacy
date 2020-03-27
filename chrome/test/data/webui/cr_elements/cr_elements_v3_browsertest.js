@@ -76,8 +76,8 @@ var CrElementsDrawerV3Test = class extends CrElementsV3BrowserTest {
   }
 };
 
-// https://crbug.com/1008122 - Flaky on Linux CFI and Mac 10.10.
-GEN('#if (defined(OS_LINUX) && defined(IS_CFI)) || defined(OS_MACOSX)');
+// https://crbug.com/1008122 - Flaky on Mac 10.10.
+GEN('#if defined(OS_MACOSX)');
 GEN('#define MAYBE_Drawer DISABLED_Drawer');
 GEN('#else');
 GEN('#define MAYBE_Drawer Drawer');

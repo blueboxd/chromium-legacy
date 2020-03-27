@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -22,8 +23,6 @@ namespace chromeos {
 class NetworkMetadataStore;
 
 namespace sync_wifi {
-
-class NetworkIdentifier;
 
 // Handles the retrieval, filtering, and conversion of local network
 // configurations to syncable protos.
@@ -48,8 +47,13 @@ class LocalNetworkCollector {
   // Creates a WifiConfigurationSpecifics proto with the relevant network
   // details for the network with the given |id|.  If that network doesn't
   // exist or isn't syncable it will provide base::nullopt to the callback.
-  virtual void GetSyncableNetwork(const NetworkIdentifier& id,
+  virtual void GetSyncableNetwork(const std::string& guid,
                                   ProtoCallback callback) = 0;
+
+  // Retrieves the NetworkIdentifier for a given local network's |guid|
+  // if the network no longer exists it returns nullopt.
+  virtual base::Optional<NetworkIdentifier> GetNetworkIdentifierFromGuid(
+      const std::string& guid) = 0;
 
   // Provides the metadata store which gets constructed later.
   virtual void SetNetworkMetadataStore(

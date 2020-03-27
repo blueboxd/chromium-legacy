@@ -222,18 +222,6 @@ using content::WebContents;
 namespace chrome {
 namespace {
 
-bool CanBookmarkCurrentTabInternal(const Browser* browser,
-                                   bool check_remove_bookmark_ui) {
-  BookmarkModel* model =
-      BookmarkModelFactory::GetForBrowserContext(browser->profile());
-  return browser_defaults::bookmarks_enabled &&
-         browser->profile()->GetPrefs()->GetBoolean(
-             bookmarks::prefs::kEditBookmarksEnabled) &&
-         model && model->loaded() && browser->is_type_normal() &&
-         (!check_remove_bookmark_ui ||
-          !chrome::ShouldRemoveBookmarkThisTabUI(browser->profile()));
-}
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 const extensions::Extension* GetExtensionForBrowser(Browser* browser) {
   return extensions::ExtensionRegistry::Get(browser->profile())
@@ -1032,8 +1020,6 @@ void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser) {
 }
 
 void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser) {
-  DCHECK(!chrome::ShouldRemoveBookmarkThisTabUI(browser->profile()));
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::Extension* extension = nullptr;
   extensions::Command command;
@@ -1057,7 +1043,12 @@ void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser) {
 }
 
 bool CanBookmarkCurrentTab(const Browser* browser) {
-  return CanBookmarkCurrentTabInternal(browser, true);
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(browser->profile());
+  return browser_defaults::bookmarks_enabled &&
+         browser->profile()->GetPrefs()->GetBoolean(
+             bookmarks::prefs::kEditBookmarksEnabled) &&
+         model && model->loaded() && browser->is_type_normal();
 }
 
 void BookmarkAllTabs(Browser* browser) {
@@ -1071,8 +1062,7 @@ void BookmarkAllTabs(Browser* browser) {
 
 bool CanBookmarkAllTabs(const Browser* browser) {
   return browser->tab_strip_model()->count() > 1 &&
-         !chrome::ShouldRemoveBookmarkAllTabsUI(browser->profile()) &&
-         CanBookmarkCurrentTabInternal(browser, false);
+         CanBookmarkCurrentTab(browser);
 }
 
 void SaveCreditCard(Browser* browser) {

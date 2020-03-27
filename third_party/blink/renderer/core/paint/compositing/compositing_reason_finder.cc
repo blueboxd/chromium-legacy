@@ -138,7 +138,12 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   if (auto* scrollable_area = layer->GetScrollableArea()) {
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       bool force_prefer_compositing_to_lcd_text =
-          reasons != CompositingReason::kNone;
+          reasons != CompositingReason::kNone ||
+          // In CompositeAfterPaint though we don't treat hidden backface as
+          // a direct compositing reason, it's very likely that the object will
+          // be composited, and it also indicates preference of compositing,
+          // so we prefer composited scrolling here.
+          style.BackfaceVisibility() == EBackfaceVisibility::kHidden;
 
       if (!force_prefer_compositing_to_lcd_text && object.IsLayoutView()) {
         if (auto* owner_object = object.GetFrame()->OwnerLayoutObject()) {

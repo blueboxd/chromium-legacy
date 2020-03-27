@@ -70,16 +70,55 @@ AshTestHelper::InitParams::InitParams() = default;
 AshTestHelper::InitParams::InitParams(InitParams&&) = default;
 AshTestHelper::InitParams::~InitParams() = default;
 
-AshTestHelper::AshTestHelper()
-    : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {}
+AshTestHelper::AshTestHelper() = default;
 
 AshTestHelper::~AshTestHelper() {
-  // Ensure the next test starts with a null display::Screen. Done here because
-  // some tests use Screen after TearDown().
+  // Ensure the next test starts with a null display::Screen.  This must be done
+  // here instead of in TearDown() since some tests test access to the Screen
+  // after the shell shuts down (which they use TearDown() to trigger).
   ScreenAsh::DeleteScreenForShutdown();
 }
 
 void AshTestHelper::SetUp(InitParams init_params) {
+  // Aura-general setup -------------------------------------------------------
+
+  wm_state_ = std::make_unique<::wm::WMState>();
+
+  if (init_params.config_type != kShell) {
+    ui::test::EnableTestConfigForPlatformWindows();
+    ui::InitializeInputMethodForTesting();
+  }
+
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
+
+  if (init_params.config_type == kUnitTest) {
+    zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
+        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+  }
+
+  if (!init_params.context_factory) {
+    context_factories_ = std::make_unique<ui::TestContextFactories>(false);
+    init_params.context_factory = context_factories_->GetContextFactory();
+  }
+
+  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
+  aura::test::EnvTestHelper env_helper(aura::Env::GetInstance());
+  env_helper.ResetEnvForTesting();
+  env_helper.SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
+
+  // Ash-specific setup -------------------------------------------------------
+
+  command_line_ = std::make_unique<base::test::ScopedCommandLine>();
+  statistics_provider_ =
+      std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
+  prefs_provider_ = std::make_unique<TestPrefServiceProvider>();
+  notifier_settings_controller_ =
+      std::make_unique<TestNotifierSettingsController>();
+  assistant_service_ = std::make_unique<TestAssistantService>();
+  system_tray_client_ = std::make_unique<TestSystemTrayClient>();
+  photo_controller_ = std::make_unique<TestPhotoController>();
+
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
@@ -91,48 +130,11 @@ void AshTestHelper::SetUp(InitParams init_params) {
         ::switches::kHostWindowBounds, "10+10-800x600");
   }
 
-  // Pre shell creation config init.
-  switch (init_params.config_type) {
-    case kUnitTest:
-      // Default for unit tests but not for perf tests.
-      zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-          ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-      TabletModeController::SetUseScreenshotForTest(false);
-      FALLTHROUGH;
-    case kPerfTest:
-      // Default for both unit and perf tests.
-      ui::test::EnableTestConfigForPlatformWindows();
-      display::ResetDisplayIdForTest();
-      ui::InitializeInputMethodForTesting();
-      break;
-    case kShell:
-      break;
-  }
+  if (init_params.config_type == kUnitTest)
+    TabletModeController::SetUseScreenshotForTest(false);
 
-  statistics_provider_ =
-      std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
-
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(
-      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
-
-  wm_state_ = std::make_unique<::wm::WMState>();
-  // Only create a ViewsDelegate if the test didn't create one already.
-  if (!views::ViewsDelegate::GetInstance())
-    test_views_delegate_ = std::make_unique<AshTestViewsDelegate>();
-
-  if (!bluez::BluezDBusManager::IsInitialized()) {
-    bluez::BluezDBusManager::InitializeFake();
-    bluez_dbus_manager_initialized_ = true;
-  }
-
-  if (!chromeos::PowerManagerClient::Get())
-    chromeos::PowerManagerClient::InitializeFake();
-
-  if (!chromeos::PowerPolicyController::IsInitialized()) {
-    chromeos::PowerPolicyController::Initialize(
-        chromeos::PowerManagerClient::Get());
-    power_policy_controller_initialized_ = true;
-  }
+  if (init_params.config_type != kShell)
+    display::ResetDisplayIdForTest();
 
   chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
@@ -143,104 +145,93 @@ void AshTestHelper::SetUp(InitParams init_params) {
   // last cursor visibility state, etc.
   ::wm::CursorManager::ResetCursorVisibilityStateForTest();
 
+  if (!bluez::BluezDBusManager::IsInitialized()) {
+    bluez::BluezDBusManager::InitializeFake();
+    bluez_dbus_manager_initialized_ = true;
+  }
+  if (!chromeos::PowerManagerClient::Get())
+    chromeos::PowerManagerClient::InitializeFake();
+  if (!chromeos::PowerPolicyController::IsInitialized()) {
+    chromeos::PowerPolicyController::Initialize(
+        chromeos::PowerManagerClient::Get());
+    power_policy_controller_initialized_ = true;
+  }
+  if (!NewWindowDelegate::GetInstance())
+    new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
+  if (!views::ViewsDelegate::GetInstance())
+    test_views_delegate_ = std::make_unique<AshTestViewsDelegate>();
+
   ShellInitParams shell_init_params;
   shell_init_params.delegate = std::move(init_params.delegate);
   if (!shell_init_params.delegate)
     shell_init_params.delegate = std::make_unique<TestShellDelegate>();
   shell_init_params.context_factory = init_params.context_factory;
-  if (!shell_init_params.context_factory) {
-    context_factories_ = std::make_unique<ui::TestContextFactories>(false);
-    shell_init_params.context_factory = context_factories_->GetContextFactory();
-  }
   shell_init_params.local_state = init_params.local_state;
   shell_init_params.keyboard_ui_factory =
       std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(shell_init_params));
-
-  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
-  aura::test::EnvTestHelper env_helper(aura::Env::GetInstance());
-  env_helper.ResetEnvForTesting();
-
-  env_helper.SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
-
   Shell* shell = Shell::Get();
 
   // Cursor is visible by default in tests.
-  // CursorManager is null on MASH.
-  if (shell->cursor_manager())
-    shell->cursor_manager()->ShowCursor();
+  shell->cursor_manager()->ShowCursor();
 
-  prefs_provider_ = std::make_unique<TestPrefServiceProvider>();
-  session_controller_client_.reset(new TestSessionControllerClient(
-      shell->session_controller(), prefs_provider_.get()));
-  session_controller_client_->InitializeAndSetClient();
-
-  notifier_settings_controller_ =
-      std::make_unique<TestNotifierSettingsController>();
-
-  assistant_service_ = std::make_unique<TestAssistantService>();
   shell->assistant_controller()->SetAssistant(
       assistant_service_->CreateRemoteAndBind());
 
-  system_tray_client_ = std::make_unique<TestSystemTrayClient>();
   shell->system_tray_model()->SetClient(system_tray_client_.get());
 
-  photo_controller_ = std::make_unique<TestPhotoController>();
-
+  session_controller_client_.reset(new TestSessionControllerClient(
+      shell->session_controller(), prefs_provider_.get()));
+  session_controller_client_->InitializeAndSetClient();
   if (init_params.start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);
 
+  // Requires the AppListController the Shell creates.
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
-  if (!NewWindowDelegate::GetInstance())
-    new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
-
-  // Post shell creation config init.
-  switch (init_params.config_type) {
-    case kUnitTest:
-      // Tests that change the display configuration generally don't care about
-      // the notifications and the popup UI can interfere with things like
-      // cursors.
-      shell->screen_layout_observer()->set_show_notifications_for_testing(
-          false);
-
-      // Disable display change animations in unit tests.
-      DisplayConfigurationControllerTestApi(
-          shell->display_configuration_controller())
-          .SetDisplayAnimator(false);
-
-      // Remove the app dragging animations delay for testing purposes.
-      shell->overview_controller()->set_delayed_animation_task_delay_for_test(
-          base::TimeDelta());
-      // Tests expect empty wallpaper.
-      shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
-
-      FALLTHROUGH;
-    case kPerfTest:
-      // Don't change the display size due to host size resize.
-      display::test::DisplayManagerTestApi(shell->display_manager())
-          .DisableChangeDisplayUponHostResize();
-
-      // Create the test keyboard controller observer to respond to
-      // OnLoadKeyboardContentsRequested().
-      test_keyboard_controller_observer_ =
-          std::make_unique<TestKeyboardControllerObserver>(
-              shell->keyboard_controller());
-      break;
-    case kShell:
-      shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
-      break;
+  if (init_params.config_type == kShell) {
+    shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
+    return;
   }
+
+  // Don't change the display size due to host size resize.
+  display::test::DisplayManagerTestApi(shell->display_manager())
+      .DisableChangeDisplayUponHostResize();
+
+  // Create the test keyboard controller observer to respond to
+  // OnLoadKeyboardContentsRequested().
+  test_keyboard_controller_observer_ =
+      std::make_unique<TestKeyboardControllerObserver>(
+          shell->keyboard_controller());
+
+  if (init_params.config_type != kUnitTest)
+    return;
+
+  // Tests that change the display configuration generally don't care about the
+  // notifications and the popup UI can interfere with things like cursors.
+  shell->screen_layout_observer()->set_show_notifications_for_testing(false);
+
+  // Disable display change animations in unit tests.
+  DisplayConfigurationControllerTestApi(
+      shell->display_configuration_controller())
+      .SetDisplayAnimator(false);
+
+  // Remove the app dragging animations delay for testing purposes.
+  shell->overview_controller()->set_delayed_animation_task_delay_for_test(
+      base::TimeDelta());
+
+  // Tests expect empty wallpaper.
+  shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
 }
 
 void AshTestHelper::TearDown() {
+  // Ash-specific teardown ----------------------------------------------------
+
+  // The AppListTestHelper holds a pointer to the AppListController the Shell
+  // owns, so shut the test helper down first.
   app_list_test_helper_.reset();
 
   Shell::DeleteInstance();
-  new_window_delegate_.reset();
-
-  // Needs to be reset after Shell::Get()->keyboard_controller() is deleted.
-  test_keyboard_controller_observer_.reset();
 
   // Suspend the tear down until all resources are returned via
   // CompositorFrameSinkClient::ReclaimResources()
@@ -249,6 +240,8 @@ void AshTestHelper::TearDown() {
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::CrasAudioClient::Shutdown();
 
+  // The PowerPolicyController holds a pointer to the PowerManagementClient, so
+  // shut the controller down first.
   if (power_policy_controller_initialized_) {
     chromeos::PowerPolicyController::Shutdown();
     power_policy_controller_initialized_ = false;
@@ -256,13 +249,29 @@ void AshTestHelper::TearDown() {
 
   chromeos::PowerManagerClient::Shutdown();
 
+  TabletModeController::SetUseScreenshotForTest(true);
+
+  // Destroy all owned objects to prevent tests from depending on their state
+  // after this returns.
+  test_keyboard_controller_observer_.reset();
+  test_views_delegate_.reset();
+  new_window_delegate_.reset();
   if (bluez_dbus_manager_initialized_) {
     device::BluetoothAdapterFactory::Shutdown();
     bluez::BluezDBusManager::Shutdown();
     bluez_dbus_manager_initialized_ = false;
   }
+  photo_controller_.reset();
+  system_tray_client_.reset();
+  assistant_service_.reset();
+  notifier_settings_controller_.reset();
+  prefs_provider_.reset();
+  statistics_provider_.reset();
+  command_line_.reset();
 
-  context_factories_.reset();
+  // Aura-general teardown ----------------------------------------------------
+
+  ui::ShutdownInputMethodForTesting();
 
   // Context factory referenced by Env is now destroyed. Reset Env's members in
   // case some other test tries to use it. This matters if someone else created
@@ -270,24 +279,12 @@ void AshTestHelper::TearDown() {
   if (aura::Env::HasInstance())
     aura::Env::GetInstance()->set_context_factory(nullptr);
 
-  ui::ShutdownInputMethodForTesting();
-  zero_duration_mode_.reset();
-
-  test_views_delegate_.reset();
-  wm_state_.reset();
-
-  command_line_.reset();
-
-  display::Display::ResetForceDeviceScaleFactorForTesting();
-
-  CHECK(!::wm::CaptureController::Get());
-
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
 
-  statistics_provider_.reset();
-
-  TabletModeController::SetUseScreenshotForTest(true);
+  context_factories_.reset();
+  zero_duration_mode_.reset();
+  wm_state_.reset();
 }
 
 PrefService* AshTestHelper::GetLocalStatePrefService() {

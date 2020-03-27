@@ -13,12 +13,16 @@ namespace test {
 ////////////////////////////////////////////////////////////////////////////////
 // TestFocusClient, public:
 
-TestFocusClient::TestFocusClient()
-    : focused_window_(NULL),
+TestFocusClient::TestFocusClient(Window* root_window)
+    : root_window_(root_window),
+      focused_window_(nullptr),
       observer_manager_(this) {
+  DCHECK(root_window_);
+  client::SetFocusClient(root_window_, this);
 }
 
 TestFocusClient::~TestFocusClient() {
+  client::SetFocusClient(root_window_, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

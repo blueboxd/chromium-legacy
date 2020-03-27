@@ -595,6 +595,7 @@ apps::mojom::AppPtr WebApps::Convert(const web_app::WebApp* web_app,
   app->name = web_app->name();
   app->short_name = web_app->name();
   app->description = web_app->description();
+  app->additional_search_terms = web_app->additional_search_terms();
 
   bool paused = paused_apps_.IsPaused(web_app->app_id());
   app->icon_key =

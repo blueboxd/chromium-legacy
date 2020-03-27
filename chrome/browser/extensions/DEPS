@@ -34,4 +34,7 @@ specific_include_rules = {
     # network::CrossOriginReadBlocking::Action enum.
     "+services/network/cross_origin_read_blocking.h"
   ],
+  "webstore_private_apitest.cc" : [
+    "+chrome/browser/ui/views/parent_permission_dialog_view.h",
+  ],
 }

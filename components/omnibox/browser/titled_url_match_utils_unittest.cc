@@ -25,14 +25,14 @@ using bookmarks::TitledUrlMatchToAutocompleteMatch;
 namespace {
 
 // A simple AutocompleteProvider that does nothing.
-class MockAutocompleteProvider : public AutocompleteProvider {
+class FakeAutocompleteProvider : public AutocompleteProvider {
  public:
-  explicit MockAutocompleteProvider(Type type) : AutocompleteProvider(type) {}
+  explicit FakeAutocompleteProvider(Type type) : AutocompleteProvider(type) {}
 
   void Start(const AutocompleteInput& input, bool minimal_changes) override {}
 
  private:
-  ~MockAutocompleteProvider() override {}
+  ~FakeAutocompleteProvider() override = default;
 };
 
 class MockTitledUrlNode : public bookmarks::TitledUrlNode {
@@ -78,8 +78,8 @@ TEST(TitledUrlMatchUtilsTest, TitledUrlMatchToAutocompleteMatch) {
   titled_url_match.title_match_positions = {{0, 3}};
   titled_url_match.url_match_positions = {{12, 15}};
 
-  scoped_refptr<MockAutocompleteProvider> provider =
-      new MockAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
+  scoped_refptr<FakeAutocompleteProvider> provider =
+      new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
   TestSchemeClassifier classifier;
   AutocompleteInput input(input_text, metrics::OmniboxEventProto::NTP,
                           classifier);
@@ -136,8 +136,8 @@ AutocompleteMatch BuildTestAutocompleteMatch(
   // Don't capture the scheme, so that it doesn't match.
   titled_url_match.url_match_positions = match_positions;
 
-  scoped_refptr<MockAutocompleteProvider> provider =
-      new MockAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
+  scoped_refptr<FakeAutocompleteProvider> provider =
+      new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
   TestSchemeClassifier classifier;
   AutocompleteInput input(input_text, metrics::OmniboxEventProto::NTP,
                           classifier);
@@ -251,8 +251,8 @@ TEST(TitledUrlMatchUtilsTest, EmptyInlineAutocompletion) {
   titled_url_match.title_match_positions = {{9, 12}};
   titled_url_match.url_match_positions = {};
 
-  scoped_refptr<MockAutocompleteProvider> provider =
-      new MockAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
+  scoped_refptr<FakeAutocompleteProvider> provider =
+      new FakeAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
   TestSchemeClassifier classifier;
   AutocompleteInput input(input_text, metrics::OmniboxEventProto::NTP,
                           classifier);

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/triggers/suspicious_site_trigger.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -40,41 +41,13 @@ void DestroyPrerenderContents(
   }
 }
 
-void StartDisplayingBlockingPage(
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    const security_interstitials::UnsafeResource& resource) {
-  content::WebContents* web_contents = resource.web_contents_getter.Run();
-  if (web_contents) {
-    prerender::PrerenderContents* prerender_contents =
-        prerender::PrerenderContents::FromWebContents(web_contents);
-    if (prerender_contents) {
-      prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
-    } else {
-      // With committed interstitials, if this is a main frame load, we need to
-      // get the navigation URL and referrer URL from the navigation entry now,
-      // since they are required for threat reporting, and the entry will be
-      // destroyed once the request is failed.
-      if (base::FeatureList::IsEnabled(kCommittedSBInterstitials) &&
-          resource.IsMainPageLoadBlocked()) {
-        content::NavigationEntry* entry =
-            web_contents->GetController().GetPendingEntry();
-        if (entry) {
-          security_interstitials::UnsafeResource resource_copy(resource);
-          resource_copy.navigation_url = entry->GetURL();
-          resource_copy.referrer_url = entry->GetReferrer().url;
-          ui_manager->DisplayBlockingPage(resource_copy);
-          return;
-        }
-      }
-      ui_manager->DisplayBlockingPage(resource);
-      return;
-    }
-  }
-
-  // Tab is gone or it's being prerendered.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false /*proceed*/,
-                                false /*showed_interstitial*/));
+void CreateSafeBrowsingUserInteractionObserver(
+    const content::WebContents::Getter& web_contents_getter,
+    const security_interstitials::UnsafeResource& resource,
+    bool is_main_frame,
+    scoped_refptr<SafeBrowsingUIManager> ui_manager) {
+  SafeBrowsingUserInteractionObserver::CreateForWebContents(
+      web_contents_getter.Run(), resource, is_main_frame, ui_manager);
 }
 
 }  // namespace
@@ -114,7 +87,19 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     bool has_user_gesture) {
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&StartDisplayingBlockingPage, ui_manager_, resource));
+      base::BindOnce(&SafeBrowsingUIManager::StartDisplayingBlockingPage,
+                     ui_manager_, resource));
+}
+
+// Starts displaying the SafeBrowsing interstitial page.
+void UrlCheckerDelegateImpl::
+    StartObservingInteractionsForDelayedBlockingPageHelper(
+        const security_interstitials::UnsafeResource& resource,
+        bool is_main_frame) {
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&CreateSafeBrowsingUserInteractionObserver,
+                                resource.web_contents_getter, resource,
+                                is_main_frame, ui_manager_));
 }
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {

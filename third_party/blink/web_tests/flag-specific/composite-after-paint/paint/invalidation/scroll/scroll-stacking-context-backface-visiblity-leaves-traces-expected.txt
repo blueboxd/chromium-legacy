@@ -14,18 +14,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) HEADER",
-      "position": [8, 28],
       "bounds": [769, 20],
       "drawsContent": false,
       "backfaceVisibility": "hidden",
-      "transform": 1
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='searchbar'",
       "bounds": [150, 150],
       "contentsOpaque": true,
       "backgroundColor": "#800080",
-      "transform": 2
+      "transform": 3
     }
   ],
   "transforms": [
@@ -40,6 +39,16 @@
     },
     {
       "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 28, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

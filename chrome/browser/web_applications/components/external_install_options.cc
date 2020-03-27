@@ -37,7 +37,8 @@ bool ExternalInstallOptions::operator==(
                   add_to_quick_launch_bar, override_previous_user_uninstall,
                   bypass_service_worker_check, require_manifest,
                   force_reinstall, wait_for_windows_closed, install_placeholder,
-                  reinstall_placeholder, uninstall_and_replace) ==
+                  reinstall_placeholder, uninstall_and_replace,
+                  additional_search_terms) ==
          std::tie(other.url, other.user_display_mode, other.install_source,
                   other.add_to_applications_menu, other.add_to_desktop,
                   other.add_to_quick_launch_bar,
@@ -45,7 +46,7 @@ bool ExternalInstallOptions::operator==(
                   other.bypass_service_worker_check, other.require_manifest,
                   other.force_reinstall, other.wait_for_windows_closed,
                   other.install_placeholder, other.reinstall_placeholder,
-                  other.uninstall_and_replace);
+                  other.uninstall_and_replace, other.additional_search_terms);
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -72,7 +73,10 @@ std::ostream& operator<<(std::ostream& out,
              << "\n reinstall_placeholder: "
              << install_options.reinstall_placeholder
              << "\n uninstall_and_replace:\n  "
-             << base::JoinString(install_options.uninstall_and_replace, "\n  ");
+             << base::JoinString(install_options.uninstall_and_replace, "\n  ")
+             << "\n additional_search_terms:\n "
+             << base::JoinString(install_options.additional_search_terms,
+                                 "\n ");
 }
 
 InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
@@ -90,6 +94,8 @@ InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
   params.bypass_service_worker_check =
       install_options.bypass_service_worker_check;
   params.require_manifest = install_options.require_manifest;
+
+  params.additional_search_terms = install_options.additional_search_terms;
 
   return params;
 }

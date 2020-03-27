@@ -169,6 +169,11 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
   install_options.bypass_service_worker_check = true;
   install_options.force_reinstall = force_update;
   install_options.uninstall_and_replace = info.uninstall_and_replace;
+
+  const auto& search_terms = info.additional_search_terms;
+  std::transform(search_terms.begin(), search_terms.end(),
+                 std::back_inserter(install_options.additional_search_terms),
+                 [](int term) { return l10n_util::GetStringUTF8(term); });
   return install_options;
 }
 

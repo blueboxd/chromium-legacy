@@ -90,7 +90,7 @@ Polymer({
   // <if expr="chromeos">
   /** @override */
   attached() {
-    cr.addWebUIListener(
+    this.addWebUIListener(
         'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
     settings.AndroidInfoBrowserProxyImpl.getInstance().requestAndroidAppsInfo();
   },

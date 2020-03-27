@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/logging.h"
 
 namespace base {
 
@@ -254,6 +255,16 @@ struct FeatureParam<Enum, true> {
     }
     LogInvalidEnumValue(*feature, name, value, static_cast<int>(default_value));
     return default_value;
+  }
+
+  // Returns the param-string for the given enum value.
+  std::string GetName(Enum value) const {
+    for (size_t i = 0; i < option_count; ++i) {
+      if (value == options[i].value)
+        return options[i].name;
+    }
+    NOTREACHED();
+    return "";
   }
 
   const base::Feature* const feature;

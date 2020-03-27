@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * Ctap2Status contains a subset of CTAP2 status codes. See
    * device::CtapDeviceResponseCode for the full list.
    * @enum {number}
    */
-  const Ctap2Status = {
+  /* #export */ const Ctap2Status = {
     OK: 0x0,
     ERR_INVALID_OPTION: 0x2C,
     ERR_KEEPALIVE_CANCEL: 0x2D,
@@ -34,7 +38,7 @@ cr.define('settings', function() {
    *            userDisplayName: string}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  let Credential;
+  /* #export */ let Credential;
 
   /**
    * SampleStatus is the result for reading an individual sample ("touch")
@@ -42,7 +46,7 @@ cr.define('settings', function() {
    * lastEnrollSampleStatus enum defined in the CTAP spec.
    * @enum {number}
    */
-  const SampleStatus = {
+  /* #export */ const SampleStatus = {
     OK: 0x0,
   };
 
@@ -54,7 +58,7 @@ cr.define('settings', function() {
    *            remaining: number}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  let SampleResponse;
+  /* #export */ let SampleResponse;
 
   /**
    * EnrollmentResponse is the final response to an enrollment suboperation,
@@ -63,7 +67,7 @@ cr.define('settings', function() {
    *            enrollment: ?settings.Enrollment}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  let EnrollmentResponse;
+  /* #export */ let EnrollmentResponse;
 
   /**
    * Enrollment represents a valid fingerprint template stored on a security
@@ -73,10 +77,10 @@ cr.define('settings', function() {
    *            id: string}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  let Enrollment;
+  /* #export */ let Enrollment;
 
   /** @interface */
-  class SecurityKeysPINBrowserProxy {
+  /* #export */ class SecurityKeysPINBrowserProxy {
     /**
      * Starts a PIN set/change operation by flashing all security keys. Resolves
      * with a pair of numbers. The first is one if the process has immediately
@@ -103,7 +107,7 @@ cr.define('settings', function() {
   }
 
   /** @interface */
-  class SecurityKeysCredentialBrowserProxy {
+  /* #export */ class SecurityKeysCredentialBrowserProxy {
     /**
      * Starts a credential management operation.
      *
@@ -147,7 +151,7 @@ cr.define('settings', function() {
   }
 
   /** @interface */
-  class SecurityKeysResetBrowserProxy {
+  /* #export */ class SecurityKeysResetBrowserProxy {
     /**
      * Starts a reset operation by flashing all security keys and sending a
      * reset command to the one that the user activates. Resolves with a CTAP
@@ -167,7 +171,7 @@ cr.define('settings', function() {
   }
 
   /** @interface */
-  class SecurityKeysBioEnrollProxy {
+  /* #export */ class SecurityKeysBioEnrollProxy {
     /**
      * Starts a biometric enrollment operation.
      *
@@ -247,7 +251,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.SecurityKeysPINBrowserProxy} */
-  class SecurityKeysPINBrowserProxyImpl {
+  /* #export */ class SecurityKeysPINBrowserProxyImpl {
     /** @override */
     startSetPIN() {
       return cr.sendWithPromise('securityKeyStartSetPIN');
@@ -265,7 +269,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.SecurityKeysCredentialBrowserProxy} */
-  class SecurityKeysCredentialBrowserProxyImpl {
+  /* #export */ class SecurityKeysCredentialBrowserProxyImpl {
     /** @override */
     startCredentialManagement() {
       return cr.sendWithPromise('securityKeyCredentialManagementStart');
@@ -293,7 +297,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.SecurityKeysResetBrowserProxy} */
-  class SecurityKeysResetBrowserProxyImpl {
+  /* #export */ class SecurityKeysResetBrowserProxyImpl {
     /** @override */
     reset() {
       return cr.sendWithPromise('securityKeyReset');
@@ -311,7 +315,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.SecurityKeysBioEnrollProxy} */
-  class SecurityKeysBioEnrollProxyImpl {
+  /* #export */ class SecurityKeysBioEnrollProxyImpl {
     /** @override */
     startBioEnroll() {
       return cr.sendWithPromise('securityKeyBioEnrollStart');

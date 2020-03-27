@@ -19,6 +19,7 @@ bool IsEmpty(const mojom::DocumentTiming& timing);
 bool IsEmpty(const mojom::PaintTiming& timing);
 bool IsEmpty(const mojom::ParseTiming& timing);
 bool IsEmpty(const mojom::PageLoadTiming& timing);
+bool IsEmpty(const mojom::InteractiveTiming& timing);
 
 void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing);
 

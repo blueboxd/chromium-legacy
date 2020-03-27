@@ -151,7 +151,7 @@ let RecentSitePermissions;
  * @typedef {{name: string,
  *            id: string}}
  */
-let MediaPickerEntry;
+/* #export */ let MediaPickerEntry;
 
 /**
  * @typedef {{protocol: string,
@@ -165,7 +165,7 @@ let ProtocolHandlerEntry;
  *            source: string,
  *            zoom: string}}
  */
-let ZoomLevelEntry;
+/* #export */ let ZoomLevelEntry;
 
 cr.define('settings', function() {
   /** @interface */

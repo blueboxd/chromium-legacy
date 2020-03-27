@@ -162,6 +162,11 @@ void WebApp::SetFileHandlers(apps::FileHandlers file_handlers) {
   file_handlers_ = std::move(file_handlers);
 }
 
+void WebApp::SetAdditionalSearchTerms(
+    std::vector<std::string> additional_search_terms) {
+  additional_search_terms_ = std::move(additional_search_terms);
+}
+
 void WebApp::SetSyncData(SyncData sync_data) {
   sync_data_ = std::move(sync_data);
 }
@@ -205,6 +210,8 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
     out << "  icon_size_on_disk: " << size << std::endl;
   for (const apps::FileHandler& file_handler : app.file_handlers_)
     out << "  file_handler: " << file_handler << std::endl;
+  for (const std::string& additional_search_term : app.additional_search_terms_)
+    out << "  additional_search_term: " << additional_search_term << std::endl;
 
   return out;
 }
@@ -226,13 +233,15 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app1.icon_infos_, app1.downloaded_icon_sizes_,
                   app1.display_mode_, app1.user_display_mode_,
                   app1.is_locally_installed_, app1.is_in_sync_install_,
-                  app1.file_handlers_, app1.sync_data_) ==
+                  app1.file_handlers_, app1.additional_search_terms_,
+                  app1.sync_data_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.icon_infos_, app2.downloaded_icon_sizes_,
                   app2.display_mode_, app2.user_display_mode_,
                   app2.is_locally_installed_, app2.is_in_sync_install_,
-                  app2.file_handlers_, app2.sync_data_);
+                  app2.file_handlers_, app2.additional_search_terms_,
+                  app2.sync_data_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

@@ -300,7 +300,7 @@ AbstractTts.PAUSE = 'pause';
 /**
  * TTS personality for annotations - text spoken by ChromeVox that
  * elaborates on a user interface element but isn't displayed on-screen.
- * @type {Object}
+ * @type {!Object}
  */
 AbstractTts.PERSONALITY_ANNOTATION = {
   'relativePitch': -0.25,

@@ -39,6 +39,8 @@ using testing::ElementsAre;
 
 namespace autofill {
 
+const base::Time kArbitraryTime = base::Time::FromTimeT(1234567890);
+
 class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
  public:
   static void CreateForTesting(content::WebContents* web_contents) {
@@ -92,6 +94,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
         ->SetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState,
             prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
+    test_clock_.SetNow(kArbitraryTime);
   }
 
   void SetLegalMessage(

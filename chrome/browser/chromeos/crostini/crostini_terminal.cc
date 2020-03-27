@@ -33,6 +33,10 @@
 namespace {
 constexpr char kSettingPrefix[] = "/hterm/profiles/default/";
 const size_t kSettingPrefixSize = base::size(kSettingPrefix) - 1;
+
+constexpr char kSettingBackgroundColor[] =
+    "/hterm/profiles/default/background-color";
+constexpr char kDefaultBackgroundColor[] = "#101010";
 }  // namespace
 
 namespace crostini {
@@ -234,6 +238,13 @@ void RecordTerminalSettingsChangesUMAs(Profile* profile) {
     }
     base::UmaHistogramEnumeration("Crostini.TerminalSettingsChanged", setting);
   }
+}
+
+std::string GetTerminalSettingBackgroundColor(Profile* profile) {
+  const base::DictionaryValue* value = profile->GetPrefs()->GetDictionary(
+      crostini::prefs::kCrostiniTerminalSettings);
+  const std::string* result = value->FindStringKey(kSettingBackgroundColor);
+  return result ? *result : kDefaultBackgroundColor;
 }
 
 }  // namespace crostini

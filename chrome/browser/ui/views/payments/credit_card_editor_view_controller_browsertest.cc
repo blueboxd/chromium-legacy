@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTestWithGooglePayEnabled,
             GetLabelText(static_cast<payments::DialogViewID>(
                 EditorViewController::GetInputFieldViewId(
                     autofill::CREDIT_CARD_NAME_FULL))));
-  EXPECT_EQ(base::ASCIIToUTF16("12/2020"),
+  EXPECT_EQ(card.ExpirationDateForDisplay(),
             GetLabelText(static_cast<payments::DialogViewID>(
                 EditorViewController::GetInputFieldViewId(
                     autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR))));

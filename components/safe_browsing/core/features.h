@@ -120,6 +120,9 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 // Controls whether Chrome uses new download warning UX.
 extern const base::Feature kUseNewDownloadWarnings;
 
+// Controls whether the delayed warning experiment is enabled.
+extern const base::Feature kDelayedWarnings;
+
 base::ListValue GetFeatureStatusList();
 
 // Returns whether or not to stop filling in the SyncAccountType and

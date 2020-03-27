@@ -10,14 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -26,22 +25,15 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 namespace {
 
-class StarViewTest : public extensions::ExtensionBrowserTest {
+class StarViewTest : public InProcessBrowserTest {
  public:
-  StarViewTest()
-      // In order to let a vanilla extension override the bookmark star, we have
-      // to enable the switch.
-      : enable_override_(
-            extensions::FeatureSwitch::enable_override_bookmarks_ui(),
-            true) {}
+  StarViewTest() = default;
   ~StarViewTest() override = default;
 
   PageActionIconView* GetStarIcon() {
@@ -51,8 +43,6 @@ class StarViewTest : public extensions::ExtensionBrowserTest {
   }
 
  private:
-  extensions::FeatureSwitch::ScopedOverride enable_override_;
-
   DISALLOW_COPY_AND_ASSIGN(StarViewTest);
 };
 
@@ -127,34 +117,6 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, InkDropHighlighted) {
     EXPECT_EQ(ink_drop_test_api.GetInkDrop()->GetTargetInkDropState(),
               views::InkDropState::ACTIVATED);
   }
-}
-
-// Test that installing an extension that overrides the bookmark star
-// successfully hides the star.
-IN_PROC_BROWSER_TEST_F(StarViewTest, ExtensionCanOverrideBookmarkStar) {
-  // By default, we should show the star.
-  EXPECT_TRUE(GetStarIcon()->GetVisible());
-
-  // Create and install an extension that overrides the bookmark star.
-  extensions::DictionaryBuilder chrome_ui_overrides;
-  chrome_ui_overrides.Set(
-      "bookmarks_ui",
-      extensions::DictionaryBuilder().Set("remove_button", true).Build());
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder()
-          .SetManifest(
-              extensions::DictionaryBuilder()
-                  .Set("name", "overrides star")
-                  .Set("manifest_version", 2)
-                  .Set("version", "0.1")
-                  .Set("description", "override the star")
-                  .Set("chrome_ui_overrides", chrome_ui_overrides.Build())
-                  .Build())
-          .Build();
-  extension_service()->AddExtension(extension.get());
-
-  // The star should now be hidden.
-  EXPECT_FALSE(GetStarIcon()->GetVisible());
 }
 
 }  // namespace

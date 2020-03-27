@@ -5,7 +5,6 @@
 package org.chromium.components.paintpreview.player;
 
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.graphics.Rect;
 
 import org.chromium.base.Callback;
@@ -31,7 +30,8 @@ public interface PlayerCompositorDelegate {
     /**
      * Sends a click event for a frame to native for link hit testing.
      * @param frameGuid The GUID of the frame.
-     * @param point The coordinates of the click event, relative to the frame.
+     * @param x The x coordinate of the click event, relative to the frame.
+     * @param y The y coordinate of the click event, relative to the frame.
      */
-    void onClick(UnguessableToken frameGuid, Point point);
+    void onClick(UnguessableToken frameGuid, int x, int y);
 }

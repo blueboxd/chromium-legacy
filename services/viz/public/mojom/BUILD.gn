@@ -58,4 +58,40 @@ mojom("mojom") {
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "viz.mojom.AggregatedHitTestRegion"
+          cpp = "::viz::AggregatedHitTestRegion"
+        },
+      ]
+      traits_headers = [ "//services/viz/public/cpp/hit_test/aggregated_hit_test_region_mojom_traits.h" ]
+      traits_sources = [ "//services/viz/public/cpp/hit_test/aggregated_hit_test_region_mojom_traits.cc" ]
+      traits_public_deps = [
+        "//components/viz/common",
+        "//ui/gfx/geometry/mojom",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "viz.mojom.HitTestRegion"
+          cpp = "::viz::HitTestRegion"
+        },
+        {
+          mojom = "viz.mojom.HitTestRegionList"
+          cpp = "::viz::HitTestRegionList"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//services/viz/public/cpp/hit_test/hit_test_region_list_mojom_traits.h" ]
+      traits_sources = [ "//services/viz/public/cpp/hit_test/hit_test_region_list_mojom_traits.cc" ]
+      traits_public_deps = [
+        "//components/viz/common",
+        "//ui/gfx/geometry/mojom",
+      ]
+    },
+  ]
 }

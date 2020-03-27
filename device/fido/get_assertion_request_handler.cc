@@ -81,7 +81,9 @@ base::Optional<GetAssertionStatus> ConvertDeviceResponseCode(
 
 bool ResponseValid(const FidoAuthenticator& authenticator,
                    const CtapGetAssertionRequest& request,
-                   const AuthenticatorGetAssertionResponse& response) {
+                   const AuthenticatorGetAssertionResponse& response,
+                   const base::Optional<AndroidClientDataExtensionInput>&
+                       android_client_data_ext_in) {
   if (response.GetRpIdHash() !=
           fido_parsing_utils::CreateSHA256Hash(request.rp_id) &&
       (!request.app_id ||
@@ -161,6 +163,18 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   if (extensions) {
     FIDO_LOG(ERROR) << "assertion response invalid due to extensions block: "
                     << cbor::DiagnosticWriter::Write(*extensions);
+    return false;
+  }
+
+  if (response.android_client_data_ext() &&
+      (!android_client_data_ext_in || !authenticator.Options() ||
+       !authenticator.Options()->supports_android_client_data_ext ||
+       !IsValidAndroidClientDataJSON(
+           *android_client_data_ext_in,
+           base::StringPiece(reinterpret_cast<const char*>(
+                                 response.android_client_data_ext()->data()),
+                             response.android_client_data_ext()->size())))) {
+    FIDO_LOG(ERROR) << "Invalid androidClientData extension";
     return false;
   }
 
@@ -245,6 +259,13 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     request_.user_verification = UserVerificationRequirement::kRequired;
   }
 
+  // Only send the googleAndroidClientData extension to authenticators that
+  // support it.
+  if (request_.android_client_data_ext) {
+    android_client_data_ext_ = *request_.android_client_data_ext;
+    request_.android_client_data_ext.reset();
+  }
+
   FIDO_LOG(EVENT) << "Starting GetAssertion flow";
   Start();
 }
@@ -309,6 +330,10 @@ void GetAssertionRequestHandler::DispatchRequest(
       request.user_verification = UserVerificationRequirement::kRequired;
     } else {
       request.user_verification = UserVerificationRequirement::kDiscouraged;
+    }
+    if (android_client_data_ext_ && authenticator->Options() &&
+        authenticator->Options()->supports_android_client_data_ext) {
+      request.android_client_data_ext = *android_client_data_ext_;
     }
   }
 
@@ -440,7 +465,8 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
-  if (!response || !ResponseValid(*authenticator, request_, *response)) {
+  if (!response || !ResponseValid(*authenticator, request_, *response,
+                                  android_client_data_ext_)) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
     std::move(completion_callback_)
@@ -496,7 +522,8 @@ void GetAssertionRequestHandler::HandleNextResponse(
     return;
   }
 
-  if (!ResponseValid(*authenticator, request_, *response)) {
+  if (!ResponseValid(*authenticator, request_, *response,
+                     android_client_data_ext_)) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
     std::move(completion_callback_)
@@ -733,6 +760,11 @@ void GetAssertionRequestHandler::DispatchRequestWithToken(
   request.pin_protocol = pin::kProtocolVersion;
   // Do not do internal UV again.
   request.user_verification = UserVerificationRequirement::kDiscouraged;
+
+  if (android_client_data_ext_ && authenticator_->Options() &&
+      authenticator_->Options()->supports_android_client_data_ext) {
+    request.android_client_data_ext = *android_client_data_ext_;
+  }
 
   ReportGetAssertionRequestTransport(authenticator_);
 

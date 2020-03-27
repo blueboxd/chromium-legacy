@@ -56,8 +56,6 @@ const char kAltShiftG[] = "Alt+Shift+G";
 
 // Name of the command for the "basics" test extension.
 const char kBasicsShortcutCommandName[] = "toggle-feature";
-// Name of the command for the overwrite_bookmark_shortcut test extension.
-const char kOverwriteBookmarkShortcutCommandName[] = "send message";
 
 #if defined(OS_MACOSX)
 const char kBookmarkKeybinding[] = "Command+D";
@@ -533,127 +531,6 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
     EXPECT_TRUE(alt_shift_f_listener.WaitUntilSatisfied());
     EXPECT_FALSE(ctrl_f_listener.was_satisfied());
   }
-}
-
-// This test validates that an extension can remove the Chrome bookmark shortcut
-// if it has requested to do so.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, RemoveBookmarkShortcut) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  // This functionality requires a feature flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui", "1");
-
-  ASSERT_TRUE(RunExtensionTest("keybinding/remove_bookmark_shortcut"))
-      << message_;
-
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
-}
-
-// This test validates that an extension cannot remove the Chrome bookmark
-// shortcut without being given permission with a feature flag.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest,
-                       RemoveBookmarkShortcutWithoutPermission) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  EXPECT_TRUE(RunExtensionTestIgnoreManifestWarnings(
-      "keybinding/remove_bookmark_shortcut"));
-
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
-}
-
-// This test validates that an extension that removes the Chrome bookmark
-// shortcut continues to remove the bookmark shortcut with a user-assigned
-// Ctrl+D shortcut (i.e. it does not trigger the overwrite functionality).
-IN_PROC_BROWSER_TEST_F(CommandsApiTest,
-                       RemoveBookmarkShortcutWithUserKeyBinding) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  // This functionality requires a feature flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui", "1");
-
-  ASSERT_TRUE(RunExtensionTest("keybinding/remove_bookmark_shortcut"))
-      << message_;
-
-  // Check that the shortcut is removed.
-  CommandService* command_service = CommandService::Get(browser()->profile());
-  const Extension* extension = GetSingleLoadedExtension();
-  // Simulate the user setting a keybinding to Ctrl+D.
-  command_service->UpdateKeybindingPrefs(
-      extension->id(), manifest_values::kBrowserActionCommandEvent,
-      kBookmarkKeybinding);
-
-  // Force the command enable state to be recalculated.
-  browser()->command_controller()->ExtensionStateChanged();
-
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
-}
-
-// This test validates that an extension can override the Chrome bookmark
-// shortcut if it has requested to do so.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  // This functionality requires a feature flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui", "1");
-
-  ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
-      << message_;
-
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-
-  // Activate the shortcut (Ctrl+D) to send a test message.
-  ExtensionTestMessageListener test_listener(false);  // Won't reply.
-  ASSERT_TRUE(SendBookmarkKeyPressSync(browser()));
-  EXPECT_TRUE(test_listener.WaitUntilSatisfied());
-  EXPECT_EQ(std::string(kOverwriteBookmarkShortcutCommandName),
-            test_listener.message());
-}
-
-// This test validates that an extension that requests to override the Chrome
-// bookmark shortcut, but does not get the keybinding, does not remove the
-// bookmark UI.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest,
-                       OverwriteBookmarkShortcutWithoutKeybinding) {
-  // This functionality requires a feature flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui", "1");
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
-
-  ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
-      << message_;
-
-  const Extension* extension = GetSingleLoadedExtension();
-  CommandService* command_service = CommandService::Get(browser()->profile());
-  CommandMap commands;
-  // Verify the expected command is present.
-  EXPECT_TRUE(command_service->GetNamedCommands(
-      extension->id(), CommandService::SUGGESTED, CommandService::ANY_SCOPE,
-      &commands));
-  EXPECT_EQ(1u, commands.count(kOverwriteBookmarkShortcutCommandName));
-
-  // Simulate the user removing the Ctrl+D keybinding from the command.
-  command_service->RemoveKeybindingPrefs(
-      extension->id(), kOverwriteBookmarkShortcutCommandName);
-
-  // Force the command enable state to be recalculated.
-  browser()->command_controller()->ExtensionStateChanged();
-
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
 }
 
 // This test validates that an extension override of the Chrome bookmark

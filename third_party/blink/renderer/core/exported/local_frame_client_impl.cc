@@ -724,6 +724,12 @@ void LocalFrameClientImpl::DidChangePerformanceTiming() {
     web_frame_->Client()->DidChangePerformanceTiming();
 }
 
+void LocalFrameClientImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
+  if (web_frame_->Client()) {
+    web_frame_->Client()->DidObserveInputDelay(input_delay);
+  }
+}
+
 void LocalFrameClientImpl::DidChangeCpuTiming(base::TimeDelta time) {
   if (web_frame_->Client())
     web_frame_->Client()->DidChangeCpuTiming(time);

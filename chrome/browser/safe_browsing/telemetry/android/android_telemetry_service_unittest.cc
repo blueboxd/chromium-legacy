@@ -79,6 +79,7 @@ class AndroidTelemetryServiceTest : public testing::Test {
     // before the NetworkService object..
     browser_process_->safe_browsing_service()->ShutDown();
     browser_process_->SetSafeBrowsingService(nullptr);
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(nullptr);
     base::RunLoop().RunUntilIdle();
   }
 

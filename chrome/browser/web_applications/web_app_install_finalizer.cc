@@ -162,6 +162,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
                                     : DisplayMode::kBrowser);
   }
 
+  web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(source);
   web_app->SetIsInSyncInstall(false);
 

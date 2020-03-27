@@ -36,8 +36,10 @@ WifiConfigurationSyncService::WifiConfigurationSyncService(
       remote_cros_network_config_.get(), std::make_unique<TimerFactory>());
   collector_ = std::make_unique<LocalNetworkCollectorImpl>(
       remote_cros_network_config_.get());
+  NetworkHandler* network_handler = NetworkHandler::Get();
   bridge_ = std::make_unique<sync_wifi::WifiConfigurationBridge>(
       updater_.get(), collector_.get(),
+      network_handler->network_configuration_handler(),
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::WIFI_CONFIGURATIONS,
           base::BindRepeating(&syncer::ReportUnrecoverableError, channel)),

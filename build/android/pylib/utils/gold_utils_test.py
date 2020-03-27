@@ -25,6 +25,7 @@ _SkiaGoldArgs = collections.namedtuple('_SkiaGoldArgs', [
     'gerrit_issue',
     'gerrit_patchset',
     'buildbucket_id',
+    'bypass_skia_gold_functionality',
 ])
 
 
@@ -33,9 +34,11 @@ def createSkiaGoldArgs(local_pixel_tests=None,
                        git_revision=None,
                        gerrit_issue=None,
                        gerrit_patchset=None,
-                       buildbucket_id=None):
+                       buildbucket_id=None,
+                       bypass_skia_gold_functionality=None):
   return _SkiaGoldArgs(local_pixel_tests, no_luci_auth, git_revision,
-                       gerrit_issue, gerrit_patchset, buildbucket_id)
+                       gerrit_issue, gerrit_patchset, buildbucket_id,
+                       bypass_skia_gold_functionality)
 
 
 def assertArgWith(test, arg_list, arg, value):
@@ -212,18 +215,34 @@ class SkiaGoldSessionAuthenticateTest(unittest.TestCase):
   @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
   def test_commandOutputReturned(self, cmd_mock):
     cmd_mock.return_value = (1, 'Something bad :(', None)
+    args = createSkiaGoldArgs(git_revision='a')
+    sgp = gold_utils.SkiaGoldProperties(args)
     with tempfile_ext.NamedTemporaryDirectory() as working_dir:
-      session = gold_utils.SkiaGoldSession(working_dir, None)
+      session = gold_utils.SkiaGoldSession(working_dir, sgp)
       rc, stdout = session.Authenticate()
     self.assertEqual(cmd_mock.call_count, 1)
     self.assertEqual(rc, 1)
     self.assertEqual(stdout, 'Something bad :(')
 
   @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
+  def test_bypassSkiaGoldFunctionality(self, cmd_mock):
+    cmd_mock.return_value = (None, None, None)
+    args = createSkiaGoldArgs(
+        git_revision='a', bypass_skia_gold_functionality=True)
+    sgp = gold_utils.SkiaGoldProperties(args)
+    with tempfile_ext.NamedTemporaryDirectory() as working_dir:
+      session = gold_utils.SkiaGoldSession(working_dir, sgp)
+      rc, _ = session.Authenticate()
+    self.assertEqual(rc, 0)
+    cmd_mock.assert_not_called()
+
+  @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
   def test_commandWithUseLuciTrue(self, cmd_mock):
     cmd_mock.return_value = (None, None, None)
+    args = createSkiaGoldArgs(git_revision='a')
+    sgp = gold_utils.SkiaGoldProperties(args)
     with tempfile_ext.NamedTemporaryDirectory() as working_dir:
-      session = gold_utils.SkiaGoldSession(working_dir, None)
+      session = gold_utils.SkiaGoldSession(working_dir, sgp)
       session.Authenticate(use_luci=True)
     self.assertIn('--luci', cmd_mock.call_args[0][0])
 
@@ -250,8 +269,10 @@ class SkiaGoldSessionAuthenticateTest(unittest.TestCase):
   @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
   def test_commandCommonArgs(self, cmd_mock):
     cmd_mock.return_value = (None, None, None)
+    args = createSkiaGoldArgs(git_revision='a')
+    sgp = gold_utils.SkiaGoldProperties(args)
     with tempfile_ext.NamedTemporaryDirectory() as working_dir:
-      session = gold_utils.SkiaGoldSession(working_dir, None)
+      session = gold_utils.SkiaGoldSession(working_dir, sgp)
       session.Authenticate()
     call_args = cmd_mock.call_args[0][0]
     self.assertIn('auth', call_args)
@@ -272,6 +293,18 @@ class SkiaGoldSessionCompareTest(unittest.TestCase):
     self.assertEqual(cmd_mock.call_count, 1)
     self.assertEqual(rc, 1)
     self.assertEqual(stdout, 'Something bad :(')
+
+  @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
+  def test_bypassSkiaGoldFunctionality(self, cmd_mock):
+    cmd_mock.return_value = (None, None, None)
+    args = createSkiaGoldArgs(
+        git_revision='a', bypass_skia_gold_functionality=True)
+    sgp = gold_utils.SkiaGoldProperties(args)
+    with tempfile_ext.NamedTemporaryDirectory() as working_dir:
+      session = gold_utils.SkiaGoldSession(working_dir, sgp)
+      rc, _ = session.Compare(None, None, None, None)
+    self.assertEqual(rc, 0)
+    cmd_mock.assert_not_called()
 
   @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
   def test_commandWithLocalPixelTestsTrue(self, cmd_mock):
@@ -426,6 +459,17 @@ class SkiaGoldSessionDiffTest(unittest.TestCase):
     self.assertEqual(stdout, 'Something bad :(')
 
   @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
+  def test_bypassSkiaGoldFunctionality(self, cmd_mock):
+    cmd_mock.return_value = (None, None, None)
+    args = createSkiaGoldArgs(
+        git_revision='a', bypass_skia_gold_functionality=True)
+    sgp = gold_utils.SkiaGoldProperties(args)
+    with tempfile_ext.NamedTemporaryDirectory() as working_dir:
+      session = gold_utils.SkiaGoldSession(working_dir, sgp)
+      with self.assertRaises(RuntimeError):
+        session.Diff(None, None, None, None)
+
+  @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
   def test_commandCommonArgs(self, cmd_mock):
     cmd_mock.return_value = (None, None, None)
     args = createSkiaGoldArgs(git_revision='a', local_pixel_tests=False)
@@ -497,6 +541,8 @@ class SkiaGoldPropertiesInitializationTest(unittest.TestCase):
     self.assertEqual(instance._issue, expected.get('gerrit_issue'))
     self.assertEqual(instance._patchset, expected.get('gerrit_patchset'))
     self.assertEqual(instance._job_id, expected.get('buildbucket_id'))
+    self.assertEqual(instance._bypass_skia_gold_functionality,
+                     expected.get('bypass_skia_gold_functionality'))
 
   def test_initializeSkiaGoldAttributes_unsetLocal(self):
     args = createSkiaGoldArgs()
@@ -517,6 +563,11 @@ class SkiaGoldPropertiesInitializationTest(unittest.TestCase):
     args = createSkiaGoldArgs(no_luci_auth=True)
     sgp = gold_utils.SkiaGoldProperties(args)
     self.verifySkiaGoldProperties(sgp, {'no_luci_auth': True})
+
+  def test_initializeSkiaGoldAttributes_bypassExplicitTrue(self):
+    args = createSkiaGoldArgs(bypass_skia_gold_functionality=True)
+    sgp = gold_utils.SkiaGoldProperties(args)
+    self.verifySkiaGoldProperties(sgp, {'bypass_skia_gold_functionality': True})
 
   def test_initializeSkiaGoldAttributes_explicitGitRevision(self):
     args = createSkiaGoldArgs(git_revision='a')

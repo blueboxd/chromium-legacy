@@ -17,6 +17,11 @@ namespace apps {
 struct AppLaunchParams;
 }  // namespace apps
 
+namespace base {
+class CommandLine;
+class FilePath;
+}  // namespace base
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -41,8 +46,8 @@ class WebAppLaunchManager : public apps::LaunchManager {
       const base::CommandLine& command_line,
       const base::FilePath& current_directory,
       base::OnceCallback<void(Browser* browser,
-                              apps::mojom::LaunchContainer container)> callback)
-      override;
+                              apps::mojom::LaunchContainer container)>
+          callback);
 
  private:
   void LaunchWebApplication(

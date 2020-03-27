@@ -266,6 +266,7 @@ source_set("eg2_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/autofill/core/browser:test_support",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",
     "//ios/chrome/browser/ui/settings/autofill:feature_flags",

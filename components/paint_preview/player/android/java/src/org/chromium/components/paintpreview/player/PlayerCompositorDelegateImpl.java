@@ -5,7 +5,6 @@
 package org.chromium.components.paintpreview.player;
 
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.graphics.Rect;
 
 import org.chromium.base.Callback;
@@ -94,13 +93,13 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     }
 
     @Override
-    public void onClick(UnguessableToken frameGuid, Point point) {
+    public void onClick(UnguessableToken frameGuid, int x, int y) {
         if (mNativePlayerCompositorDelegate == 0) {
             return;
         }
 
         PlayerCompositorDelegateImplJni.get().onClick(
-                mNativePlayerCompositorDelegate, frameGuid, point.x, point.y);
+                mNativePlayerCompositorDelegate, frameGuid, x, y);
     }
 
     @CalledByNative

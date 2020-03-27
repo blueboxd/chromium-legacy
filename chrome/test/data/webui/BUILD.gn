@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/sanitizers/sanitizers.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
@@ -214,6 +213,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
     "$root_gen_dir/chrome/test/data/webui/resources/list_property_update_behavior_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/about_page_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/all_sites_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/appearance_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/appearance_fonts_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/autofill_page_test.m.js",
@@ -250,10 +250,12 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/pref_util_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/prefs_test_cases.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/prefs_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/protocol_handlers_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/reset_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/search_engines_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/search_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/search_settings_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/security_keys_subpage_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_main_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_menu_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_slider_tests.m.js",
@@ -265,6 +267,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/test_about_page_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_local_data_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_metrics_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/site_data_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_data_details_subpage_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_details_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_details_permission_tests.m.js",
@@ -311,11 +314,6 @@ js2gtest("browser_tests_js_webui") {
     ]
   }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-  # https://crbug.com/1013656
-  if (is_cfi) {
-    defines += [ "IS_CFI" ]
-  }
 }
 
 js2gtest("browser_tests_js_mojo_lite_webui") {

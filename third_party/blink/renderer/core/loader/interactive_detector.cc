@@ -153,18 +153,6 @@ base::Optional<base::TimeTicks> InteractiveDetector::GetLongestInputTimestamp()
   return page_event_times_.longest_input_timestamp;
 }
 
-uint64_t InteractiveDetector::GetNumInputEvents() const {
-  return page_event_times_.num_input_events;
-}
-
-base::TimeDelta InteractiveDetector::GetTotalInputDelay() const {
-  return page_event_times_.total_input_delay;
-}
-
-base::TimeDelta InteractiveDetector::GetTotalAdjustedInputDelay() const {
-  return page_event_times_.total_adjusted_input_delay;
-}
-
 bool InteractiveDetector::PageWasBackgroundedSinceEvent(
     base::TimeTicks event_time) {
   DCHECK(GetSupplementable());
@@ -235,17 +223,14 @@ void InteractiveDetector::HandleForInputDelay(
     event_timestamp = event_platform_timestamp;
   }
 
-  page_event_times_.num_input_events++;
-  page_event_times_.total_input_delay += delay;
-  page_event_times_.total_adjusted_input_delay +=
-      base::TimeDelta::FromMilliseconds(
-          std::max(delay.InMilliseconds() - 50, int64_t(0)));
   pending_pointerdown_delay_ = base::TimeDelta();
   pending_pointerdown_timestamp_ = base::TimeTicks();
+  bool interactive_timing_metrics_changed = false;
 
   if (!page_event_times_.first_input_delay.has_value()) {
     page_event_times_.first_input_delay = delay;
     page_event_times_.first_input_timestamp = event_timestamp;
+    interactive_timing_metrics_changed = true;
 
     if (delay > kFirstInputDelayTraceEventThreshold) {
       // Emit a trace event to highlight long first input delays.
@@ -275,6 +260,9 @@ void InteractiveDetector::HandleForInputDelay(
   ukm::builders::InputEvent(source_id)
       .SetInteractiveTiming_InputDelay(delay.InMilliseconds())
       .Record(GetUkmRecorder());
+  if (GetSupplementable()->Loader()) {
+    GetSupplementable()->Loader()->DidObserveInputDelay(delay);
+  }
 
   UMA_HISTOGRAM_CUSTOM_TIMES(kHistogramInputDelay, delay,
                              base::TimeDelta::FromMilliseconds(1),
@@ -291,10 +279,12 @@ void InteractiveDetector::HandleForInputDelay(
       !PageWasBackgroundedSinceEvent(event_timestamp)) {
     page_event_times_.longest_input_delay = delay;
     page_event_times_.longest_input_timestamp = event_timestamp;
+    interactive_timing_metrics_changed = true;
   }
 
-  if (GetSupplementable()->Loader())
+  if (GetSupplementable()->Loader() && interactive_timing_metrics_changed) {
     GetSupplementable()->Loader()->DidChangePerformanceTiming();
+  }
 }
 
 void InteractiveDetector::BeginNetworkQuietPeriod(

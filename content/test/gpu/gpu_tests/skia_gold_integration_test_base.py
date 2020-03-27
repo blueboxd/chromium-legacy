@@ -171,6 +171,12 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       help='Don\'t use the service account provided by LUCI for authentication '
            'for Skia Gold, instead relying on gsutil to be pre-authenticated. '
            'Meant for testing locally instead of on the bots.')
+    parser.add_option(
+      '--bypass-skia-gold-functionality',
+      action='store_true', default=False,
+      help='Bypass all interaction with Skia Gold, effectively disabling the '
+           'image comparison portion of any tests that use Gold. Only meant to '
+           'be used in case a Gold outage occurs and cannot be fixed quickly.')
 
   @classmethod
   def ResetGpuInfo(cls):
@@ -375,6 +381,10 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       page: the GPU PixelTestPage object for the test.
       build_id_args: a list of build-identifying flags and values.
     """
+    if self.GetParsedCommandLineOptions().bypass_skia_gold_functionality:
+      logging.warning('Not actually comparing with Gold due to '
+                      '--bypass-skia-gold-functionality being present.')
+      return
     if not isinstance(build_id_args, list) or '--commit' not in build_id_args:
       raise Exception('Requires build args to be specified, including --commit')
 

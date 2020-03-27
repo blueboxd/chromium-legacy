@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chromeos/components/smbfs/smbfs_host.h"
@@ -57,6 +58,10 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   // Unmounts the filesystem and cancels any pending mount request.
   void Unmount(UnmountCallback callback);
 
+  // Allow smbfs to make credentials request for a short period of time
+  // (currently 5 seconds).
+  void AllowCredentialsRequest();
+
   // Returns whether the filesystem is mounted and accessible via mount_path().
   bool IsMounted() const { return bool(host_); }
 
@@ -82,6 +87,7 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
 
   // smbfs::SmbFsHost::Delegate overrides:
   void OnDisconnected() override;
+  void RequestCredentials(RequestCredentialsCallback callback) override;
 
   Profile* const profile_;
   const SmbUrl share_url_;
@@ -93,6 +99,9 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   MounterCreationCallback mounter_creation_callback_for_test_;
   std::unique_ptr<smbfs::SmbFsMounter> mounter_;
   std::unique_ptr<smbfs::SmbFsHost> host_;
+
+  base::TimeTicks allow_credential_request_expiry_;
+  bool allow_credential_request_ = false;
 };
 
 }  // namespace smb_client

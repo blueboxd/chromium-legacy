@@ -23,6 +23,7 @@ namespace page_load_metrics {
 
 namespace {
 const int kInitialTimerDelayMillis = 50;
+const int64_t kInputDelayAdjustmentMillis = int64_t(50);
 const base::Feature kPageLoadMetricsTimerDelayFeature{
     "PageLoadMetricsTimerDelay", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace
@@ -37,6 +38,7 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       timer_(std::move(timer)),
       last_timing_(std::move(initial_timing)),
       last_cpu_timing_(mojom::CpuTiming::New()),
+      input_timing_delta_(mojom::InputTiming::New()),
       metadata_(mojom::FrameMetadata::New()),
       new_features_(mojom::PageLoadFeatures::New()),
       new_deferred_resource_data_(mojom::DeferredResourceCounts::New()),
@@ -290,9 +292,12 @@ void PageTimingMetricsSender::SendNow() {
       page_resource_data_use_.erase(resource->resource_id());
     }
   }
+
   sender_->SendTiming(last_timing_, metadata_, std::move(new_features_),
                       std::move(resources), render_data_, last_cpu_timing_,
-                      std::move(new_deferred_resource_data_));
+                      std::move(new_deferred_resource_data_),
+                      std::move(input_timing_delta_));
+  input_timing_delta_ = mojom::InputTiming::New();
   new_deferred_resource_data_ = mojom::DeferredResourceCounts::New();
   new_features_ = mojom::PageLoadFeatures::New();
   metadata_->intersection_update.reset();
@@ -300,6 +305,17 @@ void PageTimingMetricsSender::SendNow() {
   modified_resources_.clear();
   render_data_.layout_shift_delta = 0;
   render_data_.layout_shift_delta_before_input_or_scroll = 0;
+}
+
+void PageTimingMetricsSender::DidObserveInputDelay(
+    base::TimeDelta input_delay) {
+  input_timing_delta_->num_input_events++;
+  input_timing_delta_->total_input_delay += input_delay;
+  input_timing_delta_->total_adjusted_input_delay +=
+      base::TimeDelta::FromMilliseconds(
+          std::max(int64_t(0),
+                   input_delay.InMilliseconds() - kInputDelayAdjustmentMillis));
+  EnsureSendTimer();
 }
 
 }  // namespace page_load_metrics

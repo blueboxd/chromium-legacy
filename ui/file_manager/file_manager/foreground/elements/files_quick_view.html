@@ -34,7 +34,7 @@
          </cr-button>
            <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" tabindex="0" has-tooltip>
            </files-icon-button>
-           <cr-button id="info-button" on-click="onMetadataButtonTap_" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" has-tooltip toogle>
+           <cr-button id="info-button" on-click="onMetadataButtonTap_" aria-pressed="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" has-tooltip>
             <span class="icon"></span>
           </cr-button>
         </div>

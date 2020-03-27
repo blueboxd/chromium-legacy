@@ -193,6 +193,7 @@ ci.mac_builder(
 
 ci.mac_ios_builder(
     name = 'ios-simulator',
+    goma_backend = None,
 )
 
 

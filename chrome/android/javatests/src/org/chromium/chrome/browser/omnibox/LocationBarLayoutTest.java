@@ -5,9 +5,14 @@
 package org.chromium.chrome.browser.omnibox;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+
+import static org.hamcrest.Matchers.not;
 
 import android.support.test.filters.SmallTest;
 import android.view.View;
@@ -164,10 +169,11 @@ public class LocationBarLayoutTest {
     }
 
     private void setUrlBarTextAndFocus(String text) throws ExecutionException {
+        onView(withId(R.id.url_bar)).perform(click());
+
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws InterruptedException {
-                getLocationBar().onUrlFocusChange(true);
                 mActivityTestRule.typeInOmnibox(text, false);
                 return null;
             }
@@ -178,20 +184,22 @@ public class LocationBarLayoutTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testNotShowingVoiceSearchButtonIfUrlBarContainsText() throws ExecutionException {
+        // When there is text, the delete button should be visible.
         setUrlBarTextAndFocus("testing");
 
-        Assert.assertEquals(getDeleteButton().getVisibility(), VISIBLE);
-        Assert.assertNotEquals(getMicButton().getVisibility(), VISIBLE);
+        onView(withId(R.id.delete_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.mic_button)).check(matches(not(isDisplayed())));
     }
 
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testShowingVoiceSearchButtonIfUrlBarIsEmpty() throws ExecutionException {
+        // When there's no text, the mic button should be visible.
         setUrlBarTextAndFocus("");
 
-        Assert.assertNotEquals(getDeleteButton().getVisibility(), VISIBLE);
-        Assert.assertEquals(getMicButton().getVisibility(), VISIBLE);
+        onView(withId(R.id.mic_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.delete_button)).check(matches(not(isDisplayed())));
     }
 
     @Test

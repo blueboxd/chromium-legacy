@@ -94,14 +94,6 @@ class CommandService : public BrowserContextKeyedAPI,
   // Convenience method to get the CommandService for a profile.
   static CommandService* Get(content::BrowserContext* context);
 
-  // Returns true if |extension| is permitted to and does remove the bookmark
-  // shortcut key.
-  static bool RemovesBookmarkShortcut(const Extension* extension);
-
-  // Returns true if |extension| is permitted to and does remove the bookmark
-  // all tabs shortcut key.
-  static bool RemovesBookmarkAllTabsShortcut(const Extension* extension);
-
   // Gets the command (if any) for the browser action of an extension given
   // its |extension_id|. The function consults the master list to see if
   // the command is active. Returns false if the extension has no browser
@@ -180,10 +172,6 @@ class CommandService : public BrowserContextKeyedAPI,
   bool GetSuggestedExtensionCommand(const std::string& extension_id,
                                     const ui::Accelerator& accelerator,
                                     Command* command) const;
-
-  // Returns true if |extension| requests to override the bookmark shortcut key
-  // and should be allowed to do so.
-  bool RequestsBookmarkShortcutOverride(const Extension* extension) const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

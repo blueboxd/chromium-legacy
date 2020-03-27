@@ -79,6 +79,10 @@ class SmbService : public KeyedService,
   // Unmounts the SmbFs share mounted at |mount_path|.
   void UnmountSmbFs(const base::FilePath& mount_path);
 
+  // Returns the SmbFsShare instance for the file at |path|. If |path| is not
+  // part of an smbfs share, returns nullptr.
+  SmbFsShare* GetSmbFsShareForPath(const base::FilePath& path);
+
   // Gathers the hosts in the network using |share_finder_| and gets the shares
   // for each of the hosts found. |discovery_callback| is called as soon as host
   // discovery is complete. |shares_callback| may be called multiple times with

@@ -59,6 +59,10 @@ struct UnsafeResource {
   // |token| field is only set if |threat_type| is
   // SB_THREAT_TYPE_*_PASSWORD_REUSE.
   std::string token;
+
+  // If true, this UnsafeResource is created because of the Delayed Warnings
+  // experiment.
+  bool is_delayed_warning;
 };
 
 }  // namespace security_interstitials

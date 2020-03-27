@@ -25,8 +25,9 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/apps_launch.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -580,8 +581,10 @@ bool StartupBrowserCreatorImpl::MaybeLaunchApplication(Profile* profile) {
 
   if (!app_id.empty()) {
     // Opens an empty browser window if the app_id is invalid.
-    apps::LaunchService::Get(profile)->LaunchApplication(
-        app_id, command_line_, cur_dir_, base::BindOnce(&FinalizeWebAppLaunch));
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        .LaunchAppWithCallback(app_id, cur_dir_,
+                               base::BindOnce(&FinalizeWebAppLaunch));
     return true;
   }
 

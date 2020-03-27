@@ -14,6 +14,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_url_checker.mojom.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
@@ -183,11 +184,19 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   void SetWebUIToken(int token);
 
+  security_interstitials::UnsafeResource MakeUnsafeResource(
+      const GURL& url,
+      SBThreatType threat_type,
+      const ThreatMetadata& metadata);
+
   enum State {
     // Haven't started checking or checking is complete.
     STATE_NONE,
     // We have one outstanding URL-check.
     STATE_CHECKING_URL,
+    // A warning must be shown, but it's delayed because of the Delayed Warnings
+    // experiment.
+    STATE_DELAYED_BLOCKING_PAGE,
     // We're displaying a blocking page.
     STATE_DISPLAYING_BLOCKING_PAGE,
     // The blocking page has returned *not* to proceed.

@@ -45,21 +45,6 @@ chrome.test.getConfig(function(config) {
     chrome.test.assertEq('injected', message);
 
     chrome.test.runTests([
-      function allowedOrigin() {
-        doReq('http://a.com', true);
-      },
-      function diallowedOrigin() {
-        doReq('http://c.com', false);
-      },
-      function allowedSubdomain() {
-        doReq('http://foo.b.com', true);
-      },
-      function noSubdomain() {
-        doReq('http://b.com', true);
-      },
-      function disallowedSubdomain() {
-        doReq('http://foob.com', false);
-      },
       // TODO(asargent): Explicitly create SSL test server and enable the test.
       // function disallowedSSL() {
       //   doReq('https://a.com', false);

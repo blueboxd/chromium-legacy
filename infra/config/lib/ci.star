@@ -362,6 +362,7 @@ def mac_ios_builder(*,
                     name,
                     caches=None,
                     executable='recipe:ios/unified_builder_tester',
+                    goma_backend=builders.goma.backend.RBE_PROD,
                     properties=None,
                     **kwargs):
   if not caches:
@@ -374,6 +375,7 @@ def mac_ios_builder(*,
   return mac_builder(
       name = name,
       caches = caches,
+      goma_backend = goma_backend,
       executable = executable,
       os = builders.os.MAC_ANY,
       properties = properties,

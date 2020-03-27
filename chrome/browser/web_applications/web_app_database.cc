@@ -151,6 +151,12 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
+  for (const auto& additional_search_term : web_app.additional_search_terms()) {
+    // Additional search terms should be sanitized before being added here.
+    DCHECK(!additional_search_term.empty());
+    local_data->add_additional_search_terms(additional_search_term);
+  }
+
   return local_data;
 }
 
@@ -298,6 +304,17 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     file_handlers.push_back(std::move(file_handler));
   }
   web_app->SetFileHandlers(std::move(file_handlers));
+
+  std::vector<std::string> additional_search_terms;
+  for (const std::string& additional_search_term :
+       local_data.additional_search_terms()) {
+    if (additional_search_term.empty()) {
+      DLOG(ERROR) << "WebApp AdditionalSearchTerms proto action parse error";
+      return nullptr;
+    }
+    additional_search_terms.push_back(additional_search_term);
+  }
+  web_app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
   return web_app;
 }

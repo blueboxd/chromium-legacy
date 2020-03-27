@@ -91,6 +91,9 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing);
   void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing,
                                content::RenderFrameHost* rfh);
+  void SimulateInputTimingUpdate(const mojom::InputTiming& input_timing);
+  void SimulateInputTimingUpdate(const mojom::InputTiming& input_timing,
+                                 content::RenderFrameHost* rfh);
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
                                        const mojom::FrameMetadata& metadata);
   void SimulateMetadataUpdate(const mojom::FrameMetadata& metadata,
@@ -166,6 +169,7 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
       const mojom::FrameRenderDataUpdate& render_data,
       const mojom::CpuTiming& cpu_timing,
       const mojom::DeferredResourceCounts& new_deferred_resource_data,
+      const mojom::InputTiming& input_timing,
       content::RenderFrameHost* rfh);
 
   content::WebContents* web_contents() const { return web_contents_; }

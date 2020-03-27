@@ -12,7 +12,8 @@ UnsafeResource::UnsafeResource()
     : is_subresource(false),
       is_subframe(false),
       threat_type(safe_browsing::SB_THREAT_TYPE_SAFE),
-      threat_source(safe_browsing::ThreatSource::UNKNOWN) {}
+      threat_source(safe_browsing::ThreatSource::UNKNOWN),
+      is_delayed_warning(false) {}
 
 UnsafeResource::UnsafeResource(const UnsafeResource& other) = default;
 

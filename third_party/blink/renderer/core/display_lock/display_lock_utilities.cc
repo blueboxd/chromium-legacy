@@ -296,22 +296,24 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
   return nullptr;
 }
 
-bool DisplayLockUtilities::IsInNonActivatableLockedSubtree(const Node& node) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+bool DisplayLockUtilities::IsInUnlockedOrActivatableSubtree(
+    const Node& node,
+    DisplayLockActivationReason activation_reason) {
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled(
+          node.GetExecutionContext()) ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       node.GetDocument().DisplayLockBlockingAllActivationCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
-    return false;
+    return true;
   }
 
   for (auto* element = NearestLockedExclusiveAncestor(node); element;
        element = NearestLockedExclusiveAncestor(*element)) {
-    if (!element->GetDisplayLockContext()->IsActivatable(
-            DisplayLockActivationReason::kAny)) {
-      return true;
+    if (!element->GetDisplayLockContext()->IsActivatable(activation_reason)) {
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(

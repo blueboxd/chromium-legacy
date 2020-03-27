@@ -1876,6 +1876,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-send-tab-to-self-omnibox-sending-animation",
+    "owners": [ "//components/send_tab_to_self/OWNERS" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "enable-send-tab-to-self-show-sending-ui",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 77

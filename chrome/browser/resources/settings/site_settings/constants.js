@@ -162,7 +162,7 @@ cr.define('settings', function() {
    * used for logging userActions.
    * @enum {string}
    */
-  const ALL_SITES_DIALOG = {
+  /* #export */ const ALL_SITES_DIALOG = {
     CLEAR_DATA: 'ClearData',
     RESET_PERMISSIONS: 'ResetPermissions',
   };

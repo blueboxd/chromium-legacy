@@ -29,7 +29,11 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -604,6 +608,36 @@ TEST_F(BackGestureEventHandlerTest, BackGestureWithAndroidKeyboardTest) {
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
   EXPECT_FALSE(window_state->IsMinimized());
+}
+
+// Tests that swiping on the backdrop to minimize a non-resizable app will not
+// cause a crash. Regression test for http://crbug.com/1064618.
+TEST_F(BackGestureEventHandlerTestCantGoBack, NonResizableApp) {
+  // Make the top window non-resizable and set its bounds so that the backdrop
+  // will take the gesture events.
+  top_window()->SetProperty(aura::client::kResizeBehaviorKey,
+                            aura::client::kResizeBehaviorCanMinimize);
+
+  WindowState* window_state = WindowState::Get(top_window());
+  window_state->Restore();
+  SetBoundsWMEvent bounds_event(gfx::Rect(200, 100, 300, 300));
+  window_state->OnWMEvent(&bounds_event);
+  ASSERT_FALSE(window_state->IsMinimized());
+
+  // Check that the backdrop is visible.
+  WorkspaceController* workspace_controller =
+      GetWorkspaceControllerForContext(top_window());
+  WorkspaceLayoutManager* layout_manager =
+      workspace_controller->layout_manager();
+  BackdropController* backdrop_controller =
+      layout_manager->backdrop_controller();
+  aura::Window* backdrop_window = backdrop_controller->backdrop_window();
+  ASSERT_TRUE(backdrop_window);
+  ASSERT_TRUE(backdrop_window->IsVisible());
+
+  // Generate a back seqeuence. There should be no crash.
+  GenerateBackSequence();
+  EXPECT_TRUE(window_state->IsMinimized());
 }
 
 }  // namespace ash

@@ -4017,6 +4017,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableAmbientAuthenticationInGuestSession)},
 
+    {"enable-send-tab-to-self-omnibox-sending-animation",
+     flag_descriptions::kSendTabToSelfOmniboxSendingAnimationName,
+     flag_descriptions::kSendTabToSelfOmniboxSendingAnimationDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         send_tab_to_self::kSendTabToSelfOmniboxSendingAnimation)},
+
     {"enable-send-tab-to-self-when-signed-in",
      flag_descriptions::kSendTabToSelfWhenSignedInName,
      flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,

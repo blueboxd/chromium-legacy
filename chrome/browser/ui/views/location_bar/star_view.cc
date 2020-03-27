@@ -18,16 +18,12 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
-#include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension_set.h"
-#include "extensions/common/feature_switch.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -61,8 +57,6 @@ StarView::StarView(CommandUpdater* command_updater,
                          page_action_icon_delegate),
       browser_(browser) {
   DCHECK(browser_);
-  extension_observer_.Add(
-      extensions::ExtensionRegistry::Get(browser_->profile()));
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, browser_->profile()->GetPrefs(),
       base::BindRepeating(&StarView::EditBookmarksPrefUpdated,
@@ -89,8 +83,7 @@ void StarView::ShowPromo() {
 
 void StarView::UpdateImpl() {
   SetVisible(browser_defaults::bookmarks_enabled &&
-             edit_bookmarks_enabled_.GetValue() &&
-             !IsBookmarkStarHiddenByExtension());
+             edit_bookmarks_enabled_.GetValue());
 }
 
 void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
@@ -147,39 +140,6 @@ void StarView::OnWidgetDestroying(views::Widget* widget) {
   }
 }
 
-void StarView::OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const extensions::Extension* extension) {
-  if (extensions::UIOverrides::RemovesBookmarkButton(extension))
-    Update();
-}
-
-void StarView::OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const extensions::Extension* extension,
-                                   extensions::UnloadedExtensionReason reason) {
-  if (extensions::UIOverrides::RemovesBookmarkButton(extension))
-    Update();
-}
-
 void StarView::EditBookmarksPrefUpdated() {
   Update();
-}
-
-bool StarView::IsBookmarkStarHiddenByExtension() const {
-  const extensions::ExtensionSet& extension_set =
-      extensions::ExtensionRegistry::Get(browser_->profile())
-          ->enabled_extensions();
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       extension_set) {
-    if (!extensions::UIOverrides::RemovesBookmarkButton(extension.get()))
-      continue;
-    if (extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kBookmarkManagerPrivate)) {
-      return true;
-    }
-    if (extensions::FeatureSwitch::enable_override_bookmarks_ui()
-            ->IsEnabled()) {
-      return true;
-    }
-  }
-  return false;
 }

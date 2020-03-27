@@ -31,7 +31,7 @@ SharedImageRepresentationGLTextureBase::BeginScopedAccess(
     GLenum mode,
     AllowUnclearedAccess allow_uncleared) {
   if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
-    LOG(ERROR) << "Attempt to access an uninitialized ShardImage";
+    LOG(ERROR) << "Attempt to access an uninitialized SharedImage";
     return nullptr;
   }
 
@@ -108,7 +108,7 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
     std::vector<GrBackendSemaphore>* end_semaphores,
     AllowUnclearedAccess allow_uncleared) {
   if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
-    LOG(ERROR) << "Attempt to write to an uninitialized ShardImage";
+    LOG(ERROR) << "Attempt to write to an uninitialized SharedImage";
     return nullptr;
   }
 
@@ -148,7 +148,7 @@ SharedImageRepresentationSkia::BeginScopedReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   if (!IsCleared()) {
-    LOG(ERROR) << "Attempt to read from an uninitialized ShardImage";
+    LOG(ERROR) << "Attempt to read from an uninitialized SharedImage";
     return nullptr;
   }
 
@@ -171,7 +171,7 @@ SharedImageRepresentationOverlay::ScopedReadAccess::ScopedReadAccess(
 std::unique_ptr<SharedImageRepresentationOverlay::ScopedReadAccess>
 SharedImageRepresentationOverlay::BeginScopedReadAccess(bool needs_gl_image) {
   if (!IsCleared()) {
-    LOG(ERROR) << "Attempt to read from an uninitialized ShardImage";
+    LOG(ERROR) << "Attempt to read from an uninitialized SharedImage";
     return nullptr;
   }
 
@@ -198,7 +198,7 @@ SharedImageRepresentationDawn::BeginScopedAccess(
     WGPUTextureUsage usage,
     AllowUnclearedAccess allow_uncleared) {
   if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
-    LOG(ERROR) << "Attempt to access an uninitialized ShardImage";
+    LOG(ERROR) << "Attempt to access an uninitialized SharedImage";
     return nullptr;
   }
 

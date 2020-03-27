@@ -185,8 +185,7 @@ dialog#delete-confirm-dialog::backdrop {
   width: 36px;
 }
 
-/* TODO(files-ng): files-ng rule that gets applied to non-files-ng */
-:host-context(html.pointer-active) cr-button:not(:active):hover {
+:host-context(html.pointer-active.files-ng) cr-button:not(:active):hover {
   --hover-bg-color: none;
   cursor: unset;
 }
@@ -255,7 +254,7 @@ iron-icon {
   display: none;
 }
 
-:host([files-ng]) #info-button[toogle] {
+:host([files-ng]) #info-button[aria-pressed=true] {
   background-color: rgba(255, 255, 255, 12%);
 }
 
@@ -268,8 +267,7 @@ iron-icon {
   font-weight: bold;
 }
 
-/* TODO(files-ng): files-ng rule that gets applied to non-files-ng */
-:host-context(html.focus-outline-visible) cr-button:not(:active):focus {
+:host-context(html.focus-outline-visible.files-ng) cr-button:not(:active):focus {
   border: 2px solid var(--google-blue-300);
 }
 

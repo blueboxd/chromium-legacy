@@ -199,7 +199,8 @@ void RendererImpl::SetLatencyHint(
   DCHECK(!latency_hint || (*latency_hint >= base::TimeDelta()));
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(chcunningham): Plumb to video renderer in a follow up CL.
+  if (video_renderer_)
+    video_renderer_->SetLatencyHint(latency_hint);
 
   if (audio_renderer_)
     audio_renderer_->SetLatencyHint(latency_hint);

@@ -2514,10 +2514,13 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
 
   raster_canvas_ = nullptr;
 
+  // The DDL pins memory for the recorded ops so it must be kept alive until its
+  // flushed.
+  std::unique_ptr<SkDeferredDisplayList> ddl;
   if (use_ddl_) {
     TRACE_EVENT0("gpu",
                  "RasterDecoderImpl::DoEndRasterCHROMIUM::DetachAndDrawDDL");
-    auto ddl = recorder_->detach();
+    ddl = recorder_->detach();
     recorder_ = nullptr;
     sk_surface_->draw(ddl.get());
   }
@@ -2540,6 +2543,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
                                      flush_info);
     DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
     end_semaphores_.clear();
+    ddl.reset();
   }
 
   shared_context_state_->UpdateSkiaOwnedMemorySize();

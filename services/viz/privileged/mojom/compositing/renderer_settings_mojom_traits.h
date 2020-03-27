@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "services/viz/privileged/cpp/overlay_strategy_mojom_traits.h"
-#include "services/viz/privileged/mojom/compositing/renderer_settings.mojom.h"
+#include "services/viz/privileged/mojom/compositing/renderer_settings.mojom-shared.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 #if defined(USE_OZONE)

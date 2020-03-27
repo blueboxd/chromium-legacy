@@ -1161,5 +1161,59 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_EQ(text->GetId(), anchor_waiter.event_target_id());
 }
 
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       IFrameContentHadFocus_ThenRootDocumentGainedFocus) {
+  // Start by loading a document with iframes.
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-padding.html");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Second Button");
+
+  // Get the root BrowserAccessibilityManager and BrowserAccessibility node.
+  BrowserAccessibilityManager* root_accessibility_manager = GetManager();
+  ASSERT_NE(nullptr, root_accessibility_manager);
+  BrowserAccessibility* root_browser_accessibility =
+      root_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            root_browser_accessibility->GetRole());
+
+  // Focus the button within the iframe.
+  {
+    BrowserAccessibility* leaf_iframe_browser_accessibility =
+        root_browser_accessibility->InternalDeepestLastChild();
+    ASSERT_NE(nullptr, leaf_iframe_browser_accessibility);
+    ASSERT_EQ(ax::mojom::Role::kIframe,
+              leaf_iframe_browser_accessibility->GetRole());
+    BrowserAccessibility* second_iframe_root_browser_accessibility =
+        leaf_iframe_browser_accessibility->PlatformGetChild(0);
+    ASSERT_NE(nullptr, second_iframe_root_browser_accessibility);
+    ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+              second_iframe_root_browser_accessibility->GetRole());
+    BrowserAccessibility* second_button = FindNodeByRole(
+        second_iframe_root_browser_accessibility, ax::mojom::Role::kButton);
+    ASSERT_NE(nullptr, second_button);
+
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+    second_iframe_root_browser_accessibility->manager()->SetFocus(
+        *second_button);
+    waiter.WaitForNotification();
+    ASSERT_EQ(second_button, root_accessibility_manager->GetFocus());
+  }
+
+  // Focusing the root Document should cause the iframe content to blur.
+  // The Document Element becomes implicitly focused when the focus is cleared,
+  // so there will not be a focus event.
+  {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kBlur);
+    root_accessibility_manager->SetFocus(*root_browser_accessibility);
+    waiter.WaitForNotification();
+    ASSERT_EQ(root_browser_accessibility,
+              root_accessibility_manager->GetFocus());
+  }
+}
+
 #endif
 }  // namespace content

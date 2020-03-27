@@ -456,6 +456,14 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
     // redirected. Will be overridden by manifest values if present.
     DCHECK(install_params_->fallback_start_url.is_valid());
     web_app_info->app_url = install_params_->fallback_start_url;
+
+    // If `additional_search_terms` was a manifest property, it would be
+    // sanitized while parsing the manifest. Since it's not, we sanitize it
+    // here.
+    for (std::string& search_term : install_params_->additional_search_terms) {
+      if (!search_term.empty())
+        web_app_info->additional_search_terms.push_back(std::move(search_term));
+    }
   }
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(

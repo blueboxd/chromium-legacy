@@ -74,6 +74,10 @@ class WebApp {
 
   const apps::FileHandlers& file_handlers() const { return file_handlers_; }
 
+  const std::vector<std::string>& additional_search_terms() const {
+    return additional_search_terms_;
+  }
+
   // While local |name| and |theme_color| may vary from device to device, the
   // synced copies of these fields are replicated to all devices. The synced
   // copies are read by a device to generate a placeholder icon (if needed). Any
@@ -119,6 +123,8 @@ class WebApp {
   // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);
+  void SetAdditionalSearchTerms(
+      std::vector<std::string> additional_search_terms);
 
   void SetSyncData(SyncData sync_data);
 
@@ -149,6 +155,7 @@ class WebApp {
   std::vector<WebApplicationIconInfo> icon_infos_;
   std::vector<SquareSizePx> downloaded_icon_sizes_;
   apps::FileHandlers file_handlers_;
+  std::vector<std::string> additional_search_terms_;
 
   SyncData sync_data_;
 };

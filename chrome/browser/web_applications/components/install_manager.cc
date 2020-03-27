@@ -8,6 +8,12 @@
 
 namespace web_app {
 
+InstallManager::InstallParams::InstallParams() = default;
+
+InstallManager::InstallParams::~InstallParams() = default;
+
+InstallManager::InstallParams::InstallParams(const InstallParams&) = default;
+
 InstallManager::InstallManager(Profile* profile) : profile_(profile) {}
 
 InstallManager::~InstallManager() = default;

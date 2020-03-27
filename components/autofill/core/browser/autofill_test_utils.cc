@@ -373,33 +373,29 @@ AutofillProfile GetServerProfile2() {
 
 CreditCard GetCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
-                    "11", "2022", "1");
+                    NextMonth().c_str(), NextYear().c_str(), "1");
   return credit_card;
 }
 
 CreditCard GetCreditCard2() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   SetCreditCardInfo(&credit_card, "Someone Else", "378282246310005" /* AmEx */,
-                    "07", "2022", "1");
+                    NextMonth().c_str(), TenYearsFromNow().c_str(), "1");
   return credit_card;
 }
 
 CreditCard GetExpiredCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
-                    "11", "2002", "1");
+                    NextMonth().c_str(), LastYear().c_str(), "1");
   return credit_card;
 }
 
 CreditCard GetIncompleteCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
-  // TODO(crbug/1059087): Change hardcoded year to NextYear.
-  SetCreditCardInfo(&credit_card, "", "4111111111111111" /* Visa */, "11",
-                    "2022", "1");
+  SetCreditCardInfo(&credit_card, "", "4111111111111111" /* Visa */,
+                    NextMonth().c_str(), NextYear().c_str(), "1");
   return credit_card;
 }
 
@@ -757,22 +753,22 @@ std::string ObfuscatedCardDigitsAsUTF8(const std::string& str) {
 
 std::string NextMonth() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
-  return base::NumberToString(now.month % 12 + 1);
+  AutofillClock::Now().LocalExplode(&now);
+  return base::StringPrintf("%02d", now.month % 12 + 1);
 }
 std::string LastYear() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year - 1);
 }
 std::string NextYear() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 1);
 }
 std::string TenYearsFromNow() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 10);
 }
 

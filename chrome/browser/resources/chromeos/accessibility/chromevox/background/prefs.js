@@ -216,11 +216,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'menuBrailleCommands': false,
   'numberReadingStyle': 'asWords',
   'position': '{}',
-  'siteSpecificEnhancements': true,
-  'siteSpecificScriptBase':
-      'https://ssl.gstatic.com/accessibility/javascript/ext/',
-  'siteSpecificScriptLoader':
-      'https://ssl.gstatic.com/accessibility/javascript/ext/loader.js',
+  'smartStickyMode': true,
   'speakTextUnderMouse': false,
   'sticky': false,
   'typingEcho': 0,

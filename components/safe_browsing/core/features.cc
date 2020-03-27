@@ -41,6 +41,9 @@ const base::Feature kCommittedSBInterstitials{
 const base::Feature kContentComplianceEnabled{
     "SafeBrowsingContentComplianceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDownloadRequestWithToken{
     "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -135,6 +138,7 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},
+    {&kDelayedWarnings, true},
     {&kCommittedSBInterstitials, true},
     {&kContentComplianceEnabled, true},
     {&kDownloadRequestWithToken, true},

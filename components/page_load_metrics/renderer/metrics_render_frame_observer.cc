@@ -45,19 +45,19 @@ class MojoPageTimingSender : public PageTimingSender {
         &page_load_metrics_);
   }
   ~MojoPageTimingSender() override = default;
-  void SendTiming(
-      const mojom::PageLoadTimingPtr& timing,
-      const mojom::FrameMetadataPtr& metadata,
-      mojom::PageLoadFeaturesPtr new_features,
-      std::vector<mojom::ResourceDataUpdatePtr> resources,
-      const mojom::FrameRenderDataUpdate& render_data,
-      const mojom::CpuTimingPtr& cpu_timing,
-      mojom::DeferredResourceCountsPtr new_deferred_resource_data) override {
+  void SendTiming(const mojom::PageLoadTimingPtr& timing,
+                  const mojom::FrameMetadataPtr& metadata,
+                  mojom::PageLoadFeaturesPtr new_features,
+                  std::vector<mojom::ResourceDataUpdatePtr> resources,
+                  const mojom::FrameRenderDataUpdate& render_data,
+                  const mojom::CpuTimingPtr& cpu_timing,
+                  mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+                  mojom::InputTimingPtr input_timing_delta) override {
     DCHECK(page_load_metrics_);
     page_load_metrics_->UpdateTiming(
         timing->Clone(), metadata->Clone(), std::move(new_features),
         std::move(resources), render_data.Clone(), cpu_timing->Clone(),
-        std::move(new_deferred_resource_data));
+        std::move(new_deferred_resource_data), std::move(input_timing_delta));
   }
 
  private:
@@ -80,6 +80,14 @@ MetricsRenderFrameObserver::~MetricsRenderFrameObserver() {
 
 void MetricsRenderFrameObserver::DidChangePerformanceTiming() {
   SendMetrics();
+}
+
+void MetricsRenderFrameObserver::DidObserveInputDelay(
+    base::TimeDelta input_delay) {
+  if (!page_timing_metrics_sender_ || HasNoRenderFrame()) {
+    return;
+  }
+  page_timing_metrics_sender_->DidObserveInputDelay(input_delay);
 }
 
 void MetricsRenderFrameObserver::DidChangeCpuTiming(base::TimeDelta time) {
@@ -394,17 +402,6 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
   if (perf.LongestInputTimestamp().has_value()) {
     timing->interactive_timing->longest_input_timestamp =
         ClampDelta((*perf.LongestInputTimestamp()).InSecondsF(), start);
-  }
-  if (perf.TotalInputDelay() > 0.0) {
-    timing->interactive_timing->total_input_delay =
-        base::TimeDelta::FromSecondsD(perf.TotalInputDelay());
-  }
-  if (perf.TotalAdjustedInputDelay() > 0.0) {
-    timing->interactive_timing->total_adjusted_input_delay =
-        base::TimeDelta::FromSecondsD(perf.TotalAdjustedInputDelay());
-  }
-  if (perf.NumInputEvents() > 0) {
-    timing->interactive_timing->num_input_events = perf.NumInputEvents();
   }
   if (perf.ResponseStart() > 0.0)
     timing->response_start = ClampDelta(perf.ResponseStart(), start);

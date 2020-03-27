@@ -1645,6 +1645,12 @@ const char kSendTabToSelfBroadcastDescription[] =
     "Allows users to broadcast the tab they send to all of their devices "
     "instead of targetting only one device.";
 
+const char kSendTabToSelfOmniboxSendingAnimationName[] =
+    "Send tab to self omnibox sending animation";
+const char kSendTabToSelfOmniboxSendingAnimationDescription[] =
+    "If enabled, shows Sending... animation in omnibox instead of Desktop OS "
+    "notifications for contextual menu entry points.";
+
 const char kSendTabToSelfWhenSignedInName[] =
     "Send tab to self: enable use when signed-in regardless of sync state";
 const char kSendTabToSelfWhenSignedInDescription[] =

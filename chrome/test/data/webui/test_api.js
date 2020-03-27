@@ -109,6 +109,9 @@ Test.prototype = {
    */
   browsePreload: null,
 
+  /** @type {?string} */
+  webuiHost: null,
+
   /**
    * When set to a string value representing an html page in the test
    * directory, generate BrowsePrintPreload call, which will browse to a url
@@ -133,12 +136,28 @@ Test.prototype = {
    */
   testGenPostamble: null,
 
+  /** @type {?function()} */
+  testGenCppIncludes: null,
+
   /**
    * When set to a non-null string, auto-generate typedef before generating
    * TEST*: {@code typedef typedefCppFixture testFixture}.
    * @type {string}
    */
   typedefCppFixture: 'WebUIBrowserTest',
+
+  /** @type {?Array<{switchName: string, switchValue: string}>} */
+  commandLineSwitches: null,
+
+  /** @type {?{enabled: !Array<string>, disabled: !Array<string>}} */
+  featureList: null,
+
+  /**
+   * @type {?Array<!{
+   *    featureName: string,
+   *    parameters: !Array<{name: string, value: string}>}>}
+   */
+  featuresWithParameters: null,
 
   /**
    * This should be initialized by the test fixture and can be referenced

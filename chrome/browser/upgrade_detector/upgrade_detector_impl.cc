@@ -453,23 +453,23 @@ void UpgradeDetectorImpl::Init() {
   // Register for experiment notifications.
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();
-  if (variations_service) {
+  if (variations_service)
     variations_service->AddObserver(this);
-  }
 
-  // On Windows, only enable upgrade notifications for Google Chrome builds.
-  // Chromium does not use an auto-updater.
-#if !defined(OS_WIN) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
-  // On macOS, only enable upgrade notifications if the updater (Keystone) is
-  // present.
-#if defined(OS_MACOSX)
+#if defined(OS_WIN)
+  // Only enable upgrade notifications for Google Chrome builds. Chromium does
+  // not use an auto-updater.
+  if (!BUILDFLAG(GOOGLE_CHROME_BRANDING))
+    return;
+#elif defined(OS_MACOSX)
+  // Only enable upgrade notifications if the updater (Keystone) is present.
   if (!keystone_glue::KeystoneEnabled())
     return;
-#endif
-
-  // On non-macOS non-Windows, always enable upgrade notifications regardless
-  // of branding.
+#elif defined(OS_POSIX)
+    // Always enable upgrade notifications regardless of branding.
+#else
+#error Unsupported platform
+#endif  // defined(OS_WIN)
 
   // Start checking for outdated builds sometime after startup completes.
   base::PostTask(
@@ -482,7 +482,6 @@ void UpgradeDetectorImpl::Init() {
   auto* const build_state = g_browser_process->GetBuildState();
   build_state->AddObserver(this);
   installed_version_poller_.emplace(build_state);
-#endif
 }
 
 void UpgradeDetectorImpl::Shutdown() {

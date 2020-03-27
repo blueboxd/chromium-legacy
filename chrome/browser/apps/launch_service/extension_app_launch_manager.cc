@@ -43,26 +43,4 @@ content::WebContents* ExtensionAppLaunchManager::OpenApplication(
   return ::OpenApplication(profile(), params);
 }
 
-void ExtensionAppLaunchManager::LaunchApplication(
-    const std::string& app_id,
-    const base::CommandLine& command_line,
-    const base::FilePath& current_directory,
-    base::OnceCallback<void(Browser* browser,
-                            apps::mojom::LaunchContainer container)> callback) {
-  apps::mojom::LaunchContainer container;
-  if (OpenExtensionApplicationWindow(profile(), app_id, command_line,
-                                     current_directory)) {
-    RecordBookmarkLaunch(profile(), app_id);
-    container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
-  } else if (OpenExtensionApplicationTab(profile(), app_id)) {
-    container = apps::mojom::LaunchContainer::kLaunchContainerTab;
-  } else {
-    // Open an empty browser window as the app_id is invalid.
-    CreateBrowserWithNewTabPage(profile());
-    container = apps::mojom::LaunchContainer::kLaunchContainerNone;
-  }
-  std::move(callback).Run(BrowserList::GetInstance()->GetLastActive(),
-                          container);
-}
-
 }  // namespace apps

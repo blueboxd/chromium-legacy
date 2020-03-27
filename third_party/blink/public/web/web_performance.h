@@ -102,9 +102,6 @@ class WebPerformance {
   BLINK_EXPORT base::Optional<base::TimeDelta> FirstInputTimestamp() const;
   BLINK_EXPORT base::Optional<base::TimeDelta> LongestInputDelay() const;
   BLINK_EXPORT base::Optional<base::TimeDelta> LongestInputTimestamp() const;
-  BLINK_EXPORT double TotalInputDelay() const;
-  BLINK_EXPORT double TotalAdjustedInputDelay() const;
-  BLINK_EXPORT uint64_t NumInputEvents() const;
   BLINK_EXPORT double ParseStart() const;
   BLINK_EXPORT double ParseStop() const;
   BLINK_EXPORT double ParseBlockedOnScriptLoadDuration() const;

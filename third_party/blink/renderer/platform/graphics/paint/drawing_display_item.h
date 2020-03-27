@@ -37,6 +37,8 @@ class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
   bool Equals(const DisplayItem& other) const final;
 
   bool KnownToBeOpaque() const {
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+      return false;
     if (!known_to_be_opaque_.has_value())
       known_to_be_opaque_.emplace(CalculateKnownToBeOpaque(record_.get()));
     return *known_to_be_opaque_;

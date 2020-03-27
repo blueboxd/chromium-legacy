@@ -23,13 +23,12 @@ class ImeUtilChromeosTest : public aura::test::AuraTestBase {
 
   void SetUp() override {
     AuraTestBase::SetUp();
-    screen_position_client_ = std::make_unique<DefaultScreenPositionClient>();
-    aura::client::SetScreenPositionClient(root_window(),
-                                          screen_position_client_.get());
+    screen_position_client_ =
+        std::make_unique<DefaultScreenPositionClient>(root_window());
   }
 
   void TearDown() override {
-    aura::client::SetScreenPositionClient(root_window(), nullptr);
+    screen_position_client_.reset();
     AuraTestBase::TearDown();
   }
 

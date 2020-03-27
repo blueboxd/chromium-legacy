@@ -135,32 +135,23 @@ class AshTestHelper {
   void reset_commandline() { command_line_.reset(); }
 
  private:
+  std::unique_ptr<::wm::WMState> wm_state_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
+  std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
-
-  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
-
-  std::unique_ptr<::wm::WMState> wm_state_;
-  std::unique_ptr<AshTestViewsDelegate> test_views_delegate_;
-
-  // Flags for whether various services were initialized here.
+  std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
+  std::unique_ptr<TestNotifierSettingsController> notifier_settings_controller_;
+  std::unique_ptr<TestAssistantService> assistant_service_;
+  std::unique_ptr<TestSystemTrayClient> system_tray_client_;
+  std::unique_ptr<TestPhotoController> photo_controller_;
+  std::unique_ptr<AppListTestHelper> app_list_test_helper_;
   bool bluez_dbus_manager_initialized_ = false;
   bool power_policy_controller_initialized_ = false;
-
-  std::unique_ptr<TestSessionControllerClient> session_controller_client_;
-  std::unique_ptr<TestNotifierSettingsController> notifier_settings_controller_;
-  std::unique_ptr<TestSystemTrayClient> system_tray_client_;
-  std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
-  std::unique_ptr<TestAssistantService> assistant_service_;
-  std::unique_ptr<ui::TestContextFactories> context_factories_;
-  std::unique_ptr<TestPhotoController> photo_controller_;
-
-  std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-
-  std::unique_ptr<AppListTestHelper> app_list_test_helper_;
-
   std::unique_ptr<TestNewWindowDelegate> new_window_delegate_;
-
+  std::unique_ptr<AshTestViewsDelegate> test_views_delegate_;
+  std::unique_ptr<TestSessionControllerClient> session_controller_client_;
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;
 

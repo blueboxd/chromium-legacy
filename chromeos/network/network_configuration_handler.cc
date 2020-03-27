@@ -422,6 +422,8 @@ void NetworkConfigurationHandler::RemoveConfigurationFromProfile(
   NET_LOG(USER) << "Remove Configuration: " << NetworkPathId(service_path)
                 << " from profiles: "
                 << (!profile_path.empty() ? profile_path : "all");
+  for (auto& observer : observers_)
+    observer.OnBeforeConfigurationRemoved(service_path, guid);
   ProfileEntryDeleter* deleter = new ProfileEntryDeleter(
       this, service_path, guid, callback, error_callback);
   if (!profile_path.empty())

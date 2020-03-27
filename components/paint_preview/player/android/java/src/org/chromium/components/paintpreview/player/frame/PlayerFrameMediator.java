@@ -5,7 +5,6 @@
 package org.chromium.components.paintpreview.player.frame;
 
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Pair;
 import android.view.View;
@@ -200,7 +199,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
     @Override
     public void onClick(int x, int y) {
-        mCompositorDelegate.onClick(mGuid, new Point(x, y));
+        mCompositorDelegate.onClick(mGuid, mViewportRect.left + x, mViewportRect.top + y);
     }
 
     /**

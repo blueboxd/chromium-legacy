@@ -62,3 +62,6 @@ per-file thread_profiler*=wittman@chromium.org
 
 # Heap profiler
 per-file heap_profiler*=alph@chromium.org
+
+# Web Applications
+per-file web_application_info.*=file://chrome/browser/web_applications/OWNERS

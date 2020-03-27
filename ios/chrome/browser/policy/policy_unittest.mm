@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -130,4 +131,34 @@ TEST_F(PolicyTest, TestSearchSuggestEnabled) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(pref_service_->IsManagedPreference(prefs::kSearchSuggestEnabled));
   EXPECT_FALSE(pref_service_->GetBoolean(prefs::kSearchSuggestEnabled));
+}
+
+// Tests that the PasswordManagerEnabled preference is correctly managed by
+// policy.
+TEST_F(PolicyTest, TestPasswordManagerEnabled) {
+  EXPECT_FALSE(pref_service_->IsManagedPreference(
+      password_manager::prefs::kCredentialsEnableService));
+
+  policy::PolicyMap values;
+  // Setting the policy to true should set the pref to true.
+  values.Set(policy::key::kPasswordManagerEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_PLATFORM,
+             std::make_unique<base::Value>(true), nullptr);
+  policy_provider_.UpdateChromePolicy(values);
+  EXPECT_TRUE(pref_service_->IsManagedPreference(
+      password_manager::prefs::kCredentialsEnableService));
+  EXPECT_TRUE(pref_service_->GetBoolean(
+      password_manager::prefs::kCredentialsEnableService));
+
+  // Setting the policy to false should set the pref to false.
+  values.Set(policy::key::kPasswordManagerEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_PLATFORM,
+             std::make_unique<base::Value>(false), nullptr);
+  policy_provider_.UpdateChromePolicy(values);
+  EXPECT_TRUE(pref_service_->IsManagedPreference(
+      password_manager::prefs::kCredentialsEnableService));
+  EXPECT_FALSE(pref_service_->GetBoolean(
+      password_manager::prefs::kCredentialsEnableService));
 }

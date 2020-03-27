@@ -6,7 +6,9 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
+<link rel="import" href="../os_settings_search_box/os_settings_search_box.html">
 
 <dom-module id="os-toolbar">
   <template>
@@ -89,6 +91,10 @@
         flex-basis: var(--settings-main-basis);
       }
 
+      :host([narrow][showing-search_]) #rightContent {
+        display: none;
+      }
+
       :host(:not([narrow])) #rightContent {
         flex: 1 1 0;
         text-align: end;
@@ -108,11 +114,18 @@
     </div>
 
     <div id="centeredContent" hidden$="[[!showSearch]]">
-      <cr-toolbar-search-field id="search" narrow="[[narrow]]"
-          label="$i18n{searchPrompt}" clear-label="$i18n{clearSearch}"
-          spinner-active="[[spinnerActive]]"
-          showing-search="{{showingSearch_}}">
-      </cr-toolbar-search-field>
+      <template is="dom-if" if="[[!newOsSettingsSearch_]]">
+        <cr-toolbar-search-field id="search" narrow="[[narrow]]"
+            label="$i18n{searchPrompt}" clear-label="$i18n{clearSearch}"
+            spinner-active="[[spinnerActive]]"
+            showing-search="{{showingSearch_}}">
+        </cr-toolbar-search-field>
+      </template>
+      <template is="dom-if" if="[[newOsSettingsSearch_]]">
+        <os-settings-search-box id="searchBox" narrow="[[narrow]]"
+            showing-search="{{showingSearch_}}">
+        </os-settings-search-box>
+      </template>
       <iron-media-query query="(max-width: [[narrowThreshold]]px)"
           query-matches="{{narrow}}">
       </iron-media-query>

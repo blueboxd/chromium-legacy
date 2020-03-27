@@ -1723,6 +1723,10 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_SEARCH_NO_RESULTS_HELP,
           base::ASCIIToUTF16(chrome::kOsSettingsSearchHelpURL)));
+
+  html_source->AddBoolean(
+      "newOsSettingsSearch",
+      base::FeatureList::IsEnabled(chromeos::features::kNewOsSettingsSearch));
 }
 
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {

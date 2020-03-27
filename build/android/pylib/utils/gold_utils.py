@@ -128,6 +128,11 @@ class SkiaGoldSession(object):
       authentication process. |output| is the stdout + stderr of the
       authentication process.
     """
+    if self._gold_properties.bypass_skia_gold_functionality:
+      logging.warning('Not actually authenticating with Gold due to '
+                      '--bypass-skia-gold-functionality being present.')
+      return 0, ''
+
     auth_cmd = [GOLDCTL_BINARY, 'auth', '--work-dir', self._working_dir]
     if use_luci:
       auth_cmd.append('--luci')
@@ -158,6 +163,11 @@ class SkiaGoldSession(object):
       comparison process. |output| is the stdout + stderr of the comparison
       process.
     """
+    if self._gold_properties.bypass_skia_gold_functionality:
+      logging.warning('Not actually comparing with Gold due to '
+                      '--bypass-skia-gold-functionality being present.')
+      return 0, ''
+
     compare_cmd = [
         GOLDCTL_BINARY,
         'imgtest',
@@ -243,6 +253,14 @@ class SkiaGoldSession(object):
       A tuple (return_code, output). |return_code| is the return code of the
       diff process. |output| is the stdout + stderr of the diff process.
     """
+    # Instead of returning that everything is okay and putting in dummy links,
+    # just fail since this should only be called when running locally and
+    # --bypass-skia-gold-functionality is only meant for use on the bots.
+    if self._gold_properties.bypass_skia_gold_functionality:
+      raise RuntimeError(
+          '--bypass-skia-gold-functionality is not supported when running '
+          'tests locally.')
+
     # Output managers only support archived files, not directories, so we have
     # to use a temporary directory and later move the data into the archived
     # files.
@@ -392,6 +410,7 @@ class SkiaGoldProperties(object):
     self._job_id = None
     self._local_pixel_tests = None
     self._no_luci_auth = None
+    self._bypass_skia_gold_functionality = None
 
     # Could in theory be configurable, but hard-coded for now since there's
     # no plan to support anything else.
@@ -435,6 +454,10 @@ class SkiaGoldProperties(object):
   def patchset(self):
     return self._patchset
 
+  @property
+  def bypass_skia_gold_functionality(self):
+    return self._bypass_skia_gold_functionality
+
   def _GetGitRevision(self):
     if not self._git_revision:
       # Automated tests should always pass the revision, so assume we're on
@@ -468,6 +491,9 @@ class SkiaGoldProperties(object):
 
     if hasattr(args, 'no_luci_auth'):
       self._no_luci_auth = args.no_luci_auth
+
+    if hasattr(args, 'bypass_skia_gold_functionality'):
+      self._bypass_skia_gold_functionality = args.bypass_skia_gold_functionality
 
     # Will be automatically determined later if needed.
     if not hasattr(args, 'git_revision') or not args.git_revision:

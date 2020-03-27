@@ -11,10 +11,15 @@
 
 namespace wm {
 
-DefaultScreenPositionClient::DefaultScreenPositionClient() {
+DefaultScreenPositionClient::DefaultScreenPositionClient(
+    aura::Window* root_window)
+    : root_window_(root_window) {
+  DCHECK(root_window_);
+  aura::client::SetScreenPositionClient(root_window_, this);
 }
 
 DefaultScreenPositionClient::~DefaultScreenPositionClient() {
+  aura::client::SetScreenPositionClient(root_window_, nullptr);
 }
 
 void DefaultScreenPositionClient::ConvertPointToScreen(

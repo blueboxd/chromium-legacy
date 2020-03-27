@@ -54,8 +54,8 @@ void WebEnginePermissionDelegate::ResetPermission(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  // TODO(crbug.com/922833): Update PermissionControllerDelegate to pass
-  // RenderFrameHost.
+  // TODO(crbug.com/1063094): Implement when the PermissionManager protocol is
+  // defined and implemented.
   NOTIMPLEMENTED() << ": " << static_cast<int>(permission);
 }
 
@@ -63,9 +63,11 @@ blink::mojom::PermissionStatus WebEnginePermissionDelegate::GetPermissionStatus(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  // GetPermissionStatus() is deprecated and it's not expected to be called in
-  // WebEngine.
-  NOTREACHED();
+  // Although GetPermissionStatusForFrame() should be used for most permissions,
+  // some use cases (e.g., BACKGROUND_SYNC) do not have a frame.
+  //
+  // TODO(crbug.com/1063094): Handle frame-less permission status checks in the
+  // PermissionManager API. Until then, reject such requests.
   return blink::mojom::PermissionStatus::DENIED;
 }
 
@@ -85,7 +87,7 @@ int WebEnginePermissionDelegate::SubscribePermissionStatusChange(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {
-  // TODO(crbug.com/922833): Implement permission status subscription. It's
+  // TODO(crbug.com/1063094): Implement permission status subscription. It's
   // used in blink to emit PermissionStatus.onchange notifications.
   NOTIMPLEMENTED() << ": " << static_cast<int>(permission);
   return content::PermissionController::kNoPendingOperation;
@@ -93,5 +95,7 @@ int WebEnginePermissionDelegate::SubscribePermissionStatusChange(
 
 void WebEnginePermissionDelegate::UnsubscribePermissionStatusChange(
     int subscription_id) {
+  // TODO(crbug.com/1063094): Implement permission status subscription. It's
+  // used in blink to emit PermissionStatus.onchange notifications.
   NOTREACHED();
 }

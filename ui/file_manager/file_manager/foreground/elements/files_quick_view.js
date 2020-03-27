@@ -182,21 +182,20 @@ const FilesQuickView = Polymer({
   },
 
   /**
-   * TODO(992824): investigate the this.$.innerContentPanel.focus() since the
-   * has no tabindex it seems, and so the focus() call is ignored.
+   * See the changes on crbug.com/641587, but crbug.com/779044#c11 later undid
+   * that work. So the focus remains on the metadata button when clicked after
+   * the crbug.com/779044 "ghost focus" fix.
+   *
+   * crbug.com/641587 mentions a different UI behavior, that was wanted to fix
+   * that bug. TODO(files-ng): UX to resolve the correct behavior needed here.
    *
    * @param {!Event} event tap event.
    *
    * @private
    */
   onMetadataButtonTap_: function(event) {
-    // Set focus back to innerContent panel so that pressing space key next
-    // closes Quick View.
-    this.$.innerContentPanel.focus();
-
     if (this.hasAttribute('files-ng')) {
       this.metadataBoxActive = !this.metadataBoxActive;
-      event.target.toggleAttribute('toogle', this.metadataBoxActive);
     }
   },
 

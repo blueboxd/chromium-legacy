@@ -21,7 +21,8 @@ class PageTimingSender {
       std::vector<mojom::ResourceDataUpdatePtr> resources,
       const mojom::FrameRenderDataUpdate& render_data,
       const mojom::CpuTimingPtr& cpu_timing,
-      mojom::DeferredResourceCountsPtr new_deferred_resource_data) = 0;
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+      mojom::InputTimingPtr input_timing_delta) = 0;
 };
 
 }  // namespace page_load_metrics

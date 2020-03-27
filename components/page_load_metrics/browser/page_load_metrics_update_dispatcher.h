@@ -144,7 +144,8 @@ class PageLoadMetricsUpdateDispatcher {
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       mojom::FrameRenderDataUpdatePtr render_data,
       mojom::CpuTimingPtr new_cpu_timing,
-      mojom::DeferredResourceCountsPtr new_deferred_resource_data);
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+      mojom::InputTimingPtr input_timing_delta);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
@@ -171,6 +172,9 @@ class PageLoadMetricsUpdateDispatcher {
   const PageRenderData& main_frame_render_data() const {
     return main_frame_render_data_;
   }
+  const mojom::InputTiming& page_input_timing() const {
+    return page_input_timing_;
+  }
 
  private:
   using FrameTreeNodeId = int;
@@ -185,6 +189,7 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
                               mojom::FrameMetadataPtr subframe_metadata);
 
+  void UpdatePageInputTiming(const mojom::InputTiming& input_timing_delta);
   void UpdatePageRenderData(const mojom::FrameRenderDataUpdate& render_data);
   void UpdateMainFrameRenderData(
       const mojom::FrameRenderDataUpdate& render_data);
@@ -221,6 +226,9 @@ class PageLoadMetricsUpdateDispatcher {
   // struct instead of using mojo.
   mojom::FrameMetadataPtr main_frame_metadata_;
   mojom::FrameMetadataPtr subframe_metadata_;
+
+  // InputTiming data accumulated across all frames.
+  mojom::InputTiming page_input_timing_;
 
   PageRenderData page_render_data_;
   PageRenderData main_frame_render_data_;

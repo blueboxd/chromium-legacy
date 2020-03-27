@@ -2912,5 +2912,8 @@
   <message desc="Announced to alert the user that ChromeVox has no current focus." name="IDS_CHROMEVOX_NO_FOCUS">
     No current ChromeVox focus. Press Alt+Shift+L to go to the launcher.
   </message>
+  <message desc="Labels the checkbox on the options page that enables or disables Smart Sticky Mode. The label explains how the feature works." name="IDS_CHROMEVOX_OPTIONS_SMART_STICKY_MODE">
+    Turn off sticky mode when editing text (Smart Sticky Mode)
+  </message>
 
 </grit-part>

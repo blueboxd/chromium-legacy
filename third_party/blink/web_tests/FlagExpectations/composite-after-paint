@@ -75,22 +75,13 @@ virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mo
 # Raster invalidation doesn't work for huge layers. 
 paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 
-# backface-visibility:hidden doesn't trigger composited scrolling.
+# No composited scrolling for overflow:hidden (on marquee).
 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
-paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
-paint/invalidation/scroll/overflow-hidden-yet-scrolled-with-custom-scrollbar.html [ Failure ]
-paint/invalidation/scroll/overflow-hidden-yet-scrolled.html [ Failure ]
 
 # We paint the iframe's content background in the scrolling layer, causing invalidation on scroll.
 paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
 # will-transform on descendant doesn't trigger compositing of iframe. 
 paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
-
-# backface-visiblity:hidden is not a direct compositing reason.
-# Extra raster invalidation caused by offset change, etc.
-paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
-paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
-paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
 
 # Extra layers for non-fast scrolling areas.
 compositing/overflow/textarea-scroll-touch.html [ Failure ]

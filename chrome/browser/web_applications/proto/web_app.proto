@@ -82,4 +82,6 @@ message WebAppProto {
   repeated int32 downloaded_icon_sizes = 11;
   // A list of file handlers.
   repeated WebAppFileHandlerProto file_handlers = 12;
+  // A list of additional search terms to use when searching for the app.
+  repeated string additional_search_terms = 13;
 }

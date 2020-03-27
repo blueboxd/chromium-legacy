@@ -112,7 +112,7 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
       return base::nullopt;
     }
 
-    const auto& extensions = extensions_it->second.GetMap();
+    const cbor::Value::MapValue& extensions = extensions_it->second.GetMap();
     const auto hmac_secret_it =
         extensions.find(cbor::Value(kExtensionHmacSecret));
     if (hmac_secret_it != extensions.end()) {
@@ -143,6 +143,18 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
         default:
           return base::nullopt;
       }
+    }
+
+    const auto android_client_data_ext_it =
+        extensions.find(cbor::Value(device::kExtensionAndroidClientData));
+    if (android_client_data_ext_it != extensions.end()) {
+      base::Optional<AndroidClientDataExtensionInput> android_client_data_ext =
+          AndroidClientDataExtensionInput::Parse(
+              android_client_data_ext_it->second);
+      if (!android_client_data_ext) {
+        return base::nullopt;
+      }
+      request.android_client_data_ext = std::move(*android_client_data_ext);
     }
   }
 
@@ -242,6 +254,11 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
   if (request.cred_protect) {
     extensions.emplace(kExtensionCredProtect,
                        static_cast<uint8_t>(request.cred_protect->first));
+  }
+
+  if (request.android_client_data_ext) {
+    extensions.emplace(kExtensionAndroidClientData,
+                       AsCBOR(*request.android_client_data_ext));
   }
 
   if (!extensions.empty()) {

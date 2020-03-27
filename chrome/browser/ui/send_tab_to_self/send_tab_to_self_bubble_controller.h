@@ -55,6 +55,9 @@ class SendTabToSelfBubbleController
   // Close the bubble when the user click on the close button.
   void OnBubbleClosed();
 
+  // Shows the confirmation message in the omnibox.
+  void ShowConfirmationMessage();
+
   // Returns true if the initial "Send" animation that's displayed once per
   // profile was shown.
   bool InitialSendAnimationShown() const;
@@ -76,9 +79,6 @@ class SendTabToSelfBubbleController
   friend class SendTabToSelfBubbleViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, PopulateScrollView);
   FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, DevicePressed);
-
-  // Updates the omnibox icon if available.
-  void UpdateIcon();
 
   // Get information of valid devices.
   void FetchDeviceInfo();

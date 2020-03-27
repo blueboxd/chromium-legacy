@@ -29,10 +29,12 @@ class NetworkTestHelper : public network_config::CrosNetworkConfigTestHelper {
   virtual ~NetworkTestHelper();
 
   void SetUp();
-  void ConfigureWiFiNetwork(const std::string& ssid,
-                            bool is_secured,
-                            bool in_profile,
-                            bool has_connected);
+
+  // Returns the |guid| of the newly configured network.
+  std::string ConfigureWiFiNetwork(const std::string& ssid,
+                                   bool is_secured,
+                                   bool in_profile,
+                                   bool has_connected);
 
   NetworkStateTestHelper* network_state_test_helper();
 

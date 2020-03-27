@@ -20,7 +20,14 @@ class FeedStore {
  public:
   FeedStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
             const base::FilePath& feed_directory);
+  FeedStore(const FeedStore&) = delete;
+  FeedStore& operator=(const FeedStore&) = delete;
   ~FeedStore();
+
+  // For testing.
+  explicit FeedStore(
+      std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>>
+          database);
 
   // Read StreamData and pass it to stream_data_callback, or nullptr on failure.
   void ReadStreamData(
@@ -29,10 +36,10 @@ class FeedStore {
   // Read Content and StreamSharedStates and pass them to content_callback, or
   // nullptrs on failure.
   void ReadContent(
-      std::vector<feedwire::ContentId> ids,
-      base::OnceCallback<
-          void(std::unique_ptr<std::vector<feedstore::Content>>,
-               std::unique_ptr<std::vector<feedstore::StreamSharedState>>)>
+      std::vector<feedwire::ContentId> content_ids,
+      std::vector<feedwire::ContentId> shared_state_ids,
+      base::OnceCallback<void(std::vector<feedstore::Content>,
+                              std::vector<feedstore::StreamSharedState>)>
           content_callback);
 
   void ReadNextStreamState(
@@ -47,7 +54,11 @@ class FeedStore {
   // TODO(iwells): implement this
   // Deletes old records that are no longer needed
   // void RemoveOldData(base::OnceCallback<void(bool)> callback);
+
+  bool IsInitializedForTesting() const;
+
  private:
+  void Initialize();
   void OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status);
   bool IsInitialized() const;
 
@@ -65,9 +76,9 @@ class FeedStore {
       bool success,
       std::unique_ptr<feedstore::Record> record);
   void OnReadContentFinished(
-      base::OnceCallback<void(
-          std::unique_ptr<std::vector<feedstore::Content>>,
-          std::unique_ptr<std::vector<feedstore::StreamSharedState>>)> callback,
+      base::OnceCallback<void(std::vector<feedstore::Content>,
+                              std::vector<feedstore::StreamSharedState>)>
+          callback,
       bool success,
       std::unique_ptr<std::vector<feedstore::Record>> records);
   void OnReadNextStreamStateFinished(

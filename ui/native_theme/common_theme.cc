@@ -395,7 +395,10 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_TextfieldReadOnlyColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_TextfieldReadOnlyBackground, color_scheme);
-      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg).color;
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TextfieldDefaultColor, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
     }
     case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
       return gfx::kGoogleBlue200;

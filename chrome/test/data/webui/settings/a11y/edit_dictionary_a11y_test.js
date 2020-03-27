@@ -46,14 +46,6 @@ AccessibilityTest.define('EditDictionaryA11yTest', {
   /** @override */
   name: 'EDIT_DICTIONARY',
 
-  /** @override */
-  axeOptions: Object.assign({}, SettingsAccessibilityTest.axeOptions, {
-    'rules': Object.assign({}, SettingsAccessibilityTest.axeOptions.rules, {
-      // TODO(crbug.com/1012370): Disable because of timeout in CFI build.
-      'hidden-content': {enabled: false},
-    }),
-  }),
-
   /** @type {settings.FakeLanguageSettingsPrivate} */
   languageSettingsPrivate_: null,
 

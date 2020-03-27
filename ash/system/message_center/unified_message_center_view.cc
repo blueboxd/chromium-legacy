@@ -411,7 +411,7 @@ void UnifiedMessageCenterView::UpdateVisibility() {
     // Transfer focus to quick settings when going invisible.
     auto* widget = GetWidget();
     if (widget && widget->IsActive())
-      FocusOut(false);
+      message_center_bubble_->ActivateQuickSettingsBubble();
   }
 }
 

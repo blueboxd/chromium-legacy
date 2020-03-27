@@ -11,7 +11,9 @@
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
 #include "storage/browser/file_system/external_mount_points.h"
 
 namespace chromeos {
@@ -20,6 +22,8 @@ namespace smb_client {
 namespace {
 
 constexpr char kMountDirPrefix[] = "smbfs-";
+constexpr base::TimeDelta kAllowCredentialsTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 SmbMountResult MountErrorToMountResult(smbfs::mojom::MountError mount_error) {
   switch (mount_error) {
@@ -175,6 +179,46 @@ void SmbFsShare::OnMountDone(MountCallback callback,
 
 void SmbFsShare::OnDisconnected() {
   Unmount(base::DoNothing());
+}
+
+void SmbFsShare::AllowCredentialsRequest() {
+  allow_credential_request_ = true;
+  allow_credential_request_expiry_ =
+      base::TimeTicks::Now() + kAllowCredentialsTimeout;
+}
+
+void SmbFsShare::RequestCredentials(RequestCredentialsCallback callback) {
+  if (allow_credential_request_expiry_ < base::TimeTicks::Now()) {
+    allow_credential_request_ = false;
+  }
+
+  if (!allow_credential_request_) {
+    std::move(callback).Run(true /* cancel */, "" /* username */,
+                            "" /* workgroup */, "" /* password */);
+    return;
+  }
+
+  smb_dialog::SmbCredentialsDialog::Show(
+      mount_id_, share_url_.ToString(),
+      base::BindOnce(
+          [](RequestCredentialsCallback callback, bool canceled,
+             const std::string& username, const std::string& password) {
+            if (canceled) {
+              std::move(callback).Run(true /* cancel */, "" /* username */,
+                                      "" /* workgroup */, "" /* password */);
+              return;
+            }
+
+            std::string parsed_username = username;
+            std::string workgroup;
+            ParseUserName(username, &parsed_username, &workgroup);
+            std::move(callback).Run(false /* cancel */, parsed_username,
+                                    workgroup, password);
+          },
+          std::move(callback)));
+  // Reset the allow dialog state to prevent showing another dialog to the user
+  // immediately after they've dismissed one.
+  allow_credential_request_ = false;
 }
 
 void SmbFsShare::SetMounterCreationCallbackForTest(

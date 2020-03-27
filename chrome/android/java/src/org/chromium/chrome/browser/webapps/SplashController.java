@@ -22,6 +22,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
@@ -33,7 +34,6 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -93,7 +93,7 @@ public class SplashController
 
     private static final String TAG = "SplashController";
 
-    private final Activity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final TwaFinishHandler mFinishHandler;
@@ -129,7 +129,8 @@ public class SplashController
     private ObserverList<SplashscreenObserver> mObservers;
 
     @Inject
-    public SplashController(Activity activity, ActivityLifecycleDispatcher lifecycleDispatcher,
+    public SplashController(ChromeActivity<?> activity,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar, TwaFinishHandler finishHandler) {
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
@@ -311,8 +312,7 @@ public class SplashController
         // Delay hiding the splash screen till the compositor has finished drawing the next frame.
         // Without this callback we were seeing a short flash of white between the splash screen and
         // the web content (crbug.com/734500).
-        CompositorView compositorView =
-                ((TabImpl) tab).getActivity().getCompositorViewHolder().getCompositorView();
+        CompositorView compositorView = mActivity.getCompositorViewHolder().getCompositorView();
         compositorView.surfaceRedrawNeededAsync(() -> { animateHideSplash(tab, reason); });
     }
 

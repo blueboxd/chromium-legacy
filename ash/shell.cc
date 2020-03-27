@@ -54,6 +54,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
+#include "ash/hud_display/hud_display.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
@@ -588,6 +589,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
 
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
+
+  hud_display::HUDDisplayView::Destroy();
 
   for (auto& observer : shell_observers_)
     observer.OnShellDestroying();

@@ -18,6 +18,7 @@
 
 class AppListModelUpdater;
 class ChromeSearchResult;
+class Profile;
 
 namespace app_list {
 
@@ -26,6 +27,7 @@ FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
 class ChipRanker;
+class SearchController;
 class SearchProvider;
 class SearchResultRanker;
 enum class RankingItemType;
@@ -57,9 +59,13 @@ class Mixer {
   // published.
   void SetNonAppSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker);
 
-  // Get a pointer to the SearchResultRanker owned by this object used for all
-  // non-app ranking.
-  SearchResultRanker* GetNonAppSearchResultRanker();
+  void InitializeRankers(Profile* profile, SearchController* search_controller);
+
+  SearchResultRanker* search_result_ranker() {
+    if (!search_result_ranker_)
+      return nullptr;
+    return search_result_ranker_.get();
+  }
 
   // Sets a ChipRanker to re-rank chip results before they are published.
   void SetChipRanker(std::unique_ptr<ChipRanker> ranker);
@@ -98,7 +104,7 @@ class Mixer {
   Groups groups_;
 
   // Adaptive models used for re-ranking search results.
-  std::unique_ptr<SearchResultRanker> non_app_ranker_;
+  std::unique_ptr<SearchResultRanker> search_result_ranker_;
   std::unique_ptr<ChipRanker> chip_ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);

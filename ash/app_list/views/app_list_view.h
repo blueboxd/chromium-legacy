@@ -131,6 +131,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   static void SetShortAnimationForTesting(bool enabled);
   static bool ShortAnimationsForTesting();
 
+  // Used for testing, allows the page reset timer to be fired immediately
+  // after starting.
+  static void SetSkipPageResetTimerForTesting(bool enabled);
+
   // Returns the app list transition progress value associated with a app list
   // view state. This matches the values GetAppListTransitionProgress() is
   // expected to return when app list view is exactly in the provided state.
@@ -369,6 +373,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if the Embedded Assistant UI is currently being shown.
   bool IsShowingEmbeddedAssistantUI() const;
 
+  // Starts or stops a timer which will reset the app list to the initial apps
+  // page. Called when the app list's visibility changes.
+  void UpdatePageResetTimer(bool app_list_visibility);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AppListControllerImplTest,
                            CheckAppListViewBoundsWhenVKeyboardEnabled);
@@ -576,6 +584,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // If set, the app list config that should be used within the app list view
   // instead of the default instance.
   std::unique_ptr<AppListConfig> app_list_config_;
+
+  // A timer which will reset the app list to the initial page. This timer only
+  // goes off when the app list is not visible after a set amount of time.
+  base::OneShotTimer page_reset_timer_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_{this};
 

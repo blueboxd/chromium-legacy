@@ -92,7 +92,9 @@ enum class TerminalSetting {
   kUserCss = 68,
   kUserCssText = 69,
   kAllowImagesInline = 70,
-  kMaxValue = kAllowImagesInline,
+  kTheme = 71,
+  kThemeVariations = 72,
+  kMaxValue = kThemeVariations,
 };
 
 // Generate the URL for Crostini terminal application.
@@ -132,6 +134,9 @@ void RecordTerminalSettingsChangesUMAs(Profile* profile);
 
 // Returns terminal setting 'background-color'.
 std::string GetTerminalSettingBackgroundColor(Profile* profile);
+
+// Returns terminal setting 'pass-ctrl-w'.
+bool GetTerminalSettingPassCtrlW(Profile* profile);
 }  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_TERMINAL_H_

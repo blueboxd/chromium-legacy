@@ -162,3 +162,7 @@ crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/new_session/default_valu
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/user_prompts.py>>test_dismiss_and_notify[capabilities0-alert] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/user_prompts.py>>test_ignore[capabilities0-alert] [ Failure ]
 crbug.com/1023255 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_frame_element [ Failure Pass ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer.py>>test_drag_and_drop_with_draggable_element[800] [ Failure ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer.py>>test_drag_and_drop_with_draggable_element[0] [ Failure ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer.py>>test_drag_and_drop_with_draggable_element[300] [ Failure ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/key_shortcuts.py>>test_mod_a_mod_c_right_mod_v_pastes_text [ Failure ]

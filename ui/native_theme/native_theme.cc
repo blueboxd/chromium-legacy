@@ -231,6 +231,22 @@ bool NativeTheme::UsesHighContrastColors() const {
   return is_high_contrast_;
 }
 
+NativeTheme::HighContrastColorScheme NativeTheme::GetHighContrastColorScheme()
+    const {
+  if (!UsesHighContrastColors())
+    return NativeTheme::HighContrastColorScheme::kNone;
+  switch (GetPreferredColorScheme()) {
+    case NativeTheme::PreferredColorScheme::kDark:
+      return HighContrastColorScheme::kDark;
+    case NativeTheme::PreferredColorScheme::kLight:
+      return HighContrastColorScheme::kLight;
+    case NativeTheme::PreferredColorScheme::kNoPreference:
+      return NativeTheme::HighContrastColorScheme::kCustom;
+  }
+  NOTREACHED();
+  return NativeTheme::HighContrastColorScheme::kNone;
+}
+
 NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
   return preferred_color_scheme_;
 }

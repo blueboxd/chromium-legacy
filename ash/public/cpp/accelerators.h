@@ -137,6 +137,7 @@ enum AcceleratorAction {
   DEBUG_TOGGLE_TABLET_MODE,
   DEBUG_TOGGLE_WALLPAPER_MODE,
   DEBUG_TRIGGER_CRASH,  // Intentionally crash the ash process.
+  DEBUG_TOGGLE_HUD_DISPLAY,
 };
 
 struct AcceleratorData {

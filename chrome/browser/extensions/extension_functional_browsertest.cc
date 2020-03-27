@@ -65,13 +65,7 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
   }
 };
 
-// Failing on Linux: http://crbug.com/654945
-#if defined(OS_LINUX)
-#define MAYBE_TestSetExtensionsState DISABLED_TestSetExtensionsState
-#else
-#define MAYBE_TestSetExtensionsState TestSetExtensionsState
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, MAYBE_TestSetExtensionsState) {
+IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
   InstallExtensionSilently(extension_service(), "google_talk.crx");
 
   // Disable the extension and verify.

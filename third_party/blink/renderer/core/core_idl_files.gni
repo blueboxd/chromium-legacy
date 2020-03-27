@@ -328,6 +328,7 @@ core_idl_files =
                     "mojo/mojo_watcher.idl",
                     "mojo/test/mojo_interface_interceptor.idl",
                     "mojo/test/mojo_interface_request_event.idl",
+                    "page/color_page_popup_controller.idl",
                     "page/page_popup_controller.idl",
                     "page/scrolling/scroll_state.idl",
                     "resize_observer/resize_observer.idl",

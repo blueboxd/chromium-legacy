@@ -12,7 +12,7 @@
     ]);
   }
 
-  /** @override*/
+  /** @override */
   recordSettingsPageHistogram(value) {
     this.methodCalled('recordSettingsPageHistogram', value);
   }

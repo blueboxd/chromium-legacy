@@ -17,6 +17,7 @@
 #include "base/numerics/ranges.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -93,6 +94,16 @@ Mixer::Mixer(AppListModelUpdater* model_updater)
     : model_updater_(model_updater) {}
 Mixer::~Mixer() = default;
 
+void Mixer::InitializeRankers(Profile* profile,
+                              SearchController* search_controller) {
+  search_result_ranker_ = std::make_unique<SearchResultRanker>(profile);
+  search_result_ranker_->InitializeRankers(search_controller);
+
+  if (app_list_features::IsSuggestedFilesEnabled()) {
+    chip_ranker_ = std::make_unique<ChipRanker>(profile);
+  }
+}
+
 size_t Mixer::AddGroup(size_t max_results, double multiplier, double boost) {
   groups_.push_back(std::make_unique<Group>(max_results, multiplier, boost));
   return groups_.size() - 1;
@@ -125,8 +136,8 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
   // Zero state search results: if any search provider won't have any results
   // displayed, but has a high-scoring result that the user hasn't seen many
   // times, replace a to-be-displayed result with it.
-  if (query.empty() && non_app_ranker_)
-    non_app_ranker_->OverrideZeroStateResults(&results);
+  if (query.empty() && search_result_ranker_)
+    search_result_ranker_->OverrideZeroStateResults(&results);
 
   // Chip results: rescore the chip results in line with app results.
   if (query.empty() && chip_ranker_) {
@@ -177,28 +188,15 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 }
 
 void Mixer::FetchResults(const base::string16& query) {
-  if (non_app_ranker_)
-    non_app_ranker_->FetchRankings(query);
+  if (search_result_ranker_)
+    search_result_ranker_->FetchRankings(query);
   for (const auto& group : groups_)
-    group->FetchResults(non_app_ranker_.get());
-}
-
-void Mixer::SetNonAppSearchResultRanker(
-    std::unique_ptr<SearchResultRanker> ranker) {
-  non_app_ranker_ = std::move(ranker);
-}
-
-SearchResultRanker* Mixer::GetNonAppSearchResultRanker() {
-  return non_app_ranker_.get();
-}
-
-void Mixer::SetChipRanker(std::unique_ptr<ChipRanker> ranker) {
-  chip_ranker_ = std::move(ranker);
+    group->FetchResults(search_result_ranker_.get());
 }
 
 void Mixer::Train(const AppLaunchData& app_launch_data) {
-  if (non_app_ranker_)
-    non_app_ranker_->Train(app_launch_data);
+  if (search_result_ranker_)
+    search_result_ranker_->Train(app_launch_data);
   if (chip_ranker_)
     chip_ranker_->Train(app_launch_data);
 }

@@ -1473,8 +1473,10 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
 
   last_visible_display_id_ = display_id;
 
+  AppListView* const app_list_view = presenter_.GetView();
+  app_list_view->UpdatePageResetTimer(real_visibility);
+
   if (!real_visibility) {
-    AppListView* const app_list_view = presenter_.GetView();
     app_list_view->search_box_view()->ClearSearchAndDeactivateSearchBox();
     // Reset the app list contents state, so the app list is in initial state
     // when the app list visibility changes again.
@@ -1550,12 +1552,6 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
       // (presumably, the visibility has already been updated if home is being
       // hidden).
       UpdateExpandArrowVisibility();
-      // Make sure app list is showing the initial page in the apps grid when
-      // it's shown - note that the selected apps page is not changed as the
-      // app list is getting hidden to avoid (visible) pagination changes as app
-      // list is being hidden.
-      if (presenter_.GetView())
-        presenter_.GetView()->SelectInitialAppsPage();
     }
 
     if (real_target_visibility && presenter_.GetView())

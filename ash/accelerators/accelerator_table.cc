@@ -85,6 +85,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_F, kDebugModifier, DEBUG_TOGGLE_SHOW_FPS_COUNTER},
     {true, ui::VKEY_P, kDebugModifier, DEBUG_TOGGLE_SHOW_PAINT_RECTS},
     {true, ui::VKEY_K, kDebugModifier, DEBUG_TRIGGER_CRASH},
+    {true, ui::VKEY_G, kDebugModifier, DEBUG_TOGGLE_HUD_DISPLAY},
 };
 
 const size_t kDebugAcceleratorDataLength = base::size(kDebugAcceleratorData);
@@ -144,6 +145,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     DEBUG_PRINT_LAYER_HIERARCHY,
     DEBUG_PRINT_VIEW_HIERARCHY,
     DEBUG_PRINT_WINDOW_HIERARCHY,
+    DEBUG_TOGGLE_HUD_DISPLAY,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
     DEBUG_TOGGLE_TABLET_MODE,

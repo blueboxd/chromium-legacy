@@ -192,7 +192,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
       std::make_unique<password_manager::PasswordStoreSigninNotifierImpl>(
-          IdentityManagerFactory::GetForProfile(profile));
+          profile);
   ps->SetPasswordStoreSigninNotifier(std::move(notifier));
 #endif
 

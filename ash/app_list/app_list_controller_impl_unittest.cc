@@ -294,6 +294,33 @@ TEST_F(AppListControllerImplTest, CheckTabOrderAfterDragIconToShelf) {
   EXPECT_EQ(item3, item2->GetNextFocusableView());
 }
 
+TEST_F(AppListControllerImplTest, PageResetByTimerInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  PopulateItem(30);
+
+  ShowAppListNow();
+
+  AppsGridView* apps_grid_view = GetAppsGridView();
+  apps_grid_view->pagination_model()->SelectPage(1, false /* animate */);
+
+  DismissAppListNow();
+
+  // When timer is not skipped the selected page should not change when app list
+  // is closed.
+  EXPECT_EQ(1, apps_grid_view->pagination_model()->selected_page());
+
+  // Skip the page reset timer to simulate timer exipration.
+  GetAppListView()->SetSkipPageResetTimerForTesting(true);
+
+  ShowAppListNow();
+  EXPECT_EQ(1, apps_grid_view->pagination_model()->selected_page());
+  DismissAppListNow();
+
+  // Once the app list is closed, the page should be reset when the timer is
+  // skipped.
+  EXPECT_EQ(0, apps_grid_view->pagination_model()->selected_page());
+}
+
 // Verifies that in clamshell mode the bounds of AppListView are correct when
 // the AppListView is in PEEKING state and the virtual keyboard is enabled (see
 // https://crbug.com/944233).

@@ -5,11 +5,14 @@
 #include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 
 #include "base/bind.h"
-#include "base/test/task_environment.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -19,7 +22,10 @@ namespace {
 
 class PasswordStoreSigninNotifierImplTest : public testing::Test {
  public:
-  PasswordStoreSigninNotifierImplTest() {
+  PasswordStoreSigninNotifierImplTest()
+      : profile_(IdentityTestEnvironmentProfileAdaptor::
+                     CreateProfileForIdentityTestEnvironment()),
+        identity_test_env_adaptor_(profile_.get()) {
     store_ = new MockPasswordStore();
   }
 
@@ -28,7 +34,7 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
   }
 
   signin::IdentityTestEnvironment* identity_test_env() {
-    return &identity_test_env_;
+    return identity_test_env_adaptor_.identity_test_env();
   }
 
   signin::IdentityManager* identity_manager() {
@@ -36,15 +42,16 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
-  signin::IdentityTestEnvironment identity_test_env_;
+  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<TestingProfile> profile_;
+  IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor_;
   scoped_refptr<MockPasswordStore> store_;
 };
 
 // Checks that if a notifier is subscribed on sign-in events, then
 // a password store receives sign-in notifications.
 TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
-  PasswordStoreSigninNotifierImpl notifier(identity_manager());
+  PasswordStoreSigninNotifierImpl notifier(profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
   identity_test_env()->MakePrimaryAccountAvailable("test@example.com");
   testing::Mock::VerifyAndClearExpectations(store_.get());
@@ -56,7 +63,7 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
 // Checks that if a notifier is unsubscribed on sign-in events, then
 // a password store receives no sign-in notifications.
 TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
-  PasswordStoreSigninNotifierImpl notifier(identity_manager());
+  PasswordStoreSigninNotifierImpl notifier(profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
   notifier.UnsubscribeFromSigninEvents();
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash()).Times(0);
@@ -67,7 +74,7 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
 // Checks that if a notifier is unsubscribed on sign-in events, then
 // a password store receives no sign-in notifications.
 TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
-  PasswordStoreSigninNotifierImpl notifier(identity_manager());
+  PasswordStoreSigninNotifierImpl notifier(profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
 
   identity_test_env()->MakePrimaryAccountAvailable("username");

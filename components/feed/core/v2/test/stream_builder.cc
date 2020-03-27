@@ -29,10 +29,6 @@ ContentId MakeContentContentId(int id_number) {
   return MakeContentId(ContentId::FEATURE, "stories", id_number);
 }
 
-ContentId MakeSharedStateContentId(int id_number) {
-  return MakeContentId(ContentId::TYPE_UNDEFINED, "shared", id_number);
-}
-
 ContentId MakeRootId(int id_number) {
   return MakeContentId(ContentId::TYPE_UNDEFINED, "root", id_number);
 }

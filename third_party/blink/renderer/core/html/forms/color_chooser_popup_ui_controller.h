@@ -35,6 +35,7 @@ namespace blink {
 class ChromeClient;
 class ColorChooserClient;
 class PagePopup;
+class PagePopupController;
 
 class CORE_EXPORT ColorChooserPopupUIController final
     : public ColorChooserUIController,
@@ -61,6 +62,10 @@ class CORE_EXPORT ColorChooserPopupUIController final
   void CancelPopup() override;
   Element& OwnerElement() override;
   void DidClosePopup() override;
+  PagePopupController* CreatePagePopupController(PagePopup&) override;
+
+  void OpenEyeDropper();
+  void EyeDropperResponseHandler(bool success, uint32_t color);
 
  private:
   ChromeClient& GetChromeClient() override;
@@ -73,6 +78,7 @@ class CORE_EXPORT ColorChooserPopupUIController final
   Member<ChromeClient> chrome_client_;
   PagePopup* popup_;
   Locale& locale_;
+  mojo::Remote<mojom::blink::EyeDropperChooser> eye_dropper_chooser_;
 };
 
 }  // namespace blink

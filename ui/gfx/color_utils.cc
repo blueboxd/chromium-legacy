@@ -378,13 +378,6 @@ SkColor GetSysSkColor(int which) {
 #endif
 }
 
-// OS_WIN implementation lives in sys_color_change_listener.cc
-#if !defined(OS_WIN)
-bool IsInvertedColorScheme() {
-  return false;
-}
-#endif  // !defined(OS_WIN)
-
 SkColor DeriveDefaultIconColor(SkColor text_color) {
   // Lighten dark colors and brighten light colors. The alpha value here (0x4c)
   // is chosen to generate a value close to GoogleGrey700 from GoogleGrey900.

@@ -70,11 +70,11 @@ class RulesetManagerTest : public DNRTestBase {
 
     // Create extension directory.
     ASSERT_TRUE(base::CreateDirectory(extension_dir));
+    ConfigFlag flags = has_background_script
+                           ? ConfigFlag::kConfig_HasBackgroundScript
+                           : ConfigFlag::kConfig_None;
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules, host_permissions,
-                            has_background_script,
-                            false /* has_feedback_permission */,
-                            false /* has_active_tab_permission */);
+                            kJSONRulesFilename, rules, host_permissions, flags);
 
     last_loaded_extension_ =
         CreateExtensionLoader()->LoadExtension(extension_dir);

@@ -124,6 +124,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="43" label="FLAG_RETRIEVE_INTERACTIVE_WINDOWS"/>
 </enum>
 
+<enum name="AccessibilityHighContrastColorScheme">
+  <summary>Tracks the color scheme used when high contrast is enabled.</summary>
+  <int value="0" label="None"/>
+  <int value="1" label="Dark"/>
+  <int value="2" label="Light"/>
+  <int value="3" label="Custom"/>
+</enum>
+
 <enum name="AccessibilityId">
   <int value="1" label="SpokenFeedback"/>
   <int value="2" label="SelectToSpeak"/>
@@ -13004,6 +13012,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="68" label="user-css"/>
   <int value="69" label="user-css-text"/>
   <int value="70" label="allow-images-inline"/>
+  <int value="71" label="theme"/>
+  <int value="72" label="theme-variations"/>
 </enum>
 
 <enum name="CrostiniUISurface">
@@ -26849,6 +26859,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3193" label="ThirdPartyCacheStorage"/>
   <int value="3194" label="ThirdPartyLocalStorage"/>
   <int value="3195" label="ThirdPartySessionStorage"/>
+  <int value="3196" label="DeclarativeShadowRoot"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

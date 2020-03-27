@@ -109,6 +109,13 @@ constexpr char kAppListDragInTabletHistogram[] =
 constexpr char kAppListDragInTabletMaxLatencyHistogram[] =
     "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode";
 
+// The number of minutes that must pass for the current app list page to reset
+// to the first page.
+constexpr int kAppListPageResetTimeLimitMinutes = 20;
+
+// When true, immdeidately fires the page reset timer upon starting.
+bool skip_page_reset_timer_for_testing = false;
+
 // Returns whether AppList's rounded corners should be hidden based on
 // the app list view state and app list view bounds.
 bool ShouldHideRoundedCorners(ash::AppListViewState app_list_state,
@@ -598,6 +605,11 @@ bool AppListView::ShortAnimationsForTesting() {
   return short_animations_for_testing;
 }
 
+// static
+void AppListView::SetSkipPageResetTimerForTesting(bool enabled) {
+  skip_page_reset_timer_for_testing = enabled;
+}
+
 void AppListView::InitView(bool is_tablet_mode, gfx::NativeView parent) {
   base::AutoReset<bool> auto_reset(&is_building_, true);
   time_shown_ = base::Time::Now();
@@ -711,6 +723,8 @@ void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {
   is_side_shelf_ = is_side_shelf;
 
   app_list_main_view_->contents_view()->ResetForShow();
+  if (!is_tablet_mode)
+    SelectInitialAppsPage();
 
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
@@ -845,6 +859,20 @@ SkColor AppListView::GetAppListBackgroundShieldColorForTest() {
 
 bool AppListView::IsShowingEmbeddedAssistantUI() const {
   return app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI();
+}
+
+void AppListView::UpdatePageResetTimer(bool app_list_visibility) {
+  if (app_list_visibility || !is_tablet_mode()) {
+    page_reset_timer_.Stop();
+    return;
+  }
+  page_reset_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMinutes(kAppListPageResetTimeLimitMinutes), this,
+      &AppListView::SelectInitialAppsPage);
+
+  if (skip_page_reset_timer_for_testing)
+    page_reset_timer_.FireNow();
 }
 
 gfx::Insets AppListView::GetMainViewInsetsForShelf() const {
@@ -1109,19 +1137,14 @@ void AppListView::SetChildViewsForStateTransition(
         AppListState::kStateApps, !is_side_shelf_);
   }
 
-  if (target_state == AppListViewState::kPeeking) {
-    // Set the apps to the initial page when PEEKING.
-    PaginationModel* pagination_model = GetAppsPaginationModel();
-    if (pagination_model->total_pages() > 0 &&
-        pagination_model->selected_page() != 0) {
-      pagination_model->SelectPage(0, false /* animate */);
-    }
-  }
+  // Set the apps to the initial page when PEEKING.
+  if (target_state == AppListViewState::kPeeking)
+    SelectInitialAppsPage();
+
   if (target_state == AppListViewState::kClosed && is_side_shelf_) {
     // Reset the search box to be shown again. This is done after the animation
     // is complete normally, but there is no animation when |is_side_shelf_|.
     search_box_view_->ClearSearchAndDeactivateSearchBox();
-    SelectInitialAppsPage();
   }
 }
 

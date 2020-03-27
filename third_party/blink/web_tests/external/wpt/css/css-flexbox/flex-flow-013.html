@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <html>
+<title>CSS Flexbox Test: flex-flow - column column-reverse and row-reverse</title>
+<link rel="help" href="https://www.w3.org/TR/css-flexbox-1/#propdef-flex-direction">
+<link rel="help" href="https://www.w3.org/TR/css-flexbox-1/#propdef-flex-flow">
+<meta name="assert" content="Test ensures that setting 'flex-flow' property to either 'column',
+'column-reverse' or 'row-reverse' in combination with different 'direction' and 'writing-mode'
+values works properly.">
 <style>
 body {
     margin: 0;
@@ -58,9 +64,9 @@ body {
     height: 10px;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>
 

@@ -930,7 +930,8 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
         DCHECK(template_stack_item->IsElementNode());
         DCHECK(shadow_host_stack_item);
         DCHECK(shadow_host_stack_item->IsElementNode());
-        // TODO(1063153): Add a use counter here.
+        UseCounter::Count(shadow_host_stack_item->GetElement()->GetDocument(),
+                          WebFeature::kDeclarativeShadowRoot);
         bool delegates_focus = template_stack_item->GetAttributeItem(
             html_names::kShadowrootdelegatesfocusAttr);
         // TODO(1063157): Add an attribute for imperative slot assignment.

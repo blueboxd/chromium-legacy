@@ -775,6 +775,7 @@ class EyeDropper extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this.classList.add('selected');
+    window.pagePopupController.openEyeDropper();
   };
 
   /**

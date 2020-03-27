@@ -289,12 +289,11 @@ NativeThemeWin::NativeThemeWin(bool configure_web_instance,
   if (!IsForcedHighContrast()) {
     set_high_contrast(IsUsingHighContrastThemeInternal());
   }
+  // Initialize the cached system colors.
+  UpdateSystemColors();
   set_preferred_color_scheme(CalculatePreferredColorScheme());
 
   memset(theme_handles_, 0, sizeof(theme_handles_));
-
-  // Initialize the cached system colors.
-  UpdateSystemColors();
 
   if (configure_web_instance)
     ConfigureWebInstance();

@@ -344,21 +344,7 @@ class DeclarativeNetRequestBrowserTest
     return result;
   }
 
-  // Sets whether the extension should have a background script.
-  void set_has_background_script(bool has_background_script) {
-    has_background_script_ = has_background_script;
-  }
-
-  // Sets whether the extension should load with the
-  // declarativeNetRequestFeedback permission.
-  void set_has_feedback_permission(bool has_feedback_permission) {
-    has_feedback_permission_ = has_feedback_permission;
-  }
-
-  // Sets whether the extension should load with the activeTab permission.
-  void set_has_active_tab_permission(bool has_active_tab_permission) {
-    has_active_tab_permission_ = has_active_tab_permission;
-  }
+  void set_config_flags(unsigned flags) { flags_ = flags; }
 
   // Loads an extension with the given declarative |rules| in the given
   // |directory|. Generates a fatal failure if the extension failed to load.
@@ -374,9 +360,7 @@ class DeclarativeNetRequestBrowserTest
     EXPECT_TRUE(base::CreateDirectory(extension_dir));
 
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules, hosts,
-                            has_background_script_, has_feedback_permission_,
-                            has_active_tab_permission_);
+                            kJSONRulesFilename, rules, hosts, flags_);
 
     background_page_ready_listener_->Reset();
     const Extension* extension = nullptr;
@@ -411,7 +395,7 @@ class DeclarativeNetRequestBrowserTest
     EXPECT_TRUE(HasValidIndexedRuleset(*extension, profile()));
 
     // Wait for the background page to load if needed.
-    if (has_background_script_)
+    if (flags_ & kConfig_HasBackgroundScript)
       WaitForBackgroundScriptToLoad(extension->id());
 
     // Ensure no load errors were reported.
@@ -592,9 +576,7 @@ class DeclarativeNetRequestBrowserTest
   }
 
   base::ScopedTempDir temp_dir_;
-  bool has_background_script_ = false;
-  bool has_feedback_permission_ = false;
-  bool has_active_tab_permission_ = false;
+  unsigned flags_ = ConfigFlag::kConfig_None;
   std::unique_ptr<ExtensionTestMessageListener> background_page_ready_listener_;
 
   // Requests observed by the EmbeddedTestServer. This is accessed on both the
@@ -999,7 +981,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowBlock) {
 
 // Tests allowing rules for redirects.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   const GURL static_redirect_url = embedded_test_server()->GetURL(
       "example.com", base::StringPrintf("/pages_with_script/page2.html"));
@@ -1101,7 +1083,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
 // enabled.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        Enable_Disable_Reload_Uninstall) {
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   // Block all main frame requests to "index.html".
   TestRule rule = CreateGenericRule();
@@ -1599,7 +1581,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // directory won't be persisted across browser restarts.
   ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
 
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   // Block all main frame requests to "index.html".
   TestRule rule = CreateGenericRule();
@@ -1873,7 +1855,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
                                                    profile());
 
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   // Load an extension which blocks all main-frame requests to "google.com".
   TestRule rule = CreateGenericRule();
@@ -2068,7 +2050,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 // version is not the same as one used by Chrome.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                        ReindexOnRulesetVersionMismatch) {
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
@@ -2302,7 +2284,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
 // Tests the dynamic rule support.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, DynamicRules) {
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   // Add an extension which blocks main-frame requests to "yahoo.com".
   TestRule block_static_rule = CreateGenericRule();
@@ -2518,12 +2500,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        ActionsMatchedCountAsBadgeText) {
   // Load the extension with a background script so scripts can be run from its
-  // generated background page.
-  set_has_background_script(true);
-
-  // Grant the feedback permission for the extension so it has access to the
-  // getMatchedRules API function.
-  set_has_feedback_permission(true);
+  // generated background page. Also grant the feedback permission for the
+  // extension so it has access to the getMatchedRules API function.
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission);
 
   auto get_url_for_host = [this](std::string hostname) {
     return embedded_test_server()->GetURL(hostname,
@@ -2681,7 +2661,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, WebRequestEvents) {
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = "||example.com";
@@ -2730,7 +2710,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, WebRequestEvents) {
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, WebRequestPriority) {
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   GURL url = embedded_test_server()->GetURL("example.com",
                                             "/pages_with_script/index.html");
@@ -2798,7 +2778,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = "abc.com";
@@ -2868,7 +2848,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        ActionCountPreferenceMultipleWindows) {
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
-  set_has_background_script(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = "abc.com";
@@ -3190,12 +3170,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        OnRuleMatchedDebugAvailability) {
   // Load the extension with a background script so scripts can be run from its
-  // generated background page.
-  set_has_background_script(true);
-
-  // Grant the feedback permission for the extension so it can have access to
-  // the onRuleMatchedDebug event when unpacked.
-  set_has_feedback_permission(true);
+  // generated background page. Also grant the feedback permission for the
+  // extension so it can have access to the onRuleMatchedDebug event when
+  // unpacked.
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission);
 
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {}, "test_extension", {URLPattern::kAllUrlsPattern}));
@@ -3223,12 +3202,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Unpacked,
   ASSERT_EQ(ExtensionLoadType::UNPACKED, GetParam());
 
   // Load the extension with a background script so scripts can be run from its
-  // generated background page.
-  set_has_background_script(true);
-
-  // Grant the feedback permission for the extension so it has access to the
-  // onRuleMatchedDebug event.
-  set_has_feedback_permission(true);
+  // generated background page. Also grant the feedback permission for the
+  // extension so it has access to the onRuleMatchedDebug event.
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission);
 
   auto create_remove_headers_rule =
       [](int id, const std::string& url_filter,
@@ -3304,12 +3281,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Unpacked,
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        GetMatchedRulesMultipleTabs) {
   // Load the extension with a background script so scripts can be run from its
-  // generated background page.
-  set_has_background_script(true);
-
-  // Grant the feedback permission for the extension so it has access to the
-  // getMatchedRules API function.
-  set_has_feedback_permission(true);
+  // generated background page. Also grant the feedback permission for the
+  // extension so it has access to the getMatchedRules API function.
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission);
 
   DeclarativeNetRequestGetMatchedRulesFunction::
       set_disable_throttling_for_tests(true);
@@ -3449,12 +3424,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        GetMatchedRulesMainFrame) {
   // Load the extension with a background script so scripts can be run from its
-  // generated background page.
-  set_has_background_script(true);
-
-  // Grant the feedback permission for the extension so it has access to the
-  // getMatchedRules API function.
-  set_has_feedback_permission(true);
+  // generated background page. Also grant the feedback permission for the
+  // extension so it has access to the getMatchedRules API function.
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission);
 
   DeclarativeNetRequestGetMatchedRulesFunction::
       set_disable_throttling_for_tests(true);
@@ -3526,12 +3499,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   rules_monitor_service->action_tracker().SetClockForTests(&clock_);
 
   // Load the extension with a background script so scripts can be run from its
-  // generated background page.
-  set_has_background_script(true);
-
-  // Grant the feedback permission for the extension so it has access to the
-  // getMatchedRules API function.
-  set_has_feedback_permission(true);
+  // generated background page. Also grant the feedback permission for the
+  // extension so it has access to the getMatchedRules API function.
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission);
 
   DeclarativeNetRequestGetMatchedRulesFunction::
       set_disable_throttling_for_tests(true);
@@ -3617,10 +3588,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        GetMatchedRulesActiveTab) {
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
-  set_has_background_script(true);
-
-  // Turn activeTab on.
-  set_has_active_tab_permission(true);
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasActiveTab);
 
   DeclarativeNetRequestGetMatchedRulesFunction::
       set_disable_throttling_for_tests(true);
@@ -3691,12 +3660,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        GetMatchedRulesNoThrottlingIfUserGesture) {
   // Load the extension with a background script so scripts can be run from its
-  // generated background page.
-  set_has_background_script(true);
-
-  // Grant the feedback permission for the extension so it has access to the
-  // getMatchedRules API function.
-  set_has_feedback_permission(true);
+  // generated background page. Also grant the feedback permission for the
+  // extension so it has access to the getMatchedRules API function.
+  set_config_flags(ConfigFlag::kConfig_HasBackgroundScript |
+                   ConfigFlag::kConfig_HasFeedbackPermission);
 
   // Ensure that GetMatchedRules is being throttled.
   DeclarativeNetRequestGetMatchedRulesFunction::

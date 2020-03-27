@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace content {
 
@@ -171,11 +172,15 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
     std::move(callback).Run();
   ui_thread_histogram_callbacks_.clear();
 
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
-                        color_utils::IsInvertedColorScheme());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
                         base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kForceRendererAccessibility));
+#if defined(OS_WIN)
+  UMA_HISTOGRAM_ENUMERATION(
+      "Accessibility.WinHighContrastTheme",
+      ui::NativeTheme::GetInstanceForNativeUi()->GetHighContrastColorScheme(),
+      ui::NativeTheme::HighContrastColorScheme::kMaxValue);
+#endif
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread() {

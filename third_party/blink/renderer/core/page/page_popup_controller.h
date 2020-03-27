@@ -42,7 +42,7 @@ class Document;
 class PagePopup;
 class PagePopupClient;
 
-class PagePopupController final : public ScriptWrappable {
+class PagePopupController : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -64,6 +64,8 @@ class PagePopupController final : public ScriptWrappable {
 
  private:
   PagePopup& popup_;
+
+ protected:
   PagePopupClient* popup_client_;
 };
 

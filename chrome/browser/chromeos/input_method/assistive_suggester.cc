@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "chromeos/constants/chromeos_features.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -23,7 +25,15 @@ void RecordAssistiveSuccess(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Success", type);
 }
 
+bool IsAssistPersonalInfoEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kAssistPersonalInfo);
+}
+
 }  // namespace
+
+bool IsAssistiveFeatureEnabled() {
+  return IsAssistPersonalInfoEnabled();
+}
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
                                        Profile* profile)
@@ -115,7 +125,8 @@ void AssistiveSuggester::Suggest(const base::string16& text,
     int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
     base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
-    if (personal_info_suggester_->Suggest(text_before_cursor)) {
+    if (IsAssistPersonalInfoEnabled() &&
+        personal_info_suggester_->Suggest(text_before_cursor)) {
       current_suggester_ = personal_info_suggester_;
     } else {
       current_suggester_ = nullptr;

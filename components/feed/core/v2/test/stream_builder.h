@@ -21,7 +21,6 @@ ContentId MakeContentId(ContentId::Type type,
                         int id_number);
 ContentId MakeClusterId(int id_number);
 ContentId MakeContentContentId(int id_number);
-ContentId MakeSharedStateContentId(int id_number);
 ContentId MakeRootId(int id_number = 0);
 ContentId MakeSharedStateId(int id_number = 0);
 feedstore::StreamStructure MakeStream(int id_number = 0);
@@ -31,7 +30,6 @@ feedstore::StreamSharedState MakeSharedState(int id_number);
 feedstore::StreamStructure MakeRemove(ContentId id);
 feedstore::StreamStructure MakeClearAll();
 feedstore::Content MakeContent(int id_number);
-feedstore::StreamSharedState MakeSharedState(int id_number);
 feedstore::DataOperation MakeOperation(feedstore::StreamStructure structure);
 feedstore::DataOperation MakeOperation(feedstore::Content content);
 

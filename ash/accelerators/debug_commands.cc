@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/hud_display/hud_display.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/window_properties.h"
@@ -188,6 +189,10 @@ void HandleTriggerCrash() {
   LOG(FATAL) << "Intentional crash via debug accelerator.";
 }
 
+void HandleTriggerHUDDisplay() {
+  hud_display::HUDDisplayView::Toggle();
+}
+
 }  // namespace
 
 void PrintUIHierarchies() {
@@ -245,6 +250,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       break;
     case DEBUG_TRIGGER_CRASH:
       HandleTriggerCrash();
+      break;
+    case DEBUG_TOGGLE_HUD_DISPLAY:
+      HandleTriggerHUDDisplay();
       break;
     default:
       break;

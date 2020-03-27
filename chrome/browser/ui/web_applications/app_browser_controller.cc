@@ -49,6 +49,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
+#endif
+
 namespace {
 
 class TerminalTabMenuModel : public ui::SimpleMenuModel {
@@ -327,6 +331,19 @@ gfx::Rect AppBrowserController::GetDefaultBounds() const {
     return TERMINAL_DEFAULT_BOUNDS;
   }
   return gfx::Rect();
+}
+
+bool AppBrowserController::ShouldShowTabContextMenuShortcut(
+    int command_id) const {
+#if defined(OS_CHROMEOS)
+  // TODO(crbug.com/1061822): Generalize ShouldShowTabContextMenuShortcut as
+  // a SystemWebApp capability.
+  if (system_app_type_ == SystemAppType::TERMINAL &&
+      command_id == TabStripModel::CommandCloseTab) {
+    return crostini::GetTerminalSettingPassCtrlW(browser()->profile());
+  }
+#endif
+  return true;
 }
 
 void AppBrowserController::DidStartNavigation(

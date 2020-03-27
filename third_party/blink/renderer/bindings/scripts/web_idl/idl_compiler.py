@@ -621,12 +621,20 @@ class IdlCompiler(object):
             Returns an unique (but meaningless) key.  Returns the same key for
             the identical union types.
             """
-            key_pieces = sorted([
-                idl_type.syntactic_form
-                for idl_type in union_type.flattened_member_types
-            ])
-            if union_type.does_include_nullable_type:
-                key_pieces.append('type null')  # something unique
+            # TODO(peria, yukishiino): Produce unique union names.  Trying to
+            # produce the names compatible to the old bindings generator for
+            # the time being.
+            key_pieces = []
+
+            def flatten_member_types(idl_type):
+                idl_type = idl_type.unwrap()
+                if idl_type.is_union:
+                    for member_type in idl_type.member_types:
+                        flatten_member_types(member_type)
+                else:
+                    key_pieces.append(idl_type.syntactic_form)
+
+            flatten_member_types(union_type)
             return '|'.join(key_pieces)
 
         grouped_unions = {}  # {unique key: list of union types}

@@ -92,6 +92,9 @@ class ManagePasswordsUIController
   void OnCredentialLeak(password_manager::CredentialLeakType leak_dialog_type,
                         const GURL& origin) override;
 
+  void NotifyUnsyncedCredentialsWillBeDeleted(
+      const std::vector<autofill::PasswordForm>& unsynced_credentials);
+
   // PasswordStore::Observer:
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;

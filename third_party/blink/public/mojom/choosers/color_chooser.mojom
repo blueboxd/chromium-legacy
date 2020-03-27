@@ -28,3 +28,8 @@ interface ColorChooserClient {
   DidChooseColor(uint32 color);
 };
 
+// Interface exposed by the browser to the renderer.
+interface EyeDropperChooser {
+  // EyeDropper window is shown.
+  Choose() => (bool success, uint32 color);
+};

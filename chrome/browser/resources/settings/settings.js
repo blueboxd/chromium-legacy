@@ -15,6 +15,7 @@ import './controls/settings_toggle_button.m.js';
 import './on_startup_page/on_startup_page.m.js';
 import './on_startup_page/startup_urls_page.m.js';
 import './prefs/prefs.m.js';
+import './privacy_page/privacy_page.m.js';
 import './site_favicon.m.js';
 import './search_page/search_page.m.js';
 import './settings_main/settings_main.m.js';

@@ -113,8 +113,17 @@ body.tab-navigation .circle input:focus::after {
 
 .left-stripe {
   left: 40px;
+  opacity: 1;
   position: absolute;
   transform: translateX(-50%);
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  visibility: visible;
+}
+
+body.taking.video .left-stripe {
+  opacity: 0;
+  transition: visibility 0ms 225ms, opacity 225ms cubic-bezier(0.4, 0, 0.2, 1);
+  visibility: hidden;
 }
 
 .right-stripe {

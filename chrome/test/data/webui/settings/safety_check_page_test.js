@@ -3,10 +3,26 @@
 // found in the LICENSE file.
 
 suite('SafetyCheckUiTests', function() {
+  /** @type {?settings.LifetimeBrowserProxy} */
+  let lifetimeBrowserProxy = null;
+  /** @type {settings.OpenWindowProxy} */
+  let openWindowProxy = null;
+  /** @type {settings.SafetyCheckBrowserProxy} */
+  let safetyCheckBrowserProxy = null;
   /** @type {SettingsBasicPageElement} */
   let page;
 
   setup(function() {
+    lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
+    settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
+    openWindowProxy = new TestOpenWindowProxy();
+    settings.OpenWindowProxyImpl.instance_ = openWindowProxy;
+    safetyCheckBrowserProxy =
+        TestBrowserProxy.fromClass(settings.SafetyCheckBrowserProxy);
+    safetyCheckBrowserProxy.setResultFor(
+        'getParentRanDisplayString', Promise.resolve('Dummy string'));
+    settings.SafetyCheckBrowserProxyImpl.instance_ = safetyCheckBrowserProxy;
+
     PolymerTest.clearBody();
     page = document.createElement('settings-safety-check-page');
     document.body.appendChild(page);
@@ -49,20 +65,29 @@ suite('SafetyCheckUiTests', function() {
     cr.webUIListenerCallback(
         settings.SafetyCheckCallbackConstants.EXTENSIONS_CHANGED, event);
   }
+  /**
+   * @return {!Promise}
+   */
+  async function expectExtensionsButtonClickActions() {
+    // User clicks review extensions button.
+    page.$$('#safetyCheckExtensionsButton').click();
+    // Ensure the browser proxy call is done.
+    assertEquals(
+        'chrome://extensions', await openWindowProxy.whenCalled('openURL'));
+  }
 
-  /** Tests parent element and collapse. */
-  test('beforeCheckUiTest', function() {
-    // Only the text button is present.
+  /** Tests parent element and collapse.from start to completion */
+  test('testParentAndCollapse', async function() {
+    // Before the check, only the text button is present.
     assertTrue(!!page.$$('#safetyCheckParentButton'));
     assertFalse(!!page.$$('#safetyCheckParentIconButton'));
     // Collapse is not opened.
     assertFalse(page.$$('#safetyCheckCollapse').opened);
-  });
 
-  /** Tests parent element and collapse. */
-  test('duringCheckUiTest', function() {
     // User starts check.
     page.$$('#safetyCheckParentButton').click();
+    // Ensure the browser proxy call is done.
+    await safetyCheckBrowserProxy.whenCalled('runSafetyCheck');
 
     Polymer.dom.flush();
     // No button is present.
@@ -70,12 +95,6 @@ suite('SafetyCheckUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckParentIconButton'));
     // Collapse is opened.
     assertTrue(page.$$('#safetyCheckCollapse').opened);
-  });
-
-  /** Tests parent element and collapse. */
-  test('afterCheckUiTest', function() {
-    // User starts check.
-    page.$$('#safetyCheckParentButton').click();
 
     // Mock all incoming messages that indicate safety check completion.
     fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.UPDATED);
@@ -86,12 +105,17 @@ suite('SafetyCheckUiTests', function() {
         settings.SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS);
 
     Polymer.dom.flush();
-
     // Only the icon button is present.
     assertFalse(!!page.$$('#safetyCheckParentButton'));
     assertTrue(!!page.$$('#safetyCheckParentIconButton'));
     // Collapse is opened.
     assertTrue(page.$$('#safetyCheckCollapse').opened);
+
+    // Ensure the automatic browser proxy calls are started.
+    const timestamp =
+        await safetyCheckBrowserProxy.whenCalled('getParentRanDisplayString');
+    assertTrue(Number.isInteger(timestamp));
+    assertTrue(timestamp >= 0);
   });
 
   test('HappinessTrackingSurveysTest', function() {
@@ -127,6 +151,11 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+
+    // User clicks the relaunch button.
+    page.$$('#safetyCheckUpdatesButton').click();
+    // Ensure the browser proxy call is done.
+    return lifetimeBrowserProxy.whenCalled('relaunch');
   });
 
   test('updatesDisabledByAdminUiTest', function() {
@@ -158,48 +187,36 @@ suite('SafetyCheckUiTests', function() {
       fireSafetyCheckPasswordsEvent(state);
       Polymer.dom.flush();
 
-      // button is only visible in COMPROMISED state
+      // Button is only visible in COMPROMISED state
       assertEquals(
           state === settings.SafetyCheckPasswordsStatus.COMPROMISED,
           !!page.$$('#safetyCheckPasswordsButton'));
     }
   });
 
-  test('passwordButtonWhenPasswordCheckIsOn', async function() {
+  test('passwordsCompromisedUiTest', async function() {
     loadTimeData.overrideValues({enablePasswordCheck: true});
-
     const passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.instance_ = passwordManager;
 
     fireSafetyCheckPasswordsEvent(
         settings.SafetyCheckPasswordsStatus.COMPROMISED);
     Polymer.dom.flush();
+    assertTrue(!!page.$$('#safetyCheckPasswordsButton'));
 
+    // User clicks the manage passwords button.
     page.$$('#safetyCheckPasswordsButton').click();
+
+    // Ensure the correct Settings page is shown.
     assertEquals(
         settings.routes.CHECK_PASSWORDS,
-        settings.Router.getInstance().currentRoute);
+        settings.Router.getInstance().getCurrentRoute());
+
+    // Ensure correct referrer sent to password check.
     const referrer =
         await passwordManager.whenCalled('recordPasswordCheckReferrer');
     assertEquals(
         PasswordManagerProxy.PasswordCheckReferrer.SAFETY_CHECK, referrer);
-  });
-
-  test('passwordButtonWhenPasswordCheckIsOff', function() {
-    loadTimeData.overrideValues({enablePasswordCheck: false});
-
-    const passwordManager = new TestPasswordManagerProxy();
-    PasswordManagerImpl.instance_ = passwordManager;
-
-    fireSafetyCheckPasswordsEvent(
-        settings.SafetyCheckPasswordsStatus.COMPROMISED);
-    Polymer.dom.flush();
-
-    page.$$('#safetyCheckPasswordsButton').click();
-    assertEquals(
-        settings.routes.PASSWORDS, settings.Router.getInstance().currentRoute);
-    assertEquals(
-        0, passwordManager.getCallCount('recordPasswordCheckReferrer'));
   });
 
   test('safeBrowsingCheckingUiTest', function() {
@@ -224,6 +241,14 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+
+    // User clicks the manage safe browsing button.
+    page.$$('#safetyCheckSafeBrowsingButton').click();
+
+    // Ensure the correct Settings page is shown.
+    assertEquals(
+        settings.routes.SECURITY,
+        settings.Router.getInstance().getCurrentRoute());
   });
 
   test('safeBrowsingCheckingUiTest', function() {
@@ -287,6 +312,8 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+
+    return expectExtensionsButtonClickActions();
   });
 
   test('extensionsBlocklistedOnAllUserUiTest', function() {
@@ -295,6 +322,8 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+
+    return expectExtensionsButtonClickActions();
   });
 
   test('extensionsBlocklistedOnUserAdminUiTest', function() {
@@ -303,6 +332,8 @@ suite('SafetyCheckUiTests', function() {
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+
+    return expectExtensionsButtonClickActions();
   });
 
   test('extensionsBlocklistedOnAllAdminUiTest', function() {

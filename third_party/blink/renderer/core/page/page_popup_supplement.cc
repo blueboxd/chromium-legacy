@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/page/page_popup_supplement.h"
 
+#include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/page_popup_controller.h"
 
 namespace blink {
@@ -38,8 +39,7 @@ PagePopupSupplement::PagePopupSupplement(LocalFrame& frame,
                                          PagePopup& popup,
                                          PagePopupClient* popup_client)
     : Supplement<LocalFrame>(frame),
-      controller_(
-          MakeGarbageCollected<PagePopupController>(popup, popup_client)) {
+      controller_(popup_client->CreatePagePopupController(popup)) {
   DCHECK(popup_client);
 }
 

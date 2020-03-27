@@ -114,6 +114,20 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kMaxValue = kLight,
   };
 
+  // IMPORTANT!
+  // This enum is reporting in metrics. Do not reorder; add additional values at
+  // the end.
+  //
+  // This represents the OS-level high contrast theme. kNone if high contrast is
+  // not enabled.
+  enum class HighContrastColorScheme {
+    kNone = 0,
+    kDark = 1,
+    kLight = 2,
+    kCustom = 3,
+    kMaxValue = kCustom,
+  };
+
   // The color scheme used for painting the native controls.
   enum class ColorScheme {
     kDefault,
@@ -376,6 +390,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Returns whether this NativeTheme uses higher-contrast colors, controlled by
   // system accessibility settings and the system theme.
   virtual bool UsesHighContrastColors() const;
+
+  // Returns the HighContrastColorScheme used by the OS. Returns kNone if high
+  // contrast is not enabled.
+  HighContrastColorScheme GetHighContrastColorScheme() const;
 
   // Returns true when the NativeTheme uses a light-on-dark color scheme. If
   // you're considering using this function to choose between two hard-coded

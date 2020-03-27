@@ -248,7 +248,7 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   void RewriteNumPadKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteExtendedKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteFunctionKeys(const ui::KeyEvent& event, MutableKeyState* state);
-  void RewriteLocatedEvent(const ui::Event& event, int* flags);
+  int RewriteLocatedEvent(const ui::Event& event);
   int RewriteModifierClick(const ui::MouseEvent& event, int* flags);
 
   // Handle Fn/Action key remapping for Wilco keyboard layout.

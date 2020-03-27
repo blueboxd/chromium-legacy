@@ -175,9 +175,9 @@
 #endif
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <commctrl.h>
 #include <shellapi.h>
+#include <windows.h>
 
 #include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
 #include "net/base/winsock_init.h"
@@ -226,8 +226,8 @@
 #if defined(USE_X11)
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
-#include "ui/gfx/x/x11_connection.h"  // nogncheck
-#include "ui/gfx/x/x11_types.h"  // nogncheck
+#include "ui/gfx/x/x11_connection.h"      // nogncheck
+#include "ui/gfx/x/x11_types.h"           // nogncheck
 #endif
 
 #if defined(USE_NSS_CERTS)
@@ -282,8 +282,8 @@ static void GLibLogHandler(const gchar* log_domain,
 
 static void SetUpGLibLogHandler() {
   // Register GLib-handled assertions to go through our logging system.
-  const char* const kLogDomains[] =
-      { nullptr, "Gtk", "Gdk", "GLib", "GLib-GObject" };
+  const char* const kLogDomains[] = {nullptr, "Gtk", "Gdk", "GLib",
+                                     "GLib-GObject"};
   for (size_t i = 0; i < base::size(kLogDomains); i++) {
     g_log_set_handler(
         kLogDomains[i],
@@ -796,11 +796,10 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   }
 
   if (!parsed_command_line_.HasSwitch(
-      switches::kDisableScreenOrientationLock)) {
+          switches::kDisableScreenOrientationLock)) {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:ScreenOrientationProvider");
-    screen_orientation_delegate_.reset(
-        new ScreenOrientationDelegateAndroid());
+    screen_orientation_delegate_.reset(new ScreenOrientationDelegateAndroid());
   }
 
   base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(
@@ -824,8 +823,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
 int BrowserMainLoop::PreCreateThreads() {
   if (parts_) {
-    TRACE_EVENT0("startup",
-        "BrowserMainLoop::CreateThreads:PreCreateThreads");
+    TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads:PreCreateThreads");
 
     result_code_ = parts_->PreCreateThreads();
   }
@@ -1017,7 +1015,7 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
 
   if (parts_) {
     TRACE_EVENT0("startup",
-        "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");
+                 "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");
 
     parts_->PreMainMessageLoopRun();
   }
@@ -1345,8 +1343,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   // MediaStreamManager needs the IO thread to be created.
   {
-    TRACE_EVENT0("startup",
-      "BrowserMainLoop::BrowserThreadsStarted:InitMediaStreamManager");
+    TRACE_EVENT0(
+        "startup",
+        "BrowserMainLoop::BrowserThreadsStarted:InitMediaStreamManager");
 
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
         audio_manager_ ? audio_manager_->GetTaskRunner() : nullptr;
@@ -1366,8 +1365,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
   {
-    TRACE_EVENT0("startup",
-      "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
+    TRACE_EVENT0(
+        "startup",
+        "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
     speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl(
         audio_system_.get(), media_stream_manager_.get()));
   }
@@ -1382,7 +1382,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   {
     TRACE_EVENT0("startup",
-      "BrowserMainLoop::BrowserThreadsStarted::SaveFileManager");
+                 "BrowserMainLoop::BrowserThreadsStarted::SaveFileManager");
     save_file_manager_ = new SaveFileManager();
   }
 
@@ -1526,7 +1526,9 @@ void BrowserMainLoop::InitializeAudio() {
 
   // Do not initialize |audio_manager_| if running out of process.
   if (!audio_manager_ &&
-      !base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
+      (base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kSingleProcess) ||
+       !base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess))) {
     audio_manager_ =
         media::AudioManager::Create(std::make_unique<media::AudioThreadImpl>(),
                                     MediaInternals::GetInstance());

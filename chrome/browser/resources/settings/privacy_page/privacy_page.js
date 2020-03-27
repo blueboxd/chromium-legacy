@@ -278,6 +278,9 @@ cr.define('settings', function() {
       'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
     ],
 
+    /** @private {?settings.PrivacyPageBrowserProxy} */
+    browserProxy_: null,
+
     /** @override */
     ready() {
       this.ContentSettingsTypes = settings.ContentSettingsTypes;
@@ -493,7 +496,7 @@ cr.define('settings', function() {
     /** @private */
     onDialogClosed_() {
       settings.Router.getInstance().navigateTo(
-          settings.routes.CLEAR_BROWSER_DATA.parent);
+          assert(settings.routes.CLEAR_BROWSER_DATA.parent));
       cr.ui.focusWithoutInk(assert(this.$$('#clearBrowsingData')));
     },
 

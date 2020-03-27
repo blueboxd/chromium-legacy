@@ -360,9 +360,12 @@ void CrostiniHandler::OnCrostiniDialogStatusChanged(
 void CrostiniHandler::OnContainerOsReleaseChanged(
     const crostini::ContainerId& container_id,
     bool can_upgrade) {
-  // Right now, |can_upgrade| is true only for the default |container_id|.
-  FireWebUIListener("crostini-container-upgrade-available-changed",
-                    base::Value(can_upgrade));
+  if (crostini::CrostiniFeatures::Get()->IsContainerUpgradeUIAllowed(
+          profile_) &&
+      container_id == crostini::DefaultContainerId()) {
+    FireWebUIListener("crostini-container-upgrade-available-changed",
+                      base::Value(can_upgrade));
+  }
 }
 
 void CrostiniHandler::OnQueryAdbSideload(
@@ -459,11 +462,9 @@ void CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest(
 void CrostiniHandler::HandleCrostiniContainerUpgradeAvailableRequest(
     const base::ListValue* args) {
   AllowJavascript();
-  crostini::ContainerId container_id(crostini::kCrostiniDefaultVmName,
-                                     crostini::kCrostiniDefaultContainerName);
-  bool can_upgrade = crostini::CrostiniManager::GetForProfile(profile_)
-                         ->IsContainerUpgradeable(container_id);
-  OnContainerOsReleaseChanged(container_id, can_upgrade);
+
+  bool can_upgrade = crostini::ShouldAllowContainerUpgrade(profile_);
+  OnContainerOsReleaseChanged(crostini::DefaultContainerId(), can_upgrade);
 }
 
 void CrostiniHandler::HandleAddCrostiniPortForward(

@@ -61,18 +61,22 @@ std::string GetFilename(const base::FilePath& file_path) {
   return file_path.BaseName().AsUTF8Unsafe();
 }
 
-std::string GetErrorWithFilename(const base::FilePath& path,
+std::string GetErrorWithFilename(const base::FilePath& json_path,
                                  const std::string& error) {
-  return base::StrCat({GetFilename(path), ": ", error});
+  return base::StrCat({GetFilename(json_path), ": ", error});
 }
 
-InstallWarning CreateInstallWarning(const std::string& message) {
-  return InstallWarning(message, manifest_keys::kDeclarativeNetRequestKey,
+InstallWarning CreateInstallWarning(const base::FilePath& json_path,
+                                    const std::string& message) {
+  std::string message_with_filename = GetErrorWithFilename(json_path, message);
+  return InstallWarning(message_with_filename,
+                        manifest_keys::kDeclarativeNetRequestKey,
                         manifest_keys::kDeclarativeRuleResourcesKey);
 }
 
 // Adds install warnings for rules which exceed the per-rule regex memory limit.
 void AddRegexLimitExceededWarnings(
+    const base::FilePath& json_path,
     std::vector<InstallWarning>* warnings,
     const std::vector<int>& regex_limit_exceeded_rule_ids) {
   DCHECK(warnings);
@@ -85,19 +89,23 @@ void AddRegexLimitExceededWarnings(
   constexpr size_t kMaxRegexLimitExceededWarnings = 10;
   if (rule_ids.size() <= kMaxRegexLimitExceededWarnings) {
     for (const std::string& rule_id: rule_ids) {
-      warnings->push_back(CreateInstallWarning(ErrorUtils::FormatErrorMessage(
-          kErrorRegexTooLarge, rule_id, kRegexFilterKey)));
+      warnings->push_back(CreateInstallWarning(
+          json_path, ErrorUtils::FormatErrorMessage(kErrorRegexTooLarge,
+                                                    rule_id, kRegexFilterKey)));
     }
 
     return;
   }
 
-  warnings->push_back(CreateInstallWarning(ErrorUtils::FormatErrorMessage(
-      kErrorRegexesTooLarge, base::JoinString(rule_ids, ", " /* separator */),
-      kRegexFilterKey)));
+  warnings->push_back(CreateInstallWarning(
+      json_path,
+      ErrorUtils::FormatErrorMessage(
+          kErrorRegexesTooLarge,
+          base::JoinString(rule_ids, ", " /* separator */), kRegexFilterKey)));
 }
 
-ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
+ReadJSONRulesResult ParseRulesFromJSON(const base::FilePath& json_path,
+                                       const base::Value& rules,
                                        size_t rule_limit) {
   ReadJSONRulesResult result;
 
@@ -126,7 +134,7 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
         parse_error.empty()) {
       if (result.rules.size() == rule_limit) {
         result.rule_parse_warnings.push_back(
-            CreateInstallWarning(kRuleCountExceeded));
+            CreateInstallWarning(json_path, kRuleCountExceeded));
         break;
       }
 
@@ -137,7 +145,7 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
         if (!regex_rule_count_exceeded) {
           regex_rule_count_exceeded = true;
           result.rule_parse_warnings.push_back(
-              CreateInstallWarning(kRegexRuleCountExceeded));
+              CreateInstallWarning(json_path, kRegexRuleCountExceeded));
         }
 
         continue;
@@ -166,6 +174,7 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
     }
 
     result.rule_parse_warnings.push_back(CreateInstallWarning(
+        json_path,
         ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, rule_location,
                                        base::UTF16ToUTF8(parse_error))));
   }
@@ -173,10 +182,10 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
   DCHECK_LE(result.rules.size(), rule_limit);
 
   if (unparsed_warnings_limit_exeeded) {
-    result.rule_parse_warnings.push_back(
-        CreateInstallWarning(ErrorUtils::FormatErrorMessage(
-            kTooManyParseFailuresWarning,
-            std::to_string(kMaxUnparsedRulesWarnings))));
+    result.rule_parse_warnings.push_back(CreateInstallWarning(
+        json_path, ErrorUtils::FormatErrorMessage(
+                       kTooManyParseFailuresWarning,
+                       std::to_string(kMaxUnparsedRulesWarnings))));
   }
 
   return result;
@@ -211,7 +220,8 @@ IndexAndPersistJSONRulesetResult IndexAndPersistRuleset(
   // change as well.
   std::vector<InstallWarning> warnings =
       std::move(read_result.rule_parse_warnings);
-  AddRegexLimitExceededWarnings(&warnings, info.regex_limit_exceeded_rules());
+  AddRegexLimitExceededWarnings(source.json_path(), &warnings,
+                                info.regex_limit_exceeded_rules());
   rules_count -= info.regex_limit_exceeded_rules().size();
 
   return IndexAndPersistJSONRulesetResult::CreateSuccessResult(
@@ -231,7 +241,7 @@ void OnSafeJSONParse(const base::FilePath& json_path,
 
   base::ElapsedTimer timer;
   ReadJSONRulesResult read_result =
-      ParseRulesFromJSON(*result.value, source.rule_count_limit());
+      ParseRulesFromJSON(json_path, *result.value, source.rule_count_limit());
 
   std::move(callback).Run(IndexAndPersistRuleset(
       source, std::move(read_result), timer));
@@ -447,7 +457,8 @@ ReadJSONRulesResult RulesetSource::ReadJSONRulesUnsafe() const {
         Status::kJSONParseError, std::move(value_with_error.error_message));
   }
 
-  return ParseRulesFromJSON(*value_with_error.value, rule_count_limit_);
+  return ParseRulesFromJSON(json_path(), *value_with_error.value,
+                            rule_count_limit_);
 }
 
 bool RulesetSource::WriteRulesToJSON(

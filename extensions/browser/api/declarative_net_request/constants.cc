@@ -71,16 +71,13 @@ const char kErrorInvalidHeaderName[] =
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =
-    "Declarative Net Request: Rule count exceeded. Some rules were ignored.";
+    "Rule count exceeded. Some rules were ignored.";
 const char kRegexRuleCountExceeded[] =
-    "Declarative Net Request: Regex rule count exceeded. Some rules were "
-    "ignored.";
+    "Regex rule count exceeded. Some rules were ignored.";
 const char kRuleNotParsedWarning[] =
-    "Declarative Net Request: Rule with * couldn't be parsed. Parse error: "
-    "*.";
+    "Rule with * couldn't be parsed. Parse error: *.";
 const char kTooManyParseFailuresWarning[] =
-    "Declarative Net Request: Too many rule parse failures; Reporting the "
-    "first *.";
+    "Too many rule parse failures; Reporting the first *.";
 const char kInternalErrorUpdatingDynamicRules[] =
     "Internal error while updating dynamic rules.";
 const char kInternalErrorGettingDynamicRules[] =

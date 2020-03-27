@@ -208,8 +208,7 @@ js_type_check("closure_compile_module") {
   deps = [
     #":passwords_leak_detection_toggle.m",
     ":personalization_options.m",
-
-    #":privacy_page.m",
+    ":privacy_page.m",
     ":privacy_page_browser_proxy.m",
     ":security_keys_bio_enroll_dialog.m",
     ":security_keys_browser_proxy.m",
@@ -250,7 +249,24 @@ js_library("personalization_options.m") {
 js_library("privacy_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/privacy_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":privacy_page_browser_proxy.m",
+    "..:hats_browser_proxy.m",
+    "..:i18n_setup.m",
+    "..:metrics_browser_proxy.m",
+    "..:page_visibility.m",
+    "..:route.m",
+    "..:router.m",
+    "../controls:settings_toggle_button.m",
+    "../people_page:sync_browser_proxy.m",
+    "../prefs:prefs_behavior.m",
+    "../site_settings:constants.m",
+    "../site_settings:site_data_details_subpage.m",
+    "../site_settings:site_settings_prefs_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
   extra_deps = [ ":privacy_page_module" ]
 }
@@ -382,6 +398,25 @@ polymer_modulizer("privacy_page") {
   js_file = "privacy_page.js"
   html_file = "privacy_page.html"
   html_type = "dom-module"
+  ignore_imports = [
+    "chrome/browser/resources/settings/privacy_page/do_not_track_toggle.html",
+    "chrome/browser/resources/settings/privacy_page/secure_dns.html",
+    "chrome/browser/resources/settings/privacy_page/security_page.html",
+    "chrome/browser/resources/settings/privacy_page/passwords_leak_detection_toggle.html",
+  ]
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "ui/webui/resources/html/assert.html|assert",
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|SiteSettingsPrefsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSettingsTypes,ChooserType",
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncStatus",
+                   "chrome/browser/resources/settings/hats_browser_proxy.html|HatsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/page_visibility.html|PrivacyPageVisibility",
+                   "chrome/browser/resources/settings/router.html|RouteObserverBehavior,Router",
+                 ]
 }
 
 polymer_modulizer("security_keys_bio_enroll_dialog") {

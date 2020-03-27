@@ -160,11 +160,6 @@ GFX_EXPORT SkColor InvertColor(SkColor color);
 // Gets a Windows system color as a SkColor
 GFX_EXPORT SkColor GetSysSkColor(int which);
 
-// Returns true only if Chrome should use an inverted color scheme - which is
-// only true if the system has high-contrast mode enabled and and is using a
-// light-on-dark color scheme.
-GFX_EXPORT bool IsInvertedColorScheme();
-
 // Derives a color for icons on a UI surface based on the text color on the same
 // surface.
 GFX_EXPORT SkColor DeriveDefaultIconColor(SkColor text_color);

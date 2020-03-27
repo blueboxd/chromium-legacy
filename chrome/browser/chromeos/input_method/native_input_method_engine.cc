@@ -18,10 +18,6 @@ namespace chromeos {
 
 namespace {
 
-bool IsAssistPersonalInfoEnabled() {
-  return base::FeatureList::IsEnabled(chromeos::features::kAssistPersonalInfo);
-}
-
 // Returns the current input context. This may change during the session, even
 // if the IME engine does not change.
 ui::IMEInputContextHandlerInterface* GetInputContext() {
@@ -137,14 +133,14 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
 
 void NativeInputMethodEngine::ImeObserver::OnFocus(
     const IMEEngineHandlerInterface::InputContext& context) {
-  if (IsAssistPersonalInfoEnabled())
+  if (IsAssistiveFeatureEnabled())
     assistive_suggester_->OnFocus(context.id);
 
   base_observer_->OnFocus(context);
 }
 
 void NativeInputMethodEngine::ImeObserver::OnBlur(int context_id) {
-  if (IsAssistPersonalInfoEnabled())
+  if (IsAssistiveFeatureEnabled())
     assistive_suggester_->OnBlur();
 
   base_observer_->OnBlur(context_id);
@@ -154,7 +150,7 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
     const std::string& engine_id,
     const InputMethodEngineBase::KeyboardEvent& event,
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) {
-  if (IsAssistPersonalInfoEnabled()) {
+  if (IsAssistiveFeatureEnabled()) {
     if (assistive_suggester_->OnKeyEvent(event)) {
       std::move(callback).Run(true);
       return;
@@ -201,7 +197,7 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     int offset_pos) {
   assistive_suggester_->RecordAssistiveCoverageMetrics(text, cursor_pos,
                                                        anchor_pos);
-  if (IsAssistPersonalInfoEnabled()) {
+  if (IsAssistiveFeatureEnabled()) {
     // If |assistive_suggester_| changes the surrounding text, no longer need
     // to call the following function, as the information is out-dated.
     if (assistive_suggester_->OnSurroundingTextChanged(text, cursor_pos,

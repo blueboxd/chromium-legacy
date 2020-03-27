@@ -85,14 +85,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
 
   std::map<uint32_t, std::unique_ptr<Stream>> streams_;
 
-  mojo::Receiver<mojom::QuicTransport> receiver_;
-  mojo::Remote<mojom::QuicTransportHandshakeClient> handshake_client_;
-  mojo::Remote<mojom::QuicTransportClient> client_;
-
+  // These callbacks must be destroyed after |client_| because of mojo callback
+  // destruction checks, so they are declared first.
   base::queue<BidirectionalStreamAcceptanceCallback>
       bidirectional_stream_acceptances_;
   base::queue<UnidirectionalStreamAcceptanceCallback>
       unidirectional_stream_acceptances_;
+
+  mojo::Receiver<mojom::QuicTransport> receiver_;
+  mojo::Remote<mojom::QuicTransportHandshakeClient> handshake_client_;
+  mojo::Remote<mojom::QuicTransportClient> client_;
 
   bool torn_down_ = false;
 

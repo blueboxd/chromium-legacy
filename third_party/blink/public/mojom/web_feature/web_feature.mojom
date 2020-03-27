@@ -2531,6 +2531,7 @@ enum WebFeature {
   kThirdPartyCacheStorage = 3193,
   kThirdPartyLocalStorage = 3194,
   kThirdPartySessionStorage = 3195,
+  kDeclarativeShadowRoot = 3196,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

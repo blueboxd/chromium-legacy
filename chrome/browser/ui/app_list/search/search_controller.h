@@ -23,7 +23,6 @@ class Profile;
 
 namespace app_list {
 
-class SearchResultRanker;
 class SearchProvider;
 enum class RankingItemType;
 
@@ -61,10 +60,6 @@ class SearchController {
 
   // Invoked when the app list is shown.
   void AppListShown();
-
-  // Gets the search result ranker owned by the Mixer that is used for all
-  // other ranking.
-  SearchResultRanker* GetNonAppSearchResultRanker();
 
   // Gets the length of the most recent query.
   int GetLastQueryLength() const;

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,6 +21,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
@@ -120,6 +122,8 @@ class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
  public:
   MOCK_METHOD1(SubscribeToSigninEvents, void(PasswordStore* store));
   MOCK_METHOD0(UnsubscribeFromSigninEvents, void());
+  MOCK_METHOD1(NotifyUISignoutWillDeleteCredentials,
+               void(const std::vector<autofill::PasswordForm>&));
 };
 
 }  // namespace

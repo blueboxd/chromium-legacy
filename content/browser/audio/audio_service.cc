@@ -63,7 +63,9 @@ base::Optional<base::TimeDelta> GetAudioServiceProcessIdleTimeout() {
 }
 
 bool IsAudioServiceOutOfProcess() {
-  return base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSingleProcess) &&
+         base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
          !GetContentClient()->browser()->OverridesAudioManager();
 }
 

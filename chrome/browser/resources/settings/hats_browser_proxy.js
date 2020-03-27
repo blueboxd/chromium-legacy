@@ -4,6 +4,10 @@
 
 /** @fileoverview Handles Happiness Tracking Surveys for the settings pages. */
 
+// clang-format on
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// clang-format off
+
 cr.define('settings', function() {
   /** @interface */
   class HatsBrowserProxy {
@@ -16,7 +20,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.HatsBrowserProxy} */
-  class HatsBrowserProxyImpl {
+  /* #export */ class HatsBrowserProxyImpl {
     /** @override*/
     tryShowSurvey() {
       chrome.send('tryShowHatsSurvey');
@@ -25,6 +29,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(HatsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     HatsBrowserProxy,
     HatsBrowserProxyImpl,

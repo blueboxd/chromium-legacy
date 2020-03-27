@@ -14,6 +14,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
+#include "content/browser/eye_dropper_chooser_impl.h"
 #include "content/browser/feature_observer.h"
 #include "content/browser/frame_host/clipboard_host_impl.h"
 #include "content/browser/frame_host/raw_clipboard_host_impl.h"
@@ -670,6 +671,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForFrame));
   map->Add<blink::mojom::ColorChooserFactory>(
       base::BindRepeating(&BindColorChooserFactoryForFrame));
+  map->Add<blink::mojom::EyeDropperChooser>(
+      base::BindRepeating(&EyeDropperChooserImpl::Create));
   map->Add<blink::mojom::CookieStore>(
       base::BindRepeating(&CookieStoreContext::CreateServiceForFrame));
   map->Add<blink::mojom::ContentIndexService>(

@@ -1837,6 +1837,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case DEBUG_TOGGLE_TABLET_MODE:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
+    case DEBUG_TOGGLE_HUD_DISPLAY:
       return debug::DebugAcceleratorsEnabled();
     case DEV_ADD_REMOVE_DISPLAY:
     case DEV_TOGGLE_UNIFIED_DESKTOP:
@@ -2043,6 +2044,7 @@ void AcceleratorControllerImpl::PerformAction(
     case DEBUG_TOGGLE_TABLET_MODE:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
+    case DEBUG_TOGGLE_HUD_DISPLAY:
       debug::PerformDebugActionIfEnabled(action);
       break;
     case DEV_ADD_REMOVE_DISPLAY:

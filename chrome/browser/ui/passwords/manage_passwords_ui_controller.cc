@@ -281,6 +281,11 @@ void ManagePasswordsUIController::OnCredentialLeak(
       CreateCredentialLeakPrompt(raw_controller));
 }
 
+void ManagePasswordsUIController::NotifyUnsyncedCredentialsWillBeDeleted(
+    const std::vector<autofill::PasswordForm>& unsynced_credentials) {
+  NOTIMPLEMENTED();
+}
+
 void ManagePasswordsUIController::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
   password_manager::ui::State current_state = GetState();

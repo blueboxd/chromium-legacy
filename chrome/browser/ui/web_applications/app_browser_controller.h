@@ -148,6 +148,9 @@ class AppBrowserController : public TabStripModelObserver,
   // Returns the default bounds for the app or empty for no defaults.
   gfx::Rect GetDefaultBounds() const;
 
+  // Returns whether the specified Tab Context Menu shortcut should be shown.
+  bool ShouldShowTabContextMenuShortcut(int command_id) const;
+
   // content::WebContentsObserver:
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;

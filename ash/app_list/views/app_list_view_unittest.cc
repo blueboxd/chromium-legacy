@@ -2087,7 +2087,7 @@ TEST_F(AppListViewTest, EscapeKeySideShelfFullscreenToClosed) {
   ASSERT_EQ(1, delegate_->dismiss_count());
 }
 
-// Tests that pressing escape when in tablet mode closes the app list.
+// Tests that pressing escape when in tablet mode keeps app list in fullscreen.
 TEST_F(AppListViewTest, EscapeKeyTabletModeStayFullscreen) {
   // Put into fullscreen by using tablet mode.
   Initialize(true /*is_tablet_mode*/);
@@ -2648,6 +2648,51 @@ TEST_F(AppListViewTest, BackAction) {
   contents_view()->Back();
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   EXPECT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
+}
+
+// Tests that, in clamshell mode, the current app list page resets to the
+// initial page when app list is closed and re-opened.
+TEST_F(AppListViewTest, InitialPageResetClamshellModeTest) {
+  Initialize(false /*is_tablet_mode*/);
+
+  AppListTestModel* model = delegate_->GetTestModel();
+  const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
+  model->PopulateApps(kAppListItemNum);
+
+  Show(false /*is_tablet_mode*/);
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  apps_grid_view()->pagination_model()->SelectPage(1, false /* animate */);
+
+  // Close and re-open the app list to ensure the current page doesn't persist.
+  view_->SetState(ash::AppListViewState::kClosed);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  EXPECT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
+}
+
+// Tests that, in tablet mode, the current app list page doesn't immediately
+// reset to the initial page when app list is closed and re-opened.
+TEST_F(AppListViewTest, PagePersistanceTabletModeTest) {
+  Initialize(true /*is_tablet_mode*/);
+
+  AppListTestModel* model = delegate_->GetTestModel();
+  const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
+  model->PopulateApps(kAppListItemNum);
+
+  Show(true /*is_tablet_mode*/);
+  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
+
+  apps_grid_view()->pagination_model()->SelectPage(1, false /* animate */);
+
+  // Close and re-open the app list to ensure the current page persists.
+  view_->SetState(ash::AppListViewState::kClosed);
+  Show(true);
+  EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
+
+  // The current page should not be reset for the tablet mode app list.
+  EXPECT_EQ(1, apps_grid_view()->pagination_model()->selected_page());
 }
 
 // Tests selecting search result to show embedded Assistant UI.

@@ -23,6 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -160,7 +161,9 @@ void MaybeShowInvertBubbleView(BrowserView* browser_view) {
   PrefService* pref_service = browser->profile()->GetPrefs();
   views::View* anchor =
       browser_view->toolbar_button_provider()->GetAppMenuButton();
-  if (color_utils::IsInvertedColorScheme() && anchor && anchor->GetWidget() &&
+  if (anchor && anchor->GetWidget() &&
+      anchor->GetNativeTheme()->GetHighContrastColorScheme() ==
+          ui::NativeTheme::HighContrastColorScheme::kDark &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
     ShowInvertBubbleView(browser, anchor);

@@ -131,12 +131,17 @@ class BrowserTabStripController::TabContextMenuContents
   }
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) const override {
+    auto* app_controller =
+        controller_->browser_view_->browser()->app_controller();
+    if (app_controller &&
+        !app_controller->ShouldShowTabContextMenuShortcut(command_id))
+      return false;
+
     int browser_cmd;
     return TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
-                                                             &browser_cmd) ?
-        controller_->tabstrip_->GetWidget()->GetAccelerator(browser_cmd,
-                                                            accelerator) :
-        false;
+                                                             &browser_cmd) &&
+           controller_->tabstrip_->GetWidget()->GetAccelerator(browser_cmd,
+                                                               accelerator);
   }
   void ExecuteCommand(int command_id, int event_flags) override {
     // Executing the command destroys |this|, and can also end up destroying

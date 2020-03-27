@@ -6676,3 +6676,5 @@ crbug.com/1064463 external/wpt/web-animations/interfaces/Animation/style-change-
 
 # Sheriff 2020-03-26
 crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas-2x.html [ Pass Failure ]
+# Sheriff 2020-03-27
+crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas.html [ Pass Failure ]

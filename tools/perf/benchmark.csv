@@ -5,20 +5,20 @@ Benchmark name,Individual owners,Component,Documentation,Tags
 UNSCHEDULED_blink_perf.service_worker,"shimazu@chromium.org, falken@chromium.org, ting.shao@intel.com",Blink>ServiceWorker,https://bit.ly/blink-perf-benchmarks,
 angle_perftests,"jmadill@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU>ANGLE,,
 base_perftests,"skyostil@chromium.org, gab@chromium.org",Internals>SequenceManager,https://chromium.googlesource.com/chromium/src/+/HEAD/base/README.md#performance-testing,
-blink_perf.accessibility,dmazzoni@chromium.org,Blink>Accessibility,https://bit.ly/blink-perf-benchmarks,
-blink_perf.bindings,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,https://bit.ly/blink-perf-benchmarks,
+blink_perf.accessibility,dmazzoni@chromium.org,Blink>Accessibility,https://bit.ly/blink-perf-benchmarks,all
+blink_perf.bindings,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,https://bit.ly/blink-perf-benchmarks,all
 blink_perf.canvas,"aaronhk@chromium.org, fserb@chromium.org",Blink>Canvas,https://bit.ly/blink-perf-benchmarks,
-blink_perf.css,"futhark@chromium.org, andruud@chromium.org",Blink>CSS,https://bit.ly/blink-perf-benchmarks,
-blink_perf.display_locking,vmpstr@chromium.org,Blink>Paint,https://bit.ly/blink-perf-benchmarks,
+blink_perf.css,"futhark@chromium.org, andruud@chromium.org",Blink>CSS,https://bit.ly/blink-perf-benchmarks,all
+blink_perf.display_locking,vmpstr@chromium.org,Blink>Paint,https://bit.ly/blink-perf-benchmarks,all
 blink_perf.dom,masonfreed@chromium.org,Blink>DOM,https://bit.ly/blink-perf-benchmarks,all
-blink_perf.events,masonfreed@chromium.org,Blink>DOM,https://bit.ly/blink-perf-benchmarks,
-blink_perf.image_decoder,cblume@chromium.org,Internals>Images>Codecs,https://bit.ly/blink-perf-benchmarks,
+blink_perf.events,masonfreed@chromium.org,Blink>DOM,https://bit.ly/blink-perf-benchmarks,all
+blink_perf.image_decoder,cblume@chromium.org,Internals>Images>Codecs,https://bit.ly/blink-perf-benchmarks,all
 blink_perf.layout,"ikilpatrick@chromium.org, kojii@chromium.org",Blink>Layout,https://bit.ly/blink-perf-benchmarks,all
-blink_perf.owp_storage,dmurph@chromium.org,Blink>Storage,https://bit.ly/blink-perf-benchmarks,
+blink_perf.owp_storage,dmurph@chromium.org,Blink>Storage,https://bit.ly/blink-perf-benchmarks,all
 blink_perf.paint,"pdr@chromium.org, wangxianzhu@chromium.org",Blink>Paint,https://bit.ly/blink-perf-benchmarks,all
-blink_perf.parser,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,https://bit.ly/blink-perf-benchmarks,
-blink_perf.shadow_dom,masonfreed@chromium.org,Blink>DOM>ShadowDOM,https://bit.ly/blink-perf-benchmarks,
-blink_perf.svg,"fs@opera.com, pdr@chromium.org",Blink>SVG,https://bit.ly/blink-perf-benchmarks,
+blink_perf.parser,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,https://bit.ly/blink-perf-benchmarks,all
+blink_perf.shadow_dom,masonfreed@chromium.org,Blink>DOM>ShadowDOM,https://bit.ly/blink-perf-benchmarks,all
+blink_perf.svg,"fs@opera.com, pdr@chromium.org",Blink>SVG,https://bit.ly/blink-perf-benchmarks,all
 components_perftests,csharrison@chromium.org,,,
 dawn_perf_tests,"enga@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU>Dawn,https://dawn.googlesource.com/dawn/+/HEAD/src/tests/perf_tests/README.md,
 dromaeo,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,,

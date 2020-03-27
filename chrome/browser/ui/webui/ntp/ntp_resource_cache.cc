@@ -96,8 +96,11 @@ SkColor GetThemeColor(const ui::ThemeProvider& tp, int id) {
   SkColor color = tp.GetColor(id);
   // If web contents are being inverted because the system is in high-contrast
   // mode, any system theme colors we use must be inverted too to cancel out.
-  return color_utils::IsInvertedColorScheme() ?
-      color_utils::InvertColor(color) : color;
+  return ui::NativeTheme::GetInstanceForNativeUi()
+                     ->GetHighContrastColorScheme() ==
+                 ui::NativeTheme::HighContrastColorScheme::kDark
+             ? color_utils::InvertColor(color)
+             : color;
 }
 
 // Get the CSS string for the background position on the new tab page for the

@@ -49,11 +49,9 @@ class ActionTrackerTest : public DNRTestBase {
  protected:
   using RequestActionType = RequestAction::Type;
 
-  // Helper to load an extension. |has_feedback_permission| specifies whether
-  // the extension will have the declarativeNetRequestFeedback permission.
-  void LoadExtension(const std::string& extension_dirname,
-                     bool has_feedback_permission,
-                     bool has_active_tab_permission) {
+  // Helper to load an extension. |flags| is a bitmask of ConfigFlag to
+  // configure the extension.
+  void LoadExtension(const std::string& extension_dirname, unsigned flags) {
     base::FilePath extension_dir =
         temp_dir().GetPath().AppendASCII(extension_dirname);
 
@@ -62,9 +60,7 @@ class ActionTrackerTest : public DNRTestBase {
     WriteManifestAndRuleset(
         extension_dir, kJSONRulesetFilepath, kJSONRulesFilename,
         std::vector<TestRule>(),
-        std::vector<std::string>({URLPattern::kAllUrlsPattern}),
-        false /* has_background_script */, has_feedback_permission,
-        has_active_tab_permission);
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}), flags);
 
     last_loaded_extension_ =
         CreateExtensionLoader()->LoadExtension(extension_dir);
@@ -116,22 +112,19 @@ class ActionTrackerTest : public DNRTestBase {
 // declarativeNetRequestFeedback or activeTab permission.
 TEST_P(ActionTrackerTest, GetMatchedRulesNoPermission) {
   // Load an extension with the declarativeNetRequestFeedback permission.
-  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension",
-                                        true /* has_feedback_permission */,
-                                        false /* has_active_tab_permission */));
+  ASSERT_NO_FATAL_FAILURE(LoadExtension(
+      "test_extension", ConfigFlag::kConfig_HasFeedbackPermission));
   const Extension* extension_1 = last_loaded_extension();
 
   // Load an extension without the declarativeNetRequestFeedback permission.
-  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension_2",
-                                        false /* has_feedback_permission */,
-                                        false /* has_active_tab_permission */));
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtension("test_extension_2", ConfigFlag::kConfig_None));
   const Extension* extension_2 = last_loaded_extension();
 
   // Load an extension without the declarativeNetRequestFeedback permission but
   // with the activeTab permission.
-  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension_3",
-                                        false /* has_feedback_permission */,
-                                        true /* has_active_tab_permission */));
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtension("test_extension_3", ConfigFlag::kConfig_HasActiveTab));
   const Extension* extension_3 = last_loaded_extension();
 
   const int tab_id = 1;
@@ -190,9 +183,8 @@ TEST_P(ActionTrackerTest, GetMatchedRulesLifespan) {
   action_tracker()->SetClockForTests(&clock_);
 
   // Load an extension with the declarativeNetRequestFeedback permission.
-  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension",
-                                        true /* has_feedback_permission */,
-                                        false /* has_active_tab_permission */));
+  ASSERT_NO_FATAL_FAILURE(LoadExtension(
+      "test_extension", ConfigFlag::kConfig_HasFeedbackPermission));
   const Extension* extension_1 = last_loaded_extension();
 
   const int tab_id = 1;
@@ -271,9 +263,8 @@ TEST_P(ActionTrackerTest, RulesClearedOnTimer) {
   action_tracker()->SetTimerForTest(std::move(mock_trim_timer));
 
   // Load an extension with the declarativeNetRequestFeedback permission.
-  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension",
-                                        true /* has_feedback_permission */,
-                                        false /* has_active_tab_permission */));
+  ASSERT_NO_FATAL_FAILURE(LoadExtension(
+      "test_extension", ConfigFlag::kConfig_HasFeedbackPermission));
   const Extension* extension_1 = last_loaded_extension();
 
   // Record a rule match for |extension_1| for the unknown tab.

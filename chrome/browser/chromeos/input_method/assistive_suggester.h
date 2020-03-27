@@ -15,6 +15,9 @@
 
 namespace chromeos {
 
+// Check if any assistive feature is enabled.
+bool IsAssistiveFeatureEnabled();
+
 // An agent to suggest assistive information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
 class AssistiveSuggester {

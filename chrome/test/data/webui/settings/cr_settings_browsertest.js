@@ -1159,7 +1159,12 @@ CrSettingsSafetyCheckPageTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/safety_check_page/safety_check_page.html',
 
-  featureList: {enabled: ['password_manager::features::kPasswordCheck']},
+  featureList: {
+    enabled: [
+      'features::kPrivacySettingsRedesign',
+      'password_manager::features::kPasswordCheck'
+    ]
+  },
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1167,6 +1172,8 @@ CrSettingsSafetyCheckPageTest.prototype = {
     'passwords_and_autofill_fake_data.js',
     'test_password_manager_proxy.js',
     'safety_check_page_test.js',
+    'test_lifetime_browser_proxy.js',
+    'test_open_window_proxy.js',
     'test_hats_browser_proxy.js',
   ]),
 };

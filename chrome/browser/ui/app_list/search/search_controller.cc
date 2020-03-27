@@ -77,14 +77,7 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
 SearchController::~SearchController() {}
 
 void SearchController::InitializeRankers() {
-  std::unique_ptr<SearchResultRanker> ranker =
-      std::make_unique<SearchResultRanker>(profile_);
-  ranker->InitializeRankers(this);
-  mixer_->SetNonAppSearchResultRanker(std::move(ranker));
-
-  if (app_list_features::IsSuggestedFilesEnabled()) {
-    mixer_->SetChipRanker(std::make_unique<ChipRanker>(profile_));
-  }
+  mixer_->InitializeRankers(profile_, this);
 }
 
 void SearchController::Start(const base::string16& query) {
@@ -174,11 +167,11 @@ void SearchController::OnSearchResultsDisplayed(
     const ash::SearchResultIdWithPositionIndices& results,
     int launched_index) {
   // Log the impression.
-  mixer_->GetNonAppSearchResultRanker()->LogSearchResults(
-      trimmed_query, results, launched_index);
+  mixer_->search_result_ranker()->LogSearchResults(trimmed_query, results,
+                                                   launched_index);
 
   if (trimmed_query.empty()) {
-    mixer_->GetNonAppSearchResultRanker()->ZeroStateResultsDisplayed(results);
+    mixer_->search_result_ranker()->ZeroStateResultsDisplayed(results);
 
     // Extract result types for logging.
     std::vector<RankingItemType> result_types;
@@ -206,15 +199,13 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
   return nullptr;
 }
 
-SearchResultRanker* SearchController::GetNonAppSearchResultRanker() {
-  return mixer_->GetNonAppSearchResultRanker();
-}
-
 int SearchController::GetLastQueryLength() const {
   return last_query_.size();
 }
 
 void SearchController::Train(AppLaunchData&& app_launch_data) {
+  app_launch_data.query = base::UTF16ToUTF8(last_query_);
+
   if (app_list_features::IsAppListLaunchRecordingEnabled()) {
     // Record a structured metrics event.
     const base::Time now = base::Time::Now();
@@ -249,9 +240,7 @@ void SearchController::Train(AppLaunchData&& app_launch_data) {
        {"Query", static_cast<int>(
                      base::HashMetricName(base::UTF16ToUTF8(last_query_)))}});
 
-  for (const auto& provider : providers_)
-    provider->Train(app_launch_data.id, app_launch_data.ranking_item_type);
-  app_launch_data.query = base::UTF16ToUTF8(last_query_);
+  // Train all search result ranking models.
   mixer_->Train(app_launch_data);
 }
 

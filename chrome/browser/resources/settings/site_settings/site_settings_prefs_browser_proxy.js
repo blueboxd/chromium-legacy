@@ -10,6 +10,7 @@
 // clang-format off
 // #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // #import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.m.js';
+// #import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 // clang-format on
 
 /**

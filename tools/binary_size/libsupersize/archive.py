@@ -18,7 +18,6 @@ import re
 import string
 import subprocess
 import sys
-import tempfile
 import zipfile
 import zlib
 
@@ -36,6 +35,7 @@ import obj_analyzer
 import parallel
 import path_util
 import string_extract
+import zip_util
 
 
 sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
@@ -1409,6 +1409,7 @@ def CreateSectionSizesAndSymbols(map_path=None,
     elf_path: Path to the corresponding unstripped ELF file. Used to find symbol
         aliases and inlined functions. Can be None.
     apk_path: Path to the .apk file to measure.
+    mapping_path: Path to the .mapping file for DEX symbol processing.
     resources_pathmap_path: Path to the pathmap file that maps original
         resource paths to shortened resource paths.
     track_string_literals: Whether to break down "** merge string" sections into
@@ -1677,13 +1678,10 @@ def _DetectLinkerName(map_path):
 
 def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
   """Returns a tuple of (build_id, section_ranges, elf_overhead_size)."""
-  with zipfile.ZipFile(apk_path) as apk, \
-       tempfile.NamedTemporaryFile() as f:
-    f.write(apk.read(apk_so_path))
-    f.flush()
-    build_id = BuildIdFromElf(f.name, tool_prefix)
-    section_ranges = _SectionInfoFromElf(f.name, tool_prefix)
-    elf_overhead_size = _CalculateElfOverhead(section_ranges, f.name)
+  with zip_util.UnzipToTemp(apk_path, apk_so_path) as temp:
+    build_id = BuildIdFromElf(temp, tool_prefix)
+    section_ranges = _SectionInfoFromElf(temp, tool_prefix)
+    elf_overhead_size = _CalculateElfOverhead(section_ranges, temp)
     return build_id, section_ranges, elf_overhead_size
 
 
@@ -1879,44 +1877,6 @@ def _DeduceMainPaths(args, knobs, on_config_error):
           size_info_prefix)
 
 
-def Run(args, on_config_error):
-  if not args.size_file.endswith('.size'):
-    on_config_error('size_file must end with .size')
-
-  if args.f is not None:
-    if not _AutoIdentifyInputFile(args):
-      on_config_error('Cannot identify file %s' % args.f)
-  if args.apk_file and args.minimal_apks_file:
-    on_config_error('Cannot use both --apk-file and --minimal-apks-file.')
-
-  # Deduce arguments.
-  setattr(args, 'is_bundle', args.minimal_apks_file is not None)
-  any_path = (args.apk_file or args.minimal_apks_file or args.elf_file
-              or args.map_file)
-  if any_path is None:
-    on_config_error(
-        'Must pass at least one of --apk-file, --minimal-apks-file, '
-        '--elf-file, --map-file')
-  setattr(args, 'any_path_within_output_directory', any_path)
-  setattr(args, 'extracted_minimal_apk_path', None)
-
-  if args.minimal_apks_file:
-    # Can't use NamedTemporaryFile() because it uses atexit, which does
-    # not play nice with fork().
-    fd, args.extracted_minimal_apk_path = tempfile.mkstemp(suffix='.apk')
-    assert args.apk_file is None
-    try:
-      logging.debug('Extracting %s', _APKS_MAIN_APK)
-      with zipfile.ZipFile(args.minimal_apks_file) as z:
-        os.write(fd, z.read(_APKS_MAIN_APK))
-      os.close(fd)
-      _RunInternal(args, on_config_error)
-    finally:
-      os.unlink(args.extracted_minimal_apk_path)
-  else:
-    _RunInternal(args, on_config_error)
-
-
 def _RunInternal(args, on_config_error):
   knobs = SectionSizeKnobs(args.is_bundle)
   knobs.ModifyWithArgs(args)
@@ -1960,3 +1920,32 @@ def _RunInternal(args, on_config_error):
       size_info, args.size_file, include_padding=args.include_padding)
   size_in_mb = os.path.getsize(args.size_file) / 1024.0 / 1024.0
   logging.info('Done. File size is %.2fMiB.', size_in_mb)
+
+
+def Run(args, on_config_error):
+  if not args.size_file.endswith('.size'):
+    on_config_error('size_file must end with .size')
+
+  if args.f is not None:
+    if not _AutoIdentifyInputFile(args):
+      on_config_error('Cannot identify file %s' % args.f)
+  if args.apk_file and args.minimal_apks_file:
+    on_config_error('Cannot use both --apk-file and --minimal-apks-file.')
+
+  # Deduce arguments.
+  setattr(args, 'is_bundle', args.minimal_apks_file is not None)
+  any_path = (args.apk_file or args.minimal_apks_file or args.elf_file
+              or args.map_file)
+  if any_path is None:
+    on_config_error(
+        'Must pass at least one of --apk-file, --minimal-apks-file, '
+        '--elf-file, --map-file')
+  setattr(args, 'any_path_within_output_directory', any_path)
+  setattr(args, 'extracted_minimal_apk_path', None)
+
+  if args.minimal_apks_file:
+    with zip_util.UnzipToTemp(args.minimal_apks_file, _APKS_MAIN_APK) as temp:
+      args.extracted_minimal_apk_path = temp
+      _RunInternal(args, on_config_error)
+  else:
+    _RunInternal(args, on_config_error)

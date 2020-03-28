@@ -294,7 +294,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowParentButton_: function() {
-    return this.parentStatus_ == ParentStatus.BEFORE;
+    return this.parentStatus_ === ParentStatus.BEFORE;
   },
 
   /**
@@ -302,7 +302,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowParentIconButton_: function() {
-    return this.parentStatus_ == ParentStatus.AFTER;
+    return this.parentStatus_ === ParentStatus.AFTER;
   },
 
   /** @private */
@@ -357,7 +357,7 @@ Polymer({
    * @return {?string}
    */
   getChildUiIconSrc_: function(childUiStatus) {
-    if (childUiStatus == ChildUiStatus.RUNNING) {
+    if (childUiStatus === ChildUiStatus.RUNNING) {
       return 'chrome://resources/images/throbber_small.svg';
     }
     return null;
@@ -409,7 +409,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowUpdatesButton_: function() {
-    return this.updatesStatus_ == settings.SafetyCheckUpdatesStatus.RELAUNCH;
+    return this.updatesStatus_ === settings.SafetyCheckUpdatesStatus.RELAUNCH;
   },
 
   /**
@@ -417,7 +417,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowUpdatesManagedIcon_: function() {
-    return this.updatesStatus_ ==
+    return this.updatesStatus_ ===
         settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN;
   },
 
@@ -485,7 +485,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowPasswordsButton_: function() {
-    return this.passwordsStatus_ ==
+    return this.passwordsStatus_ ===
         settings.SafetyCheckPasswordsStatus.COMPROMISED;
   },
 
@@ -556,7 +556,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowSafeBrowsingButton_: function() {
-    return this.safeBrowsingStatus_ ==
+    return this.safeBrowsingStatus_ ===
         settings.SafetyCheckSafeBrowsingStatus.DISABLED;
   },
 
@@ -661,7 +661,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowExtensionsManagedIcon_: function() {
-    return this.extensionsStatus_ ==
+    return this.extensionsStatus_ ===
         settings.SafetyCheckExtensionsStatus.BLOCKLISTED_REENABLED_ALL_BY_ADMIN;
   },
 

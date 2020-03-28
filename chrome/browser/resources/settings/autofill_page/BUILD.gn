@@ -358,6 +358,7 @@ js_library("password_list_item.m") {
 js_library("password_manager_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/autofill_page/password_manager_proxy.m.js" ]
   deps = [ "//ui/webui/resources/js:cr.m" ]
+  externs_list = [ "$externs_path/passwords_private.js" ]
   extra_deps = [ ":modulize" ]
 }
 

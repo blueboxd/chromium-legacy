@@ -52,7 +52,6 @@ polymer_modulizer("basic_page") {
   js_file = "basic_page.js"
   html_file = "basic_page.html"
   html_type = "dom-module"
-  ignore_imports = [ "chrome/browser/resources/settings/safety_check_page/safety_check_page.html" ]
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/page_visibility.html|PageVisibility",
                    "chrome/browser/resources/settings/route.html|routes",

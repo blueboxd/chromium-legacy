@@ -8,6 +8,11 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
@@ -40,6 +45,36 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/origin.h"
+
+namespace {
+
+base::Optional<base::TimeDelta> GetTotalPrefetchTime(
+    network::mojom::URLResponseHead* head) {
+  DCHECK(head);
+
+  base::Time start = head->request_time;
+  base::Time end = head->response_time;
+
+  if (start.is_null() || end.is_null())
+    return base::nullopt;
+
+  return end - start;
+}
+
+base::Optional<base::TimeDelta> GetPrefetchConnectTime(
+    network::mojom::URLResponseHead* head) {
+  DCHECK(head);
+
+  base::TimeTicks start = head->load_timing.connect_timing.connect_start;
+  base::TimeTicks end = head->load_timing.connect_timing.connect_end;
+
+  if (start.is_null() || end.is_null())
+    return base::nullopt;
+
+  return end - start;
+}
+
+}  // namespace
 
 IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad() = default;
 IsolatedPrerenderTabHelper::CurrentPageLoad::~CurrentPageLoad() = default;
@@ -238,6 +273,9 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(PrefetchingActive());
 
+  base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Mainframe.NetError",
+                           std::abs(page_->url_loader->NetError()));
+
   if (page_->url_loader->NetError() == net::OK && body &&
       page_->url_loader->ResponseInfo()) {
     network::mojom::URLResponseHeadPtr head =
@@ -262,7 +300,32 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
     std::unique_ptr<std::string> body) {
   DCHECK(!head->was_fetched_via_cache);
 
+  if (!head->headers)
+    return;
+
+  UMA_HISTOGRAM_COUNTS_10M("IsolatedPrerender.Prefetch.Mainframe.BodyLength",
+                           body->size());
+
+  base::Optional<base::TimeDelta> total_time = GetTotalPrefetchTime(head.get());
+  if (total_time) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("IsolatedPrerender.Prefetch.Mainframe.TotalTime",
+                               *total_time,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromSeconds(30), 100);
+  }
+
+  base::Optional<base::TimeDelta> connect_time =
+      GetPrefetchConnectTime(head.get());
+  if (connect_time) {
+    UMA_HISTOGRAM_TIMES("IsolatedPrerender.Prefetch.Mainframe.ConnectTime",
+                        *connect_time);
+  }
+
   int response_code = head->headers->response_code();
+
+  base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Mainframe.RespCode",
+                           response_code);
+
   if (response_code < 200 || response_code >= 300) {
     return;
   }

@@ -128,6 +128,8 @@ class MediaRouterMetrics {
 
   // UMA histogram names.
   static const char kHistogramCloseLatency[];
+  static const char kHistogramCloudPrefAtDialogOpen[];
+  static const char kHistogramCloudPrefAtInit[];
   static const char kHistogramDialParsingError[];
   static const char kHistogramDialFetchAppInfo[];
   static const char kHistogramIconClickLocation[];
@@ -223,6 +225,14 @@ class MediaRouterMetrics {
   // Records whether the toolbar icon is pinned by the user pref / admin policy.
   // Recorded whenever the browser is initialized.
   static void RecordIconStateAtInit(bool is_pinned);
+
+  // Records the pref value to enable the cloud services. Recorded whenever the
+  // Cast dialog is opened.
+  static void RecordCloudPrefAtDialogOpen(bool enabled);
+
+  // Records the pref value to enable the cloud services. Recorded whenever the
+  // browser is initialized.
+  static void RecordCloudPrefAtInit(bool enabled);
 
   // Recorded whenever a Cast session is started from the Cast dialog. Records
   // how the dialog was opened, and the Cast mode of the started session.

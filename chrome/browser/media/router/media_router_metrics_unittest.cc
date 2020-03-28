@@ -285,4 +285,16 @@ TEST(MediaRouterMetricsTest, RecordIconStateAtInit) {
       MediaRouterMetrics::kHistogramUiIconStateAtInit);
 }
 
+TEST(MediaRouterMetricsTest, RecordCloudPrefAtDialogOpen) {
+  TestRecordBooleanMetric(
+      base::BindRepeating(&MediaRouterMetrics::RecordCloudPrefAtDialogOpen),
+      MediaRouterMetrics::kHistogramCloudPrefAtDialogOpen);
+}
+
+TEST(MediaRouterMetricsTest, RecordCloudPrefAtInit) {
+  TestRecordBooleanMetric(
+      base::BindRepeating(&MediaRouterMetrics::RecordCloudPrefAtInit),
+      MediaRouterMetrics::kHistogramCloudPrefAtInit);
+}
+
 }  // namespace media_router

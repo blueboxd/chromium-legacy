@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '7363af8c513675e67df2729f8463b6828c80d776',
+  'skia_revision': '277879e17b88bce6db34a2474042a33e026e7514',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b9280b4dcba2321067300294596bca946f137551',
+  'v8_revision': 'bd43e20c8c22650fdcb84bf3e6e4543da293d07b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '10ade024031db57f34d67d4f50a3f82e5420634b',
+  'angle_revision': '85c076ee51c8666ca14c170e8ce85a14a96f0579',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '6489c0e7dc806db4363cfc5d91033b4bc83d35bc',
+  'pdfium_revision': '0058260afa11281d48303e6720b2566e42083cbf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0935127287847942e9c8193e03a4442ad34857c9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@376a75c44b3c04b17f4c94ef7c16f3990268ef90',
     'condition': 'checkout_src_internal',
   },
 

@@ -9,6 +9,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "services/network/public/cpp/features.h"');
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 
@@ -207,6 +208,26 @@ var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
 };
 
 TEST_F('CrSettingsPasswordsCheckV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsSafetyCheckPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/safety_check_page_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    const list = super.featureList;
+    list.enabled.push('features::kPrivacySettingsRedesign');
+    list.enabled.push('password_manager::features::kPasswordCheck');
+    return list;
+  }
+};
+
+TEST_F('CrSettingsSafetyCheckPageV3Test', 'All', function() {
   mocha.run();
 });
 

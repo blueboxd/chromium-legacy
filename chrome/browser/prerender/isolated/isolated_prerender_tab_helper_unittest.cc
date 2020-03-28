@@ -49,6 +49,11 @@
 #include "url/origin.h"
 
 namespace {
+
+const int kTotalTimeDuration = 1337;
+
+const int kConnectTimeDuration = 123;
+
 const char kHTMLMimeType[] = "text/html";
 
 const char kHTMLBody[] = R"(
@@ -57,6 +62,7 @@ const char kHTMLBody[] = R"(
         <head></head>
         <body></body>
       </html>)";
+
 }  // namespace
 
 class TestIsolatedPrerenderTabHelper : public IsolatedPrerenderTabHelper {
@@ -178,6 +184,17 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(request);
 
     auto head = network::CreateURLResponseHead(http_status);
+
+    head->response_time = base::Time::Now();
+    head->request_time = head->response_time -
+                         base::TimeDelta::FromMilliseconds(kTotalTimeDuration);
+
+    head->load_timing.connect_timing.connect_end =
+        base::TimeTicks::Now() - base::TimeDelta::FromMinutes(2);
+    head->load_timing.connect_timing.connect_start =
+        head->load_timing.connect_timing.connect_end -
+        base::TimeDelta::FromMilliseconds(kConnectTimeDuration);
+
     head->mime_type = mime_type;
     for (const std::string& header : headers) {
       head->headers->AddHeader(header);
@@ -349,6 +366,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -360,9 +378,23 @@ TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
   MakeResponseAndWait(net::HTTP_NOT_FOUND, net::OK, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
   EXPECT_EQ(PrefetchedResponseSize(), 0U);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_NOT_FOUND, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -374,9 +406,22 @@ TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
   EXPECT_EQ(PrefetchedResponseSize(), 0U);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError",
+      std::abs(net::ERR_FAILED), 1);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -384,11 +429,23 @@ TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
   GURL prediction_url("https://www.cat-food.com/");
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
+  std::string body = "console.log('Hello world');";
   VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_OK, net::OK, "application/javascript",
-                      /*headers=*/{},
-                      /*body=*/"console.log('Hello world');");
+                      /*headers=*/{}, body);
   EXPECT_EQ(PrefetchedResponseSize(), 0U);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", body.size(), 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
@@ -408,6 +465,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -432,6 +490,19 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   EXPECT_EQ(resp->network_isolation_key(),
             request.trusted_params.value().network_isolation_key);
   VerifyNIK(resp->network_isolation_key());
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {
@@ -449,6 +520,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {
 
 TEST_F(IsolatedPrerenderTabHelperTest,
        NumberOfPrefetches_UnlimitedByExperiment) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kIsolatePrerenders, {{"max_srp_prefetches", "-1"}});
@@ -471,9 +543,31 @@ TEST_F(IsolatedPrerenderTabHelperTest,
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
 
   EXPECT_EQ(RequestCount(), 0);
+
+  histogram_tester.ExpectBucketCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 2);
+  histogram_tester.ExpectBucketCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError",
+      std::abs(net::ERR_FAILED), 1);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", 3);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 2);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      2);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      2);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NumberOfPrefetches_UnlimitedByCmdLine) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -498,9 +592,31 @@ TEST_F(IsolatedPrerenderTabHelperTest, NumberOfPrefetches_UnlimitedByCmdLine) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
 
   EXPECT_EQ(RequestCount(), 0);
+
+  histogram_tester.ExpectBucketCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 2);
+  histogram_tester.ExpectBucketCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError",
+      std::abs(net::ERR_FAILED), 1);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", 3);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 2);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      2);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      2);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kIsolatePrerenders, {{"max_srp_prefetches", "2"}});
@@ -521,6 +637,27 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
 
   EXPECT_EQ(RequestCount(), 0);
+
+  histogram_tester.ExpectBucketCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
+  histogram_tester.ExpectBucketCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError",
+      std::abs(net::ERR_FAILED), 1);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", 2);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 1);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      1);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingNotStartedWhileInvisible) {
@@ -538,6 +675,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingNotStartedWhileInvisible) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -556,6 +694,19 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
 
   // But no more prefetches should start when hidden.
   EXPECT_EQ(RequestCount(), 0);
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingRestartedWhenVisible) {
@@ -657,7 +808,20 @@ class IsolatedPrerenderTabHelperRedirectTest
                          std::vector<std::string> final_headers,
                          const std::string& final_body) {
     auto final_head = network::CreateURLResponseHead(final_status);
+
+    final_head->response_time = base::Time::Now();
+    final_head->request_time =
+        final_head->response_time -
+        base::TimeDelta::FromMilliseconds(kTotalTimeDuration);
+
+    final_head->load_timing.connect_timing.connect_end =
+        base::TimeTicks::Now() - base::TimeDelta::FromMinutes(2);
+    final_head->load_timing.connect_timing.connect_start =
+        final_head->load_timing.connect_timing.connect_end -
+        base::TimeDelta::FromMilliseconds(kConnectTimeDuration);
+
     final_head->mime_type = kHTMLMimeType;
+
     for (const std::string& header : final_headers) {
       final_head->headers->AddHeader(header);
     }
@@ -719,6 +883,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
+  base::HistogramTester histogram_tester;
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");
   GURL redirect_url("https://redirect-here.com");
@@ -742,4 +907,17 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
 
   network::mojom::URLResponseHeadPtr head = resp->TakeHead();
   EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", base::size(kHTMLBody),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", kTotalTimeDuration, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
+      1);
 }

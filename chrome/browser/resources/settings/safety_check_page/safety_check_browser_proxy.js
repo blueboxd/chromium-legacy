@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter,sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /**
  * @fileoverview A helper object used by the "SafetyCheck" to interact with
  * the browser.
@@ -14,7 +18,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.cc
    * @enum {string}
    */
-  const SafetyCheckCallbackConstants = {
+  /* #export */ const SafetyCheckCallbackConstants = {
     UPDATES_CHANGED: 'safety-check-updates-status-changed',
     PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
     SAFE_BROWSING_CHANGED: 'safety-check-safe-browsing-status-changed',
@@ -27,7 +31,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  const SafetyCheckUpdatesStatus = {
+  /* #export */ const SafetyCheckUpdatesStatus = {
     CHECKING: 0,
     UPDATED: 1,
     UPDATING: 2,
@@ -43,7 +47,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  const SafetyCheckPasswordsStatus = {
+  /* #export */ const SafetyCheckPasswordsStatus = {
     CHECKING: 0,
     SAFE: 1,
     COMPROMISED: 2,
@@ -60,7 +64,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  const SafetyCheckSafeBrowsingStatus = {
+  /* #export */ const SafetyCheckSafeBrowsingStatus = {
     CHECKING: 0,
     ENABLED: 1,
     DISABLED: 2,
@@ -74,7 +78,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/safety_check_handler.h
    * @enum {number}
    */
-  const SafetyCheckExtensionsStatus = {
+  /* #export */ const SafetyCheckExtensionsStatus = {
     CHECKING: 0,
     ERROR: 1,
     NO_BLOCKLISTED_EXTENSIONS: 2,
@@ -85,7 +89,7 @@ cr.define('settings', function() {
   };
 
   /** @interface */
-  class SafetyCheckBrowserProxy {
+  /* #export */ class SafetyCheckBrowserProxy {
     /** Run the safety check. */
     runSafetyCheck() {}
 
@@ -99,7 +103,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.SafetyCheckBrowserProxy} */
-  class SafetyCheckBrowserProxyImpl {
+  /* #export */ class SafetyCheckBrowserProxyImpl {
     /** @override */
     runSafetyCheck() {
       chrome.send('performSafetyCheck');
@@ -113,13 +117,14 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(SafetyCheckBrowserProxyImpl);
 
+  // #cr_define_end
   return {
+    SafetyCheckCallbackConstants,
     SafetyCheckUpdatesStatus,
     SafetyCheckPasswordsStatus,
     SafetyCheckSafeBrowsingStatus,
     SafetyCheckExtensionsStatus,
     SafetyCheckBrowserProxy,
     SafetyCheckBrowserProxyImpl,
-    SafetyCheckCallbackConstants,
   };
 });

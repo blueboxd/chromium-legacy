@@ -83,13 +83,12 @@
       }
 
       section {
-        @apply --cr-section;
         align-items: flex-start;
-        border-top: none;
+        display: flex;
         flex-direction: column;
         justify-content: center;
-        padding-bottom: 12px;
-        padding-top: 12px;
+        min-height: var(--cr-section-min-height);
+        padding: 12px var(--cr-section-padding);
       }
 
       section:not(.page-subtitle) h2 {

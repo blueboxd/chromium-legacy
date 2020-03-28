@@ -621,9 +621,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           min_max_sizes_in_main_axis_direction.min_size =
               table_preferred_widths.min_size;
         } else {
-          // TODO(dgrogan): Do the aspect ratio parts of
-          // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
-
           LayoutUnit content_size_suggestion;
           if (MainAxisIsInlineAxis(child)) {
             content_size_suggestion = MinMaxSizesFunc().min_size;
@@ -647,9 +644,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
             content_size_suggestion = intrinsic_block_size;
           }
 
-          content_size_suggestion =
-              std::min(content_size_suggestion,
-                       min_max_sizes_in_main_axis_direction.max_size);
 
           if (child.HasAspectRatio()) {
             // TODO(dgrogan): We're including borders/padding in both
@@ -666,7 +660,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                     min_max_sizes_in_cross_axis_direction.max_size);
           }
 
-          LayoutUnit specified_size_suggestion(LayoutUnit::Max());
+          LayoutUnit specified_size_suggestion = LayoutUnit::Max();
           // If the item’s computed main size property is definite, then the
           // specified size suggestion is that size.
           if (MainAxisIsInlineAxis(child)) {
@@ -689,13 +683,42 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                 LengthResolvePhase::kLayout);
             DCHECK_NE(specified_size_suggestion, kIndefiniteSize);
           }
-          // Spec says to clamp specified_size_suggestion by max size but
-          // because content_size_suggestion already is, and we take the min of
-          // those two, we don't need to clamp specified_size_suggestion.
-          // https://github.com/w3c/csswg-drafts/issues/3669
+
+          LayoutUnit transferred_size_suggestion = LayoutUnit::Max();
+          if (specified_size_suggestion == LayoutUnit::Max() &&
+              child.HasAspectRatio()) {
+            const Length& cross_axis_length = is_horizontal_flow_
+                                                  ? child_style.Height()
+                                                  : child_style.Width();
+            if (IsItemCrossAxisLengthDefinite(child, cross_axis_length)) {
+              LayoutUnit cross_axis_size;
+              if (MainAxisIsInlineAxis(child)) {
+                cross_axis_size = ResolveMainBlockLength(
+                    flex_basis_space, child_style,
+                    border_padding_in_child_writing_mode, cross_axis_length,
+                    kIndefiniteSize, LengthResolvePhase::kLayout);
+                DCHECK_NE(cross_axis_size, kIndefiniteSize);
+              } else {
+                cross_axis_size = ResolveMainInlineLength(
+                    flex_basis_space, child_style,
+                    border_padding_in_child_writing_mode, MinMaxSizesFunc,
+                    cross_axis_length);
+              }
+              double ratio = GetMainOverCrossAspectRatio(child);
+              transferred_size_suggestion = LayoutUnit(
+                  ratio *
+                  min_max_sizes_in_cross_axis_direction.ClampSizeToMinAndMax(
+                      cross_axis_size));
+            }
+          }
+
+          DCHECK(specified_size_suggestion == LayoutUnit::Max() ||
+                 transferred_size_suggestion == LayoutUnit::Max());
 
           min_max_sizes_in_main_axis_direction.min_size =
-              std::min(specified_size_suggestion, content_size_suggestion);
+              std::min({specified_size_suggestion, content_size_suggestion,
+                        transferred_size_suggestion,
+                        min_max_sizes_in_main_axis_direction.max_size});
         }
       }
     } else if (MainAxisIsInlineAxis(child)) {

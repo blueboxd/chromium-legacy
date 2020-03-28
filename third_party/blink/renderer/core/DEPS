@@ -57,7 +57,6 @@ include_rules = [
     "+cc/trees/browser_controls_params.h",
     "+cc/trees/layer_tree_host.h",
     "+cc/trees/paint_holding_commit_trigger.h",
-    "+cc/trees/layer_tree_host.h",
     "+components/performance_manager/public/mojom/coordination_unit.mojom-blink.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",

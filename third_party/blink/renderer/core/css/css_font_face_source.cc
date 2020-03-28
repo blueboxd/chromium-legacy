@@ -84,7 +84,7 @@ scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
 void CSSFontFaceSource::PruneOldestIfNeeded() {
   if (font_cache_key_age.size() > kMaxCachedFontData) {
     DCHECK_EQ(font_cache_key_age.size() - 1, kMaxCachedFontData);
-    FontCacheKey& key = font_cache_key_age.back();
+    const FontCacheKey& key = font_cache_key_age.back();
     auto font_data_entry = font_data_table_.Take(key);
     font_cache_key_age.pop_back();
     DCHECK_EQ(font_cache_key_age.size(), kMaxCachedFontData);

@@ -2661,7 +2661,7 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
   AnchoringAdjustmentQueue queue_copy = anchoring_adjustment_queue_;
   anchoring_adjustment_queue_.clear();
 
-  for (WeakMember<ScrollableArea>& scroller : queue_copy) {
+  for (const WeakMember<ScrollableArea>& scroller : queue_copy) {
     if (scroller) {
       DCHECK(scroller->GetScrollAnchor());
       scroller->GetScrollAnchor()->Adjust();
@@ -2671,7 +2671,7 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
 
 void LocalFrameView::EnqueueScrollEvents() {
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    for (WeakMember<PaintLayerScrollableArea>& scroller :
+    for (const WeakMember<PaintLayerScrollableArea>& scroller :
          frame_view.scroll_event_queue_) {
       if (scroller)
         scroller->EnqueueScrollEventIfNeeded();

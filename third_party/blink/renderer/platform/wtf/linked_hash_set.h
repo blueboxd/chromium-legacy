@@ -51,11 +51,7 @@ template <typename Value,
 class LinkedHashSet;
 
 template <typename LinkedHashSet>
-class LinkedHashSetIterator;
-template <typename LinkedHashSet>
 class LinkedHashSetConstIterator;
-template <typename LinkedHashSet>
-class LinkedHashSetReverseIterator;
 template <typename LinkedHashSet>
 class LinkedHashSetConstReverseIterator;
 
@@ -233,13 +229,11 @@ class LinkedHashSet {
       ImplType;
 
  public:
-  typedef LinkedHashSetIterator<LinkedHashSet> iterator;
-  friend class LinkedHashSetIterator<LinkedHashSet>;
+  typedef LinkedHashSetConstIterator<LinkedHashSet> iterator;
   typedef LinkedHashSetConstIterator<LinkedHashSet> const_iterator;
   friend class LinkedHashSetConstIterator<LinkedHashSet>;
 
-  typedef LinkedHashSetReverseIterator<LinkedHashSet> reverse_iterator;
-  friend class LinkedHashSetReverseIterator<LinkedHashSet>;
+  typedef LinkedHashSetConstReverseIterator<LinkedHashSet> reverse_iterator;
   typedef LinkedHashSetConstReverseIterator<LinkedHashSet>
       const_reverse_iterator;
   friend class LinkedHashSetConstReverseIterator<LinkedHashSet>;
@@ -252,7 +246,7 @@ class LinkedHashSet {
         : stored_value(&hash_table_add_result.stored_value->value_),
           is_new_entry(hash_table_add_result.is_new_entry) {}
 
-    Value* stored_value;
+    const Value* stored_value;
     bool is_new_entry;
   };
 
@@ -340,13 +334,13 @@ class LinkedHashSet {
   AddResult InsertBefore(ValuePeekInType before_value,
                          IncomingValueType&& new_value);
   template <typename IncomingValueType>
-  AddResult InsertBefore(iterator it, IncomingValueType&& new_value) {
+  AddResult InsertBefore(const_iterator it, IncomingValueType&& new_value) {
     return impl_.template insert<NodeHashFunctions>(
         std::forward<IncomingValueType>(new_value), it.GetNode());
   }
 
   void erase(ValuePeekInType);
-  void erase(iterator);
+  void erase(const_iterator);
   void clear() { impl_.clear(); }
   template <typename Collection>
   void RemoveAll(const Collection& other) {
@@ -565,59 +559,6 @@ struct LinkedHashSetTraits
 };
 
 template <typename LinkedHashSetType>
-class LinkedHashSetIterator {
-  DISALLOW_NEW();
-
- private:
-  typedef typename LinkedHashSetType::Node Node;
-  typedef typename LinkedHashSetType::Traits Traits;
-
-  typedef typename LinkedHashSetType::Value& ReferenceType;
-  typedef typename LinkedHashSetType::Value* PointerType;
-
-  typedef LinkedHashSetConstIterator<LinkedHashSetType> const_iterator;
-
-  Node* GetNode() { return const_cast<Node*>(iterator_.GetNode()); }
-
- protected:
-  LinkedHashSetIterator(const Node* position, LinkedHashSetType* container)
-      : iterator_(position, container) {}
-
- public:
-  // Default copy, assignment and destructor are OK.
-
-  PointerType Get() const { return const_cast<PointerType>(iterator_.Get()); }
-  ReferenceType operator*() const { return *Get(); }
-  PointerType operator->() const { return Get(); }
-
-  LinkedHashSetIterator& operator++() {
-    ++iterator_;
-    return *this;
-  }
-  LinkedHashSetIterator& operator--() {
-    --iterator_;
-    return *this;
-  }
-
-  // Postfix ++ and -- intentionally omitted.
-
-  // Comparison.
-  bool operator==(const LinkedHashSetIterator& other) const {
-    return iterator_ == other.iterator_;
-  }
-  bool operator!=(const LinkedHashSetIterator& other) const {
-    return iterator_ != other.iterator_;
-  }
-
-  operator const_iterator() const { return iterator_; }
-
- protected:
-  const_iterator iterator_;
-  template <typename T, typename U, typename V, typename W>
-  friend class LinkedHashSet;
-};
-
-template <typename LinkedHashSetType>
 class LinkedHashSetConstIterator {
   DISALLOW_NEW();
 
@@ -628,7 +569,9 @@ class LinkedHashSetConstIterator {
   typedef const typename LinkedHashSetType::Value& ReferenceType;
   typedef const typename LinkedHashSetType::Value* PointerType;
 
-  const Node* GetNode() const { return static_cast<const Node*>(position_); }
+  Node* GetNode() const {
+    return const_cast<Node*>(static_cast<const Node*>(position_));
+  }
 
  protected:
   LinkedHashSetConstIterator(const LinkedHashSetNodeBase* position,
@@ -685,42 +628,6 @@ class LinkedHashSetConstIterator {
 #else
   void CheckModifications() const {}
 #endif
-  template <typename T, typename U, typename V, typename W>
-  friend class LinkedHashSet;
-  friend class LinkedHashSetIterator<LinkedHashSetType>;
-};
-
-template <typename LinkedHashSetType>
-class LinkedHashSetReverseIterator
-    : public LinkedHashSetIterator<LinkedHashSetType> {
-  typedef LinkedHashSetReverseIterator<LinkedHashSetType> reverse_iterator;
-  typedef LinkedHashSetIterator<LinkedHashSetType> Superclass;
-  typedef LinkedHashSetConstReverseIterator<LinkedHashSetType>
-      const_reverse_iterator;
-  typedef typename LinkedHashSetType::Node Node;
-
- protected:
-  LinkedHashSetReverseIterator(const Node* position,
-                               LinkedHashSetType* container)
-      : Superclass(position, container) {}
-
- public:
-  LinkedHashSetReverseIterator& operator++() {
-    Superclass::operator--();
-    return *this;
-  }
-  LinkedHashSetReverseIterator& operator--() {
-    Superclass::operator++();
-    return *this;
-  }
-
-  // Postfix ++ and -- intentionally omitted.
-
-  operator const_reverse_iterator() const {
-    return *reinterpret_cast<const_reverse_iterator*>(
-        const_cast<reverse_iterator*>(this));
-  }
-
   template <typename T, typename U, typename V, typename W>
   friend class LinkedHashSet;
 };
@@ -1010,7 +917,7 @@ LinkedHashSet<T, U, V, W>::InsertBefore(ValuePeekInType before_value,
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void LinkedHashSet<T, U, V, W>::erase(iterator it) {
+inline void LinkedHashSet<T, U, V, W>::erase(const_iterator it) {
   if (it == end())
     return;
   impl_.erase(it.GetNode());

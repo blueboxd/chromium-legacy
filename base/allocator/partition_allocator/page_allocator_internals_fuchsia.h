@@ -89,7 +89,7 @@ void* SystemAllocPagesInternal(void* hint,
   if (page_tag == PageTag::kV8) {
     // V8 uses JIT. Call zx_vmo_replace_as_executable() to allow code execution
     // in the new VMO.
-    status = vmo.replace_as_executable(zx::handle(), &vmo);
+    status = vmo.replace_as_executable(zx::resource(), &vmo);
     if (status != ZX_OK) {
       ZX_DLOG(INFO, status) << "zx_vmo_replace_as_executable";
       return nullptr;

@@ -3,7 +3,12 @@
 # found in the LICENSE file.
 
 import os
-import cPickle as pickle  # 'cPickle' is faster than 'pickle'
+import sys
+
+if sys.version_info.major == 2:
+    import cPickle as pickle  # 'cPickle' is faster than 'pickle' on Py2
+else:
+    import pickle
 
 
 def read_pickle_file(filepath):

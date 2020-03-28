@@ -7,12 +7,15 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
 import os
-import cPickle as pickle
 import re
 import shlex
-import string
 import subprocess
 import sys
+
+if sys.version_info.major == 2:
+    import cPickle as pickle
+else:
+    import pickle
 
 sys.path.append(
     os.path.join(os.path.dirname(__file__), '..', '..', 'build', 'scripts'))
@@ -351,7 +354,7 @@ def write_pickle_file(pickle_filename, data):
             except Exception:
                 # If trouble unpickling, overwrite
                 pass
-    with open(pickle_filename, 'w') as pickle_file:
+    with open(pickle_filename, 'wb') as pickle_file:
         pickle.dump(data, pickle_file)
 
 
@@ -433,7 +436,7 @@ def get_interface_extended_attributes_from_idl(file_contents):
         if parences < 0 or square_brackets < 0:
             raise ValueError('You have more close braces than open braces.')
         if parences == 0 and square_brackets == 0:
-            name, _, value = map(string.strip, concatenated.partition('='))
+            name, _, value = map(str.strip, concatenated.partition('='))
             extended_attributes[name] = value
             concatenated = None
     return extended_attributes
@@ -450,7 +453,7 @@ def get_interface_exposed_arguments(file_contents):
     if not match:
         return None
     arguments = []
-    for argument in map(string.strip, match.group(1).split(',')):
+    for argument in map(str.strip, match.group(1).split(',')):
         exposed, runtime_enabled = argument.split()
         arguments.append({
             'exposed': exposed,

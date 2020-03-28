@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
 import functools
 
 from blinkbuild.name_style_converter import NameStyleConverter
@@ -178,7 +177,7 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return not self == other
 
     def __hash__(self):
-        raise exceptions.NotImplementedError()
+        raise NotImplementedError()
 
     def make_copy(self, memo):
         return self
@@ -188,7 +187,7 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """
         Returns a text representation of the type in the form of Web IDL syntax.
         """
-        raise exceptions.NotImplementedError()
+        raise NotImplementedError()
 
     @property
     def type_name(self):
@@ -213,7 +212,7 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
 
     @property
     def type_name_without_extended_attributes(self):
-        raise exceptions.NotImplementedError()
+        raise NotImplementedError()
 
     @property
     def keyword_typename(self):

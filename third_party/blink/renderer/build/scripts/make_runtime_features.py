@@ -28,9 +28,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import copy
-import cPickle as pickle
 import os
 import sys
+
+if sys.version_info.major == 2:
+    import cPickle as pickle
+else:
+    import pickle
 
 from blinkbuild.name_style_converter import NameStyleConverter
 import make_runtime_features_utilities as util

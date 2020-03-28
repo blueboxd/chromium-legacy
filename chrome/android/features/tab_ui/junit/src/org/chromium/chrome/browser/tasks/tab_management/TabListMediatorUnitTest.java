@@ -100,7 +100,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
-import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -126,6 +125,8 @@ import java.util.List;
 /**
  * Tests for {@link TabListMediator}.
  */
+@SuppressWarnings(
+        {"ArraysAsListWithZeroOrOneArgument", "ResultOfMethodCallIgnored", "ConstantConditions"})
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 // clang-format off
@@ -218,8 +219,6 @@ public class TabListMediatorUnitTest {
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
-    @Captor
-    ArgumentCaptor<FaviconHelper.FaviconImageCallback> mFaviconCallbackCaptor;
     @Captor
     ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
@@ -2029,11 +2028,10 @@ public class TabListMediatorUnitTest {
     private SimpleRecyclerViewAdapter.ViewHolder prepareViewHolder(int id, int position) {
         SimpleRecyclerViewAdapter.ViewHolder viewHolder =
                 mock(SimpleRecyclerViewAdapter.ViewHolder.class);
-        PropertyModel model = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
-                                      .with(TabProperties.TAB_ID, id)
-                                      .with(CARD_TYPE, TAB)
-                                      .build();
-        viewHolder.model = model;
+        viewHolder.model = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
+                                   .with(TabProperties.TAB_ID, id)
+                                   .with(CARD_TYPE, TAB)
+                                   .build();
         doReturn(position).when(viewHolder).getAdapterPosition();
         return viewHolder;
     }

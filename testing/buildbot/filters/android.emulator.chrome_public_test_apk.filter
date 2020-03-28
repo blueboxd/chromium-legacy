@@ -125,9 +125,5 @@
 # crbug.com/1063991
 -org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testIncognitoToggle_tabCount
 
-# crbug.com/1064367
--org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testSearchTermChip_adaptiveIcon
--org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testSearchTermChip_withChip
-
 # crbug.com/1064058
 -org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRecycling_aspectRatioPoint75

@@ -29,7 +29,7 @@ promise_test(async () => {
 
     await smoothScroll(givenScrollLeft, 100, 110, source, 'right', SPEED_INSTANT, false /* precise_scrolling_deltas */, true /* scroll_by_page */);
     await waitFor( () => {
-        return navigator.platform.indexOf("Mac") != -1 ? true : document.scrollingElement.scrollLeft == window.expectedScrollLeft;
+        return document.scrollingElement.scrollLeft == window.expectedScrollLeft;
     });
     assert_equals(last_event.wheelDeltaX, -Math.floor(expectedWheelDeltaX));
     assert_equals(last_event.wheelDelta, -Math.floor(expectedWheelDeltaX));

@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test TabSuggestionsClientFetcher
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabSuggestionsClientFetcherTest {

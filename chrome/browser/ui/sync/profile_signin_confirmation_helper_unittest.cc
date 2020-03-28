@@ -140,9 +140,11 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     user_prefs_ = new TestingPrefStoreWithCustomReadError;
     sync_preferences::TestingPrefServiceSyncable* pref_service =
         new sync_preferences::TestingPrefServiceSyncable(
-            new TestingPrefStore(), new TestingPrefStore(), user_prefs_,
-            new TestingPrefStore(), new user_prefs::PrefRegistrySyncable(),
-            new PrefNotifierImpl());
+            /*managed_prefs=*/new TestingPrefStore(),
+            /*supervised_user_prefs=*/new TestingPrefStore(),
+            /*extension_prefs=*/new TestingPrefStore(), user_prefs_,
+            /*recommended_prefs=*/new TestingPrefStore(),
+            new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl());
     RegisterUserProfilePrefs(pref_service->registry());
     builder.SetPrefService(
         base::WrapUnique<sync_preferences::PrefServiceSyncable>(pref_service));

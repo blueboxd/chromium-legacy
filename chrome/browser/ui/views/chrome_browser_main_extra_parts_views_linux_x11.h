@@ -5,8 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CHROME_BROWSER_MAIN_EXTRA_PARTS_VIEWS_LINUX_X11_H_
 #define CHROME_BROWSER_UI_VIEWS_CHROME_BROWSER_MAIN_EXTRA_PARTS_VIEWS_LINUX_X11_H_
 
+#include <memory>
+
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
+#include "ui/gtk/gtk_ui_delegate.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler_observer.h"
+
+namespace ui {
+class GtkUiDelegate;
+}
 
 // This is solely used by non-ozone X11 builds.
 class ChromeBrowserMainExtraPartsViewsLinuxX11
@@ -18,11 +25,14 @@ class ChromeBrowserMainExtraPartsViewsLinuxX11
 
   // Overridden from ChromeBrowserMainExtraParts:
   void PreCreateThreads() override;
+  void ToolkitInitialized() override;
 
   // Overridden from views::X11DesktopHandlerObserver.
   void OnWorkspaceChanged(const std::string& new_workspace) override;
 
  private:
+  std::unique_ptr<ui::GtkUiDelegate> gtk_ui_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViewsLinuxX11);
 };
 

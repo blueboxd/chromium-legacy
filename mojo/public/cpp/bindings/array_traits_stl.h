@@ -8,6 +8,7 @@
 #include <array>
 #include <map>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 #include "mojo/public/cpp/bindings/array_traits.h"

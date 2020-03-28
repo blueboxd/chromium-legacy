@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Tests for {@link TabSelectionEditorActionProvider}.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabSelectionEditorActionProviderUnitTest {

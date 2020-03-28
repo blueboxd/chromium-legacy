@@ -133,23 +133,17 @@ class ArcPrintServiceFactory
 std::unique_ptr<printing::MetafileSkia> ReadFileOnBlockingTaskRunner(
     base::File file,
     size_t data_size) {
-  // TODO(vkuzkokov) Can we make give pipe to CUPS directly?
-  std::vector<char> buf(data_size);
-  int bytes = file.ReadAtCurrentPos(buf.data(), data_size);
-  if (bytes < 0) {
+  // TODO(vkuzkokov): Can we make give pipe to CUPS directly?
+  std::vector<uint8_t> buf(data_size);
+  if (!file.ReadAtCurrentPosAndCheck(buf)) {
     PLOG(ERROR) << "Error reading PDF";
     return nullptr;
   }
-  if (static_cast<size_t>(bytes) != data_size)
-    return nullptr;
 
   file.Close();
 
   auto metafile = std::make_unique<printing::MetafileSkia>();
-  if (!metafile->InitFromData(buf.data(), buf.size())) {
-    LOG(ERROR) << "Failed to initialize PDF metafile";
-    return nullptr;
-  }
+  CHECK(metafile->InitFromData(buf));
   return metafile;
 }
 

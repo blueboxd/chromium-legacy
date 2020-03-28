@@ -19,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ui/gtk/gtk_ui.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
@@ -26,6 +27,9 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 #if defined(USE_X11)
@@ -145,15 +149,9 @@ void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
     return;
 
   gtk_widget_realize(dialog);
-#if defined(USE_X11)
   GdkWindow* gdk_window = gtk_widget_get_window(dialog);
-  XSetTransientForHint(GDK_WINDOW_XDISPLAY(gdk_window),
-                       GDK_WINDOW_XID(gdk_window),
-                       parent->GetHost()->GetAcceleratedWidget());
-#else
-  // TODO(https://crbug.com/992239): Provide a wayland implementation.
-  NOTIMPLEMENTED();
-#endif
+  gfx::AcceleratedWidget parent_id = parent->GetHost()->GetAcceleratedWidget();
+  GtkUi::GetDelegate()->SetGdkWindowTransientFor(gdk_window, parent_id);
 
   // We also set the |parent| as a property of |dialog|, so that we can unlink
   // the two later.
@@ -582,18 +580,6 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
   return prop_value;
 }
 
-GdkDisplay* GetGdkDisplay() {
-  GdkDisplay* display = nullptr;
-  // TODO(crbug.com/1002674): Remove once GtkIM-based LinuxInputMethodContext
-  // implementation is moved out of gtk.
-#if defined(USE_X11)
-  display = gdk_x11_lookup_xdisplay(gfx::GetXDisplay());
-#endif
-  if (!display)  // Fall back to the default display.
-    display = gdk_display_get_default();
-  return display;
-}
-
 int BuildXkbStateFromGdkEvent(unsigned int state, unsigned char group) {
   return state | ((group & 0x3) << 13);
 }
@@ -606,7 +592,7 @@ GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
   int group = GetKeyEventProperty(key_event, ui::kPropertyKeyboardGroup);
 
   // Get GdkKeymap
-  GdkKeymap* keymap = gdk_keymap_get_for_display(GetGdkDisplay());
+  GdkKeymap* keymap = GtkUi::GetDelegate()->GetGdkKeymap();
 
   // Get keyval and state
   GdkModifierType state = ExtractGdkEventStateFromKeyEvent(key_event);

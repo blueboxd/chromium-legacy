@@ -219,7 +219,7 @@ std::unique_ptr<MetafilePlayer> PdfConverterImpl::GetMetaFileFromMapping(
   } else {
     metafile = std::make_unique<Emf>();
   }
-  if (!metafile->InitFromData(mapping.memory(), mapping.size()))
+  if (!metafile->InitFromData(mapping.GetMemoryAsSpan<const uint8_t>()))
     metafile.reset();
   return metafile;
 }
@@ -265,7 +265,7 @@ void PdfConverterImpl::Initialize(scoped_refptr<base::RefCountedMemory> data) {
 
   base::MappedReadOnlyRegion memory =
       base::ReadOnlySharedMemoryRegion::Create(data->size());
-  if (!memory.region.IsValid() || !memory.mapping.IsValid()) {
+  if (!memory.IsValid()) {
     OnFailed(std::string("Failed to create PDF data mapping."));
     return;
   }

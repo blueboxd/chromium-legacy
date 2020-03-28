@@ -32,6 +32,8 @@ enum class CertificateTrustType {
   // verification process. See VerifyCertificateChain() for details on how
   // constraints are applied.
   TRUSTED_ANCHOR_WITH_CONSTRAINTS,
+
+  LAST = TRUSTED_ANCHOR_WITH_CONSTRAINTS
 };
 
 // Describes the level of trust in a certificate. See CertificateTrustType for

@@ -371,6 +371,16 @@ class CastWebContents {
       const std::string& data,
       std::vector<blink::WebMessagePort> ports) = 0;
 
+  // Executes a string of JavaScript in the main frame's context.
+  // This is no-op if the main frame is not available.
+  // Pass in a callback to receive a result when it is available.
+  // If there is no need to receive the result, pass in a
+  // default-constructed callback. If provided, the callback
+  // will be invoked on the UI thread.
+  virtual void ExecuteJavaScript(
+      const base::string16& javascript,
+      base::OnceCallback<void(base::Value)> callback) = 0;
+
   // ===========================================================================
   // Utility Methods
   // ===========================================================================

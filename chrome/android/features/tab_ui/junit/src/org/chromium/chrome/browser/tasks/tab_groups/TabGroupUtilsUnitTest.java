@@ -43,6 +43,7 @@ import java.util.List;
 /**
  * Tests for {@link TabGroupUtils}.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupUtilsUnitTest {

@@ -74,7 +74,6 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   Animation* Play(AnimationEffect*);
 
   bool IsActive() const override;
-  TimelinePhase Phase() const override;
   base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
@@ -97,7 +96,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void Trace(Visitor*) override;
 
  protected:
-  base::Optional<base::TimeDelta> CurrentTimeInternal() override;
+  PhaseAndTime CurrentPhaseAndTime() override;
 
  private:
   // Origin time for the timeline relative to the time origin of the document.

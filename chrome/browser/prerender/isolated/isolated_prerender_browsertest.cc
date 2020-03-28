@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -41,6 +43,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test_base.h"
@@ -54,6 +57,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -147,7 +152,6 @@ class IsolatedPrerenderBrowserTest
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {features::kIsolatePrerenders,
-         features::kPrefetchSRPNavigationPredictions_HTMLOnly,
          data_reduction_proxy::features::kDataReductionProxyHoldback,
          data_reduction_proxy::features::kFetchClientConfig},
         {});
@@ -180,12 +184,14 @@ class IsolatedPrerenderBrowserTest
                                       enabled);
   }
 
+  content::WebContents* GetWebContents() const {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
   void MakeNavigationPrediction(const GURL& doc_url,
                                 const std::vector<GURL>& predicted_urls) {
     NavigationPredictorKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->OnPredictionUpdated(
-            browser()->tab_strip_model()->GetActiveWebContents(), doc_url,
-            predicted_urls);
+        ->OnPredictionUpdated(GetWebContents(), doc_url, predicted_urls);
   }
 
   std::unique_ptr<prerender::PrerenderHandle> StartPrerender(const GURL& url) {
@@ -195,11 +201,7 @@ class IsolatedPrerenderBrowserTest
 
     return prerender_manager->AddPrerenderFromNavigationPredictor(
         url,
-        browser()
-            ->tab_strip_model()
-            ->GetActiveWebContents()
-            ->GetController()
-            .GetDefaultSessionStorageNamespace(),
+        GetWebContents()->GetController().GetDefaultSessionStorageNamespace(),
         kSize);
   }
 
@@ -245,12 +247,7 @@ class IsolatedPrerenderBrowserTest
     return origin_server_->GetURL("testorigin.com", path);
   }
 
-  size_t origin_server_request_with_cookies() const {
-    return origin_server_request_with_cookies_;
-  }
-
  protected:
-  base::OnceClosure waiting_for_resource_request_closure_;
   base::OnceClosure on_proxy_request_closure_;
 
  private:
@@ -270,10 +267,6 @@ class IsolatedPrerenderBrowserTest
     // Don't care about favicons.
     if (request.GetURL().spec().find("favicon") != std::string::npos)
       return;
-
-    if (request.headers.find("Cookie") != request.headers.end()) {
-      origin_server_request_with_cookies_++;
-    }
   }
 
   void MonitorProxyResourceRequest(
@@ -343,54 +336,13 @@ class IsolatedPrerenderBrowserTest
       prerender::PrerenderHandle* handle) override {}
   void OnPrerenderNetworkBytesChanged(
       prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderStop(prerender::PrerenderHandle* handle) override {
-    if (waiting_for_resource_request_closure_) {
-      std::move(waiting_for_resource_request_closure_).Run();
-    }
-  }
+  void OnPrerenderStop(prerender::PrerenderHandle* handle) override {}
 
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> proxy_server_;
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
   std::unique_ptr<net::EmbeddedTestServer> config_server_;
-  size_t origin_server_request_with_cookies_ = 0;
 };
-
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(PrerenderIsIsolated)) {
-  SetDataSaverEnabled(true);
-
-  base::HistogramTester histogram_tester;
-
-  ASSERT_TRUE(content::SetCookie(browser()->profile(), GetOriginServerURL("/"),
-                                 "testing"));
-
-  // Do a prerender to the same origin and expect that the cookies are not used.
-  std::unique_ptr<prerender::PrerenderHandle> handle =
-      StartPrerender(GetOriginServerURL("/simple.html"));
-  ASSERT_TRUE(handle);
-
-  // Wait for the prerender to complete before checking.
-  if (!handle->IsFinishedLoading()) {
-    handle->SetObserver(this);
-    base::RunLoop run_loop;
-    waiting_for_resource_request_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0U, origin_server_request_with_cookies());
-
-  histogram_tester.ExpectUniqueSample(
-      "Prerender.FinalStatus",
-      prerender::FINAL_STATUS_NOSTATE_PREFETCH_FINISHED, 1);
-
-  // Navigate to the same origin and expect it to have cookies.
-  // Note: This check needs to come after the prerender, otherwise the prerender
-  // will be canceled because the origin was recently loaded.
-  ui_test_utils::NavigateToURL(browser(), GetOriginServerURL("/simple.html"));
-  EXPECT_EQ(1U, origin_server_request_with_cookies());
-}
 
 IN_PROC_BROWSER_TEST_F(
     IsolatedPrerenderBrowserTest,
@@ -401,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(
       browser(),
       GetOriginServerURL("/service_worker/create_service_worker.html"));
-  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+  EXPECT_EQ("DONE", EvalJs(GetWebContents(),
                            "register('network_fallback_worker.js');"));
 
   IsolatedPrerenderService* isolated_prerender_service =
@@ -438,4 +390,105 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   // This run loop will quit when a valid CONNECT request is made to the proxy
   // server.
   run_loop.Run();
+}
+
+class ProbingIsolatedPrerenderBrowserTest
+    : public IsolatedPrerenderBrowserTest {
+ public:
+  ProbingIsolatedPrerenderBrowserTest()
+      : origin_server_for_probing_url_(GURL("https://bad.probe.com")) {}
+
+  void SetUp() override {
+    IsolatedPrerenderBrowserTest::SetUp();
+    scoped_feature_list_.InitWithFeatureState(
+        features::kIsolatePrerendersMustProbeOrigin, EnableProbe());
+
+    origin_server_for_probing_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    if (EnableProbe()) {
+      ASSERT_TRUE(origin_server_for_probing_->Start());
+      origin_server_for_probing_url_ = origin_server_for_probing_->base_url();
+    }
+  }
+
+  virtual bool EnableProbe() const = 0;
+
+  GURL origin_server_for_probing_url() const {
+    return origin_server_for_probing_url_;
+  }
+
+  void AddSuccessfulPrefetch(const GURL& url) const {
+    IsolatedPrerenderTabHelper* tab_helper =
+        IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+    network::mojom::URLResponseHeadPtr head =
+        network::CreateURLResponseHead(net::HTTP_OK);
+    head->was_fetched_via_cache = false;
+    head->mime_type = "text/html";
+
+    tab_helper->CallHandlePrefetchResponseForTesting(
+        url, net::NetworkIsolationKey::CreateOpaqueAndNonTransient(),
+        std::move(head),
+        std::make_unique<std::string>(
+            "<html><head><title>Successful prefetch</title></head></html>"));
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<net::EmbeddedTestServer> origin_server_for_probing_;
+  GURL origin_server_for_probing_url_;
+};
+
+class ProbingEnabledIsolatedPrerenderBrowserTest
+    : public ProbingIsolatedPrerenderBrowserTest {
+ public:
+  bool EnableProbe() const override { return true; }
+};
+
+class ProbingDisabledIsolatedPrerenderBrowserTest
+    : public ProbingIsolatedPrerenderBrowserTest {
+ public:
+  bool EnableProbe() const override { return false; }
+};
+
+// These tests use a separate embedded test server from |origin_server_| because
+// we need to test against a bad server for the probe disabled case, and ensure
+// that no probe occurs and the prefetched page can still be used. Therefore,
+// |origin_server_for_probing_| is only started when probing is enabled.
+
+IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeGood) {
+  AddSuccessfulPrefetch(origin_server_for_probing_url());
+
+  ui_test_utils::NavigateToURL(browser(), origin_server_for_probing_url());
+
+  content::NavigationEntry* entry =
+      GetWebContents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
+
+  EXPECT_EQ(base::UTF8ToUTF16("Successful prefetch"),
+            GetWebContents()->GetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeBad) {
+  AddSuccessfulPrefetch(GURL("http://does-not-exist.host"));
+
+  ui_test_utils::NavigateToURL(browser(), origin_server_for_probing_url());
+
+  // The navigation won't be intercepted so an error page will be displayed.
+  content::NavigationEntry* entry =
+      GetWebContents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
+IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest, NoProbe) {
+  AddSuccessfulPrefetch(origin_server_for_probing_url());
+
+  ui_test_utils::NavigateToURL(browser(), origin_server_for_probing_url());
+
+  content::NavigationEntry* entry =
+      GetWebContents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
+
+  EXPECT_EQ(base::UTF8ToUTF16("Successful prefetch"),
+            GetWebContents()->GetTitle());
 }

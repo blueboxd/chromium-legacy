@@ -105,9 +105,8 @@ public class TabGridAccessibilityHelperTest {
 
     @Test
     @MediumTest
-    @SuppressWarnings("unchecked")
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    public void testGetPotentialActionsForView() throws InterruptedException {
+    public void testGetPotentialActionsForView() {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         final AccessibilityActionChecker checker = new AccessibilityActionChecker(cta);
@@ -162,7 +161,6 @@ public class TabGridAccessibilityHelperTest {
                 .check((v, noMatchingViewException) -> {
                     assertTrue(v instanceof RecyclerView);
                     RecyclerView recyclerView = (RecyclerView) v;
-                    List<Object> actionObjects;
 
                     View item1 = getItemViewForPosition(recyclerView, 0);
                     checker.verifyListOfAccessibilityAction(
@@ -197,7 +195,7 @@ public class TabGridAccessibilityHelperTest {
 
     @Test
     @MediumTest
-    public void testGetPositionsOfReorderAction() throws InterruptedException {
+    public void testGetPositionsOfReorderAction() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         int leftActionId = R.id.move_tab_left;
         int rightActionId = R.id.move_tab_right;
@@ -219,21 +217,21 @@ public class TabGridAccessibilityHelperTest {
 
                     View item1 = getItemViewForPosition(recyclerView, 0);
                     positions = helper.getPositionsOfReorderAction(item1, rightActionId);
-                    assertTrue(0 == positions.first);
-                    assertTrue(1 == positions.second);
+                    assertEquals(0, (int) positions.first);
+                    assertEquals(1, (int) positions.second);
 
                     positions = helper.getPositionsOfReorderAction(item1, downActionId);
-                    assertTrue(0 == positions.first);
-                    assertTrue(2 == positions.second);
+                    assertEquals(0, (int) positions.first);
+                    assertEquals(2, (int) positions.second);
 
                     View item4 = getItemViewForPosition(recyclerView, 3);
                     positions = helper.getPositionsOfReorderAction(item4, leftActionId);
-                    assertTrue(3 == positions.first);
-                    assertTrue(2 == positions.second);
+                    assertEquals(3, (int) positions.first);
+                    assertEquals(2, (int) positions.second);
 
                     positions = helper.getPositionsOfReorderAction(item4, upActionId);
-                    assertTrue(3 == positions.first);
-                    assertTrue(1 == positions.second);
+                    assertEquals(3, (int) positions.first);
+                    assertEquals(1, (int) positions.second);
                 });
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
@@ -246,25 +244,25 @@ public class TabGridAccessibilityHelperTest {
 
                     View item2 = getItemViewForPosition(recyclerView, 1);
                     positions = helper.getPositionsOfReorderAction(item2, leftActionId);
-                    assertTrue(1 == positions.first);
-                    assertTrue(0 == positions.second);
+                    assertEquals(1, (int) positions.first);
+                    assertEquals(0, (int) positions.second);
 
                     positions = helper.getPositionsOfReorderAction(item2, rightActionId);
-                    assertTrue(1 == positions.first);
-                    assertTrue(2 == positions.second);
+                    assertEquals(1, (int) positions.first);
+                    assertEquals(2, (int) positions.second);
 
                     positions = helper.getPositionsOfReorderAction(item2, downActionId);
-                    assertTrue(1 == positions.first);
-                    assertTrue(4 == positions.second);
+                    assertEquals(1, (int) positions.first);
+                    assertEquals(4, (int) positions.second);
 
                     View item5 = getItemViewForPosition(recyclerView, 4);
                     positions = helper.getPositionsOfReorderAction(item5, leftActionId);
-                    assertTrue(4 == positions.first);
-                    assertTrue(3 == positions.second);
+                    assertEquals(4, (int) positions.first);
+                    assertEquals(3, (int) positions.second);
 
                     positions = helper.getPositionsOfReorderAction(item5, upActionId);
-                    assertTrue(4 == positions.first);
-                    assertTrue(1 == positions.second);
+                    assertEquals(4, (int) positions.first);
+                    assertEquals(1, (int) positions.second);
                 });
     }
 

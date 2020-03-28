@@ -158,6 +158,7 @@ BrowserContextImpl::GetPermissionControllerDelegate() {
 
 content::ClientHintsControllerDelegate*
 BrowserContextImpl::GetClientHintsControllerDelegate() {
+  // TODO(crbug.com/1065537): implement me.
   return nullptr;
 }
 

@@ -23,7 +23,6 @@ class MockAnimationTimeline : public AnimationTimeline {
   MockAnimationTimeline(Document* document) : AnimationTimeline(document) {}
 
   MOCK_CONST_METHOD0(IsActive, bool());
-  MOCK_CONST_METHOD0(Phase, TimelinePhase());
   MOCK_METHOD0(InitialStartTimeForAnimations,
                base::Optional<base::TimeDelta>());
   MOCK_METHOD0(NeedsAnimationTimingUpdate, bool());
@@ -37,7 +36,7 @@ class MockAnimationTimeline : public AnimationTimeline {
   void Trace(Visitor* visitor) override { AnimationTimeline::Trace(visitor); }
 
  protected:
-  MOCK_METHOD0(CurrentTimeInternal, base::Optional<base::TimeDelta>());
+  MOCK_METHOD0(CurrentPhaseAndTime, PhaseAndTime());
 };
 
 class DocumentAnimationsTest : public RenderingTest {

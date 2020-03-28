@@ -16,6 +16,7 @@
 #include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/der/encode_values.h"
 #include "net/log/net_log_with_source.h"
+#include "net/log/test_net_log.h"
 #include "net/test/cert_builder.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -66,15 +67,19 @@ int VerifyOnWorkerThread(const scoped_refptr<CertVerifyProc>& verify_proc,
                          const std::string& hostname,
                          int flags,
                          const CertificateList& additional_trust_anchors,
-                         CertVerifyResult* verify_result) {
+                         CertVerifyResult* verify_result,
+                         NetLogSource* out_source) {
   base::ScopedAllowBaseSyncPrimitivesForTesting scoped_allow_blocking;
   scoped_refptr<CRLSet> crl_set = CRLSet::EmptyCRLSetForTesting();
+  NetLogWithSource net_log(NetLogWithSource::Make(
+      net::NetLog::Get(), net::NetLogSourceType::CERT_VERIFIER_TASK));
   int error =
       verify_proc->Verify(cert.get(), hostname,
                           /*ocsp_response=*/std::string(),
                           /*sct_list=*/std::string(), flags, crl_set.get(),
-                          additional_trust_anchors, verify_result);
+                          additional_trust_anchors, verify_result, net_log);
   verify_result->DetachFromSequence();
+  *out_source = net_log.source();
   return error;
 }
 
@@ -101,14 +106,15 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
               int flags,
               const CertificateList& additional_trust_anchors,
               CertVerifyResult* verify_result,
+              NetLogSource* out_source,
               CompletionOnceCallback callback) {
     verify_result->DetachFromSequence();
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&VerifyOnWorkerThread, verify_proc_, std::move(cert),
-                       hostname, flags, additional_trust_anchors,
-                       verify_result),
+                       hostname, flags, additional_trust_anchors, verify_result,
+                       out_source),
         std::move(callback));
   }
 
@@ -149,10 +155,11 @@ TEST_F(CertVerifyProcBuiltinTest, SimpleSuccess) {
   ASSERT_TRUE(chain.get());
 
   CertVerifyResult verify_result;
+  NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
   Verify(chain.get(), "www.example.com", /*flags=*/0,
          /*additional_trust_anchors=*/{root->GetX509Certificate()},
-         &verify_result, callback.callback());
+         &verify_result, &verify_net_log_source, callback.callback());
 
   int error = callback.WaitForResult();
   EXPECT_THAT(error, IsOk());
@@ -205,11 +212,12 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
   ASSERT_TRUE(chain.get());
 
   CertVerifyResult verify_result;
+  NetLogSource verify_net_log_source;
   TestCompletionCallback verify_callback;
   Verify(chain.get(), "www.example.com",
          CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
          /*additional_trust_anchors=*/{root->GetX509Certificate()},
-         &verify_result, verify_callback.callback());
+         &verify_result, &verify_net_log_source, verify_callback.callback());
 
   for (int i = 0; i < expected_request_count; i++) {
     // Wait for request #|i| to be made.
@@ -275,11 +283,12 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
   ASSERT_TRUE(chain.get());
 
   CertVerifyResult verify_result;
+  NetLogSource verify_net_log_source;
   TestCompletionCallback verify_callback;
   Verify(chain.get(), "www.example.com",
          CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
          /*additional_trust_anchors=*/{root->GetX509Certificate()},
-         &verify_result, verify_callback.callback());
+         &verify_result, &verify_net_log_source, verify_callback.callback());
 
   for (int i = 0; i < expected_request_count; i++) {
     // Wait for request #|i| to be made.
@@ -345,12 +354,14 @@ TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
   scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
 
+  RecordingNetLogObserver net_log_observer(NetLogCaptureMode::kDefault);
   CertVerifyResult verify_result;
+  NetLogSource verify_net_log_source;
   TestCompletionCallback verify_callback;
   Verify(chain.get(), "www.example.com",
          /*flags=*/0,
          /*additional_trust_anchors=*/{root->GetX509Certificate()},
-         &verify_result, verify_callback.callback());
+         &verify_result, &verify_net_log_source, verify_callback.callback());
 
   for (int i = 0; i < expected_request_count; i++) {
     // Wait for request #|i| to be made.
@@ -368,6 +379,61 @@ TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
   EXPECT_THAT(error, IsOk());
   EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_IS_EV);
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+
+  auto events = net_log_observer.GetEntriesForSource(verify_net_log_source);
+
+  auto event = std::find_if(events.begin(), events.end(), [](const auto& e) {
+    return e.type == NetLogEventType::CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT;
+  });
+  ASSERT_NE(event, events.end());
+  EXPECT_EQ(net::NetLogEventPhase::BEGIN, event->phase);
+  ASSERT_TRUE(event->params.is_dict());
+  EXPECT_EQ(true, event->params.FindBoolKey("is_ev_attempt"));
+
+  event = std::find_if(++event, events.end(), [](const auto& e) {
+    return e.type == NetLogEventType::CERT_VERIFY_PROC_PATH_BUILT;
+  });
+  ASSERT_NE(event, events.end());
+  EXPECT_EQ(net::NetLogEventPhase::NONE, event->phase);
+  ASSERT_TRUE(event->params.is_dict());
+  const std::string* errors = event->params.FindStringKey("errors");
+  ASSERT_TRUE(errors);
+  EXPECT_EQ("----- Certificate i=1 (CN=" +
+                intermediate->GetX509Certificate()->subject().common_name +
+                ") -----\nERROR: Unable to check revocation\n\n",
+            *errors);
+
+  event = std::find_if(++event, events.end(), [](const auto& e) {
+    return e.type == NetLogEventType::CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT;
+  });
+  ASSERT_NE(event, events.end());
+  EXPECT_EQ(net::NetLogEventPhase::END, event->phase);
+  ASSERT_TRUE(event->params.is_dict());
+  EXPECT_EQ(false, event->params.FindBoolKey("has_valid_path"));
+
+  event = std::find_if(++event, events.end(), [](const auto& e) {
+    return e.type == NetLogEventType::CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT;
+  });
+  ASSERT_NE(event, events.end());
+  EXPECT_EQ(net::NetLogEventPhase::BEGIN, event->phase);
+  ASSERT_TRUE(event->params.is_dict());
+  EXPECT_EQ(base::nullopt, event->params.FindBoolKey("is_ev_attempt"));
+
+  event = std::find_if(++event, events.end(), [](const auto& e) {
+    return e.type == NetLogEventType::CERT_VERIFY_PROC_PATH_BUILT;
+  });
+  ASSERT_NE(event, events.end());
+  EXPECT_EQ(net::NetLogEventPhase::NONE, event->phase);
+  ASSERT_TRUE(event->params.is_dict());
+  EXPECT_FALSE(event->params.FindStringKey("errors"));
+
+  event = std::find_if(++event, events.end(), [](const auto& e) {
+    return e.type == NetLogEventType::CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT;
+  });
+  ASSERT_NE(event, events.end());
+  EXPECT_EQ(net::NetLogEventPhase::END, event->phase);
+  ASSERT_TRUE(event->params.is_dict());
+  EXPECT_EQ(true, event->params.FindBoolKey("has_valid_path"));
 }
 #endif  // defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 
@@ -382,10 +448,11 @@ TEST_F(CertVerifyProcBuiltinTest, DebugData) {
   base::Time time = base::Time::Now();
 
   CertVerifyResult verify_result;
+  NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
   Verify(chain.get(), "www.example.com", /*flags=*/0,
          /*additional_trust_anchors=*/{root->GetX509Certificate()},
-         &verify_result, callback.callback());
+         &verify_result, &verify_net_log_source, callback.callback());
 
   int error = callback.WaitForResult();
   EXPECT_THAT(error, IsOk());

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<html>
+<title>CSS Flexbox: correct width for non-overflowing content with flex-direction: column</title>
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#flex-direction-property">
+<link rel="help" href="https://drafts.csswg.org/css-overflow-3/#overflow-properties">
+<link rel="help" href="https://crbug.com/580586">
+<meta name="assert" content="This test checks that no unnecessary extra horizontal space is considered for vertical scrollbars for non-overflowing content using flex-direction: column." />
 
 <style>
 body {
@@ -38,9 +44,9 @@ li {
 }
 </style>
 
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('section')">
 
 <div id=log></div>
@@ -56,3 +62,5 @@ li {
     <div style="height: 1000px;"></div>
   </div>
 </section>
+</body>
+</html>

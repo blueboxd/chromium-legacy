@@ -395,12 +395,25 @@ void DisplayLockContext::NotifyIsIntersectingViewport() {
   // subtree and we don't need to lock as a result.
   needs_deferred_not_intersecting_signal_ = false;
   UpdateLifecycleNotificationRegistration();
-  SetRenderAffectingState(RenderAffectingState::kIntersectsViewport, true);
+  // If we're not connected, then there is no need to change any state.
+  // This could be the case if we were disconnected while a viewport
+  // intersection notification was pending.
+  if (ConnectedToView())
+    SetRenderAffectingState(RenderAffectingState::kIntersectsViewport, true);
 }
 
 void DisplayLockContext::NotifyIsNotIntersectingViewport() {
   if (IsLocked()) {
     DCHECK(!needs_deferred_not_intersecting_signal_);
+    return;
+  }
+
+  // We might have been disconnected while the intersection observation
+  // notification was pending. Ensure to unregister from lifecycle
+  // notifications if we're doing that, and early out.
+  if (!ConnectedToView()) {
+    needs_deferred_not_intersecting_signal_ = false;
+    UpdateLifecycleNotificationRegistration();
     return;
   }
 
@@ -415,7 +428,6 @@ void DisplayLockContext::NotifyIsNotIntersectingViewport() {
   //    So, we simply delay this check to the next frame (via LocalFrameView),
   //    which will call this function again and so we can perform the check
   //    again.
-  DCHECK(ConnectedToView());
   auto* locked_ancestor =
       DisplayLockUtilities::NearestLockedExclusiveAncestor(*element_);
   if (locked_ancestor) {

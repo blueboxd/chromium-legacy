@@ -56,10 +56,15 @@ UserSettingsEventLogger::UserSettingsEventLogger()
       is_playing_audio_(false),
       is_playing_video_(false),
       clock_(base::DefaultClock::GetInstance()) {
-  chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  DCHECK(audio_handler);
+
+  audio_handler->AddAudioObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->video_detector()->AddObserver(this);
+
+  volume_ = audio_handler->GetOutputVolumePercent();
 }
 
 UserSettingsEventLogger::~UserSettingsEventLogger() {
@@ -183,12 +188,22 @@ void UserSettingsEventLogger::LogAccessibilityUkmEvent(
   SendToUkmAndAppList(settings_event);
 }
 
-void UserSettingsEventLogger::LogVolumeUkmEvent(const int previous_level,
-                                                const int current_level) {
+void UserSettingsEventLogger::OnOutputNodeVolumeChanged(uint64_t /*node*/,
+                                                        const int volume) {
   if (!volume_timer_.IsRunning()) {
-    previous_volume_ = previous_level;
+    volume_before_user_change_ = volume_;
   }
-  current_volume_ = current_level;
+  volume_ = volume;
+  volume_before_mute_ = volume;
+  volume_timer_.Start(FROM_HERE, kSliderDelay, this,
+                      &UserSettingsEventLogger::OnVolumeTimerEnded);
+}
+
+void UserSettingsEventLogger::OnOutputMuteChanged(const bool mute_on) {
+  if (!volume_timer_.IsRunning()) {
+    volume_before_user_change_ = volume_;
+  }
+  volume_ = mute_on ? 0 : volume_before_mute_;
   volume_timer_.Start(FROM_HERE, kSliderDelay, this,
                       &UserSettingsEventLogger::OnVolumeTimerEnded);
 }
@@ -199,8 +214,8 @@ void UserSettingsEventLogger::OnVolumeTimerEnded() {
 
   event->set_setting_id(UserSettingsEvent::Event::VOLUME);
   event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
-  event->set_previous_value(previous_volume_);
-  event->set_current_value(current_volume_);
+  event->set_previous_value(volume_before_user_change_);
+  event->set_current_value(volume_);
 
   PopulateSharedFeatures(&settings_event);
   SendToUkmAndAppList(settings_event);

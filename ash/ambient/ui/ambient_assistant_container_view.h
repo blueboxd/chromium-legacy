@@ -23,7 +23,7 @@ class AmbientAssistantDialogPlate;
 class AmbientAssistantContainerView : public views::View,
                                       public AssistantUiModelObserver {
  public:
-  explicit AmbientAssistantContainerView(AssistantViewDelegate* delegate);
+  AmbientAssistantContainerView();
   ~AmbientAssistantContainerView() override;
 
   // views::View:
@@ -39,7 +39,8 @@ class AmbientAssistantContainerView : public views::View,
  private:
   void InitLayout();
 
-  AssistantViewDelegate* const delegate_;  // Owned by AssistantController.
+  // Owned by |AssistantController|, so it should always outlive |this|.
+  AssistantViewDelegate* const delegate_;
 
   // Owned by view hierarchy.
   AmbientAssistantDialogPlate* ambient_assistant_dialog_plate_ = nullptr;

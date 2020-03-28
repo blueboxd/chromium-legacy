@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/ui/ambient_assistant_container_view.h"
+#include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/assistant/assistant_controller.h"
@@ -50,9 +50,8 @@ void CreateWidget(AmbientContainerView* view) {
 
 }  // namespace
 
-AmbientContainerView::AmbientContainerView(
-    AmbientController* ambient_controller)
-    : ambient_controller_(ambient_controller) {
+AmbientContainerView::AmbientContainerView(AmbientViewDelegate* delegate)
+    : delegate_(delegate) {
   Init();
 }
 
@@ -77,30 +76,15 @@ void AmbientContainerView::Layout() {
                 kAmbientAssistantContainerViewPreferredHeightDip));
 }
 
-void AmbientContainerView::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
-    event->SetHandled();
-    GetWidget()->Close();
-  }
-}
-
-void AmbientContainerView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
-    event->SetHandled();
-    GetWidget()->Close();
-  }
-}
-
 void AmbientContainerView::Init() {
   CreateWidget(this);
   // TODO(b/139954108): Choose a better dark mode theme color.
   SetBackground(views::CreateSolidBackground(SK_ColorBLACK));
 
-  photo_view_ = AddChildView(std::make_unique<PhotoView>(ambient_controller_));
+  photo_view_ = AddChildView(std::make_unique<PhotoView>(delegate_));
 
   ambient_assistant_container_view_ =
-      AddChildView(std::make_unique<AmbientAssistantContainerView>(
-          ambient_controller_->assistant_controller()->view_delegate()));
+      AddChildView(std::make_unique<AmbientAssistantContainerView>());
   ambient_assistant_container_view_->SetVisible(false);
 }
 

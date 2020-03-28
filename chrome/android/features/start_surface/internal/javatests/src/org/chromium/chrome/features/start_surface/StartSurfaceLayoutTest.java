@@ -1431,6 +1431,8 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // Disable TAB_TO_GTS_ANIMATION to make it less flaky.
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
     public void testSearchTermChip_noChip() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
@@ -1443,6 +1445,8 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // Disable TAB_TO_GTS_ANIMATION to make it less flaky.
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
     public void testSearchTermChip_withChip() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
@@ -1518,6 +1522,8 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
+    // Disable TAB_TO_GTS_ANIMATION to make it less flaky.
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS +
             "/enable_search_term_chip/true/enable_search_term_chip_adaptive_icon/true"})
     public void testSearchTermChip_adaptiveIcon() throws InterruptedException {

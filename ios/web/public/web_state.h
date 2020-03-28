@@ -362,6 +362,10 @@ class WebState : public base::SupportsUserData {
   virtual void AddObserver(WebStateObserver* observer) = 0;
   virtual void RemoveObserver(WebStateObserver* observer) = 0;
 
+  // Instructs the delegate to close this web state. Called when the page calls
+  // wants to close self by calling window.close() JavaScript API.
+  virtual void CloseWebState() = 0;
+
  protected:
   friend class WebStatePolicyDecider;
 

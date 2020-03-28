@@ -42,8 +42,7 @@ class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
 
-typedef base::RepeatingCallback<void(bool)>
-    AvailabilityProberOnCompleteCallback;
+typedef base::OnceCallback<void(bool)> AvailabilityProberOnCompleteCallback;
 
 // This class is a utility to probe a given URL with a given set of behaviors.
 // This can be used for determining whether a specific network resource is

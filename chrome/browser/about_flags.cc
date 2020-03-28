@@ -736,6 +736,47 @@ static_assert(net::EFFECTIVE_CONNECTION_TYPE_4G + 1 ==
                   net::EFFECTIVE_CONNECTION_TYPE_LAST,
               "ECT enum value is not handled.");
 
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitNone[] = {
+    {"max_srp_prefetches", "-1"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitZero[] = {
+    {"max_srp_prefetches", "0"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitOne[] = {
+    {"max_srp_prefetches", "1"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitTwo[] = {
+    {"max_srp_prefetches", "2"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitThree[] = {
+    {"max_srp_prefetches", "3"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitFour[] = {
+    {"max_srp_prefetches", "4"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitFive[] = {
+    {"max_srp_prefetches", "5"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitTen[] = {
+    {"max_srp_prefetches", "10"}};
+const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitFifteen[] = {
+    {"max_srp_prefetches", "15"}};
+
+const FeatureEntry::FeatureVariation
+    kIsolatedPrerenderFeatureWithPrefetchLimit[] = {
+        {"Unlimited Prefetches", kIsolatedPrerenderPrefetchLimitNone,
+         base::size(kIsolatedPrerenderPrefetchLimitNone), nullptr},
+        {"Zero Prefetches", kIsolatedPrerenderPrefetchLimitZero,
+         base::size(kIsolatedPrerenderPrefetchLimitZero), nullptr},
+        {"One Prefetch", kIsolatedPrerenderPrefetchLimitOne,
+         base::size(kIsolatedPrerenderPrefetchLimitOne), nullptr},
+        {"Two Prefetches", kIsolatedPrerenderPrefetchLimitTwo,
+         base::size(kIsolatedPrerenderPrefetchLimitTwo), nullptr},
+        {"Three Prefetches", kIsolatedPrerenderPrefetchLimitThree,
+         base::size(kIsolatedPrerenderPrefetchLimitThree), nullptr},
+        {"Four Prefetches", kIsolatedPrerenderPrefetchLimitFour,
+         base::size(kIsolatedPrerenderPrefetchLimitFour), nullptr},
+        {"Five Prefetches", kIsolatedPrerenderPrefetchLimitFive,
+         base::size(kIsolatedPrerenderPrefetchLimitFive), nullptr},
+        {"Ten Prefetches", kIsolatedPrerenderPrefetchLimitTen,
+         base::size(kIsolatedPrerenderPrefetchLimitTen), nullptr},
+        {"Fifteen Prefetches", kIsolatedPrerenderPrefetchLimitFifteen,
+         base::size(kIsolatedPrerenderPrefetchLimitFifteen), nullptr},
+};
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kAutofillKeyboardAccessoryFeatureVariationAnimationDuration[] = {
@@ -2433,7 +2474,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-google-srp-isolated-prerenders",
      flag_descriptions::kEnableSRPIsolatedPrerendersName,
      flag_descriptions::kEnableSRPIsolatedPrerendersDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kIsolatePrerenders)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kIsolatePrerenders,
+                                    kIsolatedPrerenderFeatureWithPrefetchLimit,
+                                    "Prefetch Limit")},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},

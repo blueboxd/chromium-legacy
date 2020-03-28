@@ -131,7 +131,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    public void testBackPressCloseDialog() throws InterruptedException {
+    public void testBackPressCloseDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -163,7 +163,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    public void testDisableTabGroupsContinuation() throws InterruptedException {
+    public void testDisableTabGroupsContinuation() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -183,7 +183,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-    public void testEnableTabGroupsContinuation() throws InterruptedException {
+    public void testEnableTabGroupsContinuation() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -202,7 +202,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    public void testTabGridDialogAnimation() throws InterruptedException {
+    public void testTabGridDialogAnimation() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -219,7 +219,7 @@ public class TabGridDialogTest {
         ViewGroup.MarginLayoutParams params =
                 (ViewGroup.MarginLayoutParams) recyclerView.getLayoutParams();
         params.topMargin += deltaTopMargin;
-        TestThreadUtils.runOnUiThreadBlocking(() -> { recyclerView.setLayoutParams(params); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> recyclerView.setLayoutParams(params));
         CriteriaHelper.pollUiThread(() -> !recyclerView.isComputingLayout());
 
         // Calculate expected values of animation source rect.
@@ -240,9 +240,9 @@ public class TabGridDialogTest {
                 layout.getStartSurfaceForTesting().getTabDialogDelegate();
         delegation.setSourceRectCallbackForTesting((result -> {
             mHasReceivedSourceRect = true;
-            assertTrue(expectedTop == result.top);
-            assertTrue(expectedHeight == result.height());
-            assertTrue(expectedWidth == result.width());
+            assertEquals(expectedTop, result.top, 0.0);
+            assertEquals(expectedHeight, result.height(), 0.0);
+            assertEquals(expectedWidth, result.width(), 0.0);
         }));
 
         TabUiTestHelper.clickFirstCardFromTabSwitcher(cta);
@@ -252,7 +252,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    public void testUndoClosureInDialog_GTS() throws InterruptedException {
+    public void testUndoClosureInDialog_GTS() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -284,7 +284,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    public void testUndoClosureInDialog_TabStrip() throws InterruptedException {
+    public void testUndoClosureInDialog_TabStrip() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -319,7 +319,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-    public void testDialogToolbarMenuShareGroup() throws InterruptedException {
+    public void testDialogToolbarMenuShareGroup() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -342,7 +342,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-    public void testSelectionEditorShowHide() throws InterruptedException {
+    public void testSelectionEditorShowHide() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -380,7 +380,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-    public void testSelectionEditorUngroup() throws InterruptedException {
+    public void testSelectionEditorUngroup() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         assertTrue(cta.getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
                            instanceof TabGroupModelFilter);
@@ -435,7 +435,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    public void testSwipeToDismiss_Dialog() throws InterruptedException {
+    public void testSwipeToDismiss_Dialog() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Create 2 tabs and merge them into one group.
         createTabs(cta, false, 2);
@@ -461,7 +461,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-    public void testSelectionEditorPosition() throws InterruptedException {
+    public void testSelectionEditorPosition() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         View parentView = cta.getCompositorViewHolder();
         createTabs(cta, false, 3);
@@ -495,7 +495,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
-    public void testTabGroupNaming() throws InterruptedException {
+    public void testTabGroupNaming() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);

@@ -207,10 +207,20 @@ ProcessExitResult RunSetup(const Configuration& configuration,
       !cmd_line.append(L"\"")) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
   }
-
   if (!cmd_line.append(L" --install --single-process --enable-logging"
-                       L" --vmodule=*/chrome/updater/*=2"))
+                       L" --vmodule=*/chrome/updater/*=2")) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+  }
+
+  // Append to the command line arguments this program has been invoked with.
+  int num_args = 0;
+  wchar_t** const arg_list =
+      ::CommandLineToArgvW(::GetCommandLineW(), &num_args);
+  for (int i = 1; i != num_args; ++i) {
+    if (!cmd_line.append(L" ") || !cmd_line.append(arg_list[i])) {
+      return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+    }
+  }
 
   return RunProcessAndWait(setup_exe.get(), cmd_line.get());
 }

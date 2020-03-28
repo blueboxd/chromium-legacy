@@ -250,7 +250,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
 
   base::MappedReadOnlyRegion memory =
       base::ReadOnlySharedMemoryRegion::Create(size);
-  if (!memory.region.IsValid() || !memory.mapping.IsValid())
+  if (!memory.IsValid())
     return false;
 
   int result =
@@ -523,7 +523,7 @@ bool ServiceUtilityProcessHost::Client::MetafileAvailable(
     return false;
   }
   printing::Emf emf;
-  if (!emf.InitFromData(mapping.memory(), mapping.size())) {
+  if (!emf.InitFromData(mapping.GetMemoryAsSpan<const uint8_t>())) {
     OnRenderPDFPagesToMetafileDone(false);
     return false;
   }

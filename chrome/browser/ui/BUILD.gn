@@ -2691,6 +2691,7 @@ jumbo_static_library("ui") {
         "views/frame/browser_desktop_window_tree_host_linux.cc",
         "views/frame/browser_desktop_window_tree_host_linux.h",
       ]
+      deps += [ "//ui/platform_window/extensions" ]
     }
     if (use_gtk) {
       # This is the only component that can interact with gtk.
@@ -3558,15 +3559,21 @@ jumbo_static_library("ui") {
         sources += [
           "views/chrome_browser_main_extra_parts_views_linux.cc",
           "views/chrome_browser_main_extra_parts_views_linux.h",
-          "views/linux_ui/linux_ui_factory.h",
         ]
         if (use_gtk) {
-          sources += [ "views/linux_ui/linux_ui_factory_gtk.cc" ]
-
-          # This is the only component that can interact with gtk.
-          deps += [ "//chrome/browser/ui/gtk" ]
-        } else {
-          sources += [ "views/linux_ui/linux_ui_factory.cc" ]
+          deps += [
+            "//chrome/browser/ui/gtk",
+            "//ui/gtk",
+          ]
+          if (use_x11) {
+            deps += [
+              "//ui/gfx/x",
+              "//ui/gtk:x",
+            ]
+          }
+          if (use_ozone) {
+            deps += [ "//ui/ozone" ]
+          }
         }
         if (use_x11) {
           sources += [

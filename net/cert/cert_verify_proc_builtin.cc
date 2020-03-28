@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_net_fetcher.h"
@@ -31,6 +32,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 
@@ -49,6 +51,62 @@ constexpr base::TimeDelta kPerAttemptMinVerificationTimeLimit =
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
 
 const void* kResultDebugDataKey = &kResultDebugDataKey;
+
+base::Value NetLogCertParams(const CRYPTO_BUFFER* cert_handle,
+                             const CertErrors& errors) {
+  base::Value results(base::Value::Type::DICTIONARY);
+
+  std::string pem_encoded;
+  if (X509Certificate::GetPEMEncodedFromDER(
+          x509_util::CryptoBufferAsStringPiece(cert_handle), &pem_encoded)) {
+    results.SetStringKey("certificate", pem_encoded);
+  }
+
+  std::string errors_string = errors.ToDebugString();
+  if (!errors_string.empty())
+    results.SetStringKey("errors", errors_string);
+
+  return results;
+}
+
+base::Value PEMCertListValue(const ParsedCertificateList& certs) {
+  base::Value value(base::Value::Type::LIST);
+  for (const auto& cert : certs) {
+    std::string pem;
+    X509Certificate::GetPEMEncodedFromDER(cert->der_cert().AsStringPiece(),
+                                          &pem);
+    value.Append(std::move(pem));
+  }
+  return value;
+}
+
+base::Value NetLogPathBuilderResultPath(
+    const CertPathBuilderResultPath& result_path) {
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetBoolKey("is_valid", result_path.IsValid());
+  value.SetIntKey("last_cert_trust",
+                  static_cast<int>(result_path.last_cert_trust.type));
+  value.SetKey("certificates", PEMCertListValue(result_path.certs));
+  // TODO(crbug.com/634484): netlog user_constrained_policy_set.
+  std::string errors_string =
+      result_path.errors.ToDebugString(result_path.certs);
+  if (!errors_string.empty())
+    value.SetStringKey("errors", errors_string);
+  return value;
+}
+
+base::Value NetLogPathBuilderResult(const CertPathBuilder::Result& result) {
+  base::Value value(base::Value::Type::DICTIONARY);
+  // TODO(crbug.com/634484): include debug data (or just have things netlog it
+  // directly).
+  value.SetBoolKey("has_valid_path", result.HasValidPath());
+  value.SetIntKey("best_result_index", result.best_result_index);
+  if (result.exceeded_iteration_limit)
+    value.SetBoolKey("exceeded_iteration_limit", true);
+  if (result.exceeded_deadline)
+    value.SetBoolKey("exceeded_deadline", true);
+  return value;
+}
 
 RevocationPolicy NoRevocationChecking() {
   RevocationPolicy policy;
@@ -302,7 +360,8 @@ class CertVerifyProcBuiltin : public CertVerifyProc {
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
-                     CertVerifyResult* verify_result) override;
+                     CertVerifyResult* verify_result,
+                     const NetLogWithSource& net_log) override;
 
   scoped_refptr<CertNetFetcher> net_fetcher_;
   std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider_;
@@ -331,14 +390,19 @@ scoped_refptr<ParsedCertificate> ParseCertificateFromBuffer(
 }
 
 void AddIntermediatesToIssuerSource(X509Certificate* x509_cert,
-                                    CertIssuerSourceStatic* intermediates) {
-  CertErrors errors;
+                                    CertIssuerSourceStatic* intermediates,
+                                    const NetLogWithSource& net_log) {
   for (const auto& intermediate : x509_cert->intermediate_buffers()) {
+    CertErrors errors;
     scoped_refptr<ParsedCertificate> cert =
         ParseCertificateFromBuffer(intermediate.get(), &errors);
+    // TODO(crbug.com/634484): this duplicates the logging of the input chain
+    // maybe should only log if there is a parse error/warning?
+    net_log.AddEvent(NetLogEventType::CERT_VERIFY_PROC_INPUT_CERT, [&] {
+      return NetLogCertParams(intermediate.get(), errors);
+    });
     if (cert)
       intermediates->AddCert(std::move(cert));
-    // TODO(crbug.com/634443): Surface these parsing errors?
   }
 }
 
@@ -465,6 +529,7 @@ CertPathBuilder::Result TryBuildPath(
 
   if (verification_type == VerificationType::kEV) {
     GetEVPolicyOids(ev_metadata, target.get(), &user_initial_policy_set);
+    // TODO(crbug.com/634484): netlog user_initial_policy_set.
   } else {
     user_initial_policy_set = {AnyPolicy()};
   }
@@ -485,6 +550,7 @@ CertPathBuilder::Result TryBuildPath(
   path_builder.AddCertIssuerSource(intermediates);
 
   // Allow the path builder to discover intermediates through AIA fetching.
+  // TODO(crbug.com/634484): hook up netlog to AIA.
   std::unique_ptr<CertIssuerSourceAia> aia_cert_issuer_source;
   if (net_fetcher) {
     aia_cert_issuer_source = std::make_unique<CertIssuerSourceAia>(net_fetcher);
@@ -601,9 +667,8 @@ int CertVerifyProcBuiltin::VerifyInternal(
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
-    CertVerifyResult* verify_result) {
-  CertErrors parsing_errors;
-
+    CertVerifyResult* verify_result,
+    const NetLogWithSource& net_log) {
   // VerifyInternal() is expected to carry out verifications using the current
   // time stamp.
   base::Time verification_time = base::Time::Now();
@@ -622,28 +687,43 @@ int CertVerifyProcBuiltin::VerifyInternal(
                                                der_verification_time);
 
   // Parse the target certificate.
-  scoped_refptr<ParsedCertificate> target =
-      ParseCertificateFromBuffer(input_cert->cert_buffer(), &parsing_errors);
-  if (!target) {
-    // TODO(crbug.com/634443): Surface these parsing errors?
-    verify_result->cert_status |= CERT_STATUS_INVALID;
-    return ERR_CERT_INVALID;
+  scoped_refptr<ParsedCertificate> target;
+  {
+    CertErrors parsing_errors;
+    target =
+        ParseCertificateFromBuffer(input_cert->cert_buffer(), &parsing_errors);
+    // TODO(crbug.com/634484): this duplicates the logging of the input chain
+    // maybe should only log if there is a parse error/warning?
+    net_log.AddEvent(NetLogEventType::CERT_VERIFY_PROC_TARGET_CERT, [&] {
+      return NetLogCertParams(input_cert->cert_buffer(), parsing_errors);
+    });
+    if (!target) {
+      verify_result->cert_status |= CERT_STATUS_INVALID;
+      return ERR_CERT_INVALID;
+    }
   }
 
   // Parse the provided intermediates.
   CertIssuerSourceStatic intermediates;
-  AddIntermediatesToIssuerSource(input_cert, &intermediates);
+  AddIntermediatesToIssuerSource(input_cert, &intermediates, net_log);
 
   // Parse the additional trust anchors and setup trust store.
   std::unique_ptr<SystemTrustStore> ssl_trust_store =
       system_trust_store_provider_->CreateSystemTrustStore();
 
   for (const auto& x509_cert : additional_trust_anchors) {
+    CertErrors parsing_errors;
     scoped_refptr<ParsedCertificate> cert =
         ParseCertificateFromBuffer(x509_cert->cert_buffer(), &parsing_errors);
     if (cert)
       ssl_trust_store->AddTrustAnchor(cert);
-    // TODO(eroman): Surface parsing errors of additional trust anchor.
+    // TODO(crbug.com/634484): this duplicates the logging of the
+    // additional_trust_anchors maybe should only log if there is a parse
+    // error/warning?
+    net_log.AddEvent(
+        NetLogEventType::CERT_VERIFY_PROC_ADDITIONAL_TRUST_ANCHOR, [&] {
+          return NetLogCertParams(x509_cert->cert_buffer(), parsing_errors);
+        });
   }
 
   // Get the global dependencies.
@@ -678,6 +758,15 @@ int CertVerifyProcBuiltin::VerifyInternal(
        ++cur_attempt_index) {
     const auto& cur_attempt = attempts[cur_attempt_index];
     verification_type = cur_attempt.verification_type;
+    net_log.BeginEvent(
+        NetLogEventType::CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT, [&] {
+          base::DictionaryValue results;
+          if (verification_type == VerificationType::kEV)
+            results.SetBoolKey("is_ev_attempt", true);
+          results.SetIntKey("digest_policy",
+                            static_cast<int>(cur_attempt.digest_policy));
+          return results;
+        });
 
     // If a previous attempt used up most/all of the deadline, extend the
     // deadline a little bit to give this verification attempt a chance at
@@ -691,6 +780,16 @@ int CertVerifyProcBuiltin::VerifyInternal(
         deadline, cur_attempt.verification_type, cur_attempt.digest_policy,
         flags, ocsp_response, crl_set, net_fetcher_.get(), ev_metadata,
         &checked_revocation_for_some_path);
+
+    // TODO(crbug.com/634484): Log these in path_builder.cc so they include
+    // correct timing information.
+    for (const auto& path : result.paths) {
+      net_log.AddEvent(NetLogEventType::CERT_VERIFY_PROC_PATH_BUILT,
+                       [&] { return NetLogPathBuilderResultPath(*path); });
+    }
+
+    net_log.EndEvent(NetLogEventType::CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT,
+                     [&] { return NetLogPathBuilderResult(result); });
 
     if (result.HasValidPath())
       break;

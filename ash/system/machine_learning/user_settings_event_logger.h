@@ -65,10 +65,9 @@ class ASH_EXPORT UserSettingsEventLogger
   void LogAccessibilityUkmEvent(UserSettingsEvent::Event::AccessibilityId id,
                                 bool enabled);
 
-  // Logs an event to UKM that the user has changed the volume from the tray.
-  void LogVolumeUkmEvent(int previous_level, int current_level);
-
   // chromeos::CrasAudioHandler::AudioObserver overrides:
+  void OnOutputNodeVolumeChanged(uint64_t node, int volume) override;
+  void OnOutputMuteChanged(bool mute_on) override;
   void OnOutputStarted() override;
   void OnOutputStopped() override;
 
@@ -105,8 +104,9 @@ class ASH_EXPORT UserSettingsEventLogger
 
   // Timer to ensure that volume is only recorded after a pause.
   base::OneShotTimer volume_timer_;
-  int previous_volume_;
-  int current_volume_;
+  int volume_;
+  int volume_before_mute_;
+  int volume_before_user_change_;
 
   // Timer to ensure that brightness is only recorded after a pause.
   base::OneShotTimer brightness_timer_;

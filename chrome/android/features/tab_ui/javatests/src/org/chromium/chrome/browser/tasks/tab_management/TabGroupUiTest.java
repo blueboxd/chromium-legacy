@@ -81,7 +81,7 @@ public class TabGroupUiTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testRenderStrip_Select5thTabIn10Tabs() throws InterruptedException, IOException {
+    public void testRenderStrip_Select5thTabIn10Tabs() throws IOException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 10);
         enterTabSwitcher(cta);
@@ -94,15 +94,14 @@ public class TabGroupUiTest {
         clickNthTabInDialog(cta, 4);
 
         ViewGroup bottomToolbar = cta.findViewById(R.id.bottom_controls);
-        RecyclerView stripRecyclerView =
-                (RecyclerView) bottomToolbar.findViewById(R.id.tab_list_view);
+        RecyclerView stripRecyclerView = bottomToolbar.findViewById(R.id.tab_list_view);
         mRenderTestRule.render(stripRecyclerView, "5th_tab_selected");
     }
 
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testRenderStrip_Select10thTabIn10Tabs() throws InterruptedException, IOException {
+    public void testRenderStrip_Select10thTabIn10Tabs() throws IOException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 10);
         enterTabSwitcher(cta);
@@ -115,15 +114,14 @@ public class TabGroupUiTest {
         clickNthTabInDialog(cta, 9);
 
         ViewGroup bottomToolbar = cta.findViewById(R.id.bottom_controls);
-        RecyclerView stripRecyclerView =
-                (RecyclerView) bottomToolbar.findViewById(R.id.tab_list_view);
+        RecyclerView stripRecyclerView = bottomToolbar.findViewById(R.id.tab_list_view);
         mRenderTestRule.render(stripRecyclerView, "10th_tab_selected");
     }
 
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testRenderStrip_AddTab() throws InterruptedException, IOException {
+    public void testRenderStrip_AddTab() throws IOException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 10);
         enterTabSwitcher(cta);
@@ -135,8 +133,7 @@ public class TabGroupUiTest {
         clickFirstCardFromTabSwitcher(cta);
         clickNthTabInDialog(cta, 0);
         ViewGroup bottomToolbar = cta.findViewById(R.id.bottom_controls);
-        RecyclerView stripRecyclerView =
-                (RecyclerView) bottomToolbar.findViewById(R.id.tab_list_view);
+        RecyclerView stripRecyclerView = bottomToolbar.findViewById(R.id.tab_list_view);
         stripRecyclerView.setItemAnimator(null);
         onView(allOf(withId(R.id.toolbar_right_button), withParent(withId(R.id.main_content))))
                 .perform(click());

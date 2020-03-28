@@ -17,6 +17,9 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/x509_certificate.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source_type.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 
@@ -35,6 +38,7 @@ namespace {
 struct ResultHelper {
   int error;
   CertVerifyResult result;
+  NetLogWithSource net_log;
 };
 
 int GetFlagsForConfig(const CertVerifier::Config& config) {
@@ -62,14 +66,16 @@ std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
     const std::string& sct_list,
     int flags,
     const scoped_refptr<CRLSet>& crl_set,
-    const CertificateList& additional_trust_anchors) {
+    const CertificateList& additional_trust_anchors,
+    const NetLogWithSource& net_log) {
   TRACE_EVENT0(NetTracingCategory(), "DoVerifyOnWorkerThread");
   auto verify_result = std::make_unique<ResultHelper>();
+  verify_result->net_log = net_log;
   MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
       allow_base_sync_primitives;
   verify_result->error = verify_proc->Verify(
       cert.get(), hostname, ocsp_response, sct_list, flags, crl_set.get(),
-      additional_trust_anchors, &verify_result->result);
+      additional_trust_anchors, &verify_result->result, net_log);
   // The CertVerifyResult is created and populated on the worker thread and
   // then returned to the network thread. Detach now before returning the
   // result, since any further access will be on the network thread.
@@ -89,10 +95,15 @@ class InternalRequest : public CertVerifier::Request {
 
   void Start(const scoped_refptr<CertVerifyProc>& verify_proc,
              const CertVerifier::Config& config,
-             const CertVerifier::RequestParams& params);
+             const CertVerifier::RequestParams& params,
+             const NetLogWithSource& caller_net_log);
 
  private:
-  void OnJobComplete(std::unique_ptr<ResultHelper> verify_result);
+  // This is a static method with a |self| weak pointer instead of a regular
+  // method, so that PostTask will still run it even if the weakptr is no
+  // longer valid.
+  static void OnJobComplete(base::WeakPtr<InternalRequest> self,
+                            std::unique_ptr<ResultHelper> verify_result);
 
   CompletionOnceCallback callback_;
   CertVerifyResult* caller_result_;
@@ -108,7 +119,14 @@ InternalRequest::~InternalRequest() = default;
 
 void InternalRequest::Start(const scoped_refptr<CertVerifyProc>& verify_proc,
                             const CertVerifier::Config& config,
-                            const CertVerifier::RequestParams& params) {
+                            const CertVerifier::RequestParams& params,
+                            const NetLogWithSource& caller_net_log) {
+  const NetLogWithSource net_log(NetLogWithSource::Make(
+      caller_net_log.net_log(), NetLogSourceType::CERT_VERIFIER_TASK));
+  net_log.BeginEvent(NetLogEventType::CERT_VERIFIER_TASK);
+  caller_net_log.AddEventReferencingSource(
+      NetLogEventType::CERT_VERIFIER_TASK_BOUND, net_log.source());
+
   int flags = GetFlagsForConfig(config);
   if (params.flags() & CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES) {
     flags &= ~CertVerifyProc::VERIFY_REV_CHECKING_ENABLED;
@@ -121,16 +139,25 @@ void InternalRequest::Start(const scoped_refptr<CertVerifyProc>& verify_proc,
       base::BindOnce(&DoVerifyOnWorkerThread, verify_proc, params.certificate(),
                      params.hostname(), params.ocsp_response(),
                      params.sct_list(), flags, config.crl_set,
-                     config.additional_trust_anchors),
+                     config.additional_trust_anchors, net_log),
       base::BindOnce(&InternalRequest::OnJobComplete,
                      weak_factory_.GetWeakPtr()));
 }
 
+// static
 void InternalRequest::OnJobComplete(
+    base::WeakPtr<InternalRequest> self,
     std::unique_ptr<ResultHelper> verify_result) {
-  *caller_result_ = verify_result->result;
-  // Note: May delete |this|.
-  std::move(callback_).Run(verify_result->error);
+  // Always log the EndEvent, even if the Request has been destroyed.
+  verify_result->net_log.EndEvent(NetLogEventType::CERT_VERIFIER_TASK);
+
+  // Check |self| weakptr and don't continue if the Request was destroyed.
+  if (!self)
+    return;
+
+  *self->caller_result_ = verify_result->result;
+  // Note: May delete |self|.
+  std::move(self->callback_).Run(verify_result->error);
 }
 
 }  // namespace
@@ -160,7 +187,7 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
 
   std::unique_ptr<InternalRequest> request =
       std::make_unique<InternalRequest>(std::move(callback), verify_result);
-  request->Start(verify_proc_, config_, params);
+  request->Start(verify_proc_, config_, params, net_log);
   *out_req = std::move(request);
   return ERR_IO_PENDING;
 }

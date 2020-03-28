@@ -307,6 +307,9 @@ bool ImageLoader::ShouldUpdateOnInsertedInto(
 }
 
 bool ImageLoader::ImageIsPotentiallyAvailable() const {
+  bool is_lazyload = lazy_image_load_state_ == LazyImageLoadState::kDeferred &&
+                     was_fully_deferred_;
+
   bool image_has_loaded = image_content_ && !image_content_->IsLoading() &&
                           !image_content_->ErrorOccurred();
   bool image_still_loading = !image_has_loaded && HasPendingActivity() &&
@@ -329,7 +332,7 @@ bool ImageLoader::ImageIsPotentiallyAvailable() const {
   // ImageResourceContent has non-null image data associated with it, which
   // isn't folded into |image_has_loaded| above.
   return (image_has_loaded && image_has_image) || image_still_loading ||
-         image_is_document;
+         image_is_document || is_lazyload;
 }
 
 void ImageLoader::ClearImage() {
@@ -594,11 +597,16 @@ void ImageLoader::DoUpdateFromElement(
       new_image_content == old_image_content) {
     ToLayoutImage(element_->GetLayoutObject())->IntrinsicSizeChanged();
   } else {
+    bool is_lazyload =
+        lazy_image_load_state_ == LazyImageLoadState::kDeferred &&
+        was_fully_deferred_;
+
     // Loading didn't start (loading of images was disabled). We show fallback
     // contents here, while we don't dispatch an 'error' event etc., because
     // spec-wise the image remains in the "Unavailable" state.
     if (new_image_content &&
-        new_image_content->GetContentStatus() == ResourceStatus::kNotStarted)
+        new_image_content->GetContentStatus() == ResourceStatus::kNotStarted &&
+        !is_lazyload)
       NoImageResourceToLoad();
 
     if (pending_load_event_.IsActive())

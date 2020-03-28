@@ -39,6 +39,7 @@ import java.util.List;
 /**
  * Tests functionality related to TabContext
  */
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument"})
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabContextTest {

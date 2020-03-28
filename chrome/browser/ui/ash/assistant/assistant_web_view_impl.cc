@@ -4,16 +4,19 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_web_view_impl.h"
 
+#include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "ui/aura/window.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 AssistantWebViewImpl::AssistantWebViewImpl(Profile* profile,
                                            const InitParams& params)
@@ -63,6 +66,11 @@ bool AssistantWebViewImpl::GoBack() {
 void AssistantWebViewImpl::Navigate(const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
   web_contents_->GetController().LoadURLWithParams(params);
+}
+
+void AssistantWebViewImpl::AddedToWidget() {
+  UpdateMinimizeOnBackProperty();
+  AssistantWebView::AddedToWidget();
 }
 
 bool AssistantWebViewImpl::IsWebContentsCreationOverridden(
@@ -222,6 +230,17 @@ void AssistantWebViewImpl::UpdateCanGoBack() {
 
   can_go_back_ = can_go_back;
 
+  UpdateMinimizeOnBackProperty();
+
   for (auto& observer : observers_)
     observer.DidChangeCanGoBack(can_go_back_);
+}
+
+void AssistantWebViewImpl::UpdateMinimizeOnBackProperty() {
+  const bool minimize_on_back = params_.minimize_on_back_key && !can_go_back_;
+  views::Widget* widget = GetWidget();
+  if (widget) {
+    widget->GetNativeWindow()->SetProperty(ash::kMinimizeOnBackKey,
+                                           minimize_on_back);
+  }
 }

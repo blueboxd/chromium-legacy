@@ -81,6 +81,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
     bool visible_on_all_workspaces;
     bool remove_standard_frame;
     bool prefer_dark_theme;
+    bool override_redirect;
     std::string workspace;
     std::string wm_class_name;
     std::string wm_class_class;
@@ -138,6 +139,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void NotifySwapAfterResize();
   void ConfineCursorTo(const gfx::Rect& bounds);
   void LowerWindow();
+  void SetOverrideRedirect(bool override_redirect);
 
   // Returns if the point is within XWindow shape. If shape is not set, always
   // returns true.

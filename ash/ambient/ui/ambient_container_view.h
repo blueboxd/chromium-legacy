@@ -12,26 +12,24 @@
 namespace ash {
 
 class AmbientAssistantContainerView;
-class AmbientController;
+class AmbientViewDelegate;
 class PhotoView;
 
 // Container view for ambient mode.
 class ASH_EXPORT AmbientContainerView : public views::WidgetDelegateView {
  public:
-  explicit AmbientContainerView(AmbientController* ambient_controller);
+  explicit AmbientContainerView(AmbientViewDelegate* delegate);
   ~AmbientContainerView() override;
 
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   void Init();
 
-  AmbientController* ambient_controller_ = nullptr;
+  AmbientViewDelegate* delegate_ = nullptr;
 
   // Owned by view hierarchy.
   PhotoView* photo_view_ = nullptr;

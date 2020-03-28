@@ -486,10 +486,11 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
   return ui::IsText(GetData().role);
 }
 
+bool AXPlatformNodeBase::IsTextField() const {
+  return IsPlainTextField() || IsRichTextField();
+}
+
 bool AXPlatformNodeBase::IsPlainTextField() const {
-  // We need to check both the role and editable state, because some ARIA text
-  // fields may in fact not be editable, whilst some editable fields might not
-  // have the role.
   return GetData().IsPlainTextField();
 }
 
@@ -499,27 +500,50 @@ bool AXPlatformNodeBase::IsRichTextField() const {
 }
 
 base::string16 AXPlatformNodeBase::GetHypertext() const {
-  return base::string16();
+  // Hypertext of platform leaves, which internally are composite objects, are
+  // represented with the inner text of the internal composite object. These
+  // don't exist on non-web content.
+  if (IsChildOfLeaf())
+    return GetDelegate()->GetInnerText();
+
+  if (hypertext_.needs_update)
+    UpdateComputedHypertext();
+  return hypertext_.hypertext;
 }
 
 base::string16 AXPlatformNodeBase::GetInnerText() const {
+  // In order to get the inner text for web content, we potentially need access
+  // to nodes that are not exposed to platform APIs, i.e. they are only visible
+  // in the internal accessibility tree. For example, nodes representing the
+  // shadow DOM inside a native text field.
+  if (GetDelegate()->IsWebContent())
+    return GetDelegate()->GetInnerText();
+
+  // Allows us to get text even in non-web content, e.g. in the browser's UI
+  // (AKA Views).
+  //
+  // Unlike in web content The "kValue" attribute takes precedence, because the
+  // accessibility of Views controls are carefully crafted by hand, in contrast
+  // to HTML pages, where any content that might be present in the shadow DOM
+  // (i.e. in the internal accessibility tree) is actually used by the renderer.
+  base::string16 value =
+      GetString16Attribute(ax::mojom::StringAttribute::kValue);
+  if (!value.empty())
+    return value;
+
   // TODO(https://crbug.com/1030703): The check for IsInvisibleOrIgnored()
   // should not be needed. ChildAtIndex() and GetChildCount() are already
   // supposed to skip over nodes that are invisible or ignored, but
   // ViewAXPlatformNodeDelegate does not currently implement this behavior.
-  if (IsTextOnlyObject() && !IsInvisibleOrIgnored())
+  if (!GetChildCount() && !IsInvisibleOrIgnored())
     return GetNameAsString16();
 
   base::string16 text;
-  for (int i = 0; i < GetChildCount(); ++i) {
-    gfx::NativeViewAccessible child_accessible =
-        const_cast<AXPlatformNodeBase*>(this)->ChildAtIndex(i);
-    AXPlatformNodeBase* child = FromNativeViewAccessible(child_accessible);
-    if (!child)
-      continue;
-
+  // TODO(Nektar): Remove const_cast by making all tree traversal methods const.
+  AXPlatformNodeBase* child =
+      const_cast<AXPlatformNodeBase*>(this)->GetFirstChild();
+  for (; child; child = child->GetNextSibling())
     text += child->GetInnerText();
-  }
   return text;
 }
 
@@ -811,8 +835,8 @@ bool AXPlatformNodeBase::HasCaret(
   return focus_object->IsDescendantOf(this);
 }
 
-bool AXPlatformNodeBase::IsLeaf() {
-  if (GetChildCount() == 0)
+bool AXPlatformNodeBase::IsLeaf() const {
+  if (!GetChildCount())
     return true;
 
   // These types of objects may have children that we use as internal
@@ -1180,7 +1204,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   // object (as opposed to treating it like a native Windows text box).
   // The text-model:a1 attribute is documented here:
   // http://www.linuxfoundation.org/collaborate/workgroups/accessibility/ia2/ia2_implementation_guide
-  if (IsPlainTextField() || IsRichTextField())
+  if (IsTextField())
     AddAttributeToList("text-model", "a1", attributes);
 
   // Expose input-text type attribute.
@@ -1239,23 +1263,16 @@ void AXPlatformNodeBase::AddAttributeToList(const char* name,
 }
 
 AXHypertext::AXHypertext() = default;
-AXHypertext::AXHypertext(const AXHypertext& other) = default;
 AXHypertext::~AXHypertext() = default;
+AXHypertext::AXHypertext(const AXHypertext& other) = default;
+AXHypertext& AXHypertext::operator=(const AXHypertext& other) = default;
 
-void AXPlatformNodeBase::UpdateComputedHypertext() {
+void AXPlatformNodeBase::UpdateComputedHypertext() const {
   hypertext_ = AXHypertext();
 
-  if (IsPlainTextField()) {
-    hypertext_.hypertext = GetValue();
-    return;
-  }
-
-  if (!GetChildCount()) {
-    if (IsRichTextField()) {
-      // We don't want to expose any associated label in IA2 Hypertext.
-      return;
-    }
-    hypertext_.hypertext = GetNameAsString16();
+  if (IsLeaf()) {
+    hypertext_.hypertext = GetInnerText();
+    hypertext_.needs_update = false;
     return;
   }
 
@@ -1265,9 +1282,13 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
   // the character index of each embedded object character to the id of the
   // child object it points to.
   base::string16 hypertext;
-  for (AXPlatformNodeBase* child = GetFirstChild(); child;
-       child = child->GetNextSibling()) {
-    // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
+  // TODO(Nektar): Remove const_cast by making all tree traversal methods const.
+  AXPlatformNodeBase* child =
+      const_cast<AXPlatformNodeBase*>(this)->GetFirstChild();
+  for (; child; child = child->GetNextSibling()) {
+    // Similar to Firefox, we don't expose text-only objects in IA2 and ATK
+    // hypertext with the embedded object character. We copy all of their text
+    // instead.
     if (child->IsTextOnlyObject()) {
       hypertext_.hypertext += child->GetNameAsString16();
     } else {
@@ -1279,6 +1300,8 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
       hypertext_.hypertext += kEmbeddedCharacter;
     }
   }
+
+  hypertext_.needs_update = false;
 }
 
 void AXPlatformNodeBase::AddAttributeToList(const char* name,

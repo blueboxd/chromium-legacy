@@ -326,9 +326,6 @@ public class NavigationTest {
             assertEquals("Page A", navigationController.getNavigationEntryTitle(0));
             assertEquals("Page B", navigationController.getNavigationEntryTitle(1));
             assertEquals("Page C", navigationController.getNavigationEntryTitle(2));
-
-            // An out of bounds index will return an empty string.
-            assertEquals("", navigationController.getNavigationEntryTitle(1234));
         });
     }
 

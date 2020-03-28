@@ -99,6 +99,11 @@ public class ScrimCoordinator {
     public void showScrim(PropertyModel model) {
         assert model != null : "Showing the scrim requires a model.";
 
+        // Ensure the previous scrim is hidden before showing the new one. This logic should be in
+        // the mediator, but it depends on the old view and binder being available which are
+        // replaced prior to mediator#showScrim being called.
+        if (mMediator.isActive()) mMediator.hideScrim(false);
+
         if (mChangeProcessor != null) mChangeProcessor.destroy();
 
         mView = mScrimViewBuilder.get();

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -104,8 +105,8 @@ public class TasksSurfaceMediatorUnitTest {
                 .set(eq(INCOGNITO_LEARN_MORE_CLICK_LISTENER),
                         mLearnMoreOnClickListenerCaptor.capture());
         assertEquals(mLearnMoreOnClickListener, mLearnMoreOnClickListenerCaptor.getValue());
-        assertEquals(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), false);
-        assertEquals(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), false);
+        assertFalse(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE));
+        assertFalse(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED));
     }
 
     @Test

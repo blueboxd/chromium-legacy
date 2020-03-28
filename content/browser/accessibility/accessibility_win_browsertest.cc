@@ -112,12 +112,13 @@ class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
                                           const std::wstring& expected_name,
                                           int32_t depth,
                                           bool* found);
-  static void CheckTextAtOffset(Microsoft::WRL::ComPtr<IAccessibleText>& object,
-                                LONG offset,
-                                IA2TextBoundaryType boundary_type,
-                                LONG expected_start_offset,
-                                LONG expected_end_offset,
-                                const std::wstring& expected_text);
+  static void CheckTextAtOffset(
+      const Microsoft::WRL::ComPtr<IAccessibleText>& object,
+      LONG offset,
+      IA2TextBoundaryType boundary_type,
+      LONG expected_start_offset,
+      LONG expected_end_offset,
+      const std::wstring& expected_text);
   static std::vector<base::win::ScopedVariant> GetAllAccessibleChildren(
       IAccessible* element);
 
@@ -464,8 +465,16 @@ BrowserAccessibility* AccessibilityWinBrowserTest::FindNodeInSubtree(
     BrowserAccessibility& node,
     ax::mojom::Role role,
     const std::string& name_or_value) {
-  const auto& name = node.GetStringAttribute(ax::mojom::StringAttribute::kName);
-  const auto& value =
+  const std::string& name =
+      node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+  // Note that in the case of a text field, "BrowserAccessibility::GetValue" has
+  // the added functionality of computing the value of an ARIA text box from its
+  // inner text.
+  //
+  // <div contenteditable="true" role="textbox">Hello world.</div>
+  // Will expose no HTML value attribute, but some screen readers, such as Jaws,
+  // VoiceOver and Talkback, require one to be computed.
+  const std::string& value =
       node.GetStringAttribute(ax::mojom::StringAttribute::kValue);
   if (node.GetRole() == role &&
       (name == name_or_value || value == name_or_value)) {
@@ -565,7 +574,7 @@ void AccessibilityWinBrowserTest::FindNodeInAccessibilityTree(
 // Ensures that the text and the start and end offsets retrieved using
 // get_textAtOffset match the expected values.
 void AccessibilityWinBrowserTest::CheckTextAtOffset(
-    Microsoft::WRL::ComPtr<IAccessibleText>& object,
+    const Microsoft::WRL::ComPtr<IAccessibleText>& object,
     LONG offset,
     IA2TextBoundaryType boundary_type,
     LONG expected_start_offset,
@@ -1843,9 +1852,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_LT(1, prev_width);
   EXPECT_LT(1, prev_height);
 
-  base::win::ScopedBstr text0;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
-
   // Delete the character in the input field.
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -1859,8 +1865,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
   ASSERT_EQ(0, caret_offset);
 
-  base::win::ScopedBstr text;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_EQ(nullptr, text.Get());
+  }
 
   // Now that input is completely empty, the position of the caret should be
   // returned for character 0. The x,y position and height should be the same as
@@ -1894,8 +1904,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_LT(1, prev_width);
   EXPECT_LT(1, prev_height);
 
-  base::win::ScopedBstr text0;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_STREQ(L"x", text.Get());
+  }
 
   // Delete the character in the input field.
   AccessibilityNotificationWaiter waiter(
@@ -1905,24 +1919,52 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   waiter.WaitForNotification();
 
   ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
-  ASSERT_EQ(0, n_characters);
+  // When the text field is empty, the placeholder text should become visible.
+  ASSERT_EQ(11, n_characters);
   LONG caret_offset;
   ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
   ASSERT_EQ(0, caret_offset);
 
-  base::win::ScopedBstr text;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_STREQ(L"placeholder", text.Get());
+  }
 
-  // Now that input is completely empty, the position of the caret should be
-  // returned for character 0. The x,y position and height should be the same as
-  // it was as when there was single character, but the width should now be 1.
-  LONG x, y, width, height;
-  for (int offset = IA2_TEXT_OFFSET_CARET; offset <= 0; ++offset) {
+  // Now that input is completely empty and the placeholder text is showing, the
+  // position of the caret should be returned for character 0. The x,y position,
+  // height and width should be the same as it was as when there was a single
+  // character.
+  {
+    LONG x, y, width, height;
     EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
-        offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+        IA2_TEXT_OFFSET_CARET, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width,
+        &height));
     EXPECT_EQ(prev_x, x);
     EXPECT_EQ(prev_y, y);
-    EXPECT_EQ(7, width);
+    EXPECT_EQ(prev_width, width);
+    EXPECT_EQ(prev_height, height);
+  }
+
+  {
+    LONG x, y, width, height;
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        0, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+    EXPECT_EQ(prev_x, x);
+    EXPECT_EQ(prev_y, y);
+    EXPECT_EQ(prev_width, width);
+    EXPECT_EQ(prev_height, height);
+  }
+
+  {
+    LONG x, y, width, height;
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        IA2_TEXT_OFFSET_LENGTH, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width,
+        &height));
+    EXPECT_EQ(prev_x, x);
+    EXPECT_EQ(prev_y, y);
+    EXPECT_EQ(1, width);
     EXPECT_EQ(prev_height, height);
   }
 }
@@ -2004,8 +2046,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 // TODO(accessibility) empty contenteditable gets height of entire
-// contenteditable instead of just 1 line. May be able to use the following
-// in Blink to get the height of a line -- it's at least close:
+// contenteditable instead of just 1 line. Maybe we are able to use the
+// following in Blink to get the height of a line -- it's at least close:
 // layout_object->Style()->GetFont().PrimaryFont()->GetFontMetrics().Height()
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        DISABLED_TestCharacterExtentsInEmptyContenteditable) {
@@ -2025,8 +2067,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_LT(1, prev_width);
   EXPECT_LT(1, prev_height);
 
-  base::win::ScopedBstr text0;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_STREQ(L"hello\n\n\nhello", text.Get());
+  }
 
   // Delete the character in the input field.
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -2042,8 +2088,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
   ASSERT_EQ(0, caret_offset);
 
-  base::win::ScopedBstr text;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_EQ(nullptr, text.Get());
+  }
 
   // Now that input is completely empty, the position of the caret should be
   // returned for character 0. The x,y position and height should be the same as
@@ -2077,8 +2127,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_LT(1, prev_width);
   EXPECT_LT(1, prev_height);
 
-  base::win::ScopedBstr text0;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text0.Receive()));
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_STREQ(L"x", text.Get());
+  }
 
   // Delete the character in the input field.
   AccessibilityNotificationWaiter waiter(
@@ -2094,8 +2148,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
   ASSERT_EQ(0, caret_offset);
 
-  base::win::ScopedBstr text;
-  ASSERT_HRESULT_SUCCEEDED(input_text->get_text(0, -1, text.Receive()));
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_EQ(nullptr, text.Get());
+  }
 
   // Now that input is completely empty, the position of the caret should be
   // returned for character 0. The x,y position and height should be the same as
@@ -2129,6 +2187,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_LT(1, prev_width);
   EXPECT_LT(1, prev_height);
 
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_STREQ(L"x", text.Get());
+  }
+
   // Delete the character in the input field.
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -2143,6 +2208,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   LONG caret_offset;
   ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
   ASSERT_EQ(0, caret_offset);
+
+  {
+    base::win::ScopedBstr text;
+    ASSERT_HRESULT_SUCCEEDED(
+        input_text->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+    EXPECT_EQ(nullptr, text.Get());
+  }
 
   // Now that input is completely empty, the position of the caret should be
   // returned for character 0. The x,y position and height should be the same as
@@ -3461,6 +3533,58 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
                     IA2_TEXT_BOUNDARY_LINE, 32, contents_string_length,
                     L"\"KHTML, like\".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestBlankLineTextAtOffsetWithBoundaryLine) {
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
+  SetUpTextareaField(&textarea_text);
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kValueChanged);
+  // Add a blank line at the end of the textarea.
+  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+      const textarea = document.querySelector('textarea');
+      textarea.value += '\n';
+      )SCRIPT"));
+  waiter.WaitForNotification();
+
+  // The second last line should have an additional trailing newline. Also,
+  // Blink represents the blank line with a newline character, so in total there
+  // should be two more newlines. The second newline is not part of the HTML
+  // value attribute however.
+  int contents_string_length = int{InputContentsString().size()} + 1;
+  CheckTextAtOffset(textarea_text, 32, IA2_TEXT_BOUNDARY_LINE, 32,
+                    contents_string_length, L"\"KHTML, like\".\n");
+  CheckTextAtOffset(textarea_text, 46, IA2_TEXT_BOUNDARY_LINE, 32,
+                    contents_string_length, L"\"KHTML, like\".\n");
+
+  // An offset one past the last character should return the last line which is
+  // blank. This is represented by Blink with yet another line break.
+  CheckTextAtOffset(textarea_text, contents_string_length,
+                    IA2_TEXT_BOUNDARY_LINE, contents_string_length,
+                    (contents_string_length + 1), L"\n");
+
+  {
+    // There should be no text after the blank line.
+    LONG start_offset = 0;
+    LONG end_offset = 0;
+    base::win::ScopedBstr text;
+    EXPECT_EQ(S_FALSE, textarea_text->get_textAtOffset(
+                           (contents_string_length + 1), IA2_TEXT_BOUNDARY_LINE,
+                           &start_offset, &end_offset, text.Receive()));
+
+    // Test special offsets.
+    EXPECT_EQ(S_FALSE, textarea_text->get_textAtOffset(
+                           IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_LINE,
+                           &start_offset, &end_offset, text.Receive()));
+  }
+
+  // The caret should have moved to the blank line.
+  CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
+                    IA2_TEXT_BOUNDARY_LINE, contents_string_length,
+                    (contents_string_length + 1), L"\n");
 }
 
 IN_PROC_BROWSER_TEST_F(

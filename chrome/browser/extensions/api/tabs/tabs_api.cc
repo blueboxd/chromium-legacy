@@ -485,6 +485,9 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
       if (ExtensionTabUtil::IsKillURL(url))
         return RespondNow(Error(tabs_constants::kNoCrashBrowserError));
       urls.push_back(url);
+
+      // Log if this navigation looks like it is to a devtools URL.
+      ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
     }
   }
 
@@ -1347,6 +1350,9 @@ bool TabsUpdateFunction::UpdateURL(const std::string& url_string,
     *error = tabs_constants::kNoCrashBrowserError;
     return false;
   }
+
+  // Log if this navigation looks like it is to a devtools URL.
+  ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
 
   const bool is_javascript_scheme = url.SchemeIs(url::kJavaScriptScheme);
   UMA_HISTOGRAM_BOOLEAN("Extensions.ApiTabUpdateJavascript",

@@ -6,17 +6,25 @@
 
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "components/safe_browsing/core/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+namespace safe_browsing {
+
+const char kDelayedWarningsHistogram[] = "SafeBrowsing.DelayedWarnings.Event";
+
 namespace {
 const char kWebContentsUserDataKey[] =
     "web_contents_safe_browsing_user_interaction_observer";
+
+void RecordUMA(DelayedWarningEvent event) {
+  base::UmaHistogramEnumeration(kDelayedWarningsHistogram, event);
 }
 
-namespace safe_browsing {
+}  // namespace
 
 SafeBrowsingUserInteractionObserver::SafeBrowsingUserInteractionObserver(
     content::WebContents* web_contents,
@@ -38,11 +46,16 @@ SafeBrowsingUserInteractionObserver::SafeBrowsingUserInteractionObserver(
   // (DidGetUserInteraction() can only observe and not cancel the event.)
   web_contents->GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(
       key_press_callback_);
+
+  RecordUMA(DelayedWarningEvent::kPageLoaded);
 }
 
 SafeBrowsingUserInteractionObserver::~SafeBrowsingUserInteractionObserver() {
   web_contents_->GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
       key_press_callback_);
+  if (!interstitial_shown_) {
+    RecordUMA(DelayedWarningEvent::kWarningNotShown);
+  }
 }
 
 // static
@@ -90,6 +103,8 @@ bool SafeBrowsingUserInteractionObserver::HandleKeyPress(
     const content::NativeWebKeyboardEvent& event) {
   CleanUp();
   // Show the interstitial.
+  interstitial_shown_ = true;
+  RecordUMA(DelayedWarningEvent::kWarningShownOnKeypress);
   SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager_, resource_);
   // DO NOT add code past this point. |this| is destroyed.
   return true;

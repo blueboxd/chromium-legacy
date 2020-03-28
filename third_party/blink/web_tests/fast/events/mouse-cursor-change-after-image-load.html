@@ -34,8 +34,10 @@ cursorTest.step(function() {
     }
 
     function testSetCursorImage(url, expectedCursorInfo, complete) {
+        const currentCursorInfo = internals.getCurrentCursorInfo();
         target.style.cursor = `url(${url}),auto`;
-        waitForCondition(() => internals.getCurrentCursorInfo() != expectedCursorInfo, cursorTest.step_func(() => {
+        waitForCondition(() => internals.getCurrentCursorInfo() != currentCursorInfo, cursorTest.step_func(() => {
+            assert_equals(internals.getCurrentCursorInfo(), expectedCursorInfo);
             complete();
         }));
     }

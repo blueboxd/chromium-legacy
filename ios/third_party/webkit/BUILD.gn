@@ -36,7 +36,7 @@ if (_build_custom_webkit) {
     action(target_name) {
       visibility = [
         ":bundle_webkit_ios_frameworks",
-        ":zip_webkit_mac_minibrowser",
+        ":copy_webkit_mac_minibrowser",
         ":webkit",
       ]
 
@@ -107,20 +107,8 @@ if (_build_custom_webkit) {
     ]
   }
 
-  _webkit_mac_minibrowser_files = [
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/MacOS/MiniBrowser",
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/_CodeSignature/CodeResources",
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/Frameworks/libclang_rt.asan_osx_dynamic.dylib",
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/Info.plist",
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/PkgInfo",
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/Resources/BrowserWindow.nib",
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/Resources/ExtensionManagerWindowController.nib",
-    "$_webkit_mac_out_product_dir/MiniBrowser.app/Contents/Resources/MainMenu.nib",
-    "$_webkit_mac_out_product_dir/WebKitTestRunner",
-  ]
-
   compile_webkit("compile_webkit_mac_minibrowser") {
-    outputs = _webkit_mac_minibrowser_files
+    outputs = [ "$_webkit_mac_out_product_dir" ]
     args = [
       "--asan",
       "--output_dir",
@@ -145,11 +133,10 @@ if (_build_custom_webkit) {
         [ "{{bundle_contents_dir}}/WebKitFrameworks/{{source_file_part}}" ]
   }
 
-  zip("zip_webkit_mac_minibrowser") {
+  copy("copy_webkit_mac_minibrowser") {
+    sources = [ "$_webkit_mac_out_product_dir" ]
+    outputs = [ "$root_out_dir/WebKitMacOS" ]
     public_deps = [ ":compile_webkit_mac_minibrowser" ]
-    inputs = _webkit_mac_minibrowser_files
-    output = "$root_out_dir/WebKitMacOS.zip"
-    base_dir = "$_webkit_mac_out_product_dir"
   }
 }
 

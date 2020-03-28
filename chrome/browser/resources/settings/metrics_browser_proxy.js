@@ -35,7 +35,7 @@ cr.define('settings', function() {
   };
 
   /** @interface */
-  class MetricsBrowserProxy {
+  /* #export */ class MetricsBrowserProxy {
     /**
      * Helper function that calls recordHistogram for the
      * SettingsPage.PrivacyElementInteractions histogram

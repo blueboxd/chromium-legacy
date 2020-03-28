@@ -6,7 +6,6 @@ typemaps = [
   "//ui/gfx/geometry/mojom/geometry.typemap",
   "//ui/gfx/image/mojom/image.typemap",
   "//ui/gfx/mojom/accelerated_widget.typemap",
-  "//ui/gfx/mojom/buffer_types.typemap",
   "//ui/gfx/mojom/ca_layer_params.typemap",
   "//ui/gfx/mojom/color_space.typemap",
   "//ui/gfx/mojom/display_color_spaces.typemap",

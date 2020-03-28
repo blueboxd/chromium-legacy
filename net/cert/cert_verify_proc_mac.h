@@ -77,7 +77,8 @@ class NET_EXPORT_PRIVATE CertVerifyProcMac : public CertVerifyProc {
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
-                     CertVerifyResult* verify_result) override;
+                     CertVerifyResult* verify_result,
+                     const NetLogWithSource& net_log) override;
 };
 
 }  // namespace net

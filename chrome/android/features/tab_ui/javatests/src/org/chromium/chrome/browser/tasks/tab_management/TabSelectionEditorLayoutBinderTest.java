@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Tests for {@link TabSelectionEditorLayoutBinder}.
  */
+@SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class TabSelectionEditorLayoutBinderTest extends DummyUiActivityTestCase {
     private TabSelectionEditorLayout mEditorLayoutView;
@@ -60,6 +61,7 @@ public class TabSelectionEditorLayoutBinderTest extends DummyUiActivityTestCase 
                     (TabSelectionEditorLayout) getActivity().getLayoutInflater().inflate(
                             R.layout.tab_selection_editor_layout, null);
             mEditorLayoutView.initialize(mParentView, null, new RecyclerView.Adapter() {
+                @SuppressWarnings("ConstantConditions")
                 @NonNull
                 @Override
                 public RecyclerView.ViewHolder onCreateViewHolder(
@@ -75,9 +77,10 @@ public class TabSelectionEditorLayoutBinderTest extends DummyUiActivityTestCase 
                     return 0;
                 }
             }, mSelectionDelegate);
+
+            mMCP = PropertyModelChangeProcessor.create(
+                    mModel, mEditorLayoutView, TabSelectionEditorLayoutBinder::bind);
         });
-        mMCP = PropertyModelChangeProcessor.create(
-                mModel, mEditorLayoutView, TabSelectionEditorLayoutBinder::bind);
     }
 
     @Override
@@ -104,7 +107,7 @@ public class TabSelectionEditorLayoutBinderTest extends DummyUiActivityTestCase 
     public void testBindActionButtonClickListener() {
         AtomicBoolean actionButtonClicked = new AtomicBoolean(false);
         mModel.set(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_LISTENER,
-                v -> { actionButtonClicked.set(true); });
+                v -> actionButtonClicked.set(true));
         mEditorLayoutView.findViewById(R.id.action_button).performClick();
         assertTrue(actionButtonClicked.get());
     }

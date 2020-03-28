@@ -203,14 +203,16 @@ void FrameSequenceMetrics::ReportMetrics() {
   if (should_report_slower_thread) {
     base::Optional<ThroughputData> slower_throughput;
     base::Optional<int> slower_throughput_percent;
+    // The value is percent of dropped frames, slower throughput should have
+    // larger value.
     if (impl_throughput_percent &&
         (!main_throughput_percent ||
-         impl_throughput_percent.value() <= main_throughput_percent.value())) {
+         impl_throughput_percent.value() >= main_throughput_percent.value())) {
       slower_throughput = impl_throughput_;
     }
     if (main_throughput_percent &&
         (!impl_throughput_percent ||
-         main_throughput_percent.value() < impl_throughput_percent.value())) {
+         main_throughput_percent.value() > impl_throughput_percent.value())) {
       slower_throughput = main_throughput_;
     }
     if (slower_throughput.has_value()) {

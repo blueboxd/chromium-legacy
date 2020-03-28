@@ -1101,15 +1101,6 @@ public class CustomTabsConnection {
     }
 
     /**
-     * Extracts the creator package name from the intent.
-     * @param intent The intent to get the package name from.
-     * @return the package name which can be null.
-     */
-    String extractCreatorPackage(Intent intent) {
-        return null;
-    }
-
-    /**
      * Shows a toast about any possible sign in issues encountered during custom tab startup.
      * @param session The session that corresponding custom tab is assigned.
      * @param intent The intent that launched the custom tab.

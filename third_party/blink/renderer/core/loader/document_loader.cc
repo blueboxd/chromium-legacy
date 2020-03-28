@@ -1344,7 +1344,6 @@ void DocumentLoader::StartLoadingResponse() {
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
-  document->SetReadyState(Document::kLoading);
   if (content_security_policy_)
     document->BindContentSecurityPolicy();
 

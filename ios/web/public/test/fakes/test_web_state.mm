@@ -34,6 +34,8 @@ void TestWebState::RemoveObserver(WebStateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void TestWebState::CloseWebState() {}
+
 TestWebState::TestWebState()
     : browser_state_(nullptr),
       web_usage_enabled_(true),

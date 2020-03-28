@@ -11,6 +11,9 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "ui/platform_window/extensions/x11_extension.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostLinux, public:
@@ -21,16 +24,19 @@ BrowserDesktopWindowTreeHostLinux::BrowserDesktopWindowTreeHostLinux(
     BrowserView* browser_view,
     BrowserFrame* browser_frame)
     : DesktopWindowTreeHostLinuxImpl(native_widget_delegate,
-                                     desktop_native_widget_aura) {
-#if defined(USE_X11)
-  browser_view_ = browser_view;
-#endif
+                                     desktop_native_widget_aura),
+      browser_view_(browser_view),
+      browser_frame_(browser_frame) {
+  static_cast<DesktopBrowserFrameAuraLinux*>(
+      browser_frame->native_browser_frame())
+      ->set_host(this);
   browser_frame->set_frame_type(browser_frame->UseCustomFrame()
                                     ? views::Widget::FrameType::kForceCustom
                                     : views::Widget::FrameType::kForceNative);
 }
 
-BrowserDesktopWindowTreeHostLinux::~BrowserDesktopWindowTreeHostLinux() {}
+BrowserDesktopWindowTreeHostLinux::~BrowserDesktopWindowTreeHostLinux() =
+    default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostLinux,
@@ -47,6 +53,18 @@ int BrowserDesktopWindowTreeHostLinux::GetMinimizeButtonOffset() const {
 
 bool BrowserDesktopWindowTreeHostLinux::UsesNativeSystemMenu() const {
   return false;
+}
+
+void BrowserDesktopWindowTreeHostLinux::TabDraggingStatusChanged(
+    bool is_dragging) {
+  // If there's no tabs left, the browser window is about to close, so don't
+  // call SetOverrideRedirect() to prevent the window from flashing.
+  if (!browser_view_->tabstrip()->GetModelCount())
+    return;
+
+  auto* x11_extension = GetX11Extension();
+  if (x11_extension && x11_extension->IsWmTiling())
+    x11_extension->SetOverrideRedirect(is_dragging);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +88,14 @@ void BrowserDesktopWindowTreeHostLinux::CloseNow() {
   global_menu_bar_x11_.reset();
 #endif
   DesktopWindowTreeHostLinuxImpl::CloseNow();
+}
+
+bool BrowserDesktopWindowTreeHostLinux::IsOverrideRedirect() const {
+  if (browser_frame_->tab_drag_kind() != TabDragKind::kAllTabs)
+    return false;
+
+  auto* x11_extension = GetX11Extension();
+  return x11_extension && x11_extension->IsWmTiling();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

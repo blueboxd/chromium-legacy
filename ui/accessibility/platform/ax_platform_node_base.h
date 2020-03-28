@@ -29,8 +29,15 @@ struct AXNodeData;
 
 struct AX_EXPORT AXHypertext {
   AXHypertext();
-  AXHypertext(const AXHypertext& other);
   ~AXHypertext();
+  AXHypertext(const AXHypertext& other);
+  AXHypertext& operator=(const AXHypertext& other);
+
+  // A flag that should be set if the hypertext information in this struct is
+  // out-of-date and needs to be updated. This flag should always be set upon
+  // construction because constructing this struct doesn't compute the
+  // hypertext.
+  bool needs_update = true;
 
   // Maps an embedded character offset in |hypertext| to an index in
   // |hyperlinks|.
@@ -209,7 +216,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // The definition of a leaf may vary depending on the platform,
   // but a leaf node should never have children that are focusable or
   // that might send notifications.
-  bool IsLeaf();
+  bool IsLeaf() const;
 
   bool IsInvisibleOrIgnored() const;
 
@@ -227,19 +234,31 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // InlineTextBox
   bool IsTextOnlyObject() const;
 
+  // A text field is any widget in which the user should be able to enter and
+  // edit text.
+  //
+  // Examples include <input type="text">, <input type="password">, <textarea>,
+  // <div contenteditable="true">, <div role="textbox">, <div role="searchbox">
+  // and <div role="combobox">. Note that when an ARIA role that indicates that
+  // the widget is editable is used, such as "role=textbox", the element doesn't
+  // need to be contenteditable for this method to return true, as in theory
+  // JavaScript could be used to implement editing functionality. In practice,
+  // this situation should be rare.
+  bool IsTextField() const;
+
   // Returns true if the node is an editable text field.
   bool IsPlainTextField() const;
 
   bool HasFocus();
 
-  // Returns the text of this node and represent the text of descendant nodes
-  // with a special character in place of every embedded object. This represents
-  // the concept of text in ATK and IA2 APIs.
-  virtual base::string16 GetHypertext() const;
+  // If this node is a leaf, returns the text of this node, otherwise represents
+  // each child node with a special "embedded object" character. This is how
+  // text is represented in ATK and IA2 APIs.
+  base::string16 GetHypertext() const;
 
   // Returns the text of this node and all descendant nodes; including text
   // found in embedded objects.
-  virtual base::string16 GetInnerText() const;
+  base::string16 GetInnerText() const;
 
   virtual base::string16 GetValue() const;
 
@@ -378,7 +397,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Compute the hypertext for this node to be exposed via IA2 and ATK This
   // method is responsible for properly embedding children using the special
   // embedded element character.
-  void UpdateComputedHypertext();
+  void UpdateComputedHypertext() const;
 
   // Selection helper functions.
   // The following functions retrieve the endpoints of the current selection.
@@ -435,7 +454,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   std::string GetInvalidValue() const;
 
-  AXHypertext hypertext_;
+  mutable AXHypertext hypertext_;
 
  private:
   // Return true if the index represents a text character.

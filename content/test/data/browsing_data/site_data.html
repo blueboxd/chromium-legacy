@@ -20,7 +20,7 @@
   }
 
   function hasCookie() {
-    domAutomationController.send(document.cookie == 'foo=bar');
+    domAutomationController.send(document.cookie.indexOf('foo=bar') != -1);
   }
 
   function setSessionCookie() {
@@ -31,6 +31,17 @@
 
   function hasSessionCookie() {
     domAutomationController.send(document.cookie == 'bar=session');
+  }
+
+  function setCookieStore() {
+    cookieStore.set('cookie-name', 'cookie-value', {sameSite: 'none'})
+      .then(success_).catch(failure_);
+  }
+
+  function hasCookieStore() {
+    cookieStore.get('cookie-name').then(function (cookie) {
+      domAutomationController.send(cookie.value == 'cookie-value');
+    }).catch(failure_);
   }
 
   function setLocalStorage() {

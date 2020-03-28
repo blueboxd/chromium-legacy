@@ -9,6 +9,17 @@
 # * trailing commas are allowed.
 
 {
+    'IPHONE_6S_12_3_1': {
+        'swarming': {
+            'dimension_sets': [
+                {
+                    'os': 'iOS-12.3.1',
+                    'device': 'iPhone8,1'
+                }
+            ]
+        },
+        'identifier': 'iPhone 6S 12.3.1'
+    },
     'SIM_IPAD_AIR_2_12_4': {
         'args': [
             '--platform',

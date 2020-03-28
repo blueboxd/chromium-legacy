@@ -124,11 +124,10 @@ const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
 const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for UI that improves transparency of and control over omnibox
-// suggestions. This includes "Why this Suggestion?" and user controls to delete
-// personalized suggestions. This will be eventually enabled by default.
+// Feature that surfaces an X button next to deletable omnibox suggestions.
+// This is to make the suggestion removal feature more discoverable.
 const base::Feature kOmniboxSuggestionTransparencyOptions{
-    "OmniboxSuggestionTransparencyOptions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxSuggestionTransparencyOptions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature to enable clipboard provider to suggest searching for copied images.
 const base::Feature kEnableClipboardProviderImageSuggestions{

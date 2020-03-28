@@ -57,9 +57,18 @@ class TestLayoutManagerBase : public LayoutManagerBase {
     return layout;
   }
 
+  void LayoutImpl() override {
+    ++layout_count_;
+    LayoutManagerBase::LayoutImpl();
+  }
+
+  size_t layout_count() const { return layout_count_; }
+
  private:
   // If specified, will always return this layout.
   base::Optional<ProposedLayout> forced_layout_;
+
+  size_t layout_count_ = 0;
 };
 
 // This layout layout lays out included child views in the upper-left of the
@@ -751,6 +760,62 @@ TEST_F(LayoutManagerBaseAvailableSizeTest,
 
   EXPECT_EQ(kChildAvailableSize, view()->GetAvailableSize(child));
   EXPECT_EQ(kGrandchildAvailableSize, child->GetAvailableSize(grandchild));
+}
+
+TEST_F(LayoutManagerBaseAvailableSizeTest,
+       AvaialbleSizeChangeTriggersDescendantLayout) {
+  View* const child = view()->AddChildView(std::make_unique<View>());
+  TestLayoutManagerBase* const child_layout =
+      child->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+  View* const grandchild = child->AddChildView(std::make_unique<View>());
+  TestLayoutManagerBase* const grandchild_layout =
+      grandchild->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+  View* const great_grandchild =
+      grandchild->AddChildView(std::make_unique<View>());
+  TestLayoutManagerBase* const great_grandchild_layout =
+      great_grandchild->SetLayoutManager(
+          std::make_unique<TestLayoutManagerBase>());
+
+  // Create a default root layout with non-visible, zero-size child with no
+  // available size.
+  ProposedLayout root_layout;
+  root_layout.child_layouts.push_back(ChildLayout());
+  root_layout.child_layouts[0].child_view = child;
+  root_layout.child_layouts[0].available_size = SizeBounds(0, 0);
+
+  // Set some default layouts for the rest of the hierarchy.
+  layout()->OverrideProposedLayout(root_layout);
+  child_layout->OverrideProposedLayout({{}, {{grandchild, false, {}, {0, 0}}}});
+  grandchild_layout->OverrideProposedLayout(
+      {{}, {{great_grandchild, false, {}, {0, 0}}}});
+
+  view()->Layout();
+
+  const size_t num_grandchild_layouts = grandchild_layout->layout_count();
+  const size_t num_great_grandchild_layouts =
+      great_grandchild_layout->layout_count();
+
+  // Set the same rootlayout again as a control. This should not have an effect
+  // on the layout of the grand- and great-grandchild views.
+  layout()->OverrideProposedLayout(root_layout);
+  view()->Layout();
+
+  EXPECT_EQ(num_grandchild_layouts, grandchild_layout->layout_count());
+  EXPECT_EQ(num_great_grandchild_layouts,
+            great_grandchild_layout->layout_count());
+
+  // Now set the child view to be visible with nonzero size and even larger
+  // available size. Applying this layout should change the size available to
+  // all views down the hierarchy, forcing a re-layout.
+  root_layout.child_layouts[0].visible = true;
+  root_layout.child_layouts[0].bounds = gfx::Rect(0, 0, 5, 5);
+  root_layout.child_layouts[0].available_size = SizeBounds(10, 10);
+  layout()->OverrideProposedLayout(root_layout);
+  view()->Layout();
+
+  EXPECT_EQ(num_grandchild_layouts + 1, grandchild_layout->layout_count());
+  EXPECT_EQ(num_great_grandchild_layouts + 1,
+            great_grandchild_layout->layout_count());
 }
 
 }  // namespace views

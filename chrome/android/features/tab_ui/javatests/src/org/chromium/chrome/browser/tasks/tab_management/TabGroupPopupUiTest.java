@@ -90,7 +90,7 @@ public class TabGroupPopupUiTest {
 
     @Test
     @MediumTest
-    public void testOnAnchorViewChanged_HOME_SEARCH_TAB_SWITCHER() throws InterruptedException {
+    public void testOnAnchorViewChanged_HOME_SEARCH_TAB_SWITCHER() {
         launchActivity(Variations.HOME_SEARCH_TAB_SWITCHER);
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Tab strip should show automatically when entering tab group.
@@ -111,7 +111,7 @@ public class TabGroupPopupUiTest {
 
     @Test
     @MediumTest
-    public void testOnAnchorViewChanged_HOME_SEARCH_SHARE() throws InterruptedException {
+    public void testOnAnchorViewChanged_HOME_SEARCH_SHARE() {
         launchActivity(Variations.HOME_SEARCH_SHARE);
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Tab strip should show automatically when entering tab group.
@@ -132,7 +132,7 @@ public class TabGroupPopupUiTest {
 
     @Test
     @MediumTest
-    public void testOnAnchorViewChanged_NEW_TAB_SEARCH_SHARE() throws InterruptedException {
+    public void testOnAnchorViewChanged_NEW_TAB_SEARCH_SHARE() {
         launchActivity(Variations.NEW_TAB_SEARCH_SHARE);
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Tab strip should show automatically when entering tab group.
@@ -153,7 +153,7 @@ public class TabGroupPopupUiTest {
 
     @Test
     @MediumTest
-    public void testTabStripShowHide() throws InterruptedException {
+    public void testTabStripShowHide() {
         launchActivity();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Try to trigger tab strip in a single tab page.
@@ -186,7 +186,7 @@ public class TabGroupPopupUiTest {
 
     @Test
     @MediumTest
-    public void testTabStripUpdate() throws InterruptedException {
+    public void testTabStripUpdate() {
         launchActivity();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
@@ -223,7 +223,7 @@ public class TabGroupPopupUiTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_MINIMUM_SHOW_DURATION})
-    public void testTabStripChangeWithScrolling() throws InterruptedException {
+    public void testTabStripChangeWithScrolling() {
         launchActivity();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         FullscreenManagerTestUtils.disableBrowserOverrides();

@@ -132,8 +132,8 @@ SettingsUIInteractiveTest.prototype = {
   ]),
 };
 
-// Fails on Mac10.13 Tests (dbg) (see crbug/1063844).
-GEN('#if !(defined(OS_MACOSX) && !defined(NDEBUG))');
+// Flaky on Mac (see https://crbug.com/1065154).
+GEN('#if !defined(OS_MACOSX)');
 TEST_F('SettingsUIInteractiveTest', 'All', function() {
   mocha.run();
 });

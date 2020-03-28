@@ -15,9 +15,4 @@ const base::Feature kIsolatePrerenders{"IsolatePrerenders",
 const base::Feature kIsolatePrerendersMustProbeOrigin{
     "IsolatePrerendersMustProbeOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Prefetches main frame HTML resources for results on Google SRPs.
-const base::Feature kPrefetchSRPNavigationPredictions_HTMLOnly{
-    "PrefetchSRPNavigationPredictions_HTMLOnly",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace features

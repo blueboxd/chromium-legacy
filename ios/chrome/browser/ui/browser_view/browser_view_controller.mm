@@ -38,6 +38,7 @@
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -2980,10 +2981,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)closeWebState:(web::WebState*)webState {
-  // Only allow a web page to close itself if it was opened by DOM, or if there
-  // are no navigation items.
+  // Only allow a web page to close itself if it was opened by DOM, if there
+  // are no navigation items, or if an interstitial is showing.
+  IOSBlockingPageTabHelper* helper =
+      IOSBlockingPageTabHelper::FromWebState(webState);
   DCHECK(webState->HasOpener() ||
-         !webState->GetNavigationManager()->GetItemCount());
+         !webState->GetNavigationManager()->GetItemCount() ||
+         helper->GetCurrentBlockingPage(webState) != nullptr);
   if (!self.browser)
     return;
   WebStateList* webStateList = self.browser->GetWebStateList();

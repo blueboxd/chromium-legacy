@@ -100,7 +100,7 @@ public class TabGridIphTest {
 
     @Test
     @MediumTest
-    public void testShowAndHideIphDialog() throws InterruptedException {
+    public void testShowAndHideIphDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         enterTabSwitcher(cta);
@@ -191,7 +191,7 @@ public class TabGridIphTest {
 
     @Test
     @MediumTest
-    public void testIphItemChangeWithLastTab() throws Exception {
+    public void testIphItemChangeWithLastTab() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         enterTabSwitcher(cta);
@@ -225,7 +225,7 @@ public class TabGridIphTest {
 
     @Test
     @MediumTest
-    public void testSwipeToDismiss_IPH() throws InterruptedException {
+    public void testSwipeToDismiss_IPH() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         enterTabSwitcher(cta);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));

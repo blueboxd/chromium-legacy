@@ -121,19 +121,24 @@ class UserSettingsEventLoggerTest : public AshTestBase {
   }
 
   // Volume features are logged at the end of the timer delay.
-  void LogVolumeAndWait(const int previous_level, const int current_level) {
-    logger_->LogVolumeUkmEvent(previous_level, current_level);
+  void LogVolumeAndWait(const int volume) {
+    logger_->OnOutputNodeVolumeChanged(0, volume);
     task_environment()->FastForwardBy(kSliderDelay);
   }
 
-  void LogBrightness(const int current_level,
+  void SetMuteAndWait(const bool mute_on) {
+    logger_->OnOutputMuteChanged(mute_on);
+    task_environment()->FastForwardBy(kSliderDelay);
+  }
+
+  void LogBrightness(const int brightness,
                      const bool initiated_by_user = true) {
     power_manager::BacklightBrightnessChange change;
     change.set_cause(
         initiated_by_user
             ? power_manager::BacklightBrightnessChange_Cause_USER_REQUEST
             : power_manager::BacklightBrightnessChange_Cause_OTHER);
-    change.set_percent(current_level);
+    change.set_percent(brightness);
 
     logger_->ScreenBrightnessChanged(change);
   }
@@ -342,42 +347,55 @@ TEST_F(UserSettingsEventLoggerTest, TestLogAccessibilityEvent) {
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestLogVolumeFeatures) {
-  LogVolumeAndWait(23, 98);
+  LogVolumeAndWait(23);
+  LogVolumeAndWait(98);
+  SetMuteAndWait(true);
+  SetMuteAndWait(false);
+  LogVolumeAndWait(20);
+  SetMuteAndWait(true);
+  LogVolumeAndWait(50);
 
   const auto& entries = GetUkmEntries();
-  ASSERT_EQ(1ul, entries.size());
+  ASSERT_EQ(7ul, entries.size());
 
   const auto* entry = entries[0];
   TestUkmRecorder::ExpectEntryMetric(entry, "SettingId",
                                      UserSettingsEvent::Event::VOLUME);
   TestUkmRecorder::ExpectEntryMetric(entry, "SettingType",
                                      UserSettingsEvent::Event::QUICK_SETTINGS);
-  TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 23);
-  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 98);
-  TestUkmRecorder::ExpectEntryMetric(entry, "IsPlayingAudio", false);
+  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 23);
+
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "PreviousValue", 23);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "CurrentValue", 98);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "PreviousValue", 98);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "CurrentValue", 0);
+  TestUkmRecorder::ExpectEntryMetric(entries[3], "PreviousValue", 0);
+  TestUkmRecorder::ExpectEntryMetric(entries[3], "CurrentValue", 98);
+  TestUkmRecorder::ExpectEntryMetric(entries[4], "PreviousValue", 98);
+  TestUkmRecorder::ExpectEntryMetric(entries[4], "CurrentValue", 20);
+  TestUkmRecorder::ExpectEntryMetric(entries[5], "PreviousValue", 20);
+  TestUkmRecorder::ExpectEntryMetric(entries[5], "CurrentValue", 0);
+  TestUkmRecorder::ExpectEntryMetric(entries[6], "PreviousValue", 0);
+  TestUkmRecorder::ExpectEntryMetric(entries[6], "CurrentValue", 50);
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestVolumeDelay) {
+  LogVolumeAndWait(10);
+
   // Only log an event if there is a pause of |kSliderDelay|.
-  logger_->LogVolumeUkmEvent(10, 11);
+  logger_->OnOutputNodeVolumeChanged(0, 11);
   task_environment()->FastForwardBy(kSliderDelay / 2);
-  logger_->LogVolumeUkmEvent(11, 12);
-  logger_->LogVolumeUkmEvent(12, 13);
-  logger_->LogVolumeUkmEvent(13, 14);
+  logger_->OnOutputNodeVolumeChanged(0, 12);
   task_environment()->FastForwardBy(kSliderDelay / 2);
-  logger_->LogVolumeUkmEvent(14, 15);
+  logger_->OnOutputNodeVolumeChanged(0, 13);
   task_environment()->FastForwardBy(kSliderDelay);
 
   const auto& entries = GetUkmEntries();
-  ASSERT_EQ(1ul, entries.size());
+  ASSERT_EQ(2ul, entries.size());
 
-  const auto* entry = entries[0];
-  TestUkmRecorder::ExpectEntryMetric(entry, "SettingId",
-                                     UserSettingsEvent::Event::VOLUME);
-  TestUkmRecorder::ExpectEntryMetric(entry, "SettingType",
-                                     UserSettingsEvent::Event::QUICK_SETTINGS);
-  TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 10);
-  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 15);
+  TestUkmRecorder::ExpectEntryMetric(entries[0], "CurrentValue", 10);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "PreviousValue", 10);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "CurrentValue", 13);
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestLogBrightnessReason) {

@@ -56,7 +56,6 @@ jumbo_component("gtk") {
 
   deps = [
     "//base",
-    "//build/config/linux/gtk",
     "//build/config/linux/gtk:gtkprint",
     "//printing",
     "//skia",
@@ -75,6 +74,7 @@ jumbo_component("gtk") {
     "//ui/events:dom_keycode_converter",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gtk",
     "//ui/native_theme",
     "//ui/shell_dialogs",
     "//ui/strings",

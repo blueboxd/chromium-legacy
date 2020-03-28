@@ -6,11 +6,11 @@
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
-#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/gtk/gtk_ui.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/composition_text.h"
@@ -18,6 +18,8 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gtk/gtk_ui_delegate.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 namespace gtk {
@@ -30,16 +32,11 @@ GdkWindow* GetTargetWindow(const ui::KeyEvent& key_event) {
   if (!key_event.target())
     return nullptr;
 
-  GdkDisplay* display = GetGdkDisplay();
   aura::Window* window = static_cast<aura::Window*>(key_event.target());
-  XID xwindow = window->GetHost()->GetAcceleratedWidget();
+  DCHECK(window) << "KeyEvent target window not set.";
 
-  GdkWindow* gdk_window = gdk_x11_window_lookup_for_display(display, xwindow);
-  if (gdk_window)
-    g_object_ref(gdk_window);
-  else
-    gdk_window = gdk_x11_window_foreign_new_for_display(display, xwindow);
-  return gdk_window;
+  auto window_id = window->GetHost()->GetAcceleratedWidget();
+  return GtkUi::GetDelegate()->GetGdkWindow(window_id);
 }
 
 // Translate IME ui::KeyEvent to a GdkEventKey.

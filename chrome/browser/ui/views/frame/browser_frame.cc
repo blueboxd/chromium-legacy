@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -273,6 +274,23 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
     menu_model_builder_->Init();
   }
   return menu_model_builder_->menu_model();
+}
+
+void BrowserFrame::SetTabDragKind(TabDragKind tab_drag_kind) {
+  if (tab_drag_kind_ == tab_drag_kind)
+    return;
+
+  bool was_dragging_window = tab_drag_kind_ == TabDragKind::kAllTabs;
+  bool is_dragging_window = tab_drag_kind == TabDragKind::kAllTabs;
+  if (was_dragging_window != is_dragging_window && native_browser_frame_)
+    native_browser_frame_->TabDraggingStatusChanged(is_dragging_window);
+
+  bool was_dragging_any = tab_drag_kind_ != TabDragKind::kNone;
+  bool is_dragging_any = tab_drag_kind != TabDragKind::kNone;
+  if (was_dragging_any != is_dragging_any)
+    browser_view_->TabDraggingStatusChanged(is_dragging_any);
+
+  tab_drag_kind_ = tab_drag_kind;
 }
 
 void BrowserFrame::OnMenuClosed() {

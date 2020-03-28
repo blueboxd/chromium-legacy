@@ -65,11 +65,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private ViewGroup mSelectableTabGridView;
     private PropertyModel mSelectableModel;
     private PropertyModelChangeProcessor mSelectableMCP;
-    private SelectionDelegate<Integer> mSelectionDelegate;
-    private int mSelectedTabBackgroundDrawableId = R.drawable.selected_tab_background;
 
     private ViewGroup mSelectableTabListView;
-    private PropertyModelChangeProcessor mSelectableListMCP;
 
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
@@ -144,8 +141,9 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
             view.addView(mSelectableTabListView);
         });
 
-        mSelectionDelegate = new SelectionDelegate<>();
+        SelectionDelegate<Integer> mSelectionDelegate = new SelectionDelegate<>();
 
+        int mSelectedTabBackgroundDrawableId = R.drawable.selected_tab_background;
         mGridModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                              .with(TabProperties.TAB_ID, TAB1_ID)
                              .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
@@ -172,23 +170,23 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                     mStripModel, mTabStripView, TabStripViewBinder::bind);
             mSelectableMCP = PropertyModelChangeProcessor.create(
                     mSelectableModel, mSelectableTabGridView, TabGridViewBinder::bindSelectableTab);
-            mSelectableListMCP = PropertyModelChangeProcessor.create(mSelectableModel,
-                    mSelectableTabListView, TabListViewBinder::bindSelectableListTab);
+            PropertyModelChangeProcessor.create(mSelectableModel, mSelectableTabListView,
+                    TabListViewBinder::bindSelectableListTab);
         });
     }
 
     private void testGridSelected(ViewGroup holder, PropertyModel model) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             model.set(TabProperties.IS_SELECTED, true);
-            Assert.assertTrue(holder.getForeground() != null);
+            Assert.assertNotNull(holder.getForeground());
             model.set(TabProperties.IS_SELECTED, false);
-            Assert.assertFalse(holder.getForeground() != null);
+            Assert.assertNull(holder.getForeground());
         } else {
             model.set(TabProperties.IS_SELECTED, true);
             View selectedView = holder.findViewById(R.id.selected_view_below_lollipop);
-            Assert.assertTrue(selectedView.getVisibility() == View.VISIBLE);
+            Assert.assertEquals(View.VISIBLE, selectedView.getVisibility());
             model.set(TabProperties.IS_SELECTED, false);
-            Assert.assertTrue(selectedView.getVisibility() == View.GONE);
+            Assert.assertEquals(View.GONE, selectedView.getVisibility());
         }
     }
 
@@ -219,30 +217,30 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         testGridSelected(mTabGridView, mGridModel);
 
         mStripModel.set(TabProperties.IS_SELECTED, true);
-        Assert.assertTrue(((FrameLayout) mTabStripView).getForeground() != null);
+        Assert.assertNotNull(((FrameLayout) mTabStripView).getForeground());
         mStripModel.set(TabProperties.IS_SELECTED, false);
-        Assert.assertFalse(((FrameLayout) mTabStripView).getForeground() != null);
+        Assert.assertNull(((FrameLayout) mTabStripView).getForeground());
 
         testGridSelected(mSelectableTabGridView, mSelectableModel);
         mSelectableModel.set(TabProperties.IS_SELECTED, true);
         ImageView actionButton = mSelectableTabGridView.findViewById(R.id.action_button);
-        Assert.assertTrue(actionButton.getBackground().getLevel() == 1);
-        Assert.assertTrue(actionButton.getDrawable() != null);
+        Assert.assertEquals(1, actionButton.getBackground().getLevel());
+        Assert.assertNotNull(actionButton.getDrawable());
         Assert.assertEquals(255, actionButton.getDrawable().getAlpha());
 
         mSelectableModel.set(TabProperties.IS_SELECTED, false);
-        Assert.assertTrue(actionButton.getBackground().getLevel() == 0);
+        Assert.assertEquals(0, actionButton.getBackground().getLevel());
         Assert.assertEquals(0, actionButton.getDrawable().getAlpha());
 
         testGridSelected(mSelectableTabListView, mSelectableModel);
         mSelectableModel.set(TabProperties.IS_SELECTED, true);
         ImageView actionButtonList = mSelectableTabListView.findViewById(R.id.action_button);
-        Assert.assertTrue(actionButtonList.getBackground().getLevel() == 1);
-        Assert.assertTrue(actionButtonList.getDrawable() != null);
+        Assert.assertEquals(1, actionButtonList.getBackground().getLevel());
+        Assert.assertNotNull(actionButtonList.getDrawable());
         Assert.assertEquals(255, actionButton.getDrawable().getAlpha());
 
         mSelectableModel.set(TabProperties.IS_SELECTED, false);
-        Assert.assertTrue(actionButtonList.getBackground().getLevel() == 0);
+        Assert.assertEquals(0, actionButtonList.getBackground().getLevel());
         Assert.assertEquals(0, actionButtonList.getDrawable().getAlpha());
     }
 
@@ -259,10 +257,10 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         CriteriaHelper.pollUiThread(
                 () -> !((ClosableTabGridView) mTabGridView).getIsAnimatingForTesting());
 
-        Assert.assertTrue(backgroundView.getVisibility() == View.GONE);
+        Assert.assertEquals(View.GONE, backgroundView.getVisibility());
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
             View selectedView = mTabGridView.findViewById(R.id.selected_view_below_lollipop);
-            Assert.assertTrue(selectedView.getVisibility() == View.VISIBLE);
+            Assert.assertEquals(View.VISIBLE, selectedView.getVisibility());
         } else {
             Drawable selectedDrawable = mTabGridView.getForeground();
             Assert.assertNotNull(selectedDrawable);
@@ -275,11 +273,11 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         });
         CriteriaHelper.pollUiThread(
                 () -> !((ClosableTabGridView) mTabGridView).getIsAnimatingForTesting());
-        Assert.assertTrue(backgroundView.getVisibility() == View.GONE);
+        Assert.assertEquals(View.GONE, backgroundView.getVisibility());
 
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
             View selectedView = mTabGridView.findViewById(R.id.selected_view_below_lollipop);
-            Assert.assertTrue(selectedView.getVisibility() == View.GONE);
+            Assert.assertEquals(View.GONE, selectedView.getVisibility());
         } else {
             Drawable selectedDrawable = mTabGridView.getForeground();
             Assert.assertNull(selectedDrawable);
@@ -318,6 +316,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertEquals(2, mThumbnailFetchedCount.get());
     }
 
+    @SuppressWarnings("UnusedAssignment") // Intentionally set to null for garbage collection.
     @Test
     @MediumTest
     @UiThreadTest
@@ -338,6 +337,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertEquals(2, mThumbnailFetchedCount.get());
     }
 
+    @SuppressWarnings("UnusedAssignment") // Intentionally set to null for garbage collection.
     @Test
     @MediumTest
     @UiThreadTest
@@ -357,6 +357,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertEquals(2, mThumbnailFetchedCount.get());
     }
 
+    @SuppressWarnings("UnusedAssignment") // Intentionally set to null for garbage collection.
     @Test
     @MediumTest
     @UiThreadTest
@@ -375,6 +376,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertTrue(canBeGarbageCollected(ref));
     }
 
+    @SuppressWarnings("UnusedAssignment") // Intentionally set to null for garbage collection.
     @Test
     @MediumTest
     @UiThreadTest

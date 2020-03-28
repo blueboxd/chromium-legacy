@@ -53,7 +53,6 @@ const uint32_t EMF_HEADER_SIZE = 128;
 
 TEST(EmfTest, DC) {
   // Simplest use case.
-  uint32_t size;
   std::vector<char> data;
   {
     Emf emf;
@@ -62,15 +61,16 @@ TEST(EmfTest, DC) {
     // An empty EMF is invalid, so we put at least a rectangle in it.
     ::Rectangle(emf.context(), 10, 10, 190, 190);
     EXPECT_TRUE(emf.FinishDocument());
-    size = emf.GetDataSize();
+    uint32_t size = emf.GetDataSize();
     EXPECT_GT(size, EMF_HEADER_SIZE);
     EXPECT_TRUE(emf.GetDataAsVector(&data));
-    EXPECT_EQ(data.size(), size);
+    ASSERT_EQ(data.size(), size);
   }
 
   // Playback the data.
   Emf emf;
-  EXPECT_TRUE(emf.InitFromData(&data.front(), size));
+  // TODO(thestig): Make |data| uint8_t and avoid the base::as_bytes() call.
+  EXPECT_TRUE(emf.InitFromData(base::as_bytes(base::make_span(data))));
   HDC hdc = CreateCompatibleDC(nullptr);
   EXPECT_TRUE(hdc);
   RECT output_rect = {0, 0, 10, 10};
@@ -106,7 +106,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   ASSERT_TRUE(emf_data.size());
 
   Emf emf;
-  EXPECT_TRUE(emf.InitFromData(&emf_data[0], emf_data.size()));
+  EXPECT_TRUE(emf.InitFromData(base::as_bytes(base::make_span(emf_data))));
 
   // This will print to file. The reason is that when running inside a
   // unit_test, PrintingContext automatically dumps its files to the
@@ -137,7 +137,6 @@ TEST_F(EmfPrintingTest, PageBreak) {
       CreateDC(L"WINSPOOL", L"UnitTest Printer", nullptr, nullptr));
   if (!dc.Get())
     return;
-  uint32_t size;
   std::vector<char> data;
   {
     Emf emf;
@@ -152,9 +151,9 @@ TEST_F(EmfPrintingTest, PageBreak) {
     }
     EXPECT_EQ(3U, emf.GetPageCount());
     EXPECT_TRUE(emf.FinishDocument());
-    size = emf.GetDataSize();
+    uint32_t size = emf.GetDataSize();
     EXPECT_TRUE(emf.GetDataAsVector(&data));
-    EXPECT_EQ(data.size(), size);
+    ASSERT_EQ(data.size(), size);
   }
 
   // Playback the data.
@@ -163,7 +162,8 @@ TEST_F(EmfPrintingTest, PageBreak) {
   di.lpszDocName = L"Test Job";
   int job_id = ::StartDoc(dc.Get(), &di);
   Emf emf;
-  EXPECT_TRUE(emf.InitFromData(&data.front(), size));
+  // TODO(thestig): Make |data| uint8_t and avoid the base::as_bytes() call.
+  EXPECT_TRUE(emf.InitFromData(base::as_bytes(base::make_span(data))));
   EXPECT_TRUE(emf.SafePlayback(dc.Get()));
   ::EndDoc(dc.Get());
   // Since presumably the printer is not real, let us just delete the job from

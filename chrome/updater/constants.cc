@@ -8,7 +8,7 @@ namespace updater {
 
 // App ids.
 const char kUpdaterAppId[] = "{44FC7FE2-65CE-487C-93F4-EDEE46EEAAAB}";
-const char kChromeAppId[] = "{8A69D345-D564-463C-AFF1-A69D9E530F96}";
+
 const char kNullVersion[] = "0.0.0.0";
 
 // Command line arguments.

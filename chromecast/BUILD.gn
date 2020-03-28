@@ -34,7 +34,10 @@ group("all") {
     data_deps += [ ":cast_shell" ]
   }
   if (is_linux) {
-    deps += [ "//chromecast/tracing" ]
+    deps += [
+      "//chromecast/browser/webview/client:wayland_webview_client",
+      "//chromecast/tracing",
+    ]
   }
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:all" ]

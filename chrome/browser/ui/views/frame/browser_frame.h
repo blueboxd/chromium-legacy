@@ -14,6 +14,7 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/widget/widget.h"
 
+class BrowserDesktopWindowTreeHost;
 class BrowserNonClientFrameView;
 class BrowserRootView;
 class BrowserView;
@@ -37,6 +38,18 @@ namespace views {
 class MenuRunner;
 class View;
 }
+
+enum class TabDragKind {
+  // No drag is active.
+  kNone,
+
+  // One or more (but not all) tabs within a window are being dragged.
+  kTab,
+
+  // All of the tabs in a window are being dragged, and the whole window is
+  // along for the ride.
+  kAllTabs,
+};
 
 // This is a virtual interface that allows system specific browser frames.
 class BrowserFrame : public views::Widget, public views::ContextMenuController {
@@ -124,6 +137,14 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
     return native_browser_frame_;
   }
 
+  void set_browser_desktop_window_tree_host(
+      BrowserDesktopWindowTreeHost* browser_desktop_window_tree_host) {
+    browser_desktop_window_tree_host_ = browser_desktop_window_tree_host;
+  }
+
+  void SetTabDragKind(TabDragKind tab_drag_kind);
+  TabDragKind tab_drag_kind() const { return tab_drag_kind_; }
+
  private:
   void OnTouchUiChanged();
 
@@ -153,6 +174,16 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&BrowserFrame::OnTouchUiChanged,
                               base::Unretained(this)));
+
+  BrowserDesktopWindowTreeHost* browser_desktop_window_tree_host_ = nullptr;
+
+  // Indicates the drag state for this window. The value can be kWindowDrag
+  // if the accociated browser is the dragged browser or kTabDrag
+  // if this is the source browser that the drag window originates from. During
+  // tab dragging process, the dragged browser or the source browser's bounds
+  // may change, the fast resize strategy will be used to resize its web
+  // contents for smoother dragging.
+  TabDragKind tab_drag_kind_ = TabDragKind::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };

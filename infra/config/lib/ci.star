@@ -90,18 +90,6 @@ def clang_builder(*, name, cores=32, properties=None, **kwargs):
   )
 
 
-def clang_ios_builder(*, name, **kwargs):
-  return clang_builder(
-      name = name,
-      caches = [builders.xcode_cache.x11a1027],
-      cores = None,
-      executable = 'recipe:ios/unified_builder_tester',
-      os = builders.os.MAC_10_14,
-      ssd = True,
-      **kwargs
-  )
-
-
 def clang_mac_builder(*, name, cores=24, **kwargs):
   return clang_builder(
       name = name,
@@ -448,7 +436,6 @@ ci = struct(
     chromium_builder = chromium_builder,
     chromiumos_builder = chromiumos_builder,
     clang_builder = clang_builder,
-    clang_ios_builder = clang_ios_builder,
     clang_mac_builder = clang_mac_builder,
     dawn_builder = dawn_builder,
     fuzz_builder = fuzz_builder,

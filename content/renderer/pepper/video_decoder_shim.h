@@ -61,7 +61,6 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   struct PendingDecode;
   struct PendingFrame;
   class DecoderImpl;
-  class YUVConverter;
 
   void OnInitializeFailed();
   void OnDecodeComplete(int32_t result, uint32_t decode_id);
@@ -105,8 +104,6 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   uint32_t texture_pool_size_;
 
   uint32_t num_pending_decodes_;
-
-  std::unique_ptr<YUVConverter> yuv_converter_;
 
   base::WeakPtrFactory<VideoDecoderShim> weak_ptr_factory_{this};
 

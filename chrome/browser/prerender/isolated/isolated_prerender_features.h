@@ -11,7 +11,6 @@ namespace features {
 
 extern const base::Feature kIsolatePrerenders;
 extern const base::Feature kIsolatePrerendersMustProbeOrigin;
-extern const base::Feature kPrefetchSRPNavigationPredictions_HTMLOnly;
 
 }  // namespace features
 

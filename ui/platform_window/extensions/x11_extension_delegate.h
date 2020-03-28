@@ -38,6 +38,10 @@ class COMPONENT_EXPORT(EXTENSIONS) X11ExtensionDelegate {
   virtual bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) = 0;
 #endif
 
+  // Returns true if this window should be in a forced override-redirect state
+  // (not maanged by the window manager).
+  virtual bool IsOverrideRedirect() const = 0;
+
  protected:
   virtual ~X11ExtensionDelegate() = default;
 };

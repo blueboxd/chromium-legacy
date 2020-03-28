@@ -178,9 +178,6 @@ SkColor GetSeparatorColor(const std::string& css_selector);
 std::string GetGtkSettingsStringProperty(GtkSettings* settings,
                                          const gchar* prop_name);
 
-// Get current GdkDisplay instance
-GdkDisplay* GetGdkDisplay();
-
 // Xkb Events store group attribute into XKeyEvent::state bit field, along with
 // other state-related info, while GdkEventKey objects have separate fields for
 // that purpose, they are ::state and ::group. This function is responsible for

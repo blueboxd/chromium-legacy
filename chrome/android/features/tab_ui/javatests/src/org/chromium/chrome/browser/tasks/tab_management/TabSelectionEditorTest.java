@@ -103,7 +103,7 @@ public class TabSelectionEditorTest {
     public void testShowTabs() {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible()
                 .verifyToolbarActionButtonDisabled()
@@ -119,7 +119,7 @@ public class TabSelectionEditorTest {
     public void testToggleItem() {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRobot.resultRobot.verifyItemNotSelectedAtAdapterPosition(0);
 
@@ -138,7 +138,7 @@ public class TabSelectionEditorTest {
     public void testToolbarNavigationButtonHideTabSelectionEditor() {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
 
@@ -151,7 +151,7 @@ public class TabSelectionEditorTest {
     public void testToolbarGroupButtonEnabledState() {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRobot.resultRobot.verifyToolbarActionButtonDisabled()
                 .verifyToolbarActionButtonWithResourceId(R.string.tab_selection_editor_group);
@@ -171,7 +171,7 @@ public class TabSelectionEditorTest {
     public void testToolbarGroupButton() {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRobot.resultRobot.verifyToolbarActionButtonWithResourceId(
                 R.string.tab_selection_editor_group);
@@ -216,7 +216,7 @@ public class TabSelectionEditorTest {
         List<Tab> tabs = getTabsInCurrentTabModel();
         int preSelectedTabCount = 1;
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+                () -> mTabSelectionEditorController.show(tabs, preSelectedTabCount));
 
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible()
                 .verifyToolbarActionButtonDisabled()
@@ -243,7 +243,7 @@ public class TabSelectionEditorTest {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+                () -> mTabSelectionEditorController.show(tabs, preSelectedTabCount));
 
         mRobot.resultRobot.verifyToolbarSelectionText("10 selected")
                 .verifyHasItemViewTypeAtAdapterPosition(
@@ -257,7 +257,7 @@ public class TabSelectionEditorTest {
         List<Tab> tabs = getTabsInCurrentTabModel();
         int preSelectedTabCount = 1;
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+                () -> mTabSelectionEditorController.show(tabs, preSelectedTabCount));
 
         mRobot.resultRobot.verifyDividerNotClickableNotFocusable();
     }
@@ -270,7 +270,7 @@ public class TabSelectionEditorTest {
     public void testListViewAppearance() throws IOException {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRenderTestRule.render(mTabSelectionEditorLayout, "list_view");
     }
@@ -283,7 +283,7 @@ public class TabSelectionEditorTest {
     public void testListViewAppearance_oneSelectedTab() throws IOException {
         List<Tab> tabs = getTabsInCurrentTabModel();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRobot.actionRobot.clickItemAtAdapterPosition(0);
 

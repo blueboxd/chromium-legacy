@@ -30,6 +30,10 @@ class IOSBlockingPageTabHelper
       int64_t navigation_id,
       std::unique_ptr<IOSSecurityInterstitialPage> blocking_page);
 
+  // Returns the blocking page showing on the current tab.
+  IOSSecurityInterstitialPage* GetCurrentBlockingPage(
+      web::WebState* web_state) const;
+
   // web::WebStateObserver implementation.
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;

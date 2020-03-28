@@ -358,7 +358,8 @@ int CertVerifyProcAndroid::VerifyInternal(
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
-    CertVerifyResult* verify_result) {
+    CertVerifyResult* verify_result,
+    const NetLogWithSource& net_log) {
   std::vector<std::string> cert_bytes;
   GetChainDEREncodedBytes(cert, &cert_bytes);
   if (!VerifyFromAndroidTrustManager(cert_bytes, hostname, cert_net_fetcher_,

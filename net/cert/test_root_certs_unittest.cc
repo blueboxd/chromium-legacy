@@ -14,6 +14,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/x509_certificate.h"
+#include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -109,7 +110,7 @@ TEST(TestRootCertsTest, OverrideTrust) {
   int bad_status = verify_proc->Verify(
       test_cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
       /*sct_list=*/std::string(), flags, net::CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &bad_verify_result);
+      CertificateList(), &bad_verify_result, NetLogWithSource());
   EXPECT_NE(OK, bad_status);
   EXPECT_NE(0u, bad_verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);
 
@@ -124,7 +125,7 @@ TEST(TestRootCertsTest, OverrideTrust) {
   int good_status = verify_proc->Verify(
       test_cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
       /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &good_verify_result);
+      CertificateList(), &good_verify_result, NetLogWithSource());
   EXPECT_THAT(good_status, IsOk());
   EXPECT_EQ(0u, good_verify_result.cert_status);
 
@@ -138,7 +139,7 @@ TEST(TestRootCertsTest, OverrideTrust) {
   int restored_status = verify_proc->Verify(
       test_cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
       /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &restored_verify_result);
+      CertificateList(), &restored_verify_result, NetLogWithSource());
   EXPECT_NE(OK, restored_status);
   EXPECT_NE(0u,
             restored_verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);

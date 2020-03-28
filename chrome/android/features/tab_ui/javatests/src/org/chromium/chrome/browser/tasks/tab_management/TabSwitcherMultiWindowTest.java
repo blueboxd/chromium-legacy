@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -79,7 +78,7 @@ public class TabSwitcherMultiWindowTest {
     @MediumTest
     @TargetApi(Build.VERSION_CODES.N)
     @DisableIf.Build(message = "crbug.com/1017141", sdk_is_less_than = Build.VERSION_CODES.P)
-    public void testMoveTabsAcrossWindow_GTS_WithoutGroup() throws InterruptedException {
+    public void testMoveTabsAcrossWindow_GTS_WithoutGroup() {
         final ChromeTabbedActivity cta1 = mActivityTestRule.getActivity();
         // Initially, we have 4 normal tabs and 3 incognito tabs in cta1.
         initializeTabModel(cta1, false, 4);
@@ -136,7 +135,7 @@ public class TabSwitcherMultiWindowTest {
             ViewGroup toggleButtons = (ViewGroup) toggleTabLayout.getChildAt(0);
             toggleButtons.getChildAt(0).performClick();
         });
-        assertEquals(false, cta1.getTabModelSelector().getCurrentModel().isIncognito());
+        assertFalse(cta1.getTabModelSelector().getCurrentModel().isIncognito());
 
         // Move 3 normal tabs to cta2.
         clickFirstCardFromTabSwitcher(cta1);

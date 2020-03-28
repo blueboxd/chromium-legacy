@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Integration tests for TabGridMessageCardProvider component.
  */
 public class MessageCardProviderTest extends DummyUiActivityTestCase {
-    static final int SUGGESTED_TAB_COUNT = 2;
+    private static final int SUGGESTED_TAB_COUNT = 2;
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -148,7 +148,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
         when(mTabSuggestionMessageData.getSize()).thenReturn(SUGGESTED_TAB_COUNT);
         mSuggestionService.sendAvailabilityNotification(mTabSuggestionMessageData);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mRecyclerView.startShowing(false); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mRecyclerView.startShowing(false));
 
         CriteriaHelper.pollUiThread(
                 () -> mRecyclerView.getVisibility() == View.VISIBLE && mFinishedShowing.get());
@@ -165,7 +165,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
                 .thenReturn(() -> reviewed.set(true));
         mSuggestionService.sendAvailabilityNotification(mTabSuggestionMessageData);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mRecyclerView.startShowing(false); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mRecyclerView.startShowing(false));
 
         CriteriaHelper.pollUiThread(
                 () -> mRecyclerView.getVisibility() == View.VISIBLE && mFinishedShowing.get());
@@ -186,7 +186,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
                 .thenReturn((type) -> dismissed.set(true));
         mSuggestionService.sendAvailabilityNotification(mTabSuggestionMessageData);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mRecyclerView.startShowing(false); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mRecyclerView.startShowing(false));
 
         CriteriaHelper.pollUiThread(
                 () -> mRecyclerView.getVisibility() == View.VISIBLE && mFinishedShowing.get());

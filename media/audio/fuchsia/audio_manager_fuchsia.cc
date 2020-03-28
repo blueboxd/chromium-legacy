@@ -46,12 +46,20 @@ void AudioManagerFuchsia::GetAudioOutputDeviceNames(
 AudioParameters AudioManagerFuchsia::GetInputStreamParameters(
     const std::string& device_id) {
   // TODO(crbug.com/852834): Fuchsia currently doesn't provide an API to get
-  // device configuration. Update this method when that functionality is
-  // implemented.
+  // device configuration and supported effects. Update this method when that
+  // functionality is implemented.
+  //
   // Use 16kHz sample rate with 10ms buffer, which is consistent with
   // the default configuration used in the AudioCapturer implementation.
-  return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+  // Assume that the system-provided AudioConsumer supports echo cancellation,
+  // noise suppression and automatic gain control.
+  AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_MONO, 16000, 160);
+  params.set_effects(AudioParameters::ECHO_CANCELLER |
+                     AudioParameters::NOISE_SUPPRESSION |
+                     AudioParameters::AUTOMATIC_GAIN_CONTROL);
+
+  return params;
 }
 
 AudioParameters AudioManagerFuchsia::GetPreferredOutputStreamParameters(

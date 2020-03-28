@@ -68,7 +68,7 @@ export class PDFScriptingAPI {
     this.viewportChangedCallback_;
 
     /** @private {Function} */
-    this.loadCallback_;
+    this.loadCompleteCallback_;
 
     /** @private {Function} */
     this.selectedTextCallback_;
@@ -108,8 +108,8 @@ export class PDFScriptingAPI {
         case 'documentLoaded': {
           const data = /** @type {{load_state: LoadState}} */ (event.data);
           this.loadState_ = data.load_state;
-          if (this.loadCallback_) {
-            this.loadCallback_(this.loadState_ === LoadState.SUCCESS);
+          if (this.loadCompleteCallback_) {
+            this.loadCompleteCallback_(this.loadState_ === LoadState.SUCCESS);
           }
           break;
         }
@@ -181,10 +181,10 @@ export class PDFScriptingAPI {
    *
    * @param {Function} callback the callback to be called.
    */
-  setLoadCallback(callback) {
-    this.loadCallback_ = callback;
-    if (this.loadState_ !== LoadState.LOADING && this.loadCallback_) {
-      this.loadCallback_(this.loadState_ === LoadState.SUCCESS);
+  setLoadCompleteCallback(callback) {
+    this.loadCompleteCallback_ = callback;
+    if (this.loadState_ !== LoadState.LOADING && this.loadCompleteCallback_) {
+      this.loadCompleteCallback_(this.loadState_ === LoadState.SUCCESS);
     }
   }
 
@@ -309,15 +309,15 @@ export function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   };
 
   // Add the functions to the iframe so that they can be called directly.
+  iframe.darkModeChanged = client.darkModeChanged.bind(client);
+  iframe.hideToolbars = client.hideToolbars.bind(client);
+  iframe.loadPreviewPage = client.loadPreviewPage.bind(client);
+  iframe.resetPrintPreviewMode = client.resetPrintPreviewMode.bind(client);
+  iframe.scrollPosition = client.scrollPosition.bind(client);
+  iframe.sendKeyEvent = client.sendKeyEvent.bind(client);
+  iframe.setKeyEventCallback = client.setKeyEventCallback.bind(client);
+  iframe.setLoadCompleteCallback = client.setLoadCompleteCallback.bind(client);
   iframe.setViewportChangedCallback =
       client.setViewportChangedCallback.bind(client);
-  iframe.setLoadCallback = client.setLoadCallback.bind(client);
-  iframe.setKeyEventCallback = client.setKeyEventCallback.bind(client);
-  iframe.resetPrintPreviewMode = client.resetPrintPreviewMode.bind(client);
-  iframe.loadPreviewPage = client.loadPreviewPage.bind(client);
-  iframe.sendKeyEvent = client.sendKeyEvent.bind(client);
-  iframe.scrollPosition = client.scrollPosition.bind(client);
-  iframe.hideToolbars = client.hideToolbars.bind(client);
-  iframe.darkModeChanged = client.darkModeChanged.bind(client);
   return iframe;
 }

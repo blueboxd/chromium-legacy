@@ -1200,6 +1200,50 @@
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
+      'ToTiOS': {
+        'additional_compile_targets': [
+          'all'
+        ],
+        'mixins': [
+          'mac_10.14',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_11c29',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_clang_tot_sim_tests'
+        }
+      },
+      'ToTiOSDevice': {
+        'additional_compile_targets': [
+          'base_unittests',
+          'boringssl_crypto_tests',
+          'boringssl_ssl_tests',
+          'components_unittests',
+          'crypto_unittests',
+          'gfx_unittests',
+          'google_apis_unittests',
+          'ios_chrome_unittests',
+          'ios_net_unittests',
+          'ios_web_inttests',
+          'ios_web_unittests',
+          'ios_web_view_inttests',
+          'net_unittests',
+          'skia_unittests',
+          'sql_unittests',
+          'ui_base_unittests',
+          'url_unittests'
+        ],
+        'mixins': [
+          'mac_10.14',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_11c29',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_clang_tot_device_tests'
+        },
+      },
       'UBSanVptr Linux': {
         'mixins': [
           'linux-xenial',

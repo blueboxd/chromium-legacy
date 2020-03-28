@@ -23,8 +23,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -50,7 +49,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -76,7 +75,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -102,7 +101,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -131,6 +130,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -207,8 +231,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -234,7 +257,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -260,7 +283,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -286,7 +309,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -315,6 +338,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -391,8 +439,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -418,7 +465,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -444,7 +491,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -470,7 +517,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -499,6 +546,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -575,8 +647,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -602,7 +673,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -628,7 +699,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -654,7 +725,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -683,6 +754,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -759,8 +855,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -786,7 +881,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -812,7 +907,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -838,7 +933,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -867,6 +962,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -943,8 +1063,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -970,7 +1089,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -996,7 +1115,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -1022,7 +1141,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -1051,6 +1170,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -1127,8 +1271,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -1154,7 +1297,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -1180,7 +1323,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -1206,7 +1349,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -1235,6 +1378,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -1311,8 +1479,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -1338,7 +1505,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -1364,7 +1531,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -1390,7 +1557,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -1419,6 +1586,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -1495,8 +1687,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -1522,7 +1713,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -1548,7 +1739,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -1574,7 +1765,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -1603,6 +1794,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -1679,8 +1895,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -1706,7 +1921,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -1732,7 +1947,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -1758,7 +1973,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -1787,6 +2002,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -1863,8 +2103,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -1890,7 +2129,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -1916,7 +2155,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -1942,7 +2181,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -1971,6 +2210,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [
@@ -2047,8 +2311,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
@@ -2074,7 +2337,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
@@ -2100,7 +2363,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
@@ -2126,7 +2389,7 @@
           "hard_timeout": 900,
           "io_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
@@ -2155,6 +2418,31 @@
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_deqp_khr_gles31_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
       },
       {
         "args": [

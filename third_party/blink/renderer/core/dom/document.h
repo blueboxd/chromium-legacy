@@ -911,6 +911,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://html.spec.whatwg.org/C/#documentreadystate
   enum DocumentReadyState { kLoading, kInteractive, kComplete };
 
+  DocumentReadyState GetReadyState() const { return ready_state_; }
   void SetReadyState(DocumentReadyState);
   bool IsLoadCompleted() const;
 

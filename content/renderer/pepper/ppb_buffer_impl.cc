@@ -87,7 +87,7 @@ int32_t PPB_Buffer_Impl::GetSharedMemory(base::UnsafeSharedMemoryRegion** shm) {
 
 BufferAutoMapper::BufferAutoMapper(PPB_Buffer_API* api) : api_(api) {
   needs_unmap_ = !PP_ToBool(api->IsMapped());
-  data_ = api->Map();
+  data_ = reinterpret_cast<const uint8_t*>(api->Map());
   api->Describe(&size_);
 }
 

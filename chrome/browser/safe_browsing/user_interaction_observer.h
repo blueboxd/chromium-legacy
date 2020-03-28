@@ -14,6 +14,23 @@
 
 namespace safe_browsing {
 
+// Used for UMA. There may be more than one event per navigation (e.g.
+// kAll and kWarningShownOnKeypress).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DelayedWarningEvent {
+  // User loaded a page with a delayed warning.
+  kPageLoaded = 0,
+  // User left the page and the warning was never shown.
+  kWarningNotShown = 1,
+  // The warning is shown because the user pressed a key.
+  kWarningShownOnKeypress = 2,
+  kMaxValue = kWarningShownOnKeypress,
+};
+
+// Name of the histogram.
+extern const char kDelayedWarningsHistogram[];
+
 // Observes user interactions and shows an interstitial if necessary.
 // Only created when an interstitial was about to be displayed but was delayed
 // due to the Delayed Warnings experiment. Deleted once the interstitial is
@@ -59,6 +76,7 @@ class SafeBrowsingUserInteractionObserver
   content::WebContents* web_contents_;
   security_interstitials::UnsafeResource resource_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
+  bool interstitial_shown_ = false;
 };
 
 }  // namespace safe_browsing

@@ -75,13 +75,12 @@ bool Emf::Init() {
   return !!hdc_;
 }
 
-bool Emf::InitFromData(const void* src_buffer, size_t src_buffer_size) {
+bool Emf::InitFromData(base::span<const uint8_t> data) {
   DCHECK(!emf_ && !hdc_);
-  if (!base::IsValueInRangeForNumericType<UINT>(src_buffer_size))
+  if (!base::IsValueInRangeForNumericType<UINT>(data.size()))
     return false;
 
-  emf_ = SetEnhMetaFileBits(static_cast<UINT>(src_buffer_size),
-                            reinterpret_cast<const BYTE*>(src_buffer));
+  emf_ = SetEnhMetaFileBits(static_cast<UINT>(data.size()), data.data());
   return !!emf_;
 }
 

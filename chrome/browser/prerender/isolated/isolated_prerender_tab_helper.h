@@ -47,6 +47,12 @@ class IsolatedPrerenderTabHelper
     return page_ ? page_->prefetched_responses.size() : 0;
   }
 
+  void CallHandlePrefetchResponseForTesting(
+      const GURL& url,
+      const net::NetworkIsolationKey& key,
+      network::mojom::URLResponseHeadPtr head,
+      std::unique_ptr<std::string> body);
+
   // content::WebContentsObserver implementation.
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;

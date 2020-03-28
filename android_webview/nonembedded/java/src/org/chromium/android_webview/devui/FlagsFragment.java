@@ -86,11 +86,32 @@ public class FlagsFragment extends Fragment {
             mOverriddenFlags = DeveloperModeUtils.getFlagOverrides(mContext.getPackageName());
         }
 
-        mListAdapter = new FlagsListAdapter();
+        mListAdapter = new FlagsListAdapter(sortFlagList(ProductionSupportedFlagList.sFlagList));
         flagsListView.setAdapter(mListAdapter);
 
         Button resetFlagsButton = view.findViewById(R.id.reset_flags_button);
         resetFlagsButton.setOnClickListener((View flagButton) -> { resetAllFlags(); });
+    }
+
+    /**
+     * Sorts the flag list so enabled/disabled flags are at the beginning and default flags are at
+     * the end.
+     */
+    private Flag[] sortFlagList(Flag[] unsorted) {
+        Flag[] sortedFlags = new Flag[unsorted.length];
+        int i = 0;
+        for (Flag flag : unsorted) {
+            if (mOverriddenFlags.containsKey(flag.getName())) {
+                sortedFlags[i++] = flag;
+            }
+        }
+        for (Flag flag : unsorted) {
+            if (!mOverriddenFlags.containsKey(flag.getName())) {
+                sortedFlags[i++] = flag;
+            }
+        }
+        assert sortedFlags.length == unsorted.length : "arrays should be same length";
+        return sortedFlags;
     }
 
     private static int booleanToState(Boolean b) {
@@ -148,8 +169,8 @@ public class FlagsFragment extends Fragment {
      * Adapter to create rows of toggleable Flags.
      */
     private class FlagsListAdapter extends ArrayAdapter<Flag> {
-        public FlagsListAdapter() {
-            super(mContext, R.layout.toggleable_flag, ProductionSupportedFlagList.sFlagList);
+        public FlagsListAdapter(Flag[] sortedFlags) {
+            super(mContext, R.layout.toggleable_flag, sortedFlags);
         }
 
         @Override

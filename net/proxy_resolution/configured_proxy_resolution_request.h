@@ -22,9 +22,9 @@ namespace net {
 class ProxyInfo;
 class ConfiguredProxyResolutionService;
 
-// ConfiguredProxyResolutionRequest is the concrete implementation of
-// ProxyResolutionRequest used by ConfiguredProxyResolutionService. Manages a
-// single asynchronous proxy resolution request.
+// This is the concrete implementation of ProxyResolutionRequest used by
+// ConfiguredProxyResolutionService. Manages a single asynchronous proxy
+// resolution request.
 class ConfiguredProxyResolutionRequest final : public ProxyResolutionRequest {
  public:
   ConfiguredProxyResolutionRequest(

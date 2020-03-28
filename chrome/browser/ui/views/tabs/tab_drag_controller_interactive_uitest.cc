@@ -106,6 +106,13 @@
 #include "base/mac/mac_util.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
+#define DESKTOP_BROWSER_FRAME_AURA DesktopBrowserFrameAuraLinux
+#else
+#define DESKTOP_BROWSER_FRAME_AURA DesktopBrowserFrameAura
+#endif
+
 using content::WebContents;
 using display::Display;
 using ui_test_utils::GetDisplays;
@@ -311,12 +318,11 @@ bool GetIsDragged(Browser* browser) {
 // synthesize this scenario.
 
 // Allows making ClearNativeFocus() invoke ReleaseCapture().
-class TestDesktopBrowserFrameAura : public DesktopBrowserFrameAura {
+class TestDesktopBrowserFrameAura : public DESKTOP_BROWSER_FRAME_AURA {
  public:
-  TestDesktopBrowserFrameAura(
-      BrowserFrame* browser_frame,
-      BrowserView* browser_view)
-      : DesktopBrowserFrameAura(browser_frame, browser_view),
+  TestDesktopBrowserFrameAura(BrowserFrame* browser_frame,
+                              BrowserView* browser_view)
+      : DESKTOP_BROWSER_FRAME_AURA(browser_frame, browser_view),
         release_capture_(false) {}
   ~TestDesktopBrowserFrameAura() override {}
 

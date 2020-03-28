@@ -20,6 +20,8 @@
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/internal/simple_path_builder_delegate.h"
+#include "net/cert/internal/trust_store.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -168,6 +170,45 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
                   "Update with new flags");
 
     constants_dict->Set("certVerifierFlags", std::move(dict));
+  }
+
+  {
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+
+    dict->SetInteger(
+        "kStrong",
+        static_cast<int>(SimplePathBuilderDelegate::DigestPolicy::kStrong));
+    dict->SetInteger(
+        "kWeakAllowSha1",
+        static_cast<int>(
+            SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1));
+
+    static_assert(SimplePathBuilderDelegate::DigestPolicy::kMaxValue ==
+                      SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1,
+                  "Update with new flags");
+
+    constants_dict->Set("certPathBuilderDigestPolicy", std::move(dict));
+  }
+
+  {
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+
+    dict->SetInteger("DISTRUSTED",
+                     static_cast<int>(CertificateTrustType::DISTRUSTED));
+    dict->SetInteger("UNSPECIFIED",
+                     static_cast<int>(CertificateTrustType::UNSPECIFIED));
+    dict->SetInteger("TRUSTED_ANCHOR",
+                     static_cast<int>(CertificateTrustType::TRUSTED_ANCHOR));
+    dict->SetInteger(
+        "TRUSTED_ANCHOR_WITH_CONSTRAINTS",
+        static_cast<int>(
+            CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS));
+
+    static_assert(CertificateTrustType::LAST ==
+                      CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS,
+                  "Update with new flags");
+
+    constants_dict->Set("certificateTrustType", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between load flag

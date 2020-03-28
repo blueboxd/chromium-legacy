@@ -7,42 +7,9 @@
  * 'settings-safety-check-page' is the settings page containing the browser
  * safety check.
  */
-cr.define('settings', function() {
-  /**
-   * Values used to identify safety check components in the callback event.
-   * Needs to be kept in sync with SafetyCheckComponent in
-   * chrome/browser/ui/webui/settings/safety_check_handler.h
-   * @enum {number}
-   */
-  const SafetyCheckComponent = {
-    UPDATES: 0,
-    PASSWORDS: 1,
-    SAFE_BROWSING: 2,
-    EXTENSIONS: 3,
-  };
-
-  /**
-   * Constants used in safety check C++ to JS communication.
-   * Their values need be kept in sync with their counterparts in
-   * chrome/browser/ui/webui/settings/safety_check_handler.h and
-   * chrome/browser/ui/webui/settings/safety_check_handler.cc
-   * @enum {string}
-   */
-  const SafetyCheckCallbackConstants = {
-    UPDATES_CHANGED: 'safety-check-updates-status-changed',
-    PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
-    SAFE_BROWSING_CHANGED: 'safety-check-safe-browsing-status-changed',
-    EXTENSIONS_CHANGED: 'safety-check-extensions-status-changed',
-  };
-
-  // #cr_define_end
-  return {
-    SafetyCheckComponent,
-    SafetyCheckCallbackConstants,
-  };
-});
 
 (function() {
+
 /**
  * States of the safety check parent element.
  * @enum {number}

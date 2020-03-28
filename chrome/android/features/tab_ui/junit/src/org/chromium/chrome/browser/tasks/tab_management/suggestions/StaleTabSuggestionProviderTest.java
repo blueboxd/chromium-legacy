@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests the provider which identifies Tabs which have not been used in a long time
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class StaleTabSuggestionProviderTest {
@@ -82,7 +83,7 @@ public class StaleTabSuggestionProviderTest {
         doReturn(tabInfos).when(mTabContext).getUngroupedTabs();
 
         List<TabSuggestion> staleSuggestions = staleTabSuggestionProvider.suggest(mTabContext);
-        Assert.assertTrue(staleSuggestions.size() == 1);
+        Assert.assertEquals(1, staleSuggestions.size());
         TabSuggestion staleSuggestion = staleSuggestions.get(0);
         Assert.assertEquals("mock_stale_title", staleSuggestion.getTabsInfo().get(0).title);
         Assert.assertEquals(TabSuggestion.TabSuggestionAction.CLOSE, staleSuggestion.getAction());
@@ -117,7 +118,7 @@ public class StaleTabSuggestionProviderTest {
         doReturn(tabInfos).when(mTabContext).getUngroupedTabs();
 
         List<TabSuggestion> staleSuggestions = staleTabSuggestionProvider.suggest(mTabContext);
-        Assert.assertTrue(staleSuggestions.size() == 1);
+        Assert.assertEquals(1, staleSuggestions.size());
         TabSuggestion staleSuggestion = staleSuggestions.get(0);
         Assert.assertEquals("mock_stale_title", staleSuggestion.getTabsInfo().get(0).title);
         Assert.assertEquals(TabSuggestion.TabSuggestionAction.CLOSE, staleSuggestion.getAction());
@@ -151,7 +152,7 @@ public class StaleTabSuggestionProviderTest {
         doReturn(tabInfos).when(mTabContext).getUngroupedTabs();
 
         List<TabSuggestion> staleSuggestions = staleTabSuggestionProvider.suggest(mTabContext);
-        Assert.assertTrue(staleSuggestions.size() == 1);
+        Assert.assertEquals(1, staleSuggestions.size());
         TabSuggestion staleSuggestion = staleSuggestions.get(0);
         Assert.assertEquals("mock_low_engaged_title", staleSuggestion.getTabsInfo().get(0).title);
         Assert.assertEquals(TabSuggestion.TabSuggestionAction.CLOSE, staleSuggestion.getAction());
@@ -185,13 +186,13 @@ public class StaleTabSuggestionProviderTest {
                 "mock_stale_referrer_url", CURRENT_TIME_MILLIS - TimeUnit.DAYS.toMillis(4), 1.0));
         tabInfos.add(getMockTab(5, "mock_stale_title_highly_engaged",
                 "mock_stale_url_highly_engaged", "mock_stale_original_url_highly_engaged",
-                "mock_stale_referrer_urlj_highly_engaged",
+                "mock_stale_referrer_url_highly_engaged",
                 CURRENT_TIME_MILLIS - TimeUnit.DAYS.toMillis(4), 20.0));
 
         doReturn(tabInfos).when(mTabContext).getUngroupedTabs();
 
         List<TabSuggestion> staleSuggestions = staleTabSuggestionProvider.suggest(mTabContext);
-        Assert.assertTrue(staleSuggestions.size() == 1);
+        Assert.assertEquals(1, staleSuggestions.size());
         TabSuggestion staleSuggestion = staleSuggestions.get(0);
         Assert.assertEquals("mock_stale_title", staleSuggestion.getTabsInfo().get(0).title);
         Assert.assertEquals(TabSuggestion.TabSuggestionAction.CLOSE, staleSuggestion.getAction());

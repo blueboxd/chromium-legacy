@@ -1793,6 +1793,10 @@
     "script": "//chrome/test/vr/perf/vrcore_fps/run_vrcore_fps_test.py",
     "type": "script",
   },
+  "vulkan_tests": {
+    "label": "//gpu/vulkan:vulkan_tests",
+    "type": "windowed_test_launcher",
+  },
   "wayland_client_perftests": {
     "label": "//components/exo/wayland:wayland_client_perftests",
     "type": "windowed_test_launcher",

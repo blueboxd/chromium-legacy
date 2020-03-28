@@ -10,15 +10,12 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/wm/core/wm_state.h"
 
 namespace ui {
 class ContextFactory;
 class ScopedAnimationDurationScaleMode;
 class TestContextFactories;
-}
-
-namespace wm {
-class WMState;
 }
 
 namespace aura {
@@ -41,18 +38,21 @@ class TestWindowParentingClient;
 // that are necessary to run test on Aura.
 class AuraTestHelper {
  public:
-  AuraTestHelper();
-  explicit AuraTestHelper(std::unique_ptr<Env> env);
+  // Instantiates/destroys an AuraTestHelper. This can happen in a
+  // single-threaded phase without a backing task environment, and must not
+  // create one lest the caller wish to do so.
+  explicit AuraTestHelper(ui::ContextFactory* context_factory = nullptr,
+                          bool disable_animations = true);
   ~AuraTestHelper();
 
   // Returns the current AuraTestHelper, or nullptr if it's not alive.
   static AuraTestHelper* GetInstance();
 
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
-  void SetUp(ui::ContextFactory* context_factory = nullptr);
+  void SetUp();
 
-  // Clean up objects that are created for tests. This also deletes the Env
-  // object.
+  // Destroys the window, Env, and most other objects.  This will be called
+  // automatically on destruction if it is not called manually earlier.
   void TearDown();
 
   // Flushes message loop.
@@ -66,13 +66,12 @@ class AuraTestHelper {
 
   Env* GetEnv();
 
+ protected:
   // May only be called between SetUp() and TearDown().
   ui::ContextFactory* GetContextFactory();
 
  private:
-  bool setup_called_ = false;
-  bool teardown_called_ = false;
-  std::unique_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<wm::WMState> wm_state_ = std::make_unique<wm::WMState>();
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
   std::unique_ptr<Env> env_;
   ui::ContextFactory* context_factory_to_restore_ = nullptr;

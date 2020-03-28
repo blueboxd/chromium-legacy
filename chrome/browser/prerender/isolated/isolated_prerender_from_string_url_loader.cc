@@ -136,6 +136,7 @@ void IsolatedPrerenderFromStringURLLoader::Finish(int error) {
   handle_watcher_.reset();
   producer_handle_.reset();
   client_.reset();
+  receiver_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
   MaybeDeleteSelf();
 }

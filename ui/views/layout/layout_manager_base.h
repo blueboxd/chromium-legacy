@@ -94,6 +94,9 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
     cached_layout_ = layout;
   }
 
+  // Returns the size available to the host view from its parent.
+  SizeBounds GetAvailableHostSize() const;
+
   // Returns true if the specified view is a child of the host view and is not
   // ignored. Views hidden by external code are only included if
   // |include_hidden| is set.
@@ -206,6 +209,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // Used to suspend invalidation while processing signals from the host view,
   // or while invalidating the host view without invalidating the layout.
   bool suppress_invalidate_ = false;
+
+  // Used during layout to determine if available size has changed for children;
+  // when it changes, children are always laid out regardless of visibility or
+  // whether their bounds have changed.
+  SizeBounds cached_available_size_;
 
   // Do some really simple caching because layout generation can cost as much
   // as 1ms or more for complex views.

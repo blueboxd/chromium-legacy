@@ -44,19 +44,26 @@ class BrowserDesktopWindowTreeHostLinux
       BrowserFrame* browser_frame);
   ~BrowserDesktopWindowTreeHostLinux() override;
 
+  // Called when the window starts or stops moving because of a tab drag.
+  void TabDraggingStatusChanged(bool is_dragging);
+
  private:
-  // Overridden from BrowserDesktopWindowTreeHost:
+  // BrowserDesktopWindowTreeHost:
   DesktopWindowTreeHost* AsDesktopWindowTreeHost() override;
   int GetMinimizeButtonOffset() const override;
   bool UsesNativeSystemMenu() const override;
 
-  // Overridden from views::DesktopWindowTreeHostLinuxImpl:
+  // views::DesktopWindowTreeHostLinuxImpl:
   void Init(const views::Widget::InitParams& params) override;
   void CloseNow() override;
 
-#if defined(USE_X11)
-  BrowserView* browser_view_ = nullptr;
+  // ui::X11ExtensionDelegate:
+  bool IsOverrideRedirect() const override;
 
+  BrowserView* browser_view_ = nullptr;
+  BrowserFrame* browser_frame_ = nullptr;
+
+#if defined(USE_X11)
   // Each browser frame maintains its own menu bar object because the lower
   // level dbus protocol associates a xid to a menu bar; we can't map multiple
   // xids to the same menu bar.

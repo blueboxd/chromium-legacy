@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.Toolbar;
 
 import org.chromium.base.Log;
@@ -166,17 +166,23 @@ public class BookmarkEditActivity extends SynchronousInitializationActivity {
         super.onDestroy();
     }
 
-    private void openBookmark() {
-        // TODO(kkimlabs): Refactor this out to handle the intent in ChromeActivity.
-        // If this activity was started via startActivityForResult(), set the result. Otherwise,
-        // launch the bookmark directly.
-        if (getCallingActivity() != null) {
-            Intent intent = new Intent();
-            intent.putExtra(BookmarkActivity.INTENT_VISIT_BOOKMARK_ID, mBookmarkId.toString());
-            setResult(RESULT_OK, intent);
-        } else {
-            BookmarkUtils.openBookmark(mModel, this, mBookmarkId);
-        }
-        finish();
+    @VisibleForTesting
+    BookmarkTextInputLayout getTitleEditText() {
+        return mTitleEditText;
+    }
+
+    @VisibleForTesting
+    BookmarkTextInputLayout getUrlEditText() {
+        return mUrlEditText;
+    }
+
+    @VisibleForTesting
+    MenuItem getDeleteButton() {
+        return mDeleteButton;
+    }
+
+    @VisibleForTesting
+    TextView getFolderTextView() {
+        return mFolderTextView;
     }
 }

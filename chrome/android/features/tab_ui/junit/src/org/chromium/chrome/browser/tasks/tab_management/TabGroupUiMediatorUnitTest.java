@@ -66,6 +66,7 @@ import java.util.List;
 /**
  * Tests for {@link TabGroupUiMediator}.
  */
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument", "unchecked"})
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupUiMediatorUnitTest {

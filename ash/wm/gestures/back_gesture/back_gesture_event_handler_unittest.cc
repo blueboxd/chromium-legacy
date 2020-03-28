@@ -640,4 +640,23 @@ TEST_F(BackGestureEventHandlerTestCantGoBack, NonResizableApp) {
   EXPECT_TRUE(window_state->IsMinimized());
 }
 
+TEST_F(BackGestureEventHandlerTestCantGoBack, NonAppAndSystemApps) {
+  RecreateTopWindow(AppType::NON_APP);
+  GenerateBackSequence();
+  EXPECT_TRUE(WindowState::Get(top_window())->IsMinimized());
+
+  RecreateTopWindow(AppType::SYSTEM_APP);
+  GenerateBackSequence();
+  EXPECT_TRUE(WindowState::Get(top_window())->IsMinimized());
+}
+
+// Tests that the back gesture will force minimize even non minimizeable apps.
+TEST_F(BackGestureEventHandlerTestCantGoBack, NonMinimizeableApp) {
+  // Make the top window non minimizeable.
+  top_window()->SetProperty(aura::client::kResizeBehaviorKey,
+                            aura::client::kResizeBehaviorNone);
+  GenerateBackSequence();
+  EXPECT_TRUE(WindowState::Get(top_window())->IsMinimized());
+}
+
 }  // namespace ash

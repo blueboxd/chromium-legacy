@@ -7,10 +7,14 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_from_string_url_loader.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader.h"
+#include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,43 +24,6 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
-
-bool ShouldInterceptRequestForPrerender(
-    int frame_tree_node_id,
-    const network::ResourceRequest& tentative_resource_request,
-    content::BrowserContext* browser_context) {
-  if (!base::FeatureList::IsEnabled(features::kIsolatePrerenders))
-    return false;
-
-  // Lite Mode must be enabled for this feature to be enabled.
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  bool ds_enabled = data_reduction_proxy::DataReductionProxySettings::
-      IsDataSaverEnabledByUser(profile->IsOffTheRecord(), profile->GetPrefs());
-  if (!ds_enabled)
-    return false;
-
-  // TODO(crbug.com/1023486): Add other triggering checks.
-
-  // TODO(robertogden): Bail GetStoragePartitionForSite(url) !=
-  // GetDefaultStoragePartitionForSite().
-
-  content::WebContents* web_contents =
-      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  if (!web_contents)
-    return false;
-
-  if (!tentative_resource_request.url.SchemeIs(url::kHttpsScheme))
-    return false;
-
-  DCHECK_EQ(web_contents->GetBrowserContext(), browser_context);
-
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(browser_context);
-  if (!prerender_manager)
-    return false;
-
-  return prerender_manager->IsWebContentsPrerendering(web_contents, nullptr);
-}
 
 Profile* ProfileFromFrameTreeNodeID(int frame_tree_node_id) {
   content::WebContents* web_contents =
@@ -84,68 +51,60 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
   DCHECK(!loader_callback_);
   loader_callback_ = std::move(callback);
 
-  if (!ShouldInterceptRequestForPrerender(
-          frame_tree_node_id_, tentative_resource_request, browser_context)) {
-    OnDoNotInterceptRequest();
+  std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch =
+      GetPrefetchedResponse(tentative_resource_request.url);
+  if (!prefetch) {
+    DoNotInterceptNavigation();
     return;
   }
 
   if (base::FeatureList::IsEnabled(
           features::kIsolatePrerendersMustProbeOrigin)) {
-    StartProbe(tentative_resource_request, browser_context);
+    StartProbe(tentative_resource_request.url.GetOrigin(),
+               base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::
+                                  InterceptPrefetchedNavigation,
+                              base::Unretained(this),
+                              tentative_resource_request, std::move(prefetch)));
     return;
   }
-
-  OnInterceptRequest(tentative_resource_request, browser_context);
+  InterceptPrefetchedNavigation(tentative_resource_request,
+                                std::move(prefetch));
 }
 
-void IsolatedPrerenderURLLoaderInterceptor::OnInterceptRequest(
+void IsolatedPrerenderURLLoaderInterceptor::InterceptPrefetchedNavigation(
     const network::ResourceRequest& tentative_resource_request,
-    content::BrowserContext* browser_context) {
-  std::unique_ptr<IsolatedPrerenderURLLoader> url_loader =
-      std::make_unique<IsolatedPrerenderURLLoader>(
-          tentative_resource_request,
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetURLLoaderFactoryForBrowserProcess(),
-          frame_tree_node_id_, 0 /* request_id */);
+    std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch) {
+  std::unique_ptr<IsolatedPrerenderFromStringURLLoader> url_loader =
+      std::make_unique<IsolatedPrerenderFromStringURLLoader>(
+          std::move(prefetch), tentative_resource_request);
   std::move(loader_callback_).Run(url_loader->ServingResponseHandler());
   // url_loader manages its own lifetime once bound to the mojo pipes.
   url_loader.release();
-  return;
 }
 
-void IsolatedPrerenderURLLoaderInterceptor::OnDoNotInterceptRequest() {
+void IsolatedPrerenderURLLoaderInterceptor::DoNotInterceptNavigation() {
   std::move(loader_callback_).Run({});
 }
 
-void IsolatedPrerenderURLLoaderInterceptor::CallOnProbeCompleteForTesting(
-    const network::ResourceRequest& tentative_resource_request,
-    content::BrowserContext* browser_context,
-    bool success) {
-  OnProbeComplete(tentative_resource_request, browser_context, success);
-}
-
 void IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete(
-    const network::ResourceRequest& tentative_resource_request,
-    content::BrowserContext* browser_context,
+    base::OnceClosure on_success_callback,
     bool success) {
   if (success) {
-    OnInterceptRequest(tentative_resource_request, browser_context);
+    std::move(on_success_callback).Run();
     return;
   }
-  OnDoNotInterceptRequest();
+  DoNotInterceptNavigation();
 }
 
 void IsolatedPrerenderURLLoaderInterceptor::StartProbe(
-    const network::ResourceRequest& tentative_resource_request,
-    content::BrowserContext* browser_context) {
+    const GURL& url,
+    base::OnceClosure on_success_callback) {
   Profile* profile = ProfileFromFrameTreeNodeID(frame_tree_node_id_);
   if (!profile) {
-    OnDoNotInterceptRequest();
+    DoNotInterceptNavigation();
     return;
   }
 
-  GURL url = tentative_resource_request.url.GetOrigin();
   DCHECK(url.SchemeIs(url::kHttpsScheme));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -191,9 +150,9 @@ void IsolatedPrerenderURLLoaderInterceptor::StartProbe(
       0 /* max_cache_entries */,
       base::TimeDelta::FromSeconds(0) /* revalidate_cache_after */);
   // Unretained is safe here because |this| owns |origin_prober_|.
-  origin_prober_->SetOnCompleteCallback(base::BindRepeating(
-      &IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete,
-      base::Unretained(this), tentative_resource_request, browser_context));
+  origin_prober_->SetOnCompleteCallback(
+      base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete,
+                     base::Unretained(this), std::move(on_success_callback)));
   origin_prober_->SendNowIfInactive(false /* send_only_in_foreground */);
 }
 
@@ -208,4 +167,19 @@ bool IsolatedPrerenderURLLoaderInterceptor::IsResponseSuccess(
   // Any response from the origin is good enough, we expect a net error if the
   // site is blocked.
   return net_error == net::OK;
+}
+
+std::unique_ptr<PrefetchedMainframeResponseContainer>
+IsolatedPrerenderURLLoaderInterceptor::GetPrefetchedResponse(const GURL& url) {
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  if (!web_contents)
+    return nullptr;
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return nullptr;
+
+  return tab_helper->TakePrefetchResponse(url);
 }

@@ -108,10 +108,9 @@ bool MetafileSkia::Init() {
 // TODO(halcanary): Create a Metafile class that only stores data.
 // Metafile::InitFromData is orthogonal to what the rest of
 // MetafileSkia does.
-bool MetafileSkia::InitFromData(const void* src_buffer,
-                                size_t src_buffer_size) {
+bool MetafileSkia::InitFromData(base::span<const uint8_t> data) {
   data_->data_stream = std::make_unique<SkMemoryStream>(
-      src_buffer, src_buffer_size, true /* copy_data? */);
+      data.data(), data.size(), /*copy_data=*/true);
   return true;
 }
 
@@ -289,7 +288,7 @@ bool MetafileSkia::RenderPage(unsigned int page_number,
     size_t length = data_->data_stream->getLength();
     std::vector<uint8_t> buffer(length);
     (void)WriteAssetToBuffer(data_->data_stream.get(), &buffer[0], length);
-    data_->pdf_cg.InitFromData(&buffer[0], length);
+    data_->pdf_cg.InitFromData(buffer);
   }
   return data_->pdf_cg.RenderPage(page_number, context, rect, params);
 }

@@ -1653,13 +1653,8 @@ bool PrintRenderFrameHelper::ProcessPreviewDocument(
   if (!preview_document_mapping.IsValid())
     return false;
 
-  auto preview_document_buffer =
-      preview_document_mapping.GetMemoryAsSpan<const uint8_t>();
-  if (!print_preview_context_.metafile()->InitFromData(
-          preview_document_buffer.data(), preview_document_buffer.size())) {
-    LOG(ERROR) << "Failed to initialize PDF metafile.";
-    return false;
-  }
+  CHECK(print_preview_context_.metafile()->InitFromData(
+      preview_document_mapping.GetMemoryAsSpan<const uint8_t>()));
 
   if (CheckForCancel())
     return false;

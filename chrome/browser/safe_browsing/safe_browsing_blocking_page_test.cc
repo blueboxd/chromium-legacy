@@ -31,6 +31,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -1892,12 +1893,6 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
       content::IsolateAllSitesForTesting(command_line);
   }
 
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    content::SetupCrossSiteRedirector(embedded_test_server());
-    ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
@@ -1921,7 +1916,6 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     event.text[0] = 'a';
     content::RenderWidgetHost* rwh = contents->GetRenderViewHost()->GetWidget();
     rwh->ForwardKeyboardEvent(event);
-
     if (AreCommittedInterstitialsEnabled()) {
       observer.WaitForNavigationFinished();
     }
@@ -1940,7 +1934,8 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
-                       DelayedWarnings) {
+                       DelayedWarningShown) {
+  base::HistogramTester histograms;
   // Navigate to a phishing site.
   ui_test_utils::NavigateToURL(browser(),
                                GURL(kChromeUISafeBrowsingMatchPhishingUrl));
@@ -1954,6 +1949,31 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
   EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningShownOnKeypress, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       DelayedWarningNotShown) {
+  base::HistogramTester histograms;
+  // Navigate to a phishing site.
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(kChromeUISafeBrowsingMatchPhishingUrl));
+  WaitForReady(browser());
+  AssertNoInterstitial(browser(), true);
+
+  // Navigate away without interacting with the page.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningNotShown, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(

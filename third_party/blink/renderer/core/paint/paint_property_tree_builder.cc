@@ -251,6 +251,12 @@ class FragmentPaintPropertyTreeBuilder {
     full_context_.clip_changed |= cleared;
   }
 
+  CompositorElementId GetCompositorElementId(
+      CompositorElementIdNamespace namespace_id) const {
+    return CompositorElementIdFromUniqueObjectId(fragment_data_.UniqueId(),
+                                                 namespace_id);
+  }
+
   const LayoutObject& object_;
   // The tree builder context for the whole object.
   PaintPropertyTreeBuilderContext& full_context_;
@@ -535,8 +541,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
       const auto& box_model = ToLayoutBoxModelObject(object_);
       TransformPaintPropertyNode::State state{
           FloatSize(box_model.StickyPositionOffset())};
-      state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-          box_model.UniqueId(),
+      state.compositor_element_id = GetCompositorElementId(
           CompositorElementIdNamespace::kStickyTranslation);
 
       auto* layer = box_model.Layer();
@@ -802,8 +807,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
           object_.HasHiddenBackface()
               ? TransformPaintPropertyNode::BackfaceVisibility::kHidden
               : TransformPaintPropertyNode::BackfaceVisibility::kVisible;
-      state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-          object_.UniqueId(), CompositorElementIdNamespace::kPrimaryTransform);
+      state.compositor_element_id = GetCompositorElementId(
+          CompositorElementIdNamespace::kPrimaryTransform);
 
       TransformPaintPropertyNode::AnimationState animation_state;
       animation_state.is_running_animation_on_compositor =
@@ -1046,8 +1051,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 
       CompositorElementId mask_compositor_element_id;
       if (mask_clip || has_spv1_composited_clip_path) {
-        mask_compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kEffectMask);
+        mask_compositor_element_id =
+            GetCompositorElementId(CompositorElementIdNamespace::kEffectMask);
       }
 
       EffectPaintPropertyNode::State state;
@@ -1084,15 +1089,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           full_context_.direct_compositing_reasons &
           CompositingReasonsForEffectProperty();
       if (state.direct_compositing_reasons) {
-        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kPrimaryEffect);
+        state.compositor_element_id = GetCompositorElementId(
+            CompositorElementIdNamespace::kPrimaryEffect);
       } else {
         // The effect node CompositorElementId is used to uniquely identify
         // renderpasses so even if we don't need one for animations we still
         // need to set an id. Using kPrimary avoids confusing cc::Animation
         // into thinking the element has been composited for animations.
-        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
+        state.compositor_element_id =
+            GetCompositorElementId(CompositorElementIdNamespace::kPrimary);
       }
 
       // TODO(crbug.com/900241): Remove these setters when we can use
@@ -1149,10 +1154,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         clip_path_state.local_transform_space = context_.current.transform;
         clip_path_state.output_clip = output_clip;
         clip_path_state.blend_mode = SkBlendMode::kDstIn;
-        clip_path_state.compositor_element_id =
-            CompositorElementIdFromUniqueObjectId(
-                object_.UniqueId(),
-                CompositorElementIdNamespace::kEffectClipPath);
+        clip_path_state.compositor_element_id = GetCompositorElementId(
+            CompositorElementIdNamespace::kEffectClipPath);
         OnUpdate(
             properties_->UpdateClipPath(parent, std::move(clip_path_state)));
       } else {
@@ -1266,8 +1269,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       state.direct_compositing_reasons =
           full_context_.direct_compositing_reasons &
           CompositingReasonsForFilterProperty();
-      state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-          object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
+      state.compositor_element_id =
+          GetCompositorElementId(CompositorElementIdNamespace::kEffectFilter);
 
       // TODO(crbug.com/900241): Remove the setter when we can use
       // state.direct_compositing_reasons to check for active animations.

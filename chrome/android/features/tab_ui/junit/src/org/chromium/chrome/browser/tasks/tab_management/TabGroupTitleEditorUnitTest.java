@@ -43,6 +43,7 @@ import java.util.Map;
 /**
  * Tests for {@link TabGroupTitleEditor}.
  */
+@SuppressWarnings({"ArraysAsListWithZeroOrOneArgument", "ResultOfMethodCallIgnored"})
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupTitleEditorUnitTest {

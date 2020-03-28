@@ -13,6 +13,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -93,6 +94,8 @@ class MediaHistoryStoreUnitTest
  public:
   MediaHistoryStoreUnitTest() = default;
   void SetUp() override {
+    base::HistogramTester histogram_tester;
+
     // Set up the profile.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
@@ -112,6 +115,10 @@ class MediaHistoryStoreUnitTest
     // create the database and tables before proceeding with the tests and
     // tearing down the temporary directory.
     WaitForDB();
+
+    histogram_tester.ExpectBucketCount(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kSuccess, 1);
 
     // Set up the local DB connection used for assertions.
     base::FilePath db_file =

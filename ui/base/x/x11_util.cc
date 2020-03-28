@@ -1039,6 +1039,45 @@ bool GetCustomFramePrefDefault() {
   return true;
 }
 
+bool IsWmTiling(WindowManagerName window_manager) {
+  switch (window_manager) {
+    case WM_BLACKBOX:
+    case WM_COMPIZ:
+    case WM_ENLIGHTENMENT:
+    case WM_FLUXBOX:
+    case WM_ICE_WM:
+    case WM_KWIN:
+    case WM_MATCHBOX:
+    case WM_METACITY:
+    case WM_MUFFIN:
+    case WM_MUTTER:
+    case WM_OPENBOX:
+    case WM_XFWM4:
+      // Stacking window managers.
+      return false;
+
+    case WM_I3:
+    case WM_ION3:
+    case WM_NOTION:
+    case WM_RATPOISON:
+    case WM_STUMPWM:
+      // Tiling window managers.
+      return true;
+
+    case WM_AWESOME:
+    case WM_QTILE:
+    case WM_XMONAD:
+    case WM_WMII:
+      // Dynamic (tiling and stacking) window managers.  Assume tiling.
+      return true;
+
+    case WM_OTHER:
+    case WM_UNNAMED:
+      // Unknown.  Assume stacking.
+      return false;
+  }
+}
+
 bool GetWindowDesktop(XID window, int* desktop) {
   return GetIntProperty(window, "_NET_WM_DESKTOP", desktop);
 }

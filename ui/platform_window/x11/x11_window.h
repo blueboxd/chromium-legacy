@@ -108,10 +108,12 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 
   // X11Extension:
   bool IsSyncExtensionAvailable() const override;
+  bool IsWmTiling() const override;
   void OnCompleteSwapAfterResize() override;
   gfx::Rect GetXRootWindowOuterBounds() const override;
   bool ContainsPointInXRegion(const gfx::Point& point) const override;
   void LowerXWindow() override;
+  void SetOverrideRedirect(bool override_redirect) override;
   void SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) override;
 
   // Overridden from ui::XEventDispatcher:

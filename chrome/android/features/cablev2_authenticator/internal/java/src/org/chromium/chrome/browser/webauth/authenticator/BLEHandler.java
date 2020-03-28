@@ -195,9 +195,17 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                 mTaskRunner.postTask(() -> {
                     Integer mtu = mKnownMtus.get(client);
                     if (mtu == null) {
-                        mtu = 512;
+                        // If no MTU is negotiated, the GATT default is just 23 bytes.
+                        mtu = 23;
                     }
-                    // TODO: should the MTU be trimmed to account for overhead?
+                    if (mtu < 4) {
+                        Log.i(TAG, "MTU unusably small");
+                        mServer.sendResponse(
+                                device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
+                        return;
+                    }
+                    // The (G)ATT op-code and attribute handle take three bytes.
+                    mtu -= 3;
                     byte[] mtuBytes = {(byte) (mtu >> 8), (byte) (mtu & 0xff)};
                     mServer.sendResponse(
                             device, requestId, BluetoothGatt.GATT_SUCCESS, 0, mtuBytes);

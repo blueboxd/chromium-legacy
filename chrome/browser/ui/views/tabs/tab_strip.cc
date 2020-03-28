@@ -653,7 +653,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 
   void StartedDragging(const std::vector<TabSlotView*>& views) override {
     // Let the controller know that the user started dragging tabs.
-    tab_strip_->controller_->OnStartedDragging();
+    tab_strip_->controller_->OnStartedDragging(
+        views.size() == static_cast<size_t>(tab_strip_->GetModelCount()));
 
     // Hide the new tab button immediately if we didn't originate the drag.
     if (!drag_controller_)

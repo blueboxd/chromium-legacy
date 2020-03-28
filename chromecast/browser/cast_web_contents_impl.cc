@@ -104,8 +104,7 @@ CastWebContents* CastWebContents::FromWebContents(
   return *it;
 }
 
-void CastWebContentsImpl::RenderProcessReady(
-    content::RenderProcessHost* host) {
+void CastWebContentsImpl::RenderProcessReady(content::RenderProcessHost* host) {
   DCHECK(host->IsReady());
   const base::Process& process = host->GetProcess();
   for (auto& observer : observer_list_) {
@@ -429,6 +428,18 @@ void CastWebContentsImpl::PostMessageToMainFrame(
   content::MessagePortProvider::PostMessageToFrame(
       web_contents(), base::string16(), target_origin_utf16, data_utf16,
       std::move(ports));
+}
+
+void CastWebContentsImpl::ExecuteJavaScript(
+    const base::string16& javascript,
+    base::OnceCallback<void(base::Value)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!web_contents_ || closing_ || !main_frame_loaded_ ||
+      !web_contents_->GetMainFrame())
+    return;
+
+  web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
+                                                   std::move(callback));
 }
 
 void CastWebContentsImpl::AddObserver(CastWebContents::Observer* observer) {

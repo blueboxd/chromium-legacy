@@ -49,6 +49,9 @@ class NativeBrowserFrame {
   virtual bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
+  // Called when the window starts or stops moving because of a tab drag.
+  virtual void TabDraggingStatusChanged(bool is_dragging) {}
+
  protected:
   friend class BrowserFrame;
 

@@ -440,7 +440,8 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
-                                            bool user_gesture);
+                                            bool user_gesture,
+                                            bool in_tab_dragging);
 
   // Shows the avatar bubble on the window frame off of the avatar button with
   // the given mode. The Service Type specified by GAIA is provided as well.

@@ -63,7 +63,8 @@ Polymer({
    * @private
    */
   onDialogConfirm_() {
-    this.$.toggle.sendPrefChange();
+    /** @type {!SettingsToggleButtonElement} */ (this.$.toggle)
+        .sendPrefChange();
     this.closeDialog_();
   },
 
@@ -73,7 +74,8 @@ Polymer({
    * @private
    */
   onDialogCancel_() {
-    this.$.toggle.resetToPrefValue();
+    /** @type {!SettingsToggleButtonElement} */ (this.$.toggle)
+        .resetToPrefValue();
     this.closeDialog_();
   },
 });

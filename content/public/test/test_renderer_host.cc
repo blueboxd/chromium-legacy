@@ -243,8 +243,8 @@ void RenderViewHostTestHarness::SetUp() {
   ui::ContextFactory* context_factory =
       ImageTransportFactory::GetInstance()->GetContextFactory();
 
-  aura_test_helper_.reset(new aura::test::AuraTestHelper());
-  aura_test_helper_->SetUp(context_factory);
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(context_factory));
+  aura_test_helper_->SetUp();
 #endif
 
   sanity_checker_.reset(new ContentBrowserSanityChecker());

@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media/feeds/media_feeds_service.h"
@@ -200,6 +201,11 @@ void MediaHistoryStoreInternal::Initialize() {
   if (!db_->Execute("PRAGMA foreign_keys=1")) {
     LOG(ERROR) << "Failed to enable foreign keys on the media history store.";
     db_->Poison();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kFailedNoForeignKeys);
+
     return;
   }
 
@@ -208,6 +214,11 @@ void MediaHistoryStoreInternal::Initialize() {
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to create or update the media history store.";
     db_->Poison();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kFailedDatabaseTooNew);
+
     return;
   }
 
@@ -215,10 +226,18 @@ void MediaHistoryStoreInternal::Initialize() {
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to initialize the media history store tables.";
     db_->Poison();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kInitResultHistogramName,
+        MediaHistoryStore::InitResult::kFailedInitializeTables);
+
     return;
   }
 
   initialization_successful_ = true;
+
+  base::UmaHistogramEnumeration(MediaHistoryStore::kInitResultHistogramName,
+                                MediaHistoryStore::InitResult::kSuccess);
 }
 
 sql::InitStatus MediaHistoryStoreInternal::CreateOrUpgradeIfNeeded() {
@@ -604,6 +623,9 @@ MediaHistoryStoreInternal::GetItemsForMediaFeedForDebug(const int64_t feed_id) {
 
   return feed_items_table_->GetItemsForFeed(feed_id);
 }
+
+const char MediaHistoryStore::kInitResultHistogramName[] =
+    "Media.History.Init.Result";
 
 MediaHistoryStore::MediaHistoryStore(
     Profile* profile,

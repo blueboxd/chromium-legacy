@@ -276,7 +276,7 @@ if (custom_toolchain != "") {
 # - is_android, is_chromeos, is_ios, and is_win should be obvious.
 # - is_mac is set only for desktop Mac. It is not set on iOS.
 # - is_posix is true for mac and any Unix-like system (basically everything
-#   except Windows).
+#   except Fuchsia and Windows).
 # - is_linux is true for desktop Linux and ChromeOS, but not Android (which is
 #   generally too different despite being based on the Linux kernel).
 #

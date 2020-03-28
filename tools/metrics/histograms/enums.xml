@@ -17659,6 +17659,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="5" label="ANGLE OpenGL"/>
   <int value="6" label="ANGLE OpenGL ES"/>
   <int value="13" label="Angle D3D11on12"/>
+  <int value="15" label="Angle OpenGL EGL"/>
+  <int value="16" label="Angle OpenGL ES EGL"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase">
@@ -42809,6 +42811,13 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Play/Pause"/>
 </enum>
 
+<enum name="MediaHistoryInitResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed due to no foreign key support"/>
+  <int value="2" label="Failed since database is too new"/>
+  <int value="3" label="Failed to create tables"/>
+</enum>
+
 <enum name="MediaKeyError">
   <int value="1" label="kUnknownError"/>
   <int value="2" label="kClientError"/>
@@ -57323,6 +57332,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Timeout"/>
   <int value="4" label="File too large"/>
   <int value="5" label="Failed to get token"/>
+</enum>
+
+<enum name="SafeBrowsingDelayedWarningEvent">
+  <int value="0" label="User loaded a page with a delayed warning"/>
+  <int value="1" label="User left the page and the warning was never shown"/>
+  <int value="2" label="The warning is shown because the user pressed a key"/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">

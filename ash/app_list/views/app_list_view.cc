@@ -147,10 +147,12 @@ class SearchBoxFocusHost : public views::View {
   explicit SearchBoxFocusHost(views::Widget* search_box_widget)
       : search_box_widget_(search_box_widget) {}
 
-  ~SearchBoxFocusHost() override {}
+  ~SearchBoxFocusHost() override = default;
 
   views::FocusTraversable* GetFocusTraversable() override {
-    return search_box_widget_;
+    if (search_box_widget_->IsVisible())
+      return search_box_widget_;
+    return nullptr;
   }
 
   // views::View:

@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 
+#include <vector>
+
 #include "base/i18n/char_iterator.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
@@ -143,7 +145,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
   // character with a dot after a short pause. On Android we don't want to
   // fire an event for those changes, but we do want to make sure our internal
   // state is correct, so we call OnDataChanged() and then return.
-  if (android_node->IsPassword() && original_node != node) {
+  if (android_node->IsPasswordField() && original_node != node) {
     android_node->OnDataChanged();
     return;
   }
@@ -191,7 +193,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       break;
     }
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
-      if (android_node->IsEditableText() && GetFocus() == node) {
+      if (android_node->IsTextField() && GetFocus() == node) {
         wcax->HandleEditableTextChanged(android_node->unique_id());
       } else if (android_node->IsSlider()) {
         wcax->HandleSliderChanged(android_node->unique_id());

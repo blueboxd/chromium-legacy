@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux_x11.h"
 
 #include "chrome/browser/ui/browser_list.h"
+#include "ui/gfx/x/x11_types.h"
+#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/gtk/gtk_ui_delegate_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
 ChromeBrowserMainExtraPartsViewsLinuxX11::
@@ -19,6 +22,16 @@ ChromeBrowserMainExtraPartsViewsLinuxX11::
 void ChromeBrowserMainExtraPartsViewsLinuxX11::PreCreateThreads() {
   ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads();
   views::X11DesktopHandler::get()->AddObserver(this);
+}
+
+void ChromeBrowserMainExtraPartsViewsLinuxX11::ToolkitInitialized() {
+  // In Aura/X11, Gtk-based LinuxUI implementation is used, so we instantiate
+  // and inject the GtkUiDelegate before ChromeBrowserMainExtraPartsViewsLinux,
+  // so it can properly initialize GtkUi on its |ToolkitInitialized| override.
+  gtk_ui_delegate_ = std::make_unique<ui::GtkUiDelegateX11>(gfx::GetXDisplay());
+  ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+
+  ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized();
 }
 
 void ChromeBrowserMainExtraPartsViewsLinuxX11::OnWorkspaceChanged(

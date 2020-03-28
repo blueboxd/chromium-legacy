@@ -12,12 +12,12 @@
 
 namespace device {
 
-class FakeSensorProvider : public mojom::SensorProvider {
+class FakeXRSensorProvider : public mojom::SensorProvider {
  public:
-  FakeSensorProvider();
-  explicit FakeSensorProvider(
+  FakeXRSensorProvider();
+  explicit FakeXRSensorProvider(
       mojo::PendingReceiver<mojom::SensorProvider> receiver);
-  ~FakeSensorProvider() override;
+  ~FakeXRSensorProvider() override;
 
   void Bind(mojo::PendingReceiver<mojom::SensorProvider> receiver);
   void GetSensor(mojom::SensorType type, GetSensorCallback callback) override;

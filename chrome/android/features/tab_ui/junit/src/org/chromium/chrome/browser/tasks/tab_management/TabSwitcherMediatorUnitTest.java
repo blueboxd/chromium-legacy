@@ -71,6 +71,7 @@ import java.util.List;
 /**
  * Tests for {@link TabSwitcherMediator}.
  */
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument", "unchecked"})
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 @DisableFeatures(

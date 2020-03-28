@@ -48,6 +48,7 @@ import java.util.List;
 /**
  * Unit tests for {@link TabSuggestionMessageService}.
  */
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument"})
 @RunWith(LocalRobolectricTestRunner.class)
 public class TabSuggestionMessageServiceUnitTest {
     private static final int TAB1_ID = 456;
@@ -100,9 +101,9 @@ public class TabSuggestionMessageServiceUnitTest {
         mocker.mock(ProfileJni.TEST_HOOKS, mMockProfileNatives);
 
         // Set up Tabs.
-        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_ROOT_ID, null, "");
-        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, TAB2_ROOT_ID, null, "");
-        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_ROOT_ID, null, "");
+        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_ROOT_ID, "");
+        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, TAB2_ROOT_ID, "");
+        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_ROOT_ID, "");
 
         // Set up TabModelSelector.
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();

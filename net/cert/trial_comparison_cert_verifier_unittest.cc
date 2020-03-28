@@ -126,7 +126,8 @@ class FakeCertVerifyProc : public CertVerifyProc {
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
-                     CertVerifyResult* verify_result) override;
+                     CertVerifyResult* verify_result,
+                     const NetLogWithSource& net_log) override;
 
   // Runs on the main thread
   void VerifyCalled();
@@ -148,7 +149,8 @@ int FakeCertVerifyProc::VerifyInternal(
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
-    CertVerifyResult* verify_result) {
+    CertVerifyResult* verify_result,
+    const NetLogWithSource& net_log) {
   *verify_result = result_;
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FakeCertVerifyProc::VerifyCalled, this));
@@ -179,7 +181,8 @@ class NotCalledCertVerifyProc : public CertVerifyProc {
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
-                     CertVerifyResult* verify_result) override;
+                     CertVerifyResult* verify_result,
+                     const NetLogWithSource& net_log) override;
 
   DISALLOW_COPY_AND_ASSIGN(NotCalledCertVerifyProc);
 };
@@ -192,7 +195,8 @@ int NotCalledCertVerifyProc::VerifyInternal(
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
-    CertVerifyResult* verify_result) {
+    CertVerifyResult* verify_result,
+    const NetLogWithSource& net_log) {
   ADD_FAILURE() << "NotCalledCertVerifyProc was called!";
   return ERR_UNEXPECTED;
 }
@@ -206,7 +210,7 @@ class MockCertVerifyProc : public CertVerifyProc {
   MockCertVerifyProc() = default;
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
-  MOCK_METHOD8(VerifyInternal,
+  MOCK_METHOD9(VerifyInternal,
                int(X509Certificate* cert,
                    const std::string& hostname,
                    const std::string& ocsp_response,
@@ -214,7 +218,8 @@ class MockCertVerifyProc : public CertVerifyProc {
                    int flags,
                    CRLSet* crl_set,
                    const CertificateList& additional_trust_anchors,
-                   CertVerifyResult* verify_result));
+                   CertVerifyResult* verify_result,
+                   const NetLogWithSource& net_log));
 
  protected:
   ~MockCertVerifyProc() override = default;
@@ -972,11 +977,11 @@ TEST_F(TrialComparisonCertVerifierTest,
       base::MakeRefCounted<MockCertVerifyProc>();
   // Primary verifier returns ok status and chain1 if verifying the leaf alone.
   EXPECT_CALL(*verify_proc1,
-              VerifyInternal(leaf_cert_1_.get(), _, _, _, _, _, _, _))
+              VerifyInternal(leaf_cert_1_.get(), _, _, _, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<7>(chain1_result), Return(OK)));
   // Primary verifier returns ok status and chain2 if verifying chain2.
   EXPECT_CALL(*verify_proc1,
-              VerifyInternal(cert_chain_2_.get(), _, _, _, _, _, _, _))
+              VerifyInternal(cert_chain_2_.get(), _, _, _, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<7>(chain2_result), Return(OK)));
 
   // Trial verifier returns ok status and chain2.
@@ -1072,12 +1077,12 @@ TEST_F(TrialComparisonCertVerifierTest,
       base::MakeRefCounted<MockCertVerifyProc>();
   // Primary verifier returns ok status and different_chain if verifying leaf
   // alone.
-  EXPECT_CALL(*verify_proc1, VerifyInternal(leaf.get(), _, _, _, _, _, _, _))
+  EXPECT_CALL(*verify_proc1, VerifyInternal(leaf.get(), _, _, _, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<7>(different_chain_result), Return(OK)));
   // Primary verifier returns ok status and nonev_chain_result if verifying
   // cert_chain.
   EXPECT_CALL(*verify_proc1,
-              VerifyInternal(cert_chain.get(), _, _, _, _, _, _, _))
+              VerifyInternal(cert_chain.get(), _, _, _, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<7>(nonev_chain_result), Return(OK)));
 
   // Trial verifier returns ok status and ev_chain_result.
@@ -1504,7 +1509,7 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
       base::MakeRefCounted<MockCertVerifyProc>();
   // Secondary verifier returns ok status...
-  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<7>(ok_result), Return(OK)));
 
 #if defined(OS_MACOSX)
@@ -1513,7 +1518,7 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
   EXPECT_CALL(
       *verify_proc2,
       VerifyInternal(_, _, _, _, CertVerifyProc::VERIFY_REV_CHECKING_ENABLED, _,
-                     _, _))
+                     _, _, _))
       .WillOnce(
           DoAll(SetArgPointee<7>(revoked_result), Return(ERR_CERT_REVOKED)));
 #endif
@@ -1579,7 +1584,7 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
   // REV_CHECKING_ENABLED was passed.
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
       base::MakeRefCounted<MockCertVerifyProc>();
-  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _, _))
 #if defined(OS_MACOSX)
       // The secondary should have been called twice on Mac due to attempting
       // the kIgnoredMacUndesiredRevocationCheckingWorkaround.

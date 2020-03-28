@@ -413,7 +413,7 @@ void BrowserTabStripController::StackedLayoutMaybeChanged() {
                                                tabstrip_->stacked_layout());
 }
 
-void BrowserTabStripController::OnStartedDragging() {
+void BrowserTabStripController::OnStartedDragging(bool dragging_window) {
   if (!immersive_reveal_lock_.get()) {
     // The top-of-window views should be revealed while the user is dragging
     // tabs in immersive fullscreen. The top-of-window views may not be already
@@ -424,12 +424,13 @@ void BrowserTabStripController::OnStartedDragging() {
             ImmersiveModeController::ANIMATE_REVEAL_NO));
   }
 
-  browser_view_->TabDraggingStatusChanged(/*is_dragging=*/true);
+  browser_view_->frame()->SetTabDragKind(dragging_window ? TabDragKind::kAllTabs
+                                                         : TabDragKind::kTab);
   // We also use fast resize for the source browser window as the source browser
   // window may also change bounds during dragging.
   BrowserView* source_browser_view = GetSourceBrowserViewInTabDragging();
   if (source_browser_view && source_browser_view != browser_view_)
-    source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/true);
+    source_browser_view->frame()->SetTabDragKind(TabDragKind::kTab);
 }
 
 void BrowserTabStripController::OnStoppedDragging() {
@@ -439,9 +440,9 @@ void BrowserTabStripController::OnStoppedDragging() {
   // Only reset the source window's fast resize bit after the entire drag
   // ends.
   if (browser_view_ != source_browser_view)
-    browser_view_->TabDraggingStatusChanged(/*is_dragging=*/false);
+    browser_view_->frame()->SetTabDragKind(TabDragKind::kNone);
   if (source_browser_view && !TabDragController::IsActive())
-    source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
+    source_browser_view->frame()->SetTabDragKind(TabDragKind::kNone);
 }
 
 void BrowserTabStripController::OnKeyboardFocusedTabChanged(

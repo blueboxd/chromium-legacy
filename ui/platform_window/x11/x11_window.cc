@@ -127,6 +127,9 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   gfx::Size adjusted_size_in_pixels =
       AdjustSizeForDisplay(config.bounds.size());
   config.bounds.set_size(adjusted_size_in_pixels);
+  config.override_redirect =
+      properties.x11_extension_delegate &&
+      properties.x11_extension_delegate->IsOverrideRedirect();
 
   workspace_extension_delegate_ = properties.workspace_extension_delegate;
   x11_extension_delegate_ = properties.x11_extension_delegate;
@@ -472,6 +475,10 @@ bool X11Window::IsSyncExtensionAvailable() const {
   return ui::IsSyncExtensionAvailable();
 }
 
+bool X11Window::IsWmTiling() const {
+  return ui::IsWmTiling(ui::GuessWindowManager());
+}
+
 void X11Window::OnCompleteSwapAfterResize() {
   XWindow::NotifySwapAfterResize();
 }
@@ -486,6 +493,10 @@ bool X11Window::ContainsPointInXRegion(const gfx::Point& point) const {
 
 void X11Window::LowerXWindow() {
   XWindow::LowerWindow();
+}
+
+void X11Window::SetOverrideRedirect(bool override_redirect) {
+  XWindow::SetOverrideRedirect(override_redirect);
 }
 
 void X11Window::SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) {

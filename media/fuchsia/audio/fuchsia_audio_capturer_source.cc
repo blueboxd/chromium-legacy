@@ -69,6 +69,9 @@ void FuchsiaAudioCapturerSource::Initialize(const AudioParameters& params,
   capturer_.events().OnPacketProduced =
       fit::bind_member(this, &FuchsiaAudioCapturerSource::OnPacketCaptured);
 
+  // TODO(crbug.com/1065207): Enable/disable stream processing based on
+  // |params.effects()| when support is added to fuchsia.media.AudioCapturer.
+
   // Configure stream format.
   fuchsia::media::AudioStreamType stream_type;
   stream_type.sample_format = fuchsia::media::AudioSampleFormat::FLOAT;

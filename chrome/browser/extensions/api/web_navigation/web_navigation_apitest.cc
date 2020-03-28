@@ -213,16 +213,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Api) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
 
-// Flaky on Windows Linux and  Chrome OS. See http://crbug.com/874782.
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_GetFrame DISABLED_GetFrame
-#else
-#define MAYBE_GetFrame GetFrame
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_GetFrame) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, GetFrame) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/getFrame")) << message_;
 }
-#undef MAYBE_GetFrame
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ClientRedirect) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/clientRedirect"))

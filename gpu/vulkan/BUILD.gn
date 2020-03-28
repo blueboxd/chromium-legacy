@@ -128,8 +128,9 @@ if (enable_vulkan) {
     }
   }
 
-  # TODO(cblume): These tests should run on each platform -- crbug.com/858614
-  if (use_x11) {
+  # TODO(penghuang): support more platforms
+  # https://crbug.com/1065499
+  if (is_android || use_x11) {
     test("vulkan_tests") {
       sources = [
         "tests/basic_vulkan_test.cc",
@@ -148,11 +149,21 @@ if (enable_vulkan) {
         "//testing/gmock",
         "//testing/gtest",
         "//ui/events/platform",
-        "//ui/events/platform/x11",
         "//ui/gfx",
         "//ui/gfx:native_widget_types",
         "//ui/gfx/geometry",
       ]
+
+      if (use_x11) {
+        deps += [ "//ui/events/platform/x11" ]
+      }
+
+      if (is_android) {
+        deps += [
+          "//ui/android:ui_java",
+          "//ui/gl",
+        ]
+      }
     }
   }
 }

@@ -8,6 +8,20 @@
  */
 cr.define('settings', function() {
   /**
+   * Constants used in safety check C++ to JS communication.
+   * Their values need be kept in sync with their counterparts in
+   * chrome/browser/ui/webui/settings/safety_check_handler.h and
+   * chrome/browser/ui/webui/settings/safety_check_handler.cc
+   * @enum {string}
+   */
+  const SafetyCheckCallbackConstants = {
+    UPDATES_CHANGED: 'safety-check-updates-status-changed',
+    PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
+    SAFE_BROWSING_CHANGED: 'safety-check-safe-browsing-status-changed',
+    EXTENSIONS_CHANGED: 'safety-check-extensions-status-changed',
+  };
+
+  /**
    * States of the safety check updates element.
    * Needs to be kept in sync with UpdatesStatus in
    * chrome/browser/ui/webui/settings/safety_check_handler.h
@@ -106,5 +120,6 @@ cr.define('settings', function() {
     SafetyCheckExtensionsStatus,
     SafetyCheckBrowserProxy,
     SafetyCheckBrowserProxyImpl,
+    SafetyCheckCallbackConstants,
   };
 });

@@ -45,6 +45,12 @@ void IOSBlockingPageTabHelper::AssociateBlockingPage(
   helper->SetBlockingPage(navigation_id, std::move(blocking_page));
 }
 
+IOSSecurityInterstitialPage* IOSBlockingPageTabHelper::GetCurrentBlockingPage(
+    web::WebState* web_state) const {
+  DCHECK_EQ(web_state_, web_state);
+  return blocking_page_for_currently_committed_navigation_.get();
+}
+
 // When the navigation finishes and commits the SSL error page, store the
 // IOSSecurityInterstitialPage in a member variable so that it can handle
 // commands. Clean up the member variable when a subsequent navigation commits,

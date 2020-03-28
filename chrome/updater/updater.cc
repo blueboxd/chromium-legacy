@@ -31,14 +31,14 @@
 #include "chrome/updater/server/mac/server.h"
 #endif
 
-// To install the updater on Windows, run "updatersetup.exe" from the
-// build directory.
-//
-// To uninstall, run "updater.exe --uninstall" from its install directory,
+// Instructions For Windows.
+// - To install only the updater, run "updatersetup.exe" from the build out dir.
+// - To install Chrome and the updater, do the same but use the --appid:
+//    updatersetup.exe --appid={8A69D345-D564-463C-AFF1-A69D9E530F96}
+// - To uninstall, run "updater.exe --uninstall" from its install directory,
 // which is under %LOCALAPPDATA%\Google\GoogleUpdater, or from the |out|
 // directory of the build.
-//
-// To debug, use the command line arguments:
+// - To debug, append the following arguments to any updater command line:
 //    --enable-logging --vmodule=*/chrome/updater/*=2.
 
 namespace updater {

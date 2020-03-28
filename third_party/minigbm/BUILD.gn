@@ -22,6 +22,7 @@ declare_args() {
   use_msm_minigbm = false
   use_radeon_minigbm = false
   use_rockchip_minigbm = false
+  use_synaptics_minigbm = false
   use_tegra_minigbm = false
   use_vc4_minigbm = false
 }
@@ -57,6 +58,9 @@ if (!use_system_minigbm) {
     if (use_rockchip_minigbm) {
       defines += [ "DRV_ROCKCHIP" ]
     }
+    if (use_synaptics_minigbm) {
+      defines += [ "DRV_SYNAPTICS" ]
+    }
     if (use_tegra_minigbm) {
       defines += [ "DRV_TEGRA" ]
     }
@@ -84,6 +88,7 @@ if (!use_system_minigbm) {
       "src/nouveau.c",
       "src/radeon.c",
       "src/rockchip.c",
+      "src/synaptics.c",
       "src/tegra.c",
       "src/udl.c",
       "src/vc4.c",

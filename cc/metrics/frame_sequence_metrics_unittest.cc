@@ -10,6 +10,22 @@
 
 namespace cc {
 
+TEST(FrameSequenceMetricsTest, SlowerThread) {
+  base::HistogramTester histogram_tester;
+
+  FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
+  first.impl_throughput().frames_expected = 200;
+  first.impl_throughput().frames_produced = 190;
+  first.main_throughput().frames_expected = 100;
+  first.main_throughput().frames_produced = 50;
+
+  // slower thread throughput is computed at ReportMetrics().
+  first.ReportMetrics();
+  std::string metric =
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll";
+  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 50), 1);
+}
+
 TEST(FrameSequenceMetricsTest, MergeMetrics) {
   // Create a metric with only a small number of frames. It shouldn't report any
   // metrics.

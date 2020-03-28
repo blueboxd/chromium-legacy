@@ -68,18 +68,29 @@ bool FilterByKey(const base::flat_set<std::string>& key_set,
 }  // namespace
 
 FeedStore::FeedStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
-                     const base::FilePath& feed_directory)
-    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+                     const base::FilePath& feed_directory,
+                     scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
       database_(database_provider->GetDB<feedstore::Record>(
           leveldb_proto::ProtoDbType::FEED_STREAM_DATABASE,
           feed_directory,
-          task_runner_)) {
-  database_->Init(base::BindOnce(&FeedStore::OnDatabaseInitialized,
-                                 weak_ptr_factory_.GetWeakPtr()));
+          task_runner)) {
+  Initialize();
+}
+
+FeedStore::FeedStore(
+    std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database)
+    : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
+      database_(std::move(database)) {
+  Initialize();
 }
 
 FeedStore::~FeedStore() = default;
+
+void FeedStore::Initialize() {
+  database_->Init(base::BindOnce(&FeedStore::OnDatabaseInitialized,
+                                 weak_ptr_factory_.GetWeakPtr()));
+}
 
 void FeedStore::OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status) {
   database_status_ = status;
@@ -87,6 +98,10 @@ void FeedStore::OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status) {
 
 bool FeedStore::IsInitialized() const {
   return database_status_ == leveldb_proto::Enums::InitStatus::kOK;
+}
+
+bool FeedStore::IsInitializedForTesting() const {
+  return IsInitialized();
 }
 
 void FeedStore::ReadSingle(
@@ -129,7 +144,7 @@ void FeedStore::OnReadStreamDataFinished(
     base::OnceCallback<void(std::unique_ptr<feedstore::StreamData>)> callback,
     bool success,
     std::unique_ptr<feedstore::Record> record) {
-  if (!success) {
+  if (!success || !record) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -138,15 +153,18 @@ void FeedStore::OnReadStreamDataFinished(
 }
 
 void FeedStore::ReadContent(
-    std::vector<feedwire::ContentId> ids,
-    base::OnceCallback<
-        void(std::unique_ptr<std::vector<feedstore::Content>>,
-             std::unique_ptr<std::vector<feedstore::StreamSharedState>>)>
+    std::vector<feedwire::ContentId> content_ids,
+    std::vector<feedwire::ContentId> shared_state_ids,
+    base::OnceCallback<void(std::vector<feedstore::Content>,
+                            std::vector<feedstore::StreamSharedState>)>
         content_callback) {
   std::vector<std::string> key_vector;
-  key_vector.reserve(ids.size());
-  for (auto& content_id : ids)
+  key_vector.reserve(content_ids.size() + shared_state_ids.size());
+  for (auto& content_id : content_ids)
     key_vector.push_back(ContentKey(content_id));
+
+  for (auto& shared_state_id : shared_state_ids)
+    key_vector.push_back(SharedStateKey(shared_state_id));
 
   ReadMany(base::flat_set<std::string>(std::move(key_vector)),
            base::BindOnce(&FeedStore::OnReadContentFinished,
@@ -155,26 +173,25 @@ void FeedStore::ReadContent(
 }
 
 void FeedStore::OnReadContentFinished(
-    base::OnceCallback<void(
-        std::unique_ptr<std::vector<feedstore::Content>>,
-        std::unique_ptr<std::vector<feedstore::StreamSharedState>>)> callback,
+    base::OnceCallback<void(std::vector<feedstore::Content>,
+                            std::vector<feedstore::StreamSharedState>)>
+        callback,
     bool success,
     std::unique_ptr<std::vector<feedstore::Record>> records) {
-  if (!success) {
-    std::move(callback).Run(nullptr, nullptr);
+  if (!success || !records) {
+    std::move(callback).Run({}, {});
     return;
   }
 
-  auto content = std::make_unique<std::vector<feedstore::Content>>();
+  std::vector<feedstore::Content> content;
   // Most of records will be content.
-  content->reserve(records->size());
-  auto shared_states =
-      std::make_unique<std::vector<feedstore::StreamSharedState>>();
+  content.reserve(records->size());
+  std::vector<feedstore::StreamSharedState> shared_states;
   for (auto& record : *records) {
     if (record.data_case() == feedstore::Record::kContent)
-      content->push_back(std::move(record.content()));
+      content.push_back(std::move(record.content()));
     else if (record.data_case() == feedstore::Record::kSharedState)
-      shared_states->push_back(std::move(record.shared_state()));
+      shared_states.push_back(std::move(record.shared_state()));
   }
 
   std::move(callback).Run(std::move(content), std::move(shared_states));
@@ -194,7 +211,7 @@ void FeedStore::OnReadNextStreamStateFinished(
         callback,
     bool success,
     std::unique_ptr<feedstore::Record> record) {
-  if (!success) {
+  if (!success || !record) {
     std::move(callback).Run(nullptr);
     return;
   }

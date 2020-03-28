@@ -16,6 +16,7 @@
 #include "build/buildflag.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gtk/gtk_ui_delegate.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"
 
@@ -36,8 +37,12 @@ class SettingsProvider;
 // Interface to GTK desktop features.
 class GtkUi : public views::LinuxUI {
  public:
-  GtkUi();
+  explicit GtkUi(ui::GtkUiDelegate* delegate);
   ~GtkUi() override;
+
+  // Static delegate getter, used by different objects (created by GtkUi), e.g:
+  // Dialogs, IME Context, when platform-specific functionality is required.
+  static ui::GtkUiDelegate* GetDelegate();
 
   // Setters used by SettingsProvider:
   void SetWindowButtonOrdering(
@@ -143,6 +148,9 @@ class GtkUi : public views::LinuxUI {
 
   float GetRawDeviceScaleFactor();
 
+  // Not owned by GtkUi.
+  ui::GtkUiDelegate* const delegate_;
+
   NativeThemeGtk* native_theme_;
 
   // A regular GtkWindow.
@@ -211,6 +219,7 @@ class GtkUi : public views::LinuxUI {
 }  // namespace gtk
 
 // Access point to the GTK desktop system.
-COMPONENT_EXPORT(GTK) views::LinuxUI* BuildGtkUi();
+COMPONENT_EXPORT(GTK)
+views::LinuxUI* BuildGtkUi(ui::GtkUiDelegate* delegate);
 
 #endif  // CHROME_BROWSER_UI_GTK_GTK_UI_H_

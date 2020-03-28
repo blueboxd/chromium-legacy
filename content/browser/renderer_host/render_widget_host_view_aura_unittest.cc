@@ -492,9 +492,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void SetUpEnvironment() {
     ImageTransportFactory::SetFactory(
         std::make_unique<TestImageTransportFactory>());
-    aura_test_helper_.reset(new aura::test::AuraTestHelper());
-    aura_test_helper_->SetUp(
-        ImageTransportFactory::GetInstance()->GetContextFactory());
+    aura_test_helper_.reset(new aura::test::AuraTestHelper(
+        ImageTransportFactory::GetInstance()->GetContextFactory()));
+    aura_test_helper_->SetUp();
 
     browser_context_.reset(new TestBrowserContext);
     process_host_ = new MockRenderProcessHost(browser_context_.get());

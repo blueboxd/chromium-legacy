@@ -810,13 +810,6 @@ class BrowserView : public BrowserWindow,
   // jankiness.
   bool in_process_fullscreen_ = false;
 
-  // True if we're participating in a tab dragging process. The value can be
-  // true if the accociated browser is the dragged browser or the source browser
-  // that the drag tab(s) originates from. During tab dragging process, the
-  // dragged browser or the source browser's bounds may change, the fast resize
-  // strategy will be used to resize its web contents for smoother dragging.
-  bool in_tab_dragging_ = false;
-
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
 #if defined(OS_WIN)

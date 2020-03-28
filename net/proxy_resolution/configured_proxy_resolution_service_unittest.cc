@@ -4180,4 +4180,19 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ImplicitlyBypassWithPac) {
   }
 }
 
+TEST_F(ConfiguredProxyResolutionServiceTest,
+       CastToConfiguredProxyResolutionService) {
+  MockProxyConfigService* config_service =
+      new MockProxyConfigService(ProxyConfig::CreateDirect());
+
+  ConfiguredProxyResolutionService service(
+      base::WrapUnique(config_service),
+      std::make_unique<MockAsyncProxyResolverFactory>(false), nullptr,
+      /*quick_check_enabled=*/true);
+
+  ConfiguredProxyResolutionService* casted_service = nullptr;
+  EXPECT_TRUE(service.CastToConfiguredProxyResolutionService(&casted_service));
+  EXPECT_EQ(&service, casted_service);
+}
+
 }  // namespace net

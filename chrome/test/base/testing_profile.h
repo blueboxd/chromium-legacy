@@ -36,6 +36,7 @@ class BrowserContextDependencyManager;
 class SimpleDependencyManager;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
+class TestingPrefStore;
 
 namespace content {
 class MockResourceContext;
@@ -500,6 +501,10 @@ class TestingProfile : public Profile {
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<policy::PolicyService> policy_service_;
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  TestingPrefStore* supervised_user_pref_store_ = nullptr;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

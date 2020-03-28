@@ -55,7 +55,7 @@ class EGLDisplayPlatform {
 class GLSurfacePresentationHelper;
 
 // If adding a new type, also add it to EGLDisplayType in
-// tools/metrics/histograms/histograms.xml. Don't remove or reorder entries.
+// tools/metrics/histograms/enums.xml. Don't remove or reorder entries.
 enum DisplayType {
   DEFAULT = 0,
   SWIFT_SHADER = 1,
@@ -72,7 +72,9 @@ enum DisplayType {
   ANGLE_VULKAN_NULL = 12,
   ANGLE_D3D11on12 = 13,
   ANGLE_SWIFTSHADER = 14,
-  DISPLAY_TYPE_MAX = 15,
+  ANGLE_OPENGL_EGL = 15,
+  ANGLE_OPENGLES_EGL = 16,
+  DISPLAY_TYPE_MAX = 17,
 };
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
@@ -80,6 +82,7 @@ GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
                                   bool supports_angle_null,
                                   bool supports_angle_vulkan,
                                   bool supports_angle_swiftshader,
+                                  bool supports_angle_egl,
                                   const base::CommandLine* command_line,
                                   std::vector<DisplayType>* init_displays);
 

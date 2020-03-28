@@ -21,6 +21,17 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  struct PhaseAndTime {
+    TimelinePhase phase;
+    base::Optional<base::TimeDelta> time;
+    bool operator==(const PhaseAndTime& other) const {
+      return phase == other.phase && time == other.time;
+    }
+    bool operator!=(const PhaseAndTime& other) const {
+      return !(*this == other);
+    }
+  };
+
   AnimationTimeline(Document*);
   ~AnimationTimeline() override = default;
 
@@ -29,8 +40,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   base::Optional<double> CurrentTime();
   base::Optional<double> CurrentTimeSeconds();
 
-  String phase() const;
-  virtual TimelinePhase Phase() const = 0;
+  String phase();
 
   virtual bool IsDocumentTimeline() const { return false; }
   virtual bool IsScrollTimeline() const { return false; }
@@ -78,7 +88,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  protected:
-  virtual base::Optional<base::TimeDelta> CurrentTimeInternal() = 0;
+  virtual PhaseAndTime CurrentPhaseAndTime() = 0;
   void RemoveReplacedAnimations();
 
   Member<Document> document_;
@@ -91,7 +101,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
 
   std::unique_ptr<CompositorAnimationTimeline> compositor_timeline_;
 
-  base::Optional<base::TimeDelta> last_current_time_internal_;
+  base::Optional<PhaseAndTime> last_current_phase_and_time_;
 };
 
 }  // namespace blink

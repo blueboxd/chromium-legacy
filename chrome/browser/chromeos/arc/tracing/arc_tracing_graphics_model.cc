@@ -67,14 +67,9 @@ constexpr char kKeyTitle[] = "title";
 constexpr char kAcquireBufferQuery[] =
     "android:onMessageReceived/android:handleMessageInvalidate/"
     "android:latchBuffer/android:updateTexImage/android:acquireBuffer";
-// Android PI+
-constexpr char kReleaseBufferQueryP[] =
+constexpr char kReleaseBufferQuery[] =
     "android:onMessageReceived/android:handleMessageRefresh/"
     "android:postComposition/android:releaseBuffer";
-// Android NYC
-constexpr char kReleaseBufferQueryN[] =
-    "android:onMessageReceived/android:handleMessageRefresh/"
-    "android:releaseBuffer";
 constexpr char kDequeueBufferQuery[] = "android:dequeueBuffer";
 constexpr char kQueueBufferQuery[] = "android:queueBuffer";
 
@@ -408,24 +403,15 @@ bool GetSurfaceFlingerEvents(const ArcTracingModel& common_model,
     return false;
   }
 
-  const int surface_flinger_pid_p =
-      ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryP,
-                                  out_events, -1 /* surface_flinger_pid */);
-  const int surface_flinger_pid_n =
-      ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryN,
-                                  out_events, -1 /* surface_flinger_pid */);
-  if (surface_flinger_pid_p <= 0 && surface_flinger_pid_n <= 0) {
+  const int surface_flinger_release_buffer_pid =
+      ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQuery, out_events,
+                                  -1 /* surface_flinger_pid */);
+  if (surface_flinger_release_buffer_pid <= 0) {
     LOG(ERROR) << "Failed to detect releaseBuffer events.";
     return false;
   }
 
-  if (surface_flinger_pid_p > 0 && surface_flinger_pid_n > 0) {
-    LOG(ERROR) << "Detected releaseBuffer events from both NYC and PI.";
-    return false;
-  }
-
-  if (surface_flinger_pid_p != surface_flinger_pid &&
-      surface_flinger_pid_n != surface_flinger_pid) {
+  if (surface_flinger_pid != surface_flinger_release_buffer_pid) {
     LOG(ERROR) << "Detected acquireBuffer and releaseBuffer from"
                   " different processes.";
     return false;

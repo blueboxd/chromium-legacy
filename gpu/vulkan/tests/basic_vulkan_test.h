@@ -5,10 +5,16 @@
 #ifndef GPU_VULKAN_TESTS_BASIC_VULKAN_TEST_H_
 #define GPU_VULKAN_TESTS_BASIC_VULKAN_TEST_H_
 
+#include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_ANDROID)
+#include "ui/gl/android/surface_texture.h"
+#endif
 
 namespace ui {
 class PlatformEventSource;
@@ -40,6 +46,9 @@ class BasicVulkanTest : public testing::Test {
   std::unique_ptr<VulkanDeviceQueue> device_queue_;
 
   gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
+#if defined(OS_ANDROID)
+  scoped_refptr<gl::SurfaceTexture> surface_texture_;
+#endif
 };
 
 }  // namespace gpu

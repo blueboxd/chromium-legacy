@@ -26,7 +26,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 public class MessageCardProviderMediatorUnitTest {
-    static final int SUGGESTED_TAB_COUNT = 2;
+    private static final int SUGGESTED_TAB_COUNT = 2;
 
     private MessageCardProviderMediator mMediator;
 

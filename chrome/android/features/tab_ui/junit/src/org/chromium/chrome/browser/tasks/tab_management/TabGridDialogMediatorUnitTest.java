@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
@@ -74,6 +73,7 @@ import java.util.List;
 /**
  * Tests for {@link TabGridDialogMediator}.
  */
+@SuppressWarnings({"ArraysAsListWithZeroOrOneArgument", "ResultOfMethodCallIgnored"})
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 // clang-format off
@@ -101,8 +101,6 @@ public class TabGridDialogMediatorUnitTest {
     Context mContext;
     @Mock
     Resources mResources;
-    @Mock
-    Rect mRect;
     @Mock
     View mView;
     @Mock

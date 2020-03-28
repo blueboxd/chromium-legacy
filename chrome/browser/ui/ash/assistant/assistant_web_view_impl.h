@@ -41,6 +41,7 @@ class AssistantWebViewImpl : public ash::AssistantWebView,
   void RemoveObserver(Observer* observer) override;
   bool GoBack() override;
   void Navigate(const GURL& url) override;
+  void AddedToWidget() override;
 
   // content::WebContentsDelegate:
   bool IsWebContentsCreationOverridden(
@@ -76,6 +77,10 @@ class AssistantWebViewImpl : public ash::AssistantWebView,
                                    bool from_user_gesture);
 
   void UpdateCanGoBack();
+
+  // Update the window property that stores whether we can minimize on a back
+  // event.
+  void UpdateMinimizeOnBackProperty();
 
   const InitParams params_;
 

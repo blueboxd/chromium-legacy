@@ -23,8 +23,8 @@ namespace sync_preferences {
 //  a PrefModelAssociatorClient.
 // TODO(tschumann) The whole purpose of TestingPrefServiceBase is questionable
 // and I'd be in favor of removing it completely:
-//  -- it hides the dependency injetion of the different stores
-//  -- just to later offer ways to manipulate speficic stores.
+//  -- it hides the dependency injection of the different stores
+//  -- just to later offer ways to manipulate specific stores.
 //  -- if tests just dependency injects the individual stores directly, they
 //     already have full control and won't need that indirection at all.
 // See PrefServiceSyncableMergeTest as an example of a cleaner way.
@@ -34,6 +34,7 @@ class TestingPrefServiceSyncable
  public:
   TestingPrefServiceSyncable();
   TestingPrefServiceSyncable(TestingPrefStore* managed_prefs,
+                             TestingPrefStore* supervised_user_prefs,
                              TestingPrefStore* extension_prefs,
                              TestingPrefStore* user_prefs,
                              TestingPrefStore* recommended_prefs,
@@ -56,6 +57,7 @@ template <>
 TestingPrefServiceBase<sync_preferences::PrefServiceSyncable,
                        user_prefs::PrefRegistrySyncable>::
     TestingPrefServiceBase(TestingPrefStore* managed_prefs,
+                           TestingPrefStore* supervised_user_prefs,
                            TestingPrefStore* extension_prefs,
                            TestingPrefStore* user_prefs,
                            TestingPrefStore* recommended_prefs,

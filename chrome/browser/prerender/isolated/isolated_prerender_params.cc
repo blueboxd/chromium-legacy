@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
@@ -26,14 +27,17 @@ bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy() {
 }
 
 base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches() {
-  if (!base::FeatureList::IsEnabled(
-          features::kPrefetchSRPNavigationPredictions_HTMLOnly)) {
+  if (!IsolatedPrerenderIsEnabled()) {
     return 0;
   }
 
-  int max = base::GetFieldTrialParamByFeatureAsInt(
-      features::kPrefetchSRPNavigationPredictions_HTMLOnly,
-      "max_srp_prefetches", 1);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "isolated-prerender-unlimited-prefetches")) {
+    return base::nullopt;
+  }
+
+  int max = base::GetFieldTrialParamByFeatureAsInt(features::kIsolatePrerenders,
+                                                   "max_srp_prefetches", 1);
   if (max < 0) {
     return base::nullopt;
   }
@@ -45,4 +49,11 @@ base::TimeDelta IsolatedPrerenderProbeTimeout() {
       base::GetFieldTrialParamByFeatureAsInt(
           features::kIsolatePrerendersMustProbeOrigin, "probe_timeout_ms",
           10 * 1000 /* 10 seconds */));
+}
+
+base::TimeDelta IsolatedPrefetchTimeoutDuration() {
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(features::kIsolatePrerenders,
+                                             "prefetch_timeout_ms",
+                                             10 * 1000 /* 10 seconds */));
 }

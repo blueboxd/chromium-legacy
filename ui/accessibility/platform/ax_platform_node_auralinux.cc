@@ -3590,7 +3590,7 @@ void AXPlatformNodeAuraLinux::GetFullSelection(int32_t* anchor_node_id,
     return;
   }
 
-  ui::AXTree::Selection selection = GetDelegate()->GetUnignoredSelection();
+  AXTree::Selection selection = GetDelegate()->GetUnignoredSelection();
   *anchor_node_id = selection.anchor_object_id;
   *anchor_offset = selection.anchor_offset;
   *focus_node_id = selection.focus_object_id;
@@ -3721,10 +3721,11 @@ void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnValueChanged() {
-  // If this is a non-web-content text entry, then we need to trigger text
-  // change signals when the value changes. This is handled by browser
-  // accessibility for web content.
-  if (IsPlainTextField() && !GetDelegate()->IsWebContent())
+  // For the AtkText interface to work on non-web content nodes, we need to
+  // update the nodes' hypertext and trigger text change signals when the value
+  // changes. Otherwise, for web and PDF content, this is handled by
+  // "BrowserAccessibilityAuraLinux".
+  if (!GetDelegate()->IsWebContent())
     UpdateHypertext();
 
   if (!GetData().IsRangeValueSupported())
@@ -4341,13 +4342,6 @@ void AXPlatformNodeAuraLinux::SetDocumentParent(
   SetWeakGPtrToAtkObject(&document_parent_, new_document_parent);
 }
 
-base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {
-  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
-  if (IsPlainTextField())
-    return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  return hypertext_.hypertext;
-}
-
 bool AXPlatformNodeAuraLinux::IsNameExposed() {
   const AXNodeData& data = GetData();
   switch (data.role) {
@@ -4510,7 +4504,7 @@ void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
   gfx::Point scroll_to(x, y);
   scroll_to = ConvertPointToScreenCoordinates(scroll_to, atk_coord_type);
 
-  ui::AXActionData action_data;
+  AXActionData action_data;
   action_data.target_node_id = GetData().id;
   action_data.action = ax::mojom::Action::kScrollToPoint;
   action_data.target_point = scroll_to;
@@ -4520,7 +4514,7 @@ void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
 void AXPlatformNodeAuraLinux::ScrollNodeRectIntoView(
     gfx::Rect rect,
     AtkScrollType atk_scroll_type) {
-  ui::AXActionData action_data;
+  AXActionData action_data;
   action_data.target_node_id = GetData().id;
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
   action_data.target_rect = rect;

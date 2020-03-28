@@ -125,6 +125,7 @@ void AssistantWebContainerView::OpenUrl(const GURL& url) {
 
   AssistantWebView::InitParams contents_params;
   contents_params.suppress_navigation = true;
+  contents_params.minimize_on_back_key = true;
 
   contents_view_ = AssistantWebViewFactory::Get()->Create(contents_params);
 

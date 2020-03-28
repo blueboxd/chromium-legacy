@@ -243,12 +243,11 @@ void PrintJobSubmitter::OnPrintJobConfirmationDialogClosed(bool accepted) {
 }
 
 void PrintJobSubmitter::StartPrintJob() {
-  auto metafile = std::make_unique<printing::MetafileSkia>();
-  CHECK(metafile->InitFromData(flattened_pdf_mapping_.memory(),
-                               flattened_pdf_mapping_.size()));
-
   DCHECK(extension_);
   DCHECK(settings_);
+  auto metafile = std::make_unique<printing::MetafileSkia>();
+  CHECK(metafile->InitFromData(
+      flattened_pdf_mapping_.GetMemoryAsSpan<const uint8_t>()));
   print_job_controller_->StartPrintJob(
       extension_->id(), std::move(metafile), std::move(settings_),
       base::BindOnce(&PrintJobSubmitter::OnPrintJobSubmitted,

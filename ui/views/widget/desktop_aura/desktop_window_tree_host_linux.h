@@ -89,6 +89,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnActivationChanged(bool active) override;
 
+  ui::X11Extension* GetX11Extension();
+  const ui::X11Extension* GetX11Extension() const;
+
  private:
   friend class DesktopWindowTreeHostX11Test;
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
@@ -114,12 +117,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 #if BUILDFLAG(USE_ATK)
   bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) override;
 #endif
+  bool IsOverrideRedirect() const override;
 
   // Enables event listening after closing |dialog|.
   void EnableEventListening();
-
-  ui::X11Extension* GetX11Extension();
-  const ui::X11Extension* GetX11Extension() const;
 
   // See comment for variable open_windows_.
   static std::list<gfx::AcceleratedWidget>& open_windows();

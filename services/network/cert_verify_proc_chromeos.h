@@ -41,7 +41,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifyProcChromeOS
                      int flags,
                      net::CRLSet* crl_set,
                      const net::CertificateList& additional_trust_anchors,
-                     net::CertVerifyResult* verify_result) override;
+                     net::CertVerifyResult* verify_result,
+                     const net::NetLogWithSource& net_log) override;
 
   // Check if the trust root of |current_chain| is allowed.
   // |is_chain_valid_arg| is actually a ChainVerifyArgs*, which is used to pass

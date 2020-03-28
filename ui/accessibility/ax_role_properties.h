@@ -90,7 +90,7 @@ AX_EXPORT bool IsMenuItem(ax::mojom::Role role);
 // Returns true if the provided role belongs to a menu or related control.
 AX_EXPORT bool IsMenuRelated(const ax::mojom::Role role);
 
-// Return true if this object supports readonly.
+// Returns true if this object supports readonly.
 // Note: This returns false for table cells and headers, it is up to the
 //       caller to make sure that they are included IFF they are within an
 //       ARIA-1.1+ role='grid' or 'treegrid', and not role='table'.

@@ -16,12 +16,11 @@ class ReaderModeInfoBarDelegate;
 class ReaderModeInfoBar : public InfoBarAndroid {
  public:
   explicit ReaderModeInfoBar(
-      std::unique_ptr<ReaderModeInfoBarDelegate> delegate);
+      std::unique_ptr<ReaderModeInfoBarDelegate> delegate,
+      const base::android::JavaParamRef<jobject>& j_manager);
   ~ReaderModeInfoBar() override;
 
-  base::android::ScopedJavaLocalRef<jobject> GetTab(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaGlobalRef<jobject> GetReaderModeManager(JNIEnv* env);
 
  protected:
   infobars::InfoBarDelegate* GetDelegate();
@@ -32,6 +31,7 @@ class ReaderModeInfoBar : public InfoBarAndroid {
       JNIEnv* env) override;
 
  private:
+  base::android::ScopedJavaGlobalRef<jobject> _j_reader_mode_manager;
   DISALLOW_COPY_AND_ASSIGN(ReaderModeInfoBar);
 };
 

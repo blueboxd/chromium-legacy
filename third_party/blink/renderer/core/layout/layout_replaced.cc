@@ -724,12 +724,14 @@ void LayoutReplaced::ComputeIntrinsicSizingInfo(
 
 static inline LayoutUnit ResolveWidthForRatio(LayoutUnit height,
                                               const FloatSize& aspect_ratio) {
-  return LayoutUnit(height * aspect_ratio.Width() / aspect_ratio.Height());
+  return LayoutUnit(height.ToDouble() * aspect_ratio.Width() /
+                    aspect_ratio.Height());
 }
 
 static inline LayoutUnit ResolveHeightForRatio(LayoutUnit width,
                                                const FloatSize& aspect_ratio) {
-  return LayoutUnit(width * aspect_ratio.Height() / aspect_ratio.Width());
+  return LayoutUnit(width.ToDouble() * aspect_ratio.Height() /
+                    aspect_ratio.Width());
 }
 
 LayoutUnit LayoutReplaced::ComputeConstrainedLogicalWidth(

@@ -9,11 +9,15 @@
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
 #include "components/prefs/pref_member.h"
 
+class BrowserDesktopWindowTreeHostLinux;
+
 // Provides the window frame for the Chrome browser window on Desktop Linux/X11.
 class DesktopBrowserFrameAuraLinux : public DesktopBrowserFrameAura {
  public:
   DesktopBrowserFrameAuraLinux(BrowserFrame* browser_frame,
                                BrowserView* browser_view);
+
+  void set_host(BrowserDesktopWindowTreeHostLinux* host) { host_ = host; }
 
  protected:
   ~DesktopBrowserFrameAuraLinux() override;
@@ -21,6 +25,7 @@ class DesktopBrowserFrameAuraLinux : public DesktopBrowserFrameAura {
   // Overridden from NativeBrowserFrame:
   views::Widget::InitParams GetWidgetParams() override;
   bool UseCustomFrame() const override;
+  void TabDraggingStatusChanged(bool is_dragging) override;
 
  private:
   // Called when the preference changes.
@@ -28,6 +33,8 @@ class DesktopBrowserFrameAuraLinux : public DesktopBrowserFrameAura {
 
   // Whether the custom Chrome frame preference is set.
   BooleanPrefMember use_custom_frame_pref_;
+
+  BrowserDesktopWindowTreeHostLinux* host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBrowserFrameAuraLinux);
 };

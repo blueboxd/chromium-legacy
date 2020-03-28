@@ -49,6 +49,7 @@ import java.util.List;
 /**
  * Tests functionality of {@link TabSuggestionsOrchestrator}.
  */
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument"})
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabSuggestionsOrchestratorTest {
@@ -71,9 +72,6 @@ public class TabSuggestionsOrchestratorTest {
 
     @Mock
     private TabModelFilter mTabModelFilter;
-
-    @Mock
-    private TabSuggestionsOrchestrator mTabSuggestionsOrchestrator;
 
     @Mock
     private ActivityLifecycleDispatcher mDispatcher;
@@ -159,6 +157,7 @@ public class TabSuggestionsOrchestratorTest {
                 mTabModelSelector, mDispatcher, new InMemorySharedPreferences());
         tabSuggestionsOrchestrator.setUseBaselineTabSuggestionsForTesting();
         List<TabSuggestion> suggestions = new LinkedList<>();
+        @SuppressWarnings("unused")
         TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
             @Override
             public void onNewSuggestion(List<TabSuggestion> tabSuggestions,

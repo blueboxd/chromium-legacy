@@ -162,14 +162,14 @@ ScrollTimeline::ScrollTimeline(Document* document,
 
 bool ScrollTimeline::IsActive() const {
   DCHECK(!IsSnapshottingAllowed() ||
-         (phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime()));
+         (phase_and_time_snapshotted_ == ComputeCurrentPhaseAndTime()));
   return phase_and_time_snapshotted_.phase != TimelinePhase::kInactive;
 }
 
 void ScrollTimeline::Invalidate() {
   if (!IsSnapshottingAllowed())
     return;
-  if (phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime())
+  if (phase_and_time_snapshotted_ == ComputeCurrentPhaseAndTime())
     return;
   SnapshotState();
   for (Animation* animation : animations_needing_update_)
@@ -198,25 +198,19 @@ bool ScrollTimeline::ComputeIsActive() const {
          layout_box->GetScrollableArea();
 }
 
-TimelinePhase ScrollTimeline::Phase() const {
+AnimationTimeline::PhaseAndTime ScrollTimeline::CurrentPhaseAndTime() {
   DCHECK(!IsSnapshottingAllowed() ||
-         phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime());
-  return phase_and_time_snapshotted_.phase;
+         phase_and_time_snapshotted_ == ComputeCurrentPhaseAndTime());
+  return phase_and_time_snapshotted_;
 }
 
-base::Optional<base::TimeDelta> ScrollTimeline::CurrentTimeInternal() {
-  DCHECK(!IsSnapshottingAllowed() ||
-         phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime());
-  return phase_and_time_snapshotted_.current_time;
-}
-
-ScrollTimeline::PhaseAndTime ScrollTimeline::ComputePhaseAndCurrentTime()
+AnimationTimeline::PhaseAndTime ScrollTimeline::ComputeCurrentPhaseAndTime()
     const {
   // 1. If scroll timeline is inactive, return an unresolved time value.
   // https://github.com/WICG/scroll-animations/issues/31
   // https://wicg.github.io/scroll-animations/#current-time-algorithm
   if (!ComputeIsActive()) {
-    return {TimelinePhase::kInactive, base::nullopt};
+    return {TimelinePhase::kInactive, /*current_time*/ base::nullopt};
   }
   LayoutBox* layout_box = resolved_scroll_source_->GetLayoutBox();
   // 2. Otherwise, let current scroll offset be the current scroll offset of
@@ -267,13 +261,12 @@ ScrollTimeline::InitialStartTimeForAnimations() {
 void ScrollTimeline::ScheduleNextService() {
   if (AnimationsNeedingUpdateCount() == 0)
     return;
-  // TODO(gerchiko): Phase also needs to be compared with the last phase.
-  if (ComputePhaseAndCurrentTime().current_time != last_current_time_internal_)
+  if (ComputeCurrentPhaseAndTime() != last_current_phase_and_time_)
     ScheduleServiceOnNextFrame();
 }
 
 void ScrollTimeline::SnapshotState() {
-  phase_and_time_snapshotted_ = ComputePhaseAndCurrentTime();
+  phase_and_time_snapshotted_ = ComputeCurrentPhaseAndTime();
 }
 
 Element* ScrollTimeline::scrollSource() {

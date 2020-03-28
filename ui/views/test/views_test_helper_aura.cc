@@ -5,7 +5,6 @@
 #include "ui/views/test/views_test_helper_aura.h"
 
 #include "ui/views/test/test_views_delegate.h"
-#include "ui/wm/core/capture_controller.h"
 
 namespace views {
 
@@ -38,11 +37,6 @@ ViewsTestHelperAura::~ViewsTestHelperAura() {
     // before they hit the CQ on other platforms.
     DCHECK(root_window->children().empty()) << "Not all windows were closed.";
   }
-
-  aura_test_helper_->TearDown();
-
-  const wm::CaptureController* const controller = wm::CaptureController::Get();
-  CHECK(!controller || !controller->is_active());
 
   g_instance = nullptr;
 }

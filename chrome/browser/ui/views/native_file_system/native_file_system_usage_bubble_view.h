@@ -38,7 +38,8 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
  private:
   class FilePathListModel : public ui::TableModel {
    public:
-    FilePathListModel(std::vector<base::FilePath> files,
+    FilePathListModel(const views::View* view,
+                      std::vector<base::FilePath> files,
                       std::vector<base::FilePath> directories);
     ~FilePathListModel() override;
     // ui::TableModel:
@@ -49,6 +50,10 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
     void SetObserver(ui::TableModelObserver*) override;
 
    private:
+    // The model needs access to the view it is in to access the correct theme
+    // for icon colors.
+    const views::View* const owner_;
+
     const std::vector<base::FilePath> files_;
     const std::vector<base::FilePath> directories_;
     DISALLOW_COPY_AND_ASSIGN(FilePathListModel);

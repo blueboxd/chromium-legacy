@@ -33,8 +33,7 @@ using chromeos::assistant::mojom::AssistantInteractionType;
 // nice error message indicating which view has the focus instead.
 #define EXPECT_HAS_FOCUS(expected_)                                           \
   ({                                                                          \
-    const views::View* actual =                                               \
-        main_view()->GetFocusManager()->GetFocusedView();                     \
+    const views::View* actual = GetFocusedView();                             \
     EXPECT_TRUE(expected_->HasFocus())                                        \
         << "Expected focus on '" << expected_->GetClassName()                 \
         << "' but it is on '" << (actual ? actual->GetClassName() : "<null>") \
@@ -176,6 +175,15 @@ class AssistantPageViewTest : public AssistantAshTestBase {
     GetEventGenerator()->PressKey(key_code, /*flags=*/ui::EF_NONE);
   }
 
+  void PressKeyAndWait(ui::KeyboardCode key_code) {
+    PressKey(key_code);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  const views::View* GetFocusedView() {
+    return main_view()->GetFocusManager()->GetFocusedView();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantPageViewTest);
 };
@@ -274,6 +282,27 @@ TEST_F(AssistantPageViewTest, ShouldNotLoseTextfieldFocusWhenResizing) {
       "resize.");
 
   EXPECT_HAS_FOCUS(input_text_field());
+}
+
+TEST_F(AssistantPageViewTest, FocusShouldRemainInAssistantViewWhenPressingTab) {
+  constexpr int kMaxIterations = 100;
+  ShowAssistantUi();
+
+  const views::View* initial_focused_view = GetFocusedView();
+  const views::View* focused_view;
+  int num_views = 0;
+
+  do {
+    PressKeyAndWait(ui::KeyboardCode::VKEY_TAB);
+    focused_view = GetFocusedView();
+    EXPECT_TRUE(page_view()->Contains(focused_view))
+        << "Focus advanced to view '" << focused_view->GetClassName()
+        << "' which is not a part of the Assistant UI";
+
+    // Sanity check to ensure we do not loop forever
+    num_views++;
+    ASSERT_LT(num_views, kMaxIterations);
+  } while (focused_view != initial_focused_view);
 }
 
 TEST_F(AssistantPageViewTest, ShouldFocusMicWhenOpeningWithHotword) {

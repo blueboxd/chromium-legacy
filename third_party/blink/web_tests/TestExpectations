@@ -2023,6 +2023,7 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
 
+crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
@@ -2128,6 +2129,8 @@ crbug.com/944583 [ Mac ] fast/scrolling/percentage-mousewheel-scroll-on-iframe.h
 crbug.com/944583 [ Mac ] fast/scrolling/percentage-mousewheel-scroll.html [ Pass Failure ]
 crbug.com/944583 [ Mac ] virtual/scroll_customization/fast/scrolling/percentage-mousewheel-scroll-on-iframe.html [ Pass Failure ]
 crbug.com/944583 [ Mac ] virtual/scroll_customization/fast/scrolling/percentage-mousewheel-scroll.html [ Pass Failure ]
+crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Pass Failure Timeout ]
+crbug.com/944583 [ Mac ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Pass Failure Timeout ]
 
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -6623,9 +6626,6 @@ crbug.com/1059645 [ Mac10.14 ] external/wpt/pointerevents/pointerevent_coalesced
 # Sheriff 2020-03-09
 crbug.com/1059123 http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope.html [ Pass Failure ]
 crbug.com/1059123 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope.html [ Pass Failure ]
-
-# Temporarily disabled to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2101972
-crbug.com/174309 http/tests/devtools/quick-open/command-menu.js [ Pass Failure ]
 
 # Support for SharedWorker must be added.
 crbug.com/1058785 external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting-shared-worker.https.html [ Timeout ]

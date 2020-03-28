@@ -32,6 +32,8 @@ source_set("renderers") {
     "video_renderer_impl.h",
     "video_resource_updater.cc",
     "video_resource_updater.h",
+    "yuv_util.cc",
+    "yuv_util.h",
   ]
 
   deps = [

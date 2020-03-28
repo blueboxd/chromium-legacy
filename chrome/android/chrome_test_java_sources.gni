@@ -65,6 +65,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/background_sync/PeriodicBackgroundSyncTest.java",
   "javatests/src/org/chromium/chrome/browser/banners/AppBannerManagerTest.java",
   "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkBridgeTest.java",
+  "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkEditTest.java",
   "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkModelTest.java",
   "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkPersonalizedSigninPromoDismissTest.java",
   "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkPersonalizedSigninPromoTest.java",

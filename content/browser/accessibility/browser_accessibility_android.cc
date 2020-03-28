@@ -4,6 +4,9 @@
 
 #include "content/browser/accessibility/browser_accessibility_android.h"
 
+#include <algorithm>
+#include <unordered_map>
+
 #include "base/i18n/break_iterator.h"
 #include "base/lazy_instance.h"
 #include "base/numerics/ranges.h"
@@ -99,7 +102,7 @@ base::string16 BrowserAccessibilityAndroid::GetValue() const {
 
   // Optionally replace entered password text with bullet characters
   // based on a user preference.
-  if (IsPassword()) {
+  if (IsPasswordField()) {
     auto* manager =
         static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
     if (manager->ShouldRespectDisplayedPasswordText()) {
@@ -108,7 +111,7 @@ base::string16 BrowserAccessibilityAndroid::GetValue() const {
       // true we should try to expose whatever's actually visually displayed,
       // whether that's the actual password or dots or whatever. To do this
       // we rely on the password field's shadow dom.
-      value = base::UTF8ToUTF16(ComputeAccessibleNameFromDescendants());
+      value = BrowserAccessibility::GetInnerText();
     } else if (!manager->ShouldExposePasswordText()) {
       value = base::string16(value.size(), ui::kSecurePasswordBullet);
     }
@@ -252,10 +255,6 @@ bool BrowserAccessibilityAndroid::IsDismissable() const {
   return false;  // No concept of "dismissable" on the web currently.
 }
 
-bool BrowserAccessibilityAndroid::IsEditableText() const {
-  return IsPlainTextField() || IsRichTextField();
-}
-
 bool BrowserAccessibilityAndroid::IsEnabled() const {
   switch (GetData().GetRestriction()) {
     case ax::mojom::Restriction::kNone:
@@ -325,10 +324,6 @@ bool BrowserAccessibilityAndroid::IsLink() const {
 
 bool BrowserAccessibilityAndroid::IsMultiLine() const {
   return HasState(ax::mojom::State::kMultiline);
-}
-
-bool BrowserAccessibilityAndroid::IsPassword() const {
-  return HasState(ax::mojom::State::kProtected);
 }
 
 bool BrowserAccessibilityAndroid::IsRangeType() const {
@@ -465,7 +460,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
 
   // On Android, contenteditable needs to be handled the same as any
   // other text field.
-  if (IsPlainTextField() || IsRichTextField())
+  if (IsTextField())
     role = ax::mojom::Role::kTextField;
 
   return ui::AXRoleToAndroidClassName(role, PlatformGetParent() != nullptr);
@@ -1714,9 +1709,9 @@ void BrowserAccessibilityAndroid::GetSuggestions(
   if (!IsRichTextField() && !IsPlainTextField())
     return;
 
-  // TODO: using FindTextOnlyObjectsInRange or NextInTreeOrder doesn't
-  // work because Android's PlatformIsLeafIncludingIgnored implementation
-  // deliberately excludes a lot of nodes. We need a version of
+  // TODO(accessibility): using FindTextOnlyObjectsInRange or NextInTreeOrder
+  // doesn't work because Android's PlatformIsLeafIncludingIgnored
+  // implementation deliberately excludes a lot of nodes. We need a version of
   // FindTextOnlyObjectsInRange and/or NextInTreeOrder that only walk
   // the internal tree.
   BrowserAccessibility* node = InternalGetFirstChild();
@@ -1769,7 +1764,7 @@ void BrowserAccessibilityAndroid::GetSuggestions(
 }
 
 bool BrowserAccessibilityAndroid::HasNonEmptyValue() const {
-  return IsEditableText() && !GetValue().empty();
+  return IsTextField() && !GetValue().empty();
 }
 
 bool BrowserAccessibilityAndroid::HasCharacterLocations() const {
@@ -1827,18 +1822,15 @@ bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {
   switch (GetRole()) {
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
-    case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kTextFieldWithComboBox:
       return true;
     default:
       break;
   }
 
-  if (IsPlainTextField() || IsRichTextField())
+  if (IsTextField())
     return true;
 
-  base::string16 value = GetValue();
-  if (value.empty())
+  if (GetValue().empty())
     return false;
 
   if (GetRole() == ax::mojom::Role::kPopUpButton)
@@ -1850,7 +1842,7 @@ bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {
 void BrowserAccessibilityAndroid::OnDataChanged() {
   BrowserAccessibility::OnDataChanged();
 
-  if (IsEditableText()) {
+  if (IsTextField()) {
     base::string16 value = GetValue();
     if (value != new_value_) {
       old_value_ = new_value_;

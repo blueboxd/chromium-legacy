@@ -18,6 +18,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
+#include "components/permissions/quota_permission_context_impl.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
@@ -498,6 +499,11 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
       /*can_persist_data*/ true,
       /*force_to_support_secure_codecs*/ false));
 #endif
+}
+
+scoped_refptr<content::QuotaPermissionContext>
+ContentBrowserClientImpl::CreateQuotaPermissionContext() {
+  return base::MakeRefCounted<permissions::QuotaPermissionContextImpl>();
 }
 
 void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {

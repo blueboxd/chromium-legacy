@@ -33,12 +33,14 @@ from devil.android import device_errors
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android.sdk import adb_wrapper
+from devil.android.sdk import build_tools
 from devil.android.sdk import intent
 from devil.android.sdk import version_codes
 from devil.utils import run_tests_helper
 
 _DIR_SOURCE_ROOT = os.path.normpath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
+_JAVA_HOME = os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current')
 
 with devil_env.SysPath(
     os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'colorama', 'src')):
@@ -1568,6 +1570,73 @@ class _CompileDexCommand(_Command):
                    self.args.compilation_filter)
 
 
+class _PrintCertsCommand(_Command):
+  name = 'print-certs'
+  description = 'Print info about certificates used to sign this APK.'
+  need_device_args = False
+  needs_apk_helper = True
+
+  def _RegisterExtraArgs(self, group):
+    group.add_argument(
+        '--full-cert',
+        action='store_true',
+        help=("Print the certificate's full signature, Base64-encoded. "
+              "Useful when configuring an Android image's "
+              "config_webview_packages.xml."))
+
+  def Run(self):
+    keytool = os.path.join(_JAVA_HOME, 'bin', 'keytool')
+    if self.is_bundle:
+      # Bundles are not signed until converted to .apks. The wrapper scripts
+      # record which key will be used to sign though.
+      with tempfile.NamedTemporaryFile() as f:
+        logging.warning('Bundles are not signed until turned into .apk files.')
+        logging.warning('Showing signing info based on associated keystore.')
+        cmd = [
+            keytool, '-exportcert', '-keystore',
+            self.bundle_generation_info.keystore_path, '-storepass',
+            self.bundle_generation_info.keystore_password, '-alias',
+            self.bundle_generation_info.keystore_alias, '-file', f.name
+        ]
+        subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        cmd = [keytool, '-printcert', '-file', f.name]
+        logging.warning('Running: %s', ' '.join(cmd))
+        subprocess.check_call(cmd)
+        if self.args.full_cert:
+          # Redirect stderr to hide a keytool warning about using non-standard
+          # keystore format.
+          full_output = subprocess.check_output(
+              cmd + ['-rfc'], stderr=subprocess.STDOUT)
+    else:
+      cmd = [
+          build_tools.GetPath('apksigner'), 'verify', '--print-certs',
+          '--verbose', self.apk_helper.path
+      ]
+      logging.warning('Running: %s', ' '.join(cmd))
+      stdout = subprocess.check_output(cmd)
+      print(stdout)
+      if self.args.full_cert:
+        if 'v1 scheme (JAR signing): true' not in stdout:
+          raise Exception(
+              'Cannot print full certificate because apk is not V1 signed.')
+
+        cmd = [keytool, '-printcert', '-jarfile', '-rfc', self.apk_helper.path]
+        # Redirect stderr to hide a keytool warning about using non-standard
+        # keystore format.
+        full_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+
+    if self.args.full_cert:
+      m = re.search(
+          r'-+BEGIN CERTIFICATE-+([\r\n0-9A-Za-z+/=]+)-+END CERTIFICATE-+',
+          full_output, re.MULTILINE)
+      if not m:
+        raise Exception('Unable to parse certificate:\n{}'.format(full_output))
+      signature = re.sub(r'[\r\n]+', '', m.group(1))
+      print()
+      print('Full Signature:')
+      print(signature)
+
+
 class _ProfileCommand(_Command):
   name = 'profile'
   description = ('Run the simpleperf sampling CPU profiler on the currently-'
@@ -1715,6 +1784,7 @@ _COMMANDS = [
     _MemUsageCommand,
     _ShellCommand,
     _CompileDexCommand,
+    _PrintCertsCommand,
     _ProfileCommand,
     _RunCommand,
     _StackCommand,

@@ -6,7 +6,10 @@
 
 #include <tuple>
 
+#include "base/values.h"
+#include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_certificate_net_log_param.h"
 
 namespace net {
 
@@ -56,6 +59,37 @@ void CertVerifyResult::Reset() {
   ocsp_result = OCSPVerifyResult();
 
   ClearAllUserData();
+}
+
+base::Value CertVerifyResult::NetLogParams(int net_error) const {
+  base::DictionaryValue results;
+  DCHECK_NE(ERR_IO_PENDING, net_error);
+  if (net_error < 0)
+    results.SetIntKey("net_error", net_error);
+  if (has_md5)
+    results.SetBoolKey("has_md5", true);
+  if (has_md2)
+    results.SetBoolKey("has_md2", true);
+  if (has_md4)
+    results.SetBoolKey("has_md4", true);
+  results.SetBoolKey("is_issued_by_known_root", is_issued_by_known_root);
+  if (is_issued_by_additional_trust_anchor) {
+    results.SetBoolKey("is_issued_by_additional_trust_anchor", true);
+  }
+  results.SetIntKey("cert_status", cert_status);
+  // TODO(mattm): This double-wrapping of the certificate list is weird. Remove
+  // this (probably requires updates to netlog-viewer).
+  base::Value certificate_dict(base::Value::Type::DICTIONARY);
+  certificate_dict.SetKey("certificates",
+                          net::NetLogX509CertificateList(verified_cert.get()));
+  results.SetKey("verified_cert", std::move(certificate_dict));
+
+  base::Value hashes(base::Value::Type::LIST);
+  for (const auto& public_key_hash : public_key_hashes)
+    hashes.Append(public_key_hash.ToString());
+  results.SetKey("public_key_hashes", std::move(hashes));
+
+  return std::move(results);
 }
 
 }  // namespace net

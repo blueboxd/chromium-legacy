@@ -246,6 +246,7 @@ group("closure_compile_module") {
     "people_page:closure_compile_module",
     "prefs:closure_compile_module",
     "printing_page:closure_compile_module",
+    "privacy_page:closure_compile_module",
     "reset_page:closure_compile_module",
     "search_engines_page:closure_compile_module",
     "search_page:closure_compile_module",

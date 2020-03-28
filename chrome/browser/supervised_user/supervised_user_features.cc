@@ -16,7 +16,7 @@ const base::Feature kSupervisedUserInitiatedExtensionInstall{
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 const base::Feature kSupervisedUserAllowlistExtensionInstall{
     "SupervisedUserAllowlistExtensionInstall",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace supervised_users

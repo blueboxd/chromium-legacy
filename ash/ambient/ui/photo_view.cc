@@ -5,9 +5,11 @@
 #include "ash/ambient/ui/photo_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/ambient/ambient_constants.h"
-#include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/model/photo_model.h"
+#include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -18,14 +20,53 @@
 
 namespace ash {
 
-PhotoView::PhotoView(AmbientController* ambient_controller)
-    : ambient_controller_(ambient_controller) {
+// AmbientBackgroundImageView--------------------------------------------------
+// A custom ImageView for ambient mode to handle specific mouse/gesture events
+// when user interacting with the background photos.
+class AmbientBackgroundImageView : public views::ImageView {
+ public:
+  explicit AmbientBackgroundImageView(AmbientViewDelegate* delegate)
+      : delegate_(delegate) {
+    DCHECK(delegate_);
+  }
+  AmbientBackgroundImageView(const AmbientBackgroundImageView&) = delete;
+  AmbientBackgroundImageView& operator=(AmbientBackgroundImageView&) = delete;
+  ~AmbientBackgroundImageView() override = default;
+
+  // views::View:
+  const char* GetClassName() const override {
+    return "AmbientBackgroundImageView";
+  }
+
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    delegate_->OnBackgroundPhotoEvents();
+    return true;
+  }
+
+  void OnMouseMoved(const ui::MouseEvent& event) override {
+    delegate_->OnBackgroundPhotoEvents();
+  }
+
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if (event->type() == ui::ET_GESTURE_TAP) {
+      delegate_->OnBackgroundPhotoEvents();
+      event->SetHandled();
+    }
+  }
+
+ private:
+  // Owned by |AmbientController| and should always outlive |this|.
+  AmbientViewDelegate* delegate_ = nullptr;
+};
+
+// PhotoView ------------------------------------------------------------------
+PhotoView::PhotoView(AmbientViewDelegate* delegate) : delegate_(delegate) {
+  DCHECK(delegate_);
   Init();
 }
 
 PhotoView::~PhotoView() {
-  // |ambient_controller_| outlives this view.
-  ambient_controller_->RemovePhotoModelObserver(this);
+  delegate_->GetPhotoModel()->RemoveObserver(this);
 }
 
 const char* PhotoView::GetClassName() const {
@@ -60,21 +101,23 @@ void PhotoView::Init() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
-  image_view_prev_ = AddChildView(std::make_unique<views::ImageView>());
-  image_view_curr_ = AddChildView(std::make_unique<views::ImageView>());
-  image_view_next_ = AddChildView(std::make_unique<views::ImageView>());
+  image_view_prev_ =
+      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
+  image_view_curr_ =
+      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
+  image_view_next_ =
+      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
 
-  // |ambient_controller_| outlives this view.
-  ambient_controller_->AddPhotoModelObserver(this);
+  delegate_->GetPhotoModel()->AddObserver(this);
 }
 
 void PhotoView::UpdateImages() {
   // TODO(b/140193766): Investigate a more efficient way to update images and do
   // layer animation.
-  auto& model = ambient_controller_->model();
-  image_view_prev_->SetImage(model.GetPrevImage());
-  image_view_curr_->SetImage(model.GetCurrImage());
-  image_view_next_->SetImage(model.GetNextImage());
+  auto* model = delegate_->GetPhotoModel();
+  image_view_prev_->SetImage(model->GetPrevImage());
+  image_view_curr_->SetImage(model->GetCurrImage());
+  image_view_next_->SetImage(model->GetNextImage());
 }
 
 void PhotoView::StartSlideAnimation() {

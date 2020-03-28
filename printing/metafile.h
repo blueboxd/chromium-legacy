@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "printing/native_drawing_context.h"
@@ -114,10 +115,9 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   // rendering resources.
   virtual bool Init() = 0;
 
-  // Initializes the metafile with the data in |src_buffer|. Returns true
-  // on success.
+  // Initializes the metafile with |data|. Returns true on success.
   // Note: It should only be called from within the browser process.
-  virtual bool InitFromData(const void* src_buffer, size_t src_buffer_size) = 0;
+  virtual bool InitFromData(base::span<const uint8_t> data) = 0;
 
   // Prepares a context for rendering a new page with the given |page_size|,
   // |content_area| and a |scale_factor| to use for the drawing. The units are

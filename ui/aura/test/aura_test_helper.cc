@@ -30,7 +30,6 @@
 #include "ui/display/screen.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
-#include "ui/wm/core/wm_state.h"
 
 #if defined(OS_LINUX)
 #include "ui/platform_window/common/platform_window_defaults.h"  // nogncheck
@@ -53,10 +52,8 @@ AuraTestHelper* g_instance = nullptr;
 
 }  // namespace
 
-AuraTestHelper::AuraTestHelper() : AuraTestHelper(nullptr) {}
-
-AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
-    : wm_state_(std::make_unique<wm::WMState>()), env_(std::move(env)) {
+AuraTestHelper::AuraTestHelper(ui::ContextFactory* context_factory,
+                               bool disable_animations) {
   DCHECK(!g_instance);
   g_instance = this;
 
@@ -69,17 +66,27 @@ AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&EventGeneratorDelegateAura::Create));
 
-  zero_duration_mode_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  if (disable_animations) {
+    zero_duration_mode_ =
+        std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  }
 
   // Some tests suites create Env globally.
   if (Env::HasInstance())
     context_factory_to_restore_ = Env::GetInstance()->context_factory();
   else
     env_ = Env::CreateInstance();
+  Env* env = GetEnv();
+
+  if (!context_factory) {
+    context_factories_ = std::make_unique<ui::TestContextFactories>(false);
+    context_factory = context_factories_->GetContextFactory();
+  }
+  env->set_context_factory(context_factory);
 
   // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
-  EnvTestHelper env_helper(GetEnv());
+  EnvTestHelper env_helper(env);
   env_helper.ResetEnvForTesting();
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
@@ -92,8 +99,8 @@ AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
 }
 
 AuraTestHelper::~AuraTestHelper() {
-  CHECK(setup_called_) << "AuraTestHelper::SetUp() never called.";
-  CHECK(teardown_called_) << "AuraTestHelper::TearDown() never called.";
+  if (g_instance)
+    TearDown();
 }
 
 // static
@@ -101,15 +108,7 @@ AuraTestHelper* AuraTestHelper::GetInstance() {
   return g_instance;
 }
 
-void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
-  setup_called_ = true;
-
-  if (!context_factory) {
-    context_factories_ = std::make_unique<ui::TestContextFactories>(false);
-    context_factory = context_factories_->GetContextFactory();
-  }
-  GetEnv()->set_context_factory(context_factory);
-
+void AuraTestHelper::SetUp() {
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
                              : gfx::Size(800, 600));
@@ -138,11 +137,9 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 }
 
 void AuraTestHelper::TearDown() {
-  teardown_called_ = true;
-
   g_instance = nullptr;
 
-  if (display::Screen::GetScreen() == test_screen_.get())
+  if (test_screen_ && (display::Screen::GetScreen() == GetTestScreen()))
     display::Screen::SetScreenInstance(nullptr);
 
   if (!env_)

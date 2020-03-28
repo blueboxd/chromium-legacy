@@ -7,16 +7,20 @@
 
 #include <vector>
 
-#include "base/containers/span.h"
+#include "base/component_export.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
+#include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/gfx/mojom/buffer_types.mojom.h"
+#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/mojom/buffer_types.mojom-shared.h"
+#include "ui/gfx/mojom/native_handle_types.mojom.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
+struct COMPONENT_EXPORT(GFX_SHARED_MOJOM_TRAITS)
+    EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
   static gfx::mojom::BufferFormat ToMojom(gfx::BufferFormat format) {
     switch (format) {
       case gfx::BufferFormat::R_8:
@@ -109,7 +113,8 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
 };
 
 template <>
-struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
+struct COMPONENT_EXPORT(GFX_SHARED_MOJOM_TRAITS)
+    EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
   static gfx::mojom::BufferUsage ToMojom(gfx::BufferUsage usage) {
     switch (usage) {
       case gfx::BufferUsage::GPU_READ:
@@ -167,8 +172,9 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
-                    gfx::BufferUsageAndFormat> {
+struct COMPONENT_EXPORT(GFX_SHARED_MOJOM_TRAITS)
+    StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
+                 gfx::BufferUsageAndFormat> {
   static gfx::BufferUsage usage(const gfx::BufferUsageAndFormat& input) {
     return input.usage;
   }
@@ -182,8 +188,9 @@ struct StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
 };
 
 template <>
-struct StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
-                    gfx::GpuMemoryBufferId> {
+struct COMPONENT_EXPORT(GFX_SHARED_MOJOM_TRAITS)
+    StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
+                 gfx::GpuMemoryBufferId> {
   static int32_t id(const gfx::GpuMemoryBufferId& buffer_id) {
     return buffer_id.id;
   }
@@ -194,61 +201,10 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
   }
 };
 
-#if defined(OS_LINUX) || defined(USE_OZONE)
 template <>
-struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
-                    gfx::NativePixmapPlane> {
-  static uint32_t stride(const gfx::NativePixmapPlane& plane) {
-    return plane.stride;
-  }
-  static int32_t offset(const gfx::NativePixmapPlane& plane) {
-    return plane.offset;
-  }
-  static uint64_t size(const gfx::NativePixmapPlane& plane) {
-    return plane.size;
-  }
-  static mojo::PlatformHandle buffer_handle(gfx::NativePixmapPlane& plane);
-  static bool Read(gfx::mojom::NativePixmapPlaneDataView data,
-                   gfx::NativePixmapPlane* out);
-};
-
-template <>
-struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
-                    gfx::NativePixmapHandle> {
-  static std::vector<gfx::NativePixmapPlane>& planes(
-      gfx::NativePixmapHandle& pixmap_handle) {
-    return pixmap_handle.planes;
-  }
-
-#if defined(OS_LINUX)
-  static uint64_t modifier(const gfx::NativePixmapHandle& pixmap_handle) {
-    return pixmap_handle.modifier;
-  }
-#endif
-
-#if defined(OS_FUCHSIA)
-  static const base::Optional<base::UnguessableToken>& buffer_collection_id(
-      const gfx::NativePixmapHandle& pixmap_handle) {
-    return pixmap_handle.buffer_collection_id;
-  }
-
-  static uint32_t buffer_index(gfx::NativePixmapHandle& pixmap_handle) {
-    return pixmap_handle.buffer_index;
-  }
-
-  static bool ram_coherency(gfx::NativePixmapHandle& pixmap_handle) {
-    return pixmap_handle.ram_coherency;
-  }
-#endif  // defined(OS_FUCHSIA)
-
-  static bool Read(gfx::mojom::NativePixmapHandleDataView data,
-                   gfx::NativePixmapHandle* out);
-};
-#endif  // defined(OS_LINUX) || defined(USE_OZONE)
-
-template <>
-struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
-                    gfx::GpuMemoryBufferHandle> {
+struct COMPONENT_EXPORT(GFX_SHARED_MOJOM_TRAITS)
+    StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
+                 gfx::GpuMemoryBufferHandle> {
   static gfx::GpuMemoryBufferId id(const gfx::GpuMemoryBufferHandle& handle) {
     return handle.id;
   }
@@ -258,8 +214,8 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   static uint32_t stride(const gfx::GpuMemoryBufferHandle& handle) {
     return handle.stride;
   }
-  static gfx::mojom::GpuMemoryBufferPlatformHandlePtr platform_handle(
-      gfx::GpuMemoryBufferHandle& handle);
+  static mojo::StructPtr<gfx::mojom::GpuMemoryBufferPlatformHandle>
+  platform_handle(gfx::GpuMemoryBufferHandle& handle);
 
   static bool Read(gfx::mojom::GpuMemoryBufferHandleDataView data,
                    gfx::GpuMemoryBufferHandle* handle);

@@ -202,14 +202,17 @@ js_library("security_page") {
   ]
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
-    #":passwords_leak_detection_toggle.m",
+    ":collapse_radio_button.m",
+    ":do_not_track_toggle.m",
+    ":passwords_leak_detection_toggle.m",
     ":personalization_options.m",
     ":privacy_page.m",
     ":privacy_page_browser_proxy.m",
+    ":secure_dns.m",
+    ":secure_dns_input.m",
     ":security_keys_bio_enroll_dialog.m",
     ":security_keys_browser_proxy.m",
     ":security_keys_credential_management_dialog.m",
@@ -217,15 +220,62 @@ js_type_check("closure_compile_module") {
     ":security_keys_reset_dialog.m",
     ":security_keys_set_pin_dialog.m",
     ":security_keys_subpage.m",
-
-    #":security_page.m",
+    ":security_page.m",
   ]
+}
+
+js_library("collapse_radio_button.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/collapse_radio_button.m.js" ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button_behavior.m",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior.m",
+  ]
+  extra_deps = [ ":collapse_radio_button_module" ]
+}
+
+js_library("secure_dns.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/secure_dns.m.js" ]
+  deps = [
+    ":privacy_page_browser_proxy.m",
+    "..:i18n_setup.m",
+    "../prefs:prefs_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+  extra_deps = [ ":secure_dns_module" ]
+}
+
+js_library("secure_dns_input.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/secure_dns_input.m.js" ]
+  deps = [
+    ":privacy_page_browser_proxy.m",
+    "..:i18n_setup.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":secure_dns_input_module" ]
+}
+
+js_library("do_not_track_toggle.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/do_not_track_toggle.m.js" ]
+  deps = [
+    "..:metrics_browser_proxy.m",
+    "../controls:settings_toggle_button.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
+  ]
+  extra_deps = [ ":do_not_track_toggle_module" ]
 }
 
 js_library("passwords_leak_detection_toggle.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/passwords_leak_detection_toggle.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "..:metrics_browser_proxy.m",
+    "../people_page:sync_browser_proxy.m",
+    "../prefs:prefs_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":passwords_leak_detection_toggle_module" ]
 }
@@ -355,17 +405,30 @@ js_library("security_keys_subpage.m") {
 js_library("security_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":privacy_page_browser_proxy.m",
+    "..:i18n_setup.m",
+    "..:metrics_browser_proxy.m",
+    "..:route.m",
+    "..:router.m",
+    "../people_page:sync_browser_proxy.m",
+    "../prefs:prefs_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
   extra_deps = [ ":security_page_module" ]
 }
 
 group("polymer3_elements") {
   public_deps = [
+    ":collapse_radio_button_module",
+    ":do_not_track_toggle_module",
     ":modulize",
     ":passwords_leak_detection_toggle_module",
     ":personalization_options_module",
     ":privacy_page_module",
+    ":secure_dns_input_module",
+    ":secure_dns_module",
     ":security_keys_bio_enroll_dialog_module",
     ":security_keys_credential_management_dialog_module",
     ":security_keys_pin_field_module",
@@ -376,10 +439,53 @@ group("polymer3_elements") {
   ]
 }
 
+polymer_modulizer("collapse_radio_button") {
+  js_file = "collapse_radio_button.js"
+  html_file = "collapse_radio_button.html"
+  html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html|CrPolicyIndicatorType",
+                   "ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button_behavior.html|CrRadioButtonBehavior",
+                 ]
+}
+
+polymer_modulizer("secure_dns") {
+  js_file = "secure_dns.js"
+  html_file = "secure_dns.html"
+  html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl,SecureDnsUiManagementMode,SecureDnsMode,ResolverOption,SecureDnsSetting",
+                   "ui/webui/resources/html/assert.html|assertNotReached",
+                 ]
+}
+
+polymer_modulizer("secure_dns_input") {
+  js_file = "secure_dns_input.js"
+  html_file = "secure_dns_input.html"
+  html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl" ]
+}
+
+polymer_modulizer("do_not_track_toggle") {
+  js_file = "do_not_track_toggle.js"
+  html_file = "do_not_track_toggle.html"
+  html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxyImpl" ]
+}
+
 polymer_modulizer("passwords_leak_detection_toggle") {
   js_file = "passwords_leak_detection_toggle.js"
   html_file = "passwords_leak_detection_toggle.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncStatus,StoredAccount",
+                   "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxyImpl",
+                 ]
 }
 
 polymer_modulizer("personalization_options") {
@@ -398,12 +504,6 @@ polymer_modulizer("privacy_page") {
   js_file = "privacy_page.js"
   html_file = "privacy_page.html"
   html_type = "dom-module"
-  ignore_imports = [
-    "chrome/browser/resources/settings/privacy_page/do_not_track_toggle.html",
-    "chrome/browser/resources/settings/privacy_page/secure_dns.html",
-    "chrome/browser/resources/settings/privacy_page/security_page.html",
-    "chrome/browser/resources/settings/privacy_page/passwords_leak_detection_toggle.html",
-  ]
   namespace_rewrites = settings_namespace_rewrites
   auto_imports = settings_auto_imports + [
                    "ui/webui/resources/html/assert.html|assert",
@@ -484,6 +584,15 @@ polymer_modulizer("security_page") {
   js_file = "security_page.js"
   html_file = "security_page.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "ui/webui/resources/html/assert.html|assert",
+                   "chrome/browser/resources/settings/router.html|Router",
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxy,MetricsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl",
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncStatus",
+                 ]
 }
 
 js_modulizer("modulize") {

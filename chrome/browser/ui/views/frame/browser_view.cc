@@ -1386,7 +1386,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // Do nothing if we're currently participating in a tab dragging process. The
   // fast resize bit will be reset and the web contents will get re-layed out
   // after the tab dragging ends.
-  if (in_tab_dragging_)
+  if (frame()->tab_drag_kind() != TabDragKind::kNone)
     return;
 
   if (is_animating)
@@ -1403,15 +1403,8 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
 }
 
 void BrowserView::TabDraggingStatusChanged(bool is_dragging) {
-  if (in_tab_dragging_ == is_dragging)
-    return;
-
-  in_tab_dragging_ = is_dragging;
-  if (in_tab_dragging_) {
-    contents_web_view_->SetFastResize(true);
-  } else {
-    contents_web_view_->SetFastResize(false);
-
+  contents_web_view_->SetFastResize(is_dragging);
+  if (!is_dragging) {
     // When tab dragging is ended, we need to make sure the web contents get
     // re-layed out. Otherwise we may see web contents get clipped to the window
     // size that was used during dragging.

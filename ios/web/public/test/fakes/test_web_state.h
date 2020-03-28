@@ -79,6 +79,8 @@ class TestWebState : public WebState {
 
   void RemoveObserver(WebStateObserver* observer) override;
 
+  void CloseWebState() override;
+
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
   void DidChangeVisibleSecurityState() override {}

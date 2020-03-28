@@ -14,7 +14,7 @@ import './search_engines_page/search_engines_page.m.js';
 // been migrated to Polymer 3.
 // import './privacy_page/cookies_page.m.js';
 import './privacy_page/security_keys_subpage.m.js';
-// import './privacy_page/security_page.m.js';
+import './privacy_page/security_page.m.js';
 import './site_settings/all_sites.m.js';
 import './site_settings/site_data_details_subpage.m.js';
 import './site_settings_page/site_settings_page.m.js';

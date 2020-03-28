@@ -21,6 +21,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
@@ -32,9 +33,8 @@ using content::BrowserThread;
 namespace {
 
 const std::vector<std::string> kStorageTypes{
-    "Cookie",    "LocalStorage", "FileSystem",   "SessionStorage",
-    "IndexedDb", "WebSql",       "CacheStorage", "ServiceWorker",
-};
+    "Cookie", "LocalStorage", "FileSystem",    "SessionStorage", "IndexedDb",
+    "WebSql", "CacheStorage", "ServiceWorker", "CookieStore"};
 
 const std::vector<std::string> kCrossTabCommunicationTypes{
     "SharedWorker",
@@ -59,6 +59,8 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
     // HTTPS server only serves a valid cert for localhost, so this is needed
     // to load pages from other hosts without an error.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "CookieStoreDocument");
   }
 
   void SetBlockThirdPartyCookies(bool value) {

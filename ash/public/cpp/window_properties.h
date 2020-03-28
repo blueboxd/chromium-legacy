@@ -126,6 +126,12 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowManagerManagesOpacityKey;
 
+// A property key to store whether we should minimize a window when a system
+// synthesized back event (back gesture, back button) is processed by this
+// window and when this window is at the bottom of its navigation stack.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool*>* const
+    kMinimizeOnBackKey;
+
 // A property key to store the window state the window had before entering PIP.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
     kPrePipWindowStateTypeKey;

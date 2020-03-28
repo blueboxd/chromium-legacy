@@ -6,33 +6,15 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {PDFCreateOutOfProcessPlugin} from '../pdf/pdf_scripting_api.js';
 
 /**
- * @typedef {{accessibility: Function,
- *            documentLoadComplete: Function,
- *            getHeight: Function,
- *            getHorizontalScrollbarThickness: Function,
- *            getPageLocationNormalized: Function,
- *            getVerticalScrollbarThickness: Function,
- *            getWidth: Function,
- *            getZoomLevel: Function,
- *            goToPage: Function,
- *            grayscale: Function,
+ * @typedef {{darkModeChanged: Function,
+ *            hideToolbars: Function,
  *            loadPreviewPage: Function,
- *            onload: Function,
- *            onPluginSizeChanged: Function,
- *            onScroll: Function,
- *            pageXOffset: Function,
- *            pageYOffset: Function,
- *            reload: Function,
  *            resetPrintPreviewMode: Function,
+ *            scrollPosition: Function,
  *            sendKeyEvent: Function,
- *            setPageNumbers: Function,
- *            setPageXOffset: Function,
- *            setPageYOffset: Function,
- *            setZoomLevel: Function,
- *            fitToHeight: Function,
- *            fitToWidth: Function,
- *            zoomIn: Function,
- *            zoomOut: Function}}
+ *            setKeyEventCallback: Function,
+ *            setLoadCompleteCallback: Function,
+ *            setViewportChangedCallback: Function}}
  */
 export let PDFPlugin;
 
@@ -164,9 +146,9 @@ export class PluginProxy {
     this.plugin_.setKeyEventCallback(keyEventCallback);
   }
 
-  /** @param {?Function} loadCallback */
-  setLoadCallback(loadCallback) {
-    this.plugin_.setLoadCallback(loadCallback);
+  /** @param {?Function} loadCompleteCallback */
+  setLoadCompleteCallback(loadCompleteCallback) {
+    this.plugin_.setLoadCompleteCallback(loadCompleteCallback);
   }
 
   /** @param {?Function} viewportChangedCallback */

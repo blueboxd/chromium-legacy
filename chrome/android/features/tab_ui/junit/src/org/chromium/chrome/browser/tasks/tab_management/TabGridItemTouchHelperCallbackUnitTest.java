@@ -64,6 +64,7 @@ import java.util.List;
 /**
  * Tests for {@link TabGridItemTouchHelperCallback}.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
@@ -112,10 +113,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     @Mock
     GridLayoutManager mGridLayoutManager;
 
-    private Tab mTab1;
-    private Tab mTab2;
-    private Tab mTab3;
-    private Tab mTab4;
     private SimpleRecyclerViewAdapter.ViewHolder mMockViewHolder1;
     private SimpleRecyclerViewAdapter.ViewHolder mMockViewHolder2;
     private RecyclerView.ViewHolder mDummyViewHolder1;
@@ -135,10 +132,10 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
         MockitoAnnotations.initMocks(this);
 
-        mTab1 = prepareTab(TAB1_ID, TAB1_TITLE);
-        mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
-        mTab3 = prepareTab(TAB3_ID, TAB3_TITLE);
-        mTab4 = prepareTab(TAB4_ID, TAB4_TITLE);
+        Tab tab1 = prepareTab(TAB1_ID, TAB1_TITLE);
+        Tab tab2 = prepareTab(TAB2_ID, TAB2_TITLE);
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE);
+        Tab tab4 = prepareTab(TAB4_ID, TAB4_TITLE);
         mMockViewHolder1 = prepareMockViewHolder(TAB1_ID, POSITION1);
         mMockViewHolder2 = prepareMockViewHolder(TAB2_ID, POSITION2);
         // Mock four cards in a grid layout. Each card is of width 4 and height 4. Both the side
@@ -158,15 +155,15 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         doReturn(tabModelList).when(mTabModelSelector).getModels();
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
-        doReturn(mTab1).when(mTabModel).getTabAt(POSITION1);
-        doReturn(mTab2).when(mTabModel).getTabAt(POSITION2);
-        doReturn(mTab3).when(mTabModel).getTabAt(POSITION3);
-        doReturn(mTab4).when(mTabModel).getTabAt(POSITION4);
+        doReturn(tab1).when(mTabModel).getTabAt(POSITION1);
+        doReturn(tab2).when(mTabModel).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabModel).getTabAt(POSITION3);
+        doReturn(tab4).when(mTabModel).getTabAt(POSITION4);
         doReturn(4).when(mTabModel).getCount();
-        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
-        doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
-        doReturn(mTab3).when(mTabGroupModelFilter).getTabAt(POSITION3);
-        doReturn(mTab4).when(mTabGroupModelFilter).getTabAt(POSITION4);
+        doReturn(tab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(tab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabGroupModelFilter).getTabAt(POSITION3);
+        doReturn(tab4).when(mTabGroupModelFilter).getTabAt(POSITION4);
         setupRecyclerView();
 
         mModel = new TabListModel();
@@ -856,11 +853,10 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     private SimpleRecyclerViewAdapter.ViewHolder prepareMockViewHolder(int id, int position) {
         SimpleRecyclerViewAdapter.ViewHolder viewHolder =
                 mock(SimpleRecyclerViewAdapter.ViewHolder.class);
-        PropertyModel model = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
-                                      .with(TabProperties.TAB_ID, id)
-                                      .with(CARD_TYPE, TAB)
-                                      .build();
-        viewHolder.model = model;
+        viewHolder.model = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
+                                   .with(TabProperties.TAB_ID, id)
+                                   .with(CARD_TYPE, TAB)
+                                   .build();
         doReturn(position).when(viewHolder).getAdapterPosition();
         return viewHolder;
     }

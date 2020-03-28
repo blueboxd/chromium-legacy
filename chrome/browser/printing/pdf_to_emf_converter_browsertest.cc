@@ -59,7 +59,7 @@ std::string GetFileNameForPageNumber(const std::string& name, int page_number) {
 
 std::unique_ptr<ENHMETAHEADER> GetEmfHeader(const std::string& emf_data) {
   Emf emf;
-  if (!emf.InitFromData(emf_data.data(), emf_data.size()))
+  if (!emf.InitFromData(base::as_bytes(base::make_span(emf_data))))
     return nullptr;
 
   auto meta_header = std::make_unique<ENHMETAHEADER>();

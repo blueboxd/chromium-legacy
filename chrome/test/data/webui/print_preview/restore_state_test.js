@@ -308,7 +308,7 @@ suite(restore_state_test.suiteName, function() {
     document.body.appendChild(page);
     const previewArea = page.$$('print-preview-preview-area');
     previewArea.plugin_ =
-        new PDFPluginStub(previewArea.onPluginLoad_.bind(previewArea));
+        new PDFPluginStub(previewArea.onPluginLoadComplete_.bind(previewArea));
 
     return nativeLayer.whenCalled('getInitialSettings')
         .then(function() {

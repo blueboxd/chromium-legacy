@@ -12,7 +12,10 @@
 
 namespace blink {
 
-DocumentTiming::DocumentTiming(Document& document) : document_(document) {}
+DocumentTiming::DocumentTiming(Document& document) : document_(document) {
+  if (document_->GetReadyState() == Document::kLoading)
+    MarkDomLoading();
+}
 
 void DocumentTiming::Trace(Visitor* visitor) {
   visitor->Trace(document_);

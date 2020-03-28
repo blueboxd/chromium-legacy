@@ -1290,7 +1290,8 @@ int CertVerifyProcMac::VerifyInternal(
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
-    CertVerifyResult* verify_result) {
+    CertVerifyResult* verify_result,
+    const NetLogWithSource& net_log) {
   // Save the input state of |*verify_result|, which may be needed to re-do
   // verification with different flags.
   const CertVerifyResult input_verify_result(*verify_result);

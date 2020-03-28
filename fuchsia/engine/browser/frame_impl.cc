@@ -969,6 +969,29 @@ void FrameImpl::RequestMediaAccessPermission(
                      std::move(callback)));
 }
 
+bool FrameImpl::CheckMediaAccessPermission(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& security_origin,
+    blink::mojom::MediaStreamType type) {
+  content::PermissionType permission;
+  switch (type) {
+    case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
+      permission = content::PermissionType::AUDIO_CAPTURE;
+      break;
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
+      permission = content::PermissionType::VIDEO_CAPTURE;
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+  auto* permission_controller =
+      web_contents_->GetBrowserContext()->GetPermissionControllerDelegate();
+  return permission_controller->GetPermissionStatusForFrame(
+             permission, render_frame_host, security_origin) ==
+         blink::mojom::PermissionStatus::GRANTED;
+}
+
 void FrameImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   if (before_load_scripts_.empty())

@@ -980,12 +980,6 @@ ChildLayout AnimatingLayoutManager::CalculateSlideFade(
   return child_layout;
 }
 
-SizeBounds AnimatingLayoutManager::GetAvailableHostSize() const {
-  DCHECK(host_view());
-  const auto* const parent = host_view()->parent();
-  return parent ? parent->GetAvailableSize(host_view()) : SizeBounds();
-}
-
 // Returns the space in which to calculate the target layout.
 gfx::Size AnimatingLayoutManager::GetAvailableTargetLayoutSize() {
   if (!should_animate_bounds_)

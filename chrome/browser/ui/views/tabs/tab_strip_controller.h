@@ -124,7 +124,9 @@ class TabStripController {
   virtual void StackedLayoutMaybeChanged() = 0;
 
   // Notifies controller that the user started dragging this tabstrip's tabs.
-  virtual void OnStartedDragging() = 0;
+  // |dragging_window| indicates if the whole window is moving, or if tabs are
+  // moving within a window.
+  virtual void OnStartedDragging(bool dragging_window) = 0;
 
   // Notifies controller that the user stopped dragging this tabstrip's tabs.
   // This is also called when the tabs that the user is dragging were detached

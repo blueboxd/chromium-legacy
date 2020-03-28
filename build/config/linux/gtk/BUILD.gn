@@ -22,8 +22,8 @@ pkg_config("gtk_internal_config") {
 
 group("gtk") {
   visibility = [
-    # This is the only target in Chrome that should depend on GTK.
-    "//chrome/browser/ui/gtk:*",
+    # This is the only target that should depend on GTK.
+    "//ui/gtk:*",
 
     # These are all for WebRTC.
     "//examples:peerconnection_client",

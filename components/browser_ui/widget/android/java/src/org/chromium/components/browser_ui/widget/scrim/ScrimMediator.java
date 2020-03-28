@@ -185,6 +185,11 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
         mOverlayAnimator.start();
     }
 
+    /** @return Whether the scrim is still active (has a non-null model). */
+    boolean isActive() {
+        return mModel != null;
+    }
+
     @Override
     public void onClick(View view) {
         if (mModel.get(ScrimProperties.CLICK_DELEGATE) != null) {

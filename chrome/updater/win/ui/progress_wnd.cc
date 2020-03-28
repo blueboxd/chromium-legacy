@@ -23,6 +23,9 @@ namespace ui {
 
 namespace {
 
+// TODO(crbug.com/1065588): remove this symbol.
+const char kChromeAppId[] = "{8A69D345-D564-463C-AFF1-A69D9E530F96}";
+
 // The current UI shows to the user only one completion type, even though
 // there could be multiple applications in a bundle, where each application
 // could have a different completion type. The following array lists the

@@ -384,7 +384,7 @@ void PrintPDFOutput(PP_Resource print_output,
     return;
   }
 
-  metafile->InitFromData(mapper.data(), mapper.size());
+  metafile->InitFromData(mapper);
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 }
 

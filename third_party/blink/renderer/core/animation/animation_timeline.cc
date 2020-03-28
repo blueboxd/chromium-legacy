@@ -39,7 +39,7 @@ bool CompareAnimations(const Member<Animation>& left,
 }
 
 double AnimationTimeline::currentTime(bool& is_null) {
-  base::Optional<base::TimeDelta> result = CurrentTimeInternal();
+  base::Optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
 
   is_null = !result.has_value();
   return result ? result->InMillisecondsF()
@@ -47,24 +47,24 @@ double AnimationTimeline::currentTime(bool& is_null) {
 }
 
 double AnimationTimeline::currentTime() {
-  base::Optional<base::TimeDelta> result = CurrentTimeInternal();
+  base::Optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
   return result ? result->InMillisecondsF()
                 : std::numeric_limits<double>::quiet_NaN();
 }
 
 base::Optional<double> AnimationTimeline::CurrentTime() {
-  base::Optional<base::TimeDelta> result = CurrentTimeInternal();
+  base::Optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
   return result ? base::make_optional(result->InMillisecondsF())
                 : base::nullopt;
 }
 
 base::Optional<double> AnimationTimeline::CurrentTimeSeconds() {
-  base::Optional<base::TimeDelta> result = CurrentTimeInternal();
+  base::Optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
   return result ? base::make_optional(result->InSecondsF()) : base::nullopt;
 }
 
-String AnimationTimeline::phase() const {
-  switch (Phase()) {
+String AnimationTimeline::phase() {
+  switch (CurrentPhaseAndTime().phase) {
     case TimelinePhase::kInactive:
       return "inactive";
     case TimelinePhase::kBefore:
@@ -82,14 +82,15 @@ void AnimationTimeline::ClearOutdatedAnimation(Animation* animation) {
 }
 
 bool AnimationTimeline::NeedsAnimationTimingUpdate() {
-  if (CurrentTimeInternal() == last_current_time_internal_)
+  PhaseAndTime current_phase_and_time = CurrentPhaseAndTime();
+  if (current_phase_and_time == last_current_phase_and_time_)
     return false;
 
-  // We allow |last_current_time_internal_| to advance here when there
+  // We allow |last_current_phase_and_time_| to advance here when there
   // are no animations to allow animations spawned during style
   // recalc to not invalidate this flag.
   if (animations_needing_update_.IsEmpty())
-    last_current_time_internal_ = CurrentTimeInternal();
+    last_current_phase_and_time_ = current_phase_and_time;
 
   return !animations_needing_update_.IsEmpty();
 }
@@ -97,15 +98,15 @@ bool AnimationTimeline::NeedsAnimationTimingUpdate() {
 void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
   TRACE_EVENT0("blink", "AnimationTimeline::serviceAnimations");
 
-  auto current_time_internal = CurrentTimeInternal();
+  auto current_phase_and_time = CurrentPhaseAndTime();
   bool maybe_update_compositor_scroll_timeline = false;
 
   if (IsScrollTimeline() &&
-      last_current_time_internal_ != current_time_internal) {
+      last_current_phase_and_time_ != current_phase_and_time) {
     maybe_update_compositor_scroll_timeline = true;
   }
 
-  last_current_time_internal_ = current_time_internal;
+  last_current_phase_and_time_ = current_phase_and_time;
 
   HeapVector<Member<Animation>> animations;
   animations.ReserveInitialCapacity(animations_needing_update_.size());
@@ -124,7 +125,7 @@ void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
   }
 
   DCHECK_EQ(outdated_animation_count_, 0U);
-  DCHECK(last_current_time_internal_ == CurrentTimeInternal());
+  DCHECK(last_current_phase_and_time_ == CurrentPhaseAndTime());
 
 #if DCHECK_IS_ON()
   for (const auto& animation : animations_needing_update_)

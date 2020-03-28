@@ -4,7 +4,9 @@
 
 #include "ios/chrome/browser/interstitials/ios_chrome_controller_client.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -12,6 +14,8 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/reload_type.h"
 #include "ios/web/public/security/web_interstitial.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,13 +27,22 @@ IOSChromeControllerClient::IOSChromeControllerClient(
     std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper)
     : security_interstitials::ControllerClient(std::move(metrics_helper)),
       web_state_(web_state),
-      web_interstitial_(nullptr) {}
+      web_interstitial_(nullptr),
+      weak_factory_(this) {
+  web_state_->AddObserver(this);
+}
 
 IOSChromeControllerClient::~IOSChromeControllerClient() {}
 
 void IOSChromeControllerClient::SetWebInterstitial(
     web::WebInterstitial* web_interstitial) {
   web_interstitial_ = web_interstitial;
+}
+
+void IOSChromeControllerClient::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
 
 bool IOSChromeControllerClient::CanLaunchDateAndTimeSettings() {
@@ -43,6 +56,13 @@ void IOSChromeControllerClient::LaunchDateAndTimeSettings() {
 void IOSChromeControllerClient::GoBack() {
   if (CanGoBack()) {
     web_state_->GetNavigationManager()->GoBack();
+  } else {
+    // Closing the tab synchronously is problematic since web state is heavily
+    // involved in the operation and CloseWebState interrupts it, so call
+    // CloseWebState asynchronously.
+    base::PostTask(FROM_HERE, {web::WebThread::UI},
+                   base::BindOnce(&IOSChromeControllerClient::Close,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -93,4 +113,10 @@ PrefService* IOSChromeControllerClient::GetPrefService() {
 const std::string IOSChromeControllerClient::GetExtendedReportingPrefName()
     const {
   return std::string();
+}
+
+void IOSChromeControllerClient::Close() {
+  if (web_state_) {
+    web_state_->CloseWebState();
+  }
 }

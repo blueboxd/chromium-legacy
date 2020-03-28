@@ -56,6 +56,8 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
 
   void Invoke() {
     const base::TimeTicks task_start_time = base::TimeTicks::Now();
+    if (!controller_)
+      return;
     if (!controller_->ShouldFindMatches(identifier_, search_text_, *options_)) {
       controller_->DidFinishTask(identifier_, search_text_, *options_,
                                  true /* finished_whole_request */,
@@ -64,20 +66,21 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
     }
     SCOPED_UMA_HISTOGRAM_TIMER("WebCore.FindInPage.TaskDuration");
 
+    Document* document = controller_->GetLocalFrame()->GetDocument();
+    if (!document || document_ != document)
+      return;
     Document::ScopedForceActivatableDisplayLocks
         forced_activatable_display_locks(
-            controller_->GetLocalFrame()
-                ->GetDocument()
-                ->GetScopedForceActivatableLocks());
-    Document& document = *controller_->GetLocalFrame()->GetDocument();
+            document->GetScopedForceActivatableLocks());
     PositionInFlatTree search_start =
-        PositionInFlatTree::FirstPositionInNode(document);
+        PositionInFlatTree::FirstPositionInNode(*document);
     PositionInFlatTree search_end;
-    if (document.documentElement() && document.documentElement()->lastChild()) {
+    if (document->documentElement() &&
+        document->documentElement()->lastChild()) {
       search_end = PositionInFlatTree::AfterNode(
-          *document.documentElement()->lastChild());
+          *document->documentElement()->lastChild());
     } else {
-      search_end = PositionInFlatTree::LastPositionInNode(document);
+      search_end = PositionInFlatTree::LastPositionInNode(*document);
     }
     DCHECK_EQ(search_start.GetDocument(), search_end.GetDocument());
 
@@ -92,8 +95,7 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
     }
 
     // This is required if we forced any of the display-locks.
-    search_start.GetDocument()->UpdateStyleAndLayout(
-        DocumentUpdateReason::kFindInPage);
+    document->UpdateStyleAndLayout(DocumentUpdateReason::kFindInPage);
 
     int match_count = 0;
     bool full_range_searched = false;
@@ -208,6 +210,8 @@ void FindTaskController::DidFinishTask(
     int match_count,
     bool aborted,
     base::TimeTicks task_start_time) {
+  if (current_find_identifier_ != identifier)
+    return;
   total_task_duration_for_current_request_ +=
       base::TimeTicks::Now() - task_start_time;
   if (find_task_)
@@ -236,13 +240,11 @@ void FindTaskController::DidFinishTask(
 
   text_finder_->FinishCurrentScopingEffort(identifier);
 
-  if (identifier == current_find_identifier_) {
-    RecordRequestMetrics(RequestEndState::ABORTED);
-    last_find_request_completed_with_no_matches_ =
-        !aborted && !current_match_count_;
-    finding_in_progress_ = false;
-    current_find_identifier_ = kInvalidFindIdentifier;
-  }
+  RecordRequestMetrics(RequestEndState::ABORTED);
+  last_find_request_completed_with_no_matches_ =
+      !aborted && !current_match_count_;
+  finding_in_progress_ = false;
+  current_find_identifier_ = kInvalidFindIdentifier;
 }
 
 void FindTaskController::RecordRequestMetrics(
@@ -281,10 +283,10 @@ bool FindTaskController::ShouldFindMatches(
     const mojom::blink::FindOptions& options) {
   if (identifier != current_find_identifier_)
     return false;
-  // Don't scope if we can't find a frame or a view.
+  // Don't scope if we can't find a frame, a document, or a view.
   // The user may have closed the tab/application, so abort.
   LocalFrame* frame = GetLocalFrame();
-  if (!frame || !frame->View() || !frame->GetPage())
+  if (!frame || !frame->View() || !frame->GetPage() || !frame->GetDocument())
     return false;
 
   DCHECK(frame->GetDocument());

@@ -108,8 +108,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   bool IsDocument() const;
 
-  bool IsEditField() const;
-
   bool IsIgnored() const;
 
   // Returns true if this object is used only for representing text.
@@ -256,8 +254,19 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
+  // Returns the value of a control, such as the value of a text field, a slider
+  // or a scrollbar.
+  //
+  // For text fields, computes the value of the field from its internal
+  // representation in the accessibility tree if necessary.
+  //
   // This is to handle the cases such as ARIA textbox, where the value should
-  // be calculated from the object's inner text.
+  // be calculated from the object's inner text, as well as all text fields
+  // originating from Blink where the HTML value attribute cannot always be
+  // trusted.
+  //
+  // TODO(nektar): Move this method to AXNode when AXNodePosition and
+  // BrowserAccessibilityPosition are merged into one class.
   virtual base::string16 GetValue() const;
 
   // This is an approximate hit test that only uses the information in
@@ -388,17 +397,38 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsWebAreaForPresentationalIframe() const;
 
   virtual bool IsClickable() const;
+
+  // A text field is any widget in which the user should be able to enter and
+  // edit text.
+  //
+  // Examples include <input type="text">, <input type="password">, <textarea>,
+  // <div contenteditable="true">, <div role="textbox">, <div role="searchbox">
+  // and <div role="combobox">. Note that when an ARIA role that indicates that
+  // the widget is editable is used, such as "role=textbox", the element doesn't
+  // need to be contenteditable for this method to return true, as in theory
+  // JavaScript could be used to implement editing functionality. In practice,
+  // this situation should be rare.
+  bool IsTextField() const;
+
+  // A text field that is used for entering passwords.
+  bool IsPasswordField() const;
+
+  // A text field that doesn't accept rich text content, such as text with
+  // special formatting or styling.
   bool IsPlainTextField() const;
+
+  // A text field that accepts rich text content, such as text with special
+  // formatting or styling.
   bool IsRichTextField() const;
 
   // Return true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;
 
-  // If an object is focusable but has no accessible name, use this
-  // to compute a name from its descendants.
+  // TODO(nektar): Remove this method and replace with GetInnerText.
   std::string ComputeAccessibleNameFromDescendants() const;
 
-  // Get text to announce for a live region change if AT does not implement.
+  // Get text to announce for a live region change, for ATs that do not
+  // implement this functionality.
   std::string GetLiveRegionText() const;
 
   // Creates a text position rooted at this object. Does not conver to a
@@ -421,11 +451,15 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // AXPosition Support
 
-  // Returns the text that is present inside this node, where the representation
-  // of text found in descendant nodes depends on the platform. For example some
-  // platforms may include descendant text while while other platforms may use a
-  // special character to represent descendant text. Prefer either GetHypertext
-  // or GetInnerText so it's clear which API is called.
+  // Returns the text that is present inside this node, where the
+  // representation of text found in descendant nodes depends on the platform.
+  // For example some platforms may include descendant text while while other
+  // platforms may use a special character to represent descendant text.
+  // Prefer either GetHypertext or GetInnerText so it's clear which API is
+  // called.
+  //
+  // TODO(nektar): Move this method to AXNode when AXNodePosition and
+  // BrowserAccessibilityPosition are merged into one class.
   virtual base::string16 GetText() const;
 
   base::string16 GetNameAsString16() const;
@@ -608,15 +642,15 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ui::AXOffscreenResult* offscreen_result) const;
 
   // Return a rect for a 1-width character past the end of text. This is what
-  // ATs expect when getting the character extents past the last character in a
-  // line, and equals what the caret bounds would be when past the end of the
-  // text.
+  // ATs expect when getting the character extents past the last character in
+  // a line, and equals what the caret bounds would be when past the end of
+  // the text.
   gfx::Rect GetRootFrameHypertextBoundsPastEndOfText(
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
-  // Return the bounds of inline text in this node's coordinate system (which is
-  // relative to its container node specified in AXRelativeBounds).
+  // Return the bounds of inline text in this node's coordinate system (which
+  // is relative to its container node specified in AXRelativeBounds).
   gfx::RectF GetInlineTextRect(const int start_offset,
                                const int end_offset,
                                const int max_length) const;
@@ -639,8 +673,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Given a set of map of spelling text attributes and a start offset, merge
   // them into the given map of existing text attributes. Merges the given
-  // spelling attributes, i.e. document marker information, into the given text
-  // attributes starting at the given character offset. This is required
+  // spelling attributes, i.e. document marker information, into the given
+  // text attributes starting at the given character offset. This is required
   // because document markers that are present on text leaves need to be
   // propagated to their parent object for compatibility with Firefox.
   static void MergeSpellingAndGrammarIntoTextAttributes(

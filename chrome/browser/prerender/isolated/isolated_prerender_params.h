@@ -26,4 +26,8 @@ base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches();
 // The amount of time to allow before timing out an origin probe.
 base::TimeDelta IsolatedPrerenderProbeTimeout();
 
+// The amount of time to allow a prefetch to take before considering it a
+// timeout error.
+base::TimeDelta IsolatedPrefetchTimeoutDuration();
+
 #endif  // CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_PARAMS_H_

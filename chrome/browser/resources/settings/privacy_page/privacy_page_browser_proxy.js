@@ -13,7 +13,7 @@ cr.define('settings', function() {
   /* #export */ let MetricsReporting;
 
   /** @typedef {{name: string, value: string, policy: string}} */
-  let ResolverOption;
+  /* #export */ let ResolverOption;
 
   /**
    * Contains the possible string values for the secure DNS mode. This should be
@@ -44,7 +44,7 @@ cr.define('settings', function() {
    *   managementMode: settings.SecureDnsUiManagementMode
    * }}
    */
-  let SecureDnsSetting;
+  /* #export */ let SecureDnsSetting;
 
   /** @interface */
   /* #export */ class PrivacyPageBrowserProxy {

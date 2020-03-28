@@ -243,9 +243,6 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
                                  double scale_percent,
                                  bool slide_from_leading) const;
 
-  // Returns the size available to the host view from its parent.
-  SizeBounds GetAvailableHostSize() const;
-
   // Returns the space in which to calculate the target layout.
   gfx::Size GetAvailableTargetLayoutSize();
 
@@ -285,7 +282,13 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   double current_offset_ = 1.0;
 
   // The restrictions on the layout's size the last time we recalculated our
-  // target layout.
+  // target layout. If they have changed, we may need to recalculate the target
+  // of the current animation.
+  //
+  // Contrast with LayoutManagerBase::cached_available_size_, which tracks
+  // changes from one layout application to the next and affects re-layout of
+  // children; this value tracks changes from one layout *calculation* to
+  // the next and affects recalculation of *this* layout.
   SizeBounds last_available_host_size_;
 
   // The layout being animated away from.

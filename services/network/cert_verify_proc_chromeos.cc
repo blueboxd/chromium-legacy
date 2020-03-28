@@ -48,7 +48,8 @@ int CertVerifyProcChromeOS::VerifyInternal(
     int flags,
     net::CRLSet* crl_set,
     const net::CertificateList& additional_trust_anchors,
-    net::CertVerifyResult* verify_result) {
+    net::CertVerifyResult* verify_result,
+    const net::NetLogWithSource& net_log) {
   ChainVerifyArgs chain_verify_args = {this, additional_trust_anchors};
 
   CERTChainVerifyCallback chain_verify_callback;

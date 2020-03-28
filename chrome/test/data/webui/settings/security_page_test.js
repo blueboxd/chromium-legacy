@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://settings/lazy_load.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
+// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+// #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
+// #import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 suite('CrSettingsSecurityPageTest', function() {
   /** @type {settings.TestMetricsBrowserProxy} */
   let testMetricsBrowserProxy;

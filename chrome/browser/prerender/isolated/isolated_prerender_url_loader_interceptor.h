@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/availability/availability_prober.h"
@@ -17,6 +18,8 @@
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+class PrefetchedMainframeResponseContainer;
 
 // Intercepts prerender navigations that are eligible to be isolated.
 class IsolatedPrerenderURLLoaderInterceptor
@@ -32,18 +35,16 @@ class IsolatedPrerenderURLLoaderInterceptor
       content::BrowserContext* browser_context,
       content::URLLoaderRequestInterceptor::LoaderCallback callback) override;
 
-  void CallOnProbeCompleteForTesting(
-      const network::ResourceRequest& tentative_resource_request,
-      content::BrowserContext* browser_context,
-      bool success);
-
-  // TODO(crbug/1023485): Add logic to handle subresources.
+ protected:
+  // Virtual for testing
+  virtual std::unique_ptr<PrefetchedMainframeResponseContainer>
+  GetPrefetchedResponse(const GURL& url);
 
  private:
-  void OnInterceptRequest(
+  void InterceptPrefetchedNavigation(
       const network::ResourceRequest& tentative_resource_request,
-      content::BrowserContext* browser_context);
-  void OnDoNotInterceptRequest();
+      std::unique_ptr<PrefetchedMainframeResponseContainer>);
+  void DoNotInterceptNavigation();
 
   // AvailabilityProber::Delegate:
   bool ShouldSendNextProbe() override;
@@ -51,15 +52,10 @@ class IsolatedPrerenderURLLoaderInterceptor
                          const network::mojom::URLResponseHead* head,
                          std::unique_ptr<std::string> body) override;
 
-  // Starts a probe to the origin of |tentative_resource_request|'s url.
-  void StartProbe(const network::ResourceRequest& tentative_resource_request,
-                  content::BrowserContext* browser_context);
+  void StartProbe(const GURL& url, base::OnceClosure on_success_callback);
 
   // Called when the probe finishes with |success|.
-  void OnProbeComplete(
-      const network::ResourceRequest& tentative_resource_request,
-      content::BrowserContext* browser_context,
-      bool success);
+  void OnProbeComplete(base::OnceClosure on_success_callback, bool success);
 
   // Used to get the current WebContents.
   const int frame_tree_node_id_;

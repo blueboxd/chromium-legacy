@@ -288,7 +288,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   if (!accessible)
     return nullptr;
   Microsoft::WRL::ComPtr<AXPlatformNodeWin> ax_platform_node;
-  accessible->QueryInterface(ax_platform_node.GetAddressOf());
+  accessible->QueryInterface(IID_PPV_ARGS(&ax_platform_node));
   return ax_platform_node.Get();
 }
 
@@ -604,7 +604,7 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
       event_type = ax::mojom::Event::kFocus;
     } else if (role == ROLE_SYSTEM_LISTITEM) {
       if (AXPlatformNodeBase* container = GetSelectionContainer()) {
-        const ui::AXNodeData& data = container->GetData();
+        const AXNodeData& data = container->GetData();
         if (data.role == ax::mojom::Role::kListBox &&
             !data.HasState(ax::mojom::State::kMultiselectable) &&
             GetDelegate()->GetFocus() == GetNativeViewAccessible()) {
@@ -618,6 +618,15 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
         event_type = ax::mojom::Event::kFocus;
       }
     }
+  }
+
+  if (event_type == ax::mojom::Event::kValueChanged) {
+    // For the IAccessibleText interface to work on non-web content nodes, we
+    // need to update the nodes' hypertext
+    // when the value changes. Otherwise, for web and PDF content, this is
+    // handled by "BrowserAccessibilityComWin".
+    if (!GetDelegate()->IsWebContent())
+      UpdateComputedHypertext();
   }
 
   if (base::Optional<DWORD> native_event = MojoEventToMSAAEvent(event_type)) {
@@ -646,21 +655,6 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   // Keep track of objects that are a target of an alert event.
   if (event_type == ax::mojom::Event::kAlert)
     AddAlertTarget();
-}
-
-base::string16 AXPlatformNodeWin::GetHypertext() const {
-  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
-  if (!GetDelegate()->IsWebContent()) {
-    if (IsPlainTextField())
-      return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  }
-
-  // Hypertext of platform leaves, which internally are composite objects, are
-  // represented with the inner text of the internal composite object.
-  if (IsChildOfLeaf())
-    return GetInnerText();
-
-  return hypertext_.hypertext;
 }
 
 bool AXPlatformNodeWin::HasActiveComposition() const {
@@ -1564,7 +1558,7 @@ IFACEMETHODIMP AXPlatformNodeWin::scrollToPoint(
     return E_INVALIDARG;
   }
 
-  ui::AXActionData action_data;
+  AXActionData action_data;
   action_data.target_node_id = GetData().id;
   action_data.action = ax::mojom::Action::kScrollToPoint;
   action_data.target_point = scroll_to;
@@ -1678,7 +1672,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
   if (ranges->anchorOffset < 0 || ranges->activeOffset < 0)
     return E_INVALIDARG;
 
-  if (anchor_node->IsTextOnlyObject() || anchor_node->IsPlainTextField()) {
+  if (anchor_node->IsLeaf()) {
     if (size_t{ranges->anchorOffset} > anchor_node->GetHypertext().length()) {
       return E_INVALIDARG;
     }
@@ -1687,7 +1681,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
       return E_INVALIDARG;
   }
 
-  if (focus_node->IsTextOnlyObject() || focus_node->IsPlainTextField()) {
+  if (focus_node->IsLeaf()) {
     if (size_t{ranges->activeOffset} > focus_node->GetHypertext().length())
       return E_INVALIDARG;
   } else {
@@ -3298,7 +3292,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nCharacters(LONG* n_characters) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_CHARACTERS);
   COM_OBJECT_VALIDATE_1_ARG(n_characters);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                                       ui::AXMode::kInlineTextBoxes);
+                                       AXMode::kInlineTextBoxes);
 
   base::string16 text = GetHypertext();
   *n_characters = static_cast<LONG>(text.size());
@@ -3409,7 +3403,7 @@ HRESULT AXPlatformNodeWin::IAccessibleTextGetTextForOffsetType(
     BSTR* text) {
   COM_OBJECT_VALIDATE_3_ARGS(start_offset, end_offset, text);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                                       ui::AXMode::kInlineTextBoxes);
+                                       AXMode::kInlineTextBoxes);
 
   // https://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/_accessible_text_8idl.html
   // IA2_TEXT_BOUNDARY_SENTENCE is optional and we can let the screenreader
@@ -3867,7 +3861,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_FragmentRoot(
   gfx::AcceleratedWidget widget =
       delegate_->GetTargetForNativeAccessibilityEvent();
   if (widget) {
-    ui::AXFragmentRootWin* root =
+    AXFragmentRootWin* root =
         AXFragmentRootWin::GetForAcceleratedWidget(widget);
     if (root != nullptr) {
       root->GetNativeViewAccessible()->QueryInterface(
@@ -4320,7 +4314,7 @@ IFACEMETHODIMP AXPlatformNodeWin::ShowContextMenu() {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SHOWCONTEXTMENU);
   UIA_VALIDATE_CALL();
 
-  ui::AXActionData action_data;
+  AXActionData action_data;
   action_data.action = ax::mojom::Action::kShowContextMenu;
   delegate_->AccessibilityPerformAction(action_data);
   return S_OK;
@@ -4382,7 +4376,7 @@ STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
     if (!IsCellOrTableHeader(accessible->GetData().role))
       return E_NOINTERFACE;
   } else if (riid == IID_IAccessibleText || riid == IID_IAccessibleHypertext) {
-    if (ui::IsImageOrVideo(accessible->GetData().role)) {
+    if (IsImageOrVideo(accessible->GetData().role)) {
       return E_NOINTERFACE;
     }
   }
@@ -5188,7 +5182,7 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
   if (data.HasState(ax::mojom::State::kEditable))
     ia2_state |= IA2_STATE_EDITABLE;
 
-  if (IsPlainTextField() || IsRichTextField()) {
+  if (IsTextField()) {
     if (data.HasState(ax::mojom::State::kMultiline)) {
       ia2_state |= IA2_STATE_MULTI_LINE;
     } else {
@@ -6745,7 +6739,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
     return true;
   }
   // non web-content case.
-  const ui::AXNodeData& data = GetData();
+  const AXNodeData& data = GetData();
   return !((IsReadOnlySupported(data.role) && data.IsReadOnlyOrDisabled()) ||
            data.HasState(ax::mojom::State::kInvisible) ||
            (data.IsIgnored() && !data.HasState(ax::mojom::State::kFocusable)));
@@ -7013,7 +7007,7 @@ int AXPlatformNodeWin::MSAAState() const {
       data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
     AXPlatformNodeBase* container = FromNativeViewAccessible(GetParent());
     if (container && container->GetParent() == focus) {
-      ui::AXNodeData container_data = container->GetData();
+      AXNodeData container_data = container->GetData();
       if ((container_data.role == ax::mojom::Role::kListBox ||
            container_data.role == ax::mojom::Role::kMenu) &&
           !container_data.HasState(ax::mojom::State::kMultiselectable)) {
@@ -7358,7 +7352,7 @@ bool AXPlatformNodeWin::IsPlaceholderText() const {
       static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
   // Static text nodes are always expected to have a parent.
   DCHECK(parent);
-  return (parent->IsPlainTextField() || parent->IsRichTextField()) &&
+  return parent->IsTextField() &&
          parent->HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder);
 }
 

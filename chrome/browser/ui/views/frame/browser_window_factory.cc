@@ -22,7 +22,8 @@
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(
     std::unique_ptr<Browser> browser,
-    bool user_gesture) {
+    bool user_gesture,
+    bool in_tab_dragging) {
   // Create the view and the frame. The frame will attach itself via the view
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView(std::move(browser));
@@ -33,6 +34,8 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(
 #endif
   if (!browser_frame)
     browser_frame = new BrowserFrame(view);
+  if (in_tab_dragging)
+    browser_frame->SetTabDragKind(TabDragKind::kAllTabs);
   browser_frame->InitBrowserFrame();
 
   view->GetWidget()->non_client_view()->SetAccessibleName(

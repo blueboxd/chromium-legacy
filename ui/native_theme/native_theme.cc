@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_features.h"
@@ -141,6 +142,11 @@ NativeThemeColorIdToColorIdMap() {
   return *map;
 }
 
+void ReportHistogramBooleanUsesColorProvider(bool uses_color_provider) {
+  UMA_HISTOGRAM_BOOLEAN("NativeTheme.GetSystemColor.UsesColorProvider",
+                        uses_color_provider);
+}
+
 }  // namespace
 
 NativeTheme::ExtraParams::ExtraParams() {
@@ -160,6 +166,7 @@ bool NativeTheme::SystemDarkModeSupported() {
 
 SkColor NativeTheme::GetSystemColor(ColorId color_id,
                                     ColorScheme color_scheme) const {
+  SCOPED_UMA_HISTOGRAM_TIMER("NativeTheme.GetSystemColor");
   if (color_scheme == NativeTheme::ColorScheme::kDefault)
     color_scheme = GetDefaultSystemColorScheme();
 
@@ -174,9 +181,12 @@ SkColor NativeTheme::GetSystemColor(ColorId color_id,
         color_mode, ColorProviderManager::ContrastMode::kNormal);
     auto color_id_map = NativeThemeColorIdToColorIdMap();
     auto result = color_id_map.find(color_id);
-    if (result != color_id_map.cend())
+    if (result != color_id_map.cend()) {
+      ReportHistogramBooleanUsesColorProvider(true);
       return color_provider->GetColor(result->second);
+    }
   }
+  ReportHistogramBooleanUsesColorProvider(false);
   return GetAuraColor(color_id, this, color_scheme);
 }
 

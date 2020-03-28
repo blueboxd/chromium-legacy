@@ -6,6 +6,7 @@ package org.chromium.components.browser_ui.widget.scrim;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -240,6 +241,24 @@ public class ScrimTest extends DummyUiActivityTestCase {
         View scrimView = mScrimCoordinator.getViewForTesting();
         assertEquals("Scrim top margin is incorrect.", topMargin,
                 ((ViewGroup.MarginLayoutParams) scrimView.getLayoutParams()).topMargin);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Scrim"})
+    public void testOldScrimHidden() throws TimeoutException {
+        showScrim(buildModel(true, false, true, Color.RED), false);
+
+        assertScrimVisibility(true);
+
+        View oldScrim = mScrimCoordinator.getViewForTesting();
+
+        showScrim(buildModel(true, false, true, Color.BLUE), false);
+
+        View newScrim = mScrimCoordinator.getViewForTesting();
+
+        assertNotEquals("The view should have changed.", oldScrim, newScrim);
+        assertEquals("The old scrim should be gone.", View.GONE, oldScrim.getVisibility());
     }
 
     /**

@@ -4,6 +4,11 @@
 
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -633,7 +638,7 @@ jboolean WebContentsAccessibilityAndroid::IsEditableText(
   if (!node)
     return false;
 
-  return node->IsEditableText();
+  return node->IsTextField();
 }
 
 jboolean WebContentsAccessibilityAndroid::IsFocused(
@@ -746,13 +751,13 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoBooleanAttributes(
       env, obj, info, unique_id, node->IsCheckable(), node->IsChecked(),
       node->IsClickable(), node->IsEnabled(), node->IsFocusable(),
-      node->IsFocused(), node->IsPassword(), node->IsScrollable(),
+      node->IsFocused(), node->IsPasswordField(), node->IsScrollable(),
       node->IsSelected(), node->IsVisibleToUser());
   Java_WebContentsAccessibilityImpl_addAccessibilityNodeInfoActions(
       env, obj, info, unique_id, node->CanScrollForward(),
       node->CanScrollBackward(), node->CanScrollUp(), node->CanScrollDown(),
       node->CanScrollLeft(), node->CanScrollRight(), node->IsClickable(),
-      node->IsEditableText(), node->IsEnabled(), node->IsFocusable(),
+      node->IsTextField(), node->IsEnabled(), node->IsFocusable(),
       node->IsFocused(), node->IsCollapsed(), node->IsExpanded(),
       node->HasNonEmptyValue(), !node->GetInnerText().empty(),
       node->IsRangeType(), node->IsFormDescendant());
@@ -782,7 +787,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoText(
       env, obj, info,
       base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()),
-      node->IsLink(), node->IsEditableText(),
+      node->IsLink(), node->IsTextField(),
       base::android::ConvertUTF16ToJavaString(
           env, node->GetInheritedString16Attribute(
                    ax::mojom::StringAttribute::kLanguage)),
@@ -800,7 +805,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   bool is_root = node->PlatformGetParent() == NULL;
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoKitKatAttributes(
-      env, obj, info, is_root, node->IsEditableText(),
+      env, obj, info, is_root, node->IsTextField(),
       base::android::ConvertUTF8ToJavaString(env, node->GetRoleString()),
       base::android::ConvertUTF16ToJavaString(env, node->GetRoleDescription()),
       base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
@@ -856,8 +861,8 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityEvent(
     return false;
 
   Java_WebContentsAccessibilityImpl_setAccessibilityEventBooleanAttributes(
-      env, obj, event, node->IsChecked(), node->IsEnabled(), node->IsPassword(),
-      node->IsScrollable());
+      env, obj, event, node->IsChecked(), node->IsEnabled(),
+      node->IsPasswordField(), node->IsScrollable());
   Java_WebContentsAccessibilityImpl_setAccessibilityEventClassName(
       env, obj, event,
       base::android::ConvertUTF8ToJavaString(env, node->GetClassName()));

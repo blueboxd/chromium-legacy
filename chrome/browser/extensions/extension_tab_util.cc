@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
@@ -244,14 +245,17 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
                                               url_string);
       return nullptr;
     }
+
+    // Don't let extensions crash the browser or renderers.
+    if (ExtensionTabUtil::IsKillURL(url)) {
+      *error = tabs_constants::kNoCrashBrowserError;
+      return nullptr;
+    }
+
+    // Log if this navigation looks like it is to a devtools URL.
+    ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
   } else {
     url = GURL(chrome::kChromeUINewTabURL);
-  }
-
-  // Don't let extensions crash the browser or renderers.
-  if (ExtensionTabUtil::IsKillURL(url)) {
-    *error = tabs_constants::kNoCrashBrowserError;
-    return nullptr;
   }
 
   // Default to foreground for the new tab. The presence of 'active' property
@@ -800,6 +804,12 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
   }
 
   return false;
+}
+
+void ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(const GURL& url) {
+  const bool is_devtools_scheme = url.SchemeIs(content::kChromeDevToolsScheme);
+  UMA_HISTOGRAM_BOOLEAN("Extensions.ApiUrlNavigationDevtools",
+                        is_devtools_scheme);
 }
 
 void ExtensionTabUtil::CreateTab(std::unique_ptr<WebContents> web_contents,

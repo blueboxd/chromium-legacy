@@ -83,6 +83,29 @@ class PolicyTest : public PlatformTest {
         browser_policy_connector_.get());
   }
 
+  void VerifyBooleanPolicy(const std::string& policyKey,
+                           const std::string& prefPath) {
+    // This preference is currently not managed
+    EXPECT_FALSE(pref_service_->IsManagedPreference(prefPath));
+
+    policy::PolicyMap values;
+    // Setting the policy to true should set the pref to true.
+    values.Set(policyKey, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
+               std::make_unique<base::Value>(true), nullptr);
+    policy_provider_.UpdateChromePolicy(values);
+    EXPECT_TRUE(pref_service_->IsManagedPreference(prefPath));
+    EXPECT_TRUE(pref_service_->GetBoolean(prefPath));
+
+    // Setting the policy to false should set the pref to false.
+    values.Set(policyKey, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
+               std::make_unique<base::Value>(false), nullptr);
+    policy_provider_.UpdateChromePolicy(values);
+    EXPECT_TRUE(pref_service_->IsManagedPreference(prefPath));
+    EXPECT_FALSE(pref_service_->GetBoolean(prefPath));
+  }
+
  protected:
   // Temporary directory to hold preference files.
   base::ScopedTempDir state_directory_;
@@ -112,53 +135,13 @@ class PolicyTest : public PlatformTest {
 // Tests that the SearchSuggestEnabled preference is correctly managed by
 // policy.
 TEST_F(PolicyTest, TestSearchSuggestEnabled) {
-  EXPECT_FALSE(
-      pref_service_->IsManagedPreference(prefs::kSearchSuggestEnabled));
-
-  policy::PolicyMap values;
-  values.Set(policy::key::kSearchSuggestEnabled, policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
-             std::make_unique<base::Value>(true), nullptr);
-  policy_provider_.UpdateChromePolicy(values);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(pref_service_->IsManagedPreference(prefs::kSearchSuggestEnabled));
-  EXPECT_TRUE(pref_service_->GetBoolean(prefs::kSearchSuggestEnabled));
-
-  values.Set(policy::key::kSearchSuggestEnabled, policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
-             std::make_unique<base::Value>(false), nullptr);
-  policy_provider_.UpdateChromePolicy(values);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(pref_service_->IsManagedPreference(prefs::kSearchSuggestEnabled));
-  EXPECT_FALSE(pref_service_->GetBoolean(prefs::kSearchSuggestEnabled));
+  VerifyBooleanPolicy(policy::key::kSearchSuggestEnabled,
+                      prefs::kSearchSuggestEnabled);
 }
 
 // Tests that the PasswordManagerEnabled preference is correctly managed by
 // policy.
 TEST_F(PolicyTest, TestPasswordManagerEnabled) {
-  EXPECT_FALSE(pref_service_->IsManagedPreference(
-      password_manager::prefs::kCredentialsEnableService));
-
-  policy::PolicyMap values;
-  // Setting the policy to true should set the pref to true.
-  values.Set(policy::key::kPasswordManagerEnabled,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-             policy::POLICY_SOURCE_PLATFORM,
-             std::make_unique<base::Value>(true), nullptr);
-  policy_provider_.UpdateChromePolicy(values);
-  EXPECT_TRUE(pref_service_->IsManagedPreference(
-      password_manager::prefs::kCredentialsEnableService));
-  EXPECT_TRUE(pref_service_->GetBoolean(
-      password_manager::prefs::kCredentialsEnableService));
-
-  // Setting the policy to false should set the pref to false.
-  values.Set(policy::key::kPasswordManagerEnabled,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-             policy::POLICY_SOURCE_PLATFORM,
-             std::make_unique<base::Value>(false), nullptr);
-  policy_provider_.UpdateChromePolicy(values);
-  EXPECT_TRUE(pref_service_->IsManagedPreference(
-      password_manager::prefs::kCredentialsEnableService));
-  EXPECT_FALSE(pref_service_->GetBoolean(
-      password_manager::prefs::kCredentialsEnableService));
+  VerifyBooleanPolicy(policy::key::kPasswordManagerEnabled,
+                      password_manager::prefs::kCredentialsEnableService);
 }

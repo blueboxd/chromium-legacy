@@ -57,7 +57,6 @@ class CORE_EXPORT ScrollTimeline
   // have a CSS layout box, or if its layout box is not a scroll container.
   // https://github.com/WICG/scroll-animations/issues/31
   bool IsActive() const override;
-  TimelinePhase Phase() const override;
   base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
 
   void ScheduleNextService() override;
@@ -113,7 +112,7 @@ class CORE_EXPORT ScrollTimeline
   static void Invalidate(Node* node);
 
  protected:
-  base::Optional<base::TimeDelta> CurrentTimeInternal() override;
+  PhaseAndTime CurrentPhaseAndTime() override;
 
  private:
   // https://wicg.github.io/scroll-animations/#avoiding-cycles
@@ -130,15 +129,7 @@ class CORE_EXPORT ScrollTimeline
   Member<Element> scroll_source_;
   Member<Node> resolved_scroll_source_;
 
-  struct PhaseAndTime {
-    TimelinePhase phase;
-    base::Optional<base::TimeDelta> current_time;
-    bool operator==(const PhaseAndTime& other) const {
-      return phase == other.phase && current_time == other.current_time;
-    }
-  };
-
-  PhaseAndTime ComputePhaseAndCurrentTime() const;
+  PhaseAndTime ComputeCurrentPhaseAndTime() const;
 
   ScrollDirection orientation_;
   Member<CSSPrimitiveValue> start_scroll_offset_;

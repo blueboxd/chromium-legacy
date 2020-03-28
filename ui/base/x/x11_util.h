@@ -303,6 +303,10 @@ COMPONENT_EXPORT(UI_BASE_X) WindowManagerName GuessWindowManager();
 // can't determine it, return "Unknown".
 COMPONENT_EXPORT(UI_BASE_X) std::string GuessWindowManagerName();
 
+// Returns a buest-effort guess as to whether |window_manager| is tiling (true)
+// or stacking (false).
+COMPONENT_EXPORT(UI_BASE_X) bool IsWmTiling(WindowManagerName window_manager);
+
 // Returns true if a compositing manager is present.
 COMPONENT_EXPORT(UI_BASE_X) bool IsCompositingManagerPresent();
 

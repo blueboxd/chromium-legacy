@@ -296,8 +296,10 @@ namespace {
 constexpr TimeDelta kUIUpdateCoalescingTime = TimeDelta::FromMilliseconds(200);
 
 BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
-                                   bool user_gesture) {
-  return BrowserWindow::CreateBrowserWindow(std::move(browser), user_gesture);
+                                   bool user_gesture,
+                                   bool in_tab_dragging) {
+  return BrowserWindow::CreateBrowserWindow(std::move(browser), user_gesture,
+                                            in_tab_dragging);
 }
 
 const extensions::Extension* GetExtensionForOrigin(
@@ -526,7 +528,8 @@ Browser::Browser(const CreateParams& params)
 
   window_ = params.window ? params.window
                           : CreateBrowserWindow(std::unique_ptr<Browser>(this),
-                                                params.user_gesture);
+                                                params.user_gesture,
+                                                params.in_tab_dragging);
 
   if (app_controller_)
     app_controller_->UpdateCustomTabBarVisibility(false);
@@ -553,11 +556,6 @@ Browser::Browser(const CreateParams& params)
       new ExclusiveAccessManager(window_->GetExclusiveAccessContext()));
 
   BrowserList::AddBrowser(this);
-
-  // SetIsInTabDragging() will set the fast resize bit for the web contents.
-  // It will be reset after the drag ends.
-  if (params.in_tab_dragging)
-    SetIsInTabDragging(true);
 
   if (is_focus_mode_)
     focus_mode_start_time_ = base::TimeTicks::Now();
@@ -904,10 +902,6 @@ bool Browser::ShouldRunUnloadListenerBeforeClosing(
 bool Browser::RunUnloadListenerBeforeClosing(
     content::WebContents* web_contents) {
   return unload_controller_.RunUnloadEventsHelper(web_contents);
-}
-
-void Browser::SetIsInTabDragging(bool is_in_tab_dragging) {
-  window_->TabDraggingStatusChanged(is_in_tab_dragging);
 }
 
 void Browser::OnWindowClosing() {

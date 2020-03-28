@@ -56,6 +56,7 @@ import java.util.List;
 /**
  * Tests for {@link TabGroupPopupUiMediator}.
  */
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument"})
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupPopupUiMediatorUnitTest {

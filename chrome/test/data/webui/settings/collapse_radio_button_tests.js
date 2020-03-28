@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://settings/lazy_load.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isChildVisible} from 'chrome://test/test_util.m.js';
+// #import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+// clang-format on
+
 suite('CrCollapseRadioButton', function() {
   /** @type {SettingsCollapseRadioButtonElement} */
   let collapseRadioButton;

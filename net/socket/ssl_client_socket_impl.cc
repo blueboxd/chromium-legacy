@@ -1170,7 +1170,9 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
   }
 
   net_log_.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED, [&] {
-    return NetLogX509CertificateParams(server_cert_.get());
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("certificates", NetLogX509CertificateList(server_cert_.get()));
+    return dict;
   });
 
   // If the certificate is bad and has been previously accepted, use

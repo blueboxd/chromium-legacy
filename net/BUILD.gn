@@ -1335,6 +1335,10 @@ component("net") {
         "proxy_resolution/proxy_config_service_win.h",
         "proxy_resolution/proxy_resolver_winhttp.cc",
         "proxy_resolution/proxy_resolver_winhttp.h",
+        "proxy_resolution/win/windows_system_proxy_resolution_request.cc",
+        "proxy_resolution/win/windows_system_proxy_resolution_request.h",
+        "proxy_resolution/win/windows_system_proxy_resolution_service.cc",
+        "proxy_resolution/win/windows_system_proxy_resolution_service.h",
         "socket/tcp_socket_win.cc",
         "socket/tcp_socket_win.h",
         "socket/udp_socket_win.cc",
@@ -4490,6 +4494,7 @@ test("net_unittests") {
       "proxy_resolution/dhcp_pac_file_adapter_fetcher_win_unittest.cc",
       "proxy_resolution/dhcp_pac_file_fetcher_win_unittest.cc",
       "proxy_resolution/proxy_config_service_win_unittest.cc",
+      "proxy_resolution/win/windows_system_proxy_resolution_service_unittest.cc",
       "ssl/client_cert_store_win_unittest.cc",
       "ssl/ssl_platform_key_win_unittest.cc",
     ]

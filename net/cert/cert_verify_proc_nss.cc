@@ -1042,7 +1042,8 @@ int CertVerifyProcNSS::VerifyInternal(
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
-    CertVerifyResult* verify_result) {
+    CertVerifyResult* verify_result,
+    const NetLogWithSource& net_log) {
   return VerifyInternalImpl(cert, hostname, ocsp_response, flags, crl_set,
                             additional_trust_anchors,
                             NULL,  // chain_verify_callback

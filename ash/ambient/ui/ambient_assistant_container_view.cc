@@ -9,6 +9,7 @@
 
 #include "ash/ambient/ui/ambient_assistant_dialog_plate.h"
 #include "ash/ambient/ui/assistant_response_container_view.h"
+#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
@@ -38,12 +39,12 @@ base::string16 GetGreetingMessage(const UserSession* user_session) {
 
 }  // namespace
 
-AmbientAssistantContainerView::AmbientAssistantContainerView(
-    AssistantViewDelegate* delegate)
-    : delegate_(delegate) {
+AmbientAssistantContainerView::AmbientAssistantContainerView()
+    : delegate_(Shell::Get()->assistant_controller()->view_delegate()) {
+  DCHECK(delegate_);
   InitLayout();
 
-  // The AssistantViewDelegate should outlive AmbientAssistantContainerView.
+  // |delegate_| must outlive |this|.
   delegate_->AddUiModelObserver(this);
 }
 

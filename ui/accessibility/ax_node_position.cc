@@ -181,8 +181,10 @@ base::string16 AXNodePosition::GetText() const {
   const AXNode* anchor = GetAnchor();
   DCHECK(anchor);
   // TODO(nektar): Replace with PlatformChildCount when AXNodePosition and
-  // BrowserAccessibilityPosition will make one.
+  // BrowserAccessibilityPosition are merged into one class.
   if (!AnchorChildCount()) {
+    // Special case: Allows us to get text even in non-web content, e.g. in the
+    // browser's UI.
     text =
         anchor->data().GetString16Attribute(ax::mojom::StringAttribute::kValue);
     if (!text.empty())

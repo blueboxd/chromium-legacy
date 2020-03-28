@@ -56,6 +56,19 @@ class MediaHistoryStore {
       base::RepeatingCallback<bool(const base::TimeDelta& duration,
                                    const base::TimeDelta& position)>;
 
+  static const char kInitResultHistogramName[];
+
+  // When we initialize the database we store the result in
+  // |kInitResultHistogramName|. Do not change the numbering since this
+  // is recorded.
+  enum class InitResult {
+    kSuccess = 0,
+    kFailedNoForeignKeys = 1,
+    kFailedDatabaseTooNew = 2,
+    kFailedInitializeTables = 3,
+    kMaxValue = kFailedInitializeTables,
+  };
+
  protected:
   friend class MediaHistoryKeyedService;
 

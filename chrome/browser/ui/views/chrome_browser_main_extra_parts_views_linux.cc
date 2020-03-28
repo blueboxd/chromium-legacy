@@ -5,9 +5,28 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 
 #include "chrome/browser/themes/theme_service_aura_linux.h"
-#include "chrome/browser/ui/views/linux_ui/linux_ui_factory.h"
 #include "chrome/browser/ui/views/theme_profile_key.h"
+#include "ui/base/buildflags.h"
 #include "ui/views/linux_ui/linux_ui.h"
+
+#if BUILDFLAG(USE_GTK)
+#include "chrome/browser/ui/gtk/gtk_ui.h"
+#include "ui/gtk/gtk_ui_delegate.h"
+#endif
+
+namespace {
+
+views::LinuxUI* BuildLinuxUI() {
+  views::LinuxUI* linux_ui = nullptr;
+  // GtkUi is the only LinuxUI implementation for now.
+#if BUILDFLAG(USE_GTK)
+  DCHECK(ui::GtkUiDelegate::instance());
+  linux_ui = BuildGtkUi(ui::GtkUiDelegate::instance());
+#endif
+  return linux_ui;
+}
+
+}  // namespace
 
 ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() =
     default;
@@ -18,7 +37,7 @@ ChromeBrowserMainExtraPartsViewsLinux::
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
   ChromeBrowserMainExtraPartsViews::ToolkitInitialized();
 
-  views::LinuxUI* linux_ui = views::BuildLinuxUI();
+  views::LinuxUI* linux_ui = BuildLinuxUI();
   if (!linux_ui)
     return;
 

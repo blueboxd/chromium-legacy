@@ -67,7 +67,7 @@
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-incremental-dbg': 'android_incremental_debug_bot',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols_fastbuild',
-      'android-lollipop-arm-rel': 'android_release_bot_minimal_symbols_fastbuild',
+      'android-lollipop-arm-rel': 'android_release_bot_minimal_symbols_fastbuild_webview_google',
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
@@ -148,7 +148,8 @@
       'ToTWinCFI': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
       'ToTWinCFI64': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTWinThinLTO64': 'clang_tot_win_official_full_symbols_thin_lto_static',
-      'ToTiOS': 'ios_error',
+      'ToTiOS': 'ios_clang_tot',
+      'ToTiOSDevice': 'ios_clang_device_tot',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
 
@@ -673,7 +674,7 @@
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-kitkat-arm-rel': 'android_release_trybot_fastbuild',
-      'android-lollipop-arm-rel': 'android_release_trybot_fastbuild',
+      'android-lollipop-arm-rel': 'android_release_trybot_fastbuild_webview_google',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
@@ -1188,6 +1189,11 @@
       'strip_debug_info', 'android_fastbuild',
     ],
 
+    'android_release_bot_minimal_symbols_fastbuild_webview_google': [
+      'android', 'release_bot', 'minimal_symbols',
+      'strip_debug_info', 'android_fastbuild', 'webview_google',
+    ],
+
     'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
       'android_fastbuild', 'resource_whitelisting',
@@ -1224,7 +1230,12 @@
 
     'android_release_trybot_fastbuild': [
       'android', 'release_trybot', 'strip_debug_info', 'android_fastbuild',
-      'android_no_proguard',
+      'android_no_proguard', 
+    ],
+
+    'android_release_trybot_fastbuild_webview_google': [
+      'android', 'release_trybot', 'strip_debug_info', 'android_fastbuild',
+      'android_no_proguard', 'webview_google',
     ],
 
     'android_release_trybot_x86_fastbuild_resource_whitelisting': [
@@ -1818,6 +1829,14 @@
     # It is an error to actually use one of these configs to generate the
     # build files.
     'ios_error': [ 'error'],
+
+    'ios_clang_tot': [
+      'clang_tot', 'ios_device', 'ios_disable_code_signing', 'release', 'static',
+    ],
+
+    'ios_clang_device_tot': [
+      'clang_tot', 'ios_device', 'release',
+    ],
 
     'ios_cronet': [
       'additional_target_cpus_x86', 'cronet_ios', 'debug_static_bot',

@@ -88,6 +88,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+  scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
+      override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

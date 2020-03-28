@@ -81,7 +81,7 @@ class VROrientationDeviceTest : public testing::Test {
   VROrientationDeviceTest() = default;
   ~VROrientationDeviceTest() override = default;
   void SetUp() override {
-    fake_sensor_provider_ = std::make_unique<FakeSensorProvider>(
+    fake_sensor_provider_ = std::make_unique<FakeXRSensorProvider>(
         sensor_provider_.BindNewPipeAndPassReceiver());
 
     fake_sensor_ = std::make_unique<FakeOrientationSensor>(
@@ -226,7 +226,7 @@ class VROrientationDeviceTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<VROrientationDevice> device_;
-  std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
+  std::unique_ptr<FakeXRSensorProvider> fake_sensor_provider_;
   mojo::Remote<mojom::SensorProvider> sensor_provider_;
 
   // Fake Sensor Init params objects

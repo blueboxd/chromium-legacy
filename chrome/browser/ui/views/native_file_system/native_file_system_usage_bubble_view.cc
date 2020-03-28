@@ -228,9 +228,12 @@ NativeFileSystemUsageBubbleView::Usage& NativeFileSystemUsageBubbleView::Usage::
 operator=(Usage&&) = default;
 
 NativeFileSystemUsageBubbleView::FilePathListModel::FilePathListModel(
+    const views::View* owner,
     std::vector<base::FilePath> files,
     std::vector<base::FilePath> directories)
-    : files_(std::move(files)), directories_(std::move(directories)) {}
+    : owner_(owner),
+      files_(std::move(files)),
+      directories_(std::move(directories)) {}
 
 NativeFileSystemUsageBubbleView::FilePathListModel::~FilePathListModel() =
     default;
@@ -249,10 +252,12 @@ base::string16 NativeFileSystemUsageBubbleView::FilePathListModel::GetText(
 
 gfx::ImageSkia NativeFileSystemUsageBubbleView::FilePathListModel::GetIcon(
     int row) {
+  const SkColor icon_color = owner_->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
   return gfx::CreateVectorIcon(size_t{row} < files_.size()
                                    ? vector_icons::kInsertDriveFileOutlineIcon
                                    : vector_icons::kFolderOpenIcon,
-                               kIconSize, gfx::kChromeIconGrey);
+                               kIconSize, icon_color);
 }
 
 base::string16 NativeFileSystemUsageBubbleView::FilePathListModel::GetTooltip(
@@ -330,9 +335,11 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       origin_(origin),
       usage_(std::move(usage)),
-      readable_paths_model_(std::move(usage_.readable_files),
+      readable_paths_model_(this,
+                            std::move(usage_.readable_files),
                             std::move(usage_.readable_directories)),
-      writable_paths_model_(std::move(usage_.writable_files),
+      writable_paths_model_(this,
+                            std::move(usage_.writable_files),
                             std::move(usage_.writable_directories)) {
   DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                  l10n_util::GetStringUTF16(IDS_DONE));

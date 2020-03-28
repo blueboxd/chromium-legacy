@@ -293,6 +293,14 @@ void DesktopWindowTreeHostLinux::OnActivationChanged(bool active) {
   DesktopWindowTreeHostPlatform::OnActivationChanged(active);
 }
 
+ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() {
+  return ui::GetX11Extension(*(platform_window()));
+}
+
+const ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() const {
+  return ui::GetX11Extension(*(platform_window()));
+}
+
 #if BUILDFLAG(USE_ATK)
 bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
   if (!IsActive() && !HasCapture())
@@ -301,6 +309,11 @@ bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
          ui::DiscardAtkKeyEvent::Discard;
 }
 #endif
+
+bool DesktopWindowTreeHostLinux::IsOverrideRedirect() const {
+  // BrowserDesktopWindowTreeHostLinux implements this for browser windows.
+  return false;
+}
 
 void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
     const Widget::InitParams& params,
@@ -374,14 +387,6 @@ void DesktopWindowTreeHostLinux::EnableEventListening() {
   DCHECK_GT(modal_dialog_counter_, 0UL);
   if (!--modal_dialog_counter_)
     targeter_for_modal_.reset();
-}
-
-ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() {
-  return ui::GetX11Extension(*(platform_window()));
-}
-
-const ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() const {
-  return ui::GetX11Extension(*(platform_window()));
 }
 
 std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostLinux::open_windows() {

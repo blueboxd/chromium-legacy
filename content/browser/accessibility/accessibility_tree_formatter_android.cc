@@ -131,7 +131,7 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
   dict->SetBoolean("collection_item", android_node->IsCollectionItem());
   dict->SetBoolean("disabled", !android_node->IsEnabled());
   dict->SetBoolean("dismissable", android_node->IsDismissable());
-  dict->SetBoolean("editable_text", android_node->IsEditableText());
+  dict->SetBoolean("editable_text", android_node->IsTextField());
   dict->SetBoolean("focusable", android_node->IsFocusable());
   dict->SetBoolean("focused", android_node->IsFocused());
   dict->SetBoolean("has_character_locations",
@@ -144,7 +144,7 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
   dict->SetBoolean("link", android_node->IsLink());
   dict->SetBoolean("multiline", android_node->IsMultiLine());
   dict->SetBoolean("range", android_node->IsRangeType());
-  dict->SetBoolean("password", android_node->IsPassword());
+  dict->SetBoolean("password", android_node->IsPasswordField());
   dict->SetBoolean("scrollable", android_node->IsScrollable());
   dict->SetBoolean("selected", android_node->IsSelected());
   dict->SetBoolean("interesting", android_node->IsInterestingOnAndroid());

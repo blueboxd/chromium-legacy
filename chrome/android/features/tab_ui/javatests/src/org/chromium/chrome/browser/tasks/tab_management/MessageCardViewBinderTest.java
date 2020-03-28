@@ -43,19 +43,14 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
     private AtomicBoolean mMessageServiceReviewCallbackRan = new AtomicBoolean();
     private AtomicBoolean mMessageServiceDismissCallbackRan = new AtomicBoolean();
 
-    private MessageCardView.ReviewActionProvider mUiReviewHandler = () -> {
-        mReviewButtonClicked.set(true);
-    };
-    private MessageCardView.DismissActionProvider mUiDismissHandler = (int messageType) -> {
-        mDismissButtonClicked.set(true);
-    };
-    private MessageCardView.ReviewActionProvider mMessageServiceActionHandler = () -> {
-        mMessageServiceReviewCallbackRan.set(true);
-    };
+    private MessageCardView.ReviewActionProvider mUiReviewHandler =
+            () -> mReviewButtonClicked.set(true);
+    private MessageCardView.DismissActionProvider mUiDismissHandler =
+            (int messageType) -> mDismissButtonClicked.set(true);
+    private MessageCardView.ReviewActionProvider mMessageServiceActionHandler =
+            () -> mMessageServiceReviewCallbackRan.set(true);
     private MessageCardView.DismissActionProvider mMessageServiceDismissHandler =
-            (int messageType) -> {
-        mMessageServiceDismissCallbackRan.set(true);
-    };
+            (int messageType) -> mMessageServiceDismissCallbackRan.set(true);
 
     @Override
     public void setUpTest() throws Exception {
@@ -69,15 +64,16 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
             mItemView = (ViewGroup) getActivity().getLayoutInflater().inflate(
                     R.layout.tab_grid_message_card_item, null);
             view.addView(mItemView);
+
+            mItemViewModel =
+                    new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
+                            .with(MessageCardViewProperties.ACTION_TEXT, ACTION_TEXT)
+                            .with(MessageCardViewProperties.DESCRIPTION_TEXT, DESCRIPTION_TEXT)
+                            .build();
+
+            mItemMCP = PropertyModelChangeProcessor.create(
+                    mItemViewModel, mItemView, MessageCardViewBinder::bind);
         });
-
-        mItemViewModel = new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
-                                 .with(MessageCardViewProperties.ACTION_TEXT, ACTION_TEXT)
-                                 .with(MessageCardViewProperties.DESCRIPTION_TEXT, DESCRIPTION_TEXT)
-                                 .build();
-
-        mItemMCP = PropertyModelChangeProcessor.create(
-                mItemViewModel, mItemView, MessageCardViewBinder::bind);
     }
 
     private String getDescriptionText() {

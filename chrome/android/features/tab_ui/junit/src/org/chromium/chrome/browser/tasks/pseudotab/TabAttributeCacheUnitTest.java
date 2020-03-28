@@ -51,6 +51,7 @@ import java.util.List;
 /**
  * Unit tests for {@link TabAttributeCache}.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabAttributeCacheUnitTest {

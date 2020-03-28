@@ -80,6 +80,7 @@
 #define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE 0x3206
 #define EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED_ANGLE 0x3451
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE 0x3209
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_EGL_ANGLE 0x348E
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE 0x320A
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE 0x345E
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE 0x3487
@@ -397,6 +398,13 @@ EGLDisplay GetDisplayFromType(
           native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
+    case ANGLE_OPENGL_EGL:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_EGL_ANGLE);
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_OPENGL_NULL:
       extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
       extra_display_attribs.push_back(
@@ -406,6 +414,13 @@ EGLDisplay GetDisplayFromType(
           enabled_angle_features, disabled_angle_features,
           extra_display_attribs);
     case ANGLE_OPENGLES:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
+    case ANGLE_OPENGLES_EGL:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_EGL_ANGLE);
       return GetPlatformANGLEDisplay(
           native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
           enabled_angle_features, disabled_angle_features,
@@ -514,6 +529,10 @@ const char* DisplayTypeString(DisplayType display_type) {
       return "D3D11on12";
     case ANGLE_SWIFTSHADER:
       return "SwiftShader";
+    case ANGLE_OPENGL_EGL:
+      return "OpenGLEGL";
+    case ANGLE_OPENGLES_EGL:
+      return "OpenGLESEGL";
     default:
       NOTREACHED();
       return "Err";
@@ -742,6 +761,7 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
                         bool supports_angle_null,
                         bool supports_angle_vulkan,
                         bool supports_angle_swiftshader,
+                        bool supports_angle_egl,
                         const base::CommandLine* command_line,
                         std::vector<DisplayType>* init_displays) {
   // SwiftShader does not use the platform extensions
@@ -812,6 +832,12 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
         AddInitDisplay(init_displays, ANGLE_OPENGL_NULL);
       } else if (requested_renderer == kANGLEImplementationOpenGLESNULLName) {
         AddInitDisplay(init_displays, ANGLE_OPENGLES_NULL);
+      } else if (requested_renderer == kANGLEImplementationOpenGLEGLName &&
+                 supports_angle_egl) {
+        AddInitDisplay(init_displays, ANGLE_OPENGL_EGL);
+      } else if (requested_renderer == kANGLEImplementationOpenGLESEGLName &&
+                 supports_angle_egl) {
+        AddInitDisplay(init_displays, ANGLE_OPENGLES_EGL);
       }
     }
   }
@@ -1135,6 +1161,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
   bool supports_angle_null = false;
   bool supports_angle_vulkan = false;
   bool supports_angle_swiftshader = false;
+  bool supports_angle_egl = false;
   // Check for availability of ANGLE extensions.
   if (client_extensions &&
       ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle")) {
@@ -1148,6 +1175,8 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_vulkan");
     supports_angle_swiftshader = ExtensionsContain(
         client_extensions, "EGL_ANGLE_platform_angle_device_type_swiftshader");
+    supports_angle_egl = ExtensionsContain(
+        client_extensions, "EGL_ANGLE_platform_angle_device_type_egl_angle");
   }
 
   bool supports_angle = supports_angle_d3d || supports_angle_opengl ||
@@ -1163,7 +1192,8 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
                      supports_angle_null, supports_angle_vulkan,
-                     supports_angle_swiftshader, command_line, &init_displays);
+                     supports_angle_swiftshader, supports_angle_egl,
+                     command_line, &init_displays);
 
   std::vector<std::string> enabled_angle_features =
       GetStringVectorFromCommandLine(command_line,

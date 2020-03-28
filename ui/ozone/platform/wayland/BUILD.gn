@@ -4,6 +4,7 @@
 
 visibility = [ "//ui/ozone/*" ]
 
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//ui/ozone/platform/wayland/wayland.gni")
@@ -162,6 +163,14 @@ source_set("wayland") {
 
   if (is_linux && !is_chromeos) {
     deps += [ "//ui/base/ime/linux" ]
+  }
+
+  if (use_gtk) {
+    sources += [
+      "host/gtk_ui_delegate_wayland.cc",
+      "host/gtk_ui_delegate_wayland.h",
+    ]
+    deps += [ "//ui/gtk" ]
   }
 
   defines = [ "OZONE_IMPLEMENTATION" ]

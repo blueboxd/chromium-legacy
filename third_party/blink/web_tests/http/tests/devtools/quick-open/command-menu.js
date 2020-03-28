@@ -20,7 +20,7 @@
     TestRunner.addResult('');
     var whitelist = [
       'Panel: Show Console', 'Drawer: Show Console', 'Appearance: Switch to dark theme',
-      'DevTools: Auto-open DevTools for popups'
+      'Global: Auto-open DevTools for popups'
     ];
     whitelist.forEach(item => {
       if (!commands.has(item))

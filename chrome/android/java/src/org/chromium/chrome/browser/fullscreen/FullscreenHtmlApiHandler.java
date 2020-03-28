@@ -25,7 +25,7 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.widget.Toast;
 
@@ -294,7 +294,7 @@ public class FullscreenHtmlApiHandler {
                 == SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) {
             systemUiVisibility = applyEnterFullscreenUIFlags(systemUiVisibility);
         } else {
-            Activity activity = ((TabImpl) tab).getActivity();
+            Activity activity = TabUtils.getActivity(tab);
             boolean isMultiWindow = MultiWindowUtils.getInstance().isLegacyMultiWindow(activity)
                     || MultiWindowUtils.getInstance().isInMultiWindowMode(activity);
 

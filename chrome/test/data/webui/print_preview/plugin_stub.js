@@ -13,7 +13,7 @@ export class PDFPluginStub extends TestBrowserProxy {
     super(['loadPreviewPage']);
 
     /** @type {?Function} The callback to call on load. */
-    this.loadCallback_ = null;
+    this.loadCompleteCallback_ = null;
 
     /** @type {?Function} Callback to call before load. */
     this.preloadCallback_ = null;
@@ -34,12 +34,12 @@ export class PDFPluginStub extends TestBrowserProxy {
   }
 
   /**
-   * @param {?Function} loadCallback Callback to call when the preview
+   * @param {?Function} loadCompleteCallback Callback to call when the preview
    *     loads.
    */
-  setLoadCallback(loadCallback) {
-    assert(!this.loadCallback_);
-    this.loadCallback_ = loadCallback;
+  setLoadCompleteCallback(loadCompleteCallback) {
+    assert(!this.loadCompleteCallback_);
+    this.loadCompleteCallback_ = loadCompleteCallback;
   }
 
   /**
@@ -116,7 +116,7 @@ export class PDFPluginStub extends TestBrowserProxy {
 
   /**
    * Called when the preview area wants the plugin to load a preview page.
-   * Immediately calls loadCallback_().
+   * Immediately calls loadCompleteCallback_().
    * @param {number} previewUid The unique ID of the preview UI.
    * @param {number} pageIndex The page index to load.
    * @param {number} index The preview index.
@@ -128,8 +128,8 @@ export class PDFPluginStub extends TestBrowserProxy {
     if (this.preloadCallback_) {
       this.preloadCallback_();
     }
-    if (this.loadCallback_) {
-      this.loadCallback_(true);
+    if (this.loadCompleteCallback_) {
+      this.loadCompleteCallback_(true);
     }
   }
 

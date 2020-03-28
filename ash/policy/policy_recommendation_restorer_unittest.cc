@@ -24,9 +24,10 @@ class PolicyRecommendationRestorerTest : public NoSessionAshTestBase {
   PolicyRecommendationRestorerTest()
       : recommended_prefs_(new TestingPrefStore),
         prefs_(new sync_preferences::TestingPrefServiceSyncable(
-            new TestingPrefStore,
-            new TestingPrefStore,
-            new TestingPrefStore,
+            /*managed_prefs=*/new TestingPrefStore,
+            /*supervised_user_prefs=*/new TestingPrefStore,
+            /*extension_prefs=*/new TestingPrefStore,
+            /*user_prefs=*/new TestingPrefStore,
             recommended_prefs_,
             new user_prefs::PrefRegistrySyncable,
             new PrefNotifierImpl)) {}

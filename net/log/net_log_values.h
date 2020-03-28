@@ -57,6 +57,7 @@ NET_EXPORT base::Value NetLogBinaryValue(const void* bytes, size_t length);
 // no loss of precision when de-serializing from JavaScript.
 NET_EXPORT base::Value NetLogNumberValue(int64_t num);
 NET_EXPORT base::Value NetLogNumberValue(uint64_t num);
+NET_EXPORT base::Value NetLogNumberValue(uint32_t num);
 
 }  // namespace net
 

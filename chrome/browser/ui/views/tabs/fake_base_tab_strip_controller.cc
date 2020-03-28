@@ -216,7 +216,7 @@ void FakeBaseTabStripController::CreateNewTabWithLocation(
 void FakeBaseTabStripController::StackedLayoutMaybeChanged() {
 }
 
-void FakeBaseTabStripController::OnStartedDragging() {}
+void FakeBaseTabStripController::OnStartedDragging(bool dragging_window) {}
 
 void FakeBaseTabStripController::OnStoppedDragging() {}
 

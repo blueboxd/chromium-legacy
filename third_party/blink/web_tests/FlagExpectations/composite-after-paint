@@ -72,7 +72,7 @@ printing/webgl-repeated-printing.html [ Failure ]
 transforms/3d/general/background-visibility-layers.html [ Failure ]
 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
 
-# Raster invalidation doesn't work for huge layers. 
+# Raster invalidation doesn't work for huge layers.
 paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 
 # No composited scrolling for overflow:hidden (on marquee).
@@ -80,7 +80,7 @@ compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failur
 
 # We paint the iframe's content background in the scrolling layer, causing invalidation on scroll.
 paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
-# will-transform on descendant doesn't trigger compositing of iframe. 
+# will-transform on descendant doesn't trigger compositing of iframe.
 paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
 
 # Extra layers for non-fast scrolling areas.
@@ -105,16 +105,8 @@ http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
 http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
-# Crash on non-contiguous effect on multiple columns
-crbug.com/1064341 fast/multicol/composited-layer-will-change.html [ Crash ]
-crbug.com/1064341 paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
-crbug.com/1064341 fast/multicol/composited-layer-multiple-fragments-translated.html [ Crash ]
-crbug.com/1064341 fast/multicol/composited-layer-multiple-fragments.html [ Crash ]
-crbug.com/1064341 fast/multicol/composited-layer-nested.html [ Crash ]
-
-# Outline paints incorrectly with columns. For now this is hidden by crbug.com/1064341.
-# crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
-crbug.com/1064341 paint/pagination/composited-paginated-outlined-box.html [ Crash ]
+# Outline paints incorrectly with columns.
+crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
 # Crash on weird clip hierarchy in multiple columns
 compositing/geometry/composited-in-columns.html [ Crash ]

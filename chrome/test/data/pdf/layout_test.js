@@ -45,7 +45,7 @@ const perLayoutTests = {
 };
 
 const scriptingAPI = new PDFScriptingAPI(window, window);
-scriptingAPI.setLoadCallback((success) => {
+scriptingAPI.setLoadCompleteCallback((success) => {
   if (success && document.title in perLayoutTests) {
     chrome.test.runTests(tests.concat(perLayoutTests[document.title]));
   } else {

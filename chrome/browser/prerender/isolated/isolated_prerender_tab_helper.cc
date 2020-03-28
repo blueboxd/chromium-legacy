@@ -55,6 +55,10 @@ IsolatedPrerenderTabHelper::IsolatedPrerenderTabHelper(
   if (navigation_predictor_service) {
     navigation_predictor_service->AddObserver(this);
   }
+
+  // Make sure the global service is up and running so that the service worker
+  // registrations can be queried before the first navigation prediction.
+  IsolatedPrerenderServiceFactory::GetForProfile(profile_);
 }
 
 IsolatedPrerenderTabHelper::~IsolatedPrerenderTabHelper() {
@@ -101,8 +105,7 @@ void IsolatedPrerenderTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!base::FeatureList::IsEnabled(
-          features::kPrefetchSRPNavigationPredictions_HTMLOnly)) {
+  if (!IsolatedPrerenderIsEnabled()) {
     return;
   }
 
@@ -132,8 +135,7 @@ bool IsolatedPrerenderTabHelper::PrefetchingActive() const {
 
 void IsolatedPrerenderTabHelper::Prefetch() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kPrefetchSRPNavigationPredictions_HTMLOnly));
+  DCHECK(IsolatedPrerenderIsEnabled());
 
   page_->url_loader.reset();
   if (page_->urls_to_prefetch.empty()) {
@@ -205,6 +207,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   page_->url_loader->SetOnRedirectCallback(base::BindRepeating(
       &IsolatedPrerenderTabHelper::OnPrefetchRedirect, base::Unretained(this)));
   page_->url_loader->SetAllowHttpErrorResults(true);
+  page_->url_loader->SetTimeoutDuration(IsolatedPrefetchTimeoutDuration());
   page_->url_loader->DownloadToString(
       GetURLLoaderFactory(),
       base::BindOnce(&IsolatedPrerenderTabHelper::OnPrefetchComplete,
@@ -244,13 +247,20 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
   Prefetch();
 }
 
+void IsolatedPrerenderTabHelper::CallHandlePrefetchResponseForTesting(
+    const GURL& url,
+    const net::NetworkIsolationKey& key,
+    network::mojom::URLResponseHeadPtr head,
+    std::unique_ptr<std::string> body) {
+  HandlePrefetchResponse(url, key, std::move(head), std::move(body));
+}
+
 void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
     const GURL& url,
     const net::NetworkIsolationKey& key,
     network::mojom::URLResponseHeadPtr head,
     std::unique_ptr<std::string> body) {
   DCHECK(!head->was_fetched_via_cache);
-  DCHECK(PrefetchingActive());
 
   int response_code = head->headers->response_code();
   if (response_code < 200 || response_code >= 300) {
@@ -270,8 +280,7 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
     const base::Optional<NavigationPredictorKeyedService::Prediction>&
         prediction) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::FeatureList::IsEnabled(
-          features::kPrefetchSRPNavigationPredictions_HTMLOnly)) {
+  if (!IsolatedPrerenderIsEnabled()) {
     return;
   }
 

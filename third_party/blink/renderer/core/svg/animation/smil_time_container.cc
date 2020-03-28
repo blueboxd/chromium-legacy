@@ -231,7 +231,7 @@ SMILTime SMILTimeContainer::Elapsed() const {
     return presentation_time_;
 
   base::TimeDelta time_offset =
-      GetDocument().Timeline().CurrentTimeInternal().value_or(
+      GetDocument().Timeline().CurrentPhaseAndTime().time.value_or(
           base::TimeDelta()) -
       reference_time_;
   DCHECK_GE(time_offset, base::TimeDelta());
@@ -260,8 +260,9 @@ SMILTime SMILTimeContainer::LatestUpdatePresentationTime() const {
 }
 
 void SMILTimeContainer::SynchronizeToDocumentTimeline() {
-  reference_time_ = GetDocument().Timeline().CurrentTimeInternal().value_or(
-      base::TimeDelta());
+  reference_time_ =
+      GetDocument().Timeline().CurrentPhaseAndTime().time.value_or(
+          base::TimeDelta());
 }
 
 bool SMILTimeContainer::IsPaused() const {

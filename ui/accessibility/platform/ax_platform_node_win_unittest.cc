@@ -2909,7 +2909,7 @@ TEST_F(AXPlatformNodeWinTest, TestAnnotatedImageName) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextGetNCharacters) {
   AXNodeData root;
   root.id = 1;
-  root.role = ax::mojom::Role::kStaticText;
+  root.role = ax::mojom::Role::kRootWebArea;
 
   AXNodeData node;
   node.id = 2;

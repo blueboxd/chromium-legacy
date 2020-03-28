@@ -4,6 +4,8 @@
 
 #include "ash/ambient/ambient_controller.h"
 
+#include <string>
+
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/photo_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
@@ -28,6 +30,15 @@ bool CanStartAmbientMode() {
          !ambient::util::IsShowing(LockScreen::ScreenType::kLogin);
 }
 
+void CloseAssistantUi() {
+  auto* assistant_controller = Shell::Get()->assistant_controller();
+  // |AssistantController| is initiated before the |AmbientController| in shell.
+  DCHECK(assistant_controller);
+
+  assistant_controller->ui_controller()->CloseUi(
+      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+}
+
 }  // namespace
 
 // static
@@ -46,8 +57,7 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   }
 }
 
-AmbientController::AmbientController(AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+AmbientController::AmbientController() {
   ambient_state_.AddObserver(this);
   // |SessionController| is initialized before |this| in Shell.
   Shell::Get()->session_controller()->AddObserver(this);
@@ -58,7 +68,8 @@ AmbientController::~AmbientController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
   ambient_state_.RemoveObserver(this);
 
-  DestroyContainerView();
+  if (container_view_)
+    DestroyContainerView();
 }
 
 void AmbientController::OnWidgetDestroying(views::Widget* widget) {
@@ -66,15 +77,10 @@ void AmbientController::OnWidgetDestroying(views::Widget* widget) {
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
 
-  // If our widget is being destroyed, Assistant UI is no longer visible.
-  // If Assistant UI was already closed, this is a no-op.
-  assistant_controller_->ui_controller()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
-
-  // We need to update the mode when the widget gets destroyed as this may have
-  // caused by AmbientContainerView directly closed the widget without calling
-  // Stop() after an outside press.
-  ambient_state_.SetAmbientModeEnabled(false);
+  // Call CloseUi() explicitly to sync states to |AssistantUiController|.
+  // This is a no-op if the UI has already been closed before the widget gets
+  // destroyed.
+  CloseAssistantUi();
 }
 
 void AmbientController::OnAmbientModeEnabled(bool enabled) {
@@ -101,33 +107,17 @@ void AmbientController::OnLockStateChanged(bool locked) {
   Start();
 }
 
-void AmbientController::Toggle() {
-  if (container_view_)
-    Stop();
-  else
-    Start();
-}
-
-void AmbientController::AddPhotoModelObserver(PhotoModelObserver* observer) {
-  model_.AddObserver(observer);
-}
-
-void AmbientController::RemovePhotoModelObserver(PhotoModelObserver* observer) {
-  model_.RemoveObserver(observer);
-}
-
 void AmbientController::Start() {
   if (!CanStartAmbientMode()) {
     // TODO(wutao): Show a toast to indicate that Ambient mode is not ready.
     return;
   }
 
-  // CloseUi to ensure standalone Assistant UI doesn't exist when entering
-  // Ambient mode to avoid strange behavior caused by standalone UI was
+  // CloseUi to ensure the embedded Assistant UI doesn't exist when entering
+  // Ambient mode to avoid strange behavior caused by the embedded UI was
   // only hidden at that time. This will be a no-op if UI was already closed.
   // TODO(meilinw): Handle embedded UI.
-  assistant_controller_->ui_controller()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+  CloseAssistantUi();
 
   ambient_state_.SetAmbientModeEnabled(true);
 }
@@ -135,16 +125,22 @@ void AmbientController::Start() {
 void AmbientController::Stop() {
   ambient_state_.SetAmbientModeEnabled(false);
 }
+void AmbientController::Toggle() {
+  if (container_view_)
+    Stop();
+  else
+    Start();
+}
 
 void AmbientController::CreateContainerView() {
   DCHECK(!container_view_);
-  container_view_ = new AmbientContainerView(this);
+  container_view_ = new AmbientContainerView(&delegate_);
   container_view_->GetWidget()->AddObserver(this);
 }
 
 void AmbientController::DestroyContainerView() {
   // |container_view_|'s widget is owned by its native widget. After calling
-  // CloseNow(), it will trigger |OnWidgetDestroying|, where it will set the
+  // |CloseNow|, |OnWidgetDestroying| will be triggered immediately to reset
   // |container_view_| to nullptr.
   if (container_view_)
     container_view_->GetWidget()->CloseNow();
@@ -154,7 +150,7 @@ void AmbientController::RefreshImage() {
   if (!PhotoController::Get())
     return;
 
-  if (model_.ShouldFetchImmediately()) {
+  if (photo_model_.ShouldFetchImmediately()) {
     // TODO(b/140032139): Defer downloading image if it is animating.
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -162,14 +158,14 @@ void AmbientController::RefreshImage() {
                        weak_factory_.GetWeakPtr()),
         kAnimationDuration);
   } else {
-    model_.ShowNextImage();
+    photo_model_.ShowNextImage();
     ScheduleRefreshImage();
   }
 }
 
 void AmbientController::ScheduleRefreshImage() {
   base::TimeDelta refresh_interval;
-  if (!model_.ShouldFetchImmediately()) {
+  if (!photo_model_.ShouldFetchImmediately()) {
     // TODO(b/139953713): Change to a correct time interval.
     refresh_interval = base::TimeDelta::FromSeconds(5);
   }
@@ -191,7 +187,7 @@ void AmbientController::OnPhotoDownloaded(bool success,
     return;
 
   DCHECK(!image.isNull());
-  model_.AddNextImage(image);
+  photo_model_.AddNextImage(image);
   ScheduleRefreshImage();
 }
 

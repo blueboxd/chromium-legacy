@@ -877,7 +877,8 @@ int CertVerifyProcWin::VerifyInternal(
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
-    CertVerifyResult* verify_result) {
+    CertVerifyResult* verify_result,
+    const NetLogWithSource& net_log) {
   // Ensure the Revocation Provider has been installed and configured for this
   // CRLSet.
   ScopedThreadLocalCRLSet thread_local_crlset(crl_set);

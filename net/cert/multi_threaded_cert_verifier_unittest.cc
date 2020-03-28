@@ -39,7 +39,7 @@ void FailTest(int /* result */) {
 
 class MockCertVerifyProc : public CertVerifyProc {
  public:
-  MOCK_METHOD8(VerifyInternal,
+  MOCK_METHOD9(VerifyInternal,
                int(X509Certificate*,
                    const std::string&,
                    const std::string&,
@@ -47,7 +47,8 @@ class MockCertVerifyProc : public CertVerifyProc {
                    int,
                    CRLSet*,
                    const CertificateList&,
-                   CertVerifyResult*));
+                   CertVerifyResult*,
+                   const NetLogWithSource&));
   MOCK_CONST_METHOD0(SupportsAdditionalTrustAnchors, bool());
 
  private:
@@ -79,7 +80,7 @@ class MultiThreadedCertVerifierTest : public TestWithTaskEnvironment {
         verifier_(mock_verify_proc_) {
     EXPECT_CALL(*mock_verify_proc_, SupportsAdditionalTrustAnchors())
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_verify_proc_, VerifyInternal(_, _, _, _, _, _, _, _))
+    EXPECT_CALL(*mock_verify_proc_, VerifyInternal(_, _, _, _, _, _, _, _, _))
         .WillRepeatedly(
             DoAll(SetCertVerifyResult(), Return(ERR_CERT_COMMON_NAME_INVALID)));
   }
@@ -184,8 +185,9 @@ TEST_F(MultiThreadedCertVerifierTest, ConvertsConfigToFlags) {
 
     verifier_.SetConfig(config);
 
-    EXPECT_CALL(*mock_verify_proc_,
-                VerifyInternal(_, _, _, _, test_config.expected_flag, _, _, _))
+    EXPECT_CALL(
+        *mock_verify_proc_,
+        VerifyInternal(_, _, _, _, test_config.expected_flag, _, _, _, _))
         .WillRepeatedly(
             DoAll(SetCertVerifyRevokedResult(), Return(ERR_CERT_REVOKED)));
 

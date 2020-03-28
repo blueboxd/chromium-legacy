@@ -135,14 +135,14 @@ public class TabSelectionEditorTestingRobot {
     public final TabSelectionEditorTestingRobot.Action actionRobot;
 
     public TabSelectionEditorTestingRobot() {
-        resultRobot = new TabSelectionEditorTestingRobot.Result();
-        actionRobot = new TabSelectionEditorTestingRobot.Action();
+        resultRobot = new Result();
+        actionRobot = new Action();
     }
 
     /**
      * This Robot is used to perform action within the TabSelectionEditor.
      */
-    public class Action {
+    public static class Action {
         public TabSelectionEditorTestingRobot.Action clickItemAtAdapterPosition(int position) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
@@ -170,7 +170,7 @@ public class TabSelectionEditorTestingRobot {
     /**
      * This Robot is used to verify result within the TabSelectionEditor.
      */
-    public class Result {
+    public static class Result {
         public TabSelectionEditorTestingRobot.Result verifyTabSelectionEditorIsVisible() {
             onView(withId(org.chromium.chrome.tab_ui.R.id.selectable_list))
                     .inRoot(isTabSelectionEditorPopup())

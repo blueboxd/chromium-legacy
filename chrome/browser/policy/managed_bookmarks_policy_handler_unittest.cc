@@ -124,7 +124,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
       }
     ]
   )");
-  ASSERT_EQ(expected, *pref_value);
+  EXPECT_EQ(expected, *pref_value);
 }
 
 TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
@@ -165,7 +165,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
       }
     ]
   )");
-  ASSERT_EQ(expected, *pref_value);
+  EXPECT_EQ(expected, *pref_value);
 }
 
 TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
@@ -214,7 +214,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
       }
     ]
   )");
-  ASSERT_EQ(expected, *pref_value);
+  EXPECT_EQ(expected, *pref_value);
 }
 
 TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {

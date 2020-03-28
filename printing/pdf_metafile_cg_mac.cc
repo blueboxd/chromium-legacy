@@ -88,20 +88,18 @@ bool PdfMetafileCg::Init() {
   return true;
 }
 
-bool PdfMetafileCg::InitFromData(const void* src_buffer,
-                                 size_t src_buffer_size) {
+bool PdfMetafileCg::InitFromData(base::span<const uint8_t> data) {
   DCHECK(!context_.get());
   DCHECK(!pdf_data_.get());
 
-  if (!src_buffer || !src_buffer_size)
+  if (data.empty())
     return false;
 
-  if (!base::IsValueInRangeForNumericType<CFIndex>(src_buffer_size))
+  if (!base::IsValueInRangeForNumericType<CFIndex>(data.size()))
     return false;
 
-  pdf_data_.reset(CFDataCreateMutable(kCFAllocatorDefault, src_buffer_size));
-  CFDataAppendBytes(pdf_data_, static_cast<const UInt8*>(src_buffer),
-                    src_buffer_size);
+  pdf_data_.reset(CFDataCreateMutable(kCFAllocatorDefault, data.size()));
+  CFDataAppendBytes(pdf_data_, data.data(), data.size());
   return true;
 }
 

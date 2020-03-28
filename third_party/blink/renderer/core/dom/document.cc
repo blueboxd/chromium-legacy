@@ -685,7 +685,17 @@ Document::Document(const DocumentInit& initializer,
       mutation_observer_types_(0),
       visited_link_state_(MakeGarbageCollected<VisitedLinkState>(*this)),
       visually_ordered_(false),
-      ready_state_(kComplete),
+      // https://html.spec.whatwg.org/multipage/dom.html#current-document-readiness
+      // says the ready state starts as 'loading' if there's an associated
+      // parser and 'complete' otherwise. We don't know whether there's an
+      // associated parser here (we create the parser in ImplicitOpen). But
+      // waiting to set the ready state to 'loading' in ImplicitOpen fires a
+      // readystatechange event, which can be observed in the case where we
+      // reuse a window. If there's a window being reused, then there must be
+      // a frame, and if there's a frame, there must be an associated parser, so
+      // setting based on frame_ here is sufficient to ensure that the quirk of
+      // when we set the ready state is not web-observable.
+      ready_state_(frame_ ? kLoading : kComplete),
       parsing_state_(kFinishedParsing),
       contains_plugins_(false),
       ignore_destructive_write_count_(0),

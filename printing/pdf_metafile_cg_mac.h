@@ -24,7 +24,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
 
   // Metafile methods.
   bool Init() override;
-  bool InitFromData(const void* src_buffer, size_t src_buffer_size) override;
+  bool InitFromData(base::span<const uint8_t> data) override;
   void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
                  float scale_factor) override;

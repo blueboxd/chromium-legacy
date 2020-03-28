@@ -32,8 +32,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace base {
 class SequencedTaskRunner;
 class TimeDelta;
@@ -49,9 +47,9 @@ class ProxyDelegate;
 class ProxyResolverFactory;
 struct PacFileDataWithSource;
 
-// This class can be used to resolve the proxy server to use when loading a
-// HTTP(S) URL.  It uses the given ProxyResolver to evaluate a PAC file, which
-// the ConfiguredProxyResolutionService then uses to resolve a proxy.  All proxy
+// This class decides which proxy server(s) to use for a particular URL request.
+// It uses the given ProxyResolver to evaluate a PAC file, which the
+// ConfiguredProxyResolutionService then uses to resolve a proxy.  All proxy
 // resolution in this class is based on first getting proxy configurations (ex:
 // a PAC URL) from some source and then using these configurations to attempt to
 // resolve that proxy.

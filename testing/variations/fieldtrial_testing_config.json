@@ -3653,7 +3653,6 @@
                         "OmniboxOnFocusSuggestions",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichEntitySuggestions",
-                        "OmniboxSuggestionTransparencyOptions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QueryInOmnibox"
                     ]

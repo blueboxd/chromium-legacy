@@ -373,17 +373,19 @@ bool ShouldMinimizeTopWindowOnBack() {
     return false;
   }
 
+  // ARC and crostini apps will handle the back event that follows on the client
+  // side and will minimize/close the window there.
   const int app_type = window->GetProperty(aura::client::kAppType);
-  if (app_type != static_cast<int>(AppType::BROWSER) &&
-      app_type != static_cast<int>(AppType::CHROME_APP)) {
+  if (app_type == static_cast<int>(AppType::ARC_APP) ||
+      app_type == static_cast<int>(AppType::CROSTINI_APP)) {
     return false;
   }
 
-  WindowState* window_state = WindowState::Get(window);
-  if (!window_state || !window_state->CanMinimize() ||
-      window_state->IsMinimized()) {
-    return false;
-  }
+  // Use the value of |kMinimizeOnBackKey| if it is provided. It can be provided
+  // by windows with custom web contents.
+  bool* can_minimize_on_back_key = window->GetProperty(kMinimizeOnBackKey);
+  if (can_minimize_on_back_key)
+    return *can_minimize_on_back_key;
 
   // Minimize the window if it is at the bottom page.
   return !shell->shell_delegate()->CanGoBack(window);

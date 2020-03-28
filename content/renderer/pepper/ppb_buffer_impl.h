@@ -66,15 +66,15 @@ class BufferAutoMapper {
   ~BufferAutoMapper();
 
   // Will be NULL on failure to map.
-  void* data() { return data_; }
-  uint32_t size() { return size_; }
+  const uint8_t* data() const { return data_; }
+  size_t size() const { return size_; }
 
  private:
   ppapi::thunk::PPB_Buffer_API* api_;
 
   bool needs_unmap_;
 
-  void* data_;
+  const uint8_t* data_;
   uint32_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferAutoMapper);

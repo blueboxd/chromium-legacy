@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/security_interstitials/core/controller_client.h"
+#include "ios/web/public/web_state_observer.h"
 
 class GURL;
 
@@ -23,7 +25,8 @@ class WebState;
 
 // Provides embedder-specific logic for the security error page controller.
 class IOSChromeControllerClient
-    : public security_interstitials::ControllerClient {
+    : public security_interstitials::ControllerClient,
+      public web::WebStateObserver {
  public:
   IOSChromeControllerClient(
       web::WebState* web_state,
@@ -31,6 +34,9 @@ class IOSChromeControllerClient
   ~IOSChromeControllerClient() override;
 
   void SetWebInterstitial(web::WebInterstitial* web_interstitial);
+
+  // web::WebStateObserver implementation.
+  void WebStateDestroyed(web::WebState* web_state) override;
 
  private:
   // security_interstitials::ControllerClient implementation.
@@ -48,8 +54,14 @@ class IOSChromeControllerClient
   PrefService* GetPrefService() override;
   const std::string GetExtendedReportingPrefName() const override;
 
+  // Closes the tab. Called in cases where a user clicks "Back to safety" and
+  // it's not possible to go back.
+  void Close();
+
   web::WebState* web_state_;
   web::WebInterstitial* web_interstitial_;
+
+  base::WeakPtrFactory<IOSChromeControllerClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeControllerClient);
 };

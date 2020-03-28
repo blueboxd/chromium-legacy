@@ -16,6 +16,7 @@
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_nss.h"
+#include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,11 +107,11 @@ class CertVerifyProcChromeOSTest : public testing::Test {
       std::string* root_subject_name) {
     int flags = 0;
     net::CertVerifyResult verify_result;
-    int error = verify_proc->Verify(cert, "127.0.0.1",
-                                    /*ocsp_response=*/std::string(),
-                                    /*sct_list=*/std::string(), flags,
-                                    net::CRLSet::BuiltinCRLSet().get(),
-                                    additional_trust_anchors, &verify_result);
+    int error = verify_proc->Verify(
+        cert, "127.0.0.1",
+        /*ocsp_response=*/std::string(),
+        /*sct_list=*/std::string(), flags, net::CRLSet::BuiltinCRLSet().get(),
+        additional_trust_anchors, &verify_result, net::NetLogWithSource());
     if (!verify_result.verified_cert->intermediate_buffers().empty()) {
       root_subject_name->assign(GetSubjectCN(
           verify_result.verified_cert->intermediate_buffers().back().get()));

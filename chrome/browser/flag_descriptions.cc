@@ -2799,9 +2799,8 @@ const char kOmniboxShortBookmarkSuggestionsDescription[] =
 const char kOmniboxSuggestionTransparencyOptionsName[] =
     "Omnibox Suggestion Transparency Options";
 const char kOmniboxSuggestionTransparencyOptionsDescription[] =
-    "Improves transparency of and control over omnibox suggestions. This "
-    "includes \"Why this Suggestion?\" and user controls to delete "
-    "personalized suggestions.";
+    "Surfaces an X button next to deletable omnibox suggestions. This is to "
+    "make the suggestion removal feature more discoverable.";
 
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";

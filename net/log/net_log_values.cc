@@ -71,6 +71,10 @@ base::Value NetLogNumberValue(uint64_t num) {
   return NetLogNumberValueHelper(num);
 }
 
+base::Value NetLogNumberValue(uint32_t num) {
+  return NetLogNumberValueHelper(num);
+}
+
 base::Value NetLogParamsWithInt(base::StringPiece name, int value) {
   base::Value params(base::Value::Type::DICTIONARY);
   params.SetIntKey(name, value);

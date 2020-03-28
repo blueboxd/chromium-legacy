@@ -215,7 +215,7 @@ void MockPrinter::PrintPage(
 #else
   printing::MetafileSkia metafile;
 #endif
-  metafile.InitFromData(mapping.memory(), mapping.size());
+  metafile.InitFromData(mapping.GetMemoryAsSpan<const uint8_t>());
   printing::Image image(metafile);
   pages_.push_back(base::MakeRefCounted<MockPrinterPage>(
       mapping.memory(), mapping.size(), image));

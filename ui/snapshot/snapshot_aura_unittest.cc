@@ -108,15 +108,16 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
     context_factories_ = std::make_unique<ui::TestContextFactories>(
         enable_pixel_output, GetParam());
 
-    helper_ = std::make_unique<aura::test::AuraTestHelper>();
-    helper_->SetUp(context_factories_->GetContextFactory());
+    helper_ = std::make_unique<aura::test::AuraTestHelper>(
+        context_factories_->GetContextFactory());
+    helper_->SetUp();
   }
 
   void TearDown() override {
     test_window_.reset();
     delegate_.reset();
     helper_->RunAllPendingInMessageLoop();
-    helper_->TearDown();
+    helper_.reset();
     context_factories_.reset();
     task_environment_.reset();
     testing::Test::TearDown();

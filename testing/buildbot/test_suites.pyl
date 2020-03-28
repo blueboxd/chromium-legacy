@@ -2130,6 +2130,17 @@
         'linux_args': [ '--no-xvfb' ],
         'test': 'content_browsertests',
       },
+      'vulkan_tests': {
+        'args': [
+          '--enable-gpu',
+          '--test-launcher-bot-mode',
+          '--test-launcher-jobs=1',
+          '--disable-headless-mode',
+        ],
+        'linux_args': [ '--no-xvfb' ],
+        'test': 'vulkan_tests',
+      },
+
     },
 
     'gpu_fyi_vulkan_swiftshader_gtests': {
@@ -2738,6 +2749,26 @@
       'power_measurement_test': {
         'telemetry_test_name': 'power',
       },
+    },
+
+    'ios_clang_tests': {
+      'base_unittests': {},
+      'boringssl_crypto_tests': {},
+      'boringssl_ssl_tests': {},
+      'components_unittests': {},
+      'crypto_unittests': {},
+      'gfx_unittests': {},
+      'google_apis_unittests': {},
+      'ios_chrome_unittests': {},
+      'ios_net_unittests': {},
+      'ios_web_inttests': {},
+      'ios_web_unittests': {},
+      'ios_web_view_inttests': {},
+      'net_unittests': {},
+      'skia_unittests': {},
+      'sql_unittests': {},
+      'ui_base_unittests': {},
+      'url_unittests': {},
     },
 
     'ios_common_tests': {
@@ -3462,9 +3493,6 @@
           '--test-launcher-batch-limit=512',
           '--test-launcher-retry-limit=0',
         ],
-        'swarming': {
-          'shards': 2,
-        },
       },
       'angle_deqp_gles2_tests': {
         'args': [
@@ -3473,7 +3501,7 @@
           '--test-launcher-retry-limit=0',
         ],
         'swarming': {
-          'shards': 3,
+          'shards': 2,
         },
       },
       'angle_deqp_gles31_tests': {
@@ -3483,7 +3511,7 @@
           '--test-launcher-retry-limit=0',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 3,
         },
       },
       'angle_deqp_gles3_tests': {
@@ -3493,10 +3521,17 @@
           '--test-launcher-retry-limit=0',
         ],
         'swarming': {
-          'shards': 9,
+          'shards': 6,
         },
       },
       'angle_deqp_khr_gles2_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-swiftshader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+      },
+      'angle_deqp_khr_gles31_tests': {
         'args': [
           '--deqp-egl-display-type=angle-swiftshader',
           '--test-launcher-batch-limit=512',
@@ -4754,6 +4789,22 @@
           'SIM_IPAD_AIR_2_12_4',
         ],
       },
+    },
+
+    'ios_clang_tot_device_tests': {
+      'ios_clang_tests': {
+        'variants': [
+          'IPHONE_6S_12_3_1',
+        ],
+      }
+    },
+
+    'ios_clang_tot_sim_tests': {
+      'ios_clang_tests': {
+        'variants': [
+          'SIM_IPHONE_6S_13_3',
+        ]
+      }
     },
 
     'ios_code_coverage_tests': {

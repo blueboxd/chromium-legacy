@@ -5,6 +5,7 @@
 #include "components/security_interstitials/core/ssl_error_ui.h"
 
 #include "base/i18n/time_formatting.h"
+#include "build/build_config.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
@@ -124,6 +125,18 @@ void SSLErrorUI::PopulateOverridableStrings(
   load_time_data->SetString(
       "primaryButtonText",
       l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
+
+// On iOS, offer to close the page instead of navigating to NTP when unable to
+// go back. See crbug.com/1058476 for discussion.
+#if defined(OS_IOS)
+  if (!controller()->CanGoBack()) {
+    load_time_data->SetString(
+        "primaryButtonText",
+        l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_CLOSE_PAGE_BUTTON));
+    load_time_data->SetBoolean("primary_button_close_page", true);
+  }
+#endif
+
   load_time_data->SetString(
       "finalParagraph",
       l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH, url));

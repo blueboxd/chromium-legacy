@@ -2366,9 +2366,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
 
   if (ui::IsNameExposedInAXValueForRole([self internalRole])) {
-    if (!IsSelectedStateRelevant(_owner))
+    if (!IsSelectedStateRelevant(_owner)) {
       return NSStringForStringAttribute(_owner,
                                         ax::mojom::StringAttribute::kName);
+    }
 
     // Append the selection state as a string, because VoiceOver will not
     // automatically report selection state when an individual item is focused.
@@ -2544,11 +2545,14 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  base::string16 value = _owner->GetValue();
-  if (NSMaxRange(range) > value.length())
+  base::string16 innerText = _owner->GetValue();
+  if (innerText.empty())
+    innerText = _owner->GetInnerText();
+  if (NSMaxRange(range) > innerText.length())
     return nil;
 
-  return base::SysUTF16ToNSString(value.substr(range.location, range.length));
+  return base::SysUTF16ToNSString(
+      innerText.substr(range.location, range.length));
 }
 
 // Retrieves the text inside this object and decorates it with attributes
@@ -2558,23 +2562,24 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  base::string16 text = _owner->GetValue();
-  if (_owner->IsTextOnlyObject() && text.empty())
-    text = _owner->GetText();
+  base::string16 innerText = _owner->GetValue();
+  if (innerText.empty())
+    innerText = _owner->GetInnerText();
+  if (NSMaxRange(range) > innerText.length())
+    return nil;
 
-  // We need to get the whole text because a spelling mistake might start or end
-  // outside our range.
-  NSString* value = base::SysUTF16ToNSString(text);
-  NSMutableAttributedString* attributedValue =
-      [[[NSMutableAttributedString alloc] initWithString:value] autorelease];
-
+  // We potentially need to add text attributes to the whole inner text because
+  // a spelling mistake might start or end outside the given range.
+  NSMutableAttributedString* attributedInnerText =
+      [[[NSMutableAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(innerText)] autorelease];
   if (!_owner->IsTextOnlyObject()) {
     AXPlatformRange ax_range(_owner->CreatePositionAt(0),
-                             _owner->CreatePositionAt(int{text.length()}));
-    AddMisspelledTextAttributes(ax_range, attributedValue);
+                             _owner->CreatePositionAt(int{innerText.length()}));
+    AddMisspelledTextAttributes(ax_range, attributedInnerText);
   }
 
-  return [attributedValue attributedSubstringFromRange:range];
+  return [attributedInnerText attributedSubstringFromRange:range];
 }
 
 // Returns the accessibility value for the given attribute.  If the value isn't
@@ -2616,12 +2621,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
-  base::string16 value = _owner->GetValue();
-  if (_owner->IsTextOnlyObject() && value.empty())
-    value = _owner->GetText();
-  int valueLength = static_cast<int>(value.size());
-
   if ([attribute isEqualToString:
                      NSAccessibilityStringForRangeParameterizedAttribute]) {
     return [self valueForRange:[(NSValue*)parameter rangeValue]];
@@ -2636,6 +2635,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if ([attribute
           isEqualToString:NSAccessibilityLineForIndexParameterizedAttribute]) {
     int lineIndex = [(NSNumber*)parameter intValue];
+    const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
     auto iterator =
         std::upper_bound(lineBreaks.begin(), lineBreaks.end(), lineIndex);
     return @(std::distance(lineBreaks.begin(), iterator));
@@ -2644,6 +2644,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if ([attribute
           isEqualToString:NSAccessibilityRangeForLineParameterizedAttribute]) {
     int lineIndex = [(NSNumber*)parameter intValue];
+    const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
+    base::string16 value = _owner->GetValue();
+    if (value.empty())
+      value = _owner->GetInnerText();
+    int valueLength = static_cast<int>(value.size());
+
     int lineCount = static_cast<int>(lineBreaks.size()) + 1;
     if (lineIndex < 0 || lineIndex >= lineCount)
       return nil;
@@ -2802,6 +2808,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return nil;
 
     int textOffset = position->AsTextPosition()->text_offset();
+    const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
     const auto iterator =
         std::upper_bound(lineBreaks.begin(), lineBreaks.end(), textOffset);
     return @(std::distance(lineBreaks.begin(), iterator));
@@ -2811,6 +2818,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
           isEqualToString:
               NSAccessibilityTextMarkerRangeForLineParameterizedAttribute]) {
     int lineIndex = [(NSNumber*)parameter intValue];
+    const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
     int lineCount = static_cast<int>(lineBreaks.size()) + 1;
     if (lineIndex < 0 || lineIndex >= lineCount)
       return nil;

@@ -92,7 +92,11 @@ base::Value NetLogCertComplianceCheckResultParams(
     bool build_timely,
     CTPolicyCompliance compliance) {
   base::DictionaryValue dict;
-  dict.SetKey("certificate", net::NetLogX509CertificateParams(cert));
+  // TODO(mattm): This double-wrapping of the certificate list is weird. Remove
+  // this (probably requires updates to netlog-viewer).
+  base::Value certificate_dict(base::Value::Type::DICTIONARY);
+  certificate_dict.SetKey("certificates", net::NetLogX509CertificateList(cert));
+  dict.SetKey("certificate", std::move(certificate_dict));
   dict.SetBoolean("build_timely", build_timely);
   dict.SetString("ct_compliance_status",
                  CTPolicyComplianceToString(compliance));

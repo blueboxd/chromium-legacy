@@ -9,6 +9,7 @@
 #include <pango/pango.h>
 
 #include <cmath>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -53,6 +54,7 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gtk/gtk_ui_delegate.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/views/controls/button/button.h"
@@ -70,10 +72,7 @@
 #include "chrome/browser/ui/gtk/gtk_event_loop_x11.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11.h"        // nogncheck
-#include "ui/gfx/x/x11_types.h"  // nogncheck
-#elif defined(USE_OZONE)
+#if defined(USE_OZONE)
 #include "ui/base/ime/input_method.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -85,6 +84,9 @@
 namespace gtk {
 
 namespace {
+
+// Stores the GtkUi singleton instance
+const GtkUi* g_gtk_ui = nullptr;
 
 const double kDefaultDPI = 96;
 
@@ -380,25 +382,18 @@ const SkBitmap GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
 
 }  // namespace
 
-GtkUi::GtkUi() {
+GtkUi::GtkUi(ui::GtkUiDelegate* delegate) : delegate_(delegate) {
   using Action = views::LinuxUI::WindowFrameAction;
   using ActionSource = views::LinuxUI::WindowFrameActionSource;
+
+  DCHECK(delegate_);
+  DCHECK(!g_gtk_ui);
+  g_gtk_ui = this;
+
   window_frame_actions_ = {
       {ActionSource::kDoubleClick, Action::kToggleMaximize},
       {ActionSource::kMiddleClick, GetDefaultMiddleClickAction()},
       {ActionSource::kRightClick, Action::kMenu}};
-
-#if defined(USE_X11)
-  // Force Gtk to use Xwayland (in case a Wayland compositor is being used).
-  gdk_set_allowed_backends("x11");
-#elif defined(USE_OZONE)
-  // TODO(crbug.com/1002674): This is a temporary layering violation, supported
-  // during X11 migration to Ozone. Once LinuxUI/GtkUi is reworked to be more
-  // aligned with Ozone design, this will be moved into ozone backend code.
-  std::string ozone_platform{ui::OzonePlatform::GetPlatformName()};
-  if (ozone_platform == "x11" || ozone_platform == "wayland")
-    gdk_set_allowed_backends(ozone_platform.c_str());
-#endif
 
   // Avoid GTK initializing atk-bridge, and let AuraLinux implementation
   // do it once it is ready.
@@ -412,6 +407,12 @@ GtkUi::GtkUi() {
 
 GtkUi::~GtkUi() {
   gtk_widget_destroy(fake_window_);
+  g_gtk_ui = nullptr;
+}
+
+ui::GtkUiDelegate* GtkUi::GetDelegate() {
+  DCHECK(g_gtk_ui) << "GtkUi instance is not set.";
+  return g_gtk_ui->delegate_;
 }
 
 void GtkUi::Initialize() {
@@ -827,6 +828,13 @@ int GtkUi::GetCursorThemeSize() {
 
 bool GtkUi::MatchEvent(const ui::Event& event,
                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
+  // TODO(crbug.com/963419): Use delegate's |GetGdkKeymap| here to
+  // determine if GtkUi's key binding handling implementation is used or not.
+  // Ozone/Wayland was unintentionally using GtkUi for keybinding handling, so
+  // early out here, for now, until a proper solution for ozone is implemented.
+  if (!GetDelegate()->GetGdkKeymap())
+    return false;
+
   // Ensure that we have a keyboard handler.
   if (!key_bindings_handler_)
     key_bindings_handler_ = std::make_unique<GtkKeyBindingsHandler>();
@@ -1093,15 +1101,19 @@ float GtkUi::GetRawDeviceScaleFactor() {
     return display::Display::GetForcedDeviceScaleFactor();
 
   GdkScreen* screen = gdk_screen_get_default();
-  gint scale = gtk_widget_get_scale_factor(fake_window_);
-  DCHECK_GT(scale, 0);
-  gdouble resolution = gdk_screen_get_resolution(screen);
-  const float scale_factor =
-      resolution <= 0 ? scale : resolution * scale / kDefaultDPI;
+  float scale = gtk_widget_get_scale_factor(fake_window_);
+  DCHECK_GT(scale, 0.0);
 
-  // Blacklist scaling factors <120% (crbug.com/484400) and round
-  // to 1 decimal to prevent rendering problems (crbug.com/485183).
-  return scale_factor < 1.2f ? 1.0f : roundf(scale_factor * 10) / 10;
+  gdouble resolution = gdk_screen_get_resolution(screen);
+  // TODO(https://crbug.com/1033552): Remove this hack once the Trusty bots are
+  // fixed to have a resolution of 96, or when the Trusty bots are removed
+  // altogether.
+  if (std::abs(resolution - 95.8486) < 0.001)
+    resolution = 96;
+  if (resolution > 0)
+    scale *= resolution / kDefaultDPI;
+
+  return scale;
 }
 
 void GtkUi::UpdateDeviceScaleFactor() {
@@ -1122,6 +1134,6 @@ float GtkUi::GetDeviceScaleFactor() const {
 
 }  // namespace gtk
 
-views::LinuxUI* BuildGtkUi() {
-  return new gtk::GtkUi;
+views::LinuxUI* BuildGtkUi(ui::GtkUiDelegate* delegate) {
+  return new gtk::GtkUi(delegate);
 }

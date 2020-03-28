@@ -185,7 +185,7 @@ void XWindow::Init(const Configuration& config) {
       break;
   }
   // An in-activatable window should not interact with the system wm.
-  if (!activatable_)
+  if (!activatable_ || config.override_redirect)
     swa.override_redirect = x11::True;
 
 #if !defined(USE_X11)
@@ -1450,6 +1450,17 @@ void XWindow::ConfineCursorTo(const gfx::Rect& bounds) {
 
 void XWindow::LowerWindow() {
   XLowerWindow(xdisplay_, xwindow_);
+}
+
+void XWindow::SetOverrideRedirect(bool override_redirect) {
+  bool remap = window_mapped_in_client_;
+  if (remap)
+    Hide();
+  XSetWindowAttributes swa;
+  swa.override_redirect = override_redirect;
+  XChangeWindowAttributes(xdisplay_, xwindow_, CWOverrideRedirect, &swa);
+  if (remap)
+    Map();
 }
 
 bool XWindow::ContainsPointInRegion(const gfx::Point& point) const {

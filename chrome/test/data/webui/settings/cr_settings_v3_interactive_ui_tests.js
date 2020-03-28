@@ -50,6 +50,18 @@ TEST_F('CrSettingsSyncPageV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsSecureDnsV3Test = class extends CrSettingsV3InteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/secure_dns_interactive_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsSecureDnsV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var SettingsUIV3InteractiveTest = class extends CrSettingsV3InteractiveUITest {
   /** @override */
   get browsePreload() {

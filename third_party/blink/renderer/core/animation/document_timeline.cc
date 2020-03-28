@@ -167,30 +167,23 @@ void DocumentTimeline::ResetForTesting() {
   zero_time_ = base::TimeTicks() + origin_time_;
   zero_time_initialized_ = true;
   playback_rate_ = 1;
-  last_current_time_internal_.reset();
+  last_current_phase_and_time_.reset();
 }
 
 void DocumentTimeline::SetTimingForTesting(PlatformTiming* timing) {
   timing_ = timing;
 }
 
-base::Optional<base::TimeDelta> DocumentTimeline::CurrentTimeInternal() {
+AnimationTimeline::PhaseAndTime DocumentTimeline::CurrentPhaseAndTime() {
   if (!IsActive()) {
-    return base::nullopt;
+    return {TimelinePhase::kInactive, /*current_time*/ base::nullopt};
   }
 
   base::Optional<base::TimeDelta> result =
       playback_rate_ == 0
           ? ZeroTime().since_origin()
           : (CurrentAnimationTime(GetDocument()) - ZeroTime()) * playback_rate_;
-  return result;
-}
-
-TimelinePhase DocumentTimeline::Phase() const {
-  if (IsActive()) {
-    return TimelinePhase::kActive;
-  }
-  return TimelinePhase::kInactive;
+  return {TimelinePhase::kActive, result};
 }
 
 void DocumentTimeline::PauseAnimationsForTesting(double pause_time) {
@@ -202,7 +195,7 @@ void DocumentTimeline::PauseAnimationsForTesting(double pause_time) {
 void DocumentTimeline::SetPlaybackRate(double playback_rate) {
   if (!IsActive())
     return;
-  base::TimeDelta current_time = CurrentTimeInternal().value();
+  base::TimeDelta current_time = CurrentPhaseAndTime().time.value();
   playback_rate_ = playback_rate;
   zero_time_ = playback_rate == 0 ? base::TimeTicks() + current_time
                                   : CurrentAnimationTime(GetDocument()) -

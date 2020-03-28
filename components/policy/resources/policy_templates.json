@@ -5392,7 +5392,9 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          URL patterns in this policy should not clash with ones configured via WebUsbBlockedForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.''',
+          URL patterns in this policy should not clash with ones configured via WebUsbBlockedForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'WebUsbBlockedForUrls',
@@ -5415,7 +5417,9 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          URL patterns in this policy should not clash with ones configured via WebUsbAskForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.''',
+          URL patterns in this policy should not clash with ones configured via WebUsbAskForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'AutoSelectCertificateForUrls',
@@ -5508,7 +5512,9 @@
 
       The value must be an array of stringified JSON dictionaries. Each dictionary must have the form <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">'{ "pattern": "$URL_PATTERN", "filter" : $FILTER }'</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> has the form <ph name="JSON_DICTIONARY_EXAMPLE">'{ "ISSUER": { "CN": "$ISSUER_CN" } }'</ph>, additionally only client certificates are selected that are issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph>. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is the empty dictionary {}, the selection of client certificates is not additionally restricted.
 
-      If this policy is left not set, no auto-selection will be done for any site.''',
+      If this policy is left not set, no auto-selection will be done for any site.
+
+      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'CookiesAllowedForUrls',
@@ -5535,7 +5541,9 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          See also policies 'CookiesBlockedForUrls' and 'CookiesSessionOnlyForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.''',
+          See also policies 'CookiesBlockedForUrls' and 'CookiesSessionOnlyForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'CookiesBlockedForUrls',
@@ -5562,7 +5570,9 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          See also policies 'CookiesAllowedForUrls' and 'CookiesSessionOnlyForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.''',
+          See also policies 'CookiesAllowedForUrls' and 'CookiesSessionOnlyForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'CookiesSessionOnlyForUrls',
@@ -5593,7 +5603,9 @@
 
           See also policies 'CookiesAllowedForUrls' and 'CookiesBlockedForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.
 
-          If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.''',
+          If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'ImagesAllowedForUrls',
@@ -5616,7 +5628,9 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
+          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'ImagesBlockedForUrls',
@@ -5639,7 +5653,9 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
+          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'JavaScriptAllowedForUrls',
@@ -5660,7 +5676,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'JavaScriptBlockedForUrls',
@@ -5681,7 +5699,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'KeygenAllowedForUrls',
@@ -5702,7 +5722,9 @@
       'tags': ['system-security', 'website-sharing', 'local-data-access'],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to use key generation. If a url pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'KeygenBlockedForUrls',
@@ -5723,7 +5745,9 @@
       'tags': ['system-security', 'website-sharing', 'local-data-access'],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to use key generation. If a url pattern is in 'KeygenAllowedForUrls', this policy overrides these exceptions.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabled',
@@ -5808,7 +5832,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'PluginsBlockedForUrls',
@@ -5829,7 +5855,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'PopupsAllowedForUrls',
@@ -5854,7 +5882,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to open popups.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'RegisteredProtocolHandlers',
@@ -5920,7 +5950,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to open popups.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'NotificationsAllowedForUrls',
@@ -5941,7 +5973,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'NotificationsBlockedForUrls',
@@ -5962,7 +5996,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'NativeMessagingBlacklist',
@@ -9081,6 +9117,8 @@
       origin of the requesting URL.  If a match is found, access to audio
       capture devices will be granted without prompt.
 
+      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
+
       NOTE: Until version 45, this policy was only supported in Kiosk mode.''',
     },
     {
@@ -9126,6 +9164,8 @@
       'desc': '''Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to video
       capture devices will be granted without prompt.
+
+      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
 
       NOTE: Until version 45, this policy was only supported in Kiosk mode.''',
     },
@@ -15931,27 +15971,13 @@
 
       If autoplay is enabled then videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      A valid URL patterns specifications are:
-
-      - [*.]domain.tld (matches domain.tld and all sub-domains)
-
-      - host (matches an exact hostname)
-
-      - scheme://host:port (supported schemes: http,https)
-
-      - scheme://[*.]domain.tld:port (supported schemes: http,https)
-
-      - file://path (The path has to be an absolute path and start with a '/')
-
-      - a.b.c.d (matches an exact IPv4 ip)
-
-      - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
-
       If the AutoplayAllowed policy is set to True then this policy will have no effect.
 
       If the AutoplayAllowed policy is set to False then any URL patterns set in this policy will still be allowed to play.
 
-      Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running and this policy changes, it will be applied only to new opened tabs. Therefore some tabs might still observe the previous behavior.''',
+      Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running and this policy changes, it will be applied only to new opened tabs. Therefore some tabs might still observe the previous behavior.
+
+      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'TabUnderAllowed',
@@ -19539,7 +19565,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites) and for which optionally blockable mixed content upgrades will be disabled.
 
-          If this policy is left not set blockable mixed content will be blocked and optionally blockable mixed content will be upgraded, and users will be allowed to set exceptions to allow it for specific sites.''',
+          If this policy is left not set blockable mixed content will be blocked and optionally blockable mixed content will be upgraded, and users will be allowed to set exceptions to allow it for specific sites.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'InsecureContentBlockedForUrls',
@@ -19560,7 +19588,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites), and for which optionally blockable (i.e. passive) mixed content will be upgraded.
 
-          If this policy is left not set blockable mixed content will be blocked and optionally blockable mixed content will be upgraded, but users will be allowed to set exceptions to allow it for specific sites.''',
+          If this policy is left not set blockable mixed content will be blocked and optionally blockable mixed content will be upgraded, but users will be allowed to set exceptions to allow it for specific sites.
+
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'DeviceWebBasedAttestationAllowedUrls',
@@ -19586,7 +19616,9 @@
 
       If this policy is not set or is set to an empty list, no URL is allowed to use remote attestation on the sign-in screen.
 
-      URLs must have HTTPS scheme, e.g. "https://example.com".'''
+      URLs must have HTTPS scheme, e.g. "https://example.com".
+
+      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.'''
     },
     {
       'name': 'DeviceShowNumericKeyboardForPassword',

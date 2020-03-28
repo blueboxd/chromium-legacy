@@ -25,7 +25,6 @@ class ServiceMetrics {
   void LogHasNoConnectionsDuration();
 
   const base::TickClock* clock_;
-  const base::TimeTicks service_start_;
   base::TimeTicks has_connections_start_;
   base::TimeTicks has_no_connections_start_;
 

@@ -151,10 +151,6 @@ class CONTENT_EXPORT AudioRendererMixerManager
   AudioRendererMixerMap mixers_;
   base::Lock mixers_lock_;
 
-  // Map of the output latencies encountered throughout mixer manager lifetime.
-  // Used for UMA histogram logging.
-  std::bitset<media::AudioLatency::LATENCY_COUNT> latency_map_;
-
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerManager);
 };
 

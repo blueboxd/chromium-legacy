@@ -8,15 +8,12 @@
 #include "ash/app_list/test/test_search_result.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/shell.h"
-#include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/spoken_feedback_browsertest.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -104,8 +101,8 @@ INSTANTIATE_TEST_SUITE_P(TestAsNormalAndGuestUser,
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
   sm_.ExpectSpeechPattern("Launcher");
   sm_.ExpectSpeech("Button");
   sm_.ExpectSpeech("Shelf");
@@ -138,8 +135,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
                        DisabledFullscreenExpandButton) {
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
   sm_.ExpectSpeech("Shelf");
 
   // Press space on the launcher button in shelf, this opens peeking launcher.
@@ -175,8 +172,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
   sm_.ExpectSpeech("Press Search plus Space to activate");
   // Press space on the launcher button in shelf, this opens peeking
   // launcher.
@@ -212,8 +209,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
   sm_.ExpectSpeech("Press Search plus Space to activate");
   // Press space on the launcher button in shelf, this opens peeking
   // launcher.
@@ -257,10 +254,12 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, NavigateAppLauncher) {
   EnableChromeVox();
 
-  // Add one app to the applist.
-  PopulateApps(1);
+  sm_.Call([this]() {
+    // Add one app to the applist.
+    PopulateApps(1);
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+    EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  });
 
   // Wait for it to say "Launcher", "Button", "Shelf", "Tool bar".
   sm_.ExpectSpeechPattern("Launcher");

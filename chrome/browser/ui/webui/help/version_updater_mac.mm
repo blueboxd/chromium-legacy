@@ -176,7 +176,6 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
       break;
 
     case kAutoupdatePromoting:
-#if 1
       // TODO(mark): KSRegistration currently handles the promotion
       // synchronously, meaning that the main thread's loop doesn't spin,
       // meaning that animations and other updates to the window won't occur
@@ -185,10 +184,6 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
       // visual feedback while promotion is in progress, but it should complete
       // (or fail) very quickly.  http://b/2290009.
       return;
-#endif
-      status = CHECKING;
-      enable_promote_button = false;
-      break;
 
     case kAutoupdateRegisterFailed:
       enable_promote_button = false;

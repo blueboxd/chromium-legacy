@@ -25,35 +25,13 @@ struct SpeechMonitorUtterance {
 };
 
 // For testing purpose installs itself as the platform speech synthesis engine,
-// allowing it to intercept all speech calls, and then provides a method to
-// block until the next utterance is spoken.
+// allowing it to intercept all speech calls. Provides an api to make
+// asynchronous function calls and expectations about resulting speech.
 class SpeechMonitor : public content::TtsPlatform {
  public:
   SpeechMonitor();
   virtual ~SpeechMonitor();
 
-  // Blocing api.
-  // Use the following apis to write a synchronous test e.g.
-  // DoSomething();
-  // EXPECT_EQ("foo", speech_monitor_.GetNextUtterance());
-
-  // Blocks until the next utterance is spoken, and returns its text.
-  std::string GetNextUtterance();
-  // Blocks until the next utterance is spoken, and returns its text.
-  SpeechMonitorUtterance GetNextUtteranceWithLanguage();
-
-  // Wait for next utterance and return true if next utterance is ChromeVox
-  // enabled message.
-  bool SkipChromeVoxEnabledMessage();
-  bool SkipChromeVoxMessage(const std::string& message);
-
-  // Returns true if StopSpeaking() was called on TtsController.
-  bool DidStop();
-
-  // Blocks until StopSpeaking() is called on TtsController.
-  void BlockUntilStop();
-
-  // Non-blocking api.
   // Use these apis if you want to write an async test e.g.
   // sm_.ExpectSpeech("foo");
   // sm_.Call([this]() { DoSomething(); })
@@ -67,6 +45,10 @@ class SpeechMonitor : public content::TtsPlatform {
                     const base::Location& location = FROM_HERE);
   void ExpectSpeechPattern(const std::string& pattern,
                            const base::Location& location = FROM_HERE);
+  void ExpectSpeechPatternWithLocale(
+      const std::string& pattern,
+      const std::string& locale,
+      const base::Location& location = FROM_HERE);
   void ExpectNextSpeechIsNot(const std::string& text,
                              const base::Location& location = FROM_HERE);
   void ExpectNextSpeechIsNotPattern(const std::string& pattern,
@@ -111,17 +93,17 @@ class SpeechMonitor : public content::TtsPlatform {
   void MaybeContinueReplay();
   void MaybePrintExpectations();
 
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
   // Our list of utterances and specified language.
   base::circular_deque<SpeechMonitorUtterance> utterance_queue_;
-  bool did_stop_ = false;
+
   std::string error_;
 
-  // Delayed utterances.
   // Calculates the milliseconds elapsed since the last call to Speak().
   double CalculateUtteranceDelayMS();
+
   // Stores the milliseconds elapsed since the last call to Speak().
   double delay_for_last_utterance_ms_;
+
   // Stores the last time Speak() was called.
   std::chrono::steady_clock::time_point time_of_last_utterance_;
 

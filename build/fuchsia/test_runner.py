@@ -40,10 +40,12 @@ def main():
   parser.add_argument(
       '--test-launcher-shard-index',
       type=int,
+      default=os.environ.get('GTEST_SHARD_INDEX'),
       help='Index of this instance amongst swarming shards.')
   parser.add_argument(
       '--test-launcher-total-shards',
       type=int,
+      default=os.environ.get('GTEST_TOTAL_SHARDS'),
       help='Total number of swarming shards of this suite.')
   parser.add_argument('--gtest_break_on_failure', action='store_true',
                       default=False,
@@ -88,6 +90,12 @@ def main():
   ConfigureLogging(args)
 
   child_args = []
+  if args.test_launcher_shard_index != None:
+    child_args.append(
+        '--test-launcher-shard-index=%d' % args.test_launcher_shard_index)
+  if args.test_launcher_total_shards != None:
+    child_args.append(
+        '--test-launcher-total-shards=%d' % args.test_launcher_total_shards)
   if args.single_process_tests:
     child_args.append('--single-process-tests')
   if args.test_launcher_bot_mode:
@@ -120,12 +128,6 @@ def main():
   if args.test_launcher_retry_limit:
     child_args.append(
         '--test-launcher-retry-limit=' + args.test_launcher_retry_limit)
-  if args.test_launcher_shard_index:
-    child_args.append(
-        '--test-launcher-shard-index=%d' % args.test_launcher_shard_index)
-  if args.test_launcher_total_shards:
-    child_args.append(
-        '--test-launcher-total-shards=%d' % args.test_launcher_total_shards)
   if args.gtest_break_on_failure:
     child_args.append('--gtest_break_on_failure')
   if args.test_launcher_summary_output:

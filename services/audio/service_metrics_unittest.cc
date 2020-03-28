@@ -22,9 +22,6 @@ TEST(AudioServiceMetricsTest, CreateDestroy_LogsUptime) {
       std::make_unique<ServiceMetrics>(&test_clock);
   test_clock.Advance(base::TimeDelta::FromDays(6));
   metrics.reset();
-  histogram_tester.ExpectTimeBucketCount("Media.AudioService.Uptime",
-                                         base::TimeDelta::FromDays(6), 1);
-  histogram_tester.ExpectTotalCount("Media.AudioService.Uptime", 1);
 }
 
 TEST(AudioServiceMetricsTest, AddRemoveConnection_LogsHasConnectionDuration) {

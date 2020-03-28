@@ -10,14 +10,10 @@
 
 namespace audio {
 
-ServiceMetrics::ServiceMetrics(const base::TickClock* clock)
-    : clock_(clock), service_start_(clock_->NowTicks()) {}
+ServiceMetrics::ServiceMetrics(const base::TickClock* clock) : clock_(clock) {}
 
 ServiceMetrics::~ServiceMetrics() {
   LogHasNoConnectionsDuration();
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Media.AudioService.Uptime", clock_->NowTicks() - service_start_,
-      base::TimeDelta(), base::TimeDelta::FromDays(7), 50);
 }
 
 void ServiceMetrics::HasConnections() {

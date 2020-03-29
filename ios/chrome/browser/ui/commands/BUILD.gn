@@ -16,6 +16,7 @@ source_set("commands") {
     "find_in_page_commands.h",
     "generate_qr_code_command.h",
     "generate_qr_code_command.mm",
+    "help_commands.h",
     "infobar_commands.h",
     "load_query_commands.h",
     "omnibox_suggestion_commands.h",

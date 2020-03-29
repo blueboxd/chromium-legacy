@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
@@ -31,9 +32,9 @@
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
@@ -507,7 +508,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   IOSChromeScopedTestingChromeBrowserProvider provider_(
       std::make_unique<FakeChromeBrowserProvider>());
 
-  id browserViewController = OCMClassMock([BrowserViewController class]);
   id browserLauncher =
       [OCMockObject mockForProtocol:@protocol(BrowserLauncher)];
   id applicationDelegate =
@@ -516,7 +516,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   StubBrowserInterfaceProvider* interfaceProvider =
       [[StubBrowserInterfaceProvider alloc] init];
   interfaceProvider.mainInterface.userInteractionEnabled = YES;
-  interfaceProvider.mainInterface.bvc = browserViewController;
 
   [[[browserLauncher stub] andReturnValue:@(INITIALIZATION_STAGE_FOREGROUND)]
       browserInitializationStage];
@@ -538,7 +537,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   [appState applicationWillTerminate:application];
 
   // Test.
-  EXPECT_OCMOCK_VERIFY(browserViewController);
   EXPECT_OCMOCK_VERIFY(startupInformation);
   EXPECT_OCMOCK_VERIFY(application);
   EXPECT_FALSE(interfaceProvider.mainInterface.userInteractionEnabled);
@@ -574,10 +572,9 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
   id tabSwitcher = [OCMockObject mockForProtocol:@protocol(TabSwitching)];
 
   // BrowserViewInformation.
-  id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-  id mainBVC = [OCMockObject mockForClass:[BrowserViewController class]];
-  interfaceProvider.mainInterface.tabModel = mainTabModel;
-  interfaceProvider.mainInterface.bvc = mainBVC;
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(getBrowserState());
+  interfaceProvider.mainInterface.browser = browser.get();
   interfaceProvider.mainInterface.browserState = getBrowserState();
 
   // Swizzle Startup Parameters.
@@ -595,7 +592,6 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
   EXPECT_EQ(NSUInteger(0), [window subviews].count);
   EXPECT_EQ(1, getProfileSessionDurationsService()->session_started_count());
   EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
-  EXPECT_OCMOCK_VERIFY(mainTabModel);
 }
 
 // Test that -resumeSessionWithTabOpener removes incognito blocker,
@@ -616,10 +612,11 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
   [[[getStartupInformationMock() stub] andReturnValue:@NO] isColdStart];
 
   // BrowserViewInformation.
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(getBrowserState());
+  interfaceProvider.mainInterface.browser = browser.get();
   id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-  id mainBVC = [OCMockObject mockForClass:[BrowserViewController class]];
   interfaceProvider.mainInterface.tabModel = mainTabModel;
-  interfaceProvider.mainInterface.bvc = mainBVC;
   interfaceProvider.mainInterface.browserState = getBrowserState();
 
   // TabOpening.
@@ -663,14 +660,25 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
 
   // BrowserViewInformation.
   id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-  id dispatcher = [OCMockObject mockForProtocol:@protocol(ApplicationCommands)];
-  [((id<ApplicationCommands>)[dispatcher expect]) openURLInNewTab:[OCMArg any]];
+  id applicationCommandEndpoint =
+      [OCMockObject mockForProtocol:@protocol(ApplicationCommands)];
+  [((id<ApplicationCommands>)[applicationCommandEndpoint expect])
+      openURLInNewTab:[OCMArg any]];
 
-  id currentBVC = [OCMockObject mockForClass:[BrowserViewController class]];
-  [[[currentBVC stub] andReturn:dispatcher] dispatcher];
-
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(getBrowserState());
+  [browser->GetCommandDispatcher()
+      startDispatchingToTarget:applicationCommandEndpoint
+                   forProtocol:@protocol(ApplicationCommands)];
+  // To fully conform to ApplicationCommands, the dispatcher needs to dispatch
+  // for ApplicationSettingsCommands as well.
+  id applicationSettingsCommandEndpoint =
+      [OCMockObject mockForProtocol:@protocol(ApplicationSettingsCommands)];
+  [browser->GetCommandDispatcher()
+      startDispatchingToTarget:applicationSettingsCommandEndpoint
+                   forProtocol:@protocol(ApplicationSettingsCommands)];
+  interfaceProvider.mainInterface.browser = browser.get();
   interfaceProvider.mainInterface.tabModel = mainTabModel;
-  interfaceProvider.mainInterface.bvc = currentBVC;
   interfaceProvider.mainInterface.browserState = getBrowserState();
 
   // TabOpening.
@@ -693,8 +701,6 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
 
   // Test.
   EXPECT_EQ(NSUInteger(0), [window subviews].count);
-  EXPECT_OCMOCK_VERIFY(mainTabModel);
-  EXPECT_OCMOCK_VERIFY(currentBVC);
 }
 
 // Tests that -applicationWillEnterForeground resets components as needed.
@@ -714,9 +720,7 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
       browserInitializationStage];
   [[[getBrowserLauncherMock() stub] andReturn:interfaceProvider]
       interfaceProvider];
-  id mainBVC = [OCMockObject mockForClass:[BrowserViewController class]];
   interfaceProvider.mainInterface.tabModel = tabModel;
-  interfaceProvider.mainInterface.bvc = mainBVC;
   interfaceProvider.mainInterface.browserState = getBrowserState();
 
   [[metricsMediator expect] updateMetricsStateBasedOnPrefsUserTriggered:NO];

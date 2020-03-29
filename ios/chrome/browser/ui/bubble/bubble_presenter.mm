@@ -67,16 +67,6 @@ const CGFloat kBubblePresentationDelay = 1;
 
 @implementation BubblePresenter
 
-@synthesize bottomToolbarTipBubblePresenter = _bottomToolbarTipBubblePresenter;
-@synthesize longPressToolbarTipBubblePresenter =
-    _longPressToolbarTipBubblePresenter;
-@synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
-@synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
-@synthesize browserState = _browserState;
-@synthesize delegate = _delegate;
-@synthesize dispatcher = _dispatcher;
-@synthesize rootViewController = _rootViewController;
-
 #pragma mark - Public
 
 - (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
@@ -91,7 +81,7 @@ const CGFloat kBubblePresentationDelay = 1;
   return self;
 }
 
-- (void)presentBubblesIfEligible {
+- (void)showHelpBubbleIfEligible {
   DCHECK(self.browserState);
   // Waits to present the bubbles until the feature engagement tracker database
   // is fully initialized. This method requires that |self.browserState| is not
@@ -116,7 +106,7 @@ const CGFloat kBubblePresentationDelay = 1;
       ->AddOnInitializedCallback(base::BindRepeating(onInitializedBlock));
 }
 
-- (void)presentLongPressBubbleIfEligible {
+- (void)showLongPressHelpBubbleIfEligible {
   DCHECK(self.browserState);
   // Waits to present the bubble until the feature engagement tracker database
   // is fully initialized. This method requires that |self.browserState| is not
@@ -136,7 +126,7 @@ const CGFloat kBubblePresentationDelay = 1;
       ->AddOnInitializedCallback(base::BindRepeating(onInitializedBlock));
 }
 
-- (void)dismissBubbles {
+- (void)hideAllHelpBubbles {
   [self.tabTipBubblePresenter dismissAnimated:NO];
   [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
   [self.bottomToolbarTipBubblePresenter dismissAnimated:NO];
@@ -344,7 +334,7 @@ presentBubbleForFeature:(const base::Feature&)feature
 
   self.incognitoTabTipBubblePresenter = presenter;
 
-  [self.dispatcher triggerToolsMenuButtonAnimation];
+  [self.toolbarHandler triggerToolsMenuButtonAnimation];
 }
 
 #pragma mark - Private Utils

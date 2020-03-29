@@ -3129,7 +3129,7 @@ TEST_F(HeapTest, HeapWeakLinkedHashSet) {
   ClearOutOldGarbage();
   OrderedSetHelper<HeapListHashSet<Member<IntWrapper>>>(true);
   ClearOutOldGarbage();
-  // TODO(keinakashiima): add a test case for WeakMember once it's supported
+  // TODO(keinakashima): add a test case for WeakMember once it's supported
   OrderedSetHelper<HeapNewLinkedHashSet<Member<IntWrapper>>>(true);
 }
 
@@ -3258,6 +3258,7 @@ typedef HeapLinkedHashSet<PairWeakStrong> WeakStrongLinkedSet;
 typedef HeapLinkedHashSet<PairWeakUnwrapped> WeakUnwrappedLinkedSet;
 typedef HeapLinkedHashSet<PairStrongWeak> StrongWeakLinkedSet;
 typedef HeapLinkedHashSet<PairUnwrappedWeak> UnwrappedWeakLinkedSet;
+// TODO(bartekn): add HeapNewLinkedHashSet cases once WeakMember is supported
 typedef HeapHashCountedSet<PairWeakStrong> WeakStrongCountedSet;
 typedef HeapHashCountedSet<PairWeakUnwrapped> WeakUnwrappedCountedSet;
 typedef HeapHashCountedSet<PairStrongWeak> StrongWeakCountedSet;
@@ -3338,6 +3339,7 @@ TEST_F(HeapTest, HeapWeakCollectionTypes) {
   typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper>> WeakWeak;
   typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
   typedef HeapLinkedHashSet<WeakMember<IntWrapper>> WeakOrderedSet;
+  // TODO(bartekn): add HeapNewLinkedHashSet case once WeakMember is supported
 
   ClearOutOldGarbage();
 
@@ -5305,6 +5307,8 @@ TEST_F(HeapTest, GarbageCollectedMixinIsAliveDuringConstruction) {
 
   using P = HeapVector<Member<HeapLinkedHashSet<Member<IntWrapper>>>>;
   MakeGarbageCollected<P>();
+  using Q = HeapVector<Member<HeapNewLinkedHashSet<Member<IntWrapper>>>>;
+  MakeGarbageCollected<Q>();
 }
 
 TEST_F(HeapTest, PersistentAssignsDeletedValue) {

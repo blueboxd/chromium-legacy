@@ -1813,11 +1813,12 @@ class Destructed final : public GarbageCollected<Destructed> {
 
 size_t Destructed::n_destructed = 0;
 
-class Wrapper final : public GarbageCollected<Wrapper> {
+class LinkedHashSetWrapper final
+    : public GarbageCollected<LinkedHashSetWrapper> {
  public:
   using HashType = HeapLinkedHashSet<Member<Destructed>>;
 
-  Wrapper() {
+  LinkedHashSetWrapper() {
     for (size_t i = 0; i < 10; ++i) {
       hash_set_.insert(MakeGarbageCollected<Destructed>());
     }
@@ -1833,7 +1834,7 @@ class Wrapper final : public GarbageCollected<Wrapper> {
   HashType hash_set_;
 };
 
-TEST_F(IncrementalMarkingTest, MovingCallback) {
+TEST_F(IncrementalMarkingTest, LinkedHashSetMovingCallback) {
   ClearOutOldGarbage();
 
   Destructed::n_destructed = 0;
@@ -1841,15 +1842,63 @@ TEST_F(IncrementalMarkingTest, MovingCallback) {
     HeapHashSet<Member<Destructed>> to_be_destroyed;
     to_be_destroyed.ReserveCapacityForSize(100);
   }
-  Persistent<Wrapper> wrapper = MakeGarbageCollected<Wrapper>();
+  Persistent<LinkedHashSetWrapper> wrapper =
+      MakeGarbageCollected<LinkedHashSetWrapper>();
 
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   ThreadState::Current()->EnableCompactionForNextGCForTesting();
   driver.Start();
   driver.FinishSteps();
 
-  // Destroy the link between original HeapLinkedHashSet object and its backign
+  // Destroy the link between original HeapLinkedHashSet object and its backing
   // store.
+  wrapper->Swap();
+  DCHECK(wrapper->hash_set_.IsEmpty());
+
+  PreciselyCollectGarbage();
+
+  EXPECT_EQ(10u, Destructed::n_destructed);
+}
+
+class NewLinkedHashSetWrapper final
+    : public GarbageCollected<NewLinkedHashSetWrapper> {
+ public:
+  using HashType = HeapNewLinkedHashSet<Member<Destructed>>;
+
+  NewLinkedHashSetWrapper() {
+    for (size_t i = 0; i < 10; ++i) {
+      hash_set_.insert(MakeGarbageCollected<Destructed>());
+    }
+  }
+
+  void Trace(Visitor* v) { v->Trace(hash_set_); }
+
+  void Swap() {
+    HashType hash_set;
+    hash_set_.Swap(hash_set);
+  }
+
+  HashType hash_set_;
+};
+
+TEST_F(IncrementalMarkingTest, NewLinkedHashSetMovingCallback) {
+  ClearOutOldGarbage();
+
+  Destructed::n_destructed = 0;
+  {
+    HeapHashSet<Member<Destructed>> to_be_destroyed;
+    to_be_destroyed.ReserveCapacityForSize(100);
+  }
+  Persistent<NewLinkedHashSetWrapper> wrapper =
+      MakeGarbageCollected<NewLinkedHashSetWrapper>();
+
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
+  driver.Start();
+  driver.FinishSteps();
+
+  // Destroy the link between original NewHeapLinkedHashSet object and its
+  // backing store.
   wrapper->Swap();
   DCHECK(wrapper->hash_set_.IsEmpty());
 

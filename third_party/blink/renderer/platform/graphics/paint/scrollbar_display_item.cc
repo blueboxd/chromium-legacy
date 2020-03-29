@@ -60,7 +60,8 @@ scoped_refptr<cc::ScrollbarLayerBase> ScrollbarDisplayItem::GetLayer() const {
   // record_ which is for non-composited scrollbars.
   record_ = nullptr;
 
-  if (!layer_)
+  if (!layer_ || layer_->is_left_side_vertical_scrollbar() !=
+                     scrollbar_->IsLeftSideVerticalScrollbar())
     layer_ = CreateLayer();
 
   layer_->SetOffsetToTransformParent(

@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_BUBBLE_BUBBLE_PRESENTER_H_
 
 #import <UIKit/UIKit.h>
-
+#import "ios/chrome/browser/ui/commands/help_commands.h"
 
 @protocol BubblePresenterDelegate;
 @class BubbleViewControllerPresenter;
@@ -15,7 +15,7 @@ class ChromeBrowserState;
 
 // Object handling the presentation of the different bubbles tips. The class is
 // holding all the bubble presenters.
-@interface BubblePresenter : NSObject
+@interface BubblePresenter : NSObject <HelpCommands>
 
 // Initializes a BubblePresenter whose bubbles are presented on the
 // |rootViewController|.
@@ -30,20 +30,7 @@ class ChromeBrowserState;
 @property(nonatomic, strong, readonly)
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
 
-@property(nonatomic, weak) id<ToolbarCommands> dispatcher;
-
-// Presents either in-product help bubbles if the the user is in a valid state
-// to see one of them. At most one bubble will be shown. If the feature
-// engagement tracker determines it is not valid to see one of the bubbles, that
-// bubble will not be shown.
-- (void)presentBubblesIfEligible;
-
-// Presents the in-product help for the LongPress help if the feature engagement
-// and the application states determine that it is possible to present it.
-- (void)presentLongPressBubbleIfEligible;
-
-// Dismisses all bubbles.
-- (void)dismissBubbles;
+@property(nonatomic, weak) id<ToolbarCommands> toolbarHandler;
 
 // Notifies the presenter that the user entered the tab switcher.
 - (void)userEnteredTabSwitcher;

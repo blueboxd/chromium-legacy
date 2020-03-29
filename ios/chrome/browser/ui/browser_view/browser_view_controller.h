@@ -113,12 +113,6 @@ class FullscreenController;
 // Called when the user explicitly opens the tab switcher.
 - (void)userEnteredTabSwitcher;
 
-// Presents either in-product help bubbles if the the user is in a valid state
-// to see one of them. At most one bubble will be shown. If the feature
-// engagement tracker determines it is not valid to see one of the bubbles, that
-// bubble will not be shown.
-- (void)presentBubblesIfEligible;
-
 // Opens a new tab as if originating from |originPoint| and |focusOmnibox|.
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox;

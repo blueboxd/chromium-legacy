@@ -127,6 +127,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       needs_composited_scrolling_(false),
       rebuild_horizontal_scrollbar_layer_(false),
       rebuild_vertical_scrollbar_layer_(false),
+      previous_vertical_scrollbar_on_left_(false),
       needs_scroll_offset_clamp_(false),
       needs_relayout_(false),
       had_horizontal_scrollbar_before_relayout_(false),
@@ -1335,6 +1336,14 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
     VerticalScrollbar()->StyleChanged();
 
   UpdateScrollCornerStyle();
+
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    bool vertical_scrollbar_on_left = ShouldPlaceVerticalScrollbarOnLeft();
+    if (vertical_scrollbar_on_left != previous_vertical_scrollbar_on_left_) {
+      rebuild_vertical_scrollbar_layer_ = true;
+      previous_vertical_scrollbar_on_left_ = vertical_scrollbar_on_left;
+    }
+  }
 }
 
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {

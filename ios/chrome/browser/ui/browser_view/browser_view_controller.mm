@@ -545,6 +545,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Command handler for text zoom commands
 @property(nonatomic, weak) id<TextZoomCommands> textZoomHandler;
 
+// Command handler for help commands
+@property(nonatomic, weak) id<HelpCommands> helpHandler;
+
 // Primary toolbar.
 @property(nonatomic, strong)
     PrimaryToolbarCoordinator* primaryToolbarCoordinator;
@@ -1068,22 +1071,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                       : nullptr;
 }
 
-- (BubblePresenter*)bubblePresenter {
-  if (!_bubblePresenter && self.browserState) {
-    self.bubblePresenter =
-        [[BubblePresenter alloc] initWithBrowserState:self.browserState
-                                             delegate:self
-                                   rootViewController:self];
-  }
-  return _bubblePresenter;
-}
-
-- (void)setBubblePresenter:(BubblePresenter*)bubblePresenter {
-  _bubblePresenter = bubblePresenter;
-  _bubblePresenter.dispatcher = self.dispatcher;
-  self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
-}
-
 - (BOOL)isNTPActiveForCurrentWebState {
   if (self.currentWebState) {
     NewTabPageTabHelper* NTPHelper =
@@ -1119,10 +1106,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                                         completion:nil];
   }
   [self.bubblePresenter userEnteredTabSwitcher];
-}
-
-- (void)presentBubblesIfEligible {
-  [self.bubblePresenter presentBubblesIfEligible];
 }
 
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
@@ -1277,7 +1260,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.dispatcher cancelOmniboxEdit];
   }
   [_dialogPresenter cancelAllDialogs];
-  [self.bubblePresenter dismissBubbles];
+  [self.helpHandler hideAllHelpBubbles];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();
 
@@ -1384,12 +1367,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.tabStripCoordinator = nil;
   self.tabStripView = nil;
 
-  self.browser->GetWebStateList()->RemoveObserver(_webStateListObserver.get());
-  self.browser = nullptr;
+  [self.commandDispatcher stopDispatchingToTarget:self.bubblePresenter];
   self.bubblePresenter = nil;
 
   [self.commandDispatcher stopDispatchingToTarget:self];
-  self.commandDispatcher = nil;
+  self.browser->GetWebStateList()->RemoveObserver(_webStateListObserver.get());
+  self.browser = nullptr;
 
   [self.primaryToolbarCoordinator stop];
   self.primaryToolbarCoordinator = nil;
@@ -1546,7 +1529,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // |presentBubblesIfEligible| requires that |self.browserState| is not NULL,
   // check for |self.browserState| before calling the presenting the bubbles.
   if (self.browserState) {
-    [self presentBubblesIfEligible];
+    [self.helpHandler showHelpBubbleIfEligible];
   }
 }
 
@@ -1561,7 +1544,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // case, display the Long Press InProductHelp if needed.
     auto completion =
         ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-            [self.bubblePresenter presentLongPressBubbleIfEligible];
+          [self.helpHandler showLongPressHelpBubbleIfEligible];
         };
 
     [self.transitionCoordinator animateAlongsideTransition:nil
@@ -2181,6 +2164,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
             .heightAnchor;
   }
 
+  self.bubblePresenter =
+      [[BubblePresenter alloc] initWithBrowserState:self.browserState
+                                           delegate:self
+                                 rootViewController:self];
+  self.bubblePresenter.toolbarHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), ToolbarCommands);
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self.bubblePresenter
+                   forProtocol:@protocol(HelpCommands)];
+  self.helpHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), HelpCommands);
+
   self.popupMenuCoordinator =
       [[PopupMenuCoordinator alloc] initWithBaseViewController:self
                                                        browser:self.browser];
@@ -2483,7 +2478,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if ([self.dispatcher respondsToSelector:@selector(hidePageInfo)])
     [self.dispatcher hidePageInfo];
   [self.dispatcher dismissPopupMenuAnimated:NO];
-  [self.bubblePresenter dismissBubbles];
+  [self.helpHandler hideAllHelpBubbles];
 }
 
 - (UIView*)footerView {
@@ -4402,7 +4397,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
     if (completion)
       completion();
-    [self.bubblePresenter presentLongPressBubbleIfEligible];
+    [self.helpHandler showLongPressHelpBubbleIfEligible];
 
     if (self.foregroundTabWasAddedCompletionBlock) {
       self.foregroundTabWasAddedCompletionBlock();

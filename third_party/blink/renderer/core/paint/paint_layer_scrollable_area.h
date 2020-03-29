@@ -695,6 +695,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // instance has been reconstructed.
   unsigned rebuild_horizontal_scrollbar_layer_ : 1;
   unsigned rebuild_vertical_scrollbar_layer_ : 1;
+  unsigned previous_vertical_scrollbar_on_left_ : 1;
 
   unsigned needs_scroll_offset_clamp_ : 1;
   unsigned needs_relayout_ : 1;

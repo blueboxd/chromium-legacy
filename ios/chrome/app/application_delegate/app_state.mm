@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
@@ -41,9 +42,10 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/help_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
@@ -354,6 +356,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   id<BrowserInterface> currentInterface =
       _browserLauncher.interfaceProvider.currentInterface;
+  CommandDispatcher* dispatcher =
+      currentInterface.browser->GetCommandDispatcher();
   if ([_startupInformation startupParameters]) {
     [UserActivityHandler
         handleStartupParametersWithTabOpener:tabOpener
@@ -369,10 +373,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     if (![tabSwitcher openNewTabFromTabSwitcher]) {
       OpenNewTabCommand* command =
           [OpenNewTabCommand commandWithIncognito:currentInterface.incognito];
-      [currentInterface.bvc.dispatcher openURLInNewTab:command];
+      [HandlerForProtocol(dispatcher, ApplicationCommands)
+          openURLInNewTab:command];
     }
   } else {
-    [currentInterface.bvc presentBubblesIfEligible];
+    [HandlerForProtocol(dispatcher, HelpCommands) showHelpBubbleIfEligible];
   }
 
   IOSProfileSessionDurationsService* psdService =

@@ -345,7 +345,9 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
 
     cc::ScrollbarLayerBase* scrollbar_layer =
         GetScrollbarLayer(scrollable_area, orientation);
-    if (!scrollbar_layer) {
+    if (!scrollbar_layer ||
+        scrollbar_layer->is_left_side_vertical_scrollbar() !=
+            scrollable_area->ShouldPlaceVerticalScrollbarOnLeft()) {
       scoped_refptr<cc::ScrollbarLayerBase> new_scrollbar_layer;
       if (scrollbar.IsSolidColor()) {
         DCHECK(scrollbar.IsOverlayScrollbar());

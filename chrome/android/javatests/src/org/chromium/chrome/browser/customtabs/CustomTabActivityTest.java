@@ -958,7 +958,7 @@ public class CustomTabActivityTest {
 
         // Mark the intent as trusted so it can show more than one action button.
         IntentHandler.addTrustedIntentExtras(intent);
-        Assert.assertTrue(IntentHandler.wasIntentSenderChrome(intent));
+        Assert.assertTrue(IntentHandler.notSecureIsIntentChromeOrFirstParty(intent));
 
         ArrayList<Bundle> toolbarItems = new ArrayList<>(2);
         final PendingIntent pi1 = PendingIntent.getBroadcast(
@@ -1033,7 +1033,7 @@ public class CustomTabActivityTest {
         Intent intent = createMinimalCustomTabIntent();
 
         // By default, the intent should not be trusted.
-        Assert.assertFalse(IntentHandler.wasIntentSenderChrome(intent));
+        Assert.assertFalse(IntentHandler.notSecureIsIntentChromeOrFirstParty(intent));
 
         ArrayList<Bundle> toolbarItems = new ArrayList<>(2);
         final PendingIntent pi = PendingIntent.getBroadcast(

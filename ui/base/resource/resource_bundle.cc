@@ -292,6 +292,14 @@ void ResourceBundle::CleanupSharedInstance() {
 }
 
 // static
+ResourceBundle* ResourceBundle::SwapSharedInstanceForTesting(
+    ResourceBundle* instance) {
+  ResourceBundle* ret = g_shared_instance_;
+  g_shared_instance_ = instance;
+  return ret;
+}
+
+// static
 bool ResourceBundle::HasSharedInstance() {
   return g_shared_instance_ != nullptr;
 }

@@ -259,6 +259,15 @@ class TaskEnvironment {
   // by |delta|. Unlike FastForwardBy, this does not run tasks. Prefer
   // FastForwardBy() when possible but this can be useful when testing blocked
   // pending tasks where being idle (required to fast-forward) is not possible.
+  //
+  // Delayed tasks that are ripe as a result of this will be scheduled.
+  // RunUntilIdle() can be used after this call to ensure those tasks have run.
+  // Note: AdvanceClock(delta) + RunUntilIdle() is slightly different from
+  // FastForwardBy(delta) in that time passes instantly before running any task
+  // (whereas FastForwardBy() will advance the clock in the smallest increments
+  // possible at a time). Hence FastForwardBy() is more realistic but
+  // AdvanceClock() can be useful when testing edge case scenarios that
+  // specifically handle more time than expected to have passed.
   void AdvanceClock(TimeDelta delta);
 
   // Only valid for instances using TimeSource::MOCK_TIME. Returns a

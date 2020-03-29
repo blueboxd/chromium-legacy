@@ -148,6 +148,9 @@ class UI_BASE_EXPORT ResourceBundle {
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
 
+  // Returns the existing shared instance and sets it to the given instance.
+  static ResourceBundle* SwapSharedInstanceForTesting(ResourceBundle* instance);
+
   // Returns true after the global resource loader instance has been created.
   static bool HasSharedInstance();
 

@@ -331,7 +331,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     @Override
     protected boolean requiresFirstRunToBeCompleted(Intent intent) {
         // Custom Tabs can be used to open Chrome help pages before the ToS has been accepted.
-        if (CustomTabIntentDataProvider.isTrustedCustomTab(intent, mSession)
+        if (IntentHandler.notSecureIsIntentChromeOrFirstParty(intent)
                 && IntentUtils.safeGetIntExtra(intent, CustomTabIntentDataProvider.EXTRA_UI_TYPE,
                            CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT)
                         == CustomTabIntentDataProvider.CustomTabsUiType.INFO_PAGE) {

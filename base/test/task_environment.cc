@@ -177,8 +177,12 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
 
   void AdvanceClock(TimeDelta delta) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    AutoLock lock(now_ticks_lock_);
-    now_ticks_ += delta;
+    {
+      AutoLock lock(now_ticks_lock_);
+      now_ticks_ += delta;
+    }
+    if (thread_pool_)
+      thread_pool_->ProcessRipeDelayedTasksForTesting();
   }
 
   static std::unique_ptr<TaskEnvironment::MockTimeDomain> CreateAndRegister(

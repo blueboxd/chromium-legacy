@@ -150,8 +150,8 @@ TEST_F(ResourceBundleTest, DelegateGetPathForResourcePack) {
 }
 
 TEST_F(ResourceBundleTest, DelegateGetPathForLocalePack) {
-  ResourceBundle::CleanupSharedInstance();
-
+  ResourceBundle* orig_instance =
+      ResourceBundle::SwapSharedInstanceForTesting(nullptr);
   MockResourceBundleDelegate delegate;
   ResourceBundle::InitSharedInstance(&delegate);
 
@@ -175,6 +175,7 @@ TEST_F(ResourceBundleTest, DelegateGetPathForLocalePack) {
             ResourceBundle::GetSharedInstance().LoadLocaleResources(locale));
 
   ResourceBundle::CleanupSharedInstance();
+  ResourceBundle::SwapSharedInstanceForTesting(orig_instance);
 }
 
 TEST_F(ResourceBundleTest, DelegateGetImageNamed) {

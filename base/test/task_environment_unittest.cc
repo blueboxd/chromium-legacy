@@ -405,7 +405,7 @@ TEST_F(TaskEnvironmentTest,
 // Verify that the TickClock returned by
 // |TaskEnvironment::GetMockTickClock| gets updated when the
 // FastForward(By|UntilNoTasksRemain) functions are called.
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceTickClock) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesTickClock) {
   // Use a QUEUED execution-mode environment, so that no tasks are actually
   // executed until RunUntilIdle()/FastForwardBy() are invoked.
   TaskEnvironment task_environment(
@@ -437,7 +437,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceTickClock) {
   EXPECT_EQ(kLongTaskDelay * 2, tick_clock->NowTicks() - tick_clock_ref);
 }
 
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceMockClock) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesMockClock) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -448,7 +448,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceMockClock) {
   EXPECT_EQ(start_time + kDelay, clock->Now());
 }
 
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceTime) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesTime) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -457,7 +457,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceTime) {
   EXPECT_EQ(start_time + kDelay, base::Time::Now());
 }
 
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesTimeTicks) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -466,7 +466,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
   EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTickClock) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesTickClock) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -477,7 +477,7 @@ TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTickClock) {
   EXPECT_EQ(start_time + kDelay, tick_clock->NowTicks());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceMockClock) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesMockClock) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -488,7 +488,7 @@ TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceMockClock) {
   EXPECT_EQ(start_time + kDelay, clock->Now());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTime) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesTime) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -497,7 +497,7 @@ TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTime) {
   EXPECT_EQ(start_time + kDelay, base::Time::Now());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTimeTicks) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesTimeTicks) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -521,6 +521,21 @@ TEST_F(TaskEnvironmentTest, AdvanceClockDoesNotRunTasks) {
   // The task is still pending, but is now runnable.
   EXPECT_EQ(1U, task_environment.GetPendingMainThreadTaskCount());
   EXPECT_FALSE(task_environment.NextTaskIsDelayed());
+}
+
+TEST_F(TaskEnvironmentTest, AdvanceClockSchedulesRipeDelayedTasks) {
+  TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
+
+  bool ran = false;
+
+  constexpr base::TimeDelta kTaskDelay = TimeDelta::FromDays(1);
+  ThreadPool::PostDelayedTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { ran = true; }), kTaskDelay);
+
+  task_environment.AdvanceClock(kTaskDelay);
+  EXPECT_FALSE(ran);
+  task_environment.RunUntilIdle();
+  EXPECT_TRUE(ran);
 }
 
 // Verify that FastForwardBy() runs existing immediate tasks before advancing,

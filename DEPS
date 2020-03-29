@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '611bbf4c16ddc6c4d1a9f0ba0de68bf5a79536e6',
+  'skia_revision': '3aee4845b5039149a506fb85e7442be1924f69c8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -521,7 +521,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '8c7be049e94b0da2843869888281fdf115e2da7f',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '144b2f61dc052661a81e8822c9739fc61a1df8e4',
       'condition': 'checkout_ios',
   },
 
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7bea0d9f8a753cc20718f9b059c84098d843d1b6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@42d56b6c7cc38d851d4733d0fc85f78a570f5396',
     'condition': 'checkout_src_internal',
   },
 

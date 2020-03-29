@@ -179,6 +179,9 @@ int main(int argc, const char* argv[]) {
   if (result != 0)
     return result;
 
+  if (replacements.empty())
+    return 0;
+
   // Each replacement line should have the following format:
   // r:<file path>:<offset>:<length>:<replacement text>
   // Only the <replacement text> field can contain embedded ":" characters.

@@ -18,10 +18,13 @@ source_set("app_shim") {
     "app_shim_termination_manager.h",
     "mach_bootstrap_acceptor.cc",
     "mach_bootstrap_acceptor.h",
+    "web_app_shim_manager_delegate_mac.cc",
+    "web_app_shim_manager_delegate_mac.h",
   ]
 
   deps = [
     "//apps",
+    "//chrome/browser/web_applications:web_applications_on_extensions",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//chrome/common:app_mode_app_support",

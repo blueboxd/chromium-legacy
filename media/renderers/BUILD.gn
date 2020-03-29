@@ -106,6 +106,8 @@ source_set("unit_tests") {
 if (is_win) {
   source_set("media_foundation_renderer") {
     sources = [
+      "win/media_engine_extension.cc",
+      "win/media_engine_extension.h",
       "win/media_engine_notify_impl.cc",
       "win/media_engine_notify_impl.h",
       "win/media_foundation_audio_stream.cc",

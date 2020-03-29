@@ -120,6 +120,10 @@ RTCRtpReceiver::getSynchronizationSources() {
     synchronization_source->setSource(web_source->Source());
     if (web_source->AudioLevel())
       synchronization_source->setAudioLevel(*web_source->AudioLevel());
+    if (web_source->CaptureTimestamp()) {
+      synchronization_source->setCaptureTimestamp(
+          *web_source->CaptureTimestamp());
+    }
     synchronization_source->setRtpTimestamp(web_source->RtpTimestamp());
     synchronization_sources.push_back(synchronization_source);
   }
@@ -147,6 +151,9 @@ RTCRtpReceiver::getContributingSources() {
     contributing_source->setSource(web_source->Source());
     if (web_source->AudioLevel())
       contributing_source->setAudioLevel(*web_source->AudioLevel());
+    if (web_source->CaptureTimestamp()) {
+      contributing_source->setCaptureTimestamp(*web_source->CaptureTimestamp());
+    }
     contributing_source->setRtpTimestamp(web_source->RtpTimestamp());
     contributing_sources.push_back(contributing_source);
   }

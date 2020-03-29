@@ -35,6 +35,7 @@ class PLATFORM_EXPORT RTCRtpSource {
   uint32_t Source() const;
   base::Optional<double> AudioLevel() const;
   uint32_t RtpTimestamp() const;
+  base::Optional<int64_t> CaptureTimestamp() const;
 
  private:
   const webrtc::RtpSource source_;

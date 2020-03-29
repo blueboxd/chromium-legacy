@@ -35,7 +35,9 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
@@ -282,7 +284,7 @@ void AppShimManager::OnShimLaunchRequested(
       DCHECK(!app_state->profiles.empty());
       profile = app_state->profiles.begin()->first;
     } else {
-      profile = delegate_->ProfileForPath(host->GetProfilePath());
+      profile = ProfileForPath(host->GetProfilePath());
     }
   }
   delegate_->LaunchShim(profile, host->GetAppId(), recreate_shims,
@@ -312,7 +314,7 @@ void AppShimManager::OnShimProcessConnectedForRegisterOnly(
   // Create a ProfileState the specified profile (if there is one). We should
   // not do this (if there exists no ProfileState, then the shim should just
   // exit), but many tests assume this behavior, and need to be updated.
-  Profile* profile = delegate_->ProfileForPath(bootstrap->GetProfilePath());
+  Profile* profile = ProfileForPath(bootstrap->GetProfilePath());
   bool app_installed = delegate_->AppIsInstalled(profile, app_id);
   if (profile && app_installed && delegate_->AppCanCreateHost(profile, app_id))
     GetOrCreateProfileState(profile, app_id);
@@ -413,11 +415,11 @@ void AppShimManager::OnShimProcessConnectedAndProfilesToLaunchLoaded(
     const base::FilePath& profile_path = profile_paths_to_launch[iter];
     if (profile_path.empty())
       continue;
-    if (delegate_->IsProfileLockedForPath(profile_path)) {
+    if (IsProfileLockedForPath(profile_path)) {
       launch_result = chrome::mojom::AppShimLaunchResult::kProfileLocked;
       continue;
     }
-    Profile* profile = delegate_->ProfileForPath(profile_path);
+    Profile* profile = ProfileForPath(profile_path);
     if (!profile) {
       launch_result = chrome::mojom::AppShimLaunchResult::kProfileNotFound;
       continue;
@@ -472,7 +474,7 @@ void AppShimManager::OnShimProcessConnectedAndProfilesToLaunchLoaded(
     // Otherwise, if the app specified a URL, open that URL in a new window.
     const GURL& url = bootstrap->GetAppURL();
     if (url.is_valid())
-      delegate_->OpenAppURLInBrowserWindow(bootstrap->GetProfilePath(), url);
+      OpenAppURLInBrowserWindow(bootstrap->GetProfilePath(), url);
   }
 
   OnShimProcessConnectedAndAllLaunchesDone(launched_profile_state,
@@ -485,7 +487,7 @@ void AppShimManager::OnShimProcessConnectedAndAllLaunchesDone(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   // If we failed because the profile was locked, launch the profile manager.
   if (result == chrome::mojom::AppShimLaunchResult::kProfileLocked)
-    delegate_->LaunchUserManager();
+    LaunchUserManager();
 
   // If we failed to find a AppShimHost (in a ProfileState) for |bootstrap|
   // to attempt to connect to, then quit the shim. This may not represent an
@@ -563,14 +565,14 @@ void AppShimManager::CloseShimForApp(Profile* profile,
 void AppShimManager::LoadProfileAndApp(const base::FilePath& profile_path,
                                        const web_app::AppId& app_id,
                                        LoadProfileAppCallback callback) {
-  Profile* profile = delegate_->ProfileForPath(profile_path);
+  Profile* profile = ProfileForPath(profile_path);
   if (profile) {
     OnProfileLoaded(profile_path, app_id, std::move(callback), profile);
   } else {
-    delegate_->LoadProfileAsync(
-        profile_path, base::BindOnce(&AppShimManager::OnProfileLoaded,
-                                     weak_factory_.GetWeakPtr(), profile_path,
-                                     app_id, std::move(callback)));
+    LoadProfileAsync(profile_path,
+                     base::BindOnce(&AppShimManager::OnProfileLoaded,
+                                    weak_factory_.GetWeakPtr(), profile_path,
+                                    app_id, std::move(callback)));
   }
 }
 
@@ -606,11 +608,67 @@ void AppShimManager::OnProfileLoaded(const base::FilePath& profile_path,
 void AppShimManager::OnAppEnabled(const base::FilePath& profile_path,
                                   const web_app::AppId& app_id,
                                   LoadProfileAppCallback callback) {
-  std::move(callback).Run(delegate_->ProfileForPath(profile_path));
+  std::move(callback).Run(ProfileForPath(profile_path));
 }
 
 bool AppShimManager::IsAcceptablyCodeSigned(pid_t pid) const {
   return IsAcceptablyCodeSignedInternal(pid);
+}
+
+Profile* AppShimManager::ProfileForPath(const base::FilePath& full_path) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = profile_manager->GetProfileByPath(full_path);
+
+  // Use IsValidProfile to check if the profile has been created.
+  return profile && profile_manager->IsValidProfile(profile) ? profile
+                                                             : nullptr;
+}
+
+void AppShimManager::LoadProfileAsync(
+    const base::FilePath& full_path,
+    base::OnceCallback<void(Profile*)> callback) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  profile_manager->LoadProfileByPath(full_path, false, std::move(callback));
+}
+
+bool AppShimManager::IsProfileLockedForPath(const base::FilePath& full_path) {
+  return profiles::IsProfileLocked(full_path);
+}
+
+std::unique_ptr<AppShimHost> AppShimManager::CreateHost(
+    AppShimHost::Client* client,
+    const base::FilePath& profile_path,
+    const web_app::AppId& app_id,
+    bool use_remote_cocoa) {
+  return std::make_unique<AppShimHost>(client, app_id, profile_path,
+                                       use_remote_cocoa);
+}
+
+void AppShimManager::OpenAppURLInBrowserWindow(
+    const base::FilePath& profile_path,
+    const GURL& url) {
+  Profile* profile =
+      profile_path.empty() ? nullptr : ProfileForPath(profile_path);
+  if (!profile)
+    profile = g_browser_process->profile_manager()->GetLastUsedProfile();
+  if (!profile)
+    return;
+  Browser* browser =
+      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
+  browser->window()->Show();
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&params);
+}
+
+void AppShimManager::LaunchUserManager() {
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+}
+
+void AppShimManager::MaybeTerminate() {
+  apps::AppShimTerminationManager::Get()->MaybeTerminate();
 }
 
 void AppShimManager::OnShimProcessDisconnected(AppShimHost* host) {
@@ -637,7 +695,7 @@ void AppShimManager::OnShimProcessDisconnected(AppShimHost* host) {
       !host->UsesRemoteViews() && host->HasBootstrapConnected();
 
   // Erase the ProfileState, which will delete |host|.
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+  Profile* profile = ProfileForPath(host->GetProfilePath());
   auto found_profile = app_state->profiles.find(profile);
   DCHECK(found_profile != app_state->profiles.end());
   ProfileState* profile_state = found_profile->second.get();
@@ -659,7 +717,7 @@ void AppShimManager::OnShimFocus(AppShimHost* host) {
   if (host->UsesRemoteViews())
     return;
 
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+  Profile* profile = ProfileForPath(host->GetProfilePath());
   if (!delegate_->AppIsInstalled(profile, host->GetAppId())) {
     CloseShimForApp(profile, host->GetAppId());
     return;
@@ -684,7 +742,7 @@ void AppShimManager::OnShimOpenedFiles(
     // profile. This just grabs one at random.
     profile = app_state->profiles.begin()->first;
   } else {
-    profile = delegate_->ProfileForPath(host->GetProfilePath());
+    profile = ProfileForPath(host->GetProfilePath());
   }
   DCHECK(profile);
   delegate_->LaunchApp(profile, host->GetAppId(), files);
@@ -769,7 +827,7 @@ void AppShimManager::OnAppDeactivated(content::BrowserContext* context,
                                       const std::string& app_id) {
   CloseShimForApp(static_cast<Profile*>(context), app_id);
   if (apps_.empty())
-    delegate_->MaybeTerminate();
+    MaybeTerminate();
 }
 
 void AppShimManager::OnAppStop(content::BrowserContext* context,
@@ -895,7 +953,7 @@ AppShimManager::ProfileState* AppShimManager::GetOrCreateProfileState(
     std::unique_ptr<AppShimHost> multi_profile_host;
     if (is_multi_profile) {
       multi_profile_host =
-          delegate_->CreateHost(this, profile_path, app_id, use_remote_cocoa);
+          CreateHost(this, profile_path, app_id, use_remote_cocoa);
     }
     auto new_app_state =
         std::make_unique<AppState>(app_id, std::move(multi_profile_host));
@@ -913,7 +971,7 @@ AppShimManager::ProfileState* AppShimManager::GetOrCreateProfileState(
     std::unique_ptr<AppShimHost> single_profile_host;
     if (!is_multi_profile) {
       single_profile_host =
-          delegate_->CreateHost(this, profile_path, app_id, use_remote_cocoa);
+          CreateHost(this, profile_path, app_id, use_remote_cocoa);
     }
     auto new_profile_state = std::make_unique<ProfileState>(
         app_state, std::move(single_profile_host));

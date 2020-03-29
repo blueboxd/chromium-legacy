@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.query_tiles.list;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.query_tiles.QueryTileCoordinator;
 import org.chromium.chrome.browser.query_tiles.Tile;
-import org.chromium.chrome.browser.query_tiles.TileProvider;
+
+import java.util.List;
 
 /**
  * The top level coordinator for the query tiles UI.
@@ -19,20 +19,15 @@ import org.chromium.chrome.browser.query_tiles.TileProvider;
 public class QueryTileCoordinatorImpl implements QueryTileCoordinator {
     private final TileListModel mModel;
     private final TileListView mView;
-    private final TileProvider mTileProvider;
-    private final Callback<Boolean> mVisibilityCallback;
 
     /** Constructor. */
-    public QueryTileCoordinatorImpl(
-            Context context, TileProvider tileProvider, Callback<Boolean> visibilityCallback) {
-        mTileProvider = tileProvider;
-        mVisibilityCallback = visibilityCallback;
+    public QueryTileCoordinatorImpl(Context context, Callback<Tile> tileClickCallback,
+            TileVisualsProvider visualsProvider) {
         mModel = new TileListModel();
         mView = new TileListView(context, mModel);
 
-        mModel.getProperties().set(TileListProperties.CLICK_CALLBACK, this::onQueryTileClicked);
-        mModel.getProperties().set(TileListProperties.VISUALS_CALLBACK, this::getVisuals);
-        onQueryTileClicked(null);
+        mModel.getProperties().set(TileListProperties.CLICK_CALLBACK, tileClickCallback);
+        mModel.getProperties().set(TileListProperties.VISUALS_CALLBACK, visualsProvider);
     }
 
     @Override
@@ -40,18 +35,8 @@ public class QueryTileCoordinatorImpl implements QueryTileCoordinator {
         return mView.getView();
     }
 
-    private void onQueryTileClicked(Tile tile) {
-        if (tile != null) {
-            mModel.set(tile.children);
-        } else {
-            mTileProvider.getQueryTiles(tiles -> {
-                mModel.set(tiles);
-                mVisibilityCallback.onResult(!tiles.isEmpty());
-            });
-        }
-    }
-
-    private void getVisuals(Tile tile, Callback<Bitmap> callback) {
-        mTileProvider.getThumbnail(tile.id, callback);
+    @Override
+    public void setTiles(List<Tile> tiles) {
+        mModel.set(tiles);
     }
 }

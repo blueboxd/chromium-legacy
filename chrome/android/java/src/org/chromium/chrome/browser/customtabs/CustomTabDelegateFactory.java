@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabBrowserControlsVisibilityDelegate;
@@ -352,6 +353,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
     private TabWebContentsDelegateAndroid mWebContentsDelegateAndroid;
     private ExternalNavigationDelegateImpl mNavigationDelegate;
+    private EphemeralTabCoordinator mEphemeralTabCoordinator;
 
     /**
      * @param activity {@link ChromeActivity} instance.
@@ -459,7 +461,15 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         int contextMenuMode = getContextMenuMode(mActivityType);
         Supplier<ShareDelegate> shareDelegateSupplier =
                 mActivity == null ? null : mActivity.getShareDelegateSupplier();
-        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab, null),
+        if (EphemeralTabCoordinator.isSupported() && mActivity != null
+                && mActivity.getBottomSheetController() != null) {
+            mEphemeralTabCoordinator = new EphemeralTabCoordinator(mActivity,
+                    mActivity.getWindowAndroid(), mActivity.getWindow().getDecorView(),
+                    mActivity.getActivityTabProvider(), mActivity::getCurrentTabCreator,
+                    mActivity.getBottomSheetController(), () -> false);
+        }
+        return new ChromeContextMenuPopulator(
+                new TabContextMenuItemDelegate(tab, () -> mEphemeralTabCoordinator),
                 shareDelegateSupplier, contextMenuMode, ExternalAuthUtils.getInstance());
     }
 

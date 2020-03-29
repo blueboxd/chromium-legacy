@@ -32,10 +32,10 @@ class TileProviderBridge : public base::SupportsUserData::Data {
                      const JavaParamRef<jobject>& jcaller,
                      const JavaParamRef<jobject>& jcallback);
 
-  void GetThumbnail(JNIEnv* env,
-                    const JavaParamRef<jobject>& jcaller,
-                    const JavaParamRef<jstring>& jid,
-                    const JavaParamRef<jobject>& jcallback);
+  void GetVisuals(JNIEnv* env,
+                  const JavaParamRef<jobject>& jcaller,
+                  const JavaParamRef<jstring>& jid,
+                  const JavaParamRef<jobject>& jcallback);
 
  private:
   // A reference to the Java counterpart of this class.  See

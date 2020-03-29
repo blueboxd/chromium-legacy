@@ -14,10 +14,6 @@ class ExtensionAppShimManagerDelegate : public AppShimManager::Delegate {
   // AppShimManager::Delegate:
   ExtensionAppShimManagerDelegate();
   ~ExtensionAppShimManagerDelegate() override;
-  Profile* ProfileForPath(const base::FilePath& path) override;
-  void LoadProfileAsync(const base::FilePath& path,
-                        base::OnceCallback<void(Profile*)> callback) override;
-  bool IsProfileLockedForPath(const base::FilePath& path) override;
   bool ShowAppWindows(Profile* profile, const web_app::AppId& app_id) override;
   void CloseAppWindows(Profile* profile, const web_app::AppId& app_id) override;
   bool AppIsInstalled(Profile* profile, const web_app::AppId& app_id) override;
@@ -27,25 +23,17 @@ class ExtensionAppShimManagerDelegate : public AppShimManager::Delegate {
                           const web_app::AppId& app_id) override;
   bool AppIsMultiProfile(Profile* profile,
                          const web_app::AppId& app_id) override;
-  std::unique_ptr<AppShimHost> CreateHost(AppShimHost::Client* client,
-                                          const base::FilePath& profile_path,
-                                          const web_app::AppId& app_id,
-                                          bool use_remote_cocoa) override;
   void EnableExtension(Profile* profile,
                        const std::string& extension_id,
                        base::OnceCallback<void()> callback) override;
   void LaunchApp(Profile* profile,
                  const web_app::AppId& app_id,
                  const std::vector<base::FilePath>& files) override;
-  void OpenAppURLInBrowserWindow(const base::FilePath& profile_path,
-                                 const GURL& url) override;
   void LaunchShim(Profile* profile,
                   const web_app::AppId& app_id,
                   bool recreate_shims,
                   ShimLaunchedCallback launched_callback,
                   ShimTerminatedCallback terminated_callback) override;
-  void LaunchUserManager() override;
-  void MaybeTerminate() override;
   bool HasNonBookmarkAppWindowsOpen() override;
 };
 

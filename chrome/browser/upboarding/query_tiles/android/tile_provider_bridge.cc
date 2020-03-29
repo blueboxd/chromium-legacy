@@ -98,10 +98,10 @@ void TileProviderBridge::GetQueryTiles(JNIEnv* env,
       &RunGetTilesCallback, ScopedJavaGlobalRef<jobject>(jcallback)));
 }
 
-void TileProviderBridge::GetThumbnail(JNIEnv* env,
-                                      const JavaParamRef<jobject>& jcaller,
-                                      const JavaParamRef<jstring>& jid,
-                                      const JavaParamRef<jobject>& jcallback) {
+void TileProviderBridge::GetVisuals(JNIEnv* env,
+                                    const JavaParamRef<jobject>& jcaller,
+                                    const JavaParamRef<jstring>& jid,
+                                    const JavaParamRef<jobject>& jcallback) {
   std::string tile_id = ConvertJavaStringToUTF8(env, jid);
   tile_service_->GetVisuals(
       tile_id, base::BindOnce(&RunGeVisualsCallback,

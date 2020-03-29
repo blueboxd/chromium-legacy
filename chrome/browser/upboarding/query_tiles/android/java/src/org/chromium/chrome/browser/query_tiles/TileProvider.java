@@ -23,10 +23,10 @@ public interface TileProvider {
     void getQueryTiles(Callback<List<Tile>> callback);
 
     /**
-     * Called to retrieve thumbnail for the given tile id.
+     * Called to retrieve visuals for the given tile id.
      * @param id The ID for a given tile.
      * @param callback The {@link Callback} to be run after fetching the thumbnail. Returns null if
-     *         no thumbnail was found.
+     *         no visuals were found.
      */
-    void getThumbnail(String id, Callback<Bitmap> callback);
+    void getVisuals(String id, Callback<List<Bitmap>> callback);
 }

@@ -74,7 +74,7 @@ public class QueryTileSectionTest {
         }
 
         @Override
-        public void getThumbnail(String id, Callback<Bitmap> callback) {
+        public void getVisuals(String id, Callback<List<Bitmap>> callback) {
             callback.onResult(null);
         }
     }

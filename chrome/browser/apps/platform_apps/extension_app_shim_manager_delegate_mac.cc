@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
@@ -93,28 +92,6 @@ const Extension* MaybeGetAppExtension(content::BrowserContext* context,
 ExtensionAppShimManagerDelegate::ExtensionAppShimManagerDelegate() = default;
 ExtensionAppShimManagerDelegate::~ExtensionAppShimManagerDelegate() = default;
 
-Profile* ExtensionAppShimManagerDelegate::ProfileForPath(
-    const base::FilePath& full_path) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetProfileByPath(full_path);
-
-  // Use IsValidProfile to check if the profile has been created.
-  return profile && profile_manager->IsValidProfile(profile) ? profile
-                                                             : nullptr;
-}
-
-void ExtensionAppShimManagerDelegate::LoadProfileAsync(
-    const base::FilePath& full_path,
-    base::OnceCallback<void(Profile*)> callback) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  profile_manager->LoadProfileByPath(full_path, false, std::move(callback));
-}
-
-bool ExtensionAppShimManagerDelegate::IsProfileLockedForPath(
-    const base::FilePath& full_path) {
-  return profiles::IsProfileLocked(full_path);
-}
-
 bool ExtensionAppShimManagerDelegate::ShowAppWindows(
     Profile* profile,
     const web_app::AppId& app_id) {
@@ -179,15 +156,6 @@ bool ExtensionAppShimManagerDelegate::AppUsesRemoteCocoa(
   return extension->is_hosted_app() && extension->from_bookmark();
 }
 
-std::unique_ptr<AppShimHost> ExtensionAppShimManagerDelegate::CreateHost(
-    AppShimHost::Client* client,
-    const base::FilePath& profile_path,
-    const web_app::AppId& app_id,
-    bool use_remote_cocoa) {
-  return std::make_unique<AppShimHost>(client, app_id, profile_path,
-                                       use_remote_cocoa);
-}
-
 void ExtensionAppShimManagerDelegate::EnableExtension(
     Profile* profile,
     const web_app::AppId& app_id,
@@ -226,24 +194,6 @@ void ExtensionAppShimManagerDelegate::LaunchApp(
   }
 }
 
-void ExtensionAppShimManagerDelegate::OpenAppURLInBrowserWindow(
-    const base::FilePath& profile_path,
-    const GURL& url) {
-  Profile* profile =
-      profile_path.empty() ? nullptr : ProfileForPath(profile_path);
-  if (!profile)
-    profile = g_browser_process->profile_manager()->GetLastUsedProfile();
-  if (!profile)
-    return;
-  Browser* browser =
-      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
-  browser->window()->Show();
-  NavigateParams params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  Navigate(&params);
-}
-
 void ExtensionAppShimManagerDelegate::LaunchShim(
     Profile* profile,
     const web_app::AppId& app_id,
@@ -251,11 +201,7 @@ void ExtensionAppShimManagerDelegate::LaunchShim(
     apps::ShimLaunchedCallback launched_callback,
     apps::ShimTerminatedCallback terminated_callback) {
   const Extension* extension = MaybeGetAppExtension(profile, app_id);
-  if (!extension) {
-    std::move(launched_callback).Run(base::Process());
-    return;
-  }
-
+  DCHECK(extension);
   // Only force recreation of shims when RemoteViews is in use (that is, for
   // PWAs). Otherwise, shims may be created unexpectedly.
   // https://crbug.com/941160
@@ -274,15 +220,6 @@ void ExtensionAppShimManagerDelegate::LaunchShim(
         std::move(launched_callback), std::move(terminated_callback),
         web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
   }
-}
-
-void ExtensionAppShimManagerDelegate::LaunchUserManager() {
-  UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-}
-
-void ExtensionAppShimManagerDelegate::MaybeTerminate() {
-  apps::AppShimTerminationManager::Get()->MaybeTerminate();
 }
 
 bool ExtensionAppShimManagerDelegate::HasNonBookmarkAppWindowsOpen() {

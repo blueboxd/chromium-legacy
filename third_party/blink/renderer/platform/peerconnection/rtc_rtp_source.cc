@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
+#include "third_party/webrtc/system_wrappers/include/ntp_time.h"
 
 namespace blink {
 
@@ -52,6 +53,13 @@ base::Optional<double> RTCRtpSource::AudioLevel() const {
 
 uint32_t RTCRtpSource::RtpTimestamp() const {
   return source_.rtp_timestamp();
+}
+
+base::Optional<int64_t> RTCRtpSource::CaptureTimestamp() const {
+  if (!source_.absolute_capture_time())
+    return base::nullopt;
+  return webrtc::UQ32x32ToInt64Ms(
+      source_.absolute_capture_time()->absolute_capture_timestamp);
 }
 
 }  // namespace blink

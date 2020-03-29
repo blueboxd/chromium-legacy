@@ -247,7 +247,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSiteSectionViewHolder = SiteSection.createViewHolder(getSiteSectionView(), mUiConfig);
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
 
-        mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles), profile);
+        final TextView searchBoxTextView =
+                mSearchBoxContainerView.findViewById(R.id.search_box_text);
+        mQueryTileSection =
+                new QueryTileSection(findViewById(R.id.query_tiles), searchBoxTextView, profile);
 
         int variation = ExploreSitesBridge.getVariation();
         if (ExploreSitesBridge.isExperimental(variation)) {
@@ -880,8 +883,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             final int width = mSiteSectionView.getMeasuredWidth() - mTileGridLayoutBleed;
             measureExactly(
                     mSearchBoxContainerView, width, mSearchBoxContainerView.getMeasuredHeight());
-            measureExactly(mSearchProviderLogoView,
-                    width, mSearchProviderLogoView.getMeasuredHeight());
+            measureExactly(
+                    mSearchProviderLogoView, width, mSearchProviderLogoView.getMeasuredHeight());
 
             if (mExploreSectionView != null) {
                 measureExactly(mExploreSectionView, mSiteSectionView.getMeasuredWidth(),

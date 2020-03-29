@@ -152,6 +152,39 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     @CalledByNativeJavaTest
+    public void testHttpLinkWithPreviewTabEnabled() {
+        ContextMenuParams contextMenuParams = new ContextMenuParams(0, PAGE_URL, LINK_URL,
+                LINK_TEXT, "", "", "", null, false, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
+
+        FirstRunStatus.setFirstRunFlowComplete(true);
+
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET, true);
+        ChromeFeatureList.setTestFeatures(features);
+
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
+        int[] expected1 = {R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
+                R.id.contextmenu_open_in_other_window, R.id.contextmenu_open_in_ephemeral_tab,
+                R.id.contextmenu_copy_link_address, R.id.contextmenu_copy_link_text,
+                R.id.contextmenu_save_link_as, R.id.contextmenu_share_link};
+        checkMenuOptions(contextMenuParams, expected1);
+
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
+        int[] expected2 = {R.id.contextmenu_open_in_browser_id,
+                R.id.contextmenu_open_in_ephemeral_tab, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_copy_link_text, R.id.contextmenu_save_link_as,
+                R.id.contextmenu_share_link};
+        checkMenuOptions(contextMenuParams, expected2);
+
+        // Webapp doesn't show preview tab.
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
+        int[] expected3 = {R.id.contextmenu_copy_link_address, R.id.contextmenu_copy_link_text,
+                R.id.contextmenu_save_link_as, R.id.contextmenu_share_link,
+                R.id.contextmenu_open_in_chrome};
+        checkMenuOptions(contextMenuParams, expected3);
+    }
+
+    @CalledByNativeJavaTest
     public void testMailLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams =

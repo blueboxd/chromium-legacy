@@ -42,14 +42,7 @@ using ::testing::WithArgs;
 
 class MockDelegate : public AppShimManager::Delegate {
  public:
-  virtual ~MockDelegate() { DCHECK(load_profile_callbacks_.empty()); }
-
-  MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath&));
-  void LoadProfileAsync(const base::FilePath& path,
-                        base::OnceCallback<void(Profile*)> callback) override {
-    CaptureLoadProfileCallback(path, std::move(callback));
-  }
-  MOCK_METHOD1(IsProfileLockedForPath, bool(const base::FilePath&));
+  virtual ~MockDelegate() {}
 
   MOCK_METHOD2(ShowAppWindows, bool(Profile*, const std::string&));
   MOCK_METHOD2(CloseAppWindows, void(Profile*, const std::string&));
@@ -63,8 +56,6 @@ class MockDelegate : public AppShimManager::Delegate {
                void(Profile*,
                     const std::string& app_id,
                     const std::vector<base::FilePath>&));
-  MOCK_METHOD2(OpenAppURLInBrowserWindow,
-               void(const base::FilePath&, const GURL& url));
 
   // Conditionally mock LaunchShim. Some tests will execute |launch_callback|
   // with a particular value.
@@ -87,9 +78,6 @@ class MockDelegate : public AppShimManager::Delegate {
     terminated_shim_callback_capture_ = callback;
   }
 
-  MOCK_METHOD0(LaunchUserManager, void());
-
-  MOCK_METHOD0(MaybeTerminate, void());
   MOCK_METHOD0(HasNonBookmarkAppWindowsOpen, bool());
 
   void SetAppCanCreateHost(bool should_create_host) {
@@ -99,34 +87,9 @@ class MockDelegate : public AppShimManager::Delegate {
     return allow_shim_to_connect_;
   }
 
-  void SetHostForCreate(std::unique_ptr<AppShimHost> host_for_create) {
-    host_for_create_ = std::move(host_for_create);
-  }
-  std::unique_ptr<AppShimHost> CreateHost(AppShimHost::Client* client,
-                                          const base::FilePath& profile_path,
-                                          const std::string& app_id,
-                                          bool use_remote_cocoa) override {
-    DCHECK(host_for_create_);
-    std::unique_ptr<AppShimHost> result = std::move(host_for_create_);
-    return result;
-  }
-
-  void CaptureLoadProfileCallback(const base::FilePath& path,
-                                  base::OnceCallback<void(Profile*)> callback) {
-    load_profile_callbacks_[path] = std::move(callback);
-  }
-
-  bool RunLoadProfileCallback(const base::FilePath& path, Profile* profile) {
-    std::move(load_profile_callbacks_[path]).Run(profile);
-    return load_profile_callbacks_.erase(path);
-  }
-
  private:
   ShimLaunchedCallback* launch_shim_callback_capture_ = nullptr;
   ShimTerminatedCallback* terminated_shim_callback_capture_ = nullptr;
-  std::map<base::FilePath, base::OnceCallback<void(Profile*)>>
-      load_profile_callbacks_;
-  std::unique_ptr<AppShimHost> host_for_create_ = nullptr;
   bool allow_shim_to_connect_ = true;
 };
 
@@ -134,7 +97,7 @@ class TestingAppShimManager : public AppShimManager {
  public:
   TestingAppShimManager(std::unique_ptr<Delegate> delegate)
       : AppShimManager(std::move(delegate)) {}
-  virtual ~TestingAppShimManager() {}
+  virtual ~TestingAppShimManager() { DCHECK(load_profile_callbacks_.empty()); }
 
   MOCK_METHOD1(OnShimFocus, void(AppShimHost* host));
 
@@ -158,9 +121,43 @@ class TestingAppShimManager : public AppShimManager {
     return is_acceptably_code_signed_;
   }
 
+  MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath&));
+  void LoadProfileAsync(const base::FilePath& path,
+                        base::OnceCallback<void(Profile*)> callback) override {
+    CaptureLoadProfileCallback(path, std::move(callback));
+  }
+  MOCK_METHOD1(IsProfileLockedForPath, bool(const base::FilePath&));
+  void SetHostForCreate(std::unique_ptr<AppShimHost> host_for_create) {
+    host_for_create_ = std::move(host_for_create);
+  }
+  std::unique_ptr<AppShimHost> CreateHost(AppShimHost::Client* client,
+                                          const base::FilePath& profile_path,
+                                          const std::string& app_id,
+                                          bool use_remote_cocoa) override {
+    DCHECK(host_for_create_);
+    std::unique_ptr<AppShimHost> result = std::move(host_for_create_);
+    return result;
+  }
+  MOCK_METHOD2(OpenAppURLInBrowserWindow,
+               void(const base::FilePath&, const GURL& url));
+  MOCK_METHOD0(LaunchUserManager, void());
+  MOCK_METHOD0(MaybeTerminate, void());
+
+  void CaptureLoadProfileCallback(const base::FilePath& path,
+                                  base::OnceCallback<void(Profile*)> callback) {
+    load_profile_callbacks_[path] = std::move(callback);
+  }
+  bool RunLoadProfileCallback(const base::FilePath& path, Profile* profile) {
+    std::move(load_profile_callbacks_[path]).Run(profile);
+    return load_profile_callbacks_.erase(path);
+  }
+
   content::NotificationRegistrar& GetRegistrar() { return registrar(); }
 
  private:
+  std::map<base::FilePath, base::OnceCallback<void(Profile*)>>
+      load_profile_callbacks_;
+  std::unique_ptr<AppShimHost> host_for_create_ = nullptr;
   std::vector<chrome::mojom::ProfileMenuItemPtr> new_profile_menu_items_;
   bool is_acceptably_code_signed_ = true;
   DISALLOW_COPY_AND_ASSIGN(TestingAppShimManager);
@@ -376,21 +373,21 @@ class AppShimManagerTest : public testing::Test {
     }
 
     // Tests that expect this call will override it.
-    EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(_, _)).Times(0);
+    EXPECT_CALL(*manager_, OpenAppURLInBrowserWindow(_, _)).Times(0);
 
-    EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
+    EXPECT_CALL(*manager_, IsProfileLockedForPath(profile_path_a_))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
+    EXPECT_CALL(*manager_, ProfileForPath(profile_path_a_))
         .WillRepeatedly(Return(&profile_a_));
 
-    EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_b_))
+    EXPECT_CALL(*manager_, IsProfileLockedForPath(profile_path_b_))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*delegate_, ProfileForPath(profile_path_b_))
+    EXPECT_CALL(*manager_, ProfileForPath(profile_path_b_))
         .WillRepeatedly(Return(&profile_b_));
 
-    EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_c_))
+    EXPECT_CALL(*manager_, IsProfileLockedForPath(profile_path_c_))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*delegate_, ProfileForPath(profile_path_c_))
+    EXPECT_CALL(*manager_, ProfileForPath(profile_path_c_))
         .WillRepeatedly(Return(&profile_c_));
 
     EXPECT_CALL(*delegate_, AppIsInstalled(&profile_a_, kTestAppIdA))
@@ -409,7 +406,7 @@ class AppShimManagerTest : public testing::Test {
     host_ab_unique_.reset();
     host_bb_unique_.reset();
     host_aa_duplicate_unique_.reset();
-    delegate_->SetHostForCreate(nullptr);
+    manager_->SetHostForCreate(nullptr);
     manager_.reset();
 
     // Delete the bootstraps via their weak pointers if they haven't been
@@ -435,7 +432,7 @@ class AppShimManagerTest : public testing::Test {
                     chrome::mojom::AppShimLaunchType launch_type,
                     const std::vector<base::FilePath>& files) {
     if (host)
-      delegate_->SetHostForCreate(std::move(host));
+      manager_->SetHostForCreate(std::move(host));
     bootstrap->DoTestLaunch(launch_type, files);
   }
 
@@ -524,31 +521,31 @@ class AppShimManagerTest : public testing::Test {
 
 TEST_F(AppShimManagerTest, LaunchProfileNotFound) {
   // Bad profile path, opens a bookmark app in a new window.
-  EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
+  EXPECT_CALL(*manager_, ProfileForPath(profile_path_a_))
       .WillRepeatedly(Return(static_cast<Profile*>(nullptr)));
   NormalLaunch(bootstrap_aa_, nullptr);
-  EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
-  delegate_->RunLoadProfileCallback(profile_path_a_, nullptr);
+  EXPECT_CALL(*manager_, OpenAppURLInBrowserWindow(profile_path_a_, _));
+  manager_->RunLoadProfileCallback(profile_path_a_, nullptr);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kProfileNotFound,
             *bootstrap_aa_result_);
 }
 
 TEST_F(AppShimManagerTest, LaunchProfileNotFoundNotBookmark) {
   // Bad profile path, not a bookmark app, doesn't open anything.
-  EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
+  EXPECT_CALL(*manager_, ProfileForPath(profile_path_a_))
       .WillRepeatedly(Return(static_cast<Profile*>(nullptr)));
   NormalLaunch(bootstrap_ab_, nullptr);
-  delegate_->RunLoadProfileCallback(profile_path_a_, nullptr);
+  manager_->RunLoadProfileCallback(profile_path_a_, nullptr);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kProfileNotFound,
             *bootstrap_ab_result_);
 }
 
 TEST_F(AppShimManagerTest, LaunchProfileIsLocked) {
   // Profile is locked.
-  EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
+  EXPECT_CALL(*manager_, IsProfileLockedForPath(profile_path_a_))
       .WillOnce(Return(true));
-  EXPECT_CALL(*delegate_, LaunchUserManager());
-  EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
+  EXPECT_CALL(*manager_, LaunchUserManager());
+  EXPECT_CALL(*manager_, OpenAppURLInBrowserWindow(profile_path_a_, _));
   NormalLaunch(bootstrap_aa_, nullptr);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kProfileLocked,
             *bootstrap_aa_result_);
@@ -560,7 +557,7 @@ TEST_F(AppShimManagerTest, LaunchAppNotFound) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
-  EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
+  EXPECT_CALL(*manager_, OpenAppURLInBrowserWindow(profile_path_a_, _));
   NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kAppNotFound,
             *bootstrap_aa_result_);
@@ -616,7 +613,7 @@ TEST_F(AppShimManagerTest, LaunchAndCloseShim) {
 TEST_F(AppShimManagerTest, AppLifetime) {
   // When the app activates, a host is created. If there is no shim, one is
   // launched.
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, kTestAppIdA, false));
   manager_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), manager_->FindHost(&profile_a_, kTestAppIdA));
@@ -651,7 +648,7 @@ TEST_F(AppShimManagerTest, AppLifetime) {
   EXPECT_EQ(nullptr, host_aa_.get());
 
   // OnAppDeactivated should trigger a MaybeTerminate call.
-  EXPECT_CALL(*delegate_, MaybeTerminate()).WillOnce(Return());
+  EXPECT_CALL(*manager_, MaybeTerminate()).WillOnce(Return());
   manager_->OnAppDeactivated(&profile_a_, kTestAppIdA);
 }
 
@@ -659,7 +656,7 @@ TEST_F(AppShimManagerTest, FailToLaunch) {
   // When the app activates, it requests a launch.
   ShimLaunchedCallback launch_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launch_callback);
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, kTestAppIdA, false));
   manager_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), manager_->FindHost(&profile_a_, kTestAppIdA));
@@ -684,7 +681,7 @@ TEST_F(AppShimManagerTest, FailToConnect) {
   ShimTerminatedCallback terminated_callback;
   delegate_->SetCaptureShimTerminatedCallback(&terminated_callback);
 
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, kTestAppIdA, false));
   manager_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), manager_->FindHost(&profile_a_, kTestAppIdA));
@@ -764,11 +761,11 @@ TEST_F(AppShimManagerTest, MaybeTerminate) {
   EXPECT_EQ(host_ab_.get(), manager_->FindHost(&profile_a_, kTestAppIdB));
 
   // Quitting when there's another shim should not terminate.
-  EXPECT_CALL(*delegate_, MaybeTerminate()).Times(0);
+  EXPECT_CALL(*manager_, MaybeTerminate()).Times(0);
   manager_->OnAppDeactivated(&profile_a_, kTestAppIdA);
 
   // Quitting when it's the last shim should terminate.
-  EXPECT_CALL(*delegate_, MaybeTerminate());
+  EXPECT_CALL(*manager_, MaybeTerminate());
   manager_->OnAppDeactivated(&profile_a_, kTestAppIdB);
 }
 
@@ -802,12 +799,12 @@ TEST_F(AppShimManagerTest, LoadProfile) {
   // If the profile is not loaded when an OnShimProcessConnected arrives, return
   // false and load the profile asynchronously. Launch the app when the profile
   // is ready.
-  EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
+  EXPECT_CALL(*manager_, ProfileForPath(profile_path_a_))
       .WillOnce(Return(static_cast<Profile*>(nullptr)))
       .WillRepeatedly(Return(&profile_a_));
   NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_FALSE(manager_->FindHost(&profile_a_, kTestAppIdA));
-  delegate_->RunLoadProfileCallback(profile_path_a_, &profile_a_);
+  manager_->RunLoadProfileCallback(profile_path_a_, &profile_a_);
   EXPECT_TRUE(manager_->FindHost(&profile_a_, kTestAppIdA));
 }
 
@@ -831,7 +828,7 @@ TEST_F(AppShimManagerTest, ExtensionUninstalled) {
 
 TEST_F(AppShimManagerTest, PreExistingHost) {
   // Create a host for our profile.
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_EQ(nullptr, manager_->FindHost(&profile_a_, kTestAppIdA));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, kTestAppIdA, false))
       .Times(1);
@@ -867,14 +864,14 @@ TEST_F(AppShimManagerTest, MultiProfile) {
   // Test with a bookmark app (host is shared).
   {
     // Create a host for profile A.
-    delegate_->SetHostForCreate(std::move(host_aa_unique_));
+    manager_->SetHostForCreate(std::move(host_aa_unique_));
     EXPECT_EQ(nullptr, manager_->FindHost(&profile_a_, kTestAppIdA));
     manager_->OnAppActivated(&profile_a_, kTestAppIdA);
     EXPECT_EQ(host_aa_.get(), manager_->FindHost(&profile_a_, kTestAppIdA));
     EXPECT_FALSE(host_aa_->did_connect_to_host());
 
     // Ensure that profile B has the same host.
-    delegate_->SetHostForCreate(std::move(host_ba_unique_));
+    manager_->SetHostForCreate(std::move(host_ba_unique_));
     EXPECT_EQ(nullptr, manager_->FindHost(&profile_b_, kTestAppIdA));
     manager_->OnAppActivated(&profile_b_, kTestAppIdA);
     EXPECT_EQ(host_aa_.get(), manager_->FindHost(&profile_b_, kTestAppIdA));
@@ -884,14 +881,14 @@ TEST_F(AppShimManagerTest, MultiProfile) {
   // Test with a non-bookmark app (host is not shared).
   {
     // Create a host for profile A.
-    delegate_->SetHostForCreate(std::move(host_ab_unique_));
+    manager_->SetHostForCreate(std::move(host_ab_unique_));
     EXPECT_EQ(nullptr, manager_->FindHost(&profile_a_, kTestAppIdB));
     manager_->OnAppActivated(&profile_a_, kTestAppIdB);
     EXPECT_EQ(host_ab_.get(), manager_->FindHost(&profile_a_, kTestAppIdB));
     EXPECT_FALSE(host_ab_->did_connect_to_host());
 
     // Ensure that profile B has the same host.
-    delegate_->SetHostForCreate(std::move(host_bb_unique_));
+    manager_->SetHostForCreate(std::move(host_bb_unique_));
     EXPECT_EQ(nullptr, manager_->FindHost(&profile_b_, kTestAppIdB));
     manager_->OnAppActivated(&profile_b_, kTestAppIdB);
     EXPECT_EQ(host_bb_.get(), manager_->FindHost(&profile_b_, kTestAppIdB));
@@ -900,7 +897,7 @@ TEST_F(AppShimManagerTest, MultiProfile) {
 }
 
 TEST_F(AppShimManagerTest, MultiProfileShimLaunch) {
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   ShimLaunchedCallback launched_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
   ShimTerminatedCallback terminated_callback;
@@ -927,7 +924,7 @@ TEST_F(AppShimManagerTest, MultiProfileShimLaunch) {
 }
 
 TEST_F(AppShimManagerTest, MultiProfileSelectMenu) {
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   ShimLaunchedCallback launched_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
   ShimTerminatedCallback terminated_callback;
@@ -979,7 +976,7 @@ TEST_F(AppShimManagerTest, ProfileMenuOneProfile) {
 
   // When the app activates, a host is created. This will trigger building
   // the avatar menu.
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, kTestAppIdA, false));
   manager_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), manager_->FindHost(&profile_a_, kTestAppIdA));
@@ -1038,7 +1035,7 @@ TEST_F(AppShimManagerTest, FindProfileFromBadProfile) {
   AppShimRegistry::Get()->OnAppQuit(kTestAppIdA, last_active_profile_paths);
 
   // Launch the shim requesting profile C.
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, kTestAppIdA, _)).Times(1);
   EXPECT_CALL(*delegate_, LaunchApp(&profile_b_, kTestAppIdA, _)).Times(0);
   EXPECT_CALL(*delegate_, EnableExtension(&profile_c_, kTestAppIdA, _))
@@ -1055,7 +1052,7 @@ TEST_F(AppShimManagerTest, FindProfileFromNoProfile) {
                                                    profile_path_a_);
 
   // Launch the shim without specifying a profile.
-  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  manager_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, kTestAppIdA, _)).Times(1);
   EXPECT_CALL(*delegate_, LaunchApp(&profile_b_, kTestAppIdA, _)).Times(0);
   NormalLaunch(bootstrap_xa_, nullptr);

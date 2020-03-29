@@ -334,17 +334,19 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         if (params.isAnchor()) {
             List<ContextMenuItem> linkTab = new ArrayList<>();
-            if (FirstRunStatus.getFirstRunFlowComplete() && mMode == ContextMenuMode.NORMAL
-                    && !isEmptyUrl(params.getUrl())
+            if (FirstRunStatus.getFirstRunFlowComplete() && !isEmptyUrl(params.getUrl())
                     && UrlUtilities.isAcceptedScheme(params.getUrl())) {
-                linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_NEW_TAB));
-                if (!mDelegate.isIncognito() && mDelegate.isIncognitoSupported()) {
-                    linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_INCOGNITO_TAB));
+                if (mMode == ContextMenuMode.NORMAL) {
+                    linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_NEW_TAB));
+                    if (!mDelegate.isIncognito() && mDelegate.isIncognitoSupported()) {
+                        linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_INCOGNITO_TAB));
+                    }
+                    if (mDelegate.isOpenInOtherWindowSupported()) {
+                        linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_OTHER_WINDOW));
+                    }
                 }
-                if (mDelegate.isOpenInOtherWindowSupported()) {
-                    linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_OTHER_WINDOW));
-                }
-                if (EphemeralTabCoordinator.isSupported()) {
+                if ((mMode == ContextMenuMode.NORMAL || mMode == ContextMenuMode.CUSTOM_TAB)
+                        && EphemeralTabCoordinator.isSupported()) {
                     ContextMenuItem item = new ChromeContextMenuItem(Item.OPEN_IN_EPHEMERAL_TAB);
                     mShowEphemeralTabNewLabel = shouldTriggerEphemeralTabHelpUi();
                     if (mShowEphemeralTabNewLabel) item.setShowInProductHelp();
@@ -407,7 +409,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 if (mMode == ContextMenuMode.NORMAL) {
                     imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
                 }
-                if (EphemeralTabCoordinator.isSupported()) {
+                if ((mMode == ContextMenuMode.NORMAL || mMode == ContextMenuMode.CUSTOM_TAB)
+                        && EphemeralTabCoordinator.isSupported()) {
                     ContextMenuItem item =
                             new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_EPHEMERAL_TAB);
                     if (mShowEphemeralTabNewLabel == null) {

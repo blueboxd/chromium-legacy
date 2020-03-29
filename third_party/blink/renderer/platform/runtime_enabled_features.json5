@@ -292,6 +292,10 @@
       status: "experimental",
     },
     {
+      name: "CaptureTimeInCsrc",
+      status: "test",
+    },
+    {
       name: "ClickPointerEvent",
       status: "experimental",
     },

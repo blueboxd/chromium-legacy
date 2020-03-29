@@ -46,9 +46,9 @@ public class TileProviderBridge implements TileProvider {
     }
 
     @Override
-    public void getThumbnail(String id, Callback<Bitmap> callback) {
+    public void getVisuals(String id, Callback<List<Bitmap>> callback) {
         if (mNativeTileProviderBridge == 0) return;
-        TileProviderBridgeJni.get().getThumbnail(mNativeTileProviderBridge, this, id, callback);
+        TileProviderBridgeJni.get().getVisuals(mNativeTileProviderBridge, this, id, callback);
     }
 
     @CalledByNative
@@ -68,7 +68,7 @@ public class TileProviderBridge implements TileProvider {
     interface Natives {
         void getQueryTiles(long nativeTileProviderBridge, TileProviderBridge caller,
                 Callback<List<Tile>> callback);
-        void getThumbnail(long nativeTileProviderBridge, TileProviderBridge caller, String id,
-                Callback<Bitmap> callback);
+        void getVisuals(long nativeTileProviderBridge, TileProviderBridge caller, String id,
+                Callback<List<Bitmap>> callback);
     }
 }

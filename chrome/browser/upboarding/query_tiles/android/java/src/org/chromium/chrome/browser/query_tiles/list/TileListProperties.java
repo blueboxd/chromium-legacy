@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.query_tiles.list;
 
-import android.graphics.Bitmap;
-
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.query_tiles.QueryTileCoordinator.TileVisualsProvider;
 import org.chromium.chrome.browser.query_tiles.Tile;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
@@ -17,21 +16,13 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
  * properties that are effectively shared across all list items like callbacks.
  */
 interface TileListProperties {
-    /** A helper interface to support retrieving {@link Bitmap} asynchronously. */
-    @FunctionalInterface
-    interface VisualsProvider {
-        /**
-         * @param tile The {@link Tile} to get the {@link Bitmap} for.
-         * @param callback A {@link Callback} that will be notified on completion.
-         */
-        void getVisuals(Tile tile, Callback<Bitmap> callback);
-    }
 
     /** The callback to run when a {@link Tile} is clicked on the UI. */
     WritableObjectPropertyKey<Callback<Tile>> CLICK_CALLBACK = new WritableObjectPropertyKey<>();
 
     /** The provider to retrieve expensive visuals for a {@link Tile}. */
-    WritableObjectPropertyKey<VisualsProvider> VISUALS_CALLBACK = new WritableObjectPropertyKey<>();
+    WritableObjectPropertyKey<TileVisualsProvider> VISUALS_CALLBACK =
+            new WritableObjectPropertyKey<>();
 
     PropertyKey[] ALL_KEYS = new PropertyKey[] {CLICK_CALLBACK, VISUALS_CALLBACK};
 }

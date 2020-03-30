@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UPBOARDING_QUERY_TILES_QUERY_TILE_ENTRY_H_
 #define CHROME_BROWSER_UPBOARDING_QUERY_TILES_QUERY_TILE_ENTRY_H_
 
-#include <set>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -33,9 +33,11 @@ struct ImageMetadata {
 struct QueryTileEntry {
   QueryTileEntry();
   ~QueryTileEntry();
-  QueryTileEntry(const QueryTileEntry& other);
   bool operator==(const QueryTileEntry& other) const;
+  bool operator!=(const QueryTileEntry& other) const;
 
+  QueryTileEntry(const QueryTileEntry& other);
+  QueryTileEntry(QueryTileEntry&& other);
   // Unique Id for each entry.
   std::string id;
 
@@ -51,11 +53,8 @@ struct QueryTileEntry {
   // A list of images's matadatas.
   std::vector<ImageMetadata> image_metadatas;
 
-  // A set contains all ids of it's children tiles.
-  std::set<std::string> children;
-
-  // TODO(shaktisahu): Merge children into subtiles.
-  std::vector<QueryTileEntry*> subtiles;
+  // A list of children of this tile.
+  std::vector<std::unique_ptr<QueryTileEntry>> sub_tiles;
 };
 
 }  // namespace upboarding

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_context_factories.h"
@@ -25,6 +24,8 @@ namespace views {
 class ViewsTestHelperMac : public ViewsTestHelper {
  public:
   ViewsTestHelperMac();
+  ViewsTestHelperMac(const ViewsTestHelperMac&) = delete;
+  ViewsTestHelperMac& operator=(const ViewsTestHelperMac&) = delete;
   ~ViewsTestHelperMac() override;
 
   // ViewsTestHelper:
@@ -57,8 +58,6 @@ class ViewsTestHelperMac : public ViewsTestHelper {
   // more consistent with other platforms, where most views are focusable by
   // default.
   ui::test::ScopedFakeFullKeyboardAccess faked_full_keyboard_access_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewsTestHelperMac);
 };
 
 }  // namespace views

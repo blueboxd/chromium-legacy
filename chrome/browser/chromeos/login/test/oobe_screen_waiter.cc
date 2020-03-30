@@ -38,6 +38,8 @@ void OobeScreenWaiter::Wait() {
 
   state_ = State::WAITING_FOR_SCREEN;
 
+  LOG(INFO) << "Actually waiting for screen " << target_screen_.name;
+
   run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
   run_loop_.reset();

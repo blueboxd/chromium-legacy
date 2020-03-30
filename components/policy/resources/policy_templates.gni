@@ -101,7 +101,11 @@ policy_templates_plist_path =
     "$policy_templates_base_dir/mac/app-Manifest.plist"
 policy_templates_plist_strings_path =
     "$policy_templates_base_dir/mac/strings/\${lang}.lproj/Localizable.strings"
-policy_templates_mac_outputs = [ policy_templates_plist_path ]
+policy_templates_jamf_path = "$policy_templates_base_dir/mac/jamf.json"
+policy_templates_mac_outputs = [
+  policy_templates_plist_path,
+  policy_templates_jamf_path,
+]
 foreach(lang, mac_policy_templates_languages) {
   policy_templates_mac_outputs += [
     "$policy_templates_base_dir/mac/strings/${lang}.lproj/Localizable.strings",

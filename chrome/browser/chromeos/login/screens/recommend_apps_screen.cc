@@ -9,6 +9,16 @@
 
 namespace chromeos {
 
+// static
+std::string RecommendAppsScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::SELECTED:
+      return "Selected";
+    case Result::SKIPPED:
+      return "Skipped";
+  }
+}
+
 RecommendAppsScreen::RecommendAppsScreen(
     RecommendAppsScreenView* view,
     const ScreenExitCallback& exit_callback)

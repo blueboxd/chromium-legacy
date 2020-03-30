@@ -25,6 +25,18 @@ constexpr char kUserActionBack[] = "go-back";
 namespace chromeos {
 
 // static
+std::string ArcTermsOfServiceScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::ACCEPTED:
+      return "Accepted";
+    case Result::SKIPPED:
+      return "Skipped";
+    case Result::BACK:
+      return "Back";
+  }
+}
+
+// static
 void ArcTermsOfServiceScreen::MaybeLaunchArcSettings(Profile* profile) {
   if (profile->GetPrefs()->GetBoolean(prefs::kShowArcSettingsOnSessionStart)) {
     profile->GetPrefs()->ClearPref(prefs::kShowArcSettingsOnSessionStart);

@@ -18,13 +18,11 @@
 namespace ios_web_view {
 
 void InitializeGlobalState() {
-#if defined(UNIT_TEST)
   // Do not perform global state initialization in an unit test environment.
   // 1. Not needed when unit testing.
   // 2. The globals below will try to create other already created globals like
   //    AtExitManagers. This causes DCHECKs and prevents tests from completing.
-  return;
-#endif  // defined(UNIT_TEST)
+#if !defined(UNIT_TEST)
   static std::unique_ptr<ios_web_view::WebViewWebClient> web_client;
   static std::unique_ptr<ios_web_view::WebViewWebMainDelegate>
       web_main_delegate;
@@ -51,6 +49,7 @@ void InitializeGlobalState() {
                   web_client.reset();
                 }];
   });
+#endif  // defined(UNIT_TEST)
 }
 
 }  // namespace ios_web_view

@@ -595,9 +595,6 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
 }
 
 void UkmPageLoadMetricsObserver::RecordInputTimingMetrics() {
-  if (GetDelegate().GetPageInputTiming().num_input_events == 0) {
-    return;
-  }
   ukm::builders::PageLoad(GetDelegate().GetSourceId())
       .SetInteractiveTiming_NumInputEvents(
           GetDelegate().GetPageInputTiming().num_input_events)

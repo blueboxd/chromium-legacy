@@ -26,6 +26,7 @@ class TestSuiteAll(unittest.TestSuite):
     import writers.google_adml_writer_unittest
     import writers.google_admx_writer_unittest
     import writers.ios_app_config_writer_unittest
+    import writers.jamf_writer_unittest
     import writers.json_writer_unittest
     import writers.plist_strings_writer_unittest
     import writers.plist_writer_unittest
@@ -45,6 +46,7 @@ class TestSuiteAll(unittest.TestSuite):
         writers.google_adml_writer_unittest.GoogleAdmlWriterUnittest,
         writers.google_admx_writer_unittest.GoogleAdmxWriterUnittest,
         writers.ios_app_config_writer_unittest.IOSAppConfigWriterUnitTests,
+        writers.jamf_writer_unittest.JamfWriterUnitTests,
         writers.json_writer_unittest.JsonWriterUnittest,
         writers.plist_strings_writer_unittest.PListStringsWriterUnittest,
         writers.plist_writer_unittest.PListWriterUnittest,

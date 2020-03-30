@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -44,20 +43,15 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
-import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.content_public.browser.test.util.TouchCommon;
-import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -157,127 +151,6 @@ public class OmniboxTest {
                                 .softInputMode;
                     }
                 }));
-    }
-
-    /**
-     * Tests that focusing a url bar starts a zero suggest request.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Omnibox"})
-    @RetryOnFailure
-    public void testRequestZeroSuggestOnFocus() {
-        final LocationBarLayout locationBar =
-                (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
-        final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> { urlBar.setText("http://www.example.com/"); });
-
-        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AutocompleteCoordinatorTestUtils.setAutocompleteController(
-                    locationBar.getAutocompleteCoordinator(), controller);
-        });
-        Assert.assertEquals("Should not have any zero suggest requests yet", 0,
-                controller.numZeroSuggestRequests());
-
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return controller.numZeroSuggestRequests();
-            }
-        }));
-
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-
-        Assert.assertFalse(controller.isStartAutocompleteCalled());
-    }
-
-    /**
-     * Tests that focusing a url bar starts a zero suggest request.
-     */
-    @Test
-    @DisableIf.
-    Build(sdk_is_greater_than = Build.VERSION_CODES.KITKAT, message = "crbug.com/1027549")
-    @MediumTest
-    @Feature({"Omnibox"})
-    @RetryOnFailure
-    public void testRequestZeroSuggestAfterDelete() throws InterruptedException {
-        final LocationBarLayout locationBar =
-                (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
-        final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-        final ImageButton deleteButton =
-                (ImageButton) mActivityTestRule.getActivity().findViewById(R.id.delete_button);
-
-        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AutocompleteCoordinatorTestUtils.setAutocompleteController(
-                    locationBar.getAutocompleteCoordinator(), controller);
-            urlBar.setText("g");
-        });
-
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Should have drawn the delete button") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return deleteButton.getWidth() > 0;
-                    }
-                });
-
-        // The click view below ends up clicking on the menu button underneath the delete button
-        // for some time after the delete button appears. Wait for UI to settle down before
-        // clicking.
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-
-        TouchCommon.singleClickView(deleteButton);
-
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return controller.numZeroSuggestRequests();
-            }
-        }));
-    }
-
-    @Test
-    @DisableIf.
-    Build(sdk_is_greater_than = Build.VERSION_CODES.KITKAT, message = "crbug.com/1027549")
-    @MediumTest
-    @Feature({"Omnibox"})
-    @RetryOnFailure
-    public void testRequestZeroSuggestTypeAndBackspace() {
-        final LocationBarLayout locationBar =
-                (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
-        final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-
-        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AutocompleteCoordinatorTestUtils.setAutocompleteController(
-                    locationBar.getAutocompleteCoordinator(), controller);
-            urlBar.setText("g");
-            urlBar.setSelection(1);
-        });
-
-        Assert.assertEquals("No calls to zero suggest yet", 0, controller.numZeroSuggestRequests());
-        KeyUtils.singleKeyEventView(
-                InstrumentationRegistry.getInstrumentation(), urlBar, KeyEvent.KEYCODE_DEL);
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return controller.numZeroSuggestRequests();
-            }
-        }));
     }
 
     // Sanity check that no text is displayed in the omnibox when on the NTP page and that the hint

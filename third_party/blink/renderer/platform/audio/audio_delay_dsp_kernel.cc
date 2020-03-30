@@ -61,7 +61,8 @@ size_t AudioDelayDSPKernel::BufferLengthForDelay(double max_delay_time,
   // Compute the length of the buffer needed to handle a max delay of
   // |maxDelayTime|. One is added to handle the case where the actual delay
   // equals the maximum delay.
-  return 1 + audio_utilities::TimeToSampleFrame(max_delay_time, sample_rate);
+  return 1 + audio_utilities::TimeToSampleFrame(max_delay_time, sample_rate,
+                                                audio_utilities::kRoundUp);
 }
 
 bool AudioDelayDSPKernel::HasSampleAccurateValues() {

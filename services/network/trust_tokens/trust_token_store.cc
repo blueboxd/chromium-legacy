@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
@@ -154,12 +155,12 @@ bool TrustTokenStore::SetAssociation(const url::Origin& issuer,
 
 void TrustTokenStore::PruneStaleIssuerState(
     const url::Origin& issuer,
-    const std::vector<TrustTokenKeyCommitment>& keys) {
+    const std::vector<mojom::TrustTokenVerificationKeyPtr>& keys) {
   DCHECK(!issuer.opaque());
   DCHECK([&keys]() {
     std::set<base::StringPiece> unique_keys;
     for (const auto& key : keys)
-      unique_keys.insert(base::StringPiece(key.key()));
+      unique_keys.insert(base::StringPiece(key->body));
     return unique_keys.size() == keys.size();
   }());
 
@@ -171,8 +172,8 @@ void TrustTokenStore::PruneStaleIssuerState(
   google::protobuf::RepeatedPtrField<TrustToken> filtered_tokens;
   for (auto& token : *config->mutable_tokens()) {
     if (std::any_of(keys.begin(), keys.end(),
-                    [&token](const TrustTokenKeyCommitment& key) {
-                      return key.key() == token.signing_key();
+                    [&token](const mojom::TrustTokenVerificationKeyPtr& key) {
+                      return key->body == token.signing_key();
                     }))
       *filtered_tokens.Add() = std::move(token);
   }

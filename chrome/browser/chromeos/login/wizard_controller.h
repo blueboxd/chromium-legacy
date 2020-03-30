@@ -209,8 +209,8 @@ class WizardController {
       DeviceSettingsService::OwnershipStatus status);
 
   // Shared actions to be performed on a screen exit.
-  // |exit_code| is the screen specific exit code reported by the screen.
-  void OnScreenExit(OobeScreenId screen, int exit_code);
+  // |exit_reason| is the screen specific exit reason reported by the screen.
+  void OnScreenExit(OobeScreenId screen, const std::string& exit_reason);
 
   // Exit handlers:
   void OnWrongHWIDScreenExit();

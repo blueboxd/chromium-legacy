@@ -24,7 +24,7 @@ if (enable_resource_whitelist_generation) {
       "$target_gen_dir/system_webview_pak_whitelist.txt"
 }
 
-if (public_android_sdk) {
+if (define_upstream_webview_targets) {
   template("standalone_system_webview_apk_tmpl") {
     system_webview_apk_or_module_tmpl(target_name) {
       forward_variables_from(invoker, "*")

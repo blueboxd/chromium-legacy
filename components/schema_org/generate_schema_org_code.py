@@ -53,10 +53,10 @@ def get_root_type(the_class, schema):
     # them specifically.
     if class_obj['@id'] == schema_org_id('URL'):
         return class_obj
-    if (class_obj.has_key('@type')
+    if ('@type' in class_obj
             and schema_org_id('DataType') in class_obj['@type']):
         return class_obj
-    if class_obj.has_key('rdfs:subClassOf'):
+    if 'rdfs:subClassOf' in class_obj:
         subclass = class_obj['rdfs:subClassOf']
         # All classes that use multiple inheritance are Thing type.
         if isinstance(subclass, list):
@@ -69,7 +69,7 @@ def parse_property(prop, schema):
     """Parse out details about the property, including what type it can be."""
     parsed_prop = {'name': object_name_from_id(prop['@id']), 'thing_types': []}
 
-    if not prop.has_key(schema_org_id('rangeIncludes')):
+    if not schema_org_id('rangeIncludes') in prop:
         return parsed_prop
 
     rangeIncludes = prop[schema_org_id('rangeIncludes')]

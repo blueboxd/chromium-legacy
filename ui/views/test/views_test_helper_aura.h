@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/views/test/views_test_helper.h"
 
@@ -20,6 +19,8 @@ class ViewsTestHelperAura : public ViewsTestHelper {
       base::OnceCallback<std::unique_ptr<TestViewsDelegate>()>;
 
   ViewsTestHelperAura();
+  ViewsTestHelperAura(const ViewsTestHelperAura&) = delete;
+  ViewsTestHelperAura& operator=(const ViewsTestHelperAura&) = delete;
   ~ViewsTestHelperAura() override;
 
   // ViewsTestHelper:
@@ -36,8 +37,6 @@ class ViewsTestHelperAura : public ViewsTestHelper {
  private:
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   TestViewsDelegateFactory factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewsTestHelperAura);
 };
 
 }  // namespace views

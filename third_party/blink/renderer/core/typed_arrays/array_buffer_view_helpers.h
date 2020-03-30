@@ -36,7 +36,7 @@ class NotShared {
   template <typename U, std::enable_if_t<std::is_base_of<T, U>::value, int> = 0>
   NotShared(const NotShared<U>& other) : typed_array_(other.Get()) {}
 
-  explicit NotShared(nullptr_t) {}
+  explicit NotShared(std::nullptr_t) {}
   explicit NotShared(T* typed_array) : typed_array_(typed_array) {
     DCHECK(!typed_array || !typed_array->IsShared());
   }
@@ -95,7 +95,7 @@ class MaybeShared {
   template <typename U, std::enable_if_t<std::is_base_of<T, U>::value, int> = 0>
   MaybeShared(const MaybeShared<U>& other) : typed_array_(other.Get()) {}
 
-  explicit MaybeShared(nullptr_t) {}
+  explicit MaybeShared(std::nullptr_t) {}
   // [AllowShared] array buffer view may be a view of non-shared array buffer,
   // so we don't check if the buffer is SharedArrayBuffer or not.
   // https://heycam.github.io/webidl/#AllowShared

@@ -11,10 +11,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/trust_tokens/types.h"
@@ -81,31 +81,27 @@ void TrustTokenRequestIssuanceHelper::Begin(
 void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
-    std::unique_ptr<TrustTokenKeyCommitmentResult> commitment_result) {
+    mojom::TrustTokenKeyCommitmentResultPtr commitment_result) {
   if (!commitment_result) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
     return;
   }
 
-  std::vector<TrustTokenKeyCommitment> obtained_commitments;
-
-  for (TrustTokenKeyCommitmentResult::Key& key : commitment_result->keys) {
-    if (!cryptographer_->AddKey(key.body)) {
+  for (const mojom::TrustTokenVerificationKeyPtr& key :
+       commitment_result->keys) {
+    if (!cryptographer_->AddKey(key->body)) {
       std::move(done).Run(
           mojom::TrustTokenOperationStatus::kFailedPrecondition);
       return;
     }
-
-    TrustTokenKeyCommitment to_store;
-    to_store.set_key(std::move(key.body));
-    to_store.set_expiry(internal::TimeToString(key.expiry));
-    obtained_commitments.emplace_back(std::move(to_store));
   }
 
-  token_store_->PruneStaleIssuerState(issuer_, std::move(obtained_commitments));
+  // Evict tokens signed with keys other than those from the issuer's most
+  // recent commitments.
+  token_store_->PruneStaleIssuerState(issuer_, commitment_result->keys);
 
   int batch_size = commitment_result->batch_size
-                       ? std::min(*commitment_result->batch_size,
+                       ? std::min(commitment_result->batch_size->value,
                                   kMaximumTrustTokenIssuanceBatchSize)
                        : kDefaultTrustTokenIssuanceBatchSize;
 

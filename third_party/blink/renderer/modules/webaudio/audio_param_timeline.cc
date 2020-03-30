@@ -694,7 +694,7 @@ bool AudioParamTimeline::HasValues(size_t current_frame,
 }
 
 void AudioParamTimeline::CancelScheduledValues(
-    double start_time,
+    double cancel_time,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -702,7 +702,21 @@ void AudioParamTimeline::CancelScheduledValues(
 
   // Remove all events starting at startTime.
   for (wtf_size_t i = 0; i < events_.size(); ++i) {
-    if (events_[i]->Time() >= start_time) {
+    // Removal all events whose event time (start) is greater than or
+    // equal to the cancel time.  And also handle the special case
+    // where the cancel time lies in the middle of a setValueCurve
+    // event.
+    //
+    // This critically depends on the fact that no event can be
+    // scheduled in the middle of the curve or at the same start time.
+    // Then removing the setValueCurve doesn't remove any events that
+    // shouldn't have been.
+    double start_time = events_[i]->Time();
+
+    if (start_time >= cancel_time ||
+        ((events_[i]->GetType() == ParamEvent::kSetValueCurve) &&
+         start_time <= cancel_time &&
+         (start_time + events_[i]->Duration() > cancel_time))) {
       RemoveCancelledEvents(i);
       break;
     }

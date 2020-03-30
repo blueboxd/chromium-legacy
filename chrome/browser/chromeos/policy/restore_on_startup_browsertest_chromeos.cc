@@ -5,10 +5,11 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/ui/browser.h"
@@ -36,9 +37,8 @@ class RestoreOnStartupTestChromeOS : public LoginPolicyTestBase {
 
   // LoginPolicyTestBase:
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  void LogInAndVerifyStartUpURLs();
+  void VerifyStartUpURLs();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupTestChromeOS);
@@ -57,15 +57,7 @@ void RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue(
   policy->Set(key::kRestoreOnStartupURLs, std::move(urls));
 }
 
-void RestoreOnStartupTestChromeOS::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  LoginPolicyTestBase::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-}
-
-void RestoreOnStartupTestChromeOS::LogInAndVerifyStartUpURLs() {
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
+void RestoreOnStartupTestChromeOS::VerifyStartUpURLs() {
   const BrowserList* const browser_list = BrowserList::GetInstance();
   ASSERT_EQ(1U, browser_list->size());
   const Browser* const browser = browser_list->get(0);
@@ -80,12 +72,17 @@ void RestoreOnStartupTestChromeOS::LogInAndVerifyStartUpURLs() {
 // Verify that the policies are honored on a new user's login.
 IN_PROC_BROWSER_TEST_F(RestoreOnStartupTestChromeOS, PRE_LogInAndVerify) {
   SkipToLoginScreen();
-  LogInAndVerifyStartUpURLs();
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  VerifyStartUpURLs();
 }
 
 // Verify that the policies are honored on an existing user's login.
 IN_PROC_BROWSER_TEST_F(RestoreOnStartupTestChromeOS, LogInAndVerify) {
-  LogInAndVerifyStartUpURLs();
+  ash::LoginScreenTestApi::SubmitPassword(AccountId::FromUserEmail(kAccountId),
+                                          kAccountPassword,
+                                          true /* check_if_submittable */);
+  chromeos::test::WaitForPrimaryUserSessionStart();
+  VerifyStartUpURLs();
 }
 
 }  // namespace policy

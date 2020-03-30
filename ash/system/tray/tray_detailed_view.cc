@@ -393,8 +393,9 @@ TriView* TrayDetailedView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
 
   views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
   image_view->SetImage(gfx::CreateVectorIcon(
-      icon, GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_ProminentButtonColor)));
+      icon, AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kIconPrimary,
+                AshColorProvider::AshColorMode::kDark)));
   header->AddView(TriView::Container::START, image_view);
 
   scroll_content_->AddChildView(header);

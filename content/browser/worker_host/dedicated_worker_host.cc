@@ -65,6 +65,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       coep_reporter_(std::move(coep_reporter)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(worker_process_host_);
+  DCHECK(worker_process_host_->IsInitializedAndNotDead());
   DCHECK(coep_reporter_);
 
   scoped_process_host_observer_.Add(worker_process_host_);
@@ -576,7 +577,8 @@ class DedicatedWorkerHostFactoryImpl final
     }
 
     auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-    if (!worker_process_host) {
+    if (!worker_process_host ||
+        !worker_process_host->IsInitializedAndNotDead()) {
       // Abort if the worker's process host is gone. This means that the calling
       // frame or worker is also either destroyed or in the process of being
       // destroyed.
@@ -623,7 +625,8 @@ class DedicatedWorkerHostFactoryImpl final
     // |script_url|, and report as bad message if that fails.
 
     auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-    if (!worker_process_host) {
+    if (!worker_process_host ||
+        !worker_process_host->IsInitializedAndNotDead()) {
       // Abort if the worker's process host is gone. This means that the calling
       // frame or worker is also either destroyed or in the process of being
       // destroyed.

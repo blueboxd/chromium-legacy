@@ -245,6 +245,11 @@ EndPositionInGraphicsLayerBacking(const SelectionInDOMTree& selection) {
 
 cc::LayerSelection ComputeLayerSelection(
     const FrameSelection& frame_selection) {
+  // TODO(https://crbug.com/1065049) - Implement layer selection for
+  // CompositeAfterPaint
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return {};
+
   if (!frame_selection.IsHandleVisible() || frame_selection.IsHidden())
     return {};
 

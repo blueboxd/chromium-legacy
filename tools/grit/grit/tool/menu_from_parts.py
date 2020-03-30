@@ -75,5 +75,5 @@ to being one message for the whole menu.'''
         if len(translation):
           translations.append([message.GetId(), ''.join(translation)])
 
-    with util.WrapOutputStream(open(output_file, 'w')) as f:
+    with util.WrapOutputStream(open(output_file, 'wb')) as f:
       transl2tc.TranslationToTc.WriteTranslations(f, translations)

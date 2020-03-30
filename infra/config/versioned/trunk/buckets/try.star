@@ -1,12 +1,11 @@
 load('//lib/builders.star', 'cpu', 'goma', 'os')
 load('//lib/try.star', 'try_')
-load('//versioned/vars/try.star', 'vars')
 # Load this using relative path so that the load statement doesn't
 # need to be changed when making a new milestone
-load('../vars.star', milestone_vars='vars')
+load('../vars.star', 'vars')
 
 luci.bucket(
-    name = vars.bucket.get(),
+    name = vars.try_bucket,
     acls = [
         acl.entry(
             roles = acl.BUILDBUCKET_READER,
@@ -33,13 +32,13 @@ luci.bucket(
 )
 
 luci.cq_group(
-    name = vars.cq_group.get(),
+    name = vars.cq_group,
     cancel_stale_tryjobs = True,
     retry_config = cq.RETRY_ALL_FAILURES,
-    tree_status_host = getattr(milestone_vars, 'tree_status_host', None),
+    tree_status_host = getattr(vars, 'tree_status_host', None),
     watch = cq.refset(
         repo = 'https://chromium.googlesource.com/chromium/src',
-        refs = [milestone_vars.cq_ref_regexp],
+        refs = [vars.cq_ref_regexp],
     ),
     acls = [
         acl.entry(
@@ -53,8 +52,8 @@ luci.cq_group(
     ],
 )
 
-try_.defaults.bucket.set(vars.bucket.get())
-try_.defaults.cq_group.set(vars.cq_group.get())
+try_.defaults.bucket.set(vars.try_bucket)
+try_.defaults.cq_group.set(vars.cq_group)
 
 
 # Builders are sorted first lexicographically by the function used to define

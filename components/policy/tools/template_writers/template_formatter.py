@@ -22,7 +22,7 @@ from writers import adm_writer, adml_writer, admx_writer, \
                     google_admx_writer, google_adml_writer, \
                     android_policy_writer, reg_writer, doc_writer, \
                     doc_atomic_groups_writer , json_writer, plist_writer, \
-                    plist_strings_writer, ios_app_config_writer
+                    plist_strings_writer, ios_app_config_writer, jamf_writer
 
 
 def MacLanguageMap(lang):
@@ -65,6 +65,7 @@ _WRITER_DESCS = [
     WriterDesc('json', False, 'utf-8', None, False),
     WriterDesc('plist', False, 'utf-8', None, False),
     WriterDesc('plist_strings', True, 'utf-8', MacLanguageMap, False),
+    WriterDesc('jamf', False, 'utf-8', None, False),
     WriterDesc('ios_app_config', False, 'utf-8', None, False),
 ]
 
@@ -184,6 +185,7 @@ def main():
   parser.add_argument('--json', action='append', dest='json')
   parser.add_argument('--plist', action='append', dest='plist')
   parser.add_argument('--plist_strings', action='append', dest='plist_strings')
+  parser.add_argument('--jamf', action='append', dest='jamf')
   parser.add_argument(
       '--android_policy', action='append', dest='android_policy')
   parser.add_argument(

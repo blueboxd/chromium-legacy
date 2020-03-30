@@ -44,7 +44,7 @@ TEST_F(CastDialogNoSinksViewTest, SwitchViews) {
   EXPECT_TRUE(looking_for_sinks_view()->GetVisible());
   EXPECT_FALSE(help_icon_view());
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(3));
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(3));
   // After three seconds, only the help icon view should be shown.
   EXPECT_FALSE(looking_for_sinks_view());
   EXPECT_TRUE(help_icon_view()->GetVisible());

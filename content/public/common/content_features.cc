@@ -814,7 +814,7 @@ const base::Feature kWebXrHitTest{"WebXRHitTest",
 const base::Feature kWebXrIncubations{"WebXRIncubations",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kWebXrPermissionsApi{"WebXrPermissionsApi",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.

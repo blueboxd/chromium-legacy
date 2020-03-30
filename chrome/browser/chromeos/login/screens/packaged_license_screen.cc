@@ -15,6 +15,16 @@ constexpr const char kUserActionDontEnrollButtonClicked[] = "dont-enroll";
 
 namespace chromeos {
 
+// static
+std::string PackagedLicenseScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::DONT_ENROLL:
+      return "DontEnroll";
+    case Result::ENROLL:
+      return "Enroll";
+  }
+}
+
 PackagedLicenseScreen::PackagedLicenseScreen(
     PackagedLicenseView* view,
     const ScreenExitCallback& exit_callback)

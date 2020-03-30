@@ -120,6 +120,8 @@ class ManagePasswordsUIController
       override;
   password_manager::ui::State GetState() const override;
   const autofill::PasswordForm& GetPendingPassword() const override;
+  const std::vector<autofill::PasswordForm>& GetUnsyncedCredentials()
+      const override;
   password_manager::metrics_util::CredentialSourceType GetCredentialSource()
       const override;
   const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()

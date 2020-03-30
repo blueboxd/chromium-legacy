@@ -748,8 +748,7 @@ public class CustomTabsConnection {
 
             // Attempt to verify origin synchronously. If successful directly initialize postMessage
             // channel for session.
-            Uri verifiedOrigin = verifyOriginForSession(session, uid,
-                    org.chromium.chrome.browser.browserservices.Origin.create(postMessageOrigin));
+            Uri verifiedOrigin = verifyOriginForSession(session, uid, postMessageOrigin);
             if (verifiedOrigin == null) {
                 mClientManager.verifyAndInitializeWithPostMessageOriginForSession(
                         session, postMessageOrigin, CustomTabsService.RELATION_USE_AS_ORIGIN);
@@ -772,12 +771,6 @@ public class CustomTabsConnection {
             CustomTabsSessionToken session, int clientUid, Origin origin) {
         if (clientUid == Process.myUid()) return Uri.EMPTY;
         return null;
-    }
-
-    // TODO(crbug.com/1058597): Delete this once Clank switches to the new Origin class.
-    protected Uri verifyOriginForSession(CustomTabsSessionToken session, int clientUid,
-            org.chromium.chrome.browser.browserservices.Origin origin) {
-        return verifyOriginForSession(session, clientUid, (Origin) origin);
     }
 
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {

@@ -48,6 +48,8 @@ std::string GetFetchIntegrityForWebURLRequest(
     const blink::WebURLRequest& request);
 blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
+network::mojom::RequestDestination GetRequestDestinationForWebURLRequest(
+    const blink::WebURLRequest& request);
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 

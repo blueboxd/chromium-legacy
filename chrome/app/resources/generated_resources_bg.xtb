@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">Добавяне на порт</translation>
 <translation id="1026822031284433028">Зареждане на изображението</translation>
 <translation id="1029317248976101138">Промяна на мащаба</translation>
-<translation id="1030706264415084469"><ph name="URL" /> иска да съхранява за постоянно голямо количество данни на устройството ви</translation>
 <translation id="1031362278801463162">Визуализацията се зарежда</translation>
 <translation id="1032605640136438169">Моля, прегледайте новите Условия</translation>
 <translation id="103279545524624934">Освободете място на диска, за да стартирате приложения за Android.</translation>
@@ -74,6 +73,7 @@
 <translation id="1093457606523402488">Видими мрежи:</translation>
 <translation id="1094607894174825014">Операция за четене или запис с невалидно отместване бе заявена на: <ph name="DEVICE_NAME" />.</translation>
 <translation id="1097658378307015415">Преди да влезете в профила си, моля, влезте като гост, за да активирате мрежата <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">Изображение, копирано от <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Не можахме да открием SIM картата ви</translation>
 <translation id="1108600514891325577">&amp;Стоп</translation>
@@ -532,7 +532,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (стандартно)</translation>
 <translation id="1709217939274742847">Изберете пропуск, който да използвате за удостоверяване. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">Пренасяне на тази парола на вашия iPhone</translation>
-<translation id="1712552549805331520"><ph name="URL" /> иска да съхранява за постоянно данни на локалния ви компютър</translation>
 <translation id="1714644264617423774">Активирайте функциите за достъпност, за да улесните използването на устройството си. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Сензори за движение</translation>
 <translation id="1718835860248848330">Последния час</translation>
@@ -560,6 +559,7 @@
 <translation id="1744108098763830590">фонова страница</translation>
 <translation id="1745520510852184940">Превеждане винаги</translation>
 <translation id="1750172676754093297">В ключа ви за сигурност не могат да се съхраняват отпечатъци</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> ще може да редактира файловете в(ъв) <ph name="FOLDERNAME" />, докато не затворите всички раздели със сайта</translation>
 <translation id="175196451752279553">По&amp;вторно отваряне на затворения раздел</translation>
 <translation id="1753067873202720523">Вашият Chromebook може да не се зарежда, докато е включен.</translation>
 <translation id="1753905327828125965">Ползвани</translation>
@@ -626,6 +626,7 @@
 <translation id="1822140782238030981">Вече сте потребител на Chrome? Влезте в профила си</translation>
 <translation id="18245044880483936">Данните в резервното копие не се отчитат в квотата на хранилището на детето ви в Диск.</translation>
 <translation id="1826516787628120939">Извършва се проверка</translation>
+<translation id="1827738518074806965">Художествена галерия</translation>
 <translation id="1828378091493947763">Тази приставка не се поддържа на устройството</translation>
 <translation id="1828901632669367785">Печат чрез системния диалогов прозорец...</translation>
 <translation id="1829129547161959350">Пингвин</translation>
@@ -746,7 +747,6 @@
 <translation id="1992397118740194946">Няма зададен</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="1995916364271252349">Контролира каква информация могат да използват и показват сайтовете (местоположение, камера, изскачащи прозорци и др.)</translation>
-<translation id="1997484222658892567"><ph name="URL" /> иска да съхранява за постоянно голямо количество данни на локалния ви компютър</translation>
 <translation id="1997616988432401742">Вашите сертификати</translation>
 <translation id="1999115740519098545">При стартиране</translation>
 <translation id="2000419248597011803">Изпраща някои „бисквитки“ и заявките за търсене от адресната лента и полето за търсене до стандартната ви търсеща машина</translation>
@@ -1007,7 +1007,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> иска да се сдвои</translation>
 <translation id="2342740338116612727">Отметките бяха добавени</translation>
 <translation id="2343747224442182863">Фокус върху този раздел</translation>
-<translation id="2344028582131185878">Автоматични изтегляния</translation>
 <translation id="2345723121311404059">1 страница до „<ph name="PRINTER_NAME" />“</translation>
 <translation id="2346953515226895098">Услуга SODA</translation>
 <translation id="2347644257713614136">Използването на Hangouts и Cast for Education се урежда от Декларацията за поверителност на Google.</translation>
@@ -1029,6 +1028,7 @@
 <translation id="2359808026110333948">Напред</translation>
 <translation id="236117173274098341">Оптимизиране</translation>
 <translation id="236141728043665931">Достъпът до микрофона да се блокира винаги</translation>
+<translation id="2364498172489649528">Премината</translation>
 <translation id="2365507699358342471">Този сайт може да преглежда текста и изображенията, копирани в буферната памет.</translation>
 <translation id="2366260648632264559">Показване на системния текст на този език</translation>
 <translation id="2367972762794486313">Показване на приложенията</translation>
@@ -1343,6 +1343,7 @@
 <translation id="2762441749940182211">Достъпът до камерата е блокиран</translation>
 <translation id="2765217105034171413">Малък</translation>
 <translation id="2766161002040448006">Питане на родител</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> ще може да редактира <ph name="FILENAME" />, докато не затворите всички раздели със сайта</translation>
 <translation id="276969039800130567">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Премахване от списъка</translation>
 <translation id="2770690685823456775">Експортирайте паролите си в друга папка.</translation>
@@ -1659,7 +1660,6 @@
 <translation id="3188465121994729530">Пълзяща средна стойност</translation>
 <translation id="3190558889382726167">Паролата бе запазена</translation>
 <translation id="3192947282887913208">Аудиофайлове</translation>
-<translation id="3194737229810486521"><ph name="URL" /> иска да съхранява за постоянно данни на устройството ви</translation>
 <translation id="3199127022143353223">Сървъри</translation>
 <translation id="3200941271596533635">Превключване на режима за четене</translation>
 <translation id="3201306578844503970">Виртуалната машина не бе инсталирана поради грешка в мрежата. Моля, опитайте отново или се свържете с администратора на устройства за организацията си. Код на грешката: <ph name="ERROR_CODE" />.</translation>
@@ -1668,6 +1668,18 @@
 <translation id="3202173864863109533">Звукът на този раздел е спрян.</translation>
 <translation id="3208321278970793882">Приложение</translation>
 <translation id="3208584281581115441">Проверка сега</translation>
+<translation id="3208640652501208439">Възможно е ресурсите за заданията от училище да не са налични или да не се зареждат автоматично
+    Детето ви може да няма достъп до:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />приложенията и разширенията, инсталирани от учебното заведение;
+      <ph name="LIST_ITEM" />отметките от учебен Chromebook;
+      <ph name="LIST_ITEM" />автоматичното попълване на пароли за образователни сайтове.
+    <ph name="END_LIST" />
+    За да получи пълната функционалност за обучение на това устройство, детето ви трябва да направи следното:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />да излезе от профила си, управляван чрез Family Link;
+      <ph name="OLIST_ITEM" />да влезе в профила си в G Suite for Education от екрана за вход. Това означава, че правилата от учебното заведение, включително настройките за достъп до приложения и уебсайтове, ще заменят избраните от вас функции на Family Link за контролиране (например училищните администратори може да разрешат достъпа до YouTube, ако е необходим за домашните работи, ограниченията за времето на ползване няма да са активни и др.)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Непотвърдено</translation>
 <translation id="32101887417650595">Не може да се установи връзка с принтера</translation>
 <translation id="321084946921799184">Жълто и бяло</translation>
@@ -1746,6 +1758,7 @@
 <translation id="3312424061798279731">Активирани езици</translation>
 <translation id="3313622045786997898">Стойност на подписа на сертификата</translation>
 <translation id="3315158641124845231">Скриване на <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Информация за училищния профил за родители</translation>
 <translation id="3317459757438853210">Двустранно</translation>
 <translation id="3317678681329786349">Достъпът до камерата и микрофона е блокиран</translation>
 <translation id="3319048459796106952">Нов &amp;прозорец в режим „инкогнито“</translation>
@@ -1932,6 +1945,7 @@
 <translation id="3574210789297084292">вход</translation>
 <translation id="3574917942258583917">Да се излезе ли от режим „инкогнито“ въпреки това?</translation>
 <translation id="3575121482199441727">Разрешаване за този сайт</translation>
+<translation id="3575919114596668130">Родителските настройки във Family Link продължават да важат. Ако сте блокирали приложение или сайт, няма нужда да го правите отново.</translation>
 <translation id="3576324189521867626">Инсталирането бе успешно</translation>
 <translation id="3578594933904494462">Съдържанието на този раздел се споделя.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; иска да сподели принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; с притежавана от вас група: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако приемете, всичките й членове ще могат да отпечатват с него.</translation>
@@ -2774,6 +2788,7 @@
 <translation id="4689235506267737042">Изберете предпочитанията си за демонстрацията</translation>
 <translation id="4689421377817139245">Синхронизирайте тази отметка със своя iPhone</translation>
 <translation id="4690091457710545971">&lt;Фърмуерът на Intel за Wi-Fi генерира четири файла: csr.lst, fh_regs.lst, radio_reg.lst и monitor.lst.sysmon. Първите три са двоични файлове с копия на данни от системния регистър и според Intel не съдържат лични данни или информация, идентифицираща устройството. Последният е файл за трасиране на изпълнението от фърмуера на Intel. Личните данни и идентифициращата устройството информация са премахнати от него, но той е твърде голям, за да бъде показан тук. Тези файлове са генерирани поради скорошните проблеми с Wi-Fi на устройството ви и ще бъдат споделени с Intel с цел по-лесното им отстраняване.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> ще може да преглежда <ph name="FILENAME" />, докато не затворите всички раздели със сайта</translation>
 <translation id="4692623383562244444">Търсещи машини</translation>
 <translation id="4693155481716051732">Суши</translation>
 <translation id="4694024090038830733">Конфигурирането на принтери се управлява от администратора.</translation>
@@ -3129,6 +3144,7 @@
 <translation id="5204967432542742771">Въведете парола</translation>
 <translation id="5206215183583316675">Да се изтрие ли „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="520621735928254154">Грешка при импортирането на сертификата</translation>
+<translation id="5209307736170827035">Данните на детето ви в Classroom ще бъдат защитени. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Няма намерени устройства</translation>
 <translation id="5210990770352357081">Приставката Plugin VM не бе деинсталирана</translation>
 <translation id="5213481667492808996">Услугата ви за данни „<ph name="NAME" />“ е готова за използване</translation>
@@ -3240,6 +3256,7 @@
 <translation id="5341980496415249280">Моля, изчакайте. Пакетирането е в ход...</translation>
 <translation id="5342091991439452114">ПИН кодът трябва да съдържа поне <ph name="MINIMUM" /> цифри</translation>
 <translation id="5344036115151554031">Linux се възстановява</translation>
+<translation id="535123479159372765">Текст, копиран от друго устройство</translation>
 <translation id="5352033265844765294">Поставяне на времево клеймо</translation>
 <translation id="5353252989841766347">Експортиране на пароли от Chrome</translation>
 <translation id="5355099869024327351">Разрешаване на Асистент да ви показва известия</translation>
@@ -3362,6 +3379,7 @@
 <translation id="5511379779384092781">Много нисък</translation>
 <translation id="5511823366942919280">Наистина ли искате да настроите това устройство като Shark?</translation>
 <translation id="5512653252560939721">Потребителският сертификат трябва да бъде с хардуерна поддръжка.</translation>
+<translation id="5515923816438946203">Изберете какво да се показва на екрана</translation>
 <translation id="5517304475148761050">Това приложение изисква достъп до Google Play Магазин</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Принтерът се добавя в профила ви. Това може да отнеме известно време...</translation>
@@ -3813,6 +3831,7 @@
 <translation id="6097480669505687979">Ако не освободите място, може да последва автоматично премахване на потребители и данни.</translation>
 <translation id="6097600385983390082">Гласовото търсене бе затворено</translation>
 <translation id="6098793583803863900">Неизвестен файл се сканира за опасно съдържание.</translation>
+<translation id="609942571968311933">Текст, копиран от <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Меню „Старт“</translation>
 <translation id="6101226222197207147">Бе добавено ново приложение (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Този файл бе блокиран от функцията за разширена защита.</translation>
@@ -3996,7 +4015,6 @@
 <translation id="6349101878882523185">Инсталиране на <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Синхронизирането не работи. Опитайте да излезете от профила си и отново да влезете в него.</translation>
 <translation id="6351063337294363751">Можете да изчистите данните за сърфирането си от това меню</translation>
-<translation id="6352223293513723497">Мястото в хранилището на устройството ви е малко. Моля, освободете място, за да използвате Plugin VM.</translation>
 <translation id="6352773953037195952">Най-висока</translation>
 <translation id="6354918092619878358">Елиптична крива secp256r1 по SECG (позната и като ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Не изключвайте устройството</translation>
@@ -4184,6 +4202,7 @@
 <translation id="6612358246767739896">Защитено съдържание</translation>
 <translation id="6615455863669487791">Покажете ми</translation>
 <translation id="6618097958368085618">Запазване въпреки това</translation>
+<translation id="6618744767048954150">В ход</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Сайтът може да следи местоположението ви</translation>
 <translation id="6619801788773578757">Добавяне на павилионно приложение</translation>
@@ -4569,6 +4588,7 @@
 <translation id="7131040479572660648">Четене на данните ви от <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Добавяне на &amp;страница...</translation>
 <translation id="7133578150266914903">Администраторът ви връща това устройство към по-ранна версия (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" /> от <ph name="TOTAL" /> пароли са проверени…</translation>
 <translation id="7134098520442464001">Шрифтът на текста се смалява</translation>
 <translation id="7135729336746831607">Да се включи ли Bluetooth?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> изисква незабавно да актуализирате устройството си <ph name="DEVICE_TYPE" />.</translation>
@@ -4917,6 +4937,7 @@
 <translation id="761530003705945209">Създаване на резервно копие в Google Диск. По всяко време можете лесно да възстановите данните на устройството си или да го замените с друго. Резервното ви копие включва данните от приложенията. Резервните ви копия се качват в Google и се шифроват посредством паролата за профила ви в Google.</translation>
 <translation id="7616214729753637086">Устройството се регистрира...</translation>
 <translation id="7617366389578322136">Свързване със: <ph name="DEVICE_NAME" /></translation>
+<translation id="761763866592998929">Режим на фон</translation>
 <translation id="762068974690945752">Добавете профил от учебно заведение или управлявайте профилите на деца оттук. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Системата не успя да запази конфигурацията на устройството.</translation>
 <translation id="7622114377921274169">Зарежда се.</translation>
@@ -4940,7 +4961,6 @@
 <translation id="7645681574855902035">Създаването на резервно копие на Linux се анулира</translation>
 <translation id="7646772052135772216">Синхронизирането на паролите не работи.</translation>
 <translation id="7647403192093989392">Няма скорошна активност</translation>
-<translation id="7648992873808071793">Да съхранява файлове на това устройство.</translation>
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7650511557061837441"><ph name="TRIGGERING_EXTENSION_NAME" /> иска да премахне <ph name="EXTENSION_NAME" />.</translation>
 <translation id="7652808307838961528">Редактиране на подстраницата за човека, <ph name="PROFILE_NAME" /></translation>
@@ -5029,6 +5049,7 @@
 <translation id="7766838926148951335">Приемам разрешенията</translation>
 <translation id="7768770796815395237">Промяна</translation>
 <translation id="7769672763586021400">Идент. № на модела</translation>
+<translation id="7770612696274572992">Изображение, копирано от друго устройство</translation>
 <translation id="7770651108375708429">Прекратяване на връзката с Wi-Fi</translation>
 <translation id="7771452384635174008">Ориентация</translation>
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
@@ -5036,6 +5057,7 @@
 <translation id="7772773261844472235">Проверка на състоянието на вашия Chromebook</translation>
 <translation id="7773726648746946405">Хранилище за сесията</translation>
 <translation id="7774365994322694683">Птица</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> ще може да преглежда файловете в(ъв) <ph name="FOLDERNAME" />, докато не затворите всички раздели със сайта</translation>
 <translation id="7776701556330691704">Няма намерени гласове</translation>
 <translation id="7780252971640011240">Има проблеми със свързването. Моля, обърнете се към оператора си за съдействие.</translation>
 <translation id="7781335840981796660">Всички профили на потребители и локални данни ще бъдат премахнати.</translation>
@@ -6055,6 +6077,7 @@
 <translation id="9055636786322918818">Задължително прилагане на RC4 шифроване. Използването на тази опция увеличава риска, тъй като шифрите RC4 са несигурни.</translation>
 <translation id="9056810968620647706">Няма намерени съответствия.</translation>
 <translation id="9057354806206861646">График на актуализациите</translation>
+<translation id="9058976525724291037">Детето ви иска да добави друг профил в Google към това устройство. Към устройствата, управлявани от Family Link, могат да се добавят само профили в G Suite for Education.</translation>
 <translation id="9062065967472365419">Изненадайте ме</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Грешка от ред <ph name="ERROR_LINE_START" /> до ред <ph name="ERROR_LINE_END" /></translation>

@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">新增連接埠</translation>
 <translation id="1026822031284433028">載入圖片</translation>
 <translation id="1029317248976101138">放大</translation>
-<translation id="1030706264415084469"><ph name="URL" /> 要求在您的裝置上永久儲存大量數據</translation>
 <translation id="1031362278801463162">正在載入預覽畫面</translation>
 <translation id="1032605640136438169">請閱讀新版條款</translation>
 <translation id="103279545524624934">請釋出磁碟的儲存空間，以啟動 Android 應用程式。</translation>
@@ -535,7 +534,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (原生)</translation>
 <translation id="1709217939274742847">選擇用作驗證的票證。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">在 iPhone 上取得此密碼</translation>
-<translation id="1712552549805331520"><ph name="URL" /> 要求在您的本機電腦上永久儲存數據</translation>
 <translation id="1714644264617423774">啟用無障礙功能，讓您使用裝置更輕鬆。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">動作感應器</translation>
 <translation id="1718835860248848330">過去一小時</translation>
@@ -749,7 +747,6 @@
 <translation id="1992397118740194946">未設定</translation>
 <translation id="1994173015038366702">網站網址</translation>
 <translation id="1995916364271252349">控制網站可使用和顯示的資料 (位置、攝錄機和彈出式視窗等等)</translation>
-<translation id="1997484222658892567"><ph name="URL" /> 要求在您的本機電腦上永久儲存大量數據</translation>
 <translation id="1997616988432401742">您的憑證</translation>
 <translation id="1999115740519098545">起始螢幕</translation>
 <translation id="2000419248597011803">將部分 Cookie，以及網址列和搜尋框中的搜尋內容傳送至預設搜尋引擎</translation>
@@ -1010,7 +1007,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> 要求與下列藍牙裝置配對</translation>
 <translation id="2342740338116612727">加咗書籤</translation>
 <translation id="2343747224442182863">將焦點移至此分頁</translation>
-<translation id="2344028582131185878">自動下載</translation>
 <translation id="2345723121311404059">將 1 頁傳送至「<ph name="PRINTER_NAME" />」列印</translation>
 <translation id="2346953515226895098">SODA 服務</translation>
 <translation id="2347644257713614136">Hangouts 和 Cast for Education 的使用受《Google 私隱權政策》管限。</translation>
@@ -1660,7 +1656,6 @@
 <translation id="3188465121994729530">移動平均</translation>
 <translation id="3190558889382726167">密碼已儲存</translation>
 <translation id="3192947282887913208">音效檔案</translation>
-<translation id="3194737229810486521"><ph name="URL" /> 要求在您的裝置上永久儲存數據</translation>
 <translation id="3199127022143353223">伺服器</translation>
 <translation id="3200941271596533635">切換閱讀器模式</translation>
 <translation id="3201306578844503970">網絡發生錯誤，因此無法安裝虛擬機器。請再試一次，或與您機構的裝置管理員聯絡。錯誤代碼：<ph name="ERROR_CODE" />。</translation>
@@ -3994,7 +3989,6 @@
 <translation id="6349101878882523185">安裝 <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">同步處理功能無法正常運作，請嘗試登出並重新登入。</translation>
 <translation id="6351063337294363751">您可以從這個選單清除您的瀏覽資料</translation>
-<translation id="6352223293513723497">裝置的儲存空間即將用完。請釋出空間，以便使用 Plugin VM。</translation>
 <translation id="6352773953037195952">最高</translation>
 <translation id="6354918092619878358">SECG 橢圓曲線 secp256r1 (亦稱為 ANSI X9.62 prime256v1、NIST P-256)</translation>
 <translation id="635609604405270300">保持裝置開啟</translation>
@@ -4938,7 +4932,6 @@
 <translation id="7645681574855902035">正在取消 Linux 備份</translation>
 <translation id="7646772052135772216">密碼同步功能無法正常運作</translation>
 <translation id="7647403192093989392">最近沒有任何活動</translation>
-<translation id="7648992873808071793">在此裝置上存放檔案</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7650511557061837441">「<ph name="TRIGGERING_EXTENSION_NAME" />」要求移除「<ph name="EXTENSION_NAME" />」。</translation>
 <translation id="7652808307838961528">編輯使用者、<ph name="PROFILE_NAME" /></translation>

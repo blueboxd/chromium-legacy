@@ -79,7 +79,7 @@ cr.define('settings', function() {
    * components/content_settings/core/browser/cookie_settings.h
    * @enum {number}
    */
-  const CookieControlsMode = {
+  /* #export */ const CookieControlsMode = {
     DISABLED: 0,
     ENABLED: 1,
     INCOGNITO_ONLY: 2,

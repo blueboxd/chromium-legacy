@@ -99,6 +99,9 @@ class SafetyCheckHandler
  private:
   // These ensure integers are passed in the correct possitions in the extension
   // check methods.
+  using Compromised = util::StrongAlias<class CompromisedTag, int>;
+  using Done = util::StrongAlias<class DoneTag, int>;
+  using Total = util::StrongAlias<class TotalTag, int>;
   using Blocklisted = util::StrongAlias<class BlocklistedTag, int>;
   using ReenabledUser = util::StrongAlias<class ReenabledUserTag, int>;
   using ReenabledAdmin = util::StrongAlias<class ReenabledAdminTag, int>;
@@ -135,7 +138,10 @@ class SafetyCheckHandler
                            int64_t update_size,
                            const base::string16& message);
   void OnSafeBrowsingCheckResult(SafeBrowsingStatus status);
-  void OnPasswordsCheckResult(PasswordsStatus status, int num_compromised);
+  void OnPasswordsCheckResult(PasswordsStatus status,
+                              Compromised compromised,
+                              Done done,
+                              Total total);
   void OnExtensionsCheckResult(ExtensionsStatus status,
                                Blocklisted blocklisted,
                                ReenabledUser reenabled_user,
@@ -146,7 +152,9 @@ class SafetyCheckHandler
   base::string16 GetStringForUpdates(UpdateStatus status);
   base::string16 GetStringForSafeBrowsing(SafeBrowsingStatus status);
   base::string16 GetStringForPasswords(PasswordsStatus status,
-                                       int num_compromised);
+                                       Compromised compromised,
+                                       Done done,
+                                       Total total);
   base::string16 GetStringForExtensions(ExtensionsStatus status,
                                         Blocklisted blocklisted,
                                         ReenabledUser reenabled_user,

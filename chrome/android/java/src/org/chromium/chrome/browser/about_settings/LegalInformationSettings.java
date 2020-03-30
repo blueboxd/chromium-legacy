@@ -9,7 +9,7 @@ import android.os.Bundle;
 import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.SettingsUtils;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 
 /**
  * Fragment to display legal information about Chrome.

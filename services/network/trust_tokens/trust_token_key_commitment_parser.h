@@ -8,11 +8,10 @@
 #include <memory>
 
 #include "base/strings/string_piece_forward.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_controller.h"
 
 namespace network {
-
-struct TrustTokenKeyCommitmentResult;
 
 // Field names from the key commitment JSON format specified in the Trust Tokens
 // design doc
@@ -45,7 +44,7 @@ class TrustTokenKeyCommitmentParser
   //   (|kTrustTokenKeyCommitmentKeyField|), and
   //   - the expiry field is a positive integer (microseconds since the Unix
   //   epoch) storing a time in the future.
-  std::unique_ptr<TrustTokenKeyCommitmentResult> Parse(
+  mojom::TrustTokenKeyCommitmentResultPtr Parse(
       base::StringPiece response_body) override;
 };
 

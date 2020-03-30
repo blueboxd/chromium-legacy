@@ -576,10 +576,6 @@ external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-br
 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Pass Failure ]
 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-width-height.html [ Pass Failure ]
 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ] # wpt_subtest_failure
-external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting-dedicated-worker.https.html [ Timeout ]
-external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting-document.https.html [ Timeout ] # wpt_subtest_failure
-external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting-service-worker.https.html [ Timeout ] # wpt_subtest_failure
-external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting-shared-worker.https.html [ Timeout ] # wpt_subtest_failure
 external/wpt/html/cross-origin-embedder-policy/coep-frame-javascript.https.html [ Pass Timeout ] # wpt_subtest_failure
 external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Pass Timeout ] # wpt_subtest_failure
 external/wpt/html/cross-origin-embedder-policy/reporting.https.html [ Pass Failure ] # wpt_subtest_failure
@@ -677,8 +673,8 @@ external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import
 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-classic.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-module.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure Pass ] # wpt_subtest_failure
-external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/html/user-activation/activation-api-iframe.tentative.html [ Pass Failure ] # wpt_subtest_failure
+external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure ]
+external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click-two-child-frames.sub.tentative.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure Pass ] # wpt_subtest_failure

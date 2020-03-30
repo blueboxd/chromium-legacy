@@ -14,7 +14,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -67,6 +66,7 @@ class WidgetDelegate;
 namespace ash {
 
 class AppListTestHelper;
+class AshTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
 class TestShellDelegate;
@@ -221,7 +221,7 @@ class AshTestBase : public testing::Test {
     return task_environment_.get();
   }
   TestingPrefServiceSimple* local_state() { return &local_state_; }
-  AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
+  AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
   TestScreenshotDelegate* GetScreenshotDelegate();
 
@@ -299,8 +299,8 @@ class AshTestBase : public testing::Test {
   // A pref service used for local state.
   TestingPrefServiceSimple local_state_;
 
-  // Must be constructed after |task_environment_| but before SetUp().
-  AshTestHelper ash_test_helper_;
+  // Must be constructed after |task_environment_|.
+  std::unique_ptr<AshTestHelper> ash_test_helper_;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 

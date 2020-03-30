@@ -7,6 +7,7 @@
 <translation id="1019413721762100891">Joaktive</translation>
 <translation id="1021110881106174305">Kartat e pranuara</translation>
 <translation id="1021753677514347426">Ky problem ndodh për shkak të një certifikate që instalove ti ose dikush tjetër në pajisjen tënde. Certifikata njihet se është përdorur për të monitoruar dhe ndërhyrë në rrjete dhe nuk është e besuar nga Chromium. Megjithëse ekzistojnë disa raste legjitime për monitorimin, si p.sh. një rrjet shkolle ose kompanie, Chromium dëshiron të sigurohet që je në dijeni se kjo ndodh, edhe nëse nuk arrin ta ndalosh. Monitorimi mund të ndodhë në çdo shfletues ose aplikacion që ka qasje në ueb.</translation>
+<translation id="1030706264415084469"><ph name="URL" /> do të ruajë në mënyrë të përhershme të dhëna të mëdha në pajisjen tënde</translation>
 <translation id="1032854598605920125">Rrotullo në drejtim të akrepave të orës</translation>
 <translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1038842779957582377">emër i panjohur</translation>
@@ -179,6 +180,7 @@
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706954506755087368">{1,plural, =1{Ky server nuk mund të vërtetonte se është <ph name="DOMAIN" />; certifikata e tij e sigurisë supozohet se është nga dita e nesërme. Kjo mund të jetë shkaktuar nga një konfigurim i gabuar ose nga ndërhyrja e një sulmuesi në lidhjen tënde.}other{ky server nuk mund të vërtetonte se është <ph name="DOMAIN" />; certifikata e tij e sigurisë supozohet se është nga # ditë në të ardhmen. Kjo mund të jetë shkaktuar nga një konfigurim i gabuar ose nga ndërhyrja e një sulmuesi në lidhjen tënde.}}</translation>
 <translation id="1710259589646384581">Sistemi operativ</translation>
+<translation id="1712552549805331520"><ph name="URL" /> kërkon të ruajë të dhëna në mënyrë të përhershme në kompjuterin tënd lokal</translation>
 <translation id="1713628304598226412">Tabakaja 2</translation>
 <translation id="1715874602234207">F</translation>
 <translation id="1717494416764505390">Kutia postare 3</translation>
@@ -246,6 +248,7 @@
 Dëshiron ta lejosh <ph name="EMBEDDED_URL" /> të përdorë kukit dhe të dhënat e sajtit në <ph name="TOP_LEVEL_URL" />?
 
 Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta lejojë përmbajtjen me të cilën ndërveprove që të funksionojë në rregull, por mund të lejojë që <ph name="EMBEDDED_URL" /> të monitorojë aktivitetin tënd.</translation>
+<translation id="1997484222658892567"><ph name="URL" /> kërkon të ruajë të dhëna të mëdha në mënyrë të përhershme në kompjuterin tënd lokal</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{dhe 1 tjetër}other{dhe # të tjera}}</translation>
 <translation id="2003709556000175978">Rivendos fjalëkalimin tënd tani</translation>
 <translation id="2003775180883135320">Katër shpime lart</translation>
@@ -322,6 +325,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2317259163369394535"><ph name="DOMAIN" /> kërkon një emër përdoruesi dhe një fjalëkalim.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, skadon më <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Cilësim i kontrolluar nga administratori yt</translation>
+<translation id="2344028582131185878">Shkarkimet automatike</translation>
 <translation id="2346319942568447007">Imazhi që kopjove</translation>
 <translation id="2354001756790975382">Faqeshënues të tjerë</translation>
 <translation id="2354430244986887761">"Shfletimi i sigurt i Google" zbuloi së fundi <ph name="BEGIN_LINK" />aplikacione të dëmshme<ph name="END_LINK" /> në <ph name="SITE" />.</translation>
@@ -504,6 +508,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
           se duhet të përdorësh një server përfaqësues:
           <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3188393374551744535">Balanca e llogarisë</translation>
+<translation id="3194737229810486521"><ph name="URL" /> kërkon të ruajë në mënyrë të përhershme të dhëna në pajisjen tënde</translation>
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> në <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Anulo pagesën</translation>
 <translation id="3207960819495026254">Regjistruar në faqeshënues</translation>
@@ -724,7 +729,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4152318981910038897">{COUNT,plural, =1{Faqja 1}other{Faqja {COUNT}}}</translation>
 <translation id="4154664944169082762">Gjurmë gishtash</translation>
 <translation id="4159784952369912983">Vjollcë</translation>
-<translation id="4163132590327127354">Chrome e ka thjeshtuar këtë faqe për ta bërë më të lehtë për t'u lexuar.</translation>
 <translation id="4165986682804962316">Cilësimet e sajtit</translation>
 <translation id="4171400957073367226">Nënshkrim vërtetimi i gabuar</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1542,6 +1546,7 @@ Detaje shtesë:
 <translation id="7638605456503525968">Portat seriale</translation>
 <translation id="7639968568612851608">Gri e errët</translation>
 <translation id="7647206758853451655">Cilësia e printimit</translation>
+<translation id="7648992873808071793">Ruaji skedarët në këtë pajisje</translation>
 <translation id="7653957176542370971">Fleta e përpunuesit të pagesës është mbyllur</translation>
 <translation id="765676359832457558">Fshih cilësimet e përparuara...</translation>
 <translation id="7658239707568436148">Anulo</translation>

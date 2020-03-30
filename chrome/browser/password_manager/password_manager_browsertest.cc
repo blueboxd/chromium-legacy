@@ -24,6 +24,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -438,6 +439,23 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       SignOutWithUnsyncedPasswords) {
+  std::vector<autofill::PasswordForm> credentials(1);
+  credentials[0].username_value = base::ASCIIToUTF16("unsynced_login");
+  credentials[0].password_value = base::ASCIIToUTF16("unsynced_password");
+  // TODO(crbug.com/1060132): Stop triggering the notifier directly once the
+  // full flow is available.
+  PasswordStoreSigninNotifierImpl notifier(browser()->profile());
+  notifier.NotifyUISignoutWillDeleteCredentials(credentials);
+  EXPECT_EQ(ManagePasswordsUIController::FromWebContents(WebContents())
+                ->GetUnsyncedCredentials(),
+            credentials);
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForDynamicForm) {
   // Adding a PSL matching form is a workaround explained later.

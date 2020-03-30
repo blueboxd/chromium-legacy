@@ -33,8 +33,8 @@ class TestFocusClient : public client::FocusClient,
   void OnWindowDestroying(Window* window) override;
 
   Window* root_window_;
-  Window* focused_window_;
-  ScopedObserver<Window, WindowObserver> observer_manager_;
+  Window* focused_window_ = nullptr;
+  ScopedObserver<Window, WindowObserver> observer_manager_{this};
   base::ObserverList<aura::client::FocusChangeObserver>::Unchecked
       focus_observers_;
 

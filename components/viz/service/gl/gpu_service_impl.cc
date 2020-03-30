@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -101,9 +102,45 @@ namespace viz {
 
 namespace {
 
-static base::LazyInstance<base::RepeatingCallback<
-    void(int severity, size_t message_start, const std::string& message)>>::
-    Leaky g_log_callback = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::RepeatingCallback<void(
+    int severity,
+    const std::string& header,
+    const std::string& message)>>::Leaky g_log_callback =
+    LAZY_INSTANCE_INITIALIZER;
+
+bool GpuLogMessageHandler(int severity,
+                          const char* file,
+                          int line,
+                          size_t message_start,
+                          const std::string& message) {
+  g_log_callback.Get().Run(severity, message.substr(0, message_start),
+                           message.substr(message_start));
+  return false;
+}
+
+struct LogMessage {
+  LogMessage(int severity,
+             const std::string& header,
+             const std::string& message)
+      : severity(severity),
+        header(std::move(header)),
+        message(std::move(message)) {}
+  const int severity;
+  const std::string header;
+  const std::string message;
+};
+
+std::vector<LogMessage>* GetDeferredLogMessages() {
+  static base::NoDestructor<std::vector<LogMessage>> deferred_messages;
+  return deferred_messages.get();
+}
+
+void PreInitializeGlobalLogCallback(int severity,
+                                    const std::string& header,
+                                    const std::string& message) {
+  GetDeferredLogMessages()->emplace_back(severity, std::move(header),
+                                         std::move(message));
+}
 
 bool IsAcceleratedJpegDecodeSupported() {
 #if defined(OS_CHROMEOS)
@@ -112,15 +149,6 @@ bool IsAcceleratedJpegDecodeSupported() {
 #else
   return false;
 #endif  // defined(OS_CHROMEOS)
-}
-
-bool GpuLogMessageHandler(int severity,
-                          const char* file,
-                          int line,
-                          size_t message_start,
-                          const std::string& message) {
-  g_log_callback.Get().Run(severity, message_start, message);
-  return false;
 }
 
 // Returns a callback which does a PostTask to run |callback| on the |runner|
@@ -325,6 +353,9 @@ void GpuServiceImpl::InitializeWithHost(
     g_log_callback.Get() = base::BindRepeating(
         &GpuServiceImpl::RecordLogMessage, base::Unretained(this));
     logging::SetLogMessageHandler(GpuLogMessageHandler);
+
+    // Flush any log messages that may have occurred before we took over.
+    FlushPreInitializeLogMessages(gpu_host_.get());
   }
 
   if (!sync_point_manager) {
@@ -404,13 +435,25 @@ gpu::ImageFactory* GpuServiceImpl::gpu_image_factory() {
              : nullptr;
 }
 
+// static
+void GpuServiceImpl::InstallPreInitializeLogHandler() {
+  g_log_callback.Get() = base::BindRepeating(&PreInitializeGlobalLogCallback);
+  logging::SetLogMessageHandler(GpuLogMessageHandler);
+}
+
+// static
+void GpuServiceImpl::FlushPreInitializeLogMessages(mojom::GpuHost* gpu_host) {
+  std::vector<LogMessage>& log_messages = *GetDeferredLogMessages();
+  for (const auto& log : log_messages)
+    gpu_host->RecordLogMessage(log.severity, log.header, log.message);
+  log_messages.clear();
+}
+
 void GpuServiceImpl::RecordLogMessage(int severity,
-                                      size_t message_start,
-                                      const std::string& str) {
+                                      const std::string& header,
+                                      const std::string& message) {
   // This can be run from any thread.
-  std::string header = str.substr(0, message_start);
-  std::string message = str.substr(message_start);
-  gpu_host_->RecordLogMessage(severity, header, message);
+  gpu_host_->RecordLogMessage(severity, std::move(header), std::move(message));
 }
 
 #if defined(OS_CHROMEOS)

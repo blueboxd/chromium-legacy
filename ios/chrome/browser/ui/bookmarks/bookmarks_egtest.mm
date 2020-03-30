@@ -240,17 +240,18 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 // Test that swiping left to right navigate back.
-- (void)testNavigateBackWithGesture {
+// TODO(crbug.com/768339): This test is faling on devices because
+// grey_swipeFastInDirectionWithStartPoint does not work.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testNavigateBackWithGesture DISABLED_testNavigateBackWithGesture
+#else
+#define MAYBE_testNavigateBackWithGesture testNavigateBackWithGesture
+#endif
+- (void)MAYBE_testNavigateBackWithGesture {
   // Disabled on iPad as there is not "navigate back" gesture.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPad");
   }
-
-// TODO(crbug.com/768339): This test is faling on devices because
-// grey_swipeFastInDirectionWithStartPoint does not work.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on devices.");
-#endif
 
   if (@available(iOS 13, *)) {
     // Navigate back side swipe gesture does not work on iOS13 simulator. This

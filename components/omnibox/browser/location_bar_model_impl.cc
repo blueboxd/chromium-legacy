@@ -10,6 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/buildflags.h"
@@ -55,6 +57,11 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
     format_types |= url_formatter::kFormatUrlTrimAfterHost;
   }
 
+  // Early exit to prevent elision of URLs when relevant extension is enabled.
+  if (delegate_->ShouldPreventElision()) {
+    return GetFormattedURL(format_types);
+  }
+
 #if defined(OS_IOS)
   format_types |= url_formatter::kFormatUrlTrimAfterHost;
 #endif
@@ -76,14 +83,25 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
   if (!ShouldDisplayURL())
     return base::string16{};
 
-  // Reset |format_types| to prevent elision of URLs when relevant extension or
-  // pref is enabled.
-  if (delegate_->ShouldPreventElision()) {
-    format_types = url_formatter::kFormatUrlOmitDefaults &
-                   ~url_formatter::kFormatUrlOmitHTTP;
+  GURL url(GetURL());
+  // Special handling for dom-distiller:. Instead of showing internal reader
+  // mode URLs, show the original article URL without a http or https scheme.
+  // Note that this does not disallow the user from copy-pasting the reader
+  // mode URL, or from seeing it in the view-source url. Note that this also
+  // impacts GetFormattedFullURL which uses GetFormattedURL as a helper.
+  // Virtual URLs were not a good solution for Reader Mode URLs because some
+  // security UI is based off of the virtual URL rather than the original URL,
+  // and Reader Mode has its own security chip. In addition virtual URLs would
+  // add a lot of complexity around passing necessary URL parameters to the
+  // Reader Mode pages.
+  if (url.SchemeIs(dom_distiller::kDomDistillerScheme)) {
+    // Ensure that HTTPS and HTTP will be removed. Reader mode should not
+    // display a scheme, and should only run on HTTP/HTTPS pages.
+    format_types |= url_formatter::kFormatUrlOmitHTTP;
+    format_types |= url_formatter::kFormatUrlOmitHTTPS;
+    url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(url);
   }
 
-  GURL url(GetURL());
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
   // the space.

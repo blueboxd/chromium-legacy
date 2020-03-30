@@ -81,7 +81,7 @@ Bulk Translation Upload tool.
                                             source_rc, args[0],
                                             transl_rc, args[1])
 
-    with util.WrapOutputStream(open(args[2], 'w')) as output_file:
+    with util.WrapOutputStream(open(args[2], 'wb')) as output_file:
       self.WriteTranslations(output_file, translations.items())
 
     self.Out('Wrote output file %s' % args[2])
@@ -237,7 +237,7 @@ Bulk Translation Upload tool.
     must be UTF-8 encoded.
 
     Args:
-      output_file: util.WrapOutputStream(open('bingo.out', 'w'))
+      output_file: util.WrapOutputStream(open('bingo.out', 'wb'))
       translations: [ [id1, text1], ['12345678', 'Hello USERNAME, howzit?'] ]
 
     Return:

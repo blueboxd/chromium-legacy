@@ -1110,11 +1110,6 @@
                   'content/test/data/indexeddb|'\
                   'components/services/storage/indexed_db',
     },
-    'infra': {
-      'filepath': 'infra/config|'\
-                  'testing/buildbot|'\
-                  'tools/mb',
-    },
     'infra_docs': {
       'filepath': 'docs/infra',
     },
@@ -2052,8 +2047,7 @@
     'android_deps': ['wnwen+watch@chromium.org'],
     'android_flags': ['hnakashima+watch@chromium.org'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
-    'android_infra': ['agrieve+watch@chromium.org',
-                      'jbudorick+watch@chromium.org'],
+    'android_infra': ['agrieve+watch@chromium.org'],
     'android_item_chooser_dialogs': ['juncai+watch@chromium.org',
                                      'ortuno+watch@chromium.org'],
     'android_lint': ['wnwen+watch@chromium.org'],
@@ -2493,7 +2487,6 @@
     'incident_reporting': ['grt+watch@chromium.org'],
     'indexed_db': ['jsbell+idb@chromium.org',
                    'dmurph+watching-idb@chromium.org'],
-    'infra': ['jbudorick+watch@chromium.org'],
     'infra_docs': ['martiniss+watch@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org',
               'nzolghadr+chromiumwatch@chromium.org'],

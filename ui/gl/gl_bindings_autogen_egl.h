@@ -141,7 +141,7 @@ typedef EGLBoolean(GL_BINDING_CALL* eglGetFrameTimestampSupportedANDROIDProc)(
     EGLDisplay dpy,
     EGLSurface surface,
     EGLint timestamp);
-typedef EGLBoolean(GL_BINDING_CALL* eglGetMscRateCHROMIUMProc)(
+typedef EGLBoolean(GL_BINDING_CALL* eglGetMscRateANGLEProc)(
     EGLDisplay dpy,
     EGLSurface surface,
     EGLint* numerator,
@@ -296,6 +296,7 @@ struct ExtensionsEGL {
   bool b_EGL_ANGLE_query_surface_pointer;
   bool b_EGL_ANGLE_stream_producer_d3d_texture;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;
+  bool b_EGL_ANGLE_sync_control_rate;
   bool b_EGL_CHROMIUM_sync_control;
   bool b_EGL_EXT_image_flush_external;
   bool b_EGL_KHR_fence_sync;
@@ -351,7 +352,7 @@ struct ProcsEGL {
   eglGetFrameTimestampsANDROIDProc eglGetFrameTimestampsANDROIDFn;
   eglGetFrameTimestampSupportedANDROIDProc
       eglGetFrameTimestampSupportedANDROIDFn;
-  eglGetMscRateCHROMIUMProc eglGetMscRateCHROMIUMFn;
+  eglGetMscRateANGLEProc eglGetMscRateANGLEFn;
   eglGetNativeClientBufferANDROIDProc eglGetNativeClientBufferANDROIDFn;
   eglGetNextFrameIdANDROIDProc eglGetNextFrameIdANDROIDFn;
   eglGetPlatformDisplayProc eglGetPlatformDisplayFn;
@@ -512,10 +513,10 @@ class GL_EXPORT EGLApi {
       EGLDisplay dpy,
       EGLSurface surface,
       EGLint timestamp) = 0;
-  virtual EGLBoolean eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
-                                             EGLSurface surface,
-                                             EGLint* numerator,
-                                             EGLint* denominator) = 0;
+  virtual EGLBoolean eglGetMscRateANGLEFn(EGLDisplay dpy,
+                                          EGLSurface surface,
+                                          EGLint* numerator,
+                                          EGLint* denominator) = 0;
   virtual EGLClientBuffer eglGetNativeClientBufferANDROIDFn(
       const struct AHardwareBuffer* ahardwarebuffer) = 0;
   virtual EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
@@ -685,8 +686,7 @@ class GL_EXPORT EGLApi {
   ::gl::g_current_egl_context->eglGetFrameTimestampsANDROIDFn
 #define eglGetFrameTimestampSupportedANDROID \
   ::gl::g_current_egl_context->eglGetFrameTimestampSupportedANDROIDFn
-#define eglGetMscRateCHROMIUM \
-  ::gl::g_current_egl_context->eglGetMscRateCHROMIUMFn
+#define eglGetMscRateANGLE ::gl::g_current_egl_context->eglGetMscRateANGLEFn
 #define eglGetNativeClientBufferANDROID \
   ::gl::g_current_egl_context->eglGetNativeClientBufferANDROIDFn
 #define eglGetNextFrameIdANDROID \

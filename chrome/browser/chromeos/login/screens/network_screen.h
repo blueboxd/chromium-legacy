@@ -31,6 +31,8 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
  public:
   enum class Result { CONNECTED, OFFLINE_DEMO_SETUP, BACK };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   NetworkScreen(NetworkScreenView* view,
                 const ScreenExitCallback& exit_callback);

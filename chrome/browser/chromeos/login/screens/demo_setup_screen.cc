@@ -19,6 +19,16 @@ constexpr char kUserActionPowerwash[] = "powerwash";
 
 namespace chromeos {
 
+// static
+std::string DemoSetupScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::CANCELED:
+      return "Canceled";
+  }
+}
+
 DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
     : BaseScreen(DemoSetupScreenView::kScreenId, OobeScreenPriority::DEFAULT),

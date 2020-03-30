@@ -37,6 +37,16 @@ void SetApplicationLocaleAndInputMethod(const std::string& locale,
 
 }  // namespace
 
+// static
+std::string DemoPreferencesScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::CANCELED:
+      return "Canceled";
+  }
+}
+
 DemoPreferencesScreen::DemoPreferencesScreen(
     DemoPreferencesScreenView* view,
     const ScreenExitCallback& exit_callback)

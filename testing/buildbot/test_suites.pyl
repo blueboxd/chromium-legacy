@@ -3200,6 +3200,7 @@
     },
 
     'ozone_linux_gtests_wayland': {
+      'gpu_unittests': {},
       'ui_touch_selection_unittests': {},
       'wayland_views_unittests': {
         'args': [
@@ -3211,6 +3212,7 @@
 
     'ozone_linux_gtests_x11': {
       'content_unittests': {},
+      'gpu_unittests': {},
       'ozone_x11_unittests': {},
       'ui_touch_selection_unittests': {},
       'views_unittests': {

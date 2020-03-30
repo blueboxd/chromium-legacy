@@ -27,8 +27,7 @@ class IOSAppConfigWriter(xml_formatted_writer.XMLFormattedWriter):
   def BeginTemplate(self):
     self._app_config.attributes[
         'xmlns:xsi'] = 'http://www.w3.org/2001/XMLSchema-instance'
-    schema_location = '/%s/appconfig/appconfig.xsd' % (
-        self.config['ios_bundle_id'])
+    schema_location = '/%s/appconfig/appconfig.xsd' % (self.config['bundle_id'])
     self._app_config.attributes[
         'xsi:noNamespaceSchemaLocation'] = schema_location
 
@@ -36,12 +35,13 @@ class IOSAppConfigWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddText(version, self.config['version'])
 
     bundle_id = self.AddElement(self._app_config, 'bundleId', {})
-    self.AddText(bundle_id, self.config['ios_bundle_id'])
+    self.AddText(bundle_id, self.config['bundle_id'])
     self._policies = self.AddElement(self._app_config, 'dict', {})
 
   def WritePolicy(self, policy):
     element_type = self.policy_type_to_xml_tag[policy['type']]
-    self.AddElement(self._policies, element_type, {'keyName': policy['name']})
+    if element_type:
+      self.AddElement(self._policies, element_type, {'keyName': policy['name']})
 
   def Init(self):
     self._doc = self.CreateDocument()
@@ -54,6 +54,7 @@ class IOSAppConfigWriter(xml_formatted_writer.XMLFormattedWriter):
         'string-enum-list': 'stringArray',
         'main': 'boolean',
         'list': 'stringArray',
+        'dict': None,
     }
 
   def GetTemplateText(self):

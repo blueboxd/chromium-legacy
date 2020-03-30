@@ -31,6 +31,18 @@ constexpr char kUserActionOfflineDemoSetup[] = "offline-demo-setup";
 namespace chromeos {
 
 // static
+std::string NetworkScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::CONNECTED:
+      return "Connected";
+    case Result::OFFLINE_DEMO_SETUP:
+      return "OfflineDemoSetup";
+    case Result::BACK:
+      return "Back";
+  }
+}
+
+// static
 NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
   return static_cast<NetworkScreen*>(
       manager->GetScreen(NetworkScreenView::kScreenId));

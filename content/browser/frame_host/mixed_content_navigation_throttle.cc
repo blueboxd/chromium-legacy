@@ -75,6 +75,7 @@ void UpdateRendererOnMixedContentFound(NavigationRequest* navigation_request,
   params.main_resource_url = mixed_content_url;
   params.mixed_content_url = navigation_request->GetURL();
   params.request_context_type = navigation_request->request_context_type();
+  params.request_destination = navigation_request->request_destination();
   params.was_allowed = was_allowed;
   params.had_redirect = for_redirect;
   params.source_location =

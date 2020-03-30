@@ -13,6 +13,7 @@ class FilePath;
 }
 
 namespace weblayer {
+class CookieManager;
 class DownloadDelegate;
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
@@ -49,6 +50,9 @@ class Profile {
 
   // Sets the DownloadDelegate. If none is set, downloads will be dropped.
   virtual void SetDownloadDelegate(DownloadDelegate* delegate) = 0;
+
+  // Gets the cookie manager for this profile.
+  virtual CookieManager* GetCookieManager() = 0;
 };
 
 }  // namespace weblayer

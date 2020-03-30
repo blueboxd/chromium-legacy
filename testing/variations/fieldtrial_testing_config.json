@@ -6840,6 +6840,22 @@
             ]
         }
     ],
+    "WebXrPermissionsApi": [
+        {
+            "platforms": [
+                "android",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebXrPermissionsApi"
+                    ]
+                }
+            ]
+        }
+    ],
     "WindowsHybridSpellCheck": [
         {
             "platforms": [

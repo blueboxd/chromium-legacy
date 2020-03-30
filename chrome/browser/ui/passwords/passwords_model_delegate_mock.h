@@ -28,6 +28,8 @@ class PasswordsModelDelegateMock
   MOCK_CONST_METHOD0(GetOrigin, const GURL&());
   MOCK_CONST_METHOD0(GetState, password_manager::ui::State());
   MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
+  MOCK_CONST_METHOD0(GetUnsyncedCredentials,
+                     const std::vector<autofill::PasswordForm>&());
   MOCK_CONST_METHOD0(GetCredentialSource,
                      password_manager::metrics_util::CredentialSourceType());
   MOCK_CONST_METHOD0(

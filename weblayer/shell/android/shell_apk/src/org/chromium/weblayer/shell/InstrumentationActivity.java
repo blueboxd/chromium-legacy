@@ -26,6 +26,8 @@ import android.widget.RelativeLayout;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.NewTabCallback;
+import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
@@ -248,6 +250,26 @@ public class InstrumentationActivity extends FragmentActivity {
             }
         };
         mTab.registerTabCallback(mTabCallback);
+
+        mTab.setNewTabCallback(new NewTabCallback() {
+            @Override
+            public void onNewTab(Tab newTab, @NewTabType int type) {
+                // NOTE: At this time there isn't a need to hang on to the previous tab as this
+                // activity doesn't support closing tabs. If needed that could be added following
+                // the implementation in WebLayerShellActivity.java.
+                mTab.unregisterTabCallback(mTabCallback);
+                mTabCallback = null;
+                mTab = null;
+
+                setTab(newTab);
+                mBrowser.setActiveTab(newTab);
+            }
+
+            @Override
+            public void onCloseTab() {
+                assert false;
+            }
+        });
     }
 
     private Fragment getOrCreateBrowserFragment() {
@@ -282,6 +304,10 @@ public class InstrumentationActivity extends FragmentActivity {
         // have to wait until the commit is executed.
         transaction.commitNow();
         return fragment;
+    }
+
+    public String getCurrentDisplayUrl() {
+        return mUrlView.getText().toString();
     }
 
     public void loadUrl(String url) {

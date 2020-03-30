@@ -118,8 +118,6 @@ void UsbDeviceWin::OnReadStringDescriptors(
     std::unique_ptr<std::map<uint8_t, base::string16>> string_map) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  device_handle->Close();
-
   if (i_manufacturer)
     device_info_->manufacturer_name = (*string_map)[i_manufacturer];
   if (i_product)
@@ -128,15 +126,37 @@ void UsbDeviceWin::OnReadStringDescriptors(
     device_info_->serial_number = (*string_map)[i_serial_number];
 
   if (usb_version() >= kUsbVersion2_1) {
-    Open(base::BindOnce(&UsbDeviceWin::OnOpenedToReadWebUsbDescriptors, this,
-                        std::move(callback)));
+    ReadWebUsbCapabilityDescriptor(
+        device_handle,
+        base::BindOnce(&UsbDeviceWin::OnReadWebUsbCapabilityDescriptor, this,
+                       std::move(callback), device_handle));
   } else {
+    device_handle->Close();
     std::move(callback).Run(true);
   }
 }
 
-void UsbDeviceWin::OnOpenedToReadWebUsbDescriptors(
+void UsbDeviceWin::OnReadWebUsbCapabilityDescriptor(
     base::OnceCallback<void(bool)> callback,
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    const base::Optional<WebUsbPlatformCapabilityDescriptor>& descriptor) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  device_handle->Close();
+
+  if (!descriptor || !descriptor->landing_page_id) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  Open(base::BindOnce(&UsbDeviceWin::OnOpenedToReadWebUsbLandingPage, this,
+                      std::move(callback), descriptor->vendor_code,
+                      descriptor->landing_page_id));
+}
+
+void UsbDeviceWin::OnOpenedToReadWebUsbLandingPage(
+    base::OnceCallback<void(bool)> callback,
+    uint8_t vendor_code,
+    uint8_t landing_page_id,
     scoped_refptr<UsbDeviceHandle> device_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -147,12 +167,13 @@ void UsbDeviceWin::OnOpenedToReadWebUsbDescriptors(
     return;
   }
 
-  ReadWebUsbDescriptors(
-      device_handle, base::BindOnce(&UsbDeviceWin::OnReadWebUsbDescriptors,
-                                    this, std::move(callback), device_handle));
+  ReadWebUsbLandingPage(
+      vendor_code, landing_page_id, device_handle,
+      base::BindOnce(&UsbDeviceWin::OnReadWebUsbLandingPage, this,
+                     std::move(callback), device_handle));
 }
 
-void UsbDeviceWin::OnReadWebUsbDescriptors(
+void UsbDeviceWin::OnReadWebUsbLandingPage(
     base::OnceCallback<void(bool)> callback,
     scoped_refptr<UsbDeviceHandle> device_handle,
     const GURL& landing_page) {

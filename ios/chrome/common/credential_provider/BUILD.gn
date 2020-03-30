@@ -10,21 +10,32 @@ source_set("credential_provider") {
   sources = [
     "archivable_credential.h",
     "archivable_credential.mm",
+    "archivable_credential_store.h",
+    "archivable_credential_store.mm",
   ]
-  deps = [ ":ui" ]
+  deps = [
+    ":ui",
+    "//base",
+  ]
   libs = [ "Foundation.framework" ]
 }
 
 source_set("ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [ "credential.h" ]
+  sources = [
+    "credential.h",
+    "credential_store.h",
+  ]
   libs = [ "Foundation.framework" ]
 }
 
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [ "archivable_credential_unittest.mm" ]
+  sources = [
+    "archivable_credential_store_unittest.mm",
+    "archivable_credential_unittest.mm",
+  ]
   deps = [
     ":credential_provider",
     "//base/test:test_support",

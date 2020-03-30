@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {ContentSetting, SiteSettingsPrefsBrowserProxyImpl, CookieControlsMode, ContentSettingsTypes, SiteSettingSource} from 'chrome://settings/lazy_load.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
+// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+// #import {createRawSiteException, createDefaultContentSetting,createSiteSettingsPrefs,createContentSettingTypeToValuePair} from 'chrome://test/settings/test_util.m.js';
+// #import {isChildVisible, flushTasks} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('CrSettingsCookiesPageTest', function() {
   /** @type {TestSiteSettingsPrefsBrowserProxy} */
   let siteSettingsBrowserProxy;
@@ -214,7 +224,7 @@ suite('CrSettingsCookiesPageTest', function() {
   });
 
   test('CookieSettingExceptions_Search', async function() {
-    exceptionPrefs = test_util.createSiteSettingsPrefs([], [
+    const exceptionPrefs = test_util.createSiteSettingsPrefs([], [
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.COOKIES,
           [
@@ -275,7 +285,7 @@ suite('CrSettingsCookiesPageTest', function() {
     Polymer.dom.flush();
 
     // Check the four radio buttons are correctly indicating they are managed.
-    for (button of radioButtons) {
+    for (const button of radioButtons) {
       assertTrue(button.disabled);
       assertEquals(button.policyIndicatorType, 'devicePolicy');
     }
@@ -317,7 +327,7 @@ suite('CrSettingsCookiesPageTest', function() {
     await siteSettingsBrowserProxy.whenCalled('getCookieControlsManagedState');
 
     // Check the four radio buttons no longer indicate they are managed.
-    for (button of radioButtons) {
+    for (const button of radioButtons) {
       assertFalse(button.disabled);
       assertEquals(button.policyIndicatorType, 'none');
     }

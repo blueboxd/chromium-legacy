@@ -551,6 +551,9 @@ try_.chromium_mac_ios_builder(
     executable = 'recipe:chromium_trybot',
     goma_backend = None,  # TODO(crbug.com/950413): Use goma.backend.RBE_PROD
     use_clang_coverage = True,
+    properties = {
+        'coverage_test_types': ['unit'],
+    },
 )
 
 try_.chromium_mac_ios_builder(

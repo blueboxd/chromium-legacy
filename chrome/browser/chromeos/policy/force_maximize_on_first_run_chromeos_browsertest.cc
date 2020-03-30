@@ -4,12 +4,13 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,11 +51,6 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
     return CreateBrowser(profile);
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginPolicyTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizeOnFirstRunTest);
 };
@@ -84,7 +80,10 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
 
 IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, TwoRuns) {
   SetUpResolution();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  ash::LoginScreenTestApi::SubmitPassword(AccountId::FromUserEmail(kAccountId),
+                                          kAccountPassword,
+                                          true /* check_if_submittable */);
+  chromeos::test::WaitForPrimaryUserSessionStart();
 
   const Browser* const browser = OpenNewBrowserWindow();
   ASSERT_TRUE(browser);

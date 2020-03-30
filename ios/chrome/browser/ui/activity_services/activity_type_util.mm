@@ -81,6 +81,7 @@ const PrefixTypeAssociation prefixTypeAssociations[] = {
     {NATIVE_CLIPBOARD, @"com.apple.UIKit.activity.CopyToPasteboard", true},
     {PRINT, @"com.google.chrome.printActivity", true},
     {FIND_IN_PAGE, @"com.google.chrome.FindInPageActivityType", true},
+    {GENERATE_QR_CODE, @"com.google.chrome.GenerateQrCodeActivityType", true},
     // The trailing '.' prevents false positives.
     // For instance, "com.viberific" won't be matched by the "com.viber.".
     {GOOGLE_DRIVE, @"com.google.Drive.", false},
@@ -228,6 +229,10 @@ void RecordMetricForActivity(ActivityType type) {
     case SEND_TAB_TO_SELF:
       base::RecordAction(
           base::UserMetricsAction("MobileShareMenuSendTabToSelf"));
+      break;
+    case GENERATE_QR_CODE:
+      base::RecordAction(
+          base::UserMetricsAction("MobileShareMenuGenerateQRCode"));
       break;
   }
 }

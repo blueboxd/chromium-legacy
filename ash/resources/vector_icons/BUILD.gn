@@ -37,6 +37,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "dictation_off_newui.icon",
     "dictation_on.icon",
     "dictation_on_newui.icon",
+    "hollow_check_circle.icon",
     "ime_menu_emoticon.icon",
     "ime_menu_microphone.icon",
     "ime_menu_on_screen_keyboard.icon",

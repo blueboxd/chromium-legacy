@@ -21,6 +21,10 @@ class TestPredicateWaiter : public TestConditionWaiter {
   explicit TestPredicateWaiter(const PredicateCheck& is_fulfilled);
   ~TestPredicateWaiter() override;
 
+  void set_description(const std::string& description) {
+    description_ = description;
+  }
+
   // TestConditionWaiter
   void Wait() override;
 
@@ -31,6 +35,7 @@ class TestPredicateWaiter : public TestConditionWaiter {
 
   base::RetainingOneShotTimer timer_;
   base::RunLoop run_loop_;
+  std::string description_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPredicateWaiter);
 };

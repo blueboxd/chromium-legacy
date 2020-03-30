@@ -9,13 +9,13 @@
     android:title="@string/all_sites">
 
     <!-- A text message describing cookie settings. -->
-    <org.chromium.chrome.browser.settings.TextMessagePreference
+    <org.chromium.components.browser_ui.settings.TextMessagePreference
         android:key="cookie_info_text"
         android:summary="@string/website_settings_cookie_info"/>
 
     <!-- A common binary toggle, only shown for specific categories that allow
          turning default values for that category on/off.-->
-    <org.chromium.chrome.browser.settings.ChromeSwitchPreference
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="binary_toggle"
         android:defaultValue="true" />
     <!-- A common Allow/Ask/Block 3-state toggle (radio group). Only shown when
@@ -28,20 +28,20 @@
         android:key="four_state_cookie_toggle" />
 
     <!-- A toggle for blocking third-party cookies, only shown for the Cookies category. -->
-    <org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference
+    <org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference
         android:key="third_party_cookies"
         android:title="@string/block_third_party_cookies_title"
         android:summary="@string/block_third_party_cookies_summary"
         android:defaultValue="true"
         android:persistent="false" />
     <!-- A checkbox for enabling a quiet ui for notification prompts. Only shown in the Notifications category. -->
-    <org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference
+    <org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference
         android:key="notifications_quiet_ui"
         android:title="@string/website_settings_category_notifications_quiet"
         android:defaultValue="false"
         android:persistent="false" />
     <!-- A toggle for enabling vibration in notifications. -->
-    <org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference
+    <org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference
         android:key="notifications_vibrate"
         android:title="@string/enable_notifications_vibrate_title"
         android:summary="@string/enable_notifications_vibrate_summary"
@@ -53,10 +53,10 @@
         app:helpContext="@string/help_context_protected_content"/>
 
     <!-- Collapsible headers for sorting preferences. -->
-    <org.chromium.chrome.browser.settings.ExpandablePreferenceGroup
+    <org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup
         android:key="managed_group" />
-    <org.chromium.chrome.browser.settings.ExpandablePreferenceGroup
+    <org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup
         android:key="blocked_group" />
-    <org.chromium.chrome.browser.settings.ExpandablePreferenceGroup
+    <org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup
         android:key="allowed_group" />
 </PreferenceScreen>

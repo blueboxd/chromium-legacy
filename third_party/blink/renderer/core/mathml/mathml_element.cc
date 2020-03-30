@@ -111,14 +111,12 @@ base::Optional<Length> MathMLElement::AddMathLengthToComputedStyle(
     const QualifiedName& attr_name) {
   if (!FastHasAttribute(attr_name))
     return base::nullopt;
-  auto string = FastGetAttribute(attr_name);
-  const CSSValue* parsed = CSSParser::ParseSingleValue(
-      CSSPropertyID::kHeight, string,
-      StrictCSSParserContext(GetDocument().GetSecureContextMode()));
-  const auto* new_value = DynamicTo<CSSPrimitiveValue>(parsed);
-  if (!new_value || !new_value->IsLength())
+  auto value = FastGetAttribute(attr_name);
+  const CSSPrimitiveValue* parsed_value = CSSParser::ParseLengthPercentage(
+      value, StrictCSSParserContext(GetDocument().GetSecureContextMode()));
+  if (!parsed_value || parsed_value->IsCalculated())
     return base::nullopt;
-  return new_value->ConvertToLength(conversion_data);
+  return parsed_value->ConvertToLength(conversion_data);
 }
 
 }  // namespace blink

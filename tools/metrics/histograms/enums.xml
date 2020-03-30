@@ -56257,6 +56257,38 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="10" label="Parent node is not a folder"/>
 </enum>
 
+<enum name="RemoteCommandExecutionStatus">
+  <int value="0" label="Not initialized"/>
+  <int value="1" label="Invalid"/>
+  <int value="2" label="Expired"/>
+  <int value="3" label="Not started"/>
+  <int value="4" label="Running"/>
+  <int value="5" label="Succeeded"/>
+  <int value="6" label="Failed"/>
+  <int value="7" label="Terminated"/>
+</enum>
+
+<enum name="RemoteCommandReceivedStatus">
+  <int value="0" label="Invalid: Invalid signature"/>
+  <int value="1" label="Invalid: Invalid (if no other error is applicable)"/>
+  <int value="2" label="Invalid: Unknown type"/>
+  <int value="3" label="Invalid: Duplicated"/>
+  <int value="4" label="Invalid: Invalid scope (user or device)"/>
+  <int value="5" label="Command echo test (should not appear)"/>
+  <int value="6" label="Reboot device command"/>
+  <int value="7" label="Screenshot command"/>
+  <int value="8" label="Set volume command"/>
+  <int value="9" label="Fetch status command"/>
+  <int value="10" label="ARC command"/>
+  <int value="11" label="Wipe users command"/>
+  <int value="12" label="Start CRD session command"/>
+  <int value="13" label="Powerwash command"/>
+  <int value="14" label="Refresh enterprise machine certificate command"/>
+  <int value="15" label="Get available diagnostic routines command"/>
+  <int value="16" label="Run diagnostic routine command"/>
+  <int value="17" label="Get diagnostic routine update command"/>
+</enum>
+
 <enum name="RemoteHungProcessTerminateReason">
   <int value="1" label="Terminate accepted by user"/>
   <int value="2" label="No visible windows found"/>

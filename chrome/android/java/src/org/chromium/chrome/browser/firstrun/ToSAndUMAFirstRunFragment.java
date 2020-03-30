@@ -93,41 +93,38 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         mTosAndPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
 
         Resources resources = getResources();
-        NoUnderlineClickableSpan clickableTermsSpan =
+        NoUnderlineClickableSpan clickableGoogleTermsSpan =
                 new NoUnderlineClickableSpan(resources, (view1) -> {
                     if (!isAdded()) return;
-                    getPageDelegate().showInfoPage(R.string.chrome_terms_of_service_url);
+                    getPageDelegate().showInfoPage(R.string.google_terms_of_service_url);
                 });
-
-        NoUnderlineClickableSpan clickablePrivacySpan =
+        NoUnderlineClickableSpan clickableChromeAdditionalTermsSpan =
                 new NoUnderlineClickableSpan(resources, (view1) -> {
                     if (!isAdded()) return;
-                    getPageDelegate().showInfoPage(R.string.chrome_privacy_notice_url);
+                    getPageDelegate().showInfoPage(R.string.chrome_additional_terms_of_service_url);
                 });
-
         NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan =
                 new NoUnderlineClickableSpan(resources, (view1) -> {
                     if (!isAdded()) return;
                     getPageDelegate().showInfoPage(R.string.family_link_privacy_policy_url);
                 });
 
-        final CharSequence tosAndPrivacyText;
+        final CharSequence tosText;
         Bundle freProperties = getPageDelegate().getProperties();
         @ChildAccountStatus.Status
         int childAccountStatus = freProperties.getInt(
                 SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
         if (childAccountStatus == ChildAccountStatus.REGULAR_CHILD) {
-            tosAndPrivacyText =
-                    SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy_child_account),
-                            new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
-                            new SpanInfo("<LINK2>", "</LINK2>", clickablePrivacySpan),
-                            new SpanInfo("<LINK3>", "</LINK3>", clickableFamilyLinkPrivacySpan));
+            tosText = SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy_child_account),
+                    new SpanInfo("<LINK1>", "</LINK1>", clickableGoogleTermsSpan),
+                    new SpanInfo("<LINK2>", "</LINK2>", clickableChromeAdditionalTermsSpan),
+                    new SpanInfo("<LINK3>", "</LINK3>", clickableFamilyLinkPrivacySpan));
         } else {
-            tosAndPrivacyText = SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy),
-                    new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
-                    new SpanInfo("<LINK2>", "</LINK2>", clickablePrivacySpan));
+            tosText = SpanApplier.applySpans(getString(R.string.fre_tos),
+                    new SpanInfo("<LINK1>", "</LINK1>", clickableGoogleTermsSpan),
+                    new SpanInfo("<LINK2>", "</LINK2>", clickableChromeAdditionalTermsSpan));
         }
-        mTosAndPrivacy.setText(tosAndPrivacyText);
+        mTosAndPrivacy.setText(tosText);
 
         // If this page should be skipped, it can be one of the following cases:
         //   1. Native hasn't been initialized yet and this page will be skipped once that happens.

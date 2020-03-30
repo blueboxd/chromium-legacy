@@ -8,6 +8,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "weblayer/browser/system_network_context_manager.h"
 
 #if defined(OS_ANDROID)
 #include "components/version_info/android/channel_getter.h"
@@ -29,8 +30,10 @@ base::Version GetVersionForSimulation() {
 }  // namespace
 
 WebLayerVariationsServiceClient::WebLayerVariationsServiceClient(
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
-    : shared_url_loader_factory_(std::move(shared_url_loader_factory)) {}
+    SystemNetworkContextManager* network_context_manager)
+    : network_context_manager_(network_context_manager) {
+  DCHECK(network_context_manager_);
+}
 
 WebLayerVariationsServiceClient::~WebLayerVariationsServiceClient() = default;
 
@@ -41,7 +44,7 @@ WebLayerVariationsServiceClient::GetVersionForSimulationCallback() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 WebLayerVariationsServiceClient::GetURLLoaderFactory() {
-  return shared_url_loader_factory_;
+  return network_context_manager_->GetSharedURLLoaderFactory();
 }
 
 network_time::NetworkTimeTracker*

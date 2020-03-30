@@ -7,14 +7,13 @@ package org.chromium.chrome.browser.site_settings;
 import android.os.Bundle;
 
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory.Type;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
 
@@ -28,7 +27,7 @@ import java.util.List;
  * browser-wide.
  */
 public class SiteSettings
-        extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
+        extends SiteSettingsPreferenceFragment implements Preference.OnPreferenceClickListener {
     // The keys for each category shown on the Site Settings page
     // are defined in the SiteSettingsCategory.
 

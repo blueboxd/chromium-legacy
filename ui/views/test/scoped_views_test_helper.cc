@@ -8,7 +8,6 @@
 
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
-#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/views/test/test_views_delegate.h"
 
 #if defined(USE_AURA)
@@ -27,13 +26,13 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
                                        std::move(factory));
   test_helper_->SetUp();
 
-  ui::InitializeInputMethodForTesting();
+  // OS clipboard is a global resource, which causes flakiness when unit tests
+  // run in parallel. So, use a per-instance test clipboard.
   ui::TestClipboard::CreateForCurrentThread();
 }
 
 ScopedViewsTestHelper::~ScopedViewsTestHelper() {
   ui::Clipboard::DestroyClipboardForCurrentThread();
-  ui::ShutdownInputMethodForTesting();
 }
 
 gfx::NativeWindow ScopedViewsTestHelper::GetContext() {

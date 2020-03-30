@@ -9,17 +9,32 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ElementsAre;
-using ::testing::Pointee;
+using ::testing::Truly;
 using ::testing::UnorderedElementsAre;
 
 namespace network {
+
+namespace {
+
+// For convenience, define a matcher for checking mojo struct pointer equality
+// in order to simplify validating results returning containers of points.
+template <typename T>
+decltype(auto) EqualsMojo(const mojo::StructPtr<T>& value) {
+  return Truly([&](const mojo::StructPtr<T>& candidate) {
+    return mojo::Equals(candidate, value);
+  });
+}
+
+}  // namespace
 
 TEST(TrustTokenKeyCommitmentParsing, RejectsEmpty) {
   // If the input isn't valid JSON, we should
@@ -58,12 +73,12 @@ TEST(TrustTokenKeyCommitmentParsing, AcceptsMinimal) {
   // Sanity check that the input is actually valid JSON.
   ASSERT_TRUE(base::JSONReader::Read(input));
 
-  TrustTokenKeyCommitmentResult expectation;
+  auto expectation = mojom::TrustTokenKeyCommitmentResult::New();
   base::Base64Decode("aaaa",
-                     &expectation.signed_redemption_record_verification_key);
+                     &expectation->signed_redemption_record_verification_key);
 
   EXPECT_THAT(TrustTokenKeyCommitmentParser().Parse(input),
-              Pointee(expectation));
+              EqualsMojo(expectation));
 }
 
 TEST(TrustTokenKeyCommitmentParsing, RejectsMissingSrrkey) {
@@ -72,7 +87,7 @@ TEST(TrustTokenKeyCommitmentParsing, RejectsMissingSrrkey) {
   // Sanity check that the input is actually valid JSON.
   ASSERT_TRUE(base::JSONReader::Read(input));
 
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result =
+  mojom::TrustTokenKeyCommitmentResultPtr result =
       TrustTokenKeyCommitmentParser().Parse(input);
   EXPECT_FALSE(result);
 }
@@ -83,7 +98,7 @@ TEST(TrustTokenKeyCommitmentParsing, RejectsTypeUnsafeSrrkey) {
   // Sanity check that the input is actually valid JSON.
   ASSERT_TRUE(base::JSONReader::Read(input));
 
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result =
+  mojom::TrustTokenKeyCommitmentResultPtr result =
       TrustTokenKeyCommitmentParser().Parse(input);
   EXPECT_FALSE(result);
 }
@@ -94,7 +109,7 @@ TEST(TrustTokenKeyCommitmentParsing, RejectsNonBase64Srrkey) {
   // Sanity check that the input is actually valid JSON.
   ASSERT_TRUE(base::JSONReader::Read(input));
 
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result =
+  mojom::TrustTokenKeyCommitmentResultPtr result =
       TrustTokenKeyCommitmentParser().Parse(input);
   EXPECT_FALSE(result);
 }
@@ -228,14 +243,14 @@ TEST(TrustTokenKeyCommitmentParsing, AcceptsKeyWithExpiryAndBody) {
   // and that the given time is valid.
   ASSERT_TRUE(base::JSONReader::Read(input));
 
-  TrustTokenKeyCommitmentResult::Key my_key;
-  my_key.label = 1;
-  ASSERT_TRUE(base::Base64Decode("akey", &my_key.body));
-  my_key.expiry = one_minute_from_now;
+  auto my_key = mojom::TrustTokenVerificationKey::New();
+  my_key->label = 1;
+  ASSERT_TRUE(base::Base64Decode("akey", &my_key->body));
+  my_key->expiry = one_minute_from_now;
 
   auto result = TrustTokenKeyCommitmentParser().Parse(input);
   ASSERT_TRUE(result);
-  EXPECT_THAT(result->keys, ElementsAre(my_key));
+  EXPECT_THAT(result->keys, ElementsAre(EqualsMojo(my_key)));
 }
 
 TEST(TrustTokenKeyCommitmentParsing, AcceptsMultipleKeys) {
@@ -265,19 +280,20 @@ TEST(TrustTokenKeyCommitmentParsing, AcceptsMultipleKeys) {
   // and that the given time is valid.
   ASSERT_TRUE(base::JSONReader::Read(input));
 
-  TrustTokenKeyCommitmentResult::Key a_key;
-  a_key.label = 1;
-  ASSERT_TRUE(base::Base64Decode("akey", &a_key.body));
-  a_key.expiry = one_minute_from_now;
+  auto a_key = mojom::TrustTokenVerificationKey::New();
+  a_key->label = 1;
+  ASSERT_TRUE(base::Base64Decode("akey", &a_key->body));
+  a_key->expiry = one_minute_from_now;
 
-  TrustTokenKeyCommitmentResult::Key another_key;
-  another_key.label = 2;
-  ASSERT_TRUE(base::Base64Decode("aaaa", &another_key.body));
-  another_key.expiry = two_minutes_from_now;
+  auto another_key = mojom::TrustTokenVerificationKey::New();
+  another_key->label = 2;
+  ASSERT_TRUE(base::Base64Decode("aaaa", &another_key->body));
+  another_key->expiry = two_minutes_from_now;
 
   auto result = TrustTokenKeyCommitmentParser().Parse(input);
   ASSERT_TRUE(result);
-  EXPECT_THAT(result->keys, UnorderedElementsAre(a_key, another_key));
+  EXPECT_THAT(result->keys,
+              UnorderedElementsAre(EqualsMojo(a_key), EqualsMojo(another_key)));
 }
 
 TEST(TrustTokenKeyCommitmentParsing, RejectsKeyWithNoExpiry) {
@@ -339,12 +355,12 @@ TEST(TrustTokenKeyCommitmentParsing, IgnoreKeyWithExpiryInThePast) {
   // Sanity check that the input is actually valid JSON.
   ASSERT_TRUE(base::JSONReader::Read(input));
 
-  TrustTokenKeyCommitmentResult expectation;
+  auto expectation = mojom::TrustTokenKeyCommitmentResult::New();
   base::Base64Decode("aaaa",
-                     &expectation.signed_redemption_record_verification_key);
+                     &expectation->signed_redemption_record_verification_key);
 
-  EXPECT_THAT(TrustTokenKeyCommitmentParser().Parse(input),
-              Pointee(expectation));
+  EXPECT_TRUE(
+      mojo::Equals(TrustTokenKeyCommitmentParser().Parse(input), expectation));
 }
 
 TEST(TrustTokenKeyCommitmentParsing, RejectsKeyWithNoBody) {
@@ -391,10 +407,11 @@ TEST(TrustTokenKeyCommitmentParsing, ParsesBatchSize) {
      "batchsize": 5
    })";
 
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result =
+  mojom::TrustTokenKeyCommitmentResultPtr result =
       TrustTokenKeyCommitmentParser().Parse(input);
   ASSERT_TRUE(result);
-  EXPECT_EQ(result->batch_size, 5);
+  ASSERT_TRUE(result->batch_size);
+  EXPECT_EQ(result->batch_size->value, 5);
 }
 
 TEST(TrustTokenKeyCommitmentParsing, RejectsTypeUnsafeBatchSize) {
@@ -404,7 +421,7 @@ TEST(TrustTokenKeyCommitmentParsing, RejectsTypeUnsafeBatchSize) {
      "batchsize": "not a number"
    })";
 
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result =
+  mojom::TrustTokenKeyCommitmentResultPtr result =
       TrustTokenKeyCommitmentParser().Parse(input);
   EXPECT_FALSE(result);
 }

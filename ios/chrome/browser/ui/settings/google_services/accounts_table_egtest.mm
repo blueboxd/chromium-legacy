@@ -258,11 +258,14 @@ id<GREYMatcher> NoBookmarksLabel() {
 
 // Tests that the user isn't signed out and the UI is correct when the
 // disconnect is cancelled in the Account Settings screen.
-- (void)testSignInDisconnectCancelled {
-// TODO(crbug.com/669613): Re-enable this test on devices.
 #if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+// TODO(crbug.com/669613): Re-enable this test on devices.
+#define MAYBE_testSignInDisconnectCancelled \
+  DISABLED_testSignInDisconnectCancelled
+#else
+#define MAYBE_testSignInDisconnectCancelled testSignInDisconnectCancelled
 #endif
+- (void)MAYBE_testSignInDisconnectCancelled {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |fakeIdentity|, then open the Account Settings.

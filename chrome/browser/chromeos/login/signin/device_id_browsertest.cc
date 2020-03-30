@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
@@ -24,7 +24,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/user_manager/known_user.h"
-#include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_manager.h"
 
 namespace {
@@ -45,21 +44,22 @@ char kSecondUserRefreshToken2[] = "refresh_token_second_user_2";
 namespace chromeos {
 
 class DeviceIDTest : public OobeBaseTest,
-                     public user_manager::RemoveUserDelegate {
+                     public user_manager::UserManager::Observer {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   }
 
   void SetUpOnMainThread() override {
     user_removal_loop_.reset(new base::RunLoop);
     OobeBaseTest::SetUpOnMainThread();
     LoadRefreshTokenToDeviceIdMap();
+    user_manager::UserManager::Get()->AddObserver(this);
   }
 
   void TearDownOnMainThread() override {
+    user_manager::UserManager::Get()->RemoveObserver(this);
     SaveRefreshTokenToDeviceIdMap();
     OobeBaseTest::TearDownOnMainThread();
   }
@@ -117,24 +117,19 @@ class DeviceIDTest : public OobeBaseTest,
   }
 
   void SignInOffline(const std::string& user_id, const std::string& password) {
-    WaitForSigninScreen();
-
-    test::OobeJS().ExecuteAsync(base::StringPrintf(
-        "chrome.send('authenticateUser', ['%s', '%s', false])", user_id.c_str(),
-        password.c_str()));
+    ash::LoginScreenTestApi::SubmitPassword(AccountId::FromUserEmail(user_id),
+                                            FakeGaiaMixin::kFakeUserPassword,
+                                            false /* check_if_submittable */);
     test::WaitForPrimaryUserSessionStart();
   }
 
   void RemoveUser(const AccountId& account_id) {
-    user_manager::UserManager::Get()->RemoveUser(account_id, this);
+    ASSERT_TRUE(ash::LoginScreenTestApi::RemoveUser(account_id));
     user_removal_loop_->Run();
   }
 
  private:
-  // user_manager::RemoveUserDelegate:
-  void OnBeforeUserRemoved(const AccountId& account_id) override {}
-
-  void OnUserRemoved(const AccountId& account_id) override {
+  void LocalStateChanged(user_manager::UserManager* manager) override {
     user_removal_loop_->Quit();
   }
 
@@ -195,6 +190,7 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_PRE_NewUsers) {
   EXPECT_FALSE(device_id.empty());
   EXPECT_EQ(device_id, GetDeviceIdFromGAIA(kRefreshToken1));
 
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   SignInOnline(FakeGaiaMixin::kFakeUserEmail, FakeGaiaMixin::kFakeUserPassword,
                kRefreshToken2, FakeGaiaMixin::kFakeUserGaiaId);
   CheckDeviceIDIsConsistent(
@@ -225,8 +221,7 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_NewUsers) {
 
 // Add the second user.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_NewUsers) {
-  WaitForSigninScreen();
-  test::OobeJS().ExecuteAsync("chrome.send('showAddUser')");
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken1,
                kSecondUserGaiaId);
   CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kSecondUserEmail),
@@ -235,13 +230,13 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_NewUsers) {
 
 // Remove the second user.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_NewUsers) {
-  WaitForSigninScreen();
   RemoveUser(AccountId::FromUserEmail(kSecondUserEmail));
 }
 
 // Add the second user back. Verify that device ID has been changed.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, NewUsers) {
   EXPECT_TRUE(GetDeviceId(AccountId::FromUserEmail(kSecondUserEmail)).empty());
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken2,
                kSecondUserGaiaId);
   CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kSecondUserEmail),

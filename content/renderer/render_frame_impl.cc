@@ -5402,6 +5402,12 @@ void RenderFrameImpl::DidCommitNavigationInternal(
                                                std::move(interface_params));
     }
   }
+
+  // Ensure we will propagate frame intersections when the main frame commits
+  // even if the intersection does not change across navigations.
+  if (IsMainFrame()) {
+    mainframe_document_intersection_rect_.reset();
+  }
 }
 
 void RenderFrameImpl::PrepareFrameForCommit(
@@ -6284,6 +6290,7 @@ void RenderFrameImpl::BeginNavigationInternal(
           GetWebURLRequestHeadersAsString(info->url_request), load_flags,
           info->url_request.GetSkipServiceWorker(),
           GetRequestContextTypeForWebURLRequest(info->url_request),
+          GetRequestDestinationForWebURLRequest(info->url_request),
           GetMixedContentContextTypeForWebURLRequest(info->url_request),
           is_form_submission, was_initiated_by_link_click, searchable_form_url,
           searchable_form_encoding, client_side_redirect_url,

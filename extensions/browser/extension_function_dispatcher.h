@@ -113,15 +113,6 @@ class ExtensionFunctionDispatcher
   // |response_callback_wrappers_for_worker_|.
   struct WorkerResponseCallbackMapKey;
 
-  // Helper to check whether an ExtensionFunction has the required permissions.
-  // This should be called after the function is fully initialized.
-  // If the check fails, |callback| is run with an access-denied error and false
-  // is returned. |function| must not be run in that case.
-  static bool CheckPermissions(
-      ExtensionFunction* function,
-      const ExtensionHostMsg_Request_Params& params,
-      const ExtensionFunction::ResponseCallback& callback);
-
   // Helper to create an ExtensionFunction to handle the function given by
   // |params|. Can be called on any thread.
   // Does not set subclass properties, or include_incognito.

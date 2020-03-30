@@ -187,6 +187,8 @@ void DriverEGL::InitializeExtensionBindings() {
       gfx::HasExtension(extensions, "EGL_ANGLE_stream_producer_d3d_texture");
   ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle = gfx::HasExtension(
       extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle");
+  ext.b_EGL_ANGLE_sync_control_rate =
+      gfx::HasExtension(extensions, "EGL_ANGLE_sync_control_rate");
   ext.b_EGL_CHROMIUM_sync_control =
       gfx::HasExtension(extensions, "EGL_CHROMIUM_sync_control");
   ext.b_EGL_EXT_image_flush_external =
@@ -278,9 +280,9 @@ void DriverEGL::InitializeExtensionBindings() {
             GetGLProcAddress("eglGetFrameTimestampSupportedANDROID"));
   }
 
-  if (ext.b_EGL_CHROMIUM_sync_control) {
-    fn.eglGetMscRateCHROMIUMFn = reinterpret_cast<eglGetMscRateCHROMIUMProc>(
-        GetGLProcAddress("eglGetMscRateCHROMIUM"));
+  if (ext.b_EGL_ANGLE_sync_control_rate) {
+    fn.eglGetMscRateANGLEFn = reinterpret_cast<eglGetMscRateANGLEProc>(
+        GetGLProcAddress("eglGetMscRateANGLE"));
   }
 
   if (ext.b_EGL_ANDROID_get_native_client_buffer) {
@@ -602,12 +604,11 @@ EGLBoolean EGLApiBase::eglGetFrameTimestampSupportedANDROIDFn(
                                                             timestamp);
 }
 
-EGLBoolean EGLApiBase::eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
-                                               EGLSurface surface,
-                                               EGLint* numerator,
-                                               EGLint* denominator) {
-  return driver_->fn.eglGetMscRateCHROMIUMFn(dpy, surface, numerator,
-                                             denominator);
+EGLBoolean EGLApiBase::eglGetMscRateANGLEFn(EGLDisplay dpy,
+                                            EGLSurface surface,
+                                            EGLint* numerator,
+                                            EGLint* denominator) {
+  return driver_->fn.eglGetMscRateANGLEFn(dpy, surface, numerator, denominator);
 }
 
 EGLClientBuffer EGLApiBase::eglGetNativeClientBufferANDROIDFn(
@@ -1117,13 +1118,12 @@ EGLBoolean TraceEGLApi::eglGetFrameTimestampSupportedANDROIDFn(
                                                           timestamp);
 }
 
-EGLBoolean TraceEGLApi::eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
-                                                EGLSurface surface,
-                                                EGLint* numerator,
-                                                EGLint* denominator) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceEGLAPI::eglGetMscRateCHROMIUM")
-  return egl_api_->eglGetMscRateCHROMIUMFn(dpy, surface, numerator,
-                                           denominator);
+EGLBoolean TraceEGLApi::eglGetMscRateANGLEFn(EGLDisplay dpy,
+                                             EGLSurface surface,
+                                             EGLint* numerator,
+                                             EGLint* denominator) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceEGLAPI::eglGetMscRateANGLE")
+  return egl_api_->eglGetMscRateANGLEFn(dpy, surface, numerator, denominator);
 }
 
 EGLClientBuffer TraceEGLApi::eglGetNativeClientBufferANDROIDFn(
@@ -1811,16 +1811,16 @@ EGLBoolean LogEGLApi::eglGetFrameTimestampSupportedANDROIDFn(EGLDisplay dpy,
   return result;
 }
 
-EGLBoolean LogEGLApi::eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
-                                              EGLSurface surface,
-                                              EGLint* numerator,
-                                              EGLint* denominator) {
-  GL_SERVICE_LOG("eglGetMscRateCHROMIUM"
+EGLBoolean LogEGLApi::eglGetMscRateANGLEFn(EGLDisplay dpy,
+                                           EGLSurface surface,
+                                           EGLint* numerator,
+                                           EGLint* denominator) {
+  GL_SERVICE_LOG("eglGetMscRateANGLE"
                  << "(" << dpy << ", " << surface << ", "
                  << static_cast<const void*>(numerator) << ", "
                  << static_cast<const void*>(denominator) << ")");
   EGLBoolean result =
-      egl_api_->eglGetMscRateCHROMIUMFn(dpy, surface, numerator, denominator);
+      egl_api_->eglGetMscRateANGLEFn(dpy, surface, numerator, denominator);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

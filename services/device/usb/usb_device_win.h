@@ -17,6 +17,7 @@
 namespace device {
 
 struct UsbDeviceDescriptor;
+struct WebUsbPlatformCapabilityDescriptor;
 
 class UsbDeviceWin : public UsbDevice {
  public:
@@ -54,10 +55,16 @@ class UsbDeviceWin : public UsbDevice {
       uint8_t i_product,
       uint8_t i_serial_number,
       std::unique_ptr<std::map<uint8_t, base::string16>> string_map);
-  void OnOpenedToReadWebUsbDescriptors(
+  void OnReadWebUsbCapabilityDescriptor(
       base::OnceCallback<void(bool)> callback,
+      scoped_refptr<UsbDeviceHandle> device_handle,
+      const base::Optional<WebUsbPlatformCapabilityDescriptor>& descriptor);
+  void OnOpenedToReadWebUsbLandingPage(
+      base::OnceCallback<void(bool)> callback,
+      uint8_t vendor_code,
+      uint8_t landing_page_id,
       scoped_refptr<UsbDeviceHandle> device_handle);
-  void OnReadWebUsbDescriptors(base::OnceCallback<void(bool)> callback,
+  void OnReadWebUsbLandingPage(base::OnceCallback<void(bool)> callback,
                                scoped_refptr<UsbDeviceHandle> device_handle,
                                const GURL& landing_page);
 

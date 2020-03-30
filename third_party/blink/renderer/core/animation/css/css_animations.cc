@@ -590,7 +590,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     Animation& animation =
         *running_animations_[cancelled_indices[i]]->animation;
     animation.ClearOwningElement();
-    animation.cancel();
+    if (animation.IsCSSAnimation() &&
+        !DynamicTo<CSSAnimation>(animation)->getIgnoreCSSPlayState())
+      animation.cancel();
     animation.Update(kTimingUpdateOnDemand);
     running_animations_.EraseAt(cancelled_indices[i]);
   }

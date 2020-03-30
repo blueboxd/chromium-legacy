@@ -27,6 +27,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "weblayer/browser/browser_context_impl.h"
+#include "weblayer/browser/cookie_manager_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/common/weblayer_paths.h"
 
@@ -272,6 +273,12 @@ void ProfileImpl::SetDownloadDelegate(DownloadDelegate* delegate) {
   download_delegate_ = delegate;
 }
 
+CookieManager* ProfileImpl::GetCookieManager() {
+  if (!cookie_manager_)
+    cookie_manager_ = std::make_unique<CookieManagerImpl>(GetBrowserContext());
+  return cookie_manager_.get();
+}
+
 void ProfileImpl::ClearRendererCache() {
   for (content::RenderProcessHost::iterator iter =
            content::RenderProcessHost::AllHostsIterator();
@@ -364,6 +371,10 @@ void ProfileImpl::SetDownloadDirectory(
       base::android::ConvertJavaStringToUTF8(directory));
 
   SetDownloadDirectory(directory_path);
+}
+
+jlong ProfileImpl::GetCookieManager(JNIEnv* env) {
+  return reinterpret_cast<jlong>(GetCookieManager());
 }
 
 #endif  // OS_ANDROID

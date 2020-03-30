@@ -13,6 +13,7 @@ jumbo_static_library("webauthn") {
     "internal_authenticator_impl.h",
   ]
   deps = [
+    "//components/autofill/core/browser",
     "//content/browser:for_internal_webauthn",
     "//content/public/browser",
   ]

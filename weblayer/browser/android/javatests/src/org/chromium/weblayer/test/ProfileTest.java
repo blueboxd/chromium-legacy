@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -119,6 +120,7 @@ public class ProfileTest {
 
     @Test
     @SmallTest
+    @DisabledTest
     public void testEnumerateAllProfileNames() throws Exception {
         final String profileName = "TestEnumerateAllProfileNames";
         final WebLayer weblayer = mActivityTestRule.getWebLayer();

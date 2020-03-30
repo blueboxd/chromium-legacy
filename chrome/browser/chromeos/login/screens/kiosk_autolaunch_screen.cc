@@ -11,6 +11,16 @@
 
 namespace chromeos {
 
+// static
+std::string KioskAutolaunchScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::CANCELED:
+      return "Canceled";
+  }
+}
+
 KioskAutolaunchScreen::KioskAutolaunchScreen(
     KioskAutolaunchScreenView* view,
     const ScreenExitCallback& exit_callback)

@@ -63,6 +63,7 @@ source_set("unit_tests") {
     "//chrome/browser/upboarding/query_tiles:public",
     "//chrome/browser/upboarding/query_tiles/internal",
     "//chrome/browser/upboarding/query_tiles/proto",
+    "//chrome/browser/upboarding/query_tiles/test:test_lib",
     "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto",
     "//components/leveldb_proto:test_support",

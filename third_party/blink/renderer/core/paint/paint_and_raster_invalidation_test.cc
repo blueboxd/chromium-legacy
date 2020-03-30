@@ -409,8 +409,10 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   UpdateAllLifecyclePhasesForTest();
   Element* iframe = GetDocument().getElementById("iframe");
   Element* content = ChildDocument().getElementById("content");
-  EXPECT_EQ(GetLayoutView(),
-            content->GetLayoutObject()->ContainerForPaintInvalidation());
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(GetLayoutView(),
+              content->GetLayoutObject()->ContainerForPaintInvalidation());
+  }
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             content->GetLayoutObject()->View()->GetBackgroundPaintLocation());
 
@@ -488,8 +490,10 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   Element* iframe = GetDocument().getElementById("iframe");
   Element* content = ChildDocument().getElementById("content");
   LayoutView* frame_layout_view = content->GetLayoutObject()->View();
-  EXPECT_EQ(GetLayoutView(),
-            content->GetLayoutObject()->ContainerForPaintInvalidation());
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(GetLayoutView(),
+              content->GetLayoutObject()->ContainerForPaintInvalidation());
+  }
 
   // Resize the content.
   GetDocument().View()->SetTracksRasterInvalidations(true);
@@ -679,7 +683,8 @@ TEST_P(PaintAndRasterInvalidationTest,
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(&GetLayoutView(), object->ContainerForPaintInvalidation());
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_EQ(&GetLayoutView(), object->ContainerForPaintInvalidation());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             ToLayoutBoxModelObject(object)->GetBackgroundPaintLocation());
 
@@ -806,15 +811,19 @@ TEST_P(PaintAndRasterInvalidationTest,
 
   Element* iframe = GetDocument().getElementById("iframe");
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
-  EXPECT_EQ(GetDocument().GetLayoutView(),
-            &child_layout_view->ContainerForPaintInvalidation());
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(GetDocument().GetLayoutView(),
+              &child_layout_view->ContainerForPaintInvalidation());
+  }
   EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
 
   iframe->setAttribute(html_names::kStyleAttr, "border: 20px solid blue");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(GetDocument().GetLayoutView(),
-            &child_layout_view->ContainerForPaintInvalidation());
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(GetDocument().GetLayoutView(),
+              &child_layout_view->ContainerForPaintInvalidation());
+  }
   EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
 }

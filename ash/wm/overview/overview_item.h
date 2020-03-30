@@ -201,12 +201,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   void OnHighlightedViewActivated();
   void OnHighlightedViewClosed();
 
-  // Called when we try to close a window that is not closeable. The close
-  // animation happens before we try to call Widget::Close. This will get
-  // called after Widget::Close if the window was not closed, so we can reverse
-  // the close animation.
-  void OnWindowDidNotClose();
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

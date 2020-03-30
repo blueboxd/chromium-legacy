@@ -13,6 +13,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
 #include "components/prefs/pref_service.h"
@@ -62,12 +63,13 @@ void CloudPolicyCore::Disconnect() {
 }
 
 void CloudPolicyCore::StartRemoteCommandsService(
-    std::unique_ptr<RemoteCommandsFactory> factory) {
+    std::unique_ptr<RemoteCommandsFactory> factory,
+    PolicyInvalidationScope scope) {
   DCHECK(client_);
   DCHECK(factory);
 
   remote_commands_service_ = std::make_unique<RemoteCommandsService>(
-      std::move(factory), client_.get(), store_);
+      std::move(factory), client_.get(), store_, scope);
 
   // Do an initial remote commands fetch immediately.
   remote_commands_service_->FetchRemoteCommands();

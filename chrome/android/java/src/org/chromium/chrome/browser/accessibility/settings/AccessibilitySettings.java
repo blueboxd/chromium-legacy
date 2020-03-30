@@ -18,9 +18,9 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
-import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 
 /**
  * Fragment to keep track of all the accessibility related preferences.

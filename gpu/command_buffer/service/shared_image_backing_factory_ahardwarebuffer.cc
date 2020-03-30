@@ -287,7 +287,7 @@ class SharedImageRepresentationSkiaVkAHB
 
   ~SharedImageRepresentationSkiaVkAHB() override {
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
-    DCHECK(!surface_);
+    surface_.reset();
     DCHECK(vulkan_image_);
     VulkanFenceHelper* fence_helper = context_state_->vk_context_provider()
                                           ->GetDeviceQueue()
@@ -302,29 +302,31 @@ class SharedImageRepresentationSkiaVkAHB
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores) override {
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
-    DCHECK(!surface_);
 
     if (!BeginAccess(false /* readonly */, begin_semaphores, end_semaphores))
       return nullptr;
 
-    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
-        /*gpu_compositing=*/true, format());
-    auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        context_state_->gr_context(), promise_texture_->backendTexture(),
-        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
-        color_space().ToSkColorSpace(), &surface_props);
-    DCHECK(surface);
-    surface_ = surface.get();
-    return surface;
+    if (!surface_) {
+      SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+          /*gpu_compositing=*/true, format());
+      surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+          context_state_->gr_context(), promise_texture_->backendTexture(),
+          kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
+          color_space().ToSkColorSpace(), &surface_props);
+    }
+
+    DCHECK(surface_);
+    return surface_;
   }
 
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
     DCHECK_EQ(mode_, RepresentationAccessMode::kWrite);
-    DCHECK_EQ(surface.get(), surface_);
-    DCHECK(surface->unique());
+    DCHECK_EQ(surface.get(), surface_.get());
+
+    surface.reset();
+    DCHECK(surface_->unique());
 
     EndAccess(false /* readonly */);
-    surface_ = nullptr;
   }
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
@@ -449,7 +451,7 @@ class SharedImageRepresentationSkiaVkAHB
   std::unique_ptr<VulkanImage> vulkan_image_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
-  SkSurface* surface_ = nullptr;
+  sk_sp<SkSurface> surface_;
   scoped_refptr<SharedContextState> context_state_;
   VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
 };

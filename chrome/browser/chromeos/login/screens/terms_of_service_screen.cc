@@ -36,6 +36,16 @@ constexpr const char kBack[] = "back";
 
 }  // namespace
 
+// static
+std::string TermsOfServiceScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::ACCEPTED:
+      return "Accepted";
+    case Result::DECLINED:
+      return "Declined";
+  }
+}
+
 TermsOfServiceScreen::TermsOfServiceScreen(
     TermsOfServiceScreenView* view,
     const ScreenExitCallback& exit_callback)

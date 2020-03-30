@@ -829,10 +829,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         "GL_FILL_NV",
     },
     {
-        0x1D00,
-        "GL_FLAT_CHROMIUM",
-    },
-    {
         0x1E00,
         "GL_KEEP",
     },
@@ -875,14 +871,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     {
         0x20000000,
         "GL_FONT_NUM_GLYPH_INDICES_BIT_NV",
-    },
-    {
-        0x2400,
-        "GL_EYE_LINEAR_CHROMIUM",
-    },
-    {
-        0x2401,
-        "GL_OBJECT_LINEAR_CHROMIUM",
     },
     {
         0x2600,
@@ -2051,10 +2039,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     {
         0x851C,
         "GL_MAX_CUBE_MAP_TEXTURE_SIZE",
-    },
-    {
-        0x8576,
-        "GL_CONSTANT_CHROMIUM",
     },
     {
         0x8589,
@@ -4629,10 +4613,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         "GL_PATH_CLIENT_LENGTH_NV",
     },
     {
-        0x907a,
-        "GL_PATH_MITER_LIMIT_CHROMIUM",
-    },
-    {
         0x9080,
         "GL_PATH_FILL_MODE_NV",
     },
@@ -4651,10 +4631,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     {
         0x9084,
         "GL_PATH_STROKE_MASK_NV",
-    },
-    {
-        0x9086,
-        "GL_PATH_STROKE_BOUND_CHROMIUM",
     },
     {
         0x9088,
@@ -4963,14 +4939,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     {
         0x90F3,
         "GL_CONTEXT_ROBUST_ACCESS_KHR",
-    },
-    {
-        0x90a3,
-        "GL_SQUARE_CHROMIUM",
-    },
-    {
-        0x90a4,
-        "GL_ROUND_CHROMIUM",
     },
     {
         0x9100,

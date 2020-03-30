@@ -3088,8 +3088,6 @@ jumbo_static_library("browser") {
     }
   } else {  # !is_android
     sources += [
-      "accessibility/caption_bubble.cc",
-      "accessibility/caption_bubble.h",
       "accessibility/invert_bubble_prefs.cc",
       "accessibility/invert_bubble_prefs.h",
       "apps/app_service/app_icon_factory.cc",

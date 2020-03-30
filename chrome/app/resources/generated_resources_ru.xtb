@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">Добавить порт</translation>
 <translation id="1026822031284433028">Загрузить изображение</translation>
 <translation id="1029317248976101138">Масштаб</translation>
-<translation id="1030706264415084469">Сайт <ph name="URL" /> запрашивает разрешение на постоянное хранение большого объема данных на вашем устройстве.</translation>
 <translation id="1031362278801463162">Загрузка данных для предварительного просмотра</translation>
 <translation id="1032605640136438169">Просим вас ознакомиться с изменениями.</translation>
 <translation id="103279545524624934">Чтобы запускать Android-приложения, освободите пространство на диске.</translation>
@@ -534,7 +533,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (оригинальное)</translation>
 <translation id="1709217939274742847">Выберите билет для аутентификации. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">Получите этот пароль на iPhone</translation>
-<translation id="1712552549805331520">Сайт <ph name="URL" /> запрашивает разрешение на постоянное хранение данных на вашем компьютере.</translation>
 <translation id="1714644264617423774">Чтобы пользоваться устройством было проще, включите специальные возможности. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Датчики движения</translation>
 <translation id="1718835860248848330">Последний час</translation>
@@ -748,7 +746,6 @@
 <translation id="1992397118740194946">Не задано</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="1995916364271252349">Определяет, какую информацию могут использовать и показывать сайты (например, есть ли у них доступ к местоположению и камере, а также разрешение на показ всплывающих окон и т. д.).</translation>
-<translation id="1997484222658892567">Сайт <ph name="URL" /> запрашивает разрешение на постоянное хранение большого объема данных на вашем компьютере.</translation>
 <translation id="1997616988432401742">Ваши сертификаты</translation>
 <translation id="1999115740519098545">Запуск Chrome</translation>
 <translation id="2000419248597011803">Отправлять некоторые файлы cookie и поисковые запросы из адресной строки в поисковую систему по умолчанию</translation>
@@ -1009,7 +1006,6 @@
 <translation id="2340263603246777781">Сайт <ph name="ORIGIN" /> запрашивает подключение</translation>
 <translation id="2342740338116612727">Закладки добавлены</translation>
 <translation id="2343747224442182863">Переключиться на эту вкладку</translation>
-<translation id="2344028582131185878">Автоматическая загрузка</translation>
 <translation id="2345723121311404059">Печать 1 страницы на принтере <ph name="PRINTER_NAME" /></translation>
 <translation id="2346953515226895098">Сервис SODA</translation>
 <translation id="2347644257713614136">Использование Hangouts и Cast for Education регулируется Политикой конфиденциальности Google.</translation>
@@ -1660,7 +1656,6 @@
 <translation id="3188465121994729530">Скользящее среднее</translation>
 <translation id="3190558889382726167">Пароль сохранен</translation>
 <translation id="3192947282887913208">Аудиофайлы</translation>
-<translation id="3194737229810486521">Сайт <ph name="URL" /> запрашивает разрешение на постоянное хранение данных на вашем устройстве.</translation>
 <translation id="3199127022143353223">Серверы</translation>
 <translation id="3200941271596533635">Включить/выключить режим чтения</translation>
 <translation id="3201306578844503970">Не удалось установить виртуальную машину из-за ошибки сети. Повторите попытку или обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
@@ -3994,7 +3989,6 @@
 <translation id="6349101878882523185">Установить приложение "<ph name="APP_NAME" />"</translation>
 <translation id="6349170655202535379">Ошибка синхронизации. Выйдите из аккаунта и войдите ещё раз.</translation>
 <translation id="6351063337294363751">В этом меню можно удалить данные о работе в браузере</translation>
-<translation id="6352223293513723497">На устройстве осталось мало места. Чтобы использовать Plugin VM, освободите пространство в хранилище.</translation>
 <translation id="6352773953037195952">Самый высокий</translation>
 <translation id="6354918092619878358">Эллиптическая кривая SECG secp256r1 (она же ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Не выключайте устройство.</translation>
@@ -4938,7 +4932,6 @@
 <translation id="7645681574855902035">Отмена резервного копирования контейнера Linux…</translation>
 <translation id="7646772052135772216">Синхронизация паролей не работает</translation>
 <translation id="7647403192093989392">Нет недавних действий</translation>
-<translation id="7648992873808071793">сохранение файлов на этом устройстве</translation>
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7650511557061837441">Расширение "<ph name="TRIGGERING_EXTENSION_NAME" />" пытается удалить расширение "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7652808307838961528">Изменить профиль пользователя <ph name="PROFILE_NAME" /></translation>

@@ -51,8 +51,6 @@ using content::BrowserThread;
 namespace extensions {
 namespace {
 
-constexpr char kCreationFailed[] = "Access to extension API denied.";
-
 // Notifies the ApiActivityMonitor that an extension API function has been
 // called. May be called from any thread.
 void NotifyApiFunctionCalled(const std::string& extension_id,
@@ -336,9 +334,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     function->set_include_incognito_information(true);
   }
 
-  if (!CheckPermissions(function.get(), params, callback))
-    return;
-
   if (!extension) {
     if (function->source_context_type() == Feature::WEBUI_CONTEXT) {
       base::UmaHistogramSparse("Extensions.Functions.WebUICalls",
@@ -456,19 +451,6 @@ ExtensionFunctionDispatcher::GetVisibleWebContents() const {
 }
 
 // static
-bool ExtensionFunctionDispatcher::CheckPermissions(
-    ExtensionFunction* function,
-    const ExtensionHostMsg_Request_Params& params,
-    const ExtensionFunction::ResponseCallback& callback) {
-  if (!function->HasPermission()) {
-    LOG(ERROR) << "Permission denied for " << params.name;
-    function->RespondWithError(kCreationFailed);
-    return false;
-  }
-  return true;
-}
-
-// static
 scoped_refptr<ExtensionFunction>
 ExtensionFunctionDispatcher::CreateExtensionFunction(
     const ExtensionHostMsg_Request_Params& params,
@@ -479,6 +461,8 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
     ExtensionAPI* api,
     void* profile_id,
     const ExtensionFunction::ResponseCallback& callback) {
+  constexpr char kCreationFailed[] = "Access to extension API denied.";
+
   scoped_refptr<ExtensionFunction> function =
       ExtensionFunctionRegistry::GetInstance().NewFunction(params.name);
   if (!function) {
@@ -498,6 +482,12 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_source_context_type(process_map.GetMostLikelyContextType(
       extension, requesting_process_id, rfh_url));
   function->set_source_process_id(requesting_process_id);
+
+  if (!function->HasPermission()) {
+    LOG(ERROR) << "Permission denied for " << params.name;
+    function->RespondWithError(kCreationFailed);
+    return nullptr;
+  }
 
   return function;
 }

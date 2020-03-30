@@ -11,11 +11,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/variations/service/variations_service_client.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
 namespace weblayer {
+
+class SystemNetworkContextManager;
 
 // WebLayerVariationsServiceClient provides an implementation of
 // VariationsServiceClient, all members are currently stubs for WebLayer.
@@ -23,10 +21,11 @@ class WebLayerVariationsServiceClient
     : public variations::VariationsServiceClient {
  public:
   explicit WebLayerVariationsServiceClient(
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
+      SystemNetworkContextManager* network_context_manager);
   ~WebLayerVariationsServiceClient() override;
 
  private:
+  // variations::VariationsServiceClient:
   base::OnceCallback<base::Version(void)> GetVersionForSimulationCallback()
       override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
@@ -35,7 +34,7 @@ class WebLayerVariationsServiceClient
   bool OverridesRestrictParameter(std::string* parameter) override;
   bool IsEnterprise() override;
 
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  SystemNetworkContextManager* network_context_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerVariationsServiceClient);
 };

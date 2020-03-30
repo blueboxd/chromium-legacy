@@ -265,7 +265,6 @@ mojom("android_mojo_bindings") {
     "payments/payment_handler_host.mojom",
     "payments/payment_request.mojom",
     "webauthn/authenticator.mojom",
-    "webauthn/internal_authenticator.mojom",
     "webshare/webshare.mojom",
   ]
 

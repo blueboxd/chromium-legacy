@@ -39,6 +39,7 @@
 #include "components/autofill/content/browser/autofill_log_router_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/content/browser/webauthn/internal_authenticator_impl.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
@@ -225,6 +226,16 @@ ChromeAutofillClient::GetBinRangeWhitelistForVirtualCards() {
       ->GetTokenizationBinRangesWhitelist();
 }
 #endif
+
+std::unique_ptr<InternalAuthenticator>
+ChromeAutofillClient::CreateCreditCardInternalAuthenticator(
+    content::RenderFrameHost* rfh) {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  return std::make_unique<content::InternalAuthenticatorImpl>(rfh);
+#endif
+}
 
 void ChromeAutofillClient::ShowAutofillSettings(
     bool show_credit_card_settings) {

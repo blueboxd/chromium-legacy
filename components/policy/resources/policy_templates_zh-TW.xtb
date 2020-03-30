@@ -161,11 +161,6 @@
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
 <translation id="1163080558183062209">停用拒絕清單上的印表機類型</translation>
 <translation id="117059611145966538">外部列印伺服器</translation>
-<translation id="1189817621108632689">讓你設定網址模式清單，指定不可顯示圖片的網站。
-
-          如果未設定這項政策，系統會根據「DefaultImagesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
-
-          請注意，先前我們誤在 Android 裝置上啟用這項政策，但這項功能從未針對 Android 裝置提供完整支援。</translation>
 <translation id="1194005076170619046">如果啟用這項設定，當工作階段處於啟動狀態且螢幕未鎖定時，系統匣會顯示紅色的大型登出按鈕。
 
       如果停用或不指定這項設定，則系統匣不會顯示紅色的大型登出按鈕。</translation>
@@ -309,7 +304,6 @@
       這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="1438739959477268107">預設金鑰產生設定</translation>
-<translation id="1454846751303307294">允許你設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="1455804070656338445">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。當密碼保護服務偵測到瀏覽器中出現警告訊息後，就會將使用者導向至這個網址，讓他們變更密碼。
       為了讓 <ph name="PRODUCT_NAME" /> 能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合以下網址所述的規範：https://www.chromium.org/developers/design-documents/create-amazing-password-forms.。
 
@@ -427,9 +421,6 @@
 <translation id="1654087023995670109">強制執行瀏覽器訪客模式</translation>
 <translation id="1655229863189977773">設定磁碟快取大小 (以位元組為單位)</translation>
 <translation id="166427968280387991">Proxy 伺服器：</translation>
-<translation id="1667071842533245879">你可以設定網址模式清單，指定哪些網站不能顯示可封鎖 (即使用中) 混合內容 (亦即 HTTPS 網站上的 HTTP 內容)，並指定要升級哪些選擇性可封鎖 (即非使用中) 混合內容。
-
-         如果不設定這項政策，則可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。但使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。</translation>
 <translation id="1667877109169174750">如果將這項政策設為 True，系統匣選單中一律會顯示無障礙工具選項。
 
           如果將這項政策設為 False，系統匣選單中一律不會顯示無障礙工具選項。
@@ -579,13 +570,6 @@
       如果未設定這項政策，系統會啟用網路預測功能，不過使用者可變更這項設定。</translation>
 <translation id="1865417998205858223">金鑰權限</translation>
 <translation id="186719019195685253">使用 AC 電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
-<translation id="1875371246345730828">這項政策會設定哪些網址可在登入畫面的 SAML 流程中，取得使用裝置身分遠端認證機制的存取權。
-
-      具體來說，如果網址符合這項政策提供的其中一種模式，系統會允許該網址接收 HTTP 標頭 (其中包含對遠端認證機制驗證問題的回應)，以認證裝置身分及裝置狀態。
-
-      如果不設定這項政策或將其設為空白，則系統不允許任何網址在登入畫面使用遠端認證機制。
-
-      網址必須採用 HTTPS 架構，例如「https://example.com」。</translation>
 <translation id="187819629719252111">允許「<ph name="PRODUCT_NAME" />」顯示檔案選項對話方塊，即可允許本機檔案的存取權。如果你啟用這項設定，使用者就能照常開啟檔案選項對話方塊。如果你停用這項設定，只要使用者執行的動作會開啟檔案選項對話方塊 (例如匯入書籤、上傳檔案、儲存連結等)，螢幕上就會顯示訊息，並假設使用者已按下檔案選項對話方塊上的 [取消]。如果未調整這項設定，使用者就能照常開啟檔案選項對話方塊。</translation>
 <translation id="1885782360784839335">允許顯示完整分頁宣傳內容</translation>
 <translation id="1888871729456797026">電腦上的雲端政策註冊憑證</translation>
@@ -911,7 +895,6 @@
 
       系統會忽略格式不正確的範本。</translation>
 <translation id="2345547870894930157">啟用 DNS-over-HTTPS，而且禁止改用不安全查詢</translation>
-<translation id="237494535617297575">允許你設定網址模式清單，指定可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="2386362615870139244">允許使用螢幕喚醒鎖</translation>
 <translation id="2398554235599593694"> 這項政策可控管系統是否要在外部通訊協定的啟動確認提示中顯示「一律開啟」核取方塊。
 
@@ -1314,31 +1297,6 @@
 
       一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的印表機，且 ID 必須和 <ph name="DEVICE_PRINTERS_POLICY" /> 指定檔案中的「id」或「guid」欄位相符。
       </translation>
-<translation id="2842152347010310843">這項政策可控管要一律啟用自動播放功能的網址模式許可清單。
-
-      如果自動播放功能設定為啟用，<ph name="PRODUCT_NAME" /> 中的影片可與音訊內容一起自動播放 (不需經過使用者同意)。
-
-      有效的網址模式應符合下列規範：
-
-      - [*.]domain.tld (符合 domain.tld 和所有子網域)
-
-      - host (符合確切的主機名稱)
-
-      - scheme://host:port (支援的網址配置：http、https)
-
-      - scheme://[*.]domain.tld:port (支援的網址配置：http、https)
-
-      - file://path (路徑必須是以「/」開頭的絕對路徑)
-
-      - a.b.c.d (符合確切的 IPv4 IP)
-
-      - [a:b:c:d:e:f:g:h] (符合確切的 IPv6 IP)
-
-      如果 AutoplayAllowed 政策的設定為 True，這項政策將不具效力。
-
-      如果 AutoplayAllowed 政策的設定為 False，這項政策中設定的網址模式仍可以播放。
-
-      請注意，如果在「<ph name="PRODUCT_NAME" />」執行期間變更這項政策，只有新開啟的分頁會套用變更。因此，某些分頁可能仍會沿用先前的設定。</translation>
 <translation id="284288632677954003">XML 檔案的網址，其中包含一律不觸發瀏覽器切換的網址。</translation>
 <translation id="2844404652289407061">在 <ph name="PRODUCT_NAME" /> 的內容檢視畫面中啟用「輕觸搜尋」功能。
 
@@ -1488,11 +1446,6 @@
 
       這項政策不適用於資訊站使用者。如果未設定這項政策，裝置行為將與選擇「DisallowArc」時相同。</translation>
 <translation id="3086995894968271156">設定「<ph name="PRODUCT_NAME" />」的 Cast 接收器</translation>
-<translation id="3088796212846734853">讓你設定網址模式清單，指定可顯示圖片的網站。
-
-          如果未設定這項政策，系統會根據「DefaultImagesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
-
-          請注意，先前我們誤在 Android 裝置上啟用這項政策，但這項功能從未針對 Android 裝置提供完整支援。</translation>
 <translation id="3091832372132789233">對主要連線至外部電源的裝置進行充電。</translation>
 <translation id="3096595567015595053">啟用的外掛程式清單</translation>
 <translation id="3101501961102569744">選擇如何指定 Proxy 伺服器設定</translation>
@@ -1584,18 +1537,10 @@
       但是，只有當 SAML 識別資訊提供者在 SAML 登入流程中將密碼到期資訊傳送至裝置時，系統才會顯示這些通知。
 
       設定這項政策後，使用者即無法變更或覆寫。</translation>
-<translation id="3322771899429619102">允許您設定網址模式清單，指定可以使用金鑰產生功能的網站。如果網址模式為「KeygenBlockedForUrls」，則會覆寫這類例外狀況。
-
-          如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
 <translation id="3327195598110816609">不要延遲提供檔案</translation>
 <translation id="332771718998993005">確定公開為「<ph name="PRODUCT_NAME" />」目的地的名稱。
 
           如果這項政策設為非空白字串，該字串就會成為「<ph name="PRODUCT_NAME" />」目的地的名稱，否則目的地名稱將會是裝置名稱。如果未設定這項政策，則目的地名稱會是裝置名稱，且裝置擁有者 (或裝置管理網域中的使用者) 可進行變更。名稱長度上限為 24 個字元。</translation>
-<translation id="3335468714959531450">讓你設定網址模式清單，指定可設定 Cookie 的網站。
-
-          如果未設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
-
-          另請查看「CookiesBlockedForUrls」和「CookiesSessionOnlyForUrls」政策。請注意，這三項政策的網址模式不得有衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
 <translation id="3339271789059866414">設定系統 Proxy 服務的可用性和系統服務的 Proxy 憑證。
       如果不設定這項政策，將無法使用系統 Proxy 服務。</translation>
 <translation id="3356657927302977341">設定 Linux 上的 <ph name="PRODUCT_NAME" /> 是否要使用原生通知。
@@ -1934,7 +1879,6 @@
           根據預設，所有內建訊息傳遞主機都會列入許可清單。不過，如果透過政策將所有內建訊息傳遞主機列入黑名單，則可使用許可清單來覆寫政策。</translation>
 <translation id="3835692988507803626">針對指定語言強制停用拼字檢查功能</translation>
 <translation id="3837424079837455272">這項政策可控管是否能在 <ph name="PRODUCT_OS_NAME" />中新增使用者，但不會禁止使用者在 Android 應用程式中登入其他 Google 帳戶。如要禁止使用者登入其他 Google 帳戶，你可以在 <ph name="ARC_POLICY_POLICY_NAME" /> 中設定 Android 專屬的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策。</translation>
-<translation id="384743459174066962">允許你設定網址模式清單，指定不可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="3851039766298741586">回報執行中資訊站工作階段的相關資訊，例如
       應用程式 ID 和版本。
 
@@ -2247,9 +2191,6 @@
 
           注意：在 <ph name="CHARGE_START_TIME_FIELD_NAME" /> 和<ph name="CHARGE_END_TIME_FIELD_NAME" /> 的 <ph name="MINUTE_FIELD_NAME" /> 欄位中，允許的值為 0、15、30、45。</translation>
 <translation id="4224610387358583899">螢幕鎖定延遲</translation>
-<translation id="423797045246308574">允許您設定網址模式清單，指定禁止使用金鑰產生功能的網站。如果網址模式為「KeygenAllowedForUrls」，這項政策就會覆寫這類例外狀況。
-
-          如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
 <translation id="4238997902172035160">這項政策可設定 <ph name="PRODUCT_NAME" /> 儲存設定檔漫遊副本的目錄。
 
       如果設定這項政策且啟用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策，<ph name="PRODUCT_NAME" /> 會將設定檔的漫遊副本儲存在你所提供的目錄。如果停用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策或不設定，則系統不會使用這項政策所儲存的值。
@@ -2755,7 +2696,6 @@
           如果未設定這項政策或將其留空，系統就會使用預設的新分頁。
 
           這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
-<translation id="5208240613060747912">允許你設定網址模式清單，指定不可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="5210980743015047124">設定 <ph name="PRODUCT_NAME" /> 的最低版本限制。
 
       將這項政策設為非空白的清單時：
@@ -3403,7 +3343,6 @@
 
       請注意，如果將 <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 政策設為 <ph name="BLOCK_GEOLOCATION_SETTING" />，則系統會忽略這項政策，並一律停用 Google 定位服務。</translation>
 <translation id="6141402445226505817">一律使用約略時區偵測功能</translation>
-<translation id="6145799962557135888">允許你設定網址模式清單，指定可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="614616930188030377">系統會將這份清單中的模式與要求網址的安全性來源進行比對。
       如果找到相符的結果，或你已停用 chrome://flags/#enable-webrtc-hide-local-ips-with-mdns，系統就會在 WebRTC ICE 候選項目中顯示本機 IP 位址。
       否則系統會透過 mDNS 主機名稱隱藏本機 IP 位址。
@@ -3432,9 +3371,6 @@
           如需詳細範例，請造訪：
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="6178075938488052838">這項政策可控管哪些使用者能夠啟動 <ph name="PRODUCT_OS_NAME" />工作階段，但不會禁止使用者在 Android 應用程式中登入其他 Google 帳戶。如要禁止使用者登入其他 Google 帳戶，你可以在 <ph name="ARC_POLICY_POLICY_NAME" /> 中設定 Android 專屬的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策。</translation>
-<translation id="6181608880636987460">允許你設定網址模式清單，指定不允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
-
-          如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6190022522129724693">預設彈出視視窗設定</translation>
 <translation id="6190367314942602985">回報使用者身分識別資訊</translation>
 <translation id="6195802366906945965">決定是否使用內建憑證驗證器來驗證伺服器憑證</translation>
@@ -3710,11 +3646,6 @@
 <translation id="6665670272107384733">設定使用者使用快速解鎖功能時需輸入密碼的頻率</translation>
 <translation id="6672070613706645316">允許使用者自訂新分頁的背景</translation>
 <translation id="6672630473862787247">在一般工作階段、無痕模式工作階段和訪客工作階段中啟用背景驗證。</translation>
-<translation id="6681229465468164801">允許你設定網址模式清單，指定禁止要求使用者授予 USB 裝置存取權的網站。
-
-          如未設定這項政策，系統會根據「DefaultWebUsbGuardSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
-
-          透過這項政策設定的網址模式與透過 WebUsbAskForUrls 設定的網址模式不可衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
 <translation id="6685903773201985073">在訪客工作階段和一般工作階段中啟用背景驗證。</translation>
 <translation id="6689792153960219308">回報硬體狀態</translation>
 <translation id="6698632841807204978">啟用單色列印</translation>
@@ -3732,9 +3663,6 @@
 <translation id="6731757988219967594">針對成人內容篩選頂層網站 (但不篩選嵌入的 iframe)</translation>
 <translation id="6734521799274931721">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
-<translation id="6757438632136860443">允許你設定網址模式清單，指定允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
-
-          如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6757613329154374267">已啟用備份與還原功能</translation>
 <translation id="6762235610019366960">讓你控制 <ph name="PRODUCT_NAME" /> 能否以完整分頁顯示宣傳和/或教學內容。
 
@@ -3746,11 +3674,6 @@
 <translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
 <translation id="6772045451150098845">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的功能。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的功能。如果設為 False，進階保護計畫的使用者只能享有標準的消費者功能。</translation>
-<translation id="6780908086869332493">允許你設定網址模式清單，指定在 SAML 流程代管架構的登入畫面中，系統要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話)。實際應用範例為設定要提供給 SAML IdP 的裝置通用憑證。
-
-      這個值必須是字串化的 JSON 字典陣列。每個字典的格式都必須為 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定模式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器只會選取符合伺服器憑證要求的憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 的格式為 <ph name="JSON_DICTIONARY_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 是空白的字典 {}，則瀏覽器在選取用戶端憑證時不會受到額外限制。
-
-      如果不設定這項政策，系統不會為任何網站自動選取憑證。</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6795485990775913659">只在 PIN 碼停用時允許列印</translation>
@@ -3903,11 +3826,6 @@
 <translation id="7072208053150563108">裝置密碼變更頻率</translation>
 <translation id="7079519252486108041">封鎖這些網站的彈出式視窗</translation>
 <translation id="7080072532759721791">允許使用者上傳或下載受密碼保護的檔案</translation>
-<translation id="7085803328069945025">允許你設定網址模式清單，指定可要求使用者授予 USB 裝置存取權的網站。
-
-          如未設定這項政策，系統會根據「DefaultWebUsbGuardSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
-
-          透過這項政策設定的網址模式與透過 WebUsbBlockedForUrls 設定的網址模式不可衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
 <translation id="7086677522575756117">指定當系統在螢幕調暗或畫面關閉後不久便偵測到使用者活動時，要將螢幕調暗延遲時間延長多少百分比。
 
           如果設定這項政策，當系統在螢幕調暗或畫面關閉後不久便偵測到使用者活動時，將按這項政策的百分比值延長螢幕調暗延遲時間。一旦延長了螢幕調暗延遲時間，螢幕關閉、螢幕鎖定和閒置狀態的延遲時間也會隨之調整，以維持與原先設定相同的間隔時間。
@@ -4226,7 +4144,6 @@
       如果將這項政策設為 False 或不設定，系統會關閉 DTC，DTC 就無法收集、處理和回報裝置上的遙測和診斷資料。
       如果相關裝置可以使用 Wilco DTC，且這項政策設為 True，那麼系統就會開啟遙測和診斷資料的收集、處理和回報功能。</translation>
 <translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
-<translation id="7529100000224450960">允許你設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
 <translation id="7534199150025803530">這項政策對 Android Google 雲端硬碟應用程式沒有影響。如要禁止透過行動網路連線使用 Google 雲端硬碟，則必須禁止安裝 Android Google 雲端硬碟應用程式。</translation>
 <translation id="7540622499178214923">允許使用 wilco 診斷與遙測控制器</translation>
@@ -4308,15 +4225,6 @@
 <translation id="7651739109954974365">決定是否要為裝置啟用數據漫遊。如果設為 True，就會允許數據漫遊。如未設定或設為 False，就不支援數據漫遊。</translation>
 <translation id="7657261947024629645">效能最佳化。</translation>
 <translation id="7673194325208122247">時間範圍 (毫秒)</translation>
-<translation id="7676708657861783864">將符合這些網址模式的網頁所設定的 Cookie 限制在目前的工作階段中，也就是說當使用者離開瀏覽器時，系統就會刪除 Cookie。
-
-          如果網址所採用的不是此處指定的模式，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定套用預設值。如果未設定這項政策，系統也會針對所有網址採用這種做法。
-
-          請注意，如果 <ph name="PRODUCT_NAME" /> 是以「背景模式」運作，當最後一個瀏覽器視窗關閉時，工作階段可能不會關閉，而會繼續保持使用中的狀態，直到使用者離開瀏覽器為止。請查看「BackgroundModeEnabled」政策，進一步瞭解如何設定這項行為。
-
-          另請查看「CookiesAllowedForUrls」和「CookiesBlockedForUrls」政策。請注意，這三項政策的網址模式不得有衝突，否則系統將無法判定應優先遵循哪一項政策。
-
-          如果將「RestoreOnStartup」政策設為還原先前工作階段的網址，系統就不會遵循這項政策，並且會為這些網站永久儲存 Cookie。</translation>
 <translation id="7677220829878081413">
       如果將這項政策設為 [ArcSession]，在 Android 已啟動的情況下，系統會在使用者登出時強制重新啟動裝置。
       如果將這項政策設為 [ArcSessionOrVMStart]，在 Android 或 VM 已啟動的情況下，系統會在使用者登出時強制重新啟動裝置。
@@ -4452,11 +4360,6 @@
           如果停用這項政策，使用者就無法新增 Kerberos 帳戶，只能透過「設定 Kerberos 帳戶」政策新增帳戶。這個方法可以有效地鎖定帳戶。</translation>
 <translation id="7895553628261067384">遠端存取</translation>
 <translation id="7902040092815978832">在輸入密碼時顯示數字鍵盤</translation>
-<translation id="7902255855035461275">系統會將這份清單中的模式與要求網址的安全性
-      來源進行比對。如果找到相符的結果，系統就會授權存取
-      影片擷取裝置，並且不會提示使用者。
-
-      注意：45 以下的版本僅在執行 Kiosk 模式時才支援這項政策。</translation>
 <translation id="7912255076272890813">設定允許的應用程式/擴充功能類型</translation>
 <translation id="7922358664346625612">讓 Chrome 中的最後一個分頁保持開啟。</translation>
 <translation id="793134539373873765">指定是否使用 P2P 更新裝載作業系統。如果設為 True，裝置將會在 LAN 上共用並嘗試使用更新裝載，藉此降低網際網路頻寬用量及減輕壅塞。如果 LAN 上未提供更新裝載，裝置將回歸至更新伺服器進行下載。如果設為 False 或未設定，則不會使用 P2P。</translation>
@@ -4538,11 +4441,6 @@
           如果啟用這項政策，系統會將這項政策定義的帳戶清單加入 Kerberos 帳戶設定。
 
           如果停用或不設定這項政策，系統不會將任何帳戶加入 Kerberos 帳戶設定，並會移除先前透過這項政策新增的所有帳戶。如果啟用「使用者可以新增 Kerberos 帳戶」政策，則使用者仍可以手動新增帳戶。</translation>
-<translation id="8078366200175825572">讓你設定網址模式清單，指定不可設定 Cookie 的網站。
-
-          如果未設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
-
-          另請查看「CookiesAllowedForUrls」和「CookiesSessionOnlyForUrls」政策。請注意，這三項政策的網址模式不得有衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
 <translation id="8078648571144932071">檢查上傳內容是否包含惡意軟體的網址模式</translation>
 <translation id="8099880303030573137">在電池供電環境下執行時的閒置延遲時間</translation>
 <translation id="8101381354936029836">政策不可部分完成的群組：</translation>
@@ -4631,9 +4529,6 @@
 <translation id="8186911565834244165">允許使用者意見回饋功能</translation>
 <translation id="8214600119442850823">設定密碼管理員</translation>
 <translation id="8217516105848565518">這項政策已遭到淘汰，請改用 RemoteAccessHostDomainList。</translation>
-<translation id="8236323460664833038">你可以設定網址模式清單，指定哪些網站能夠顯示可封鎖 (即使用中) 混合內容 (亦即 HTTPS 網站上的 HTTP 內容)，並指定要停用哪些選擇性可封鎖混合內容的升級功能。
-
-         如果不設定這項政策，則可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。</translation>
 <translation id="8244171102276095471">在傳輸層安全標準 (TLS) 中啟用 RC4 加密套件</translation>
 <translation id="8244525275280476362">政策失效後的最大擷取延遲</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME" /> 在登入畫面上顯示的帳戶名稱，以表示相對應的裝置本機帳戶。
@@ -5127,11 +5022,6 @@
       啟用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策時，請勿啟用這項政策。原因是該功能具有同樣的用戶端功能，會導致 Google 代管的同步處理服務完全停用。</translation>
 <translation id="8955719471735800169">返回頁首</translation>
 <translation id="8959992920425111821">預設設定</translation>
-<translation id="8960850473856121830">系統會將這份清單中的模式與要求網址的安全性
-      來源進行比對。如果找到相符的結果，系統就會授權存取
-      音訊擷取裝置，並且不會提示使用者。
-
-      注意：對於 45 版本以下的版本，僅有在執行 Kiosk 模式時才支援這項政策。</translation>
 <translation id="8970205333161758602">隱藏停止支援 <ph name="PRODUCT_FRAME_NAME" />的提示</translation>
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
 <translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>

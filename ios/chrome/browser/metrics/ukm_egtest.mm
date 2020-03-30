@@ -200,12 +200,13 @@ void SignOut() {
 // //chrome/browser/metrics/ukm_browsertest.cc
 
 // Make sure that UKM is disabled while an incognito tab is open.
-- (void)testRegularPlusIncognito {
 #if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
-  EARL_GREY_TEST_DISABLED(@"EG1 Fails");
+// TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
+#define MAYBE_testRegularPlusIncognito DISABLED_testRegularPlusIncognito
+#else
+#define MAYBE_testRegularPlusIncognito testRegularPlusIncognito
 #endif
-
+- (void)MAYBE_testRegularPlusIncognito {
   uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   OpenNewIncognitoTab();
@@ -235,12 +236,13 @@ void SignOut() {
 }
 
 // Make sure opening a real tab after Incognito doesn't enable UKM.
-- (void)testIncognitoPlusRegular {
 #if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
-  EARL_GREY_TEST_DISABLED(@"EG1 Fails");
+// TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
+#define MAYBE_testIncognitoPlusRegular DISABLED_testIncognitoPlusRegular
+#else
+#define MAYBE_testIncognitoPlusRegular testIncognitoPlusRegular
 #endif
-
+- (void)MAYBE_testIncognitoPlusRegular {
   uint64_t originalClientID = [MetricsAppInterface UKMClientID];
   [ChromeEarlGrey closeAllTabs];
   [ChromeEarlGrey waitForMainTabCount:0];

@@ -56,6 +56,13 @@ class MainSixtyImplSixty(ThroughputMetricStory):
          'main-impl-animations-throughput.html#60')
 
 
+class MainSixtyImplSixtyWithJankAndDelay(ThroughputMetricStory):
+  BASE_NAME = 'main_60fps_with_jank_and_delay_impl_60fps'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-impl-animations-throughput.html?jank&delay#60')
+
+
 class MainSixtyImplSixtyNoUpdate(ThroughputMetricStory):
   BASE_NAME = 'main_60fps_impl_60fps_no_update'
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS

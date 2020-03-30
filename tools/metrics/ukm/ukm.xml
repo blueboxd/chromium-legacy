@@ -3701,6 +3701,13 @@ be describing additional metrics about the same event.
       make it easier to work with queries / dashboards for the overall
       CrossOriginFetchFromContentScript3 event.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

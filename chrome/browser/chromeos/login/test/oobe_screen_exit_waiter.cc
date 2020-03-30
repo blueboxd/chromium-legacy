@@ -29,6 +29,8 @@ void OobeScreenExitWaiter::Wait() {
 
   state_ = State::WAITING_FOR_SCREEN_EXIT;
 
+  LOG(INFO) << "Actually waiting for exiting screen " << target_screen_.name;
+
   run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
   run_loop_.reset();

@@ -5019,31 +5019,26 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
     content::RenderViewHostTestHarness::NavigateAndCommit(url);
   }
 
-  mojo::Remote<blink::mojom::InternalAuthenticator> ConnectToAuthenticator(
-      GURL effective_origin_url) {
-    internal_authenticator_impl_ = std::make_unique<InternalAuthenticatorImpl>(
-        main_rfh(), url::Origin::Create(effective_origin_url));
-    mojo::Remote<blink::mojom::InternalAuthenticator> authenticator;
-    internal_authenticator_impl_->Bind(
-        authenticator.BindNewPipeAndPassReceiver());
-    return authenticator;
+  InternalAuthenticatorImpl* GetAuthenticator(
+      const url::Origin& effective_origin_url) {
+    internal_authenticator_impl_ =
+        std::make_unique<InternalAuthenticatorImpl>(main_rfh());
+    internal_authenticator_impl_->SetEffectiveOrigin(effective_origin_url);
+    return internal_authenticator_impl_.get();
   }
 
-  mojo::Remote<blink::mojom::InternalAuthenticator> ConnectToAuthenticator(
-      GURL effective_origin_url,
+  InternalAuthenticatorImpl* ConnectToAuthenticator(
+      const url::Origin& effective_origin_url,
       std::unique_ptr<base::OneShotTimer> timer) {
     internal_authenticator_impl_.reset(new InternalAuthenticatorImpl(
-        main_rfh(), url::Origin::Create(effective_origin_url),
+        main_rfh(),
         std::make_unique<AuthenticatorCommon>(main_rfh(), std::move(timer))));
-    mojo::Remote<blink::mojom::InternalAuthenticator> authenticator;
-    internal_authenticator_impl_->Bind(
-        authenticator.BindNewPipeAndPassReceiver());
-    return authenticator;
+    internal_authenticator_impl_->SetEffectiveOrigin(effective_origin_url);
+    return internal_authenticator_impl_.get();
   }
 
-  mojo::Remote<blink::mojom::InternalAuthenticator>
-  ConstructAuthenticatorWithTimer(
-      GURL effective_origin_url,
+  InternalAuthenticatorImpl* ConstructAuthenticatorWithTimer(
+      const url::Origin& effective_origin_url,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
 
@@ -5074,8 +5069,8 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     }
 
     NavigateAndCommit(origin);
-    mojo::Remote<blink::mojom::InternalAuthenticator> authenticator =
-        ConnectToAuthenticator(origin);
+    InternalAuthenticatorImpl* authenticator =
+        GetAuthenticator(url::Origin::Create(origin));
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
     options->relying_party.id = test_case.claimed_authority;
@@ -5095,8 +5090,8 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     NavigateAndCommit(GURL("https://this.isthewrong.origin"));
     auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
-    auto authenticator =
-        ConstructAuthenticatorWithTimer(GURL(test_case.origin), task_runner);
+    auto* authenticator = ConstructAuthenticatorWithTimer(
+        url::Origin::Create(GURL(test_case.origin)), task_runner);
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
     options->relying_party.id = test_case.claimed_authority;
@@ -5126,8 +5121,8 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     }
 
     NavigateAndCommit(origin);
-    mojo::Remote<blink::mojom::InternalAuthenticator> authenticator =
-        ConnectToAuthenticator(origin);
+    InternalAuthenticatorImpl* authenticator =
+        GetAuthenticator(url::Origin::Create(origin));
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = test_case.claimed_authority;
@@ -5149,8 +5144,8 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     NavigateAndCommit(GURL("https://this.isthewrong.origin"));
     auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
-    auto authenticator =
-        ConstructAuthenticatorWithTimer(GURL(test_case.origin), task_runner);
+    auto* authenticator = ConstructAuthenticatorWithTimer(
+        url::Origin::Create(GURL(test_case.origin)), task_runner);
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = test_case.claimed_authority;

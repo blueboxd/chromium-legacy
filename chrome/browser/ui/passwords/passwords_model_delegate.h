@@ -60,6 +60,10 @@ class PasswordsModelDelegate {
   // the returned credential in AUTO_SIGNIN_STATE.
   virtual const autofill::PasswordForm& GetPendingPassword() const = 0;
 
+  // Returns unsynced credentials being deleted upon signout.
+  virtual const std::vector<autofill::PasswordForm>& GetUnsyncedCredentials()
+      const = 0;
+
   // Returns the source of the credential to be saved.
   virtual password_manager::metrics_util::CredentialSourceType
   GetCredentialSource() const = 0;

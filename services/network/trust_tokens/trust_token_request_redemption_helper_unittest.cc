@@ -19,7 +19,6 @@
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,19 +43,18 @@ class FixedKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
   FixedKeyCommitmentGetter() = default;
   explicit FixedKeyCommitmentGetter(
       const url::Origin& issuer,
-      std::unique_ptr<TrustTokenKeyCommitmentResult> result)
+      mojom::TrustTokenKeyCommitmentResultPtr result)
       : issuer_(issuer), result_(std::move(result)) {}
-  void Get(
-      const url::Origin& origin,
-      base::OnceCallback<void(std::unique_ptr<TrustTokenKeyCommitmentResult>)>
-          on_done) override {
+  void Get(const url::Origin& origin,
+           base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)>
+               on_done) override {
     EXPECT_EQ(origin, issuer_);
     std::move(on_done).Run(std::move(result_));
   }
 
  private:
   url::Origin issuer_;
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result_;
+  mojom::TrustTokenKeyCommitmentResultPtr result_;
 };
 
 // MockCryptographer mocks out the cryptographic operations
@@ -172,7 +170,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfNoTokensToRedeem) {
 
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
-      std::make_unique<TrustTokenKeyCommitmentResult>());
+      mojom::TrustTokenKeyCommitmentResult::New());
 
   TrustTokenRequestRedemptionHelper helper(
       url::Origin::Create(GURL("https://toplevel.com/")),
@@ -205,9 +203,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -247,9 +245,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyPairGenerationFails) {
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -291,9 +289,9 @@ class TrustTokenBeginRedemptionPostconditionsTest
                      std::vector<std::string>{"a token"},
                      /*key=*/"");
 
-    auto key_commitment_result =
-        std::make_unique<TrustTokenKeyCommitmentResult>();
-    key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+    auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+    key_commitment_result->keys.push_back(
+        mojom::TrustTokenVerificationKey::New());
     auto getter = std::make_unique<FixedKeyCommitmentGetter>(
         url::Origin::Create(GURL("https://issuer.com")),
         std::move(key_commitment_result));
@@ -355,9 +353,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -409,9 +407,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -472,9 +470,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -535,9 +533,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -587,9 +585,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -706,9 +704,9 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
                    std::vector<std::string>{"a token"},
                    /*key=*/"");
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       url::Origin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));

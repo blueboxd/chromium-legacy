@@ -72,6 +72,7 @@
 #if !defined(OS_IOS)
 #include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
+#include "components/autofill/core/browser/payments/test_internal_authenticator.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -183,6 +184,7 @@ class CreditCardAccessManagerTest : public testing::Test {
         autofill_manager_->credit_card_access_manager();
 
 #if !defined(OS_IOS)
+    autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
     credit_card_access_manager_->set_fido_authenticator_for_testing(
         std::make_unique<TestCreditCardFIDOAuthenticator>(
             autofill_driver_.get(), &autofill_client_));

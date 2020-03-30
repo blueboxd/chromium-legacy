@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 
 /**
  * Autofill profiles fragment, which allows the user to edit autofill profiles.

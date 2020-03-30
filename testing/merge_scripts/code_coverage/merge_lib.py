@@ -6,6 +6,7 @@
 import logging
 import multiprocessing
 import os
+import re
 import shutil
 import subprocess
 
@@ -87,14 +88,16 @@ def _call_profdata_tool(profile_input_file_paths,
   return []
 
 
-def _get_profile_paths(input_dir, input_extension):
+def _get_profile_paths(input_dir,
+                       input_extension,
+                       input_filename_pattern='.*'):
   """Finds all the profiles in the given directory (recursively)."""
   paths = []
   for dir_path, _sub_dirs, file_names in os.walk(input_dir):
     paths.extend([
         os.path.join(dir_path, fn)
         for fn in file_names
-        if fn.endswith(input_extension)
+        if fn.endswith(input_extension) and re.search(input_filename_pattern,fn)
     ])
   return paths
 
@@ -224,7 +227,11 @@ def merge_java_exec_files(input_dir, output_path, jacococli_path):
   logging.info('Merge succeeded with output: %r', output)
 
 
-def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
+def merge_profiles(input_dir,
+                   output_file,
+                   input_extension,
+                   profdata_tool_path,
+                   input_filename_pattern='.*'):
   """Merges the profiles produced by the shards using llvm-profdata.
 
   Args:
@@ -233,11 +240,15 @@ def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
     input_extension (str): File extension to look for in the input_dir.
         e.g. '.profdata' or '.profraw'
     profdata_tool_path: The path to the llvm-profdata executable.
+    input_filename_pattern (str): The regex pattern of input filename. Should be
+        a valid regex pattern if present.
   Returns:
     The list of profiles that had to be excluded to get the merge to
     succeed and a list of profiles that had a counter overflow.
   """
-  profile_input_file_paths = _get_profile_paths(input_dir, input_extension)
+  profile_input_file_paths = _get_profile_paths(input_dir,
+                                                input_extension,
+                                                input_filename_pattern)
   invalid_profraw_files = []
   counter_overflows = []
   if input_extension == '.profraw':

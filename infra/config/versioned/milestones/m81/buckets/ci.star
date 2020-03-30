@@ -1,17 +1,13 @@
-load('//lib/builders.star', 'cpu', 'defaults', 'goma', 'os')
+load('//lib/builders.star', 'builder_name', 'cpu', 'defaults', 'goma', 'os')
 load('//lib/ci.star', 'ci')
-load('//versioned/vars/ci.star', 'vars')
 # Load this using relative path so that the load statement doesn't
 # need to be changed when making a new milestone
-load('../vars.star', milestone_vars='vars')
-
-vars.bucket.set('ci-m81')
-vars.poller.set('m81-gitiles-trigger')
+load('../vars.star', 'vars')
 
 defaults.pool.set('luci.chromium.ci')
 
 luci.bucket(
-    name = vars.bucket.get(),
+    name = vars.ci_bucket,
     acls = [
         acl.entry(
             roles = acl.BUILDBUCKET_READER,
@@ -29,16 +25,16 @@ luci.bucket(
 )
 
 luci.gitiles_poller(
-    name = vars.poller.get(),
-    bucket = vars.bucket.get(),
+    name = vars.ci_poller,
+    bucket = vars.ci_bucket,
     repo = 'https://chromium.googlesource.com/chromium/src',
-    refs = [milestone_vars.ref],
+    refs = [vars.ref],
 )
 
 
-ci.defaults.bucket.set(vars.bucket.get())
+ci.defaults.bucket.set(vars.ci_bucket)
 ci.defaults.bucketed_triggers.set(True)
-ci.defaults.triggered_by.set([vars.poller.get()])
+ci.defaults.triggered_by.set([vars.ci_poller])
 
 
 # Builders are sorted first lexicographically by the function used to define
@@ -62,13 +58,13 @@ ci.android_builder(
 ci.android_builder(
     name = 'android-cronet-kitkat-arm-rel',
     notifies = ['cronet'],
-    triggered_by = [vars.bucket.builder('android-cronet-arm-rel')],
+    triggered_by = [builder_name('android-cronet-arm-rel')],
 )
 
 ci.android_builder(
     name = 'android-cronet-lollipop-arm-rel',
     notifies = ['cronet'],
-    triggered_by = [vars.bucket.builder('android-cronet-arm-rel')],
+    triggered_by = [builder_name('android-cronet-arm-rel')],
 )
 
 ci.android_builder(
@@ -102,7 +98,7 @@ ci.chromiumos_builder(
 ci.fyi_builder(
     name = 'mac-osxbeta-rel',
     goma_backend = None,
-    triggered_by = [vars.bucket.builder('Mac Builder')],
+    triggered_by = [builder_name('Mac Builder')],
 )
 
 
@@ -110,7 +106,7 @@ ci.fyi_windows_builder(
     name = 'Win10 Tests x64 1803',
     goma_backend = None,
     os = os.WINDOWS_10,
-    triggered_by = [vars.bucket.builder('Win x64 Builder')],
+    triggered_by = [builder_name('Win x64 Builder')],
 )
 
 
@@ -137,22 +133,22 @@ ci.gpu_builder(
 
 ci.gpu_thin_tester(
     name = 'Linux Release (NVIDIA)',
-    triggered_by = [vars.bucket.builder('GPU Linux Builder')],
+    triggered_by = [builder_name('GPU Linux Builder')],
 )
 
 ci.gpu_thin_tester(
     name = 'Mac Release (Intel)',
-    triggered_by = [vars.bucket.builder('GPU Mac Builder')],
+    triggered_by = [builder_name('GPU Mac Builder')],
 )
 
 ci.gpu_thin_tester(
     name = 'Mac Retina Release (AMD)',
-    triggered_by = [vars.bucket.builder('GPU Mac Builder')],
+    triggered_by = [builder_name('GPU Mac Builder')],
 )
 
 ci.gpu_thin_tester(
     name = 'Win10 x64 Release (NVIDIA)',
-    triggered_by = [vars.bucket.builder('GPU Win x64 Builder')],
+    triggered_by = [builder_name('GPU Win x64 Builder')],
 )
 
 
@@ -178,7 +174,7 @@ ci.linux_builder(
 ci.linux_builder(
     name = 'Linux Tests',
     goma_backend = None,
-    triggered_by = [vars.bucket.builder('Linux Builder')],
+    triggered_by = [builder_name('Linux Builder')],
 )
 
 ci.linux_builder(
@@ -188,13 +184,13 @@ ci.linux_builder(
 ci.linux_builder(
     name = 'Linux Ozone Tester (Wayland)',
     goma_backend = None,
-    triggered_by = [vars.bucket.builder('linux-ozone-rel')],
+    triggered_by = [builder_name('linux-ozone-rel')],
 )
 
 ci.linux_builder(
     name = 'Linux Ozone Tester (X11)',
     goma_backend = None,
-    triggered_by = [vars.bucket.builder('linux-ozone-rel')],
+    triggered_by = [builder_name('linux-ozone-rel')],
 )
 
 ci.mac_builder(
@@ -210,43 +206,43 @@ ci.mac_builder(
 # The build runs on 10.13, but triggers tests on 10.10 bots.
 ci.mac_builder(
     name = 'Mac10.10 Tests',
-    triggered_by = [vars.bucket.builder('Mac Builder')],
+    triggered_by = [builder_name('Mac Builder')],
 )
 
 # The build runs on 10.13, but triggers tests on 10.11 bots.
 ci.mac_builder(
     name = 'Mac10.11 Tests',
-    triggered_by = [vars.bucket.builder('Mac Builder')],
+    triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.12 Tests',
     os = os.MAC_10_12,
-    triggered_by = [vars.bucket.builder('Mac Builder')],
+    triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.13 Tests',
     os = os.MAC_10_13,
-    triggered_by = [vars.bucket.builder('Mac Builder')],
+    triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.14 Tests',
     os = os.MAC_10_14,
-    triggered_by = [vars.bucket.builder('Mac Builder')],
+    triggered_by = [builder_name('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.13 Tests (dbg)',
     os = os.MAC_ANY,
-    triggered_by = [vars.bucket.builder('Mac Builder (dbg)')],
+    triggered_by = [builder_name('Mac Builder (dbg)')],
 )
 
 ci.mac_builder(
     name = 'WebKit Mac10.13 (retina)',
     os = os.MAC_10_13,
-    triggered_by = [vars.bucket.builder('Mac Builder')],
+    triggered_by = [builder_name('Mac Builder')],
 )
 
 
@@ -263,25 +259,25 @@ ci.memory_builder(
 
 ci.memory_builder(
     name = 'Linux ASan LSan Tests (1)',
-    triggered_by = [vars.bucket.builder('Linux ASan LSan Builder')],
+    triggered_by = [builder_name('Linux ASan LSan Builder')],
 )
 
 ci.memory_builder(
     name = 'Linux ASan Tests (sandboxed)',
-    triggered_by = [vars.bucket.builder('Linux ASan LSan Builder')],
+    triggered_by = [builder_name('Linux ASan LSan Builder')],
 )
 
 
 ci.win_builder(
     name = 'Win7 Tests (dbg)(1)',
     os = os.WINDOWS_7,
-    triggered_by = [vars.bucket.builder('Win Builder (dbg)')],
+    triggered_by = [builder_name('Win Builder (dbg)')],
 )
 
 ci.win_builder(
     name = 'Win 7 Tests x64 (1)',
     os = os.WINDOWS_7,
-    triggered_by = [vars.bucket.builder('Win x64 Builder')],
+    triggered_by = [builder_name('Win x64 Builder')],
 )
 
 ci.win_builder(
@@ -298,5 +294,5 @@ ci.win_builder(
 
 ci.win_builder(
     name = 'Win10 Tests x64',
-    triggered_by = [vars.bucket.builder('Win x64 Builder')],
+    triggered_by = [builder_name('Win x64 Builder')],
 )

@@ -201,9 +201,8 @@ autofill::Suggestion CreateGenerationEntry() {
 
 // Entry for opting in to password account storage and then filling.
 autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
-  // TODO(crbug.com/1062344): Add proper (translated) string.
   autofill::Suggestion suggestion(
-      base::ASCIIToUTF16("Use passwords stored in your Google account"));
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN;
   return suggestion;
@@ -211,9 +210,8 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
 
 // Entry for opting in to password account storage and then generating password.
 autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
-  // TODO(crbug.com/1062344): Add proper (translated) string.
-  autofill::Suggestion suggestion(base::ASCIIToUTF16(
-      "Use your Google account to generate a strong password"));
+  autofill::Suggestion suggestion(l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORED_GENERATION));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE;
   return suggestion;

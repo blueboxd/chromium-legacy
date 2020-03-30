@@ -23,6 +23,7 @@ class BrowserContext;
 
 namespace weblayer {
 class BrowserContextImpl;
+class CookieManagerImpl;
 
 class ProfileImpl : public Profile {
  public:
@@ -54,6 +55,7 @@ class ProfileImpl : public Profile {
                          base::OnceClosure callback) override;
   void SetDownloadDirectory(const base::FilePath& directory) override;
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
+  CookieManager* GetCookieManager() override;
 
 #if defined(OS_ANDROID)
   ProfileImpl(JNIEnv* env, const base::android::JavaParamRef<jstring>& path);
@@ -70,6 +72,7 @@ class ProfileImpl : public Profile {
   void SetDownloadDirectory(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& directory);
+  jlong GetCookieManager(JNIEnv* env);
 #endif
 
   void IncrementBrowserImplCount();
@@ -99,6 +102,8 @@ class ProfileImpl : public Profile {
   DownloadDelegate* download_delegate_ = nullptr;
 
   std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
+
+  std::unique_ptr<CookieManagerImpl> cookie_manager_;
 
   size_t num_browser_impl_ = 0u;
 

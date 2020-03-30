@@ -270,20 +270,21 @@ TEST(TrustTokenStore, PrunesDataAssociatedWithRemovedKeyCommitments) {
   my_store.AddTokens(issuer, std::vector<std::string>{"some token body"},
                      "quite a secure key, this");
 
-  TrustTokenKeyCommitment another_commitment;
-  another_commitment.set_key("distinct from the first key");
+  auto another_commitment = mojom::TrustTokenVerificationKey::New();
+  another_commitment->body = "distinct from the first key";
 
   my_store.AddTokens(issuer, std::vector<std::string>{"some other token body"},
-                     another_commitment.key());
+                     another_commitment->body);
 
   // The prune should remove the first token added, because it corresponds to a
   // key not in the list of commitments provided to PruneStaleIssuerState.
-  my_store.PruneStaleIssuerState(
-      issuer, std::vector<TrustTokenKeyCommitment>{another_commitment});
+  std::vector<mojom::TrustTokenVerificationKeyPtr> keys;
+  keys.emplace_back(another_commitment.Clone());
+  my_store.PruneStaleIssuerState(issuer, keys);
 
   TrustToken expected_token;
   expected_token.set_body("some other token body");
-  expected_token.set_signing_key(another_commitment.key());
+  expected_token.set_signing_key(another_commitment->body);
 
   // Removing |my_commitment| should have
   // - led to the removal of the token associated with the removed key and
@@ -311,8 +312,8 @@ TEST(TrustTokenStore, AddsTrustTokens) {
   // that token.
 
   const std::string kMyKey = "abcdef";
-  TrustTokenKeyCommitment my_commitment;
-  my_commitment.set_key(kMyKey);
+  auto my_commitment = mojom::TrustTokenVerificationKey::New();
+  my_commitment->body = kMyKey;
 
   TrustToken expected_token;
   expected_token.set_body("some token");
@@ -333,11 +334,11 @@ TEST(TrustTokenStore, RetrievesTrustTokensRespectingNontrivialPredicate) {
 
   const std::string kMatchingKey = "bbbbbb";
   const std::string kNonmatchingKey = "aaaaaa";
-  TrustTokenKeyCommitment matching_commitment;
-  matching_commitment.set_key(kMatchingKey);
+  auto matching_commitment = mojom::TrustTokenVerificationKey::New();
+  matching_commitment->body = kMatchingKey;
 
-  TrustTokenKeyCommitment nonmatching_commitment;
-  nonmatching_commitment.set_key(kNonmatchingKey);
+  auto nonmatching_commitment = mojom::TrustTokenVerificationKey::New();
+  nonmatching_commitment->body = kNonmatchingKey;
 
   TrustToken expected_token;
   expected_token.set_body("this one should get returned");
@@ -371,20 +372,20 @@ TEST(TrustTokenStore, DeletesSingleToken) {
   // On the other hand, tokens *not* deleted should still be
   // returned.
 
-  TrustTokenKeyCommitment my_commitment;
-  my_commitment.set_key("key");
+  auto my_commitment = mojom::TrustTokenVerificationKey::New();
+  my_commitment->body = "key";
 
   TrustToken first_token;
   first_token.set_body("delete me!");
-  first_token.set_signing_key(my_commitment.key());
+  first_token.set_signing_key(my_commitment->body);
 
   TrustToken second_token;
   second_token.set_body("don't delete me!");
-  second_token.set_signing_key(my_commitment.key());
+  second_token.set_signing_key(my_commitment->body);
 
   my_store.AddTokens(
       issuer, std::vector<std::string>{first_token.body(), second_token.body()},
-      my_commitment.key());
+      my_commitment->body);
 
   my_store.DeleteToken(issuer, first_token);
 

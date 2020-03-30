@@ -17,7 +17,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.MenuItemCompat;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
@@ -25,9 +24,8 @@ import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
-import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
+import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
+import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +35,7 @@ import java.util.Locale;
  * Shows a particular chosen object (e.g. a USB device) and the list of sites that have been
  * granted access to it by the user.
  */
-public class ChosenObjectSettings extends PreferenceFragmentCompat {
+public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
     public static final String EXTRA_OBJECT_INFOS = "org.chromium.chrome.preferences.object_infos";
     public static final String EXTRA_SITES = "org.chromium.chrome.preferences.site_set";
     public static final String EXTRA_CATEGORY =
@@ -287,15 +285,11 @@ public class ChosenObjectSettings extends PreferenceFragmentCompat {
                         getInfo();
                     });
 
-            preference.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
+            preference.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
+                    getSiteSettingsClient().getManagedPreferenceDelegate()) {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
                     return info.isManaged();
-                }
-
-                @Override
-                public boolean isPreferenceControlledByCustodian(Preference preference) {
-                    return false;
                 }
 
                 @Override

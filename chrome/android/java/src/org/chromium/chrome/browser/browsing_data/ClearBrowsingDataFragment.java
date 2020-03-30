@@ -33,8 +33,8 @@ import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.SettingsUtils;
-import org.chromium.chrome.browser.settings.SpinnerPreference;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.settings.SpinnerPreference;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.annotation.Retention;

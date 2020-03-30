@@ -5,6 +5,13 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 
 #include "chrome/test/views/chrome_test_views_delegate.h"
+#include "content/public/test/browser_task_environment.h"
+
+ChromeViewsTestBase::ChromeViewsTestBase()
+    : views::ViewsTestBase(std::unique_ptr<base::test::TaskEnvironment>(
+          std::make_unique<content::BrowserTaskEnvironment>(
+              content::BrowserTaskEnvironment::MainThreadType::UI,
+              content::BrowserTaskEnvironment::TimeSource::MOCK_TIME))) {}
 
 ChromeViewsTestBase::~ChromeViewsTestBase() = default;
 

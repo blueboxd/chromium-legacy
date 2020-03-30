@@ -701,6 +701,15 @@ wtf_size_t StringImpl::HexToUIntStrict(bool* ok) {
                              NumberParsingOptions::kStrict, ok);
 }
 
+uint64_t StringImpl::HexToUInt64Strict(bool* ok) {
+  if (Is8Bit()) {
+    return HexCharactersToUInt64(Characters8(), length_,
+                                 NumberParsingOptions::kStrict, ok);
+  }
+  return HexCharactersToUInt64(Characters16(), length_,
+                               NumberParsingOptions::kStrict, ok);
+}
+
 int64_t StringImpl::ToInt64(NumberParsingOptions options, bool* ok) const {
   if (Is8Bit())
     return CharactersToInt64(Characters8(), length_, options, ok);

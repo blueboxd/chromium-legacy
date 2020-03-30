@@ -154,25 +154,22 @@ void FillProcessData(
 
   const double cpu_usage = task_manager->GetPlatformIndependentCPUUsage(id);
   if (!std::isnan(cpu_usage))
-    out_process->cpu.reset(new double(cpu_usage));
+    out_process->cpu = std::make_unique<double>(cpu_usage);
 
   const int64_t network_usage = task_manager->GetProcessTotalNetworkUsage(id);
   if (network_usage != -1)
-    out_process->network.reset(new double(static_cast<double>(network_usage)));
+    out_process->network = std::make_unique<double>(network_usage);
 
   int64_t v8_allocated = 0;
   int64_t v8_used = 0;
   if (task_manager->GetV8Memory(id, &v8_allocated, &v8_used)) {
-    out_process->js_memory_allocated.reset(new double(static_cast<double>(
-        v8_allocated)));
-    out_process->js_memory_used.reset(new double(static_cast<double>(v8_used)));
+    out_process->js_memory_allocated = std::make_unique<double>(v8_allocated);
+    out_process->js_memory_used = std::make_unique<double>(v8_used);
   }
 
   const int64_t sqlite_bytes = task_manager->GetSqliteMemoryUsed(id);
-  if (sqlite_bytes != -1) {
-    out_process->sqlite_memory.reset(new double(static_cast<double>(
-        sqlite_bytes)));
-  }
+  if (sqlite_bytes != -1)
+    out_process->sqlite_memory = std::make_unique<double>(sqlite_bytes);
 
   blink::WebCacheResourceTypeStats cache_stats;
   if (task_manager->GetWebCacheStats(id, &cache_stats)) {

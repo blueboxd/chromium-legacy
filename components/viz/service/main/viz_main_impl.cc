@@ -127,10 +127,6 @@ VizMainImpl::~VizMainImpl() {
         dependencies_.ukm_recorder.get());
 }
 
-void VizMainImpl::SetLogMessagesForHost(LogMessages log_messages) {
-  log_messages_ = std::move(log_messages);
-}
-
 void VizMainImpl::BindAssociated(
     mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver) {
   receiver_.Bind(std::move(pending_receiver));
@@ -152,11 +148,9 @@ void VizMainImpl::CreateGpuService(
   if (gl::GetGLImplementation() != gl::kGLImplementationDisabled)
     gpu_service_->UpdateGPUInfo();
 
-  for (const LogMessage& log : log_messages_)
-    gpu_host->RecordLogMessage(log.severity, log.header, log.message);
-  log_messages_.clear();
   if (!gpu_init_->init_successful()) {
     LOG(ERROR) << "Exiting GPU process due to errors during initialization";
+    GpuServiceImpl::FlushPreInitializeLogMessages(gpu_host.get());
     gpu_service_.reset();
     gpu_host->DidFailInitialize();
     if (delegate_)

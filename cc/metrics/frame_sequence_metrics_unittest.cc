@@ -10,20 +10,16 @@
 
 namespace cc {
 
-TEST(FrameSequenceMetricsTest, SlowerThread) {
-  base::HistogramTester histogram_tester;
-
+TEST(FrameSequenceMetricsTest, AggregatedThroughput) {
   FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
-  first.impl_throughput().frames_expected = 200;
-  first.impl_throughput().frames_produced = 190;
-  first.main_throughput().frames_expected = 100;
-  first.main_throughput().frames_produced = 50;
+  first.impl_throughput().frames_expected = 200u;
+  first.impl_throughput().frames_produced = 190u;
+  first.main_throughput().frames_expected = 100u;
+  first.main_throughput().frames_produced = 50u;
 
-  // slower thread throughput is computed at ReportMetrics().
-  first.ReportMetrics();
-  std::string metric =
-      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll";
-  EXPECT_EQ(histogram_tester.GetBucketCount(metric, 50), 1);
+  // The aggregated throughput is computed at ReportMetrics().
+  first.ComputeAggregatedThroughputForTesting();
+  EXPECT_EQ(first.aggregated_throughput().frames_expected, 200u);
 }
 
 TEST(FrameSequenceMetricsTest, MergeMetrics) {
@@ -47,6 +43,23 @@ TEST(FrameSequenceMetricsTest, MergeMetrics) {
   EXPECT_TRUE(first.HasEnoughDataForReporting());
 }
 
+#if DCHECK_IS_ON()
+TEST(FrameSequenceMetricsTest, ScrollingThreadMergeMetrics) {
+  FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
+  first.SetScrollingThread(FrameSequenceMetrics::ThreadType::kCompositor);
+  first.impl_throughput().frames_expected = 20;
+  first.impl_throughput().frames_produced = 10;
+
+  auto second = std::make_unique<FrameSequenceMetrics>(
+      FrameSequenceTrackerType::kTouchScroll, nullptr);
+  second->SetScrollingThread(FrameSequenceMetrics::ThreadType::kMain);
+  second->main_throughput().frames_expected = 50;
+  second->main_throughput().frames_produced = 10;
+
+  ASSERT_DEATH(first.Merge(std::move(second)), "");
+}
+#endif  // DCHECK_IS_ON()
+
 TEST(FrameSequenceMetricsTest, AllMetricsReported) {
   base::HistogramTester histograms;
 
@@ -67,8 +80,6 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
       1u);
   histograms.ExpectTotalCount(
       "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 0u);
-  histograms.ExpectTotalCount(
-      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 1u);
 
   // There should still be data left over for the main-thread.
   EXPECT_TRUE(first.HasDataLeftForReporting());
@@ -86,8 +97,6 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
       2u);
   histograms.ExpectTotalCount(
       "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
-  histograms.ExpectTotalCount(
-      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 2u);
   // All the metrics have now been reported. No data should be left over.
   EXPECT_FALSE(first.HasDataLeftForReporting());
 
@@ -104,8 +113,6 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
       1u);
   histograms.ExpectTotalCount(
       "Graphics.Smoothness.PercentDroppedFrames.MainThread.Universal", 1u);
-  histograms.ExpectTotalCount(
-      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.Universal", 1u);
 }
 
 TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {

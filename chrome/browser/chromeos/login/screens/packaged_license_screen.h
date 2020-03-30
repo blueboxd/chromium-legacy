@@ -25,6 +25,9 @@ class PackagedLicenseScreen : public BaseScreen {
     // Show enterprise enrollment screen
     ENROLL
   };
+
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   PackagedLicenseScreen(PackagedLicenseView* view,
                         const ScreenExitCallback& exit_callback);

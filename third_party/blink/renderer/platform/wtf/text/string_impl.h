@@ -345,6 +345,7 @@ class WTF_EXPORT StringImpl {
   uint64_t ToUInt64(NumberParsingOptions, bool* ok) const;
 
   wtf_size_t HexToUIntStrict(bool* ok);
+  uint64_t HexToUInt64Strict(bool* ok);
 
   // FIXME: Like NumberParsingOptions::kStrict, these give false for "ok" when
   // there is trailing garbage.  Like NumberParsingOptions::kLoose, these return

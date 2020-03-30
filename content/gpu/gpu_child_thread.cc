@@ -98,13 +98,10 @@ viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies() {
 }  // namespace
 
 GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
-                               std::unique_ptr<gpu::GpuInit> gpu_init,
-                               viz::VizMainImpl::LogMessages log_messages)
+                               std::unique_ptr<gpu::GpuInit> gpu_init)
     : GpuChildThread(std::move(quit_closure),
                      GetOptions(),
-                     std::move(gpu_init)) {
-  viz_main_.SetLogMessagesForHost(std::move(log_messages));
-}
+                     std::move(gpu_init)) {}
 
 GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
                                std::unique_ptr<gpu::GpuInit> gpu_init)

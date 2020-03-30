@@ -179,6 +179,9 @@ bool g_using_zero_delays = false;
 // Total timezone resolving process timeout.
 const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
 
+constexpr const char kDefaultExitReason[] = "Next";
+constexpr const char kResetScreenExitReason[] = "Cancel";
+
 // Stores the list of all screens that should be shown when resuming OOBE.
 const chromeos::StaticOobeScreenId kResumableScreens[] = {
     chromeos::WelcomeView::kScreenId,
@@ -254,6 +257,7 @@ constexpr const Entry kLegacyUmaOobeScreenNames[] = {
     {chromeos::TermsOfServiceScreenView::kScreenId, "tos"}};
 
 void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreenId screen,
+                                                 const std::string& exit_reason,
                                                  base::TimeDelta step_time) {
   // Fetch screen name; make sure to use initial UMA name if the name has
   // changed.
@@ -276,6 +280,17 @@ void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreenId screen,
       base::TimeDelta::FromMinutes(3), 50,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddTime(step_time);
+
+  // Use for this Histogram real screen names.
+  screen_name = screen.name;
+  screen_name[0] = std::toupper(screen_name[0]);
+  std::string histogram_name_with_reason =
+      "OOBE.StepCompletionTimeByExitReason." + screen_name + "." + exit_reason;
+  base::HistogramBase* histogram_with_reason = base::Histogram::FactoryTimeGet(
+      histogram_name_with_reason, base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromMinutes(10), 100,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_with_reason->AddTime(step_time);
 }
 
 bool IsRemoraRequisition() {
@@ -792,19 +807,21 @@ void WizardController::SkipUpdateEnrollAfterEula() {
   skip_update_enroll_after_eula_ = true;
 }
 
-void WizardController::OnScreenExit(OobeScreenId screen, int exit_code) {
+void WizardController::OnScreenExit(OobeScreenId screen,
+                                    const std::string& exit_reason) {
   DCHECK(current_screen_->screen_id() == screen);
 
-  VLOG(1) << "Wizard screen " << screen << " exited with code: " << exit_code;
+  VLOG(1) << "Wizard screen " << screen
+          << " exited with reason: " << exit_reason;
 
   RecordUMAHistogramForOOBEStepCompletionTime(
-      screen, base::Time::Now() - screen_show_times_[screen]);
+      screen, exit_reason, base::Time::Now() - screen_show_times_[screen]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnWrongHWIDScreenExit() {
-  OnScreenExit(WrongHWIDScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(WrongHWIDScreenView::kScreenId, kDefaultExitReason);
 
   if (previous_screen_) {
     SetCurrentScreen(previous_screen_);
@@ -814,7 +831,7 @@ void WizardController::OnWrongHWIDScreenExit() {
 }
 
 void WizardController::OnHidDetectionScreenExit() {
-  OnScreenExit(HIDDetectionView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(HIDDetectionView::kScreenId, kDefaultExitReason);
 
   // Check for tests configuration.
   if (!StartupUtils::IsOobeCompleted())
@@ -822,13 +839,14 @@ void WizardController::OnHidDetectionScreenExit() {
 }
 
 void WizardController::OnWelcomeScreenExit() {
-  OnScreenExit(WelcomeView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(WelcomeView::kScreenId, kDefaultExitReason);
 
   ShowNetworkScreen();
 }
 
 void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
-  OnScreenExit(NetworkScreenView::kScreenId, static_cast<int>(result));
+  OnScreenExit(NetworkScreenView::kScreenId,
+               NetworkScreen::GetResultString(result));
 
   if (result == NetworkScreen::Result::BACK) {
     if (demo_setup_controller_) {
@@ -895,7 +913,7 @@ bool WizardController::ShowEulaOrArcTosAfterNetworkScreen() {
 }
 
 void WizardController::OnEulaScreenExit(EulaScreen::Result result) {
-  OnScreenExit(EulaView::kScreenId, static_cast<int>(result));
+  OnScreenExit(EulaView::kScreenId, EulaScreen::GetResultString(result));
 
   switch (result) {
     case EulaScreen::Result::ACCEPTED_WITH_USAGE_STATS_REPORTING:
@@ -934,7 +952,7 @@ void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
 }
 
 void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
-  OnScreenExit(UpdateView::kScreenId, static_cast<int>(result));
+  OnScreenExit(UpdateView::kScreenId, UpdateScreen::GetResultString(result));
 
   switch (result) {
     case UpdateScreen::Result::UPDATE_NOT_REQUIRED:
@@ -957,7 +975,7 @@ void WizardController::OnUpdateCompleted() {
 }
 
 void WizardController::OnAutoEnrollmentCheckScreenExit() {
-  OnScreenExit(AutoEnrollmentCheckScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(AutoEnrollmentCheckScreenView::kScreenId, kDefaultExitReason);
 
   // Check whether the device is disabled. OnDeviceDisabledChecked() will be
   // invoked when the result of this check is known. Until then, the current
@@ -970,7 +988,8 @@ void WizardController::OnAutoEnrollmentCheckScreenExit() {
 }
 
 void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
-  OnScreenExit(EnrollmentScreenView::kScreenId, static_cast<int>(result));
+  OnScreenExit(EnrollmentScreenView::kScreenId,
+               EnrollmentScreen::GetResultString(result));
 
   switch (result) {
     case EnrollmentScreen::Result::COMPLETED:
@@ -1009,26 +1028,27 @@ void WizardController::OnEnrollmentDone() {
 }
 
 void WizardController::OnEnableAdbSideloadingScreenExit() {
-  OnScreenExit(EnableAdbSideloadingScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(EnableAdbSideloadingScreenView::kScreenId, kDefaultExitReason);
 
   OnDeviceModificationCanceled();
 }
 
 void WizardController::OnEnableDebuggingScreenExit() {
-  OnScreenExit(EnableDebuggingScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(EnableDebuggingScreenView::kScreenId, kDefaultExitReason);
 
   OnDeviceModificationCanceled();
 }
 
 void WizardController::OnKioskEnableScreenExit() {
-  OnScreenExit(KioskEnableScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(KioskEnableScreenView::kScreenId, kDefaultExitReason);
 
   ShowLoginScreen();
 }
 
 void WizardController::OnKioskAutolaunchScreenExit(
     KioskAutolaunchScreen::Result result) {
-  OnScreenExit(KioskAutolaunchScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(KioskAutolaunchScreenView::kScreenId,
+               KioskAutolaunchScreen::GetResultString(result));
 
   switch (result) {
     case KioskAutolaunchScreen::Result::COMPLETED:
@@ -1043,7 +1063,8 @@ void WizardController::OnKioskAutolaunchScreenExit(
 
 void WizardController::OnDemoPreferencesScreenExit(
     DemoPreferencesScreen::Result result) {
-  OnScreenExit(DemoPreferencesScreenView::kScreenId, static_cast<int>(result));
+  OnScreenExit(DemoPreferencesScreenView::kScreenId,
+               DemoPreferencesScreen::GetResultString(result));
 
   DCHECK(demo_setup_controller_);
 
@@ -1059,7 +1080,8 @@ void WizardController::OnDemoPreferencesScreenExit(
 }
 
 void WizardController::OnDemoSetupScreenExit(DemoSetupScreen::Result result) {
-  OnScreenExit(DemoSetupScreenView::kScreenId, static_cast<int>(result));
+  OnScreenExit(DemoSetupScreenView::kScreenId,
+               DemoSetupScreen::GetResultString(result));
 
   DCHECK(demo_setup_controller_);
   demo_setup_controller_.reset();
@@ -1077,7 +1099,8 @@ void WizardController::OnDemoSetupScreenExit(DemoSetupScreen::Result result) {
 
 void WizardController::OnTermsOfServiceScreenExit(
     TermsOfServiceScreen::Result result) {
-  OnScreenExit(TermsOfServiceScreenView::kScreenId, static_cast<int>(result));
+  OnScreenExit(TermsOfServiceScreenView::kScreenId,
+               TermsOfServiceScreen::GetResultString(result));
 
   switch (result) {
     case TermsOfServiceScreen::Result::ACCEPTED:
@@ -1096,7 +1119,7 @@ void WizardController::OnTermsOfServiceAccepted() {
 }
 
 void WizardController::OnSyncConsentScreenExit() {
-  OnScreenExit(SyncConsentScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(SyncConsentScreenView::kScreenId, kDefaultExitReason);
   OnSyncConsentFinished();
 }
 
@@ -1105,20 +1128,20 @@ void WizardController::OnSyncConsentFinished() {
 }
 
 void WizardController::OnFingerprintSetupScreenExit() {
-  OnScreenExit(FingerprintSetupScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(FingerprintSetupScreenView::kScreenId, kDefaultExitReason);
 
   ShowDiscoverScreen();
 }
 
 void WizardController::OnDiscoverScreenExit() {
-  OnScreenExit(DiscoverScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(DiscoverScreenView::kScreenId, kDefaultExitReason);
   ShowArcTermsOfServiceScreen();
 }
 
 void WizardController::OnArcTermsOfServiceScreenExit(
     ArcTermsOfServiceScreen::Result result) {
   OnScreenExit(ArcTermsOfServiceScreenView::kScreenId,
-               static_cast<int>(result));
+               ArcTermsOfServiceScreen::GetResultString(result));
 
   switch (result) {
     case ArcTermsOfServiceScreen::Result::ACCEPTED:
@@ -1164,7 +1187,8 @@ void WizardController::OnArcTermsOfServiceAccepted() {
 
 void WizardController::OnRecommendAppsScreenExit(
     RecommendAppsScreen::Result result) {
-  OnScreenExit(RecommendAppsScreenView::kScreenId, static_cast<int>(result));
+  OnScreenExit(RecommendAppsScreenView::kScreenId,
+               RecommendAppsScreen::GetResultString(result));
 
   switch (result) {
     case RecommendAppsScreen::Result::SELECTED:
@@ -1177,36 +1201,36 @@ void WizardController::OnRecommendAppsScreenExit(
 }
 
 void WizardController::OnAppDownloadingScreenExit() {
-  OnScreenExit(AppDownloadingScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(AppDownloadingScreenView::kScreenId, kDefaultExitReason);
 
   ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnAssistantOptInFlowScreenExit() {
-  OnScreenExit(AssistantOptInFlowScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(AssistantOptInFlowScreenView::kScreenId, kDefaultExitReason);
 
   ShowMultiDeviceSetupScreen();
 }
 
 void WizardController::OnMultiDeviceSetupScreenExit() {
-  OnScreenExit(MultiDeviceSetupScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(MultiDeviceSetupScreenView::kScreenId, kDefaultExitReason);
 
   ShowGestureNavigationScreen();
 }
 
 void WizardController::OnGestureNavigationScreenExit() {
-  OnScreenExit(GestureNavigationScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(GestureNavigationScreenView::kScreenId, kDefaultExitReason);
 
   ShowMarketingOptInScreen();
 }
 
 void WizardController::OnMarketingOptInScreenExit() {
-  OnScreenExit(MarketingOptInScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(MarketingOptInScreenView::kScreenId, kDefaultExitReason);
   OnOobeFlowFinished();
 }
 
 void WizardController::OnResetScreenExit() {
-  OnScreenExit(ResetView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(ResetView::kScreenId, kResetScreenExitReason);
   OnDeviceModificationCanceled();
 }
 
@@ -1238,14 +1262,15 @@ void WizardController::OnDeviceModificationCanceled() {
 }
 
 void WizardController::OnSupervisionTransitionScreenExit() {
-  OnScreenExit(SupervisionTransitionScreenView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(SupervisionTransitionScreenView::kScreenId, kDefaultExitReason);
 
   OnOobeFlowFinished();
 }
 
 void WizardController::OnPackagedLicenseScreenExit(
     PackagedLicenseScreen::Result result) {
-  OnScreenExit(PackagedLicenseView::kScreenId, 0 /* exit_code */);
+  OnScreenExit(PackagedLicenseView::kScreenId,
+               PackagedLicenseScreen::GetResultString(result));
   switch (result) {
     case PackagedLicenseScreen::Result::DONT_ENROLL:
       ShowLoginScreen();

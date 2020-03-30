@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/test/views/chrome_test_views_delegate.h"
+
 #if defined(OS_CHROMEOS)
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -35,12 +37,6 @@
 #endif
 
 class GURL;
-
-#if defined(TOOLKIT_VIEWS)
-namespace views {
-class TestViewsDelegate;
-}  // namespace views
-#endif
 
 namespace content {
 class NavigationController;
@@ -226,9 +222,12 @@ class BrowserWithTestWindowTest : public testing::Test {
 
 #if defined(OS_CHROMEOS)
   ash::AshTestHelper ash_test_helper_;
-  std::unique_ptr<views::TestViewsDelegate> test_views_delegate_;
+  std::unique_ptr<views::TestViewsDelegate> test_views_delegate_ =
+      std::make_unique<ChromeTestViewsDelegate<ash::AshTestViewsDelegate>>();
 #elif defined(TOOLKIT_VIEWS)
-  std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_;
+  std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_ =
+      std::make_unique<views::ScopedViewsTestHelper>(
+          std::make_unique<ChromeTestViewsDelegate<>>());
 #endif
 
   // The existence of this object enables tests via RenderViewHostTester.

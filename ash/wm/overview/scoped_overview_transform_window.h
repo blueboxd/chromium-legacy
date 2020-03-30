@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "ui/aura/client/transient_window_client_observer.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -36,8 +35,7 @@ class ScopedOverviewHideWindows;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedOverviewTransformWindow
-    : public aura::client::TransientWindowClientObserver,
-      public aura::WindowObserver {
+    : public aura::client::TransientWindowClientObserver {
  public:
   // Overview windows have certain properties if their aspect ratio exceeds a
   // threshold. This enum keeps track of which category the window falls into,
@@ -146,9 +144,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   void OnTransientChildWindowRemoved(aura::Window* parent,
                                      aura::Window* transient_child) override;
 
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-
   aura::Window* window() const { return window_; }
 
   GridWindowFillMode type() const { return type_; }
@@ -202,10 +197,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // True if a window is clipped to match splitview bounds. If true, the
   // splitview clipping overrides any top view inset clipping there may be.
   bool has_aspect_ratio_clipping_ = false;
-
-  // Flag which tracks if a call to CloseWidget() has actually closed |window_|.
-  // If true, notifies |overview_item_| to reverse some animations.
-  bool window_has_closed_ = false;
 
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 

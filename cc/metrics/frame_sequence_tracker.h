@@ -107,20 +107,29 @@ class CC_EXPORT FrameSequenceMetrics {
 
   void SetScrollingThread(ThreadType thread);
 
+  // Returns the 'effective thread' for the metrics (i.e. the thread most
+  // relevant for this metric).
+  ThreadType GetEffectiveThread() const;
+
   void Merge(std::unique_ptr<FrameSequenceMetrics> metrics);
   bool HasEnoughDataForReporting() const;
   bool HasDataLeftForReporting() const;
   // Report related metrics: throughput, checkboarding...
   void ReportMetrics();
+  void ComputeAggregatedThroughputForTesting() {
+    ComputeAggregatedThroughput();
+  }
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
   ThroughputData& main_throughput() { return main_throughput_; }
+  ThroughputData& aggregated_throughput() { return aggregated_throughput_; }
   void add_checkerboarded_frames(int64_t frames) {
     frames_checkerboarded_ += frames;
   }
   uint32_t frames_checkerboarded() const { return frames_checkerboarded_; }
 
  private:
+  void ComputeAggregatedThroughput();
   const FrameSequenceTrackerType type_;
 
   // Pointer to the reporter owned by the FrameSequenceTrackerCollection.
@@ -128,6 +137,8 @@ class CC_EXPORT FrameSequenceMetrics {
 
   ThroughputData impl_throughput_;
   ThroughputData main_throughput_;
+  // The aggregated throughput for the main/compositor thread.
+  ThroughputData aggregated_throughput_;
 
   ThreadType scrolling_thread_ = ThreadType::kUnknown;
 
@@ -212,8 +223,9 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   // The reporter takes throughput data and connect to UkmManager to report it.
   std::unique_ptr<ThroughputUkmReporter> throughput_ukm_reporter_;
 
-  base::flat_map<FrameSequenceTrackerType,
-                 std::unique_ptr<FrameSequenceMetrics>>
+  base::flat_map<
+      std::pair<FrameSequenceTrackerType, FrameSequenceMetrics::ThreadType>,
+      std::unique_ptr<FrameSequenceMetrics>>
       accumulated_metrics_;
 };
 
@@ -304,6 +316,9 @@ class CC_EXPORT FrameSequenceTracker {
   }
   FrameSequenceMetrics::ThroughputData& main_throughput() {
     return metrics_->main_throughput();
+  }
+  FrameSequenceMetrics::ThroughputData& aggregated_throughput() {
+    return metrics_->aggregated_throughput();
   }
 
   void ScheduleTerminate();
@@ -415,6 +430,14 @@ class CC_EXPORT FrameSequenceTracker {
 
   uint64_t last_processed_main_sequence_ = 0;
   uint64_t last_processed_main_sequence_latency_ = 0;
+
+  // Used to compute aggregated throughput.
+  // When expecting a main frame, we accumulate the number of impl frames
+  // presented because if that main frame ends up with no-damage, then we should
+  // count the impl frames that were produced in the meantime.
+  uint32_t impl_frames_produced_while_expecting_main_ = 0;
+  // Each entry is a frame token, inserted at ReportSubmitFrame.
+  base::circular_deque<uint32_t> expecting_main_when_submit_impl_;
 
   // Handle off-screen main damage case. In this case, the sequence is typically
   // like: b(1)B(0,1)E(1)n(1)e(1)b(2)n(2)e(2)...b(10)E(2)B(10,10)n(10)e(10).

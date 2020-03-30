@@ -124,7 +124,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool ContinueOnNonHostX11ServerTty();
 
   // This counter is only written on the gpu thread, and read on both threads.
-  base::subtle::Atomic32 arm_disarm_counter_ = 0;
+  volatile base::subtle::Atomic32 arm_disarm_counter_ = 0;
   // The counter number read in the last OnWatchdogTimeout() on the watchdog
   // thread.
   int32_t last_arm_disarm_counter_ = 0;

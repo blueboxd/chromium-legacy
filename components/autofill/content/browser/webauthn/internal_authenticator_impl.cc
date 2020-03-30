@@ -17,25 +17,21 @@
 namespace content {
 
 InternalAuthenticatorImpl::InternalAuthenticatorImpl(
-    RenderFrameHost* render_frame_host,
-    url::Origin effective_origin)
+    RenderFrameHost* render_frame_host)
     : InternalAuthenticatorImpl(render_frame_host,
-                                std::move(effective_origin),
                                 std::make_unique<AuthenticatorCommon>(
                                     render_frame_host,
                                     std::make_unique<base::OneShotTimer>())) {}
 
 InternalAuthenticatorImpl::InternalAuthenticatorImpl(
     RenderFrameHost* render_frame_host,
-    url::Origin effective_origin,
     std::unique_ptr<AuthenticatorCommon> authenticator_common)
     : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
-      effective_origin_(std::move(effective_origin)),
+      effective_origin_(render_frame_host->GetLastCommittedOrigin()),
       authenticator_common_(std::move(authenticator_common)) {
   DCHECK(render_frame_host_);
   DCHECK(authenticator_common_);
-  DCHECK(!effective_origin.opaque());
   // Disabling WebAuthn modal dialogs to avoid conflict with Autofill's own
   // modal dialogs. Since WebAuthn is designed for websites, rather than browser
   // components, the UI can be confusing for users in the case for Autofill.
@@ -50,39 +46,34 @@ InternalAuthenticatorImpl::~InternalAuthenticatorImpl() {
   render_frame_host_->GetRoutingID();
 }
 
-void InternalAuthenticatorImpl::Bind(
-    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {
-  // If |render_frame_host_| is being unloaded then binding receivers are
-  // rejected.
-  if (!render_frame_host_->IsCurrent()) {
-    return;
-  }
-
-  DCHECK(!receiver_.is_bound());
-  receiver_.Bind(std::move(receiver));
+void InternalAuthenticatorImpl::SetEffectiveOrigin(const url::Origin& origin) {
+  effective_origin_ = url::Origin(origin);
+  DCHECK(!effective_origin_.opaque());
 }
 
-// mojom::InternalAuthenticator
 void InternalAuthenticatorImpl::MakeCredential(
     blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
-    MakeCredentialCallback callback) {
+    blink::mojom::Authenticator::MakeCredentialCallback callback) {
   authenticator_common_->MakeCredential(effective_origin_, std::move(options),
                                         std::move(callback));
 }
 
-// mojom::InternalAuthenticator
 void InternalAuthenticatorImpl::GetAssertion(
     blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
-    GetAssertionCallback callback) {
+    blink::mojom::Authenticator::GetAssertionCallback callback) {
   authenticator_common_->GetAssertion(effective_origin_, std::move(options),
                                       std::move(callback));
 }
 
-// mojom::InternalAuthenticator
 void InternalAuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
-    IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
+    blink::mojom::Authenticator::
+        IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
   authenticator_common_->IsUserVerifyingPlatformAuthenticatorAvailable(
       std::move(callback));
+}
+
+void InternalAuthenticatorImpl::Cancel() {
+  authenticator_common_->Cancel();
 }
 
 void InternalAuthenticatorImpl::DidFinishNavigation(
@@ -98,7 +89,6 @@ void InternalAuthenticatorImpl::DidFinishNavigation(
     return;
   }
 
-  receiver_.reset();
   authenticator_common_->Cleanup();
 }
 

@@ -40,6 +40,14 @@ WTF_EXPORT unsigned HexCharactersToUInt(const UChar*,
                                         size_t,
                                         NumberParsingOptions,
                                         bool* ok);
+WTF_EXPORT uint64_t HexCharactersToUInt64(const UChar*,
+                                          size_t,
+                                          NumberParsingOptions,
+                                          bool* ok);
+WTF_EXPORT uint64_t HexCharactersToUInt64(const LChar*,
+                                          size_t,
+                                          NumberParsingOptions,
+                                          bool* ok);
 WTF_EXPORT unsigned CharactersToUInt(const LChar*,
                                      size_t,
                                      NumberParsingOptions,

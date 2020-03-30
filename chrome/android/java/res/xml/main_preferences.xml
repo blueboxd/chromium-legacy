@@ -14,7 +14,7 @@
         android:key="sign_in"
         android:order="1"
         android:title="@string/sign_in_to_chrome"/>
-    <org.chromium.chrome.browser.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="sync_and_services"
         android:order="2"
         android:layout="@layout/account_management_account_row"
@@ -25,22 +25,22 @@
         android:key="basics_section"
         android:order="3"
         android:title="@string/prefs_section_basics"/>
-    <org.chromium.chrome.browser.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings"
         android:key="search_engine"
         android:order="4"
         android:title="@string/search_engine_settings"/>
-    <org.chromium.chrome.browser.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.password_manager.settings.PasswordSettings"
         android:key="passwords"
         android:order="5"
         android:title="@string/password_settings_title"/>
-    <org.chromium.chrome.browser.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment"
         android:key="autofill_payment_methods"
         android:order="6"
         android:title="@string/autofill_payment_methods"/>
-    <org.chromium.chrome.browser.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragment"
         android:key="autofill_addresses"
         android:order="7"
@@ -85,12 +85,12 @@
         android:key="languages"
         android:order="15"
         android:title="@string/language_settings"/>
-    <org.chromium.chrome.browser.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.datareduction.settings.DataReductionPreferenceFragment"
         android:key="data_reduction"
         android:order="16"
         android:title="@string/data_reduction_title_lite_mode"/>
-    <org.chromium.chrome.browser.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.download.settings.DownloadSettings"
         android:key="downloads"
         android:order="17"

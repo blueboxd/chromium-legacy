@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">প’ৰ্ট যোগ কৰক</translation>
 <translation id="1026822031284433028">প্ৰতিচ্ছবি ল’ড কৰক</translation>
 <translation id="1029317248976101138">জুম কৰক</translation>
-<translation id="1030706264415084469"><ph name="URL" />এ আপোনাৰ ডিভাইচত চিৰদিনৰ বাবে ডাঙৰ ডেটা সঞ্চয় কৰিব বিচাৰে</translation>
 <translation id="1031362278801463162">পূৰ্বদৰ্শন ল’ড কৰি থকা হৈছে</translation>
 <translation id="1032605640136438169">অনুগ্ৰহ কৰি নতুন চৰ্তাৱলী পৰ্যালোচনা কৰক</translation>
 <translation id="103279545524624934">Android এপ্ লঞ্চ কৰিবলৈ ডিস্কৰ ঠাই খালী কৰক।</translation>
@@ -532,7 +531,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (স্থানীয়)</translation>
 <translation id="1709217939274742847">বিশ্বাসযোগ্যতা প্ৰমাণীকৰণৰ বাবে ব্যৱহাৰ কৰিবলৈ এটা টিকেট বাছনি কৰক। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">আপোনাৰ iPhoneত এই পাছৱর্ডটো পাওক</translation>
-<translation id="1712552549805331520"><ph name="URL" />এ আপোনাৰ ল’কেল কম্পিউটাৰত স্থায়ীভাৱে ডেটা ষ্ট’ৰ কৰিব বিচাৰে</translation>
 <translation id="1714644264617423774">আপোনাৰ ডিভাইচটো ব্যৱহাৰৰ বাবে অধিক সুবিধাজনক কৰিবলৈ সাধ্য সুবিধাসমূহ সক্ষম কৰক। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">ম'শ্বন ছেন্সৰসমূহ</translation>
 <translation id="1718835860248848330">যোৱা ১ ঘণ্টাৰ</translation>
@@ -746,7 +744,6 @@
 <translation id="1992397118740194946">ছেট কৰা হোৱা নাই</translation>
 <translation id="1994173015038366702">ছাইট URL</translation>
 <translation id="1995916364271252349">ছাইটসমূহে কি তথ্য ব্যৱহাৰ কৰিব আৰু দেখুৱাব পাৰে সেয়া নিয়ন্ত্ৰণ কৰে (অৱস্থান, কেমেৰা, পপ-আপ আৰু বহুতো)</translation>
-<translation id="1997484222658892567">আপোনাৰ স্থানীয় কম্পিউটাৰত <ph name="URL" />এ স্থায়ীভাৱে বেছিকৈ ডেটা সঞ্চয় কৰিব বিচাৰে</translation>
 <translation id="1997616988432401742">আপোনাৰ প্ৰমাণপত্ৰ</translation>
 <translation id="1999115740519098545">আৰম্ভণি</translation>
 <translation id="2000419248597011803">আপোনাৰ ডিফ’ল্ট সন্ধান ইঞ্জিনলৈ ঠিকনা বাৰ আৰু সন্ধান বাকছৰ পৰা কিছুমান কুকি আৰু সন্ধান পঠিয়ায়</translation>
@@ -1007,7 +1004,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" />এ যোৰা লাগিব খোজে</translation>
 <translation id="2342740338116612727">বুকমাৰ্ক যোগ কৰা হ’ল</translation>
 <translation id="2343747224442182863">এই টেবটোত ফ'কাছ কৰক</translation>
-<translation id="2344028582131185878">স্বয়ংক্ৰিয়ভাৱে হোৱা ডাউনল’ড</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" />লৈ ১ পৃষ্ঠা</translation>
 <translation id="2346953515226895098">SODA সেৱা</translation>
 <translation id="2347644257713614136">Hangouts আৰু শিক্ষাৰ বাবে কাষ্ট কৰা সুবিধাটোৰ ব্যৱহাৰ Googleৰ গোপনীয়তা নীতিয়ে পৰিচালনা কৰে।</translation>
@@ -1659,7 +1655,6 @@
 <translation id="3188465121994729530">গতিশীল গঢ়</translation>
 <translation id="3190558889382726167">পাছৱর্ড ছেভ কৰা হ'ল</translation>
 <translation id="3192947282887913208">অডিঅ’ ফাইল</translation>
-<translation id="3194737229810486521">আপোনাৰ ডিভাইচত <ph name="URL" />এ স্থায়ীভাৱে ডেটা সঞ্চয় কৰিব খোজে</translation>
 <translation id="3199127022143353223">ছাৰ্ভাৰসমূহ</translation>
 <translation id="3200941271596533635">ৰীডাৰ ম’ড ট’গল কৰক</translation>
 <translation id="3201306578844503970">নেটৱৰ্ক সম্পৰ্কীয় এটা আসোঁৱাহৰ বাবে ভাৰ্চুৱেল মেচিনটো ইনষ্টল কৰিব পৰা নগ’ল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক অথবা আপোনাৰ প্ৰতিষ্ঠানৰ ডিভাইচ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক। আসোঁৱাহ ক’ড: <ph name="ERROR_CODE" />।</translation>
@@ -1700,6 +1695,7 @@
 <translation id="3264544094376351444">Sans-serif ফ’ণ্ট</translation>
 <translation id="3264582393905923483">প্ৰসংগ</translation>
 <translation id="3265459715026181080">ৱিণ্ড’ বন্ধ কৰক</translation>
+<translation id="3266274118485960573">সুৰক্ষা পৰীক্ষা চলি আছে।</translation>
 <translation id="3267726687589094446">একাধিক ফাইল স্বয়ংক্ৰিয়ভাৱে ডাউনল’ড হোৱাৰ অনুমতি দি থাকক</translation>
 <translation id="3268451620468152448">খুলি ৰখা টেব</translation>
 <translation id="3269069891205016797">আপুনি ছাইন আউট কৰিলে ডিভাইচটোৰ পৰা আপোনাৰ তথ্য আঁতৰোৱা হ'ব।</translation>
@@ -1805,6 +1801,7 @@
 <translation id="3412265149091626468">বাছনিলৈ যাওক</translation>
 <translation id="3413122095806433232">চিএ ব্যৱহাৰকাৰী: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">আকাৰ:</translation>
+<translation id="3416468988018290825">সদায় সম্পূর্ণ URLসমূহ দেখুৱাওক</translation>
 <translation id="3420501302812554910">আভ্যন্তৰীণ সুৰক্ষাৰ চাবিটো ৰিছেট কৰা আৱশ্যক</translation>
 <translation id="3421387094817716717">উপবৃত্তাকাৰ লেখৰ ৰাজহুৱা চাবি</translation>
 <translation id="3422291238483866753">কোনো ছাইটে আপোনাৰ চৌপাশৰ এখন 3D মেপ সৃষ্টি কৰিবলৈ অথবা কেমেৰাৰ স্থান ট্ৰেক কৰিবলৈ বিচাৰিলে সোধক (চুপাৰিছ কৰা হয়)</translation>
@@ -3985,7 +3982,6 @@
 <translation id="6349101878882523185"><ph name="APP_NAME" /> ইনষ্টল কৰক</translation>
 <translation id="6349170655202535379">ছিংক কৰা সুবিধাটোৱে কাম কৰা নাই। এবাৰ ছাইন আউট হৈ আকৌ ছাইন ইন কৰি চেষ্টা কৰক।</translation>
 <translation id="6351063337294363751">আপুনি এই মেনুৰ পৰা নিজৰ ব্ৰাউজিং ডেটা মচিব পাৰিব</translation>
-<translation id="6352223293513723497">আপোনাৰ ডিভাইচটোৰ ষ্ট'ৰেজৰ খালী ঠাই কমিছে। Plugin VM ব্যৱহাৰ কৰিবলৈ অনুগ্ৰহ কৰি ঠাই খালী কৰক।</translation>
 <translation id="6352773953037195952">উচ্চতম</translation>
 <translation id="6354918092619878358">SECG উপবৃত্তাকাৰ লেখ secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">ডিভাইচ অন কৰি ৰাখক</translation>
@@ -4153,6 +4149,7 @@
 <translation id="6586451623538375658">মাউছৰ প্ৰাথমিক বুটাম সলনি-সলনি কৰক</translation>
 <translation id="6586604979641883411">Linux আপগ্ৰে’ড কৰিবলৈ ডিস্কত অতি কমেও <ph name="REQUIRED_SPACE" /> খালী ঠাইৰ আৱশ্যক। অনুগ্ৰহ কৰি আপোনাৰ ডিভাইচটোত কিছু খালী ঠাই উলিয়াওক আৰু পুনৰ চেষ্টা কৰক।</translation>
 <translation id="6588043302623806746">সুৰক্ষিত DNS ব্যৱহাৰ কৰক</translation>
+<translation id="659005207229852190">সুৰক্ষা পৰীক্ষা সম্পূর্ণ হৈছে।</translation>
 <translation id="6590458744723262880">ফ’ল্ডাৰটোৰ নতুন নাম দিয়ক</translation>
 <translation id="6592267180249644460">WebRTC লগ কেপশ্বাৰ কৰাৰ সময় <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">আপোনাৰ ফিংগাৰপ্ৰিণ্ট কেপশ্বাৰ কৰা হ’ল</translation>
@@ -4922,7 +4919,6 @@
 <translation id="7645681574855902035">Linux বেক আপ বাতিল কৰি থকা হৈছে</translation>
 <translation id="7646772052135772216">পাছৱৰ্ড ছিংক কৰা সুবিধাটোৱে কাম কৰা নাই</translation>
 <translation id="7647403192093989392">কোনো শেহতীয়া কাৰ্যকলাপ নাই</translation>
-<translation id="7648992873808071793">এই ডিভাইচত ফাইলসমূহ ষ্ট’ৰ কৰক</translation>
 <translation id="7649070708921625228">সহায়</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />"এ "<ph name="EXTENSION_NAME" />" আঁতৰাব বিচাৰে।</translation>
 <translation id="7652808307838961528">প্ৰ’ফাইল সম্পাদনা কৰক, <ph name="PROFILE_NAME" /></translation>
@@ -5408,6 +5404,7 @@
 <translation id="8249672078237421304">কোনো পৃষ্ঠা আপুনি পঢ়িব নোৱাৰা ভাষাত থাকিলে সেয়া অনুবাদ কৰি লোৱাৰ সুবিধা প্ৰদান কৰক</translation>
 <translation id="8251441930213048644">এতিয়া ৰিফ্রেশ্ব কৰক</translation>
 <translation id="8251578425305135684">থাম্বনেইল আঁতৰোৱা হ'ল।</translation>
+<translation id="825238165904109940">সদায় সম্পূর্ণ URLসমূহ দেখুৱাওক</translation>
 <translation id="8252569384384439529">আপল’ড কৰি থকা হৈছে...</translation>
 <translation id="8253198102038551905">নেটৱর্কৰ বৈশিষ্ট্যসমূহ পাবলৈ ‘+’ ত ক্লিক কৰক</translation>
 <translation id="8254954272268479918">Linux বন্ধ কৰক (বিটা)</translation>

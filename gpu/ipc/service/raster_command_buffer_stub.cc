@@ -103,7 +103,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   }
 
   if (!shared_context_state->IsGLInitialized()) {
-    if (!shared_context_state->MakeCurrent(nullptr) ||
+    if (!shared_context_state->MakeCurrent(nullptr, true /* needs_gl */) ||
         !shared_context_state->InitializeGL(
             manager->gpu_preferences(),
             base::MakeRefCounted<gles2::FeatureInfo>(

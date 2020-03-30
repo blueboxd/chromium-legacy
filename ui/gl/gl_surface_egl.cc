@@ -174,6 +174,7 @@ bool g_egl_create_context_robustness_supported = false;
 bool g_egl_create_context_bind_generates_resource_supported = false;
 bool g_egl_create_context_webgl_compatability_supported = false;
 bool g_egl_sync_control_supported = false;
+bool g_egl_sync_control_rate_supported = false;
 bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
@@ -266,14 +267,12 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   }
 
   bool GetMscRate(int32_t* numerator, int32_t* denominator) override {
-    // TODO(https://crbug.com/1064078): eglGetMscRateCHROMIUM is not universally
-    // available when the EGL_CHROMIUM_sync_control extension is present (for
-    // example, EGL Mesa).
-    if (!gl::g_driver_egl.fn.eglGetMscRateCHROMIUMFn)
+    if (!g_egl_sync_control_rate_supported) {
       return false;
+    }
 
-    bool result = eglGetMscRateCHROMIUM(g_egl_display, surface_, numerator,
-                                        denominator) == EGL_TRUE;
+    bool result = eglGetMscRateANGLE(g_egl_display, surface_, numerator,
+                                     denominator) == EGL_TRUE;
     return result;
   }
 
@@ -921,6 +920,8 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_create_context_webgl_compatability_supported =
       HasEGLExtension("EGL_ANGLE_create_context_webgl_compatibility");
   g_egl_sync_control_supported = HasEGLExtension("EGL_CHROMIUM_sync_control");
+  g_egl_sync_control_rate_supported =
+      HasEGLExtension("EGL_ANGLE_sync_control_rate");
   g_egl_window_fixed_size_supported =
       HasEGLExtension("EGL_ANGLE_window_fixed_size");
   g_egl_surface_orientation_supported =
@@ -1036,6 +1037,7 @@ void GLSurfaceEGL::ShutdownOneOff() {
   g_egl_create_context_bind_generates_resource_supported = false;
   g_egl_create_context_webgl_compatability_supported = false;
   g_egl_sync_control_supported = false;
+  g_egl_sync_control_rate_supported = false;
   g_egl_window_fixed_size_supported = false;
   g_egl_surface_orientation_supported = false;
   g_egl_surfaceless_context_supported = false;

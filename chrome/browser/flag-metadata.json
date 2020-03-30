@@ -391,7 +391,7 @@
   {
     "name": "bluetooth-kernel-suspend-notifier",
     "owners": [ "abhishekpandit", "chromeos-bluetooth@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 84
   },
   {
     "name": "bluetooth-next-handsfree-profile",

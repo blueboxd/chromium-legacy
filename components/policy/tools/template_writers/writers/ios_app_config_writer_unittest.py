@@ -40,14 +40,17 @@ class IOSAppConfigWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
 ''' % (policy_name, policy_type)
 
   def _GetExpectedOutput(self, version, tag):
+    if tag:
+      policies = '<dict>\n    %s\n  </dict>' % tag
+    else:
+      policies = '<dict/>'
+
     return '''<?xml version="1.0" ?>
 <managedAppConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="/com.google.chrome/appconfig/appconfig.xsd">
   <version>%s</version>
   <bundleId>com.google.chrome</bundleId>
-  <dict>
-    %s
-  </dict>
-</managedAppConfiguration>''' % (version, tag)
+  %s
+</managedAppConfiguration>''' % (version, policies)
 
   def testStringPolicy(self):
     policy_json = self._GetTestPolicyTemplate('StringPolicy', 'string')
@@ -114,6 +117,17 @@ class IOSAppConfigWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
     policy_json = self._GetTestPolicyTemplate('ListPolicy', 'list')
     expected = self._GetExpectedOutput('83.0.4089.0',
                                        '<stringArray keyName="ListPolicy"/>')
+    output = self.GetOutput(policy_json, {
+        '_google_chrome': '1',
+        'version': '83.0.4089.0'
+    }, 'ios_app_config')
+    self.assertEquals(output.strip(), expected.strip())
+
+  def testDictPolicy(self):
+    policy_json = self._GetTestPolicyTemplate('DictPolicy', 'dict')
+    # Dict policies are not supported by the appconfig.xml format and should not
+    # be present in the output.
+    expected = self._GetExpectedOutput('83.0.4089.0', None)
     output = self.GetOutput(policy_json, {
         '_google_chrome': '1',
         'version': '83.0.4089.0'

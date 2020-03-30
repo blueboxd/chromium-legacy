@@ -23,6 +23,7 @@ class StyleRuleBase;
 class StyleRuleKeyframe;
 class StyleSheetContents;
 class CSSValue;
+class CSSPrimitiveValue;
 enum class ParseSheetResult;
 enum class SecureContextMode;
 
@@ -111,6 +112,9 @@ class CORE_EXPORT CSSParser {
   static void ParseDeclarationListForInspector(const CSSParserContext*,
                                                const String&,
                                                CSSParserObserver&);
+
+  static CSSPrimitiveValue* ParseLengthPercentage(const String&,
+                                                  const CSSParserContext*);
 
  private:
   static MutableCSSPropertyValueSet::SetResult ParseValue(

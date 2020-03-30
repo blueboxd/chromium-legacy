@@ -43,6 +43,7 @@ enum ActivityType {
   THIRD_PARTY_INSTAPAPER,
   APPEX_PASSWORD_MANAGEMENT,
   SEND_TAB_TO_SELF,
+  GENERATE_QR_CODE,
   // UNKNOWN must be the last type.
   UNKNOWN,
 };

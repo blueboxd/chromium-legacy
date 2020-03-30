@@ -295,6 +295,15 @@ unsigned String::HexToUIntStrict(bool* ok) const {
   return impl_->HexToUIntStrict(ok);
 }
 
+uint64_t String::HexToUInt64Strict(bool* ok) const {
+  if (!impl_) {
+    if (ok)
+      *ok = false;
+    return 0;
+  }
+  return impl_->HexToUInt64Strict(ok);
+}
+
 int64_t String::ToInt64Strict(bool* ok) const {
   if (!impl_) {
     if (ok)

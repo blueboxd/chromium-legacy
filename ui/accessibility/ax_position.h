@@ -1093,11 +1093,13 @@ class AXPosition {
       return copy;
     }
 
-    // Blink doesn't always remove all deleted whitespace at the end of a
-    // textarea even though it will have adjusted its value attribute, because
-    // the extra layout objects are invisible. Therefore, we will stop at the
-    // last child that we can reach with the current text offset and ignore any
-    // remaining children.
+    // We stop at the last child that we can reach with the current text offset
+    // and ignore any remaining children. This is for defensive programming
+    // purposes, in case "MaxTextOffset" doesn't match the total length of all
+    // our children. This may happen if, for example, there is a bug in the
+    // internal accessibility tree we get from the renderer. In contrast, the
+    // current offset could not be greater than the length of all our children
+    // because the position would have been invalid.
     int current_offset = 0;
     int child_index = 0;
     for (; child_index < copy->AnchorChildCount(); ++child_index) {
@@ -1827,18 +1829,6 @@ class AXPosition {
 
         AXPositionInstance parent_position = CreateTextPosition(
             tree_id, parent_id, parent_offset, parent_affinity);
-        if (parent_position->IsNullPosition()) {
-          // Workaround: When the autofill feature populates a text field, it
-          // doesn't immediately update its value, which causes the text inside
-          // the user-agent shadow DOM to be different than the text in the text
-          // field itself. As a result, the parent_offset calculated above might
-          // appear to be temporarily invalid.
-          // TODO(nektar): Fix this better by ensuring that the text field's
-          // hypertext is always kept up to date.
-          parent_position =
-              CreateTextPosition(tree_id, parent_id, 0 /* text_offset */,
-                                 ax::mojom::TextAffinity::kDownstream);
-        }
 
         // If the current position is pointing at the end of its anchor, we need
         // to check if the parent position has introduced ambiguity as to

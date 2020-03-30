@@ -304,9 +304,7 @@ void V4GetHashProtocolManager::GetFullHashes(
   // TODO(crbug.com/1028755): Enable full hash checks on iOS.
 #if defined(OS_IOS)
   std::move(callback).Run(cached_full_hash_infos);
-  return;
-#endif
-
+#else
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("safe_browsing_v4_get_hash", R"(
         semantics {
@@ -361,6 +359,7 @@ void V4GetHashProtocolManager::GetFullHashes(
       clock_->Now()));
   UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.V4GetHash.CountOfPrefixes",
                            prefixes_to_request.size());
+#endif
 }
 
 void V4GetHashProtocolManager::GetFullHashesWithApis(

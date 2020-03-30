@@ -30,6 +30,7 @@ class DefaultCaptureClient;
 class FocusClient;
 class ScreenPositionClient;
 }
+
 namespace test {
 class TestWindowParentingClient;
 

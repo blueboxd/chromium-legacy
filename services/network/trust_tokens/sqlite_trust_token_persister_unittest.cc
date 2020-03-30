@@ -52,7 +52,9 @@ TEST(SQLiteTrustTokenPersister, PutReinitializeAndGet) {
     ASSERT_TRUE(persister);
 
     TrustTokenIssuerConfig config;
-    config.set_batch_size(5);
+    TrustToken my_token;
+    my_token.set_body("token token token");
+    *config.add_tokens() = my_token;
 
     auto config_to_store = std::make_unique<TrustTokenIssuerConfig>(config);
     persister->SetIssuerConfig(origin, std::move(config_to_store));
@@ -74,7 +76,8 @@ TEST(SQLiteTrustTokenPersister, PutReinitializeAndGet) {
 
   auto got = persister->GetIssuerConfig(origin);
   ASSERT_TRUE(got);
-  EXPECT_EQ(got->batch_size(), 5);
+  ASSERT_EQ(got->tokens_size(), 1);
+  EXPECT_EQ(got->tokens(0).body(), "token token token");
 
   persister.reset();
   // Wait until the persister's TrustTokenDatabaseOwner finishes closing its

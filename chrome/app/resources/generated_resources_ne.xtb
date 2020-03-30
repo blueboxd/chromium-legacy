@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">पोर्ट थप्नुहोस्</translation>
 <translation id="1026822031284433028">छवि लोड गर्नुहोस्</translation>
 <translation id="1029317248976101138">जुम आउट गर्नुहोस्</translation>
-<translation id="1030706264415084469"><ph name="URL" /> तपाईंको यन्त्रमा स्थायी रूपमा ठूलो परिमाणको डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड गर्दै</translation>
 <translation id="1032605640136438169">कृपया नयाँ सर्तहरूको समीक्षा गर्नुहोस्</translation>
 <translation id="103279545524624934">Android अनुप्रयोग सुरु गर्न डिस्कमा ठाउँ खाली गर्नुहोस्।</translation>
@@ -531,7 +530,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> गुणा <ph name="HEIGHT" /> (मूल)</translation>
 <translation id="1709217939274742847">प्रमाणीकरणका लागि प्रयोग गर्न कुनै टिकट छान्नुहोस्। <ph name="LINK_BEGIN" />थप जान्नुहोस्<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">आफ्नो iPhone मा यो पासवर्ड प्राप्त गर्नुहोस्</translation>
-<translation id="1712552549805331520"><ph name="URL" /> तपाईंको स्थानीय कम्प्युटरमा स्थायी रूपमा डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="1714644264617423774">तपाईंको यन्त्र प्रयोग गर्न अझ सहज बनाउन पहुँचका विशेषताहरू सक्षम पार्नुहोस्। <ph name="LINK_BEGIN" />थप जान्नुहोस्<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">चालसम्बन्धी सेन्सरहरू</translation>
 <translation id="1718835860248848330">पछिल्लो घन्टा</translation>
@@ -745,7 +743,6 @@
 <translation id="1992397118740194946">सेट गरिएको छैन</translation>
 <translation id="1994173015038366702">साइट URL</translation>
 <translation id="1995916364271252349">साइटहरूले के कस्ता जानकारी (स्थान, क्यामेरा, पप-अप र अन्य कुरा) प्रयोग गर्न र देखाउन पाउँछन् भन्ने कुरा नियन्त्रण गर्छ</translation>
-<translation id="1997484222658892567"><ph name="URL" /> तपाईंको स्थानीय कम्प्युटरमा स्थायी रूपमा ठूलो परिमाणको डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="1997616988432401742">तपाईंका प्रमाणपत्रहरू</translation>
 <translation id="1999115740519098545">सुरूवातमा</translation>
 <translation id="2000419248597011803">यसले ठेगाना पट्टी र खोज बाकसका केही कुकी र खोजहरूलाई तपाईंको पूर्वनिर्धारित खोज इन्जिनमा पठाउँछ</translation>
@@ -1006,7 +1003,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> जोडा बनाउन चाहन्छ</translation>
 <translation id="2342740338116612727">पुस्तक चिन्हहरू थपिए</translation>
 <translation id="2343747224442182863">यो ट्याबमा केन्द्रित गर्नुहोस्</translation>
-<translation id="2344028582131185878">स्वचालित डाउनलोडहरू</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" /> का लागि १ पृष्ठ</translation>
 <translation id="2346953515226895098">SODA सेवा</translation>
 <translation id="2347644257713614136">Hangouts र शिक्षाका लागि Cast को प्रयोगलाई Google को गोपनीयता नीतिले नियन्त्रण गर्छ।</translation>
@@ -1659,7 +1655,6 @@
 <translation id="3188465121994729530">औसत चलायमान</translation>
 <translation id="3190558889382726167">पासवर्ड सुरक्षित गरियो</translation>
 <translation id="3192947282887913208">अडियो फाइलहरू</translation>
-<translation id="3194737229810486521"><ph name="URL" /> तपाईंको यन्त्रमा स्थायी रूपमा डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="3199127022143353223">सर्भरहरू</translation>
 <translation id="3200941271596533635">पाठक मोड टगल गर्नुहोस्</translation>
 <translation id="3201306578844503970">नेटवर्कसम्बन्धी त्रुटिका कारण भर्चुअल मेसिन स्थापना गर्न सकिएन। कृपया फेरि प्रयास गर्नुहोस् वा आफ्नो सङ्गठनका यन्त्रका प्रशासकसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
@@ -3989,7 +3984,6 @@
 <translation id="6349101878882523185"><ph name="APP_NAME" /> स्थापना गर्नुहोस्</translation>
 <translation id="6349170655202535379">सिंकले काम गरिरहेको छैन। साइन आउट गरेर फेरि साइन इन गरी हेर्नुहोस्।</translation>
 <translation id="6351063337294363751">तपाईं यस मेनुबाट आफ्नो ब्राउजिङको डेटा खाली गर्न सक्नुहुन्छ</translation>
-<translation id="6352223293513723497">तपाईंको यन्त्रको भण्डारणको खाली ठाउँ कम छ। Plugin VM प्रयोग गर्न कृपया ठाउँ खाली गर्नुहोस्।</translation>
 <translation id="6352773953037195952">सबैभन्दा उच्च</translation>
 <translation id="6354918092619878358">SECG अण्डाकार कर्भ secp256r1 (ANSI X9.62 prime256v1, NIST P-256 पनि भनिन्छ)</translation>
 <translation id="635609604405270300">यन्त्रलाई सक्रिय राख्नुहोस्</translation>
@@ -4009,7 +4003,7 @@
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' को १ परिणाम</translation>
 <translation id="6380143666419481200">स्वीकार्नुहोस् र जारी राख्नुहोस्</translation>
 <translation id="6384275966486438344">तपाईंको खोज सेटिङहरूलाई यसमा परिवर्तन गर्नुहोस्: <ph name="SEARCH_HOST" /></translation>
-<translation id="6385149369087767061">इन्टरनेटमा जोडिनुहोस् र फेरि प्रयास गर्नुहोस्</translation>
+<translation id="6385149369087767061">इन्टरनेटमा कनेक्ट गरी फेरि प्रयास गर्नुहोस्</translation>
 <translation id="6385543213911723544">साइटहरूले कुकी डेटा सुरक्षित गर्न र पढ्न सक्छ</translation>
 <translation id="6386099547750337629">यो कुनै त्रुटिवश भएको हो भने कृपया सहायता प्रदान गर्ने सेवामा सम्पर्क गर्नुहोस्।</translation>
 <translation id="6387674443318562538">ठाडो रूपमा विभाजन गर्नुहोस्</translation>
@@ -4932,7 +4926,6 @@
 <translation id="7645681574855902035">Linux को ब्याकअप रद्द गर्दै</translation>
 <translation id="7646772052135772216">पासवर्ड सिंक गर्ने सुविधाले काम गर्दै छैन</translation>
 <translation id="7647403192093989392">हालसालैको कुनै पनि क्रियाकलाप छैन</translation>
-<translation id="7648992873808071793">यस यन्त्रमा फाइलहरू भण्डार गर्नुहोस्</translation>
 <translation id="7649070708921625228">मद्दत</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" ले "<ph name="EXTENSION_NAME" />" हटाउन चाहन्छ ।</translation>
 <translation id="7652808307838961528">व्यक्तिको विवरण सम्पादन गर्नुहोस्, <ph name="PROFILE_NAME" /></translation>

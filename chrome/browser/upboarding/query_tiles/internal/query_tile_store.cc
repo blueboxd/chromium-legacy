@@ -38,7 +38,8 @@ void QueryTileStore::Update(const std::string& key,
                             const QueryTileEntry& entry,
                             UpdateCallback callback) {
   auto entries_to_save = std::make_unique<KeyEntryVector>();
-  entries_to_save->emplace_back(key, entry);
+  QueryTileEntry entry_to_save = entry;
+  entries_to_save->emplace_back(key, std::move(entry_to_save));
   db_->UpdateEntries(std::move(entries_to_save),
                      std::make_unique<KeyVector>() /*keys_to_remove*/,
                      std::move(callback));
@@ -75,8 +76,8 @@ void QueryTileStore::OnDataLoaded(
 
   KeysAndEntries keys_and_entries;
   for (auto& it : *loaded_keys_and_entries) {
-    std::unique_ptr<QueryTileEntry> entry = std::make_unique<QueryTileEntry>();
-    *entry = std::move(it.second);
+    std::unique_ptr<QueryTileEntry> entry =
+        std::make_unique<QueryTileEntry>(std::move(it.second));
     keys_and_entries.emplace(it.first, std::move(entry));
   }
 

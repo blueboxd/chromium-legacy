@@ -141,7 +141,7 @@ void ChooseExperiment(
           !HasDeviceLevelMismatch(*experiment) &&
           HasFormFactor(*experiment)) {
         chosen_experiment = experiment;
-    }
+      }
 
       if (experiment->forcing_flag &&
           command_line.HasSwitch(experiment->forcing_flag)) {

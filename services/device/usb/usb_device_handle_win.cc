@@ -332,7 +332,8 @@ void UsbDeviceHandleWin::ControlTransfer(
                            base::Owned(node_connection_info), buffer));
         return;
       } else if (((value >> 8) == USB_CONFIGURATION_DESCRIPTOR_TYPE) ||
-                 ((value >> 8) == USB_STRING_DESCRIPTOR_TYPE)) {
+                 ((value >> 8) == USB_STRING_DESCRIPTOR_TYPE) ||
+                 ((value >> 8) == USB_BOS_DESCRIPTOR_TYPE)) {
         size_t size = sizeof(USB_DESCRIPTOR_REQUEST) + buffer->size();
         auto request_buffer = base::MakeRefCounted<base::RefCountedBytes>(size);
         USB_DESCRIPTOR_REQUEST* descriptor_request =

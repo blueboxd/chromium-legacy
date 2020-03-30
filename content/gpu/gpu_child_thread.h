@@ -48,8 +48,7 @@ class GpuChildThread : public ChildThreadImpl,
                        public viz::VizMainImpl::Delegate {
  public:
   GpuChildThread(base::RepeatingClosure quit_closure,
-                 std::unique_ptr<gpu::GpuInit> gpu_init,
-                 viz::VizMainImpl::LogMessages deferred_messages);
+                 std::unique_ptr<gpu::GpuInit> gpu_init);
 
   GpuChildThread(const InProcessChildThreadParams& params,
                  std::unique_ptr<gpu::GpuInit> gpu_init);

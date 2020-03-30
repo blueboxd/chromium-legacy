@@ -27,8 +27,23 @@ void SystemFeaturesDisableListPolicyHandler::ApplyList(
     base::Value filtered_list,
     PrefValueMap* prefs) {
   DCHECK(filtered_list.is_list());
+  base::Value enums_list(base::Value::Type::LIST);
+  for (const auto& element : filtered_list.GetList()) {
+    enums_list.Append(ConvertToEnum(element.GetString()));
+  }
   prefs->SetValue(policy_prefs::kSystemFeaturesDisableList,
-                  std::move(filtered_list));
+                  std::move(enums_list));
+}
+
+SystemFeature SystemFeaturesDisableListPolicyHandler::ConvertToEnum(
+    const std::string& system_feature) {
+  if (system_feature == "camera")
+    return SystemFeature::CAMERA;
+  if (system_feature == "settings")
+    return SystemFeature::SETTINGS;
+
+  NOTREACHED() << "Unsupported system feature: " << system_feature;
+  return LAST_SYSTEM_FEATURE;
 }
 
 }  // namespace policy

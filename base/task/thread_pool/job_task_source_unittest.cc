@@ -386,13 +386,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, MaxConcurrencyStagnateIfShouldYield) {
 
 // Verifies that a missing call to NotifyConcurrencyIncrease() causes a DCHECK
 // death after a timeout.
-// TODO(crbug.com/1064953): Flaky on Windows.
-#if defined(OS_WIN)
-#define MAYBE_InvalidConcurrency DISABLED_InvalidConcurrency
-#else
-#define MAYBE_InvalidConcurrency InvalidConcurrency
-#endif
-TEST_F(ThreadPoolJobTaskSourceTest, MAYBE_InvalidConcurrency) {
+TEST_F(ThreadPoolJobTaskSourceTest, InvalidConcurrency) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   scoped_refptr<test::MockJobTask> job_task;
@@ -422,14 +416,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, MAYBE_InvalidConcurrency) {
 
 // Verifies that a stale concurrency with no call to NotifyConcurrencyIncrease()
 // causes a DCHECK death after a timeout.
-  
-// TODO(crbug.com/1064953): Flaky on Windows.
-#if defined(OS_WIN)
-#define MAYBE_StaleConcurrency DISABLED_StaleConcurrency
-#else
-#define MAYBE_StaleConcurrency StaleConcurrency
-#endif
-TEST_F(ThreadPoolJobTaskSourceTest, MAYBE_StaleConcurrency) {
+TEST_F(ThreadPoolJobTaskSourceTest, StaleConcurrency) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   auto task_source = MakeRefCounted<JobTaskSource>(

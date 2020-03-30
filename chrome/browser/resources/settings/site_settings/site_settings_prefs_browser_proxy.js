@@ -57,7 +57,7 @@ let ManagedState;
  *            blockAll: !ManagedState,
               sessionOnly: !ManagedState}}
  */
-let CookieControlsManagedState;
+/* #export */ let CookieControlsManagedState;
 
 /**
  * Stores origin information. The |hasPermissionSettings| will be set to true

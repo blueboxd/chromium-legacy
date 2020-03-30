@@ -520,7 +520,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
           ->GetForProfile(profile())
           ->OnBookmarkAdded();
 #endif
-      BookmarkCurrentTabAllowingExtensionOverrides(browser_);
+      BookmarkCurrentTab(browser_);
       break;
     case IDC_BOOKMARK_ALL_TABS:
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)

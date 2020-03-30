@@ -2135,6 +2135,11 @@ message CheckDevicePairingResponse {
 // This protobuf defines a single remote command from server to client for
 // execution.
 message RemoteCommand {
+  // The names are used as part of metric names. If enumeration is updated
+  // the names should also be updated:
+  // - components/policy/core/common/cloud/enterprise_metrics.cc;
+  // - components/policy/core/common/remote_commands/remote_commands_service.cc;
+  // - Enterprise.RemoteCommandType in tools/metrics/histograms/histograms.xml;
   enum Type {
     // Simple echo command for testing, will be ignored in production code.
     COMMAND_ECHO_TEST = -1;
@@ -2175,6 +2180,8 @@ message RemoteCommand {
 
     // Send a command or get an update from an existing diagnostics routine.
     DEVICE_GET_DIAGNOSTIC_ROUTINE_UPDATE = 11;
+
+    // Please update metrics after adding a new item - see the comment above.
   }
 
   // The command type.

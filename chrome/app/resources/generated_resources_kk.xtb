@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">Порт енгізу</translation>
 <translation id="1026822031284433028">Кескінді жүктеу</translation>
 <translation id="1029317248976101138">Масштабтау</translation>
-<translation id="1030706264415084469"><ph name="URL" /> үлкен көлемді деректерді құрылғыңызда біржола сақтағысы келеді</translation>
 <translation id="1031362278801463162">Алдын ала көріністі жүктеу</translation>
 <translation id="1032605640136438169">Жаңа шарттарды қарап шығыңыз.</translation>
 <translation id="103279545524624934">Android қолданбаларын орнату үшін дискіде орын босатыңыз.</translation>
@@ -532,7 +531,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (жергілікті)</translation>
 <translation id="1709217939274742847">Аутентификация үшін қолдануға арналған билетті таңдаңыз. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">iPhone телефонында осы құпия сөзді алу</translation>
-<translation id="1712552549805331520"><ph name="URL" /> деректерді жергілікті компьютеріңізде біржола сақтағысы келеді</translation>
 <translation id="1714644264617423774">Құрылғыңызды пайдалануды жеңілдету үшін арнайы мүмкіндіктерді қосу. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Қозғалыс датчиктері</translation>
 <translation id="1718835860248848330">Соңғы сағат</translation>
@@ -746,7 +744,6 @@
 <translation id="1992397118740194946">Орнатылмаған</translation>
 <translation id="1994173015038366702">URL сайты</translation>
 <translation id="1995916364271252349">Сайттар қандай ақпаратты (геодерек, камера, қалқымалы терезелер, т.б.) пайдалана және көрсете алатынын басқарады.</translation>
-<translation id="1997484222658892567"><ph name="URL" /> үлкен көлемді деректерді жергілікті компьютеріңізде біржола сақтағысы келеді</translation>
 <translation id="1997616988432401742">Сертификаттарыңыз</translation>
 <translation id="1999115740519098545">Іске қосу кезінде</translation>
 <translation id="2000419248597011803">Мекенжай жолағына және іздеу өрісіне енгізілген сұрауларды, сонымен қатар кейбір cookie файлдарын әдепкі іздеу жүйесіне жібереді</translation>
@@ -1007,7 +1004,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> сайты жұптасқысы келеді</translation>
 <translation id="2342740338116612727">Бетбелгілер енгізілді</translation>
 <translation id="2343747224442182863">Осы қойындыны ерекшелеу</translation>
-<translation id="2344028582131185878">Автоматты жүктеулер</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" /> үшін бір бет</translation>
 <translation id="2346953515226895098">SODA қызметі</translation>
 <translation id="2347644257713614136">Hangouts және Cast for Education қолданбаларын Google құпиялылық саясатына сәйкес пайдалану керек.</translation>
@@ -1659,7 +1655,6 @@
 <translation id="3188465121994729530">Орташа мәнді жылжыту</translation>
 <translation id="3190558889382726167">Құпия сөз сақталды</translation>
 <translation id="3192947282887913208">Аудио файлдары</translation>
-<translation id="3194737229810486521"><ph name="URL" /> деректерді құрылғыңызда біржола сақтағысы келеді</translation>
 <translation id="3199127022143353223">Серверлер</translation>
 <translation id="3200941271596533635">Оқу құралы режимін қосу/өшіру</translation>
 <translation id="3201306578844503970">Желідегі қатеге байланысты виртуалды құрылғы орнатылмады. Әрекетті қайталаңыз немесе ұйымыңыздың құрылғы әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
@@ -3993,7 +3988,6 @@
 <translation id="6349101878882523185"><ph name="APP_NAME" /> қолданбасын орнату</translation>
 <translation id="6349170655202535379">Синхрондалып жатқан жоқ. Жүйеден шығып, қайта кіріп көріңіз.</translation>
 <translation id="6351063337294363751">Осы мәзірден браузерді пайдалану деректерін өшіре аласыз</translation>
-<translation id="6352223293513723497">Құрылғыда бос орын аз қалды. Plugin VM плагинін пайдалану үшін орын босатыңыз.</translation>
 <translation id="6352773953037195952">Ең жоғары</translation>
 <translation id="6354918092619878358">SECG эллипстік қисық сызығы secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Құрылғыны қосулы күйде ұстаңыз</translation>
@@ -4937,7 +4931,6 @@
 <translation id="7645681574855902035">Linux контейнерінің сақтық көшірмесін жасаудан бас тартылуда</translation>
 <translation id="7646772052135772216">Құпия сөз синхрондау жұмыс істеп тұрған жоқ</translation>
 <translation id="7647403192093989392">Соңғы әрекет жоқ</translation>
-<translation id="7648992873808071793">Файлдарды осы құрылғыда сақтау</translation>
 <translation id="7649070708921625228">Анықтама</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" "<ph name="EXTENSION_NAME" />" жойғысы келеді.</translation>
 <translation id="7652808307838961528">Адамды, <ph name="PROFILE_NAME" /> атын өңдеу</translation>

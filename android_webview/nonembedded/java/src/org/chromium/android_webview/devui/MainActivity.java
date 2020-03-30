@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,7 +21,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.base.ApiCompatibilityUtils;
 
 import java.util.HashMap;
@@ -156,13 +157,17 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        NavigationMenuHelper.inflate(this, menu);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            getMenuInflater().inflate(R.menu.navigation_menu, menu);
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (NavigationMenuHelper.onOptionsItemSelected(this, item)) {
+        if (item.getItemId() == R.id.nav_menu_switch_provider
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            startActivity(new Intent(Settings.ACTION_WEBVIEW_SETTINGS));
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -168,7 +168,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentTab) {
                                    WindowOpenDisposition::CURRENT_TAB,
                                    ui::PAGE_TRANSITION_TYPED, false));
 
-  chrome::BookmarkCurrentTabAllowingExtensionOverrides(browser());
+  chrome::BookmarkCurrentTab(browser());
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());

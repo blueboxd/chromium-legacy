@@ -165,4 +165,24 @@ TEST_F(ScreenPinningControllerTest, TrustedPinnedWithAccelerator) {
   EXPECT_TRUE(Shell::Get()->screen_pinning_controller()->IsPinned());
 }
 
+TEST_F(ScreenPinningControllerTest, ExitUnifiedDisplay) {
+  display_manager()->SetUnifiedDesktopEnabled(true);
+
+  UpdateDisplay("400x300, 400x400");
+
+  aura::Window* w1 = CreateTestWindowInShellWithId(0);
+  wm::ActivateWindow(w1);
+  auto* window_state = WindowState::Get(w1);
+
+  window_util::PinWindow(w1, /*trusted=*/true);
+
+  EXPECT_TRUE(window_state->IsPinned());
+  EXPECT_TRUE(Shell::Get()->screen_pinning_controller()->IsPinned());
+
+  UpdateDisplay("200x200");
+
+  EXPECT_TRUE(window_state->IsPinned());
+  EXPECT_TRUE(Shell::Get()->screen_pinning_controller()->IsPinned());
+}
+
 }  // namespace ash

@@ -81,15 +81,15 @@
         <div class="flex"></div>
         <!-- Cancel button, only disabled when reverting -->
         <oobe-text-button border on-tap="onCancelTap_" text-key="cancelButton"
-            disabled="[[inRevertState_]]"></oobe-text-button>
+            id="resetCancel" disabled="[[inRevertState_]]"></oobe-text-button>
         <!-- Restart button -->
         <oobe-text-button inverse on-tap="onRestartTap_" class="focus-on-show"
-            text-key="resetButtonRestart"
+            id="restart" text-key="resetButtonRestart"
             hidden="[[!inRestartRequiredState_]]">
         </oobe-text-button>
         <!-- Powerwash button (depends on powerwash mode) -->
         <oobe-text-button inverse on-tap="onPowerwashTap_" class="focus-on-show"
-            hidden="[[!inPowerwashState_]]"
+            id="powerwash" hidden="[[!inPowerwashState_]]"
             text-key="[[powerwashButtonTextKey_]]"
             disabled="[[powerwashButtonDisabled_]]">
         </oobe-text-button>
@@ -104,6 +104,7 @@
         <oobe-text-button id="cancelButton" border on-tap="onDialogCancelTap_"
             text-key="cancel"></oobe-text-button>
         <oobe-text-button inverse on-tap="onDialogContinueTap_"
+            id="confirmPowerwash"
             text-key="confirmResetButton"></oobe-text-button>
       </div>
     </oobe-help-dialog>

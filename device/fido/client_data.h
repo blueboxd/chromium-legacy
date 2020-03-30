@@ -17,10 +17,6 @@
 
 namespace device {
 
-// The map key for inserting the googleAndroidClientDataExtension output into a
-// CTAP2 makeCredential or getAssertion response.
-constexpr int kAndroidClientDataExtOutputKey = 0xf0;
-
 // Builds the CollectedClientData[1] dictionary with the given values,
 // serializes it to JSON, and returns the resulting string. For legacy U2F
 // requests coming from the CryptoToken U2F extension, modifies the object key

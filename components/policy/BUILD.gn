@@ -236,6 +236,8 @@ action("policy_templates") {
       rebase_path(policy_templates_plist_path, root_build_dir),
       "--plist_strings",
       rebase_path(policy_templates_plist_strings_path, root_build_dir),
+      "--jamf",
+      rebase_path(policy_templates_jamf_path, root_build_dir),
       "-D",
       "mac_bundle_id=$chrome_mac_bundle_id",
     ]

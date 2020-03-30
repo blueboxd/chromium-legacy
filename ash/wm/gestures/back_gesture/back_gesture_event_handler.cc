@@ -162,6 +162,15 @@ void BackGestureEventHandler::OnDisplayMetricsChanged(
 void BackGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {}
 
 void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+  // Do not handle PEN and ERASER events for back gesture. PEN events can come
+  // from stylus device.
+  if (event->pointer_details().pointer_type ==
+          ui::EventPointerType::POINTER_TYPE_PEN ||
+      event->pointer_details().pointer_type ==
+          ui::EventPointerType::POINTER_TYPE_ERASER) {
+    return;
+  }
+
   if (first_touch_id_ == ui::kPointerIdUnknown)
     first_touch_id_ = event->pointer_details().id;
 

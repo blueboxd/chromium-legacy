@@ -15,7 +15,6 @@
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "url/origin.h"
 
@@ -154,7 +153,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   void OnGotKeyCommitment(
       net::URLRequest* request,
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
-      std::unique_ptr<TrustTokenKeyCommitmentResult> commitment_result);
+      mojom::TrustTokenKeyCommitmentResultPtr commitment_result);
 
   url::Origin issuer_;
   const url::Origin top_level_origin_;

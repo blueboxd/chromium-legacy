@@ -971,12 +971,6 @@ void OverviewItem::OnHighlightedViewClosed() {
   overview_session_->OnHighlightedItemClosed(this);
 }
 
-void OverviewItem::OnWindowDidNotClose() {
-  // If the window failed to close reverse the opacity and transform animations.
-  AnimateOpacity(1.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
-  overview_grid_->PositionWindows(/*animate=*/true);
-}
-
 void OverviewItem::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   DCHECK_EQ(sender, overview_item_view_->close_button());

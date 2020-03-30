@@ -17,10 +17,8 @@
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/trust_token_database_owner.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
-#include "services/network/trust_tokens/types.h"
 #include "url/url_constants.h"
 
 namespace network {
@@ -93,28 +91,21 @@ void TrustTokenRequestRedemptionHelper::Begin(
 void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
-    std::unique_ptr<TrustTokenKeyCommitmentResult> commitment_result) {
+    mojom::TrustTokenKeyCommitmentResultPtr commitment_result) {
   if (!commitment_result) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
     return;
   }
 
-  UpdateTokenStoreFromKeyCommitmentResult(*commitment_result);
+  // Evict tokens signed with keys other than those from the issuer's most
+  // recent commitments.
+  token_store_->PruneStaleIssuerState(issuer_, commitment_result->keys);
 
   base::Optional<TrustToken> maybe_token_to_redeem = RetrieveSingleToken();
   if (!maybe_token_to_redeem) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
-
-  // As a postcondition of UpdateTokenStoreFromKeyCommitmentResult, each token
-  // in the store for |issuer_| should have been issued by some key in
-  // |commitment_result|.
-  DCHECK(std::any_of(commitment_result->keys.begin(),
-                     commitment_result->keys.end(),
-                     [&](const TrustTokenKeyCommitmentResult::Key& key) {
-                       return key.body == maybe_token_to_redeem->signing_key();
-                     }));
 
   if (!key_pair_generator_->Generate(&signing_key_, &verification_key_)) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
@@ -194,24 +185,6 @@ mojom::TrustTokenOperationStatus TrustTokenRequestRedemptionHelper::Finalize(
                                     std::move(record_to_store));
 
   return mojom::TrustTokenOperationStatus::kOk;
-}
-
-void TrustTokenRequestRedemptionHelper::UpdateTokenStoreFromKeyCommitmentResult(
-    const TrustTokenKeyCommitmentResult& result) {
-  // TODO(crbug.com/1063510): Once we've centralized key commitment storage,
-  // this method, and its counterpart in TrustTokenRequestIssuanceHelper, will
-  // no longer be needed.
-
-  std::vector<TrustTokenKeyCommitment> commitments_to_store;
-
-  for (const TrustTokenKeyCommitmentResult::Key& key : result.keys) {
-    TrustTokenKeyCommitment to_store;
-    to_store.set_key(key.body);
-    to_store.set_expiry(internal::TimeToString(key.expiry));
-    commitments_to_store.emplace_back(std::move(to_store));
-  }
-
-  token_store_->PruneStaleIssuerState(issuer_, std::move(commitments_to_store));
 }
 
 base::Optional<TrustToken>

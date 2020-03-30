@@ -12,9 +12,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/window_types.h"
-#include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -42,7 +40,6 @@
 
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
 using base::ASCIIToUTF16;

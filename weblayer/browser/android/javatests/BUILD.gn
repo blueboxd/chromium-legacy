@@ -11,6 +11,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
     "src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
     "src/org/chromium/weblayer/test/CloseTabNewTabCallbackImpl.java",
+    "src/org/chromium/weblayer/test/CookieManagerTest.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
     "src/org/chromium/weblayer/test/DataClearingTest.java",
     "src/org/chromium/weblayer/test/DowngradeTest.java",

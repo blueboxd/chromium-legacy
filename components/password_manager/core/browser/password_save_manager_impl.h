@@ -97,6 +97,10 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
       bool is_credential_api_save,
       const autofill::PasswordForm* similar_saved_form);
 
+  virtual std::pair<const autofill::PasswordForm*, PendingCredentialsState>
+  FindSimilarSavedFormAndComputeState(
+      const autofill::PasswordForm& parsed_submitted_form) const;
+
   // Returns the form_saver to be used for generated passwords. Subclasses will
   // override this method to provide different logic for get the form saver.
   virtual FormSaver* GetFormSaverForGeneration();

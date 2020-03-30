@@ -18,13 +18,14 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
-#include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace autofill {
 
@@ -124,11 +125,7 @@ void CreditCardFIDOAuthenticator::IsUserVerifiable(
     base::OnceCallback<void(bool)> callback) {
   if (base::FeatureList::IsEnabled(
           features::kAutofillCreditCardAuthentication)) {
-    if (!authenticator_.is_bound()) {
-      autofill_driver_->ConnectToAuthenticator(
-          authenticator_.BindNewPipeAndPassReceiver());
-    }
-    authenticator_->IsUserVerifyingPlatformAuthenticatorAvailable(
+    authenticator()->IsUserVerifyingPlatformAuthenticatorAvailable(
         std::move(callback));
   } else {
     std::move(callback).Run(false);
@@ -247,10 +244,6 @@ CreditCardFIDOAuthenticator::GetOrCreateFidoAuthenticationStrikeDatabase() {
 
 void CreditCardFIDOAuthenticator::GetAssertion(
     PublicKeyCredentialRequestOptionsPtr request_options) {
-  if (!authenticator_.is_bound()) {
-    autofill_driver_->ConnectToAuthenticator(
-        authenticator_.BindNewPipeAndPassReceiver());
-  }
 #if !defined(OS_ANDROID)
   // On desktop, during an opt-in flow, close the WebAuthn offer dialog and get
   // ready to show the OS level authentication dialog. If dialog is already
@@ -269,7 +262,7 @@ void CreditCardFIDOAuthenticator::GetAssertion(
     }
   }
 #endif
-  authenticator_->GetAssertion(
+  authenticator()->GetAssertion(
       std::move(request_options),
       base::BindOnce(&CreditCardFIDOAuthenticator::OnDidGetAssertion,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -277,10 +270,6 @@ void CreditCardFIDOAuthenticator::GetAssertion(
 
 void CreditCardFIDOAuthenticator::MakeCredential(
     PublicKeyCredentialCreationOptionsPtr creation_options) {
-  if (!authenticator_.is_bound()) {
-    autofill_driver_->ConnectToAuthenticator(
-        authenticator_.BindNewPipeAndPassReceiver());
-  }
 #if !defined(OS_ANDROID)
   // On desktop, close the WebAuthn offer dialog and get ready to show the OS
   // level authentication dialog. If dialog is already closed, then the offer
@@ -297,7 +286,7 @@ void CreditCardFIDOAuthenticator::MakeCredential(
     return;
   }
 #endif
-  authenticator_->MakeCredential(
+  authenticator()->MakeCredential(
       std::move(creation_options),
       base::BindOnce(&CreditCardFIDOAuthenticator::OnDidMakeCredential,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -760,5 +749,15 @@ void CreditCardFIDOAuthenticator::LogWebauthnResult(
 void CreditCardFIDOAuthenticator::UpdateUserPref() {
   ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_->GetPrefs(),
                                                   user_is_opted_in_);
+}
+
+InternalAuthenticator* CreditCardFIDOAuthenticator::authenticator() {
+  if (!authenticator_) {
+    authenticator_ =
+        autofill_driver_->GetOrCreateCreditCardInternalAuthenticator();
+    authenticator()->SetEffectiveOrigin(
+        url::Origin::Create(payments::GetBaseSecureUrl()));
+  }
+  return authenticator_;
 }
 }  // namespace autofill

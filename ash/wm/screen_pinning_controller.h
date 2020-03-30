@@ -31,7 +31,8 @@ class WindowUserData;
 // https://developer.android.com/about/versions/android-5.0.html#ScreenPinning
 // See also ArcKioskAppLauncher::CheckAndPinWindow().
 class ASH_EXPORT ScreenPinningController
-    : public WindowTreeHostManager::Observer {
+    : public WindowTreeHostManager::Observer,
+      aura::WindowObserver {
  public:
   ScreenPinningController();
   ~ScreenPinningController() override;
@@ -85,6 +86,9 @@ class ASH_EXPORT ScreenPinningController
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
 
   // Pinned window should be on top in the parent window.
   aura::Window* pinned_window_ = nullptr;

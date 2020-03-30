@@ -18,18 +18,18 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_controller.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
 using ::testing::Optional;
-using ::testing::Pointee;
 
 namespace network {
 
@@ -40,21 +40,21 @@ namespace {
 class FixedKeyCommitmentParser
     : public TrustTokenKeyCommitmentController::Parser {
  public:
-  std::unique_ptr<TrustTokenKeyCommitmentResult> Parse(
+  mojom::TrustTokenKeyCommitmentResultPtr Parse(
       base::StringPiece response_body) override {
-    return std::make_unique<TrustTokenKeyCommitmentResult>(
-        DeterministicallyReturnedValue());
+    return DeterministicallyReturnedValue();
   }
-  static TrustTokenKeyCommitmentResult DeterministicallyReturnedValue() {
-    TrustTokenKeyCommitmentResult result;
-    result.signed_redemption_record_verification_key = "key";
+  static mojom::TrustTokenKeyCommitmentResultPtr
+  DeterministicallyReturnedValue() {
+    auto result = mojom::TrustTokenKeyCommitmentResult::New();
+    result->signed_redemption_record_verification_key = "key";
     return result;
   }
 };
 
 class FailingKeyCommitmentParser
     : public TrustTokenKeyCommitmentController::Parser {
-  std::unique_ptr<TrustTokenKeyCommitmentResult> Parse(
+  mojom::TrustTokenKeyCommitmentResultPtr Parse(
       base::StringPiece response_body) override {
     return nullptr;
   }
@@ -68,14 +68,14 @@ GURL IssuerDotComKeyCommitmentPath() {
 class CommitmentWaiter {
  public:
   base::OnceCallback<void(TrustTokenKeyCommitmentController::Status,
-                          std::unique_ptr<TrustTokenKeyCommitmentResult>)>
+                          mojom::TrustTokenKeyCommitmentResultPtr)>
   Callback() {
     return base::BindOnce(&CommitmentWaiter::OnComplete,
                           base::Unretained(this));
   }
 
   std::pair<TrustTokenKeyCommitmentController::Status,
-            std::unique_ptr<TrustTokenKeyCommitmentResult>>
+            mojom::TrustTokenKeyCommitmentResultPtr>
   WaitForResult() {
     run_loop_.Run();
     CHECK(done_);
@@ -84,7 +84,7 @@ class CommitmentWaiter {
 
  private:
   void OnComplete(TrustTokenKeyCommitmentController::Status status,
-                  std::unique_ptr<TrustTokenKeyCommitmentResult> result) {
+                  mojom::TrustTokenKeyCommitmentResultPtr result) {
     done_ = true;
     status_ = status;
     result_ = std::move(result);
@@ -93,7 +93,7 @@ class CommitmentWaiter {
 
   bool done_ = false;
   TrustTokenKeyCommitmentController::Status status_;
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result_;
+  mojom::TrustTokenKeyCommitmentResultPtr result_;
   base::RunLoop run_loop_;
 };
 
@@ -189,7 +189,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, NetworkError) {
           net::ERR_CONNECTION_REFUSED /* chosen arbitrarily */));
 
   TrustTokenKeyCommitmentController::Status result_status;
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result;
+  mojom::TrustTokenKeyCommitmentResultPtr result;
   CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
@@ -214,7 +214,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, NetworkSuccessParseFailure) {
   factory.AddResponse(IssuerDotComKeyCommitmentPath().spec(), "");
 
   TrustTokenKeyCommitmentController::Status result_status;
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result;
+  mojom::TrustTokenKeyCommitmentResultPtr result;
   CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
@@ -246,7 +246,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, Redirect) {
                       std::move(redirects));
 
   TrustTokenKeyCommitmentController::Status result_status;
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result;
+  mojom::TrustTokenKeyCommitmentResultPtr result;
   CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
@@ -269,7 +269,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, Success) {
   factory.AddResponse(IssuerDotComKeyCommitmentPath().spec(), "", net::HTTP_OK);
 
   TrustTokenKeyCommitmentController::Status result_status;
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result;
+  mojom::TrustTokenKeyCommitmentResultPtr result;
   CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
@@ -283,9 +283,9 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, Success) {
   std::tie(result_status, result) = waiter.WaitForResult();
   EXPECT_EQ(result_status.value,
             TrustTokenKeyCommitmentController::Status::Value::kOk);
-  EXPECT_THAT(
-      result,
-      Pointee(FixedKeyCommitmentParser::DeterministicallyReturnedValue()));
+  ASSERT_TRUE(result);
+  EXPECT_TRUE(mojo::Equals(
+      result, FixedKeyCommitmentParser::DeterministicallyReturnedValue()));
 }
 
 }  // namespace network

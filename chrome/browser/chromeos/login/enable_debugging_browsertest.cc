@@ -13,9 +13,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -150,18 +150,21 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
   int num_remove_protection_;
 };
 
-class EnableDebuggingTestBase : public OobeBaseTest {
+class EnableDebuggingTest : public LoginManagerTest {
  public:
-  EnableDebuggingTestBase() = default;
-  ~EnableDebuggingTestBase() override = default;
+  EnableDebuggingTest()
+      : LoginManagerTest(false, true /* should_initialize_webui */) {}
+  ~EnableDebuggingTest() override {}
 
-  // OobeBaseTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    OobeBaseTest::SetUpCommandLine(command_line);
+    LoginManagerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
     // Disable HID detection because it takes precedence and could block
     // enable-debugging UI.
     command_line->AppendSwitch(chromeos::switches::kDisableHIDDetectionOnOOBE);
   }
+
+  // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
     std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
@@ -169,7 +172,20 @@ class EnableDebuggingTestBase : public OobeBaseTest {
     dbus_setter->SetDebugDaemonClient(
         std::unique_ptr<DebugDaemonClient>(debug_daemon_client_));
 
-    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+    LoginManagerTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void WaitUntilJSIsReady() {
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
+    if (!host)
+      return;
+    chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+    if (!oobe_ui)
+      return;
+    base::RunLoop run_loop;
+    const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
+    if (!oobe_ui_ready)
+      run_loop.Run();
   }
 
   void InvokeEnableDebuggingScreen() {
@@ -208,7 +224,7 @@ class EnableDebuggingTestBase : public OobeBaseTest {
   void ShowRemoveProtectionScreen() {
     debug_daemon_client_->SetDebuggingFeaturesStatus(
         DebugDaemonClient::DEV_FEATURE_NONE);
-    OobeBaseTest::WaitForOobeUI();
+    WaitUntilJSIsReady();
     test::OobeJS().ExpectHidden("debugging");
     InvokeEnableDebuggingScreen();
     test::OobeJS().ExpectVisible("debugging");
@@ -229,7 +245,7 @@ class EnableDebuggingTestBase : public OobeBaseTest {
   void ShowSetupScreen() {
     debug_daemon_client_->SetDebuggingFeaturesStatus(
         debugd::DevFeatureFlag::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED);
-    OobeBaseTest::WaitForOobeUI();
+    WaitUntilJSIsReady();
     test::OobeJS().ExpectHidden("debugging");
     InvokeEnableDebuggingScreen();
     test::OobeJS().ExpectVisible("debugging");
@@ -250,23 +266,11 @@ class EnableDebuggingTestBase : public OobeBaseTest {
   TestDebugDaemonClient* debug_daemon_client_ = nullptr;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(EnableDebuggingTestBase);
-};
-
-class EnableDebuggingDevTest : public EnableDebuggingTestBase {
- public:
-  EnableDebuggingDevTest() = default;
-  ~EnableDebuggingDevTest() override = default;
-
-  // EnableDebuggingTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EnableDebuggingTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
-  }
+  DISALLOW_COPY_AND_ASSIGN(EnableDebuggingTest);
 };
 
 // Show remove protection screen, click on [Cancel] button.
-IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowAndCancelRemoveProtection) {
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowAndCancelRemoveProtection) {
   ShowRemoveProtectionScreen();
   CloseEnableDebuggingScreen();
   test::OobeJS().ExpectHidden("debugging");
@@ -278,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowAndCancelRemoveProtection) {
 
 // Show remove protection, click on [Remove protection] button and wait for
 // reboot.
-IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowAndRemoveProtection) {
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowAndRemoveProtection) {
   ShowRemoveProtectionScreen();
   debug_daemon_client_->ResetWait();
   ClickRemoveProtectionButton();
@@ -293,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowAndRemoveProtection) {
 }
 
 // Show setup screen. Click on [Enable] button. Wait until done screen is shown.
-IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowSetup) {
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowSetup) {
   ShowSetupScreen();
   debug_daemon_client_->ResetWait();
   ClickEnableButton();
@@ -305,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowSetup) {
 
 // Show setup screen. Type in matching passwords.
 // Click on [Enable] button. Wait until done screen is shown.
-IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, SetupMatchingPasswords) {
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, SetupMatchingPasswords) {
   ShowSetupScreen();
   debug_daemon_client_->ResetWait();
   test::OobeJS().TypeIntoPath("test0000", {"enable-debugging-password"});
@@ -321,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, SetupMatchingPasswords) {
 // Show setup screen. Type in different passwords.
 // Click on [Enable] button. Assert done screen is not shown.
 // Then confirm that typing in matching passwords enables debugging features.
-IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, SetupNotMatchingPasswords) {
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, SetupNotMatchingPasswords) {
   ShowSetupScreen();
   debug_daemon_client_->ResetWait();
   test::OobeJS().TypeIntoPath("test0000", {"enable-debugging-password"});
@@ -345,11 +349,11 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, SetupNotMatchingPasswords) {
 
 // Test images come with some features enabled but still has rootfs protection.
 // Invoking debug screen should show remove protection screen.
-IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowOnTestImages) {
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, ShowOnTestImages) {
   debug_daemon_client_->SetDebuggingFeaturesStatus(
       debugd::DevFeatureFlag::DEV_FEATURE_SSH_SERVER_CONFIGURED |
       debugd::DevFeatureFlag::DEV_FEATURE_SYSTEM_ROOT_PASSWORD_SET);
-  OobeBaseTest::WaitForOobeUI();
+  WaitUntilJSIsReady();
   test::OobeJS().ExpectHidden("debugging");
   InvokeEnableDebuggingScreen();
   test::OobeJS().ExpectVisible("debugging");
@@ -362,12 +366,12 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowOnTestImages) {
   EXPECT_EQ(debug_daemon_client_->num_remove_protection(), 0);
 }
 
-IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, WaitForDebugDaemon) {
+IN_PROC_BROWSER_TEST_F(EnableDebuggingTest, WaitForDebugDaemon) {
   // Stat with service not ready.
   debug_daemon_client_->SetServiceIsAvailable(false);
   debug_daemon_client_->SetDebuggingFeaturesStatus(
       DebugDaemonClient::DEV_FEATURE_NONE);
-  OobeBaseTest::WaitForOobeUI();
+  WaitUntilJSIsReady();
 
   // Invoking UI and it should land on wait-view.
   test::OobeJS().ExpectHidden("debugging");
@@ -382,16 +386,22 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, WaitForDebugDaemon) {
   VerifyRemoveProtectionScreen();
 }
 
-class EnableDebuggingNonDevTest : public EnableDebuggingTestBase {
+class EnableDebuggingNonDevTest : public EnableDebuggingTest {
  public:
-  EnableDebuggingNonDevTest() = default;
+  EnableDebuggingNonDevTest() {}
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Skip EnableDebuggingTest::SetUpCommandLine().
+    LoginManagerTest::SetUpCommandLine(command_line);
+  }
+
+  // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
     std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetDebugDaemonClient(
         std::unique_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
-    EnableDebuggingTestBase::SetUpInProcessBrowserTestFixture();
+    LoginManagerTest::SetUpInProcessBrowserTestFixture();
   }
 };
 
@@ -409,11 +419,11 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingNonDevTest, NoShowInNonDevMode) {
   test::OobeJS().ExpectHasNoClass("wait-view", {"debugging"});
 }
 
-class EnableDebuggingRequestedTest : public EnableDebuggingDevTest {
+class EnableDebuggingRequestedTest : public EnableDebuggingTest {
  public:
   EnableDebuggingRequestedTest() {}
 
-  // EnableDebuggingDevTest overrides:
+  // EnableDebuggingTest overrides:
   bool SetUpUserDataDirectory() override {
     base::DictionaryValue local_state_dict;
     local_state_dict.SetBoolean(prefs::kDebuggingFeaturesRequested, true);
@@ -425,10 +435,10 @@ class EnableDebuggingRequestedTest : public EnableDebuggingDevTest {
     CHECK(
         JSONFileValueSerializer(local_state_path).Serialize(local_state_dict));
 
-    return EnableDebuggingDevTest::SetUpUserDataDirectory();
+    return EnableDebuggingTest::SetUpUserDataDirectory();
   }
   void SetUpInProcessBrowserTestFixture() override {
-    EnableDebuggingDevTest::SetUpInProcessBrowserTestFixture();
+    EnableDebuggingTest::SetUpInProcessBrowserTestFixture();
 
     debug_daemon_client_->SetDebuggingFeaturesStatus(
         debugd::DevFeatureFlag::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED);

@@ -11,7 +11,7 @@
         android:layout="@layout/languages_preference"
         android:widgetLayout="@layout/accept_languages_list" />
 
-    <org.chromium.chrome.browser.settings.ChromeSwitchPreference
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="translate_switch"
         android:summaryOn="@string/languages_offer_translate_switch"
         android:summaryOff="@string/languages_offer_translate_switch" />

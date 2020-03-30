@@ -14,12 +14,12 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,19 +48,18 @@ class FixedKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
   FixedKeyCommitmentGetter() = default;
   explicit FixedKeyCommitmentGetter(
       const url::Origin& issuer,
-      std::unique_ptr<TrustTokenKeyCommitmentResult> result)
+      mojom::TrustTokenKeyCommitmentResultPtr result)
       : issuer_(issuer), result_(std::move(result)) {}
-  void Get(
-      const url::Origin& origin,
-      base::OnceCallback<void(std::unique_ptr<TrustTokenKeyCommitmentResult>)>
-          on_done) override {
+  void Get(const url::Origin& origin,
+           base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)>
+               on_done) override {
     EXPECT_EQ(origin, issuer_);
     std::move(on_done).Run(std::move(result_));
   }
 
  private:
   url::Origin issuer_;
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result_;
+  mojom::TrustTokenKeyCommitmentResultPtr result_;
 };
 
 // MockCryptographer mocks out the cryptographic operations underlying Trust
@@ -155,9 +154,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAddingKeyFails) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -182,9 +181,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -215,9 +214,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeader) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -252,9 +251,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsLoadFlag) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -285,9 +284,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -321,9 +320,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -368,9 +367,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -414,9 +413,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, AssociatesIssuerWithToplevel) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(TrustTokenKeyCommitmentResult::Key());
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -449,10 +448,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
 
   url::Origin issuer = url::Origin::Create(GURL("https://issuer.com/"));
 
-  auto key_commitment_result =
-      std::make_unique<TrustTokenKeyCommitmentResult>();
-  key_commitment_result->keys.push_back(
-      TrustTokenKeyCommitmentResult::Key{.body = "key"});
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(mojom::TrustTokenVerificationKey::New(
+      "key", /*expiry=*/base::Time(), /*label=*/0));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 

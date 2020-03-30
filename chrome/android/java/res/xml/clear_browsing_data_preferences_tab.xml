@@ -7,7 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.settings.SpinnerPreference
+    <org.chromium.components.browser_ui.settings.SpinnerPreference
         android:key="time_period_spinner"
         android:persistent="false"
         android:title="@string/clear_browsing_data_tab_period_title"

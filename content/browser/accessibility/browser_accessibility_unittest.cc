@@ -743,14 +743,20 @@ TEST_F(BrowserAccessibilityTest, NextWordPositionWithHypertext) {
   auto position = input_accessible->CreatePositionAt(
       0, ax::mojom::TextAffinity::kDownstream);
 
-  // On platforms that expose IA2 or ATK hypertext, moving by word should have
-  // no effect, i.e. return the same position, since the visible text is just a
-  // placeholder and should not appear in the input field's hypertext.
+  // On platforms that expose IA2 or ATK hypertext, moving by word should work
+  // the same as if the value of the text field is equal to the placeholder
+  // text.
+  //
+  // This is because visually the placeholder text appears in the text field in
+  // the same location as its value, and the user should be able to read it
+  // using standard screen reader commands, such as "read current word" and
+  // "read current line". Only once the user starts typing should the
+  // placeholder disappear.
+
   auto next_word_start = position->CreateNextWordStartPosition(
       ui::AXBoundaryBehavior::CrossBoundary);
-  ASSERT_TRUE(next_word_start->IsTextPosition());
   if (position->MaxTextOffset() == 0) {
-    EXPECT_EQ(*position, *next_word_start);
+    EXPECT_TRUE(next_word_start->IsNullPosition());
   } else {
     EXPECT_EQ(
         "TextPosition anchor_id=2 text_offset=7 affinity=downstream "
@@ -760,9 +766,8 @@ TEST_F(BrowserAccessibilityTest, NextWordPositionWithHypertext) {
 
   auto next_word_end = position->CreateNextWordEndPosition(
       ui::AXBoundaryBehavior::CrossBoundary);
-  ASSERT_TRUE(next_word_end->IsTextPosition());
   if (position->MaxTextOffset() == 0) {
-    EXPECT_EQ(*position, *next_word_end);
+    EXPECT_TRUE(next_word_end->IsNullPosition());
   } else {
     EXPECT_EQ(
         "TextPosition anchor_id=2 text_offset=6 affinity=downstream "

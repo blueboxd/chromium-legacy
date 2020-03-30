@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/payments/test_authentication_requester.h"
 #include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
+#include "components/autofill/core/browser/payments/test_internal_authenticator.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -128,6 +129,7 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
     requester_.reset(new TestAuthenticationRequester());
     autofill_driver_ =
         std::make_unique<testing::NiceMock<TestAutofillDriver>>();
+    autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
 
     payments::TestPaymentsClient* payments_client =
         new payments::TestPaymentsClient(

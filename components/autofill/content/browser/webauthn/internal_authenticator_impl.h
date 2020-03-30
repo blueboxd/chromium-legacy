@@ -11,11 +11,13 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill/core/browser/payments/internal_authenticator.h"
 #include "content/browser/webauth/authenticator_common.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "url/origin.h"
 
 namespace url {
 class Origin;
@@ -28,21 +30,29 @@ class RenderFrameHost;
 // Implementation of the public InternalAuthenticator interface.
 // This class is meant only for trusted and internal components of Chrome to
 // use.
-class InternalAuthenticatorImpl : public blink::mojom::InternalAuthenticator,
+class InternalAuthenticatorImpl : public autofill::InternalAuthenticator,
                                   public WebContentsObserver {
  public:
-  InternalAuthenticatorImpl(RenderFrameHost* render_frame_host,
-                            url::Origin effective_origin);
+  explicit InternalAuthenticatorImpl(RenderFrameHost* render_frame_host);
 
   ~InternalAuthenticatorImpl() override;
 
-  // Creates a binding between this implementation and |receiver|.
-  //
-  // Note that one InternalAuthenticatorImpl instance can be bound to
-  // exactly one interface connection at a time, and disconnected when the frame
-  // navigates to a new active document.
-  void Bind(
-      mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver);
+  // InternalAuthenticator:
+  void SetEffectiveOrigin(const url::Origin& origin) override;
+  void MakeCredential(
+      blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
+      blink::mojom::Authenticator::MakeCredentialCallback callback) override;
+  void GetAssertion(
+      blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
+      blink::mojom::Authenticator::GetAssertionCallback callback) override;
+  void IsUserVerifyingPlatformAuthenticatorAvailable(
+      blink::mojom::Authenticator::
+          IsUserVerifyingPlatformAuthenticatorAvailableCallback callback)
+      override;
+  void Cancel() override;
+
+  // WebContentsObserver:
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
  private:
   friend class InternalAuthenticatorImplTest;
@@ -53,31 +63,15 @@ class InternalAuthenticatorImpl : public blink::mojom::InternalAuthenticator,
   // tests.
   InternalAuthenticatorImpl(
       RenderFrameHost* render_frame_host,
-      url::Origin effective_origin,
       std::unique_ptr<AuthenticatorCommon> authenticator_common);
 
   AuthenticatorCommon* get_authenticator_common_for_testing() {
     return authenticator_common_.get();
   }
 
-  // mojom::InternalAuthenticator
-  void MakeCredential(
-      blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
-      MakeCredentialCallback callback) override;
-  void GetAssertion(blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
-                    GetAssertionCallback callback) override;
-  void IsUserVerifyingPlatformAuthenticatorAvailable(
-      IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) override;
-
-  // WebContentsObserver
-  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-
   RenderFrameHost* const render_frame_host_;
-  const url::Origin effective_origin_;
+  url::Origin effective_origin_;
   std::unique_ptr<AuthenticatorCommon> authenticator_common_;
-
-  // Owns pipes to this Authenticator from |render_frame_host_|.
-  mojo::Receiver<blink::mojom::InternalAuthenticator> receiver_{this};
 
   base::WeakPtrFactory<InternalAuthenticatorImpl> weak_factory_{this};
 

@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.site_settings;
 
-import static org.chromium.chrome.browser.settings.SearchUtils.handleSearchNavigation;
 import static org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
+import static org.chromium.components.browser_ui.settings.SearchUtils.handleSearchNavigation;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,7 +28,6 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
@@ -44,16 +43,16 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
-import org.chromium.chrome.browser.settings.ChromeBasePreference;
-import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.ExpandablePreferenceGroup;
-import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.settings.SearchUtils;
-import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.browser.site_settings.Website.StoredDataClearedCallback;
+import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
+import org.chromium.components.browser_ui.settings.ChromeBasePreference;
+import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
+import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
+import org.chromium.components.browser_ui.settings.SearchUtils;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -75,7 +74,7 @@ import java.util.Set;
  * the websites with microphone permissions. When the user selects a site, SingleWebsiteSettings
  * is launched to allow the user to see or modify the settings for that particular website.
  */
-public class SingleCategorySettings extends PreferenceFragmentCompat
+public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener,
                    AddExceptionPreference.SiteAddedCallback, View.OnClickListener,
                    PreferenceManager.OnPreferenceTreeClickListener {
@@ -168,7 +167,11 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
 
     /** Called by common settings code to determine if a Preference is managed. */
     private class SingleCategoryManagedPreferenceDelegate
-            implements ChromeManagedPreferenceDelegate {
+            extends ForwardingManagedPreferenceDelegate {
+        SingleCategoryManagedPreferenceDelegate(ManagedPreferenceDelegate base) {
+            super(base);
+        }
+
         @Override
         public boolean isPreferenceControlledByPolicy(Preference preference) {
             // TODO(bauerb): Align the ManagedPreferenceDelegate and
@@ -1053,7 +1056,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         }
         binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
 
-        binaryToggle.setManagedPreferenceDelegate(new SingleCategoryManagedPreferenceDelegate());
+        binaryToggle.setManagedPreferenceDelegate(new SingleCategoryManagedPreferenceDelegate(
+                getSiteSettingsClient().getManagedPreferenceDelegate()));
 
         // Set the checked value.
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)) {
@@ -1071,10 +1075,14 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
                 PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
         thirdPartyCookiesPref.setEnabled(
                 WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES));
-        thirdPartyCookiesPref.setManagedPreferenceDelegate(
-                (ChromeManagedPreferenceDelegate) preference
-                -> PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.BLOCK_THIRD_PARTY_COOKIES));
+        thirdPartyCookiesPref.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
+                getSiteSettingsClient().getManagedPreferenceDelegate()) {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                return PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.BLOCK_THIRD_PARTY_COOKIES);
+            }
+        });
     }
 
     private void updateNotificationsSecondaryControls() {
@@ -1110,8 +1118,9 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
 
     private void showManagedToast() {
         if (mCategory.isManagedByCustodian()) {
-            ManagedPreferencesUtils.showManagedByParentToast(
-                    getActivity(), new SingleCategoryManagedPreferenceDelegate());
+            ManagedPreferencesUtils.showManagedByParentToast(getActivity(),
+                    new SingleCategoryManagedPreferenceDelegate(
+                            getSiteSettingsClient().getManagedPreferenceDelegate()));
         } else {
             ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
         }

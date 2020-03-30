@@ -25,7 +25,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/widget_test.h"
 
 #if defined(USE_AURA)
@@ -128,8 +127,9 @@ class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
 class WebViewUnitTest : public views::test::WidgetTest {
  public:
   WebViewUnitTest()
-      : views::test::WidgetTest(
-            views::ViewsTestBase::SubclassManagesTaskEnvironment()) {}
+      : views::test::WidgetTest(std::unique_ptr<base::test::TaskEnvironment>(
+            std::make_unique<content::BrowserTaskEnvironment>())) {}
+
   ~WebViewUnitTest() override = default;
 
   std::unique_ptr<content::WebContents> CreateWebContentsForWebView(
@@ -146,7 +146,6 @@ class WebViewUnitTest : public views::test::WidgetTest {
     scoped_web_contents_creator_ =
         std::make_unique<views::WebView::ScopedWebContentsCreatorForTesting>(
             creator);
-    set_views_delegate(base::WrapUnique(new views::TestViewsDelegate));
     browser_context_ = std::make_unique<content::TestBrowserContext>();
     WidgetTest::SetUp();
     // Set the test content browser client to avoid pulling in needless
@@ -194,8 +193,6 @@ class WebViewUnitTest : public views::test::WidgetTest {
   void SetFullscreenNativeView(WebView* web_view, gfx::NativeView native_view) {
     web_view->fullscreen_native_view_for_testing_ = native_view;
   }
-
-  content::BrowserTaskEnvironment task_environment_;
 
  private:
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_enabler_;

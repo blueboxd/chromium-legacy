@@ -14,12 +14,12 @@ import androidx.preference.PreferenceFragmentCompat;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
-import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.site_settings.ContentSettingsResources;
 import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingsType;
 
 /**

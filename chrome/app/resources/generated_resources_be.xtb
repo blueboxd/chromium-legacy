@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">Дадаць порт</translation>
 <translation id="1026822031284433028">Загрузіць відарыс</translation>
 <translation id="1029317248976101138">Маштаб</translation>
-<translation id="1030706264415084469">Сайт <ph name="URL" /> запытвае дазволу захоўваць вялікі аб'ём даных на вашай прыладзе</translation>
 <translation id="1031362278801463162">Ідзе загрузка перадпрагляду</translation>
 <translation id="1032605640136438169">Азнаёмцеся з новымі ўмовамі</translation>
 <translation id="103279545524624934">Каб запускаць праграмы Android, вызваліце месца на дыску.</translation>
@@ -535,7 +534,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (уласная)</translation>
 <translation id="1709217939274742847">Выберыце, які білет выкарыстоўваць для аўтэнтыфікацыі. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">Атрымайце гэты пароль на свой iPhone</translation>
-<translation id="1712552549805331520">Сайт <ph name="URL" /> запытвае дазволу захоўваць даныя на лакальным камп'ютары</translation>
 <translation id="1714644264617423774">Каб спрасціць карыстанне прыладай, уключыце спецыяльныя магчымасці. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Датчыкі руху</translation>
 <translation id="1718835860248848330">За апошнюю гадзіну</translation>
@@ -749,7 +747,6 @@
 <translation id="1992397118740194946">Не зададзена</translation>
 <translation id="1994173015038366702">URL-адрас сайта</translation>
 <translation id="1995916364271252349">Кантралюе, якую інфармацыю могуць выкарыстоўваць і паказваць сайты (месцазнаходжанне, камера, усплывальныя вокны і іншае)</translation>
-<translation id="1997484222658892567">Сайт <ph name="URL" /> запытвае дазволу захоўваць вялікі аб'ём даных на лакальным камп'ютары</translation>
 <translation id="1997616988432401742">Вашы сертыфікаты</translation>
 <translation id="1999115740519098545">Пры запуску</translation>
 <translation id="2000419248597011803">Адпраўляе вашай стандартнай пошукавай сістэме некаторыя файлы cookie, а таксама пошукавыя запыты, уведзеныя ў адрасным радку і полі пошуку</translation>
@@ -1010,7 +1007,6 @@
 <translation id="2340263603246777781">Сайт <ph name="ORIGIN" /> запытвае спалучэнне</translation>
 <translation id="2342740338116612727">Закладкі дададзены</translation>
 <translation id="2343747224442182863">Перайсці на гэту ўкладку</translation>
-<translation id="2344028582131185878">Аўтаматычныя спампоўкі</translation>
 <translation id="2345723121311404059">1 старонка – на прынтар "<ph name="PRINTER_NAME" />"</translation>
 <translation id="2346953515226895098">Сэрвісы SODA</translation>
 <translation id="2347644257713614136">Выкарыстанне Hangouts і Cast for Education рэгулюецца Палітыкай прыватнасці Google.</translation>
@@ -1662,7 +1658,6 @@
 <translation id="3188465121994729530">Рухомае сярэдняе</translation>
 <translation id="3190558889382726167">Пароль захаваны</translation>
 <translation id="3192947282887913208">Аўдыяфайлы</translation>
-<translation id="3194737229810486521">Сайт <ph name="URL" /> запытвае дазволу захоўваць даныя на вашай прыладзе</translation>
 <translation id="3199127022143353223">Серверы</translation>
 <translation id="3200941271596533635">Уключыць або выключыць рэжым чытання</translation>
 <translation id="3201306578844503970">Не ўдалося ўсталяваць віртуальную машыну з-за памылкі сеткі. Паўтарыце спробу або звярніцеся да адміністратара прылад сваёй арганізацыі. Код памылкі: <ph name="ERROR_CODE" />.</translation>
@@ -3996,7 +3991,6 @@
 <translation id="6349101878882523185">Усталяваць праграму "<ph name="APP_NAME" />"</translation>
 <translation id="6349170655202535379">Сінхранізацыя не працуе. Паспрабуйце выйсці і ўвайсці зноў.</translation>
 <translation id="6351063337294363751">Праз гэта меню можна выдаліць гісторыю праглядаў</translation>
-<translation id="6352223293513723497">У сховішчы прылады мала месца. Вызваліце месца, каб выкарыстоўваць Plugin VM.</translation>
 <translation id="6352773953037195952">Найвышэйшы</translation>
 <translation id="6354918092619878358">SECG эліптычны secp256r1 (іншая назва – ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Не выключайце прыладу.</translation>
@@ -4940,7 +4934,6 @@
 <translation id="7645681574855902035">Скасоўваецца стварэнне рэзервовай копіі кантэйнера Linux</translation>
 <translation id="7646772052135772216">Сінхранізацыя пароляў не працуе</translation>
 <translation id="7647403192093989392">Няма нядаўніх дзеянняў</translation>
-<translation id="7648992873808071793">Захоўваць файлы на гэтай прыладзе</translation>
 <translation id="7649070708921625228">Даведка</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" прапануе выдаліць пашырэнне "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7652808307838961528">Змяніць профіль карыстальніка <ph name="PROFILE_NAME" /></translation>

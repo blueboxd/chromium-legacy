@@ -794,7 +794,8 @@ void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
     return;
 
   core()->StartRemoteCommandsService(
-      std::make_unique<UserCommandsFactoryChromeOS>(profile_));
+      std::make_unique<UserCommandsFactoryChromeOS>(profile_),
+      PolicyInvalidationScope::kUser);
   invalidator_ = std::make_unique<RemoteCommandsInvalidatorImpl>(
       core(), base::DefaultClock::GetInstance(),
       PolicyInvalidationScope::kUser);

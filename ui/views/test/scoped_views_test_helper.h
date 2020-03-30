@@ -29,6 +29,8 @@ class ScopedViewsTestHelper {
       std::unique_ptr<TestViewsDelegate> test_views_delegate = nullptr,
       base::Optional<ViewsDelegate::NativeWidgetFactory> factory =
           base::nullopt);
+  ScopedViewsTestHelper(const ScopedViewsTestHelper&) = delete;
+  ScopedViewsTestHelper& operator=(const ScopedViewsTestHelper&) = delete;
   ~ScopedViewsTestHelper();
 
   // Returns the context for creating new windows. In Aura builds, this will be
@@ -45,8 +47,6 @@ class ScopedViewsTestHelper {
  private:
   std::unique_ptr<ViewsTestHelper> test_helper_ = ViewsTestHelper::Create();
   std::unique_ptr<TestViewsDelegate> test_views_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedViewsTestHelper);
 };
 
 }  // namespace views

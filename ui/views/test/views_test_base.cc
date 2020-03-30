@@ -64,7 +64,8 @@ bool InitializeVisuals() {
 }  // namespace
 
 ViewsTestBase::ViewsTestBase(
-    ViewsTestBase::SubclassManagesTaskEnvironment tag) {}
+    std::unique_ptr<base::test::TaskEnvironment> task_environment)
+    : task_environment_(std::move(task_environment)) {}
 
 ViewsTestBase::~ViewsTestBase() {
   CHECK(setup_called_)

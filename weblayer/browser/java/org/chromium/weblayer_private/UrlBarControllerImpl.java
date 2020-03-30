@@ -5,6 +5,7 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
@@ -81,6 +82,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             super(context);
             mTextSize = options.getFloat(URL_TEXT_SIZE, DEFAULT_TEXT_SIZE);
             View.inflate(getContext(), R.layout.weblayer_url_bar, this);
+            setOrientation(LinearLayout.HORIZONTAL);
+            setBackgroundColor(Color.TRANSPARENT);
             mUrlTextView = findViewById(R.id.url_text);
             mSecurityButton = (ImageButton) findViewById(R.id.security_button);
 

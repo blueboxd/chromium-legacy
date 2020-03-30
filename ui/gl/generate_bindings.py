@@ -2452,9 +2452,9 @@ EGL_FUNCTIONS = [
                  ] }],
   'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLint timestamp', },
 { 'return_type': 'EGLBoolean',
-  'versions': [{ 'name': 'eglGetMscRateCHROMIUM',
+  'versions': [{ 'name': 'eglGetMscRateANGLE',
                  'extensions': [
-                   'EGL_CHROMIUM_sync_control'
+                   'EGL_ANGLE_sync_control_rate'
                  ] }],
   'arguments':
       'EGLDisplay dpy, EGLSurface surface, '

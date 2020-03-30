@@ -151,7 +151,8 @@ void AshTestBase::SetUp(std::unique_ptr<TestShellDelegate> delegate) {
   params.start_session = start_session_;
   params.delegate = std::move(delegate);
   params.local_state = local_state();
-  ash_test_helper_.SetUp(std::move(params));
+  ash_test_helper_ = std::make_unique<AshTestHelper>();
+  ash_test_helper_->SetUp(std::move(params));
 
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->GetHost()->Show();
@@ -179,7 +180,7 @@ void AshTestBase::TearDown() {
   // Flush the message loop to finish pending release tasks.
   base::RunLoop().RunUntilIdle();
 
-  ash_test_helper_.TearDown();
+  ash_test_helper_->TearDown();
 
   event_generator_.reset();
   // Some tests set an internal display id,
@@ -236,7 +237,7 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
 }
 
 aura::Window* AshTestBase::GetContext() {
-  return ash_test_helper_.GetContext();
+  return ash_test_helper_->GetContext();
 }
 
 // static
@@ -382,15 +383,15 @@ TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
 }
 
 TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
-  return ash_test_helper_.test_session_controller_client();
+  return ash_test_helper_->test_session_controller_client();
 }
 
 TestSystemTrayClient* AshTestBase::GetSystemTrayClient() {
-  return ash_test_helper_.system_tray_client();
+  return ash_test_helper_->system_tray_client();
 }
 
 AppListTestHelper* AshTestBase::GetAppListTestHelper() {
-  return ash_test_helper_.app_list_test_helper();
+  return ash_test_helper_->app_list_test_helper();
 }
 
 void AshTestBase::CreateUserSessions(int n) {
@@ -558,7 +559,7 @@ display::Display AshTestBase::GetPrimaryDisplay() const {
 }
 
 display::Display AshTestBase::GetSecondaryDisplay() const {
-  return ash_test_helper_.GetSecondaryDisplay();
+  return ash_test_helper_->GetSecondaryDisplay();
 }
 
 }  // namespace ash

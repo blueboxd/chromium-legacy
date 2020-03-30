@@ -42,6 +42,9 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
   void MoveCredentialsToAccountStore() override;
 
  protected:
+  std::pair<const autofill::PasswordForm*, PendingCredentialsState>
+  FindSimilarSavedFormAndComputeState(
+      const autofill::PasswordForm& parsed_submitted_form) const override;
   FormSaver* GetFormSaverForGeneration() override;
 
  private:

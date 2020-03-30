@@ -66,22 +66,22 @@ TEST_F(NotificationHeaderViewTest, UpdatesTimestampOverTime) {
                 IDS_MESSAGE_NOTIFICATION_DURATION_HOURS_SHORTEST_FUTURE, 3),
             timestamp_view->GetText());
 
-  task_environment_->FastForwardBy(base::TimeDelta::FromHours(3));
-  task_environment_->RunUntilIdle();
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(3));
+  task_environment()->RunUntilIdle();
 
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_MINUTES_SHORTEST_FUTURE, 30),
             timestamp_view->GetText());
 
-  task_environment_->FastForwardBy(base::TimeDelta::FromMinutes(30));
-  task_environment_->RunUntilIdle();
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(30));
+  task_environment()->RunUntilIdle();
 
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MESSAGE_NOTIFICATION_NOW_STRING_SHORTEST),
       timestamp_view->GetText());
 
-  task_environment_->FastForwardBy(base::TimeDelta::FromDays(2));
-  task_environment_->RunUntilIdle();
+  task_environment()->FastForwardBy(base::TimeDelta::FromDays(2));
+  task_environment()->RunUntilIdle();
 
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_DAYS_SHORTEST, 2),

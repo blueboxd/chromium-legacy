@@ -132,12 +132,11 @@ void WorkerWatcher::OnWorkerStarted(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
       base::UnguessableToken::Create());
+  AddClientFrame(worker_node.get(), ancestor_render_frame_host_id);
   bool inserted = dedicated_worker_nodes_
                       .emplace(dedicated_worker_id, std::move(worker_node))
                       .second;
   DCHECK(inserted);
-
-  // TODO(pmonette): Connect |worker_node| to its client frame.
 }
 
 void WorkerWatcher::OnBeforeWorkerTerminated(
@@ -145,15 +144,15 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   auto it = dedicated_worker_nodes_.find(dedicated_worker_id);
   DCHECK(it != dedicated_worker_nodes_.end());
-
   auto worker_node = std::move(it->second);
-  // TODO(pmonette): Disconnect |worker_node| from its client frame.
+  dedicated_worker_nodes_.erase(it);
+
+  RemoveClientFrame(worker_node.get(), ancestor_render_frame_host_id);
 #if DCHECK_IS_ON()
   DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
 #endif  // DCHECK_IS_ON()
-  PerformanceManagerImpl::DeleteNode(std::move(worker_node));
 
-  dedicated_worker_nodes_.erase(it);
+  PerformanceManagerImpl::DeleteNode(std::move(worker_node));
 }
 
 void WorkerWatcher::OnFinalResponseURLDetermined(

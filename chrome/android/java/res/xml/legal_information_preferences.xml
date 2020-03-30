@@ -11,9 +11,13 @@
         android:title="@string/open_source_license_title"
         app:url="@string/open_source_license_url" />
     <org.chromium.chrome.browser.settings.HyperlinkPreference
-        android:key="terms_of_service"
-        android:title="@string/terms_of_service_title"
-        app:url="@string/chrome_terms_of_service_url" />
+        android:key="google_terms_of_service"
+        android:title="@string/google_terms_of_service_title"
+        app:url="@string/google_terms_of_service_url" />
+    <org.chromium.chrome.browser.settings.HyperlinkPreference
+        android:key="chrome_additional_terms_of_service"
+        android:title="@string/chrome_additional_terms_of_service_title"
+        app:url="@string/chrome_additional_terms_of_service_url" />
     <org.chromium.chrome.browser.settings.HyperlinkPreference
         android:key="privacy_notice"
         android:title="@string/privacy_notice_title"

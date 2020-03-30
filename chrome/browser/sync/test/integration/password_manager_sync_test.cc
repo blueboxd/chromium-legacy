@@ -33,10 +33,17 @@ namespace {
 
 using testing::ElementsAre;
 using testing::IsEmpty;
+using testing::UnorderedElementsAre;
 
 MATCHER_P2(MatchesLogin, username, password, "") {
   return arg->username_value == base::UTF8ToUTF16(username) &&
          arg->password_value == base::UTF8ToUTF16(password);
+}
+
+MATCHER_P3(MatchesLoginAndRealm, username, password, signon_realm, "") {
+  return arg->username_value == base::UTF8ToUTF16(username) &&
+         arg->password_value == base::UTF8ToUTF16(password) &&
+         arg->signon_realm == signon_realm;
 }
 
 // Note: This helper applies to ChromeOS too, but is currently unused there. So
@@ -96,29 +103,60 @@ class PasswordManagerSyncTest : public SyncTest {
     ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   }
 
+  GURL GetWWWOrigin() {
+    return embedded_test_server()->GetURL("www.example.com", "/");
+  }
+  GURL GetPSLOrigin() {
+    return embedded_test_server()->GetURL("psl.example.com", "/");
+  }
+
+  // Returns a credential for the origin returned by GetWWWOrigin().
   autofill::PasswordForm CreateTestPasswordForm(const std::string& username,
                                                 const std::string& password) {
-    GURL origin = embedded_test_server()->GetURL("/");
     autofill::PasswordForm form;
-    form.signon_realm = origin.spec();
-    form.origin = origin;
+    form.signon_realm = GetWWWOrigin().spec();
+    form.origin = GetWWWOrigin();
     form.username_value = base::UTF8ToUTF16(username);
     form.password_value = base::UTF8ToUTF16(password);
     form.date_created = base::Time::Now();
     return form;
   }
 
-  void AddPasswordToFakeServer(const std::string& username,
-                               const std::string& password) {
-    passwords_helper::InjectKeystoreEncryptedServerPassword(
-        CreateTestPasswordForm(username, password), GetFakeServer());
+  // Returns a credential for the origin returned by GetPSLOrigin().
+  autofill::PasswordForm CreateTestPSLPasswordForm(
+      const std::string& username,
+      const std::string& password) {
+    autofill::PasswordForm form = CreateTestPasswordForm(username, password);
+    form.signon_realm = GetPSLOrigin().spec();
+    form.origin = GetPSLOrigin();
+    return form;
   }
 
-  void AddLocalPassword(const std::string& username,
-                        const std::string& password) {
+  // Adds a credential to the Sync fake server for the origin returned by
+  // GetWWWOrigin().
+  void AddCredentialToFakeServer(const std::string& username,
+                                 const std::string& password) {
+    AddCredentialToFakeServer(CreateTestPasswordForm(username, password));
+  }
+
+  // Adds a credential to the Sync fake server.
+  void AddCredentialToFakeServer(const autofill::PasswordForm& form) {
+    passwords_helper::InjectKeystoreEncryptedServerPassword(form,
+                                                            GetFakeServer());
+  }
+
+  // Adds a credential to the local store for the origin returned by
+  // GetWWWOrigin().
+  void AddLocalCredential(const std::string& username,
+                          const std::string& password) {
+    AddLocalCredential(CreateTestPasswordForm(username, password));
+  }
+
+  // Adds a credential to the local store.
+  void AddLocalCredential(const autofill::PasswordForm& form) {
     scoped_refptr<password_manager::PasswordStore> password_store =
         passwords_helper::GetPasswordStore(0);
-    password_store->AddLogin(CreateTestPasswordForm(username, password));
+    password_store->AddLogin(form);
     // Do a roundtrip to the DB thread, to make sure the new password is stored
     // before doing anything else that might depend on it.
     GetAllLoginsFromProfilePasswordStore();
@@ -151,7 +189,7 @@ class PasswordManagerSyncTest : public SyncTest {
     ASSERT_EQ(web_contents,
               GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
     NavigationObserver observer(web_contents);
-    GURL url = embedded_test_server()->GetURL(path);
+    GURL url = embedded_test_server()->GetURL("www.example.com", path);
     ui_test_utils::NavigateToURL(GetBrowser(0), url);
     observer.Wait();
     // After navigation, the password manager retrieves any matching credentials
@@ -243,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, UpdateInProfileStore) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AddLocalPassword("user", "localpass");
+  AddLocalCredential("user", "localpass");
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -269,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, UpdateInProfileStore) {
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, UpdateInAccountStore) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AddPasswordToFakeServer("user", "accountpass");
+  AddCredentialToFakeServer("user", "accountpass");
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -296,8 +334,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
                        UpdateMatchingCredentialInBothStores) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AddPasswordToFakeServer("user", "pass");
-  AddLocalPassword("user", "pass");
+  AddCredentialToFakeServer("user", "pass");
+  AddLocalCredential("user", "pass");
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -324,8 +362,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
                        UpdateMismatchingCredentialInBothStores) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AddPasswordToFakeServer("user", "accountpass");
-  AddLocalPassword("user", "localpass");
+  AddCredentialToFakeServer("user", "accountpass");
+  AddLocalCredential("user", "localpass");
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -357,8 +395,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // Add credentials for the same username, but with different passwords, to the
   // two stores.
-  AddPasswordToFakeServer("user", "accountpass");
-  AddLocalPassword("user", "localpass");
+  AddCredentialToFakeServer("user", "accountpass");
+  AddLocalCredential("user", "localpass");
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -395,8 +433,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // Add credentials for the same username, but with different passwords, to the
   // two stores.
-  AddPasswordToFakeServer("user", "accountpass");
-  AddLocalPassword("user", "localpass");
+  AddCredentialToFakeServer("user", "accountpass");
+  AddLocalCredential("user", "localpass");
 
   SetupSyncTransportWithPasswordAccountStorage();
 
@@ -421,6 +459,66 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
   // ...but also the one in the profile store should have been updated to match.
   EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(),
               ElementsAre(MatchesLogin("user", "accountpass")));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       AutoUpdatePSLMatchInAccountStoreOnSuccessfulUse) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Add the same credential to both stores, but the account one is a PSL match
+  // (i.e. it's stored for psl.example.com instead of www.example.com).
+  AddCredentialToFakeServer(CreateTestPSLPasswordForm("user", "pass"));
+  AddLocalCredential(CreateTestPasswordForm("user", "pass"));
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form (on www.) and submit it with the saved credentials.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "pass");
+
+  // Now the PSL-matched credential should have been automatically saved for
+  // www. as well (in the account store).
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              UnorderedElementsAre(
+                  MatchesLoginAndRealm("user", "pass", GetWWWOrigin()),
+                  MatchesLoginAndRealm("user", "pass", GetPSLOrigin())));
+  // In the profile store, there was already a credential for www. so nothing
+  // should have changed.
+  ASSERT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "pass")));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       AutoUpdatePSLMatchInProfileStoreOnSuccessfulUse) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Add the same credential to both stores, but the local one is a PSL match
+  // (i.e. it's stored for psl.example.com instead of www.example.com).
+  AddCredentialToFakeServer(CreateTestPasswordForm("user", "pass"));
+  AddLocalCredential(CreateTestPSLPasswordForm("user", "pass"));
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form (on www.) and submit it with the saved credentials.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "pass");
+
+  // Now the PSL-matched credential should have been automatically saved for
+  // www. as well (in the profile store).
+  EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              UnorderedElementsAre(
+                  MatchesLoginAndRealm("user", "pass", GetWWWOrigin()),
+                  MatchesLoginAndRealm("user", "pass", GetPSLOrigin())));
+  // In the account store, there was already a credential for www. so nothing
+  // should have changed.
+  ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "pass")));
 }
 #endif  // !defined(OS_CHROMEOS)
 

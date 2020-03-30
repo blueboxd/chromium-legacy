@@ -1207,10 +1207,8 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that "Never Translate ..." is automatically triggered only for a
 // maximum number of times if refused by the user.
-- (void)testInfobarAutoNeverTranslateMaxTries {
-  // TODO(crbug.com/945118): Re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
-
+// TODO(crbug.com/945118): Re-enable when fixed.
+- (void)DISABLED_testInfobarAutoNeverTranslateMaxTries {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">పోర్ట్‌ను జోడించండి</translation>
 <translation id="1026822031284433028">చిత్రాన్ని లోడ్ చేయండి</translation>
 <translation id="1029317248976101138">జూమ్ చేయి:</translation>
-<translation id="1030706264415084469">డేటాను మీ పరికరంలో అధిక మొత్తంలో, శాశ్వతంగా నిల్వ చేయాలని <ph name="URL" /> అనుకుంటోంది</translation>
 <translation id="1031362278801463162">ప్రివ్యూ లోడ్ అవుతోంది</translation>
 <translation id="1032605640136438169">దయచేసి కొత్త నిబంధనలను సమీక్షించండి</translation>
 <translation id="103279545524624934">Android యాప్‌లను ప్రారంభించడానికి డిస్క్ స్థలాన్ని ఖాళీ చేయండి.</translation>
@@ -535,7 +534,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (స్థానికం)</translation>
 <translation id="1709217939274742847">ప్రామాణీకరణ కోసం ఉపయోగించాల్సిన టిక్కెట్‌ను ఎంచుకోండి. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">మీ iPhoneలో ఈ పాస్‌వర్డ్‌ను పొందండి</translation>
-<translation id="1712552549805331520">మీ స్థానిక కంప్యూటర్‌లో <ph name="URL" /> శాశ్వతంగా డేటాను నిల్వ చేయాలనుకుంటోంది</translation>
 <translation id="1714644264617423774">మీ పరికరాన్ని సులభంగా ఉపయోగించడానికి యాక్సెస్‌ ఫీచ‌ర్‌ల‌ను ఎనేబుల్ చేయండి. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">మోషన్ సెన్సార్‌లు</translation>
 <translation id="1718835860248848330">చివరి గంట</translation>
@@ -749,7 +747,6 @@
 <translation id="1992397118740194946">సెట్ చెయ్యలేదు</translation>
 <translation id="1994173015038366702">సైట్ URL</translation>
 <translation id="1995916364271252349">సైట్‌లు ఉపయోగించగల సమాచారాన్ని, అవి చూపగల కంటెంట్‌ను (లొకేషన్, కెమెరా, పాప్-అప్‌లు, మరిన్ని) నియంత్రిస్తుంది</translation>
-<translation id="1997484222658892567"><ph name="URL" /> శాశ్వతంగా అధిక డేటాని మీ స్థానిక కంప్యూటర్‌లో నిల్వ చేయాలనుకుంటోంది</translation>
 <translation id="1997616988432401742">మీ ప్రమాణపత్రాలు</translation>
 <translation id="1999115740519098545">ప్రారంభించిన తరువాత</translation>
 <translation id="2000419248597011803">చిరునామా బార్ మరియు శోధన పెట్టెలోని కొన్ని కుక్కీలు మరియు శోధనలను మీ డిఫాల్ట్ శోధన ఇంజిన్‌కు పంపుతుంది</translation>
@@ -1010,7 +1007,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> దీనితో జత చేయాలనుకుంటోంది</translation>
 <translation id="2342740338116612727">బుక్‌మార్క్‌లు జోడించబడ్డాయి</translation>
 <translation id="2343747224442182863">ఈ ట్యాబ్‌పై దృష్టి కేంద్రీకరించు</translation>
-<translation id="2344028582131185878">ఆటోమేటిక్ డౌన్‌లోడ్‌లు</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" />కు 1 పేజీ</translation>
 <translation id="2346953515226895098">SODA సర్వీస్</translation>
 <translation id="2347644257713614136">Hangouts మరియు Cast for Educationల వినియోగం Google గోప్యతా విధానానికి అనుగుణంగా ఉంటుంది.</translation>
@@ -1662,7 +1658,6 @@
 <translation id="3188465121994729530">తరలించే సగటు</translation>
 <translation id="3190558889382726167">పాస్‌వర్డ్ సేవ్ చేయబడింది</translation>
 <translation id="3192947282887913208">ఆడియో  ఫైళ్ళు</translation>
-<translation id="3194737229810486521"><ph name="URL" /> శాశ్వతంగా డేటాను మీ పరికరంలో నిల్వ చేయాలనుకుంటోంది</translation>
 <translation id="3199127022143353223">సర్వర్‌లు</translation>
 <translation id="3200941271596533635">రీడర్ మోడ్ టోగుల్ చేయవచ్చు</translation>
 <translation id="3201306578844503970">నెట్‌వర్క్ ఎర్రర్ కారణంగా వర్చువల్ మెషిన్‌ను ఇన్‌స్టాల్ చేయడం సాధ్యం కాలేదు. దయచేసి మళ్లీ ప్రయత్నించండి, లేదా మీ సంస్థ పరికర నిర్వాహకుడిని సంప్రదించండి. ఎర్రర్ కోడ్: <ph name="ERROR_CODE" />.</translation>
@@ -1703,6 +1698,7 @@
 <translation id="3264544094376351444">Sans-Serif ఫాంట్</translation>
 <translation id="3264582393905923483">సందర్భం</translation>
 <translation id="3265459715026181080">విండో ముసివేయి</translation>
+<translation id="3266274118485960573">భద్రతా తనిఖీ రన్ అవుతోంది.</translation>
 <translation id="3267726687589094446">బహుళ ఫైల్‌ల స్వయంచాలక డౌన్‌లోడ్‌లకు అనుమతిని కొనసాగించు</translation>
 <translation id="3268451620468152448">ఓపెన్ టాబ్‌లు</translation>
 <translation id="3269069891205016797">మీరు సైన్ అవుట్ చేసినప్పుడు పరికరం నుండి మీ సమాచారం తీసివేయబడుతుంది.</translation>
@@ -1808,6 +1804,7 @@
 <translation id="3412265149091626468">ఎంపికకు వెళ్ళు</translation>
 <translation id="3413122095806433232">CA జారీచేసిన వారు: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">పరిమాణం:</translation>
+<translation id="3416468988018290825">ఎల్లప్పుడూ పూర్తి URLలను చూపించు</translation>
 <translation id="3420501302812554910">అంతర్గత సెక్యూరిటీ కీని రీసెట్ చేయడం అవసరం</translation>
 <translation id="3421387094817716717">దీర్ఘవృత్తాకార వక్రరేఖ పబ్లిక్ కీ</translation>
 <translation id="3422291238483866753">ఒక సైట్ మీ పరిసరాల 3D మ్యాప్‌ను రూపొందించాలన్నప్పుడు లేదా కెమెరా పొజిషన్‌ను ట్రాక్ చేయాలన్నప్పుడు అనుమతి అడగాలి (సిఫార్సు చేయడమైనది)</translation>
@@ -3994,7 +3991,6 @@
 <translation id="6349101878882523185"><ph name="APP_NAME" />‌ను ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="6349170655202535379">సింక్‌ పని చేయడం లేదు. సైన్ అవుట్ చేసి, తిరిగి మళ్లీ సైన్ ఇన్ చేయండి.</translation>
 <translation id="6351063337294363751">మీరు ఈ మెనూ నుండి మీ బ్రౌజింగ్ డేటాను తీసివేయవచ్చు</translation>
-<translation id="6352223293513723497">మీ పరికరంలో స్టోరేజ్ స్పేస్ తక్కువగా ఉంది. Plugin VMను ఉపయోగించడానికి దయచేసి స్పేస్‌ను ఖాళీ చేయండి.</translation>
 <translation id="6352773953037195952">అత్యధికం</translation>
 <translation id="6354918092619878358">SECG దీర్ఘవృత్తాకార వక్రం secp256r1 (ANSI X9.62 prime256v1, NIST P-256గా కూడా పిలువబడతాయి)</translation>
 <translation id="635609604405270300">పరికరాన్ని ఆన్ చేసి ఉంచండి</translation>
@@ -4164,6 +4160,7 @@
 <translation id="6586451623538375658">ప్రాథమిక మౌస్ బటన్‌ను మార్చు</translation>
 <translation id="6586604979641883411">Linuxను అప్‌గ్రేడ్ చేయడానికి కనీసం <ph name="REQUIRED_SPACE" /> ఖాళీ డిస్క్ స్థలం అవసరం. దయచేసి మీ పరికరంలో కొంత స్థలాన్ని ఖాళీ చేసి, ఆపై మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="6588043302623806746">సెక్యూర్ DNSను ఉపయోగించండి</translation>
+<translation id="659005207229852190">భద్రతా తనిఖీ పూర్తయింది.</translation>
 <translation id="6590458744723262880">ఫోల్డర్‌ పేరు మార్చండి</translation>
 <translation id="6592267180249644460">WebRTC లాగ్ క్యాప్చర్ చేయబడినది <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">మీ వేలిముద్ర క్యాప్చర్ చేయబడింది</translation>
@@ -4937,7 +4934,6 @@
 <translation id="7645681574855902035">Linux బ్యాకప్‍ను రద్దు చేస్తోంది</translation>
 <translation id="7646772052135772216">పాస్‌వర్డ్ సింక్ పనిచేయడం లేదు</translation>
 <translation id="7647403192093989392">ఇటీవలి కార్యకలాపాలు లేవు</translation>
-<translation id="7648992873808071793">ఈ పరికరంలో ఫైల్‌లను నిల్వ చేయాలనుకుంటోంది</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7650511557061837441">"<ph name="EXTENSION_NAME" />"ని "<ph name="TRIGGERING_EXTENSION_NAME" />" తీసివేయాలనుకుంటోంది.</translation>
 <translation id="7652808307838961528">వ్యక్తిని సవరించండి, <ph name="PROFILE_NAME" /></translation>
@@ -5420,6 +5416,7 @@
 <translation id="8249672078237421304">మీరు చదివే భాషలో లేని పేజీలను అనువదించే సౌలభ్యం</translation>
 <translation id="8251441930213048644">ఇప్పుడు రిఫ్రెష్ చేయి</translation>
 <translation id="8251578425305135684">సూక్ష్మచిత్రం తొలగించబడింది.</translation>
+<translation id="825238165904109940">ఎల్లప్పుడూ పూర్తి URLలను చూపించు</translation>
 <translation id="8252569384384439529">అప్‌లోడ్ చేస్తోంది...</translation>
 <translation id="8253198102038551905">నెట్‌వర్క్ లక్షణాలను పొందడానికి '+' క్లిక్ చేయండి</translation>
 <translation id="8254954272268479918">Linux (బీటా)ను షట్ డౌన్ చేయండి</translation>

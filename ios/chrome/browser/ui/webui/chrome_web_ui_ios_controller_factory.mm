@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/ui/webui/flags_ui.h"
 #include "ios/chrome/browser/ui/webui/gcm/gcm_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/inspect/inspect_ui.h"
+#include "ios/chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "ios/chrome/browser/ui/webui/net_export/net_export_ui.h"
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/omaha_ui.h"
@@ -25,12 +26,12 @@
 #include "ios/chrome/browser/ui/webui/prefs_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/suggestions_ui.h"
-#include "ios/chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/terms_ui.h"
 #include "ios/chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/ukm_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/user_actions_ui.h"
 #include "ios/chrome/browser/ui/webui/version_ui.h"
+#include "ios/components/webui/sync_internals/sync_internals_ui.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -84,6 +85,8 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
     return &NewWebUIIOS<GCMInternalsUI>;
   if (url_host == kChromeUIInspectHost)
     return &NewWebUIIOS<InspectUI>;
+  if (url_host == kChromeUIIntersitialsHost)
+    return &NewWebUIIOS<InterstitialUI>;
   if (url_host == kChromeUINetExportHost)
     return &NewWebUIIOS<NetExportUI>;
   if (url_host == kChromeUINTPTilesInternalsHost)
@@ -105,7 +108,7 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
   if (url_host == kChromeUIUserActionsHost)
     return &NewWebUIIOS<UserActionsUI>;
   if (url_host == kChromeUISyncInternalsHost)
-    return &NewWebUIIOS<SyncInternalsUI>;
+    return &NewWebUIIOSWithHost<SyncInternalsUI>;
   if (url_host == kChromeUITermsHost)
     return &NewWebUIIOSWithHost<TermsUI>;
   if (url_host == kChromeUIVersionHost)

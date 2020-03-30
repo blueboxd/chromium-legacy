@@ -63,16 +63,23 @@ public class Profile {
     private final String mName;
     private IProfile mImpl;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
+    private final CookieManager mCookieManager;
 
     // Constructor for test mocking.
     protected Profile() {
         mName = null;
         mImpl = null;
+        mCookieManager = null;
     }
 
     private Profile(String name, IProfile impl) {
         mName = name;
         mImpl = impl;
+        if (WebLayer.getSupportedMajorVersionInternal() >= 83) {
+            mCookieManager = CookieManager.create(impl);
+        } else {
+            mCookieManager = null;
+        }
 
         sProfiles.put(name, this);
     }
@@ -191,6 +198,21 @@ public class Profile {
         }
     }
 
+    /**
+     * Gets the cookie manager for this profile.
+     *
+     * @since 83
+     */
+    @NonNull
+    public CookieManager getCookieManager() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 83) {
+            throw new UnsupportedOperationException();
+        }
+
+        return mCookieManager;
+    }
+
     private static final class DownloadCallbackClientImpl extends IDownloadCallbackClient.Stub {
         private final DownloadCallback mCallback;
 
@@ -256,6 +278,7 @@ public class Profile {
         }
 
         @Override
+        // Deprecated, implementations past 83 call IWebLayerClient.createIntent instead.
         public Intent createIntent() {
             StrictModeWorkaround.apply();
             // Intent objects need to be created in the client library so they can refer to the

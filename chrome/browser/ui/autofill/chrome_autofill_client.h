@@ -74,6 +74,8 @@ class ChromeAutofillClient
   std::vector<std::string> GetMerchantWhitelistForVirtualCards() override;
   std::vector<std::string> GetBinRangeWhitelistForVirtualCards() override;
 #endif
+  std::unique_ptr<InternalAuthenticator> CreateCreditCardInternalAuthenticator(
+      content::RenderFrameHost* rfh) override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,

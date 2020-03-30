@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/safety_check_handler.h"
 
 #include "base/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -255,18 +256,20 @@ void SafetyCheckHandler::OnSafeBrowsingCheckResult(
 }
 
 void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
-                                                int num_compromised) {
+                                                Compromised compromised,
+                                                Done done,
+                                                Total total) {
   base::DictionaryValue event;
   event.SetIntKey(kNewState, static_cast<int>(status));
   if (status == PasswordsStatus::kCompromisedExist) {
-    event.SetIntKey(kPasswordsCompromised, num_compromised);
+    event.SetIntKey(kPasswordsCompromised, compromised.value());
     event.SetStringKey(
         kButtonString,
         l10n_util::GetPluralStringFUTF16(
-            IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON, num_compromised));
+            IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON, compromised.value()));
   }
   event.SetStringKey(kDisplayString,
-                     GetStringForPasswords(status, num_compromised));
+                     GetStringForPasswords(status, compromised, done, total));
   FireWebUIListener(kPasswordsEvent, event);
 }
 
@@ -341,17 +344,27 @@ base::string16 SafetyCheckHandler::GetStringForSafeBrowsing(
   }
 }
 
-base::string16 SafetyCheckHandler::GetStringForPasswords(PasswordsStatus status,
-                                                         int num_compromised) {
+base::string16 SafetyCheckHandler::GetStringForPasswords(
+    PasswordsStatus status,
+    Compromised compromised,
+    Done done,
+    Total total) {
   switch (status) {
-    case PasswordsStatus::kChecking:
-      return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+    case PasswordsStatus::kChecking: {
+      // Unable to get progress for some reason.
+      if (total.value() == 0) {
+        return l10n_util::GetStringUTF16(IDS_SETTINGS_SAFETY_CHECK_RUNNING);
+      }
+      return l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PROGRESS,
+          base::FormatNumber(done.value()), base::FormatNumber(total.value()));
+    }
     case PasswordsStatus::kSafe:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SAFE);
     case PasswordsStatus::kCompromisedExist:
       return l10n_util::GetPluralStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_COMPROMISED, num_compromised);
+          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_COMPROMISED, compromised.value());
     case PasswordsStatus::kOffline:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_OFFLINE);
@@ -471,7 +484,7 @@ void SafetyCheckHandler::DetermineIfNoPasswordsOrSafe(
         passwords) {
   OnPasswordsCheckResult(passwords.empty() ? PasswordsStatus::kNoPasswords
                                            : PasswordsStatus::kSafe,
-                         0);
+                         Compromised(0), Done(0), Total(0));
 }
 
 void SafetyCheckHandler::OnStateChanged(
@@ -488,27 +501,32 @@ void SafetyCheckHandler::OnStateChanged(
                            base::Unretained(this)));
       } else {
         OnPasswordsCheckResult(PasswordsStatus::kCompromisedExist,
-                               num_compromised);
+                               Compromised(num_compromised), Done(0), Total(0));
       }
       break;
     }
     case BulkLeakCheckService::State::kRunning:
-      OnPasswordsCheckResult(PasswordsStatus::kChecking, 0);
+      OnPasswordsCheckResult(PasswordsStatus::kChecking, Compromised(0),
+                             Done(0), Total(0));
       // Non-terminal state, so nothing else needs to be done.
       return;
     case BulkLeakCheckService::State::kSignedOut:
-      OnPasswordsCheckResult(PasswordsStatus::kSignedOut, 0);
+      OnPasswordsCheckResult(PasswordsStatus::kSignedOut, Compromised(0),
+                             Done(0), Total(0));
       break;
     case BulkLeakCheckService::State::kNetworkError:
-      OnPasswordsCheckResult(PasswordsStatus::kOffline, 0);
+      OnPasswordsCheckResult(PasswordsStatus::kOffline, Compromised(0), Done(0),
+                             Total(0));
       break;
     case BulkLeakCheckService::State::kQuotaLimit:
-      OnPasswordsCheckResult(PasswordsStatus::kQuotaLimit, 0);
+      OnPasswordsCheckResult(PasswordsStatus::kQuotaLimit, Compromised(0),
+                             Done(0), Total(0));
       break;
     case BulkLeakCheckService::State::kTokenRequestFailure:
     case BulkLeakCheckService::State::kHashingFailure:
     case BulkLeakCheckService::State::kServiceError:
-      OnPasswordsCheckResult(PasswordsStatus::kError, 0);
+      OnPasswordsCheckResult(PasswordsStatus::kError, Compromised(0), Done(0),
+                             Total(0));
       break;
   }
 
@@ -520,8 +538,17 @@ void SafetyCheckHandler::OnStateChanged(
 void SafetyCheckHandler::OnCredentialDone(
     const password_manager::LeakCheckCredential& credential,
     password_manager::IsLeaked is_leaked) {
-  // Do nothing because we only want to know the total number of compromised
-  // credentials at the end of the bulk leak check.
+  extensions::api::passwords_private::PasswordCheckStatus status =
+      passwords_delegate_->GetPasswordCheckStatus();
+  // Send progress updates only if the check is still running.
+  if (status.state ==
+          extensions::api::passwords_private::PASSWORD_CHECK_STATE_RUNNING &&
+      status.already_processed && status.remaining_in_queue) {
+    Done done = Done(*(status.already_processed));
+    Total total = Total(*(status.remaining_in_queue) + done.value());
+    OnPasswordsCheckResult(PasswordsStatus::kChecking, Compromised(0), done,
+                           total);
+  }
 }
 
 void SafetyCheckHandler::OnJavascriptAllowed() {}

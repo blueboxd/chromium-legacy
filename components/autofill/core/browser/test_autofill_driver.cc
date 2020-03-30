@@ -48,8 +48,10 @@ bool TestAutofillDriver::RendererIsAvailable() {
 }
 
 #if !defined(OS_IOS)
-void TestAutofillDriver::ConnectToAuthenticator(
-    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {}
+InternalAuthenticator*
+TestAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
+  return test_authenticator_.get();
+}
 #endif
 
 void TestAutofillDriver::SendFormDataToRenderer(int query_id,
@@ -117,5 +119,12 @@ void TestAutofillDriver::SetSharedURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   test_shared_loader_factory_ = url_loader_factory;
 }
+
+#if !defined(OS_IOS)
+void TestAutofillDriver::SetAuthenticator(
+    InternalAuthenticator* authenticator_) {
+  test_authenticator_.reset(authenticator_);
+}
+#endif
 
 }  // namespace autofill

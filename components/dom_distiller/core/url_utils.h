@@ -19,12 +19,20 @@ namespace url_utils {
 const GURL GetDistillerViewUrlFromEntryId(const std::string& scheme,
                                           const std::string& entry_id);
 
-// Returns the URL for viewing distilled content for a URL.
+// Returns the URL for viewing distilled content for |view_url|. This URL should
+// not be displayed to end users (except in DevTools and view-source). Instead,
+// users should always be shown the original page URL minus the http or https
+// scheme in the omnibox (i.e. in LocationBarModel::GetFormattedURL()).
+// A distilled page's true URL, the distiller view URL, should be returned
+// from WebContents::GetLastCommittedURL() and WebContents::GetVisibleURL().
+// This has the chrome-distiller scheme and the form
+// chrome-distiller://<hash>?<params>, where <params> are generated from
+// |view_url| and |start_time_ms|.
 const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
                                       const GURL& view_url,
                                       int64_t start_time_ms = 0);
 
-// Returns the original URL from the distilled URL.
+// Returns the original article's URL from the distilled URL.
 // If |distilled_url| is not distilled, it is returned as is.
 // If |distilled_url| looks like distilled, but no original URL can be found,
 // an empty, invalid URL is returned.

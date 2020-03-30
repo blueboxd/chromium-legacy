@@ -16,7 +16,7 @@ std::unique_ptr<views::ScopedViewsTestHelper> views_helper_;
 // DialogDelegate::CreateDialogWidget().
 class TestViewsDelegateWithContext : public ChromeTestViewsDelegate<> {
  public:
-  TestViewsDelegateWithContext() {}
+  TestViewsDelegateWithContext() = default;
 
   void set_context(gfx::NativeWindow context) { context_ = context; }
 
@@ -40,8 +40,7 @@ class TestViewsDelegateWithContext : public ChromeTestViewsDelegate<> {
 namespace crostini {
 
 void SetUpViewsEnvironmentForTesting() {
-  std::unique_ptr<TestViewsDelegateWithContext> views_delegate(
-      new TestViewsDelegateWithContext);
+  auto views_delegate = std::make_unique<TestViewsDelegateWithContext>();
   TestViewsDelegateWithContext* views_delegate_weak = views_delegate.get();
   views_helper_ =
       std::make_unique<views::ScopedViewsTestHelper>(std::move(views_delegate));

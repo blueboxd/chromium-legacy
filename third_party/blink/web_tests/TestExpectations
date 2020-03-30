@@ -48,6 +48,9 @@ crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.sh
 crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.worker.html [ Skip ]
 crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]
 
+# WPT Test harness doesn't deal with finding an about:blank ref test
+crbug.com/1066130 external/wpt/infrastructure/assumptions/blank.html [ Failure ]
+
 # Favicon is not supported by run_web_tests.
 external/wpt/fetch/metadata/favicon.https.sub.html [ Skip ]
 virtual/omt-worker-fetch/external/wpt/fetch/metadata/favicon.https.sub.html [ Skip ]
@@ -1627,7 +1630,6 @@ crbug.com/875235 virtual/layout_ng_fieldset/fast/forms/fieldset/legend-after-mar
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-006.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-009.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-linethickness-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-003.html [ Failure ]
@@ -2023,7 +2025,6 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
 
-crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
@@ -4715,11 +4716,7 @@ crbug.com/791529 external/wpt/css/css-variables/variable-transitions-transition-
 crbug.com/791529 external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
 
 # Feature Policy changes fullscreen behaviour, tests need updating
-crbug.com/718155 fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
 crbug.com/718155 fullscreen/full-screen-restrictions.html [ Failure Timeout ]
-crbug.com/718155 media/video-controls-fullscreen-iframe-not-allowed.html [ Failure ]
-crbug.com/718155 virtual/audio-service/media/video-controls-fullscreen-iframe-not-allowed.html [ Failure ]
-crbug.com/718155 virtual/android/fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
 crbug.com/718155 virtual/android/fullscreen/full-screen-restrictions.html [ Failure Timeout ]
 
 crbug.com/852645 gamepad/full-screen-gamepad.html [ Timeout ]
@@ -5224,7 +5221,8 @@ crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smoot
 crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # User Activation
-crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tentative.html [ Failure ]
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure ]
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
 
 # Sheriff 2018-07-05
 crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]
@@ -5325,10 +5323,6 @@ crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure P
 
 # Sheriff 2018-10-15
 crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font-matching.html [ Failure Pass ]
-
-# run_web_tests.py crashes content_shell when <link href="about:blank"> is present
-crbug.com/895777 external/wpt/css/css-transforms/text-perspective-001.html [ Pass Crash ]
-crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Crash ]
 
 #Sheriff 2018-10-23
 crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
@@ -5607,9 +5601,6 @@ crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout
 crbug.com/931533 media/video-played-collapse.html [ Pass Failure ]
 crbug.com/931533 virtual/audio-service/media/video-played-collapse.html [ Pass Failure ]
 
-# Test was blocking WPT importer
-crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [ Pass Failure Crash ]
-
 # Sheriff 2019-03-14
 crbug.com/806357 virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash Timeout ]
 crbug.com/941931 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
@@ -5718,19 +5709,6 @@ crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-lin
 
 # Sheriff 2019-04-25
 crbug.com/956736 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Pass Failure ]
-
-crbug.com/946534 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.10 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.10 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.10 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
-crbug.com/946534 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
 
 crbug.com/1065059 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/animationworklet/scroll-timeline-non-scrollable.html [ Pass Crash ]
 crbug.com/1065059 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/animationworklet/playback-rate-scroll-timeline-accelerated-property.html [ Pass Crash ]
@@ -6681,8 +6659,6 @@ crbug.com/1061226 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.
 crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Failure ]
 crbug.com/1061043 fast/plugins/keypress-event.html [ Pass Failure ]
 crbug.com/1061097 http/tests/security/promise-access-control-allow.htm [ Pass Failure ]
-crbug.com/1061539 [ Mac ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
-crbug.com/1061539 [ Linux ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
 crbug.com/1061131 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Pass Timeout ]
 crbug.com/1061131 [ Win ] fast/canvas/toBlob-in-detached-document.html [ Pass Crash ]
 crbug.com/1061131 [ Mac ] fast/canvas/toBlob-in-detached-document.html [ Pass Crash ]

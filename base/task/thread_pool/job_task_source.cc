@@ -336,11 +336,7 @@ size_t JobTaskSource::GetConcurrencyIncreaseVersion() const {
 
 bool JobTaskSource::WaitForConcurrencyIncreaseUpdate(size_t recorded_version) {
   AutoLock auto_lock(version_lock_);
-  // This timeout is meant to catch a JobDelegate which forgets to decrease the 
-  // max-concurrency it returns despite workers returning (hence entering an 
-  // infinite loop of workers being spawned with no work to do). 30 seconds 
-  // catches this error early enough without causing false positives.
-  constexpr TimeDelta timeout = TimeDelta::FromSeconds(30);
+  constexpr TimeDelta timeout = TimeDelta::FromSeconds(1);
   const base::TimeTicks start_time = subtle::TimeTicksNowIgnoringOverride();
   do {
     DCHECK_LE(recorded_version, increase_version_);

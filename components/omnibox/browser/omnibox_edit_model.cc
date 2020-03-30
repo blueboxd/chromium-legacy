@@ -21,6 +21,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -387,8 +389,17 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
 
     // If the omnibox is displaying a URL, set the hyperlink text to the URL's
     // spec. This undoes any URL elisions.
-    if (!controller()->GetLocationBarModel()->GetDisplaySearchTerms(nullptr))
+    if (!controller()->GetLocationBarModel()->GetDisplaySearchTerms(nullptr)) {
+      // Don't let users copy Reader Mode ("chrome-distiller://") URLs.
+      // We display the original article's URL in the omnibox, so users will
+      // expect that to be what is copied to the clipboard.
+      if (url_from_text->SchemeIs(dom_distiller::kDomDistillerScheme)) {
+        *url_from_text =
+            dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+                *url_from_text);
+      }
       *text = base::UTF8ToUTF16(url_from_text->spec());
+    }
 
     return;
   }

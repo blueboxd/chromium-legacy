@@ -105,7 +105,7 @@ void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
 
 void StarView::ExecuteCommand(ExecuteSource source) {
   OnExecuting(source);
-  chrome::BookmarkCurrentTabIgnoringExtensionOverrides(browser_);
+  chrome::BookmarkCurrentTab(browser_);
 }
 
 views::BubbleDialogDelegateView* StarView::GetBubble() const {

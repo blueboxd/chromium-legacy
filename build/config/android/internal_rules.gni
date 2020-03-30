@@ -3168,7 +3168,7 @@ if (enable_java_templates) {
       }
     }
 
-    _accumulated_public_deps = []
+    _public_deps = []
     _accumulated_deps = []
     _java_header_deps = []
     _java_full_deps = []
@@ -3362,7 +3362,6 @@ if (enable_java_templates) {
         }
       }
     }
-    _accumulated_public_deps += [ ":$_build_config_target_name" ]
 
     # Don't need to depend on the apk-under-test to be packaged.
     if (defined(invoker.apk_under_test)) {
@@ -3416,8 +3415,8 @@ if (enable_java_templates) {
           chromium_code = _chromium_code
           supports_android = _supports_android
           requires_android = _requires_android
-          deps =
-              _java_header_deps + _accumulated_deps + _accumulated_public_deps
+          deps = _java_header_deps + _accumulated_deps +
+                 [ ":$_build_config_target_name" ]
 
           # android_apk and junit_binary pass R.java srcjars via srcjar_deps.
           if (_type == "java_library" && _requires_android) {
@@ -3477,7 +3476,7 @@ if (enable_java_templates) {
           srcjar_deps = _srcjar_deps
           build_config = _build_config
           requires_android = _requires_android
-          deps = _accumulated_deps + _accumulated_public_deps
+          deps = _accumulated_deps + [ ":$_build_config_target_name" ]
           java_files = _java_files
           if (_java_files != []) {
             java_sources_file = _java_sources_file
@@ -3488,9 +3487,6 @@ if (enable_java_templates) {
         }
         _analysis_public_deps += [ ":$_android_lint_target" ]
       }
-
-      # Update this after lint so that lint does not depend on javac.
-      _accumulated_public_deps += [ ":$_compile_java_target" ]
     }  # _has_sources
 
     if (_is_prebuilt || _has_sources) {
@@ -3514,13 +3510,13 @@ if (enable_java_templates) {
           output_jar = _final_ijar_path
 
           # Some prebuilts have java deps (e.g. //third_party/proguard:retrace_java).
-          deps = _accumulated_deps + _java_header_deps
+          deps = _java_header_deps + _accumulated_deps
           if (_has_sources) {
             deps += [ ":$_compile_java_target" ]
           }
         }
       }
-      _accumulated_public_deps += [ ":$_header_target_name" ]
+      _public_deps += [ ":$_header_target_name" ]
     }  # _is_prebuilt || _has_sources
 
     if (defined(_final_jar_path)) {
@@ -3534,7 +3530,7 @@ if (enable_java_templates) {
           dest = _final_jar_path
           outputs = [ _final_jar_path ]
         }
-        _accumulated_public_deps += [ ":$_copy_system_library_target_name" ]
+        _public_deps += [ ":$_copy_system_library_target_name" ]
       } else {
         _process_prebuilt_target_name = "${target_name}__process_prebuilt"
         process_java_prebuilt(_process_prebuilt_target_name) {
@@ -3557,7 +3553,11 @@ if (enable_java_templates) {
             java_sources_file = _java_sources_file
           }
           output_jar_path = _final_jar_path
-          deps = _java_full_deps + _accumulated_deps + _accumulated_public_deps
+          deps = _java_full_deps + _accumulated_deps +
+                 [ ":$_build_config_target_name" ]
+          if (_has_sources) {
+            deps += [ ":$_compile_java_target" ]
+          }
 
           # proguard_configs listed on java_library targets need to be marked
           # as inputs to at least one action so that "gn analyze" will know
@@ -3572,7 +3572,7 @@ if (enable_java_templates) {
             deps += _srcjar_deps  # For the aapt-generated proguard rules.
           }
         }
-        _accumulated_public_deps += [ ":$_process_prebuilt_target_name" ]
+        _public_deps += [ ":$_process_prebuilt_target_name" ]
 
         if (defined(_dex_path)) {
           dex("${target_name}__dex") {
@@ -3589,7 +3589,7 @@ if (enable_java_templates) {
             enable_multidex = false
             enable_library_multidex = true
           }
-          _accumulated_public_deps += [ ":${target_name}__dex" ]
+          _public_deps += [ ":${target_name}__dex" ]
         }
       }
     }
@@ -3608,9 +3608,9 @@ if (enable_java_templates) {
         if (defined(invoker.wrapper_script_name)) {
           script_name = invoker.wrapper_script_name
         }
-        deps = _accumulated_public_deps
+        deps = [ ":$_build_config_target_name" ]
       }
-      _accumulated_public_deps += [ ":${target_name}__java_binary_script" ]
+      _public_deps += [ ":${target_name}__java_binary_script" ]
     }
 
     group(target_name) {
@@ -3622,7 +3622,7 @@ if (enable_java_templates) {
                                "data_deps",
                                "visibility",
                              ])
-      public_deps = _accumulated_public_deps
+      public_deps = _public_deps
       if (defined(_analysis_public_deps)) {
         if (!defined(data_deps)) {
           data_deps = []

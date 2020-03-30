@@ -282,6 +282,8 @@ public final class DownloadImpl extends IDownload.Stub {
     private Intent createIntent() {
         // Because the intent is using classes from the implementation's class loader,
         // we need to use the constructor which doesn't take the app's context.
+        if (WebLayerFactoryImpl.getClientMajorVersion() >= 83) return WebLayerImpl.createIntent();
+
         try {
             return mClient.createIntent();
         } catch (RemoteException e) {
@@ -300,21 +302,6 @@ public final class DownloadImpl extends IDownload.Stub {
         mNotificationId = getNextNotificationId();
         sMap.put(Integer.valueOf(mNotificationId), this);
 
-        Intent pauseIntent = createIntent();
-        pauseIntent.setAction(PAUSE_INTENT);
-        pauseIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-
-        // See PendingIntent's documentation on why we must use a different requestId as we need
-        // multiple distinct PendingIntents at a time, one for each notification.
-        PendingIntent pausePendingIntent = PendingIntent.getBroadcast(
-                ContextUtils.getApplicationContext(), mNotificationId, pauseIntent, 0);
-
-        Intent cancelIntent = createIntent();
-        cancelIntent.setAction(CANCEL_INTENT);
-        cancelIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-        PendingIntent cancelPendingIntent = PendingIntent.getBroadcast(
-                ContextUtils.getApplicationContext(), mNotificationId, cancelIntent, 0);
-
         Intent deleteIntent = createIntent();
         deleteIntent.setAction(DELETE_INTENT);
         deleteIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
@@ -323,41 +310,17 @@ public final class DownloadImpl extends IDownload.Stub {
 
         mBuilder = new NotificationCompat.Builder(ContextUtils.getApplicationContext(), CHANNEL_ID)
                            .setSmallIcon(android.R.drawable.stat_sys_download)
-                           .setContentTitle((new File(getLocation())).getName())
                            .setOngoing(true)
-                           .addAction(0 /* no icon */, "Pause", pausePendingIntent)
-                           .addAction(0 /* no icon */, "Cancel", cancelPendingIntent)
                            .setDeleteIntent(deletePendingIntent)
                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        if (getTotalBytes() == -1) {
-            mBuilder.setProgress(0, 0, true);
-        } else {
-            mBuilder.setProgress(100, 0, false);
-        }
-
-        NotificationManagerCompat notificationManager = getNotificationManager();
-        if (notificationManager != null) {
-            // mNotificationId is a unique int for each notification that you must define
-            notificationManager.notify(mNotificationId, mBuilder.build());
-        }
+        updateNotification();
     }
 
     public void downloadProgressChanged() {
         if (mBuilder == null) return;
 
-        // The filename might not have been available initially.
-        mBuilder.setContentTitle((new File(getLocation())).getName());
-        if (getTotalBytes() > 0) {
-            int progressCurrent = (int) (getReceivedBytes() * 100 / getTotalBytes());
-
-            mBuilder.setProgress(100, progressCurrent, false);
-
-            NotificationManagerCompat notificationManager = getNotificationManager();
-            if (notificationManager != null) {
-                notificationManager.notify(mNotificationId, mBuilder.build());
-            }
-        }
+        updateNotification();
     }
 
     public void downloadCompleted() {
@@ -391,6 +354,18 @@ public final class DownloadImpl extends IDownload.Stub {
         if (mBuilder == null) return;
 
         NotificationManagerCompat notificationManager = getNotificationManager();
+
+        // The filename might not have been available initially.
+        String location = getLocation();
+        if (!TextUtils.isEmpty((location))) {
+            mBuilder.setContentTitle((new File(location)).getName());
+        }
+
+        if (getTotalBytes() > 0) {
+            int progressCurrent = (int) (getReceivedBytes() * 100 / getTotalBytes());
+
+            mBuilder.setProgress(100, progressCurrent, false);
+        }
 
         @DownloadState
         int state = getState();
@@ -451,6 +426,7 @@ public final class DownloadImpl extends IDownload.Stub {
         }
 
         if (notificationManager != null) {
+            // mNotificationId is a unique int for each notification that you must define.
             notificationManager.notify(mNotificationId, mBuilder.build());
         }
     }

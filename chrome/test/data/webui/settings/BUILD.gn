@@ -24,6 +24,7 @@ js_modulizer("modulize") {
     "collapse_radio_button_tests.js",
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",
+    "cookies_page_test.js",
     "do_not_track_toggle_test.js",
     "downloads_page_test.js",
     "dropdown_menu_tests.js",

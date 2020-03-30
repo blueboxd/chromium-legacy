@@ -23,6 +23,8 @@ class DemoSetupScreen : public BaseScreen {
  public:
   enum class Result { COMPLETED, CANCELED };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   DemoSetupScreen(DemoSetupScreenView* view,
                   const ScreenExitCallback& exit_callback);

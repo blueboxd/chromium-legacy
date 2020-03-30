@@ -15,6 +15,15 @@ class PrefRegistrySimple;
 
 namespace policy {
 
+// A system feature that can be disabled by SystemFeaturesDisableList policy.
+enum SystemFeature {
+  CAMERA = 0,  // The camera chrome app on Chrome OS.
+  SETTINGS,    // The settings feature on Chrome OS. It includes also Chrome
+               // settings.
+
+  LAST_SYSTEM_FEATURE
+};
+
 class SystemFeaturesDisableListPolicyHandler
     : public policy::ListPolicyHandler {
  public:
@@ -26,6 +35,9 @@ class SystemFeaturesDisableListPolicyHandler
  protected:
   // ListPolicyHandler:
   void ApplyList(base::Value filtered_list, PrefValueMap* prefs) override;
+
+ private:
+  SystemFeature ConvertToEnum(const std::string& system_feature);
 };
 
 }  // namespace policy

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 
 namespace sharing {
@@ -124,7 +125,9 @@ void LogWebRtcSendMessageResult(WebRtcSendMessageResult result);
 void LogWebRtcConnectionErrorReason(WebRtcConnectionErrorReason reason);
 
 // Logs the timing for |event| to UMA.
-void LogWebRtcTimingEvent(WebRtcTimingEvent event, base::TimeDelta delay);
+void LogWebRtcTimingEvent(WebRtcTimingEvent event,
+                          base::TimeDelta delay,
+                          base::Optional<bool> is_sender);
 
 // Logs the result of receiving a message via WebRTC.
 void LogSharingWebRtcOnMessageReceivedResult(

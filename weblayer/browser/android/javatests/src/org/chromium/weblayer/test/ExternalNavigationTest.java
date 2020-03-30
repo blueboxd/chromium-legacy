@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -34,6 +35,10 @@ public class ExternalNavigationTest {
     private static final String INTENT_TO_CHROME_URL =
             "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end";
     private static final String NON_RESOLVABLE_INTENT_URL = "intent://garbage;end";
+    private static final String LINK_WITH_INTENT_TO_CHROME_IN_SAME_TAB_FILE =
+            "link_with_intent_to_chrome_in_same_tab.html";
+    private static final String LINK_WITH_INTENT_TO_CHROME_IN_NEW_TAB_FILE =
+            "link_with_intent_to_chrome_in_new_tab.html";
 
     // The test server handles "echo" with a response containing "Echo" :).
     private final String mTestServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
@@ -132,6 +137,83 @@ public class ExternalNavigationTest {
         Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
         Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
                 intent.getDataString());
+    }
+
+    /**
+     * Tests that clicking on a link that goes to an external intent in the same tab results in the
+     * external intent being launched.
+     */
+    @Test
+    @SmallTest
+    public void testExternalIntentInSameTabLaunchedOnLinkClick() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_CHROME_IN_SAME_TAB_FILE);
+
+        mActivityTestRule.navigateAndWait(url);
+
+        mActivityTestRule.executeScriptSync(
+                "document.onclick = function() {document.getElementById('link').click()}",
+                true /* useSeparateIsolate */);
+        EventUtils.simulateTouchCenterOfView(
+                mActivityTestRule.getActivity().getWindow().getDecorView());
+
+        intentInterceptor.waitForIntent();
+
+        // The current URL should not have changed, and the intent should have been launched.
+        Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
+        Intent intent = intentInterceptor.mLastIntent;
+        Assert.assertNotNull(intent);
+        Assert.assertEquals("com.android.chrome", intent.getPackage());
+        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
+        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
+                intent.getDataString());
+    }
+
+    /**
+     * Tests that clicking on a link that goes to an external intent in a new tab results in
+     * a new tab being opened whose URL is that of the intent and the intent being launched.
+     */
+    @Test
+    @SmallTest
+    public void testExternalIntentInNewTabLaunchedOnLinkClick() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestDataURL(LINK_WITH_INTENT_TO_CHROME_IN_NEW_TAB_FILE);
+
+        mActivityTestRule.navigateAndWait(url);
+
+        // Grab the existing tab before causing a new one to be opened.
+        Tab tab = mActivityTestRule.getActivity().getTab();
+
+        mActivityTestRule.executeScriptSync(
+                "document.onclick = function() {document.getElementById('link').click()}",
+                true /* useSeparateIsolate */);
+        EventUtils.simulateTouchCenterOfView(
+                mActivityTestRule.getActivity().getWindow().getDecorView());
+
+        intentInterceptor.waitForIntent();
+
+        // The current URL should not have changed in the existing tab, and the intent should have
+        // been launched.
+        Assert.assertEquals(url, mActivityTestRule.getLastCommittedUrlInTab(tab));
+        Intent intent = intentInterceptor.mLastIntent;
+        Assert.assertNotNull(intent);
+        Assert.assertEquals("com.android.chrome", intent.getPackage());
+        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
+        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
+                intent.getDataString());
+
+        // A new tab should have been created whose URL is that of the intent.
+        Browser browser = mActivityTestRule.getActivity().getBrowser();
+        int numTabs =
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return browser.getTabs().size(); });
+        Assert.assertEquals(2, numTabs);
+        Assert.assertEquals(INTENT_TO_CHROME_URL, mActivityTestRule.getCurrentDisplayUrl());
     }
 
     /**

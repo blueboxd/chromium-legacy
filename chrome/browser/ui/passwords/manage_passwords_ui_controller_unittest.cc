@@ -1324,3 +1324,15 @@ TEST_F(ManagePasswordsUIControllerTest, UpdateBubbleAfterLeakCheck) {
   ExpectIconAndControllerStateIs(
       password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
 }
+
+TEST_F(ManagePasswordsUIControllerTest,
+       NotifyUnsyncedCredentialsWillBeDeleted) {
+  // TODO(crbug.com/1060132): Add expectations on the state enum and on the
+  // bubble behavior when those are being updated.
+  std::vector<autofill::PasswordForm> credentials(1);
+  credentials[0].username_value = base::ASCIIToUTF16("unsynced_login");
+  credentials[0].password_value = base::ASCIIToUTF16("unsynced_password");
+  controller()->NotifyUnsyncedCredentialsWillBeDeleted(credentials);
+
+  EXPECT_EQ(controller()->GetUnsyncedCredentials(), credentials);
+}

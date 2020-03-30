@@ -254,6 +254,12 @@ blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
       request.GetRequestContext());
 }
 
+network::mojom::RequestDestination GetRequestDestinationForWebURLRequest(
+    const WebURLRequest& request) {
+  return static_cast<network::mojom::RequestDestination>(
+      request.GetRequestDestination());
+}
+
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const WebURLRequest& request) {
   return blink::WebMixedContent::ContextTypeFromRequestContext(

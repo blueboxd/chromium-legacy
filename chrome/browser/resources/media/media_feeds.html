@@ -124,6 +124,8 @@
         </th>
         <th data-key="logos">
           Logos
+        <th data-key="actions">
+          Actions
         </th>
       </tr>
     </thead>
@@ -131,22 +133,71 @@
     </tbody>
   </table>
 
-  <template id="datarow">
-    <tr>
-      <td class="id-cell"></td>
-      <td class="url-cell"></td>
-      <td></td>
-      <td class="last-discovery-time-cell"></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-  </template>
+  <div id="feed-content" style="display:none;">
+    <hr>
+    <h2>Feed Contents: <span id="current-feed"></span></h2>
+    <table id="feed-items-table">
+      <thead>
+        <tr>
+          <th sort-key="type" class="sort-column" sort-reverse>
+            Type
+          </th>
+          <th sort-key="name">
+            Name
+          </th>
+          <th sort-key="author">
+            Author
+          </th>
+          <th sort-key="datePublished">
+            Date Published
+          </th>
+          <th sort-key="isFamilyFriendly">
+            Family Friendly
+          </th>
+          <th sort-key="actionStatus">
+            Action Status
+          </th>
+          <th sort-key="action.url">
+            Action URL
+          </th>
+          <th sort-key="action.startTime">
+            Action Start Time (secs)
+          </th>
+          <th sort-key="interactionCounters">
+            Interaction Counters
+          </th>
+          <th sort-key="contentRatings">
+            Content Ratings
+          </th>
+          <th sort-key="genre">
+            Genre
+          </th>
+          <th sort-key="live">
+            Live Details
+          </th>
+          <th sort-key="tvEpisode">
+            TV Episode
+          </th>
+          <th sort-key="playNextCandidate">
+            Play Next Candidate
+          </th>
+          <th sort-key="identifiers">
+            Identifiers
+          </th>
+          <th sort-key="shownCount">
+            Shown Count
+          </th>
+          <th sort-key="clicked">
+            Clicked
+          </th>
+          <th sort-key="images">
+            Images
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>

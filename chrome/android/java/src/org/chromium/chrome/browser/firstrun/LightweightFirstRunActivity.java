@@ -62,10 +62,10 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
                                .inflate(R.layout.lightweight_fre_tos, null));
 
         final Resources resources = getResources();
-        NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan(
-                resources, (view) -> showInfoPage(R.string.chrome_terms_of_service_url));
-        NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan(
-                resources, (view) -> showInfoPage(R.string.chrome_privacy_notice_url));
+        NoUnderlineClickableSpan clickableGoogleTermsSpan = new NoUnderlineClickableSpan(
+                resources, (view) -> showInfoPage(R.string.google_terms_of_service_url));
+        NoUnderlineClickableSpan clickableChromeAdditionalTermsSpan = new NoUnderlineClickableSpan(
+                resources, (view) -> showInfoPage(R.string.chrome_additional_terms_of_service_url));
         NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan = new NoUnderlineClickableSpan(
                 resources, (view) -> showInfoPage(R.string.family_link_privacy_policy_url));
         String associatedAppName =
@@ -78,15 +78,14 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
             tosAndPrivacyText = SpanApplier.applySpans(
                     getString(R.string.lightweight_fre_associated_app_tos_and_privacy_child_account,
                             associatedAppName),
-                    new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
-                    new SpanInfo("<LINK2>", "</LINK2>", clickablePrivacySpan),
+                    new SpanInfo("<LINK1>", "</LINK1>", clickableGoogleTermsSpan),
+                    new SpanInfo("<LINK2>", "</LINK2>", clickableChromeAdditionalTermsSpan),
                     new SpanInfo("<LINK3>", "</LINK3>", clickableFamilyLinkPrivacySpan));
         } else {
             tosAndPrivacyText = SpanApplier.applySpans(
-                    getString(R.string.lightweight_fre_associated_app_tos_and_privacy,
-                            associatedAppName),
-                    new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
-                    new SpanInfo("<LINK2>", "</LINK2>", clickablePrivacySpan));
+                    getString(R.string.lightweight_fre_associated_app_tos, associatedAppName),
+                    new SpanInfo("<LINK1>", "</LINK1>", clickableGoogleTermsSpan),
+                    new SpanInfo("<LINK2>", "</LINK2>", clickableChromeAdditionalTermsSpan));
         }
         TextView tosAndPrivacyTextView =
                 (TextView) findViewById(R.id.lightweight_fre_tos_and_privacy);

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/upboarding/query_tiles/internal/proto_conversion.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 
 namespace upboarding {
@@ -11,6 +14,8 @@ namespace upboarding {
 void QueryTileEntryToProto(
     upboarding::QueryTileEntry* entry,
     upboarding::query_tiles::proto::QueryTileEntry* proto) {
+  DCHECK(entry);
+  DCHECK(proto);
   proto->set_id(entry->id);
   proto->set_query_text(entry->query_text);
   proto->set_display_text(entry->display_text);
@@ -23,15 +28,17 @@ void QueryTileEntryToProto(
     data->set_url(image.url.spec());
   }
 
-  // Set Ids of children.
-  for (const auto& child : entry->children) {
-    proto->add_children(child);
+  // Set children.
+  for (auto& subtile : entry->sub_tiles) {
+    QueryTileEntryToProto(subtile.get(), proto->add_sub_tiles());
   }
 }
 
 void QueryTileEntryFromProto(
     upboarding::query_tiles::proto::QueryTileEntry* proto,
     upboarding::QueryTileEntry* entry) {
+  DCHECK(entry);
+  DCHECK(proto);
   entry->id = proto->id();
   entry->query_text = proto->query_text();
   entry->display_text = proto->display_text();
@@ -41,8 +48,11 @@ void QueryTileEntryFromProto(
     entry->image_metadatas.emplace_back(image_md.id(), GURL(image_md.url()));
   }
 
-  for (const auto& child : proto->children()) {
-    entry->children.emplace(child);
+  for (int i = 0; i < proto->sub_tiles_size(); i++) {
+    auto sub_tile_proto = proto->sub_tiles(i);
+    auto child = std::make_unique<QueryTileEntry>();
+    QueryTileEntryFromProto(&sub_tile_proto, child.get());
+    entry->sub_tiles.emplace_back(std::move(child));
   }
 }
 

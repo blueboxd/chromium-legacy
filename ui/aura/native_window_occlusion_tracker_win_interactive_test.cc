@@ -118,9 +118,6 @@ class NativeWindowOcclusionTrackerTest : public test::AuraTestBase {
         features::kCalculateNativeWinOcclusion);
 
     AuraTestBase::SetUp();
-
-    display::Screen::SetScreenInstance(test_screen());
-
   }
 
   void SetNativeWindowBounds(HWND hwnd, const gfx::Rect& bounds) {

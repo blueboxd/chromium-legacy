@@ -299,12 +299,12 @@ MockEGLInterface::Mock_eglGetFrameTimestampsANDROID(EGLDisplay dpy,
 }
 
 EGLBoolean GL_BINDING_CALL
-MockEGLInterface::Mock_eglGetMscRateCHROMIUM(EGLDisplay dpy,
-                                             EGLSurface surface,
-                                             EGLint* numerator,
-                                             EGLint* denominator) {
-  MakeEglMockFunctionUnique("eglGetMscRateCHROMIUM");
-  return interface_->GetMscRateCHROMIUM(dpy, surface, numerator, denominator);
+MockEGLInterface::Mock_eglGetMscRateANGLE(EGLDisplay dpy,
+                                          EGLSurface surface,
+                                          EGLint* numerator,
+                                          EGLint* denominator) {
+  MakeEglMockFunctionUnique("eglGetMscRateANGLE");
+  return interface_->GetMscRateANGLE(dpy, surface, numerator, denominator);
 }
 
 EGLClientBuffer GL_BINDING_CALL
@@ -706,8 +706,8 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "eglGetFrameTimestampsANDROID") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_eglGetFrameTimestampsANDROID);
-  if (strcmp(name, "eglGetMscRateCHROMIUM") == 0)
-    return reinterpret_cast<GLFunctionPointerType>(Mock_eglGetMscRateCHROMIUM);
+  if (strcmp(name, "eglGetMscRateANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_eglGetMscRateANGLE);
   if (strcmp(name, "eglGetNativeClientBufferANDROID") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_eglGetNativeClientBufferANDROID);

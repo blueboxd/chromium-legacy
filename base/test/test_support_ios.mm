@@ -110,8 +110,9 @@ static char** g_argv;
   // test result parser analyzes console output.
   return !base::ShouldRunIOSUnittestsWithXCTest() &&
          !base::debug::BeingDebugged();
-#endif  // TARGET_IPHONE_SIMULATOR
+#else
   return NO;
+#endif  // TARGET_IPHONE_SIMULATOR
 }
 
 // Returns the path to the directory to store gtest output files.

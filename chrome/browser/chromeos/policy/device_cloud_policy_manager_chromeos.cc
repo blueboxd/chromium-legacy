@@ -46,6 +46,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -326,7 +327,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
 
   // Start remote commands services now that we have setup everything they need.
   core()->StartRemoteCommandsService(
-      std::make_unique<DeviceCommandsFactoryChromeOS>(this));
+      std::make_unique<DeviceCommandsFactoryChromeOS>(this),
+      PolicyInvalidationScope::kDevice);
 
   // Enable device reporting and status monitoring for cloud managed devices. We
   // want to create these objects even if monitoring is currently inactive, in

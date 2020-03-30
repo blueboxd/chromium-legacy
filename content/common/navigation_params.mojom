@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
+import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/source_location.mojom";
 import "services/network/public/mojom/url_loader.mojom";
@@ -100,6 +101,9 @@ struct BeginNavigationParams {
 
   // Indicates the request context type.
   blink.mojom.RequestContextType request_context_type;
+
+  // Indicates the request destination.
+  network.mojom.RequestDestination request_destination;
 
   // The mixed content context type for potential mixed content checks.
   MixedContentContextType mixed_content_context_type;

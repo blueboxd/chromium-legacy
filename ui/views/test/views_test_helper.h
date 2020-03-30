@@ -23,6 +23,8 @@ class ViewsTestHelper {
   // Create a platform specific instance.
   static std::unique_ptr<ViewsTestHelper> Create();
 
+  ViewsTestHelper(const ViewsTestHelper&) = delete;
+  ViewsTestHelper& operator=(const ViewsTestHelper&) = delete;
   virtual ~ViewsTestHelper() = default;
 
   // Returns the delegate to use if the test/owner does not create one.
@@ -36,15 +38,11 @@ class ViewsTestHelper {
   // Does any additional necessary setup of this object or its members.
   virtual void SetUp();
 
-  // Returns a context view. In aura builds, this will be the RootWindow.
-  // Everywhere else, null.
+  // Returns a context window, e.g. the Aura root window.
   virtual gfx::NativeWindow GetContext();
 
  protected:
   ViewsTestHelper() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ViewsTestHelper);
 };
 
 }  // namespace views

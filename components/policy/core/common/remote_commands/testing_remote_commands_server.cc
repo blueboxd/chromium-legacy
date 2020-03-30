@@ -92,13 +92,19 @@ void TestingRemoteCommandsServer::IssueCommand(
   if (!payload.empty())
     command.set_payload(payload);
 
-  RemoteCommandWithCallback command_with_callback(
-      command, base::nullopt, clock_->NowTicks(), std::move(reported_callback));
-  if (skip_next_fetch)
-    commands_issued_after_next_fetch_.push_back(
-        std::move(command_with_callback));
-  else
-    commands_.push_back(std::move(command_with_callback));
+  DoIssueCommand(command, /*signed_data=*/base::nullopt,
+                 std::move(reported_callback), skip_next_fetch);
+}
+
+void TestingRemoteCommandsServer::IssueCommand(
+    const em::RemoteCommand& command,
+    ResultReportedCallback reported_callback,
+    bool skip_next_fetch) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
+
+  DoIssueCommand(command, /*signed_data=*/base::nullopt,
+                 std::move(reported_callback), skip_next_fetch);
 }
 
 void TestingRemoteCommandsServer::IssueSignedCommand(
@@ -135,9 +141,8 @@ void TestingRemoteCommandsServer::IssueSignedCommand(
     signed_data.set_signature(SignDataWithTestKey(signed_data.data()));
   }
 
-  RemoteCommandWithCallback command_with_callback(
-      command, signed_data, clock_->NowTicks(), std::move(reported_callback));
-  commands_.push_back(std::move(command_with_callback));
+  DoIssueCommand(command, signed_data, std::move(reported_callback),
+                 /*skip_next_fetch=*/false);
 }
 
 void TestingRemoteCommandsServer::FetchCommands(
@@ -224,6 +229,22 @@ void TestingRemoteCommandsServer::SetClock(const base::TickClock* clock) {
 size_t TestingRemoteCommandsServer::NumberOfCommandsPendingResult() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return commands_.size();
+}
+
+void TestingRemoteCommandsServer::DoIssueCommand(
+    const em::RemoteCommand& command,
+    const base::Optional<em::SignedData>& signed_data,
+    ResultReportedCallback reported_callback,
+    bool skip_next_fetch) {
+  RemoteCommandWithCallback command_with_callback(
+      command, signed_data, clock_->NowTicks(), std::move(reported_callback));
+
+  if (skip_next_fetch) {
+    commands_issued_after_next_fetch_.push_back(
+        std::move(command_with_callback));
+  } else {
+    commands_.push_back(std::move(command_with_callback));
+  }
 }
 
 void TestingRemoteCommandsServer::ReportJobResult(

@@ -2,6 +2,7 @@ include_rules = [
   "+components/bookmarks/browser",
   "+components/bookmarks/test",
   "+components/component_updater",
+  "+components/dom_distiller/core",
   "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/util",
   "+components/favicon/core",
   "+components/favicon_base",

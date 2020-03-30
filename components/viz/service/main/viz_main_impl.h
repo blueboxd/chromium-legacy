@@ -45,13 +45,6 @@ class GpuServiceImpl;
 class VizMainImpl : public mojom::VizMain,
                     public gpu::GpuInProcessThreadServiceDelegate {
  public:
-  struct LogMessage {
-    int severity;
-    std::string header;
-    std::string message;
-  };
-  using LogMessages = std::vector<LogMessage>;
-
   class Delegate {
    public:
     virtual ~Delegate() = default;
@@ -105,8 +98,6 @@ class VizMainImpl : public mojom::VizMain,
   // Destruction must happen on the GPU thread.
   ~VizMainImpl() override;
 
-  void SetLogMessagesForHost(LogMessages messages);
-
   void BindAssociated(
       mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver);
 
@@ -155,8 +146,6 @@ class VizMainImpl : public mojom::VizMain,
   // |io_thread_| must be ordered above GPU service related variables so it's
   // destroyed after they are.
   std::unique_ptr<base::Thread> io_thread_;
-
-  LogMessages log_messages_;
 
   std::unique_ptr<gpu::GpuInit> gpu_init_;
   std::unique_ptr<GpuServiceImpl> gpu_service_;

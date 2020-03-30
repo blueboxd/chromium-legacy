@@ -627,6 +627,9 @@ jumbo_static_library("ui") {
     if (enable_feed_in_chrome) {
       deps += [ "//chrome/browser/ui/webui/feed_internals:mojo_bindings" ]
     }
+  } else {
+    # !is_android
+    deps += [ "//components/autofill/content/browser/webauthn" ]
   }
 
   if (!is_fuchsia) {
@@ -2765,6 +2768,8 @@ jumbo_static_library("ui") {
       # This test header is included because it contains forward declarations
       # needed for "friend" statements for use in tests.
       "translate/translate_bubble_test_utils.h",
+      "views/accessibility/caption_bubble.cc",
+      "views/accessibility/caption_bubble.h",
       "views/accessibility/invert_bubble_view.cc",
       "views/accessibility/invert_bubble_view.h",
       "views/accessibility/non_accessible_image_view.cc",

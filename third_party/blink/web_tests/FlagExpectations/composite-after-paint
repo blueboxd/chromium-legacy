@@ -80,8 +80,6 @@ compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failur
 
 # We paint the iframe's content background in the scrolling layer, causing invalidation on scroll.
 paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
-# will-transform on descendant doesn't trigger compositing of iframe.
-paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
 
 # Extra layers for non-fast scrolling areas.
 compositing/overflow/textarea-scroll-touch.html [ Failure ]

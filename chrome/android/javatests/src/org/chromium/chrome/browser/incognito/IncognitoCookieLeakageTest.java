@@ -119,7 +119,7 @@ public class IncognitoCookieLeakageTest {
     testCookiesDoNotLeakFromIncognitoToIncognito(
             String incognitoActivityType1, String incognitoActivityType2) throws TimeoutException {
         ActivityType incognitoActivity1 = ActivityType.valueOf(incognitoActivityType1);
-        ActivityType incognitoActivity2 = ActivityType.valueOf(incognitoActivityType1);
+        ActivityType incognitoActivity2 = ActivityType.valueOf(incognitoActivityType2);
 
         Tab setter_tab = incognitoActivity1.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mCookiesTestPage);

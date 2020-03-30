@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">添加端口</translation>
 <translation id="1026822031284433028">加载图片</translation>
 <translation id="1029317248976101138">缩放</translation>
-<translation id="1030706264415084469"><ph name="URL" /> 想在您的设备上永久存储大量数据</translation>
 <translation id="1031362278801463162">正在加载预览</translation>
 <translation id="1032605640136438169">请查阅新版条款</translation>
 <translation id="103279545524624934">请释放磁盘空间以启动 Android 应用。</translation>
@@ -532,7 +531,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" />（原生）</translation>
 <translation id="1709217939274742847">选择用于进行身份验证的票据。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">通过您的 iPhone 获取此密码</translation>
-<translation id="1712552549805331520"><ph name="URL" /> 想在您的本地计算机上永久存储数据</translation>
 <translation id="1714644264617423774">启用无障碍功能，让设备更易于使用。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">动态传感器</translation>
 <translation id="1718835860248848330">过去一小时</translation>
@@ -746,7 +744,6 @@
 <translation id="1992397118740194946">未设置</translation>
 <translation id="1994173015038366702">网站网址</translation>
 <translation id="1995916364271252349">控制网站可以使用和显示什么信息（如位置信息、摄像头、弹出式窗口及其他）</translation>
-<translation id="1997484222658892567"><ph name="URL" /> 想在您的本地计算机上永久存储大量数据</translation>
 <translation id="1997616988432401742">您的证书</translation>
 <translation id="1999115740519098545">启动时</translation>
 <translation id="2000419248597011803">将一些 Cookie 以及地址栏和搜索框中的搜索字词发送给您的默认搜索引擎</translation>
@@ -1007,7 +1004,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> 希望与以下所选设备配对：</translation>
 <translation id="2342740338116612727">书签已添加</translation>
 <translation id="2343747224442182863">聚焦此标签页</translation>
-<translation id="2344028582131185878">自动下载</translation>
 <translation id="2345723121311404059">“<ph name="PRINTER_NAME" />”有 1 个页面需要打印</translation>
 <translation id="2346953515226895098">SODA 服务</translation>
 <translation id="2347644257713614136">使用环聊和 Cast for Education 时须遵守《Google 隐私权政策》。</translation>
@@ -1658,7 +1654,6 @@
 <translation id="3188465121994729530">移动平均值</translation>
 <translation id="3190558889382726167">密码已保存</translation>
 <translation id="3192947282887913208">音频文件</translation>
-<translation id="3194737229810486521"><ph name="URL" /> 想在您的设备上永久存储数据</translation>
 <translation id="3199127022143353223">服务器</translation>
 <translation id="3200941271596533635">开启/关闭阅读器模式</translation>
 <translation id="3201306578844503970">无法安装虚拟机，因为发生了网络连接错误。请重试，或与贵单位的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
@@ -3991,7 +3986,6 @@
 <translation id="6349101878882523185">安装“<ph name="APP_NAME" />”</translation>
 <translation id="6349170655202535379">无法同步。请尝试退出并重新登录。</translation>
 <translation id="6351063337294363751">您可以使用此菜单清除浏览数据</translation>
-<translation id="6352223293513723497">您设备上的存储空间不足。要使用 Plugin VM，请先释放空间。</translation>
 <translation id="6352773953037195952">最高</translation>
 <translation id="6354918092619878358">SECG 椭圆曲线 secp256r1（又称 ANSI X9.62 prime256v1 或 NIST P-256）</translation>
 <translation id="635609604405270300">请勿关闭设备</translation>
@@ -4935,7 +4929,6 @@
 <translation id="7645681574855902035">正在取消 Linux 备份</translation>
 <translation id="7646772052135772216">无法同步密码</translation>
 <translation id="7647403192093989392">近期无活动</translation>
-<translation id="7648992873808071793">在此设备上存储文件</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7650511557061837441">“<ph name="TRIGGERING_EXTENSION_NAME" />”想要移除“<ph name="EXTENSION_NAME" />”。</translation>
 <translation id="7652808307838961528">修改用户，<ph name="PROFILE_NAME" /></translation>

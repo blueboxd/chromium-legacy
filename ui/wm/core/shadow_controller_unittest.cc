@@ -48,9 +48,8 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
 
   void InstallShadowController(
       std::unique_ptr<ShadowControllerDelegate> delegate) {
-    ActivationClient* activation_client = GetActivationClient(root_window());
     shadow_controller_ = std::make_unique<ShadowController>(
-        activation_client, std::move(delegate));
+        GetActivationClient(root_window()), std::move(delegate));
   }
 
  private:

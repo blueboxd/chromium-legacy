@@ -167,8 +167,9 @@ PasswordGenerationManagerTest::SetUpOverwritingUI(
 
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordMock(true))
       .WillOnce(testing::Return(true));
-  manager().GeneratedPasswordAccepted(std::move(generated), fetcher,
-                                      std::move(driver));
+  manager().GeneratedPasswordAccepted(
+      std::move(generated), fetcher.GetNonFederatedMatches(),
+      fetcher.GetFederatedMatches(), std::move(driver));
   return client_.MoveForm();
 }
 
@@ -181,8 +182,9 @@ TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_EmptyStore) {
   FakeFormFetcher fetcher;
 
   EXPECT_CALL(driver, GeneratedPasswordAccepted(generated.password_value));
-  manager().GeneratedPasswordAccepted(std::move(generated), fetcher,
-                                      driver.AsWeakPtr());
+  manager().GeneratedPasswordAccepted(
+      std::move(generated), fetcher.GetNonFederatedMatches(),
+      fetcher.GetFederatedMatches(), driver.AsWeakPtr());
   EXPECT_FALSE(manager().HasGeneratedPassword());
   histogram_tester.ExpectUniqueSample(
       "PasswordGeneration.PresaveConflict",
@@ -202,8 +204,9 @@ TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_Conflict) {
   fetcher.SetNonFederated({&saved});
 
   EXPECT_CALL(driver, GeneratedPasswordAccepted(generated.password_value));
-  manager().GeneratedPasswordAccepted(std::move(generated), fetcher,
-                                      driver.AsWeakPtr());
+  manager().GeneratedPasswordAccepted(
+      std::move(generated), fetcher.GetNonFederatedMatches(),
+      fetcher.GetFederatedMatches(), driver.AsWeakPtr());
   EXPECT_FALSE(manager().HasGeneratedPassword());
   histogram_tester.ExpectUniqueSample(
       "PasswordGeneration.PresaveConflict",

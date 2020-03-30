@@ -108,15 +108,14 @@ bool ContentAutofillDriver::RendererIsAvailable() {
   return render_frame_host_->GetRenderViewHost() != nullptr;
 }
 
-void ContentAutofillDriver::ConnectToAuthenticator(
-    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {
-#if defined(OS_ANDROID)
-  render_frame_host_->GetJavaInterfaces()->GetInterface(std::move(receiver));
-#else
-  authenticator_impl_ = std::make_unique<content::InternalAuthenticatorImpl>(
-      render_frame_host_, url::Origin::Create(payments::GetBaseSecureUrl()));
-  authenticator_impl_->Bind(std::move(receiver));
-#endif
+InternalAuthenticator*
+ContentAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
+  if (!authenticator_impl_) {
+    authenticator_impl_ =
+        autofill_manager_->client()->CreateCreditCardInternalAuthenticator(
+            render_frame_host_);
+  }
+  return authenticator_impl_.get();
 }
 
 void ContentAutofillDriver::SendFormDataToRenderer(

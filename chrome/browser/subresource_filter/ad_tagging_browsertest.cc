@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
   CreateDocWrittenFrameFromAdScript(GetWebContents());
 
   // Navigate away and ensure we report same origin.
-  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kSubresourceFilterOriginStatusHistogram,
                                       FrameData::OriginStatus::kSame, 1);
 }
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
   CreateDocWrittenFrameFromAdScript(regular_child);
 
   // Navigate away and ensure we report cross origin.
-  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   // TODO(johnidel): Check that frame was reported properly. See
   // crbug.com/914893.
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
   waiter->Wait();
 
   // Navigate away and ensure we report cross origin.
-  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kSubresourceFilterOriginStatusHistogram,
                                       FrameData::OriginStatus::kCross, 1);
 }
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
                               "b.com", "/ad_tagging/frame_factory.html"));
 
   // Navigate away and ensure we report same origin.
-  ui_test_utils::NavigateToURL(browser(), GetURL(url::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(kSubresourceFilterOriginStatusHistogram,
                                       FrameData::OriginStatus::kSame, 1);
 }

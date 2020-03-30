@@ -12,7 +12,7 @@ import androidx.core.view.ViewCompat;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.ChromeBasePreference;
+import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 
 /**
  * A custom preference for drawing Site Settings entries.

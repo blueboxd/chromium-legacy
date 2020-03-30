@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">Додати порт</translation>
 <translation id="1026822031284433028">Завантажити зображення</translation>
 <translation id="1029317248976101138">Збільшити</translation>
-<translation id="1030706264415084469">Сайт <ph name="URL" /> хоче постійно зберігати великий обсяг даних на вашому пристрої</translation>
 <translation id="1031362278801463162">Завантаження попереднього перегляду</translation>
 <translation id="1032605640136438169">Перегляньте нові правила</translation>
 <translation id="103279545524624934">Щоб запускати додатки Android, звільніть місце на диску.</translation>
@@ -74,6 +73,7 @@
 <translation id="1093457606523402488">Видимі мережі:</translation>
 <translation id="1094607894174825014">Запит на операцію перегляду або внесення змін надіслано з недійсним зміщенням на пристрої <ph name="DEVICE_NAME" />.</translation>
 <translation id="1097658378307015415">Перш ніж увійти, розпочніть сеанс у режимі гостя, щоб активувати мережу <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">Зображення скопійовано з пристрою <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">SIM-карту не виявлено</translation>
 <translation id="1108600514891325577">&amp;Зупинити</translation>
@@ -535,7 +535,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" />x<ph name="HEIGHT" /> (оригінальна)</translation>
 <translation id="1709217939274742847">Виберіть квиток для автентифікації. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">Отримайте цей пароль на своєму пристрої iPhone</translation>
-<translation id="1712552549805331520">Сайт <ph name="URL" /> хоче постійно зберігати дані на вашому локальному комп’ютері</translation>
 <translation id="1714644264617423774">Увімкніть функції доступності, щоб полегшити користування своїм пристроєм. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Датчики руху</translation>
 <translation id="1718835860248848330">Остання година</translation>
@@ -563,6 +562,7 @@
 <translation id="1744108098763830590">фонова сторінка</translation>
 <translation id="1745520510852184940">Завжди виконувати цю дію</translation>
 <translation id="1750172676754093297">На вашому ключі безпеки не можна зберігати відбитки пальців</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> зможе змінювати файли в папці "<ph name="FOLDERNAME" />", поки ви не закриєте всі вкладки для цього сайту</translation>
 <translation id="175196451752279553">В&amp;ідкрити закриту вкладку знову</translation>
 <translation id="1753067873202720523">Ваш Chromebook може не заряджатися, поки він увімкнений.</translation>
 <translation id="1753905327828125965">Часто відвідувані</translation>
@@ -629,6 +629,7 @@
 <translation id="1822140782238030981">Уже користуєтеся Chrome? Увійдіть в обліковий запис</translation>
 <translation id="18245044880483936">Резервні копії даних не займають простір на Диску вашої дитини.</translation>
 <translation id="1826516787628120939">Перевірка</translation>
+<translation id="1827738518074806965">Мистецька галерея</translation>
 <translation id="1828378091493947763">Цей плагін не підтримується на цьому пристрої</translation>
 <translation id="1828901632669367785">Друкувати за допомогою діалогового вікна системи...</translation>
 <translation id="1829129547161959350">Пінгвін</translation>
@@ -749,7 +750,6 @@
 <translation id="1992397118740194946">Не налаштовано</translation>
 <translation id="1994173015038366702">URL-адреса сайту</translation>
 <translation id="1995916364271252349">Контролює, яку інформацію можуть використовувати й показувати сайти (місцезнаходження, камера, спливаючі вікна тощо)</translation>
-<translation id="1997484222658892567">Сайт <ph name="URL" /> хоче постійно зберігати великий обсяг даних на вашому локальному комп’ютері</translation>
 <translation id="1997616988432401742">Ваші сертифікати</translation>
 <translation id="1999115740519098545">Після запуску</translation>
 <translation id="2000419248597011803">Надсилає деякі файли cookie й пошукові запити з адресного рядка та вікна пошуку в пошукову систему за умовчанням</translation>
@@ -1010,7 +1010,6 @@
 <translation id="2340263603246777781">Сайт <ph name="ORIGIN" /> хоче підключитися до пристрою</translation>
 <translation id="2342740338116612727">Закладки додано</translation>
 <translation id="2343747224442182863">Виділити цю вкладку</translation>
-<translation id="2344028582131185878">Автоматичні завантаження</translation>
 <translation id="2345723121311404059">Друк 1 сторінки на <ph name="PRINTER_NAME" /></translation>
 <translation id="2346953515226895098">Сервіс SODA</translation>
 <translation id="2347644257713614136">Використання Hangouts і Cast for Education регулюється Політикою конфіденційності Google.</translation>
@@ -1032,6 +1031,7 @@
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="236117173274098341">Оптимізувати</translation>
 <translation id="236141728043665931">Завжди блокувати доступ до мікрофона</translation>
+<translation id="2364498172489649528">Виконано</translation>
 <translation id="2365507699358342471">Цей сайт може переглядати тексти й зображення в буфері обміну.</translation>
 <translation id="2366260648632264559">Зробити мовою системи</translation>
 <translation id="2367972762794486313">Показати програми</translation>
@@ -1346,6 +1346,7 @@
 <translation id="2762441749940182211">Заборонено використовувати камеру</translation>
 <translation id="2765217105034171413">Малий</translation>
 <translation id="2766161002040448006">Попросити батьків</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> зможе змінювати файл "<ph name="FILENAME" />", поки ви не закриєте всі вкладки для цього сайту</translation>
 <translation id="276969039800130567">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Видалити зі списку</translation>
 <translation id="2770690685823456775">Експортуйте паролі в іншу папку</translation>
@@ -1662,7 +1663,6 @@
 <translation id="3188465121994729530">Середня швидкість переміщення курсора</translation>
 <translation id="3190558889382726167">Пароль збережено</translation>
 <translation id="3192947282887913208">Аудіофайли</translation>
-<translation id="3194737229810486521">Сайт <ph name="URL" /> хоче постійно зберігати дані на вашому пристрої</translation>
 <translation id="3199127022143353223">Сервери</translation>
 <translation id="3200941271596533635">Режим читання</translation>
 <translation id="3201306578844503970">Не вдалося встановити віртуальну машину через помилку мережі. Повторіть спробу або зв'яжіться з адміністратором пристрою у своїй організації. Код помилки: <ph name="ERROR_CODE" />.</translation>
@@ -1671,6 +1671,18 @@
 <translation id="3202173864863109533">Звук на цій вкладці вимкнено.</translation>
 <translation id="3208321278970793882">Додаток</translation>
 <translation id="3208584281581115441">Перевірити</translation>
+<translation id="3208640652501208439">Ресурси для навчання можуть бути недоступні або не завантажуватимуться автоматично
+    Дитина, можливо, не матиме доступу до:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />додатків і розширень, які встановив навчальний заклад;
+      <ph name="LIST_ITEM" />закладок із комп'ютера Chromebook навчального закладу;
+      <ph name="LIST_ITEM" />автозаповнення паролів на навчальних сайтах.
+    <ph name="END_LIST" />
+    Щоб користуватися всіма можливостями облікового запису навчального закладу, дитині слід:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />вийти з облікового запису, який керується через Family Link;
+      <ph name="OLIST_ITEM" />увійти в обліковий запис G Suite for Education через екран входу. Проте зверніть увагу, що правила навчального закладу, зокрема налаштування доступу до додатків і веб-сайтів, матимуть перевагу над функціями контролю Family Link (наприклад, адміністратори навчального закладу можуть дозволити користуватися YouTube, якщо це потрібно для виконання домашніх завдань, час використання може не обмежуватися тощо)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Не підтверджено</translation>
 <translation id="32101887417650595">Не вдається підключитися до принтера</translation>
 <translation id="321084946921799184">Жовто-білий</translation>
@@ -1749,6 +1761,7 @@
 <translation id="3312424061798279731">Активні мови</translation>
 <translation id="3313622045786997898">Значення підпису сертифіката</translation>
 <translation id="3315158641124845231">Сховати <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Інформація для батьків про обліковий запис навчального закладу</translation>
 <translation id="3317459757438853210">Двосторонній</translation>
 <translation id="3317678681329786349">Заборонено використовувати камеру та мікрофон</translation>
 <translation id="3319048459796106952">Нове &amp;анонімне вікно</translation>
@@ -1935,6 +1948,7 @@
 <translation id="3574210789297084292">увійти</translation>
 <translation id="3574917942258583917">Усе одно вийти з режиму анонімного перегляду?</translation>
 <translation id="3575121482199441727">Дозволити для цього сайту</translation>
+<translation id="3575919114596668130">Застосовуватимуться ваші налаштування для батьків із Family Link. Якщо ви заблокували додаток або сайт раніше, не потрібно блокувати його знову.</translation>
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">До вмісту цієї вкладки надано доступ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хоче надати групі &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;, якою ви керуєте, доступ до принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;. Якщо ви приймете це запрошення, усі учасники групи зможуть користуватися цим принтером.</translation>
@@ -2775,6 +2789,7 @@
 <translation id="4689235506267737042">Виберіть демо-параметри</translation>
 <translation id="4689421377817139245">Синхронізуйте цю закладку з iPhone</translation>
 <translation id="4690091457710545971">&lt;Мікропрограма Wi-Fi від Intel згенерувала чотири файли: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Перші три – це двійкові файли, що містять дані розвантаження пам’яті реєстру та не включають особисту інформацію й відомості, за якими можна ідентифікувати пристрій (як стверджує компанія Intel). Останній файл – це трасування виконання мікропрограми Intel; з нього стерто всю особисту інформацію й дані, за якими можна ідентифікувати пристрій, але він завеликий, щоб відображатися тут. Ці файли згенеровано у відповідь на нещодавні проблеми з Wi-Fi на пристрої. Їх буде надіслано в Intel, щоб допомогти вирішити ці проблеми.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> зможе переглядати файл "<ph name="FILENAME" />", поки ви не закриєте всі вкладки для цього сайту</translation>
 <translation id="4692623383562244444">Пошукові системи</translation>
 <translation id="4693155481716051732">Суші</translation>
 <translation id="4694024090038830733">Налаштування принтерів встановлює адміністратор.</translation>
@@ -3130,6 +3145,7 @@
 <translation id="5204967432542742771">Введіть пароль</translation>
 <translation id="5206215183583316675">Видалити сертифікат "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Не вдалось імпортувати сертифікат</translation>
+<translation id="5209307736170827035">Дані вашої дитини у Класі буде захищено. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Пристрої не знайдено.</translation>
 <translation id="5210990770352357081">Не вдається видалити Plugin VM</translation>
 <translation id="5213481667492808996">Службу передавання даних "<ph name="NAME" />" активовано</translation>
@@ -3241,6 +3257,7 @@
 <translation id="5341980496415249280">Пакування. Зачекайте…</translation>
 <translation id="5342091991439452114">Мінімальна кількість цифр у PIN-коді: <ph name="MINIMUM" /></translation>
 <translation id="5344036115151554031">Відновлення Linux</translation>
+<translation id="535123479159372765">Текст скопійовано з іншого пристрою</translation>
 <translation id="5352033265844765294">Встановлення позначки часу</translation>
 <translation id="5353252989841766347">Експортувати паролі з Chrome</translation>
 <translation id="5355099869024327351">Дозволити Асистенту показувати сповіщення</translation>
@@ -3363,6 +3380,7 @@
 <translation id="5511379779384092781">Дуже мало</translation>
 <translation id="5511823366942919280">Налаштувати цей пристрій як "Shark"?</translation>
 <translation id="5512653252560939721">Сертифікату користувача потрібна апаратна підтримка.</translation>
+<translation id="5515923816438946203">Виберіть, що ви хочете бачити на екрані</translation>
 <translation id="5517304475148761050">Цьому додатку потрібен доступ до Play Маркету</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Додавання принтера в обліковий запис. Це може тривати деякий час…</translation>
@@ -3813,6 +3831,7 @@
 <translation id="6097480669505687979">Якщо ви не звільните місце, користувачів і дані може бути автоматично вилучено.</translation>
 <translation id="6097600385983390082">Голосовий пошук закрито</translation>
 <translation id="6098793583803863900">Невідомий файл сканується на наявність небезпечного контенту.</translation>
+<translation id="609942571968311933">Текст скопійовано з пристрою <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Меню "Пуск"</translation>
 <translation id="6101226222197207147">Додано нову програму (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Цей файл заблоковано Додатковим захистом.</translation>
@@ -3996,7 +4015,6 @@
 <translation id="6349101878882523185">Установіть додаток <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Синхронізація не працює. Вийдіть з облікового запису та ввійдіть у нього знову.</translation>
 <translation id="6351063337294363751">Ви можете очистити дані веб-перегляду з цього меню</translation>
-<translation id="6352223293513723497">На вашому пристрої закінчується доступний обсяг пам'яті. Звільніть місце, щоб скористатися плагіном Plugin VM.</translation>
 <translation id="6352773953037195952">Найвищий</translation>
 <translation id="6354918092619878358">Еліптична крива SECG secp256r1 (також відома як ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Не вимикайте пристрій</translation>
@@ -4184,6 +4202,7 @@
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="6615455863669487791">Показати</translation>
 <translation id="6618097958368085618">Усе одно завантажити</translation>
+<translation id="6618744767048954150">Виконується</translation>
 <translation id="6619058681307408113">Диспетчер лінійного принтера (LPD)</translation>
 <translation id="661907246513853610">Сайт може відстежувати місцезнаходження</translation>
 <translation id="6619801788773578757">Додати додаток для терміналів</translation>
@@ -4569,6 +4588,7 @@
 <translation id="7131040479572660648">Переглядати ваші дані на веб-сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Додати стор&amp;інку...</translation>
 <translation id="7133578150266914903">Адміністратор відновлює цей пристрій до попереднього стану (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">Перевірено паролів: <ph name="DONE" />/<ph name="TOTAL" />…</translation>
 <translation id="7134098520442464001">Зменшити розмір тексту</translation>
 <translation id="7135729336746831607">Увімкнути Bluetooth?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" />: негайно оновіть <ph name="DEVICE_TYPE" />.</translation>
@@ -4917,6 +4937,7 @@
 <translation id="761530003705945209">Створювати резервні копії на Google Диску. Легко відновлюйте дані чи переносьте їх на інші пристрої. Резервні копії містять дані додатків. Ваші резервні копії завантажуються в Google і шифруються за допомогою пароля облікового запису Google.</translation>
 <translation id="7616214729753637086">Реєстрація пристрою…</translation>
 <translation id="7617366389578322136">Під’єднання до пристрою <ph name="DEVICE_NAME" /></translation>
+<translation id="761763866592998929">Заставка</translation>
 <translation id="762068974690945752">Додайте обліковий запис навчального закладу або керуйте обліковими записами дитини тут. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Системі не вдалося зберегти конфігурацію пристрою.</translation>
 <translation id="7622114377921274169">Заряджається.</translation>
@@ -4940,7 +4961,6 @@
 <translation id="7645681574855902035">Скасовується резервне копіювання Linux</translation>
 <translation id="7646772052135772216">Синхронізація паролів не працює</translation>
 <translation id="7647403192093989392">Немає останніх дій</translation>
-<translation id="7648992873808071793">Зберігати файли на цьому пристрої</translation>
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7650511557061837441">Розширення "<ph name="TRIGGERING_EXTENSION_NAME" />" хоче вилучити розширення "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7652808307838961528">Редагувати користувача <ph name="PROFILE_NAME" /></translation>
@@ -5029,6 +5049,7 @@
 <translation id="7766838926148951335">Прийняти дозволи</translation>
 <translation id="7768770796815395237">Змінити</translation>
 <translation id="7769672763586021400">Ідентифікатор моделі</translation>
+<translation id="7770612696274572992">Зображення скопійовано з іншого пристрою</translation>
 <translation id="7770651108375708429">Від'єднатися від Wi-Fi</translation>
 <translation id="7771452384635174008">Орієнтація</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
@@ -5036,6 +5057,7 @@
 <translation id="7772773261844472235">Перевірити статус Chromebook</translation>
 <translation id="7773726648746946405">Пам’ять сеансу</translation>
 <translation id="7774365994322694683">Птах</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> зможе переглядати файли в папці "<ph name="FOLDERNAME" />", поки ви не закриєте всі вкладки для цього сайту</translation>
 <translation id="7776701556330691704">Голосів не знайдено</translation>
 <translation id="7780252971640011240">Помилка з'єднання. Зверніться по допомогу до оператора.</translation>
 <translation id="7781335840981796660">Усі облікові записи користувачів і локальні дані буде видалено.</translation>
@@ -6055,6 +6077,7 @@
 <translation id="9055636786322918818">Застосовує шифрування RC4. Використання цієї опції підвищує ризик, оскільки шифри RC4 ненадійні.</translation>
 <translation id="9056810968620647706">Збігів не знайдено.</translation>
 <translation id="9057354806206861646">Оновити розклад</translation>
+<translation id="9058976525724291037">Ваша дитина хоче додати інший обліковий запис Google на цей пристрій. На пристрої, що керуються через Family Link, можна додати тільки облікові записи G Suite for Education.</translation>
 <translation id="9062065967472365419">Здивуйте мене</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Помилка в рядках <ph name="ERROR_LINE_START" />–<ph name="ERROR_LINE_END" /></translation>

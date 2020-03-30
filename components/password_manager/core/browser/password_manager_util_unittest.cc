@@ -392,24 +392,6 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernamePickFirst) {
             GetMatchForUpdating(parsed, {&stored3, &stored2, &stored1}));
 }
 
-TEST(PasswordManagerUtil,
-     GetMatchForUpdating_DuplicateUsernamePickMatchingPassword) {
-  // Two credentials with a matching username are stored. One has the same
-  // password as well, the other has a different password. This can happen when
-  // one credential comes from the profile store, the other from the password
-  // store.
-  autofill::PasswordForm parsed = GetTestCredential();
-  autofill::PasswordForm stored_samepw = parsed;
-  autofill::PasswordForm stored_diffpw = parsed;
-  stored_diffpw.password_value = base::ASCIIToUTF16("different");
-
-  // The order of the two stored credentials shouldn't matter.
-  EXPECT_EQ(&stored_samepw,
-            GetMatchForUpdating(parsed, {&stored_diffpw, &stored_samepw}));
-  EXPECT_EQ(&stored_samepw,
-            GetMatchForUpdating(parsed, {&stored_samepw, &stored_diffpw}));
-}
-
 TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Android) {
   autofill::PasswordForm blacklisted_credential = MakeNormalizedBlacklistedForm(
       password_manager::PasswordStore::FormDigest(GetTestAndroidCredential()));

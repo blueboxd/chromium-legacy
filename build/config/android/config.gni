@@ -50,6 +50,12 @@ if (is_android || is_chromeos) {
 
     # Android API level for 64 bits platforms
     android64_ndk_api_level = 21
+
+    # [WIP] Allows devs to achieve much faster edit-build-install cycles.
+    # Currently only works for ChromeModern apks due to incremental install.
+    # This needs to be in a separate declare_args as it determines some of the
+    # args in the main declare_args block below.
+    android_fast_local_dev = false
   }
 
   if (enable_chrome_android_internal) {
@@ -172,11 +178,12 @@ if (is_android || is_chromeos) {
     # Set to false to disable the Errorprone compiler.
     # Defaults to false for official builds to reduce build times.
     # Static analysis failures should have been already caught by normal bots.
-    use_errorprone_java_compiler = !is_official_build
+    # Disabled when fast_local_dev is turned on.
+    use_errorprone_java_compiler = !is_official_build && !android_fast_local_dev
 
     # Build incremental targets whenever possible.
     # See //build/android/incremental_install/README.md for more details.
-    incremental_install = false
+    incremental_install = android_fast_local_dev
 
     # When true, updates all android_aar_prebuilt() .info files during gn gen.
     # Refer to android_aar_prebuilt() for more details.
@@ -185,7 +192,8 @@ if (is_android || is_chromeos) {
     # Turns off android lint. Useful for prototyping or for faster local builds.
     # Defaults to true for official builds to reduce build times.
     # Static analysis failures should have been already caught by normal bots.
-    disable_android_lint = is_official_build
+    # Disabled when fast_local_dev is turned on.
+    disable_android_lint = is_official_build || android_fast_local_dev
 
     # Location of aapt2 used for app bundles. For now, a more recent version
     # than the one distributed with the Android SDK is required.

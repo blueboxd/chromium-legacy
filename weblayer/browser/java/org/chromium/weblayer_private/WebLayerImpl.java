@@ -13,6 +13,7 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.SparseArray;
@@ -42,12 +43,14 @@ import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
+import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
 import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
+import org.chromium.weblayer_private.interfaces.IWebLayerClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 import org.chromium.weblayer_private.metrics.MetricsServiceClient;
@@ -87,6 +90,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private final ProfileManager mProfileManager = new ProfileManager();
 
     private boolean mInited;
+    private static IWebLayerClient sClient;
     // Whether WebView is running in process. Set in init().
     private boolean mIsWebViewCompatMode;
 
@@ -315,6 +319,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         ProfileImpl.enumerateAllProfileNames(callback);
     }
 
+    @Override
+    public void setClient(IWebLayerClient client) {
+        StrictModeWorkaround.apply();
+        sClient = client;
+    }
+
     /**
      * Creates a remote context. This should only be used for backwards compatibility when the
      * client was not sending the remote context.
@@ -326,6 +336,18 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                     Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
         } catch (PackageManager.NameNotFoundException e) {
             throw new AndroidRuntimeException(e);
+        }
+    }
+
+    public static Intent createIntent() {
+        if (sClient == null) {
+            throw new IllegalStateException("WebLayer should have been initialized already.");
+        }
+
+        try {
+            return sClient.createIntent();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
         }
     }
 

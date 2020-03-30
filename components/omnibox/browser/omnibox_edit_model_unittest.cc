@@ -10,9 +10,12 @@
 #include <string>
 
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -221,6 +224,27 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
     EXPECT_EQ(GURL(), url);
     EXPECT_FALSE(write_url);
   }
+}
+
+// Tests that AdjustTextForCopy behaves properly for Reader Mode URLs.
+TEST_F(OmniboxEditModelTest, AdjustTextForCopyReaderMode) {
+  const GURL article_url("https://www.example.com/article.html");
+  const GURL distiller_url =
+      dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+          dom_distiller::kDomDistillerScheme, article_url);
+  // In ReaderMode, the URL is chrome-distiller://<hash>,
+  // but the user should only see the original URL minus the scheme.
+  location_bar_model()->set_url(distiller_url);
+  model()->ResetDisplayTexts();
+
+  base::string16 result = base::UTF8ToUTF16(distiller_url.spec());
+  GURL url;
+  bool write_url = false;
+  model()->AdjustTextForCopy(0, &result, &url, &write_url);
+
+  EXPECT_EQ(base::ASCIIToUTF16(article_url.spec()), result);
+  EXPECT_EQ(article_url, url);
+  EXPECT_TRUE(write_url);
 }
 
 TEST_F(OmniboxEditModelTest, DISABLED_InlineAutocompleteText) {

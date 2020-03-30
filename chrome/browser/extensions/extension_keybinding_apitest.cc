@@ -498,39 +498,22 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
       browser(), ui::VKEY_F, false, true, true, false));
   EXPECT_TRUE(alt_shift_f_listener.WaitUntilSatisfied());
 
-  // Try to activate the bookmark shortcut (Ctrl+D). This should not work
-  // without requesting via chrome_settings_overrides.
-  //
-  // Since keypresses are sent synchronously, we can check this by first sending
-  // Ctrl+D (which shouldn't work), followed by Alt+Shift+F (which should work),
-  // and listening for both. If, by the time we receive the Alt+Shift+F
-  // response, we haven't received a response for Ctrl+D, it is safe to say we
-  // won't receive one.
-  {
-    ExtensionTestMessageListener ctrl_d_listener("ctrl_d", false);
-    alt_shift_f_listener.Reset();
-    // Send Ctrl+D.
-    ASSERT_TRUE(SendBookmarkKeyPressSync(browser()));
-    // Send Alt+Shift+F.
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_F, false, true, true, false));
-    EXPECT_TRUE(alt_shift_f_listener.WaitUntilSatisfied());
-    EXPECT_FALSE(ctrl_d_listener.was_satisfied());
-  }
-
   // Try to activate the Ctrl+F shortcut (shouldn't work).
-  {
-    ExtensionTestMessageListener ctrl_f_listener("ctrl_f", false);
-    alt_shift_f_listener.Reset();
-    // Send Ctrl+F.
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_F, true, false, false, false));
-    // Send Alt+Shift+F.
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_F, false, true, true, false));
-    EXPECT_TRUE(alt_shift_f_listener.WaitUntilSatisfied());
-    EXPECT_FALSE(ctrl_f_listener.was_satisfied());
-  }
+  // Since keypresses are sent synchronously, we can check this by first sending
+  // Ctrl+F (which shouldn't work), followed by Alt+Shift+F (which should work),
+  // and listening for both. If, by the time we receive the Alt+Shift+F
+  // response, we haven't received a response for Ctrl+F, it is safe to say we
+  // won't receive one.
+  ExtensionTestMessageListener ctrl_f_listener("ctrl_f", false);
+  alt_shift_f_listener.Reset();
+  // Send Ctrl+F.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_F, true,
+                                              false, false, false));
+  // Send Alt+Shift+F.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_F, false,
+                                              true, true, false));
+  EXPECT_TRUE(alt_shift_f_listener.WaitUntilSatisfied());
+  EXPECT_FALSE(ctrl_f_listener.was_satisfied());
 }
 
 // This test validates that an extension override of the Chrome bookmark

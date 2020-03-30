@@ -43,6 +43,7 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--profdata-dir', required=True, help='where to store the merged data')
   parser.add_argument(
       '--llvm-profdata', required=True, help='path to llvm-profdata executable')
+  parser.add_argument('--test-target-name', help='test target name')
   parser.add_argument(
       '--java-coverage-dir', help='directory for Java coverage data')
   parser.add_argument(
@@ -75,6 +76,10 @@ def main():
     coverage_merger.merge_java_exec_files(
         params.task_output_dir, output_path, params.jacococli_path)
 
+  # Name the output profdata file name as {test_target}.profdata or
+  # default.profdata.
+  output_prodata_filename = (params.test_target_name or 'default') + '.profdata'
+
   # NOTE: The coverage data merge script must make sure that the profraw files
   # are deleted from the task output directory after merging, otherwise, other
   # test results merge script such as layout tests will treat them as json test
@@ -82,7 +87,7 @@ def main():
   logging.info('Merging code coverage profraw data')
   invalid_profiles, counter_overflows = coverage_merger.merge_profiles(
       params.task_output_dir,
-      os.path.join(params.profdata_dir, 'default.profdata'), '.profraw',
+      os.path.join(params.profdata_dir, output_prodata_filename), '.profraw',
       params.llvm_profdata)
 
   # At the moment counter overflows overlap with invalid profiles, but this is

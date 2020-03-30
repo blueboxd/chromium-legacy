@@ -13,8 +13,8 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
-import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.tracing.TracingController;
+import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 
 import java.util.ArrayList;
 import java.util.Collections;

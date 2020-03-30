@@ -260,6 +260,10 @@ void SharingWebRtcConnection::OnOfferReceived(
     const std::string& offer,
     OnOfferReceivedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Only the receiver receives an offer from the sender and it's the first
+  // thing it does.
+  timing_recorder_.set_is_sender(false);
+
   timing_recorder_.LogEvent(WebRtcTimingEvent::kOfferReceived);
 
   std::unique_ptr<webrtc::SessionDescriptionInterface> description(
@@ -296,6 +300,11 @@ void SharingWebRtcConnection::OnIceCandidatesReceived(
 void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
                                           SendMessageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // We know that we're the sender if there is no data channel yet because the
+  // receiver only sends ack messages after receiving via a data channel.
+  if (!channel_)
+    timing_recorder_.set_is_sender(true);
+
   timing_recorder_.LogEvent(WebRtcTimingEvent::kQueuingMessage);
 
   if (message.empty()) {

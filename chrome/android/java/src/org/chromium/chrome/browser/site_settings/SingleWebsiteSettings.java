@@ -22,7 +22,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
 import org.chromium.base.Callback;
@@ -31,10 +30,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
-import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.settings.SettingsUtils;
+import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
+import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 
@@ -46,7 +44,7 @@ import java.util.Set;
 /**
  * Shows the permissions and other settings for a particular website.
  */
-public class SingleWebsiteSettings extends PreferenceFragmentCompat
+public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
     // SingleWebsiteSettings expects either EXTRA_SITE (a Website) or
     // EXTRA_SITE_ADDRESS (a WebsiteAddress) to be present (but not both). If
@@ -593,19 +591,10 @@ public class SingleWebsiteSettings extends PreferenceFragmentCompat
                         }
                     });
 
-            preference.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
+            preference.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
+                    getSiteSettingsClient().getManagedPreferenceDelegate()) {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
-                    return info.isManaged();
-                }
-
-                @Override
-                public boolean isPreferenceControlledByCustodian(Preference preference) {
-                    return false;
-                }
-
-                @Override
-                public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
                     return info.isManaged();
                 }
             });

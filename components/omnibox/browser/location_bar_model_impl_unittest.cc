@@ -8,6 +8,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -117,6 +119,43 @@ TEST_F(LocationBarModelImplTest,
             model()->GetFormattedFullURL());
   EXPECT_EQ(base::ASCIIToUTF16("google.com/TestSuffix"),
             model()->GetURLForDisplay());
+}
+
+TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
+  const GURL http_url("http://www.example.com/article.html");
+  // Get the real article's URL shown to the user.
+  delegate()->SetURL(http_url);
+  base::string16 originalDisplayUrl = model()->GetURLForDisplay();
+  base::string16 originalFormattedFullUrl = model()->GetFormattedFullURL();
+  // We expect that they don't start with "http://." We want the reader mode
+  // URL shown to the user to be the same as this original URL.
+#ifdef OS_IOS
+  EXPECT_EQ(base::ASCIIToUTF16("example.com/TestSuffix"), originalDisplayUrl);
+#else
+  EXPECT_EQ(base::ASCIIToUTF16("example.com/article.html/TestSuffix"),
+            originalDisplayUrl);
+#endif
+  EXPECT_EQ(base::ASCIIToUTF16("www.example.com/article.html/TestSuffix"),
+            originalFormattedFullUrl);
+
+  GURL distilled = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+      dom_distiller::kDomDistillerScheme, http_url);
+  // Ensure the test is set up properly by checking the reader mode URL has
+  // the reader mode scheme.
+  EXPECT_EQ(dom_distiller::kDomDistillerScheme, distilled.scheme());
+  delegate()->SetURL(distilled);
+
+  // The user should see the same URL seen for the original article.
+  EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
+  EXPECT_EQ(originalFormattedFullUrl, model()->GetFormattedFullURL());
+
+  // Similarly, https scheme should also be hidden.
+  const GURL https_url("https://www.example.com/article.html");
+  distilled = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+      dom_distiller::kDomDistillerScheme, https_url);
+  delegate()->SetURL(distilled);
+  EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
+  EXPECT_EQ(originalFormattedFullUrl, model()->GetFormattedFullURL());
 }
 
 // TODO(https://crbug.com/1010418): Fix flakes on linux_chromium_asan_rel_ng and

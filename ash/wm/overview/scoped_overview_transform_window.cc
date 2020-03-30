@@ -454,24 +454,10 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   event_targeting_blocker_map_.erase(transient_child);
 }
 
-void ScopedOverviewTransformWindow::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(window, window_);
-  window->RemoveObserver(this);
-  window_has_closed_ = true;
-}
-
 void ScopedOverviewTransformWindow::CloseWidget() {
   aura::Window* parent_window = ::wm::GetTransientRoot(window_);
-  DCHECK(parent_window);
-  window_->AddObserver(this);
-  window_util::CloseWidgetForWindow(parent_window);
-
-  if (window_has_closed_)
-    return;
-
-  // Notify |overview_item_| the window failed to close.
-  window_->RemoveObserver(this);
-  overview_item_->OnWindowDidNotClose();
+  if (parent_window)
+    window_util::CloseWidgetForWindow(parent_window);
 }
 
 // static

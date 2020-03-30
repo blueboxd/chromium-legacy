@@ -57,6 +57,8 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
  public:
   using Result = VersionUpdater::Result;
 
+  static std::string GetResultString(Result result);
+
   static UpdateScreen* Get(ScreenManager* manager);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;

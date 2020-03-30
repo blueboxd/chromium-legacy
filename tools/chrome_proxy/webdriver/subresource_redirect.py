@@ -12,16 +12,32 @@ LITEPAGES_REGEXP = r'https://\w+\.litepages\.googlezip\.net/.*'
 
 class SubresourceRedirect(IntegrationTest):
 
+  def enableSubresourceRedirectFeature(self, test_driver):
+    test_driver.EnableChromeFeature('SubresourceRedirect<SubresourceRedirect')
+    test_driver.AddChromeArg('--force-fieldtrials=SubresourceRedirect/Enabled')
+    test_driver.AddChromeArg(
+        '--force-fieldtrial-params='
+        'SubresourceRedirect.Enabled:enable_lite_page_redirect/true')
+    test_driver.EnableChromeFeature('OptimizationHints')
+    test_driver.EnableChromeFeature('OptimizationHintsFetching')
+    test_driver.EnableChromeFeature(
+        'OptimizationHintsFetchingAnonymousDataConsent')
+    test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+    test_driver.AddChromeArg('--dont-require-litepage-redirect-infobar')
+
   # Verifies that image subresources on a page have been returned
   # from the compression server.
   @ChromeVersionEqualOrAfterM(77)
   def testCompressImage(self):
     with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-subresource-redirect')
-      test_driver.LoadURL('https://check.googlezip.net/static/index.html')
+      self.enableSubresourceRedirectFeature(test_driver)
+      test_driver.LoadURL(
+          'https://check.googlezip.net/static/image_delayed_load.html')
+
+      test_driver.SleepUntilHistogramHasEntry(
+          'SubresourceRedirect.CompressionAttempt.ServerResponded')
 
       image_responses = 0
-
       for response in test_driver.GetHTTPResponses():
         content_type = ''
         if 'content-type' in response.response_headers:
@@ -38,7 +54,7 @@ class SubresourceRedirect(IntegrationTest):
   @ChromeVersionEqualOrAfterM(77)
   def testOnRedirectImage(self):
     with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-subresource-redirect')
+      self.enableSubresourceRedirectFeature(test_driver)
       # Image compression server returns a 307 for all images on this webpage.
       test_driver.LoadURL(
         'https://testsafebrowsing.appspot.com/s/image_small.html')
@@ -66,7 +82,7 @@ class SubresourceRedirect(IntegrationTest):
   @ChromeVersionEqualOrAfterM(77)
   def testNoCompressNonImage(self):
     with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-subresource-redirect')
+      self.enableSubresourceRedirectFeature(test_driver)
       test_driver.LoadURL('https://check.googlezip.net/testvideo.html')
 
       image_responses = 0
@@ -87,7 +103,7 @@ class SubresourceRedirect(IntegrationTest):
   @ChromeVersionEqualOrAfterM(77)
   def testNoCompressNonHTTPS(self):
     with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-subresource-redirect')
+      self.enableSubresourceRedirectFeature(test_driver)
       test_driver.LoadURL('http://check.googlezip.net/static/index.html')
 
       image_responses = 0

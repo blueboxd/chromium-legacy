@@ -15,9 +15,9 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "url/gurl.h"
 
@@ -50,8 +50,8 @@ std::unique_ptr<ResourceRequest> CreateTrustTokenKeyCommitmentRequest(
 
 TrustTokenKeyCommitmentController::TrustTokenKeyCommitmentController(
     base::OnceCallback<void(Status status,
-                            std::unique_ptr<TrustTokenKeyCommitmentResult>
-                                result)> completion_callback,
+                            mojom::TrustTokenKeyCommitmentResultPtr result)>
+        completion_callback,
     const net::URLRequest& request,
     const url::Origin& top_level_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -124,7 +124,7 @@ void TrustTokenKeyCommitmentController::HandleResponseBody(
     return;
   }
 
-  std::unique_ptr<TrustTokenKeyCommitmentResult> result =
+  mojom::TrustTokenKeyCommitmentResultPtr result =
       parser_->Parse(*response_body);
 
   if (!result) {

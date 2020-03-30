@@ -13785,6 +13785,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareMenuGenerateQRCode">
+  <owner>seblalancette@chromium.org</owner>
+  <description>
+    The user pressed the generate QR code option from the share action menu.
+  </description>
+</action>
+
 <action name="MobileShareMenuReadLater">
   <owner>gambard@chromium.org</owner>
   <description>User shared to the device's Reading List.</description>

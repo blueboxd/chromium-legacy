@@ -61,6 +61,12 @@ class JSChecker {
   WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateWaiter(
       const std::string& js_condition);
 
+  // Checks test waiter that would await until |js_condition| evaluates
+  // to true.
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
+  CreateWaiterWithDescription(const std::string& js_condition,
+                              const std::string& description);
+
   // Waiter that waits until the given attribute is (not) present.
   // WARNING! This does not cover the case where ATTRIBUTE=false.
   // Should only be used for boolean attributes.

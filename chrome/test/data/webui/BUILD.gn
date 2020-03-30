@@ -230,6 +230,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/collapse_radio_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_radio_button_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/cookies_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/do_not_track_toggle_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/downloads_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/dropdown_menu_tests.m.js",

@@ -26,6 +26,10 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/internal_authenticator.h"
+#endif
+
 class PrefService;
 
 namespace content {
@@ -263,6 +267,14 @@ class AutofillClient : public RiskDataLoader {
   // Returns the whitelists for virtual cards. Used on desktop platforms only.
   virtual std::vector<std::string> GetMerchantWhitelistForVirtualCards() = 0;
   virtual std::vector<std::string> GetBinRangeWhitelistForVirtualCards() = 0;
+#endif
+
+#if !defined(OS_IOS)
+  // Creates the appropriate implementation of InternalAuthenticator. May be
+  // null for platforms that don't support this, in which case standard CVC
+  // authentication will be used instead.
+  virtual std::unique_ptr<InternalAuthenticator>
+  CreateCreditCardInternalAuthenticator(content::RenderFrameHost* rfh);
 #endif
 
   // Causes the Autofill settings UI to be shown. If |show_credit_card_settings|

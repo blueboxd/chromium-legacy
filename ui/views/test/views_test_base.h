@@ -47,16 +47,13 @@ class ViewsTestBase : public PlatformTest {
   // specified.
   template <typename... TaskEnvironmentTraits>
   NOINLINE explicit ViewsTestBase(TaskEnvironmentTraits&&... traits)
-      : task_environment_(base::in_place,
-                          base::test::TaskEnvironment::MainThreadType::UI,
-                          std::forward<TaskEnvironmentTraits>(traits)...) {
-  }
+      : ViewsTestBase(std::make_unique<base::test::TaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::UI,
+            std::forward<TaskEnvironmentTraits>(traits)...)) {}
 
-  // Alternatively a subclass may pass this tag to ask this ViewsTestBase not to
-  // instantiate a TaskEnvironment. The subclass is then responsible to
-  // instantiate one before ViewsTestBase::SetUp().
-  struct SubclassManagesTaskEnvironment {};
-  explicit ViewsTestBase(SubclassManagesTaskEnvironment tag);
+  // Alternatively a subclass may pass a TaskEnvironment directly.
+  explicit ViewsTestBase(
+      std::unique_ptr<base::test::TaskEnvironment> task_environment);
 
   ~ViewsTestBase() override;
 
@@ -85,6 +82,9 @@ class ViewsTestBase : public PlatformTest {
   void SimulateNativeDestroy(Widget* widget);
 
  protected:
+  base::test::TaskEnvironment* task_environment() {
+    return task_environment_.get();
+  }
   TestViewsDelegate* test_views_delegate() const {
     return test_helper_->test_views_delegate();
   }
@@ -121,16 +121,13 @@ class ViewsTestBase : public PlatformTest {
       const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
- protected:
   Widget::InitParams CreateParamsForTestWidget(
       Widget::InitParams::Type type =
           Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
-  // Initialized first, destroyed last. Use this protected member directly from
-  // the test body to drive tasks posted within a ViewsTestBase-based test.
-  base::Optional<base::test::TaskEnvironment> task_environment_;
-
  private:
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+
   // Controls what type of widget will be created by default for a test (i.e.
   // when creating a Widget and leaving InitParams::native_widget unspecified).
   // kDefault will allow the system default to be used (typically

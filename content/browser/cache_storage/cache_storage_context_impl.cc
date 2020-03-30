@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
@@ -28,8 +29,18 @@ namespace content {
 
 namespace {
 
+// TODO(crbug/960012): Disabled on chromeos for now due to performance
+// regressions that need to be investigated.
+// TODO(crbug/960012): Disabled on fuchsia for test failures.
 const base::Feature kCacheStorageSequenceFeature{
-    "CacheStorageSequence", base::FEATURE_DISABLED_BY_DEFAULT};
+  "CacheStorageSequence",
+#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#endif
 
 scoped_refptr<base::SequencedTaskRunner> CreateSchedulerTaskRunner() {
   if (!base::FeatureList::IsEnabled(kCacheStorageSequenceFeature))

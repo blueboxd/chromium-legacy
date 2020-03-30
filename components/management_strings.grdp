@@ -170,15 +170,15 @@
     Performance data and crash reports
   </message>
 
-  <!-- Strings related to Enterprise Service Hooks -->
-  <message name="IDS_MANAGEMENT_THREAT_PROTECTION" desc="Title of the Enterprise Service Hooks section of the page">
-    Enterprise Service Hooks
+  <!-- Strings related to Chrome Enterprise Connectors -->
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION" desc="Title of the Chrome Enterprise Connectors section of the page">
+    Chrome Enterprise Connectors
   </message>
-  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION" desc="Description of the Enterprise Service Hooks section of the page">
-    Your administrator has enabled Enterprise Service Hooks on your browser. These hooks have access to some of your data.
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION" desc="Description of the Chrome Enterprise Connectors section of the page">
+    Your administrator has enabled Chrome Enterprise Connectors on your browser. These connectors have access to some of your data.
   </message>
-  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY" desc="Description of the Enterprise Service Hooks section of the page">
-    <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> has enabled Enterprise Service Hooks on your browser. These hooks have access to some of your data.
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY" desc="Description of the Chrome Enterprise Connectors section of the page">
+    <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> has enabled Chrome Enterprise Connectors on your browser. These connectors have access to some of your data.
   </message>
   <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_NAME" desc="Name for the data loss prevention feature">
     Data Loss Prevention
@@ -196,6 +196,6 @@
     Enterprise Reporting
   </message>
   <message name="IDS_MANAGEMENT_ENTERPRISE_REPORTING_PERMISSIONS" desc="Permissions description for the enterprise reporting feature">
-    Share data about security events that have been flagged by Enterprise Service Hooks with your administrator. This may include URLs of pages you visit, file names or metadata, and the username you use to sign in to your device and Chrome.
+    Share data about security events that have been flagged by Chrome Enterprise Connectors with your administrator. This may include URLs of pages you visit, file names or metadata, and the username you use to sign in to your device and Chrome.
   </message>
 </grit-part>

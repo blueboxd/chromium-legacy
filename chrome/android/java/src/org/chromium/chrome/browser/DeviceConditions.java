@@ -15,6 +15,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.PowerManager;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -56,15 +57,22 @@ public class DeviceConditions {
     }
 
     @VisibleForTesting
-    DeviceConditions() {}
+    DeviceConditions() {
+        // Setting to most restrictive device conditions.
+        mPowerSaveOn = true;
+        mScreenOnAndUnlocked = true;
+        mActiveNetworkMetered = true;
+    }
 
     /**
      * Returns the current device conditions if the device supports obtaining battery status.
-     * Otherwise it will return null.
+     * Otherwise it will return the most restrictive device conditions.
      */
-    public static DeviceConditions getCurrent(Context context) {
+    public static @NonNull DeviceConditions getCurrent(Context context) {
         Intent batteryStatus = getBatteryStatus(context);
-        if (batteryStatus == null) return null;
+        if (batteryStatus == null) {
+            return new DeviceConditions();
+        }
 
         return new DeviceConditions(isCurrentlyPowerConnected(context, batteryStatus),
                 getCurrentBatteryPercentage(context, batteryStatus),

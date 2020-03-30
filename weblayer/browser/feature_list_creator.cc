@@ -20,6 +20,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/ui_string_overrider.h"
+#include "components/variations/service/variations_service.h"
 #include "components/variations/variations_crash_keys.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switch_dependent_feature_overrides.h"
@@ -36,6 +37,8 @@ const char kDisableBackgroundNetworking[] = "disable-background-networking";
 
 namespace weblayer {
 namespace {
+
+FeatureListCreator* feature_list_creator_instance = nullptr;
 
 void HandleReadError(PersistentPrefStore::PrefReadError error) {}
 
@@ -75,9 +78,20 @@ std::unique_ptr<PrefService> CreatePrefService() {
 
 }  // namespace
 
-FeatureListCreator::FeatureListCreator() = default;
+FeatureListCreator::FeatureListCreator() {
+  DCHECK(!feature_list_creator_instance);
+  feature_list_creator_instance = this;
+}
 
-FeatureListCreator::~FeatureListCreator() = default;
+FeatureListCreator::~FeatureListCreator() {
+  feature_list_creator_instance = nullptr;
+}
+
+// static
+FeatureListCreator* FeatureListCreator::GetInstance() {
+  DCHECK(feature_list_creator_instance);
+  return feature_list_creator_instance;
+}
 
 void FeatureListCreator::SetSystemNetworkContextManager(
     SystemNetworkContextManager* system_network_context_manager) {
@@ -107,7 +121,7 @@ void FeatureListCreator::SetUpFieldTrials() {
   DCHECK(system_network_context_manager_);
   variations_service_ = variations::VariationsService::Create(
       std::make_unique<WebLayerVariationsServiceClient>(
-          system_network_context_manager_->GetSharedURLLoaderFactory()),
+          system_network_context_manager_),
       local_state_.get(), metrics_client->metrics_state_manager(),
       switches::kDisableBackgroundNetworking, variations::UIStringOverrider(),
       base::BindOnce(&content::GetNetworkConnectionTracker));
@@ -118,7 +132,6 @@ void FeatureListCreator::SetUpFieldTrials() {
   std::vector<std::string> variation_ids;
   auto feature_list = std::make_unique<base::FeatureList>();
 
-  variations_service_->PerformPreMainMessageLoopStartup();
   variations_service_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials, variation_ids,
@@ -138,6 +151,14 @@ void FeatureListCreator::CreateFeatureListAndFieldTrials() {
   WebLayerMetricsServiceClient::GetInstance()->Initialize(local_state_.get());
 #endif
   SetUpFieldTrials();
+}
+
+void FeatureListCreator::PerformPreMainMessageLoopStartup() {
+#if defined(OS_ANDROID)
+  // It is expected this is called after SetUpFieldTrials().
+  DCHECK(variations_service_);
+  variations_service_->PerformPreMainMessageLoopStartup();
+#endif
 }
 
 }  // namespace weblayer

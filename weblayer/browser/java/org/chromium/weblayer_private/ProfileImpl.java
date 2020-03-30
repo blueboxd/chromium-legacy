@@ -13,6 +13,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.interfaces.BrowsingDataType;
+import org.chromium.weblayer_private.interfaces.ICookieManager;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
@@ -29,6 +30,7 @@ import java.util.List;
 public final class ProfileImpl extends IProfile.Stub {
     private final String mName;
     private long mNativeProfile;
+    private final CookieManagerImpl mCookieManager;
     private Runnable mOnDestroyCallback;
     private boolean mBeingDeleted;
     private DownloadCallbackProxy mDownloadCallbackProxy;
@@ -44,6 +46,8 @@ public final class ProfileImpl extends IProfile.Stub {
         }
         mName = name;
         mNativeProfile = ProfileImplJni.get().createProfile(name);
+        mCookieManager =
+                new CookieManagerImpl(ProfileImplJni.get().getCookieManager(mNativeProfile));
         mOnDestroyCallback = onDestroyCallback;
     }
 
@@ -131,6 +135,13 @@ public final class ProfileImpl extends IProfile.Stub {
         }
     }
 
+    @Override
+    public ICookieManager getCookieManager() {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        return mCookieManager;
+    }
+
     void checkNotDestroyed() {
         if (!mBeingDeleted) return;
         throw new IllegalArgumentException("Profile being destroyed: " + mName);
@@ -169,5 +180,6 @@ public final class ProfileImpl extends IProfile.Stub {
         void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
                 long fromMillis, long toMillis, Runnable callback);
         void setDownloadDirectory(long nativeProfileImpl, String directory);
+        long getCookieManager(long nativeProfileImpl);
     }
 }

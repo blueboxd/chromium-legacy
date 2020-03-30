@@ -260,13 +260,20 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         return getTestServer().getURL("/weblayer/test/data/" + path);
     }
 
-    public String getCurrentDisplayUrl() {
+    // Returns the display URL of the last committed navigation entry in |tab|. Note that this will
+    // return an empty URL if there have been no committed navigations in |tab|.
+    public String getLastCommittedUrlInTab(Tab tab) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            NavigationController navController = getActivity().getTab().getNavigationController();
+            NavigationController navController = tab.getNavigationController();
             return navController
                     .getNavigationEntryDisplayUri(navController.getNavigationListCurrentIndex())
                     .toString();
         });
+    }
+
+    // Returns the URL that is currently being displayed to the user.
+    public String getCurrentDisplayUrl() {
+        return getActivity().getCurrentDisplayUrl();
     }
 
     public void setRetainInstance(boolean retain) {

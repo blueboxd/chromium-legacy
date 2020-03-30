@@ -25,6 +25,10 @@ void TestPredicateWaiter::Wait() {
   if (is_fulfilled_.Run())
     return;
 
+  if (!description_.empty()) {
+    LOG(INFO) << "Actually waiting for " << description_;
+  }
+
   timer_.Start(FROM_HERE, kPredicateCheckFrequency, this,
                &TestPredicateWaiter::CheckPredicate);
   run_loop_.Run();

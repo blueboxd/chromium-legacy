@@ -21,9 +21,12 @@ function test_with_window(f, name, srcdoc) {
   }, name);
 }
 
+// TODO(1066131): After https://github.com/web-platform-tests/wpt/pull/21876 is
+// rolled into Chromium, this function can be replaced with:
+//   assert_throws_dom(code, global_context.DOMException, func, description);
 function assert_throws_dom_exception(global_context, code, func, description) {
   let exception;
-  assert_throws(code, () => {
+  assert_throws_dom(code, () => {
     try {
       func.call(this);
     } catch(e) {
@@ -66,9 +69,15 @@ function assert_reports(w, expected_error, func, description) {
     w.onerror = old_onerror;
   }
   assert_equals(errors.length, 1, 'only one error should have been reported');
-  // assert_throws has an error expectation matcher that can only be
-  // accessed by throwing the error
-  assert_throws(expected_error, () => { throw errors[0]; });
+  // The testharness.js methods have error expectation matchers that can only be
+  // accessed by throwing the error.
+  if (typeof(expected_error) == 'string') {
+    assert_throws_dom(expected_error, () => { throw errors[0]; });
+  } else if (typeof(expected_error) == 'function') {
+    assert_throws_js(expected_error, () => { throw errors[0]; });
+  } else {
+    assert_throws_exactly(expected_error, () => { throw errors[0]; });
+  }
 }
 
 // Asserts that func synchronously invokes the error event handler in w

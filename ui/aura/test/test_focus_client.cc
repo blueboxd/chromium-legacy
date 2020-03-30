@@ -14,9 +14,7 @@ namespace test {
 // TestFocusClient, public:
 
 TestFocusClient::TestFocusClient(Window* root_window)
-    : root_window_(root_window),
-      focused_window_(nullptr),
-      observer_manager_(this) {
+    : root_window_(root_window) {
   DCHECK(root_window_);
   client::SetFocusClient(root_window_, this);
 }

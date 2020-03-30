@@ -17,15 +17,17 @@ import com.google.android.gms.fido.common.Transport;
 import com.google.android.gms.fido.fido2.Fido2PrivilegedApiClient;
 import com.google.android.gms.fido.fido2.api.common.Attachment;
 import com.google.android.gms.fido.fido2.api.common.AttestationConveyancePreference;
+import com.google.android.gms.fido.fido2.api.common.AuthenticatorAssertionResponse;
 import com.google.android.gms.fido.fido2.api.common.AuthenticatorAttestationResponse;
 import com.google.android.gms.fido.fido2.api.common.AuthenticatorErrorResponse;
-import com.google.android.gms.fido.fido2.api.common.AuthenticatorResponse;
 import com.google.android.gms.fido.fido2.api.common.AuthenticatorSelectionCriteria;
 import com.google.android.gms.fido.fido2.api.common.BrowserPublicKeyCredentialCreationOptions;
+import com.google.android.gms.fido.fido2.api.common.BrowserPublicKeyCredentialRequestOptions;
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredential;
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialCreationOptions;
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialDescriptor;
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialParameters;
+import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialRequestOptions;
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialRpEntity;
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialType;
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialUserEntity;
@@ -43,8 +45,10 @@ import java.util.List;
 class CableAuthenticator {
     private static final String TAG = "CableAuthenticator";
     private static final String FIDO2_KEY_CREDENTIAL_EXTRA = "FIDO2_CREDENTIAL_EXTRA";
-    private static final int FIDO2_REGISTER_INTENT_CODE = 1;
-    private static final int CLIENT_DATA_HASH_LENGTH = 32;
+    private static final double TIMEOUT_SECONDS = 20;
+
+    private static final int REGISTER_REQUEST_CODE = 1;
+    private static final int SIGN_REQUEST_CODE = 2;
 
     private static final int CTAP2_OK = 0;
     private static final int CTAP2_ERR_OPERATION_DENIED = 0x27;
@@ -66,12 +70,11 @@ class CableAuthenticator {
         }
     }
 
-    public void makeCredential(long clientAddress, byte[] clientDataHash, String rpId,
+    public void makeCredential(long clientAddress, String origin, String rpId, byte[] challenge,
             byte[] userId, int[] algorithms, byte[][] excludedCredentialIds,
             boolean residentKeyRequired) {
         // TODO: handle concurrent requests
         assert mClientAddress == 0;
-        assert clientDataHash.length == CLIENT_DATA_HASH_LENGTH;
         mClientAddress = clientAddress;
         Fido2PrivilegedApiClient client = Fido.getFido2PrivilegedApiClient(mContext);
         if (client == null) {
@@ -86,11 +89,9 @@ class CableAuthenticator {
                     PublicKeyCredentialType.PUBLIC_KEY.toString(), algorithms[i]));
         }
         // The GmsCore FIDO2 API does not actually support resident keys yet.
-        AuthenticatorSelectionCriteria selection =
-                new AuthenticatorSelectionCriteria.Builder()
-                        .setAttachment(Attachment.PLATFORM)
-                        .setRequireResidentKey(residentKeyRequired)
-                        .build();
+        AuthenticatorSelectionCriteria selection = new AuthenticatorSelectionCriteria.Builder()
+                                                           .setAttachment(Attachment.PLATFORM)
+                                                           .build();
         List<PublicKeyCredentialDescriptor> excludeCredentials =
                 new ArrayList<PublicKeyCredentialDescriptor>();
         for (int i = 0; i < excludedCredentialIds.length; i++) {
@@ -103,9 +104,9 @@ class CableAuthenticator {
                 new PublicKeyCredentialCreationOptions.Builder()
                         .setRp(new PublicKeyCredentialRpEntity(rpId, "", ""))
                         .setUser(new PublicKeyCredentialUserEntity(userId, "", null, ""))
-                        .setChallenge(clientDataHash)
+                        .setChallenge(challenge)
                         .setParameters(parameters)
-                        .setTimeoutSeconds(Double.valueOf(20))
+                        .setTimeoutSeconds(TIMEOUT_SECONDS)
                         .setExcludeList(excludeCredentials)
                         .setAuthenticatorSelection(selection)
                         .setAttestationConveyancePreference(AttestationConveyancePreference.NONE)
@@ -113,14 +114,70 @@ class CableAuthenticator {
         BrowserPublicKeyCredentialCreationOptions browserRequestOptions =
                 new BrowserPublicKeyCredentialCreationOptions.Builder()
                         .setPublicKeyCredentialCreationOptions(credentialCreationOptions)
-                        .setOrigin(Uri.parse("https://" + rpId))
+                        .setOrigin(Uri.parse(origin))
                         .build();
         Task<PendingIntent> result = client.getRegisterPendingIntent(browserRequestOptions);
         result.addOnSuccessListener(pedingIntent -> {
                   Log.i(TAG, "got pending");
                   try {
                       mUi.startIntentSenderForResult(pedingIntent.getIntentSender(),
-                              123, // REGISTER_REQUEST_CODE,
+                              REGISTER_REQUEST_CODE,
+                              null, // fillInIntent,
+                              0, // flagsMask,
+                              0, // flagsValue,
+                              0, // extraFlags,
+                              Bundle.EMPTY);
+                  } catch (IntentSender.SendIntentException e) {
+                      Log.e(TAG, "intent failure");
+                  }
+              }).addOnFailureListener(e -> { Log.e(TAG, "intent failure" + e); });
+
+        Log.i(TAG, "op done");
+    }
+
+    public void getAssertion(long clientAddress, String origin, String rpId, byte[] challenge,
+            byte[][] allowedCredentialIds) {
+        // TODO: handle concurrent requests
+        assert mClientAddress == 0;
+        mClientAddress = clientAddress;
+
+        Fido2PrivilegedApiClient client = Fido.getFido2PrivilegedApiClient(mContext);
+        if (client == null) {
+            Log.i(TAG, "getFido2PrivilegedApiClient failed");
+            return;
+        }
+        Log.i(TAG, "have fido client");
+
+        List<PublicKeyCredentialDescriptor> allowCredentials =
+                new ArrayList<PublicKeyCredentialDescriptor>();
+        ArrayList<Transport> transports = new ArrayList<Transport>();
+        transports.add(Transport.INTERNAL);
+        for (int i = 0; i < allowedCredentialIds.length; i++) {
+            allowCredentials.add(
+                    new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PUBLIC_KEY.toString(),
+                            allowedCredentialIds[i], transports));
+        }
+
+        PublicKeyCredentialRequestOptions credentialRequestOptions =
+                new PublicKeyCredentialRequestOptions.Builder()
+                        .setAllowList(allowCredentials)
+                        .setChallenge(challenge)
+                        .setRpId(rpId)
+                        .setTimeoutSeconds(TIMEOUT_SECONDS)
+                        .build();
+
+        BrowserPublicKeyCredentialRequestOptions browserRequestOptions =
+                new BrowserPublicKeyCredentialRequestOptions.Builder()
+                        .setPublicKeyCredentialRequestOptions(credentialRequestOptions)
+                        .setOrigin(Uri.parse(origin))
+                        .build();
+
+        Task<PendingIntent> result = client.getSignPendingIntent(browserRequestOptions);
+        result.addOnSuccessListener(pedingIntent -> {
+                  Log.i(TAG, "got pending");
+                  try {
+                      mUi.startIntentSenderForResult(pedingIntent.getIntentSender(),
+                              SIGN_REQUEST_CODE,
                               null, // fillInIntent,
                               0, // flagsMask,
                               0, // flagsValue,
@@ -137,47 +194,32 @@ class CableAuthenticator {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onActivityResult " + requestCode + " " + resultCode);
 
-        if (data == null) {
-            Log.e(TAG, "Received a null intent.");
-            // The user cancelled the request.
-            mBleHandler.onAuthenticatorAttestationResponse(
-                    mClientAddress, CTAP2_ERR_OPERATION_DENIED, null);
-            return;
+        switch (requestCode) {
+            case REGISTER_REQUEST_CODE:
+                onRegisterResponse(resultCode, data);
+                break;
+            case SIGN_REQUEST_CODE:
+                onSignResponse(resultCode, data);
+                break;
+            default:
+                Log.i(TAG, "invalid requestCode: " + requestCode);
+                assert (false);
         }
+    }
 
-        if (resultCode != Activity.RESULT_OK) {
-            Log.e(TAG,
-                    resultCode == Activity.RESULT_CANCELED
-                            ? "CANCELED."
-                            : "Failed with result code" + resultCode);
-            mBleHandler.onAuthenticatorAttestationResponse(
-                    mClientAddress, CTAP2_ERR_OPERATION_DENIED, null);
+    public void onRegisterResponse(int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            Log.e(TAG, "Failed with result code" + resultCode);
+            mBleHandler.onAuthenticatorAssertionResponse(
+                    mClientAddress, CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
             return;
         }
         Log.e(TAG, "OK.");
 
-        if (!data.hasExtra(FIDO2_KEY_CREDENTIAL_EXTRA)) {
-            if (data.hasExtra(Fido.FIDO2_KEY_ERROR_EXTRA)) {
-                Log.e(TAG, "error extra");
-            } else if (data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)) {
-                Log.e(TAG, "resp extra");
-            } else {
-                // Something went wrong.
-                Log.e(TAG,
-                        "The response is missing FIDO2_KEY_RESPONSE_EXTRA "
-                                + "and FIDO2_KEY_CREDENTIAL_EXTRA.");
-            }
-            // TODO: figure out what error to return here
-            mBleHandler.onAuthenticatorAttestationResponse(mClientAddress, CTAP2_ERR_OTHER, null);
-            return;
-        }
-
-        Log.e(TAG, "cred extra");
-        PublicKeyCredential publicKeyCredential = PublicKeyCredential.deserializeFromBytes(
-                data.getByteArrayExtra(FIDO2_KEY_CREDENTIAL_EXTRA));
-        AuthenticatorResponse response = publicKeyCredential.getResponse();
-        if (response instanceof AuthenticatorErrorResponse) {
-            AuthenticatorErrorResponse error = (AuthenticatorErrorResponse) response;
+        if (data.hasExtra(Fido.FIDO2_KEY_ERROR_EXTRA)) {
+            Log.e(TAG, "error extra");
+            AuthenticatorErrorResponse error = AuthenticatorErrorResponse.deserializeFromBytes(
+                    data.getByteArrayExtra(Fido.FIDO2_KEY_ERROR_EXTRA));
             Log.i(TAG,
                     "error response: " + error.getErrorMessage() + " "
                             + String.valueOf(error.getErrorCodeAsInt()));
@@ -193,20 +235,79 @@ class CableAuthenticator {
                     ctap_status = CTAP2_ERR_OTHER;
                     break;
             }
-            mBleHandler.onAuthenticatorAttestationResponse(mClientAddress, ctap_status, null);
-            return;
-        }
-        if (!(response instanceof AuthenticatorAttestationResponse)) {
-            Log.i(TAG, "unknown response");
-            mBleHandler.onAuthenticatorAttestationResponse(mClientAddress, CTAP2_ERR_OTHER, null);
+            mBleHandler.onAuthenticatorAttestationResponse(
+                    mClientAddress, CTAP2_ERR_OTHER, null, null);
             return;
         }
 
-        Log.i(TAG, "attestation response");
-        AuthenticatorAttestationResponse attestation_response =
-                (AuthenticatorAttestationResponse) response;
-        mBleHandler.onAuthenticatorAttestationResponse(
-                mClientAddress, CTAP2_OK, attestation_response.getAttestationObject());
+        if (!data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)
+                || !data.hasExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)) {
+            Log.e(TAG, "Missing FIDO2_KEY_RESPONSE_EXTRA or FIDO2_KEY_CREDENTIAL_EXTRA");
+            mBleHandler.onAuthenticatorAttestationResponse(
+                    mClientAddress, CTAP2_ERR_OTHER, null, null);
+            return;
+        }
+
+        Log.e(TAG, "cred extra");
+        PublicKeyCredential unusedPublicKeyCredential = PublicKeyCredential.deserializeFromBytes(
+                data.getByteArrayExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA));
+        AuthenticatorAttestationResponse response =
+                AuthenticatorAttestationResponse.deserializeFromBytes(
+                        data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA));
+        mBleHandler.onAuthenticatorAttestationResponse(mClientAddress, CTAP2_OK,
+                response.getClientDataJSON(), response.getAttestationObject());
+    }
+
+    public void onSignResponse(int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            Log.e(TAG, "Failed with result code" + resultCode);
+            mBleHandler.onAuthenticatorAssertionResponse(
+                    mClientAddress, CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
+            return;
+        }
+        Log.e(TAG, "OK.");
+
+        if (data.hasExtra(Fido.FIDO2_KEY_ERROR_EXTRA)) {
+            Log.e(TAG, "error extra");
+            AuthenticatorErrorResponse error = AuthenticatorErrorResponse.deserializeFromBytes(
+                    data.getByteArrayExtra(Fido.FIDO2_KEY_ERROR_EXTRA));
+            Log.i(TAG,
+                    "error response: " + error.getErrorMessage() + " "
+                            + String.valueOf(error.getErrorCodeAsInt()));
+
+            // ErrorCode represents DOMErrors not CTAP status codes.
+            // TODO: figure out translation of the remaining codes
+            int ctap_status;
+            switch (error.getErrorCode()) {
+                case NOT_ALLOWED_ERR:
+                    ctap_status = CTAP2_ERR_OPERATION_DENIED;
+                    break;
+                default:
+                    ctap_status = CTAP2_ERR_OTHER;
+                    break;
+            }
+            mBleHandler.onAuthenticatorAssertionResponse(
+                    mClientAddress, ctap_status, null, null, null, null);
+            return;
+        }
+
+        if (!data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)
+                || !data.hasExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)) {
+            Log.e(TAG, "Missing FIDO2_KEY_RESPONSE_EXTRA or FIDO2_KEY_CREDENTIAL_EXTRA");
+            mBleHandler.onAuthenticatorAssertionResponse(
+                    mClientAddress, CTAP2_ERR_OTHER, null, null, null, null);
+            return;
+        }
+
+        Log.e(TAG, "cred extra");
+        PublicKeyCredential unusedPublicKeyCredential = PublicKeyCredential.deserializeFromBytes(
+                data.getByteArrayExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA));
+        AuthenticatorAssertionResponse response =
+                AuthenticatorAssertionResponse.deserializeFromBytes(
+                        data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA));
+        mBleHandler.onAuthenticatorAssertionResponse(mClientAddress, CTAP2_OK,
+                response.getClientDataJSON(), response.getKeyHandle(),
+                response.getAuthenticatorData(), response.getSignature());
     }
 
     public void onQRCode(String value) {

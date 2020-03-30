@@ -8,6 +8,7 @@ import androidx.preference.Preference;
 
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 
 /**
  * A ManagedPreferenceDelegate with Chrome-specific default behavior.

@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -244,7 +244,6 @@ class OAuth2Test : public OobeBaseTest {
   // OobeBaseTest overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
 
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
 
@@ -304,9 +303,6 @@ class OAuth2Test : public OobeBaseTest {
   }
 
   void LoginAsExistingUser() {
-    test::OobeJS().ExpectTrue("!!document.querySelector('#account-picker')");
-    test::OobeJS().ExpectTrue("!!document.querySelector('#pod-row')");
-
     // PickAccountId does not work at this point as the primary user profile has
     // not yet been created.
     const std::string email = kTestEmail;
@@ -314,9 +310,10 @@ class OAuth2Test : public OobeBaseTest {
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
     // Try login.  Primary profile has changed.
-    EXPECT_TRUE(
-        TryToLogin(AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId),
-                   kTestAccountPassword));
+    ash::LoginScreenTestApi::SubmitPassword(
+        AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId),
+        kTestAccountPassword, true /*check_if_submittable */);
+    test::WaitForPrimaryUserSessionStart();
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
     CoreAccountId account_id = PickAccountId(profile, kTestGaiaId, kTestEmail);
     ASSERT_EQ(email, account_id.ToString());
@@ -568,8 +565,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_MergeSession) {
 IN_PROC_BROWSER_TEST_F(OAuth2Test, MergeSession) {
   SimulateNetworkOnline();
 
-  test::OobeJS().ExpectTrue("!!document.querySelector('#account-picker')");
-  test::OobeJS().ExpectTrue("!!document.querySelector('#pod-row')");
+  EXPECT_EQ(1, ash::LoginScreenTestApi::GetUsersCount());
 
   // PickAccountId does not work at this point as the primary user profile has
   // not yet been created.

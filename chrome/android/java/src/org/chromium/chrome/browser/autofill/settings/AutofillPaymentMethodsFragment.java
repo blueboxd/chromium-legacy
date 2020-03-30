@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 
 /**
  * Autofill credit cards fragment, which allows the user to edit credit cards and control

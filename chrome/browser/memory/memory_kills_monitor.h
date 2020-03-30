@@ -104,14 +104,14 @@ class MemoryKillsMonitor : public base::DelegateSimpleThread::Delegate,
   base::Time last_low_memory_kill_time_;
   // The number of low memory kills since monitoring is started. Accessed from
   // UI thread only.
-  int low_memory_kills_count_;
+  int low_memory_kills_count_ = 0;
 
   // The last time an OOM kill happens. Accessed from
   // |non_joinable_worker_thread_| only.
-  int64_t last_oom_kill_time_;
+  int64_t last_oom_kill_time_ = -1;
   // The number of OOM kills since monitoring is started. Accessed from
   // |non_joinable_worker_thread_| only.
-  int oom_kills_count_;
+  int oom_kills_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryKillsMonitor);
 };

@@ -7,7 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.settings.ChromeSwitchPreference
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="homepage_switch"
         android:summaryOn="@string/text_on"
         android:summaryOff="@string/text_off" />
@@ -25,7 +25,7 @@
         app:allowDividerAbove="true"
         app:allowDividerBelow="false" />
 
-    <org.chromium.chrome.browser.settings.TextMessagePreference
+    <org.chromium.components.browser_ui.settings.TextMessagePreference
         android:key="text_managed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

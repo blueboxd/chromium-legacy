@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,6 +24,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/crx_file/id_util.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
+#include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -98,6 +100,11 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     state_ = state;
   }
 
+  void SetProgress(int done, int total) {
+    done_ = done;
+    total_ = total;
+  }
+
   std::vector<extensions::api::passwords_private::CompromisedCredential>
   GetCompromisedCredentials() override {
     std::vector<extensions::api::passwords_private::CompromisedCredential>
@@ -112,12 +119,18 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
   GetPasswordCheckStatus() override {
     extensions::api::passwords_private::PasswordCheckStatus status;
     status.state = state_;
+    if (total_ != 0) {
+      status.already_processed = std::make_unique<int>(done_);
+      status.remaining_in_queue = std::make_unique<int>(total_ - done_);
+    }
     return status;
   }
 
  private:
   password_manager::BulkLeakCheckService* leak_service_ = nullptr;
   int compromised_password_count_ = 0;
+  int done_ = 0;
+  int total_ = 0;
   extensions::api::passwords_private::PasswordCheckState state_ =
       extensions::api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
 };
@@ -223,8 +236,11 @@ const base::DictionaryValue*
 SafetyCheckHandlerTest::GetSafetyCheckStatusChangedWithDataIfExists(
     const std::string& component,
     int new_state) {
-  for (const auto& it : test_web_ui_.call_data()) {
-    const content::TestWebUI::CallData& data = *it;
+  // Return the latest update if multiple, so iterate from the end.
+  const std::vector<std::unique_ptr<content::TestWebUI::CallData>>& call_data =
+      test_web_ui_.call_data();
+  for (int i = call_data.size() - 1; i >= 0; --i) {
+    const content::TestWebUI::CallData& data = *(call_data[i]);
     if (data.function_name() != "cr.webUIListenerCallback") {
       continue;
     }
@@ -681,6 +697,52 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_NoPasswords) {
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kNoPasswords));
   EXPECT_TRUE(event);
   VerifyDisplayString(event, "No saved passwords");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_Progress) {
+  auto credential = password_manager::LeakCheckCredential(
+      base::UTF8ToUTF16("test"), base::UTF8ToUTF16("test"));
+  auto is_leaked = password_manager::IsLeaked(false);
+  safety_check_->PerformSafetyCheck();
+  test_passwords_delegate_.SetPasswordCheckState(
+      extensions::api::passwords_private::PASSWORD_CHECK_STATE_RUNNING);
+  test_passwords_delegate_.SetProgress(1, 3);
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnCredentialDone(credential, is_leaked);
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
+  EXPECT_TRUE(event);
+  VerifyDisplayString(event, base::UTF8ToUTF16("1/3 passwords checked…"));
+
+  test_passwords_delegate_.SetProgress(2, 3);
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnCredentialDone(credential, is_leaked);
+  const base::DictionaryValue* event2 =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
+  EXPECT_TRUE(event2);
+  VerifyDisplayString(event2, base::UTF8ToUTF16("2/3 passwords checked…"));
+
+  // Final update comes after status change, so no new progress message should
+  // be present.
+  test_passwords_delegate_.SetPasswordCheckState(
+      extensions::api::passwords_private::PASSWORD_CHECK_STATE_IDLE);
+  test_passwords_delegate_.SetProgress(3, 3);
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnCredentialDone(credential, is_leaked);
+  const base::DictionaryValue* event3 =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
+  EXPECT_TRUE(event3);
+  // Still 2/3 event.
+  VerifyDisplayString(event3, base::UTF8ToUTF16("2/3 passwords checked…"));
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoExtensions) {

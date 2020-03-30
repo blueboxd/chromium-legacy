@@ -223,7 +223,8 @@ enum class MetricUserPolicyChromeOSSessionAbortType {
 // from the same enum above can be triggered in different files, and must use
 // the same UMA histogram name.
 // Metrics name from UMA dashboard cloud be used in codesearch as is, so please
-// keep the names without format specifiers (e.g. %s).
+// keep the names without format specifiers (e.g. %s) or add a comment how the
+// name could be expanded.
 POLICY_EXPORT extern const char kMetricUserPolicyRefresh[];
 POLICY_EXPORT extern const char kMetricUserPolicyRefreshFcm[];
 POLICY_EXPORT extern const char kMetricUserPolicyInvalidations[];
@@ -249,6 +250,18 @@ POLICY_EXPORT extern const char kMetricDeviceRemoteCommandInvalidations[];
 
 POLICY_EXPORT extern const char
     kMetricRemoteCommandInvalidationsRegistrationResult[];
+
+POLICY_EXPORT extern const char kMetricUserRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricUserUnsignedRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricUserRemoteCommandExecutedTemplate[];
+POLICY_EXPORT extern const char
+    kMetricUserUnsignedRemoteCommandExecutedTemplate[];
+
+POLICY_EXPORT extern const char kMetricDeviceRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricDeviceUnsignedRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricDeviceRemoteCommandExecutedTemplate[];
+POLICY_EXPORT extern const char
+    kMetricDeviceUnsignedRemoteCommandExecutedTemplate[];
 
 }  // namespace policy
 

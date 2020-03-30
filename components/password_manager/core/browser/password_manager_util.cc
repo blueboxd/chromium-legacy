@@ -383,52 +383,31 @@ const PasswordForm* GetMatchForUpdating(
   if (!submitted_form.federation_origin.opaque())
     return nullptr;
 
-  // Find any form(s) that match by username or by username+password.
-  const PasswordForm* username_password_match = nullptr;
-  const PasswordForm* username_match = nullptr;
-  const base::string16& password_to_save =
-      submitted_form.new_password_value.empty()
-          ? submitted_form.password_value
-          : submitted_form.new_password_value;
-  for (const PasswordForm* form : credentials) {
-    if (!username_password_match &&
-        form->username_value == submitted_form.username_value &&
-        form->password_value == password_to_save) {
-      username_password_match = form;
-    }
-    if (!username_match &&
-        form->username_value == submitted_form.username_value) {
-      username_match = form;
-    }
-  }
+  // Try to return form with matching |username_value|.
+  const PasswordForm* username_match =
+      FindFormByUsername(credentials, submitted_form.username_value);
+  if (username_match) {
+    if (!username_match->is_public_suffix_match)
+      return username_match;
 
-  // First, try to return a non-PSL match. Prefer if the password also matches.
-  if (username_password_match &&
-      !username_password_match->is_public_suffix_match) {
-    return username_password_match;
+    const auto& password_to_save = submitted_form.new_password_value.empty()
+                                       ? submitted_form.password_value
+                                       : submitted_form.new_password_value;
+    // Normally, the copy of the PSL matched credentials, adapted for the
+    // current domain, is saved automatically without asking the user, because
+    // the copy likely represents the same account, i.e., the one for which
+    // the user already agreed to store a password.
+    //
+    // However, if the user changes the suggested password, it might indicate
+    // that the autofilled credentials and |submitted_password_form|
+    // actually correspond to two different accounts (see
+    // http://crbug.com/385619).
+    return password_to_save == username_match->password_value ? username_match
+                                                              : nullptr;
   }
-  if (username_match && !username_match->is_public_suffix_match)
-    return username_match;
-
-  // All matches (if there are any) are PSL matches. We only want to return
-  // PSL matches if the password also matches:
-  //
-  // Normally, the copy of the PSL matched credentials, adapted for the
-  // current domain, is saved automatically without asking the user, because
-  // the copy likely represents the same account, i.e., the one for which
-  // the user already agreed to store a password.
-  //
-  // However, if the user changes the suggested password, it might indicate
-  // that the autofilled credentials and |submitted_password_form|
-  // actually correspond to two different accounts (see
-  // http://crbug.com/385619).
-  if (username_password_match)
-    return username_password_match;
 
   // Next attempt is to find a match by password value. It should not be tried
   // when the username was actually detected.
-  if (username_match)
-    return nullptr;
   if (submitted_form.type == PasswordForm::Type::kApi ||
       !submitted_form.username_value.empty()) {
     return nullptr;

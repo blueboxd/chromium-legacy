@@ -20,5 +20,6 @@ interface IDownloadCallbackClient {
   void downloadProgressChanged(IClientDownload download) = 4;
   void downloadCompleted(IClientDownload download) = 5;
   void downloadFailed(IClientDownload download) = 6;
+  // Deprecated, use WebLayerClient.createIntent.
   Intent createIntent() = 7;
 }

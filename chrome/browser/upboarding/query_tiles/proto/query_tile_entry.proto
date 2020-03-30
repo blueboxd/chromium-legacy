@@ -36,6 +36,6 @@ message QueryTileEntry {
   // A list of image metadatas.
   repeated ImageMetadata image_metadatas = 5;
 
-  // Sub-level QueryTiles id;
-  repeated string children = 6;
+  // Sub level children.
+  repeated QueryTileEntry sub_tiles = 6;
 }

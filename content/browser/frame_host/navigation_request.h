@@ -508,6 +508,10 @@ class CONTENT_EXPORT NavigationRequest
     return begin_params_->request_context_type;
   }
 
+  network::mojom::RequestDestination request_destination() const {
+    return begin_params_->request_destination;
+  }
+
   blink::WebMixedContentContextType mixed_content_context_type() const {
     return begin_params_->mixed_content_context_type;
   }

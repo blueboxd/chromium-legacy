@@ -50,8 +50,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   enum ToBlobFunctionType {
     kHTMLCanvasToBlobCallback,
     kHTMLCanvasConvertToBlobPromise,
-    kOffscreenCanvasConvertToBlobPromise,
-    kNumberOfToBlobFunctionTypes
+    kOffscreenCanvasConvertToBlobPromise
   };
 
   void ScheduleAsyncBlobCreation(const double& quality);

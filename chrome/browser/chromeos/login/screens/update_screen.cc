@@ -42,6 +42,16 @@ constexpr const base::TimeDelta kShowDelay =
 }  // anonymous namespace
 
 // static
+std::string UpdateScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::UPDATE_NOT_REQUIRED:
+      return "UpdateNotRequired";
+    case Result::UPDATE_ERROR:
+      return "UpdateError";
+  }
+}
+
+// static
 UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
   return static_cast<UpdateScreen*>(manager->GetScreen(UpdateView::kScreenId));
 }

@@ -11,6 +11,7 @@
 
 #include "base/test/task_environment.h"
 #include "chrome/browser/upboarding/query_tiles/internal/proto_conversion.h"
+#include "chrome/browser/upboarding/query_tiles/test/test_utils.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +21,9 @@ using InitStatus = leveldb_proto::Enums::InitStatus;
 
 namespace upboarding {
 namespace {
+
+const char kGuid[] = "test_guid";
+const char kTestDisplayText[] = "test_display_text";
 
 class QueryTileStoreTest : public testing::Test {
  public:
@@ -31,8 +35,6 @@ class QueryTileStoreTest : public testing::Test {
 
   QueryTileStoreTest() : load_result_(false), db_(nullptr) {}
   ~QueryTileStoreTest() override = default;
-
-  void SetUp() override {}
 
   QueryTileStoreTest(const QueryTileStoreTest& other) = delete;
   QueryTileStoreTest& operator=(const QueryTileStoreTest& other) = delete;
@@ -55,7 +57,7 @@ class QueryTileStoreTest : public testing::Test {
   }
 
   void CreateTestDbEntries(TestEntries input) {
-    for (auto entry : input) {
+    for (auto& entry : input) {
       QueryTileEntryProto proto;
       upboarding::QueryTileEntryToProto(&entry, &proto);
       db_entries_.emplace(entry.id, proto);
@@ -76,7 +78,14 @@ class QueryTileStoreTest : public testing::Test {
     EXPECT_TRUE(success);
     DCHECK(expected);
     DCHECK(loaded_entries);
-    EXPECT_EQ(*expected.get(), *loaded_entries.get());
+    for (auto it = loaded_entries->begin(); it != loaded_entries->end(); it++) {
+      EXPECT_NE(expected->count(it->first), 0u);
+      auto& actual_loaded_tree = it->second;
+      auto& expected_tree = expected->at(it->first);
+      EXPECT_EQ(actual_loaded_tree, expected_tree)
+          << "\n Actual: " << test::DebugString(&actual_loaded_tree)
+          << "\n Expected: " << test::DebugString(&expected_tree);
+    }
   }
 
   bool load_result() const { return load_result_; }
@@ -96,7 +105,7 @@ class QueryTileStoreTest : public testing::Test {
 // Test Initializing and loading an empty database .
 TEST_F(QueryTileStoreTest, InitSuccessEmptyDb) {
   auto test_data = TestEntries();
-  Init(test_data, InitStatus::kOK);
+  Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(true);
   EXPECT_EQ(load_result(), true);
   EXPECT_TRUE(in_memory_entries().empty());
@@ -105,81 +114,89 @@ TEST_F(QueryTileStoreTest, InitSuccessEmptyDb) {
 // Test Initializing and loading a non-empty database.
 TEST_F(QueryTileStoreTest, InitSuccessWithData) {
   auto test_data = TestEntries();
-  auto test_entry = QueryTileEntry();
-  test_entry.id = "test-id";
-  test_data.emplace_back(test_entry);
-  Init(test_data, InitStatus::kOK);
+  QueryTileEntry test_entry;
+  test_entry.id = kGuid;
+  test_data.emplace_back(std::move(test_entry));
+  Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(true);
   EXPECT_EQ(load_result(), true);
   EXPECT_EQ(in_memory_entries().size(), 1u);
   auto actual = in_memory_entries().begin();
-  EXPECT_EQ(actual->first, test_entry.id);
-  EXPECT_EQ(*(actual->second.get()), test_entry);
+  EXPECT_EQ(actual->first, kGuid);
+  EXPECT_EQ(actual->second.get()->id, kGuid);
 }
 
 // Test Initializing and loading a non-empty database failed.
 TEST_F(QueryTileStoreTest, InitFailedWithData) {
   auto test_data = TestEntries();
-  auto test_entry = QueryTileEntry();
-  test_entry.id = "test-id";
-  test_data.emplace_back(test_entry);
-  Init(test_data, InitStatus::kOK);
+  QueryTileEntry test_entry;
+  test_entry.id = kGuid;
+  test_data.emplace_back(std::move(test_entry));
+  Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(false);
   EXPECT_EQ(load_result(), false);
   EXPECT_TRUE(in_memory_entries().empty());
 }
 
 // Test adding and updating.
-TEST_F(QueryTileStoreTest, AddAndUpdateDataSuccess) {
+TEST_F(QueryTileStoreTest, AddAndUpdateDataFailed) {
   auto test_data = TestEntries();
-  Init(test_data, InitStatus::kOK);
+  Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(true);
   EXPECT_EQ(load_result(), true);
   EXPECT_TRUE(in_memory_entries().empty());
 
   // Add an entry failed.
-  auto test_entry_1 = QueryTileEntry();
+  QueryTileEntry test_entry_1;
   test_entry_1.id = "test_entry_id_1";
   test_entry_1.display_text = "test_entry_test_display_text";
   store()->Update(test_entry_1.id, test_entry_1,
                   base::BindOnce([](bool success) { EXPECT_FALSE(success); }));
   db()->UpdateCallback(false);
+}
+
+TEST_F(QueryTileStoreTest, AddAndUpdateDataSuccess) {
+  auto test_data = TestEntries();
+  Init(std::move(test_data), InitStatus::kOK);
+  db()->LoadCallback(true);
+  EXPECT_EQ(load_result(), true);
+  EXPECT_TRUE(in_memory_entries().empty());
 
   // Add an entry successfully.
+  QueryTileEntry test_entry_1;
+  test_entry_1.id = "test_entry_id_1";
+  test_entry_1.display_text = kTestDisplayText;
+  auto test_entry_2 = std::make_unique<QueryTileEntry>();
+  test_entry_2->id = "test_entry_id_2";
+  test_entry_1.sub_tiles.emplace_back(std::move(test_entry_2));
   store()->Update(test_entry_1.id, test_entry_1,
                   base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
   db()->UpdateCallback(true);
 
   auto expected = std::make_unique<KeysAndEntries>();
-  expected->emplace(test_entry_1.id, test_entry_1);
-  VerifyDataInDb(std::move(expected));
-
-  // Update an existing entry successfully.
-  test_entry_1.display_text = "test_entry_test_display_text_updated";
-  store()->Update(test_entry_1.id, test_entry_1,
-                  base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
-  db()->UpdateCallback(true);
-
-  expected = std::make_unique<KeysAndEntries>();
-  expected->emplace(test_entry_1.id, test_entry_1);
+  expected->emplace(test_entry_1.id, std::move(test_entry_1));
   VerifyDataInDb(std::move(expected));
 }
 
-// Test Deleting from db.
+// Test deleting from db.
 TEST_F(QueryTileStoreTest, DeleteSuccess) {
   auto test_data = TestEntries();
-  auto test_entry = QueryTileEntry();
-  test_entry.id = "test-id";
-  test_data.emplace_back(test_entry);
-  Init(test_data, InitStatus::kOK);
+  QueryTileEntry test_entry_1;
+  test_entry_1.id = kGuid;
+  test_entry_1.display_text = kTestDisplayText;
+  auto test_entry_2 = std::make_unique<QueryTileEntry>();
+  test_entry_2->id = "test_entry_id_2";
+  test_entry_1.sub_tiles.emplace_back(std::move(test_entry_2));
+  test_data.emplace_back(std::move(test_entry_1));
+  Init(std::move(test_data), InitStatus::kOK);
   db()->LoadCallback(true);
   EXPECT_EQ(load_result(), true);
   EXPECT_EQ(in_memory_entries().size(), 1u);
   auto actual = in_memory_entries().begin();
-  EXPECT_EQ(actual->first, test_entry.id);
-  EXPECT_EQ(*(actual->second.get()), test_entry);
+  EXPECT_EQ(actual->first, kGuid);
+  EXPECT_EQ(actual->second.get()->id, kGuid);
 
-  store()->Delete(test_entry.id,
+  store()->Delete(kGuid,
                   base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
   db()->UpdateCallback(true);
   // No entry is expected in db.

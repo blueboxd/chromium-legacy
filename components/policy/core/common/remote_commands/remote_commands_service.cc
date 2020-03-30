@@ -10,23 +10,154 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 
 namespace policy {
 
 namespace em = enterprise_management;
 
+namespace {
+
+RemoteCommandsService::MetricReceivedRemoteCommand RemoteCommandMetricFromType(
+    em::RemoteCommand_Type type) {
+  using Metric = RemoteCommandsService::MetricReceivedRemoteCommand;
+
+  switch (type) {
+    case em::RemoteCommand_Type_COMMAND_ECHO_TEST:
+      return Metric::kCommandEchoTest;
+    case em::RemoteCommand_Type_DEVICE_REBOOT:
+      return Metric::kDeviceReboot;
+    case em::RemoteCommand_Type_DEVICE_SCREENSHOT:
+      return Metric::kDeviceScreenshot;
+    case em::RemoteCommand_Type_DEVICE_SET_VOLUME:
+      return Metric::kDeviceSetVolume;
+    case em::RemoteCommand_Type_DEVICE_START_CRD_SESSION:
+      return Metric::kDeviceStartCrdSession;
+    case em::RemoteCommand_Type_DEVICE_FETCH_STATUS:
+      return Metric::kDeviceFetchStatus;
+    case em::RemoteCommand_Type_USER_ARC_COMMAND:
+      return Metric::kUserArcCommand;
+    case em::RemoteCommand_Type_DEVICE_WIPE_USERS:
+      return Metric::kDeviceWipeUsers;
+    case em::RemoteCommand_Type_DEVICE_REFRESH_ENTERPRISE_MACHINE_CERTIFICATE:
+      return Metric::kDeviceRefreshEnterpriseMachineCertificate;
+    case em::RemoteCommand_Type_DEVICE_REMOTE_POWERWASH:
+      return Metric::kDeviceRemotePowerwash;
+    case em::RemoteCommand_Type_DEVICE_GET_AVAILABLE_DIAGNOSTIC_ROUTINES:
+      return Metric::kDeviceGetAvailableDiagnosticRoutines;
+    case em::RemoteCommand_Type_DEVICE_RUN_DIAGNOSTIC_ROUTINE:
+      return Metric::kDeviceRunDiagnosticRoutine;
+    case em::RemoteCommand_Type_DEVICE_GET_DIAGNOSTIC_ROUTINE_UPDATE:
+      return Metric::kDeviceGetDiagnosticRoutineUpdate;
+  }
+
+  // None of possible types matched. May indicate that there is new unhandled
+  // command type.
+  NOTREACHED() << "Unknown command type to record: " << type;
+  return Metric::kUnknownType;
+}
+
+const char* RemoteCommandTypeToString(em::RemoteCommand_Type type) {
+  switch (type) {
+    case em::RemoteCommand_Type_COMMAND_ECHO_TEST:
+      return "CommandEchoTest";
+    case em::RemoteCommand_Type_DEVICE_REBOOT:
+      return "DeviceReboot";
+    case em::RemoteCommand_Type_DEVICE_SCREENSHOT:
+      return "DeviceScreenshot";
+    case em::RemoteCommand_Type_DEVICE_SET_VOLUME:
+      return "DeviceSetVolume";
+    case em::RemoteCommand_Type_DEVICE_START_CRD_SESSION:
+      return "DeviceStartCrdSession";
+    case em::RemoteCommand_Type_DEVICE_FETCH_STATUS:
+      return "DeviceFetchStatus";
+    case em::RemoteCommand_Type_USER_ARC_COMMAND:
+      return "UserArcCommand";
+    case em::RemoteCommand_Type_DEVICE_WIPE_USERS:
+      return "DeviceWipeUsers";
+    case em::RemoteCommand_Type_DEVICE_REFRESH_ENTERPRISE_MACHINE_CERTIFICATE:
+      return "DeviceRefreshEnterpriseMachineCertificate";
+    case em::RemoteCommand_Type_DEVICE_REMOTE_POWERWASH:
+      return "DeviceRemotePowerwash";
+    case em::RemoteCommand_Type_DEVICE_GET_AVAILABLE_DIAGNOSTIC_ROUTINES:
+      return "DeviceGetAvailableDiagnosticRoutines";
+    case em::RemoteCommand_Type_DEVICE_RUN_DIAGNOSTIC_ROUTINE:
+      return "DeviceRunDiagnosticRoutine";
+    case em::RemoteCommand_Type_DEVICE_GET_DIAGNOSTIC_ROUTINE_UPDATE:
+      return "DeviceGetDiagnosticRoutineUpdate";
+  }
+
+  NOTREACHED() << "Unknown command type: " << type;
+  return "";
+}
+
+}  // namespace
+
+// static
+const char* RemoteCommandsService::GetMetricNameReceivedRemoteCommand(
+    PolicyInvalidationScope scope,
+    bool is_command_signed) {
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      return is_command_signed ? kMetricUserRemoteCommandReceived
+                               : kMetricUserUnsignedRemoteCommandReceived;
+    case PolicyInvalidationScope::kDevice:
+      return is_command_signed ? kMetricDeviceRemoteCommandReceived
+                               : kMetricDeviceUnsignedRemoteCommandReceived;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      NOTREACHED() << "Unexpected instance of remote commands service with "
+                      "device local account scope.";
+      return "";
+  }
+}
+
+// static
+std::string RemoteCommandsService::GetMetricNameExecutedRemoteCommand(
+    PolicyInvalidationScope scope,
+    em::RemoteCommand_Type command_type,
+    bool is_command_signed) {
+  const char* base_metric_name = nullptr;
+  switch (scope) {
+    case PolicyInvalidationScope::kUser:
+      base_metric_name = is_command_signed
+                             ? kMetricUserRemoteCommandExecutedTemplate
+                             : kMetricUserUnsignedRemoteCommandExecutedTemplate;
+      break;
+    case PolicyInvalidationScope::kDevice:
+      base_metric_name =
+          is_command_signed
+              ? kMetricDeviceRemoteCommandExecutedTemplate
+              : kMetricDeviceUnsignedRemoteCommandExecutedTemplate;
+      break;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
+      NOTREACHED() << "Unexpected instance of remote commands service with "
+                      "device local account scope.";
+      return "";
+  }
+
+  DCHECK(base_metric_name);
+  return base::StringPrintf(base_metric_name,
+                            RemoteCommandTypeToString(command_type));
+}
+
 RemoteCommandsService::RemoteCommandsService(
     std::unique_ptr<RemoteCommandsFactory> factory,
     CloudPolicyClient* client,
-    CloudPolicyStore* store)
-    : factory_(std::move(factory)), client_(client), store_(store) {
+    CloudPolicyStore* store,
+    PolicyInvalidationScope scope)
+    : factory_(std::move(factory)),
+      client_(client),
+      store_(store),
+      scope_(scope) {
   DCHECK(client_);
   queue_.AddObserver(this);
 }
@@ -95,19 +226,21 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
       CloudPolicyValidatorBase::SignatureType::SHA1);
 
   auto ignore_result = base::BindOnce(
-      [](std::vector<em::RemoteCommandResult>* unsent_results,
-         const char* error_msg) {
+      [](RemoteCommandsService* self, const char* error_msg,
+         MetricReceivedRemoteCommand metric) {
         SYSLOG(ERROR) << error_msg;
         em::RemoteCommandResult result;
         result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
         result.set_command_id(-1);
-        unsent_results->push_back(result);
+        self->unsent_results_.push_back(result);
+        self->RecordReceivedRemoteCommand(metric, /*is_signed=*/true);
       },
-      &unsent_results_);
+      base::Unretained(this));
 
   if (!valid_signature) {
     std::move(ignore_result)
-        .Run("Secure remote command signature verification failed");
+        .Run("Secure remote command signature verification failed",
+             MetricReceivedRemoteCommand::kInvalidSignature);
     return;
   }
 
@@ -117,7 +250,8 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
       policy_data.policy_type() !=
           dm_protocol::kChromeRemoteCommandPolicyType) {
     std::move(ignore_result)
-        .Run("Secure remote command with wrong PolicyData type");
+        .Run("Secure remote command with wrong PolicyData type",
+             MetricReceivedRemoteCommand::kInvalid);
     return;
   }
 
@@ -125,14 +259,16 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
   if (!policy_data.has_policy_value() ||
       !command.ParseFromString(policy_data.policy_value())) {
     std::move(ignore_result)
-        .Run("Secure remote command invalid RemoteCommand data");
+        .Run("Secure remote command invalid RemoteCommand data",
+             MetricReceivedRemoteCommand::kInvalid);
     return;
   }
 
   const em::PolicyData* const policy = store_->policy();
   if (!policy || policy->device_id() != command.target_device_id()) {
     std::move(ignore_result)
-        .Run("Secure remote command wrong target device id");
+        .Run("Secure remote command wrong target device id",
+             MetricReceivedRemoteCommand::kInvalid);
     return;
   }
 
@@ -143,14 +279,22 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
 void RemoteCommandsService::EnqueueCommand(
     const em::RemoteCommand& command,
     const em::SignedData* signed_command) {
+  const bool is_command_signed = signed_command != nullptr;
   if (!command.has_type() || !command.has_command_id()) {
     SYSLOG(ERROR) << "Invalid remote command from server.";
+    const auto metric = !command.has_command_id()
+                            ? MetricReceivedRemoteCommand::kInvalid
+                            : MetricReceivedRemoteCommand::kUnknownType;
+    RecordReceivedRemoteCommand(metric, is_command_signed);
     return;
   }
 
   // If the command is already fetched, ignore it.
-  if (base::Contains(fetched_command_ids_, command.command_id()))
+  if (base::Contains(fetched_command_ids_, command.command_id())) {
+    RecordReceivedRemoteCommand(MetricReceivedRemoteCommand::kDuplicated,
+                                is_command_signed);
     return;
+  }
 
   fetched_command_ids_.push_back(command.command_id());
 
@@ -161,6 +305,10 @@ void RemoteCommandsService::EnqueueCommand(
     SYSLOG(ERROR) << "Initialization of remote command type "
                   << command.type() << " with id " << command.command_id()
                   << " failed.";
+    const auto metric = job == nullptr
+                            ? MetricReceivedRemoteCommand::kInvalidScope
+                            : MetricReceivedRemoteCommand::kInvalid;
+    RecordReceivedRemoteCommand(metric, is_command_signed);
     em::RemoteCommandResult ignored_result;
     ignored_result.set_result(
         em::RemoteCommandResult_ResultType_RESULT_IGNORED);
@@ -168,6 +316,9 @@ void RemoteCommandsService::EnqueueCommand(
     unsent_results_.push_back(ignored_result);
     return;
   }
+
+  RecordReceivedRemoteCommand(RemoteCommandMetricFromType(command.type()),
+                              is_command_signed);
 
   queue_.AddJob(std::move(job));
 }
@@ -209,6 +360,8 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
 
   unsent_results_.push_back(result);
 
+  RecordExecutedRemoteCommand(*command);
+
   FetchRemoteCommands();
 }
 
@@ -234,6 +387,22 @@ void RemoteCommandsService::OnRemoteCommandsFetched(
   // results or enqueued fetch requests.
   if (!unsent_results_.empty() || has_enqueued_fetch_request_)
     FetchRemoteCommands();
+}
+
+void RemoteCommandsService::RecordReceivedRemoteCommand(
+    RemoteCommandsService::MetricReceivedRemoteCommand metric,
+    bool is_command_signed) const {
+  const char* metric_name =
+      GetMetricNameReceivedRemoteCommand(scope_, is_command_signed);
+  base::UmaHistogramEnumeration(metric_name, metric);
+}
+
+void RemoteCommandsService::RecordExecutedRemoteCommand(
+    const RemoteCommandJob& command) const {
+  const std::string metric_name = GetMetricNameExecutedRemoteCommand(
+      scope_, command.GetType(), command.has_signed_data());
+  base::UmaHistogramEnumeration(metric_name, command.status(),
+                                RemoteCommandJob::STATUS_TYPE_SIZE);
 }
 
 }  // namespace policy

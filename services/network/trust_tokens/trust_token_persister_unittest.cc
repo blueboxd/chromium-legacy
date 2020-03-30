@@ -116,16 +116,15 @@ TYPED_TEST(TrustTokenPersisterTest, StoresIssuerConfigs) {
   env.RunUntilIdle();  // Give implementations with asynchronous initialization
                        // time to initialize.
 
-  VLOG(1) << "Loaded the persister";
-
   TrustTokenIssuerConfig config;
-  config.set_batch_size(5);
+  TrustToken my_token;
+  my_token.set_body("token token token");
+  *config.add_tokens() = my_token;
 
   auto config_to_store = std::make_unique<TrustTokenIssuerConfig>(config);
   auto origin = url::Origin::Create(GURL("https://a.com/"));
   persister->SetIssuerConfig(origin, std::move(config_to_store));
 
-  VLOG(1) << "Set the issuer config";
   env.RunUntilIdle();  // Give implementations with asynchronous write
                        // operations time to complete the operation.
 

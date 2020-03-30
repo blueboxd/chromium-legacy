@@ -532,11 +532,9 @@ void TapSuppressDialogsButton() {
 }
 
 // Tests that an alert is presented after displaying the share menu.
-- (void)testShowJavaScriptAfterShareMenu {
-  // TODO(crbug.com/747622): re-enable this test once earl grey can interact
-  // with the share menu.
-  EARL_GREY_TEST_DISABLED(@"Disabled until EG can use share menu.");
-
+// TODO(crbug.com/747622): re-enable this test once earl grey can interact
+// with the share menu.
+- (void)DISABLED_testShowJavaScriptAfterShareMenu {
   // Load the blank test page.
   const GURL kURL = self.testServer->GetURL(kAlertURLPath);
   [ChromeEarlGrey loadURL:kURL];

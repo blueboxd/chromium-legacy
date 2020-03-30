@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "url/origin.h"
 
 namespace network {
@@ -21,7 +21,7 @@ class TrustTokenKeyCommitmentGetter {
   virtual ~TrustTokenKeyCommitmentGetter() = default;
   virtual void Get(
       const url::Origin& origin,
-      base::OnceCallback<void(std::unique_ptr<TrustTokenKeyCommitmentResult>)>
+      base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)>
           on_done) = 0;
 };
 

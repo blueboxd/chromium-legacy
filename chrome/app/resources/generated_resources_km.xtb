@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">បញ្ចូលច្រក</translation>
 <translation id="1026822031284433028">ដំណើរការរូបភាព</translation>
 <translation id="1029317248976101138">ពង្រីក</translation>
-<translation id="1030706264415084469"><ph name="URL" /> ចង់ផ្ទុក​ទិន្នន័យ​ទំហំធំ​នៅលើ​ឧបករណ៍​របស់អ្នក​ជា​អចិន្ត្រៃយ៍</translation>
 <translation id="1031362278801463162">កំពុងដំណើរការការពិនិត្យមើល</translation>
 <translation id="1032605640136438169">សូម​ពិនិត្យមើល​លក្ខខណ្ឌ​ថ្មី</translation>
 <translation id="103279545524624934">បង្កើនទំហំផ្ទុកថាសដើម្បីចាប់ផ្តើមកម្មវិធី Android</translation>
@@ -535,7 +534,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ដើម)</translation>
 <translation id="1709217939274742847">សូមជ្រើសរើស​សំបុត្រ ដើម្បីប្រើសម្រាប់​ការផ្ទៀងផ្ទាត់។ <ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">ទទួលពាក្យសម្ងាត់នេះនៅលើ iPhone របស់អ្នក</translation>
-<translation id="1712552549805331520"><ph name="URL" /> ចង់​ផ្ទុក​ទិន្នន័យ​នៅក្នុង​កុំព្យូទ័រ​មូលដ្ឋាន​របស់អ្នក​ជាអចិន្ត្រៃយ៍</translation>
 <translation id="1714644264617423774">បើក​មុខងារភាពងាយប្រើ ដើម្បីធ្វើឱ្យ​ឧបករណ៍​របស់អ្នក​ងាយស្រួលប្រើ​ជាងមុន។ <ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">ឧបករណ៍​ចាប់ចលនា</translation>
 <translation id="1718835860248848330">មួយម៉ោងមុន</translation>
@@ -749,7 +747,6 @@
 <translation id="1992397118740194946">មិនបានកំណត់</translation>
 <translation id="1994173015038366702">URL គេហទំព័រ</translation>
 <translation id="1995916364271252349">គ្រប់គ្រង​ថាតើ​ព័ត៌មាន​អ្វីខ្លះ​ដែលគេហទំព័រ​អាច​ប្រើ និង​បង្ហាញ (ទីតាំង កាមេរ៉ា ផ្ទាំងលោតឡើង និង​ច្រើនទៀត)</translation>
-<translation id="1997484222658892567"><ph name="URL" /> ចង់ផ្ទុក​ទិន្នន័យ​ទំហំ​ធំ​នៅលើ​កុំព្យូទ័រ​មូលដ្ឋាន​របស់អ្នក​ជាអចិន្ត្រៃយ៍</translation>
 <translation id="1997616988432401742">វិញ្ញាបនបត្ររបស់អ្នក</translation>
 <translation id="1999115740519098545">នៅពេលចាប់ផ្តើមដំណើរការ</translation>
 <translation id="2000419248597011803">បញ្ជូនការស្វែងរក និងខូគី​មួយចំនួនពី​របារអាសយដ្ឋាន និង​ប្រអប់​ស្វែងរកទៅ​ម៉ាស៊ីន​ស្វែងរក​លំនាំដើម​របស់​អ្នក</translation>
@@ -1010,7 +1007,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ចង់ផ្គូផ្គង</translation>
 <translation id="2342740338116612727">បានបញ្ចូល​ចំណាំ</translation>
 <translation id="2343747224442182863">ផ្ដោត​ផ្ទាំងនេះ</translation>
-<translation id="2344028582131185878">ទាញយកស្វ័យប្រវត្តិ</translation>
 <translation id="2345723121311404059">1 ទំព័រទៅកាន់ <ph name="PRINTER_NAME" /></translation>
 <translation id="2346953515226895098">សេវាកម្ម SODA</translation>
 <translation id="2347644257713614136">ការប្រើប្រាស់​កម្មវិធី Hangouts និង Cast សម្រាប់​ការអប់រំត្រូវបាន​គ្រប់គ្រង​ដោយ​គោលការណ៍​ឯកជនភាព Google ។</translation>
@@ -1662,7 +1658,6 @@
 <translation id="3188465121994729530">Moving Average</translation>
 <translation id="3190558889382726167">បានរក្សាទុកពាក្យសម្ងាត់</translation>
 <translation id="3192947282887913208">ឯកសារសម្លេង</translation>
-<translation id="3194737229810486521"><ph name="URL" /> ចង់ផ្ទុក​ទិន្នន័យ​នៅលើ​ឧបករណ៍​របស់អ្នក​ជាអចិន្ត្រៃយ៍</translation>
 <translation id="3199127022143353223">ម៉ាស៊ីនមេ</translation>
 <translation id="3200941271596533635">បិទ/បើកមុខងារអាន</translation>
 <translation id="3201306578844503970">មិនអាច​ដំឡើង​ម៉ាស៊ីន​និម្មិត​បានទេ ដោយសារ​មាន​បញ្ហា​បណ្ដាញ​។ សូមព្យាយាម​ម្ដងទៀត ឬទាក់ទង​អ្នកគ្រប់គ្រង​ឧបករណ៍​របស់​ស្ថាប័ន​អ្នក។ លេខកូដ​មានបញ្ហា​៖ <ph name="ERROR_CODE" />​។</translation>
@@ -3997,7 +3992,6 @@
 <translation id="6349101878882523185">ដំឡើង <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">សមកាលកម្មមិនដំណើរការទេ សូមសាកល្បងចាកចេញពីគណនី ហើយចូលមកវិញម្តងទៀត។</translation>
 <translation id="6351063337294363751">អ្នកអាចជម្រះទិន្នន័យរុករករបស់អ្នកចេញពីម៉ឺនុយនេះបាន</translation>
-<translation id="6352223293513723497">ឧបករណ៍​របស់អ្នក​ជិតអស់​ទំហំផ្ទុក​ហើយ។ សូមបង្កើន​ទំហំផ្ទុក ដើម្បី​អាចប្រើ Plugin VM បាន។</translation>
 <translation id="6352773953037195952">ខ្ពស់បំផុត</translation>
 <translation id="6354918092619878358">SECG elliptic curve secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">បន្តបើក​ឧបករណ៍</translation>
@@ -4941,7 +4935,6 @@
 <translation id="7645681574855902035">កំពុងបោះបង់​ការបម្រុងទុក Linux</translation>
 <translation id="7646772052135772216">សមកាល​កម្ម​ពាក្យសម្ងាត់​មិន​ដំណើរការ​ទេ</translation>
 <translation id="7647403192093989392">មិនមាន​សកម្មភាពថ្មីៗទេ</translation>
-<translation id="7648992873808071793">ផ្ទុកឯកសារនៅលើឧបករណ៍នេះ</translation>
 <translation id="7649070708921625228">ជំនួយ</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" ចង់ដក "<ph name="EXTENSION_NAME" />" ចេញ។</translation>
 <translation id="7652808307838961528">កែសម្រួលបុគ្គល, <ph name="PROFILE_NAME" /></translation>

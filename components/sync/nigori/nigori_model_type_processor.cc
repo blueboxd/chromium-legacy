@@ -8,6 +8,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
@@ -417,13 +418,24 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  if (model_type_state_.initial_sync_done() &&
-      model_type_state_.cache_guid() != activation_request_.cache_guid) {
-    ClearMetadataAndReset();
-    DCHECK(model_ready_to_sync_);
-  }
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncNigoriRemoveMetadataOnCacheGuidMismatch)) {
+    if (model_type_state_.initial_sync_done() &&
+        model_type_state_.cache_guid() != activation_request_.cache_guid) {
+      ClearMetadataAndReset();
+      DCHECK(model_ready_to_sync_);
+    }
 
-  model_type_state_.set_cache_guid(activation_request_.cache_guid);
+    model_type_state_.set_cache_guid(activation_request_.cache_guid);
+  } else {
+    // Legacy logic.
+    if (!model_type_state_.has_cache_guid()) {
+      model_type_state_.set_cache_guid(activation_request_.cache_guid);
+    } else if (model_type_state_.cache_guid() !=
+               activation_request_.cache_guid) {
+      // Not implemented in legacy codepath.
+    }
+  }
 
   // Cache GUID verification earlier above guarantees the user is the same.
   model_type_state_.set_authenticated_account_id(

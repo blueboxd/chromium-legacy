@@ -64,6 +64,22 @@ function setTextDirection(direction) {
   document.body.setAttribute('dir', direction);
 }
 
+// These classes must agree with the font classes in distilledpage.css.
+const fontFamilyClasses = ['sans-serif', 'serif', 'monospace'];
+function useFontFamily(fontFamily) {
+  fontFamilyClasses.forEach(
+      (element) =>
+          document.body.classList.toggle(element, element === fontFamily));
+}
+
+// These classes must agree with the theme classes in distilledpage.css.
+const themeClasses = ['light', 'dark', 'sepia'];
+function useTheme(theme) {
+  themeClasses.forEach(
+      (element) => document.body.classList.toggle(element, element === theme));
+  updateToolbarColor(theme);
+}
+
 function getClassFromElement(element, classList) {
   let foundClass = classList[0];
   classList.forEach((cls) => {
@@ -72,38 +88,6 @@ function getClassFromElement(element, classList) {
     }
   });
   return foundClass;
-}
-
-// These classes must agree with the font classes in distilledpage.css.
-// The order must also agree with the corresponding enum in
-// distilled_page_prefs.mojom.
-const fontFamilyClasses = ['sans-serif', 'serif', 'monospace'];
-function useFontFamily(fontFamily) {
-  fontFamilyClasses.forEach(
-      (element) =>
-          document.body.classList.toggle(element, element === fontFamily));
-  distiller.storeFontFamilyPref(fontFamilyClasses.indexOf(fontFamily));
-}
-
-// These classes must agree with the theme classes in distilledpage.css.
-// The order must also agree with the corresponding enum in
-// distilled_page_prefs.mojom.
-const themeClasses = ['light', 'dark', 'sepia'];
-function useTheme(theme) {
-  themeClasses.forEach(
-      (element) => document.body.classList.toggle(element, element === theme));
-  updateToolbarColor(theme);
-  distiller.storeThemePref(themeClasses.indexOf(theme));
-}
-
-// TODO(https://crbug.com/1027612): Rename this so that the distinction between
-// it and useTheme() is more obvious.
-function updateThemeSelection(theme) {
-  const selectedElem =
-      document.querySelector('.theme-option input[value="' + theme + '"');
-  if (selectedElem) {
-    selectedElem.checked = true;
-  }
 }
 
 function updateToolbarColor(theme) {

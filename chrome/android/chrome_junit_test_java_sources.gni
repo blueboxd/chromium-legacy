@@ -3,6 +3,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/ChromeActionModeCallbackTest.java",
   "junit/src/org/chromium/chrome/browser/ChromeBackupAgentTest.java",
   "junit/src/org/chromium/chrome/browser/DelayedScreenLockIntentHandlerTest.java",
+  "junit/src/org/chromium/chrome/browser/DeviceConditionsTest.java",
   "junit/src/org/chromium/chrome/browser/IntentHeadersRecorderTest.java",
   "junit/src/org/chromium/chrome/browser/SSLClientCertificateRequestTest.java",
   "junit/src/org/chromium/chrome/browser/ShadowDeviceConditions.java",

@@ -25,6 +25,8 @@ class DemoPreferencesScreen
  public:
   enum class Result { COMPLETED, CANCELED };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   DemoPreferencesScreen(DemoPreferencesScreenView* view,
                         const ScreenExitCallback& exit_callback);

@@ -14,7 +14,7 @@
 #include "net/base/network_isolation_key.h"
 
 #if !defined(OS_IOS)
-#include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
+#include "components/autofill/core/browser/payments/internal_authenticator.h"
 #endif
 
 namespace network {
@@ -69,9 +69,9 @@ class AutofillDriver {
   virtual bool RendererIsAvailable() = 0;
 
 #if !defined(OS_IOS)
-  // Binds the mojom request in order to facilitate WebAuthn flows.
-  virtual void ConnectToAuthenticator(
-      mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) = 0;
+  // Gets or creates a pointer to an implementation of InternalAuthenticator.
+  virtual InternalAuthenticator*
+  GetOrCreateCreditCardInternalAuthenticator() = 0;
 #endif
 
   // Forwards |data| to the renderer. |query_id| is the id of the renderer's

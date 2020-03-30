@@ -5,6 +5,7 @@
 module network.mojom;
 
 import "url/mojom/origin.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // TrustTokenOperationStatus enumerates (an incomplete collection of) outcomes
 // for a Trust Tokens protocol operation.
@@ -140,3 +141,41 @@ interface HasTrustTokensAnswerer {
   // denoting whether the user possesses any trust tokens issued by |issuer|.
   HasTrustTokens(url.mojom.Origin issuer) => (HasTrustTokensResult result);
 };
+
+// Struct TrustTokenKeyCommitmentResult represents a trust token issuer's
+// current key commitments and associated information. These are published via
+// the issuer's key commitment endpoint, obtained out of band, and provided to
+// the network service through periodic updates (see
+// NetworkService::SetTrustTokenKeyCommitments).
+struct TrustTokenVerificationKey {
+  string body;
+  mojo_base.mojom.Time expiry;
+  // Key labels are opaque values provided by the trust token issuer,
+  // constrained to be in the representable range of uint32. We keep track of
+  // them in order to provide them in Trust Tokens redemption requests, at which
+  // point the label of a token's verification key becomes bound to the token's
+  // redemption.
+  uint32 label;
+};
+
+// This is a wrapper struct that exists in order to make the batch size
+// nullable.
+struct TrustTokenKeyCommitmentBatchSize {
+  int32 value;
+};
+
+struct TrustTokenKeyCommitmentResult {
+  // |batch_size| is the issuer's optional number of tokens it wishes the client
+  // to request per Trust Tokens issuance operation.
+  TrustTokenKeyCommitmentBatchSize? batch_size;
+
+  // |keys| is the collection of the issuer's current trust token verification
+  // keys.
+  array<TrustTokenVerificationKey> keys;
+
+  // |signed_redemption_record_verification_key| is an Ed25519 public key that
+  // can be used to verify Signed Redemption Record (SRR) signatures
+  // subsequently provided by the issuer.
+  string signed_redemption_record_verification_key;
+};
+

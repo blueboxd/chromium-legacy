@@ -1459,8 +1459,11 @@ void XWindow::SetOverrideRedirect(bool override_redirect) {
   XSetWindowAttributes swa;
   swa.override_redirect = override_redirect;
   XChangeWindowAttributes(xdisplay_, xwindow_, CWOverrideRedirect, &swa);
-  if (remap)
+  if (remap) {
     Map();
+    if (has_pointer_grab_)
+      ui::ChangeActivePointerGrabCursor(x11::None);
+  }
 }
 
 bool XWindow::ContainsPointInRegion(const gfx::Point& point) const {

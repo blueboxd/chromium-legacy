@@ -18,6 +18,11 @@ def _merge_steps_argument_parser(*args, **kwargs):
       '--output-file', required=True, help='where to store the merged data')
   parser.add_argument(
       '--llvm-profdata', required=True, help='path to llvm-profdata executable')
+  parser.add_argument(
+      '--profdata-filename-pattern',
+      default='.*',
+      help='regex pattern of profdata filename to merge for current test type. '
+          'If not present, all profdata files will be merged.')
   return parser
 
 
@@ -26,7 +31,7 @@ def main():
   parser = _merge_steps_argument_parser(description=desc)
   params = parser.parse_args()
   merger.merge_profiles(params.input_dir, params.output_file, '.profdata',
-                        params.llvm_profdata)
+                        params.llvm_profdata, params.profdata_filename_pattern)
 
 
 if __name__ == '__main__':

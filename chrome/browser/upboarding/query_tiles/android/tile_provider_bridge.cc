@@ -4,6 +4,10 @@
 
 #include "chrome/browser/upboarding/query_tiles/android/tile_provider_bridge.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/upboarding/query_tiles/jni_headers/TileProviderBridge_jni.h"
@@ -26,8 +30,8 @@ ScopedJavaLocalRef<jobject> createJavaTileAndMaybeAddToList(
   ScopedJavaLocalRef<jobject> jchildren =
       Java_TileProviderBridge_createList(env);
 
-  for (QueryTileEntry* subtile : tile->subtiles)
-    createJavaTileAndMaybeAddToList(env, jchildren, subtile);
+  for (const auto& subtile : tile->sub_tiles)
+    createJavaTileAndMaybeAddToList(env, jchildren, subtile.get());
 
   return Java_TileProviderBridge_createTileAndMaybeAddToList(
       env, jlist, ConvertUTF8ToJavaString(env, tile->id),

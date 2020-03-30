@@ -369,6 +369,10 @@ enum class CredProtect : uint8_t {
   kUVRequired = 3,
 };
 
+// The map key for inserting the googleAndroidClientDataExtension output into a
+// CTAP2 makeCredential or getAssertion response.
+constexpr int kAndroidClientDataExtOutputKey = 0xf0;
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FIDO_CONSTANTS_H_

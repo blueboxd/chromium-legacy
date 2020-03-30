@@ -1230,7 +1230,7 @@
 
     'android_release_trybot_fastbuild': [
       'android', 'release_trybot', 'strip_debug_info', 'android_fastbuild',
-      'android_no_proguard', 
+      'android_no_proguard',
     ],
 
     'android_release_trybot_fastbuild_webview_google': [
@@ -1831,7 +1831,7 @@
     'ios_error': [ 'error'],
 
     'ios_clang_tot': [
-      'clang_tot', 'ios_device', 'ios_disable_code_signing', 'release', 'static',
+      'clang_tot', 'ios_simulator', 'ios_disable_code_signing', 'release', 'static',
     ],
 
     'ios_clang_device_tot': [

@@ -90,6 +90,7 @@ source_set("webui_internal") {
   sources = [
     "chrome_web_ui_ios_controller_factory.h",
     "chrome_web_ui_ios_controller_factory.mm",
+    "chrome_web_ui_provider.cc",
     "omaha_ui.cc",
     "omaha_ui.h",
     "signin_internals_ui_ios.cc",
@@ -105,11 +106,15 @@ source_set("webui_internal") {
     "//ios/chrome/browser/omaha",
     "//ios/chrome/browser/policy:feature_flags",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/webui/gcm",
+    "//ios/chrome/browser/ui/webui/interstitials",
     "//ios/chrome/browser/ui/webui/net_export",
     "//ios/chrome/browser/ui/webui/policy",
-    "//ios/chrome/browser/ui/webui/sync_internals",
     "//ios/chrome/browser/ui/webui/translate_internals",
+    "//ios/chrome/common",
+    "//ios/components/webui:provider",
+    "//ios/components/webui/sync_internals",
     "//url",
   ]
 

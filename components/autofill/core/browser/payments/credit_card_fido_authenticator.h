@@ -14,17 +14,17 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
+#include "components/autofill/core/browser/payments/internal_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "device/fido/fido_constants.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 namespace autofill {
 
 using blink::mojom::AuthenticatorStatus;
 using blink::mojom::GetAssertionAuthenticatorResponse;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
-using blink::mojom::InternalAuthenticator;
 using blink::mojom::MakeCredentialAuthenticatorResponse;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
 using blink::mojom::PublicKeyCredentialCreationOptions;
@@ -230,6 +230,9 @@ class CreditCardFIDOAuthenticator
   // Updates the user preference to the value of |user_is_opted_in_|.
   void UpdateUserPref();
 
+  // Gets or creates Authenticator pointer to facilitate WebAuthn.
+  InternalAuthenticator* authenticator();
+
   // Card being unmasked.
   const CreditCard* card_;
 
@@ -253,7 +256,7 @@ class CreditCardFIDOAuthenticator
   payments::PaymentsClient* const payments_client_;
 
   // Authenticator pointer to facilitate WebAuthn.
-  mojo::Remote<InternalAuthenticator> authenticator_;
+  InternalAuthenticator* authenticator_ = nullptr;
 
   // Responsible for getting the full card details, including the PAN and the
   // CVC.

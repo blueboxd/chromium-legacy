@@ -55,6 +55,32 @@ NSString* const kACValidationIdentifierKey = @"validationIdentifier";
   return self;
 }
 
+- (BOOL)isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  } else {
+    if (![other isKindOfClass:[ArchivableCredential class]]) {
+      return NO;
+    }
+    ArchivableCredential* otherCredential = (ArchivableCredential*)other;
+    return
+        [self.favicon isEqual:otherCredential.favicon] &&
+        [self.keychainIdentifier isEqual:otherCredential.keychainIdentifier] &&
+        self.rank == otherCredential.rank &&
+        [self.recordIdentifier isEqual:otherCredential.recordIdentifier] &&
+        [self.serviceIdentifier isEqual:otherCredential.serviceIdentifier] &&
+        [self.serviceName isEqual:otherCredential.serviceName] &&
+        [self.user isEqual:otherCredential.user] &&
+        [self.validationIdentifier
+            isEqual:otherCredential.validationIdentifier];
+  }
+}
+
+- (NSUInteger)hash {
+  // Using record identifier xored with keychain identifier should be enough.
+  return self.recordIdentifier.hash ^ self.keychainIdentifier.hash;
+}
+
 #pragma mark - NSSecureCoding
 
 + (BOOL)supportsSecureCoding {

@@ -22,6 +22,7 @@
 #include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "weblayer/browser/browser_process.h"
+#include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/permissions/weblayer_permissions_client.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
@@ -131,6 +132,8 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
 }
 
 void BrowserMainPartsImpl::PreMainMessageLoopRun() {
+  FeatureListCreator::GetInstance()->PerformPreMainMessageLoopStartup();
+
   // It's necessary to have a complete dependency graph of
   // BrowserContextKeyedServices before calling out to the delegate (which
   // will potentially create a profile), so that a profile creation message is

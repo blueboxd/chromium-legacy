@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 
 namespace network {
 
@@ -44,7 +44,7 @@ enum class ParseKeyResult {
 // the prase.
 ParseKeyResult ParseSingleKeyExceptLabel(
     const base::Value& in,
-    TrustTokenKeyCommitmentResult::Key* out) {
+    mojom::TrustTokenVerificationKey* out) {
   CHECK(in.is_dict());
 
   const std::string* expiry =
@@ -94,8 +94,8 @@ const char kTrustTokenKeyCommitmentKeyField[] = "Y";
 //     "expiry" : ...,
 //   }
 // }
-std::unique_ptr<TrustTokenKeyCommitmentResult>
-TrustTokenKeyCommitmentParser::Parse(base::StringPiece response_body) {
+mojom::TrustTokenKeyCommitmentResultPtr TrustTokenKeyCommitmentParser::Parse(
+    base::StringPiece response_body) {
   base::Optional<base::Value> maybe_value =
       base::JSONReader::Read(response_body);
   if (!maybe_value)
@@ -104,15 +104,18 @@ TrustTokenKeyCommitmentParser::Parse(base::StringPiece response_body) {
   if (!maybe_value->is_dict())
     return nullptr;
 
-  auto result = std::make_unique<TrustTokenKeyCommitmentResult>();
+  auto result = mojom::TrustTokenKeyCommitmentResult::New();
 
   // Confirm that the batchsize field is type-safe, if it's present.
   if (maybe_value->FindKey(kTrustTokenKeyCommitmentBatchsizeField) &&
       !maybe_value->FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
     return nullptr;
   }
-  result->batch_size =
-      maybe_value->FindIntKey(kTrustTokenKeyCommitmentBatchsizeField);
+  if (base::Optional<int> maybe_batch_size =
+          maybe_value->FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
+    result->batch_size =
+        mojom::TrustTokenKeyCommitmentBatchSize::New(*maybe_batch_size);
+  }
 
   // Confirm that the srrkey field is present and base64-encoded.
   const std::string* maybe_srrkey =
@@ -131,12 +134,12 @@ TrustTokenKeyCommitmentParser::Parse(base::StringPiece response_body) {
     if (!item.is_dict())
       continue;
 
-    TrustTokenKeyCommitmentResult::Key key;
+    auto key = mojom::TrustTokenVerificationKey::New();
 
-    if (!ParseSingleKeyLabel(kv.first, &key.label))
+    if (!ParseSingleKeyLabel(kv.first, &key->label))
       return nullptr;
 
-    switch (ParseSingleKeyExceptLabel(item, &key)) {
+    switch (ParseSingleKeyExceptLabel(item, key.get())) {
       case ParseKeyResult::kFail:
         return nullptr;
       case ParseKeyResult::kIgnore:

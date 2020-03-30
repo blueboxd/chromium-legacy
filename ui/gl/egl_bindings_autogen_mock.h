@@ -131,11 +131,10 @@ Mock_eglGetFrameTimestampsANDROID(EGLDisplay dpy,
                                   EGLint numTimestamps,
                                   EGLint* timestamps,
                                   EGLnsecsANDROID* values);
-static EGLBoolean GL_BINDING_CALL
-Mock_eglGetMscRateCHROMIUM(EGLDisplay dpy,
-                           EGLSurface surface,
-                           EGLint* numerator,
-                           EGLint* denominator);
+static EGLBoolean GL_BINDING_CALL Mock_eglGetMscRateANGLE(EGLDisplay dpy,
+                                                          EGLSurface surface,
+                                                          EGLint* numerator,
+                                                          EGLint* denominator);
 static EGLClientBuffer GL_BINDING_CALL Mock_eglGetNativeClientBufferANDROID(
     const struct AHardwareBuffer* ahardwarebuffer);
 static EGLBoolean GL_BINDING_CALL

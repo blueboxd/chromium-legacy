@@ -44,7 +44,10 @@ specific_include_rules = {
   "(test_)?credit_card_fido_authenticator\.(cc|h)": [
     "+device/fido/fido_constants.h",
     "+third_party/blink/public/mojom/webauthn/authenticator.mojom.h",
-    "+third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h",
+  ],
+  "(test_)?internal_authenticator\.h": [
+    "+device/fido/fido_constants.h",
+    "+third_party/blink/public/mojom/webauthn/authenticator.mojom.h",
   ],
   "autofill_driver\.h": [
     "+third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"

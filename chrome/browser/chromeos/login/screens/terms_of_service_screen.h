@@ -29,6 +29,8 @@ class TermsOfServiceScreen : public BaseScreen {
  public:
   enum class Result { ACCEPTED, DECLINED };
 
+  static std::string GetResultString(Result result);
+
   // The possible states that the screen may assume.
   enum class ScreenState : int { LOADING = 0, LOADED = 1, ERROR = 2 };
 

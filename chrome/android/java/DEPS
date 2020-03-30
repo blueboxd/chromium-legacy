@@ -21,6 +21,7 @@ include_rules = [
   "+components/background_task_scheduler/android/java/src/org/chromium/components/background_task_scheduler",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
   "+components/browser_ui/widget/android",
+  "+components/browser_ui/settings/android",
   "+components/browser_ui/styles/android",
   "+components/crash/android/java",
   "+components/dom_distiller/content/browser/android/java/src/org/chromium/components/dom_distiller/content",

@@ -175,6 +175,20 @@ unsigned HexCharactersToUInt(const UChar* data,
   return ToIntegralType<unsigned, UChar, 16>(data, length, options, ok);
 }
 
+uint64_t HexCharactersToUInt64(const LChar* data,
+                               size_t length,
+                               NumberParsingOptions options,
+                               bool* ok) {
+  return ToIntegralType<uint64_t, LChar, 16>(data, length, options, ok);
+}
+
+uint64_t HexCharactersToUInt64(const UChar* data,
+                               size_t length,
+                               NumberParsingOptions options,
+                               bool* ok) {
+  return ToIntegralType<uint64_t, UChar, 16>(data, length, options, ok);
+}
+
 int CharactersToInt(const LChar* data,
                     size_t length,
                     NumberParsingOptions options,

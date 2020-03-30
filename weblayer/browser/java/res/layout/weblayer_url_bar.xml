@@ -3,27 +3,27 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    android:orientation="horizontal">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ContentDescription is set programmatically. -->
     <ImageButton
-        tools:ignore="ContentDescription"
         android:id="@+id/security_button"
-        android:layout_width="15dp"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:background="@android:color/transparent" />
+        tools:ignore="ContentDescription"
+        android:background="@android:color/transparent"
+        android:layout_gravity="center_vertical"
+        android:layout_height="@dimen/security_status_icon_size"
+        android:layout_width="@dimen/security_status_icon_size"
+        android:scaleType="center"
+        android:paddingEnd="@dimen/security_status_icon_padding"/>
 
     <TextView
         android:id="@+id/url_text"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:gravity="center_vertical"/>
-</LinearLayout>
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:maxLines="1"
+        android:paddingEnd="@dimen/url_text_edge_padding"/>
+
+</merge>

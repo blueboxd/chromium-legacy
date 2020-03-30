@@ -863,8 +863,7 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_COOKIES_PAGE_HTML"
                  file="privacy_page/cookies_page.html"
-                 type="chrome_html"
-                 preprocess="true" />
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_COOKIES_PAGE_JS"
                  file="privacy_page/cookies_page.js"
                  type="chrome_html" />

@@ -121,7 +121,7 @@ MOCK_METHOD6(GetFrameTimestampsANDROID,
                         EGLnsecsANDROID* values));
 MOCK_METHOD3(GetFrameTimestampSupportedANDROID,
              EGLBoolean(EGLDisplay dpy, EGLSurface surface, EGLint timestamp));
-MOCK_METHOD4(GetMscRateCHROMIUM,
+MOCK_METHOD4(GetMscRateANGLE,
              EGLBoolean(EGLDisplay dpy,
                         EGLSurface surface,
                         EGLint* numerator,

@@ -195,8 +195,7 @@ int DemoMain() {
   display::Screen::SetScreenInstance(test_screen.get());
   std::unique_ptr<aura::WindowTreeHost> host(
       test_screen->CreateHostForPrimaryDisplay());
-  std::unique_ptr<DemoWindowParentingClient> window_parenting_client(
-      new DemoWindowParentingClient(host->window()));
+  DemoWindowParentingClient window_parenting_client(host->window());
   aura::test::TestFocusClient focus_client(host->window());
 
   // Create a hierarchy of test windows.

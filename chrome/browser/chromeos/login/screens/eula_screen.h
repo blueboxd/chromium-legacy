@@ -31,6 +31,8 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
     BACK
   };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback);
   ~EulaScreen() override;

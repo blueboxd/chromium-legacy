@@ -32,19 +32,17 @@ base::Optional<OriginPolicyParsedHeader> OriginPolicyParsedHeader::FromString(
     return base::nullopt;
   }
 
-  // TODO(domenic): when https://crbug.com/1061139 gets fixed we can
-  // make this a const reference.
-  sh::Dictionary& parsed_header = *parsed_header_opt;
+  const sh::Dictionary& parsed_header = *parsed_header_opt;
 
   std::vector<OriginPolicyAllowedValue> allowed;
 
   if (parsed_header.contains("allowed")) {
-    if (!parsed_header["allowed"].member_is_inner_list) {
+    if (!parsed_header.at("allowed").member_is_inner_list) {
       return base::nullopt;
     }
 
     const std::vector<sh::ParameterizedItem>& raw_allowed_list =
-        parsed_header["allowed"].member;
+        parsed_header.at("allowed").member;
     for (const auto& parameterized_item : raw_allowed_list) {
       base::Optional<OriginPolicyAllowedValue> result;
 
@@ -74,11 +72,11 @@ base::Optional<OriginPolicyParsedHeader> OriginPolicyParsedHeader::FromString(
 
   base::Optional<OriginPolicyPreferredValue> preferred;
   if (parsed_header.contains("preferred")) {
-    if (parsed_header["preferred"].member_is_inner_list) {
+    if (parsed_header.at("preferred").member_is_inner_list) {
       return base::nullopt;
     }
 
-    const sh::Item& item = parsed_header["preferred"].member[0].item;
+    const sh::Item& item = parsed_header.at("preferred").member[0].item;
     if (item.is_string()) {
       const std::string& string = item.GetString();
       if (string.empty()) {

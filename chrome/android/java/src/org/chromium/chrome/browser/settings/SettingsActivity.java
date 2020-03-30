@@ -31,6 +31,9 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsClient;
+import org.chromium.chrome.browser.site_settings.SiteSettingsPreferenceFragment;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.util.ColorUtils;
 
@@ -256,6 +259,14 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (!listener.onBackPressed()) {
             // Fragment hasn't handled this event, fall back to AppCompatActivity handling.
             super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        if (fragment instanceof SiteSettingsPreferenceFragment) {
+            ((SiteSettingsPreferenceFragment) fragment)
+                    .setSiteSettingsClient(new ChromeSiteSettingsClient());
         }
     }
 

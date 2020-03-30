@@ -310,6 +310,7 @@ TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuildsOld', function() {
  ['CollapseRadioButton', 'collapse_radio_button_tests.m.js'],
  ['ControlledButton', 'controlled_button_tests.m.js'],
  ['ControlledRadioButton', 'controlled_radio_button_tests.m.js'],
+ ['CookiesPage', 'cookies_page_test.m.js'],
  ['DoNotTrackToggle', 'do_not_track_toggle_test.m.js'],
  ['DownloadsPage', 'downloads_page_test.m.js'],
  ['DropdownMenu', 'dropdown_menu_tests.m.js'],

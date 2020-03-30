@@ -24,6 +24,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -39,10 +40,11 @@ constexpr base::TimeDelta kVeryoldCommandAge = base::TimeDelta::FromDays(175);
 class TestingRemoteCommandsService : public RemoteCommandsService {
  public:
   explicit TestingRemoteCommandsService(MockCloudPolicyClient* client)
-      : RemoteCommandsService(
-            std::make_unique<DeviceCommandsFactoryChromeOS>(nullptr),
-            client,
-            nullptr /* store */) {}
+      : RemoteCommandsService(std::make_unique<DeviceCommandsFactoryChromeOS>(
+                                  /*policy_manager=*/nullptr),
+                              client,
+                              /*store=*/nullptr,
+                              PolicyInvalidationScope::kDevice) {}
   // RemoteCommandsService:
   void SetOnCommandAckedCallback(base::OnceClosure callback) override {
     on_command_acked_callback_ = std::move(callback);

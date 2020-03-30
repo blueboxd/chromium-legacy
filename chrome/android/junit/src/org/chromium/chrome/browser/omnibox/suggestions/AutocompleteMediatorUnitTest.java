@@ -476,4 +476,58 @@ public class AutocompleteMediatorUnitTest {
                             SuggestionCommonProperties.LAYOUT_DIRECTION));
         }
     }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void onUrlFocusChange_triggersZeroSuggest_nativeInitialized() {
+        when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
+        when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
+
+        Profile profile = Mockito.mock(Profile.class);
+        String url = "http://www.example.com";
+        String title = "Title";
+        int pageClassification = 2;
+        when(mToolbarDataProvider.getProfile()).thenReturn(profile);
+        when(mToolbarDataProvider.getCurrentUrl()).thenReturn(url);
+        when(mToolbarDataProvider.getTitle()).thenReturn(title);
+        when(mToolbarDataProvider.hasTab()).thenReturn(true);
+        when(mToolbarDataProvider.getPageClassification(false)).thenReturn(pageClassification);
+
+        when(mTextStateProvider.getTextWithAutocomplete()).thenReturn(url);
+
+        mMediator.onNativeInitialized();
+        mMediator.onUrlFocusChange(true);
+        verify(mAutocompleteController)
+                .startZeroSuggest(profile, url, url, pageClassification, title);
+    }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void onUrlFocusChange_triggersZeroSuggest_nativeNotInitialized() {
+        when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
+        when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
+
+        Profile profile = Mockito.mock(Profile.class);
+        String url = "http://www.example.com";
+        String title = "Title";
+        int pageClassification = 2;
+        when(mToolbarDataProvider.getProfile()).thenReturn(profile);
+        when(mToolbarDataProvider.getCurrentUrl()).thenReturn(url);
+        when(mToolbarDataProvider.getTitle()).thenReturn(title);
+        when(mToolbarDataProvider.hasTab()).thenReturn(true);
+        when(mToolbarDataProvider.getPageClassification(false)).thenReturn(pageClassification);
+
+        when(mTextStateProvider.getTextWithAutocomplete()).thenReturn("");
+
+        // Signal focus prior to initializing native.
+        mMediator.onUrlFocusChange(true);
+
+        // Initialize native and ensure zero suggest is triggered.
+        mMediator.onNativeInitialized();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        verify(mAutocompleteController)
+                .startZeroSuggest(profile, "", url, pageClassification, title);
+    }
 }

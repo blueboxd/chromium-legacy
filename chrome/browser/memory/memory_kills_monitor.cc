@@ -70,10 +70,7 @@ MemoryKillsMonitor::Handle::~Handle() {
   }
 }
 
-MemoryKillsMonitor::MemoryKillsMonitor()
-    : low_memory_kills_count_(0),
-      last_oom_kill_time_(-1),
-      oom_kills_count_(0) {}
+MemoryKillsMonitor::MemoryKillsMonitor() = default;
 
 MemoryKillsMonitor::~MemoryKillsMonitor() {
   // The instance has to be leaked on shutdown as it is referred to by a

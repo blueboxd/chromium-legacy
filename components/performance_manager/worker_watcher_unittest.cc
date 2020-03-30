@@ -725,9 +725,7 @@ TEST_F(WorkerWatcherTest, SimpleDedicatedWorker) {
         EXPECT_EQ(worker_node->worker_type(),
                   WorkerNode::WorkerType::kDedicated);
         EXPECT_EQ(worker_node->process_node(), process_node);
-        // TODO(pmonette): Change the following to EXPECT_TRUE when the
-        //                 dedicated worker node gets hooked up correctly.
-        EXPECT_FALSE(IsWorkerClient(worker_node, client_frame_node));
+        EXPECT_TRUE(IsWorkerClient(worker_node, client_frame_node));
       }));
 
   // Disconnect and clean up the worker.
@@ -976,9 +974,7 @@ TEST_F(WorkerWatcherTest, FrameDestroyed) {
         EXPECT_TRUE(graph->NodeInGraph(dedicated_worker_node));
         EXPECT_TRUE(graph->NodeInGraph(shared_worker_node));
         EXPECT_TRUE(graph->NodeInGraph(service_worker_node));
-        // TODO(pmonette): Change the following to EXPECT_TRUE when the
-        //                 dedicated worker node gets hooked up correctly.
-        EXPECT_FALSE(IsWorkerClient(dedicated_worker_node, client_frame_node));
+        EXPECT_TRUE(IsWorkerClient(dedicated_worker_node, client_frame_node));
         EXPECT_TRUE(IsWorkerClient(shared_worker_node, client_frame_node));
         // TODO(pmonette): Change the following to EXPECT_TRUE when the
         //                 service worker node gets hooked up correctly.

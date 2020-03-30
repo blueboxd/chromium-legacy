@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/trust_token_persister.h"
 #include "services/network/trust_tokens/types.h"
@@ -146,7 +147,7 @@ class TrustTokenStore {
   // distinct keys.
   virtual void PruneStaleIssuerState(
       const url::Origin& issuer,
-      const std::vector<TrustTokenKeyCommitment>& keys);
+      const std::vector<mojom::TrustTokenVerificationKeyPtr>& keys);
 
   //// Methods related to reading and writing signed tokens:
 

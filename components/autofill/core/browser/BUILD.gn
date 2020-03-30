@@ -325,6 +325,7 @@ jumbo_static_library("browser") {
       "payments/credit_card_fido_authenticator.h",
       "payments/fido_authentication_strike_database.cc",
       "payments/fido_authentication_strike_database.h",
+      "payments/internal_authenticator.h",
     ]
   }
 
@@ -505,6 +506,7 @@ jumbo_static_library("test_support") {
     sources += [
       "payments/test_credit_card_fido_authenticator.cc",
       "payments/test_credit_card_fido_authenticator.h",
+      "payments/test_internal_authenticator.h",
     ]
 
     deps += [ "//third_party/blink/public/common" ]

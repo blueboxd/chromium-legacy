@@ -46,6 +46,11 @@ template("system_webview_apk_or_module_tmpl") {
       "//android_webview:pak_file_assets",
     ]
 
+    # If the R SDK isn't public yet, include the downstream code to support R.
+    if (!public_android_sdk && android_sdk_release == "r") {
+      deps += [ "//clank/android_webview/next:r_sdk_java" ]
+    }
+
     if (_exclude_weblayer_java) {
       deps += [ "//android_webview:android_webview_no_weblayer_java" ]
     } else {

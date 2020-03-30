@@ -177,7 +177,10 @@ mojom("mutable_network_traffic_annotation_interface") {
 mojom("trust_tokens_interface") {
   generate_java = true
   sources = [ "trust_tokens.mojom" ]
-  public_deps = [ "//url/mojom:url_mojom_origin" ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_origin",
+  ]
   if (!is_ios) {
     export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"

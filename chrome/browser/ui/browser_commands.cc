@@ -117,8 +117,6 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
@@ -228,34 +226,6 @@ const extensions::Extension* GetExtensionForBrowser(Browser* browser) {
       ->GetExtensionById(
           web_app::GetAppIdFromApplicationName(browser->app_name()),
           extensions::ExtensionRegistry::EVERYTHING);
-}
-
-bool GetBookmarkOverrideCommand(Profile* profile,
-                                const extensions::Extension** extension,
-                                extensions::Command* command) {
-  DCHECK(extension);
-  DCHECK(command);
-
-  ui::Accelerator bookmark_tab_accelerator =
-      chrome::GetPrimaryChromeAcceleratorForBookmarkTab();
-  if (bookmark_tab_accelerator.key_code() == ui::VKEY_UNKNOWN)
-    return false;
-
-  extensions::CommandService* command_service =
-      extensions::CommandService::Get(profile);
-  const extensions::ExtensionSet& extension_set =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
-  for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
-       i != extension_set.end(); ++i) {
-    extensions::Command prospective_command;
-    if (command_service->GetSuggestedExtensionCommand(
-            (*i)->id(), bookmark_tab_accelerator, &prospective_command)) {
-      *extension = i->get();
-      *command = prospective_command;
-      return true;
-    }
-  }
-  return false;
 }
 #endif
 
@@ -979,7 +949,7 @@ void Exit() {
   chrome::AttemptUserExit();
 }
 
-void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser) {
+void BookmarkCurrentTab(Browser* browser) {
   base::RecordAction(UserMetricsAction("Star"));
 
   BookmarkModel* model =
@@ -1017,29 +987,6 @@ void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser) {
 
   if (!was_bookmarked_by_user && is_bookmarked_by_user)
     RecordBookmarksAdded(browser->profile());
-}
-
-void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  const extensions::Extension* extension = nullptr;
-  extensions::Command command;
-  if (GetBookmarkOverrideCommand(browser->profile(), &extension, &command)) {
-    switch (command.type()) {
-      case extensions::Command::Type::kNamed:
-        browser->window()->ExecuteExtensionCommand(extension, command);
-        break;
-      case extensions::Command::Type::kBrowserAction:
-      case extensions::Command::Type::kPageAction:
-        // BookmarkCurrentTab is called through a user gesture, so it is safe
-        // to grant the active tab permission.
-        extensions::ExtensionActionAPI::Get(browser->profile())
-            ->ShowExtensionActionPopup(extension, browser, true);
-        break;
-    }
-    return;
-  }
-#endif
-  BookmarkCurrentTabIgnoringExtensionOverrides(browser);
 }
 
 bool CanBookmarkCurrentTab(const Browser* browser) {

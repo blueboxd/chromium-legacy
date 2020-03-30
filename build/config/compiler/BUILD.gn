@@ -1591,7 +1591,8 @@ config("chromium_code") {
 
     # TODO(thakis): Enable this more often, https://crbug.com/346399
     # use_libfuzzer: https://crbug.com/1063180
-    if (!is_nacl && !use_libfuzzer && target_os != "ios") {
+    if (!is_nacl && !use_libfuzzer &&
+        !(is_ios && ios_app_bundle_id_prefix != "org.chromium")) {
       cflags += [ "-Wunreachable-code" ]
     }
 

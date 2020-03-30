@@ -5,11 +5,9 @@
 #include "ui/aura/test/aura_test_helper.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "ui/aura/client/default_capture_client.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -112,7 +110,6 @@ void AuraTestHelper::SetUp() {
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
                              : gfx::Size(800, 600));
-
   test_screen_.reset(TestScreen::Create(host_size));
   // TODO(pkasting): Seems like we should either always set the screen instance,
   // or not create the screen/host if the test already has one; it doesn't make
@@ -202,13 +199,13 @@ client::CaptureClient* AuraTestHelper::GetCaptureClient() {
 }
 
 Env* AuraTestHelper::GetEnv() {
-  return env_ ? env_.get() : Env::HasInstance() ? Env::GetInstance() : nullptr;
+  if (env_)
+    return env_.get();
+  return Env::HasInstance() ? Env::GetInstance() : nullptr;
 }
 
 ui::ContextFactory* AuraTestHelper::GetContextFactory() {
-  Env* env = GetEnv();
-  DCHECK(env);
-  return env->context_factory();
+  return GetEnv()->context_factory();
 }
 
 }  // namespace test

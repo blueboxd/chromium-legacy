@@ -29,6 +29,18 @@ bool g_usage_statistics_reporting_enabled = true;
 
 }  // namespace
 
+// static
+std::string EulaScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::ACCEPTED_WITH_USAGE_STATS_REPORTING:
+      return "AcceptedWithStats";
+    case Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING:
+      return "AcceptedWithoutStats";
+    case Result::BACK:
+      return "Back";
+  }
+}
+
 EulaScreen::EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback)
     : BaseScreen(EulaView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),

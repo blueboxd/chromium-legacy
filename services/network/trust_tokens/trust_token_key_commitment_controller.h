@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace mojom {
@@ -67,7 +67,7 @@ class TrustTokenKeyCommitmentController final {
   class Parser {
    public:
     virtual ~Parser() = default;
-    virtual std::unique_ptr<TrustTokenKeyCommitmentResult> Parse(
+    virtual mojom::TrustTokenKeyCommitmentResultPtr Parse(
         base::StringPiece response_body) = 0;
   };
 
@@ -99,8 +99,8 @@ class TrustTokenKeyCommitmentController final {
   };
   TrustTokenKeyCommitmentController(
       base::OnceCallback<void(Status status,
-                              std::unique_ptr<TrustTokenKeyCommitmentResult>
-                                  result)> completion_callback,
+                              mojom::TrustTokenKeyCommitmentResultPtr result)>
+          completion_callback,
       const net::URLRequest& request,
       const url::Origin& top_level_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -135,9 +135,8 @@ class TrustTokenKeyCommitmentController final {
   // Parses the key commitment response if one is received.
   std::unique_ptr<Parser> parser_;
 
-  base::OnceCallback<void(
-      Status status,
-      std::unique_ptr<TrustTokenKeyCommitmentResult> result)>
+  base::OnceCallback<void(Status status,
+                          mojom::TrustTokenKeyCommitmentResultPtr result)>
       completion_callback_;
 };
 

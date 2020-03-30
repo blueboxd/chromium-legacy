@@ -306,8 +306,7 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
   }
 
   void AdvanceClockMilliseconds(int milliseconds) {
-    ASSERT_TRUE(task_environment_.has_value());
-    task_environment_->FastForwardBy(
+    task_environment()->FastForwardBy(
         base::TimeDelta::FromMilliseconds(milliseconds));
   }
 

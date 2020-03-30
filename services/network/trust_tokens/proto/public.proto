@@ -8,21 +8,6 @@ package network;
 
 option optimize_for = LITE_RUNTIME;
 
-// A TrustTokenKeyCommitment message stores a single key received
-// from an issuer’s key commitments endpoint, along with associated
-// metadata.
-message TrustTokenKeyCommitment {
-  // The key's body. Used for comparison (when checking if
-  // stored tokens’ keys are still current) and, by BoringSSL, for
-  // cryptographic operations.
-  optional bytes key = 1;  // required
-
-  // The expiry time of the key.
-  // (Here and elsewhere, string times are serialized base::Times
-  // converted with base::CreateTimeValue.)
-  optional string expiry = 2;  // required
-}
-
 // Message TrustToken represents a signed trust token received from
 // an issuer.
 message TrustToken {

@@ -4,16 +4,10 @@
 
 module dom_distiller.mojom;
 
-import "components/dom_distiller/core/mojom/distilled_page_prefs.mojom";
-
 // This service is implemented by the browser process and is used by the
 // renderer when a distiller JavaScript function is called.
 interface DistillerJavaScriptService {
   // Open the Android view containing settings for Reader Mode; the
   // "distiller.openSettings" function.
   HandleDistillerOpenSettingsCall();
-
-  // Store updated appearance settings as synced prefs.
-  HandleStoreThemePref(Theme theme);
-  HandleStoreFontFamilyPref(FontFamily font_family);
 };

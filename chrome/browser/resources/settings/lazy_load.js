@@ -9,10 +9,7 @@ import './autofill_page/passwords_section.m.js';
 import './autofill_page/payments_section.m.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.m.js';
 import './search_engines_page/search_engines_page.m.js';
-
-// TODO(https://crbug.com/1026426): Uncomment these imports once the pages have
-// been migrated to Polymer 3.
-// import './privacy_page/cookies_page.m.js';
+import './privacy_page/cookies_page.m.js';
 import './privacy_page/security_keys_subpage.m.js';
 import './privacy_page/security_page.m.js';
 import './site_settings/all_sites.m.js';
@@ -89,7 +86,7 @@ export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/cl
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
-export {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SITE_EXCEPTION_WILDCARD,SortMethod} from './site_settings/constants.m.js';
+export {ChooserType,ContentSetting,ContentSettingsTypes,CookieControlsMode,SiteSettingSource,SITE_EXCEPTION_WILDCARD,SortMethod} from './site_settings/constants.m.js';
 export {cookieInfo} from './site_settings/cookie_info.m.js';
 export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
 export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.m.js';

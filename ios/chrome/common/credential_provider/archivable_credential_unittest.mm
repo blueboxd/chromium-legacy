@@ -85,4 +85,35 @@ TEST_F(ArchivableCredentialTest, retrieveData) {
               unarchivedCredential.validationIdentifier);
 }
 
+// Tests ArchivableCredential equality.
+TEST_F(ArchivableCredentialTest, equality) {
+  ArchivableCredential* credential = TestCredential();
+  ArchivableCredential* credentialIdentical = TestCredential();
+  EXPECT_NSEQ(credential, credentialIdentical);
+  EXPECT_EQ(credential.hash, credentialIdentical.hash);
+
+  ArchivableCredential* credentialSameIdentifier = [[ArchivableCredential alloc]
+           initWithFavicon:@"other_favicon"
+        keychainIdentifier:@"other_keychainIdentifier"
+                      rank:credential.rank + 10
+          recordIdentifier:@"recordIdentifier"
+         serviceIdentifier:@"other_serviceIdentifier"
+               serviceName:@"other_serviceName"
+                      user:@"other_user"
+      validationIdentifier:@"other_validationIdentifier"];
+  EXPECT_NSNE(credential, credentialSameIdentifier);
+
+  ArchivableCredential* credentialDiferentIdentifier =
+      [[ArchivableCredential alloc] initWithFavicon:@"favicon"
+                                 keychainIdentifier:@"keychainIdentifier"
+                                               rank:credential.rank
+                                   recordIdentifier:@"other_recordIdentifier"
+                                  serviceIdentifier:@"serviceIdentifier"
+                                        serviceName:@"serviceName"
+                                               user:@"user"
+                               validationIdentifier:@"validationIdentifier"];
+  EXPECT_NSNE(credential, credentialDiferentIdentifier);
+
+  EXPECT_NSNE(credential, nil);
+}
 }

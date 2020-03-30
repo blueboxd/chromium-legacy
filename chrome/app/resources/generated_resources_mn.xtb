@@ -23,7 +23,6 @@
 <translation id="1026655690966755180">Порт нэмэх</translation>
 <translation id="1026822031284433028">Зураг ачаалах</translation>
 <translation id="1029317248976101138">Татаж харах</translation>
-<translation id="1030706264415084469"><ph name="URL" /> таны төхөөрөмжид том хэмжээний өгөгдлийг бүрмөсөн хадгалах хүсэлтэй байна</translation>
 <translation id="1031362278801463162">Ачаалах явцыг харах</translation>
 <translation id="1032605640136438169">Шинэ нөхцөлийг шалгаж үзнэ үү</translation>
 <translation id="103279545524624934">Андройд апп-г ажиллуулахын тулд дискний багтаамжийг нэмэгдүүлнэ үү.</translation>
@@ -531,7 +530,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Төрөлх)</translation>
 <translation id="1709217939274742847">Нотолгоонд хэрэглэх тасалбарыг сонгоно уу. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="1712349894969001173">Энэ нууц үгийг iPhone-доо авах</translation>
-<translation id="1712552549805331520"><ph name="URL" /> таны дотоод компьютерт өгөгдлийг бүрмөсөн хадгалах хүсэлтэй байна</translation>
 <translation id="1714644264617423774">Таны төхөөрөмжийг ашиглахад илүү хялбар болгохын тулд хандалтын онцлогуудыг идэвхжүүлэх. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Хөдөлгөөн мэдрэгч</translation>
 <translation id="1718835860248848330">Сүүлийн цаг</translation>
@@ -745,7 +743,6 @@
 <translation id="1992397118740194946">Суугдаагүй</translation>
 <translation id="1994173015038366702">Сайтын URL</translation>
 <translation id="1995916364271252349">Ямар мэдээллийг сайтууд ашиглаж, харуулж (байршил, камер, үзэгдэх болон бусад зүйл) болохыг хянадаг</translation>
-<translation id="1997484222658892567"><ph name="URL" /> таны дотоод компьютерт том хэмжээний өгөгдлийг бүрмөсөн хадгалах хүсэлтэй байна</translation>
 <translation id="1997616988432401742">Таны сертификат</translation>
 <translation id="1999115740519098545">Эхлүүлэх</translation>
 <translation id="2000419248597011803">Таны өгөгдмөл хайлтын системд хаяг оруулах хэсэг, хайх хэсгийн зарим күүки болон хайлтыг илгээдэг</translation>
@@ -1006,7 +1003,6 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> холбогдох хүсэлтэй байна</translation>
 <translation id="2342740338116612727">Хавчуурга нэмсэн</translation>
 <translation id="2343747224442182863">Энэ табын фокусыг тохируулах</translation>
-<translation id="2344028582131185878">Автоматаар татаж авах</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" />-р 1 хуудас</translation>
 <translation id="2346953515226895098">SODA үйлчилгээ</translation>
 <translation id="2347644257713614136">Hangouts болон Cast for Education-н хэрэглээг Google-н нууцлалын бодлогын дагуу зохицуулдаг.</translation>
@@ -1657,7 +1653,6 @@
 <translation id="3188465121994729530">Дундаж үзүүлэлт</translation>
 <translation id="3190558889382726167">Нууц үгийг хадгалсан</translation>
 <translation id="3192947282887913208">Аудио файлууд</translation>
-<translation id="3194737229810486521"><ph name="URL" /> таны төхөөрөмжид өгөгдлийг бүрмөсөн хадгалах хүсэлтэй байна</translation>
 <translation id="3199127022143353223">Серверүүд</translation>
 <translation id="3200941271596533635">Уншигчийн горимыг унтраах/асаах</translation>
 <translation id="3201306578844503970">Сүлжээний алдааны улмаас виртуал машиныг суулгаж чадсангүй. Дахин оролдоно уу эсвэл байгууллагынхаа төхөөрөмжийн администратортай холбогдоно уу. Алдааны код: <ph name="ERROR_CODE" />.</translation>
@@ -3990,7 +3985,6 @@
 <translation id="6349101878882523185"><ph name="APP_NAME" />-г суулгах</translation>
 <translation id="6349170655202535379">Синк ажиллахгүй байна. Гараад, дахин нэвтэрнэ үү.</translation>
 <translation id="6351063337294363751">Та энэ цэснээс хайлтын өгөгдлөө устгах боломжтой</translation>
-<translation id="6352223293513723497">Таны төхөөрөмжийн хадгалах сангийн зай бага байна. Plugin VM-г ашиглахын тулд сул зай гаргана уу.</translation>
 <translation id="6352773953037195952">Хамгийн дээд</translation>
 <translation id="6354918092619878358">SECG зууван муруй secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Төхөөрөмжийг асаалттай хэвээр байлгаарай</translation>
@@ -4934,7 +4928,6 @@
 <translation id="7645681574855902035">Linux-н нөөцлөлтийг цуцалж байна</translation>
 <translation id="7646772052135772216">Нууц үгийг синк хийх ажиллахгүй байна</translation>
 <translation id="7647403192093989392">Саяхны үйл ажиллагаа байхгүй</translation>
-<translation id="7648992873808071793">Энэхүү төхөөрөмж дээр файлуудыг хадгалах</translation>
 <translation id="7649070708921625228">Тусламж</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" нь "<ph name="EXTENSION_NAME" />"-ыг устгахыг хүсч байна.</translation>
 <translation id="7652808307838961528">Хүнийг өөрчлөх, <ph name="PROFILE_NAME" /></translation>

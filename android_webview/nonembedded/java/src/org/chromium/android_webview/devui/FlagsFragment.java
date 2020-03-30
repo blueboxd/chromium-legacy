@@ -215,7 +215,6 @@ public class FlagsFragment extends Fragment {
      * @param state the state of the flag.
      */
     private void formatListEntry(View toggleableFlag, int state) {
-        // View stateIndicator = toggleableFlag.findViewById(R.id.flag_state_indicator);
         TextView flagName = toggleableFlag.findViewById(R.id.flag_name);
         if (state == /* STATE_DEFAULT */ 0) {
             // Unset the compound drawable.

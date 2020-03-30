@@ -51,7 +51,8 @@ void SharingWebRtcTimingRecorder::LogEvent(WebRtcTimingEvent event) {
   if (!to_iter.second)
     return;
 
-  LogWebRtcTimingEvent(event, to_iter.first->second - from_iter->second);
+  base::TimeDelta delay = to_iter.first->second - from_iter->second;
+  LogWebRtcTimingEvent(event, delay, is_sender_);
 }
 
 }  // namespace sharing

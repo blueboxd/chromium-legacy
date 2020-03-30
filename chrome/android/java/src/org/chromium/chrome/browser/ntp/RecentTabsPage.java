@@ -310,9 +310,18 @@ public class RecentTabsPage
     @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
+        updatePadding();
+    }
+
+    @Override
+    public void onTopControlsHeightChanged(int topControlsHeight, int topControlsMinHeight) {
+        updatePadding();
+    }
+
+    private void updatePadding() {
         final View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
         ViewCompat.setPaddingRelative(recentTabsRoot, ViewCompat.getPaddingStart(recentTabsRoot),
                 mFullscreenManager.getTopControlsHeight(), ViewCompat.getPaddingEnd(recentTabsRoot),
-                bottomControlsHeight);
+                mFullscreenManager.getBottomControlsHeight());
     }
 }

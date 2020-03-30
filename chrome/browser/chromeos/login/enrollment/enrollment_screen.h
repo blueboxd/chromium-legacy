@@ -46,6 +46,8 @@ class EnrollmentScreen
  public:
   enum class Result { COMPLETED, BACK };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   EnrollmentScreen(EnrollmentScreenView* view,
                    const ScreenExitCallback& exit_callback);

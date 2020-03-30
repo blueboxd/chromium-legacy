@@ -50,11 +50,9 @@ class TestWebDialogViewWebDialogDelegate
 // Provides functionality to test a WebDialogView.
 class WebDialogViewUnitTest : public views::test::WidgetTest {
  public:
-  template <typename... TaskEnvironmentTraits>
-  NOINLINE explicit WebDialogViewUnitTest(TaskEnvironmentTraits&&... traits)
-      : views::test::WidgetTest(
-            views::test::WidgetTest::SubclassManagesTaskEnvironment()),
-        task_environment_(std::forward<TaskEnvironmentTraits>(traits)...) {}
+  WebDialogViewUnitTest()
+      : views::test::WidgetTest(std::unique_ptr<base::test::TaskEnvironment>(
+            std::make_unique<content::BrowserTaskEnvironment>())) {}
   ~WebDialogViewUnitTest() override = default;
 
   // testing::Test
@@ -126,9 +124,6 @@ class WebDialogViewUnitTest : public views::test::WidgetTest {
     if (web_dialog_view_->GetFocusManager()->OnKeyEvent(event_copy))
       widget_->OnKeyEvent(&event_copy);
   }
-
-  // TaskEnvironment must be created first
-  content::BrowserTaskEnvironment task_environment_;
 
  private:
   content::TestContentBrowserClient test_browser_client_;

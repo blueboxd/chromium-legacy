@@ -5,6 +5,7 @@
 package org.chromium.weblayer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -26,8 +27,10 @@ import org.chromium.weblayer_private.interfaces.IBrowserFragment;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
+import org.chromium.weblayer_private.interfaces.IWebLayerClient;
 import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -397,6 +400,14 @@ public class WebLayer {
 
     private WebLayer(IWebLayer iWebLayer) {
         mImpl = iWebLayer;
+
+        if (getSupportedMajorVersionInternal() >= 83) {
+            try {
+                mImpl.setClient(new WebLayerClientImpl());
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
     }
 
     /**
@@ -586,5 +597,16 @@ public class WebLayer {
                                   .metaData;
         if (metaData != null) return metaData.getString(PACKAGE_MANIFEST_KEY);
         return null;
+    }
+
+    private final class WebLayerClientImpl extends IWebLayerClient.Stub {
+        @Override
+        public Intent createIntent() {
+            StrictModeWorkaround.apply();
+            // Intent objects need to be created in the client library so they can refer to the
+            // broadcast receiver that will handle them. The broadcast receiver needs to be in the
+            // client library because it's referenced in the manifest.
+            return new Intent(WebLayer.getAppContext(), DownloadBroadcastReceiver.class);
+        }
     }
 }

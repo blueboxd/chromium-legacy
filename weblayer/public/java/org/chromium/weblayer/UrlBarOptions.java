@@ -37,7 +37,7 @@ public final class UrlBarOptions {
          * Sets the text size of the URL bar.
          *
          * @param textSize The desired size of the URL bar text in scalable pixels.
-         * The default is 10.0F and the minimum allowed size is 5.0F.
+         * The default is 14.0F and the minimum allowed size is 5.0F.
          */
         public Builder setTextSizeSP(float textSize) {
             mOptions.putFloat(URL_TEXT_SIZE, textSize);

@@ -997,6 +997,7 @@ ci.fyi_coverage_builder(
     use_clang_coverage = True,
     properties = {
         'xcode_build_version': '11c29',
+        'coverage_test_types': ['overall', 'unit'],
     },
 )
 

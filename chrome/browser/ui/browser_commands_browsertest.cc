@@ -15,11 +15,11 @@ namespace chrome {
 
 using BrowserCommandsTest = InProcessBrowserTest;
 
-// Verify that calling BookmarkCurrentTabIgnoringExtensionOverrides() just
-// after closing all tabs doesn't cause a crash. https://crbug.com/799668
+// Verify that calling BookmarkCurrentTab() just after closing all tabs doesn't
+// cause a crash. https://crbug.com/799668
 IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, BookmarkCurrentTabAfterCloseTabs) {
   browser()->tab_strip_model()->CloseAllTabs();
-  BookmarkCurrentTabIgnoringExtensionOverrides(browser());
+  BookmarkCurrentTab(browser());
 }
 
 class ReloadObserver : public content::WebContentsObserver {

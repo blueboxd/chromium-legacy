@@ -16,6 +16,12 @@ void WidgetTest::WidgetCloser::operator()(Widget* widget) const {
   widget->CloseNow();
 }
 
+WidgetTest::WidgetTest() = default;
+
+WidgetTest::WidgetTest(
+    std::unique_ptr<base::test::TaskEnvironment> task_environment)
+    : ViewsTestBase(std::move(task_environment)) {}
+
 WidgetTest::~WidgetTest() = default;
 
 Widget* WidgetTest::CreateTopLevelPlatformWidget() {

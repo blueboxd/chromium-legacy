@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -103,6 +104,26 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   return reasons;
 }
 
+static bool ShouldPreferCompositingForLayoutView(
+    const LayoutView& layout_view) {
+  auto has_direct_compositing_reasons = [](const LayoutObject* object) -> bool {
+    return object && CompositingReasonFinder::DirectReasonsForPaintProperties(
+                         *object) != CompositingReason::kNone;
+  };
+  if (has_direct_compositing_reasons(
+          layout_view.GetFrame()->OwnerLayoutObject()))
+    return true;
+  if (auto* document_element = layout_view.GetDocument().documentElement()) {
+    if (has_direct_compositing_reasons(document_element->GetLayoutObject()))
+      return true;
+  }
+  if (auto* body = layout_view.GetDocument().FirstBodyElement()) {
+    if (has_direct_compositing_reasons(body->GetLayoutObject()))
+      return true;
+  }
+  return false;
+}
+
 CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     const LayoutObject& object) {
   // TODO(wangxianzhu): Don't depend on PaintLayer for CompositeAfterPaint.
@@ -143,15 +164,9 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
           // a direct compositing reason, it's very likely that the object will
           // be composited, and it also indicates preference of compositing,
           // so we prefer composited scrolling here.
-          style.BackfaceVisibility() == EBackfaceVisibility::kHidden;
-
-      if (!force_prefer_compositing_to_lcd_text && object.IsLayoutView()) {
-        if (auto* owner_object = object.GetFrame()->OwnerLayoutObject()) {
-          force_prefer_compositing_to_lcd_text =
-              DirectReasonsForPaintProperties(*owner_object) !=
-              CompositingReason::kNone;
-        }
-      }
+          style.BackfaceVisibility() == EBackfaceVisibility::kHidden ||
+          (object.IsLayoutView() &&
+           ShouldPreferCompositingForLayoutView(To<LayoutView>(object)));
 
       if (scrollable_area->ComputeNeedsCompositedScrolling(
               force_prefer_compositing_to_lcd_text)) {

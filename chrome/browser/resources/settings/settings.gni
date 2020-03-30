@@ -28,6 +28,7 @@ settings_namespace_rewrites = [
   "settings.ChromeCleanupRemovalListItem|ChromeCleanupRemovalListItem",
   "settings.ClearBrowsingDataBrowserProxy|ClearBrowsingDataBrowserProxy",
   "settings.ContentSetting|ContentSetting",
+  "settings.CookieControlsMode|CookieControlsMode",
   "settings.CreditCardEntry|CreditCardEntry",
   "settings.BrowserProfile|BrowserProfile",
   "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -237,8 +238,14 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
                 base::ASCIIToUTF16(kDeviceName)),
             notification.title());
   ASSERT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
+#if defined(OS_MACOSX)
+  // We show the image in the notification icon on macOS.
+  ASSERT_EQ(640, notification.icon().Width());
+  ASSERT_EQ(480, notification.icon().Height());
+#else
   ASSERT_EQ(640, notification.rich_notification_data().image.Width());
   ASSERT_EQ(480, notification.rich_notification_data().image.Height());
+#endif  // defined(OS_MACOSX)
   histograms_.ExpectUniqueSample(kStatusCodeHistogram, net::HTTP_OK, 1);
   histograms_.ExpectTotalCount(kLoadTimeHistogram, 1);
   histograms_.ExpectUniqueSample(kImageSizeBeforeDecodeHistogram, 810490, 1);

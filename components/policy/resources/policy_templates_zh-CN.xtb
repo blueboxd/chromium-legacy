@@ -158,11 +158,6 @@
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
 <translation id="1163080558183062209">禁用拒绝列表中的打印机类型</translation>
 <translation id="117059611145966538">外部打印服务器</translation>
-<translation id="1189817621108632689">让您能够设置一系列网址格式，以用于指定允许哪些网站显示图片。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultImagesSetting”政策中的全局默认值（倘若已设置“DefaultImagesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultImagesSetting”政策）。
-
-          请注意，之前我们误在 Android 设备上启用了这项政策，但我们从未在 Android 设备上为这项功能提供完整支持。</translation>
 <translation id="1194005076170619046">如果已启用，当会话处于活动状态且屏幕未处于锁定状态时，系统任务栏中会显示一个大的红色退出按钮。
 
       如果已停用或未指定，系统任务栏中不会显示任何大的红色退出按钮。</translation>
@@ -300,7 +295,6 @@
       此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
-<translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="1455804070656338445">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当浏览器显示警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
       为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获这一用于更改密码的页面中的新密码指纹，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
 
@@ -406,9 +400,6 @@
 <translation id="1654087023995670109">强制采用浏览器访客模式</translation>
 <translation id="1655229863189977773">设置磁盘缓存大小（字节）</translation>
 <translation id="166427968280387991">代理服务器</translation>
-<translation id="1667071842533245879">让您能够设置一系列网址格式，从而指定不允许哪些网站显示可屏蔽的（即主动型）混合内容（即 HTTPS 网站上的 HTTP 内容），以及要为哪些网站升级可选的可屏蔽（即被动型）混合内容。
-
-          如果未设置此政策，可屏蔽的混合内容将被屏蔽，同时可选的可屏蔽混合内容将被升级，但用户将能设置例外情况以允许在特定网站上显示此类内容。</translation>
 <translation id="1667877109169174750">如果此政策设为 true，系统任务栏菜单中将始终显示无障碍选项。
 
           如果此政策设为 false，系统任务栏菜单中绝不会显示无障碍选项。
@@ -558,13 +549,6 @@
       如果未设置此政策，系统将会启用网络联想查询功能，但用户将能够自行更改此设置。</translation>
 <translation id="1865417998205858223">密钥使用权限</translation>
 <translation id="186719019195685253">当闲置延迟时间已过且使用交流电源供电时执行的操作</translation>
-<translation id="1875371246345730828">此政策用于配置有权在登录屏幕上的 SAML 流程中对设备身份执行远程认证的网址。
-
-      具体而言，如果某个网址与通过此政策提供的格式之一匹配，该网址就能接收 HTTP 标头（包含对远程认证质询的响应），以认证设备身份和设备状态。
-
-      如果此政策未设置，或设为一个空列表，则不允许任何网址在登录屏幕上使用远程认证。
-
-      网址必须采用 HTTPS 架构，例如：“https://example.com”。</translation>
 <translation id="187819629719252111">允许 <ph name="PRODUCT_NAME" />显示文件选择对话框，从而允许用户访问计算机上的本地文件。如果您启用了此设置，用户就可以正常地打开文件选择对话框。如果您停用了此设置，那么只要用户执行了会触发文件选择对话框的操作（如导入书签、上传文件、保存链接等），系统就会显示一条讯息，并且假定用户已在该文件选择对话框中点击了“取消”。如果您未设定此设置，用户就可以正常地打开文件选择对话框。</translation>
 <translation id="1885782360784839335">允许使用整个标签页显示宣传内容</translation>
 <translation id="1888871729456797026">云政策在桌面设备上的注册令牌</translation>
@@ -878,7 +862,6 @@
 
       格式有误的模板将被忽略。</translation>
 <translation id="2345547870894930157">启用 DNS-over-HTTPS，且禁止改用不安全的查询</translation>
-<translation id="237494535617297575">可让您设置网址格式的列表，这些网址格式用于指定允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="2386362615870139244">允许使用屏幕唤醒锁定</translation>
 <translation id="2398554235599593694"> 此政策用于控制在出现外部协议启动确认提示时是否显示“始终打开”复选框。
 
@@ -1283,31 +1266,6 @@
 
       如果使用此政策，则只有那些具有与此政策中所列值匹配的 ID 的打印机才可供用户使用。ID 必须与 <ph name="DEVICE_PRINTERS_POLICY" /> 中指定的文件内的“id”或“guid”字段相符。
       </translation>
-<translation id="2842152347010310843">此政策可控制要一律启用自动播放功能的网址格式白名单。
-
-      如果自动播放功能处于启用状态，则 <ph name="PRODUCT_NAME" /> 中的视频可与音频内容一起自动播放（无需经过用户同意）。
-
-      有效的网址格式规范为：
-
-      - [*.]domain.tld（与 domain.tld 和所有子网域一致）
-
-      - host（与确切的主机名一致）
-
-      - scheme://host:port（支持的方案：http、https）
-
-      - scheme://[*.]domain.tld:port（支持的方案：http、https）
-
-      - file://path（路径必须是以“/”开头的绝对路径）
-
-      - a.b.c.d（与确切的 IPv4 ip 一致）
-
-      - [a:b:c:d:e:f:g:h]（与确切的 IPv6 ip 一致）
-
-      如果 AutoplayAllowed 政策设置为 True，则此政策将不会产生任何效力。
-
-      如果 AutoplayAllowed 政策设置为 False，则此政策中设置的任何网址格式仍可以播放。
-
-      请注意，如果此政策在 <ph name="PRODUCT_NAME" /> 运行期间发生了更改，则更改将仅应用于新打开的标签页。因此，部分标签页可能仍会沿用先前的设置。</translation>
 <translation id="284288632677954003">包含始终不应触发浏览器切换的网址的 XML 文件对应的网址。</translation>
 <translation id="2844404652289407061">允许在 <ph name="PRODUCT_NAME" /> 的内容视图中使用“触摸搜索”功能。
 
@@ -1457,11 +1415,6 @@
 
       此政策不适用于自助服务终端用户。如果未设置此政策，则设备的行为方式会与将此政策设为“DisallowArc”时相同。</translation>
 <translation id="3086995894968271156">在 <ph name="PRODUCT_NAME" />中配置 Cast 接收器。</translation>
-<translation id="3088796212846734853">让您能够设置一系列网址格式，以用于指定允许哪些网站显示图片。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultImagesSetting”政策中的全局默认值（倘若已设置“DefaultImagesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultImagesSetting”政策）。
-
-          请注意，之前我们误在 Android 设备上启用了这项政策，但我们从未在 Android 设备上为这项功能提供完整支持。</translation>
 <translation id="3091832372132789233">为主要连接到外部电源的设备的电池充电。</translation>
 <translation id="3096595567015595053">已启用插件的列表</translation>
 <translation id="3101501961102569744">选择如何指定代理服务器设置</translation>
@@ -1555,18 +1508,10 @@
       但是，除非 SAML 身份提供商在 SAML 登录流程中将密码到期信息发送给设备，否则系统不会显示此类通知。
 
       如果设置了此政策，用户将无法更改或覆盖它。</translation>
-<translation id="3322771899429619102">可让您设置一个网址格式列表，以便指定哪些网站可以使用密钥生成功能。对于同时还包含在“KeygenBlockedForUrls”中的网址格式，系统将应用“KeygenBlockedForUrls”政策而忽略此政策。
-
-          如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
 <translation id="3327195598110816609">不延迟任何交付</translation>
 <translation id="332771718998993005">将广告中宣传的名称确定为 <ph name="PRODUCT_NAME" /> 目标名称。
 
           如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
-<translation id="3335468714959531450">让您能够设置一系列网址格式，以用于指定允许哪些网站设置 Cookie。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultCookiesSetting”政策中的全局默认值（倘若已设置“DefaultCookiesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultCookiesSetting”政策）。
-
-          另请参阅“CookiesBlockedForUrls”和“CookiesSessionOnlyForUrls”政策。请注意，这三项政策中的网址格式不得存在冲突，因为无从指定应以哪项政策为准。</translation>
 <translation id="3339271789059866414">配置系统代理服务的可用情况以及系统服务的代理凭据。
       如果此政策未设置，系统代理服务将不可用。</translation>
 <translation id="3356657927302977341">配置 Linux 上的 <ph name="PRODUCT_NAME" /> 是否会使用原生通知。
@@ -1906,7 +1851,6 @@
           默认情况下，所有本地消息传递主机均在白名单中，但如果所有本地消息传递主机都按相关政策被列入黑名单，则您可以使用白名单来替换该政策。</translation>
 <translation id="3835692988507803626">强制停用语言拼写检查</translation>
 <translation id="3837424079837455272">此政策用于控制是否可向 <ph name="PRODUCT_OS_NAME" />添加新用户，但不会阻止用户在 Android 内登录其他 Google 帐号。如果您想阻止此类情况，请将 Android 专用的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策配置为 <ph name="ARC_POLICY_POLICY_NAME" /> 的一部分。</translation>
-<translation id="384743459174066962">可让您设置网址格式的列表，这些网址格式用于指定不允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="3851039766298741586">报告有关当前自助服务终端会话的信息，例如应用 ID 和版本。
 
       如果此政策设为 false，则系统不会报告自助服务终端会话信息。如果此政策设为 true 或未设置，则系统会报告自助服务终端会话信息。</translation>
@@ -2221,9 +2165,6 @@
 
           注意：<ph name="CHARGE_START_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_END_TIME_FIELD_NAME" /> 所允许的 <ph name="MINUTE_FIELD_NAME" /> 字段值为 0、15、30、45。</translation>
 <translation id="4224610387358583899">屏幕锁定延迟时间</translation>
-<translation id="423797045246308574">可让您设置一个网址格式列表，以便指定哪些网站不能使用密钥生成功能。对于同时还包含在“KeygenAllowedForUrls”中的网址格式，系统将应用此政策而忽略“KeygenBlockedForUrls”政策。
-
-          如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
 <translation id="4238997902172035160">配置 <ph name="PRODUCT_NAME" /> 将用于存储个人资料漫游副本的目录。
 
       设置此政策后，如果 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策已启用，<ph name="PRODUCT_NAME" /> 将会使用所提供的目录来存储个人资料的漫游副本；如果 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策已停用或未设置，系统将不会使用存储在此政策中的值。
@@ -2726,7 +2667,6 @@
           如果此政策未设置或留空，系统便会使用默认的“新标签页”页面。
 
           此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
-<translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5210980743015047124">配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本要求。
 
       当此政策设为非空列表时：
@@ -3367,7 +3307,6 @@
 
       请注意，如果 <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 政策设为 <ph name="BLOCK_GEOLOCATION_SETTING" />，则系统会忽略此政策并会始终停用 Google 位置信息服务。</translation>
 <translation id="6141402445226505817">一律使用粗略式时区检测方式</translation>
-<translation id="6145799962557135888">可让您设置网址格式的列表，这些网址格式用于指定允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="614616930188030377">系统会将此列表中的网址格式与请求网址的安全来源进行比对。
       如果找到了匹配项或者 chrome://flags/#enable-webrtc-hide-local-ips-with-mdns 已停用，本地 IP 地址就会显示在 WebRTC ICE 候选路径中。
       否则，本地 IP 地址将会隐藏，被 mDNS 主机名取代。
@@ -3395,9 +3334,6 @@
           要查看详细示例，请访问以下网址：
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="6178075938488052838">此政策用于控制谁可以启动 <ph name="PRODUCT_OS_NAME" />会话，但不会阻止用户在 Android 内登录其他 Google 帐号。如果您想阻止此类情况，请将 Android 专用的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策配置为 <ph name="ARC_POLICY_POLICY_NAME" /> 的一部分。</translation>
-<translation id="6181608880636987460">可让您设置一系列网址格式，以用于指定禁止哪些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultPluginsSetting”政策中的全局默认值（倘若已设置“DefaultPluginsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultPluginsSetting”政策）。</translation>
 <translation id="6190022522129724693">默认弹出式窗口设置</translation>
 <translation id="6190367314942602985">报告用户标识信息</translation>
 <translation id="6195802366906945965">确定是否会使用内置的证书验证程序来验证服务器证书</translation>
@@ -3677,11 +3613,6 @@
 <translation id="6665670272107384733">指定用户必须按什么样的频率输入密码才能使用快速解锁功能</translation>
 <translation id="6672070613706645316">允许用户在“新标签页”页面上自定义背景</translation>
 <translation id="6672630473862787247">为常规会话、无痕会话和访客会话启用静默身份验证。</translation>
-<translation id="6681229465468164801">让您能够设置一系列网址格式，以用于指定禁止哪些网站请求用户授权其访问 USB 设备。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
-
-          此政策中的网址格式不应与通过 WebUsbAskForUrls 配置的网址格式冲突，因为无从指定当某个网址与这两项政策都相符时应以哪项政策为准。</translation>
 <translation id="6685903773201985073">为访客会话和常规会话启用静默身份验证。</translation>
 <translation id="6689792153960219308">报告硬件状态</translation>
 <translation id="6698632841807204978">启用单色打印</translation>
@@ -3699,9 +3630,6 @@
 <translation id="6731757988219967594">滤除提供成人内容的顶级网站（但不滤除嵌入式 iframe）</translation>
 <translation id="6734521799274931721">控制是否允许在 Chrome 操作系统中使用网络文件共享功能</translation>
 <translation id="6735701345096330595">强制检查语言拼写</translation>
-<translation id="6757438632136860443">可让您设置一系列网址格式，以用于指定允许哪些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultPluginsSetting”政策中的全局默认值（倘若已设置“DefaultPluginsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultPluginsSetting”政策）。</translation>
 <translation id="6757613329154374267">已启用备份和恢复服务</translation>
 <translation id="6762235610019366960">让您能够控制是否在 <ph name="PRODUCT_NAME" /> 中使用整个标签页显示宣传内容和/或教育内容。
 
@@ -3713,11 +3641,6 @@
 <translation id="6766216162565713893">允许网站请求用户授予对附近蓝牙设备的访问权限</translation>
 <translation id="6770454900105963262">报告自助服务终端的相关信息</translation>
 <translation id="6772045451150098845">此政策用于控制已加入“高级保护”计划的用户是否可获享额外的功能。其中的部分功能可能会涉及与 Google 分享数据（例如，已加入“高级保护”计划的用户将能够把他们的下载内容发送给 Google 进行恶意软件扫描）。如果此政策设为 True 或未设置，已加入“高级保护”计划的用户将会获享额外的功能。如果此政策设为 False，已加入“高级保护”计划的用户将只能获享标准的消费者级别功能。</translation>
-<translation id="6780908086869332493">让您能够指定一系列网址格式，从而指定要在 SAML 流程托管框架的登录屏幕上自动为哪些网站选择客户端证书（如果相应网站要求提供证书）。例如，配置一个要向 SAML IdP 出示的设备级证书。
-
-      此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是内容设置格式，<ph name="FILTER_PLACEHOLDER" /> 会限制浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与服务器的证书请求相匹配的证书。如果 <ph name="FILTER_PLACEHOLDER" /> 采用 <ph name="JSON_DICTIONARY_EXAMPLE" /> 格式，系统便只会选择由 CommonName 为 <ph name="ISSUER_CN_PLACEHOLDER" /> 的证书颁发机构颁发的客户端证书。如果 <ph name="FILTER_PLACEHOLDER" /> 是空字典 {}，那么系统在选择客户端证书时便不会受到额外限制。
-
-      如果未设置此政策，系统将不会为任何网站自动选择证书。</translation>
 <translation id="6786747875388722282">扩展程序</translation>
 <translation id="6786967369487349613">设置漫游个人资料目录</translation>
 <translation id="6795485990775913659">仅允许在没有 PIN 码的情况下打印</translation>
@@ -3868,11 +3791,6 @@
 <translation id="7072208053150563108">设备密码更改率</translation>
 <translation id="7079519252486108041">在这些网站上阻止弹出式窗口</translation>
 <translation id="7080072532759721791">允许用户上传或下载受密码保护的文件</translation>
-<translation id="7085803328069945025">让您能够设置一系列网址格式，以用于指定允许哪些网站请求用户授权其访问 USB 设备。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
-
-          此政策中的网址格式不应与通过 WebUsbBlockedForUrls 配置的网址格式冲突，因为无从指定当某个网址与这两项政策都相符时应以哪项政策为准。</translation>
 <translation id="7086677522575756117">指定当在屏幕变暗后或在屏幕关闭不久后察觉到用户活动时，系统会对屏幕变暗延迟时间应用的调整幅度（百分比）。
 
           如果此政策已设置，那么当在屏幕变暗后或在屏幕关闭不久后察觉到用户活动时，系统会按照所指定的百分比调整屏幕变暗延迟时间。调整屏幕变暗延迟时间时，系统也会调整屏幕关闭、屏幕锁定和待机的延迟时间，以使它们保持在原有配置下与屏幕变暗延迟时间的间隔。
@@ -4192,7 +4110,6 @@
       如果此政策设为 false 或未设置，DTC 就会关闭，而且无法收集、处理和报告设备的遥测与诊断数据。
       如果 Wilco DTC 在给定设备上可用且此政策设为 true，则会开启对遥测与诊断数据的收集、处理和报告。</translation>
 <translation id="7519251620064708155">允许在这些网站上使用密钥生成功能</translation>
-<translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7529144158022474049">自动更新分配因素</translation>
 <translation id="7534199150025803530">此政策对 Android 版“Google 云端硬盘”应用没有任何影响。如果您想阻止通过移动网络连接使用 Google 云端硬盘，则应禁止安装 Android 版“Google 云端硬盘”应用。</translation>
 <translation id="7540622499178214923">允许使用 Wilco 诊断和遥测控制器</translation>
@@ -4280,15 +4197,6 @@
 <translation id="7651739109954974365">确定是否应为设备启用数据漫游。如果将此政策设置为 true，数据漫游就可以使用。如果未配置此政策或将其设置为 false，数据漫游就无法使用。</translation>
 <translation id="7657261947024629645">针对性能进行优化。</translation>
 <translation id="7673194325208122247">时间段（毫秒）</translation>
-<translation id="7676708657861783864">仅在当前会话中使用由符合这些网址格式的网页所设置的 Cookie，也就是说当用户退出浏览器时，系统就会删除 Cookie。
-
-          如果网址所采用的不是此处指定的格式，系统会根据“DefaultCookiesSetting”政策（如有设置）或用户的个人配置来应用全局默认值。如果未设置这项政策，系统会针对所有网址应用全局默认值。
-
-          请注意，如果 <ph name="PRODUCT_NAME" /> 是以“后台模式”运行，那么在最后一个浏览器窗口关闭时，会话可能不会关闭，而会继续保持使用中的状态，直到用户离开浏览器为止。如需关于配置此行为的更多信息，请参见“BackgroundModeEnabled”政策。
-
-          另请参阅“CookiesAllowedForUrls”和“CookiesBlockedForUrls”政策。请注意，这三项政策中的网址格式不得存在冲突，因为无从指定应以哪项政策为准。
-
-          如果将“RestoreOnStartup”政策设为恢复先前会话中的网址，系统就不会遵循这项政策，并且会为这些网站永久存储 Cookie。</translation>
 <translation id="7677220829878081413">
       如果此政策设为 ArcSession，且 Android 已启动，那么每当用户退出后，系统都会强制相应设备重新启动。
       如果此政策设为 ArcSessionOrVMStart，且 Android 或虚拟机已启动，那么每当用户退出后，系统都会强制相应设备重新启动。
@@ -4424,9 +4332,6 @@
           如果停用了此政策，则用户无法添加 Kerberos 帐号。只能通过“配置 Kerberos 帐号”政策添加帐号。这是锁定帐号的有效方式。</translation>
 <translation id="7895553628261067384">远程访问</translation>
 <translation id="7902040092815978832">在用户输入密码时显示数字键盘</translation>
-<translation id="7902255855035461275">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址使用视频捕获设备，并且不会进行提示。
-
-      请注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
 <translation id="7912255076272890813">配置允许的应用/扩展程序类型</translation>
 <translation id="7922358664346625612">使 Chrome 中仅剩的那个标签页保持打开状态。</translation>
 <translation id="793134539373873765">指定是否对操作系统更新有效负荷使用 p2p。如果设置为 True，设备将共享并试图消耗局域网中的更新有效负荷，从而可能会减少互联网带宽使用量和拥堵。如果局域网中没有更新有效负荷，设备将回退到从更新服务器下载。如果设置为 False 或未配置，则不会使用 p2p。</translation>
@@ -4509,11 +4414,6 @@
           如果启用了此政策，则系统会将此政策定义的一系列帐号添加到 Kerberos 帐号设置。
 
           如果停用了或未设置此政策，则系统不但不会将任何帐号添加到 Kerberos 帐号设置，还会移除先前通过此政策添加的所有帐号。如果启用了“用户可以添加 Kerberos 帐号”政策，则用户仍可手动添加帐号。</translation>
-<translation id="8078366200175825572">让您能够设置一系列网址格式，以用于指定允许哪些网站设置 Cookie。
-
-          如果未设置此政策，系统将会对所有网站使用“DefaultCookiesSetting”政策中的全局默认值（倘若已设置“DefaultCookiesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultCookiesSetting”政策）。
-
-          另请参阅“CookiesAllowedForUrls”和“CookiesSessionOnlyForUrls”政策。请注意，这三项政策中的网址格式不得存在冲突，因为无从指定应以哪项政策为准。</translation>
 <translation id="8078648571144932071">要针对其检查上传内容是否包含恶意软件的网址格式</translation>
 <translation id="8099880303030573137">使用电池供电时的闲置延迟时间</translation>
 <translation id="8101381354936029836">政策原子组：</translation>
@@ -4602,9 +4502,6 @@
 <translation id="8186911565834244165">允许用户提供反馈</translation>
 <translation id="8214600119442850823">配置密码管理器。</translation>
 <translation id="8217516105848565518">此政策已被弃用。请改用 RemoteAccessHostDomainList。</translation>
-<translation id="8236323460664833038">让您能够设置一系列网址格式，从而指定允许哪些网站显示可屏蔽的（即主动型）混合内容（即 HTTPS 网站上的 HTTP 内容），以及要为哪些网站上可选的可屏蔽（即被动型）混合内容停用升级功能。
-
-          如果未设置此政策，可屏蔽的混合内容将被屏蔽，同时可选的可屏蔽混合内容将被升级，而且用户将能设置例外情况以允许在特定网站上显示此类内容。</translation>
 <translation id="8244171102276095471">在 TLS 中启用 RC4 加密套件</translation>
 <translation id="8244525275280476362">政策失效后的最大提取延迟</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME" />在登录屏幕上为相应的设备本地帐号显示的帐号名。
@@ -5084,9 +4981,6 @@
       当 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策已被启用时，请勿启用此政策，因为这两种政策具有相同的客户端功能。在此种情况下，由 Google 托管的同步服务亦会被完全停用。</translation>
 <translation id="8955719471735800169">返回页首</translation>
 <translation id="8959992920425111821">默认配置</translation>
-<translation id="8960850473856121830">如果有网址请求使用音频捕获设备，系统会将此列表中的网址格式与该网址的安全来源进行比对。如果找到了匹配项，系统将允许该网址使用音频捕获设备，并且不会提示用户。
-
-      请注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
 <translation id="8970205333161758602">阻止显示 <ph name="PRODUCT_FRAME_NAME" />停止支持的提示</translation>
 <translation id="8976248126101463034">允许针对远程访问主机进行 gnubby 身份验证</translation>
 <translation id="8976531594979650914">使用系统默认打印机作为默认选项</translation>

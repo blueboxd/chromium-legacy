@@ -324,6 +324,136 @@ luci.console_view(
             short_name = 'kvn',
         ),
         luci.console_view_entry(
+            builder = 'ci/android-cronet-arm-dbg',
+            category = 'chromium.android|cronet|arm',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-cronet-arm-rel',
+            category = 'chromium.android|cronet|arm',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-cronet-kitkat-arm-rel',
+            category = 'chromium.android|cronet|test',
+            short_name = 'k',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-cronet-lollipop-arm-rel',
+            category = 'chromium.android|cronet|test',
+            short_name = 'l',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android arm Builder (dbg)',
+            category = 'chromium.android|builder|arm',
+            short_name = '32',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android arm64 Builder (dbg)',
+            category = 'chromium.android|builder|arm',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android x86 Builder (dbg)',
+            category = 'chromium.android|builder|x86',
+            short_name = '32',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android x64 Builder (dbg)',
+            category = 'chromium.android|builder|x86',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/KitKat Phone Tester (dbg)',
+            category = 'chromium.android|tester|phone',
+            short_name = 'K',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Lollipop Phone Tester',
+            category = 'chromium.android|tester|phone',
+            short_name = 'L',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Marshmallow 64 bit Tester',
+            category = 'chromium.android|tester|phone',
+            short_name = 'M',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Nougat Phone Tester',
+            category = 'chromium.android|tester|phone',
+            short_name = 'N',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Oreo Phone Tester',
+            category = 'chromium.android|tester|phone',
+            short_name = 'O',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-pie-arm64-dbg',
+            category = 'chromium.android|tester|phone',
+            short_name = 'P',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/KitKat Tablet Tester',
+            category = 'chromium.android|tester|tablet',
+            short_name = 'K',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Lollipop Tablet Tester',
+            category = 'chromium.android|tester|tablet',
+            short_name = 'L',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Marshmallow Tablet Tester',
+            category = 'chromium.android|tester|tablet',
+            short_name = 'M',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android WebView L (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'L',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android WebView M (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'M',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android WebView N (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'N',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android WebView O (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'O',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android WebView P (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'P',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-kitkat-arm-rel',
+            category = 'chromium.android|on_cq',
+            short_name = 'K',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-marshmallow-arm64-rel',
+            category = 'chromium.android|on_cq',
+            short_name = 'M',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Cast Android (dbg)',
+            category = 'chromium.android|on_cq',
+            short_name = 'cst',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-pie-arm64-rel',
+            category = 'chromium.android|on_cq',
+            short_name = 'P',
+        ),
+        luci.console_view_entry(
             builder = 'chrome:ci/linux-chromeos-chrome',
             category = 'chrome',
             short_name = 'cro',
@@ -437,6 +567,119 @@ luci.console_view(
             builder = 'ci/Linux CFI',
             category = 'chromium.memory|cfi',
             short_name = 'lnx',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Linux x64 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Linux|Builder',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Linux x64 DEPS Release (Intel HD 630)',
+            category = 'chromium.dawn|DEPS|Linux|Intel',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Linux x64 DEPS Release (NVIDIA)',
+            category = 'chromium.dawn|DEPS|Linux|Nvidia',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Mac x64 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Mac|Builder',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Mac x64 DEPS Release (AMD)',
+            category = 'chromium.dawn|DEPS|Mac|AMD',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Mac x64 DEPS Release (Intel)',
+            category = 'chromium.dawn|DEPS|Mac|Intel',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x86 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Windows|Builder',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x64 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Windows|Builder',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x86 DEPS Release (Intel HD 630)',
+            category = 'chromium.dawn|DEPS|Windows|Intel',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x64 DEPS Release (Intel HD 630)',
+            category = 'chromium.dawn|DEPS|Windows|Intel',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x86 DEPS Release (NVIDIA)',
+            category = 'chromium.dawn|DEPS|Windows|Nvidia',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Dawn Win10 x64 DEPS Release (NVIDIA)',
+            category = 'chromium.dawn|DEPS|Windows|Nvidia',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU Mac Builder',
+            category = 'chromium.gpu|Mac',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Mac Release (Intel)',
+            category = 'chromium.gpu|Mac',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Mac Retina Release (AMD)',
+            category = 'chromium.gpu|Mac',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU Linux Builder',
+            category = 'chromium.gpu|Linux',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux Release (NVIDIA)',
+            category = 'chromium.gpu|Linux',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android Release (Nexus 5X)',
+            category = 'chromium.gpu|Android',
+        ),
+        # TODO(gbeaty): FYI builders should not be mirrors for try builders on
+        # the CQ, but things are what they are
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-cronet',
+            category = 'chromium.fyi|cronet',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/mac-osxbeta-rel',
+            category = 'chromium.fyi|mac',
+            short_name = 'beta',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/chromeos-kevin-rel-hw-tests',
+            category = 'chromium.fyi|chromos',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/VR Linux',
+            category = 'chromium.fyi|linux',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux Ozone Tester (Wayland)',
+            category = 'chromium.fyi|linux',
+            short_name = 'low',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux Ozone Tester (X11)',
+            category = 'chromium.fyi|linux',
+            short_name = 'lox',
         ),
     ],
 )

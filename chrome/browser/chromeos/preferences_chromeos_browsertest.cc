@@ -6,7 +6,6 @@
 #include <sys/types.h>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
@@ -147,28 +146,13 @@ class PreferencesTest : public LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(PreferencesTest);
 };
 
-class PreferencesTestForceWebUiLogin : public PreferencesTest {
- public:
-  PreferencesTestForceWebUiLogin() = default;
-  ~PreferencesTestForceWebUiLogin() override = default;
-
-  // PreferencesTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PreferencesTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PreferencesTestForceWebUiLogin);
-};
-
-IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, PRE_MultiProfiles) {
+IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
   RegisterUser(test_users_[0]);
   RegisterUser(test_users_[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, MultiProfiles) {
+IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Add first user and init its preferences. Check that corresponding

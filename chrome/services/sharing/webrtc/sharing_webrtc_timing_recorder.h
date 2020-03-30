@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/services/sharing/public/cpp/sharing_webrtc_metrics.h"
 
@@ -25,9 +26,16 @@ class SharingWebRtcTimingRecorder {
   // is determined by the |event_start_map| in GetEventStart.
   void LogEvent(WebRtcTimingEvent event);
 
+  // Sets whether we should log events with the sender or receiver suffix in
+  // addition to the non-suffixed version. Only the non-suffixed version is
+  // logged by default.
+  void set_is_sender(bool is_sender) { is_sender_ = is_sender; }
+
  private:
   // Map of the timing event to the first timestamp it got logged.
   std::map<WebRtcTimingEvent, base::TimeTicks> timings_;
+  // Whether we should log events with the sender or receiver suffix.
+  base::Optional<bool> is_sender_;
 };
 
 }  // namespace sharing

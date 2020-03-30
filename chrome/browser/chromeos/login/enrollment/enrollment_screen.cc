@@ -103,6 +103,16 @@ std::string GetEnterpriseDisplayDomain() {
 namespace chromeos {
 
 // static
+std::string EnrollmentScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::BACK:
+      return "Back";
+  }
+}
+
+// static
 EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
   return static_cast<EnrollmentScreen*>(
       manager->GetScreen(EnrollmentScreenView::kScreenId));

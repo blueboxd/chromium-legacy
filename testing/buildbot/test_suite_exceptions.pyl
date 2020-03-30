@@ -443,6 +443,12 @@
           'shards': 30,
         },
       },
+      'Linux Tests (dbg)(1)': {
+        # crbug.com/1066161
+        'swarming': {
+          'shards': 20,
+        },
+      },
       'Mac ASan 64 Tests (1)': {
         'swarming': {
           'dimension_sets': [

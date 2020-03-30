@@ -15,7 +15,6 @@
 
 namespace password_manager {
 
-class FormFetcher;
 class FormSaver;
 class PasswordManagerClient;
 class PasswordManagerDriver;
@@ -37,19 +36,22 @@ class PasswordGenerationManager {
     return presaved_->password_value;
   }
 
-  // Called when user wants to start generation flow for |generated|. If there
-  // is no username conflict, the message is synchronously passed to |driver|.
-  // |fetcher| to fill that UI with correct data.
-  // Otherwise, the UI on the client is invoked to ask for overwrite permission.
-  // There is one corner case that is still not covered.
-  // The user had the current password saved with empty username.
+  // Called when user wants to start generation flow for |generated|.
+  // |non_federated_matches| and |federated_matches| are used to determine
+  // whether there is a username conflict. If there is none, the message is
+  // synchronously passed to |driver|. Otherwise, the UI on the client is
+  // invoked to ask for overwrite permission. There is one corner case that is
+  // still not covered. The user had the current password saved with empty
+  // username.
   // - The change password form has no username.
   // - The user generates a password and sees the bubble with an empty username.
   // - The user clicks 'Update'.
   // - The actual form submission doesn't succeed for some reason.
-  void GeneratedPasswordAccepted(autofill::PasswordForm generated,
-                                 const FormFetcher& fetcher,
-                                 base::WeakPtr<PasswordManagerDriver> driver);
+  void GeneratedPasswordAccepted(
+      autofill::PasswordForm generated,
+      const std::vector<const autofill::PasswordForm*>& non_federated_matches,
+      const std::vector<const autofill::PasswordForm*>& federated_matches,
+      base::WeakPtr<PasswordManagerDriver> driver);
 
   // Called when generated password is accepted or changed by user.
   void PresaveGeneratedPassword(

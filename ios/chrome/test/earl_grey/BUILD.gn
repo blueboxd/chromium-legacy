@@ -108,6 +108,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/tabs:eg_tests",
     "//ios/chrome/browser/ui/toolbar:eg_tests",
     "//ios/chrome/browser/ui/webui:eg_tests",
+    "//ios/chrome/browser/ui/webui/interstitials:eg_tests",
   ]
 
   shards = 2
@@ -299,6 +300,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/settings/google_services:constants",
     "//ios/chrome/browser/ui/settings/password:eg_test_support",
     "//ios/chrome/browser/ui/settings/password:password_constants",
+    "//ios/chrome/browser/ui/settings/privacy",
     "//ios/chrome/browser/ui/settings/sync",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui_constants",
     "//ios/chrome/browser/ui/tab_grid/grid:grid_ui_constants",
@@ -458,6 +460,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/settings/language:eg_app_support+eg2",
     "//ios/chrome/browser/ui/settings/password:eg_app_support+eg2",
     "//ios/chrome/browser/ui/settings/password:password_constants",
+    "//ios/chrome/browser/ui/settings/privacy",
     "//ios/chrome/browser/ui/settings/sync",
     "//ios/chrome/browser/ui/signin_interaction:eg_app_support+eg2",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui_constants",

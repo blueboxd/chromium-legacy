@@ -23,6 +23,8 @@ class ArcTermsOfServiceScreen : public BaseScreen,
  public:
   enum class Result { ACCEPTED, SKIPPED, BACK };
 
+  static std::string GetResultString(Result result);
+
   // Launches the ARC settings page if the user requested to review them after
   // completing OOBE.
   static void MaybeLaunchArcSettings(Profile* profile);

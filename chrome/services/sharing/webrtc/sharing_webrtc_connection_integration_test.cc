@@ -4,7 +4,9 @@
 
 #include "chrome/services/sharing/webrtc/sharing_webrtc_connection.h"
 
+#include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/sharing/webrtc/test/mock_sharing_connection_host.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -168,10 +170,29 @@ class SharingWebRtcConnectionIntegrationTest : public testing::Test {
             base::Unretained(this)));
   }
 
+  enum class Role { kSender, kReceiver, kSenderAndReceiver };
+
+  void ExpectTimingHistogram(const std::string& name, Role role) {
+    int expected_count = role == Role::kSenderAndReceiver ? 2 : 1;
+    histograms_.ExpectTotalCount(
+        base::StrCat({"Sharing.WebRtc.TimingEvents.", name}), expected_count);
+
+    if (role == Role::kSender || role == Role::kSenderAndReceiver) {
+      histograms_.ExpectTotalCount(
+          base::StrCat({"Sharing.WebRtc.TimingEvents.Sender.", name}), 1);
+    }
+
+    if (role == Role::kReceiver || role == Role::kSenderAndReceiver) {
+      histograms_.ExpectTotalCount(
+          base::StrCat({"Sharing.WebRtc.TimingEvents.Receiver.", name}), 1);
+    }
+  }
+
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME};
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> webrtc_pc_factory_;
+  base::HistogramTester histograms_;
 };
 
 TEST_F(SharingWebRtcConnectionIntegrationTest, SendMessage_Success) {
@@ -205,6 +226,17 @@ TEST_F(SharingWebRtcConnectionIntegrationTest, SendMessage_Success) {
 
   send_run_loop.Run();
   receive_run_loop.Run();
+
+  ExpectTimingHistogram("OfferCreated", Role::kSender);
+  ExpectTimingHistogram("AnswerReceived", Role::kSender);
+  ExpectTimingHistogram("QueuingMessage", Role::kSender);
+  ExpectTimingHistogram("SendingMessage", Role::kSender);
+  ExpectTimingHistogram("OfferReceived", Role::kReceiver);
+  ExpectTimingHistogram("AnswerCreated", Role::kReceiver);
+  ExpectTimingHistogram("MessageReceived", Role::kReceiver);
+  ExpectTimingHistogram("SignalingStable", Role::kSenderAndReceiver);
+  ExpectTimingHistogram("IceCandidateReceived", Role::kSenderAndReceiver);
+  ExpectTimingHistogram("DataChannelOpen", Role::kSenderAndReceiver);
 }
 
 }  // namespace sharing

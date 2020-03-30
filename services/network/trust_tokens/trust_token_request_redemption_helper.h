@@ -15,7 +15,6 @@
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
-#include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "url/origin.h"
 
@@ -152,12 +151,7 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   void OnGotKeyCommitment(
       net::URLRequest* request,
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
-      std::unique_ptr<TrustTokenKeyCommitmentResult> commitment_result);
-
-  // Helper method: stores the keys from |result| in |token_store_| (and, while
-  // doing so, evicts all tokens not signed with keys in |result|).
-  void UpdateTokenStoreFromKeyCommitmentResult(
-      const TrustTokenKeyCommitmentResult& result);
+      mojom::TrustTokenKeyCommitmentResultPtr commitment_result);
 
   // Helper method: searches |token_store_| for a single trust token and returns
   // it, returning nullopt if the store contains no tokens for |issuer_|.

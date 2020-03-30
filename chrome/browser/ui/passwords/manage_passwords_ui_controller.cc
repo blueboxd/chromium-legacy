@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -283,7 +284,8 @@ void ManagePasswordsUIController::OnCredentialLeak(
 
 void ManagePasswordsUIController::NotifyUnsyncedCredentialsWillBeDeleted(
     const std::vector<autofill::PasswordForm>& unsynced_credentials) {
-  NOTIMPLEMENTED();
+  passwords_data_.ProcessUnsyncedCredentialsWillBeDeleted(unsynced_credentials);
+  // TODO(crbug.com/1060132): Update the bubble after the state is set.
 }
 
 void ManagePasswordsUIController::OnLoginsChanged(
@@ -371,6 +373,11 @@ ManagePasswordsUIController::GetCredentialSource() const {
   return form_manager
              ? form_manager->GetCredentialSource()
              : password_manager::metrics_util::CredentialSourceType::kUnknown;
+}
+
+const std::vector<autofill::PasswordForm>&
+ManagePasswordsUIController::GetUnsyncedCredentials() const {
+  return passwords_data_.unsynced_credentials();
 }
 
 const std::vector<std::unique_ptr<autofill::PasswordForm>>&

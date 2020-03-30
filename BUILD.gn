@@ -910,6 +910,8 @@ if (is_win) {
 }
 
 if (is_chromeos) {
+  # This group is used to collect all targets used when verifying a new version
+  # of Chrome for Chrome OS.
   group("chromiumos_preflight") {
     testonly = true
     deps = [
@@ -917,15 +919,20 @@ if (is_chromeos) {
       "//chrome/browser/metrics/perf:profile_provider_unittest",
       "//chrome/test/chromedriver",
       "//components/chromeos_camera:jpeg_decode_accelerator_unittest",
+      "//components/exo/wayland:wayland_client_perftests",
       "//media:media_unittests",
+      "//media/capture:capture_unittests",
       "//ppapi/examples/video_decode",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
       "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
+      "//third_party/dawn:dawn_end2end_tests",
+      "//third_party/dawn:dawn_unittests",
 
       # Blocked on https://github.com/catapult-project/catapult/issues/2297
       #"//third_party/catapult/telemetry:bitmaptools",
       "//tools/perf/clear_system_cache",
+      "//ui/ozone/gl:ozone_gl_unittests",
     ]
 
     if (use_v4l2_codec || use_vaapi) {
@@ -935,6 +942,9 @@ if (is_chromeos) {
         "//media/gpu:video_decode_accelerator_tests",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
+      if (use_vaapi) {
+        deps += [ "//media/gpu/vaapi:vaapi_unittest" ]
+      }
     }
   }
 }

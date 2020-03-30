@@ -455,6 +455,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/collapse_radio_button.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_COOKIES_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/cookies_page.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_PRIVACY_PAGE_DO_NOT_TRACK_TOGGLE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/do_not_track_toggle.m.js"
            use_base_dir="false"

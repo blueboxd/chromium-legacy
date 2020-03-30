@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -117,21 +116,6 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread*,
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
 #endif
-
-base::LazyInstance<viz::VizMainImpl::LogMessages>::DestructorAtExit
-    deferred_messages = LAZY_INSTANCE_INITIALIZER;
-
-bool GpuProcessLogMessageHandler(int severity,
-                                 const char* file, int line,
-                                 size_t message_start,
-                                 const std::string& str) {
-  viz::VizMainImpl::LogMessage log;
-  log.severity = severity;
-  log.header = str.substr(0, message_start);
-  log.message = str.substr(message_start);
-  deferred_messages.Get().push_back(std::move(log));
-  return false;
-}
 
 class ContentSandboxHelper : public gpu::GpuSandboxHelper {
  public:
@@ -260,7 +244,9 @@ int GpuMain(const MainFunctionParams& parameters) {
     ::SetPriorityClass(::GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 #endif
 
-  logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
+  // Installs a base::LogMessageHandlerFunction which ensures messages are sent
+  // to the GpuProcessHost once the GpuServiceImpl has started.
+  viz::GpuServiceImpl::InstallPreInitializeLogHandler();
 
   // We are experiencing what appear to be memory-stomp issues in the GPU
   // process. These issues seem to be impacting the task executor and listeners
@@ -356,7 +342,6 @@ int GpuMain(const MainFunctionParams& parameters) {
       const_cast<base::CommandLine*>(&command_line), gpu_preferences);
   const bool dead_on_arrival = !init_success;
 
-  logging::SetLogMessageHandler(nullptr);
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 
   const base::ThreadPriority io_thread_priority =
@@ -390,10 +375,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::RunLoop run_loop;
   GpuChildThread* child_thread =
-      new GpuChildThread(run_loop.QuitClosure(), std::move(gpu_init),
-                         std::move(deferred_messages.Get()));
-  deferred_messages.Get().clear();
-
+      new GpuChildThread(run_loop.QuitClosure(), std::move(gpu_init));
   child_thread->Init(start_time);
 
   gpu_process.set_main_thread(child_thread);

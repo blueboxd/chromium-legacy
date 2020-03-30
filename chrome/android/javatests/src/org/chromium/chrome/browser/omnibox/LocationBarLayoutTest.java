@@ -29,6 +29,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -41,6 +42,9 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.test.util.ClickUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -200,6 +204,17 @@ public class LocationBarLayoutTest {
 
         onView(withId(R.id.mic_button)).check(matches(isDisplayed()));
         onView(withId(R.id.delete_button)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @SmallTest
+    public void testDeleteButton() throws ExecutionException {
+        setUrlBarTextAndFocus("testing");
+        Assert.assertEquals(getDeleteButton().getVisibility(), VISIBLE);
+        ClickUtils.clickButton(getDeleteButton());
+        CriteriaHelper.pollUiThread(
+                Criteria.checkThat(() -> getDeleteButton().getVisibility(), Matchers.not(VISIBLE)));
+        Assert.assertEquals("", getUrlText(getUrlBar()));
     }
 
     @Test

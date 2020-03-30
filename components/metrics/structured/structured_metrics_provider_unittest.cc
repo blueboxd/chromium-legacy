@@ -35,7 +35,8 @@ namespace {
 // To test that the right values are calculated for hashed metrics, we need to
 // set up some fake keys that we know the output hashes for. kKeyData contains
 // the JSON for a simple structured_metrics.json file with keys for the test
-// events.
+// events. The two keys are ID'd by the name hashes of "TestEventOne" and
+// "TestProject", because TestEventTwo is associated with TestProject.
 // TODO(crbug.com/1016655): Once custom rotation periods have been implemented,
 // change the large constants to 0.
 constexpr char kKeyData[] = R"({
@@ -45,7 +46,7 @@ constexpr char kKeyData[] = R"({
       "last_rotation":1000000,
       "key":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     },
-    "15791833939776536363":{
+    "17426425568333718899":{
       "rotation_period":1000000,
       "last_rotation":1000000,
       "key":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
@@ -276,7 +277,7 @@ TEST_F(StructuredMetricsProviderTest, EventsReportedCorrectly) {
       const auto& metric = event.metrics(0);
       EXPECT_EQ(metric.name_hash(), kMetricThreeHash);
       EXPECT_EQ(HashToHex(metric.value_hmac()),
-                // Value of HMAC_256("bbb...b", concat(hex(kMetricOneHash),
+                // Value of HMAC_256("bbb...b", concat(hex(kProjectHash),
                 // "value three"))
                 "86F0169868588DC7");
     }

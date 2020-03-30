@@ -45,6 +45,8 @@ constexpr char kKey[] = "abcdefghijklmnopqrstuvwxyzabcdef";
 constexpr uint64_t kEventOneHash = UINT64_C(15619026293081468407);
 // The name hash of "TestEventTwo".
 constexpr uint64_t kEventTwoHash = UINT64_C(15791833939776536363);
+// The name hash of "TestProject".
+constexpr uint64_t kProjectHash = UINT64_C(17426425568333718899);
 
 // The name hash of "TestMetricOne".
 constexpr uint64_t kMetricOneHash = UINT64_C(637929385654885975);
@@ -83,7 +85,7 @@ std::string RotationPeriodPath(const uint64_t event) {
 // Returns the total number of events registered in structured.xml. This is used
 // to determine how many keys we expect to load or rotate on initialization.
 int NumberOfEvents() {
-  return sizeof(metrics::structured::events::kEventNameHashes) /
+  return sizeof(metrics::structured::events::kProjectNameHashes) /
          sizeof(uint64_t);
 }
 
@@ -186,7 +188,7 @@ TEST_F(KeyDataTest, GeneratesKeysForEvents) {
       NumberOfEvents());
 
   const std::string key_one = GetString(KeyPath(kEventOneHash));
-  const std::string key_two = GetString(KeyPath(kEventTwoHash));
+  const std::string key_two = GetString(KeyPath(kProjectHash));
 
   EXPECT_EQ(key_one.size(), 32ul);
   EXPECT_EQ(key_two.size(), 32ul);

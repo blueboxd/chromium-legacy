@@ -324,7 +324,7 @@ def read_pickle_files(pickle_filenames):
 
 
 def read_pickle_file(pickle_filename):
-    with open(pickle_filename) as pickle_file:
+    with open(pickle_filename, 'rb') as pickle_file:
         return pickle.load(pickle_file)
 
 

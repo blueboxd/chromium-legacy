@@ -39492,6 +39492,7 @@ from previous Chrome versions.
   <int value="335976733" label="NotificationStackingBarRedesign:enabled"/>
   <int value="336429189" label="DisallowUnsafeHttpDownloads:disabled"/>
   <int value="338662897" label="AndroidNightModeTabReparenting:disabled"/>
+  <int value="339419844" label="EmojiSuggestAddition:enabled"/>
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
   <int value="341851350" label="EnableDbusAndX11StatusIcons:enabled"/>
@@ -39995,6 +39996,7 @@ from previous Chrome versions.
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="955425932" label="EnterpriseReportingInChromeOS:enabled"/>
+  <int value="955901619" label="EmojiSuggestAddition:disabled"/>
   <int value="956716414" label="GlobalMediaControlsPictureInPicture:disabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
@@ -52201,6 +52203,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Error while downloading Plugin VM DLC"/>
   <int value="7" label="User cancelled setup while downloading Plugin VM DLC"/>
   <int value="8" label="Plugin VM was already installed"/>
+  <int value="9" label="User cancelled setup while checking for existing VM"/>
+  <int value="10" label="User didn't meet minimum required free disk space"/>
+  <int value="11" label="User cancelled setup due to low free disk space"/>
+  <int value="12" label="User cancelled setup during disk space check"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum">

@@ -77,9 +77,9 @@ void StructuredMetricsProvider::OnRecord(const EventBase& event) {
       // Store hashed values as strings, because the JSON parser only retains 53
       // bits of precision for ints. This would corrupt the hashes.
       name_value.SetStringKey(
-          "value",
-          base::NumberToString(key_data_->HashForEventMetric(
-              event.name_hash(), metric.name_hash, metric.string_value)));
+          "value", base::NumberToString(key_data_->HashForEventMetric(
+                       event.project_name_hash(), metric.name_hash,
+                       metric.string_value)));
     } else if (metric.type == EventBase::MetricType::kInt) {
       name_value.SetIntKey("value", metric.int_value);
     }
@@ -87,9 +87,13 @@ void StructuredMetricsProvider::OnRecord(const EventBase& event) {
     metrics.Append(std::move(name_value));
   }
 
-  // Create an event value containing the metrics and the event name hash.
+  // Create an event value containing the metrics, the event name hash, and the
+  // ID that will eventually be used as the profile_event_id of this event.
   base::Value event_value(base::Value::Type::DICTIONARY);
   event_value.SetStringKey("name", base::NumberToString(event.name_hash()));
+  event_value.SetStringKey(
+      "id",
+      base::NumberToString(key_data_->UserEventId(event.project_name_hash())));
   event_value.SetKey("metrics", std::move(metrics));
 
   // Add the event to |storage_|.
@@ -178,7 +182,14 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
       continue;
     }
     event_proto->set_event_name_hash(event_name_hash);
-    event_proto->set_profile_event_id(key_data_->UserEventId(event_name_hash));
+
+    uint64_t user_event_id;
+    if (!base::StringToUint64(event.FindKey("id")->GetString(),
+                              &user_event_id)) {
+      LogInternalError(StructuredMetricsError::kFailedUintConversion);
+      continue;
+    }
+    event_proto->set_profile_event_id(user_event_id);
 
     for (const auto& metric : event.FindKey("metrics")->GetList()) {
       auto* metric_proto = event_proto->add_metrics();

@@ -197,16 +197,6 @@ class ResetOobeTest : public OobeBaseTest {
     OobeBaseTest::SetUpCommandLine(command_line);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    update_engine_client_ = new FakeUpdateEngineClient;
-    dbus_setter->SetUpdateEngineClient(
-        std::unique_ptr<UpdateEngineClient>(update_engine_client_));
-
-    OobeBaseTest::SetUpInProcessBrowserTestFixture();
-  }
-
   // Simulates reset screen request from OOBE UI.
   void InvokeResetScreen() {
     test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
@@ -214,8 +204,6 @@ class ResetOobeTest : public OobeBaseTest {
     EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
     ExpectConfirmationDialogClosed();
   }
-
-  FakeUpdateEngineClient* update_engine_client_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResetOobeTest);
@@ -334,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(ResetOobeTest, ResetOnWelcomeScreen) {
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
@@ -349,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  EXPECT_EQ(0, update_engine_client()->rollback_call_count());
 }
 
 // TODO(http://crbug.com/990362): Times out on MSAN buildbots.

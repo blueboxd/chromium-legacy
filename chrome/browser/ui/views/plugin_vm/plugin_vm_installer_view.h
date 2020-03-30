@@ -33,6 +33,8 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
+  void OnCheckedDiskSpace(bool low_disk_space) override;
+  void OnDiskSpaceCheckFailed() override;
   void OnDlcDownloadProgressUpdated(double progress,
                                     base::TimeDelta elapsed_time) override;
   void OnDlcDownloadCompleted() override;
@@ -60,8 +62,11 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
       base::OnceCallback<void(bool success)> callback);
 
  private:
+  // TODO(crbug.com/1063748): Re-use PluginVmInstaller::InstallingState.
   enum class State {
-    STARTING,         // View was just created, installation hasn't yet started
+    STARTING,  // View was just created, installation hasn't yet started
+    CHECKING_DISK_SPACE,  // Checking there is available free disk space.
+    LOW_DISK_SPACE,   // Prompt user to continue or abort due to low disk space.
     DOWNLOADING_DLC,  // PluginVm DLC downloading and installing in progress.
     CHECKING_VMS,     // Checking for existing VMs.
     DOWNLOADING,      // Image download (ISO or VM) is in progress.

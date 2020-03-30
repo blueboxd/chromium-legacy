@@ -34,16 +34,16 @@ class EventInfo(object):
   def __init__(self, event_obj, project_obj):
     self.raw_name = event_obj['name']
     self.name = sanitize_name(event_obj['name'])
-    self.hash = HashName(event_obj['name'])
+    self.name_hash = HashName(event_obj['name'])
 
     # If a project is associated with this event, project_obj will be non-None
     # and we should use the project's name as the key name hash. Otherwise, use
     # the event's name as the key name hash.
     if project_obj:
-      key_name = project_obj['name']
+      project_name = sanitize_name(project_obj['name'])
     else:
-      key_name = event_obj['name']
-    self.key_name_hash = HashName(key_name)
+      project_name = sanitize_name(event_obj['name'])
+    self.project_name_hash = HashName(project_name)
 
 
 class MetricInfo(object):
@@ -95,25 +95,29 @@ class Template(object):
     file_info = FileInfo(relpath, self.basename)
     event_code = []
 
-    projects = {
+    project_name_hashes = set()
+    defined_projects = {
         project['name']: project
         for project in data[_PROJECTS_TYPE.tag][_PROJECT_TYPE.tag]
     }
     for event in data[_EVENTS_TYPE.tag][_EVENT_TYPE.tag]:
-      project = projects.get(event.get('project'))
-      event_code.append(self._StampEventCode(file_info, event, project))
+      defined_project = defined_projects.get(event.get('project'))
+      event_code.append(self._StampEventCode(file_info, event, defined_project))
+      project_name_hashes.add(
+          defined_project['name'] if defined_project else event['name'])
+
     event_code = ''.join(event_code)
 
-    event_name_hashes = [
-        'UINT64_C(%s)' % HashName(metric['name'])
-        for metric in data[_EVENTS_TYPE.tag][_EVENT_TYPE.tag]
+    project_name_hashes = [
+        'UINT64_C(%s)' % HashName(name)
+        for name in sorted(list(project_name_hashes))
     ]
-    event_name_hashes = '{' + ', '.join(event_name_hashes) + '}'
+    project_name_hashes = '{' + ', '.join(project_name_hashes) + '}'
 
     return self.file_template.format(
         file=file_info,
         event_code=event_code,
-        event_name_hashes=event_name_hashes)
+        project_name_hashes=project_name_hashes)
 
   def WriteFile(self, outdir, relpath, data):
     """Generates code and writes it to a file.

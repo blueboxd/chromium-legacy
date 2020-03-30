@@ -2016,6 +2016,9 @@ extern const char kImeAssistAutocorrectDescription[];
 extern const char kImeAssistPersonalInfoName[];
 extern const char kImeAssistPersonalInfoDescription[];
 
+extern const char kImeEmojiSuggestAdditionName[];
+extern const char kImeEmojiSuggestAdditionDescription[];
+
 extern const char kImeInputLogicFstName[];
 extern const char kImeInputLogicFstDescription[];
 

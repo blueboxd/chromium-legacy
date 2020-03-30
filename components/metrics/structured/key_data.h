@@ -55,30 +55,30 @@ class KeyData {
   KeyData(const KeyData&) = delete;
   KeyData& operator=(const KeyData&) = delete;
 
-  // Returns a digest of |value| for |metric| in the context of |event|.
-  // Terminology: a metric is a (name, value) pair, and an event is a bundle of
-  // metrics.
+  // Returns a digest of |value| for |metric| in the context of
+  // |project_name_hash|. Terminology: a metric is a (name, value) pair, and an
+  // event is a bundle of metrics.
   //
-  //  - |event| is the uint64 name hash of an event.
-  //  - |metric| is the uint64 name hash of a metric within |event|.
+  //  - |project_name_hash| is the uint64 name hash of an event or project.
+  //  - |metric| is the uint64 name hash of a metric within |project_name_hash|.
   //  - |value| is the string value to hash.
   //
   // The result is the HMAC digest of the |value| salted with |metric|, using
-  // the key for |event|. That is:
+  // the key for |project_name_hash|. That is:
   //
-  //   HMAC_SHA256(key(event), concat(value, hex(metric)))
+  //   HMAC_SHA256(key(project_name_hash), concat(value, hex(metric)))
   //
   // Returns 0u in case of an error.
-  uint64_t HashForEventMetric(uint64_t event,
+  uint64_t HashForEventMetric(uint64_t project_name_hash,
                               uint64_t metric,
                               const std::string& value);
 
-  // Returns an ID for this (user, |event|) pair. |event| is the name of an
-  // event, represented by the first 8 bytes of the MD5 hash of its name defined
-  // in structured.xml.
+  // Returns an ID for this (user, |project_name_hash|) pair.
+  // |project_name_hash| is the name of an event or project, represented by the
+  // first 8 bytes of the MD5 hash of its name defined  in structured.xml.
   //
-  // The derived ID is the first 8 bytes of SHA256(key(event)). Returns 0u in
-  // case of an error.
+  // The derived ID is the first 8 bytes of SHA256(key(project_name_hash)).
+  // Returns 0u in case of an error.
   //
   // This ID is intended as the only ID for a particular structured metrics
   // event. However, events are uploaded from the device alongside the UMA
@@ -86,7 +86,7 @@ class KeyData {
   // means events are associated with the client ID when uploaded from the
   // device. See the class comment of StructuredMetricsProvider for more
   // details.
-  uint64_t UserEventId(uint64_t event);
+  uint64_t UserEventId(uint64_t project_name_hash);
 
  private:
   int GetRotationPeriod(uint64_t event);
@@ -97,7 +97,7 @@ class KeyData {
 
   // Ensure that a valid key exists for |event|, and return it. Either returns a
   // string of size |kKeySize| or base::nullopt, which indicates an error.
-  base::Optional<std::string> ValidateAndGetKey(uint64_t event);
+  base::Optional<std::string> ValidateAndGetKey(uint64_t project_name_hash);
   void SetKey(uint64_t event, const std::string& key);
 
   // Ensure that valid keys exist for all events.

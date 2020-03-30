@@ -55,6 +55,10 @@ void WaitForNetworkSelectionScreen() {
 }
 
 void TapNetworkSelectionNext() {
+  test::OobeJS()
+      .CreateEnabledWaiter(true /* enabled */,
+                           {"oobe-network-md", "nextButton"})
+      ->Wait();
   test::OobeJS().TapOnPath({"oobe-network-md", "nextButton"});
 }
 

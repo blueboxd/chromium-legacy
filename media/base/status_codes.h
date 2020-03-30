@@ -69,7 +69,7 @@ enum class StatusCode : StatusCodeType {
   kVaapiFailedAcceleratorCreation = 0x00000509,
 
   // Special codes
-  kGenericErrorPleaseRemove = 0x99999999,
+  kGenericErrorPleaseRemove = 0x79999999,
   kCodeOnlyForTesting = std::numeric_limits<StatusCodeType>::max(),
   kMaxValue = kCodeOnlyForTesting,
 };

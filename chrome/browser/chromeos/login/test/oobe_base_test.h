@@ -20,6 +20,8 @@ class WindowedNotificationObserver;
 
 namespace chromeos {
 
+class FakeUpdateEngineClient;
+
 // Base class for OOBE, login, SAML and Kiosk tests.
 class OobeBaseTest : public MixinBasedInProcessBrowserTest {
  public:
@@ -34,6 +36,7 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   // MixinBasedInProcessBrowserTest::
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpInProcessBrowserTestFixture() override;
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
@@ -44,6 +47,10 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
 
   // Returns chrome://oobe WebUI.
   content::WebUI* GetLoginUI();
+
+  FakeUpdateEngineClient* update_engine_client() {
+    return update_engine_client_;
+  }
 
   void WaitForOobeUI();
   void WaitForGaiaPageLoad();
@@ -66,6 +73,8 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
  private:
   // Waits for login_screen_load_observer_ and resets it afterwards.
   void MaybeWaitForLoginScreenLoad();
+
+  FakeUpdateEngineClient* update_engine_client_ = nullptr;
 
   std::unique_ptr<content::WindowedNotificationObserver>
       login_screen_load_observer_;

@@ -13,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/guid.h"
 #include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
@@ -34,6 +35,8 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
+
+constexpr char kHomeDirectory[] = "/home";
 
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
@@ -89,6 +92,25 @@ void PluginVmInstaller::Start() {
   }
 
   state_ = State::kInstalling;
+  installing_state_ = InstallingState::kCheckingDiskSpace;
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
+                     base::FilePath(kHomeDirectory)),
+      base::BindOnce(&PluginVmInstaller::OnAvailableDiskSpace,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmInstaller::Continue() {
+  if (state_ != State::kInstalling ||
+      installing_state_ != InstallingState::kPausedLowDiskSpace) {
+    LOG(ERROR) << "Tried to continue installation in unexpected state "
+               << GetStateName(state_) << ", "
+               << GetInstallingStateName(installing_state_);
+    return;
+  }
+
   StartDlcDownload();
 }
 
@@ -100,6 +122,10 @@ void PluginVmInstaller::Cancel() {
   }
   state_ = State::kCancelling;
   switch (installing_state_) {
+    case InstallingState::kPausedLowDiskSpace:
+      CancelFinished();
+      return;
+    case InstallingState::kCheckingDiskSpace:
     case InstallingState::kCheckingForExistingVm:
     case InstallingState::kDownloadingDlc:
       // These can't be cancelled, so we wait for completion. For DLC, we also
@@ -114,6 +140,42 @@ void PluginVmInstaller::Cancel() {
     default:
       NOTREACHED();
   }
+}
+
+void PluginVmInstaller::OnAvailableDiskSpace(int64_t bytes) {
+  if (state_ == State::kCancelling) {
+    CancelFinished();
+    return;
+  }
+
+  if (free_disk_space_for_testing_ != -1)
+    bytes = free_disk_space_for_testing_;
+
+  // We allow the installer to fail for users who already set up a VM via vmc
+  // and have low disk space as it's simpler to check for existing VMs after
+  // installing DLC and this case should be very rare.
+
+  if (bytes < kMinimumFreeDiskSpace) {
+    if (observer_)
+      observer_->OnDiskSpaceCheckFailed();
+    InstallFinished();
+    return;
+  }
+
+  if (bytes < kRecommendedFreeDiskSpace) {
+    // If there's no observer, we would get stuck in the paused state.
+    if (!observer_) {
+      InstallFinished();
+      return;
+    }
+    observer_->OnCheckedDiskSpace(/*low_disk_space=*/true);
+    installing_state_ = InstallingState::kPausedLowDiskSpace;
+    return;
+  }
+
+  if (observer_)
+    observer_->OnCheckedDiskSpace(/*low_disk_space=*/false);
+  StartDlcDownload();
 }
 
 void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
@@ -649,6 +711,10 @@ std::string PluginVmInstaller::GetInstallingStateName(InstallingState state) {
   switch (state) {
     case InstallingState::kInactive:
       return "kInactive";
+    case InstallingState::kCheckingDiskSpace:
+      return "kCheckingDiskSpace";
+    case InstallingState::kPausedLowDiskSpace:
+      return "kPausedLowDiskSpace";
     case InstallingState::kCheckingForExistingVm:
       return "kCheckingForExistingVm";
     case InstallingState::kDownloadingDlc:

@@ -156,7 +156,10 @@ void IndexImpl::Find(const base::string16& query,
                      int32_t max_results,
                      FindCallback callback) {
   std::vector<local_search_service::Result> results;
-  const auto response = Find(query, max_latency_in_ms, max_results, &results);
+  // TODO(jiameng): |max_latency| isn't supported yet. We're
+  // temporarily ignoring it before the next cl removes the async call.
+  const auto response =
+      Find(query, max_results < 0 ? 0u : max_results, &results);
 
   mojom::ResponseStatus mresponse = mojom::ResponseStatus::UNKNOWN_ERROR;
   switch (response) {
@@ -197,8 +200,7 @@ void IndexImpl::Find(const base::string16& query,
 
 local_search_service::ResponseStatus IndexImpl::Find(
     const base::string16& query,
-    int32_t max_latency_in_ms,
-    int32_t max_results,
+    uint32_t max_results,
     std::vector<local_search_service::Result>* results) {
   DCHECK(results);
   results->clear();
@@ -209,7 +211,7 @@ local_search_service::ResponseStatus IndexImpl::Find(
     return local_search_service::ResponseStatus::kEmptyIndex;
   }
 
-  *results = GetSearchResults(query);
+  *results = GetSearchResults(query, max_results);
   return local_search_service::ResponseStatus::kSuccess;
 }
 
@@ -250,7 +252,8 @@ void IndexImpl::GetSearchParamsForTesting(double* relevance_threshold,
 }
 
 std::vector<local_search_service::Result> IndexImpl::GetSearchResults(
-    const base::string16& query) const {
+    const base::string16& query,
+    uint32_t max_results) const {
   std::vector<local_search_service::Result> results;
   const TokenizedString tokenized_query(query);
 
@@ -272,6 +275,9 @@ std::vector<local_search_service::Result> IndexImpl::GetSearchResults(
   }
 
   std::sort(results.begin(), results.end(), CompareResults);
+  if (results.size() > max_results && max_results > 0u) {
+    results.resize(max_results);
+  }
   return results;
 }
 

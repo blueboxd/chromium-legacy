@@ -4,11 +4,11 @@
 
 #include <vector>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager_base.h"
 
@@ -34,7 +34,8 @@ struct {
 class LoginUIHideSupervisedUsersTest : public LoginManagerTest {
  public:
   LoginUIHideSupervisedUsersTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {
+      : LoginManagerTest(false, false /* should_initialize_webui */) {
+    set_force_webui_login(false);
     for (size_t i = 0; i < base::size(kTestUsers); ++i) {
       test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
           kTestUsers[i].email, kTestUsers[i].gaia_id));
@@ -53,6 +54,7 @@ class LoginUIHideSupervisedUsersEnabledTest
   void SetUpInProcessBrowserTestFixture() override {
     scoped_feature_list_.InitAndEnableFeature(
         user_manager::kHideSupervisedUsers);
+    LoginUIHideSupervisedUsersTest::SetUpInProcessBrowserTestFixture();
   }
 
  private:
@@ -67,6 +69,7 @@ class LoginUIHideSupervisedUsersDisabledTest
   void SetUpInProcessBrowserTestFixture() override {
     scoped_feature_list_.InitAndDisableFeature(
         user_manager::kHideSupervisedUsers);
+    LoginUIHideSupervisedUsersTest::SetUpInProcessBrowserTestFixture();
   }
 
  private:
@@ -86,16 +89,9 @@ IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersEnabledTest,
 IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersEnabledTest,
                        SupervisedUserHidden) {
   // Only the regular users should be displayed on the login screen.
-  test::OobeJS().ExpectEQ(
-      "document.querySelectorAll('.pod:not(#user-pod-template)').length", 2);
-  test::OobeJS().ExpectEQ(
-      std::string("document.querySelectorAll('.pod:not(#user-pod-template)')[0]"
-                  ".user.emailAddress"),
-      std::string(test_users_[0].GetUserEmail()));
-  test::OobeJS().ExpectEQ(
-      std::string("document.querySelectorAll('.pod:not(#user-pod-template)')[1]"
-                  ".user.emailAddress"),
-      std::string(test_users_[1].GetUserEmail()));
+  EXPECT_EQ(2, ash::LoginScreenTestApi::GetUsersCount());
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[0]));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[1]));
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersDisabledTest,
@@ -110,23 +106,10 @@ IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersDisabledTest,
 // HideSupervisedUsers feature flag is *not* enabled.
 IN_PROC_BROWSER_TEST_F(LoginUIHideSupervisedUsersDisabledTest,
                        SupervisedUserDisplayed) {
-  test::OobeJS().ExpectEQ(
-      "document.querySelectorAll('.pod:not(#user-pod-template)').length", 3);
-  test::OobeJS().ExpectEQ(
-      std::string("document.querySelectorAll('.pod:not(#user-pod-template)')[0]"
-                  ".user.emailAddress"),
-      std::string(test_users_[0].GetUserEmail()));
-  test::OobeJS().ExpectEQ(
-      std::string("document.querySelectorAll('.pod:not(#user-pod-template)')[1]"
-                  ".user.emailAddress"),
-      std::string(test_users_[1].GetUserEmail()));
-
-  // Emails are not displayed for Supervised users, but there is an
-  // empty DOM element for the email address.
-  test::OobeJS().ExpectEQ(
-      std::string("document.querySelectorAll('.pod:not(#user-pod-template)')[2]"
-                  ".user.emailAddress"),
-      std::string());
+  EXPECT_EQ(3, ash::LoginScreenTestApi::GetUsersCount());
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[0]));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[1]));
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_users_[2]));
 }
 
 }  // namespace chromeos

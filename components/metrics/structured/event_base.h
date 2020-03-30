@@ -54,8 +54,10 @@ class EventBase {
 
   uint64_t name_hash() const { return event_name_hash_; }
 
+  uint64_t project_name_hash() const { return project_name_hash_; }
+
  protected:
-  explicit EventBase(uint64_t event_name_hash);
+  explicit EventBase(uint64_t event_name_hash, uint64_t project_name_hash);
 
   void AddStringMetric(uint64_t name_hash, const std::string& value);
 
@@ -65,6 +67,20 @@ class EventBase {
   // First 8 bytes of the MD5 hash of the event name, as defined in
   // structured.xml. This is calculated by tools/metrics/structured/codegen.py.
   uint64_t event_name_hash_;
+
+  // The project name hash is used to to determine which key to use for hashing
+  // events. The project name comes from this event's definition in
+  // structured.xml, and is decided by the rules:
+  //
+  //  - if this event references a project, eg. <event name="..."
+  //    project="...">, use that project's name.
+  //
+  //  - otherwise, use the event's name.
+  //
+  // |project_name_hash_| is the first 8 bytes of the MD5 hash of the project
+  // name.
+  uint64_t project_name_hash_;
+
   std::vector<Metric> metrics_;
 };
 

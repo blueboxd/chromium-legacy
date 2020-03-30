@@ -184,6 +184,12 @@ bool PluginVmInstallerView::Accept() {
     plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm();
     return true;
   }
+  if (state_ == State::LOW_DISK_SPACE) {
+    state_ = State::DOWNLOADING_DLC;
+    OnStateUpdated();
+    plugin_vm_installer_->Continue();
+    return false;
+  }
   DCHECK_EQ(state_, State::ERROR);
   // Retry button has been clicked to retry setting of PluginVm environment
   // after error occurred.
@@ -194,6 +200,14 @@ bool PluginVmInstallerView::Accept() {
 bool PluginVmInstallerView::Cancel() {
   switch (state_) {
     case State::STARTING:
+    case State::CHECKING_DISK_SPACE:
+      plugin_vm::RecordPluginVmSetupResultHistogram(
+          plugin_vm::PluginVmSetupResult::kUserCancelledCheckingDiskSpace);
+      break;
+    case State::LOW_DISK_SPACE:
+      plugin_vm::RecordPluginVmSetupResultHistogram(
+          plugin_vm::PluginVmSetupResult::kUserCancelledLowDiskSpace);
+      break;
     case State::DOWNLOADING_DLC:
       plugin_vm::RecordPluginVmSetupResultHistogram(
           plugin_vm::PluginVmSetupResult::kUserCancelledDownloadingPluginVmDlc);
@@ -224,6 +238,26 @@ bool PluginVmInstallerView::Cancel() {
 
 gfx::Size PluginVmInstallerView::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
+}
+
+void PluginVmInstallerView::OnCheckedDiskSpace(bool low_disk_space) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::CHECKING_DISK_SPACE);
+
+  if (low_disk_space)
+    state_ = State::LOW_DISK_SPACE;
+  else
+    state_ = State::DOWNLOADING_DLC;
+  OnStateUpdated();
+}
+
+void PluginVmInstallerView::OnDiskSpaceCheckFailed() {
+  state_ = State::ERROR;
+  reason_ =
+      plugin_vm::PluginVmInstaller::FailureReason::INSUFFICIENT_DISK_SPACE;
+  OnStateUpdated();
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kErrorInsufficientDiskSpace);
 }
 
 void PluginVmInstallerView::OnDlcDownloadProgressUpdated(
@@ -359,6 +393,8 @@ void PluginVmInstallerView::OnCreated() {
 base::string16 PluginVmInstallerView::GetBigMessage() const {
   switch (state_) {
     case State::STARTING:
+    case State::CHECKING_DISK_SPACE:
+    case State::LOW_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
     case State::DOWNLOADING:
@@ -382,7 +418,15 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
 
 base::string16 PluginVmInstallerView::GetMessage() const {
   switch (state_) {
+    case State::LOW_DISK_SPACE:
+      return l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_INSTALLER_LOW_DISK_SPACE_MESSAGE,
+          ui::FormatBytesWithUnits(
+              plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
+              ui::DATA_UNITS_GIBIBYTE,
+              /*show_units=*/true));
     case State::STARTING:
+    case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
       return l10n_util::GetStringUTF16(
@@ -449,9 +493,18 @@ base::string16 PluginVmInstallerView::GetMessage() const {
         case Reason::DLC_NEED_REBOOT:
           return l10n_util::GetStringUTF16(
               IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE);
+        case Reason::INSUFFICIENT_DISK_SPACE:
         case Reason::DLC_NEED_SPACE:
-          return l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_DLC_NEED_SPACE_FAILED_MESSAGE);
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_INSUFFICIENT_DISK_SPACE_MESSAGE,
+              ui::FormatBytesWithUnits(
+                  plugin_vm::PluginVmInstaller::kMinimumFreeDiskSpace,
+                  ui::DATA_UNITS_GIBIBYTE,
+                  /*show_units=*/true),
+              ui::FormatBytesWithUnits(
+                  plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
+                  ui::DATA_UNITS_GIBIBYTE,
+                  /*show_units=*/true));
       }
   }
 }
@@ -469,11 +522,14 @@ PluginVmInstallerView::~PluginVmInstallerView() {
 int PluginVmInstallerView::GetCurrentDialogButtons() const {
   switch (state_) {
     case State::STARTING:
+    case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
     case State::DOWNLOADING:
     case State::IMPORTING:
       return ui::DIALOG_BUTTON_CANCEL;
+    case State::LOW_DISK_SPACE:
+      return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
     case State::IMPORTED:
     case State::CREATED:
       return ui::DIALOG_BUTTON_OK;
@@ -492,6 +548,7 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
     ui::DialogButton button) const {
   switch (state_) {
     case State::STARTING:
+    case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
     case State::DOWNLOADING:
@@ -504,6 +561,11 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
       DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_LAUNCH_BUTTON);
     }
+    case State::LOW_DISK_SPACE:
+      return l10n_util::GetStringUTF16(
+          button == ui::DIALOG_BUTTON_OK
+              ? IDS_PLUGIN_VM_INSTALLER_CONTINUE_BUTTON
+              : IDS_APP_CANCEL);
     case State::ERROR: {
       DCHECK(reason_);
       switch (*reason_) {
@@ -546,9 +608,9 @@ void PluginVmInstallerView::OnStateUpdated() {
   }
 
   const bool progress_bar_visible =
-      state_ == State::STARTING || state_ == State::DOWNLOADING_DLC ||
-      state_ == State::CHECKING_VMS || state_ == State::DOWNLOADING ||
-      state_ == State::IMPORTING;
+      state_ == State::STARTING || state_ == State::CHECKING_DISK_SPACE ||
+      state_ == State::DOWNLOADING_DLC || state_ == State::CHECKING_VMS ||
+      state_ == State::DOWNLOADING || state_ == State::IMPORTING;
   progress_bar_->SetVisible(progress_bar_visible);
   // Values outside the range [0,1] display an infinite loading animation.
   progress_bar_->SetValue(-1);
@@ -657,7 +719,7 @@ void PluginVmInstallerView::StartInstallation() {
   // retry button is clicked).
   setup_start_tick_ = base::TimeTicks::Now();
 
-  state_ = State::DOWNLOADING_DLC;
+  state_ = State::CHECKING_DISK_SPACE;
   OnStateUpdated();
 
   plugin_vm_installer_->SetObserver(this);

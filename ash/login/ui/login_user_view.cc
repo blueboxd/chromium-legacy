@@ -23,6 +23,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_type.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -239,6 +240,11 @@ class LoginUserView::TapButton : public views::Button {
   void OnBlur() override {
     views::Button::OnBlur();
     parent_->UpdateOpacity();
+  }
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    // TODO(https://crbug.com/1065516): Define the button name.
+    node_data->SetNameExplicitlyEmpty();
+    Button::GetAccessibleNodeData(node_data);
   }
 
  private:

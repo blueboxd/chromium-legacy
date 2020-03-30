@@ -65,20 +65,35 @@ class PluginVmInstaller : public KeyedService,
     DLC_BUSY = 20,
     DLC_NEED_REBOOT = 21,
     DLC_NEED_SPACE = 22,
+    INSUFFICIENT_DISK_SPACE = 23,
   };
 
   enum class InstallingState {
     kInactive,
+    kCheckingDiskSpace,
+    kPausedLowDiskSpace,
     kDownloadingDlc,
     kCheckingForExistingVm,
     kDownloadingImage,
     kImporting,
   };
 
+  static constexpr int64_t kMinimumFreeDiskSpace = 16LL * 1024 * 1024 * 1024;
+  static constexpr int64_t kRecommendedFreeDiskSpace =
+      32LL * 1024 * 1024 * 1024;
+
   // Observer class for the PluginVm image related events.
+  // TODO(timloh): Merge OnFooFailed functions as the failure reason is enough
+  // to distinguish where we failed.
   class Observer {
    public:
     virtual ~Observer() = default;
+
+    // If |low_disk_space| is true, the device doesn't have the recommended
+    // amount of free disk space and the install will pause until Continue() or
+    // Cancel() is called.
+    virtual void OnCheckedDiskSpace(bool low_disk_space) = 0;
+    virtual void OnDiskSpaceCheckFailed() = 0;
 
     virtual void OnDlcDownloadProgressUpdated(double progress,
                                               base::TimeDelta elapsed_time) = 0;
@@ -108,6 +123,8 @@ class PluginVmInstaller : public KeyedService,
 
   // Start the installation. Progress updates will be sent to the observer.
   void Start();
+  // Continue the installation if it was paused due to low disk space.
+  void Continue();
   // Cancel the installation.
   void Cancel();
 
@@ -137,6 +154,9 @@ class PluginVmInstaller : public KeyedService,
   // Public for testing purposes.
   bool VerifyDownload(const std::string& downloaded_archive_hash);
 
+  void SetFreeDiskSpaceForTesting(int64_t bytes) {
+    free_disk_space_for_testing_ = bytes;
+  }
   void SetDownloadServiceForTesting(
       download::DownloadService* download_service);
   void SetDownloadedImageForTesting(const base::FilePath& downloaded_image);
@@ -146,9 +166,10 @@ class PluginVmInstaller : public KeyedService,
   std::string GetCurrentDownloadGuidForTesting();
 
  private:
+  void OnAvailableDiskSpace(int64_t bytes);
+  void StartDlcDownload();
   void OnUpdateVmState(bool default_vm_exists);
   void OnUpdateVmStateFailed();
-  void StartDlcDownload();
   void StartDownload();
   void DetectImageType();
   void StartImport();
@@ -187,6 +208,9 @@ class PluginVmInstaller : public KeyedService,
   base::TimeTicks import_start_tick_;
   std::unique_ptr<PluginVmDriveImageDownloadService> drive_download_service_;
   bool using_drive_download_service_ = false;
+
+  // -1 indicates not set
+  int64_t free_disk_space_for_testing_ = -1;
 
   ~PluginVmInstaller() override;
 

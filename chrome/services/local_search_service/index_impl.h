@@ -114,10 +114,10 @@ class IndexImpl : public mojom::Index {
             int32_t max_latency_in_ms,
             int32_t max_results,
             FindCallback callback) override;
+  // Zero |max_results| means no max.
   local_search_service::ResponseStatus Find(
       const base::string16& query,
-      int32_t max_latency_in_ms,
-      int32_t max_results,
+      uint32_t max_results,
       std::vector<local_search_service::Result>* results);
 
   void SetSearchParams(mojom::SearchParamsPtr search_params,
@@ -133,7 +133,8 @@ class IndexImpl : public mojom::Index {
  private:
   // Returns all search results for a given query.
   std::vector<local_search_service::Result> GetSearchResults(
-      const base::string16& query) const;
+      const base::string16& query,
+      uint32_t max_results) const;
 
   // A map from key to tokenized search-tags.
   std::map<std::string, std::vector<std::unique_ptr<TokenizedString>>> data_;

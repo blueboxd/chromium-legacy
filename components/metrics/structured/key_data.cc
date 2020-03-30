@@ -63,34 +63,35 @@ KeyData::KeyData(JsonPrefStore* key_store) : key_store_(key_store) {
 
 KeyData::~KeyData() = default;
 
-base::Optional<std::string> KeyData::ValidateAndGetKey(const uint64_t event) {
+base::Optional<std::string> KeyData::ValidateAndGetKey(
+    const uint64_t project_name_hash) {
   DCHECK(key_store_);
   const int now = (base::Time::Now() - base::Time::UnixEpoch()).InDays();
   bool key_is_valid = true;
 
-  // If the key for |key_path| doesn't exist, initialize new key data. Set the
-  // last rotation to a uniformly selected day between today and
+  // If the key for |project_name_hash| doesn't exist, initialize new key data.
+  // Set the last rotation to a uniformly selected day between today and
   // |kDefaultRotationPeriod| days ago, to uniformly distribute users amongst
   // rotation cohorts.
-  if (!key_store_->GetValue(KeyPath(event), nullptr)) {
+  if (!key_store_->GetValue(KeyPath(project_name_hash), nullptr)) {
     const int rotation_seed = base::RandInt(0, kDefaultRotationPeriod - 1);
-    SetRotationPeriod(event, kDefaultRotationPeriod);
-    SetLastRotation(event, now - rotation_seed);
-    SetKey(event, GenerateKey());
+    SetRotationPeriod(project_name_hash, kDefaultRotationPeriod);
+    SetLastRotation(project_name_hash, now - rotation_seed);
+    SetKey(project_name_hash, GenerateKey());
 
     LogKeyValidation(KeyValidationState::kCreated);
     key_is_valid = false;
   }
 
-  // If the key for |event| is outdated, generate a new key and write it to
-  // the |keys| pref store along with updated rotation data. Update the last
-  // rotation such that the user stays in the same cohort.
-  const int rotation_period = GetRotationPeriod(event);
-  const int last_rotation = GetLastRotation(event);
+  // If the key for |project_name_hash| is outdated, generate a new key and
+  // write it to the |keys| pref store along with updated rotation data. Update
+  // the last rotation such that the user stays in the same cohort.
+  const int rotation_period = GetRotationPeriod(project_name_hash);
+  const int last_rotation = GetLastRotation(project_name_hash);
   if (now - last_rotation > rotation_period) {
     const int new_last_rotation = now - (now - last_rotation) % rotation_period;
-    SetLastRotation(event, new_last_rotation);
-    SetKey(event, GenerateKey());
+    SetLastRotation(project_name_hash, new_last_rotation);
+    SetKey(project_name_hash, GenerateKey());
 
     LogKeyValidation(KeyValidationState::kRotated);
     key_is_valid = false;
@@ -101,7 +102,7 @@ base::Optional<std::string> KeyData::ValidateAndGetKey(const uint64_t event) {
   }
 
   const base::Value* key_json;
-  if (!(key_store_->GetValue(KeyPath(event), &key_json) &&
+  if (!(key_store_->GetValue(KeyPath(project_name_hash), &key_json) &&
         key_json->is_string())) {
     LogInternalError(StructuredMetricsError::kMissingKey);
     return base::nullopt;
@@ -117,8 +118,9 @@ base::Optional<std::string> KeyData::ValidateAndGetKey(const uint64_t event) {
 }
 
 void KeyData::ValidateKeys() {
-  for (const uint64_t event : metrics::structured::events::kEventNameHashes) {
-    ValidateAndGetKey(event);
+  for (const uint64_t project_name_hash :
+       metrics::structured::events::kProjectNameHashes) {
+    ValidateAndGetKey(project_name_hash);
   }
 }
 
@@ -135,8 +137,8 @@ void KeyData::SetRotationPeriod(const uint64_t event,
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
-void KeyData::SetKey(const uint64_t event, const std::string& key) {
-  return key_store_->SetValue(KeyPath(event),
+void KeyData::SetKey(const uint64_t project_name_hash, const std::string& key) {
+  return key_store_->SetValue(KeyPath(project_name_hash),
                               std::make_unique<base::Value>(key),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
@@ -163,9 +165,9 @@ int KeyData::GetRotationPeriod(const uint64_t event) {
   return value->GetInt();
 }
 
-uint64_t KeyData::UserEventId(const uint64_t event) {
+uint64_t KeyData::UserEventId(const uint64_t project_name_hash) {
   // Retrieve the key for |event|.
-  const base::Optional<std::string> key = ValidateAndGetKey(event);
+  const base::Optional<std::string> key = ValidateAndGetKey(project_name_hash);
   if (!key) {
     NOTREACHED();
     return 0u;
@@ -177,11 +179,11 @@ uint64_t KeyData::UserEventId(const uint64_t event) {
   return hash;
 }
 
-uint64_t KeyData::HashForEventMetric(const uint64_t event,
+uint64_t KeyData::HashForEventMetric(const uint64_t project_name_hash,
                                      const uint64_t metric,
                                      const std::string& value) {
-  // Retrieve the key for |event|.
-  const base::Optional<std::string> key = ValidateAndGetKey(event);
+  // Retrieve the key for |project_name_hash|.
+  const base::Optional<std::string> key = ValidateAndGetKey(project_name_hash);
   if (!key) {
     NOTREACHED();
     return 0u;

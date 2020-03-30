@@ -1242,6 +1242,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-cros-ime-emoji-suggest-addition",
+    "owners": [ "myy", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-cros-ime-input-logic-fst",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 85

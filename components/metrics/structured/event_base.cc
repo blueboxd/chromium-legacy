@@ -9,8 +9,9 @@
 namespace metrics {
 namespace structured {
 
-EventBase::EventBase(uint64_t event_name_hash)
-    : event_name_hash_(event_name_hash) {}
+EventBase::EventBase(uint64_t event_name_hash, uint64_t project_name_hash)
+    : event_name_hash_(event_name_hash),
+      project_name_hash_(project_name_hash) {}
 EventBase::EventBase(const EventBase& other) = default;
 EventBase::~EventBase() = default;
 

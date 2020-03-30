@@ -34,22 +34,20 @@ enum class PluginVmLaunchResult {
 // numeric values should never be reused.
 enum class PluginVmSetupResult {
   kSuccess = 0,
-
   kPluginVmIsNotAllowed = 1,
-
   kErrorDownloadingPluginVmImage = 2,
   kErrorImportingPluginVmImage = 3,
-
   kUserCancelledDownloadingPluginVmImage = 4,
   kUserCancelledImportingPluginVmImage = 5,
-
   kErrorDownloadingPluginVmDlc = 6,
   kUserCancelledDownloadingPluginVmDlc = 7,
-
   kVmAlreadyExists = 8,
   kUserCancelledCheckingForExistingVm = 9,
+  kErrorInsufficientDiskSpace = 10,
+  kUserCancelledLowDiskSpace = 11,
+  kUserCancelledCheckingDiskSpace = 12,
 
-  kMaxValue = kUserCancelledCheckingForExistingVm,
+  kMaxValue = kUserCancelledCheckingDiskSpace,
 };
 
 enum class PluginVmDlcUseResult {

@@ -137,4 +137,21 @@ TEST_F(IndexImplTest, RelevanceThreshold) {
   }
 }
 
+TEST_F(IndexImplTest, MaxResults) {
+  const std::map<std::string, std::vector<std::string>> data_to_register = {
+      {"id1", {"Clash Of Clan"}}, {"id2", {"famous"}}};
+  std::vector<mojom::DataPtr> data = CreateTestData(data_to_register);
+  AddOrUpdateAndCheck(index_remote_.get(), std::move(data));
+  GetSizeAndCheck(index_remote_.get(), 2u);
+  mojom::SearchParamsPtr search_params = mojom::SearchParams::New();
+  search_params->relevance_threshold = 0.0;
+  SetSearchParamsAndCheck(index_remote_.get(), std::move(search_params));
+
+  FindAndCheck(index_remote_.get(), "CC", /*max_latency_in_ms=*/-1,
+               /*max_results=*/-1, mojom::ResponseStatus::SUCCESS,
+               {"id1", "id2"});
+  FindAndCheck(index_remote_.get(), "CC", /*max_latency_in_ms=*/-1,
+               /*max_results=*/1, mojom::ResponseStatus::SUCCESS, {"id1"});
+}
+
 }  // namespace local_search_service

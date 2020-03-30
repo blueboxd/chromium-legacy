@@ -12,9 +12,12 @@
 namespace chromeos {
 
 namespace {
+const char kChromeVoxEnabledMessage[] = "ChromeVox spoken feedback is ready";
+const char kChromeVoxAlertMessage[] = "Alert";
+const char kChromeVoxUpdate1[] = "chrome vox Updated Press chrome vox o,";
+const char kChromeVoxUpdate2[] = "n to learn more about chrome vox Next.";
 
 constexpr int kPrintExpectationDelayMs = 3000;
-
 }  // namespace
 
 SpeechMonitor::SpeechMonitor() {
@@ -26,6 +29,52 @@ SpeechMonitor::~SpeechMonitor() {
       content::TtsPlatform::GetInstance());
   if (!replay_queue_.empty() || !replayed_queue_.empty())
     CHECK(replay_called_) << "Expectation was made, but Replay() not called.";
+}
+
+std::string SpeechMonitor::GetNextUtterance() {
+  return GetNextUtteranceWithLanguage().text;
+}
+
+SpeechMonitorUtterance SpeechMonitor::GetNextUtteranceWithLanguage() {
+  if (utterance_queue_.empty()) {
+    loop_runner_ = new content::MessageLoopRunner();
+    loop_runner_->Run();
+    loop_runner_.reset();
+  }
+  SpeechMonitorUtterance result = utterance_queue_.front();
+  utterance_queue_.pop_front();
+  return result;
+}
+
+bool SpeechMonitor::SkipChromeVoxEnabledMessage() {
+  return SkipChromeVoxMessage(kChromeVoxEnabledMessage);
+}
+
+bool SpeechMonitor::DidStop() {
+  return did_stop_;
+}
+
+void SpeechMonitor::BlockUntilStop() {
+  if (!did_stop_) {
+    loop_runner_ = new content::MessageLoopRunner();
+    loop_runner_->Run();
+    loop_runner_.reset();
+  }
+}
+
+bool SpeechMonitor::SkipChromeVoxMessage(const std::string& message) {
+  while (true) {
+    if (utterance_queue_.empty()) {
+      loop_runner_ = new content::MessageLoopRunner();
+      loop_runner_->Run();
+      loop_runner_.reset();
+    }
+    SpeechMonitorUtterance result = utterance_queue_.front();
+    utterance_queue_.pop_front();
+    if (result.text == message)
+      return true;
+  }
+  return false;
 }
 
 bool SpeechMonitor::PlatformImplAvailable() {
@@ -46,6 +95,7 @@ void SpeechMonitor::Speak(int utterance_id,
 }
 
 bool SpeechMonitor::StopSpeaking() {
+  did_stop_ = true;
   return true;
 }
 
@@ -64,8 +114,21 @@ void SpeechMonitor::GetVoices(std::vector<content::VoiceData>* out_voices) {
 void SpeechMonitor::WillSpeakUtteranceWithVoice(
     content::TtsUtterance* utterance,
     const content::VoiceData& voice_data) {
+  // Blacklist some phrases.
+  // Filter out empty utterances which can be used to trigger a start event from
+  // tts as an earcon sync.
+  if (utterance->GetText() == "" ||
+      utterance->GetText() == kChromeVoxAlertMessage ||
+      utterance->GetText() == kChromeVoxUpdate1 ||
+      utterance->GetText() == kChromeVoxUpdate2)
+    return;
+
+  VLOG(0) << "Speaking " << utterance->GetText();
   utterance_queue_.emplace_back(utterance->GetText(), utterance->GetLang());
   delay_for_last_utterance_ms_ = CalculateUtteranceDelayMS();
+  if (loop_runner_.get())
+    loop_runner_->Quit();
+
   MaybeContinueReplay();
 }
 
@@ -120,19 +183,11 @@ void SpeechMonitor::ExpectSpeech(const std::string& text,
 
 void SpeechMonitor::ExpectSpeechPattern(const std::string& pattern,
                                         const base::Location& location) {
-  ExpectSpeechPatternWithLocale(pattern, "", location);
-}
-
-void SpeechMonitor::ExpectSpeechPatternWithLocale(
-    const std::string& pattern,
-    const std::string& locale,
-    const base::Location& location) {
   CHECK(!replay_loop_runner_.get());
-  replay_queue_.push_back({[this, pattern, locale]() {
+  replay_queue_.push_back({[this, pattern]() {
                              for (auto it = utterance_queue_.begin();
                                   it != utterance_queue_.end(); it++) {
-                               if (base::MatchPattern(it->text, pattern) &&
-                                   (locale.empty() || it->lang == locale)) {
+                               if (base::MatchPattern(it->text, pattern)) {
                                  // Erase all utterances that came before the
                                  // match as well as the match itself.
                                  utterance_queue_.erase(

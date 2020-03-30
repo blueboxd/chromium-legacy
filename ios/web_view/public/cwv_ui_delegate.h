@@ -68,7 +68,7 @@ CWV_EXPORT
                               defaultText:(NSString*)defaultText
                                   pageURL:(NSURL*)URL
                         completionHandler:
-                            (void (^)(NSString*))completionHandler;
+                            (void (^)(NSString* _Nullable))completionHandler;
 
 // Determines whether the given link with |linkURL| should show a preview on
 // force touch. Return value NO is assumed if the method is not implemented.
@@ -98,7 +98,7 @@ CWV_EXPORT
 - (void)webView:(CWVWebView*)webView
     contextMenuConfigurationForLinkWithURL:(NSURL*)linkURL
                          completionHandler:
-                             (void (^)(UIContextMenuConfiguration*))
+                             (void (^)(UIContextMenuConfiguration* _Nullable))
                                  completionHandler API_AVAILABLE(ios(13.0));
 
 // Equivalent of -[WKUIDelegate

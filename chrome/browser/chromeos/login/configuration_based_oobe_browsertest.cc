@@ -80,18 +80,6 @@ class OobeConfigurationTest : public OobeBaseTest {
         fake_policy_dir_.GetPath());
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    OobeBaseTest::SetUpInProcessBrowserTestFixture();
-    OobeConfiguration::set_skip_check_for_testing(true);
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-
-    fake_update_engine_client_ = new chromeos::FakeUpdateEngineClient();
-
-    dbus_setter->SetUpdateEngineClient(
-        std::unique_ptr<chromeos::UpdateEngineClient>(
-            fake_update_engine_client_));
-  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // File name is based on the test name.
@@ -136,8 +124,6 @@ class OobeConfigurationTest : public OobeBaseTest {
   }
 
  protected:
-  // Owned by DBusThreadManagerSetter
-  chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
   base::ScopedTempDir fake_policy_dir_;
 
@@ -279,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestAcceptEula) {
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::DOWNLOADING);
   status.set_progress(0.1);
-  fake_update_engine_client_->set_default_status(status);
+  update_engine_client()->set_default_status(status);
 
   LoadConfiguration();
   OobeScreenWaiter(UpdateView::kScreenId).Wait();

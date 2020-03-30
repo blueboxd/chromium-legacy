@@ -26,7 +26,7 @@ namespace metrics {{
 namespace structured {{
 namespace events {{
 
-constexpr uint64_t kEventNameHashes[] = {event_name_hashes};\
+constexpr uint64_t kProjectNameHashes[] = {project_name_hashes};\
 {event_code}
 
 }}  // namespace events
@@ -43,8 +43,8 @@ class {event.name} final : public ::metrics::structured::EventBase {{
   {event.name}();
   ~{event.name}() override;
 
-  static constexpr uint64_t kEventNameHash = UINT64_C({event.hash});
-  static constexpr uint64_t kKeyNameHash = UINT64_C({event.key_name_hash});\
+  static constexpr uint64_t kEventNameHash = UINT64_C({event.name_hash});
+  static constexpr uint64_t kProjectNameHash = UINT64_C({event.project_name_hash});\
 {metric_code}
 }};\
 """
@@ -84,7 +84,7 @@ namespace events {{\
 IMPL_EVENT_TEMPLATE = """
 
 {event.name}::{event.name}() :
-  ::metrics::structured::EventBase(kEventNameHash) {{}}
+  ::metrics::structured::EventBase(kEventNameHash, kProjectNameHash) {{}}
 {event.name}::~{event.name}() = default;\
 {metric_code}\
 """

@@ -84,6 +84,7 @@ class MakeNamesWriter(json5_generator.Writer):
             entries = json5_generator.remove_duplicates(entries)
         else:
             json5_generator.reject_duplicates(entries)
+        entries.sort(key=lambda x: _symbol(x))
 
         basename, _ = os.path.splitext(os.path.basename(json5_file_path[0]))
         self._outputs = {

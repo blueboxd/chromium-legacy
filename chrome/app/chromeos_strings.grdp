@@ -4384,6 +4384,9 @@
   <message name="IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE" desc="Title of the Plugin VM installer if Plugin VM is disallowed.">
     Plugin VM needs permission to run
   </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_LOW_DISK_SPACE_MESSAGE" desc="Text of the Plugin VM installer that warns them of low disk space.">
+    Your device is low on storage space. At least <ph name="RECOMMENDED_SPACE">$1<ex>32GB</ex></ph> of free space is recommended to use Plugin VM. To free up space, delete files from device storage.
+  </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_START_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer that informs the user that setup may take a while.">
     This may take awhile
   </message>
@@ -4422,6 +4425,9 @@
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_TIME_LEFT_MESSAGE" desc="Text of the Plugin VM installer that shows estimated time left before current installation stage ends.">
     <ph name="TIME_LEFT">$1<ex>30 mins</ex></ph> left
+  </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_CONTINUE_BUTTON" desc="Label for the button in the Plugin VM installer to continue installation.">
+    Continue
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_LAUNCH_BUTTON" desc="Label for the button in the Plugin VM installer to launch Plugin VM after successful installation.">
     Launch
@@ -4468,8 +4474,8 @@
   <message name="IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because a pending update requires the device to be restarted.">
     Please restart your device to use Plugin VM.
   </message>
-  <message name="IDS_PLUGIN_VM_DLC_NEED_SPACE_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because there is not enough free space on the device.">
-    Your device is low on storage space. Please free up space to use Plugin VM.
+  <message name="IDS_PLUGIN_VM_INSUFFICIENT_DISK_SPACE_MESSAGE" desc="Error message shown if Plugin VM installation fails because there is not enough free space on the device.">
+    Your device is low on storage space. At least <ph name="MINIMUM_SPACE">$1<ex>16GB</ex></ph> of free space is required to use Plugin VM, and over <ph name="RECOMMENDED_SPACE">$2<ex>32GB</ex></ph> of free space is recommended. To free up space, delete files from device storage.
   </message>
 
   <!-- Strings for Account Manager error screen -->

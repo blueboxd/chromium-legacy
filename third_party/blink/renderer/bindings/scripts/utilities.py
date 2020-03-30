@@ -219,7 +219,7 @@ def merge_dict_recursively(target, diff):
     |target| will be updated with |diff|.  Part of |diff| may be re-used in
     |target|.
     """
-    for key, value in diff.iteritems():
+    for key, value in diff.items():
         if key not in target:
             target[key] = value
         elif type(value) == dict:

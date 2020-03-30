@@ -499,7 +499,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
             assert match
             if (driver_vendor == match.group(1) and
                 gpu_helper.EvaluateVersionComparison(
-                    driver_version, match.group(2), match.group(3))):
+                    driver_version, match.group(2), match.group(3),
+                    browser.platform.GetOSName(), driver_vendor)):
               tags.append(tag)
     return tags
 

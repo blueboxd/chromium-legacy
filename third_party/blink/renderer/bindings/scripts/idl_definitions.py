@@ -137,22 +137,22 @@ class IdlDefinitions(object):
 
     def accept(self, visitor):
         visitor.visit_definitions(self)
-        for interface in self.interfaces.itervalues():
+        for interface in self.interfaces.values():
             interface.accept(visitor)
-        for callback_function in self.callback_functions.itervalues():
+        for callback_function in self.callback_functions.values():
             callback_function.accept(visitor)
-        for dictionary in self.dictionaries.itervalues():
+        for dictionary in self.dictionaries.values():
             dictionary.accept(visitor)
-        for enumeration in self.enumerations.itervalues():
+        for enumeration in self.enumerations.values():
             enumeration.accept(visitor)
         for include in self.includes:
             include.accept(visitor)
-        for typedef in self.typedefs.itervalues():
+        for typedef in self.typedefs.values():
             typedef.accept(visitor)
 
     def update(self, other):
         """Update with additional IdlDefinitions."""
-        for interface_name, new_interface in other.interfaces.iteritems():
+        for interface_name, new_interface in other.interfaces.items():
             if not new_interface.is_partial:
                 # Add as new interface
                 self.interfaces[interface_name] = new_interface

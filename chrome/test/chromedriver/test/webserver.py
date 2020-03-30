@@ -29,7 +29,7 @@ class Responder(object):
   def SendHeaders(self, headers={}, content_length=None):
     """Sends headers for OK response."""
     self._handler.send_response(200)
-    for field, value in headers.iteritems():
+    for field, value in headers.items():
       self._handler.send_header(field, value)
     if content_length:
       self._handler.send_header('Content-Length', content_length)

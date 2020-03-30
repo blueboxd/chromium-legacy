@@ -116,7 +116,7 @@ void V8SetReturnValue(const CallbackInfo& info,
 
 // nullptr
 template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info, nullptr_t) {
+void V8SetReturnValue(const CallbackInfo& info, std::nullptr_t) {
   info.GetReturnValue().SetNull();
 }
 

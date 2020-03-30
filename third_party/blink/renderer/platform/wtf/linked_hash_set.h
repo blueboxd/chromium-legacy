@@ -991,10 +991,10 @@ class NewLinkedHashSet {
   typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
 
   NewLinkedHashSet();
-  NewLinkedHashSet(const NewLinkedHashSet&);
-  NewLinkedHashSet(NewLinkedHashSet&&);
-  NewLinkedHashSet& operator=(const NewLinkedHashSet&);
-  NewLinkedHashSet& operator=(NewLinkedHashSet&&);
+  NewLinkedHashSet(const NewLinkedHashSet&) = default;
+  NewLinkedHashSet(NewLinkedHashSet&&) = default;
+  NewLinkedHashSet& operator=(const NewLinkedHashSet&) = default;
+  NewLinkedHashSet& operator=(NewLinkedHashSet&&) = default;
 
   ~NewLinkedHashSet() = default;
 
@@ -1072,36 +1072,12 @@ class NewLinkedHashSet {
 };
 
 template <typename T, typename Allocator>
-NewLinkedHashSet<T, Allocator>::NewLinkedHashSet() {
+inline NewLinkedHashSet<T, Allocator>::NewLinkedHashSet() {
   static_assert(Allocator::kIsGarbageCollected ||
                     !IsPointerToGarbageCollectedType<T>::value,
                 "Cannot put raw pointers to garbage-collected classes into "
                 "an off-heap NewLinkedHashSet. Use "
                 "HeapNewLinkedHashSet<Member<T>> instead.");
-}
-
-// TODO(keinakashima): add copy constructor after implementing iterator if
-// anybody uses it.
-
-template <typename T, typename Allocator>
-inline NewLinkedHashSet<T, Allocator>::NewLinkedHashSet(
-    NewLinkedHashSet&& other) {
-  Swap(other);
-}
-
-template <typename T, typename Allocator>
-inline NewLinkedHashSet<T, Allocator>& NewLinkedHashSet<T, Allocator>::
-operator=(const NewLinkedHashSet& other) {
-  NewLinkedHashSet tmp(other);
-  Swap(tmp);
-  return *this;
-}
-
-template <typename T, typename Allocator>
-inline NewLinkedHashSet<T, Allocator>& NewLinkedHashSet<T, Allocator>::
-operator=(NewLinkedHashSet&& other) {
-  Swap(other);
-  return *this;
 }
 
 template <typename T, typename Allocator>

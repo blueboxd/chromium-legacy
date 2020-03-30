@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -300,8 +301,7 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
     std::string app_id = update.AppId();
     if (proxy_->AppRegistryCache().GetAppType(app_id) ==
             apps::mojom::AppType::kCrostini ||
-        base::StartsWith(app_id, crostini::kCrostiniAppIdPrefix,
-                         base::CompareCase::SENSITIVE)) {
+        crostini::IsUnmatchedCrostiniShelfAppId(app_id)) {
       window->SetProperty(aura::client::kAppType,
                           static_cast<int>(ash::AppType::CROSTINI_APP));
     }

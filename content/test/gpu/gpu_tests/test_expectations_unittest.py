@@ -45,6 +45,39 @@ _get_generic = lambda tags: set(
 ResultType = json_results.ResultType
 
 
+INTEL_DRIVER_VERSION_SCHEMA = '''
+The version format of Intel graphics driver is AA.BB.CCC.DDDD.
+DDDD(old schema) or CCC.DDDD(new schema) is the build number. That is,
+indicates the actual driver number. The comparison between old schema
+and new schema is NOT valid. In such a condition the only comparison
+operator that returns true is "not equal".
+
+AA.BB: You are free to specify the real number here, but they are meaningless
+when comparing two version numbers. Usually it's okay to leave it to "0.0".
+
+CCC: It's necessary for new schema. Regarding to old schema, you can specify
+the real number or any number less than 100 in order to differentiate from
+new schema.
+
+DDDD: It's always meaningful. It must not be "0" under old schema.
+
+Legal: "24.20.100.7000", "0.0.100.7000", "0.0.0.7000", "0.0.100.0"
+Illegal: "24.0.0.0", "24.20.0.0", "0.0.99.0"
+'''
+
+
+def check_intel_driver_version(version):
+  ver_list = version.split('.')
+  if len(ver_list) != 4:
+    return False
+  for ver in ver_list:
+    if not ver.isdigit():
+      return False
+  if int(ver_list[2]) < 100 and ver_list[3] == '0':
+    return False
+  return True
+
+
 def _MapGpuDevicesToVendors(tag_sets):
   for tag_set in tag_sets:
     if any(gpu in tag_set for gpu in GPU_CONDITIONS):
@@ -297,7 +330,12 @@ class GpuTestExpectationsValidation(unittest.TestCase):
         for tag_set in parser.tag_sets:
           if gpu_helper.MatchDriverTag(list(tag_set)[0]):
             for tag in tag_set:
-              assert gpu_helper.MatchDriverTag(tag)
+              match = gpu_helper.MatchDriverTag(tag)
+              assert match
+              if match.group(1) == 'intel':
+                if not check_intel_driver_version(match.group(3)):
+                  assert False, INTEL_DRIVER_VERSION_SCHEMA
+
             assert not driver_tag_set
             driver_tag_set = tag_set
           else:
@@ -416,3 +454,37 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
         self.assertIn('3: Expectation with pattern \'a/b/d\' does not match'
                       ' any tests in the GpuIntegrationTest test suite',
                       str(context.exception))
+
+def testDriverVersionComparision(self):
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000', 'eq', '24.20.100.7000'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100', 'ne', '24.20.100.7000'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000', 'gt', '24.20.100'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000a', 'gt', '24.20.100.7000'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000', 'lt', '24.20.100.7001'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000', 'lt', '24.20.200.6000'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000', 'lt', '25.30.100.6000', 'linux', 'intel'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000', 'gt', '25.30.100.6000', 'win', 'intel'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.101.6000', 'gt', '25.30.100.7000', 'win', 'intel'))
+  self.assertFalse(gpu_helper.EvaluateVersionComparison(
+      '24.20.99.7000', 'gt', '24.20.100.7000', 'win', 'intel'))
+  self.assertFalse(gpu_helper.EvaluateVersionComparison(
+      '24.20.99.7000', 'lt', '24.20.100.7000', 'win', 'intel'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.99.7000', 'ne', '24.20.100.7000', 'win', 'intel'))
+  self.assertFalse(gpu_helper.EvaluateVersionComparison(
+      '24.20.100', 'lt', '24.20.100.7000', 'win', 'intel'))
+  self.assertFalse(gpu_helper.EvaluateVersionComparison(
+      '24.20.100', 'gt', '24.20.100.7000', 'win', 'intel'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100', 'ne', '24.20.100.7000', 'win', 'intel'))
+  self.assertTrue(gpu_helper.EvaluateVersionComparison(
+      '24.20.100.7000', 'eq', '25.20.100.7000', 'win', 'intel'))

@@ -1443,9 +1443,8 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
-        "comment": "INF_version: 8.16.0.0",
         "op": "<",
-        "value": "8.16.0.0"
+        "value": "0.0.0.3000"
       },
       "features": [
         "accelerated_webgl2"

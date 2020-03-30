@@ -48,17 +48,17 @@ class DatabaseBody(object):
         )
 
         @classmethod
-        def itervalues(cls):
+        def values(cls):
             return cls._ALL_ENTRIES.__iter__()
 
     def __init__(self):
         self._defs = {}
-        for kind in DatabaseBody.Kind.itervalues():
+        for kind in DatabaseBody.Kind.values():
             self._defs[kind] = {}
 
     def register(self, kind, user_defined_type):
         assert isinstance(user_defined_type, (Typedef, Union, UserDefinedType))
-        assert kind in DatabaseBody.Kind.itervalues()
+        assert kind in DatabaseBody.Kind.values()
         try:
             self.find_by_identifier(user_defined_type.identifier)
             assert False, user_defined_type.identifier
@@ -67,7 +67,7 @@ class DatabaseBody(object):
         self._defs[kind][user_defined_type.identifier] = user_defined_type
 
     def find_by_identifier(self, identifier):
-        for defs_per_kind in self._defs.itervalues():
+        for defs_per_kind in self._defs.values():
             if identifier in defs_per_kind:
                 return defs_per_kind[identifier]
         raise KeyError(identifier)
@@ -156,4 +156,4 @@ class Database(object):
         return self._view_by_kind(Database._Kind.UNION)
 
     def _view_by_kind(self, kind):
-        return self._impl.find_by_kind(kind).viewvalues()
+        return self._impl.find_by_kind(kind).values()

@@ -166,9 +166,19 @@ def blink_type_info(idl_type):
 
     if (real_type.is_sequence or real_type.is_frozen_array
             or real_type.is_variadic):
-        element_type = blink_type_info(real_type.element_type)
+        element_type = real_type.element_type
+        element_type_info = blink_type_info(real_type.element_type)
+        if element_type.type_definition_object is not None:
+            # In order to support recursive IDL data structures, we have to
+            # avoid recursive C++ header inclusions and utilize C++ forward
+            # declarations.  Since |VectorOf| requires complete type
+            # definition, |HeapVector<Member<T>>| is preferred as it
+            # requires only forward declaration.
+            vector_fmt = "HeapVector<Member<{}>>"
+        else:
+            vector_fmt = "VectorOf<{}>"
         return TypeInfo(
-            "VectorOf<{}>".format(element_type.typename),
+            vector_fmt.format(element_type_info.typename),
             ref_fmt="{}&",
             const_ref_fmt="const {}&")
 

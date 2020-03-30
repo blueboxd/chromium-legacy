@@ -215,7 +215,7 @@ class ChromeDriver(object):
       log_types = ['client', 'driver', 'browser', 'server', 'performance',
         'devtools']
       log_levels = ['ALL', 'DEBUG', 'INFO', 'WARNING', 'SEVERE', 'OFF']
-      for log_type, log_level in logging_prefs.iteritems():
+      for log_type, log_level in logging_prefs.items():
         assert log_type in log_types
         assert log_level in log_levels
     else:

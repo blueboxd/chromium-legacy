@@ -17,7 +17,9 @@ namespace blink {
 
 WakeLockManager::WakeLockManager(ExecutionContext* execution_context,
                                  WakeLockType type)
-    : wake_lock_type_(type), execution_context_(execution_context) {
+    : wake_lock_(execution_context),
+      wake_lock_type_(type),
+      execution_context_(execution_context) {
   DCHECK_NE(execution_context, nullptr);
 }
 
@@ -36,15 +38,16 @@ void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   //      document and type.
   // 4.3. Add lock to record.[[ActiveLocks]].
   // 5. Return active.
-  if (!wake_lock_) {
+  if (!wake_lock_.is_bound()) {
     mojo::Remote<mojom::blink::WakeLockService> wake_lock_service;
     execution_context_->GetBrowserInterfaceBroker().GetInterface(
         wake_lock_service.BindNewPipeAndPassReceiver());
 
-    wake_lock_service->GetWakeLock(ToMojomWakeLockType(wake_lock_type_),
-                                   device::mojom::blink::WakeLockReason::kOther,
-                                   "Blink Wake Lock",
-                                   wake_lock_.BindNewPipeAndPassReceiver());
+    wake_lock_service->GetWakeLock(
+        ToMojomWakeLockType(wake_lock_type_),
+        device::mojom::blink::WakeLockReason::kOther, "Blink Wake Lock",
+        wake_lock_.BindNewPipeAndPassReceiver(
+            execution_context_->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     wake_lock_.set_disconnect_handler(WTF::Bind(
         &WakeLockManager::OnWakeLockConnectionError, WrapWeakPersistent(this)));
     wake_lock_->RequestWakeLock();
@@ -99,6 +102,7 @@ void WakeLockManager::OnWakeLockConnectionError() {
 void WakeLockManager::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(wake_lock_sentinels_);
+  visitor->Trace(wake_lock_);
 }
 
 }  // namespace blink

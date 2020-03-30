@@ -22,6 +22,8 @@
 
 namespace blink {
 
+class CascadeInterpolations;
+class CascadeResolver;
 class CSSCustomPropertyDeclaration;
 class CSSParserContext;
 class CSSProperty;
@@ -29,9 +31,8 @@ class CSSValue;
 class CSSVariableData;
 class CSSVariableReferenceValue;
 class CustomProperty;
-class StyleResolverState;
 class MatchResult;
-class CascadeInterpolations;
+class StyleResolverState;
 
 namespace cssvalue {
 
@@ -60,9 +61,6 @@ class CORE_EXPORT StyleCascade {
   using CSSPendingSubstitutionValue = cssvalue::CSSPendingSubstitutionValue;
 
  public:
-  class Resolver;
-  class AutoLock;
-
   StyleCascade(StyleResolverState& state) : state_(state) {}
 
   // The Analyze pass goes through the MatchResult (or CascadeInterpolations),
@@ -102,91 +100,6 @@ class CORE_EXPORT StyleCascade {
   // any changes already applied to the StyleResolverState/ComputedStyle.
   void Reset();
 
-  // Resolver is an object passed on the stack during Apply. Its most important
-  // job is to detect cycles during Apply (in general, keep track of which
-  // properties we're currently applying).
-  class CORE_EXPORT Resolver {
-    STACK_ALLOCATED();
-
-   public:
-    // TODO(crbug.com/985047): Probably use a HashMap for this.
-    using NameStack = Vector<CSSPropertyName, 8>;
-
-    // A 'locked' property is a property we are in the process of applying.
-    // In other words, once a property is locked, locking it again would form
-    // a cycle, and is therefore an error.
-    bool IsLocked(const CSSProperty&) const;
-    bool IsLocked(const CSSPropertyName&) const;
-
-    // We do not allow substitution of animation-tainted values into
-    // an animation-affecting property.
-    //
-    // https://drafts.csswg.org/css-variables/#animation-tainted
-    bool AllowSubstitution(CSSVariableData*) const;
-
-   private:
-    friend class AutoLock;
-    friend class StyleCascade;
-    friend class TestCascadeResolver;
-
-    Resolver(CascadeFilter filter,
-             const MatchResult* match_result,
-             const CascadeInterpolations* interpolations,
-             uint8_t generation)
-        : filter_(filter),
-          match_result_(match_result),
-          interpolations_(interpolations),
-          generation_(generation) {}
-
-    // If the given property is already being applied, returns true.
-    // The return value is the same value you would get from InCycle(), and
-    // is just returned for convenience.
-    //
-    // When a cycle has been detected, the Resolver will *persist the cycle
-    // state* (i.e. InCycle() will continue to return true) until we reach
-    // the start of the cycle.
-    //
-    // The cycle state is cleared by ~AutoLock, once we have moved far enough
-    // up the stack.
-    bool DetectCycle(const CSSProperty&);
-    // Returns true whenever the Resolver is in a cycle state.
-    // This DOES NOT detect cycles; the caller must call DetectCycle first.
-    bool InCycle() const;
-
-    NameStack stack_;
-    wtf_size_t cycle_depth_ = kNotFound;
-    CascadeFilter filter_;
-    const MatchResult* match_result_;
-    const CascadeInterpolations* interpolations_;
-    const uint8_t generation_ = 0;
-
-    // A very simple cache for CSSPendingSubstitutionValues. We cache only the
-    // most recently parsed CSSPendingSubstitutionValue, such that consecutive
-    // calls to ResolvePendingSubstitution with the same value don't need to
-    // do the same parsing job all over again.
-    struct {
-      STACK_ALLOCATED();
-
-     public:
-      const CSSPendingSubstitutionValue* value = nullptr;
-      HeapVector<CSSPropertyValue, 256> parsed_properties;
-    } shorthand_cache_;
-  };
-
-  // Automatically locks and unlocks the given property. (See
-  // Resolver::IsLocked).
-  class CORE_EXPORT AutoLock {
-    STACK_ALLOCATED();
-
-   public:
-    AutoLock(const CSSProperty&, Resolver&);
-    AutoLock(const CSSPropertyName&, Resolver&);
-    ~AutoLock();
-
-   private:
-    Resolver& resolver_;
-  };
-
   // Applying interpolations may involve resolving values, since we may be
   // applying a keyframe from e.g. "color: var(--x)" to "color: var(--y)".
   // Hence that code needs an entry point to the resolving process.
@@ -196,7 +109,9 @@ class CORE_EXPORT StyleCascade {
   // StyleCascade, however).
   //
   // See documentation the other Resolve* functions for what resolve means.
-  const CSSValue* Resolve(const CSSPropertyName&, const CSSValue&, Resolver&);
+  const CSSValue* Resolve(const CSSPropertyName&,
+                          const CSSValue&,
+                          CascadeResolver&);
 
  private:
   friend class TestCascade;
@@ -213,11 +128,11 @@ class CORE_EXPORT StyleCascade {
   // em/ch/etc to dynamically apply font-size (and related properties), but
   // in practice, it is very inconvenient to detect these dependencies. Hence,
   // we apply font-affecting properties (among others) before all the others.
-  void ApplyHighPriority(Resolver&);
+  void ApplyHighPriority(CascadeResolver&);
 
   // Applies -webkit-appearance, and excludes -internal-ua-* properties if
   // we don't have an appearance.
-  void ApplyAppearance(Resolver&);
+  void ApplyAppearance(CascadeResolver&);
 
   // Applies -webkit-border-image (if present), and skips any border-image
   // longhands found with lower priority than -webkit-border-image.
@@ -225,30 +140,30 @@ class CORE_EXPORT StyleCascade {
   // The -webkit-border-image property is unique (in a bad way), since it's
   // a surrogate of a shorthand. Therefore it needs special treatment to
   // behave correctly.
-  void ApplyWebkitBorderImage(Resolver&);
+  void ApplyWebkitBorderImage(CascadeResolver&);
 
-  void ApplyMatchResult(const MatchResult&, Resolver&);
-  void ApplyInterpolations(const CascadeInterpolations&, Resolver&);
+  void ApplyMatchResult(const MatchResult&, CascadeResolver&);
+  void ApplyInterpolations(const CascadeInterpolations&, CascadeResolver&);
   void ApplyInterpolationMap(const ActiveInterpolationsMap&,
                              CascadeOrigin,
                              size_t index,
-                             Resolver&);
+                             CascadeResolver&);
   void ApplyInterpolation(const CSSProperty&,
                           CascadePriority,
                           const ActiveInterpolations&,
-                          Resolver&);
+                          CascadeResolver&);
 
   // Looks up a value with random access, and applies it.
-  void LookupAndApply(const CSSPropertyName&, Resolver&);
-  void LookupAndApply(const CSSProperty&, Resolver&);
+  void LookupAndApply(const CSSPropertyName&, CascadeResolver&);
+  void LookupAndApply(const CSSProperty&, CascadeResolver&);
   void LookupAndApplyDeclaration(const CSSProperty&,
                                  CascadePriority,
                                  const MatchResult&,
-                                 Resolver&);
+                                 CascadeResolver&);
   void LookupAndApplyInterpolation(const CSSProperty&,
                                    CascadePriority,
                                    const CascadeInterpolations&,
-                                   Resolver&);
+                                   CascadeResolver&);
 
   // Whether or not we are calculating the style for the root element.
   // We need to know this to detect cycles with 'rem' units.
@@ -336,11 +251,13 @@ class CORE_EXPORT StyleCascade {
   // Surrogate properties should be skipped (i.e. not applied after all) if
   // the corresponding original property has a higher priority.
   //
-  Surrogate ResolveSurrogate(const CSSProperty&, CascadePriority, Resolver&);
+  Surrogate ResolveSurrogate(const CSSProperty&,
+                             CascadePriority,
+                             CascadeResolver&);
 
   inline Surrogate ResolveIfSurrogate(const CSSProperty& property,
                                       CascadePriority priority,
-                                      Resolver& resolver) {
+                                      CascadeResolver& resolver) {
     if (!property.IsSurrogate())
       return Surrogate::kNoSurrogate;
     return ResolveSurrogate(property, priority, resolver);
@@ -363,19 +280,21 @@ class CORE_EXPORT StyleCascade {
   // other words, we must first Apply '--y'. Hence, resolving 'width' will
   // Apply '--y' as a side-effect. (This process would then continue to '--x').
 
-  const CSSValue* Resolve(const CSSProperty&, const CSSValue&, Resolver&);
+  const CSSValue* Resolve(const CSSProperty&,
+                          const CSSValue&,
+                          CascadeResolver&);
   const CSSValue* ResolveCustomProperty(const CSSProperty&,
                                         const CSSCustomPropertyDeclaration&,
-                                        Resolver&);
+                                        CascadeResolver&);
   const CSSValue* ResolveVariableReference(const CSSProperty&,
                                            const CSSVariableReferenceValue&,
-                                           Resolver&);
+                                           CascadeResolver&);
   const CSSValue* ResolvePendingSubstitution(const CSSProperty&,
                                              const CSSPendingSubstitutionValue&,
-                                             Resolver&);
+                                             CascadeResolver&);
 
   scoped_refptr<CSSVariableData> ResolveVariableData(CSSVariableData*,
-                                                     Resolver&);
+                                                     CascadeResolver&);
 
   // The Resolve*Into functions either resolve dependencies, append to the
   // TokenSequence accordingly, and return true; or it returns false when
@@ -385,9 +304,9 @@ class CORE_EXPORT StyleCascade {
   //
   // [1] https://drafts.csswg.org/css-variables/#invalid-at-computed-value-time
 
-  bool ResolveTokensInto(CSSParserTokenRange, Resolver&, TokenSequence&);
-  bool ResolveVarInto(CSSParserTokenRange, Resolver&, TokenSequence&);
-  bool ResolveEnvInto(CSSParserTokenRange, Resolver&, TokenSequence&);
+  bool ResolveTokensInto(CSSParserTokenRange, CascadeResolver&, TokenSequence&);
+  bool ResolveVarInto(CSSParserTokenRange, CascadeResolver&, TokenSequence&);
+  bool ResolveEnvInto(CSSParserTokenRange, CascadeResolver&, TokenSequence&);
 
   CSSVariableData* GetVariableData(const CustomProperty&) const;
   CSSVariableData* GetEnvironmentVariable(const AtomicString&) const;

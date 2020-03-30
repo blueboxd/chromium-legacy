@@ -58,7 +58,7 @@ class PathManager(object):
         cls._root_gen_dir = os.path.abspath(root_gen_dir)
         cls._component_reldirs = {
             component: posixpath.normpath(rel_dir)
-            for component, rel_dir in component_reldirs.iteritems()
+            for component, rel_dir in component_reldirs.items()
         }
         cls._is_initialized = True
 

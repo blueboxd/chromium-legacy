@@ -48,8 +48,7 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
         self._implied_mappings = self._make_implied_mappings()
         self._trial_to_features_map = self._make_trial_to_features_map()
         self._max_features_per_trial = max(
-            len(features)
-            for features in self._trial_to_features_map.itervalues())
+            len(features) for features in self._trial_to_features_map.values())
         self._set_trial_types()
 
     @property

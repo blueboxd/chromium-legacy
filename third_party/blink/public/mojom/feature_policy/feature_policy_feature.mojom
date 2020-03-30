@@ -64,8 +64,8 @@ enum FeaturePolicyFeature {
   kLazyLoad = 29,
   // Restricts the usage of layout-causing animations in a document.
   kLayoutAnimations = 30,
-  // Controls access to WakeLock
-  kWakeLock = 31,
+  // Controls access to Screen Wake Lock
+  kScreenWakeLock = 31,
 
   // These are the defined sandbox features implemented as policy-controlled
   // features.

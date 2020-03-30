@@ -251,15 +251,6 @@ void PluginVmInstallerView::OnCheckedDiskSpace(bool low_disk_space) {
   OnStateUpdated();
 }
 
-void PluginVmInstallerView::OnDiskSpaceCheckFailed() {
-  state_ = State::ERROR;
-  reason_ =
-      plugin_vm::PluginVmInstaller::FailureReason::INSUFFICIENT_DISK_SPACE;
-  OnStateUpdated();
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kErrorInsufficientDiskSpace);
-}
-
 void PluginVmInstallerView::OnDlcDownloadProgressUpdated(
     double progress,
     base::TimeDelta elapsed_time) {
@@ -326,23 +317,6 @@ void PluginVmInstallerView::OnDownloadCompleted() {
   OnStateUpdated();
 }
 
-void PluginVmInstallerView::OnDownloadFailed(
-    plugin_vm::PluginVmInstaller::FailureReason reason) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  state_ = State::ERROR;
-  reason_ = reason;
-  OnStateUpdated();
-
-  if (reason == plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED) {
-    plugin_vm::RecordPluginVmSetupResultHistogram(
-        plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed);
-  } else {
-    plugin_vm::RecordPluginVmSetupResultHistogram(
-        plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage);
-  }
-}
-
 void PluginVmInstallerView::OnImportProgressUpdated(
     int percent_completed,
     base::TimeDelta elapsed_time) {
@@ -350,18 +324,6 @@ void PluginVmInstallerView::OnImportProgressUpdated(
   DCHECK_EQ(state_, State::IMPORTING);
 
   UpdateOperationProgress(percent_completed, 100.0, elapsed_time);
-}
-
-void PluginVmInstallerView::OnImportFailed(
-    plugin_vm::PluginVmInstaller::FailureReason reason) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  state_ = State::ERROR;
-  reason_ = reason;
-  OnStateUpdated();
-
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kErrorImportingPluginVmImage);
 }
 
 void PluginVmInstallerView::OnImported() {
@@ -388,6 +350,18 @@ void PluginVmInstallerView::OnCreated() {
       plugin_vm::PluginVmSetupResult::kSuccess);
   plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
                                               setup_start_tick_);
+}
+
+void PluginVmInstallerView::OnError(
+    plugin_vm::PluginVmInstaller::FailureReason reason) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  state_ = State::ERROR;
+  reason_ = reason;
+  OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kError);
 }
 
 base::string16 PluginVmInstallerView::GetBigMessage() const {

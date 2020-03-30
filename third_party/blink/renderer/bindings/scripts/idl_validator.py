@@ -51,7 +51,7 @@ class IDLExtendedAttributeValidator(object):
 
     def validate_extended_attributes(self, definitions):
         # FIXME: this should be done when parsing the file, rather than after.
-        for interface in definitions.interfaces.itervalues():
+        for interface in definitions.interfaces.values():
             self.validate_extended_attributes_node(interface)
             for attribute in interface.attributes:
                 self.validate_extended_attributes_node(attribute)
@@ -59,17 +59,17 @@ class IDLExtendedAttributeValidator(object):
                 self.validate_extended_attributes_node(operation)
                 for argument in operation.arguments:
                     self.validate_extended_attributes_node(argument)
-        for dictionary in definitions.dictionaries.itervalues():
+        for dictionary in definitions.dictionaries.values():
             self.validate_extended_attributes_node(dictionary)
             for member in dictionary.members:
                 self.validate_extended_attributes_node(member)
-        for callback_function in definitions.callback_functions.itervalues():
+        for callback_function in definitions.callback_functions.values():
             self.validate_extended_attributes_node(callback_function)
             for argument in callback_function.arguments:
                 self.validate_extended_attributes_node(argument)
 
     def validate_extended_attributes_node(self, node):
-        for name, values_string in node.extended_attributes.iteritems():
+        for name, values_string in node.extended_attributes.items():
             self.validate_name_values_string(name, values_string)
 
     def validate_name_values_string(self, name, values_string):

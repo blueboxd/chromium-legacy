@@ -180,6 +180,12 @@ SmbService::~SmbService() {
   }
 }
 
+void SmbService::Shutdown() {
+  // Unmount and destroy all smbfs instances explicitly before destruction,
+  // since SmbFsShare accesses KeyedServices on destruction.
+  smbfs_shares_.clear();
+}
+
 // static
 void SmbService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {

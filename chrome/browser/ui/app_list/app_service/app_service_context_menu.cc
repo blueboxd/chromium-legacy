@@ -173,9 +173,8 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
         auto* provider = web_app::WebAppProvider::Get(profile());
         DCHECK(provider);
-        if (command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW) {
-          return provider->registrar().IsInExperimentalTabbedWindowMode(
-              app_id());
+        if (provider->registrar().IsInExperimentalTabbedWindowMode(app_id())) {
+          return command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW;
         }
 
         web_app::DisplayMode effective_display_mode =

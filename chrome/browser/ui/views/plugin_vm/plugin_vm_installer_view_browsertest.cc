@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
 
   histogram_tester_->ExpectUniqueSample(
       plugin_vm::kPluginVmSetupResultHistogram,
-      plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage, 1);
+      plugin_vm::PluginVmSetupResult::kError, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
 
   histogram_tester_->ExpectUniqueSample(
       plugin_vm::kPluginVmSetupResultHistogram,
-      plugin_vm::PluginVmSetupResult::kErrorImportingPluginVmImage, 1);
+      plugin_vm::PluginVmSetupResult::kError, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
@@ -273,9 +273,9 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
 
   CheckSetupIsFinishedSuccessfully();
 
-  histogram_tester_->ExpectBucketCount(
-      plugin_vm::kPluginVmSetupResultHistogram,
-      plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage, 1);
+  histogram_tester_->ExpectBucketCount(plugin_vm::kPluginVmSetupResultHistogram,
+                                       plugin_vm::PluginVmSetupResult::kError,
+                                       1);
   histogram_tester_->ExpectBucketCount(plugin_vm::kPluginVmSetupResultHistogram,
                                        plugin_vm::PluginVmSetupResult::kSuccess,
                                        1);
@@ -294,5 +294,5 @@ IN_PROC_BROWSER_TEST_F(
 
   histogram_tester_->ExpectUniqueSample(
       plugin_vm::kPluginVmSetupResultHistogram,
-      plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed, 1);
+      plugin_vm::PluginVmSetupResult::kError, 1);
 }

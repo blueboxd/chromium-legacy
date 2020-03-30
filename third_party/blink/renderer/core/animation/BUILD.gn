@@ -92,6 +92,8 @@ blink_core_sources("animation") {
     "css_image_list_interpolation_type.h",
     "css_image_slice_interpolation_type.cc",
     "css_image_slice_interpolation_type.h",
+    "css_interpolation_environment.cc",
+    "css_interpolation_environment.h",
     "css_interpolation_type.cc",
     "css_interpolation_type.h",
     "css_interpolation_types_map.cc",

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/alias.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -37,6 +38,48 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
   if (!version)
     return ServiceWorkerVersionInfo();
   return version->GetInfo();
+}
+
+// TODO(crbug.com/1015692): Remove this and CrashDueToControllee() once we
+// identified the cause of crash.
+struct ControlleeInfo {
+  std::string client_uuid;
+  ServiceWorkerVersion* controller;
+  ServiceWorkerRegistration* controller_registration;
+  bool is_context_secure_for_service_worker;
+
+  explicit ControlleeInfo(const ServiceWorkerContainerHost& container_host)
+      : client_uuid(container_host.client_uuid()),
+        controller(container_host.controller()),
+        controller_registration(container_host.controller_registration()),
+        is_context_secure_for_service_worker(
+            container_host.IsContextSecureForServiceWorker()) {}
+};
+
+void CrashDueToControllee(
+    ServiceWorkerRegistration* registration,
+    scoped_refptr<ServiceWorkerVersion> exiting_version,
+    scoped_refptr<ServiceWorkerVersion> activating_version) {
+  std::vector<ControlleeInfo> controllees_in_exiting;
+  for (const auto& it : exiting_version->controllee_map()) {
+    ControlleeInfo info(*it.second);
+    controllees_in_exiting.push_back(info);
+  }
+  std::vector<ControlleeInfo> controllees_in_activating;
+  for (const auto& it : activating_version->controllee_map()) {
+    ControlleeInfo info(*it.second);
+    controllees_in_activating.push_back(info);
+  }
+
+  bool exiting_version_skip_waiting = exiting_version->skip_waiting();
+  bool activating_version_skip_waiting = activating_version->skip_waiting();
+
+  base::debug::Alias(&registration);
+  base::debug::Alias(&controllees_in_exiting);
+  base::debug::Alias(&controllees_in_activating);
+  base::debug::Alias(&exiting_version_skip_waiting);
+  base::debug::Alias(&activating_version_skip_waiting);
+  CHECK(false);
 }
 
 }  // namespace
@@ -505,9 +548,9 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
       observer.OnSkippedWaiting(this);
   }
 
-  // TODO(crbug.com/951571): Remove this once we identified the cause of crash.
-  if (exiting_version) {
-    CHECK(!exiting_version->HasControllee());
+  // TODO(crbug.com/1015692): Remove this once we identified the cause of crash.
+  if (exiting_version && exiting_version->HasControllee()) {
+    CrashDueToControllee(this, exiting_version, activating_version);
   }
 
   // "10. Queue a task to fire an event named activate..."

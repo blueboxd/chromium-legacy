@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -634,9 +635,8 @@ TEST_F(ShelfContextMenuTest, CrostiniUnregisteredApps) {
 
   const std::string fake_window_app_id = "foo";
   const std::string fake_window_startup_id = "bar";
-  const std::string app_id =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile())
-          ->GetCrostiniShelfAppId(&fake_window_app_id, &fake_window_startup_id);
+  const std::string app_id = crostini::GetCrostiniShelfAppId(
+      profile(), &fake_window_app_id, &fake_window_startup_id);
   controller()->PinAppWithID(app_id);
   const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
   ASSERT_TRUE(item);

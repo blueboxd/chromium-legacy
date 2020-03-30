@@ -481,6 +481,23 @@ TEST_F(HTMLSelectElementTest, CrashOnAttachingMenuList) {
   ASSERT_TRUE(select->GetLayoutObject());
 }
 
+TEST_F(HTMLSelectElementTest, CrashOnAttachingMenuList2) {
+  // crbug.com/1065125
+  // This test passes if no crash.
+  SetHtmlInnerHTML("<select><optgroup><option>o1</select>");
+  auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
+  select->setTextContent("foo");
+
+  // Detach LayoutObject.
+  select->setAttribute("style", "display:none;");
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  // Attach LayoutObject.  It triggered a DCHECK failure in
+  // MenuListSelectType::OptionToBeShown()
+  select->removeAttribute("style");
+  GetDocument().UpdateStyleAndLayoutTree();
+}
+
 TEST_F(HTMLSelectElementTest, SlotAssignmentRecalcDuringOptionRemoval) {
   // crbug.com/1056094
   // This test passes if no CHECK failure about IsSlotAssignmentRecalcForbidden.

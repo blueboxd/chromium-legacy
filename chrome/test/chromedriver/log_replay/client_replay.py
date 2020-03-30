@@ -308,7 +308,7 @@ def _ReplaceWindowAndElementIds(payload, id_map):
     id_map: mapping from old to new IDs that should be replaced.
   """
   if isinstance(payload, dict):
-    for key, value in payload.iteritems():
+    for key, value in payload.items():
       if isinstance(value, basestring) and value in id_map:
         payload[key] = id_map[value]
       else:
@@ -831,7 +831,7 @@ class CommandSequence(object):
 
     response = [
         {u"id": key, u"capabilities": val["response"].GetPayloadPrimitive()}
-        for key, val in command_response_pairs.iteritems()
+        for key, val in command_response_pairs.items()
     ]
     self._last_response = _GetSessionsResponseEntry(response)
 

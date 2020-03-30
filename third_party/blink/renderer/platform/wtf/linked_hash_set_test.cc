@@ -7,13 +7,178 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
 namespace WTF {
 
-TEST(NewLinkedHashSetTest, Construct) {
-  NewLinkedHashSet<int> test;
-  EXPECT_EQ(test.size(), 0u);
-  EXPECT_TRUE(test.IsEmpty());
+TEST(NewLinkedHashSetTest, CopyConstructAndAssignInt) {
+  NewLinkedHashSet<int> set1;
+  EXPECT_EQ(set1.size(), 0u);
+  EXPECT_TRUE(set1.IsEmpty());
+  set1.insert(1);
+  set1.insert(2);
+  set1.insert(3);
+  EXPECT_EQ(set1.size(), 3u);
+  NewLinkedHashSet<int> set2(set1);
+  EXPECT_EQ(set2.size(), 3u);
+  NewLinkedHashSet<int> set3;
+  EXPECT_EQ(set3.size(), 0u);
+  set3 = set2;
+  EXPECT_EQ(set3.size(), 3u);
+  auto it1 = set1.begin();
+  auto it2 = set2.begin();
+  auto it3 = set3.begin();
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(*it1, i + 1);
+    EXPECT_EQ(*it2, i + 1);
+    EXPECT_EQ(*it3, i + 1);
+    ++it1;
+    ++it2;
+    ++it3;
+  }
+}
+
+TEST(NewLinkedHashSetTest, CopyConstructAndAssignIntPtr) {
+  NewLinkedHashSet<int*> set1;
+  EXPECT_EQ(set1.size(), 0u);
+  EXPECT_TRUE(set1.IsEmpty());
+  std::unique_ptr<int> int1 = std::make_unique<int>(1);
+  std::unique_ptr<int> int2 = std::make_unique<int>(2);
+  std::unique_ptr<int> int3 = std::make_unique<int>(3);
+  set1.insert(int1.get());
+  set1.insert(int2.get());
+  set1.insert(int3.get());
+  EXPECT_EQ(set1.size(), 3u);
+  NewLinkedHashSet<int*> set2(set1);
+  EXPECT_EQ(set2.size(), 3u);
+  NewLinkedHashSet<int*> set3;
+  EXPECT_EQ(set3.size(), 0u);
+  set3 = set2;
+  EXPECT_EQ(set3.size(), 3u);
+  auto it1 = set1.begin();
+  auto it2 = set2.begin();
+  auto it3 = set3.begin();
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(**it1, i + 1);
+    EXPECT_EQ(**it2, i + 1);
+    EXPECT_EQ(**it3, i + 1);
+    ++it1;
+    ++it2;
+    ++it3;
+  }
+
+  for (int* ptr : set1)
+    *ptr += 1000;
+  it1 = set1.begin();
+  it2 = set2.begin();
+  it3 = set3.begin();
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(**it1, i + 1001);
+    EXPECT_EQ(**it2, i + 1001);
+    EXPECT_EQ(**it3, i + 1001);
+    ++it1;
+    ++it2;
+    ++it3;
+  }
+}
+
+TEST(NewLinkedHashSetTest, CopyConstructAndAssignString) {
+  NewLinkedHashSet<String> set1;
+  EXPECT_EQ(set1.size(), 0u);
+  EXPECT_TRUE(set1.IsEmpty());
+  set1.insert("1");
+  set1.insert("2");
+  set1.insert("3");
+  EXPECT_EQ(set1.size(), 3u);
+  NewLinkedHashSet<String> set2(set1);
+  EXPECT_EQ(set2.size(), 3u);
+  NewLinkedHashSet<String> set3;
+  EXPECT_EQ(set3.size(), 0u);
+  set3 = set2;
+  EXPECT_EQ(set3.size(), 3u);
+  auto it1 = set1.begin();
+  auto it2 = set2.begin();
+  auto it3 = set3.begin();
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(*it1, String(Vector<UChar>({'1' + i})));
+    EXPECT_EQ(*it2, String(Vector<UChar>({'1' + i})));
+    EXPECT_EQ(*it3, String(Vector<UChar>({'1' + i})));
+    ++it1;
+    ++it2;
+    ++it3;
+  }
+}
+
+TEST(NewLinkedHashSetTest, MoveConstructAndAssignInt) {
+  NewLinkedHashSet<ValueInstanceCount<int>> set1;
+  EXPECT_EQ(set1.size(), 0u);
+  EXPECT_TRUE(set1.IsEmpty());
+  int counter1 = 0;
+  int counter2 = 0;
+  int counter3 = 0;
+  set1.insert(ValueInstanceCount<int>(&counter1, 1));
+  set1.insert(ValueInstanceCount<int>(&counter2, 2));
+  set1.insert(ValueInstanceCount<int>(&counter3, 3));
+  EXPECT_EQ(set1.size(), 3u);
+  NewLinkedHashSet<ValueInstanceCount<int>> set2(std::move(set1));
+  EXPECT_EQ(set2.size(), 3u);
+  NewLinkedHashSet<ValueInstanceCount<int>> set3;
+  EXPECT_EQ(set3.size(), 0u);
+  set3 = std::move(set2);
+  EXPECT_EQ(set3.size(), 3u);
+  auto it = set3.begin();
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(it->Value(), i + 1);
+    ++it;
+  }
+
+  // Only move constructors were used, each object is only in set3.
+  // Count 2x because each set uses hash map and vector.
+  EXPECT_EQ(counter1, 2);
+  EXPECT_EQ(counter2, 2);
+  EXPECT_EQ(counter3, 2);
+
+  NewLinkedHashSet<ValueInstanceCount<int>> set4(set3);
+  // Copy constructor was used, each object is in set3 and set4.
+  EXPECT_EQ(counter1, 4);
+  EXPECT_EQ(counter2, 4);
+  EXPECT_EQ(counter3, 4);
+}
+
+TEST(NewLinkedHashSetTest, MoveConstructAndAssignString) {
+  NewLinkedHashSet<ValueInstanceCount<String>> set1;
+  EXPECT_EQ(set1.size(), 0u);
+  EXPECT_TRUE(set1.IsEmpty());
+  int counter1 = 0;
+  int counter2 = 0;
+  int counter3 = 0;
+  set1.insert(ValueInstanceCount<String>(&counter1, "1"));
+  set1.insert(ValueInstanceCount<String>(&counter2, "2"));
+  set1.insert(ValueInstanceCount<String>(&counter3, "3"));
+  EXPECT_EQ(set1.size(), 3u);
+  NewLinkedHashSet<ValueInstanceCount<String>> set2(std::move(set1));
+  EXPECT_EQ(set2.size(), 3u);
+  NewLinkedHashSet<ValueInstanceCount<String>> set3;
+  EXPECT_EQ(set3.size(), 0u);
+  set3 = std::move(set2);
+  EXPECT_EQ(set3.size(), 3u);
+  auto it = set3.begin();
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(it->Value(), String(Vector<UChar>({'1' + i})));
+    ++it;
+  }
+
+  // Only move constructors were used, each object is only in set3.
+  // Count 2x because each set uses hash map and vector.
+  EXPECT_EQ(counter1, 2);
+  EXPECT_EQ(counter2, 2);
+  EXPECT_EQ(counter3, 2);
+
+  NewLinkedHashSet<ValueInstanceCount<String>> set4(set3);
+  // Copy constructor was used, each object is in set3 and set4.
+  EXPECT_EQ(counter1, 4);
+  EXPECT_EQ(counter2, 4);
+  EXPECT_EQ(counter3, 4);
 }
 
 TEST(NewLinkedHashSetTest, Iterator) {

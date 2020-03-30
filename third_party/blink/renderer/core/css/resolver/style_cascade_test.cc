@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/resolver/cascade_interpolations.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_map.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -251,7 +252,7 @@ class TestCascadeResolver {
   friend class TestCascadeAutoLock;
 
   Document& document_;
-  StyleCascade::Resolver resolver_;
+  CascadeResolver resolver_;
 };
 
 class TestCascadeAutoLock {
@@ -263,7 +264,7 @@ class TestCascadeAutoLock {
       : lock_(name, resolver.resolver_) {}
 
  private:
-  StyleCascade::AutoLock lock_;
+  CascadeResolver::AutoLock lock_;
 };
 
 class StyleCascadeTest : public PageTestBase, private ScopedCSSCascadeForTest {

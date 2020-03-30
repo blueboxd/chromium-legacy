@@ -48,7 +48,7 @@ def parse_options():
 
 
 def dict_union(dicts):
-    return dict((k, v) for d in dicts for k, v in d.iteritems())
+    return dict((k, v) for d in dicts for k, v in d.items())
 
 
 def idl_file_to_global_names(idl_filename):

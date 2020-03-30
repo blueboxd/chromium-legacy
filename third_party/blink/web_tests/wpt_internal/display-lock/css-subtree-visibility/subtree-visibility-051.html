@@ -10,12 +10,6 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 
-<style>
-.auto {
-  subtree-visibility: auto;
-}
-</style>
-
 <div id="hidden" style="subtree-visibility: auto">
   foo
   <div id="child" tabindex="0">
@@ -29,19 +23,25 @@ function axElementById(id) {
 }
 
 async_test(async(t) => {
-  const hiddenEl = document.getElementById("hidden");
-  let axHidden = axElementById("hidden");
-  t.step(() => { assert_equals(axHidden.childrenCount, 3, "Child count after acquire"); });
-  axElementById("child").takeFocus();
+  t.step(() => {
+    let axChild = axElementById("child");
+    assert_false(Boolean(axChild.backgroundColor), "Background color after activation");
+  });
 
-  // Wait for the next frame for the ax object to be recreated.
+  axElementById("child").takeFocus();  // Use accessibility to set the focus.
+
+  // Wait for a few frames for the ax tree to be refreshed.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      axHidden = axElementById("hidden");
-      t.step(() => { assert_equals(axHidden.childrenCount, 2, "Child count after activation"); });
-      t.done();
+-     requestAnimationFrame(() => {
+  -     t.step(() => {
+          let axChild = axElementById("child");
+          assert_equals(axChild.backgroundColor, 0xFFFFFFFF, "Background color after activation");
+        });
+        t.done();
+      });
     });
   });
-}, "Accessiblility focus causes activatable hidden tree to activate");
+}, "Accessiblility focus causes activatable hidden tree to activate, and thus accessibility details such as background color become available");
 
 </script>

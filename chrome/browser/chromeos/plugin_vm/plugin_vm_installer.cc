@@ -36,6 +36,8 @@
 
 namespace {
 
+constexpr char kFailureReasonHistogram[] = "PluginVm.SetupFailureReason";
+
 constexpr char kHomeDirectory[] = "/home";
 
 chromeos::ConciergeClient* GetConciergeClient() {
@@ -78,7 +80,7 @@ void PluginVmInstaller::Start() {
                << " another PluginVm image is currently being processed "
                << "in state " << GetStateName(state_) << ", "
                << GetInstallingStateName(installing_state_);
-    OnDownloadFailed(FailureReason::OPERATION_IN_PROGRESS);
+    InstallFailed(FailureReason::OPERATION_IN_PROGRESS);
     return;
   }
   // Defensive check preventing any download attempts when PluginVm is
@@ -87,7 +89,7 @@ void PluginVmInstaller::Start() {
   if (!IsPluginVmAllowedForProfile(profile_)) {
     LOG(ERROR) << "Download of PluginVm image cannot be started because "
                << "the user is not allowed to run PluginVm";
-    OnDownloadFailed(FailureReason::NOT_ALLOWED);
+    InstallFailed(FailureReason::NOT_ALLOWED);
     return;
   }
 
@@ -156,9 +158,7 @@ void PluginVmInstaller::OnAvailableDiskSpace(int64_t bytes) {
   // installing DLC and this case should be very rare.
 
   if (bytes < kMinimumFreeDiskSpace) {
-    if (observer_)
-      observer_->OnDiskSpaceCheckFailed();
-    InstallFinished();
+    InstallFailed(FailureReason::INSUFFICIENT_DISK_SPACE);
     return;
   }
 
@@ -201,14 +201,14 @@ void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
 void PluginVmInstaller::OnUpdateVmStateFailed() {
   // Either the dispatcher failed to start or ListVms didn't work.
   // PluginVmManager logs the details.
-  OnDownloadFailed(FailureReason::DISPATCHER_NOT_AVAILABLE);
+  InstallFailed(FailureReason::DISPATCHER_NOT_AVAILABLE);
 }
 
 void PluginVmInstaller::StartDlcDownload() {
   installing_state_ = InstallingState::kDownloadingDlc;
 
   if (!GetPluginVmImageDownloadUrl().is_valid()) {
-    OnDownloadFailed(FailureReason::INVALID_IMAGE_URL);
+    InstallFailed(FailureReason::INVALID_IMAGE_URL);
     return;
   }
 
@@ -229,7 +229,7 @@ void PluginVmInstaller::StartDownload() {
   GURL url = GetPluginVmImageDownloadUrl();
   // This may have changed since running StartDlcDownload.
   if (!url.is_valid()) {
-    OnDownloadFailed(FailureReason::INVALID_IMAGE_URL);
+    InstallFailed(FailureReason::INVALID_IMAGE_URL);
     return;
   }
 
@@ -320,9 +320,7 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   }
 
   RecordPluginVmDlcUseResultHistogram(result);
-  if (observer_)
-    observer_->OnDownloadFailed(reason);
-  InstallFinished();
+  InstallFailed(reason);
 }
 
 void PluginVmInstaller::OnDownloadStarted() {
@@ -380,9 +378,7 @@ void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
     using_drive_download_service_ = false;
   }
 
-  if (observer_)
-    observer_->OnDownloadFailed(reason);
-  InstallFinished();
+  InstallFailed(reason);
 }
 
 void PluginVmInstaller::StartImport() {
@@ -596,11 +592,7 @@ void PluginVmInstaller::OnImported(
       LOG(ERROR) << "New VM creation failed";
     else
       LOG(ERROR) << "Image import failed";
-    if (observer_) {
-      observer_->OnImportFailed(*failure_reason);
-    }
-
-    InstallFinished();
+    InstallFailed(*failure_reason);
     return;
   }
 
@@ -816,6 +808,14 @@ void PluginVmInstaller::CancelFinished() {
 
   if (observer_)
     observer_->OnCancelFinished();
+}
+
+void PluginVmInstaller::InstallFailed(FailureReason reason) {
+  state_ = State::kIdle;
+  installing_state_ = InstallingState::kInactive;
+  base::UmaHistogramEnumeration(kFailureReasonHistogram, reason);
+  if (observer_)
+    observer_->OnError(reason);
 }
 
 void PluginVmInstaller::InstallFinished() {

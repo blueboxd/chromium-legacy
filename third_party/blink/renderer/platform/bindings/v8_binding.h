@@ -229,6 +229,12 @@ void V8SetReturnValue(const CallbackInfo& info,
   V8SetReturnValue(info, ToV8(value, creation_context, info.GetIsolate()));
 }
 
+template <class CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      bindings::DictionaryBase* value) {
+  V8SetReturnValue(info, ToV8(value, info.Holder(), info.GetIsolate()));
+}
+
 // Convert v8::String to a WTF::String. If the V8 string is not already
 // an external string then it is transformed into an external string at this
 // point to avoid repeated conversions.

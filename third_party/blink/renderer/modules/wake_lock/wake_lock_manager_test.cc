@@ -194,6 +194,7 @@ TEST(WakeLockManagerTest, WakeLockConnectionError) {
   context.WaitForPromiseFulfillment(promise1);
   context.WaitForPromiseFulfillment(promise2);
 
+  EXPECT_TRUE(manager->wake_lock_.is_bound());
   EXPECT_EQ(2U, manager->wake_lock_sentinels_.size());
 
   // Unbind and wait for the disconnection to reach |wake_lock_|'s
@@ -202,7 +203,7 @@ TEST(WakeLockManagerTest, WakeLockConnectionError) {
   manager->wake_lock_.FlushForTesting();
 
   EXPECT_EQ(0U, manager->wake_lock_sentinels_.size());
-  EXPECT_FALSE(manager->wake_lock_);
+  EXPECT_FALSE(manager->wake_lock_.is_bound());
   EXPECT_FALSE(system_lock.is_acquired());
 }
 

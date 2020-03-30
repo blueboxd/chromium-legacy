@@ -316,7 +316,7 @@ class CodeNode(object):
         for node in outers:
             if node.own_template_vars is None:
                 continue
-            for name, value in node.own_template_vars.iteritems():
+            for name, value in node.own_template_vars.items():
                 assert name not in bindings, (
                     "Duplicated template variable binding: {}".format(name))
                 bindings[name] = value
@@ -341,7 +341,7 @@ class CodeNode(object):
 
     def add_template_vars(self, template_vars):
         assert isinstance(template_vars, dict)
-        for name, value in template_vars.iteritems():
+        for name, value in template_vars.items():
             self.add_template_var(name, value)
 
     @property
@@ -357,7 +357,7 @@ class CodeNode(object):
 
     def set_base_template_vars(self, template_vars):
         assert isinstance(template_vars, dict)
-        for name, value in template_vars.iteritems():
+        for name, value in template_vars.items():
             assert isinstance(name, str)
             assert not isinstance(value, CodeNode)
         assert self._base_template_vars is None
@@ -507,7 +507,7 @@ class CompositeNode(CodeNode):
             gensym = CodeNode.gensym()
             gensym_args.append("${{{}}}".format(gensym))
             template_vars[gensym] = arg
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             assert isinstance(key, (int, long, str))
             assert isinstance(value, (CodeNode, int, long, str))
             gensym = CodeNode.gensym()
@@ -732,7 +732,7 @@ class SymbolScopeNode(SequenceNode):
                     scope = scope_chain[0]
                     scope_to_likeliness[scope] = max(
                         likeliness, scope_to_likeliness.get(scope, likeliness))
-            for likeliness in scope_to_likeliness.itervalues():
+            for likeliness in scope_to_likeliness.values():
                 counts[DIRECT_CHILD_SCOPES] += 1
                 counts[likeliness] += 1
             return counts

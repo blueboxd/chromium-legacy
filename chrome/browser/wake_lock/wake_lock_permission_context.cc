@@ -10,9 +10,12 @@
 WakeLockPermissionContext::WakeLockPermissionContext(
     content::BrowserContext* browser_context,
     ContentSettingsType content_settings_type)
-    : PermissionContextBase(browser_context,
-                            content_settings_type,
-                            blink::mojom::FeaturePolicyFeature::kWakeLock),
+    : PermissionContextBase(
+          browser_context,
+          content_settings_type,
+          content_settings_type == ContentSettingsType::WAKE_LOCK_SCREEN
+              ? blink::mojom::FeaturePolicyFeature::kScreenWakeLock
+              : blink::mojom::FeaturePolicyFeature::kNotFound),
       content_settings_type_(content_settings_type) {
   DCHECK(content_settings_type == ContentSettingsType::WAKE_LOCK_SCREEN ||
          content_settings_type == ContentSettingsType::WAKE_LOCK_SYSTEM);

@@ -190,7 +190,7 @@ class ExtendedAttributes(object):
     def _on_ext_attrs_updated(self):
         self._keys = tuple(sorted(self._ext_attrs.keys()))
         self._length = 0
-        for ext_attrs in self._ext_attrs.itervalues():
+        for ext_attrs in self._ext_attrs.values():
             self._length += len(ext_attrs)
 
     @classmethod

@@ -34,7 +34,6 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
   void OnCheckedDiskSpace(bool low_disk_space) override;
-  void OnDiskSpaceCheckFailed() override;
   void OnDlcDownloadProgressUpdated(double progress,
                                     base::TimeDelta elapsed_time) override;
   void OnDlcDownloadCompleted() override;
@@ -43,14 +42,11 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
                                  int64_t content_length,
                                  base::TimeDelta elapsed_time) override;
   void OnDownloadCompleted() override;
-  void OnDownloadFailed(
-      plugin_vm::PluginVmInstaller::FailureReason reason) override;
   void OnImportProgressUpdated(int percent_completed,
                                base::TimeDelta elapsed_time) override;
   void OnCreated() override;
   void OnImported() override;
-  void OnImportFailed(
-      plugin_vm::PluginVmInstaller::FailureReason reason) override;
+  void OnError(plugin_vm::PluginVmInstaller::FailureReason reason) override;
 
   void OnCancelFinished() override;
 

@@ -71,7 +71,7 @@ def use_jinja_gperf_template(template_path, gperf_extra_args=None):
                 gperf_args.extend(gperf_extra_args)
             return generate_gperf(gperf_path, gperf_input, gperf_args)
 
-        generator_internal.func_name = generator.func_name
+        generator_internal.__name__ = generator.__name__
         return generator_internal
 
     return wrapper

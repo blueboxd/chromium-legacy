@@ -318,6 +318,41 @@ function testFilesDisplayPanelMixedSummary() {
   assertEquals('success', summaryPanelItem.status);
 }
 
+function testFilesDisplayPanelMixedProgress() {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Add a generic progress panel item to the display panel container.
+  const progressPanel = displayPanel.addPanelItem('testpanel1');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+  progressPanel.progress = '1';
+
+  // Add a format progress panel item to the display panel container.
+  const formatProgressPanel = displayPanel.addPanelItem('testpanel2');
+  formatProgressPanel.panelType = formatProgressPanel.panelTypeFormatProgress;
+  formatProgressPanel.progress = '2';
+
+  // Confirm that format progress panels do not have a cancel button.
+  assertEquals(null, formatProgressPanel.secondaryButton);
+
+  // Add a drive sync progress panel item to the display panel container.
+  const syncProgressPanel = displayPanel.addPanelItem('testpanel3');
+  syncProgressPanel.panelType = syncProgressPanel.panelTypeSyncProgress;
+  syncProgressPanel.progress = '6';
+
+  // Confirm that sync progress panels do not have a cancel button.
+  assertEquals(null, syncProgressPanel.secondaryButton);
+
+  // Verify a summary panel item is created with the correct average.
+  const summaryContainer = displayPanel.shadowRoot.querySelector('#summary');
+  const summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
+  assertEquals(summaryPanelItem.panelTypeSummary, summaryPanelItem.panelType);
+  assertEquals('largeprogress', summaryPanelItem.indicator);
+  assertEquals('hidden', summaryPanelItem.errorMarkerVisibility);
+  assertEquals('3', summaryPanelItem.progress);
+}
+
 function testFilesDisplayPanelCircularProgress() {
   // Get the host display panel container element.
   /** @type {!DisplayPanel|!Element} */

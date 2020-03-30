@@ -39,8 +39,8 @@ class PluginVmDriveImageDownloadService;
 class PluginVmInstaller : public KeyedService,
                           public chromeos::ConciergeClient::DiskImageObserver {
  public:
-  // FailureReasons values can be shown to the user. Do not reorder or renumber
-  // these values without careful consideration.
+  // FailureReasons values are logged to UMA and shown to users. Do not change
+  // or re-use enum values.
   enum class FailureReason {
     // LOGIC_ERROR = 0,
     SIGNAL_NOT_CONNECTED = 1,
@@ -66,6 +66,8 @@ class PluginVmInstaller : public KeyedService,
     DLC_NEED_REBOOT = 21,
     DLC_NEED_SPACE = 22,
     INSUFFICIENT_DISK_SPACE = 23,
+
+    kMaxValue = INSUFFICIENT_DISK_SPACE,
   };
 
   enum class InstallingState {
@@ -93,7 +95,6 @@ class PluginVmInstaller : public KeyedService,
     // amount of free disk space and the install will pause until Continue() or
     // Cancel() is called.
     virtual void OnCheckedDiskSpace(bool low_disk_space) = 0;
-    virtual void OnDiskSpaceCheckFailed() = 0;
 
     virtual void OnDlcDownloadProgressUpdated(double progress,
                                               base::TimeDelta elapsed_time) = 0;
@@ -106,12 +107,11 @@ class PluginVmInstaller : public KeyedService,
                                            int64_t content_length,
                                            base::TimeDelta elapsed_time) = 0;
     virtual void OnDownloadCompleted() = 0;
-    virtual void OnDownloadFailed(FailureReason reason) = 0;
     virtual void OnImportProgressUpdated(int percent_completed,
                                          base::TimeDelta elapsed_time) = 0;
     virtual void OnCreated() = 0;
     virtual void OnImported() = 0;
-    virtual void OnImportFailed(FailureReason reason) = 0;
+    virtual void OnError(FailureReason reason) = 0;
 
     virtual void OnCancelFinished() = 0;
   };
@@ -182,6 +182,7 @@ class PluginVmInstaller : public KeyedService,
   // Reset state and call observers.
   void CancelFinished();
 
+  void InstallFailed(FailureReason reason);
   // Reset state, callers also need to call the appropriate observer functions.
   void InstallFinished();
 

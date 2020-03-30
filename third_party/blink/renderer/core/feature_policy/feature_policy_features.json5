@@ -246,6 +246,11 @@
       depends_on: ["WebAuthenticationFeaturePolicy"],
     },
     {
+      name: "ScreenWakeLock",
+      feature_policy_name: "screen-wake-lock",
+      depends_on: ["WakeLock"],
+    },
+    {
       name: "Script",
       feature_policy_name: "scripts",
       depends_on: ["FeaturePolicyForSandbox"],
@@ -283,11 +288,6 @@
       name: "VerticalScroll",
       feature_policy_name: "vertical-scroll",
       depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
-      name: "WakeLock",
-      feature_policy_name: "wake-lock",
-      depends_on: ["WakeLock"],
     },
     {
       name: "WebXr",

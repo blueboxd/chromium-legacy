@@ -45,6 +45,7 @@ picture-in-picture
 pointer-lock
 popups
 presentation
+screen-wake-lock
 scripts
 serial
 sync-script
@@ -53,6 +54,5 @@ top-navigation
 trust-token-redemption
 usb
 vertical-scroll
-wake-lock
 xr-spatial-tracking
 

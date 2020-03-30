@@ -17,8 +17,8 @@ AppRegistryController::~AppRegistryController() = default;
 
 void AppRegistryController::SetExperimentalTabbedWindowMode(const AppId& app_id,
                                                             bool enabled) {
-  DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip));
   if (enabled) {
+    DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip));
     UpdateBoolWebAppPref(profile()->GetPrefs(), app_id,
                          kExperimentalTabbedWindowMode, true);
 

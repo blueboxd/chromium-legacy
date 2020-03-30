@@ -241,7 +241,9 @@ class DisplayPanel extends HTMLElement {
     const connectedPanels = this.connectedPanelItems_();
     for (const panel of connectedPanels) {
       // Only sum progress for attached progress panels.
-      if (panel.panelType === panel.panelTypeProgress) {
+      if (panel.panelType === panel.panelTypeProgress ||
+          panel.panelType === panel.panelTypeFormatProgress ||
+          panel.panelType === panel.panelTypeSyncProgress) {
         total += Number(panel.progress);
         progressCount++;
       } else if (panel.panelType === panel.panelTypeError) {

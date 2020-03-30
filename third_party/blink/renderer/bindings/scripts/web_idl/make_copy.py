@@ -48,11 +48,11 @@ def make_copy(obj, memo=None):
     if isinstance(obj, dict):
         return memoize(
             cls([(make_copy(key, memo), make_copy(value, memo))
-                 for key, value in obj.iteritems()]))
+                 for key, value in obj.items()]))
 
     if hasattr(obj, '__dict__'):
         copy = memoize(cls.__new__(cls))
-        for name, value in obj.__dict__.iteritems():
+        for name, value in obj.__dict__.items():
             setattr(copy, name, make_copy(value, memo))
         return copy
 

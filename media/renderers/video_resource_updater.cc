@@ -620,13 +620,17 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
           protected_video_type = gfx::ProtectedVideoType::kSoftwareProtected;
       }
 
+      const gfx::Vector2dF offset(
+          static_cast<float>(visible_rect.x()) / coded_size.width(),
+          static_cast<float>(visible_rect.y()) / coded_size.height());
+
       auto* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-      texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                           needs_blending, frame_resources_[0].id,
-                           premultiplied_alpha, uv_top_left, uv_bottom_right,
-                           SK_ColorTRANSPARENT, opacity, flipped,
-                           nearest_neighbor, false, protected_video_type);
+      texture_quad->SetNew(
+          shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
+          frame_resources_[0].id, premultiplied_alpha, uv_top_left + offset,
+          uv_bottom_right + offset, SK_ColorTRANSPARENT, opacity, flipped,
+          nearest_neighbor, false, protected_video_type);
       texture_quad->set_resource_size_in_pixels(coded_size);
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);

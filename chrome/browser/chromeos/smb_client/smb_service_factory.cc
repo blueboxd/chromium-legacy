@@ -8,6 +8,7 @@
 
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_credentials_manager.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -54,6 +55,7 @@ SmbServiceFactory::SmbServiceFactory()
   DependsOn(file_system_provider::ServiceFactory::GetInstance());
   DependsOn(AuthPolicyCredentialsManagerFactory::GetInstance());
   DependsOn(KerberosCredentialsManagerFactory::GetInstance());
+  DependsOn(file_manager::VolumeManagerFactory::GetInstance());
 }
 
 SmbServiceFactory::~SmbServiceFactory() {}

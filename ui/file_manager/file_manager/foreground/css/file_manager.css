@@ -1151,6 +1151,10 @@ body.check-select #search-box {
   width: 36px;
 }
 
+html:not(.pointer-active) .dialog-header.files-ng #search-box .clear:hover {
+  background-color: rgba(0, 0, 0, 4%);
+}
+
 .dialog-header.files-ng #search-box .clear > .icon {
   -webkit-mask-image: url(../images/files/ui/search_clear_filled.svg);
 }

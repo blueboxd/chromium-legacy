@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -208,15 +209,19 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   const AccountId& primary_account_id =
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          chromeos::ProfileHelper::Get()->GetProfileByAccountId(
-              primary_account_id));
-  const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
-      exo::GetShellApplicationId(window), exo::GetShellStartupId(window));
+  Profile* primary_account_profile =
+      chromeos::ProfileHelper::Get()->GetProfileByAccountId(primary_account_id);
+
+  const std::string& shelf_app_id = crostini::GetCrostiniShelfAppId(
+      primary_account_profile, exo::GetShellApplicationId(window),
+      exo::GetShellStartupId(window));
   // Windows without an application id set will get filtered out here.
   if (shelf_app_id.empty())
     return;
+
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          primary_account_profile);
 
   // At this point, all remaining windows are Crostini windows. Firstly, we add
   // support for forcibly closing it. We use the registration to retrieve the
@@ -240,8 +245,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   // respective apps take at most another few seconds to start.
   // Work is ongoing to make this occur as infrequently as possible.
   // See https://crbug.com/854911.
-  if (base::StartsWith(shelf_app_id, crostini::kCrostiniAppIdPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  if (crostini::IsUnmatchedCrostiniShelfAppId(shelf_app_id)) {
     owner()->GetShelfSpinnerController()->CloseCrostiniSpinners();
   }
 

@@ -27,6 +27,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
+
 import os.path
 import sys
 
@@ -103,7 +105,7 @@ class EventFactoryWriter(json5_generator.Writer):
         }
 
     def _fatal(self, message):
-        print 'FATAL ERROR: ' + message
+        print('FATAL ERROR: ' + message)
         exit(1)
 
     def _headers_header_include_path(self, entry):

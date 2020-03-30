@@ -26913,7 +26913,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="28" label="DocumentWrite"/>
   <int value="29" label="LazyLoad"/>
   <int value="30" label="LayoutAnimations"/>
-  <int value="31" label="WakeLock"/>
+  <int value="31" label="ScreenWakeLock"/>
   <int value="32" label="FontDisplay"/>
   <int value="33" label="TopNavigation"/>
   <int value="34" label="FormSubmission"/>
@@ -52192,6 +52192,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Error"/>
 </enum>
 
+<enum name="PluginVmSetupFailureReason">
+  <int value="1" label="SIGNAL_NOT_CONNECTED"/>
+  <int value="2" label="OPERATION_IN_PROGRESS"/>
+  <int value="3" label="NOT_ALLOWED"/>
+  <int value="4" label="INVALID_IMAGE_URL"/>
+  <int value="5" label="UNEXPECTED_DISK_IMAGE_STATUS"/>
+  <int value="6" label="INVALID_DISK_IMAGE_STATUS_RESPONSE"/>
+  <int value="7" label="DOWNLOAD_FAILED_UNKNOWN"/>
+  <int value="8" label="DOWNLOAD_FAILED_NETWORK"/>
+  <int value="9" label="DOWNLOAD_FAILED_ABORTED"/>
+  <int value="10" label="HASH_MISMATCH"/>
+  <int value="11" label="DISPATCHER_NOT_AVAILABLE"/>
+  <int value="12" label="CONCIERGE_NOT_AVAILABLE"/>
+  <int value="13" label="COULD_NOT_OPEN_IMAGE"/>
+  <int value="14" label="INVALID_IMPORT_RESPONSE"/>
+  <int value="15" label="IMAGE_IMPORT_FAILED"/>
+  <int value="18" label="DLC_INTERNAL"/>
+  <int value="19" label="DLC_UNSUPPORTED"/>
+  <int value="20" label="DLC_BUSY"/>
+  <int value="21" label="DLC_NEED_REBOOT"/>
+  <int value="22" label="DLC_NEED_SPACE"/>
+  <int value="23" label="INSUFFICIENT_DISK_SPACE"/>
+</enum>
+
 <enum name="PluginVmSetupResult">
   <int value="0" label="Success"/>
   <int value="1" label="Plugin VM is not allowed for this user"/>
@@ -52207,6 +52231,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="User didn't meet minimum required free disk space"/>
   <int value="11" label="User cancelled setup due to low free disk space"/>
   <int value="12" label="User cancelled setup during disk space check"/>
+  <int value="13" label="Error, see PluginVm.SetupFailureReason"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum">

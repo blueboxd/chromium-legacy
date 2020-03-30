@@ -140,7 +140,7 @@ def _format(style_func, format_string, *args, **kwargs):
     assert isinstance(format_string, str)
 
     args = map(style_func, map(_tokenize, args))
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
         kwargs[key] = style_func(_tokenize(value))
     return format_string.format(*args, **kwargs)
 

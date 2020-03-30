@@ -682,8 +682,8 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
-        "op": "<=",
-        "value": "9.18.0.0"
+        "op": "<",
+        "value": "0.0.0.3000"
       },
       "features": [
         "disable_d3d11"
@@ -3002,8 +3002,8 @@
         "type": "win"
       },
       "driver_version": {
-        "op": ">=",
-        "value": "24"
+        "op": ">",
+        "value": "0.0.100.0"
       },
       "hardware_overlay": "unsupported",
       "features": [
@@ -3184,7 +3184,7 @@
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<",
-        "value": "24.0.0.0"
+        "value": "0.0.0.9999"
       },
       "features": [
         "disable_nv12_dynamic_textures"

@@ -238,7 +238,7 @@ class InterfaceInfoCollector(object):
         self.union_types.update(this_union_types)
         self.typedefs.update(definitions.typedefs)
         for callback_function_name, callback_function in \
-                definitions.callback_functions.iteritems():
+                definitions.callback_functions.items():
             # Set 'component_dir' to specify a directory that callback function files belong to
             self.callback_functions[callback_function_name] = {
                 'callback_function': callback_function,
@@ -253,7 +253,7 @@ class InterfaceInfoCollector(object):
         self.enumerations.update(definitions.enumerations)
 
         if definitions.interfaces:
-            definition = next(definitions.interfaces.itervalues())
+            definition = next(iter(definitions.interfaces.values()))
             interface_info = {
                 'is_callback_interface':
                 definition.is_callback,
@@ -270,7 +270,7 @@ class InterfaceInfoCollector(object):
                 get_put_forward_interfaces_from_definition(definition),
             }
         elif definitions.dictionaries:
-            definition = next(definitions.dictionaries.itervalues())
+            definition = next(iter(definitions.dictionaries.values()))
             interface_info = {
                 'is_callback_interface': False,
                 'is_dictionary': True,

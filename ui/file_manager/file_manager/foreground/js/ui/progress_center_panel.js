@@ -426,6 +426,8 @@ class ProgressCenterPanel {
         }, this.PENDING_TIME_MS_);
         if (item.type === 'format') {
           panelItem.panelType = panelItem.panelTypeFormatProgress;
+        } else if (item.type === 'sync') {
+          panelItem.panelType = panelItem.panelTypeSyncProgress;
         } else {
           panelItem.panelType = panelItem.panelTypeProgress;
         }

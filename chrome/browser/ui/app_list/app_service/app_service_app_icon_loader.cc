@@ -6,7 +6,7 @@
 
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
@@ -61,8 +61,7 @@ bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& id) {
   // with the prefix "crostini:".
   if (proxy && (proxy->AppRegistryCache().GetAppType(app_id) !=
                     apps::mojom::AppType::kUnknown ||
-                base::StartsWith(app_id, crostini::kCrostiniAppIdPrefix,
-                                 base::CompareCase::SENSITIVE))) {
+                crostini::IsUnmatchedCrostiniShelfAppId(app_id))) {
     return true;
   }
 
@@ -135,8 +134,7 @@ void AppServiceAppIconLoader::CallLoadIcon(const std::string& app_id,
 
   // When Crostini generates shelf id as the app_id, which couldn't match to an
   // app, the default penguin icon should be loaded.
-  if (base::StartsWith(app_id, crostini::kCrostiniAppIdPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  if (crostini::IsUnmatchedCrostiniShelfAppId(app_id)) {
     apps::mojom::IconKeyPtr icon_key = apps::mojom::IconKey::New();
     proxy->LoadIconFromIconKey(
         apps::mojom::AppType::kCrostini, std::string(), std::move(icon_key),

@@ -299,7 +299,7 @@ class IdlCompiler(object):
 
         self._ir_map.move_to_new_phase()
 
-        for identifier, old_dictionary in old_dictionaries.iteritems():
+        for identifier, old_dictionary in old_dictionaries.items():
             new_dictionary = make_copy(old_dictionary)
             self._ir_map.add(new_dictionary)
             for partial_dictionary in old_partial_dictionaries.get(
@@ -331,7 +331,7 @@ class IdlCompiler(object):
         ir_sets_to_merge = [(interface, [
             mixins[include.mixin_identifier]
             for include in includes.get(identifier, [])
-        ]) for identifier, interface in interfaces.iteritems()]
+        ]) for identifier, interface in interfaces.items()]
 
         self._ir_map.move_to_new_phase()
 
@@ -380,7 +380,7 @@ class IdlCompiler(object):
 
         self._ir_map.move_to_new_phase()
 
-        for old_interface in old_interfaces.itervalues():
+        for old_interface in old_interfaces.values():
             new_interface = make_copy(old_interface)
             self._ir_map.add(new_interface)
             inheritance_chain = create_inheritance_chain(
@@ -644,13 +644,13 @@ class IdlCompiler(object):
 
         grouped_typedefs = {}  # {unique key: list of typedefs to the union}
         all_typedefs = self._db.find_by_kind(DatabaseBody.Kind.TYPEDEF)
-        for typedef in all_typedefs.itervalues():
+        for typedef in all_typedefs.values():
             if not typedef.idl_type.is_union:
                 continue
             key = unique_key(typedef.idl_type)
             grouped_typedefs.setdefault(key, []).append(typedef)
 
-        for key, union_types in grouped_unions.iteritems():
+        for key, union_types in grouped_unions.items():
             self._db.register(
                 DatabaseBody.Kind.UNION,
                 Union(

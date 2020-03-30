@@ -9,9 +9,9 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "components/user_manager/user_manager.h"
@@ -232,12 +232,11 @@ bool ShelfSpinnerController::RemoveSpinnerFromControllerMap(
 
 void ShelfSpinnerController::CloseCrostiniSpinners() {
   std::vector<std::string> app_ids_to_close;
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          chromeos::ProfileHelper::Get()->GetProfileByAccountId(
-              current_account_id_));
+  const Profile* profile =
+      chromeos::ProfileHelper::Get()->GetProfileByAccountId(
+          current_account_id_);
   for (const auto& app_id_controller_pair : app_controller_map_) {
-    if (registry_service->IsCrostiniShelfAppId(app_id_controller_pair.first))
+    if (crostini::IsCrostiniShelfAppId(profile, app_id_controller_pair.first))
       app_ids_to_close.push_back(app_id_controller_pair.first);
   }
   for (const auto& app_id : app_ids_to_close)

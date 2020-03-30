@@ -23,40 +23,46 @@ AtomicString CreateFilterDataUrl(AtomicString piece) {
 
 AtomicString CreateVisionDeficiencyFilterUrl(
     VisionDeficiency vision_deficiency) {
+  // The filter color matrices are based on the following research paper:
+  // Gustavo M. Machado, Manuel M. Oliveira, and Leandro A. F. Fernandes
+  // "A Physiologically-based Model for Simulation of Color Vision Deficiency".
+  // IEEE Transactions on Visualization and Computer Graphics. Volume 15 (2009),
+  // Number 6, November/December 2009. pp. 1291-1298.
+  // https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html
   switch (vision_deficiency) {
     case VisionDeficiency::kAchromatopsia:
       return CreateFilterDataUrl(
           "<feColorMatrix values=\""
-          "0.299 0.587 0.114 0.000 0.000 "
-          "0.299 0.587 0.114 0.000 0.000 "
-          "0.299 0.587 0.114 0.000 0.000 "
-          "0.000 0.000 0.000 1.000 0.000 "
+          "0.299  0.587  0.114  0.000  0.000 "
+          "0.299  0.587  0.114  0.000  0.000 "
+          "0.299  0.587  0.114  0.000  0.000 "
+          "0.000  0.000  0.000  1.000  0.000 "
           "\"/>");
     case VisionDeficiency::kBlurredVision:
       return CreateFilterDataUrl("<feGaussianBlur stdDeviation=\"2\"/>");
     case VisionDeficiency::kDeuteranopia:
       return CreateFilterDataUrl(
           "<feColorMatrix values=\""
-          "0.625 0.375 0.000 0.000 0.000 "
-          "0.700 0.300 0.000 0.000 0.000 "
-          "0.000 0.300 0.700 0.000 0.000 "
-          "0.000 0.000 0.000 1.000 0.000 "
+          " 0.367  0.861 -0.228  0.000  0.000 "
+          " 0.280  0.673  0.047  0.000  0.000 "
+          "-0.012  0.043  0.969  0.000  0.000 "
+          " 0.000  0.000  0.000  1.000  0.000 "
           "\"/>");
     case VisionDeficiency::kProtanopia:
       return CreateFilterDataUrl(
           "<feColorMatrix values=\""
-          "0.567 0.433 0.000 0.000 0.000 "
-          "0.558 0.442 0.000 0.000 0.000 "
-          "0.000 0.242 0.758 0.000 0.000 "
-          "0.000 0.000 0.000 1.000 0.000 "
+          " 0.152  1.053 -0.205  0.000  0.000 "
+          " 0.115  0.786  0.099  0.000  0.000 "
+          "-0.004 -0.048  1.052  0.000  0.000 "
+          " 0.000  0.000  0.000  1.000  0.000 "
           "\"/>");
     case VisionDeficiency::kTritanopia:
       return CreateFilterDataUrl(
           "<feColorMatrix values=\""
-          "0.950 0.050 0.000 0.000 0.000 "
-          "0.000 0.433 0.567 0.000 0.000 "
-          "0.000 0.475 0.525 0.000 0.000 "
-          "0.000 0.000 0.000 1.000 0.000 "
+          " 1.256 -0.077 -0.179  0.000  0.000 "
+          "-0.078  0.931  0.148  0.000  0.000 "
+          " 0.005  0.691  0.304  0.000  0.000 "
+          " 0.000  0.000  0.000  1.000  0.000 "
           "\"/>");
     case VisionDeficiency::kNoVisionDeficiency:
       NOTREACHED();

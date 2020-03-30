@@ -62,6 +62,9 @@ class SmbService : public KeyedService,
   SmbService(Profile* profile, std::unique_ptr<base::TickClock> tick_clock);
   ~SmbService() override;
 
+  // KeyedService override.
+  void Shutdown() override;
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Starts the process of mounting an SMB file system.

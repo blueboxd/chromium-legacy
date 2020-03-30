@@ -224,7 +224,7 @@
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<",
-        "value": "10.7"
+        "value": "24.20.100.7000"
       },
       "features": [
         "test_feature_1"
@@ -896,6 +896,43 @@
         "type": "chromeos"
       },
       "gl_renderer": "Mali.*",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 75,
+      "description": "GpuControlListEntryTest.IntelDriverVendorEntry",
+      "driver_vendor": "Intel.*",
+      "driver_version": {
+        "op": "between",
+        "value": "24.20.100.6000",
+        "value2": "26.20.100.7000"
+      },
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 76,
+      "description": "GpuControlListEntryTest.IntelDriverVersionEntry",
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<=",
+        "value": "24.20.100.7000"
+      },
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 77,
+      "description": "GpuControlListEntryTest.IntelOldDriverVersionEntry",
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<=",
+        "value": "24.20.10.7000"
+      },
       "features": [
         "test_feature_0"
       ]

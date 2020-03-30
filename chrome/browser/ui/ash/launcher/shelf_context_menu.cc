@@ -13,8 +13,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -71,12 +70,10 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
 
     // AppServiceShelfContextMenu supports context menus for apps registered in
     // AppService, Arc shortcuts and Crostini apps with the prefix "crostini:".
-    if (proxy &&
-        (proxy->AppRegistryCache().GetAppType(item->id.app_id) !=
-             apps::mojom::AppType::kUnknown ||
-         base::StartsWith(item->id.app_id, crostini::kCrostiniAppIdPrefix,
-                          base::CompareCase::SENSITIVE) ||
-         arc::IsArcItem(controller->profile(), item->id.app_id))) {
+    if (proxy && (proxy->AppRegistryCache().GetAppType(item->id.app_id) !=
+                      apps::mojom::AppType::kUnknown ||
+                  crostini::IsUnmatchedCrostiniShelfAppId(item->id.app_id) ||
+                  arc::IsArcItem(controller->profile(), item->id.app_id))) {
       return std::make_unique<AppServiceShelfContextMenu>(controller, item,
                                                           display_id);
     }
@@ -91,11 +88,7 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
     return std::make_unique<ArcShelfContextMenu>(controller, item, display_id);
 
   // Use CrostiniShelfContextMenu for crostini apps and Terminal System App.
-  crostini::CrostiniRegistryService* crostini_registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          controller->profile());
-  if ((crostini_registry_service &&
-       crostini_registry_service->IsCrostiniShelfAppId(item->id.app_id)) ||
+  if (crostini::IsCrostiniShelfAppId(controller->profile(), item->id.app_id) ||
       item->id.app_id == crostini::kCrostiniTerminalSystemAppId) {
     return std::make_unique<CrostiniShelfContextMenu>(controller, item,
                                                       display_id);

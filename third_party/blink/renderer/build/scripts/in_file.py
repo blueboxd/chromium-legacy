@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
+
 import copy
 import os
 
@@ -175,5 +177,5 @@ class InFile(object):
 
     def _fatal(self, message):
         # FIXME: This should probably raise instead of exit(1)
-        print message
+        print(message)
         exit(1)

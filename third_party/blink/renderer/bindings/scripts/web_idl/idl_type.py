@@ -265,14 +265,14 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         }
 
         value_counts = {None: 0, False: 0, True: 0}
-        for value in switches.itervalues():
+        for value in switches.values():
             assert value is None or isinstance(value, bool)
             value_counts[value] += 1
         assert value_counts[False] == 0 or value_counts[True] == 0, (
             "Specify only True or False arguments.  Unspecified arguments are "
             "automatically set to the opposite value.")
         default = value_counts[True] == 0
-        for arg, value in switches.iteritems():
+        for arg, value in switches.items():
             if value is None:
                 switches[arg] = default
 

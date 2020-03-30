@@ -31,7 +31,7 @@ FaceDetector* FaceDetector::Create(ExecutionContext* context,
 
 FaceDetector::FaceDetector(ExecutionContext* context,
                            const FaceDetectorOptions* options)
-    : ShapeDetector() {
+    : face_service_(context) {
   auto face_detector_options =
       shape_detection::mojom::blink::FaceDetectorOptions::New();
   face_detector_options->max_detected_faces = options->maxDetectedFaces();
@@ -54,7 +54,7 @@ FaceDetector::FaceDetector(ExecutionContext* context,
 ScriptPromise FaceDetector::DoDetect(ScriptPromiseResolver* resolver,
                                      SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
-  if (!face_service_) {
+  if (!face_service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "Face detection service unavailable."));
@@ -116,6 +116,7 @@ void FaceDetector::OnFaceServiceConnectionError() {
 
 void FaceDetector::Trace(Visitor* visitor) {
   ShapeDetector::Trace(visitor);
+  visitor->Trace(face_service_);
   visitor->Trace(face_service_requests_);
 }
 

@@ -36,6 +36,38 @@ _OS_TYPE_MAP = {
     '': 'kOsAny',
   }
 
+INTEL_DRIVER_VERSION_SCHEMA = '''
+The version format of Intel graphics driver is AA.BB.CCC.DDDD.
+DDDD(old schema) or CCC.DDDD(new schema) is the build number. That is,
+indicates the actual driver number. The comparison between old schema
+and new schema is NOT valid. In such a condition the only comparison
+operator that returns true is "not equal".
+
+AA.BB: You are free to specify the real number here, but they are meaningless
+when comparing two version numbers. Usually it's okay to leave it to "0.0".
+
+CCC: It's necessary for new schema. Regarding to old schema, you can speicy
+the real number or any number less than 100 in order to differentiate from
+new schema.
+
+DDDD: It's always meaningful. It must not be "0" under old schema.
+
+Legal: "24.20.100.7000", "0.0.100.7000", "0.0.0.7000", "0.0.100.0"
+Illegal: "24.0.0.0", "24.20.0.0", "0.0.99.0"
+'''
+
+
+def check_intel_driver_version(version):
+  ver_list = version.split('.')
+  if len(ver_list) != 4:
+    return False
+  for ver in ver_list:
+    if not ver.isdigit():
+      return False
+  if int(ver_list[2]) < 100 and ver_list[3] == '0':
+    return False
+  return True
+
 
 def load_software_rendering_list_features(feature_type_filename):
   header_file = open(feature_type_filename, 'r')
@@ -485,6 +517,15 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   write_multi_gpu_style(multi_gpu_style, data_file)
   # group driver info
   if driver_vendor != '' or driver_version != None:
+    if driver_version and os_type == 'win':
+      if (format(vendor_id, '#04x') == '0x8086' or intel_gpu_series_list
+          or intel_gpu_generation or 'Intel' in driver_vendor):
+        if not check_intel_driver_version(driver_version['value']):
+          assert False, INTEL_DRIVER_VERSION_SCHEMA
+        if driver_version.has_key('value2'):
+          if not check_intel_driver_version(driver_version['value2']):
+            assert False, INTEL_DRIVER_VERSION_SCHEMA
+
     write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
                       driver_version, unique_symbol_id,
                       data_file, data_helper_file)

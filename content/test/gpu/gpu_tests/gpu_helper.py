@@ -185,7 +185,8 @@ def MatchDriverTag(tag):
   return DRIVER_TAG_MATCHER.match(tag.lower())
 
 
-def EvaluateVersionComparison(version1, operation, version2):
+def EvaluateVersionComparison(version, operation, ref_version,
+                              os_name=None, driver_vendor=None):
   def parse_version(ver):
     if ver.isdigit():
       return int(ver), ''
@@ -193,8 +194,32 @@ def EvaluateVersionComparison(version1, operation, version2):
       if not ver[i].isdigit():
         return int(ver[:i]) if i > 0 else 0, ver[i:]
 
-  ver_list1 = version1.split('.')
-  ver_list2 = version2.split('.')
+  def is_old_intel_driver(ver_list):
+    assert len(ver_list) == 4
+    num, suffix = parse_version(ver_list[2])
+    assert not suffix
+    return num < 100
+
+  ver_list1 = version.split('.')
+  ver_list2 = ref_version.split('.')
+  # On Windows, if the driver vendor is Intel, the driver version should be
+  # compared based on the Intel graphics driver version schema.
+  # https://www.intel.com/content/www/us/en/support/articles/000005654/graphics-drivers.html
+  if os_name == 'win' and driver_vendor == 'intel':
+    # If either of the two versions doesn't match the Intel driver version
+    # schema, or they belong to different generation of version schema, they
+    # should not be compared.
+    if len(ver_list1) != 4 or len(ver_list2) != 4:
+      return operation == 'ne'
+    if is_old_intel_driver(ver_list1) != is_old_intel_driver(ver_list2):
+      return operation == 'ne'
+    if is_old_intel_driver(ver_list1):
+      ver_list1 = ver_list1[3:]
+      ver_list2 = ver_list2[3:]
+    else:
+      ver_list1 = ver_list1[2:]
+      ver_list2 = ver_list2[2:]
+
   for i in range(0, max(len(ver_list1), len(ver_list2))):
     ver1 = ver_list1[i] if i < len(ver_list1) else '0'
     ver2 = ver_list2[i] if i < len(ver_list2) else '0'

@@ -27,6 +27,7 @@ class PanelItem extends HTMLElement {
     this.panelTypeError = 3;
     this.panelTypeInfo = 4;
     this.panelTypeFormatProgress = 5;
+    this.panelTypeSyncProgress = 6;
 
     /** @private {number} */
     this.panelType_ = this.panelTypeDefault;
@@ -264,6 +265,9 @@ class PanelItem extends HTMLElement {
       case this.panelTypeFormatProgress:
         this.setAttribute('indicator', 'status');
         this.setAttribute('status', 'hard-drive');
+        break;
+      case this.panelTypeSyncProgress:
+        this.setAttribute('indicator', 'progress');
         break;
     }
 

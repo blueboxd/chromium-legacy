@@ -642,7 +642,7 @@ class IdlAnnotatedType(IdlTypeBase):
     def __str__(self):
         annotation = ', '.join(
             (key + ('' if val is None else '=' + val))
-            for key, val in self.extended_attributes.iteritems())
+            for key, val in self.extended_attributes.items())
         return '[%s] %s' % (annotation, str(self.inner_type))
 
     def __getattr__(self, name):
@@ -670,7 +670,7 @@ class IdlAnnotatedType(IdlTypeBase):
     def name(self):
         annotation = ''.join(
             (key + ('' if val is None else val))
-            for key, val in sorted(self.extended_attributes.iteritems()))
+            for key, val in sorted(self.extended_attributes.items()))
         return self.inner_type.name + annotation
 
     def resolve_typedefs(self, typedefs):

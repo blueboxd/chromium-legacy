@@ -44,13 +44,10 @@ class VectorBackedLinkedListNode {
         next_index_(next_index),
         value_(std::move(value)) {}
 
-  VectorBackedLinkedListNode(const VectorBackedLinkedListNode& other) = delete;
-
+  VectorBackedLinkedListNode(const VectorBackedLinkedListNode& other) = default;
   VectorBackedLinkedListNode(VectorBackedLinkedListNode&& other) = default;
-
   VectorBackedLinkedListNode& operator=(
-      const VectorBackedLinkedListNode& other) = delete;
-
+      const VectorBackedLinkedListNode& other) = default;
   VectorBackedLinkedListNode& operator=(VectorBackedLinkedListNode&& other) =
       default;
 
@@ -119,9 +116,10 @@ class VectorBackedLinkedList {
 
   VectorBackedLinkedList();
 
-  // TODO(keinakashima): implement copy constructor & copy assignment operator
-  VectorBackedLinkedList(VectorBackedLinkedList&&);
-  VectorBackedLinkedList& operator=(VectorBackedLinkedList&&);
+  VectorBackedLinkedList(const VectorBackedLinkedList&) = default;
+  VectorBackedLinkedList(VectorBackedLinkedList&&) = default;
+  VectorBackedLinkedList& operator=(const VectorBackedLinkedList&) = default;
+  VectorBackedLinkedList& operator=(VectorBackedLinkedList&&) = default;
 
   ~VectorBackedLinkedList() = default;
 
@@ -468,20 +466,6 @@ VectorBackedLinkedList<T, Allocator>::VectorBackedLinkedList() {
   // First inserts anchor, which serves as the beginning and the end of
   // the used list.
   nodes_.push_back(Node(anchor_index_, anchor_index_));
-}
-
-template <typename T, typename Allocator>
-inline VectorBackedLinkedList<T, Allocator>::VectorBackedLinkedList(
-    VectorBackedLinkedList&& other) {
-  swap(other);
-}
-
-template <typename T, typename Allocator>
-inline VectorBackedLinkedList<T, Allocator>&
-VectorBackedLinkedList<T, Allocator>::operator=(
-    VectorBackedLinkedList&& other) {
-  swap(other);
-  return *this;
 }
 
 template <typename T, typename Allocator>

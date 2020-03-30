@@ -525,8 +525,8 @@ const int kFeatureListForGpuControlTestingEntry20[1] = {
 
 const GpuControlList::DriverInfo kDriverInfoForGpuControlTestingEntry20 = {
     nullptr,  // driver_vendor
-    {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "10.7",
-     nullptr},  // driver_version
+    {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical,
+     "24.20.100.7000", nullptr},  // driver_version
 };
 
 const GpuControlList::More kMoreForEntry20_1440601243 = {
@@ -2045,6 +2045,87 @@ const GpuControlList::GLStrings kGLStringsForGpuControlTestingEntry74 = {
 };
 
 const GpuControlList::More kMoreForEntry74_1440601243 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
+    GpuControlList::kDontCare,  // subpixel_font_rendering
+};
+
+const int kFeatureListForGpuControlTestingEntry75[1] = {
+    TEST_FEATURE_0,
+};
+
+const GpuControlList::DriverInfo kDriverInfoForGpuControlTestingEntry75 = {
+    "Intel.*",  // driver_vendor
+    {GpuControlList::kBetween, GpuControlList::kVersionStyleNumerical,
+     "24.20.100.6000", "26.20.100.7000"},  // driver_version
+};
+
+const GpuControlList::More kMoreForEntry75_1440601243 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
+    GpuControlList::kDontCare,  // subpixel_font_rendering
+};
+
+const int kFeatureListForGpuControlTestingEntry76[1] = {
+    TEST_FEATURE_0,
+};
+
+const GpuControlList::DriverInfo kDriverInfoForGpuControlTestingEntry76 = {
+    nullptr,  // driver_vendor
+    {GpuControlList::kLE, GpuControlList::kVersionStyleNumerical,
+     "24.20.100.7000", nullptr},  // driver_version
+};
+
+const GpuControlList::More kMoreForEntry76_1440601243 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
+    GpuControlList::kDontCare,  // subpixel_font_rendering
+};
+
+const int kFeatureListForGpuControlTestingEntry77[1] = {
+    TEST_FEATURE_0,
+};
+
+const GpuControlList::DriverInfo kDriverInfoForGpuControlTestingEntry77 = {
+    nullptr,  // driver_vendor
+    {GpuControlList::kLE, GpuControlList::kVersionStyleNumerical,
+     "24.20.10.7000", nullptr},  // driver_version
+};
+
+const GpuControlList::More kMoreForEntry77_1440601243 = {
     GpuControlList::kGLTypeNone,  // gl_type
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
      nullptr},  // gl_version

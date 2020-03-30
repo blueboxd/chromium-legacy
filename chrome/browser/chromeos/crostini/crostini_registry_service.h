@@ -35,10 +35,6 @@ class ApplicationList;
 
 namespace crostini {
 
-// This prefix is used when generating the crostini app list id, and used as a
-// prefix when generating shelf ids for windows we couldn't match to an app.
-constexpr char kCrostiniAppIdPrefix[] = "crostini:";
-
 // The CrostiniRegistryService stores information about Desktop Entries (apps)
 // in Crostini. We store this in prefs so that it is readily available even when
 // the VM isn't running. The registrations here correspond to .desktop files,
@@ -136,21 +132,6 @@ class CrostiniRegistryService : public KeyedService {
   ~CrostiniRegistryService() override;
 
   base::WeakPtr<CrostiniRegistryService> GetWeakPtr();
-
-  // Returns a shelf app id for an exo window startup id or app id.
-  //
-  // First try to return a desktop file id matching the |window_startup_id|.
-  //
-  // If the app id is empty, returns empty string. If we can uniquely identify
-  // a registry entry, returns the crostini app id for that. Otherwise, returns
-  // the string pointed to by |window_app_id|, prefixed by "crostini:".
-  //
-  // As the window app id is derived from fields set by the app itself, it is
-  // possible for an app to masquerade as a different app.
-  std::string GetCrostiniShelfAppId(const std::string* window_app_id,
-                                    const std::string* window_startup_id);
-  // Returns whether the app_id is a Crostini app id.
-  bool IsCrostiniShelfAppId(const std::string& shelf_app_id);
 
   // Return all installed apps. This always includes the Terminal app.
   std::map<std::string, CrostiniRegistryService::Registration>

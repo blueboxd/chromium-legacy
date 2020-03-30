@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -1320,20 +1321,6 @@ bool AXObject::HasInheritedPresentationalRole() const {
   return cached_has_inherited_presentational_role_;
 }
 
-bool AXObject::CanReceiveAccessibilityFocus() const {
-  const Element* elem = GetElement();
-  if (!elem)
-    return false;
-
-  // Focusable, and not forwarding the focus somewhere else
-  if (elem->IsFocusable() &&
-      !GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kActiveDescendant))
-    return true;
-
-  // aria-activedescendant focus
-  return elem->FastHasAttribute(html_names::kIdAttr) && CanBeActiveDescendant();
-}
-
 bool AXObject::CanSetValueAttribute() const {
   switch (RoleValue()) {
     case ax::mojom::Role::kColorWell:
@@ -1353,42 +1340,95 @@ bool AXObject::CanSetValueAttribute() const {
   return false;
 }
 
+// This does not use Element::IsFocusable(), as that can sometimes recalculate
+// styles because of IsFocusableStyle() check, resetting the document lifecycle.
 bool AXObject::CanSetFocusAttribute() const {
-  Node* node = GetNode();
-  if (!node)
+  if (IsDetached())
     return false;
 
-  // Elements inside a portal should not be focusable.
+  // NOT focusable: anything inside a <portal> (the portal element itself is).
   if (GetDocument() && GetDocument()->GetPage() &&
-      GetDocument()->GetPage()->InsidePortal())
+      GetDocument()->GetPage()->InsidePortal()) {
     return false;
+  }
 
+  // Focusable: web area -- this is the only focusable non-element.
   if (IsWebArea())
     return true;
 
-  // Children of elements with an aria-activedescendant attribute should be
-  // focusable if they have a (non-presentational) ARIA role.
-  if (!IsPresentational() && AriaRoleAttribute() != ax::mojom::Role::kUnknown &&
-      CanBeActiveDescendant()) {
-    return true;
-  }
-
-  // NOTE: It would be more accurate to ask the document whether
-  // setFocusedNode() would do anything. For example, setFocusedNode() will do
-  // nothing if the current focused node will not relinquish the focus.
-  if (IsDisabledFormControl(node))
+  // NOT focusable: objects with no DOM node, e.g. extra layout blocks inserted
+  // as filler, or objects where the node is not an element, such as a text
+  // node or an HTML comment.
+  Element* elem = GetElement();
+  if (!elem)
     return false;
 
-  // Check for options here because AXListBoxOption and AXMenuListOption
-  // don't help when the <option> is canvas fallback, and because
-  // a common case for aria-owns from a textbox that points to a list
-  // does not change the hierarchy (textboxes don't support children)
-  if (RoleValue() == ax::mojom::Role::kListBoxOption ||
-      RoleValue() == ax::mojom::Role::kMenuListOption)
+  // NOT focusable: inert elements.
+  if (elem->IsInert())
+    return false;
+
+  // NOT focusable: disabled form controls.
+  if (IsDisabledFormControl(elem))
+    return false;
+
+  // Focusable: options in a combobox or listbox.
+  // Even though they are not treated as supporting focus by Blink (the parent
+  // widget is), they are considered focusable in the accessibility sense,
+  // behaving like potential active descendants, and handling focus actions.
+  // Menu list options are handled before visibility check, because they
+  // are considered focusable even when part of collapsed drop down.
+  if (RoleValue() == ax::mojom::Role::kMenuListOption)
     return true;
 
-  auto* element = DynamicTo<Element>(node);
-  return element && element->SupportsFocus();
+  // NOT focusable: hidden elements.
+  // This is imperfect, because the only way to really know whether something
+  // is hidden via style is to EnsureComputedStyle(). The method
+  // AXObject::IsHiddenViaStyle() does this, but it relies on
+  // EnsureComputedStyle() which could cause instability in callers.
+  // This code assumes that a canvas descendant has the same visibility as
+  // the canvas itself.
+  // TODO(aleventhal) Consider caching visibility when it's safe to compute.
+  if (!IsA<HTMLAreaElement>(elem)) {
+    if (!GetLayoutObject()) {
+      if (!elem->IsInCanvasSubtree())
+        return false;
+      const HTMLCanvasElement* canvas =
+          Traversal<HTMLCanvasElement>::FirstAncestorOrSelf(*elem);
+      if (!canvas->GetLayoutObject() ||
+          canvas->GetLayoutObject()->Style()->Visibility() !=
+              EVisibility::kVisible) {
+        return false;
+      }
+    } else if (GetLayoutObject()->Style()->Visibility() !=
+               EVisibility::kVisible) {
+      return false;
+    }
+  }
+
+  // Focusable: options in a combobox or listbox.
+  // Similar to menu list option treatment above, but not focusable if hidden.
+  if (RoleValue() == ax::mojom::Role::kListBoxOption)
+    return true;
+
+  // Focusable: element supports focus.
+  if (elem->SupportsFocus())
+    return true;
+
+  // TODO(accessibility) Focusable: scrollable with the keyboard.
+  // Keyboard-focusable scroll containers feature:
+  // https://www.chromestatus.com/feature/5231964663578624
+  // When adding here, remove similar check from ::NameFromContents().
+  // if (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+  //     IsUserScrollable()) {
+  //   return true;
+  // }
+
+  // Focusable: can be an active descendant.
+  if (CanBeActiveDescendant())
+    return true;
+
+  // NOT focusable: everything else.
+  return false;
 }
 
 // From ARIA 1.1.
@@ -1401,6 +1441,25 @@ bool AXObject::CanSetFocusAttribute() const {
 // textbox or is a logical descendant of that controlled element as indicated by
 // the aria-owns attribute.
 bool AXObject::CanBeActiveDescendant() const {
+  // Require an element with an id attribute.
+  // TODO(accessibility): this code currently requires both an id and role
+  // attribute, as well as an ancestor or controlling aria-activedescendant.
+  // However, with element reflection it may be possible to set an active
+  // descendant without an id, so at some point we may need to remove the
+  // requirement for an id attribute.
+  if (!GetElement() || !GetElement()->FastHasAttribute(html_names::kIdAttr))
+    return false;
+
+  // Does not make sense to use aria-activedescendant to point to a
+  // presentational object.
+  if (IsPresentational())
+    return false;
+
+  // Does not make sense to use aria-activedescendant to point to an HTML
+  // element that requires real focus, therefore an ARIA role is necessary.
+  if (AriaRoleAttribute() == ax::mojom::Role::kUnknown)
+    return false;
+
   return IsARIAControlledByTextboxWithActiveDescendant() ||
          AncestorExposesActiveDescendant();
 }
@@ -1932,10 +1991,8 @@ ax::mojom::DefaultActionVerb AXObject::Action() const {
   // a click action means the user should trigger the action via a simulated
   // click. If this object cannot receive focus, it's impossible to trigger it
   // with a key press.
-  if (RoleValue() == ax::mojom::Role::kButton &&
-      !CanReceiveAccessibilityFocus()) {
+  if (RoleValue() == ax::mojom::Role::kButton && !CanSetFocusAttribute())
     return ax::mojom::DefaultActionVerb::kClick;
-  }
 
   switch (RoleValue()) {
     case ax::mojom::Role::kButton:
@@ -2114,7 +2171,7 @@ AXRestriction AXObject::Restriction() const {
     if (is_disabled)
       return kRestrictionDisabled;
   } else if (CanSetFocusAttribute() && IsDescendantOfDisabledNode()) {
-    // No aria-disabled, but other markup says it's disabled.
+    // aria-disabled on an ancestor propagates to focusable descendants.
     return kRestrictionDisabled;
   }
 
@@ -3716,7 +3773,30 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kSection:
     case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kTime:
-      result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
+      if (recursive) {
+        // Use contents if part of a recursive name computation.
+        result = true;
+      } else {
+        // Use contents if focusable, so that there is a name in the case
+        // where the author mistakenly forgot to provide one.
+        // Exceptions:
+        // 1.Elements with contenteditable, where using the contents as a name
+        //   would cause them to be double-announced.
+        // 2.Containers with aria-activedescendant, where the focus is being
+        //   forwarded somewhere else.
+        // TODO(accessibility) Scrollables are currently whitelisted here in
+        // order to keep the current behavior. In the future, this can be
+        // removed because this code will be handled in IsFocusable(), once
+        // KeyboardFocusableScrollersEnabled is permanently enabled.
+        // Note: this uses the same scrollable check that element.cc uses.
+        bool is_focusable_scrollable =
+            RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+            IsUserScrollable();
+        bool is_focusable = is_focusable_scrollable || CanSetFocusAttribute();
+        result = is_focusable && !IsEditable() &&
+                 !GetAOMPropertyOrARIAAttribute(
+                     AOMRelationProperty::kActiveDescendant);
+      }
       break;
 
     case ax::mojom::Role::kPdfActionableHighlight:

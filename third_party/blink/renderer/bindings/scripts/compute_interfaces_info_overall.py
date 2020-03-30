@@ -127,12 +127,12 @@ def dict_of_dicts_of_lists_update_or_append(existing, other):
 
     Needed for merging partial_interface_files across components.
     """
-    for key, value in other.iteritems():
+    for key, value in other.items():
         if key not in existing:
             existing[key] = value
             continue
         existing_value = existing[key]
-        for inner_key, inner_value in value.iteritems():
+        for inner_key, inner_value in value.items():
             existing_value[inner_key].extend(inner_value)
 
 
@@ -178,7 +178,7 @@ def compute_global_type_info():
     garbage_collected_interfaces = set()
     callback_interfaces = set()
 
-    for interface_name, interface_info in interfaces_info.iteritems():
+    for interface_name, interface_info in interfaces_info.items():
         component_dirs[interface_name] = idl_filename_to_component(
             interface_info['full_path'])
 
@@ -220,10 +220,10 @@ def compute_interfaces_info_overall(info_individuals):
             partial_interface_files, info['partial_interface_files'])
 
     # Record inheritance information individually
-    for interface_name, interface_info in interfaces_info.iteritems():
+    for interface_name, interface_info in interfaces_info.items():
         extended_attributes = interface_info['extended_attributes']
         inherited_extended_attributes_by_interface[interface_name] = dict(
-            (key, value) for key, value in extended_attributes.iteritems()
+            (key, value) for key, value in extended_attributes.items()
             if key in INHERITED_EXTENDED_ATTRIBUTES)
         parent = interface_info['parent']
         if parent:
@@ -241,7 +241,7 @@ def compute_interfaces_info_overall(info_individuals):
     # 'includes').
     # Note that moving an 'includes' statement between files does not change the
     # info itself (or hence cause a rebuild)!
-    for mixin_name, interface_info in interfaces_info.iteritems():
+    for mixin_name, interface_info in interfaces_info.items():
         for interface_name in interface_info['included_by_interfaces']:
             interfaces_info[interface_name]['including_mixins'].append(
                 mixin_name)
@@ -249,7 +249,7 @@ def compute_interfaces_info_overall(info_individuals):
 
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces include.
-    for interface_name, interface_info in interfaces_info.iteritems():
+    for interface_name, interface_info in interfaces_info.items():
         partial_interface_paths = partial_interface_files[interface_name]
         partial_interfaces_full_paths = partial_interface_paths['full_paths']
         # Partial interface definitions each need an include, as they are
@@ -311,7 +311,7 @@ def compute_interfaces_info_overall(info_individuals):
         })
 
     # Clean up temporary private information
-    for interface_info in interfaces_info.itervalues():
+    for interface_info in interfaces_info.values():
         del interface_info['extended_attributes']
         del interface_info['union_types']
         del interface_info['is_legacy_treat_as_partial_interface']

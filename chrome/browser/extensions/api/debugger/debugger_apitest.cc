@@ -338,6 +338,19 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, Debugger) {
   ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
 }
 
+// Tests that an extension is not allowed to inspect a worker through the
+// inspectWorker debugger command.
+// Regression test for https://crbug.com/1059577.
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest,
+                       DebuggerNotAllowedToInvokeInspectWorker) {
+  GURL url(embedded_test_server()->GetURL(
+      "/extensions/api_test/debugger_inspect_worker/inspected_page.html"));
+
+  EXPECT_TRUE(
+      RunExtensionTestWithArg("debugger_inspect_worker", url.spec().c_str()))
+      << message_;
+}
+
 class SitePerProcessDebuggerExtensionApiTest : public DebuggerExtensionApiTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -1,0 +1,41 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Subtree Visibility: accessibility focus</title>
+<link rel="author" title="Aaron Leventhal" href="mailto:aleventhal@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<link rel="match" href="container-ref.html">
+<meta name="assert" content="subtree-visibility auto subtrees are exposed by accessibility focus">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<style>
+.auto {
+  subtree-visibility: auto;
+}
+</style>
+
+<div id="hidden" style="subtree-visibility: auto">
+  foo
+  <div id="child" tabindex="0">
+    bar
+  </div>
+</div>
+
+<script>
+function axElementById(id) {
+  return accessibilityController.accessibleElementById(id);
+}
+
+async_test(async(t) => {
+  const hiddenEl = document.getElementById("hidden");
+  let axHidden = axElementById("hidden");
+  t.step(() => {
+    assert_equals(axHidden.childrenCount, 3, "Child count after acquire" );
+    axHidden.childAtIndex(1).name;   // Referring to the name should have no effect on the number of children.
+    assert_equals(axHidden.childrenCount, 3, "Child count after acquire, and accessing name of first child" );
+    t.done();
+  });
+}, "Accessiblility name calculation on child of subtree-visibility: auto does not destroy tree");
+
+</script>

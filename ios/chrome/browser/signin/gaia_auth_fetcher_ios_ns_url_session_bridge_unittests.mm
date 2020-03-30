@@ -323,7 +323,8 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetHeaderFieldsWithCookies(
 // Tests to send a request with no cookies set in the cookie store and receive
 // multiples cookies from the request.
 // TODO(crbug.com/1065349): this test is flaky.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
+       DISABLED_FetchWithEmptyCookieStore) {
   ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
@@ -345,7 +346,8 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
 // Tests to send a request with one cookie set in the cookie store and receive
 // another cookies from the request.
 // TODO(crbug.com/1065349): this test is flaky.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FLAKY_FetchWithCookieStore) {
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
+       DISABLED_FetchWithCookieStore) {
   NSArray* cookies_to_send = @[ GetCookie1() ];
   AddCookiesToCookieManager(cookies_to_send);
   ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
@@ -368,7 +370,7 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FLAKY_FetchWithCookieStore) {
 // Tests to a request with a redirect. One cookie is received by the first
 // request, and a second one by the redirected request.
 // TODO(crbug.com/1065349): this test is flaky.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FLAKY_FetchWithRedirect) {
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, DISABLED_FetchWithRedirect) {
   ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]

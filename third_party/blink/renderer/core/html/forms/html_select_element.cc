@@ -781,8 +781,12 @@ void HTMLSelectElement::ChildrenChanged(const ChildrenChange& change) {
   } else if (change.type == ChildrenChangeType::kAllChildrenRemoved) {
     DCHECK(change.removed_nodes);
     for (Node* node : *change.removed_nodes) {
-      if (auto* option = DynamicTo<HTMLOptionElement>(node))
+      if (auto* option = DynamicTo<HTMLOptionElement>(node)) {
         OptionRemoved(*option);
+      } else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(node)) {
+        for (auto& option : Traversal<HTMLOptionElement>::ChildrenOf(*optgroup))
+          OptionRemoved(option);
+      }
     }
   }
 }

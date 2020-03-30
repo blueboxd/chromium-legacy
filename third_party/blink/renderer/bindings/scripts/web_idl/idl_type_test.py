@@ -83,7 +83,7 @@ class IdlTypesTest(unittest.TestCase):
             'void': 'Void',
             'symbol': 'Symbol',
         }
-        for name, expect in type_names.iteritems():
+        for name, expect in type_names.items():
             self.assertEqual(expect, factory.simple_type(name).type_name)
 
         short_type = factory.simple_type('short')

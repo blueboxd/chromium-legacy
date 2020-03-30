@@ -216,7 +216,7 @@ class IntegrationTest(unittest.TestCase):
             size_info_prefix=size_info_prefix,
             knobs=knobs)
         IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
-            section_sizes, raw_symbols, metadata=metadata)
+            [section_sizes], [raw_symbols], [metadata])
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
   def _DoArchive(self,

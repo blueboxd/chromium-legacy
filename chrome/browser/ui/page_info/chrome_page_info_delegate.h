@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
-#include "chrome/browser/ui/page_info/page_info_delegate.h"
+#include "components/page_info/page_info_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"

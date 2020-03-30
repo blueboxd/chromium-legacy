@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/enrollment_helper_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -139,22 +139,13 @@ void WaitForJsCondition(const std::string& js_condition) {
 }  // namespace
 
 // Basic tests for demo mode setup flow.
-class DemoSetupTest : public LoginManagerTest {
+class DemoSetupTestBase : public OobeBaseTest {
  public:
-  DemoSetupTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {}
-  ~DemoSetupTest() override = default;
-
-  // LoginTestManager:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kArcAvailability,
-                                    "officially-supported");
-    ASSERT_TRUE(arc::IsArcAvailable());
-  }
+  DemoSetupTestBase() = default;
+  ~DemoSetupTestBase() override = default;
 
   void SetUpOnMainThread() override {
-    LoginManagerTest::SetUpOnMainThread();
+    OobeBaseTest::SetUpOnMainThread();
     DisableConfirmationDialogAnimations();
     branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
     DisconnectAllNetworks();
@@ -466,10 +457,25 @@ class DemoSetupTest : public LoginManagerTest {
   policy::MockCloudPolicyStore mock_policy_store_;
   std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
+  DISALLOW_COPY_AND_ASSIGN(DemoSetupTestBase);
 };
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
+class DemoSetupArcSupportedTest : public DemoSetupTestBase {
+ public:
+  DemoSetupArcSupportedTest() = default;
+  ~DemoSetupArcSupportedTest() override = default;
+
+  // DemoSetupTestBase:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DemoSetupTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kArcAvailability,
+                                    "officially-supported");
+    ASSERT_TRUE(arc::IsArcAvailable());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       ShowConfirmationDialogAndProceed) {
   EXPECT_FALSE(IsConfirmationDialogShown());
 
   InvokeDemoModeWithAccelerator();
@@ -481,14 +487,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
   EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 }
 
-#if defined(OS_CHROMEOS)
-// Flaky on ChromeOS. crbug.com/895120
-#define MAYBE_ShowConfirmationDialogAndCancel \
-  DISABLED_ShowConfirmationDialogAndCancel
-#else
-#define MAYBE_ShowConfirmationDialogAndCancel ShowConfirmationDialogAndCancel
-#endif
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_ShowConfirmationDialogAndCancel) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       ShowConfirmationDialogAndCancel) {
   EXPECT_FALSE(IsConfirmationDialogShown());
 
   InvokeDemoModeWithAccelerator();
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_ShowConfirmationDialogAndCancel) {
   EXPECT_FALSE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, InvokeWithTaps) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, InvokeWithTaps) {
   // Use fake time to avoid flakiness.
   SetFakeTimeForMultiTapDetector(base::Time::UnixEpoch());
   EXPECT_FALSE(IsConfirmationDialogShown());
@@ -509,7 +509,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, InvokeWithTaps) {
   EXPECT_TRUE(IsConfirmationDialogShown());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, DoNotInvokeWithNonConsecutiveTaps) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       DoNotInvokeWithNonConsecutiveTaps) {
   // Use fake time to avoid flakiness.
   const base::Time kFakeTime = base::Time::UnixEpoch();
   SetFakeTimeForMultiTapDetector(kFakeTime);
@@ -527,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, DoNotInvokeWithNonConsecutiveTaps) {
   EXPECT_FALSE(IsConfirmationDialogShown());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OnlineSetupFlowSuccess) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -584,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest,
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
                        OnlineSetupFlowSuccessWithCountryCustomization) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
@@ -674,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OnlineSetupFlowErrorDefault) {
   // Simulate online setup failure.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -738,7 +739,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       OnlineSetupFlowErrorPowerwashRequired) {
   // Simulate online setup failure that requires powerwash.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -801,7 +803,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowCrosComponentFailure) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       OnlineSetupFlowCrosComponentFailure) {
   // Simulate failure to load demo resources CrOS component.
   // There is no enrollment attempt, as process fails earlier.
   enrollment_helper_.ExpectNoEnrollment();
@@ -858,7 +861,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowCrosComponentFailure) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineDemoModeUnavailable) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OfflineDemoModeUnavailable) {
   SimulateNetworkDisconnected();
 
   InvokeDemoModeWithAccelerator();
@@ -881,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineDemoModeUnavailable) {
   EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OfflineSetupFlowSuccess) {
   // Simulate offline setup success.
   enrollment_helper_.ExpectOfflineEnrollmentSuccess();
   SimulateNetworkDisconnected();
@@ -938,7 +941,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorDefault) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       OfflineSetupFlowErrorDefault) {
   // Simulate offline setup failure.
   enrollment_helper_.ExpectOfflineEnrollmentError(
       policy::EnrollmentStatus::ForStatus(
@@ -1003,7 +1007,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorDefault) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorPowerwashRequired) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       OfflineSetupFlowErrorPowerwashRequired) {
   // Simulate offline setup failure.
   enrollment_helper_.ExpectOfflineEnrollmentError(
       policy::EnrollmentStatus::ForLockError(
@@ -1067,7 +1072,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorPowerwashRequired) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, NextDisabledOnNetworkScreen) {
   SimulateNetworkDisconnected();
   SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
@@ -1081,7 +1086,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
   EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickNetworkOnNetworkScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, ClickNetworkOnNetworkScreen) {
   SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
@@ -1094,7 +1099,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickNetworkOnNetworkScreen) {
   EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickConnectedNetworkOnNetworkScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       ClickConnectedNetworkOnNetworkScreen) {
   SimulateNetworkConnected();
   SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
@@ -1107,7 +1113,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickConnectedNetworkOnNetworkScreen) {
   EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnNetworkScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnNetworkScreen) {
   SimulateNetworkConnected();
   SkipToScreen(NetworkScreenView::kScreenId);
 
@@ -1118,7 +1124,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnNetworkScreen) {
   EXPECT_TRUE(IsScreenShown(DemoPreferencesScreenView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnArcTermsScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnArcTermsScreen) {
   // User cannot go to ARC ToS screen without accepting eula - simulate that.
   StartupUtils::MarkEulaAccepted();
 
@@ -1130,7 +1136,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnArcTermsScreen) {
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnErrorScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnErrorScreen) {
   SkipToErrorDialog();
 
   ClickScreenDialogButton(DemoSetupScreenView::kScreenId,
@@ -1140,7 +1146,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, BackOnErrorScreen) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, RetryOnErrorScreen) {
   SkipToErrorDialog();
 
   // We need to create another mock after showing error dialog.
@@ -1157,7 +1163,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOfflineSetupOptionOnNetworkList) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       ShowOfflineSetupOptionOnNetworkList) {
   auto* const wizard_controller = WizardController::default_controller();
   wizard_controller->SimulateDemoModeSetupForTesting();
   SimulateOfflineEnvironment();
@@ -1166,19 +1173,20 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOfflineSetupOptionOnNetworkList) {
   EXPECT_TRUE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, NoOfflineSetupOptionOnNetworkList) {
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       NoOfflineSetupOptionOnNetworkList) {
   SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
 
-class DemoSetupArcUnsupportedTest : public DemoSetupTest {
+class DemoSetupArcUnsupportedTest : public DemoSetupTestBase {
  public:
   DemoSetupArcUnsupportedTest() = default;
   ~DemoSetupArcUnsupportedTest() override = default;
 
-  // DemoSetupTest:
+  // DemoSetupTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginManagerTest::SetUpCommandLine(command_line);
+    DemoSetupTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kArcAvailability, "none");
     ASSERT_FALSE(arc::IsArcAvailable());
   }
@@ -1204,7 +1212,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest, DoNotInvokeWithTaps) {
 }
 
 // Demo setup tests related to Force Re-Enrollment.
-class DemoSetupFRETest : public DemoSetupTest {
+class DemoSetupFRETest : public DemoSetupArcSupportedTest {
  protected:
   DemoSetupFRETest() {
     statistics_provider_.SetMachineStatistic(system::kSerialNumberKeyForTest,
@@ -1212,10 +1220,8 @@ class DemoSetupFRETest : public DemoSetupTest {
   }
   ~DemoSetupFRETest() override = default;
 
-  void SetUpOnMainThread() override { DemoSetupTest::SetUpOnMainThread(); }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    DemoSetupTest::SetUpCommandLine(command_line);
+    DemoSetupArcSupportedTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableForcedReEnrollment,

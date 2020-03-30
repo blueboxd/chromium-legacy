@@ -7,9 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol StartupInformation;
-
-@protocol BrowserInterfaceProvider;
+@class SceneState;
 @protocol StartupInformation;
 
 namespace metrics_mediator {
@@ -38,8 +36,7 @@ extern NSString* const kAppEnteredBackgroundDateKey;
 // Logs the number of tabs open and the start type.
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation
-                             interfaceProvider:(id<BrowserInterfaceProvider>)
-                                                   interfaceProvider;
+                               connectedScenes:(NSArray<SceneState*>*)scenes;
 // Logs in UserDefaults the current date with kAppEnteredBackgroundDateKey as
 // key.
 + (void)logDateInUserDefaults;

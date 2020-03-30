@@ -38582,11 +38582,17 @@
     ]
   },
   "linux-upload-perfetto": {
-    "scripts": [
+    "gtest_tests": [
       {
-        "name": "upload_perfetto_script",
-        "script": "//tools/perf/core/perfetto_binary_roller/upload_trace_processor",
-        "swarming": {}
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "upload_trace_processor",
+        "test_target": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor"
       }
     ]
   },
@@ -41942,11 +41948,17 @@
     ]
   },
   "mac-upload-perfetto": {
-    "scripts": [
+    "gtest_tests": [
       {
-        "name": "upload_perfetto_script",
-        "script": "//tools/perf/core/perfetto_binary_roller/upload_trace_processor",
-        "swarming": {}
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "upload_trace_processor",
+        "test_target": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor"
       }
     ]
   },
@@ -42182,11 +42194,17 @@
     ]
   },
   "win-upload-perfetto": {
-    "scripts": [
+    "gtest_tests": [
       {
-        "name": "upload_perfetto_script",
-        "script": "//tools/perf/core/perfetto_binary_roller/upload_trace_processor",
-        "swarming": {}
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "upload_trace_processor",
+        "test_target": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor"
       }
     ]
   },

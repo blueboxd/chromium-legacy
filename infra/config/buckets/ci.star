@@ -953,6 +953,7 @@ ci.fyi_builder(
     name = 'mac-upload-perfetto',
     os = os.MAC_DEFAULT,
     schedule = 'with 3h interval',
+    triggered_by = [],
 )
 
 ci.fyi_builder(
@@ -960,6 +961,7 @@ ci.fyi_builder(
     name = 'win-upload-perfetto',
     os = os.WINDOWS_DEFAULT,
     schedule = 'with 3h interval',
+    triggered_by = [],
 )
 
 ci.fyi_celab_builder(

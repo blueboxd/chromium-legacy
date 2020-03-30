@@ -11,16 +11,34 @@ Polymer({
   is: 'password-check-list-item',
 
   properties: {
-    password_: {
-      type: String,
-      value: ' '.repeat(10),
-    },
-
     /**
      * The password that is being displayed.
      * @type {!PasswordManagerProxy.CompromisedCredential}
      */
     item: Object,
+
+    /** @private */
+    isPasswordVisible_: {
+      type: Boolean,
+      computed: 'computePasswordVisibility_(item.password)',
+    },
+
+    /** @private */
+    password_: {
+      type: String,
+      computed: 'computePassword_(item.password)',
+    },
+  },
+
+  /**
+   * @private {?PasswordManagerProxy}
+   */
+  passwordManager_: null,
+
+  /** @override */
+  attached() {
+    // Set the manager. These can be overridden by tests.
+    this.passwordManager_ = PasswordManagerImpl.getInstance();
   },
 
   /**
@@ -58,5 +76,64 @@ Polymer({
    */
   onMoreClick_(event) {
     this.fire('more-actions-click', {moreActionsButton: event.target});
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getInputType_() {
+    return this.isPasswordVisible_ ? 'text' : 'password';
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computePasswordVisibility_() {
+    return !!this.item.password;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computePassword_() {
+    const NUM_PLACEHOLDERS = 10;
+    return this.item.password || ' '.repeat(NUM_PLACEHOLDERS);
+  },
+
+  /**
+   * @public
+   */
+  hidePassword() {
+    this.set('item.password', null);
+  },
+
+  /**
+   * @public
+   */
+  showPassword() {
+    this.passwordManager_.recordPasswordCheckInteraction(
+        PasswordManagerProxy.PasswordCheckInteraction.SHOW_PASSWORD);
+    this.passwordManager_
+        .getPlaintextCompromisedPassword(
+            assert(this.item), chrome.passwordsPrivate.PlaintextReason.VIEW)
+        .then(
+            compromisedCredential => {
+              this.set('item', compromisedCredential);
+            },
+            error => {
+              this.hidePassword();
+            });
+  },
+
+  /**
+   * @private
+   */
+  onReadonlyInputTap_() {
+    if (this.isPasswordVisible_) {
+      this.$$('#leakedPassword').select();
+    }
   },
 });

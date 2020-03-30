@@ -2525,9 +2525,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_LIST_BULLET" desc="Unicode bullet for list items in permission bubbles.">
         •  <ph name="LIST_ITEM_TEXT">$1<ex>You might need permission to continue ...</ex></ph>
       </message>
-      <message name="IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL" desc="Header for multiple automatic downloads page on Content Settings dialog">
-        Automatic Downloads
-      </message>
       <message name="IDS_BLOCKED_DOWNLOAD_NO_ACTION" desc="Radio button to keep blocking automatic downloads">
         Continue blocking automatic downloads of multiple files
       </message>

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/proto/remote_copy_message.pb.h"
@@ -222,9 +223,17 @@ TEST_F(RemoteCopyMessageHandlerTest, ProgressNotificationWithProgressFlag) {
                 IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT,
                 base::ASCIIToUTF16(kDeviceNameInMessage)),
             notification.title());
+
+#if defined(OS_MACOSX)
+  // On macOS the progress status is shown in the message.
+  base::string16 progress_status = notification.message();
+#else
+  base::string16 progress_status = notification.progress_status();
+#endif  // defined(OS_MACOSX)
+
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD),
-            notification.progress_status());
+            progress_status);
   EXPECT_EQ(-1, notification.progress());
 
   // Calling GetDefaultStoragePartition creates tasks that need to run before
@@ -260,7 +269,13 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithoutProgressFlag) {
 
   // Expect an image notification showing the image.
   auto notification = GetImageNotification();
+
+#if defined(OS_MACOSX)
+  // On macOS we show the image as the icon instead.
+  EXPECT_FALSE(notification.icon().IsEmpty());
+#else
   EXPECT_FALSE(notification.image().IsEmpty());
+#endif  // defined(OS_MACOSX)
 
   // Calling GetDefaultStoragePartition creates tasks that need to run before
   // the ScopedFeatureList is destroyed. See crbug.com/1060869
@@ -338,7 +353,13 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
 
   // Expect an image notification showing the image.
   auto notification = GetImageNotification();
+
+#if defined(OS_MACOSX)
+  // On macOS we show the image as the icon instead.
+  EXPECT_FALSE(notification.icon().IsEmpty());
+#else
   EXPECT_FALSE(notification.image().IsEmpty());
+#endif  // defined(OS_MACOSX)
 
   // Calling GetDefaultStoragePartition creates tasks that need to run before
   // the ScopedFeatureList is destroyed. See crbug.com/1060869

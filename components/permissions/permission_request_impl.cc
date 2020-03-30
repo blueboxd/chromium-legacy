@@ -13,7 +13,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "components/permissions/android/theme_resources.h"
+#include "components/resources/android/theme_resources.h"
 #include "media/base/android/media_drm_bridge.h"
 #else
 #include "components/vector_icons/vector_icons.h"

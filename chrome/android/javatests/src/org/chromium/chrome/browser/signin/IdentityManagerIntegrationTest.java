@@ -15,8 +15,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -46,11 +46,11 @@ public class IdentityManagerIntegrationTest {
     private static final String TEST_ACCOUNT1 = "foo@gmail.com";
     private static final String TEST_ACCOUNT2 = "bar@gmail.com";
     private static final AccountHolder TEST_ACCOUNT_HOLDER_1 =
-            AccountHolder.builder(AccountManagerFacade.createAccountFromName(TEST_ACCOUNT1))
+            AccountHolder.builder(AccountUtils.createAccountFromName(TEST_ACCOUNT1))
                     .alwaysAccept(true)
                     .build();
     private static final AccountHolder TEST_ACCOUNT_HOLDER_2 =
-            AccountHolder.builder(AccountManagerFacade.createAccountFromName(TEST_ACCOUNT2))
+            AccountHolder.builder(AccountUtils.createAccountFromName(TEST_ACCOUNT2))
                     .alwaysAccept(true)
                     .build();
 

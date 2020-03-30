@@ -573,11 +573,18 @@ enum class BackForwardNavigationType {
     itemUserAgentType = web::UserAgentType::MOBILE;
   }
 
-  if (itemUserAgentType != web::UserAgentType::NONE) {
-    NSString* userAgentString = base::SysUTF8ToNSString(
-        web::GetWebClient()->GetUserAgent(itemUserAgentType));
-    if (![self.webView.customUserAgent isEqualToString:userAgentString]) {
-      self.webView.customUserAgent = userAgentString;
+  if (@available(iOS 13, *)) {
+  } else {
+    // On iOS 13, this is done in
+    // webView:decidePolicyForNavigationAction:preferences:decisionHandler:. As
+    // the method only exists for iOS 13, this check still need to be there for
+    // iOS 12.
+    if (itemUserAgentType != web::UserAgentType::NONE) {
+      NSString* userAgentString = base::SysUTF8ToNSString(
+          web::GetWebClient()->GetUserAgent(itemUserAgentType));
+      if (![self.webView.customUserAgent isEqualToString:userAgentString]) {
+        self.webView.customUserAgent = userAgentString;
+      }
     }
   }
 

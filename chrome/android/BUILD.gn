@@ -460,7 +460,6 @@ android_library("chrome_java") {
     "//chrome:download_enum_javagen",
     "//chrome:instant_apps_reasons_enum_javagen",
     "//chrome:offline_pages_enum_javagen",
-    "//chrome:page_info_action_javagen",
     "//chrome:page_info_connection_type_javagen",
     "//chrome:partner_bookmarks_javagen",
     "//chrome:payments_journey_logger_enum_javagen",
@@ -482,6 +481,7 @@ android_library("chrome_java") {
     "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
     "//components/ntp_tiles:ntp_tiles_enums_java",
     "//components/offline_pages/core:offline_page_model_enums_java",
+    "//components/page_info:page_info_action_javagen",
     "//components/password_manager/core/browser:password_manager_java_enums_srcjar",
     "//components/payments/content/android:method_strings_generated_srcjar",
     "//components/search_engines:search_engine_type_java",
@@ -681,7 +681,8 @@ java_cpp_template("resource_id_javagen") {
   package_path = "org/chromium/chrome/browser/resources"
   inputs = [
     "../browser/android/resource_id.h",
-    "//components/permissions/android/resource_id.h",
+    "//components/resources/android/page_info_resource_id.h",
+    "//components/resources/android/permissions_resource_id.h",
   ]
 }
 

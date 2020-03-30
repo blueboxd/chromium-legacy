@@ -46,7 +46,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class AccountManagerFacade {
     private static final String TAG = "Sync_Signin";
-    public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
     /**
      * An account feature (corresponding to a Gaia service flag) that specifies whether the account
@@ -126,15 +125,6 @@ public class AccountManagerFacade {
         ThreadUtils.assertOnUiThread();
         boolean success = mObservers.removeObserver(observer);
         assert success : "Can't find observer";
-    }
-
-    /**
-     * Creates an Account object for the given name.
-     * TODO(https://crbug.com/1064877): Move this method to AccountUtils
-     */
-    @AnyThread
-    public static Account createAccountFromName(String name) {
-        return new Account(name, GOOGLE_ACCOUNT_TYPE);
     }
 
     /**
@@ -296,7 +286,7 @@ public class AccountManagerFacade {
     public boolean hasGoogleAccountAuthenticator() {
         AuthenticatorDescription[] descs = mDelegate.getAuthenticatorTypes();
         for (AuthenticatorDescription desc : descs) {
-            if (GOOGLE_ACCOUNT_TYPE.equals(desc.type)) return true;
+            if (AccountUtils.GOOGLE_ACCOUNT_TYPE.equals(desc.type)) return true;
         }
         return false;
     }

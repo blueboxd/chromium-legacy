@@ -72,8 +72,8 @@ class IncomingStreamTest : public ::testing::Test {
   void ClosePipe() { data_pipe_producer_.reset(); }
 
   // Copies the contents of a v8::Value containing a Uint8Array to a Vector.
-  Vector<uint8_t> ToVector(const V8TestingScope& scope,
-                           v8::Local<v8::Value> v8value) {
+  static Vector<uint8_t> ToVector(const V8TestingScope& scope,
+                                  v8::Local<v8::Value> v8value) {
     Vector<uint8_t> ret;
 
     DOMUint8Array* value =
@@ -94,19 +94,23 @@ class IncomingStreamTest : public ::testing::Test {
 
   // Performs a single read from |reader|, converting the output to the
   // Iterator type. Assumes that the readable stream is not errored.
-  Iterator Read(const V8TestingScope& scope,
-                ReadableStreamDefaultReader* reader) {
+  static Iterator Read(const V8TestingScope& scope,
+                       ReadableStreamDefaultReader* reader) {
     auto* script_state = scope.GetScriptState();
     ScriptPromise read_promise =
         reader->read(script_state, ASSERT_NO_EXCEPTION);
     ScriptPromiseTester tester(script_state, read_promise);
     tester.WaitUntilSettled();
     EXPECT_TRUE(tester.IsFulfilled());
-    v8::Local<v8::Value> result = tester.Value().V8Value();
+    return IteratorFromReadResult(scope, tester.Value().V8Value());
+  }
+
+  static Iterator IteratorFromReadResult(const V8TestingScope& scope,
+                                         v8::Local<v8::Value> result) {
     CHECK(result->IsObject());
     Iterator ret;
     v8::Local<v8::Value> v8value;
-    if (!V8UnpackIteratorResult(script_state, result.As<v8::Object>(),
+    if (!V8UnpackIteratorResult(scope.GetScriptState(), result.As<v8::Object>(),
                                 &ret.done)
              .ToLocal(&v8value)) {
       ADD_FAILURE() << "Couldn't unpack iterator";
@@ -376,6 +380,29 @@ TEST_F(IncomingStreamTest, GarbageCollectionRemoteClose) {
       scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
 
   EXPECT_FALSE(incoming_stream);
+}
+
+TEST_F(IncomingStreamTest, WriteToPipeWithPendingRead) {
+  V8TestingScope scope;
+
+  auto* incoming_stream = CreateIncomingStream(scope);
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      incoming_stream->readable()->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise read_promise = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, read_promise);
+
+  test::RunPendingTasks();
+
+  WriteToPipe({'A'});
+
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+
+  Iterator result = IteratorFromReadResult(scope, tester.Value().V8Value());
+  EXPECT_FALSE(result.done);
+  EXPECT_THAT(result.value, ElementsAre('A'));
+  EXPECT_CALL(*mock_close_proxy_, ForgetStream());
 }
 
 }  // namespace

@@ -123,8 +123,6 @@ void PerfTestWithBVC::SetUp() {
   bvc_ = [[BrowserViewController alloc]
                      initWithBrowser:browser_.get()
                    dependencyFactory:bvc_factory_
-          applicationCommandEndpoint:nil
-         browsingDataCommandEndpoint:nil
       browserContainerViewController:[[BrowserContainerViewController alloc]
                                          init]];
   [bvc_ setActive:YES];

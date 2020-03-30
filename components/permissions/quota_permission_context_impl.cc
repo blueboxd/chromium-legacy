@@ -27,7 +27,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "components/permissions/android/theme_resources.h"
+#include "components/resources/android/theme_resources.h"
 #else
 #include "components/vector_icons/vector_icons.h"
 #endif

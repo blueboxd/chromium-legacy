@@ -22,8 +22,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ClearAccountsAction;
@@ -369,8 +369,7 @@ public class SigninManager
     public void signIn(@SigninAccessPoint int accessPoint, CoreAccountInfo accountInfo,
             @Nullable SignInCallback callback) {
         assert accountInfo != null;
-        signIn(accessPoint, AccountManagerFacade.createAccountFromName(accountInfo.getEmail()),
-                callback);
+        signIn(accessPoint, AccountUtils.createAccountFromName(accountInfo.getEmail()), callback);
     }
 
     /**
@@ -697,7 +696,7 @@ public class SigninManager
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in the native code and crashes.
         mAndroidSyncSettings.updateAccount(
-                AccountManagerFacade.createAccountFromName(accountInfo.getEmail()));
+                AccountUtils.createAccountFromName(accountInfo.getEmail()));
         mAndroidSyncSettings.enableChromeSync();
     }
 

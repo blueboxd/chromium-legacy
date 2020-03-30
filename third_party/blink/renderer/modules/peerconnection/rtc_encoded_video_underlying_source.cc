@@ -50,7 +50,8 @@ void RTCEncodedVideoUnderlyingSource::Trace(Visitor* visitor) {
 
 void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
     std::unique_ptr<webrtc::video_coding::EncodedFrame> webrtc_frame,
-    std::vector<uint8_t> additional_data) {
+    std::vector<uint8_t> additional_data,
+    uint32_t ssrc) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // If the source is canceled or there are too many queued frames,
   // drop the new frame.
@@ -67,7 +68,7 @@ void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
 
   RTCEncodedVideoFrame* encoded_frame =
       MakeGarbageCollected<RTCEncodedVideoFrame>(
-          std::move(webrtc_frame), std::move(wtf_additional_data));
+          std::move(webrtc_frame), std::move(wtf_additional_data), ssrc);
   Controller()->Enqueue(encoded_frame);
 }
 

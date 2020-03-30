@@ -151,6 +151,7 @@ source_set("eg2_tests") {
   ]
   deps = [
     ":constants",
+    "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
@@ -174,6 +175,7 @@ source_set("eg_tests") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/popup_menu:constants",

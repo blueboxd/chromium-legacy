@@ -126,11 +126,14 @@ if (enable_vulkan) {
       deps += [ "//ui/gfx/x" ]
       configs += [ "//build/config/linux:x11" ]
     }
+    if (is_win) {
+      sources += [ "tests/native_window_win.cc" ]
+    }
   }
 
   # TODO(penghuang): support more platforms
   # https://crbug.com/1065499
-  if (is_android || use_x11) {
+  if (is_android || use_x11 || is_win) {
     test("vulkan_tests") {
       sources = [
         "tests/basic_vulkan_test.cc",

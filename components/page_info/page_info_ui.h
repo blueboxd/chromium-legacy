@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_UI_H_
-#define CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_UI_H_
+#ifndef COMPONENTS_PAGE_INFO_PAGE_INFO_UI_H_
+#define COMPONENTS_PAGE_INFO_PAGE_INFO_UI_H_
 
 #include <memory>
 #include <string>
@@ -11,9 +11,9 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/page_info/page_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/page_info.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/safe_browsing/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
@@ -261,4 +261,4 @@ typedef PageInfoUI::CookieInfoList CookieInfoList;
 typedef PageInfoUI::PermissionInfoList PermissionInfoList;
 typedef PageInfoUI::ChosenObjectInfoList ChosenObjectInfoList;
 
-#endif  // CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_UI_H_
+#endif  // COMPONENTS_PAGE_INFO_PAGE_INFO_UI_H_

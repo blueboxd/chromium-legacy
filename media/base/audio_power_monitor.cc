@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/audio_power_monitor.h"
+#include "media/base/audio_power_monitor.h"
 
 #include <algorithm>
 #include <cmath>
@@ -15,10 +15,10 @@
 
 namespace media {
 
-AudioPowerMonitor::AudioPowerMonitor(
-    int sample_rate, const base::TimeDelta& time_constant)
-    : sample_weight_(
-          1.0f - expf(-1.0f / (sample_rate * time_constant.InSecondsF()))) {
+AudioPowerMonitor::AudioPowerMonitor(int sample_rate,
+                                     base::TimeDelta time_constant)
+    : sample_weight_(1.0f -
+                     expf(-1.0f / (sample_rate * time_constant.InSecondsF()))) {
   Reset();
 }
 
@@ -80,8 +80,9 @@ std::pair<float, bool> AudioPowerMonitor::ReadCurrentPowerAndClip() {
   // Convert power level to dBFS units, and pin it down to zero if it is
   // insignificantly small.
   const float kInsignificantPower = 1.0e-10f;  // -100 dBFS
-  const float power_dbfs = power_reading_ < kInsignificantPower ? zero_power() :
-      10.0f * log10f(power_reading_);
+  const float power_dbfs = power_reading_ < kInsignificantPower
+                               ? zero_power()
+                               : 10.0f * log10f(power_reading_);
 
   const bool clipped = clipped_reading_;
   clipped_reading_ = false;

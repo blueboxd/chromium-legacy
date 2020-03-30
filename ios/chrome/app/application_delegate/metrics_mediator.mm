@@ -22,13 +22,14 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -143,10 +144,13 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation
-                             interfaceProvider:(id<BrowserInterfaceProvider>)
-                                                   interfaceProvider {
-  int numTabs =
-      static_cast<int>(interfaceProvider.mainInterface.tabModel.count);
+                               connectedScenes:(NSArray<SceneState*>*)scenes {
+  int numTabs = 0;
+  for (SceneState* scene in scenes) {
+    numTabs += scene.interfaceProvider.mainInterface.browser->GetWebStateList()
+                   ->count();
+  }
+
   if (startupInformation.isColdStart) {
     [self recordNumTabAtStartup:numTabs];
   } else {
@@ -169,15 +173,27 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     [startupInformation
         activateFirstUserActionRecorderWithBackgroundTime:interval];
 
-    web::WebState* currentWebState = interfaceProvider.currentInterface.tabModel
-                                         .webStateList->GetActiveWebState();
-    if (currentWebState &&
-        currentWebState->GetLastCommittedURL() == kChromeUINewTabURL) {
-      startupInformation.firstUserActionRecorder->RecordStartOnNTP();
-      [startupInformation resetFirstUserActionRecorder];
-    } else {
-      [startupInformation
-          expireFirstUserActionRecorderAfterDelay:kFirstUserActionTimeout];
+    SceneState* activeScene = nil;
+    for (SceneState* scene in scenes) {
+      if (scene.activationLevel == SceneActivationLevelForegroundActive) {
+        activeScene = scene;
+        break;
+      }
+    }
+
+    if (activeScene) {
+      web::WebState* currentWebState =
+          activeScene.interfaceProvider.currentInterface.browser
+              ->GetWebStateList()
+              ->GetActiveWebState();
+      if (currentWebState &&
+          currentWebState->GetLastCommittedURL() == kChromeUINewTabURL) {
+        startupInformation.firstUserActionRecorder->RecordStartOnNTP();
+        [startupInformation resetFirstUserActionRecorder];
+      } else {
+        [startupInformation
+            expireFirstUserActionRecorderAfterDelay:kFirstUserActionTimeout];
+      }
     }
     // Remove the value so it's not reused if the app crashes.
     [[NSUserDefaults standardUserDefaults]

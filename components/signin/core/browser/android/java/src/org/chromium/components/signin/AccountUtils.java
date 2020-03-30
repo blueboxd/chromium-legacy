@@ -4,16 +4,30 @@
 
 package org.chromium.components.signin;
 
+import android.accounts.Account;
+
+import androidx.annotation.VisibleForTesting;
+
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
  * AccountUtils groups some static util methods for account.
  */
-class AccountUtils {
+public class AccountUtils {
     private static final Pattern AT_SYMBOL = Pattern.compile("@");
     private static final String GMAIL_COM = "gmail.com";
     private static final String GOOGLEMAIL_COM = "googlemail.com";
+
+    @VisibleForTesting
+    public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
+
+    /**
+     * Creates an Account object for the given name.
+     */
+    public static Account createAccountFromName(String name) {
+        return new Account(name, GOOGLE_ACCOUNT_TYPE);
+    }
 
     /**
      * Canonicalizes the account name.

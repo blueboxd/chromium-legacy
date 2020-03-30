@@ -29,6 +29,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -241,7 +242,7 @@ public class AccountManagerFacadeRobolectricTest {
     }
 
     private Account addTestAccount(String accountName, String... features) {
-        Account account = AccountManagerFacade.createAccountFromName(accountName);
+        Account account = AccountUtils.createAccountFromName(accountName);
         AccountHolder holder = AccountHolder.builder(account)
                                        .alwaysAccept(true)
                                        .featureSet(new HashSet<>(Arrays.asList(features)))

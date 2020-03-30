@@ -41,7 +41,7 @@ TEST_F(RTCEncodedVideoUnderlyingSourceTest,
   ScriptPromiseTester read_tester(script_state,
                                   reader->read(script_state, exception_state));
   EXPECT_FALSE(read_tester.IsFulfilled());
-  source->OnFrameFromSource(nullptr, std::vector<uint8_t>());
+  source->OnFrameFromSource(nullptr, std::vector<uint8_t>(), 0);
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsFulfilled());
 
@@ -70,12 +70,12 @@ TEST_F(RTCEncodedVideoUnderlyingSourceTest, QueuedFramesAreDroppedWhenOverflow) 
   for (int i = 0; i > RTCEncodedVideoUnderlyingSource::kMinQueueDesiredSize;
        --i) {
     EXPECT_EQ(source->Controller()->DesiredSize(), i);
-    source->OnFrameFromSource(nullptr, std::vector<uint8_t>());
+    source->OnFrameFromSource(nullptr, std::vector<uint8_t>(), 0);
   }
   EXPECT_EQ(source->Controller()->DesiredSize(),
             RTCEncodedVideoUnderlyingSource::kMinQueueDesiredSize);
 
-  source->OnFrameFromSource(nullptr, std::vector<uint8_t>());
+  source->OnFrameFromSource(nullptr, std::vector<uint8_t>(), 0);
   EXPECT_EQ(source->Controller()->DesiredSize(),
             RTCEncodedVideoUnderlyingSource::kMinQueueDesiredSize);
 

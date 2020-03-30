@@ -6301,7 +6301,9 @@ interface RTCDtlsTransport : EventTarget
 interface RTCEncodedAudioFrame
     attribute @@toStringTag
     getter additionalData
+    getter contributingSources
     getter data
+    getter synchronizationSource
     getter timestamp
     method constructor
     method toString
@@ -6310,6 +6312,7 @@ interface RTCEncodedVideoFrame
     attribute @@toStringTag
     getter additionalData
     getter data
+    getter synchronizationSource
     getter timestamp
     getter type
     method constructor

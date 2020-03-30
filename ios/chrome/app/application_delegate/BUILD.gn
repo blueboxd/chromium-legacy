@@ -57,6 +57,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/u2f",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/main",
+    "//ios/chrome/browser/ui/main:scene",
     "//ios/chrome/browser/ui/main/test",
     "//ios/chrome/browser/ui/safe_mode",
     "//ios/chrome/browser/ui/settings",

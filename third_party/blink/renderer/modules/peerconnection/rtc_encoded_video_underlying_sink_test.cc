@@ -69,7 +69,7 @@ class RTCEncodedVideoUnderlyingSinkTest : public testing::Test {
 
   ScriptValue CreateEncodedVideoFrameChunk(ScriptState* script_state) {
     RTCEncodedVideoFrame* frame = MakeGarbageCollected<RTCEncodedVideoFrame>(
-        /*frame_delegate=*/nullptr, Vector<uint8_t>());
+        /*frame_delegate=*/nullptr, Vector<uint8_t>(), 0);
     return ScriptValue(script_state->GetIsolate(),
                        ToV8(frame, script_state->GetContext()->Global(),
                             script_state->GetIsolate()));

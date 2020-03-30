@@ -1,5 +1,6 @@
 include_rules = [
   "-components/devtools_bridge",
+  "+components/resources/android",
   "+cc/layers/layer.h",
   "+chrome/android/test_support_jni_headers",
   "+chrome_jni_registration/chrome_jni_registration.h",

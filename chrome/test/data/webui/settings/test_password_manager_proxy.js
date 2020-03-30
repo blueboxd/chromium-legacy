@@ -22,7 +22,7 @@
       'stopBulkPasswordCheck',
       'getCompromisedCredentials',
       'getPasswordCheckStatus',
-      'getPlainttextCompromisedPassword',
+      'getPlaintextCompromisedPassword',
       'changeCompromisedCredential',
       'removeCompromisedCredential',
       'recordPasswordCheckInteraction',
@@ -199,7 +199,7 @@
 
   /** @override */
   getPlaintextCompromisedPassword(credential, reason) {
-    this.methodCalled('getPlainttextCompromisedPassword', {credential, reason});
+    this.methodCalled('getPlaintextCompromisedPassword', {credential, reason});
     if (!this.plaintextPassword_) {
       return Promise.reject('Could not obtain plaintext password');
     }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/audio_power_monitor.h"
+#include "media/base/audio_power_monitor.h"
 
 #include <limits>
 #include <memory>
@@ -24,8 +24,11 @@ namespace {
 // Container for each parameterized test's data (input and expected results).
 class TestScenario {
  public:
-  TestScenario(const float* data, int num_channels, int num_frames,
-               float expected_power, bool expected_clipped)
+  TestScenario(const float* data,
+               int num_channels,
+               int num_frames,
+               float expected_power,
+               bool expected_clipped)
       : expected_power_(expected_power), expected_clipped_(expected_clipped) {
     CreatePopulatedBuffer(data, num_channels, num_frames);
   }
@@ -48,23 +51,18 @@ class TestScenario {
     return result;
   }
 
-  const AudioBus& data() const {
-    return *bus_;
-  }
+  const AudioBus& data() const { return *bus_; }
 
-  float expected_power() const {
-    return expected_power_;
-  }
+  float expected_power() const { return expected_power_; }
 
-  bool expected_clipped() const {
-    return expected_clipped_;
-  }
+  bool expected_clipped() const { return expected_clipped_; }
 
  private:
   // Creates an AudioBus, sized and populated with kFramesPerBuffer frames of
   // data.  The given test |data| is repeated to fill the buffer.
-  void CreatePopulatedBuffer(
-      const float* data, int num_channels, int num_frames) {
+  void CreatePopulatedBuffer(const float* data,
+                             int num_channels,
+                             int num_frames) {
     bus_ = AudioBus::Create(num_channels, kFramesPerBuffer);
     for (int ch = 0; ch < num_channels; ++ch) {
       for (int frames = 0; frames < kFramesPerBuffer; frames += num_frames) {
@@ -85,8 +83,7 @@ class TestScenario {
 ::std::ostream& operator<<(::std::ostream& os, const TestScenario& ts) {
   return os << "{" << ts.data().channels() << "-channel signal} --> {"
             << ts.expected_power() << " dBFS, "
-            << (ts.expected_clipped() ? "clipped" : "not clipped")
-            << "}";
+            << (ts.expected_clipped() ? "clipped" : "not clipped") << "}";
 }
 
 // An observer that receives power measurements.  Each power measurement should
@@ -99,17 +96,11 @@ class MeasurementObserver {
         last_power_measurement_(AudioPowerMonitor::zero_power()),
         last_clipped_(false) {}
 
-  int measurement_count() const {
-    return measurement_count_;
-  }
+  int measurement_count() const { return measurement_count_; }
 
-  float last_power_measurement() const {
-    return last_power_measurement_;
-  }
+  float last_power_measurement() const { return last_power_measurement_; }
 
-  bool last_clipped() const {
-    return last_clipped_;
-  }
+  bool last_clipped() const { return last_clipped_; }
 
   void OnPowerMeasured(float cur_power_measurement, bool clipped) {
     if (measurement_count_ == 0) {
@@ -159,8 +150,9 @@ class AudioPowerMonitorTest : public ::testing::TestWithParam<TestScenario> {
                        base::TimeDelta::FromMilliseconds(kTimeConstantMillis)) {
   }
 
-  void FeedAndCheckExpectedPowerIsMeasured(
-      const AudioBus& bus, float power, bool clipped) {
+  void FeedAndCheckExpectedPowerIsMeasured(const AudioBus& bus,
+                                           float power,
+                                           bool clipped) {
     // Feed the AudioPowerMonitor, read measurements from it, and record them in
     // MeasurementObserver.
     static const int kNumFeedIters = 100;
@@ -195,83 +187,70 @@ TEST_P(AudioPowerMonitorTest, MeasuresPowerOfSignal) {
   // Send a "zero power" audio signal, then this scenario's audio signal, then
   // the "zero power" audio signal again; testing that the power monitor
   // measurements match expected values.
-  FeedAndCheckExpectedPowerIsMeasured(
-      *zeroed_bus, AudioPowerMonitor::zero_power(), false);
+  FeedAndCheckExpectedPowerIsMeasured(*zeroed_bus,
+                                      AudioPowerMonitor::zero_power(), false);
   FeedAndCheckExpectedPowerIsMeasured(
       scenario.data(), scenario.expected_power(), scenario.expected_clipped());
-  FeedAndCheckExpectedPowerIsMeasured(
-      *zeroed_bus, AudioPowerMonitor::zero_power(), false);
+  FeedAndCheckExpectedPowerIsMeasured(*zeroed_bus,
+                                      AudioPowerMonitor::zero_power(), false);
 }
 
-static const float kMonoSilentNoise[] = {
-  0.01f, -0.01f
-};
+static const float kMonoSilentNoise[] = {0.01f, -0.01f};
 
-static const float kMonoMaxAmplitude[] = {
-  1.0f
-};
+static const float kMonoMaxAmplitude[] = {1.0f};
 
-static const float kMonoMaxAmplitude2[] = {
-  -1.0f, 1.0f
-};
+static const float kMonoMaxAmplitude2[] = {-1.0f, 1.0f};
 
-static const float kMonoHalfMaxAmplitude[] = {
-  0.5f, -0.5f, 0.5f, -0.5f
-};
+static const float kMonoHalfMaxAmplitude[] = {0.5f, -0.5f, 0.5f, -0.5f};
 
-static const float kMonoAmplitudeClipped[] = {
-  2.0f, -2.0f
-};
+static const float kMonoAmplitudeClipped[] = {2.0f, -2.0f};
 
-static const float kMonoMaxAmplitudeWithClip[] = {
-  2.0f, 0.0, 0.0f, 0.0f
-};
+static const float kMonoMaxAmplitudeWithClip[] = {2.0f, 0.0, 0.0f, 0.0f};
 
-static const float kMonoMaxAmplitudeWithClip2[] = {
-  4.0f, 0.0, 0.0f, 0.0f
-};
+static const float kMonoMaxAmplitudeWithClip2[] = {4.0f, 0.0, 0.0f, 0.0f};
 
 static const float kStereoSilentNoise[] = {
-  // left channel
-  0.005f, -0.005f,
-  // right channel
-  0.005f, -0.005f
-};
+    // left channel
+    0.005f, -0.005f,
+    // right channel
+    0.005f, -0.005f};
 
 static const float kStereoMaxAmplitude[] = {
-  // left channel
-  1.0f, -1.0f,
-  // right channel
-  -1.0f, 1.0f
-};
+    // left channel
+    1.0f, -1.0f,
+    // right channel
+    -1.0f, 1.0f};
 
 static const float kRightChannelMaxAmplitude[] = {
-  // left channel
-  0.0f, 0.0f, 0.0f, 0.0f,
-  // right channel
-  -1.0f, 1.0f, -1.0f, 1.0f
-};
+    // left channel
+    0.0f, 0.0f, 0.0f, 0.0f,
+    // right channel
+    -1.0f, 1.0f, -1.0f, 1.0f};
 
 static const float kLeftChannelHalfMaxAmplitude[] = {
-  // left channel
-  0.5f, -0.5f, 0.5f, -0.5f,
-  // right channel
-  0.0f, 0.0f, 0.0f, 0.0f,
+    // left channel
+    0.5f,
+    -0.5f,
+    0.5f,
+    -0.5f,
+    // right channel
+    0.0f,
+    0.0f,
+    0.0f,
+    0.0f,
 };
 
 static const float kStereoMixed[] = {
-  // left channel
-  0.5f, -0.5f, 0.5f, -0.5f,
-  // right channel
-  -1.0f, 1.0f, -1.0f, 1.0f
-};
+    // left channel
+    0.5f, -0.5f, 0.5f, -0.5f,
+    // right channel
+    -1.0f, 1.0f, -1.0f, 1.0f};
 
 static const float kStereoMixed2[] = {
-  // left channel
-  1.0f, -1.0f, 0.75f, -0.75f, 0.5f, -0.5f, 0.25f, -0.25f,
-  // right channel
-  0.25f, -0.25f, 0.5f, -0.5f, 0.75f, -0.75f, 1.0f, -1.0f
-};
+    // left channel
+    1.0f, -1.0f, 0.75f, -0.75f, 0.5f, -0.5f, 0.25f, -0.25f,
+    // right channel
+    0.25f, -0.25f, 0.5f, -0.5f, 0.75f, -0.75f, 1.0f, -1.0f};
 
 INSTANTIATE_TEST_SUITE_P(
     Scenarios,

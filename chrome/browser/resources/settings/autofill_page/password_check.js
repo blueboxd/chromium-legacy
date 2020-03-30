@@ -103,6 +103,12 @@ Polymer({
       type: Boolean,
       computed:
           'computeShowNoCompromisedPasswordsLabel(syncStatus_, prefs.*, status_, leakedPasswords)',
+    },
+
+    /** @private */
+    showHideMenuTitle_: {
+      type: String,
+      computed: 'computeShowHideMenuTitle(activePassword_)',
     }
   },
 
@@ -129,6 +135,12 @@ Polymer({
    * @private {?HTMLElement}
    */
   activeDialogAnchor_: null,
+
+  /**
+   * The password_check_list_item that the user is interacting with now.
+   * @private {?EventTarget}
+   */
+  activeListItem_: null,
 
   /** @override */
   attached() {
@@ -239,7 +251,17 @@ Polymer({
     const target = event.detail.moreActionsButton;
     this.$.moreActionsMenu.showAt(target);
     this.activeDialogAnchor_ = target;
-    this.activePassword_ = event.target.item;
+    this.activeListItem_ = event.target;
+    this.activePassword_ = this.activeListItem_.item;
+  },
+
+  /** @private */
+  onMenuShowPasswordClick_() {
+    this.activePassword_.password ? this.activeListItem_.hidePassword() :
+                                    this.activeListItem_.showPassword();
+    this.$.moreActionsMenu.close();
+    this.activePassword_ = null;
+    this.activeDialogAnchor_ = null;
   },
 
   /** @private */
@@ -279,6 +301,12 @@ Polymer({
     this.showPasswordEditDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
+  },
+
+  computeShowHideMenuTitle() {
+    return this.i18n(
+        this.activeListItem_.isPasswordVisible_ ? 'hideCompromisedPassword' :
+                                                  'showCompromisedPassword');
   },
 
   /**
@@ -560,6 +588,7 @@ Polymer({
       if (map.has(item.id)) {
         // Replace old version with new
         resultList.push(map.get(item.id));
+        resultList[resultList.length - 1].password = item.password;
         map.delete(item.id);
       }
     });
@@ -573,7 +602,8 @@ Polymer({
       }
       return rhs.compromiseTime - lhs.compromiseTime;
     });
-    this.leakedPasswords = resultList.concat(addedResults);
+    addedResults.forEach(item => resultList.push(item));
+    this.leakedPasswords = resultList;
   },
 
   /**

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_PAGE_INFO_PERMISSION_MENU_MODEL_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/page_info_ui.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "url/gurl.h"
 

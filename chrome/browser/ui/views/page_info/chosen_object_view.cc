@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "components/page_info/page_info_delegate.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

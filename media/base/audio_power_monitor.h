@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_AUDIO_POWER_MONITOR_H_
-#define MEDIA_AUDIO_AUDIO_POWER_MONITOR_H_
+#ifndef MEDIA_BASE_AUDIO_POWER_MONITOR_H_
+#define MEDIA_BASE_AUDIO_POWER_MONITOR_H_
 
 #include <limits>
 #include <utility>
@@ -40,7 +40,7 @@ class MEDIA_EXPORT AudioPowerMonitor {
   // characterizes how samples are averaged over time to determine the power
   // level; and is the amount of time it takes a zero power level to increase to
   // ~63.2% of maximum given a step input signal.
-  AudioPowerMonitor(int sample_rate, const base::TimeDelta& time_constant);
+  AudioPowerMonitor(int sample_rate, base::TimeDelta time_constant);
 
   ~AudioPowerMonitor();
 
@@ -85,4 +85,4 @@ class MEDIA_EXPORT AudioPowerMonitor {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_AUDIO_POWER_MONITOR_H_
+#endif  // MEDIA_BASE_AUDIO_POWER_MONITOR_H_

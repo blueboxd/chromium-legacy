@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.settings.MainSettings;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -72,7 +72,7 @@ public class PasswordViewingTypeTest {
     }
 
     private void setupTestAccount() {
-        mAccount = AccountManagerFacade.createAccountFromName("account@example.com");
+        mAccount = AccountUtils.createAccountFromName("account@example.com");
         AccountHolder.Builder accountHolder = AccountHolder.builder(mAccount).alwaysAccept(true);
         mAccountManagerTestRule.addAccount(accountHolder.build());
     }

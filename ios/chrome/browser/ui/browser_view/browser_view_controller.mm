@@ -713,10 +713,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (instancetype)initWithBrowser:(Browser*)browser
                  dependencyFactory:
                      (BrowserViewControllerDependencyFactory*)factory
-        applicationCommandEndpoint:
-            (id<ApplicationCommands>)applicationCommandEndpoint
-       browsingDataCommandEndpoint:
-           (id<BrowsingDataCommands>)browsingDataCommandEndpoint
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController {
   self = [super initWithNibName:nil bundle:base::mac::FrameworkBundle()];
@@ -731,22 +727,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.commandDispatcher
         startDispatchingToTarget:self
                      forProtocol:@protocol(BrowserCommands)];
-    [self.commandDispatcher
-        startDispatchingToTarget:applicationCommandEndpoint
-                     forProtocol:@protocol(ApplicationCommands)];
-    // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
-    // passed protocol conforms to, so ApplicationSettingsCommands is explicitly
-    // dispatched to the endpoint as well. Since this is potentially
-    // fragile, DCHECK that it should still work (if the endpoint is nonnull).
-    DCHECK(!applicationCommandEndpoint ||
-           [applicationCommandEndpoint
-               conformsToProtocol:@protocol(ApplicationSettingsCommands)]);
-    [self.commandDispatcher
-        startDispatchingToTarget:applicationCommandEndpoint
-                     forProtocol:@protocol(ApplicationSettingsCommands)];
-    [self.commandDispatcher
-        startDispatchingToTarget:browsingDataCommandEndpoint
-                     forProtocol:@protocol(BrowsingDataCommands)];
+
     _toolbarCoordinatorAdaptor =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
     self.toolbarInterface = _toolbarCoordinatorAdaptor;

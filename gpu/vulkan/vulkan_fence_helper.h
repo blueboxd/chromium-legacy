@@ -28,7 +28,7 @@ class VULKAN_EXPORT VulkanFenceHelper {
 
   // Class representing a fence registered with this system. Should be treated
   // as an opaque handle.
-  class FenceHandle {
+  class VULKAN_EXPORT FenceHandle {
    public:
     FenceHandle();
     FenceHandle(const FenceHandle& other);

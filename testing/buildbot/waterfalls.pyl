@@ -2088,8 +2088,9 @@
       },
       'linux-upload-perfetto': {
         'test_suites': {
-          'scripts': 'upload_perfetto',
+          'gtest_tests': 'upload_perfetto',
         },
+        'use_swarming': False,
       },
       'linux-wpt-fyi-rel': {
         'mixins': [
@@ -2133,8 +2134,9 @@
       },
       'mac-upload-perfetto': {
         'test_suites': {
-          'scripts': 'upload_perfetto',
+          'gtest_tests': 'upload_perfetto',
         },
+        'use_swarming': False,
       },
       'mac10.10-blink-rel-dummy': {
         'test_suites': {
@@ -2244,8 +2246,9 @@
       },
       'win-upload-perfetto': {
         'test_suites': {
-          'scripts': 'upload_perfetto',
+          'gtest_tests': 'upload_perfetto',
         },
+        'use_swarming': False,
       },
       'win10-blink-rel-dummy': {
         'swarming': {

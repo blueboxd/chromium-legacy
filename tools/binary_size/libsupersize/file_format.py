@@ -233,13 +233,15 @@ def _SaveSizeInfoToFile(size_info,
 
   Args:
     size_info: Data to write to the file
-    file_obj: File opened for writing
-    sparse_symbols: If present, only save these symbols to the file
+    file_obj: File opened for writing.
+    include_padding: Whether to save padding data, useful if adding a subset of
+      symbols.
+    sparse_symbols: If present, only save these symbols to the file.
   """
   if sparse_symbols is not None:
-    # Any aliases of sparse symbols must also be included, or else file parsing
-    # will attribute symbols that happen to follow an incomplete alias group to
-    # that alias group.
+    # Any aliases of sparse symbols must also be included, or else file
+    # parsing will attribute symbols that happen to follow an incomplete alias
+    # group to that alias group.
     raw_symbols = _ExpandSparseSymbols(sparse_symbols)
   else:
     raw_symbols = size_info.raw_symbols
@@ -362,7 +364,7 @@ def _ReadValuesFromLine(file_iter, split):
 def _LoadSizeInfoFromFile(file_obj, size_path):
   """Loads a size_info from the given file.
 
-  See _SaveSizeInfoToFile for details on the .size file format.
+  See _SaveSizeInfoToFile() for details on the .size file format.
 
   Args:
     file_obj: File to read, should be a GzipFile

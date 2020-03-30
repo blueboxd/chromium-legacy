@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountUtils;
 
 /**
  * Structure storing the core information about a Google account that is always known. The {@link
@@ -91,9 +91,8 @@ public class CoreAccountInfo {
      * @return {@link Account} for the argument if it is not null, null otherwise.
      */
     public static @Nullable Account getAndroidAccountFrom(@Nullable CoreAccountInfo accountInfo) {
-        return accountInfo == null
-                ? null
-                : AccountManagerFacade.createAccountFromName(accountInfo.getEmail());
+        return accountInfo == null ? null
+                                   : AccountUtils.createAccountFromName(accountInfo.getEmail());
     }
 
     /**

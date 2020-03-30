@@ -119,6 +119,7 @@ static_library("vr_android") {
     "//components/content_settings/core/browser",
     "//components/language/core/browser",
     "//components/omnibox/browser",
+    "//components/page_info",
     "//components/permissions",
     "//components/rappor",
     "//components/search_engines:search_engines",

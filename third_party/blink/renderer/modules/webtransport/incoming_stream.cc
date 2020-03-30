@@ -228,18 +228,36 @@ void IncomingStream::ProcessClose() {
 }
 
 void IncomingStream::ReadFromPipeAndEnqueue() {
-  DVLOG(1) << "IncomingStream::ReadFromPipeAndEnqueue() this=" << this;
+  DVLOG(1) << "IncomingStream::ReadFromPipeAndEnqueue() this=" << this
+           << " in_two_phase_read_=" << in_two_phase_read_
+           << " read_pending_=" << read_pending_;
+
+  // Protect against re-entrancy.
+  if (in_two_phase_read_) {
+    read_pending_ = true;
+    return;
+  }
+  DCHECK(!read_pending_);
 
   const void* buffer = nullptr;
   uint32_t buffer_num_bytes = 0;
   auto result = data_pipe_->BeginReadData(&buffer, &buffer_num_bytes,
                                           MOJO_BEGIN_READ_DATA_FLAG_NONE);
-
   switch (result) {
-    case MOJO_RESULT_OK:
+    case MOJO_RESULT_OK: {
+      in_two_phase_read_ = true;
+      // EnqueueBytes() may re-enter this method via pull().
       EnqueueBytes(buffer, buffer_num_bytes);
       data_pipe_->EndReadData(buffer_num_bytes);
+      in_two_phase_read_ = false;
+      if (read_pending_) {
+        read_pending_ = false;
+        // pull() will not be called when another pull() is in progress, so the
+        // maximum recursion depth is 1.
+        ReadFromPipeAndEnqueue();
+      }
       break;
+    }
 
     case MOJO_RESULT_SHOULD_WAIT:
       read_watcher_.ArmOrNotify();
@@ -250,7 +268,7 @@ void IncomingStream::ReadFromPipeAndEnqueue() {
       return;
 
     default:
-      DLOG(FATAL) << "FATAL ERROR";
+      NOTREACHED() << "Unexpected result: " << result;
       return;
   }
 }

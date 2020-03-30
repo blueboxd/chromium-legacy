@@ -4,6 +4,7 @@
 
 #include "gpu/vulkan/tests/basic_vulkan_test.h"
 
+#include "base/command_line.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/tests/native_window.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -22,17 +23,21 @@ BasicVulkanTest::~BasicVulkanTest() {}
 
 void BasicVulkanTest::SetUp() {
   platform_event_source_ = ui::PlatformEventSource::CreateDefault();
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(OS_WIN)
+  bool use_swiftshader =
+      base::CommandLine::ForCurrentProcess()->HasSwitch("use-swiftshader");
   const gfx::Rect kDefaultBounds(10, 10, 100, 100);
   window_ = CreateNativeWindow(kDefaultBounds);
 #elif defined(OS_ANDROID)
+  // Vulkan swiftshader is not supported on Android.
+  bool use_swiftshader = false;
   // TODO(penghuang): Not depend on gl.
   uint texture = 0;
   surface_texture_ = gl::SurfaceTexture::Create(texture);
   window_ = surface_texture_->CreateSurface();
   ASSERT_TRUE(window_ != gfx::kNullAcceleratedWidget);
 #endif
-  vulkan_implementation_ = CreateVulkanImplementation();
+  vulkan_implementation_ = CreateVulkanImplementation(use_swiftshader);
   ASSERT_TRUE(vulkan_implementation_);
   ASSERT_TRUE(vulkan_implementation_->InitializeVulkanInstance());
   device_queue_ = gpu::CreateVulkanDeviceQueue(
@@ -43,7 +48,7 @@ void BasicVulkanTest::SetUp() {
 }
 
 void BasicVulkanTest::TearDown() {
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(OS_WIN)
   DestroyNativeWindow(window_);
 #elif defined(OS_ANDROID)
   ANativeWindow_release(window_);

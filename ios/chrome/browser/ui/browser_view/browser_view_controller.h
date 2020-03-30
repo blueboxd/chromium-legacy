@@ -49,10 +49,6 @@ class FullscreenController;
 - (instancetype)initWithBrowser:(Browser*)browser
                  dependencyFactory:
                      (BrowserViewControllerDependencyFactory*)factory
-        applicationCommandEndpoint:
-            (id<ApplicationCommands>)applicationCommandEndpoint
-       browsingDataCommandEndpoint:
-           (id<BrowsingDataCommands>)browsingDataCommandEndpoint
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
     NS_DESIGNATED_INITIALIZER;

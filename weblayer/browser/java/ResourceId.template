@@ -11,7 +11,7 @@ class ResourceId {
         int[] resourceList = {
 #define LINK_RESOURCE_ID(c_id,java_id) java_id,
 #define DECLARE_RESOURCE_ID(c_id,java_id) java_id,
-#include "components/permissions/android/resource_id.h"
+#include "components/resources/android/permissions_resource_id.h"
         };
         return resourceList;
     }

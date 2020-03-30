@@ -23,6 +23,7 @@ jumbo_static_library("safe_browsing") {
     "//components/browser_sync",
     "//components/keyed_service/content",
     "//components/language/core/browser",
+    "//components/page_info",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:hash_password_manager",
     "//components/pref_registry",

@@ -999,7 +999,7 @@ cr.define('settings_passwords_check', function() {
       checkPasswordSection.$.menuEditPassword.click();
       // Since we did not specify a plaintext password above, this request
       // should fail.
-      await passwordManager.whenCalled('getPlainttextCompromisedPassword');
+      await passwordManager.whenCalled('getPlaintextCompromisedPassword');
       // Verify that the edit dialog has not become visible.
       Polymer.dom.flush();
       expectFalse(isElementVisible(
@@ -1027,7 +1027,7 @@ cr.define('settings_passwords_check', function() {
       node.$.more.click();
       checkPasswordSection.$.menuEditPassword.click();
       const {credential, reason} =
-          await passwordManager.whenCalled('getPlainttextCompromisedPassword');
+          await passwordManager.whenCalled('getPlaintextCompromisedPassword');
       expectEquals(passwordManager.data.leakedCredentials[0], credential);
       expectEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
 
@@ -1085,6 +1085,70 @@ cr.define('settings_passwords_check', function() {
           PasswordManagerProxy.PasswordCheckInteraction
               .START_CHECK_AUTOMATICALLY,
           interaction);
+      settings.Router.getInstance().resetRouteForTesting();
+    });
+
+    // Verify clicking show password in menu reveal password.
+    test('showHidePasswordMenuItemSuccess', async function() {
+      passwordManager.data.leakedCredentials =
+          [autofill_test_util.makeCompromisedCredential(
+              'google.com', 'jdoerrie', 'LEAKED')];
+      passwordManager.plaintextPassword_ = 'test4';
+      const checkPasswordSection = createCheckPasswordSection();
+
+      await passwordManager.whenCalled('getCompromisedCredentials');
+
+      Polymer.dom.flush();
+      const listElements = checkPasswordSection.$.leakedPasswordList;
+      const node = listElements.children[1];
+      assertEquals('password', node.$.leakedPassword.type);
+      assertNotEquals('test4', node.$.leakedPassword.value);
+
+      // Open the more actions menu and click 'Show Password'.
+      node.$.more.click();
+      checkPasswordSection.$.menuShowPassword.click();
+
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.SHOW_PASSWORD,
+          interaction);
+      const {reason} =
+          await passwordManager.whenCalled('getPlaintextCompromisedPassword');
+      expectEquals(chrome.passwordsPrivate.PlaintextReason.VIEW, reason);
+      assertEquals('text', node.$.leakedPassword.type);
+      assertEquals('test4', node.$.leakedPassword.value);
+
+      // Open the more actions menu and click 'Hide Password'.
+      node.$.more.click();
+      checkPasswordSection.$.menuShowPassword.click();
+
+      assertEquals('password', node.$.leakedPassword.type);
+      assertNotEquals('test4', node.$.leakedPassword.value);
+    });
+
+    // Verify if getPlaintext fails password will not be shown
+    test('showHidePasswordMenuItemFail', async function() {
+      passwordManager.data.leakedCredentials =
+          [autofill_test_util.makeCompromisedCredential(
+              'google.com', 'jdoerrie', 'LEAKED')];
+      const checkPasswordSection = createCheckPasswordSection();
+      await passwordManager.whenCalled('getCompromisedCredentials');
+
+      Polymer.dom.flush();
+      const listElements = checkPasswordSection.$.leakedPasswordList;
+      const node = listElements.children[1];
+      assertEquals('password', node.$.leakedPassword.type);
+      assertNotEquals('test4', node.$.leakedPassword.value);
+
+      // Open the more actions menu and click 'Show Password'.
+      node.$.more.click();
+      checkPasswordSection.$.menuShowPassword.click();
+      await passwordManager.whenCalled('getPlaintextCompromisedPassword');
+      // Verify that password field didn't change
+      assertEquals('password', node.$.leakedPassword.type);
+      assertNotEquals('test4', node.$.leakedPassword.value);
     });
   });
   // #cr_define_end

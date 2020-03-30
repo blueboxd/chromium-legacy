@@ -176,7 +176,9 @@ void LocalWindowProxy::Initialize() {
   if (evaluate_csp_for_eval) {
     ContentSecurityPolicy* csp =
         GetFrame()->GetDocument()->GetContentSecurityPolicyForWorld();
-    context->AllowCodeGenerationFromStrings(!csp->ShouldCheckEval());
+    // Configure V8 to check Blink for every 'eval' attempts.
+    // See CodeGenerationCheckCallbackInMainThread.
+    context->AllowCodeGenerationFromStrings(false);
     context->SetErrorMessageForCodeGenerationFromStrings(
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));
   }

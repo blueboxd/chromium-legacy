@@ -61,8 +61,6 @@ source_set("permissions") {
       "android/permission_dialog_delegate.h",
       "android/permission_prompt_android.cc",
       "android/permission_prompt_android.h",
-      "android/resource_id.h",
-      "android/theme_resources.h",
       "contexts/geolocation_permission_context_android.cc",
       "contexts/geolocation_permission_context_android.h",
     ]
@@ -72,6 +70,7 @@ source_set("permissions") {
       "//components/location/android:settings",
       "//components/permissions/android:jni_headers",
       "//components/prefs",
+      "//components/resources:android_resources",
       "//ui/android",
     ]
   } else {
@@ -107,6 +106,9 @@ source_set("test_support") {
     "//ui/gfx",
     "//url",
   ]
+  if (is_android) {
+    deps += [ "//components/resources:android_resources" ]
+  }
 }
 
 source_set("unit_tests") {

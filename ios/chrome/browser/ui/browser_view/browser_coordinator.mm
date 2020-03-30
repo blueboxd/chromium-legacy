@@ -296,8 +296,6 @@
   _viewController = [[BrowserViewController alloc]
                      initWithBrowser:self.browser
                    dependencyFactory:factory
-          applicationCommandEndpoint:self.applicationCommandHandler
-         browsingDataCommandEndpoint:self.browsingDataCommandHandler
       browserContainerViewController:self.browserContainerCoordinator
                                          .viewController];
 }
@@ -726,17 +724,17 @@
 #pragma mark - FormInputAccessoryCoordinatorNavigator
 
 - (void)openPasswordSettings {
-  [self.applicationCommandHandler
+  [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showSavedPasswordsSettingsFromViewController:self.viewController];
 }
 
 - (void)openAddressSettings {
-  [self.applicationCommandHandler
+  [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showProfileSettingsFromViewController:self.viewController];
 }
 
 - (void)openCreditCardSettings {
-  [self.applicationCommandHandler
+  [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showCreditCardSettingsFromViewController:self.viewController];
 }
 

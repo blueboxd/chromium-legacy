@@ -25,6 +25,14 @@ void RTCEncodedAudioFrame::setData(DOMArrayBuffer* data) {
   frame_data_ = data;
 }
 
+uint32_t RTCEncodedAudioFrame::synchronizationSource() const {
+  return 0;
+}
+
+Vector<uint32_t> RTCEncodedAudioFrame::contributingSources() const {
+  return Vector<uint32_t>();
+}
+
 String RTCEncodedAudioFrame::toString() const {
   StringBuilder sb;
   sb.Append("RTCEncodedAudioFrame{timestamp: ");

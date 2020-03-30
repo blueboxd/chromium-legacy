@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabCon
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
@@ -440,7 +441,7 @@ public class CustomTabActivityTabController
 
     /** Sets the initial background color for the Tab, shown before the page content is ready. */
     private void prepareTabBackground(final Tab tab) {
-        if (!IntentHandler.notSecureIsIntentChromeOrFirstParty(mIntent)) return;
+        if (!CustomTabIntentDataProvider.isTrustedCustomTab(mIntent, mSession)) return;
 
         int backgroundColor = mIntentDataProvider.getInitialBackgroundColor();
         if (backgroundColor == Color.TRANSPARENT) return;

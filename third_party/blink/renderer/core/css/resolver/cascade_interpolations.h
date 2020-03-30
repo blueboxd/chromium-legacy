@@ -25,9 +25,10 @@ class CORE_EXPORT CascadeInterpolations {
     CascadeOrigin origin = CascadeOrigin::kNone;
   };
 
-  CascadeInterpolations() = default;
-  CascadeInterpolations(Vector<Entry, 4> entries)
-      : entries_(std::move(entries)) {}
+  void Add(const ActiveInterpolationsMap* map, CascadeOrigin origin) {
+    DCHECK(map);
+    entries_.push_back(Entry{map, origin});
+  }
 
   bool IsEmpty() const { return GetEntries().IsEmpty(); }
 
@@ -38,6 +39,8 @@ class CORE_EXPORT CascadeInterpolations {
       return empty;
     return entries_;
   }
+
+  void Reset() { entries_.clear(); }
 
  private:
   // We need to add at most four entries (see CSSAnimationUpdate):

@@ -758,7 +758,7 @@ void RTCRtpSender::OnFrameFromEncoder(
     uint32_t ssrc) {
   if (video_from_encoder_underlying_source_) {
     video_from_encoder_underlying_source_->OnFrameFromSource(
-        std::move(frame), std::move(additional_data));
+        std::move(frame), std::move(additional_data), ssrc);
   }
 }
 

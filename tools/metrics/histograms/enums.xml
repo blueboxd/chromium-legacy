@@ -50044,6 +50044,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Change password"/>
   <int value="4" label="Edit password"/>
   <int value="5" label="Remove password"/>
+  <int value="6" label="Show password"/>
 </enum>
 
 <enum name="PasswordCheckReferrer">

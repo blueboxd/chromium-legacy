@@ -25,8 +25,8 @@
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_source_diverter.h"
+#include "media/base/audio_power_monitor.h"
 #include "services/audio/loopback_group_member.h"
 #include "services/audio/stream_monitor_coordinator.h"
 

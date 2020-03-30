@@ -30,7 +30,8 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
  public:
   explicit RTCEncodedVideoFrame(
       std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate,
-      Vector<uint8_t> generic_descriptor);
+      Vector<uint8_t> generic_descriptor,
+      uint32_t ssrc);
 
   // rtc_encoded_video_frame.idl implementation.
   String type() const;
@@ -39,6 +40,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   DOMArrayBuffer* data() const;
   DOMArrayBuffer* additionalData() const;
   void setData(DOMArrayBuffer*);
+  uint32_t synchronizationSource() const;
   String toString() const;
 
   // Internal API
@@ -53,6 +55,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
  private:
   std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate_;
   Vector<uint8_t> additional_data_vector_;
+  const uint32_t ssrc_;
   // Exposes encoded frame data from |delegate_|.
   mutable Member<DOMArrayBuffer> frame_data_;
   // Exposes data from |additional_data_vector_|.

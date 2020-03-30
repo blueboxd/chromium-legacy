@@ -31,7 +31,8 @@ namespace audio {
 namespace {
 
 // Time in seconds between two successive measurements of audio power levels.
-constexpr int kPowerMonitorLogIntervalSeconds = 15;
+constexpr base::TimeDelta kPowerMonitorLogInterval =
+    base::TimeDelta::FromSeconds(15);
 
 // Used to log the result of rendering startup.
 // Elements in this enum should not be deleted or rearranged; the only
@@ -485,8 +486,7 @@ int OutputController::OnMoreData(base::TimeDelta delay,
     power_monitor_.Scan(*dest, frames);
 
     const auto now = base::TimeTicks::Now();
-    if ((now - last_audio_level_log_time_).InSeconds() >
-        kPowerMonitorLogIntervalSeconds) {
+    if ((now - last_audio_level_log_time_) > kPowerMonitorLogInterval) {
       LogAudioPowerLevel(__func__);
       last_audio_level_log_time_ = now;
     }

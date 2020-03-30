@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_PAGE_INFO_CHROME_PAGE_INFO_UI_DELEGATE_H_
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/page_info/page_info_ui_delegate.h"
+#include "components/page_info/page_info_ui_delegate.h"
 
 class Profile;
 

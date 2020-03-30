@@ -19,7 +19,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -38,16 +37,6 @@ PluginVmInstallerView* g_plugin_vm_installer_view = nullptr;
 constexpr gfx::Insets kButtonRowInsets(0, 64, 32, 64);
 constexpr int kWindowWidth = 768;
 constexpr int kWindowHeight = 636;
-
-base::Optional<double> GetFractionComplete(double units_processed,
-                                           double total_units) {
-  if (total_units <= 0)
-    return base::nullopt;
-  double fraction_complete = units_processed / total_units;
-  if (fraction_complete < 0.0 || fraction_complete > 1.0)
-    return base::nullopt;
-  return base::make_optional(fraction_complete);
-}
 
 }  // namespace
 
@@ -120,24 +109,15 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   upper_container_view->AddChildView(big_message_label_);
 
   views::View* message_container_view = new views::View();
-  views::BoxLayout* message_container_layout =
-      message_container_view->SetLayoutManager(
-          std::make_unique<views::BoxLayout>(
-              views::BoxLayout::Orientation::kVertical,
-              gfx::Insets(kMessageHeight - kMessageFontSize, 0, 0, 0)));
+  message_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(kMessageHeight - kMessageFontSize, 0, 0, 0)));
   upper_container_view->AddChildView(message_container_view);
 
   message_label_ = new views::Label(GetMessage(), {kMessageFont});
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_container_view->AddChildView(message_label_);
-
-  time_left_message_label_ = new views::Label(base::string16(), {kMessageFont});
-  time_left_message_label_->SetEnabledColor(gfx::kGoogleGrey700);
-  time_left_message_label_->SetMultiLine(false);
-  time_left_message_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  message_container_view->AddChildView(time_left_message_label_);
-  message_container_layout->SetFlexForView(time_left_message_label_, 1);
 
   progress_bar_ = new views::ProgressBar(kProgressBarHeight);
   progress_bar_->SetProperty(
@@ -240,6 +220,10 @@ gfx::Size PluginVmInstallerView::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
 }
 
+void PluginVmInstallerView::OnProgressUpdated(double fraction_complete) {
+  progress_bar_->SetValue(fraction_complete);
+}
+
 void PluginVmInstallerView::OnCheckedDiskSpace(bool low_disk_space) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::CHECKING_DISK_SPACE);
@@ -249,15 +233,6 @@ void PluginVmInstallerView::OnCheckedDiskSpace(bool low_disk_space) {
   else
     state_ = State::DOWNLOADING_DLC;
   OnStateUpdated();
-}
-
-void PluginVmInstallerView::OnDlcDownloadProgressUpdated(
-    double progress,
-    base::TimeDelta elapsed_time) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
-
-  UpdateOperationProgress(progress * 100, 100.0, elapsed_time);
 }
 
 void PluginVmInstallerView::OnDlcDownloadCompleted() {
@@ -295,10 +270,8 @@ void PluginVmInstallerView::OnCancelFinished() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void PluginVmInstallerView::OnDownloadProgressUpdated(
-    uint64_t bytes_downloaded,
-    int64_t content_length,
-    base::TimeDelta elapsed_time) {
+void PluginVmInstallerView::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
+                                                      int64_t content_length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::DOWNLOADING);
 
@@ -306,7 +279,6 @@ void PluginVmInstallerView::OnDownloadProgressUpdated(
       GetDownloadProgressMessage(bytes_downloaded, content_length));
   download_progress_message_label_->NotifyAccessibilityEvent(
       ax::mojom::Event::kTextChanged, true);
-  UpdateOperationProgress(bytes_downloaded, content_length, elapsed_time);
 }
 
 void PluginVmInstallerView::OnDownloadCompleted() {
@@ -315,15 +287,6 @@ void PluginVmInstallerView::OnDownloadCompleted() {
 
   state_ = State::IMPORTING;
   OnStateUpdated();
-}
-
-void PluginVmInstallerView::OnImportProgressUpdated(
-    int percent_completed,
-    base::TimeDelta elapsed_time) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(state_, State::IMPORTING);
-
-  UpdateOperationProgress(percent_completed, 100.0, elapsed_time);
 }
 
 void PluginVmInstallerView::OnImported() {
@@ -586,11 +549,6 @@ void PluginVmInstallerView::OnStateUpdated() {
       state_ == State::DOWNLOADING_DLC || state_ == State::CHECKING_VMS ||
       state_ == State::DOWNLOADING || state_ == State::IMPORTING;
   progress_bar_->SetVisible(progress_bar_visible);
-  // Values outside the range [0,1] display an infinite loading animation.
-  progress_bar_->SetValue(-1);
-
-  // This will be shown once we receive download/import progress messages.
-  time_left_message_label_->SetVisible(false);
 
   const bool download_progress_message_label_visible =
       state_ == State::DOWNLOADING;
@@ -612,11 +570,8 @@ base::string16 PluginVmInstallerView::GetDownloadProgressMessage(
     int64_t content_length) const {
   DCHECK_EQ(state_, State::DOWNLOADING);
 
-  base::Optional<double> fraction_complete =
-      GetFractionComplete(bytes_downloaded, content_length);
-
   // If download size isn't known |fraction_complete| should be empty.
-  if (fraction_complete.has_value()) {
+  if (content_length > 0) {
     return l10n_util::GetStringFUTF16(
         IDS_PLUGIN_VM_INSTALLER_DOWNLOAD_PROGRESS_MESSAGE,
         ui::FormatBytesWithUnits(bytes_downloaded, ui::DATA_UNITS_GIBIBYTE,
@@ -629,37 +584,6 @@ base::string16 PluginVmInstallerView::GetDownloadProgressMessage(
         ui::FormatBytesWithUnits(bytes_downloaded, ui::DATA_UNITS_GIBIBYTE,
                                  /*show_units=*/true));
   }
-}
-
-void PluginVmInstallerView::UpdateOperationProgress(
-    double units_processed,
-    double total_units,
-    base::TimeDelta elapsed_time) const {
-  DCHECK(state_ == State::DOWNLOADING_DLC || state_ == State::CHECKING_VMS ||
-         state_ == State::DOWNLOADING || state_ == State::IMPORTING);
-
-  base::Optional<double> maybe_fraction_complete =
-      GetFractionComplete(units_processed, total_units);
-
-  if (!maybe_fraction_complete || units_processed == 0 ||
-      elapsed_time.is_zero()) {
-    progress_bar_->SetValue(-1);
-    time_left_message_label_->SetVisible(false);
-    return;
-  }
-
-  const double fraction_complete = *maybe_fraction_complete;
-  const double fraction_remaining = 1 - fraction_complete;
-
-  progress_bar_->SetValue(fraction_complete);
-  time_left_message_label_->SetVisible(true);
-  base::TimeDelta remaining =
-      fraction_remaining / fraction_complete * elapsed_time;
-  time_left_message_label_->SetText(
-      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
-                             ui::TimeFormat::LENGTH_SHORT, remaining));
-  time_left_message_label_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kTextChanged, true);
 }
 
 void PluginVmInstallerView::SetBigMessageLabel() {
@@ -694,6 +618,7 @@ void PluginVmInstallerView::StartInstallation() {
   setup_start_tick_ = base::TimeTicks::Now();
 
   state_ = State::CHECKING_DISK_SPACE;
+  progress_bar_->SetValue(0);
   OnStateUpdated();
 
   plugin_vm_installer_->SetObserver(this);

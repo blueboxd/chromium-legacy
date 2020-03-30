@@ -2,6 +2,7 @@ include_rules = [
   "+components/content_settings/core",
   "+components/keyed_service/content",
   "+components/keyed_service/core",
+  "+components/resources/android",
   "+components/strings",
   "+components/sync_preferences",
   "+components/ukm/content",

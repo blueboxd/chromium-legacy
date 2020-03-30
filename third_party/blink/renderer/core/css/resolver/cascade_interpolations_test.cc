@@ -15,16 +15,32 @@ TEST(CascadeInterpolationsTest, Limit) {
                 "Unexpected max. If the limit increased, evaluate whether it "
                 "still makes sense to run this test");
 
-  using Entry = CascadeInterpolations::Entry;
+  ActiveInterpolationsMap map;
 
-  CascadeInterpolations at_max(Vector<Entry, 4>(max + 1));
-  CascadeInterpolations above_max(Vector<Entry, 4>(max + 2));
+  CascadeInterpolations interpolations;
+  for (size_t i = 0; i <= max; ++i)
+    interpolations.Add(&map, CascadeOrigin::kAuthor);
 
-  EXPECT_EQ(max + 1, at_max.GetEntries().size());
-  EXPECT_FALSE(at_max.IsEmpty());
+  // At maximum
+  EXPECT_FALSE(interpolations.IsEmpty());
 
-  EXPECT_FALSE(above_max.GetEntries().size());
-  EXPECT_TRUE(above_max.IsEmpty());
+  interpolations.Add(&map, CascadeOrigin::kAuthor);
+
+  // Maximum + 1
+  EXPECT_TRUE(interpolations.IsEmpty());
+}
+
+TEST(CascadeInterpolationsTest, Reset) {
+  ActiveInterpolationsMap map;
+
+  CascadeInterpolations interpolations;
+  EXPECT_TRUE(interpolations.IsEmpty());
+
+  interpolations.Add(&map, CascadeOrigin::kAuthor);
+  EXPECT_FALSE(interpolations.IsEmpty());
+
+  interpolations.Reset();
+  EXPECT_TRUE(interpolations.IsEmpty());
 }
 
 }  // namespace blink

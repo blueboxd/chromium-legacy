@@ -27,6 +27,21 @@ java_cpp_enum("cookie_controls_status_javagen") {
 
 android_resources("java_resources") {
   sources = [
+    "java/res/drawable-hdpi/pageinfo_bad.png",
+    "java/res/drawable-hdpi/pageinfo_good.png",
+    "java/res/drawable-hdpi/pageinfo_warning.png",
+    "java/res/drawable-mdpi/pageinfo_bad.png",
+    "java/res/drawable-mdpi/pageinfo_good.png",
+    "java/res/drawable-mdpi/pageinfo_warning.png",
+    "java/res/drawable-xhdpi/pageinfo_bad.png",
+    "java/res/drawable-xhdpi/pageinfo_good.png",
+    "java/res/drawable-xhdpi/pageinfo_warning.png",
+    "java/res/drawable-xxhdpi/pageinfo_bad.png",
+    "java/res/drawable-xxhdpi/pageinfo_good.png",
+    "java/res/drawable-xxhdpi/pageinfo_warning.png",
+    "java/res/drawable-xxxhdpi/pageinfo_bad.png",
+    "java/res/drawable-xxxhdpi/pageinfo_good.png",
+    "java/res/drawable-xxxhdpi/pageinfo_warning.png",
     "java/res/layout/cookie_controls_view.xml",
     "java/res/layout/page_info.xml",
     "java/res/layout/page_info_permission_row.xml",

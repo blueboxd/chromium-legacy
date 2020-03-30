@@ -27,7 +27,7 @@ MediaStreamAudioTrack::MediaStreamAudioTrack(bool is_local_track)
     : WebPlatformMediaStreamTrack(is_local_track), is_enabled_(1) {
   SendLogMessage(
       base::StringPrintf("MediaStreamAudioTrack([this=%p] {is_local_track=%s})",
-                         this, (is_local_track ? "local" : "remote")));
+                         this, (is_local_track ? "true" : "false")));
 }
 
 MediaStreamAudioTrack::~MediaStreamAudioTrack() {

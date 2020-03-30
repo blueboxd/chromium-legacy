@@ -43,9 +43,7 @@ class Longhand : public CSSProperty {
   }
 
  protected:
-  constexpr Longhand(CSSPropertyID id,
-                     uint16_t flags,
-                     char repetition_separator)
+  constexpr Longhand(CSSPropertyID id, Flags flags, char repetition_separator)
       : CSSProperty(id, flags | kLonghand, repetition_separator) {}
 };
 

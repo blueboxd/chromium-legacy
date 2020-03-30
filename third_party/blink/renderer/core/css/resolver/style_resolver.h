@@ -273,13 +273,11 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void CascadeAndApplyForcedColors(StyleResolverState&, const MatchResult&);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
-                                        StyleCascade& cascade,
-                                        const MatchResult&);
+                                        StyleCascade& cascade);
 
   void CalculateAnimationUpdate(StyleResolverState&);
 
   bool ApplyAnimatedStandardProperties(StyleResolverState&,
-                                       const MatchResult&,
                                        StyleCascade* cascade = nullptr);
 
   void ApplyCallbackSelectors(StyleResolverState&);

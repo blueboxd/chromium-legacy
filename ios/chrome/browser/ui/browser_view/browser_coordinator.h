@@ -8,8 +8,6 @@
 #include "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@protocol ApplicationCommands;
-@protocol BrowsingDataCommands;
 @class BrowserViewController;
 
 class AppUrlLoadingService;
@@ -26,11 +24,6 @@ class AppUrlLoadingService;
 
 // The main view controller.
 @property(nonatomic, strong, readonly) BrowserViewController* viewController;
-
-// Command handler for ApplicationCommands.
-@property(nonatomic, weak) id<ApplicationCommands> applicationCommandHandler;
-// Command handler for BrowsingDataCommands.
-@property(nonatomic, weak) id<BrowsingDataCommands> browsingDataCommandHandler;
 
 // The application level component for url loading. Should be used only by
 // browser state level UrlLoadingService instances.

@@ -7,6 +7,10 @@ import("//components/safe_browsing/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 about_credits_file = "$target_gen_dir/about_credits.html"
 
 group("resources") {
@@ -99,4 +103,14 @@ action("about_credits") {
     "credits",
     rebase_path(about_credits_file, root_build_dir),
   ]
+}
+
+if (is_android) {
+  source_set("android_resources") {
+    sources = [
+      "android/page_info_resource_id.h",
+      "android/permissions_resource_id.h",
+      "android/theme_resources.h",
+    ]
+  }
 }

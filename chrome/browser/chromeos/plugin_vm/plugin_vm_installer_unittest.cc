@@ -49,7 +49,9 @@ namespace {
 
 using ::base::test::RunClosure;
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
+using ::testing::DoubleEq;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
@@ -80,18 +82,13 @@ constexpr char kFailureReasonHistogram[] = "PluginVm.SetupFailureReason";
 
 class MockObserver : public PluginVmInstaller::Observer {
  public:
+  MOCK_METHOD1(OnProgressUpdated, void(double));
   MOCK_METHOD1(OnCheckedDiskSpace, void(bool));
   MOCK_METHOD1(OnExistingVmCheckCompleted, void(bool));
-  MOCK_METHOD2(OnDlcDownloadProgressUpdated,
-               void(double progress, base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnDlcDownloadCompleted, void());
-  MOCK_METHOD3(OnDownloadProgressUpdated,
-               void(uint64_t bytes_downloaded,
-                    int64_t content_length,
-                    base::TimeDelta elapsed_time));
+  MOCK_METHOD2(OnDownloadProgressUpdated,
+               void(uint64_t bytes_downloaded, int64_t content_length));
   MOCK_METHOD0(OnDownloadCompleted, void());
-  MOCK_METHOD2(OnImportProgressUpdated,
-               void(int percent_completed, base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnCreated, void());
   MOCK_METHOD0(OnImported, void());
   MOCK_METHOD1(OnError, void(FailureReason));
@@ -173,6 +170,7 @@ class PluginVmInstallerTestBase : public testing::Test {
     installer_->SetObserver(observer_.get());
     installer_->SetFreeDiskSpaceForTesting(std::numeric_limits<int64_t>::max());
 
+    SetDefaultExpectations();
     // These actions are required to make the RunUntil* functions work, so tests
     // probably shouldn't override them.
     ON_CALL(*observer_, OnExistingVmCheckCompleted(false))
@@ -213,6 +211,11 @@ class PluginVmInstallerTestBase : public testing::Test {
         profile_->GetPath().AppendASCII(kPluginVmImageFile);
     base::WriteFile(zip_file_path, kContent, strlen(kContent));
     return zip_file_path;
+  }
+
+  void VerifyExpectations() {
+    Mock::VerifyAndClearExpectations(observer_.get());
+    SetDefaultExpectations();
   }
 
   // Helper functions for starting and progressing the installer.
@@ -280,6 +283,11 @@ class PluginVmInstallerTestBase : public testing::Test {
         fake_downloaded_plugin_vm_image_archive_);
     if (download_completed_closure_)
       std::move(download_completed_closure_).Run();
+  }
+
+  void SetDefaultExpectations() {
+    // Suppress progress updates.
+    EXPECT_CALL(*observer_, OnProgressUpdated(_)).Times(AnyNumber());
   }
 
   base::ScopedTempDir profiles_dir_;
@@ -386,6 +394,24 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
   DISALLOW_COPY_AND_ASSIGN(PluginVmInstallerDriveTest);
 };
 
+TEST_F(PluginVmInstallerDownloadServiceTest, ProgressUpdates) {
+  SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
+
+  // Override default expectation so unexpected calls will fail the test.
+  EXPECT_CALL(*observer_, OnProgressUpdated(_)).Times(0);
+
+  EXPECT_CALL(*observer_, OnProgressUpdated(DoubleEq(0.01)));
+  EXPECT_CALL(*observer_, OnProgressUpdated(DoubleEq(0.45)));
+  EXPECT_CALL(*observer_, OnProgressUpdated(DoubleEq(0.725)));
+
+  EXPECT_CALL(*observer_, OnCheckedDiskSpace(false));
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
+  EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnImported());
+  StartAndRunToCompletion();
+}
+
 TEST_F(PluginVmInstallerDownloadServiceTest, InsufficientDisk) {
   installer_->SetFreeDiskSpaceForTesting(
       PluginVmInstaller::kMinimumFreeDiskSpace - 1);
@@ -402,7 +428,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest, LowDiskCancel) {
 
   EXPECT_CALL(*observer_, OnCheckedDiskSpace(/*low_disk_space=*/true));
   StartAndRunToCompletion();
-  Mock::VerifyAndClearExpectations(observer_.get());
+  VerifyExpectations();
 
   EXPECT_CALL(*observer_, OnCancelFinished());
   installer_->Cancel();
@@ -416,12 +442,11 @@ TEST_F(PluginVmInstallerDownloadServiceTest, LowDiskContinue) {
 
   EXPECT_CALL(*observer_, OnCheckedDiskSpace(/*low_disk_space=*/true));
   StartAndRunToCompletion();
-  Mock::VerifyAndClearExpectations(observer_.get());
+  VerifyExpectations();
 
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
   EXPECT_CALL(*observer_, OnDownloadCompleted());
-  EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
   installer_->Continue();
   task_environment_.RunUntilIdle();
@@ -461,7 +486,6 @@ TEST_F(PluginVmInstallerDownloadServiceTest, DownloadPluginVmImageParamsTest) {
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
   EXPECT_CALL(*observer_, OnDownloadCompleted());
-  EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
   StartAndRunUntilDownloading();
@@ -485,7 +509,6 @@ TEST_F(PluginVmInstallerDownloadServiceTest, OnlyOneImageIsProcessedTest) {
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
   EXPECT_CALL(*observer_, OnDownloadCompleted());
-  EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
   StartAndRunUntilDownloading();
@@ -512,7 +535,6 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(2);
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false)).Times(2);
   EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(2);
-  EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _)).Times(2);
   EXPECT_CALL(*observer_, OnImported()).Times(2);
 
   StartAndRunToCompletion();
@@ -536,7 +558,6 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(2);
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false)).Times(2);
   EXPECT_CALL(*observer_, OnDownloadCompleted());
-  EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
   StartAndRunUntilDownloading();
@@ -653,7 +674,7 @@ TEST_F(PluginVmInstallerDriveTest, WrongHashDriveTest) {
   EXPECT_CALL(*observer_, OnCheckedDiskSpace(false));
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
-  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(_, _, _)).Times(2);
+  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(_, _)).Times(2);
   EXPECT_CALL(*observer_, OnError(FailureReason::HASH_MISMATCH));
 
   StartAndRunToCompletion();
@@ -666,8 +687,8 @@ TEST_F(PluginVmInstallerDriveTest, DriveDownloadFailedAfterStartingTest) {
   EXPECT_CALL(*observer_, OnCheckedDiskSpace(false));
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
-  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(5, 100, _));
-  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(10, 100, _));
+  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(5, 100));
+  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(10, 100));
   EXPECT_CALL(*observer_, OnError(FailureReason::DOWNLOAD_FAILED_NETWORK));
 
   StartAndRunToCompletion();
@@ -689,7 +710,7 @@ TEST_F(PluginVmInstallerDriveTest, CancelledDriveDownloadTest) {
   EXPECT_CALL(*observer_, OnCheckedDiskSpace(false));
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
-  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(5, 100, _));
+  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(5, 100));
   EXPECT_CALL(*observer_, OnCancelFinished());
 
   StartAndRunToCompletion();
@@ -710,8 +731,7 @@ TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnExistingVmCheckCompleted(false));
   EXPECT_CALL(*observer_, OnDownloadCompleted());
-  EXPECT_CALL(*observer_,
-              OnDownloadProgressUpdated(_, std::strlen(kContent), _))
+  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(_, std::strlen(kContent)))
       .Times(AtLeast(1));
   EXPECT_CALL(*observer_, OnError(_));
 

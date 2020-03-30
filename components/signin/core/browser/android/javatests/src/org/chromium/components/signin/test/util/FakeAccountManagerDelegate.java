@@ -19,8 +19,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerDelegate;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.AuthException;
 import org.chromium.components.signin.ProfileDataSource;
@@ -287,8 +287,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public AuthenticatorDescription[] getAuthenticatorTypes() {
-        AuthenticatorDescription googleAuthenticator = new AuthenticatorDescription(
-                AccountManagerFacade.GOOGLE_ACCOUNT_TYPE, "p1", 0, 0, 0, 0);
+        AuthenticatorDescription googleAuthenticator =
+                new AuthenticatorDescription(AccountUtils.GOOGLE_ACCOUNT_TYPE, "p1", 0, 0, 0, 0);
 
         return new AuthenticatorDescription[] {googleAuthenticator};
     }

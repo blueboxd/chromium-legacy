@@ -30,7 +30,7 @@ std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(
     bool use_swiftshader,
     bool allow_protected_memory,
     bool enforce_protected_memory) {
-#if !defined(USE_X11)
+#if !defined(USE_X11) && !defined(OS_WIN)
   // TODO(samans): Support Swiftshader on more platforms.
   // https://crbug.com/963988
   DCHECK(!use_swiftshader)
@@ -50,7 +50,7 @@ std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(
       ->CreateVulkanImplementation(allow_protected_memory,
                                    enforce_protected_memory);
 #elif defined(OS_WIN)
-  return std::make_unique<VulkanImplementationWin32>();
+  return std::make_unique<VulkanImplementationWin32>(use_swiftshader);
 #else
 #error Unsupported Vulkan Platform.
 #endif

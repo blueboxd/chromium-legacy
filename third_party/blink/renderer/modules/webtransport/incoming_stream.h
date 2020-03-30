@@ -153,6 +153,14 @@ class MODULES_EXPORT IncomingStream
   // True when |data_pipe_| has been detected to be closed. The close is not
   // processed until |fin_received_| is also set.
   bool is_pipe_closed_ = false;
+
+  // Indicates if we are currently performing a two-phase read from the pipe and
+  // so can't start another read.
+  bool in_two_phase_read_ = false;
+
+  // Indicates if we need to perform another read after the current one
+  // completes.
+  bool read_pending_ = false;
 };
 
 }  // namespace blink

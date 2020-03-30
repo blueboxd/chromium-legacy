@@ -13,9 +13,11 @@ namespace blink {
 
 RTCEncodedVideoFrame::RTCEncodedVideoFrame(
     std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate,
-    Vector<uint8_t> additional_data)
+    Vector<uint8_t> additional_data,
+    uint32_t ssrc)
     : delegate_(std::move(delegate)),
-      additional_data_vector_(std::move(additional_data)) {}
+      additional_data_vector_(std::move(additional_data)),
+      ssrc_(ssrc) {}
 
 String RTCEncodedVideoFrame::type() const {
   if (!delegate_)
@@ -42,6 +44,10 @@ DOMArrayBuffer* RTCEncodedVideoFrame::additionalData() const {
                                               additional_data_vector_.size());
   }
   return additional_data_;
+}
+
+uint32_t RTCEncodedVideoFrame::synchronizationSource() const {
+  return ssrc_;
 }
 
 void RTCEncodedVideoFrame::setData(DOMArrayBuffer* data) {

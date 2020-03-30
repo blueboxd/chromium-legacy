@@ -33,21 +33,16 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
+  void OnProgressUpdated(double fraction_complete) override;
   void OnCheckedDiskSpace(bool low_disk_space) override;
-  void OnDlcDownloadProgressUpdated(double progress,
-                                    base::TimeDelta elapsed_time) override;
   void OnDlcDownloadCompleted() override;
   void OnExistingVmCheckCompleted(bool has_vm) override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
-                                 int64_t content_length,
-                                 base::TimeDelta elapsed_time) override;
+                                 int64_t content_length) override;
   void OnDownloadCompleted() override;
-  void OnImportProgressUpdated(int percent_completed,
-                               base::TimeDelta elapsed_time) override;
   void OnCreated() override;
   void OnImported() override;
   void OnError(plugin_vm::PluginVmInstaller::FailureReason reason) override;
-
   void OnCancelFinished() override;
 
   // Public for testing purposes.
@@ -83,10 +78,6 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
 
   base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
                                             int64_t content_length) const;
-  // Updates the progress bar and shows a time left message if available.
-  void UpdateOperationProgress(double units_processed,
-                               double total_units,
-                               base::TimeDelta elapsed_time) const;
   void SetBigMessageLabel();
   void SetMessageLabel();
   void SetBigImage();
@@ -99,7 +90,6 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
   views::Label* download_progress_message_label_ = nullptr;
-  views::Label* time_left_message_label_ = nullptr;
   views::ImageView* big_image_ = nullptr;
   base::TimeTicks setup_start_tick_;
 

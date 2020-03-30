@@ -292,8 +292,9 @@ PasswordManagerProxy.PasswordCheckInteraction = {
   CHANGE_PASSWORD: 3,
   EDIT_PASSWORD: 4,
   REMOVE_PASSWORD: 5,
+  SHOW_PASSWORD: 6,
   // Must be last.
-  COUNT: 6,
+  COUNT: 7,
 };
 
 /**

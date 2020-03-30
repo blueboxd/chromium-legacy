@@ -40,7 +40,7 @@ public final class ChildAccountInfoFetcher {
             long nativeAccountFetcherService, String accountId, String accountName) {
         mNativeAccountFetcherService = nativeAccountFetcherService;
         mAccountId = accountId;
-        mAccount = AccountManagerFacade.createAccountFromName(accountName);
+        mAccount = AccountUtils.createAccountFromName(accountName);
 
         // Register for notifications about flag changes in the future.
         mAccountFlagsChangedReceiver = new BroadcastReceiver() {

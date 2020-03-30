@@ -1577,19 +1577,26 @@ def CreateSectionSizesAndSymbols(map_path=None,
   return section_sizes, raw_symbols
 
 
-def CreateSizeInfo(section_sizes,
-                   raw_symbols,
-                   metadata=None,
+def CreateSizeInfo(section_sizes_list,
+                   raw_symbols_list,
+                   metadata_list,
                    normalize_names=True):
   """Performs operations on all symbols and creates a SizeInfo object."""
-  file_format.SortSymbols(raw_symbols)
-  file_format.CalculatePadding(raw_symbols)
+  for raw_symbols in raw_symbols_list:
+    file_format.SortSymbols(raw_symbols)
+    file_format.CalculatePadding(raw_symbols)
 
-  # Do not call _NormalizeNames() during archive since that method tends to need
-  # tweaks over time. Calling it only when loading .size files allows for more
-  # flexibility.
-  if normalize_names:
-    _NormalizeNames(raw_symbols)
+    # Do not call _NormalizeNames() during archive since that method tends to
+    # need tweaks over time. Calling it only when loading .size files allows for
+    # more flexibility.
+    if normalize_names:
+      _NormalizeNames(raw_symbols)
+
+  # TODO(huangs): Implement data fusing to compute the following for real.
+  assert len(section_sizes_list) == 1
+  section_sizes = section_sizes_list[0]
+  raw_symbols = raw_symbols_list[0]
+  metadata = metadata_list[0]
 
   return models.SizeInfo(section_sizes, raw_symbols, metadata=metadata)
 
@@ -1813,20 +1820,15 @@ def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
   return elf_path, map_path, apk_so_path
 
 
-def _DeduceMainPaths(args, knobs, on_config_error):
-  """Computes main paths based on input, and deduces them if needed."""
-  aab_or_apk = args.apk_file or args.minimal_apks_file
+def _DeduceAuxPaths(args, apk_prefix):
   mapping_path = args.mapping_file
   resources_pathmap_path = args.resources_pathmap_file
-  if aab_or_apk:
-    # Allow either .minimal.apks or just .apks.
-    aab_or_apk = aab_or_apk.replace('.minimal.apks', '.aab')
-    aab_or_apk = aab_or_apk.replace('.apks', '.aab')
+  if apk_prefix:
     if not mapping_path:
-      mapping_path = aab_or_apk + '.mapping'
+      mapping_path = apk_prefix + '.mapping'
       logging.debug('Detected --mapping-file=%s', mapping_path)
     if not resources_pathmap_path:
-      possible_pathmap_path = aab_or_apk + '.pathmap.txt'
+      possible_pathmap_path = apk_prefix + '.pathmap.txt'
       # This could be pointing to a stale pathmap file if path shortening was
       # previously enabled but is disabled for the current build. However, since
       # current apk/aab will have unshortened paths, looking those paths up in
@@ -1836,90 +1838,76 @@ def _DeduceMainPaths(args, knobs, on_config_error):
         resources_pathmap_path = possible_pathmap_path
         logging.debug('Detected --resources-pathmap-file=%s',
                       resources_pathmap_path)
+  return mapping_path, resources_pathmap_path
+
+
+def _DeduceMainPaths(args, knobs, on_config_error):
+  """Generates main paths (may be deduced) for each containers given by input.
+
+  Yields:
+    For each container, main paths and other info needed to create size_info.
+  """
 
   output_directory_finder = path_util.OutputDirectoryFinder(
       value=args.output_directory,
       any_path_within_output_directory=args.any_path_within_output_directory)
 
-  apk_path = args.extracted_minimal_apk_path or args.apk_file
-  linker_name = None
-  tool_prefix = None
-  if knobs.analyze_native:
-    elf_path, map_path, apk_so_path = _DeduceNativeInfo(
-        output_directory_finder.Tentative(), apk_path, args.elf_file,
-        args.map_file, on_config_error)
-    if map_path:
-      linker_name = _DetectLinkerName(map_path)
-      logging.info('Linker name: %s' % linker_name)
+  def _Inner(apk_prefix, apk_path):
+    """Inner helper for _DeduceMainPaths(), for one container.
 
-      tool_prefix_finder = path_util.ToolPrefixFinder(
-          value=args.tool_prefix,
-          output_directory_finder=output_directory_finder,
-          linker_name=linker_name)
-      tool_prefix = tool_prefix_finder.Finalized()
+    Params:
+      apk_prefix: Prefix used to search for auxiliary .apk related files.
+      apk_path: Path to .apk file that can be opened for processing, but whose
+        filename is unimportant (e.g., can be a temp file).
+    """
+    if apk_prefix:
+      # Allow either .minimal.apks or just .apks.
+      apk_prefix = apk_prefix.replace('.minimal.apks', '.aab')
+      apk_prefix = apk_prefix.replace('.apks', '.aab')
+
+    mapping_path, resources_pathmap_path = _DeduceAuxPaths(args, apk_prefix)
+    linker_name = None
+    tool_prefix = None
+    if knobs.analyze_native:
+      elf_path, map_path, apk_so_path = _DeduceNativeInfo(
+          output_directory_finder.Tentative(), apk_path, args.elf_file,
+          args.map_file, on_config_error)
+      if map_path:
+        linker_name = _DetectLinkerName(map_path)
+        logging.info('Linker name: %s' % linker_name)
+
+        tool_prefix_finder = path_util.ToolPrefixFinder(
+            value=args.tool_prefix,
+            output_directory_finder=output_directory_finder,
+            linker_name=linker_name)
+        tool_prefix = tool_prefix_finder.Finalized()
+    else:
+      # Trust that these values will not be used, and set to None.
+      elf_path = None
+      map_path = None
+      apk_so_path = None
+
+    # TODO(huangs): See if this can be pulled out of _Inner().
+    output_directory = None
+    if not args.no_source_paths:
+      output_directory = output_directory_finder.Finalized()
+
+    size_info_prefix = None
+    if output_directory and apk_prefix:
+      size_info_prefix = os.path.join(output_directory, 'size-info',
+                                      os.path.basename(apk_prefix))
+
+    return (output_directory, tool_prefix, apk_path, mapping_path, apk_so_path,
+            elf_path, map_path, resources_pathmap_path, linker_name,
+            size_info_prefix)
+
+  # Process each container.
+  # If needed, extract .apk file to a temp file and process that instead.
+  if args.minimal_apks_file:
+    with zip_util.UnzipToTemp(args.minimal_apks_file, _APKS_MAIN_APK) as temp:
+      yield _Inner(args.minimal_apks_file, temp)
   else:
-    # Trust that these values will not be used, and set to None.
-    elf_path = None
-    map_path = None
-    apk_so_path = None
-
-  output_directory = None
-  if not args.no_source_paths:
-    output_directory = output_directory_finder.Finalized()
-
-  size_info_prefix = None
-  if output_directory and aab_or_apk:
-    size_info_prefix = os.path.join(
-        output_directory, 'size-info', os.path.basename(aab_or_apk))
-
-  return (output_directory, tool_prefix, apk_path, mapping_path, apk_so_path,
-          elf_path, map_path, resources_pathmap_path, linker_name,
-          size_info_prefix)
-
-
-def _RunInternal(args, on_config_error):
-  knobs = SectionSizeKnobs(args.is_bundle)
-  knobs.ModifyWithArgs(args)
-
-  (output_directory, tool_prefix, apk_path, mapping_path, apk_so_path, elf_path,
-   map_path, resources_pathmap_path, linker_name,
-   size_info_prefix) = _DeduceMainPaths(args, knobs, on_config_error)
-
-  # Note that |args.apk_file| is used instead of |apk_path|, since the latter
-  # may be an extracted temporary file.
-  metadata = CreateMetadata(map_path, elf_path, args.apk_file,
-                            args.minimal_apks_file, tool_prefix,
-                            output_directory, linker_name)
-  section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
-      map_path=map_path,
-      tool_prefix=tool_prefix,
-      elf_path=elf_path,
-      apk_path=apk_path,
-      mapping_path=mapping_path,
-      output_directory=output_directory,
-      resources_pathmap_path=resources_pathmap_path,
-      track_string_literals=args.track_string_literals,
-      metadata=metadata,
-      apk_so_path=apk_so_path,
-      pak_files=args.pak_file,
-      pak_info_file=args.pak_info_file,
-      linker_name=linker_name,
-      size_info_prefix=size_info_prefix,
-      knobs=knobs)
-  size_info = CreateSizeInfo(
-      section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
-
-  if logging.getLogger().isEnabledFor(logging.DEBUG):
-    for line in describe.DescribeSizeInfoCoverage(size_info):
-      logging.debug(line)
-  logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
-  logging.info('Recording metadata: \n  %s',
-               '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
-  logging.info('Saving result to %s', args.size_file)
-  file_format.SaveSizeInfo(
-      size_info, args.size_file, include_padding=args.include_padding)
-  size_in_mb = os.path.getsize(args.size_file) / 1024.0 / 1024.0
-  logging.info('Done. File size is %.2fMiB.', size_in_mb)
+    yield _Inner(args.apk_file, args.apk_file)
 
 
 def Run(args, on_config_error):
@@ -1941,11 +1929,58 @@ def Run(args, on_config_error):
         'Must pass at least one of --apk-file, --minimal-apks-file, '
         '--elf-file, --map-file')
   setattr(args, 'any_path_within_output_directory', any_path)
-  setattr(args, 'extracted_minimal_apk_path', None)
 
-  if args.minimal_apks_file:
-    with zip_util.UnzipToTemp(args.minimal_apks_file, _APKS_MAIN_APK) as temp:
-      args.extracted_minimal_apk_path = temp
-      _RunInternal(args, on_config_error)
-  else:
-    _RunInternal(args, on_config_error)
+  knobs = SectionSizeKnobs(args.is_bundle)
+  knobs.ModifyWithArgs(args)
+
+  metadata_list = []
+  section_sizes_list = []
+  raw_symbols_list = []
+  # Generate one size info for each container.
+  for (output_directory, tool_prefix, apk_path, mapping_path, apk_so_path,
+       elf_path, map_path, resources_pathmap_path, linker_name,
+       size_info_prefix) in _DeduceMainPaths(args, knobs, on_config_error):
+    # Note that |args.apk_file| is used instead of |apk_path|, since the latter
+    # may be an extracted temporary file.
+    metadata = CreateMetadata(map_path, elf_path, args.apk_file,
+                              args.minimal_apks_file, tool_prefix,
+                              output_directory, linker_name)
+    section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
+        map_path=map_path,
+        tool_prefix=tool_prefix,
+        elf_path=elf_path,
+        apk_path=apk_path,
+        mapping_path=mapping_path,
+        output_directory=output_directory,
+        resources_pathmap_path=resources_pathmap_path,
+        track_string_literals=args.track_string_literals,
+        metadata=metadata,
+        apk_so_path=apk_so_path,
+        pak_files=args.pak_file,
+        pak_info_file=args.pak_info_file,
+        linker_name=linker_name,
+        size_info_prefix=size_info_prefix,
+        knobs=knobs)
+
+    metadata_list.append(metadata)
+    section_sizes_list.append(section_sizes)
+    raw_symbols_list.append(raw_symbols)
+
+  size_info = CreateSizeInfo(
+      section_sizes_list,
+      raw_symbols_list,
+      metadata_list,
+      normalize_names=False)
+
+  if logging.getLogger().isEnabledFor(logging.DEBUG):
+    for line in describe.DescribeSizeInfoCoverage(size_info):
+      logging.debug(line)
+  logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
+  logging.info('Recording metadata: \n  %s', '\n  '.join(
+      describe.DescribeMetadata(size_info.metadata)))
+
+  logging.info('Saving result to %s', args.size_file)
+  file_format.SaveSizeInfo(
+      size_info, args.size_file, include_padding=args.include_padding)
+  size_in_mb = os.path.getsize(args.size_file) / 1024.0 / 1024.0
+  logging.info('Done. File size is %.2fMiB.', size_in_mb)

@@ -447,6 +447,8 @@ Still reading?
     <ignore regexp="chrome/android/java/res/values/styles.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/layout/tab_switcher_action_menu_layout.xml"/>
+    <!--TODO(crbug.com/1052375): Remove this suppression once ConnectionInfoPopAndroid moves to components.-->
+    <ignore regexp="components/page_info/android/java/res/drawable-hdpi/pageinfo_*"/>
   </issue>
   <issue id="UseCompoundDrawables">
     <!-- Upscaling 24dp to 48dp doesn't work as expected with a TextView compound drawable. -->

@@ -22,6 +22,9 @@
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -170,6 +173,7 @@
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(_mainBrowser->GetBrowserState());
   browserList->AddBrowser(_mainBrowser.get());
+  [self dispatchToEndpointsForBrowser:_mainBrowser.get()];
   [self restoreSessionToBrowser:_mainBrowser.get()];
   [self addObserversToWebStateList:_mainBrowser->GetWebStateList()];
 
@@ -381,6 +385,7 @@
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(browser->GetBrowserState());
   browserList->AddIncognitoBrowser(browser.get());
+  [self dispatchToEndpointsForBrowser:browser.get()];
   if (restorePersistedState)
     [self restoreSessionToBrowser:browser.get()];
 
@@ -393,10 +398,27 @@
   BrowserCoordinator* coordinator =
       [[BrowserCoordinator alloc] initWithBaseViewController:nil
                                                      browser:browser];
-  coordinator.applicationCommandHandler = _applicationCommandEndpoint;
-  coordinator.browsingDataCommandHandler = _browsingDataCommandEndpoint;
   coordinator.appURLLoadingService = _appURLLoadingService;
   return coordinator;
+}
+
+- (void)dispatchToEndpointsForBrowser:(Browser*)browser {
+  [browser->GetCommandDispatcher()
+      startDispatchingToTarget:_applicationCommandEndpoint
+                   forProtocol:@protocol(ApplicationCommands)];
+  // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
+  // passed protocol conforms to, so ApplicationSettingsCommands is explicitly
+  // dispatched to the endpoint as well. Since this is potentially
+  // fragile, DCHECK that it should still work (if the endpoint is non-nil).
+  DCHECK(!_applicationCommandEndpoint ||
+         [_applicationCommandEndpoint
+             conformsToProtocol:@protocol(ApplicationSettingsCommands)]);
+  [browser->GetCommandDispatcher()
+      startDispatchingToTarget:_applicationCommandEndpoint
+                   forProtocol:@protocol(ApplicationSettingsCommands)];
+  [browser->GetCommandDispatcher()
+      startDispatchingToTarget:_browsingDataCommandEndpoint
+                   forProtocol:@protocol(BrowsingDataCommands)];
 }
 
 - (void)restoreSessionToBrowser:(Browser*)browser {

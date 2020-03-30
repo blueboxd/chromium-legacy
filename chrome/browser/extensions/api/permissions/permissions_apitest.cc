@@ -69,6 +69,12 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, ExperimentalPermissionsFail) {
       << message_;
 }
 
+// TODO(crbug/1065399): Flaky on ChromeOS and Linux non-dbg builds.
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(NDEBUG)
+#define MAYBE_FaviconPermission DISABLED_FaviconPermission
+#else
+#define MAYBE_FaviconPermission MAYBE_FaviconPermission
+#endif
 IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FaviconPermission) {
   base::HistogramTester tester;
   ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;

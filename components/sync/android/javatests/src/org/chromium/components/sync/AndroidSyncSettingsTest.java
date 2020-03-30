@@ -20,8 +20,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -146,7 +146,7 @@ public class AndroidSyncSettingsTest {
     }
 
     private Account addTestAccount(String name) {
-        Account account = AccountManagerFacade.createAccountFromName(name);
+        Account account = AccountUtils.createAccountFromName(name);
         AccountHolder holder = AccountHolder.builder(account).alwaysAccept(true).build();
         mAccountManager.addAccountHolderBlocking(holder);
         return account;

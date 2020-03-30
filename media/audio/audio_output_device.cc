@@ -68,7 +68,7 @@ void AudioOutputDevice::InitializeOnIOThread(const AudioParameters& params,
 AudioOutputDevice::~AudioOutputDevice() {
   {
     // Abort any pending callbacks. Technically we don't need to acquire the
-    // lock here since ther eshould be no other calls outstanding, but because
+    // lock here since there should be no other calls outstanding, but because
     // we've used the GUARDED_BY compiler syntax, we'll get an error without it.
     base::AutoLock auto_lock(device_info_lock_);
     if (pending_device_info_cb_) {

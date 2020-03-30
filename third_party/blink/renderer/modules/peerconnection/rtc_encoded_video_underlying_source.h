@@ -29,7 +29,8 @@ class MODULES_EXPORT RTCEncodedVideoUnderlyingSource
   ScriptPromise Cancel(ScriptState*, ScriptValue reason) override;
 
   void OnFrameFromSource(std::unique_ptr<webrtc::video_coding::EncodedFrame>,
-                         std::vector<uint8_t> additional_data);
+                         std::vector<uint8_t> additional_data,
+                         uint32_t ssrc);
   void Close();
 
   void Trace(Visitor*) override;

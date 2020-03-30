@@ -219,6 +219,20 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     /**
+     * Evaluates whether the passed Intent and/or CustomTabsSessionToken are
+     * from a trusted source. Trusted in this case means from the app itself or
+     * via a first-party application.
+     *
+     * @param intent The Intent used to start the custom tabs activity, or null.
+     * @param session The connected session for the custom tabs activity, or null.
+     * @return True if the intent or session are trusted.
+     */
+    public static boolean isTrustedCustomTab(Intent intent, CustomTabsSessionToken session) {
+        return IntentHandler.wasIntentSenderChrome(intent)
+                || CustomTabsConnection.getInstance().isSessionFirstParty(session);
+    }
+
+    /**
      * Constructs a {@link CustomTabIntentDataProvider}.
      *
      * The colorScheme parameter specifies which color scheme the Custom Tab should use.
@@ -233,7 +247,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         mIntent = intent;
 
         mSession = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        mIsTrustedIntent = IntentHandler.notSecureIsIntentChromeOrFirstParty(intent);
+        mIsTrustedIntent = isTrustedCustomTab(intent, mSession);
 
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
                 intent, CustomTabsIntent.EXTRA_EXIT_ANIMATION_BUNDLE);

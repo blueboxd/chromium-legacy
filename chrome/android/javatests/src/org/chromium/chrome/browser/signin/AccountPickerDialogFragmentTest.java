@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
@@ -135,7 +135,7 @@ import java.io.IOException;
     }
 
     private void addAccount(String accountName, String fullName) {
-        Account account = AccountManagerFacade.createAccountFromName(accountName);
+        Account account = AccountUtils.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder = AccountHolder.builder(account).alwaysAccept(true);
         ProfileDataSource.ProfileData profileData =
                 new ProfileDataSource.ProfileData(accountName, null, fullName, null);

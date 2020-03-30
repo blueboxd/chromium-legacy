@@ -32,6 +32,10 @@ class PackagedLicenseScreen : public BaseScreen {
   PackagedLicenseScreen& operator=(const PackagedLicenseScreen&) = delete;
   ~PackagedLicenseScreen() override;
 
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
  protected:
   // BaseScreen
   void ShowImpl() override;

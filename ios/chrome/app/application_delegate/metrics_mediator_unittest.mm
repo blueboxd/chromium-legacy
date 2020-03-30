@@ -10,16 +10,20 @@
 #include "components/metrics/metrics_service.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
-#import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
-#import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/test/fake_scene_state.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #import "ios/testing/scoped_block_swizzler.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/web_task_environment.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/platform_test.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
@@ -124,22 +128,9 @@ typedef void (^logLaunchMetricsBlock)(id, const char*, int);
 
 class MetricsMediatorLogLaunchTest : public PlatformTest {
  protected:
-  MetricsMediatorLogLaunchTest()
-      : has_been_called_(FALSE),
-        web_state_list_(
-            std::make_unique<WebStateList>(&web_state_list_delegate_)) {}
+  MetricsMediatorLogLaunchTest() : has_been_called_(FALSE) {}
 
   void initiateMetricsMediator(BOOL coldStart, int tabCount) {
-    id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-    [[[mainTabModel stub] andReturnValue:@(tabCount)] count];
-    WebStateList* web_state_list = web_state_list_.get();
-    [[[mainTabModel stub] andReturnValue:OCMOCK_VALUE(web_state_list)]
-        webStateList];
-    StubBrowserInterfaceProvider* concreteProvider =
-        [[StubBrowserInterfaceProvider alloc] init];
-    concreteProvider.mainInterface.tabModel = mainTabModel;
-    interface_provider_ = concreteProvider;
-
     swizzle_block_ = [^(id self, int numTab) {
       has_been_called_ = YES;
       // Tests.
@@ -158,17 +149,12 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
 
   void verifySwizzleHasBeenCalled() { EXPECT_TRUE(has_been_called_); }
 
-  id<BrowserInterfaceProvider> getInterfaceProvider() {
-    return interface_provider_;
-  }
-
- private:
-  id<BrowserInterfaceProvider> interface_provider_;
+  web::WebTaskEnvironment task_environment_;
+  NSArray<FakeSceneState*>* connected_scenes_;
   __block BOOL has_been_called_;
   logLaunchMetricsBlock swizzle_block_;
   std::unique_ptr<ScopedBlockSwizzler> uma_histogram_swizzler_;
-  std::unique_ptr<WebStateList> web_state_list_;
-  FakeWebStateListDelegate web_state_list_delegate_;
+  std::set<std::unique_ptr<TestBrowser>> browsers_;
 };
 
 // Verifies that the log of the number of open tabs is sent and verifies
@@ -177,6 +163,13 @@ TEST_F(MetricsMediatorLogLaunchTest,
   // Setup.
   BOOL coldStart = YES;
   initiateMetricsMediator(coldStart, 23);
+  // 23 tabs across three scenes.
+  connected_scenes_ = [FakeSceneState sceneArrayWithCount:3];
+  [connected_scenes_[0] appendWebStatesWithURL:GURL() count:9];
+  [connected_scenes_[1] appendWebStatesWithURL:GURL() count:9];
+  [connected_scenes_[2] appendWebStatesWithURL:GURL() count:5];
+  // Mark one of the scenes as active.
+  connected_scenes_[0].activationLevel = SceneActivationLevelForegroundActive;
 
   const NSTimeInterval kFirstUserActionTimeout = 30.0;
 
@@ -191,9 +184,8 @@ TEST_F(MetricsMediatorLogLaunchTest,
          forKey:metrics_mediator::kAppEnteredBackgroundDateKey];
 
   // Action.
-  [MetricsMediator
-      logLaunchMetricsWithStartupInformation:startupInformation
-                           interfaceProvider:getInterfaceProvider()];
+  [MetricsMediator logLaunchMetricsWithStartupInformation:startupInformation
+                                          connectedScenes:connected_scenes_];
 
   // Tests.
   NSDate* dateStored = [[NSUserDefaults standardUserDefaults]
@@ -209,6 +201,13 @@ TEST_F(MetricsMediatorLogLaunchTest, logLaunchMetricsNoBackgroundDate) {
   // Setup.
   BOOL coldStart = NO;
   initiateMetricsMediator(coldStart, 32);
+  // 32 tabs across five scenes.
+  connected_scenes_ = [FakeSceneState sceneArrayWithCount:5];
+  [connected_scenes_[0] appendWebStatesWithURL:GURL() count:8];
+  [connected_scenes_[1] appendWebStatesWithURL:GURL() count:8];
+  // Scene 2 has zero tabs.
+  [connected_scenes_[3] appendWebStatesWithURL:GURL() count:8];
+  [connected_scenes_[4] appendWebStatesWithURL:GURL() count:8];
 
   id startupInformation =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
@@ -218,10 +217,8 @@ TEST_F(MetricsMediatorLogLaunchTest, logLaunchMetricsNoBackgroundDate) {
       removeObjectForKey:metrics_mediator::kAppEnteredBackgroundDateKey];
 
   // Action.
-  [MetricsMediator
-      logLaunchMetricsWithStartupInformation:startupInformation
-                           interfaceProvider:getInterfaceProvider()];
-
+  [MetricsMediator logLaunchMetricsWithStartupInformation:startupInformation
+                                          connectedScenes:connected_scenes_];
   // Tests.
   verifySwizzleHasBeenCalled();
 }

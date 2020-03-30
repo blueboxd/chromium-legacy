@@ -100,6 +100,7 @@ js_library("password_check") {
     ":password_manager_proxy",
     "..:plural_string_proxy",
     "../prefs:prefs_behavior",
+    "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
@@ -296,6 +297,7 @@ js_library("password_check.m") {
     "..:plural_string_proxy.m",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":password_check_module" ]
@@ -318,6 +320,7 @@ js_library("password_check_list_item.m") {
     ":password_manager_proxy.m",
     "..:open_window_proxy.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior",
   ]
   extra_deps = [ ":password_check_list_item_module" ]

@@ -23,7 +23,7 @@ generate_product_config_srcjar("weblayer_product_config") {
 java_cpp_template("resource_id_javagen") {
   sources = [ "ResourceId.template" ]
   package_path = "org/chromium/weblayer_private/resources"
-  inputs = [ "//components/permissions/android/resource_id.h" ]
+  inputs = [ "//components/resources/android/permissions_resource_id.h" ]
 }
 
 java_cpp_enum("generated_enums") {

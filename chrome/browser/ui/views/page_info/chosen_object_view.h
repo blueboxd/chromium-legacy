@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "components/page_info/page_info_ui.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 

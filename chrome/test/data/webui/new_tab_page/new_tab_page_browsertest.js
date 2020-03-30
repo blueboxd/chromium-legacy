@@ -155,6 +155,6 @@ var NewTabPageLogoTest = class extends NewTabPageBrowserTest {
   }
 };
 
-TEST_F('NewTabPageLogoTest', 'All', function() {
+TEST_F('NewTabPageLogoTest', 'DISABLE_All', function() {
   mocha.run();
 });

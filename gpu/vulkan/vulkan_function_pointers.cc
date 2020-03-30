@@ -261,6 +261,29 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
   }
 #endif  // defined(USE_VULKAN_XLIB)
 
+#if defined(OS_WIN)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_KHR_WIN32_SURFACE_EXTENSION_NAME)) {
+    vkCreateWin32SurfaceKHRFn = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(
+        vkGetInstanceProcAddr(vk_instance, "vkCreateWin32SurfaceKHR"));
+    if (!vkCreateWin32SurfaceKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkCreateWin32SurfaceKHR";
+      return false;
+    }
+
+    vkGetPhysicalDeviceWin32PresentationSupportKHRFn =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR>(
+            vkGetInstanceProcAddr(
+                vk_instance, "vkGetPhysicalDeviceWin32PresentationSupportKHR"));
+    if (!vkGetPhysicalDeviceWin32PresentationSupportKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetPhysicalDeviceWin32PresentationSupportKHR";
+      return false;
+    }
+  }
+#endif  // defined(OS_WIN)
+
 #if defined(OS_ANDROID)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_ANDROID_SURFACE_EXTENSION_NAME)) {

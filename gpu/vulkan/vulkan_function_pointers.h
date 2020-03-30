@@ -36,6 +36,10 @@
 #include <vulkan/vulkan_xlib.h>
 #endif
 
+#if defined(OS_WIN)
+#include <vulkan/vulkan_win32.h>
+#endif
+
 namespace gpu {
 
 struct VulkanFunctionPointers;
@@ -133,6 +137,12 @@ struct VulkanFunctionPointers {
   VulkanFunction<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>
       vkGetPhysicalDeviceXlibPresentationSupportKHRFn;
 #endif  // defined(USE_VULKAN_XLIB)
+
+#if defined(OS_WIN)
+  VulkanFunction<PFN_vkCreateWin32SurfaceKHR> vkCreateWin32SurfaceKHRFn;
+  VulkanFunction<PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR>
+      vkGetPhysicalDeviceWin32PresentationSupportKHRFn;
+#endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
   VulkanFunction<PFN_vkCreateAndroidSurfaceKHR> vkCreateAndroidSurfaceKHRFn;
@@ -316,6 +326,14 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()                    \
       ->vkGetPhysicalDeviceXlibPresentationSupportKHRFn
 #endif  // defined(USE_VULKAN_XLIB)
+
+#if defined(OS_WIN)
+#define vkCreateWin32SurfaceKHR \
+  gpu::GetVulkanFunctionPointers()->vkCreateWin32SurfaceKHRFn
+#define vkGetPhysicalDeviceWin32PresentationSupportKHR \
+  gpu::GetVulkanFunctionPointers()                     \
+      ->vkGetPhysicalDeviceWin32PresentationSupportKHRFn
+#endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
 #define vkCreateAndroidSurfaceKHR \

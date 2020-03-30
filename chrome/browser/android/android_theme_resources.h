@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_ANDROID_THEME_RESOURCES_H_
 #define CHROME_BROWSER_ANDROID_ANDROID_THEME_RESOURCES_H_
 
-#include "components/permissions/android/theme_resources.h"
+#include "components/resources/android/theme_resources.h"
 
 // LINK_RESOURCE_ID will use an ID defined by grit, so no-op.
 #define LINK_RESOURCE_ID(c_id, java_id)

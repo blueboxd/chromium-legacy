@@ -612,25 +612,18 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
         ParseDeclarationBlock("color:-internal-light-dark-color(black, white)");
     auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
     auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
-    CascadeFilter filter;
-
-    MatchResult result1;
-    result1.AddMatchedProperties(color_declaration);
-    result1.AddMatchedProperties(dark_declaration);
 
     StyleCascade cascade1(state);
-    cascade1.Analyze(result1, filter);
-    cascade1.Apply(result1, filter);
+    cascade1.MutableMatchResult().AddMatchedProperties(color_declaration);
+    cascade1.MutableMatchResult().AddMatchedProperties(dark_declaration);
+    cascade1.Apply();
     EXPECT_EQ(Color::kWhite,
               style->VisitedDependentColor(GetCSSPropertyColor()));
 
-    MatchResult result2;
-    result2.AddMatchedProperties(color_declaration);
-    result2.AddMatchedProperties(light_declaration);
-
     StyleCascade cascade2(state);
-    cascade2.Analyze(result2, filter);
-    cascade2.Apply(result2, filter);
+    cascade2.MutableMatchResult().AddMatchedProperties(color_declaration);
+    cascade2.MutableMatchResult().AddMatchedProperties(light_declaration);
+    cascade2.Apply();
     EXPECT_EQ(Color::kBlack,
               style->VisitedDependentColor(GetCSSPropertyColor()));
   }

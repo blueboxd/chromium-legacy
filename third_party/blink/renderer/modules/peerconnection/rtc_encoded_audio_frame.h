@@ -25,6 +25,8 @@ class RTCEncodedAudioFrame final : public ScriptWrappable {
   DOMArrayBuffer* data() const;
   DOMArrayBuffer* additionalData() const;
   void setData(DOMArrayBuffer*);
+  uint32_t synchronizationSource() const;
+  Vector<uint32_t> contributingSources() const;
   String toString() const;
 
   void Trace(Visitor*) override;

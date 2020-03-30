@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/page_info/page_info.h"
+#include "components/page_info/page_info.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -23,9 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/page_info/page_info_delegate.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -34,6 +31,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/page_info/page_info_delegate.h"
+#include "components/page_info/page_info_ui.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -41,6 +40,9 @@
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
+#if defined(OS_ANDROID)
+#include "components/resources/android/theme_resources.h"
+#endif
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/content/password_protection/password_protection_service.h"
@@ -69,15 +71,6 @@
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/policy_cert_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#endif
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -345,11 +338,11 @@ PageInfo::~PageInfo() {
 
   // Record the total time the Page Info UI was open for all opens as well as
   // split between whether any action was taken.
-  base::UmaHistogramCustomTimes(
-      security_state::GetSecurityLevelHistogramName(
-          kPageInfoTimePrefix, security_level_),
-      base::TimeTicks::Now() - start_time_,
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
+  base::UmaHistogramCustomTimes(security_state::GetSecurityLevelHistogramName(
+                                    kPageInfoTimePrefix, security_level_),
+                                base::TimeTicks::Now() - start_time_,
+                                base::TimeDelta::FromMilliseconds(1),
+                                base::TimeDelta::FromHours(1), 100);
   base::UmaHistogramCustomTimes(
       security_state::GetSafetyTipHistogramName(kPageInfoTimePrefix,
                                                 safety_tip_info_.status),
@@ -363,8 +356,8 @@ PageInfo::~PageInfo() {
 
   if (did_perform_action_) {
     base::UmaHistogramCustomTimes(
-        security_state::GetSecurityLevelHistogramName(
-            kPageInfoTimeActionPrefix, security_level_),
+        security_state::GetSecurityLevelHistogramName(kPageInfoTimeActionPrefix,
+                                                      security_level_),
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);

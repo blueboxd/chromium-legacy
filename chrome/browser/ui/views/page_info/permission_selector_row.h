@@ -10,11 +10,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/page_info_ui.h"
 
 class Profile;
 

@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -332,12 +333,25 @@ void RemoteCopyMessageHandler::UpdateProgressNotification(
     // This might happen if we don't know the total size of the image but we
     // still want to show how many bytes have been transferred.
     notification.set_progress(-1);
+#if defined(OS_MACOSX)
+    // On macOS we only have the title and message available. The progress is
+    // prepended to the title and the message should be the context.
+    notification.set_message(context);
+#else
     notification.set_progress_status(context);
+#endif  // defined(OS_MACOSX)
   } else {
     notification.set_progress(image_content_progress_ * 100 /
                               image_content_length_);
-    notification.set_progress_status(
-        GetProgressString(image_content_progress_, image_content_length_));
+    base::string16 progress =
+        GetProgressString(image_content_progress_, image_content_length_);
+#if defined(OS_MACOSX)
+    // On macOS we only have the title and message available. The progress is
+    // prepended to the title and the message should be the progress.
+    notification.set_message(progress);
+#else
+    notification.set_progress_status(progress);
+#endif  // defined(OS_MACOSX)
   }
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
@@ -502,6 +516,13 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
                      base::Unretained(this), old_sequence_number,
                      base::TimeTicks::Now(), /*is_image=*/true));
 
+#if defined(OS_MACOSX)
+  // On macOS we can't replace a persistent notification with a non-persistent
+  // one because they are posted from different sources (app vs xpc). To avoid
+  // having both notifications on screen, remove the progress one first.
+  CancelProgressNotification();
+#endif  // defined(OS_MACOSX)
+
   std::string notification_id = image_notification_id_;
   if (notification_id.empty()) {
     notification_id = base::GenerateGUID();
@@ -523,13 +544,23 @@ void RemoteCopyMessageHandler::ShowNotification(
     const std::string& notification_id) {
   TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::ShowNotification");
 
+  gfx::Image icon;
+  message_center::RichNotificationData rich_notification_data;
+
   bool use_image_notification =
       base::FeatureList::IsEnabled(kRemoteCopyImageNotification) &&
       !image.drawsNothing();
 
-  message_center::RichNotificationData rich_notification_data;
-  if (use_image_notification)
+  if (use_image_notification) {
+#if defined(OS_MACOSX)
+    // On macOS notifications do not support large images so use the icon
+    // instead.
+    icon = gfx::Image::CreateFrom1xBitmap(image);
+#else
     rich_notification_data.image = gfx::Image::CreateFrom1xBitmap(image);
+#endif  // defined(OS_MACOSX)
+  }
+
   rich_notification_data.vector_small_image = &kSendTabToSelfIcon;
 
   message_center::NotificationType type =
@@ -543,7 +574,7 @@ void RemoteCopyMessageHandler::ShowNotification(
       l10n_util::GetStringFUTF16(
           IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION,
           paste_accelerator.GetShortcutText()),
-      /*icon=*/gfx::Image(),
+      icon,
       /*display_source=*/base::string16(),
       /*origin_url=*/GURL(), message_center::NotifierId(),
       rich_notification_data,

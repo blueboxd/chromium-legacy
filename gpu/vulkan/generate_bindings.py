@@ -67,6 +67,14 @@ VULKAN_INSTANCE_FUNCTIONS = [
     ]
   },
   {
+    'ifdef': 'defined(OS_WIN)',
+    'extension': 'VK_KHR_WIN32_SURFACE_EXTENSION_NAME',
+    'functions': [
+      'vkCreateWin32SurfaceKHR',
+      'vkGetPhysicalDeviceWin32PresentationSupportKHR',
+    ]
+  },
+  {
     'ifdef': 'defined(OS_ANDROID)',
     'extension': 'VK_KHR_ANDROID_SURFACE_EXTENSION_NAME',
     'functions': [
@@ -327,6 +335,10 @@ def GenerateHeaderFile(file):
 #if defined(USE_VULKAN_XLIB)
 #include <X11/Xlib.h>
 #include <vulkan/vulkan_xlib.h>
+#endif
+
+#if defined(OS_WIN)
+#include <vulkan/vulkan_win32.h>
 #endif
 
 namespace gpu {

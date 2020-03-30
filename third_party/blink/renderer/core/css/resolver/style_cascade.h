@@ -13,9 +13,11 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_interpolations.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_map.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
+#include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -40,19 +42,17 @@ class CSSPendingSubstitutionValue;
 
 }  // namespace cssvalue
 
-// StyleCascade can analyze a MatchResult/CascadeInterpolations object to figure
-// out which declarations should be skipped (e.g. due to a subsequent
-// declaration with a higher priority), and which should be applied.
+// StyleCascade analyzes declarations provided by CSS rules and animations,
+// and figures out which declarations should be skipped, and which should be
+// applied (and in which order).
 //
 // Usage:
 //
-//   MatchResult result;
-//   AddRulesSomehow(result);
-//
 //   StyleCascade cascade(state);
-//   CascadeFilter allow_all;
-//   cascade.Analyze(result, allow_all);
-//   cascade.Apply(result, allow_all);
+//   cascade.MutableMatchResult().AddMatchedProperties(...matched rule...);
+//   cascade.MutableMatchResult().AddMatchedProperties(...another rule...);
+//   cascade.AddInterpolation(...); // Optional
+//   cascade.Apply();
 //
 // [1] https://drafts.csswg.org/css-cascade/#cascade
 class CORE_EXPORT StyleCascade {
@@ -63,38 +63,29 @@ class CORE_EXPORT StyleCascade {
  public:
   StyleCascade(StyleResolverState& state) : state_(state) {}
 
-  // The Analyze pass goes through the MatchResult (or CascadeInterpolations),
-  // and produces a CascadePriority for each declaration. Each declaration
-  // is compared against the currently stored priority for the associated
-  // property, and either added the CascadeMap, or discarded, depending on which
-  // priority is greater.
-  //
-  // Note that the MatchResult/CascadeInterpolations (and their values) are
-  // not retained by StyleCascade. The caller must provide the same object
-  // (or a compatible object) when calling Apply.
-  void Analyze(const MatchResult&, CascadeFilter);
-  void Analyze(const CascadeInterpolations&, CascadeFilter);
+  const MatchResult& GetMatchResult() { return match_result_; }
 
-  // The Apply pass goes through the MatchResult (or CascadeInterpolations),
-  // and produces a CascadePriority for each declaration. If the priority of
-  // the declaration is equal to the priority stored for the associated
-  // property, then we Apply that declaration to the ComputedStyle. Otherwise,
-  // the declaration is skipped.
-  void Apply(const MatchResult& result, CascadeFilter filter) {
-    Apply(&result, nullptr, filter);
-  }
-  void Apply(const CascadeInterpolations& i, CascadeFilter filter) {
-    Apply(nullptr, &i, filter);
-  }
-  // Applying a MatchResult and CascadeInterpolations at the same time means
-  // that dependency resolution can take place across the two "declaration
-  // sources".
+  // Access the MatchResult in order to add declarations to it.
+  // The modifications made will be taken into account during the next call to
+  // Apply.
   //
-  // For example, if there is an interpolation currently taking place on
-  // 'font-size', static declarations from the MatchResult object that contain
-  // 'em' units would be responsive to to that interpolation. This would not be
-  // the case if two are applied separately.
-  void Apply(const MatchResult*, const CascadeInterpolations*, CascadeFilter);
+  // TODO(andruud): ElementRuleCollector could emit MatchedProperties
+  // directly to the cascade.
+  MatchResult& MutableMatchResult();
+
+  // Add ActiveInterpolationsMap to the cascade. The interpolations present
+  // in the map will be taken into account during the next call to Apply.
+  //
+  // Note that it's assumed that the incoming ActiveInterpolationsMap outlives
+  // the StyleCascade object.
+  void AddInterpolations(const ActiveInterpolationsMap*, CascadeOrigin);
+
+  // Applies the current CSS declarations and animations to the
+  // StyleResolverState.
+  //
+  // It is valid to call Apply multiple times (up to 15), and each call may
+  // provide a different filter.
+  void Apply(CascadeFilter = CascadeFilter());
 
   // Resets the cascade to its initial state. Note that this does not undo
   // any changes already applied to the StyleResolverState/ComputedStyle.
@@ -122,6 +113,17 @@ class CORE_EXPORT StyleCascade {
   // https://drafts.csswg.org/css-variables/#long-variables
   static const size_t kMaxSubstitutionTokens = 16384;
 
+  // Before we can Apply the cascade, the MatchResult and CascadeInterpolations
+  // must be Analyzed. This means going through all the declarations, and
+  // adding them to the CascadeMap, which gives us a complete picture of which
+  // declarations won the cascade.
+  //
+  // We analyze only if needed (i.e. if MatchResult or CascadeInterpolations)
+  // has been mutated since the last call to AnalyzeIfNeeded.
+  void AnalyzeIfNeeded();
+  void AnalyzeMatchResult();
+  void AnalyzeInterpolations();
+
   // Applies kHighPropertyPriority properties.
   //
   // In theory, it would be possible for each property/value that contains
@@ -142,8 +144,8 @@ class CORE_EXPORT StyleCascade {
   // behave correctly.
   void ApplyWebkitBorderImage(CascadeResolver&);
 
-  void ApplyMatchResult(const MatchResult&, CascadeResolver&);
-  void ApplyInterpolations(const CascadeInterpolations&, CascadeResolver&);
+  void ApplyMatchResult(CascadeResolver&);
+  void ApplyInterpolations(CascadeResolver&);
   void ApplyInterpolationMap(const ActiveInterpolationsMap&,
                              CascadeOrigin,
                              size_t index,
@@ -158,11 +160,9 @@ class CORE_EXPORT StyleCascade {
   void LookupAndApply(const CSSProperty&, CascadeResolver&);
   void LookupAndApplyDeclaration(const CSSProperty&,
                                  CascadePriority,
-                                 const MatchResult&,
                                  CascadeResolver&);
   void LookupAndApplyInterpolation(const CSSProperty&,
                                    CascadePriority,
-                                   const CascadeInterpolations&,
                                    CascadeResolver&);
 
   // Whether or not we are calculating the style for the root element.
@@ -336,6 +336,8 @@ class CORE_EXPORT StyleCascade {
   bool HasAuthorBackground() const;
 
   StyleResolverState& state_;
+  MatchResult match_result_;
+  CascadeInterpolations interpolations_;
   CascadeMap map_;
   // Generational Apply
   //
@@ -375,6 +377,9 @@ class CORE_EXPORT StyleCascade {
   // Note: The maximum generation number is currently 15. This is more than
   //       enough for our needs.
   uint8_t generation_ = 0;
+
+  bool needs_match_result_analyze_ = false;
+  bool needs_interpolations_analyze_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StyleCascade);
 };

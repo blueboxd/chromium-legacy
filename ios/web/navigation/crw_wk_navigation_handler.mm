@@ -181,6 +181,21 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
+  if (item && userAgentType == web::UserAgentType::NONE &&
+      web::GetWebClient()->IsAppSpecificURL(item->GetVirtualURL())) {
+    // In case the URL to be loaded is a WebUI URL and the user agent is nil,
+    // get the mobile user agent.
+    userAgentType = web::UserAgentType::MOBILE;
+  }
+
+  if (userAgentType != web::UserAgentType::NONE) {
+    NSString* userAgentString = base::SysUTF8ToNSString(
+        web::GetWebClient()->GetUserAgent(userAgentType));
+    if (![webView.customUserAgent isEqualToString:userAgentString]) {
+      webView.customUserAgent = userAgentString;
+    }
+  }
+
   WKContentMode contentMode = userAgentType == web::UserAgentType::DESKTOP
                                   ? WKContentModeDesktop
                                   : WKContentModeMobile;

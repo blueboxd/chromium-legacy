@@ -13,8 +13,6 @@
 
 namespace blink {
 
-class MatchResult;
-class CascadeInterpolations;
 class CSSVariableData;
 class CSSProperty;
 
@@ -65,14 +63,8 @@ class CORE_EXPORT CascadeResolver {
   friend class StyleCascade;
   friend class TestCascadeResolver;
 
-  CascadeResolver(CascadeFilter filter,
-                  const MatchResult* match_result,
-                  const CascadeInterpolations* interpolations,
-                  uint8_t generation)
-      : filter_(filter),
-        match_result_(match_result),
-        interpolations_(interpolations),
-        generation_(generation) {}
+  CascadeResolver(CascadeFilter filter, uint8_t generation)
+      : filter_(filter), generation_(generation) {}
 
   // If the given property is already being applied, returns true.
   // The return value is the same value you would get from InCycle(), and
@@ -92,8 +84,6 @@ class CORE_EXPORT CascadeResolver {
   NameStack stack_;
   wtf_size_t cycle_depth_ = kNotFound;
   CascadeFilter filter_;
-  const MatchResult* match_result_;
-  const CascadeInterpolations* interpolations_;
   const uint8_t generation_ = 0;
 
   // A very simple cache for CSSPendingSubstitutionValues. We cache only the

@@ -373,6 +373,7 @@ source_set("weblayer_lib_base") {
       "//components/minidump_uploader",
       "//components/navigation_interception",
       "//components/permissions/android:native",
+      "//components/resources:android_resources",
       "//components/safe_browsing/content/common:interfaces",
       "//components/safe_browsing/content/renderer:throttles",
       "//components/safe_browsing/core/common",

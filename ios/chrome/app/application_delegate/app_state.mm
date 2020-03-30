@@ -308,10 +308,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   GetApplicationContext()->OnAppEnterForeground();
 
-  [MetricsMediator
-      logLaunchMetricsWithStartupInformation:_startupInformation
-                           interfaceProvider:_browserLauncher
-                                                 .interfaceProvider];
+  [MetricsMediator logLaunchMetricsWithStartupInformation:_startupInformation
+                                          connectedScenes:self.connectedScenes];
   [memoryHelper resetForegroundMemoryWarningCount];
 
   // Use the mainBVC as the ContentSuggestions can only be started in non-OTR.

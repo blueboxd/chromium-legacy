@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/test/fake_scene_state.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
@@ -263,14 +264,15 @@ class AppStateTest : public BlockCleanupTest {
 
     ScopedBlockSwizzler swizzler(
         [MetricsMediator class],
-        @selector(logLaunchMetricsWithStartupInformation:interfaceProvider:),
+        @selector(logLaunchMetricsWithStartupInformation:connectedScenes:),
         swizzleBlock);
 
     [appState applicationWillEnterForeground:application
                              metricsMediator:metricsMediator
                                 memoryHelper:memoryHelper
                                    tabOpener:tabOpener];
-
+    // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
+    app_state_.mainSceneState = [[FakeSceneState alloc] init];
     initializeIncognitoBlocker(window);
 
     return appState;
@@ -282,6 +284,8 @@ class AppStateTest : public BlockCleanupTest {
           [[AppState alloc] initWithBrowserLauncher:browser_launcher_mock_
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
+      // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
+      app_state_.mainSceneState = [[FakeSceneState alloc] init];
       [app_state_ setWindow:window_];
     }
     return app_state_;
@@ -293,6 +297,8 @@ class AppStateTest : public BlockCleanupTest {
           [[AppState alloc] initWithBrowserLauncher:browser_launcher_mock_
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
+      // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
+      app_state_.mainSceneState = [[FakeSceneState alloc] init];
       [app_state_ setWindow:window];
       [window makeKeyAndVisible];
     }
@@ -738,7 +744,7 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
 
   ScopedBlockSwizzler swizzler(
       [MetricsMediator class],
-      @selector(logLaunchMetricsWithStartupInformation:interfaceProvider:),
+      @selector(logLaunchMetricsWithStartupInformation:connectedScenes:),
       swizzleBlock);
 
   // Actions.

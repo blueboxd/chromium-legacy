@@ -129,6 +129,20 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         startDispatchingToTarget:mockPageInfoCommandHandler
                      forProtocol:@protocol(PageInfoCommands)];
 
+    // Set up ApplicationCommands mock. Because ApplicationCommands conforms
+    // to ApplicationSettingsCommands, that needs to be mocked and dispatched
+    // as well.
+    id mockApplicationCommandHandler =
+        OCMProtocolMock(@protocol(ApplicationCommands));
+    id mockApplicationSettingsCommandHandler =
+        OCMProtocolMock(@protocol(ApplicationSettingsCommands));
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mockApplicationCommandHandler
+                     forProtocol:@protocol(ApplicationCommands)];
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mockApplicationSettingsCommandHandler
+                     forProtocol:@protocol(ApplicationSettingsCommands)];
+
     // Create three web states.
     for (int i = 0; i < 3; i++) {
       web::WebState::CreateParams params(chrome_browser_state_.get());
@@ -145,15 +159,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
             chrome_browser_state_.get());
     template_url_service->Load();
 
-    // Instantiate the BVC.
-    id mockApplicationCommandHandler =
-        OCMProtocolMock(@protocol(ApplicationCommands));
-
     bvc_ = [[BrowserViewController alloc]
                        initWithBrowser:browser_.get()
                      dependencyFactory:factory
-            applicationCommandEndpoint:mockApplicationCommandHandler
-           browsingDataCommandEndpoint:nil
         browserContainerViewController:[[BrowserContainerViewController alloc]
                                            init]];
 

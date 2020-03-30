@@ -18,8 +18,8 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -96,7 +96,7 @@ public final class SigninTestUtil {
      * Add an account with a given name.
      */
     public static Account addTestAccount(String name) {
-        Account account = AccountManagerFacade.createAccountFromName(name);
+        Account account = AccountUtils.createAccountFromName(name);
         AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
         sAccountManager.addAccountHolderBlocking(accountHolder);
         sAddedAccounts.add(accountHolder);

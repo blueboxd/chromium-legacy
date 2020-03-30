@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
-#include "third_party/blink/renderer/core/css/resolver/cascade_interpolations.h"
 #include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -55,13 +54,8 @@ void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
     ActiveInterpolationsMap map;
     map.Set(PropertyHandle("--unused"), interpolations);
 
-    using Entry = CascadeInterpolations::Entry;
-    CascadeInterpolations cascade_interpolations(Vector<Entry, 4>{
-        Entry{&map, CascadeOrigin::kAnimation},
-    });
-
-    cascade.Analyze(cascade_interpolations, CascadeFilter());
-    cascade.Apply(cascade_interpolations, CascadeFilter());
+    cascade.AddInterpolations(&map, CascadeOrigin::kAnimation);
+    cascade.Apply();
   } else {
     CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
                                  state.GetDocument());

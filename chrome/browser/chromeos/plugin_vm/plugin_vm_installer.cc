@@ -36,6 +36,9 @@
 
 namespace {
 
+// Size to use for calculating progress when the actual size isn't available.
+constexpr int64_t kDownloadSizeFallbackEstimate = 15LL * 1024 * 1024 * 1024;
+
 constexpr char kFailureReasonHistogram[] = "PluginVm.SetupFailureReason";
 
 constexpr char kHomeDirectory[] = "/home";
@@ -95,6 +98,7 @@ void PluginVmInstaller::Start() {
 
   state_ = State::kInstalling;
   installing_state_ = InstallingState::kCheckingDiskSpace;
+  progress_ = 0;
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -212,8 +216,6 @@ void PluginVmInstaller::StartDlcDownload() {
     return;
   }
 
-  dlc_download_start_tick_ = base::TimeTicks::Now();
-
   chromeos::DlcserviceClient::Get()->Install(
       GetPluginVmDlcModuleList(),
       base::BindOnce(&PluginVmInstaller::OnDlcDownloadCompleted,
@@ -225,6 +227,7 @@ void PluginVmInstaller::StartDlcDownload() {
 void PluginVmInstaller::StartDownload() {
   DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
   installing_state_ = InstallingState::kDownloadingImage;
+  UpdateProgress(/*state_progress=*/0);
 
   GURL url = GetPluginVmImageDownloadUrl();
   // This may have changed since running StartDlcDownload.
@@ -265,9 +268,7 @@ void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
   if (state_ == State::kCancelling)
     return;
 
-  if (observer_)
-    observer_->OnDlcDownloadProgressUpdated(
-        progress, base::TimeTicks::Now() - dlc_download_start_tick_);
+  UpdateProgress(progress);
 }
 
 void PluginVmInstaller::OnDlcDownloadCompleted(
@@ -324,16 +325,19 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
 }
 
 void PluginVmInstaller::OnDownloadStarted() {
-  download_start_tick_ = base::TimeTicks::Now();
 }
 
 void PluginVmInstaller::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                                   int64_t content_length) {
-  if (observer_) {
-    observer_->OnDownloadProgressUpdated(
-        bytes_downloaded, content_length,
-        base::TimeTicks::Now() - download_start_tick_);
-  }
+  DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
+  if (observer_)
+    observer_->OnDownloadProgressUpdated(bytes_downloaded, content_length);
+
+  if (content_length <= 0)
+    content_length = kDownloadSizeFallbackEstimate;
+
+  UpdateProgress(
+      std::min(1., static_cast<double>(bytes_downloaded) / content_length));
 }
 
 void PluginVmInstaller::OnDownloadCompleted(
@@ -384,6 +388,7 @@ void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
 void PluginVmInstaller::StartImport() {
   DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
   installing_state_ = InstallingState::kImporting;
+  UpdateProgress(/*state_progress=*/0);
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
@@ -391,6 +396,49 @@ void PluginVmInstaller::StartImport() {
                      base::Unretained(this)),
       base::BindOnce(&PluginVmInstaller::OnImageTypeDetected,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmInstaller::UpdateProgress(double state_progress) {
+  DCHECK_EQ(state_, State::kInstalling);
+  if (state_progress < 0 || state_progress > 1) {
+    LOG(ERROR) << "Unexpected progress value " << state_progress
+               << " in installing state "
+               << GetInstallingStateName(installing_state_);
+    return;
+  }
+
+  double start_range = 0;
+  double end_range = 0;
+  switch (installing_state_) {
+    case InstallingState::kDownloadingDlc:
+      start_range = 0;
+      end_range = 0.01;
+      break;
+    case InstallingState::kDownloadingImage:
+      start_range = 0.01;
+      end_range = 0.45;
+      break;
+    case InstallingState::kImporting:
+      start_range = 0.45;
+      end_range = 1;
+      break;
+    default:
+      // Other states take a negligible amount of time so we don't send progress
+      // updates.
+      NOTREACHED();
+  }
+
+  double new_progress =
+      start_range + (end_range - start_range) * state_progress;
+  if (new_progress < progress_) {
+    LOG(ERROR) << "Progress went backwards from " << progress_ << " to "
+               << progress_;
+    return;
+  }
+
+  progress_ = new_progress;
+  if (observer_)
+    observer_->OnProgressUpdated(new_progress);
 }
 
 void PluginVmInstaller::DetectImageType() {
@@ -513,7 +561,6 @@ void PluginVmInstaller::OnImportDiskImage(base::Optional<ReplyType> reply) {
   }
 
   VLOG(1) << "Disk image creation/import is now in progress";
-  import_start_tick_ = base::TimeTicks::Now();
   current_import_command_uuid_ = response.command_uuid();
   // Image in progress. Waiting for progress signals...
   // TODO(https://crbug.com/966398): think about adding a timeout here,
@@ -537,10 +584,7 @@ void PluginVmInstaller::OnDiskImageProgress(
       RequestFinalStatus();
       return;
     case vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS:
-      if (observer_) {
-        observer_->OnImportProgressUpdated(
-            percent_completed, base::TimeTicks::Now() - import_start_tick_);
-      }
+      UpdateProgress(percent_completed / 100.);
       return;
     default:
       LOG(ERROR) << "Disk image status signal has status: " << status

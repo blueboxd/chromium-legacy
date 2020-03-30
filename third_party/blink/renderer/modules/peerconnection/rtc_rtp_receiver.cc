@@ -402,7 +402,7 @@ void RTCRtpReceiver::OnFrameFromDepacketizer(
     uint32_t ssrc) {
   if (video_from_depacketizer_underlying_source_) {
     video_from_depacketizer_underlying_source_->OnFrameFromSource(
-        std::move(encoded_video_frame), std::move(additional_data));
+        std::move(encoded_video_frame), std::move(additional_data), ssrc);
   }
 }
 

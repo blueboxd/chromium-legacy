@@ -540,7 +540,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self scheduleStartupCleanupTasks];
   [MetricsMediator
       logLaunchMetricsWithStartupInformation:self
-                           interfaceProvider:self.interfaceProvider];
+                             connectedScenes:self.appState.connectedScenes];
   if (self.isColdStart) {
     [ContentSuggestionsSchedulerNotifications
         notifyColdStart:self.mainBrowserState];

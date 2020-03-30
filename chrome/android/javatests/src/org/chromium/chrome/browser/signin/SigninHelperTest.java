@@ -17,8 +17,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
@@ -110,7 +110,7 @@ public class SigninHelperTest {
         mEventChecker.insertRenameEvent("B", "C");
         mEventChecker.insertRenameEvent("C", "D");
         mEventChecker.insertRenameEvent("D", "A"); // Looped.
-        Account account = AccountManagerFacade.createAccountFromName("D");
+        Account account = AccountUtils.createAccountFromName("D");
         AccountHolder accountHolder = AccountHolder.builder(account).build();
         mAccountManagerTestRule.addAccount(accountHolder);
         SigninHelper.updateAccountRenameData(mEventChecker);

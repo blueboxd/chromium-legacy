@@ -142,6 +142,11 @@ class WizardController {
            !prescribed_enrollment_config_.should_enroll();
   }
 
+  void set_prescribed_enrollment_config_for_testing(
+      policy::EnrollmentConfig config) {
+    prescribed_enrollment_config_ = config;
+  }
+
   // Returns true if a given screen exists.
   bool HasScreen(OobeScreenId screen);
 

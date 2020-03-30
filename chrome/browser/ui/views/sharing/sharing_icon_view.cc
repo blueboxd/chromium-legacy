@@ -144,7 +144,7 @@ bool SharingIconView::IsTriggerableEvent(const ui::Event& event) {
 }
 
 const gfx::VectorIcon& SharingIconView::GetVectorIconBadge() const {
-  return should_show_error_ ? kBlockedBadgeIcon : gfx::kNoneIcon;
+  return should_show_error_ ? vector_icons::kBlockedBadgeIcon : gfx::kNoneIcon;
 }
 
 void SharingIconView::OnExecuting(

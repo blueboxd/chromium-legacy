@@ -34,7 +34,9 @@ class PageRuleCollector {
   STACK_ALLOCATED();
 
  public:
-  PageRuleCollector(const ComputedStyle* root_element_style, int page_index);
+  PageRuleCollector(const ComputedStyle* root_element_style,
+                    int page_index,
+                    MatchResult&);
 
   void MatchPageRules(RuleSet* rules);
   const MatchResult& MatchedResult() { return result_; }
@@ -59,7 +61,7 @@ class PageRuleCollector {
   const bool is_first_page_;
   const String page_name_;
 
-  MatchResult result_;
+  MatchResult& result_;
 };
 
 }  // namespace blink

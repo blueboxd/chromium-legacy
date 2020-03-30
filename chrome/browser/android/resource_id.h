@@ -51,24 +51,6 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PHONE_ICON,
 LINK_RESOURCE_ID(IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER,
                  R.drawable.google_pay_with_divider)
 
-// PageInfoUI images, used in ConnectionInfoPopup
-// Good:
-DECLARE_RESOURCE_ID(IDR_PAGEINFO_GOOD, R.drawable.pageinfo_good)
-// Warnings:
-DECLARE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MINOR, R.drawable.pageinfo_warning)
-// Bad:
-DECLARE_RESOURCE_ID(IDR_PAGEINFO_BAD, R.drawable.pageinfo_bad)
-// Should never occur, use warning just in case:
-// Enterprise managed: ChromeOS only.
-DECLARE_RESOURCE_ID(IDR_PAGEINFO_ENTERPRISE_MANAGED,
-                    R.drawable.pageinfo_warning)
-// Info: Only shown on chrome:// urls, which don't show the connection info
-// popup.
-DECLARE_RESOURCE_ID(IDR_PAGEINFO_INFO, R.drawable.pageinfo_warning)
-// Major warning: Used on insecure pages, which don't show the connection info
-// popup.
-DECLARE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MAJOR, R.drawable.pageinfo_warning)
-
 // Autofill popup and keyboard accessory images.
 // We use Android's |VectorDrawableCompat| for the following images that are
 // displayed using |DropdownAdapter|.

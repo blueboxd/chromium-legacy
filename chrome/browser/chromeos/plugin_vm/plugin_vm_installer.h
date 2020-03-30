@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
@@ -91,24 +90,21 @@ class PluginVmInstaller : public KeyedService,
    public:
     virtual ~Observer() = default;
 
+    virtual void OnProgressUpdated(double fraction_complete) = 0;
+
     // If |low_disk_space| is true, the device doesn't have the recommended
     // amount of free disk space and the install will pause until Continue() or
     // Cancel() is called.
     virtual void OnCheckedDiskSpace(bool low_disk_space) = 0;
 
-    virtual void OnDlcDownloadProgressUpdated(double progress,
-                                              base::TimeDelta elapsed_time) = 0;
     virtual void OnDlcDownloadCompleted() = 0;
 
     // If |has_vm| is true, the install is done.
     virtual void OnExistingVmCheckCompleted(bool has_vm) = 0;
 
     virtual void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
-                                           int64_t content_length,
-                                           base::TimeDelta elapsed_time) = 0;
+                                           int64_t content_length) = 0;
     virtual void OnDownloadCompleted() = 0;
-    virtual void OnImportProgressUpdated(int percent_completed,
-                                         base::TimeDelta elapsed_time) = 0;
     virtual void OnCreated() = 0;
     virtual void OnImported() = 0;
     virtual void OnError(FailureReason reason) = 0;
@@ -174,6 +170,8 @@ class PluginVmInstaller : public KeyedService,
   void DetectImageType();
   void StartImport();
 
+  void UpdateProgress(double state_progress);
+
   // Cancels the download of PluginVm image finishing the image processing.
   // Downloaded PluginVm image archive is being deleted.
   void CancelDownload();
@@ -204,9 +202,7 @@ class PluginVmInstaller : public KeyedService,
   // -1 when is not yet determined.
   int64_t downloaded_image_size_ = -1;
   bool creating_new_vm_ = false;
-  base::TimeTicks dlc_download_start_tick_;
-  base::TimeTicks download_start_tick_;
-  base::TimeTicks import_start_tick_;
+  double progress_ = 0;
   std::unique_ptr<PluginVmDriveImageDownloadService> drive_download_service_;
   bool using_drive_download_service_ = false;
 

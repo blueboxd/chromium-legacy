@@ -2938,6 +2938,7 @@ crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.14 ] external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/writing-mode-vertical-rl.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/threaded/external/wpt/requestidlecallback/callback-invoked.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/threaded/external/wpt/css/css-animations/parsing/animation-shorthand.html [ Timeout ]

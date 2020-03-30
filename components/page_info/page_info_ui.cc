@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "components/page_info/page_info_ui.h"
 
 #include <utility>
 
@@ -12,11 +12,11 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/page_info/page_info_ui_delegate.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -26,12 +26,9 @@
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/android_theme_resources.h"
+#include "components/resources/android/theme_resources.h"
 #else
-#include "chrome/app/vector_icons/vector_icons.h"
-#include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -554,13 +551,13 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       icon = &vector_icons::kCookieIcon;
       break;
     case ContentSettingsType::IMAGES:
-      icon = &kPhotoIcon;
+      icon = &vector_icons::kPhotoIcon;
       break;
     case ContentSettingsType::JAVASCRIPT:
-      icon = &kCodeIcon;
+      icon = &vector_icons::kCodeIcon;
       break;
     case ContentSettingsType::POPUPS:
-      icon = &kLaunchIcon;
+      icon = &vector_icons::kLaunchIcon;
       break;
 #if BUILDFLAG(ENABLE_PLUGINS)
     case ContentSettingsType::PLUGINS:
@@ -580,30 +577,30 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       icon = &vector_icons::kVideocamIcon;
       break;
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
-      icon = &kFileDownloadIcon;
+      icon = &vector_icons::kFileDownloadIcon;
       break;
 #if defined(OS_CHROMEOS)
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
-      icon = &kProtectedContentIcon;
+      icon = &vector_icons::kProtectedContentIcon;
       break;
 #endif
     case ContentSettingsType::MIDI_SYSEX:
       icon = &vector_icons::kMidiIcon;
       break;
     case ContentSettingsType::BACKGROUND_SYNC:
-      icon = &kSyncIcon;
+      icon = &vector_icons::kSyncIcon;
       break;
     case ContentSettingsType::ADS:
-      icon = &kAdsIcon;
+      icon = &vector_icons::kAdsIcon;
       break;
     case ContentSettingsType::SOUND:
-      icon = &kVolumeUpIcon;
+      icon = &vector_icons::kVolumeUpIcon;
       break;
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
-      icon = &kPageInfoContentPasteIcon;
+      icon = &vector_icons::kPageInfoContentPasteIcon;
       break;
     case ContentSettingsType::SENSORS:
-      icon = &kSensorsIcon;
+      icon = &vector_icons::kSensorsIcon;
       break;
     case ContentSettingsType::USB_GUARD:
       icon = &vector_icons::kUsbIcon;
@@ -618,7 +615,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       icon = &vector_icons::kBluetoothScanningIcon;
       break;
     case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
-      icon = &kSaveOriginalFileIcon;
+      icon = &vector_icons::kSaveOriginalFileIcon;
       break;
     case ContentSettingsType::VR:
     case ContentSettingsType::AR:
@@ -638,7 +635,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     return gfx::CreateVectorIconWithBadge(
         *icon, kVectorIconSize,
         color_utils::DeriveDefaultIconColor(related_text_color),
-        kBlockedBadgeIcon);
+        vector_icons::kBlockedBadgeIcon);
   }
   return gfx::CreateVectorIcon(
       *icon, kVectorIconSize,
@@ -676,7 +673,7 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
     return gfx::CreateVectorIconWithBadge(
         *icon, kVectorIconSize,
         color_utils::DeriveDefaultIconColor(related_text_color),
-        kBlockedBadgeIcon);
+        vector_icons::kBlockedBadgeIcon);
   }
   return gfx::CreateVectorIcon(
       *icon, kVectorIconSize,
@@ -687,7 +684,7 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
 const gfx::ImageSkia PageInfoUI::GetCertificateIcon(
     const SkColor related_text_color) {
   return gfx::CreateVectorIcon(
-      kCertificateIcon, kVectorIconSize,
+      vector_icons::kCertificateIcon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 

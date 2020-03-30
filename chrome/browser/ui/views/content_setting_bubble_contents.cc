@@ -241,7 +241,8 @@ void ContentSettingBubbleContents::ListItemContainer::AddItem(
         *item_icon, CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY);
     item_icon->SetImage(CreateVectorIconWithBadge(
         *item.image, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color,
-        item.has_blocked_badge ? kBlockedBadgeIcon : gfx::kNoneIcon));
+        item.has_blocked_badge ? vector_icons::kBlockedBadgeIcon
+                               : gfx::kNoneIcon));
   }
 
   std::unique_ptr<views::View> item_contents;

@@ -64,10 +64,12 @@ String PageRuleCollector::PageName(int /* pageIndex */) const {
 }
 
 PageRuleCollector::PageRuleCollector(const ComputedStyle* root_element_style,
-                                     int page_index)
+                                     int page_index,
+                                     MatchResult& match_result)
     : is_left_page_(IsLeftPage(root_element_style, page_index)),
       is_first_page_(IsFirstPage(page_index)),
-      page_name_(PageName(page_index)) {}
+      page_name_(PageName(page_index)),
+      result_(match_result) {}
 
 void PageRuleCollector::MatchPageRules(RuleSet* rules) {
   if (!rules)

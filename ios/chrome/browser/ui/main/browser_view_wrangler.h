@@ -12,10 +12,8 @@
 
 @protocol ApplicationCommands;
 class AppUrlLoadingService;
-@class BrowserCoordinator;
 @protocol BrowsingDataCommands;
 class ChromeBrowserState;
-@protocol WebStateListObserving;
 
 namespace {
 
@@ -38,7 +36,6 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
 // storage associated with the interfaces when the current interface changes;
 // this is handled in the implementation of -setCurrentInterface:.
 - (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
-                webStateListObserver:(id<WebStateListObserving>)observer
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
          browsingDataCommandEndpoint:

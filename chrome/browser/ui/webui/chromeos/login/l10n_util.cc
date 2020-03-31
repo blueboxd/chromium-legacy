@@ -383,7 +383,7 @@ void ResolveLanguageListInThreadPool(
       chromeos::GetUILanguageList(nullptr, selected_code));
 
   task_runner->PostTask(
-      FROM_HERE, base::BindOnce(resolved_callback, base::Passed(&language_list),
+      FROM_HERE, base::BindOnce(resolved_callback, std::move(language_list),
                                 list_locale, selected_language));
 }
 

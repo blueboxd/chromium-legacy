@@ -206,19 +206,25 @@ void Normalizer::NormalizeOpenVPN(base::DictionaryValue* openvpn) {
   base::Value* user_auth_type_value = openvpn->FindKeyOfType(
       ::onc::openvpn::kUserAuthenticationType, base::Value::Type::STRING);
   // If UserAuthenticationType is unspecified, do not strip Password and OTP.
-  if (!user_auth_type_value)
-    return;
-  std::string user_auth_type = user_auth_type_value->GetString();
-  RemoveEntryUnless(
-      openvpn,
-      ::onc::openvpn::kPassword,
-      user_auth_type == ::onc::openvpn_user_auth_type::kPassword ||
-          user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
-  RemoveEntryUnless(
-      openvpn,
-      ::onc::openvpn::kOTP,
-      user_auth_type == ::onc::openvpn_user_auth_type::kOTP ||
-          user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
+  if (user_auth_type_value) {
+    std::string user_auth_type = user_auth_type_value->GetString();
+    RemoveEntryUnless(
+        openvpn, ::onc::openvpn::kPassword,
+        user_auth_type == ::onc::openvpn_user_auth_type::kPassword ||
+            user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
+    RemoveEntryUnless(
+        openvpn, ::onc::openvpn::kOTP,
+        user_auth_type == ::onc::openvpn_user_auth_type::kOTP ||
+            user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
+  }
+
+  const std::string* compression_algorithm =
+      openvpn->FindStringKey(::onc::openvpn::kCompressionAlgorithm);
+  if (compression_algorithm) {
+    RemoveEntryUnless(
+        openvpn, ::onc::openvpn::kCompressionAlgorithm,
+        *compression_algorithm != ::onc::openvpn_compression_algorithm::kNone);
+  }
 }
 
 void Normalizer::NormalizeProxySettings(base::DictionaryValue* proxy) {

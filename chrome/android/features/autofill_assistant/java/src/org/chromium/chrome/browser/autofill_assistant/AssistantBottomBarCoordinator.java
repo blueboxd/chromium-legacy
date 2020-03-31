@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.app.Activity;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.TransitionManager;
@@ -18,7 +19,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
@@ -76,13 +76,14 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     @AssistantViewportMode
     private int mViewportMode = AssistantViewportMode.NO_RESIZE;
 
-    AssistantBottomBarCoordinator(ChromeActivity activity, AssistantModel model,
-            BottomSheetController controller, TabObscuringHandler tabObscuringHandler) {
+    AssistantBottomBarCoordinator(Activity activity, AssistantModel model,
+            BottomSheetController controller,
+            ApplicationViewportInsetSupplier applicationViewportInsetSupplier,
+            TabObscuringHandler tabObscuringHandler) {
         mModel = model;
         mBottomSheetController = controller;
 
-        mWindowApplicationInsetSupplier =
-                activity.getWindowAndroid().getApplicationBottomInsetProvider();
+        mWindowApplicationInsetSupplier = applicationViewportInsetSupplier;
         mWindowApplicationInsetSupplier.addSupplier(mInsetSupplier);
 
         BottomSheetContent currentSheetContent = controller.getCurrentSheetContent();

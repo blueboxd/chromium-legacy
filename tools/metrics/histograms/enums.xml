@@ -57587,6 +57587,45 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="NOT_SUPPORTED"/>
 </enum>
 
+<enum name="SafetyCheckExtensionsStatus">
+  <int value="0" label="CHECKING"/>
+  <int value="1" label="ERROR"/>
+  <int value="2" label="NONE_BLOCKLISTED"/>
+  <int value="3" label="BLOCKLISTED_ALL_DISABLED"/>
+  <int value="4" label="BLOCKLISTED_REENABLED_ALL_BY_USER"/>
+  <int value="5" label="BLOCKLISTED_REENABLED_SOME_BY_USER"/>
+  <int value="6" label="BLOCKLISTED_REENABLED_ALL_BY_ADMIN"/>
+</enum>
+
+<enum name="SafetyCheckPasswordsStatus">
+  <int value="0" label="CHECKING"/>
+  <int value="1" label="SAFE"/>
+  <int value="2" label="COMPROMISED_EXIST"/>
+  <int value="3" label="OFFLINE"/>
+  <int value="4" label="NO_PASSWORDS"/>
+  <int value="5" label="SIGNED_OUT"/>
+  <int value="6" label="QUOTA_LIMIT"/>
+  <int value="7" label="FAILED"/>
+</enum>
+
+<enum name="SafetyCheckSafeBrowsingStatus">
+  <int value="0" label="CHECKING"/>
+  <int value="1" label="ENABLED"/>
+  <int value="2" label="DISABLED"/>
+  <int value="3" label="DISABLED_BY_ADMIN"/>
+  <int value="4" label="DISABLED_BY_EXTENSION"/>
+</enum>
+
+<enum name="SafetyCheckUpdateStatus">
+  <int value="0" label="CHECKING"/>
+  <int value="1" label="UPDATED"/>
+  <int value="2" label="UPDATING"/>
+  <int value="3" label="RELAUNCH"/>
+  <int value="4" label="DISABLED_BY_ADMIN"/>
+  <int value="5" label="FAILED_OFFLINE"/>
+  <int value="6" label="FAILED"/>
+</enum>
+
 <enum name="SafetyTipInteraction">
   <int value="0" label="User dismissed the Safety Tip"/>
   <int value="1" label="User left the site with the Safety Tip"/>
@@ -64372,6 +64411,7 @@ would be helpful to identify which type is being sent.
   <int value="19" label="Permission Requests"/>
   <int value="20" label="Permission Requests High"/>
   <int value="21" label="Announcement"/>
+  <int value="22" label="Share Save Image"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">

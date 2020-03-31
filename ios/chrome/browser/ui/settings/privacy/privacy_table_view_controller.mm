@@ -18,9 +18,8 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
-#import "ios/chrome/browser/ui/settings/privacy/handoff_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -113,6 +112,14 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   [self loadModel];
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.presentationDelegate
+        privacyTableViewControllerViewControllerWasRemoved:self];
+  }
+}
+
 #pragma mark - ChromeTableViewController
 
 - (void)loadModel {
@@ -203,32 +210,16 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-
-  // Items that push a new view controller.
-  UIViewController<SettingsRootViewControlling>* controller;
-
   switch (itemType) {
     case ItemTypeOtherDevicesHandoff:
-      controller = [[HandoffTableViewController alloc]
-          initWithBrowserState:_browserState];
+      [self.handler showHandoff];
       break;
-    case ItemTypeClearBrowsingDataClear: {
-      ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
-          [[ClearBrowsingDataTableViewController alloc]
-              initWithBrowser:_browser];
-      clearBrowsingDataViewController.delegate = self;
-      controller = clearBrowsingDataViewController;
+    case ItemTypeClearBrowsingDataClear:
+      [self.handler showClearBrowsingData];
       break;
-    }
     default:
       break;
   }
-
-  if (controller) {
-    controller.dispatcher = self.dispatcher;
-    [self.navigationController pushViewController:controller animated:YES];
-  }
-
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 

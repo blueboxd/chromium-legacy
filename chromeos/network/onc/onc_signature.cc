@@ -117,6 +117,7 @@ const OncFieldSignature openvpn_fields[] = {
     {::onc::client_cert::kClientCertType, &kStringSignature},
     {::onc::openvpn::kCompLZO, &kStringSignature},
     {::onc::openvpn::kCompNoAdapt, &kBoolSignature},
+    {::onc::openvpn::kCompressionAlgorithm, &kStringSignature},
     {::onc::openvpn::kExtraHosts, &kStringListSignature},
     {::onc::openvpn::kIgnoreDefaultRoute, &kBoolSignature},
     {::onc::openvpn::kKeyDirection, &kStringSignature},

@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -84,6 +85,9 @@ scoped_refptr<AudioWorkletHandler> AudioWorkletHandler::Create(
 
 void AudioWorkletHandler::Process(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
+
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "AudioWorkletHandler::Process");
 
   // Render and update the node state when the processor is ready with no error.
   // We also need to check if the global scope is valid before we request

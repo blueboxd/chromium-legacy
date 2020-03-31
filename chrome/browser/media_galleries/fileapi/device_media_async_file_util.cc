@@ -585,7 +585,7 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&CreateSnapshotFileOnBlockingPool, profile_path_),
-      base::BindOnce(&OnSnapshotFileCreatedRunTask, base::Passed(&context),
+      base::BindOnce(&OnSnapshotFileCreatedRunTask, std::move(context),
                      std::move(callback), url, validate_media_files()));
 }
 

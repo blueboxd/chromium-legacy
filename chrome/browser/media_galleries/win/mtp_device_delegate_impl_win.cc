@@ -429,13 +429,12 @@ void MTPDeviceDelegateImplWin::CreateSnapshotFile(
                           success_callback, error_callback)));
   // Passing a raw SnapshotFileDetails* to the blocking pool is safe, because
   // it is owned by |file_details| in the reply callback.
-  EnsureInitAndRunTask(
-      PendingTaskInfo(FROM_HERE,
-                      base::BindOnce(&GetFileStreamOnBlockingPoolThread,
-                                     storage_device_info_, file_details.get()),
-                      base::BindOnce(&MTPDeviceDelegateImplWin::OnGetFileStream,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     base::Passed(&file_details))));
+  EnsureInitAndRunTask(PendingTaskInfo(
+      FROM_HERE,
+      base::BindOnce(&GetFileStreamOnBlockingPoolThread, storage_device_info_,
+                     file_details.get()),
+      base::BindOnce(&MTPDeviceDelegateImplWin::OnGetFileStream,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(file_details))));
 }
 
 bool MTPDeviceDelegateImplWin::IsStreaming() {

@@ -165,7 +165,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   }
 
   *callback = base::BindOnce(&ThreadSafeCaptureOracle::DidCaptureFrame, this,
-                             base::Passed(&capture));
+                             std::move(capture));
 
   return true;
 }

@@ -14,6 +14,7 @@ android_resources("weblayer_resources") {
   custom_package = "org.chromium.weblayer_private"
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//components/browser_ui/styles/android:java_resources",
     "//components/permissions/android:java_resources",
     "//weblayer:components_java_strings",
   ]
@@ -156,12 +157,9 @@ android_library("test_java") {
   sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
   deps = [
     ":weblayer_test_resources",
-    "//components/permissions/android:java",
-    "//content/public/test/android:content_java_test_support",
     "//net/android:net_java",
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
-    "//ui/android:ui_full_java",
   ]
   srcjar_deps = [ ":test_aidl" ]
 }

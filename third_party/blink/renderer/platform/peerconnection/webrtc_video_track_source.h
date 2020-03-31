@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_WEBRTC_VIDEO_TRACK_SOURCE_H_
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame_pool.h"
@@ -13,6 +14,8 @@
 #include "third_party/webrtc/rtc_base/timestamp_aligner.h"
 
 namespace blink {
+
+PLATFORM_EXPORT extern const base::Feature kWebRtcLogWebRtcVideoFrameAdapter;
 
 // This class implements webrtc's VideoTrackSourceInterface. To pass frames down
 // the webrtc video pipeline, each received a media::VideoFrame is converted to
@@ -79,6 +82,8 @@ class PLATFORM_EXPORT WebRtcVideoTrackSource
 
   absl::optional<FrameAdaptationParams>
       custom_frame_adaptation_params_for_testing_;
+
+  const bool log_to_webrtc_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoTrackSource);
 };

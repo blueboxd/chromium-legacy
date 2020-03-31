@@ -8,6 +8,8 @@
 #include <keyhi.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -116,8 +118,7 @@ bool OwnerSettingsService::AssembleAndSignPolicyAsync(
     return false;
   return base::PostTaskAndReplyWithResult(
       task_runner, FROM_HERE,
-      base::BindOnce(&AssembleAndSignPolicy, base::Passed(&policy),
-                     private_key_),
+      base::BindOnce(&AssembleAndSignPolicy, std::move(policy), private_key_),
       std::move(callback));
 }
 

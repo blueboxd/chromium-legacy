@@ -58,7 +58,7 @@ void MojoMediaDrmStorage::LoadPersistentSession(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&MojoMediaDrmStorage::OnPersistentSessionLoaded,
                          weak_factory_.GetWeakPtr(),
-                         base::Passed(&load_persistent_session_cb)),
+                         std::move(load_persistent_session_cb)),
           nullptr));
 }
 

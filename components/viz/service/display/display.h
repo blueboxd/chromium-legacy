@@ -103,7 +103,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 #endif
   void Initialize(DisplayClient* client,
                   SurfaceManager* surface_manager,
-                  bool enable_shared_images = kEnableSharedImages);
+                  bool enable_shared_images = kEnableSharedImages,
+                  bool using_synthetic_bfs = false);
 
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);

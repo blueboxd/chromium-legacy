@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
@@ -59,6 +60,8 @@ public class BrowserImpl extends IBrowser.Stub {
     private final UrlBarControllerImpl mUrlBarController;
     private boolean mFragmentStarted;
     private boolean mFragmentResumed;
+    // Cache the value instead of querying system every time.
+    private Boolean mPasswordEchoEnabled;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -140,6 +143,7 @@ public class BrowserImpl extends IBrowser.Stub {
         mWindowAndroid = windowAndroid;
         mViewController = new BrowserViewController(windowAndroid);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
+        mPasswordEchoEnabled = null;
     }
 
     public void onFragmentAttached(FragmentWindowAndroid windowAndroid) {
@@ -231,6 +235,28 @@ public class BrowserImpl extends IBrowser.Stub {
     @CalledByNative
     private void createTabForSessionRestore(long nativeTab) {
         new TabImpl(mProfile, mWindowAndroid, nativeTab);
+    }
+
+    private void checkPasswordEchoEnabled() {
+        if (mPasswordEchoEnabled == null) return;
+        boolean oldEnabled = mPasswordEchoEnabled;
+        mPasswordEchoEnabled = null;
+        boolean newEnabled = getPasswordEchoEnabled();
+        if (oldEnabled != newEnabled) {
+            BrowserImplJni.get().webPreferencesChanged(mNativeBrowser);
+        }
+    }
+
+    @CalledByNative
+    private boolean getPasswordEchoEnabled() {
+        Context context = getContext();
+        if (context == null) return false;
+        if (mPasswordEchoEnabled == null) {
+            mPasswordEchoEnabled = Settings.System.getInt(context.getContentResolver(),
+                                           Settings.System.TEXT_SHOW_PASSWORD, 1)
+                    == 1;
+        }
+        return mPasswordEchoEnabled;
     }
 
     @CalledByNative
@@ -371,6 +397,7 @@ public class BrowserImpl extends IBrowser.Stub {
     public void onFragmentStart() {
         mFragmentStarted = true;
         updateAllTabs();
+        checkPasswordEchoEnabled();
     }
 
     public void onFragmentStop() {
@@ -440,5 +467,6 @@ public class BrowserImpl extends IBrowser.Stub {
         byte[] getMinimalPersistenceState(long nativeBrowserImpl, BrowserImpl browser);
         void restoreStateIfNecessary(long nativeBrowserImpl, BrowserImpl browser,
                 String persistenceId, byte[] persistenceCryptoKey, byte[] minimalPersistenceState);
+        void webPreferencesChanged(long nativeBrowserImpl);
     }
 }

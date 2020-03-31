@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webusb/usb_device.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
@@ -51,15 +52,50 @@ const char kInterfaceNotFound[] =
 const char kInterfaceStateChangeInProgress[] =
     "An operation that changes interface state is in progress.";
 const char kOpenRequired[] = "The device must be opened first.";
+
+#if defined(OS_CHROMEOS)
 const char kExtensionProtocol[] = "chrome-extension";
-const char kImprivataLoginScreenProdExtensionId[] =
-    "lpimkpkllnkdlcigdbgmabfplniahkgm";
-const char kImprivataLoginScreenDevExtensionId[] =
-    "cdgickkdpbekbnalbmpgochbninibkko";
-const char kImprivataInSessionProdExtensionId[] =
-    "cokoeepjbmmnhgdhlkpahohdaiedfjgn";
-const char kImprivataInSessionDevExtensionId[] =
-    "omificdfgpipkkpdhbjmefgfgbppehke";
+
+// These whitelisted Imprivata extensions can claim the protected HID interface
+// class (used as badge readers), see crbug.com/1065112 and crbug.com/995294.
+// This list needs to be alphabetically sorted for quick access via binary
+// search.
+const char* kImprivataExtensionIds[] = {
+    "baobpecgllpajfeojepgedjdlnlfffde", "bnfoibgpjolimhppjmligmcgklpboloj",
+    "cdgickkdpbekbnalbmpgochbninibkko", "cjakdianfealdjlapagfagpdpemoppba",
+    "cokoeepjbmmnhgdhlkpahohdaiedfjgn", "dahgfgiifpnaoajmloofonkndaaafacp",
+    "dbknmmkopacopifbkgookcdbhfnggjjh", "ddcjglpbfbibgepfffpklmpihphbcdco",
+    "dhodapiemamlmhlhblgcibabhdkohlen", "dlahpllbhpbkfnoiedkgombmegnnjopi",
+    "egfpnfjeaopimgpiioeedbpmojdapaip", "fnbibocngjnefolmcodjkkghijpdlnfm",
+    "jcnflhjcfjkplgkcinikhbgbhfldkadl", "jkfjfbelolphkjckiolfcakgalloegek",
+    "kmhpgpnbglclbaccjjgoioogjlnfgbne", "lpimkpkllnkdlcigdbgmabfplniahkgm",
+    "odehonhhkcjnbeaomlodfkjaecbmhklm", "olnmflhcfkifkgbiegcoabineoknmbjc",
+    "omificdfgpipkkpdhbjmefgfgbppehke", "phjobickjiififdadeoepbdaciefacfj",
+    "pkeacbojooejnjolgjdecbpnloibpafm", "pllbepacblmgialkkpcceohmjakafnbb",
+    "plpogimmgnkkiflhpidbibfmgpkaofec", "pmhiabnkkchjeaehcodceadhdpfejmmd",
+};
+const char** kExtensionNameMappingsEnd = std::end(kImprivataExtensionIds);
+
+bool IsCStrBefore(const char* first, const char* second) {
+  return strcmp(first, second) < 0;
+}
+
+bool IsClassWhitelistedForExtension(uint8_t class_code, const KURL& url) {
+  if (url.Protocol() != kExtensionProtocol)
+    return false;
+
+  switch (class_code) {
+    case 0x03:  // HID
+      DCHECK(std::is_sorted(kImprivataExtensionIds, kExtensionNameMappingsEnd,
+                            IsCStrBefore));
+      return std::binary_search(kImprivataExtensionIds,
+                                kExtensionNameMappingsEnd,
+                                url.Host().Utf8().c_str(), IsCStrBefore);
+    default:
+      return false;
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 DOMException* ConvertFatalTransferStatus(const UsbTransferStatus& status) {
   switch (status) {
@@ -626,28 +662,16 @@ bool USBDevice::IsProtectedInterfaceClass(wtf_size_t interface_index) const {
     if (std::binary_search(std::begin(kProtectedClasses),
                            std::end(kProtectedClasses),
                            alternate->class_code)) {
-      return !IsClassWhitelistedForExtension(alternate->class_code);
+#if defined(OS_CHROMEOS)
+      return !IsClassWhitelistedForExtension(alternate->class_code,
+                                             GetExecutionContext()->Url());
+#else
+      return true;
+#endif
     }
   }
 
   return false;
-}
-
-bool USBDevice::IsClassWhitelistedForExtension(uint8_t class_code) const {
-  const KURL& url = GetExecutionContext()->Url();
-  if (url.Protocol() != kExtensionProtocol)
-    return false;
-
-  const String host = url.Host();
-  switch (class_code) {
-    case 0x03:  // HID
-      return host == kImprivataLoginScreenProdExtensionId ||
-             host == kImprivataLoginScreenDevExtensionId ||
-             host == kImprivataInSessionProdExtensionId ||
-             host == kImprivataInSessionDevExtensionId;
-    default:
-      return false;
-  }
 }
 
 bool USBDevice::EnsureNoDeviceChangeInProgress(

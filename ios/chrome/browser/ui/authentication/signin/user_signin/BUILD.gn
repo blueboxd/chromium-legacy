@@ -27,6 +27,7 @@ source_set("user_signin") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/browser/ui/authentication/signin:signin_protected",
     "//ios/chrome/browser/ui/authentication/signin/user_signin/logging",
     "//ios/chrome/browser/ui/authentication/unified_consent",

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/win/jumplist.h"
 
+#include <utility>
+
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -599,7 +601,7 @@ void JumpList::PostRunUpdate() {
           FROM_HERE, std::move(run_update),
           base::BindOnce(&JumpList::OnRunUpdateCompletion,
                          weak_ptr_factory_.GetWeakPtr(),
-                         base::Passed(std::move(update_transaction))))) {
+                         std::move(update_transaction)))) {
     OnRunUpdateCompletion(std::make_unique<UpdateTransaction>());
   }
 }

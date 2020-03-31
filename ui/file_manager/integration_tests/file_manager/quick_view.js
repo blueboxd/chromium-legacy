@@ -311,6 +311,38 @@
   };
 
   /**
+   * Tests opening Quick View on a Smbfs file.
+   */
+  testcase.openQuickViewSmbfs = async () => {
+    const SMBFS_VOLUME_QUERY = '#directory-tree [volume-type-icon="smb"]';
+
+    // Open Files app on Downloads containing ENTRIES.photos.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+    // Populate Smbfs with some files.
+    await addEntries(['smbfs'], BASIC_LOCAL_ENTRY_SET);
+
+    // Mount Smbfs volume.
+    await sendTestMessage({name: 'mountSmbfs'});
+
+    // Wait for the Smbfs volume to mount.
+    await remoteCall.waitForElement(appId, SMBFS_VOLUME_QUERY);
+
+    // Click to open the Smbfs volume.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'fakeMouseClick', appId, [SMBFS_VOLUME_QUERY]),
+        'fakeMouseClick failed');
+
+    const files = TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET);
+    await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+  };
+
+  /**
    * Tests opening Quick View on a USB file.
    */
   testcase.openQuickViewUsb = async () => {

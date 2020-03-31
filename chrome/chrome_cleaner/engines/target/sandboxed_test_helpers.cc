@@ -112,7 +112,7 @@ SandboxChildProcess::SandboxChildProcess(
       FROM_HERE,
       base::BindOnce(&SandboxChildProcess::BindEngineCommandsReceiver,
                      base::Unretained(this),
-                     base::Passed(&engine_commands_receiver), &event));
+                     std::move(engine_commands_receiver), &event));
   event.Wait();
 }
 
@@ -167,7 +167,7 @@ SandboxChildProcess::~SandboxChildProcess() {
                      [](std::unique_ptr<EngineCommandsImpl> commands) {
                        commands.reset();
                      },
-                     base::Passed(&engine_commands_impl_)));
+                     std::move(engine_commands_impl_)));
 }
 
 }  // namespace chrome_cleaner

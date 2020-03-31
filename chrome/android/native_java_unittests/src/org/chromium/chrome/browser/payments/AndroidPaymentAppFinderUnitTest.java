@@ -366,7 +366,7 @@ public class AndroidPaymentAppFinderUnitTest {
             @Override
             public void downloadPaymentMethodManifest(
                     Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
-                callback.onPaymentMethodManifestDownloadSuccess(
+                callback.onPaymentMethodManifestDownloadSuccess(uri,
                         PaymentManifestDownloader.createOpaqueOriginForTest(), "some content here");
             }
 
@@ -382,7 +382,8 @@ public class AndroidPaymentAppFinderUnitTest {
 
         PaymentManifestParser parser = new PaymentManifestParser() {
             @Override
-            public void parsePaymentMethodManifest(String content, ManifestParseCallback callback) {
+            public void parsePaymentMethodManifest(
+                    URI paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
                 try {
                     callback.onPaymentMethodManifestParseSuccess(
                             new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0], false);

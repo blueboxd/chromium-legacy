@@ -41,6 +41,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 #if defined(OS_ANDROID)
@@ -54,6 +55,7 @@ const char kPasswordName[] = "password";
 
 const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
+const char kAliceAccountStoredPassword[] = "account-stored-password";
 const char kAliceEmail[] = "alice@gmail.com";
 
 using autofill::PopupType;
@@ -63,6 +65,7 @@ using autofill::SuggestionVectorIdsAre;
 using autofill::SuggestionVectorLabelsAre;
 using autofill::SuggestionVectorValuesAre;
 using favicon_base::FaviconImageCallback;
+using gfx::test::AreImagesEqual;
 using testing::_;
 using testing::AllOf;
 using testing::ElementsAreArray;
@@ -346,6 +349,7 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
 
     // Load filling and favicon data.
     autofill::PasswordFormFillData data = CreateTestFormFillData();
+    data.uses_account_store = false;
     favicon::MockFaviconService favicon_service;
     EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
     EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _))
@@ -372,8 +376,7 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
         base::i18n::RIGHT_TO_LEFT, base::string16(), show_suggestion_options,
         gfx::RectF());
     ASSERT_GE(suggestions.size(), 1u);
-    EXPECT_TRUE(
-        gfx::test::AreImagesEqual(suggestions[0].custom_icon, kTestFavicon));
+    EXPECT_TRUE(AreImagesEqual(suggestions[0].custom_icon, kTestFavicon));
 
     EXPECT_CALL(*client.mock_driver(),
                 FillSuggestion(test_username_, test_password_));
@@ -394,7 +397,71 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   }
 }
 
-// Test that the popup is updated once remote suggestions are unlocked.
+// Test that suggestions are filled correctly if account-stored and local
+// suggestion have duplicates.
+TEST_F(PasswordAutofillManagerTest,
+       ExternalDelegateAccountStorePasswordSuggestions) {
+  for (bool is_suggestion_on_password_field : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "is_suggestion_on_password_field = "
+                                    << is_suggestion_on_password_field);
+    TestPasswordManagerClient client;
+    NiceMock<MockAutofillClient> autofill_client;
+    InitializePasswordAutofillManager(&client, &autofill_client);
+
+    // Load filling data and account-stored duplicate with a different password.
+    autofill::PasswordFormFillData data = CreateTestFormFillData();
+    autofill::PasswordAndMetadata duplicate;
+    duplicate.password = base::ASCIIToUTF16(kAliceAccountStoredPassword);
+    duplicate.realm = data.preferred_realm;
+    duplicate.uses_account_store = true;
+    data.additional_logins[data.username_field.value] = duplicate;
+    favicon::MockFaviconService favicon_service;
+    EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
+    EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _))
+        .WillOnce(Invoke(RespondWithTestIcon));
+    password_autofill_manager_->OnAddPasswordFillData(data);
+
+    // Show the popup and verify local and account-stored suggestion coexist.
+    std::vector<Suggestion> suggestions;
+    EXPECT_CALL(
+        autofill_client,
+        ShowAutofillPopup(
+            _, _,
+            SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
+                {is_suggestion_on_password_field
+                     ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
+                     : autofill::POPUP_ITEM_ID_USERNAME_ENTRY,
+                 is_suggestion_on_password_field
+                     ? autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY
+                     : autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY,
+                 autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
+            /*autoselect_first_suggestion=*/false, PopupType::kPasswords, _))
+        .WillOnce(testing::SaveArg<2>(&suggestions));
+    password_autofill_manager_->OnShowPasswordSuggestions(
+        base::i18n::RIGHT_TO_LEFT, base::string16(),
+        is_suggestion_on_password_field ? autofill::IS_PASSWORD_FIELD : 0,
+        gfx::RectF());
+    ASSERT_GE(suggestions.size(), 2u);
+    EXPECT_TRUE(AreImagesEqual(suggestions[0].custom_icon, kTestFavicon));
+    EXPECT_TRUE(AreImagesEqual(suggestions[1].custom_icon, kTestFavicon));
+
+    // When selecting the account-stored credential, make sure the filled
+    // password belongs to the selected credential (and not to the first match).
+    EXPECT_CALL(*client.mock_driver(),
+                FillSuggestion(test_username_, duplicate.password));
+    EXPECT_CALL(
+        autofill_client,
+        HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
+    password_autofill_manager_->DidAcceptSuggestion(
+        test_username_,
+        is_suggestion_on_password_field
+            ? autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY
+            : autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY,
+        /*position=*/1);
+  }
+}
+
+// Test that the popup is updated once account-stored suggestions are unlocked.
 TEST_F(PasswordAutofillManagerTest, ShowOptInAndFillButton) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
@@ -657,7 +724,7 @@ TEST_F(PasswordAutofillManagerTest,
       autofill_client,
       UpdatePopup(
           SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
-              {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
+              {autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
           PopupType::kPasswords));

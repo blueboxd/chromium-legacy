@@ -1811,8 +1811,6 @@ source_set("chromeos") {
     "policy/component_active_directory_policy_service.h",
     "policy/configuration_policy_handler_chromeos.cc",
     "policy/configuration_policy_handler_chromeos.h",
-    "policy/device_account_initializer.cc",
-    "policy/device_account_initializer.h",
     "policy/device_auto_update_time_restrictions_decoder.cc",
     "policy/device_auto_update_time_restrictions_decoder.h",
     "policy/device_auto_update_time_restrictions_utils.cc",

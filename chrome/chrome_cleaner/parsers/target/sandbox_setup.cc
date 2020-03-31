@@ -32,7 +32,7 @@ class ParserSandboxTargetHooks : public MojoSandboxTargetHooks {
                        [](std::unique_ptr<ParserImpl> parser_impl) {
                          parser_impl.reset();
                        },
-                       base::Passed(&parser_impl_)));
+                       std::move(parser_impl_)));
   }
 
   // SandboxTargetHooks
@@ -45,9 +45,8 @@ class ParserSandboxTargetHooks : public MojoSandboxTargetHooks {
     // broker process is broken, mojo error handler will abort this process.
     base::RunLoop run_loop;
     mojo_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ParserSandboxTargetHooks::CreateParserImpl,
-                       base::Unretained(this), base::Passed(&receiver)));
+        FROM_HERE, base::BindOnce(&ParserSandboxTargetHooks::CreateParserImpl,
+                                  base::Unretained(this), std::move(receiver)));
     run_loop.Run();
     return RESULT_CODE_SUCCESS;
   }

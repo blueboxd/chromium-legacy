@@ -25,8 +25,6 @@ class ChromeBrowserState;
 // interface; this protocol allows for easy encapsulation of that process.
 // For legacy reasons, the primary UI entry point for an interface is a visible
 // tab.
-// A given interface is scoped (currently) to a browser state; thus there can
-// be two interfaces available (a one incognito and the other not).
 @protocol BrowserInterface
 
 // The view controller showing the current tab for this interface. This property
@@ -67,9 +65,7 @@ class ChromeBrowserState;
 // |currentInterface| is an implementation decision, but |mainInterface| is
 // typical.
 // Changing this value may or may not trigger actual UI changes, or may just be
-// bookkeeping associated with UI changes handled elsewhere. The only invariant
-// is that |currentInterface.current| must be YES, and the |current| value of
-// any other interface must be NO.
+// bookkeeping associated with UI changes handled elsewhere.
 @property(nonatomic, weak) id<BrowserInterface> currentInterface;
 // The "main" (meaning non-incognito -- the nomenclature is legacy) interface.
 // This interface's |incognito| property is expected to be NO.

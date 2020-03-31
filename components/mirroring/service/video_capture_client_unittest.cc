@@ -13,7 +13,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,7 +93,7 @@ class VideoCaptureClientTest : public ::testing::Test,
       client_->OnNewBuffer(
           buffer_id,
           media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
-              mojo::CreateReadOnlySharedMemoryRegion(buffer_size).region));
+              base::ReadOnlySharedMemoryRegion::Create(buffer_size).region));
     }
     task_environment_.RunUntilIdle();
   }

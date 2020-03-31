@@ -68,8 +68,10 @@ const std::string ValidateAndTruncateIfNeeded(const std::string& input,
 }
 
 // Parses the "default_applications": ["https://some/url"] from |dict| into
-// |web_app_manifest_urls|. Returns 'false' for invalid data.
-bool ParseDefaultApplications(base::DictionaryValue* dict,
+// |web_app_manifest_urls|. Uses |manifest_url| to resolve relative URLs.
+// Returns 'false' for invalid data.
+bool ParseDefaultApplications(const GURL& manifest_url,
+                              base::DictionaryValue* dict,
                               std::vector<GURL>* web_app_manifest_urls,
                               const ErrorLogger& log) {
   DCHECK(dict);
@@ -77,6 +79,8 @@ bool ParseDefaultApplications(base::DictionaryValue* dict,
 
   base::ListValue* list = nullptr;
   if (!dict->GetList(kDefaultApplications, &list)) {
+    // TODO(crbug.com/1065337): Move the error message strings to
+    // components/payments/core/native_error_strings.cc.
     log.Error(
         base::StringPrintf("\"%s\" must be a list.", kDefaultApplications));
     return false;
@@ -92,18 +96,17 @@ bool ParseDefaultApplications(base::DictionaryValue* dict,
   for (size_t i = 0; i < apps_number; ++i) {
     std::string item;
     if (!list->GetString(i, &item) || item.empty() ||
-        !base::IsStringUTF8(item) ||
-        !(base::StartsWith(item, kHttpsPrefix, base::CompareCase::SENSITIVE) ||
-          base::StartsWith(item, kHttpPrefix, base::CompareCase::SENSITIVE))) {
-      log.Error(base::StringPrintf(
-          "Each entry in \"%s\" must be UTF8 string that starts with \"%s\" or "
-          "\"%s\" (for localhost).",
-          kDefaultApplications, kHttpsPrefix, kHttpPrefix));
+        !base::IsStringUTF8(item)) {
+      log.Error(base::StringPrintf("Each entry in \"%s\" must be UTF8 string.",
+                                   kDefaultApplications));
       web_app_manifest_urls->clear();
       return false;
     }
 
-    GURL url(item);
+    GURL url = manifest_url.Resolve(item);
+    // TODO(crbug.com/1065337): Check that |url| is the same origin with
+    // |manifest_url|. Currently that's checked by callers, but the earlier this
+    // is caught, the fewer resources Chrome consumes.
     if (!UrlUtil::IsValidManifestUrl(url)) {
       const std::string item_to_print =
           ValidateAndTruncateIfNeeded(item, nullptr);
@@ -353,6 +356,7 @@ PaymentManifestParser::PaymentManifestParser(std::unique_ptr<ErrorLogger> log)
 PaymentManifestParser::~PaymentManifestParser() = default;
 
 void PaymentManifestParser::ParsePaymentMethodManifest(
+    const GURL& manifest_url,
     const std::string& content,
     PaymentMethodCallback callback) {
   parse_payment_callback_counter_++;
@@ -360,7 +364,8 @@ void PaymentManifestParser::ParsePaymentMethodManifest(
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       content, base::BindOnce(&PaymentManifestParser::OnPaymentMethodParse,
-                              weak_factory_.GetWeakPtr(), std::move(callback)));
+                              weak_factory_.GetWeakPtr(), manifest_url,
+                              std::move(callback)));
 }
 
 void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
@@ -384,6 +389,7 @@ void PaymentManifestParser::ParseWebAppInstallationInfo(
 
 // static
 void PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
+    const GURL& manifest_url,
     std::unique_ptr<base::Value> value,
     const ErrorLogger& log,
     std::vector<GURL>* web_app_manifest_urls,
@@ -403,7 +409,8 @@ void PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
   }
 
   if (dict->HasKey(kDefaultApplications) &&
-      !ParseDefaultApplications(dict.get(), web_app_manifest_urls, log)) {
+      !ParseDefaultApplications(manifest_url, dict.get(), web_app_manifest_urls,
+                                log)) {
     return;
   }
 
@@ -641,6 +648,7 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
 }
 
 void PaymentManifestParser::OnPaymentMethodParse(
+    const GURL& manifest_url,
     PaymentMethodCallback callback,
     data_decoder::DataDecoder::ValueOrError result) {
   parse_payment_callback_counter_--;
@@ -651,8 +659,9 @@ void PaymentManifestParser::OnPaymentMethodParse(
 
   if (result.value) {
     ParsePaymentMethodManifestIntoVectors(
-        base::Value::ToUniquePtrValue(std::move(*result.value)), *log_,
-        &web_app_manifest_urls, &supported_origins, &all_origins_supported);
+        manifest_url, base::Value::ToUniquePtrValue(std::move(*result.value)),
+        *log_, &web_app_manifest_urls, &supported_origins,
+        &all_origins_supported);
   } else {
     log_->Error(*result.error);
   }

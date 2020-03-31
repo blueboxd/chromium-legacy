@@ -217,7 +217,7 @@ void StartLogRetrieval(const base::FilePath& file_name_template,
       FROM_HERE,
       base::BindOnce(&InitializeLogFile, base::Unretained(file_ptr), file_path,
                      flags),
-      base::BindOnce(&WriteDebugLogToFile, base::Passed(&file), file_path,
+      base::BindOnce(&WriteDebugLogToFile, std::move(file), file_path,
                      should_compress, std::move(callback)));
 }
 

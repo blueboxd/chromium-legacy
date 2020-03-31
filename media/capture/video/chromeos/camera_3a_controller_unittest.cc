@@ -5,6 +5,7 @@
 #include "media/capture/video/chromeos/camera_3a_controller.h"
 
 #include <functional>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
@@ -70,10 +71,9 @@ class Camera3AControllerTest : public ::testing::Test {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(
-        location,
-        base::BindOnce(&Camera3AControllerTest::RunOnThread,
-                       base::Unretained(this), std::cref(location),
-                       base::Passed(&closure), base::Unretained(&done)));
+        location, base::BindOnce(&Camera3AControllerTest::RunOnThread,
+                                 base::Unretained(this), std::cref(location),
+                                 std::move(closure), base::Unretained(&done)));
     done.Wait();
   }
 

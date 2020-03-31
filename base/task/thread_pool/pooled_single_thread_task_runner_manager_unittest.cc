@@ -364,10 +364,7 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostTaskAfterShutdown) {
 
 // Verify that a Task runs shortly after its delay expires.
 TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
-  TimeTicks start_time = TimeTicks::Now();
-
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::AUTOMATIC,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_ran(WaitableEvent::ResetPolicy::AUTOMATIC);
   auto task_runner = CreateTaskRunner();
 
   // Wait until the task runner is up and running to make sure the test below is
@@ -377,7 +374,9 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
   task_ran.Wait();
   ASSERT_TRUE(!task_ran.IsSignaled());
 
+
   // Post a task with a short delay.
+  const TimeTicks start_time = TimeTicks::Now();
   EXPECT_TRUE(task_runner->PostDelayedTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
       TestTimeouts::tiny_timeout()));
@@ -385,12 +384,12 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
   // Wait until the task runs.
   task_ran.Wait();
 
-  // Expect the task to run after its delay expires, but no more than 250 ms
-  // after that.
+  // Expect the task to run after its delay expires, but no more than a
+  // reasonable amount of time after that (overloaded bots can be slow sometimes
+  // so give it 10X flexibility).
   const TimeDelta actual_delay = TimeTicks::Now() - start_time;
   EXPECT_GE(actual_delay, TestTimeouts::tiny_timeout());
-  EXPECT_LT(actual_delay,
-            TimeDelta::FromMilliseconds(250) + TestTimeouts::tiny_timeout());
+  EXPECT_LT(actual_delay, 10 * TestTimeouts::tiny_timeout());
 }
 
 // Verify that posting tasks after the single-thread manager is destroyed fails

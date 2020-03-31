@@ -118,7 +118,7 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
-                         weak_factory_.GetWeakPtr(), base::Passed(&callback),
+                         weak_factory_.GetWeakPtr(), std::move(callback),
                          false),
           base::TimeDelta::FromSeconds(1));
       return;
@@ -133,7 +133,7 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
   client_->AuthenticateUserWithPasswordOrPin(
       account_id, password, is_pin,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void LoginScreenController::AuthenticateUserWithExternalBinary(

@@ -553,8 +553,27 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   if (node && (IsMenuListOption(node) || IsA<HTMLAreaElement>(node)))
     return nullptr;
 
-  if (node && DisplayLockUtilities::NearestLockedExclusiveAncestor(*node))
+  // Prefer creating AXNodeObjects over AXLayoutObjects in locked subtrees
+  // (e.g. subtree-visibility: auto), even if a LayoutObject is available,
+  // because the LayoutObject is not guaranteed to be up-to-date (it might come
+  // from a previous layout update), or even it is up-to-date, it may not remain
+  // up-to-date. Blink doesn't update style/layout for nodes in locked
+  // subtrees, so creating a matching AXLayoutObjects could lead to the use of
+  // old information. Note that Blink will recreate the AX objects as
+  // AXLayoutObjects when a locked element is activated, aka it becomes visible.
+  // Visit https://wicg.github.io/display-locking/#accessibility for more info.
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object)) {
+    if (!node) {
+      // Nodeless objects such as anonymous blocks do not get accessible objects
+      // in a locked subtree. Anonymous blocks are added to help layout when
+      // a block and inline are siblings.
+      // This prevents an odd mixture of ax objects in a locked subtree, e.g.
+      // AXNodeObjects when there is a node, and AXLayoutObjects
+      // when there isn't. The locked subtree should not have AXLayoutObjects.
+      return nullptr;
+    }
     return GetOrCreate(layout_object->GetNode());
+  }
 
   AXObject* new_obj = CreateFromRenderer(layout_object);
 

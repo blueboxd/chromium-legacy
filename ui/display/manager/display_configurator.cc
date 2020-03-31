@@ -663,7 +663,7 @@ void DisplayConfigurator::TakeControl(DisplayControlCallback callback) {
   display_control_changing_ = true;
   native_display_delegate_->TakeDisplayControl(
       base::BindOnce(&DisplayConfigurator::OnDisplayControlTaken,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DisplayConfigurator::OnDisplayControlTaken(DisplayControlCallback callback,
@@ -707,7 +707,7 @@ void DisplayConfigurator::RelinquishControl(DisplayControlCallback callback) {
   SetDisplayPowerInternal(
       chromeos::DISPLAY_POWER_ALL_OFF, kSetDisplayPowerNoFlags,
       base::BindOnce(&DisplayConfigurator::SendRelinquishDisplayControl,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DisplayConfigurator::SendRelinquishDisplayControl(
@@ -717,9 +717,9 @@ void DisplayConfigurator::SendRelinquishDisplayControl(
     // Set the flag early such that an incoming configuration event won't start
     // while we're releasing control of the displays.
     display_externally_controlled_ = true;
-    native_display_delegate_->RelinquishDisplayControl(base::BindOnce(
-        &DisplayConfigurator::OnDisplayControlRelinquished,
-        weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+    native_display_delegate_->RelinquishDisplayControl(
+        base::BindOnce(&DisplayConfigurator::OnDisplayControlRelinquished,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   } else {
     display_control_changing_ = false;
     std::move(callback).Run(false);

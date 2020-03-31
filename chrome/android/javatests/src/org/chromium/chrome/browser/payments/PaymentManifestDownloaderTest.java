@@ -74,7 +74,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
 
     @Override
     public void onPaymentMethodManifestDownloadSuccess(
-            Origin paymentMethodManifestOrigin, String content) {
+            URI paymentMethodManifestUrl, Origin paymentMethodManifestOrigin, String content) {
         mDownloadComplete = true;
         mDownloadPaymentMethodManifestSuccess = true;
         mPaymentMethodManifest = content;

@@ -2,28 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build_overrides/build.gni")
-import("//third_party/abseil-cpp/abseil_clients.gni")
+import("//third_party/abseil-cpp/absl.gni")
 
-# Usage of Abseil in Chromium is guarded by an explicit opt-in list, before
-# adding projects to this list please reach out to cxx@chromium.org and CC:
-# - https://cs.chromium.org/chromium/src/third_party/abseil-cpp/OWNERS
-#
-# More information can be found at:
-# https://docs.google.com/document/d/1DgS1-A3rzboTLjpf4m1sqkJgWjnY_Ru2dokk1X1vBDU
-if (build_with_chromium) {
-  visibility = absl_visibility
-} else {
-  visibility = [ "*" ]
-}
-
-source_set("atomic_hook") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("atomic_hook") {
   public = [ "internal/atomic_hook.h" ]
   deps = [
     ":config",
@@ -33,28 +14,14 @@ source_set("atomic_hook") {
   visibility += [ "../*" ]
 }
 
-source_set("errno_saver") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("errno_saver") {
   public = [ "internal/errno_saver.h" ]
-  deps = [
-    ":config",
-  ]
+  deps = [ ":config" ]
   visibility = []
   visibility += [ "../*" ]
 }
 
-source_set("log_severity") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("log_severity") {
   sources = [ "log_severity.cc" ]
   public = [ "log_severity.h" ]
   deps = [
@@ -63,13 +30,7 @@ source_set("log_severity") {
   ]
 }
 
-source_set("raw_logging_internal") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("raw_logging_internal") {
   sources = [ "internal/raw_logging.cc" ]
   public = [ "internal/raw_logging.h" ]
   deps = [
@@ -82,13 +43,7 @@ source_set("raw_logging_internal") {
   visibility += [ "../*" ]
 }
 
-source_set("spinlock_wait") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("spinlock_wait") {
   sources = [
     "internal/spinlock_akaros.inc",
     "internal/spinlock_linux.inc",
@@ -96,9 +51,7 @@ source_set("spinlock_wait") {
     "internal/spinlock_wait.cc",
     "internal/spinlock_win32.inc",
   ]
-  public = [
-    "internal/spinlock_wait.h",
-  ]
+  public = [ "internal/spinlock_wait.h" ]
   deps = [
     ":base_internal",
     ":core_headers",
@@ -108,13 +61,7 @@ source_set("spinlock_wait") {
   visibility += [ "../base:*" ]
 }
 
-source_set("config") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("config") {
   public = [
     "config.h",
     "options.h",
@@ -126,16 +73,8 @@ config("clang_support_dynamic_annotations") {
   cflags_cc = [ "-D__CLANG_SUPPORT_DYN_ANNOTATION__" ]
 }
 
-source_set("dynamic_annotations") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [
-    ":clang_support_dynamic_annotations",
-    "//third_party/abseil-cpp:absl_include_config",
-  ]
+absl_source_set("dynamic_annotations") {
+  public_configs = [ ":clang_support_dynamic_annotations" ]
   sources = [ "dynamic_annotations.cc" ]
   public = [ "dynamic_annotations.h" ]
 
@@ -145,13 +84,7 @@ source_set("dynamic_annotations") {
   visibility = [ "../*" ]
 }
 
-source_set("core_headers") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("core_headers") {
   public = [
     "attributes.h",
     "const_init.h",
@@ -163,13 +96,7 @@ source_set("core_headers") {
   deps = [ ":config" ]
 }
 
-source_set("malloc_internal") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("malloc_internal") {
   sources = [ "internal/low_level_alloc.cc" ]
   public = [
     "internal/direct_mmap.h",
@@ -185,13 +112,7 @@ source_set("malloc_internal") {
   ]
 }
 
-source_set("base_internal") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("base_internal") {
   public = [
     "internal/hide_ptr.h",
     "internal/identity.h",
@@ -207,13 +128,7 @@ source_set("base_internal") {
   visibility += [ "../*" ]
 }
 
-source_set("base") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("base") {
   sources = [
     "internal/cycleclock.cc",
     "internal/spinlock.cc",
@@ -233,6 +148,7 @@ source_set("base") {
     "internal/tsan_mutex_interface.h",
     "internal/unscaledcycleclock.h",
   ]
+
   # TODO(mbonadei): The bazel file has:
   #   "-DEFAULTLIB:advapi32.lib"
   # understand if this is needed here as well.
@@ -249,13 +165,7 @@ source_set("base") {
   ]
 }
 
-source_set("throw_delegate") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("throw_delegate") {
   sources = [ "internal/throw_delegate.cc" ]
   public = [ "internal/throw_delegate.h" ]
   deps = [
@@ -266,27 +176,15 @@ source_set("throw_delegate") {
   visibility += [ "../*" ]
 }
 
-source_set("exception_testing") {
+absl_source_set("exception_testing") {
   testonly = true
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_test_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [ "internal/exception_testing.h" ]
   deps = [ ":config" ]
   visibility = []
   visibility += [ "../*" ]
 }
 
-source_set("pretty_function") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("pretty_function") {
   public = [ "internal/pretty_function.h" ]
   visibility = []
   visibility += [ "../*" ]
@@ -319,14 +217,8 @@ source_set("pretty_function") {
 #   ]
 # }
 
-source_set("spinlock_test_common") {
+absl_source_set("spinlock_test_common") {
   testonly = true
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_test_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [ "spinlock_test_common.cc" ]
   deps = [
     ":base",
@@ -337,13 +229,7 @@ source_set("spinlock_test_common") {
   ]
 }
 
-source_set("endian") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+absl_source_set("endian") {
   public = [
     "internal/endian.h",
     "internal/unaligned_access.h",
@@ -354,12 +240,7 @@ source_set("endian") {
   ]
 }
 
-source_set("bits") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
+absl_source_set("bits") {
   public = [ "internal/bits.h" ]
   deps = [
     ":config",
@@ -369,12 +250,7 @@ source_set("bits") {
   visibility += [ "../*" ]
 }
 
-source_set("exponential_biased") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
+absl_source_set("exponential_biased") {
   sources = [ "internal/exponential_biased.cc" ]
   public = [ "internal/exponential_biased.h" ]
   deps = [
@@ -385,12 +261,7 @@ source_set("exponential_biased") {
   visibility += [ "../*" ]
 }
 
-source_set("periodic_sampler") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
+absl_source_set("periodic_sampler") {
   sources = [ "internal/periodic_sampler.cc" ]
   public = [ "internal/periodic_sampler.h" ]
   deps = [
@@ -399,13 +270,8 @@ source_set("periodic_sampler") {
   ]
 }
 
-source_set("scoped_set_env") {
+absl_source_set("scoped_set_env") {
   testonly = true
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
   public = [ "internal/scoped_set_env.h" ]
   sources = [ "internal/scoped_set_env.cc" ]
   deps = [

@@ -128,3 +128,27 @@ TEST_F('EduLoginParentSigninTest', 'ShowHidePassword', function() {
 TEST_F('EduLoginParentSigninTest', 'ClearState', function() {
   this.runMochaTest(edu_login_parent_signin_tests.TestNames.ClearState);
 });
+
+var EduLoginSigninTest = class extends EduLoginTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://chrome-signin/test_loader.html?module=chromeos/edu_login/edu_login_signin_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return edu_login_signin_tests.suiteName;
+  }
+};
+
+TEST_F('EduLoginSigninTest', 'Init', function() {
+  this.runMochaTest(edu_login_signin_tests.TestNames.Init);
+});
+
+TEST_F('EduLoginSigninTest', 'WebUICallbacks', function() {
+  this.runMochaTest(edu_login_signin_tests.TestNames.WebUICallbacks);
+});
+
+TEST_F('EduLoginSigninTest', 'AuthExtHostCallbacks', function() {
+  this.runMochaTest(edu_login_signin_tests.TestNames.AuthExtHostCallbacks);
+});

@@ -52,7 +52,9 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
     FrameRateDecider* const decider_;
   };
 
-  FrameRateDecider(SurfaceManager* surface_manager, Client* client);
+  FrameRateDecider(SurfaceManager* surface_manager,
+                   Client* client,
+                   bool using_synthetic_bfs);
   ~FrameRateDecider() override;
 
   void SetSupportedFrameIntervals(
@@ -69,6 +71,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   void StartAggregation();
   void EndAggregation();
   void UpdatePreferredFrameIntervalIfNeeded();
+  void SetPreferredInterval(base::TimeDelta new_preferred_interval);
   bool multiple_refresh_rates_supported() const {
     return supported_intervals_.size() > 1u;
   }
@@ -77,6 +80,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   base::flat_map<SurfaceId, uint64_t> current_surface_id_to_active_index_;
 
   base::flat_set<FrameSinkId> frame_sinks_updated_in_previous_frame_;
+  base::flat_set<FrameSinkId> frame_sinks_drawn_in_previous_frame_;
   base::flat_map<SurfaceId, uint64_t> prev_surface_id_to_active_index_;
 
   std::vector<base::TimeDelta> supported_intervals_;
@@ -88,6 +92,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   size_t min_num_of_frames_to_toggle_interval_ = 60u;
   SurfaceManager* const surface_manager_;
   Client* const client_;
+  const bool using_synthetic_bfs_;
 };
 
 }  // namespace viz

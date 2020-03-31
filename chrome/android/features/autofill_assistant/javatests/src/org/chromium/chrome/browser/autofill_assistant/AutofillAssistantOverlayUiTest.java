@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayImage;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
@@ -85,9 +86,12 @@ public class AutofillAssistantOverlayUiTest {
     /** Creates a coordinator for use in UI tests with a custom overlay image. */
     private AssistantOverlayCoordinator createCoordinator(
             AssistantOverlayModel model, @Nullable Bitmap overlayImage) throws ExecutionException {
+        ChromeActivity activity = mTestRule.getActivity();
         return runOnUiThreadBlocking(
                 ()
-                        -> new AssistantOverlayCoordinator(mTestRule.getActivity(), model,
+                        -> new AssistantOverlayCoordinator(activity,
+                                activity.getFullscreenManager(), activity.getCompositorViewHolder(),
+                                activity.getScrim(), model,
                                 new AutofillAssistantUiTestUtil.MockImageFetcher(
                                         overlayImage, null)));
     }

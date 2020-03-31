@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -76,6 +77,9 @@ scoped_refptr<BiquadFilterHandler> BiquadFilterHandler::Create(
 }
 
 void BiquadFilterHandler::Process(uint32_t frames_to_process) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "BiquadFilterHandler::Process");
+
   AudioBasicProcessorHandler::Process(frames_to_process);
 
   if (!did_warn_bad_filter_state_) {

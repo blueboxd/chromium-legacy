@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -61,8 +62,14 @@ void GetNewTab(Browser* browser, content::WebContents** web_contents) {
 class PasswordManagerSyncTest : public SyncTest {
  public:
   PasswordManagerSyncTest() : SyncTest(SINGLE_CLIENT) {
-    feature_list_.InitAndEnableFeature(
-        password_manager::features::kEnablePasswordsAccountStorage);
+    // Note: Enabling kFillOnAccountSelect effectively *disables* autofilling on
+    // page load. This is important because if a password is autofilled, then
+    // all Javascript changes to it are discarded, and thus any tests that cover
+    // updating a password become flaky.
+    feature_list_.InitWithFeatures(
+        {password_manager::features::kEnablePasswordsAccountStorage,
+         password_manager::features::kFillOnAccountSelect},
+        {});
   }
 
   ~PasswordManagerSyncTest() override = default;
@@ -348,6 +355,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // There should be an update bubble; accept it.
   BubbleObserver bubble_observer(web_contents);
+  // TODO(crbug.com/1058339): Remove this temporary logging once the test
+  // flakiness is diagnosed.
+  if (!bubble_observer.IsUpdatePromptShownAutomatically()) {
+    LOG(ERROR) << "ManagePasswordsUIController state: "
+               << ManagePasswordsUIController::FromWebContents(web_contents)
+                      ->GetState();
+  }
   ASSERT_TRUE(bubble_observer.IsUpdatePromptShownAutomatically());
   bubble_observer.AcceptUpdatePrompt();
 
@@ -376,6 +390,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
   // There should be an update bubble; accept it.
   BubbleObserver bubble_observer(web_contents);
+  // TODO(crbug.com/1058339): Remove this temporary logging once the test
+  // flakiness is diagnosed.
+  if (!bubble_observer.IsUpdatePromptShownAutomatically()) {
+    LOG(ERROR) << "ManagePasswordsUIController state: "
+               << ManagePasswordsUIController::FromWebContents(web_contents)
+                      ->GetState();
+  }
   ASSERT_TRUE(bubble_observer.IsUpdatePromptShownAutomatically());
   bubble_observer.AcceptUpdatePrompt();
 

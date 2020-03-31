@@ -25,6 +25,7 @@ class PaymentManifestParserAndroid {
 
   void ParsePaymentMethodManifest(
       JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jmanifest_url,
       const base::android::JavaParamRef<jstring>& jcontent,
       const base::android::JavaParamRef<jobject>& jcallback);
 

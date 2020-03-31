@@ -4,6 +4,8 @@
 
 #include "media/capture/video/chromeos/camera_3a_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
 
@@ -192,7 +194,7 @@ void Camera3AController::Stabilize3AForStillCapture(
   if (!af_mode_set_ || !ae_mode_set_ || !awb_mode_set_) {
     on_3a_mode_set_callback_ =
         base::BindOnce(&Camera3AController::Stabilize3AForStillCapture,
-                       GetWeakPtr(), base::Passed(&on_3a_stabilized_callback));
+                       GetWeakPtr(), std::move(on_3a_stabilized_callback));
     return;
   }
 

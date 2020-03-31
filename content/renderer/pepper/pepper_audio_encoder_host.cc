@@ -14,7 +14,6 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -363,7 +362,7 @@ bool PepperAudioEncoderHost::AllocateBuffers(
     return false;
 
   base::UnsafeSharedMemoryRegion audio_region =
-      mojo::CreateUnsafeSharedMemoryRegion(
+      base::UnsafeSharedMemoryRegion::Create(
           total_audio_memory_size.ValueOrDie());
   if (!audio_region.IsValid())
     return false;
@@ -388,7 +387,7 @@ bool PepperAudioEncoderHost::AllocateBuffers(
   }
 
   base::UnsafeSharedMemoryRegion bitstream_region =
-      mojo::CreateUnsafeSharedMemoryRegion(
+      base::UnsafeSharedMemoryRegion::Create(
           total_bitstream_memory_size.ValueOrDie());
   if (!bitstream_region.IsValid())
     return false;

@@ -14,6 +14,10 @@
 
 // Use -initWithBaseViewController:browser:
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+// Use -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 

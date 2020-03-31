@@ -514,8 +514,7 @@ struct ManagedOpenVPNProperties {
   ManagedCertificatePattern? client_cert_pattern;
   ManagedString? client_cert_ref;
   ManagedString? client_cert_type;
-  ManagedString? comp_lzo;
-  ManagedBoolean? comp_no_adapt;
+  ManagedString? compression_algorithm;
   ManagedStringList? extra_hosts;
   ManagedBoolean? ignore_default_route;
   ManagedString? key_direction;

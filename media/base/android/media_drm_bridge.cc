@@ -681,10 +681,9 @@ void MediaDrmBridge::OnMediaCryptoReady(
   DVLOG(1) << __func__;
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MediaDrmBridge::NotifyMediaCryptoReady,
-                     weak_factory_.GetWeakPtr(),
-                     base::Passed(CreateJavaObjectPtr(j_media_crypto.obj()))));
+      FROM_HERE, base::BindOnce(&MediaDrmBridge::NotifyMediaCryptoReady,
+                                weak_factory_.GetWeakPtr(),
+                                CreateJavaObjectPtr(j_media_crypto.obj())));
 }
 
 void MediaDrmBridge::OnProvisionRequest(
@@ -816,7 +815,7 @@ void MediaDrmBridge::OnSessionKeysChange(
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(session_keys_change_cb_, std::move(session_id),
-                     has_additional_usable_key, base::Passed(&cdm_keys_info)));
+                     has_additional_usable_key, std::move(cdm_keys_info)));
 
   if (has_additional_usable_key) {
     task_runner_->PostTask(

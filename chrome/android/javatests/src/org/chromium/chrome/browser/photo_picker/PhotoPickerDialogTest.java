@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +40,7 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelega
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.PhotoPickerListener;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,6 +59,10 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
                                               DecoderServiceHost.DecoderStatusCallback,
                                               PickerVideoPlayer.VideoPlaybackStatusCallback,
                                               AnimationListener {
+    @ClassRule
+    public static DisableAnimationsTestRule mDisableAnimationsTestRule =
+            new DisableAnimationsTestRule();
+
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = 30L;
 

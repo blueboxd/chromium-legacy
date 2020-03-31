@@ -140,6 +140,9 @@ class TabImpl : public Tab,
   void AttachToView(views::WebView* web_view) override;
 #endif
 
+  void WebPreferencesChanged();
+  bool GetPasswordEchoEnabled();
+
   // Executes |script| with a user gesture.
   void ExecuteScriptWithUserGestureForTests(const base::string16& script);
 

@@ -84,6 +84,7 @@ class BrowserImpl : public Browser {
       const base::android::JavaParamRef<jbyteArray>& j_persistence_crypto_key,
       const base::android::JavaParamRef<jbyteArray>&
           j_minimal_persistence_state);
+  void WebPreferencesChanged(JNIEnv* env);
 #endif
 
   // Used in tests to specify a non-default max (0 means use the default).
@@ -95,6 +96,8 @@ class BrowserImpl : public Browser {
       base::OnceClosure closure) {
     visible_security_state_changed_callback_for_tests_ = std::move(closure);
   }
+
+  bool GetPasswordEchoEnabled();
 
   // Browser:
   Tab* AddTab(std::unique_ptr<Tab> tab) override;

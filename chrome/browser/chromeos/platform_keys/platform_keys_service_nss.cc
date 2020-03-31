@@ -302,7 +302,7 @@ class SelectCertificatesState : public NSSOperationState {
                 std::unique_ptr<net::CertificateList> matches,
                 const std::string& error_message) {
     auto bound_callback =
-        base::BindOnce(callback_, base::Passed(&matches), error_message);
+        base::BindOnce(callback_, std::move(matches), error_message);
     origin_task_runner_->PostTask(
         from, base::BindOnce(&NSSOperationState::RunCallback,
                              std::move(bound_callback), service_weak_ptr_));
@@ -333,7 +333,7 @@ class GetCertificatesState : public NSSOperationState {
                 std::unique_ptr<net::CertificateList> certs,
                 const std::string& error_message) {
     auto bound_callback =
-        base::BindOnce(callback_, base::Passed(&certs), error_message);
+        base::BindOnce(callback_, std::move(certs), error_message);
     origin_task_runner_->PostTask(
         from, base::BindOnce(&NSSOperationState::RunCallback,
                              std::move(bound_callback), service_weak_ptr_));
@@ -415,7 +415,7 @@ class GetTokensState : public NSSOperationState {
                 std::unique_ptr<std::vector<std::string>> token_ids,
                 const std::string& error_message) {
     auto bound_callback =
-        base::BindOnce(callback_, base::Passed(&token_ids), error_message);
+        base::BindOnce(callback_, std::move(token_ids), error_message);
     origin_task_runner_->PostTask(
         from, base::BindOnce(&NSSOperationState::RunCallback,
                              std::move(bound_callback), service_weak_ptr_));

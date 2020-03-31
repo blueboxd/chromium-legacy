@@ -342,7 +342,7 @@ void CloudExternalDataManagerBase::Backend::RunCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   callback_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), base::Passed(&data), file_path));
+      base::BindOnce(std::move(callback), std::move(data), file_path));
 }
 
 void CloudExternalDataManagerBase::Backend::StartDownload(
@@ -389,7 +389,7 @@ void CloudExternalDataManagerBase::SetExternalDataStore(
   backend_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Backend::SetExternalDataStore,
                                 base::Unretained(backend_.get()),
-                                base::Passed(&external_data_store)));
+                                std::move(external_data_store)));
 }
 
 void CloudExternalDataManagerBase::SetPolicyStore(
@@ -427,9 +427,9 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
   }
 
   backend_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Backend::OnMetadataUpdated,
-                                base::Unretained(backend_.get()),
-                                base::Passed(&metadata)));
+      FROM_HERE,
+      base::BindOnce(&Backend::OnMetadataUpdated,
+                     base::Unretained(backend_.get()), std::move(metadata)));
 }
 
 void CloudExternalDataManagerBase::Connect(

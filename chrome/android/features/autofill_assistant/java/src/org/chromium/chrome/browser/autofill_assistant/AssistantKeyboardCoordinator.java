@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.app.Activity;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 
@@ -14,8 +15,9 @@ import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
  * Coordinator responsible for enabling or disabling the soft keyboard.
  */
 class AssistantKeyboardCoordinator {
-    private final ChromeActivity mActivity;
+    private final Activity mActivity;
     private final ActivityKeyboardVisibilityDelegate mKeyboardDelegate;
+    private final CompositorViewHolder mCompositorViewHolder;
     private final KeyboardVisibilityListener mKeyboardVisibilityListener =
             this::onKeyboardVisibilityChanged;
     private boolean mAllowShowingSoftKeyboard = true;
@@ -25,9 +27,12 @@ class AssistantKeyboardCoordinator {
         void onKeyboardVisibilityChanged(boolean visible);
     }
 
-    AssistantKeyboardCoordinator(ChromeActivity activity, AssistantModel model, Delegate delegate) {
+    AssistantKeyboardCoordinator(Activity activity,
+            ActivityKeyboardVisibilityDelegate keyboardVisibilityDelegate,
+            CompositorViewHolder compositorViewHolder, AssistantModel model, Delegate delegate) {
         mActivity = activity;
-        mKeyboardDelegate = activity.getWindowAndroid().getKeyboardDelegate();
+        mKeyboardDelegate = keyboardVisibilityDelegate;
+        mCompositorViewHolder = compositorViewHolder;
         mDelegate = delegate;
 
         model.addObserver((source, propertyKey) -> {
@@ -45,12 +50,12 @@ class AssistantKeyboardCoordinator {
 
     /** Returns whether the keyboard is currently shown. */
     boolean isKeyboardShown() {
-        return mKeyboardDelegate.isKeyboardShowing(mActivity, mActivity.getCompositorViewHolder());
+        return mKeyboardDelegate.isKeyboardShowing(mActivity, mCompositorViewHolder);
     }
 
     /** Hides the keyboard. */
     void hideKeyboard() {
-        mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
+        mKeyboardDelegate.hideKeyboard(mCompositorViewHolder);
     }
 
     /** Hides the keyboard after a delay if the focus is not on a TextView */
@@ -66,7 +71,7 @@ class AssistantKeyboardCoordinator {
     private void allowShowingSoftKeyboard(boolean allowed) {
         mAllowShowingSoftKeyboard = allowed;
         if (!allowed) {
-            mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
+            mKeyboardDelegate.hideKeyboard(mCompositorViewHolder);
         }
     }
 

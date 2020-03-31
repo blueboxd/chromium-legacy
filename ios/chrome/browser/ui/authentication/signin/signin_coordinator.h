@@ -9,7 +9,7 @@
 
 #import "base/ios/block_types.h"
 #import "components/signin/public/base/signin_metrics.h"
-#import "ios/chrome/browser/ui/authentication/signin/signin_enums.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 class Browser;

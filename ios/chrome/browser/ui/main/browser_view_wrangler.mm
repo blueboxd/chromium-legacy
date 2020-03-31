@@ -26,10 +26,6 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -107,7 +103,6 @@
 
   std::unique_ptr<Browser> _mainBrowser;
   std::unique_ptr<Browser> _otrBrowser;
-  std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
 }
 
 @property(nonatomic, strong, readwrite) WrangledBrowser* mainInterface;
@@ -124,9 +119,6 @@
 // Restore session to the given |browser|, any existing tabs that have been
 // saved for the |browser| will be loaded.
 - (void)restoreSessionToBrowser:(Browser*)browser;
-
-// Add the common observers to the browser's |webStateList|.
-- (void)addObserversToWebStateList:(WebStateList*)webStateList;
 
 // Setters for the main and otr Browsers.
 - (void)setMainBrowser:(std::unique_ptr<Browser>)browser;
@@ -146,7 +138,6 @@
 @synthesize currentInterface = _currentInterface;
 
 - (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
-                webStateListObserver:(id<WebStateListObserving>)observer
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
          browsingDataCommandEndpoint:
@@ -158,8 +149,6 @@
     _applicationCommandEndpoint = applicationCommandEndpoint;
     _browsingDataCommandEndpoint = browsingDataCommandEndpoint;
     _appURLLoadingService = appURLLoadingService;
-    _webStateListForwardingObserver =
-        std::make_unique<WebStateListObserverBridge>(observer);
   }
   return self;
 }
@@ -175,8 +164,7 @@
   browserList->AddBrowser(_mainBrowser.get());
   [self dispatchToEndpointsForBrowser:_mainBrowser.get()];
   [self restoreSessionToBrowser:_mainBrowser.get()];
-  [self addObserversToWebStateList:_mainBrowser->GetWebStateList()];
-
+  breakpad::MonitorTabStateForWebStateList(_mainBrowser->GetWebStateList());
   // Follow loaded URLs in the main tab model to send those in case of
   // crashes.
   breakpad::MonitorURLsForWebStateList(self.mainBrowser->GetWebStateList());
@@ -255,7 +243,6 @@
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     breakpad::StopMonitoringURLsForWebStateList(webStateList);
     [tabModel disconnect];
-    webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
   _mainBrowser = std::move(mainBrowser);
@@ -267,7 +254,6 @@
     WebStateList* webStateList = self.otrBrowser->GetWebStateList();
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     [tabModel disconnect];
-    webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
   _otrBrowser = std::move(otrBrowser);
@@ -389,7 +375,7 @@
   if (restorePersistedState)
     [self restoreSessionToBrowser:browser.get()];
 
-  [self addObserversToWebStateList:browser->GetWebStateList()];
+  breakpad::MonitorTabStateForWebStateList(browser->GetWebStateList());
 
   return browser;
 }
@@ -433,11 +419,6 @@
   }
   SessionRestorationBrowserAgent::FromBrowser(browser)->RestoreSessionWindow(
       sessionWindow);
-}
-
-- (void)addObserversToWebStateList:(WebStateList*)webStateList {
-  webStateList->AddObserver(_webStateListForwardingObserver.get());
-  breakpad::MonitorTabStateForWebStateList(webStateList);
 }
 
 @end

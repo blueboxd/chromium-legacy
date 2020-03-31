@@ -207,6 +207,15 @@ ContentBrowserClientImpl::CreateBrowserMainParts(
   return browser_main_parts;
 }
 
+void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebLayerFakePermissions)) {
+    command_line->AppendSwitch(switches::kWebLayerFakePermissions);
+  }
+}
+
 std::string ContentBrowserClientImpl::GetApplicationLocale() {
   return i18n::GetApplicationLocale();
 }
@@ -277,6 +286,7 @@ void ContentBrowserClientImpl::OverrideWebkitPrefs(
       content::WebContents::FromRenderViewHost(render_view_host);
   TabImpl* tab = TabImpl::FromWebContents(web_contents);
   prefs->fullscreen_supported = tab && tab->fullscreen_delegate();
+  prefs->password_echo_enabled = tab && tab->GetPasswordEchoEnabled();
 }
 
 mojo::Remote<network::mojom::NetworkContext>

@@ -30,6 +30,7 @@
 #include "components/onc/onc_constants.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 namespace onc {
@@ -212,6 +213,14 @@ void LocalTranslator::TranslateOpenVPN() {
 
   SetClientCertProperties(client_cert::CONFIG_TYPE_OPENVPN, onc_object_,
                           shill_dictionary_);
+
+  const std::string* compression_algorithm =
+      onc_object_->FindStringKey(::onc::openvpn::kCompressionAlgorithm);
+  if (compression_algorithm) {
+    TranslateWithTableAndSet(*compression_algorithm,
+                             kOpenVpnCompressionAlgorithmTable,
+                             shill::kOpenVPNCompressProperty);
+  }
 
   // Modified CopyFieldsAccordingToSignature to handle RemoteCertKU and
   // ServerCAPEMs and handle all other fields as strings.

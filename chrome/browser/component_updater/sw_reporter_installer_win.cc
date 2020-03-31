@@ -426,7 +426,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
             &safe_browsing::ChromeCleanerController::OnSwReporterReady,
             base::Unretained(
                 safe_browsing::ChromeCleanerController::GetInstance()),
-            base::Passed(&invocations)));
+            std::move(invocations)));
   };
 
   // Install the component.

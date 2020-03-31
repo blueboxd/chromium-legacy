@@ -315,10 +315,9 @@ void BrailleControllerImpl::DispatchKeys() {
 
 void BrailleControllerImpl::DispatchKeyEvent(std::unique_ptr<KeyEvent> event) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&BrailleControllerImpl::DispatchKeyEvent,
-                       base::Unretained(this), base::Passed(&event)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&BrailleControllerImpl::DispatchKeyEvent,
+                                  base::Unretained(this), std::move(event)));
     return;
   }
   VLOG(1) << "Dispatching key event: " << *event->ToValue();
@@ -333,7 +332,7 @@ void BrailleControllerImpl::DispatchOnDisplayStateChanged(
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(
                 &BrailleControllerImpl::DispatchOnDisplayStateChanged,
-                base::Unretained(this), base::Passed(&new_state)))) {
+                base::Unretained(this), std::move(new_state)))) {
       NOTREACHED();
     }
     return;

@@ -20,7 +20,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_graphics_3d.h"
@@ -362,7 +361,7 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
 
   for (uint32_t i = 0; i < kDefaultNumberOfBitstreamBuffers; ++i) {
     base::UnsafeSharedMemoryRegion region =
-        mojo::CreateUnsafeSharedMemoryRegion(output_buffer_size);
+        base::UnsafeSharedMemoryRegion::Create(output_buffer_size);
     if (!region.IsValid()) {
       shm_buffers_.clear();
       break;
@@ -471,7 +470,7 @@ void PepperVideoEncoderHost::AllocateVideoFrames() {
   uint32_t total_size = size.ValueOrDie();
 
   base::UnsafeSharedMemoryRegion region =
-      mojo::CreateUnsafeSharedMemoryRegion(total_size);
+      base::UnsafeSharedMemoryRegion::Create(total_size);
   if (!region.IsValid() ||
       !buffer_manager_.SetBuffers(frame_count_, buffer_size_aligned,
                                   std::move(region), true)) {

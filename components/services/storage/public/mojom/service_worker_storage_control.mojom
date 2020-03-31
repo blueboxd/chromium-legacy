@@ -19,6 +19,15 @@ struct ServiceWorkerFindRegistrationResult {
   array<ServiceWorkerResourceRecord> resources;
 };
 
+// Used to tell the browser process or embedders if there are registrations
+// after ServiceWorkerStorageControl::DeleteRegistration().
+enum ServiceWorkerStorageOriginState {
+  // Registrations may exist for the origin. It cannot be deleted.
+  kKeep,
+  // No registrations exist for the origin. It can be deleted.
+  kDelete,
+};
+
 // Controls the state of service worker storage within a partition. This is a
 // privileged interface and must not be brokered to untrusted clients.
 //
@@ -37,4 +46,15 @@ interface ServiceWorkerStorageControl {
   // Reads a stored registration for |registration_id|.
   FindRegistrationForId(int64 registration_id, url.mojom.Url origin) =>
       (ServiceWorkerFindRegistrationResult result);
+
+  // Stores |registration_data| and |resources| on persistent storage.
+  StoreRegistration(ServiceWorkerRegistrationData registration,
+                    array<ServiceWorkerResourceRecord> resources) =>
+      (ServiceWorkerDatabaseStatus status);
+
+  // Deletes the registration specified by |registration_id|. |origin_state| is
+  // kDelete if there is no registration for |origin| after deletion.
+  DeleteRegistration(int64 registration_id, url.mojom.Url origin) =>
+      (ServiceWorkerDatabaseStatus status,
+       ServiceWorkerStorageOriginState origin_state);
 };

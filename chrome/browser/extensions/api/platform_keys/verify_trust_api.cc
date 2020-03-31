@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -115,7 +116,7 @@ void VerifyTrustAPI::Verify(std::unique_ptr<Params> params,
   base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&IOPart::Verify, base::Unretained(io_part_.get()),
-                     base::Passed(&params), extension_id, finish_callback));
+                     std::move(params), extension_id, finish_callback));
 }
 
 void VerifyTrustAPI::OnExtensionUnloaded(

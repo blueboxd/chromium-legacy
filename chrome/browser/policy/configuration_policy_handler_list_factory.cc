@@ -24,7 +24,6 @@
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/homepage_location_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
-#include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/policy/network_prediction_policy_handler.h"
 #include "chrome/browser/policy/printing_restrictions_policy_handler.h"
 #include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
@@ -45,6 +44,7 @@
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/autofill/core/browser/autofill_policy_handler.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
@@ -1318,7 +1318,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<IncognitoModePolicyHandler>());
   handlers->AddHandler(std::make_unique<GuestModePolicyHandler>());
   handlers->AddHandler(
-      std::make_unique<ManagedBookmarksPolicyHandler>(chrome_schema));
+      std::make_unique<bookmarks::ManagedBookmarksPolicyHandler>(
+          chrome_schema));
   handlers->AddHandler(std::make_unique<HomepageLocationPolicyHandler>());
   handlers->AddHandler(std::make_unique<ProxyPolicyHandler>());
   handlers->AddHandler(std::make_unique<SecureDnsPolicyHandler>());

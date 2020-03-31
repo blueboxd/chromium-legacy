@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share;
 
 import android.annotation.TargetApi;
+import android.app.DownloadManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -136,7 +137,7 @@ public class ShareImageFileUtils {
                 callback.onResult(uri);
             }
             @Override
-            public void onImageSaveError() {}
+            public void onImageSaveError(String displayName) {}
         };
 
         String fileName = String.valueOf(System.currentTimeMillis());
@@ -173,7 +174,7 @@ public class ShareImageFileUtils {
      */
     public interface OnImageSaveListener {
         void onImageSaved(Uri uri, String displayName);
-        void onImageSaveError();
+        void onImageSaveError(String displayName);
     }
 
     /**
@@ -221,26 +222,32 @@ public class ShareImageFileUtils {
                     StreamUtil.closeQuietly(fOut);
                 }
 
-                Uri uri = FileUtils.getUriForFile(destFile);
+                Uri uri = null;
                 if (!isTemporary) {
                     if (BuildInfo.isAtLeastQ()) {
                         uri = addToMediaStore(destFile);
                     } else {
-                        addCompletedDownload(destFile);
+                        long downloadId = addCompletedDownload(destFile);
+                        DownloadManager manager =
+                                (DownloadManager) ContextUtils.getApplicationContext()
+                                        .getSystemService(Context.DOWNLOAD_SERVICE);
+                        return manager.getUriForDownloadedFile(downloadId);
                     }
+                } else {
+                    uri = FileUtils.getUriForFile(destFile);
                 }
                 return uri;
             }
 
             @Override
             protected void onCancelled() {
-                listener.onImageSaveError();
+                listener.onImageSaveError(fileName);
             }
 
             @Override
             protected void onPostExecute(Uri uri) {
                 if (uri == null) {
-                    listener.onImageSaveError();
+                    listener.onImageSaveError(fileName);
                     return;
                 }
 

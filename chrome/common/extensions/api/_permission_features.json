@@ -270,8 +270,18 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
-      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
-      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509"   // Imprivata (login screen) DEV
+      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen) crbug.com/1065112
+      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509", // Imprivata (login screen) crbug.com/1065112
+      "CDA6A10BE50CE65C59B766D0CE6A27E8E0A1533F", // Imprivata (login screen) crbug.com/1065112
+      "D85454743B32D9F5ABF3E5F18DF78809F3A0ABD4", // Imprivata (login screen) crbug.com/1065112
+      "04569B963251EB28C0906099668D98EE65ECA2D8", // Imprivata (login screen) crbug.com/1065112
+      "7BF5B69C3ACA9E6ACA5C480661B8073EB9FA32A9", // Imprivata (login screen) crbug.com/1065112
+      "5F2EF8E9F7E975090278D6A0AD039860430C5684", // Imprivata (login screen) crbug.com/1065112
+      "97A4DC8AFC1FCF665C71B624A55675C297AB256C", // Imprivata (login screen) crbug.com/1065112
+      "A00EB72B456C374F1EA86C09833C7DBB6CD95CAE", // Imprivata (login screen) crbug.com/1065112
+      "51DDBADA37EF4D25AD03CB1BB6451799456FE183", // Imprivata (login screen) crbug.com/1065112
+      "DD97CAE4D8658003658140109BC119188A19A5B8", // Imprivata (login screen) crbug.com/1065112
+      "320857126E2180A5751AA384B7B7332A4964BD8C"  // Imprivata (login screen) crbug.com/1065112
     ]
   }],
   "enterprise.hardwarePlatform": {
@@ -450,12 +460,32 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
-      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519",  // Login screen APIs test extension
-      "3F5995FE79A861F019C6F093BEF98D73FA9D3A5F",  // Login screen APIs in-sesesion test extension
-      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
-      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509",  // Imprivata (login screen) DEV
-      "A24DE1B21A67E25FB62AC8491642038FE25DA75B",  // Imprivata (in session)
-      "6B25164FFE2BADB5F1DBBD301CC022170267022D"   // Imprivata (in session) DEV
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // Login screen APIs test extension
+      "3F5995FE79A861F019C6F093BEF98D73FA9D3A5F", // Login screen APIs in-sesesion test extension
+      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen) crbug.com/1065112
+      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509", // Imprivata (login screen) crbug.com/1065112
+      "CDA6A10BE50CE65C59B766D0CE6A27E8E0A1533F", // Imprivata (login screen) crbug.com/1065112
+      "D85454743B32D9F5ABF3E5F18DF78809F3A0ABD4", // Imprivata (login screen) crbug.com/1065112
+      "04569B963251EB28C0906099668D98EE65ECA2D8", // Imprivata (login screen) crbug.com/1065112
+      "7BF5B69C3ACA9E6ACA5C480661B8073EB9FA32A9", // Imprivata (login screen) crbug.com/1065112
+      "5F2EF8E9F7E975090278D6A0AD039860430C5684", // Imprivata (login screen) crbug.com/1065112
+      "97A4DC8AFC1FCF665C71B624A55675C297AB256C", // Imprivata (login screen) crbug.com/1065112
+      "A00EB72B456C374F1EA86C09833C7DBB6CD95CAE", // Imprivata (login screen) crbug.com/1065112
+      "51DDBADA37EF4D25AD03CB1BB6451799456FE183", // Imprivata (login screen) crbug.com/1065112
+      "DD97CAE4D8658003658140109BC119188A19A5B8", // Imprivata (login screen) crbug.com/1065112
+      "320857126E2180A5751AA384B7B7332A4964BD8C", // Imprivata (login screen) crbug.com/1065112
+      "A24DE1B21A67E25FB62AC8491642038FE25DA75B", // Imprivata (in-session) crbug.com/1065112
+      "6B25164FFE2BADB5F1DBBD301CC022170267022D", // Imprivata (in-session) crbug.com/1065112
+      "4D15F9AFCF54E56F0A6E06D22DD15F133DCF0882", // Imprivata (in-session) crbug.com/1065112
+      "171F86E3D91235E5FC745282834BB3DA164F14B3", // Imprivata (in-session) crbug.com/1065112
+      "F7BDB4C21BFF955F851C6CF65167373BDEED6218", // Imprivata (in-session) crbug.com/1065112
+      "220ABCF657446B2CBEBDE2DDA09B6FC415E87FB7", // Imprivata (in-session) crbug.com/1065112
+      "B0092A67BFB22960DE49B11E9CA56035BD40BCFA", // Imprivata (in-session) crbug.com/1065112
+      "3899082721C4996840EA4DD3A7B604914FB915CF", // Imprivata (in-session) crbug.com/1065112
+      "0D0EF5C81661E90BAFD606EADD68D8BB5EDC7E9A", // Imprivata (in-session) crbug.com/1065112
+      "D53DFC9E0D738159557959ABCA61BDDC97470C87", // Imprivata (in-session) crbug.com/1065112
+      "579D5666AB7B27A2E9EA0B13FB7F70CA7D864F72", // Imprivata (in-session) crbug.com/1065112
+      "FC3BBFAD9D7E711BBBD8235E7640348A9B98EB5F" // Imprivata (in-session) crbug.com/1065112
     ]
   },
   "loginScreenStorage": {
@@ -464,10 +494,30 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
-      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
-      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509",  // Imprivata (login screen) DEV
-      "A24DE1B21A67E25FB62AC8491642038FE25DA75B",  // Imprivata (in session)
-      "6B25164FFE2BADB5F1DBBD301CC022170267022D"   // Imprivata (in session) DEV
+      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen) crbug.com/1065112
+      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509", // Imprivata (login screen) crbug.com/1065112
+      "CDA6A10BE50CE65C59B766D0CE6A27E8E0A1533F", // Imprivata (login screen) crbug.com/1065112
+      "D85454743B32D9F5ABF3E5F18DF78809F3A0ABD4", // Imprivata (login screen) crbug.com/1065112
+      "04569B963251EB28C0906099668D98EE65ECA2D8", // Imprivata (login screen) crbug.com/1065112
+      "7BF5B69C3ACA9E6ACA5C480661B8073EB9FA32A9", // Imprivata (login screen) crbug.com/1065112
+      "5F2EF8E9F7E975090278D6A0AD039860430C5684", // Imprivata (login screen) crbug.com/1065112
+      "97A4DC8AFC1FCF665C71B624A55675C297AB256C", // Imprivata (login screen) crbug.com/1065112
+      "A00EB72B456C374F1EA86C09833C7DBB6CD95CAE", // Imprivata (login screen) crbug.com/1065112
+      "51DDBADA37EF4D25AD03CB1BB6451799456FE183", // Imprivata (login screen) crbug.com/1065112
+      "DD97CAE4D8658003658140109BC119188A19A5B8", // Imprivata (login screen) crbug.com/1065112
+      "320857126E2180A5751AA384B7B7332A4964BD8C", // Imprivata (login screen) crbug.com/1065112
+      "A24DE1B21A67E25FB62AC8491642038FE25DA75B", // Imprivata (in-session) crbug.com/1065112
+      "6B25164FFE2BADB5F1DBBD301CC022170267022D", // Imprivata (in-session) crbug.com/1065112
+      "4D15F9AFCF54E56F0A6E06D22DD15F133DCF0882", // Imprivata (in-session) crbug.com/1065112
+      "171F86E3D91235E5FC745282834BB3DA164F14B3", // Imprivata (in-session) crbug.com/1065112
+      "F7BDB4C21BFF955F851C6CF65167373BDEED6218", // Imprivata (in-session) crbug.com/1065112
+      "220ABCF657446B2CBEBDE2DDA09B6FC415E87FB7", // Imprivata (in-session) crbug.com/1065112
+      "B0092A67BFB22960DE49B11E9CA56035BD40BCFA", // Imprivata (in-session) crbug.com/1065112
+      "3899082721C4996840EA4DD3A7B604914FB915CF", // Imprivata (in-session) crbug.com/1065112
+      "0D0EF5C81661E90BAFD606EADD68D8BB5EDC7E9A", // Imprivata (in-session) crbug.com/1065112
+      "D53DFC9E0D738159557959ABCA61BDDC97470C87", // Imprivata (in-session) crbug.com/1065112
+      "579D5666AB7B27A2E9EA0B13FB7F70CA7D864F72", // Imprivata (in-session) crbug.com/1065112
+      "FC3BBFAD9D7E711BBBD8235E7640348A9B98EB5F"  // Imprivata (in-session) crbug.com/1065112
     ]
   },
   "loginScreenUi": {
@@ -477,8 +527,18 @@
     "platforms": ["chromeos"],
     "whitelist": [
       "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // Login screen APIs test extension
-      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen)
-      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509"  // Imprivata (login screen) DEV
+      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen) crbug.com/1065112
+      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509", // Imprivata (login screen) crbug.com/1065112
+      "CDA6A10BE50CE65C59B766D0CE6A27E8E0A1533F", // Imprivata (login screen) crbug.com/1065112
+      "D85454743B32D9F5ABF3E5F18DF78809F3A0ABD4", // Imprivata (login screen) crbug.com/1065112
+      "04569B963251EB28C0906099668D98EE65ECA2D8", // Imprivata (login screen) crbug.com/1065112
+      "7BF5B69C3ACA9E6ACA5C480661B8073EB9FA32A9", // Imprivata (login screen) crbug.com/1065112
+      "5F2EF8E9F7E975090278D6A0AD039860430C5684", // Imprivata (login screen) crbug.com/1065112
+      "97A4DC8AFC1FCF665C71B624A55675C297AB256C", // Imprivata (login screen) crbug.com/1065112
+      "A00EB72B456C374F1EA86C09833C7DBB6CD95CAE", // Imprivata (login screen) crbug.com/1065112
+      "51DDBADA37EF4D25AD03CB1BB6451799456FE183", // Imprivata (login screen) crbug.com/1065112
+      "DD97CAE4D8658003658140109BC119188A19A5B8", // Imprivata (login screen) crbug.com/1065112
+      "320857126E2180A5751AA384B7B7332A4964BD8C"  // Imprivata (login screen) crbug.com/1065112
     ]
   },
   "loginState": [

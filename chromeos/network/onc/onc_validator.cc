@@ -21,6 +21,7 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "components/crx_file/id_util.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 namespace onc {
@@ -894,6 +895,12 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
       ::onc::openvpn::kNoInteract};
   const std::vector<const char*> valid_cert_tls_values = {
       ::onc::openvpn::kNone, ::onc::openvpn::kServer};
+  const std::vector<const char*> valid_compression_algorithm_values = {
+      ::onc::openvpn_compression_algorithm::kFramingOnly,
+      ::onc::openvpn_compression_algorithm::kLz4,
+      ::onc::openvpn_compression_algorithm::kLz4V2,
+      ::onc::openvpn_compression_algorithm::kLzo,
+      ::onc::openvpn_compression_algorithm::kNone};
   const std::vector<const char*> valid_user_auth_types = {
       ::onc::openvpn_user_auth_type::kNone, ::onc::openvpn_user_auth_type::kOTP,
       ::onc::openvpn_user_auth_type::kPassword,
@@ -903,6 +910,9 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
                                     valid_auth_retry_values) ||
       FieldExistsAndHasNoValidValue(*result, ::onc::openvpn::kRemoteCertTLS,
                                     valid_cert_tls_values) ||
+      FieldExistsAndHasNoValidValue(*result,
+                                    ::onc::openvpn::kCompressionAlgorithm,
+                                    valid_compression_algorithm_values) ||
       FieldExistsAndHasNoValidValue(*result,
                                     ::onc::openvpn::kUserAuthenticationType,
                                     valid_user_auth_types) ||

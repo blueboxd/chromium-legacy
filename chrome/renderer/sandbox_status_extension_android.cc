@@ -120,7 +120,7 @@ void SandboxStatusExtension::GetSandboxStatus(gin::Arguments* args) {
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&SandboxStatusExtension::ReadSandboxStatus, this),
       base::BindOnce(&SandboxStatusExtension::RunCallback, this,
-                     base::Passed(&global_callback)));
+                     std::move(global_callback)));
 }
 
 std::unique_ptr<base::Value> SandboxStatusExtension::ReadSandboxStatus() {

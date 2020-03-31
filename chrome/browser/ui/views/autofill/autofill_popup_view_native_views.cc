@@ -1190,6 +1190,8 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
       case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
       case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
+      case autofill::PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY:
+      case autofill::PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY:
         rows_.push_back(PasswordPopupSuggestionView::Create(this, line_number,
                                                             frontend_id));
         break;

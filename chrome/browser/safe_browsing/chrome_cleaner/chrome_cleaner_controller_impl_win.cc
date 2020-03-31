@@ -190,7 +190,7 @@ ChromeCleanerControllerDelegate::~ChromeCleanerControllerDelegate() = default;
 void ChromeCleanerControllerDelegate::FetchAndVerifyChromeCleaner(
     FetchedCallback fetched_callback) {
   FetchChromeCleaner(
-      base::BindOnce(&OnChromeCleanerFetched, base::Passed(&fetched_callback)),
+      base::BindOnce(&OnChromeCleanerFetched, std::move(fetched_callback)),
       g_browser_process->system_network_context_manager()
           ->GetURLLoaderFactory());
 }
@@ -410,7 +410,7 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan(Profile* profile) {
             &safe_browsing::MaybeStartSwReporter, invocation_type,
             // The invocations will be modified by the |ReporterRunner|.
             // Give it a copy to keep the cached invocations pristine.
-            base::Passed(&copied_sequence)));
+            std::move(copied_sequence)));
 
     RecordOnDemandUpdateRequiredHistogram(false);
   } else {

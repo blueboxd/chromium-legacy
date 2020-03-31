@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -105,6 +106,17 @@ public final class SigninTestUtil {
     }
 
     /**
+     * Remove an account with a given name.
+     */
+    public static void removeTestAccount(String name) {
+        Account account = AccountUtils.createAccountFromName(name);
+        AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
+        sAccountManager.removeAccountHolderBlocking(accountHolder);
+        sAddedAccounts.remove(accountHolder);
+        seedAccounts();
+    }
+
+    /**
      * Add and sign in an account with the default name.
      */
     public static Account addAndSignInTestAccount() {
@@ -150,18 +162,34 @@ public final class SigninTestUtil {
         });
     }
 
-    private static void seedAccounts() {
-        Account[] accounts = sAccountManager.getAccountsSyncNoThrow();
-        String[] accountNames = new String[accounts.length];
-        String[] accountIds = new String[accounts.length];
-        for (int i = 0; i < accounts.length; i++) {
-            accountNames[i] = accounts[i].name;
-            accountIds[i] = sAccountManager.getAccountGaiaId(accounts[i].name);
-        }
+    /**
+     * Waits for the AccountTrackerService to seed system accounts.
+     */
+    public static void seedAccounts() {
+        ThreadUtils.assertOnBackgroundThread();
+        CallbackHelper ch = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
-                    accountIds, accountNames);
+            AccountTrackerService accountTrackerService =
+                    IdentityServicesProvider.get().getAccountTrackerService();
+            if (accountTrackerService.checkAndSeedSystemAccounts()) {
+                ch.notifyCalled();
+            } else {
+                AccountTrackerService.OnSystemAccountsSeededListener listener =
+                        new AccountTrackerService.OnSystemAccountsSeededListener() {
+                            @Override
+                            public void onSystemAccountsSeedingComplete() {
+                                accountTrackerService.removeSystemAccountsSeededListener(this);
+                                ch.notifyCalled();
+                            }
+                        };
+                accountTrackerService.addSystemAccountsSeededListener(listener);
+            }
         });
+        try {
+            ch.waitForFirst("Timed out while waiting for system accounts to seed.");
+        } catch (TimeoutException ex) {
+            throw new RuntimeException("Timed out while waiting for system accounts to seed.");
+        }
     }
 
     private static void signOut() {

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
@@ -30,7 +33,7 @@ const char kErrorNoExistingWindow[] = "No open window to close.";
 const char kErrorNotOnLoginOrLockScreen[] =
     "Windows can only be created on the login and lock screen.";
 
-struct HardcodedExtensionNameMapping {
+struct ExtensionNameMapping {
   const char* extension_id;
   const char* extension_name;
 };
@@ -38,20 +41,45 @@ struct HardcodedExtensionNameMapping {
 // Hardcoded extension names to be used in the window's dialog title.
 // Intentionally not using |extension->name()| here to prevent a compromised
 // extension from being able to control the dialog title's content.
-const HardcodedExtensionNameMapping kHardcodedExtensionNameMappings[] = {
+// This list has to be sorted for quick access using std::lower_bound.
+const ExtensionNameMapping kExtensionNameMappings[] = {
+    {"bnfoibgpjolimhppjmligmcgklpboloj", "Imprivata"},
     {"cdgickkdpbekbnalbmpgochbninibkko", "Imprivata"},
+    {"dbknmmkopacopifbkgookcdbhfnggjjh", "Imprivata"},
+    {"ddcjglpbfbibgepfffpklmpihphbcdco", "Imprivata"},
+    {"dhodapiemamlmhlhblgcibabhdkohlen", "Imprivata"},
+    {"dlahpllbhpbkfnoiedkgombmegnnjopi", "Imprivata"},
     {"lpimkpkllnkdlcigdbgmabfplniahkgm", "Imprivata"},
     {"oclffehlkdgibkainkilopaalpdobkan", "LoginScreenUi test extension"},
+    {"odehonhhkcjnbeaomlodfkjaecbmhklm", "Imprivata"},
+    {"olnmflhcfkifkgbiegcoabineoknmbjc", "Imprivata"},
+    {"phjobickjiififdadeoepbdaciefacfj", "Imprivata"},
+    {"pkeacbojooejnjolgjdecbpnloibpafm", "Imprivata"},
+    {"pmhiabnkkchjeaehcodceadhdpfejmmd", "Imprivata"},
 };
+const ExtensionNameMapping* kExtensionNameMappingsEnd =
+    std::end(kExtensionNameMappings);
 
 std::string GetHardcodedExtensionName(const extensions::Extension* extension) {
-  for (const HardcodedExtensionNameMapping& mapping :
-       kHardcodedExtensionNameMappings) {
-    if (mapping.extension_id == extension->id())
-      return mapping.extension_name;
+  DCHECK(std::is_sorted(kExtensionNameMappings, kExtensionNameMappingsEnd,
+                        [](const ExtensionNameMapping& entry1,
+                           const ExtensionNameMapping& entry2) {
+                          return strcmp(entry1.extension_id,
+                                        entry2.extension_id) < 0;
+                        }));
+
+  const char* extension_id = extension->id().c_str();
+  const ExtensionNameMapping* entry = std::lower_bound(
+      kExtensionNameMappings, kExtensionNameMappingsEnd, extension_id,
+      [](const ExtensionNameMapping& entry, const char* key) {
+        return strcmp(entry.extension_id, key) < 0;
+      });
+  if (entry == kExtensionNameMappingsEnd ||
+      strcmp(entry->extension_id, extension_id) != 0) {
+    NOTREACHED();
+    return "UNKNOWN EXTENSION";
   }
-  NOTREACHED();
-  return "UNKNOWN EXTENSION";
+  return entry->extension_name;
 }
 
 bool CanUseLoginScreenUiApi(const extensions::Extension* extension) {

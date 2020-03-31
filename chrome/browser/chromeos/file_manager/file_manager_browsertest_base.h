@@ -38,6 +38,7 @@ class AndroidFilesTestVolume;
 class RemovableTestVolume;
 class DocumentsProviderTestVolume;
 class MediaViewTestVolume;
+class SmbfsTestVolume;
 
 class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
  protected:
@@ -68,6 +69,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetIsOffline() const;
   virtual bool GetEnableFilesNg() const;
   virtual bool GetEnableNativeSmb() const;
+  virtual bool GetEnableSmbfs() const;
   virtual bool GetEnableUnifiedMediaView() const;
   virtual bool GetStartWithNoVolumesMounted() const;
   virtual bool GetStartWithFileTasksObserver() const;
@@ -106,6 +108,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test needs a native SMB file system provider.
   bool IsNativeSmbTest() const { return GetEnableNativeSmb(); }
+
+  // Returns true if the test needs smbfs for native SMB integration.
+  bool IsSmbfsTest() const { return GetEnableSmbfs(); }
 
   // Returns true if the test needs the unified media view feature.
   bool IsUnifiedMediaViewTest() const { return GetEnableUnifiedMediaView(); }
@@ -165,6 +170,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<MediaViewTestVolume> media_view_images_;
   std::unique_ptr<MediaViewTestVolume> media_view_videos_;
   std::unique_ptr<MediaViewTestVolume> media_view_audio_;
+  std::unique_ptr<SmbfsTestVolume> smbfs_volume_;
 
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;

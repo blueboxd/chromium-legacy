@@ -795,12 +795,24 @@ L2TP over IPsec with pre-shared key:
 
 * **CompLZO**
     * (optional, defaults to *adaptive*) - **string**
+    * DEPRECATED, use **Compress** with *lzo* option instead.
     * Decides to fast LZO compression with *true*
       and *false* as other values.
 
 * **CompNoAdapt**
     * (optional, defaults to *false*) - **boolean**
+    * DEPRECATED, do not use.
     * Disables adaptive compression.
+
+* **Compress**
+    * (optional, defaults to *None*) - **string**
+    * Specifies the compression algorithm to be used.
+    * Allowed values are:
+        * *None*
+        * *FramingOnly*
+        * *LZ4*
+        * *LZ4-V2*
+        * *LZO*
 
 * **ExtraHosts**
     * (optional) - **array of string**

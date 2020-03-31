@@ -116,7 +116,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 @interface SceneController () <UserFeedbackDataSource,
                                SettingsNavigationControllerDelegate,
-                               WebStateListObserving>
+                               WebStateListObserving> {
+  std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
+}
 
 // Navigation View controller for the settings.
 @property(nonatomic, strong)
@@ -212,6 +214,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     }
     _appURLLoadingService = new AppUrlLoadingService();
     _appURLLoadingService->SetDelegate(self);
+
+    _webStateListForwardingObserver =
+        std::make_unique<WebStateListObserverBridge>(self);
   }
   return self;
 }
@@ -303,12 +308,11 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainController.mainBrowserState
-             webStateListObserver:self
        applicationCommandEndpoint:self
       browsingDataCommandEndpoint:self.mainController
              appURLLoadingService:self.appURLLoadingService];
 
-  // Ensure the main tab model is created. This also creates the BVC.
+  // Ensure the main browser is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];
 
   // Only create the restoration helper if the browser state was backed up
@@ -363,6 +367,12 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // point where it is necessary.
   TabModel* mainTabModel = self.mainInterface.tabModel;
   TabModel* otrTabModel = self.incognitoInterface.tabModel;
+
+  // Observe the web state lists for both browsers.
+  self.mainInterface.browser->GetWebStateList()->AddObserver(
+      _webStateListForwardingObserver.get());
+  self.incognitoInterface.browser->GetWebStateList()->AddObserver(
+      _webStateListForwardingObserver.get());
 
   // Enables UI initializations to query the keyWindow's size.
   [self.sceneState.window makeKeyAndVisible];
@@ -430,6 +440,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
   [_mainCoordinator stop];
   _mainCoordinator = nil;
+
+  // Stop observing web state list changes before tearing down the web state
+  // lists.
+  self.mainInterface.browser->GetWebStateList()->RemoveObserver(
+      _webStateListForwardingObserver.get());
+  self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
+      _webStateListForwardingObserver.get());
 
   [self.browserViewWrangler shutdown];
   self.browserViewWrangler = nil;
@@ -1576,6 +1593,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   }
 }
 
+#pragma mark - Helpers for web state list events
+
 // Called when the last incognito tab was closed.
 - (void)lastIncognitoTabClosed {
   // This seems the best place to mark the start of destroying the incognito
@@ -1690,7 +1709,11 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
             self.incognitoInterface.browserState));
   }
 
+  self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
+      _webStateListForwardingObserver.get());
   [self.browserViewWrangler destroyAndRebuildIncognitoBrowser];
+  self.incognitoInterface.browser->GetWebStateList()->AddObserver(
+      _webStateListForwardingObserver.get());
 
   if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
     breakpad::MonitorBreadcrumbManagerService(

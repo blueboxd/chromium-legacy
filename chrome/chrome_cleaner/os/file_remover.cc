@@ -288,7 +288,7 @@ void FileRemover::ValidateAndQuarantineFile(
 
   TryToQuarantine(normalized_path,
                   base::BindOnce(std::move(removal_callback), normalized_path,
-                                 base::Passed(&done_callback)));
+                                 std::move(done_callback)));
 }
 
 }  // namespace chrome_cleaner

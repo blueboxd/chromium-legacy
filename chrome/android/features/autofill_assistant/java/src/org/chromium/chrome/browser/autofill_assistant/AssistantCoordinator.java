@@ -39,14 +39,17 @@ class AssistantCoordinator {
             mOverlayCoordinator = overlayCoordinator;
         } else {
             mModel = new AssistantModel();
-            mOverlayCoordinator =
-                    new AssistantOverlayCoordinator(activity, mModel.getOverlayModel());
+            mOverlayCoordinator = new AssistantOverlayCoordinator(activity,
+                    activity.getFullscreenManager(), activity.getCompositorViewHolder(),
+                    activity.getScrim(), mModel.getOverlayModel());
         }
 
-        mBottomBarCoordinator = new AssistantBottomBarCoordinator(
-                activity, mModel, controller, tabObscuringHandler);
-        mKeyboardCoordinator =
-                new AssistantKeyboardCoordinator(activity, mModel, keyboardCoordinatorDelegate);
+        mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mModel, controller,
+                activity.getWindowAndroid().getApplicationBottomInsetProvider(),
+                tabObscuringHandler);
+        mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity,
+                activity.getWindowAndroid().getKeyboardDelegate(),
+                activity.getCompositorViewHolder(), mModel, keyboardCoordinatorDelegate);
 
         mModel.setVisible(true);
     }

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
@@ -305,7 +307,7 @@ void NetworkConfigurationHandler::SetShillProperties(
       dbus::ObjectPath(service_path), *properties_to_set,
       base::BindOnce(&NetworkConfigurationHandler::SetPropertiesSuccessCallback,
                      weak_ptr_factory_.GetWeakPtr(), service_path,
-                     base::Passed(&properties_copy), callback),
+                     std::move(properties_copy), callback),
       base::BindOnce(&NetworkConfigurationHandler::SetPropertiesErrorCallback,
                      weak_ptr_factory_.GetWeakPtr(), service_path,
                      error_callback));

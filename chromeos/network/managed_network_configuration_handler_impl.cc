@@ -1111,7 +1111,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
       base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess,
           weak_ptr_factory_.GetWeakPtr(), service_path,
-          base::Passed(&shill_properties_copy), repeating_send_callback),
+          std::move(shill_properties_copy), repeating_send_callback),
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure,
           weak_ptr_factory_.GetWeakPtr(), service_path,

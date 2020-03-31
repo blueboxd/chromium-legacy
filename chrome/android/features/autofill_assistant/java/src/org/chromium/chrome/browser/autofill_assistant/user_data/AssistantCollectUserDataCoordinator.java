@@ -147,7 +147,7 @@ public class AssistantCollectUserDataCoordinator {
                 paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
                 infoSection, prependedSections, appendedSections,
                 genericUserInterfaceContainerPrepended, genericUserInterfaceContainerAppended,
-                DIVIDER_TAG, activity);
+                DIVIDER_TAG, mActivity);
         AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

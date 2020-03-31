@@ -26,6 +26,25 @@ void DidFindRegistration(
           status, std::move(data), std::move(resource_list)));
 }
 
+void DidStoreRegistration(
+    ServiceWorkerStorageControlImpl::StoreRegistrationCallback callback,
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    int64_t deleted_version_id,
+    const std::vector<int64_t>& newly_purgeable_resources) {
+  // TODO(bashi): Figure out how to purge resources.
+  std::move(callback).Run(status);
+}
+
+void DidDeleteRegistration(
+    ServiceWorkerStorageControlImpl::DeleteRegistrationCallback callback,
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    ServiceWorkerStorage::OriginState origin_state,
+    int64_t deleted_version_id,
+    const std::vector<int64_t>& newly_purgeable_resources) {
+  // TODO(bashi): Figure out how to purge resources.
+  std::move(callback).Run(status, origin_state);
+}
+
 }  // namespace
 
 ServiceWorkerStorageControlImpl::ServiceWorkerStorageControlImpl(
@@ -35,6 +54,10 @@ ServiceWorkerStorageControlImpl::ServiceWorkerStorageControlImpl(
 }
 
 ServiceWorkerStorageControlImpl::~ServiceWorkerStorageControlImpl() = default;
+
+void ServiceWorkerStorageControlImpl::LazyInitializeForTest() {
+  storage_->LazyInitializeForTest();
+}
 
 void ServiceWorkerStorageControlImpl::FindRegistrationForClientUrl(
     const GURL& client_url,
@@ -57,6 +80,28 @@ void ServiceWorkerStorageControlImpl::FindRegistrationForId(
   storage_->FindRegistrationForId(
       registration_id, origin,
       base::BindOnce(&DidFindRegistration, std::move(callback)));
+}
+
+void ServiceWorkerStorageControlImpl::StoreRegistration(
+    storage::mojom::ServiceWorkerRegistrationDataPtr registration,
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources,
+    StoreRegistrationCallback callback) {
+  // TODO(bashi): Change the signature of
+  // ServiceWorkerStorage::StoreRegistrationData() to take a const reference.
+  storage_->StoreRegistrationData(
+      std::move(registration),
+      std::make_unique<ServiceWorkerStorage::ResourceList>(
+          std::move(resources)),
+      base::BindOnce(&DidStoreRegistration, std::move(callback)));
+}
+
+void ServiceWorkerStorageControlImpl::DeleteRegistration(
+    int64_t registration_id,
+    const GURL& origin,
+    DeleteRegistrationCallback callback) {
+  storage_->DeleteRegistration(
+      registration_id, origin,
+      base::BindOnce(&DidDeleteRegistration, std::move(callback)));
 }
 
 }  // namespace content

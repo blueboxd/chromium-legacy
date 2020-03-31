@@ -67,12 +67,18 @@ gfx::Rect ScaleRectangle(const gfx::Rect& input_rect,
 
 namespace blink {
 
+const base::Feature kWebRtcLogWebRtcVideoFrameAdapter{
+    "WebRtcLogWebRtcVideoFrameAdapter", base::FEATURE_DISABLED_BY_DEFAULT};
+
 WebRtcVideoTrackSource::WebRtcVideoTrackSource(
     bool is_screencast,
     absl::optional<bool> needs_denoising)
     : AdaptedVideoTrackSource(/*required_alignment=*/1),
       is_screencast_(is_screencast),
-      needs_denoising_(needs_denoising) {
+      needs_denoising_(needs_denoising),
+      log_to_webrtc_(is_screencast &&
+                     base::FeatureList::IsEnabled(
+                         blink::kWebRtcLogWebRtcVideoFrameAdapter)) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -325,7 +331,11 @@ void WebRtcVideoTrackSource::DeliverFrame(
   webrtc::VideoFrame::Builder frame_builder =
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(
-              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame))
+              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+                  frame,
+                  (log_to_webrtc_
+                       ? WebRtcVideoFrameAdapter::LogStatus::kLogToWebRtc
+                       : WebRtcVideoFrameAdapter::LogStatus::kNoLogging)))
           .set_rotation(webrtc::kVideoRotation_0)
           .set_timestamp_us(timestamp_us);
   if (update_rect) {

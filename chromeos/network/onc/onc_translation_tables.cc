@@ -83,6 +83,8 @@ const FieldTranslationEntry openvpn_fields[] = {
     //  shill::kOpenVPNClientCertIdProperty},
     {::onc::openvpn::kCompLZO, shill::kOpenVPNCompLZOProperty},
     {::onc::openvpn::kCompNoAdapt, shill::kOpenVPNCompNoAdaptProperty},
+    // This field is converted during translation, see onc_translator_*
+    // {::onc::openvpn::kCompressionAlgorithm, shill::kOpenVPNCompressProperty},
     {::onc::openvpn::kExtraHosts, shill::kOpenVPNExtraHostsProperty},
     {::onc::openvpn::kIgnoreDefaultRoute,
      shill::kOpenVPNIgnoreDefaultRouteProperty},
@@ -388,6 +390,15 @@ const StringTranslationEntry kTetheringStateTable[] = {
      shill::kTetheringNotDetectedState},
     {::onc::tethering_state::kTetheringSuspectedState,
      shill::kTetheringSuspectedState},
+    {nullptr}};
+
+const StringTranslationEntry kOpenVpnCompressionAlgorithmTable[] = {
+    {::onc::openvpn_compression_algorithm::kFramingOnly,
+     shill::kOpenVPNCompressFramingOnly},
+    {::onc::openvpn_compression_algorithm::kLz4, shill::kOpenVPNCompressLz4},
+    {::onc::openvpn_compression_algorithm::kLz4V2,
+     shill::kOpenVPNCompressLz4V2},
+    {::onc::openvpn_compression_algorithm::kLzo, shill::kOpenVPNCompressLzo},
     {nullptr}};
 
 // This must contain only Shill Device properties and no Service properties.

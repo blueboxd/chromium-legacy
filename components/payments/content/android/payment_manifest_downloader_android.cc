@@ -42,6 +42,8 @@ class DownloadCallback {
     } else {
       Java_ManifestDownloadCallback_onPaymentMethodManifestDownloadSuccess(
           env, jcallback_,
+          Java_PaymentManifestDownloader_convertGURLToURI(
+              env, url::GURLAndroid::FromNativeGURL(env, url_after_redirects)),
           url::Origin::Create(url_after_redirects).CreateJavaObject(),
           base::android::ConvertUTF8ToJavaString(env, content));
     }

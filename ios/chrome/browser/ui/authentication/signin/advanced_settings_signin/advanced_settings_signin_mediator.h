@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/authentication/signin/signin_enums.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 
 @class AdvancedSettingsSigninMediator;
 @class AdvancedSettingsSigninNavigationController;

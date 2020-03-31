@@ -185,16 +185,11 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateFrameCpuTiming(content::RenderFrameHost* render_frame_host,
                             mojom::CpuTimingPtr new_timing);
 
-  void UpdateMainFrameMetadata(content::RenderFrameHost* render_frame_host,
-                               mojom::FrameMetadataPtr new_metadata);
+  void UpdateMainFrameMetadata(mojom::FrameMetadataPtr new_metadata);
   void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
                               mojom::FrameMetadataPtr subframe_metadata);
 
   void UpdatePageInputTiming(const mojom::InputTiming& input_timing_delta);
-  void MaybeUpdateFrameIntersection(
-      content::RenderFrameHost* render_frame_host,
-      const mojom::FrameMetadataPtr& frame_metadata);
-
   void UpdatePageRenderData(const mojom::FrameRenderDataUpdate& render_data);
   void UpdateMainFrameRenderData(
       const mojom::FrameRenderDataUpdate& render_data);

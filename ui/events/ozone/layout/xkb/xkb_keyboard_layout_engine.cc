@@ -634,7 +634,7 @@ void LoadKeymap(const std::string& layout_name,
         xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
     reply_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(reply_callback), layout_name,
-                                  base::Passed(&keymap_str)));
+                                  std::move(keymap_str)));
   } else {
     LOG(FATAL) << "Keymap file failed to load: " << layout_name;
   }

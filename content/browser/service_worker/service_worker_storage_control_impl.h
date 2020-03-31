@@ -31,6 +31,8 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
 
   ~ServiceWorkerStorageControlImpl() override;
 
+  void LazyInitializeForTest();
+
  private:
   // storage::mojom::ServiceWorkerStorageControl implementations:
   void FindRegistrationForClientUrl(
@@ -42,6 +44,13 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   void FindRegistrationForId(int64_t registration_id,
                              const GURL& origin,
                              FindRegistrationForIdCallback callback) override;
+  void StoreRegistration(
+      storage::mojom::ServiceWorkerRegistrationDataPtr registration,
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources,
+      StoreRegistrationCallback callback) override;
+  void DeleteRegistration(int64_t registration_id,
+                          const GURL& origin,
+                          DeleteRegistrationCallback callback) override;
 
   const std::unique_ptr<ServiceWorkerStorage> storage_;
 };

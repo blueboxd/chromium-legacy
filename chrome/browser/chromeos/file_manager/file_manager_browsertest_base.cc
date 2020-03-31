@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -42,6 +43,8 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
@@ -56,11 +59,14 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/components/drivefs/fake_drivefs.h"
+#include "chromeos/components/smbfs/smbfs_host.h"
+#include "chromeos/components/smbfs/smbfs_mounter.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "chromeos/disks/mount_point.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -100,6 +106,8 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+
+using ::testing::_;
 
 class SelectFileDialogExtensionTestFactory
     : public ui::SelectFileDialogFactory {
@@ -171,7 +179,8 @@ struct AddEntriesMessage {
     DOCUMENTS_PROVIDER_VOLUME,
     MEDIA_VIEW_AUDIO,
     MEDIA_VIEW_IMAGES,
-    MEDIA_VIEW_VIDEOS
+    MEDIA_VIEW_VIDEOS,
+    SMBFS_VOLUME,
   };
 
   // Represents the different types of entries (e.g. file, folder).
@@ -225,6 +234,8 @@ struct AddEntriesMessage {
       *volume = MEDIA_VIEW_IMAGES;
     else if (value == "media_view_videos")
       *volume = MEDIA_VIEW_VIDEOS;
+    else if (value == "smbfs")
+      *volume = SMBFS_VOLUME;
     else
       return false;
     return true;
@@ -1292,6 +1303,122 @@ class MediaViewTestVolume : public DocumentsProviderTestVolume {
   DISALLOW_COPY_AND_ASSIGN(MediaViewTestVolume);
 };
 
+class MockSmbFsMounter : public smbfs::SmbFsMounter {
+ public:
+  MOCK_METHOD(void,
+              Mount,
+              (smbfs::SmbFsMounter::DoneCallback callback),
+              (override));
+};
+
+class MockSmbFsImpl : public smbfs::mojom::SmbFs {
+ public:
+  explicit MockSmbFsImpl(mojo::PendingReceiver<smbfs::mojom::SmbFs> pending)
+      : receiver_(this, std::move(pending)) {}
+
+ private:
+  mojo::Receiver<smbfs::mojom::SmbFs> receiver_;
+};
+
+// SmbfsTestVolume: Test volume for FUSE-based SMB file shares.
+class SmbfsTestVolume : public LocalTestVolume {
+ public:
+  SmbfsTestVolume() : LocalTestVolume("smbfs") {}
+  ~SmbfsTestVolume() override = default;
+
+  // Create root dir so entries can be created, but volume is not mounted.
+  bool Initialize(Profile* profile) { return CreateRootDirectory(profile); }
+
+  bool Mount(Profile* profile) override {
+    // Only support mounting this volume once.
+    CHECK(!mock_smbfs_);
+    if (!CreateRootDirectory(profile)) {
+      return false;
+    }
+
+    chromeos::smb_client::SmbService* smb_service =
+        chromeos::smb_client::SmbServiceFactory::Get(profile);
+    {
+      base::RunLoop run_loop;
+      smb_service->OnSetupCompleteForTesting(run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    {
+      // Share gathering needs to complete at least once before a share can be
+      // mounted.
+      base::RunLoop run_loop;
+      smb_service->GatherSharesInNetwork(
+          base::DoNothing(),
+          base::BindLambdaForTesting(
+              [&run_loop](const std::vector<chromeos::smb_client::SmbUrl>&
+                              shares_gathered,
+                          bool done) {
+                if (done) {
+                  run_loop.Quit();
+                }
+              }));
+      run_loop.Run();
+    }
+
+    // Inject a mounter creation callback so that smbfs startup can be faked
+    // out.
+    smb_service->SetSmbFsMounterCreationCallbackForTesting(base::BindRepeating(
+        &SmbfsTestVolume::CreateMounter, base::Unretained(this)));
+
+    bool success = false;
+    chromeos::file_system_provider::MountOptions mount_options;
+    mount_options.display_name = "SMB Share";
+    base::RunLoop run_loop;
+    smb_service->Mount(
+        mount_options, base::FilePath("smb://server/share"), "" /* username */,
+        "" /* password */, false /* use_chromad_kerberos */,
+        false /* should_open_file_manager_after_mount */,
+        false /* save_credentials */,
+        base::BindLambdaForTesting(
+            [&](chromeos::smb_client::SmbMountResult result) {
+              success =
+                  (result == chromeos::smb_client::SmbMountResult::kSuccess);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return success;
+  }
+
+  const base::FilePath& mount_path() const { return root_path(); }
+
+ private:
+  std::unique_ptr<smbfs::SmbFsMounter> CreateMounter(
+      const std::string& share_path,
+      const std::string& mount_dir_name,
+      const chromeos::smb_client::SmbFsShare::MountOptions& options,
+      smbfs::SmbFsHost::Delegate* delegate) {
+    std::unique_ptr<MockSmbFsMounter> mock_mounter =
+        std::make_unique<MockSmbFsMounter>();
+    EXPECT_CALL(*mock_mounter, Mount(_))
+        .WillOnce([this,
+                   delegate](smbfs::SmbFsMounter::DoneCallback mount_callback) {
+          mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
+          mock_smbfs_ = std::make_unique<MockSmbFsImpl>(
+              smbfs_remote.BindNewPipeAndPassReceiver());
+
+          std::move(mount_callback)
+              .Run(smbfs::mojom::MountError::kOk,
+                   std::make_unique<smbfs::SmbFsHost>(
+                       std::make_unique<chromeos::disks::MountPoint>(
+                           mount_path(),
+                           chromeos::disks::DiskMountManager::GetInstance()),
+                       delegate, std::move(smbfs_remote),
+                       delegate_.BindNewPipeAndPassReceiver()));
+        });
+    return std::move(mock_mounter);
+  }
+
+  std::unique_ptr<MockSmbFsImpl> mock_smbfs_;
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(SmbfsTestVolume);
+};
+
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
 
 FileManagerBrowserTestBase::~FileManagerBrowserTestBase() = default;
@@ -1366,6 +1493,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.emplace_back(chromeos::features::kUnifiedMediaView);
   } else {
     disabled_features.emplace_back(chromeos::features::kUnifiedMediaView);
+  }
+
+  if (IsSmbfsTest()) {
+    enabled_features.emplace_back(features::kSmbFs);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the
@@ -1502,6 +1633,10 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     }
   }
 
+  if (IsSmbfsTest()) {
+    smbfs_volume_ = std::make_unique<SmbfsTestVolume>();
+  }
+
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());
 
@@ -1564,6 +1699,10 @@ bool FileManagerBrowserTestBase::GetEnableFilesNg() const {
 
 bool FileManagerBrowserTestBase::GetEnableNativeSmb() const {
   return true;
+}
+
+bool FileManagerBrowserTestBase::GetEnableSmbfs() const {
+  return false;
 }
 
 bool FileManagerBrowserTestBase::GetEnableUnifiedMediaView() const {
@@ -1811,6 +1950,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             LOG(FATAL) << "Add entry: but no MediaView Videos volume.";
           }
           break;
+        case AddEntriesMessage::SMBFS_VOLUME:
+          CHECK(smbfs_volume_);
+          ASSERT_TRUE(smbfs_volume_->Initialize(profile()));
+          smbfs_volume_->CreateEntry(*message.entries[i]);
+          break;
       }
     }
 
@@ -1964,6 +2108,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "unmountPlayFiles") {
     DCHECK(android_files_volume_);
     android_files_volume_->Unmount(profile());
+    return;
+  }
+
+  if (name == "mountSmbfs") {
+    CHECK(smbfs_volume_);
+    ASSERT_TRUE(smbfs_volume_->Mount(profile()));
     return;
   }
 

@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 import org.chromium.url.URI;
 
@@ -25,13 +26,17 @@ public class PaymentManifestDownloader {
         /**
          * Called on successful download of a payment method manifest.
          *
+         * @param paymentMethodManifestUrl The URL of the payment method manifest after all
+         * redirects and the optional HTTP Link rel=payment-method-manifest header have been
+         * followed.
          * @param paymentMethodManifestOrigin The origin of the payment method manifest after all
-         *                                    redirects have been followed.
-         * @param content                     The successfully downloaded payment method manifest.
+         * redirects and the optional HTTP Link rel=payment-method-manifest header have been
+         * followed.
+         * @param content The successfully downloaded payment method manifest.
          */
         @CalledByNative("ManifestDownloadCallback")
         void onPaymentMethodManifestDownloadSuccess(
-                Origin paymentMethodManifestOrigin, String content);
+                URI paymentMethodManifestUrl, Origin paymentMethodManifestOrigin, String content);
 
         /**
          * Called on successful download of a web app manifest.
@@ -116,6 +121,21 @@ public class PaymentManifestDownloader {
     @VisibleForTesting
     public static Origin createOpaqueOriginForTest() {
         return PaymentManifestDownloaderJni.get().createOpaqueOriginForTest();
+    }
+
+    /**
+     * Converts GURL to URI through string serialization. Needed because C++ knows only how to
+     * create Java GURL objects, but web payments uses URI, which is a subclass of GURL, so casting
+     * is not possible.
+     *
+     * TODO(crbug.com/1065577): Use GURL direclly everywhere in web payments.
+     *
+     * @param gurl The GURL to convert. Cannot be null. Must be valid.
+     * @return The equivalent URI.
+     */
+    @CalledByNative
+    public static URI convertGURLToURI(GURL gurl) {
+        return URI.create(gurl.getPossiblyInvalidSpec());
     }
 
     @NativeMethods

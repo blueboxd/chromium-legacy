@@ -17,8 +17,6 @@ typedef NS_ENUM(NSUInteger, UserSigninIntent) {
   UserSigninIntentSignin,
 };
 
-// Name of notification sent when the user has attempted a sign-in.
-extern NSString* const kUserSigninAttemptedNotification;
 // Key in the UserDefaults to record the version of the application when the
 // SSO Recall promo has been displayed.
 // Exposed for testing.

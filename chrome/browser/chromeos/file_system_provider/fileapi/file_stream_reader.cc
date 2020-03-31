@@ -102,11 +102,10 @@ class FileStreamReader::OperationRunner
 
     // If the file system got unmounted, then abort the get length operation.
     if (!file_system_.get()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(std::move(callback),
-                         base::Passed(base::WrapUnique<EntryMetadata>(NULL)),
-                         base::File::FILE_ERROR_ABORT));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(std::move(callback),
+                                    base::WrapUnique<EntryMetadata>(NULL),
+                                    base::File::FILE_ERROR_ABORT));
       return;
     }
 
@@ -166,7 +165,7 @@ class FileStreamReader::OperationRunner
 
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), base::Passed(&metadata), result));
+        base::BindOnce(std::move(callback), std::move(metadata), result));
   }
 
   // Forwards a response of reading from a file to the IO thread.

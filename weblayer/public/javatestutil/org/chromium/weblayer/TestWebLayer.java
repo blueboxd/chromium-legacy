@@ -63,12 +63,4 @@ public final class TestWebLayer {
     public boolean isMockLocationProviderRunning() throws RemoteException {
         return mITestWebLayer.isMockLocationProviderRunning();
     }
-
-    public boolean isPermissionDialogShown() throws RemoteException {
-        return mITestWebLayer.isPermissionDialogShown();
-    }
-
-    public void clickPermissionDialogButton(boolean allow) throws RemoteException {
-        mITestWebLayer.clickPermissionDialogButton(allow);
-    }
 }

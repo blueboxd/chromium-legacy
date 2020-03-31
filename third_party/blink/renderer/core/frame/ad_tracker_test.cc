@@ -103,15 +103,13 @@ class AdTrackerTest : public testing::Test {
     if (ad_tracker_)
       ad_tracker_->Shutdown();
     ad_tracker_ = MakeGarbageCollected<TestAdTracker>(GetFrame());
-    ad_tracker_->SetExecutionContext(ExecutionContext());
+    ad_tracker_->SetExecutionContext(
+        page_holder_->GetDocument().ToExecutionContext());
   }
 
   void WillExecuteScript(const String& script_url) {
-    ad_tracker_->WillExecuteScript(ExecutionContext(), String(script_url));
-  }
-
-  ExecutionContext* ExecutionContext() {
-    return page_holder_->GetDocument().ToExecutionContext();
+    ad_tracker_->WillExecuteScript(
+        page_holder_->GetDocument().ToExecutionContext(), String(script_url));
   }
 
   void DidExecuteScript() { ad_tracker_->DidExecuteScript(); }
@@ -123,11 +121,12 @@ class AdTrackerTest : public testing::Test {
 
   bool AnyExecutingScriptsTaggedAsAdResourceWithStackType(
       AdTracker::StackType stack_type) {
-    return ad_tracker_->IsAdScriptInStackSlow(stack_type);
+    return ad_tracker_->IsAdScriptInStack(stack_type);
   }
 
   void AppendToKnownAdScripts(const String& url) {
-    ad_tracker_->AppendToKnownAdScripts(*ExecutionContext(), url);
+    ad_tracker_->AppendToKnownAdScripts(
+        *page_holder_->GetDocument().ToExecutionContext(), url);
   }
 
   Persistent<TestAdTracker> ad_tracker_;
@@ -290,7 +289,7 @@ TEST_F(AdTrackerTest, AsyncTagging) {
   probe::AsyncTaskId async_task;
 
   // Create an async task while ad script is running.
-  ad_tracker_->DidCreateAsyncTask(&async_task, ExecutionContext());
+  ad_tracker_->DidCreateAsyncTask(&async_task);
 
   // Finish executing the ad script.
   DidExecuteScript();
@@ -394,18 +393,13 @@ TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
       To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
   EXPECT_TRUE(child_frame->IsAdSubframe());
 
-  // Run vanilla script in the main frame context. It shouldn't be an ad.
+  // Now run unknown script in the child's context. It should be considered an
+  // ad based on context alone.
+  ad_tracker_->SetExecutionContext(
+      child_frame->GetDocument()->ToExecutionContext());
   ad_tracker_->SetScriptAtTopOfStack("foo.js");
-  EXPECT_FALSE(ad_tracker_->IsAdScriptInStackForContext(
-      AdTracker::StackType::kBottomAndTop, GetDocument().ToExecutionContext()));
-
-  // Run the same vanilla script in the child's context. It should be considered
-  // an ad based on context alone. This also tests IsAdScriptInStack's
-  // |execution_context| param.
-  ExecutionContext* execution_context =
-      child_frame->GetDocument()->ToExecutionContext();
-  EXPECT_TRUE(ad_tracker_->IsAdScriptInStackForContext(
-      AdTracker::StackType::kBottomAndTop, execution_context));
+  EXPECT_TRUE(
+      ad_tracker_->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop));
 }
 
 TEST_F(AdTrackerSimTest, RedirectToAdUrl) {

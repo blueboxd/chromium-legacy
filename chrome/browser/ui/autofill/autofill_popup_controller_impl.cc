@@ -437,6 +437,8 @@ bool AutofillPopupControllerImpl::HasSuggestions() {
   return id > 0 || id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
          id == POPUP_ITEM_ID_PASSWORD_ENTRY ||
          id == POPUP_ITEM_ID_USERNAME_ENTRY ||
+         id == POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY ||
+         id == POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY ||
          id == POPUP_ITEM_ID_DATALIST_ENTRY ||
          id == POPUP_ITEM_ID_SCAN_CREDIT_CARD;
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/download/android/download_controller.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -276,7 +277,7 @@ void DownloadController::AcquireFileAccessPermission(
   RecordStoragePermission(StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
   AcquirePermissionCallback callback(base::BindOnce(
       &OnRequestFileAccessResult, web_contents_getter,
-      base::BindOnce(&OnStoragePermissionDecided, base::Passed(&cb))));
+      base::BindOnce(&OnStoragePermissionDecided, std::move(cb))));
   // Make copy on the heap so we can pass the pointer through JNI.
   intptr_t callback_id = reinterpret_cast<intptr_t>(
       new AcquirePermissionCallback(std::move(callback)));

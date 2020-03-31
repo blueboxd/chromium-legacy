@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/sync/consent_auditor_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/user_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_mediator.h"
@@ -298,6 +299,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
     case UserSigninIntentFirstRun: {
       // The caller is responsible for cleaning up the base view controller for
       // first run sign-in.
+      if (completion) {
+        completion();
+      }
       break;
     }
     case UserSigninIntentSignin:
@@ -319,7 +323,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (void)notifyUserSigninAttempted {
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kUserSigninAttemptedNotification
-                    object:nil];
+                    object:self];
 }
 
 // Called when |self.viewController| is dismissed. If |settingsWasTapped| is

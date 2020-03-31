@@ -227,16 +227,19 @@
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>
-    <div class="settings-box two-line single-column stretch settings-box-text"
-        aria-describedby="systemSizeLabel"
-        aria-labelledby="systemSizeSubLabel">
-      <div id="systemSizeLabel" class="label" aria-hidden="true">
-        $i18n{storageItemSystem}
+    <template is="dom-if" if="[[!isGuest_]]">
+      <div id="systemSize"
+          class="settings-box two-line single-column stretch settings-box-text"
+          aria-describedby="systemSizeLabel"
+          aria-labelledby="systemSizeSubLabel">
+        <div id="systemSizeLabel" class="label" aria-hidden="true">
+          $i18n{storageItemSystem}
+        </div>
+        <div id="systemSizeSubLabel" class="secondary label" aria-hidden="true">
+          $i18n{storageSizeComputing}
+        </div>
       </div>
-      <div id="systemSizeSubLabel" class="secondary label" aria-hidden="true">
-        $i18n{storageSizeComputing}
-      </div>
-    </div>
+    </template>
     <template is="dom-if" if="[[androidEnabled]]">
       <cr-link-row id="externalStoragePreferences" class="hr"
           on-click="onExternalStoragePreferencesTap_"

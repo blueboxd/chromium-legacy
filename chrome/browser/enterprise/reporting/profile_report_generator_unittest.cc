@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -26,6 +27,8 @@ namespace em = enterprise_management;
 
 namespace enterprise_reporting {
 namespace {
+
+const int kMaxNumberOfExtensionRequest = 1000;
 
 constexpr char kProfile[] = "Profile";
 constexpr char kIdleProfile[] = "IdleProfile";
@@ -235,6 +238,29 @@ TEST_F(ProfileReportGeneratorTest, FilterOutBlockedPendingRequest) {
   auto report = GenerateReport();
   ASSERT_EQ(1, report->extension_requests_size());
   EXPECT_EQ(kExtensionId2, report->extension_requests(0).id());
+}
+
+TEST_F(ProfileReportGeneratorTest, TooManyRequests) {
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kCloudExtensionRequestEnabled,
+      std::make_unique<base::Value>(true));
+  const int extension_request_count = kMaxNumberOfExtensionRequest;
+  std::vector<std::string> ids(extension_request_count);
+  for (int extension_id = 0; extension_id < extension_request_count;
+       extension_id += 1) {
+    ids[extension_id] = base::NumberToString(extension_id);
+  }
+  SetExtensionToPendingList(ids);
+
+  auto report = GenerateReport();
+  // At most 1000 requests will be uploaded.
+  EXPECT_EQ(kMaxNumberOfExtensionRequest, report->extension_requests_size());
+
+  // And the filter is stable.
+  auto report2 = GenerateReport();
+  for (int id = 0; id < kMaxNumberOfExtensionRequest; id += 1)
+    EXPECT_EQ(report->extension_requests(id).id(),
+              report2->extension_requests(id).id());
 }
 
 }  // namespace enterprise_reporting

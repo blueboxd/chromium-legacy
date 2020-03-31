@@ -148,14 +148,9 @@ class ListHashSet
    public:
     friend class ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>;
     AddResult(Node* node, bool is_new_entry)
-        : stored_value(&node->value_),
-          is_new_entry(is_new_entry),
-          node_(node) {}
+        : stored_value(&node->value_), is_new_entry(is_new_entry) {}
     ValueType* stored_value;
     bool is_new_entry;
-
-   private:
-    Node* node_;
   };
 
   ListHashSet();
@@ -211,12 +206,6 @@ class ListHashSet
   // a bool that is true if an new entry was added.
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
-
-  // Same as insert() except that the return value is an iterator. Useful in
-  // cases where it's needed to have the same return value as find() and where
-  // it's not possible to use a pointer to the storedValue.
-  template <typename IncomingValueType>
-  iterator AddReturnIterator(IncomingValueType&&);
 
   // Add the value to the end of the collection. If the value was already in
   // the list, it is moved to the end.
@@ -1017,14 +1006,6 @@ ListHashSet<T, inlineCapacity, U, V>::insert(IncomingValueType&& value) {
   if (result.is_new_entry)
     AppendNode(*result.stored_value);
   return AddResult(*result.stored_value, result.is_new_entry);
-}
-
-template <typename T, size_t inlineCapacity, typename U, typename V>
-template <typename IncomingValueType>
-typename ListHashSet<T, inlineCapacity, U, V>::iterator
-ListHashSet<T, inlineCapacity, U, V>::AddReturnIterator(
-    IncomingValueType&& value) {
-  return MakeIterator(insert(std::forward<IncomingValueType>(value)).node_);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>

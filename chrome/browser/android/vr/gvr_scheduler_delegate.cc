@@ -549,7 +549,7 @@ void GvrSchedulerDelegate::SubmitDrawnFrame(FrameType frame_type,
                             base::Unretained(this)));
     task_runner()->PostTask(
         FROM_HERE, base::BindOnce(webxr_delayed_gvr_submit_.callback(),
-                                  frame_type, head_pose, base::Passed(&fence)));
+                                  frame_type, head_pose, std::move(fence)));
   } else {
     // Continue with submit immediately.
     DrawFrameSubmitNow(frame_type, head_pose);
@@ -584,13 +584,12 @@ void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
         task_runner()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(webxr_delayed_gvr_submit_.callback(), frame_type,
-                           head_pose, base::Passed(&fence)),
+                           head_pose, std::move(fence)),
             kWebVRFenceCheckPollInterval);
       } else {
         task_runner()->PostTask(
-            FROM_HERE,
-            base::BindOnce(webxr_delayed_gvr_submit_.callback(), frame_type,
-                           head_pose, base::Passed(&fence)));
+            FROM_HERE, base::BindOnce(webxr_delayed_gvr_submit_.callback(),
+                                      frame_type, head_pose, std::move(fence)));
       }
       return;
     }

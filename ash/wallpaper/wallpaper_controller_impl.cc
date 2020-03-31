@@ -288,8 +288,7 @@ void OnWallpaperDataRead(LoadedCallback callback,
                          bool read_is_successful) {
   if (!read_is_successful) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), base::Passed(gfx::ImageSkia())));
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::ImageSkia()));
     return;
   }
   // This image was once encoded to JPEG by |ResizeAndEncodeImage|.
@@ -1645,7 +1644,7 @@ void WallpaperControllerImpl::ReadAndDecodeWallpaper(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&base::ReadFileToString, file_path, data),
       base::BindOnce(&OnWallpaperDataRead, std::move(callback),
-                     base::Passed(base::WrapUnique(data))));
+                     base::WrapUnique(data)));
 }
 
 bool WallpaperControllerImpl::InitializeUserWallpaperInfo(

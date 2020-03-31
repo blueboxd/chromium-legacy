@@ -57,6 +57,7 @@
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy/privacy_coordinator.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
@@ -160,6 +161,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     GoogleServicesSettingsCoordinatorDelegate,
     IdentityManagerObserverBridgeDelegate,
     PrefObserverDelegate,
+    PrivacyCoordinatorDelegate,
     SettingsControllerProtocol,
     SearchEngineObserving,
     SigninPresenter,
@@ -189,6 +191,9 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   // identity update notifications.
   SigninPromoViewMediator* _signinPromoViewMediator;
   GoogleServicesSettingsCoordinator* _googleServicesSettingsCoordinator;
+
+  // Privacy coordinator.
+  PrivacyCoordinator* _privacyCoordinator;
 
   // Cached resized profile image.
   UIImage* _resizedImage;
@@ -825,8 +830,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
           initWithPrefs:_browserState->GetPrefs()];
       break;
     case ItemTypePrivacy:
-      controller =
-          [[PrivacyTableViewController alloc] initWithBrowser:_browser];
+      [self showPrivacy];
       break;
     case ItemTypeLanguageSettings: {
       LanguageSettingsMediator* mediator =
@@ -927,6 +931,16 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                                       mode:GoogleServicesSettingsModeSettings];
   _googleServicesSettingsCoordinator.delegate = self;
   [_googleServicesSettingsCoordinator start];
+}
+
+// Shows Privacy screen.
+- (void)showPrivacy {
+  DCHECK(!_privacyCoordinator);
+  _privacyCoordinator = [[PrivacyCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                               browser:_browser];
+  _privacyCoordinator.delegate = self;
+  [_privacyCoordinator start];
 }
 
 // Sets the NSUserDefaults BOOL |value| for |key|.
@@ -1087,9 +1101,14 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 - (void)settingsWillBeDismissed {
   DCHECK(!_settingsHasBeenDismissed);
+
   [_googleServicesSettingsCoordinator stop];
   _googleServicesSettingsCoordinator.delegate = nil;
   _googleServicesSettingsCoordinator = nil;
+
+  [_privacyCoordinator stop];
+  _privacyCoordinator = nil;
+
   _settingsHasBeenDismissed = YES;
   [self.signinInteractionCoordinator cancel];
   [_signinPromoViewMediator signinPromoViewIsRemoved];
@@ -1267,6 +1286,15 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   [_googleServicesSettingsCoordinator stop];
   _googleServicesSettingsCoordinator.delegate = nil;
   _googleServicesSettingsCoordinator = nil;
+}
+
+#pragma mark - PrivacyCoordinatorDelegate
+
+- (void)privacyCoordinatorViewControllerWasRemoved:
+    (PrivacyCoordinator*)coordinator {
+  DCHECK_EQ(_privacyCoordinator, coordinator);
+  [_privacyCoordinator stop];
+  _privacyCoordinator = nil;
 }
 
 #pragma mark - IdentityManagerObserverBridgeDelegate

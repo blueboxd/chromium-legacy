@@ -1086,9 +1086,8 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
       GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertRef);
   openvpn->client_cert_type =
       GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertType);
-  openvpn->comp_lzo = GetManagedString(openvpn_dict, ::onc::openvpn::kCompLZO);
-  openvpn->comp_no_adapt =
-      GetManagedBoolean(openvpn_dict, ::onc::openvpn::kCompNoAdapt);
+  openvpn->compression_algorithm =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kCompressionAlgorithm);
   openvpn->extra_hosts =
       GetManagedStringList(openvpn_dict, ::onc::openvpn::kExtraHosts);
   openvpn->ignore_default_route =

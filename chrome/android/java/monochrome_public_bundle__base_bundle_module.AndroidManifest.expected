@@ -1400,6 +1400,9 @@
         android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TimeoutReceiver"/>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.share.SaveImageNotificationManager$TapReceiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"/>
     <receiver
         android:exported="false"

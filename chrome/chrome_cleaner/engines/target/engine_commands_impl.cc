@@ -73,7 +73,7 @@ void EngineCommandsImpl::Initialize(
   engine_delegate_->Initialize(
       log_directory_path, file_requests_proxy,
       base::BindOnce(&EngineCommandsImpl::PostInitializeCallback,
-                     base::Unretained(this), base::Passed(&callback)));
+                     base::Unretained(this), std::move(callback)));
 }
 
 void EngineCommandsImpl::StartScan(

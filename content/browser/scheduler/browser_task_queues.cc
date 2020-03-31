@@ -56,7 +56,7 @@ const char* GetUITaskQueueName(BrowserTaskQueues::QueueType queue_type) {
     case BrowserTaskQueues::QueueType::kBootstrap:
       return "ui_bootstrap_tq";
     case BrowserTaskQueues::QueueType::kPreconnection:
-      return "ui_navigation_and_preconnection_tq";
+      return "ui_preconnection_tq";
     case BrowserTaskQueues::QueueType::kDefault:
       return "ui_default_tq";
     case BrowserTaskQueues::QueueType::kUserBlocking:
@@ -73,7 +73,7 @@ const char* GetIOTaskQueueName(BrowserTaskQueues::QueueType queue_type) {
     case BrowserTaskQueues::QueueType::kBootstrap:
       return "io_bootstrap_tq";
     case BrowserTaskQueues::QueueType::kPreconnection:
-      return "io_navigation_and_preconnection_tq";
+      return "io_preconnection_tq";
     case BrowserTaskQueues::QueueType::kDefault:
       return "io_default_tq";
     case BrowserTaskQueues::QueueType::kUserBlocking:

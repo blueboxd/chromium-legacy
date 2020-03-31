@@ -1953,6 +1953,11 @@ cr.define('device_page_tests', function() {
         cr.webUIListenerCallback('storage-system-size-changed', '8.4 GB');
         Polymer.dom.flush();
         assertEquals('8.4 GB', storagePage.$$('#systemSizeSubLabel').innerText);
+
+        // In guest mode, the system row should be hidden.
+        storagePage.isGuest_ = true;
+        Polymer.dom.flush();
+        assertTrue(isHidden(storagePage.$$('#systemSize')));
       });
 
       test('apps extensions size', async function() {

@@ -22,6 +22,7 @@
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 namespace onc {
@@ -249,6 +250,10 @@ void ShillToONCTranslator::TranslateOpenVPN() {
 
   SetPKCS11Id(shill_dictionary_, shill::kOpenVPNClientCertIdProperty,
               shill::kOpenVPNClientCertSlotProperty, onc_object_.get());
+
+  TranslateWithTableAndSet(shill::kOpenVPNCompressProperty,
+                           kOpenVpnCompressionAlgorithmTable,
+                           ::onc::openvpn::kCompressionAlgorithm);
 
   for (const OncFieldSignature* field_signature = onc_signature_->fields;
        field_signature->onc_field_name != NULL; ++field_signature) {

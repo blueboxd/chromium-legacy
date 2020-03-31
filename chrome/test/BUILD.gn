@@ -3288,7 +3288,6 @@ test("unit_tests") {
     "../browser/policy/file_selection_dialogs_policy_handler_unittest.cc",
     "../browser/policy/homepage_location_policy_handler_unittest.cc",
     "../browser/policy/javascript_policy_handler_unittest.cc",
-    "../browser/policy/managed_bookmarks_policy_handler_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_table_unittest.cc",

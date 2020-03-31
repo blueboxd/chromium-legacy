@@ -28,7 +28,7 @@ class FrameRateDeciderTest : public testing::Test,
   void SetUp() override {
     surface_manager_ = std::make_unique<SurfaceManager>(this, base::nullopt);
     frame_rate_decider_ =
-        std::make_unique<FrameRateDecider>(surface_manager_.get(), this);
+        std::make_unique<FrameRateDecider>(surface_manager_.get(), this, false);
     frame_rate_decider_->set_min_num_of_frames_to_toggle_interval_for_testing(
         0u);
   }
@@ -313,6 +313,54 @@ TEST_F(FrameRateDeciderTest, TogglesAfterMinNumOfFrames) {
     frame_rate_decider_->OnSurfaceWillBeDrawn(surface2);
   }
   EXPECT_EQ(display_interval_, min_supported_interval);
+}
+
+TEST_F(FrameRateDeciderTest, TogglesWithSyntheticBFS) {
+  frame_rate_decider_ =
+      std::make_unique<FrameRateDecider>(surface_manager_.get(), this, true);
+  frame_rate_decider_->set_min_num_of_frames_to_toggle_interval_for_testing(0u);
+  base::TimeDelta min_supported_interval = base::TimeDelta::FromSeconds(1);
+  const std::vector<base::TimeDelta> supported_intervals = {
+      min_supported_interval * 2, min_supported_interval};
+  frame_rate_decider_->SetSupportedFrameIntervals(supported_intervals);
+  EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
+
+  FrameSinkId frame_sink_id1(1u, 1u);
+  preferred_intervals_[frame_sink_id1] = min_supported_interval * 2;
+  auto* surface1 = CreateAndDrawSurface(frame_sink_id1);
+
+  // If there is only one framesink with non-minimum interval,
+  // UnspecifiedFrameInterval() should be used
+  UpdateFrame(surface1);
+  {
+    FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface1);
+  }
+  EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
+
+  FrameSinkId frame_sink_id2(1u, 2u);
+  preferred_intervals_[frame_sink_id2] = min_supported_interval * 2;
+  auto* surface2 = CreateAndDrawSurface(frame_sink_id2);
+
+  // With two or more framesinks with non-minimum interval, calculate the
+  // optimal interval
+  UpdateFrame(surface1);
+  UpdateFrame(surface2);
+  {
+    FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface1);
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface2);
+  }
+  EXPECT_EQ(display_interval_, min_supported_interval * 2);
+
+  // Make sure it goes back to UnspecifiedFrameInterval() if we have only one
+  // framesink with non-minimum interval left
+  UpdateFrame(surface1);
+  {
+    FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface1);
+  }
+  EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
 }
 
 }  // namespace

@@ -829,13 +829,13 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
     first_launch_callback_ = base::BindOnce(
         &ReporterRunnerTest::
             FutureExpectNoReporterLoggingWithLastTimeSentReportSet,
-        base::Unretained(this), base::Passed(&get_first_invocation),
+        base::Unretained(this), std::move(get_first_invocation),
         last_time_sent_logs);
   } else {
     bool expect_logging = ExpectLogging(true);
     first_launch_callback_ = base::BindOnce(
         &ReporterRunnerTest::FutureExpectReporterLoggingHappenedInTheLastHour,
-        base::Unretained(this), base::Passed(&get_first_invocation),
+        base::Unretained(this), std::move(get_first_invocation),
         expect_logging);
   }
 

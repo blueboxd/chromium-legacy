@@ -125,7 +125,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     device_manager->CheckAccess(
         device.guid,
         base::BindOnce(&UsbDevicePermissionsPrompt::AddCheckedDevice, this,
-                       base::Passed(&device_info)));
+                       std::move(device_info)));
 #else
     AddCheckedDevice(std::move(device_info), true);
 #endif  // defined(OS_CHROMEOS)

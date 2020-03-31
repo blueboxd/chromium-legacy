@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -22,7 +24,7 @@ StatusCollectorParams& StatusCollectorState::response_params() {
 // Protected.
 StatusCollectorState::~StatusCollectorState() {
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(response_, base::Passed(&response_params_)));
+      FROM_HERE, base::BindOnce(response_, std::move(response_params_)));
 }
 
 }  // namespace policy

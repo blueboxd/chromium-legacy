@@ -296,7 +296,7 @@ TEST_P(ThreadGroupTestAllExecutionModes, PostDelayedTask) {
   ASSERT_TRUE(!task_ran.IsSignaled());
 
   // Post a task with a short delay.
-  TimeTicks start_time = TimeTicks::Now();
+  const TimeTicks start_time = TimeTicks::Now();
   EXPECT_TRUE(task_runner->PostDelayedTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
       TestTimeouts::tiny_timeout()));

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.share.qrcode.share_tab;
 import android.graphics.Bitmap;
 
 import org.chromium.ui.modelutil.PropertyKey;
-import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 class QrCodeShareViewProperties {
@@ -15,9 +14,5 @@ class QrCodeShareViewProperties {
     public static final WritableObjectPropertyKey<Bitmap> QRCODE_BITMAP =
             new WritableObjectPropertyKey<>();
 
-    /** Indicates whether download was successful. */
-    public static final WritableBooleanPropertyKey DOWNLOAD_SUCCESSFUL =
-            new WritableBooleanPropertyKey();
-
-    public static final PropertyKey[] ALL_KEYS = {QRCODE_BITMAP, DOWNLOAD_SUCCESSFUL};
+    public static final PropertyKey[] ALL_KEYS = {QRCODE_BITMAP};
 }

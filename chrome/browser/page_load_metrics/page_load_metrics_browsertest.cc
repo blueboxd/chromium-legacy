@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -2489,44 +2488,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreCommitWebFeature) {
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kSecureContextCheckFailed), 0);
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MainFrameDocumentIntersectionsMainFrame) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreatePageLoadMetricsTestWaiter();
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Evaluate the height and width of the page as the browser_test can
-  // vary the dimensions.
-  int document_height =
-      EvalJs(web_contents, "document.body.scrollHeight").ExtractInt();
-  int document_width =
-      EvalJs(web_contents, "document.body.scrollWidth").ExtractInt();
-
-  // Expectation is before NavigateToUrl for this test as the expectation can be
-  // met after NavigateToUrl and before the Wait.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(0, 0, document_width,
-                document_height));  // Initial main frame rect.
-
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL(
-          "/page_load_metrics/blank_with_positioned_iframe_writer.html"));
-  waiter->Wait();
-
-  // Create a |document_width|x|document_height| frame at 100,100, increasing
-  // the page width and height by 100.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(0, 0, document_width + 100, document_height + 100));
-  EXPECT_TRUE(ExecJs(
-      web_contents,
-      content::JsReplace("createIframeAtRect(\"test\", 100, 100, $1, $2);",
-                         document_width, document_height)));
-  waiter->Wait();
 }
 
 // Creates a single frame within the main frame and verifies the intersection

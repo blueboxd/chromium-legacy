@@ -43,9 +43,33 @@ class IsolatedPrerenderTabHelper
  public:
   ~IsolatedPrerenderTabHelper() override;
 
-  size_t prefetched_responses_size_for_testing() const {
-    return page_ ? page_->prefetched_responses.size() : 0;
-  }
+  // Simple container for several metrics which pertain to prefetching actions
+  // on a Google SRP.
+  struct PrefetchMetrics {
+    // This bitmask keeps track each eligible page's placement in the original
+    // navigation prediction. The Nth-LSB is set if the Nth predicted page is
+    // eligible. Pages are in descending order of likelihood of user clicking.
+    // For example, if the following prediction is made:
+    //
+    //   [eligible, not eligible, eligible, eligible]
+    //
+    // then the resulting bitmask will be
+    //
+    //   0b1101.
+    int64_t ordered_eligible_pages_bitmask = 0;
+
+    // The number of SRP links that were eligible to be prefetched.
+    size_t prefetch_eligible_count = 0;
+
+    // The number of eligible prefetches that were attempted.
+    size_t prefetch_attempted_count = 0;
+
+    // The number of attempted prefetches that were successful (net error was OK
+    // and HTTP response code was 2XX).
+    size_t prefetch_successful_count = 0;
+  };
+
+  const PrefetchMetrics& metrics() const { return page_->metrics_; }
 
   void CallHandlePrefetchResponseForTesting(
       const GURL& url,
@@ -79,25 +103,29 @@ class IsolatedPrerenderTabHelper
     CurrentPageLoad();
     ~CurrentPageLoad();
 
+    // The metrics pertaining to prefetching actions on a Google SRP page.
+    PrefetchMetrics metrics_;
+
+    // A map of all predicted URLs to their original placement in the ordered
+    // prediction.
+    std::map<GURL, size_t> original_prediction_ordering_;
+
     // The url loader that does all the prefetches. Set only when active.
-    std::unique_ptr<network::SimpleURLLoader> url_loader;
+    std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
     // An ordered list of the URLs to prefetch.
-    std::vector<GURL> urls_to_prefetch;
-
-    // The number of prefetches that have been attempted on this page.
-    size_t num_prefetches_attempted = 0;
+    std::vector<GURL> urls_to_prefetch_;
 
     // All prefetched responses by URL. This is cleared every time a mainframe
     // navigation commits.
     std::map<GURL, std::unique_ptr<PrefetchedMainframeResponseContainer>>
-        prefetched_responses;
+        prefetched_responses_;
 
     // The network context and url loader factory that will be used for
     // prefetches. A separate network context is used so that the prefetch proxy
-    // can be used via a custom porxy configuration.
-    mojo::Remote<network::mojom::URLLoaderFactory> isolated_url_loader_factory;
-    mojo::Remote<network::mojom::NetworkContext> isolated_network_context;
+    // can be used via a custom proxy configuration.
+    mojo::Remote<network::mojom::URLLoaderFactory> isolated_url_loader_factory_;
+    mojo::Remote<network::mojom::NetworkContext> isolated_network_context_;
   };
 
   // A helper method to make it easier to tell when prefetching is already

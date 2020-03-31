@@ -7,7 +7,7 @@
 
 #import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_enums.h"
-#import "ios/chrome/browser/ui/authentication/signin/signin_enums.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 
 @class ChromeIdentity;
 @class ChromeIdentityInteractionManager;

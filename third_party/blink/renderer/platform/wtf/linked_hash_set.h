@@ -313,13 +313,6 @@ class LinkedHashSet {
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
 
-  // Same as insert() except that the return value is an
-  // iterator. Useful in cases where it's needed to have the
-  // same return value as find() and where it's not possible to
-  // use a pointer to the storedValue.
-  template <typename IncomingValueType>
-  iterator AddReturnIterator(IncomingValueType&&);
-
   // Add the value to the end of the collection. If the value was already in
   // the list, it is moved to the end.
   template <typename IncomingValueType>
@@ -865,16 +858,6 @@ LinkedHashSet<Value, HashFunctions, Traits, Allocator>::insert(
     IncomingValueType&& value) {
   return impl_.template insert<NodeHashFunctions>(
       std::forward<IncomingValueType>(value), &anchor_);
-}
-
-template <typename T, typename U, typename V, typename W>
-template <typename IncomingValueType>
-typename LinkedHashSet<T, U, V, W>::iterator
-LinkedHashSet<T, U, V, W>::AddReturnIterator(IncomingValueType&& value) {
-  typename ImplType::AddResult result =
-      impl_.template insert<NodeHashFunctions>(
-          std::forward<IncomingValueType>(value), &anchor_);
-  return MakeIterator(result.stored_value);
 }
 
 template <typename T, typename U, typename V, typename W>

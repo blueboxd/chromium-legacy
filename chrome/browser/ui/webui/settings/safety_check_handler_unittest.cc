@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
@@ -202,6 +203,7 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
   TestSafetyCheckExtensionService test_extension_service_;
   content::TestWebUI test_web_ui_;
   std::unique_ptr<TestingSafetyCheckHandler> safety_check_;
+  base::HistogramTester histogram_tester_;
 
  private:
   // Replaces any instances of browser name (e.g. Google Chrome, Chromium,
@@ -324,6 +326,8 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Checking) {
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kChecking));
   ASSERT_TRUE(event);
   VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
+  // Checking state should not get recorded.
+  histogram_tester_.ExpectTotalCount("SafetyCheck.UpdatesResult", 0);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updated) {
@@ -342,6 +346,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updated) {
 #else
   VerifyDisplayString(event, "Browser is up to date");
 #endif
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.UpdatesResult", SafetyCheckHandler::UpdateStatus::kUpdated,
+      1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updating) {
@@ -357,6 +364,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updating) {
 #else
   VerifyDisplayString(event, "Updating Browser");
 #endif
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.UpdatesResult", SafetyCheckHandler::UpdateStatus::kUpdating,
+      1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Relaunch) {
@@ -375,6 +385,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Relaunch) {
                       "Nearly up to date! Relaunch Browser to finish "
                       "updating. Incognito windows won't reopen.");
 #endif
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.UpdatesResult", SafetyCheckHandler::UpdateStatus::kRelaunch,
+      1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_DisabledByAdmin) {
@@ -391,6 +404,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_DisabledByAdmin) {
       "Updates are managed by <a target=\"_blank\" "
       "href=\"https://support.google.com/chrome?p=your_administrator\">your "
       "administrator</a>");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.UpdatesResult",
+      SafetyCheckHandler::UpdateStatus::kDisabledByAdmin, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_FailedOffline) {
@@ -404,6 +420,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_FailedOffline) {
   VerifyDisplayString(event,
                       "Browser can't check for updates. Try checking your "
                       "internet connection.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.UpdatesResult",
+      SafetyCheckHandler::UpdateStatus::kFailedOffline, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
@@ -419,6 +438,9 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
       "Browser didn't update, something went wrong. <a target=\"_blank\" "
       "href=\"https://support.google.com/chrome?p=fix_chrome_updates\">Fix "
       "Browser update problems and failed updates.</a>");
+  histogram_tester_.ExpectBucketCount("SafetyCheck.UpdatesResult",
+                                      SafetyCheckHandler::UpdateStatus::kFailed,
+                                      1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_DestroyedOnJavascriptDisallowed) {
@@ -443,6 +465,9 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Enabled) {
   VerifyDisplayString(event,
                       "Safe Browsing is up to date and protecting you from "
                       "harmful sites and downloads");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.SafeBrowsingResult",
+      SafetyCheckHandler::SafeBrowsingStatus::kEnabled, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Disabled) {
@@ -457,6 +482,9 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Disabled) {
   ASSERT_TRUE(event);
   VerifyDisplayString(
       event, "Safe Browsing is off. To stay safe on the web, turn it on.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.SafeBrowsingResult",
+      SafetyCheckHandler::SafeBrowsingStatus::kDisabled, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByAdmin) {
@@ -477,6 +505,9 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByAdmin) {
       "<a target=\"_blank\" "
       "href=\"https://support.google.com/chrome?p=your_administrator\">Your "
       "administrator</a> has turned off Safe Browsing");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.SafeBrowsingResult",
+      SafetyCheckHandler::SafeBrowsingStatus::kDisabledByAdmin, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByExtension) {
@@ -493,6 +524,9 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByExtension) {
               SafetyCheckHandler::SafeBrowsingStatus::kDisabledByExtension));
   ASSERT_TRUE(event);
   VerifyDisplayString(event, "An extension has turned off Safe Browsing");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.SafeBrowsingResult",
+      SafetyCheckHandler::SafeBrowsingStatus::kDisabledByExtension, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
@@ -506,6 +540,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking));
   ASSERT_TRUE(event);
   VerifyDisplayString(event, base::UTF8ToUTF16("Running…"));
+  histogram_tester_.ExpectTotalCount("SafetyCheck.PasswordsResult", 0);
   // Second, an "offline" state.
   test_leak_service_->set_state_and_notify(
       password_manager::BulkLeakCheckService::State::kNetworkError);
@@ -517,6 +552,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
   VerifyDisplayString(event2,
                       "Browser can't check your passwords. Try checking your "
                       "internet connection.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kOffline, 1);
   // Another error, but since the previous state is terminal, the handler
   // should no longer be observing the BulkLeakCheckService state.
   test_leak_service_->set_state_and_notify(
@@ -526,6 +564,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
           kPasswords,
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kOffline));
   ASSERT_TRUE(event3);
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kOffline, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_InterruptedAndRefreshed) {
@@ -565,6 +606,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_InterruptedAndRefreshed) {
   VerifyDisplayString(
       event3,
       "Browser can't check your passwords because you're not signed in");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kSignedOut, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_StartedTwice) {
@@ -589,6 +633,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_StartedTwice) {
   VerifyDisplayString(event2,
                       "Browser can't check your passwords. Try checking your "
                       "internet connection.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kOffline, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverNotifiedTwice) {
@@ -627,6 +674,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_Safe) {
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kSafe));
   EXPECT_TRUE(event);
   VerifyDisplayString(event, "No compromised passwords found");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult", SafetyCheckHandler::PasswordsStatus::kSafe,
+      1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_CompromisedExist) {
@@ -651,6 +701,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_CompromisedExist) {
   VerifyDisplayString(
       event2, base::NumberToString(kCompromised) + " compromised passwords");
   VerifyButtonString(event2, "Change passwords");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kCompromisedExist, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {
@@ -667,6 +720,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {
   ASSERT_TRUE(event);
   VerifyDisplayString(event,
                       "Browser can't check your passwords. Try again later.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kError, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
@@ -684,6 +740,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
   ASSERT_TRUE(event);
   VerifyDisplayString(event, "1 compromised password");
   VerifyButtonString(event, "Change password");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kCompromisedExist, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_NoPasswords) {
@@ -697,6 +756,9 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_NoPasswords) {
           static_cast<int>(SafetyCheckHandler::PasswordsStatus::kNoPasswords));
   EXPECT_TRUE(event);
   VerifyDisplayString(event, "No saved passwords");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kNoPasswords, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_Progress) {
@@ -751,6 +813,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoExtensions) {
       kExtensions,
       static_cast<int>(
           SafetyCheckHandler::ExtensionsStatus::kNoneBlocklisted)));
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.ExtensionsResult",
+      SafetyCheckHandler::ExtensionsStatus::kNoneBlocklisted, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoneBlocklisted) {
@@ -771,6 +836,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoneBlocklisted) {
   EXPECT_TRUE(event);
   VerifyDisplayString(event,
                       "You're protected from potentially harmful extensions");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.ExtensionsResult",
+      SafetyCheckHandler::ExtensionsStatus::kNoneBlocklisted, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedAllDisabled) {
@@ -793,6 +861,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedAllDisabled) {
   EXPECT_TRUE(event);
   VerifyDisplayString(
       event, "1 potentially harmful extension is off. You can also remove it.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.ExtensionsResult",
+      SafetyCheckHandler::ExtensionsStatus::kBlocklistedAllDisabled, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByUser) {
@@ -814,6 +885,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByUser) {
   EXPECT_TRUE(event);
   VerifyDisplayString(event,
                       "You turned 1 potentially harmful extension back on");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.ExtensionsResult",
+      SafetyCheckHandler::ExtensionsStatus::kBlocklistedReenabledAllByUser, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByAdmin) {
@@ -835,6 +909,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByAdmin) {
   VerifyDisplayString(event,
                       "Your administrator turned 1 potentially harmful "
                       "extension back on");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.ExtensionsResult",
+      SafetyCheckHandler::ExtensionsStatus::kBlocklistedReenabledAllByAdmin, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledSomeByUser) {
@@ -870,6 +947,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledSomeByUser) {
                       "You turned 1 potentially harmful extension back "
                       "on. Your administrator "
                       "turned 1 potentially harmful extension back on.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.ExtensionsResult",
+      SafetyCheckHandler::ExtensionsStatus::kBlocklistedReenabledSomeByUser, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
@@ -905,6 +985,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
   EXPECT_TRUE(event);
   VerifyDisplayString(event,
                       "Browser can't check your extensions. Try again later.");
+  histogram_tester_.ExpectBucketCount(
+      "SafetyCheck.ExtensionsResult",
+      SafetyCheckHandler::ExtensionsStatus::kError, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {

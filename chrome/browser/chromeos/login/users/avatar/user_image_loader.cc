@@ -221,9 +221,8 @@ void DecodeImage(
   if (!data_is_ready) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            std::move(image_info.loaded_cb),
-            base::Passed(base::WrapUnique(new user_manager::UserImage))));
+        base::BindOnce(std::move(image_info.loaded_cb),
+                       base::WrapUnique(new user_manager::UserImage)));
     return;
   }
 

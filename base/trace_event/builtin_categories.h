@@ -232,6 +232,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"))                    \
   X(TRACE_DISABLED_BY_DEFAULT("viz.surface_lifetime"))                   \
   X(TRACE_DISABLED_BY_DEFAULT("viz.triangles"))                          \
+  X(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"))
 
 #define INTERNAL_TRACE_INIT_CATEGORY_NAME(name) name,

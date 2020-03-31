@@ -11,8 +11,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
-import {getFakeParent} from './edu_login_test_util.js';
+import {getFakeParent, TestEduAccountLoginBrowserProxy} from './edu_login_test_util.js';
 
 window.edu_login_parent_signin_tests = {};
 edu_login_parent_signin_tests.suiteName = 'EduLoginParentSigninTest';
@@ -34,26 +33,6 @@ suite(edu_login_parent_signin_tests.suiteName, function() {
   let parentSigninComponent;
   let testBrowserProxy;
   let passwordField;
-
-  /** @implements {EduAccountLoginBrowserProxy} */
-  class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
-    constructor() {
-      super(['parentSignin']);
-      /** @private {function} */
-      this.parentSigninResponse_ = null;
-    }
-
-    /** @param {function} parentSigninResponse */
-    setParentSigninResponse(parentSigninResponse) {
-      this.parentSigninResponse_ = parentSigninResponse;
-    }
-
-    /** @override */
-    parentSignin(parent, password) {
-      this.methodCalled('parentSignin', parent, password);
-      return this.parentSigninResponse_();
-    }
-  }
 
   /** @param {string} type */
   function clickButton(type) {

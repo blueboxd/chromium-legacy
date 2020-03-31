@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -156,9 +155,8 @@ bool AdTracker::CalculateIfAdSubresource(ExecutionContext* execution_context,
                                          bool known_ad) {
   // Check if the document loading the resource is an ad or if any executing
   // script is an ad.
-  known_ad =
-      known_ad || IsKnownAdExecutionContext(execution_context) ||
-      IsAdScriptInStackForContext(StackType::kBottomAndTop, execution_context);
+  known_ad = known_ad || IsKnownAdExecutionContext(execution_context) ||
+             IsAdScriptInStack(StackType::kBottomAndTop);
 
   // If it is a script marked as an ad and it's not in an ad context, append it
   // to the known ad script set. We don't need to keep track of ad scripts in ad
@@ -172,13 +170,12 @@ bool AdTracker::CalculateIfAdSubresource(ExecutionContext* execution_context,
   return known_ad;
 }
 
-void AdTracker::DidCreateAsyncTask(probe::AsyncTaskId* task,
-                                   ExecutionContext* execution_context) {
+void AdTracker::DidCreateAsyncTask(probe::AsyncTaskId* task) {
   DCHECK(task);
   if (!async_stack_enabled_)
     return;
 
-  if (IsAdScriptInStackForContext(StackType::kBottomOnly, execution_context))
+  if (IsAdScriptInStack(StackType::kBottomOnly))
     task->SetAdTask();
 }
 
@@ -200,12 +197,11 @@ void AdTracker::DidFinishAsyncTask(probe::AsyncTaskId* task) {
     running_ad_async_tasks_ -= 1;
 }
 
-bool AdTracker::IsAdScriptInStackForContext(
-    StackType stack_type,
-    ExecutionContext* execution_context) {
+bool AdTracker::IsAdScriptInStack(StackType stack_type) {
   if (num_ads_in_stack_ > 0 || running_ad_async_tasks_ > 0)
     return true;
 
+  ExecutionContext* execution_context = GetCurrentExecutionContext();
   if (!execution_context)
     return false;
 
@@ -227,10 +223,6 @@ bool AdTracker::IsAdScriptInStackForContext(
     return true;
 
   return false;
-}
-
-bool AdTracker::IsAdScriptInStackSlow(StackType stack_type) {
-  return IsAdScriptInStackForContext(stack_type, GetCurrentExecutionContext());
 }
 
 bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,

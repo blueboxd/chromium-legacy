@@ -7,6 +7,9 @@ source_set("privacy") {
   sources = [
     "handoff_table_view_controller.h",
     "handoff_table_view_controller.mm",
+    "privacy_coordinator.h",
+    "privacy_coordinator.mm",
+    "privacy_navigation_commands.h",
     "privacy_table_view_controller.h",
     "privacy_table_view_controller.mm",
   ]
@@ -24,6 +27,7 @@ source_set("privacy") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/cells",

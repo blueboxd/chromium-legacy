@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -136,8 +138,7 @@ void ChromeNetworkingCastPrivateDelegate::VerifyDestination(
     const FailureCallback& failure_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&RunDecodeAndVerifyCredentials,
-                     base::Passed(&credentials)),
+      base::BindOnce(&RunDecodeAndVerifyCredentials, std::move(credentials)),
       base::BindOnce(&VerifyDestinationCompleted, success_callback,
                      failure_callback));
 }
@@ -149,8 +150,7 @@ void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptData(
     const FailureCallback& failure_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&RunVerifyAndEncryptData, data,
-                     base::Passed(&credentials)),
+      base::BindOnce(&RunVerifyAndEncryptData, data, std::move(credentials)),
       base::BindOnce(&VerifyAndEncryptDataCompleted, success_callback,
                      failure_callback));
 }

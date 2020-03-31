@@ -4,6 +4,8 @@
 
 #include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
@@ -147,8 +149,7 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
     base::AutoLock lock(lock_);
     decode_done_closure_ = base::BindOnce(
         decode_done_cb_, out_buffer.id, out_buffer.frame_feedback_id,
-        base::Passed(&out_buffer.access_permission),
-        base::Passed(&out_frame_info));
+        std::move(out_buffer.access_permission), std::move(out_frame_info));
   }
 
   // base::Unretained is safe because |decoder_| is deleted on

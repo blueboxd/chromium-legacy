@@ -82,10 +82,11 @@ void CSSSegmentedFontFace::AddFontFace(FontFace* font_face,
   if (css_connected) {
     font_faces_.InsertBefore(first_non_css_connected_face_, font_face);
   } else {
-    // This is the only place in Blink that is using addReturnIterator.
-    FontFaceList::iterator iterator = font_faces_.AddReturnIterator(font_face);
-    if (first_non_css_connected_face_ == font_faces_.end())
-      first_non_css_connected_face_ = iterator;
+    FontFaceList::AddResult result = font_faces_.insert(font_face);
+    if (first_non_css_connected_face_ == font_faces_.end()) {
+      --first_non_css_connected_face_;
+      DCHECK_EQ(result.stored_value, &*first_non_css_connected_face_);
+    }
   }
 }
 

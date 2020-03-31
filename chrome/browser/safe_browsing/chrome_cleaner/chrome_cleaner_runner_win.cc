@@ -211,10 +211,10 @@ void ChromeCleanerRunner::OnPromptUser(
     ChromeCleanerScannerResults&& scanner_results,
     ChromePromptActions::PromptUserReplyCallback reply_callback) {
   if (on_prompt_user_) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(on_prompt_user_),
-                                          base::Passed(&scanner_results),
-                                          base::Passed(&reply_callback)));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(on_prompt_user_), std::move(scanner_results),
+                       std::move(reply_callback)));
   }
 }
 

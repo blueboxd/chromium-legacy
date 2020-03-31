@@ -48,7 +48,7 @@ def CleanFile(expectation_name, expectation, variable_expander):
       'Invalid expectation for CleanFile operation: \'exists\' property for ' +
       'path %s must not be True' % file_path)
   try:
-    if stat.S_ISDIR(os.lstat(file_path)):
+    if stat.S_ISDIR(os.lstat(file_path).st_mode):
       shutil.rmtree(file_path)
       logging.info('CleanFile deleted directory %s' % file_path)
     else:

@@ -25,7 +25,8 @@ TEST(WebRtcVideoFrameAdapterTest, WidthAndHeight) {
                       media::VideoFrame::STORAGE_OWNED_MEMORY);
   rtc::scoped_refptr<webrtc::VideoFrameBuffer> owned_memory_frame_adapter(
       new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
-          std::move(owned_memory_frame)));
+          std::move(owned_memory_frame),
+          WebRtcVideoFrameAdapter::LogStatus::kNoLogging));
   EXPECT_EQ(owned_memory_frame_adapter->width(), kVisibleRect.width());
   EXPECT_EQ(owned_memory_frame_adapter->height(), kVisibleRect.height());
 
@@ -35,7 +36,9 @@ TEST(WebRtcVideoFrameAdapterTest, WidthAndHeight) {
       CreateTestFrame(kCodedSize, kVisibleRect, kNaturalSize,
                       media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
   rtc::scoped_refptr<webrtc::VideoFrameBuffer> gmb_frame_adapter(
-      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(std::move(gmb_frame)));
+      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+          std::move(gmb_frame),
+          WebRtcVideoFrameAdapter::LogStatus::kNoLogging));
   EXPECT_EQ(gmb_frame_adapter->width(), kNaturalSize.width());
   EXPECT_EQ(gmb_frame_adapter->height(), kNaturalSize.height());
 }
@@ -52,7 +55,9 @@ TEST(WebRtcVideoFrameAdapterTest, ToI420DownScale) {
   // The adapter should report width and height from the natural size for
   // VideoFrame backed by GpuMemoryBuffer.
   rtc::scoped_refptr<webrtc::VideoFrameBuffer> gmb_frame_adapter(
-      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(std::move(gmb_frame)));
+      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+          std::move(gmb_frame),
+          WebRtcVideoFrameAdapter::LogStatus::kNoLogging));
   EXPECT_EQ(gmb_frame_adapter->width(), kNaturalSize.width());
   EXPECT_EQ(gmb_frame_adapter->height(), kNaturalSize.height());
 

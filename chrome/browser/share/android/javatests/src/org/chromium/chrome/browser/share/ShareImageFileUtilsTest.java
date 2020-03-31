@@ -260,7 +260,7 @@ public class ShareImageFileUtilsTest {
                     }
 
                     @Override
-                    public void onImageSaveError() {
+                    public void onImageSaveError(String displayName) {
                         Assert.fail();
                     }
                 };
@@ -299,7 +299,7 @@ public class ShareImageFileUtilsTest {
                     }
 
                     @Override
-                    public void onImageSaveError() {
+                    public void onImageSaveError(String displayName) {
                         Assert.fail();
                     }
                 };

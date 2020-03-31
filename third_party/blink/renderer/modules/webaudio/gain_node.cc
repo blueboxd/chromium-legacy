@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 
@@ -55,6 +56,9 @@ scoped_refptr<GainHandler> GainHandler::Create(AudioNode& node,
 }
 
 void GainHandler::Process(uint32_t frames_to_process) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "GainHandler::Process");
+
   // FIXME: for some cases there is a nice optimization to avoid processing
   // here, and let the gain change happen in the summing junction input of the
   // AudioNode we're connected to.  Then we can avoid all of the following:

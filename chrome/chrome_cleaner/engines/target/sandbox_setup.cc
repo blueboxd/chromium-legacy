@@ -63,7 +63,7 @@ EngineMojoSandboxTargetHooks::~EngineMojoSandboxTargetHooks() {
                      [](std::unique_ptr<EngineCommandsImpl> commands) {
                        commands.reset();
                      },
-                     base::Passed(&engine_commands_impl_)));
+                     std::move(engine_commands_impl_)));
 }
 
 ResultCode EngineMojoSandboxTargetHooks::TargetDroppedPrivileges(
@@ -78,7 +78,7 @@ ResultCode EngineMojoSandboxTargetHooks::TargetDroppedPrivileges(
   mojo_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&EngineMojoSandboxTargetHooks::BindEngineCommandsReceiver,
-                     base::Unretained(this), base::Passed(&receiver)));
+                     base::Unretained(this), std::move(receiver)));
 
   run_loop.Run();
   return RESULT_CODE_SUCCESS;

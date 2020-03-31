@@ -14,8 +14,8 @@ group("signin") {
 source_set("signin_headers") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "signin_constants.h",
     "signin_coordinator.h",
-    "signin_enums.h",
     "signin_utils.h",
   ]
   public_deps = [
@@ -28,7 +28,10 @@ source_set("signin_headers") {
 
 source_set("signin_protected") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [ "signin_coordinator+protected.h" ]
+  sources = [
+    "signin_constants.mm",
+    "signin_coordinator+protected.h",
+  ]
   deps = [ ":signin_headers" ]
 }
 

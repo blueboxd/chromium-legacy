@@ -10,10 +10,4 @@ interface ITestWebLayer {
   // set mock location provider
   void setMockLocationProvider(in boolean enable) = 2;
   boolean isMockLocationProviderRunning() = 3;
-
-  // Whether or not a permission dialog is currently showing.
-  boolean isPermissionDialogShown() = 4;
-
-  // Clicks a button on the permission dialog.
-  void clickPermissionDialogButton(in boolean allow) = 5;
 }

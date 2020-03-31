@@ -4,6 +4,7 @@
      found in the LICENSE file. -->
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ContentDescription is set programmatically. -->
@@ -15,7 +16,8 @@
         android:layout_height="@dimen/security_status_icon_size"
         android:layout_width="@dimen/security_status_icon_size"
         android:scaleType="center"
-        android:paddingEnd="@dimen/security_status_icon_padding"/>
+        android:paddingEnd="@dimen/security_status_icon_padding"
+        app:tint="@color/default_icon_color_tint_list"/>
 
     <TextView
         android:id="@+id/url_text"

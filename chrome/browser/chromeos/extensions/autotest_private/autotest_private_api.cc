@@ -1965,7 +1965,7 @@ ExtensionFunction::ResponseAction AutotestPrivateTakeScreenshotFunction::Run() {
   grabber->TakeScreenshot(
       primary_root, primary_root->bounds(),
       base::BindOnce(&AutotestPrivateTakeScreenshotFunction::ScreenshotTaken,
-                     this, base::Passed(&grabber)));
+                     this, std::move(grabber)));
   return RespondLater();
 }
 
@@ -2008,7 +2008,7 @@ AutotestPrivateTakeScreenshotForDisplayFunction::Run() {
           window, window->bounds(),
           base::BindOnce(
               &AutotestPrivateTakeScreenshotForDisplayFunction::ScreenshotTaken,
-              this, base::Passed(&grabber)));
+              this, std::move(grabber)));
       return RespondLater();
     }
   }

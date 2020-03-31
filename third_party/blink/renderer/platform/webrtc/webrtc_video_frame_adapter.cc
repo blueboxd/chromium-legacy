@@ -6,6 +6,8 @@
 
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 #include "third_party/webrtc/common_video/libyuv/include/webrtc_libyuv.h"
@@ -83,7 +85,8 @@ void IsValidFrame(const media::VideoFrame& frame) {
 }
 
 scoped_refptr<media::VideoFrame> ConstructI420VideoFrame(
-    const media::VideoFrame& source_frame) {
+    const media::VideoFrame& source_frame,
+    blink::WebRtcVideoFrameAdapter::LogStatus log_to_webrtc) {
   // NV12 is the only supported format.
   DCHECK_EQ(source_frame.format(), media::PIXEL_FORMAT_NV12);
   DCHECK_EQ(source_frame.storage_type(),
@@ -101,6 +104,22 @@ scoped_refptr<media::VideoFrame> ConstructI420VideoFrame(
       (reinterpret_cast<const uint8_t*>(gmb->memory(1)) +
        ((source_frame.visible_rect().x() / 2) * 2) +
        ((source_frame.visible_rect().y() / 2) * gmb->stride(1)));
+
+  if (log_to_webrtc ==
+      blink::WebRtcVideoFrameAdapter::LogStatus::kLogToWebRtc) {
+    blink::WebRtcLogMessage(base::StringPrintf(
+        "VFC::WebRtcVideoFrameAdapter : ConstructI420VideoFrame "
+        "pixel_format %d "
+        "natural_size %s coded_size %s visible_rect %s "
+        "source_plane_y %p source_plane_uv %p "
+        "source_stride_y %d, source_stride_uv %d "
+        "visible_y %p visible_uv %p",
+        static_cast<int>(source_frame.format()),
+        source_frame.natural_size().ToString().c_str(),
+        source_frame.coded_size().ToString().c_str(),
+        source_frame.visible_rect().ToString().c_str(), gmb->memory(0),
+        gmb->memory(1), gmb->stride(0), gmb->stride(1), src_y, src_uv));
+  }
 
   // Convert to I420 and scale to the natural size specified in |source_frame|.
   scoped_refptr<media::VideoFrame> i420_frame = media::VideoFrame::CreateFrame(
@@ -131,8 +150,9 @@ scoped_refptr<media::VideoFrame> ConstructI420VideoFrame(
 namespace blink {
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
-    scoped_refptr<media::VideoFrame> frame)
-    : frame_(std::move(frame)) {}
+    scoped_refptr<media::VideoFrame> frame,
+    LogStatus log_to_webrtc)
+    : frame_(std::move(frame)), log_to_webrtc_(log_to_webrtc) {}
 
 WebRtcVideoFrameAdapter::~WebRtcVideoFrameAdapter() {}
 
@@ -158,8 +178,12 @@ rtc::scoped_refptr<webrtc::I420BufferInterface>
 WebRtcVideoFrameAdapter::CreateFrameAdapter() const {
   if (frame_->storage_type() ==
       media::VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER) {
-    auto i420_frame = ConstructI420VideoFrame(*frame_);
+    auto i420_frame = ConstructI420VideoFrame(*frame_, log_to_webrtc_);
     if (!i420_frame) {
+      if (log_to_webrtc_ == LogStatus::kLogToWebRtc) {
+        blink::WebRtcLogMessage(
+            "VFC::WebRtcVideoFrameAdapter couldn't contruct I420 frame");
+      }
       return new rtc::RefCountedObject<
           FrameAdapter<webrtc::I420BufferInterface>>(
           media::VideoFrame::CreateColorFrame(frame_->natural_size(), 0u, 0x80,
@@ -188,7 +212,29 @@ WebRtcVideoFrameAdapter::CreateFrameAdapter() const {
   }
 
   IsValidFrame(*frame_);
+  if (log_to_webrtc_ == LogStatus::kLogToWebRtc) {
+    blink::WebRtcLogMessage(base::StringPrintf(
+        "VFC::WebRtcVideoFrameAdapter created I420 adapter: "
+        "natural_size %s coded_size %s visible_rect %s "
+        "PlaneY %p PlaneU %p PlaneY %p StrideY %d StrideU %d StrideY %d ",
+        frame_->natural_size().ToString().c_str(),
+        frame_->coded_size().ToString().c_str(),
+        frame_->visible_rect().ToString().c_str(),
+        frame_->visible_data(media::VideoFrame::kYPlane),
+        frame_->visible_data(media::VideoFrame::kUPlane),
+        frame_->visible_data(media::VideoFrame::kVPlane),
+        frame_->stride(media::VideoFrame::kYPlane),
+        frame_->stride(media::VideoFrame::kUPlane),
+        frame_->stride(media::VideoFrame::kVPlane)));
+  }
   if (media::PIXEL_FORMAT_I420A == frame_->format()) {
+    if (log_to_webrtc_ == LogStatus::kLogToWebRtc) {
+      blink::WebRtcLogMessage(base::StringPrintf(
+          "VFC::WebRtcVideoFrameAdapter pixel format is I420A. "
+          "PlaneA %p StrideA %d",
+          frame_->visible_data(media::VideoFrame::kAPlane),
+          frame_->stride(media::VideoFrame::kAPlane)));
+    }
     return new rtc::RefCountedObject<
         FrameAdapterWithA<webrtc::I420ABufferInterface>>(frame_);
   }

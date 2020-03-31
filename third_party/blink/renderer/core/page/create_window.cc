@@ -204,7 +204,7 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
 
   bool is_ad_subframe = opener_frame.IsAdSubframe();
   bool is_ad_script_in_stack =
-      ad_tracker->IsAdScriptInStackSlow(AdTracker::StackType::kBottomAndTop);
+      ad_tracker->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop);
   FromAdState state =
       blink::GetFromAdState(is_ad_subframe, is_ad_script_in_stack);
 

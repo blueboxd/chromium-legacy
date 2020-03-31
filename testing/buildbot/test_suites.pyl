@@ -3199,6 +3199,10 @@
     },
 
     'ozone_linux_gtests_wayland': {
+      'accessibility_unittests': {},
+      'aura_unittests': {},
+      'content_unittests': {},
+      'events_unittests': {},
       'gpu_unittests': {},
       'ui_touch_selection_unittests': {},
       'wayland_views_unittests': {
@@ -3210,7 +3214,10 @@
     },
 
     'ozone_linux_gtests_x11': {
+      'accessibility_unittests': {},
+      'aura_unittests': {},
       'content_unittests': {},
+      'events_unittests': {},
       'gpu_unittests': {},
       'ozone_x11_unittests': {},
       'ui_touch_selection_unittests': {},

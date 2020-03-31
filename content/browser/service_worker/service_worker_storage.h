@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
+#include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
@@ -62,12 +63,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerStorageTest, DisabledStorage);
 // restarted.
 class CONTENT_EXPORT ServiceWorkerStorage {
  public:
-  enum class OriginState {
-    // Registrations may exist at this origin. It cannot be deleted.
-    kKeep,
-    // No registrations exist at this origin. It can be deleted.
-    kDelete
-  };
+  using OriginState = storage::mojom::ServiceWorkerStorageOriginState;
 
   using RegistrationList =
       std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr>;

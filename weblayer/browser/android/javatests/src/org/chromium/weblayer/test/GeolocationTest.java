@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
@@ -26,6 +27,7 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
  * Tests that Geolocation Web API works as expected.
  */
 @RunWith(WebLayerJUnit4ClassRunner.class)
+@CommandLineFlags.Add("weblayer-fake-permissions")
 public final class GeolocationTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
@@ -92,8 +94,6 @@ public final class GeolocationTest {
     @MediumTest
     public void testGeolocation_getPosition() throws Throwable {
         mActivityTestRule.executeScriptSync("initiate_getCurrentPosition();", false);
-        waitForDialog();
-        mTestWebLayer.clickPermissionDialogButton(true);
         waitForCountEqual("positionCount", 1);
         mActivityTestRule.executeScriptSync("initiate_getCurrentPosition();", false);
         waitForCountEqual("positionCount", 2);
@@ -107,8 +107,6 @@ public final class GeolocationTest {
     @MediumTest
     public void testGeolocation_watchPosition() throws Throwable {
         mActivityTestRule.executeScriptSync("initiate_watchPosition();", false);
-        waitForDialog();
-        mTestWebLayer.clickPermissionDialogButton(true);
         waitForCountGreaterThan("positionCount", 1);
         ensureGeolocationIsRunning(true);
         Assert.assertEquals(0, getCountFromJS("errorCount"));
@@ -121,8 +119,6 @@ public final class GeolocationTest {
     @MediumTest
     public void testGeolocation_destroyTabStopsGeolocation() throws Throwable {
         mActivityTestRule.executeScriptSync("initiate_watchPosition();", false);
-        waitForDialog();
-        mTestWebLayer.clickPermissionDialogButton(true);
         ensureGeolocationIsRunning(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Browser browser = mActivity.getBrowser();
@@ -147,26 +143,11 @@ public final class GeolocationTest {
         Assert.assertEquals(0, getCountFromJS("positionCount"));
     }
 
-    @Test
-    @MediumTest
-    public void testGeolocation_denyFromPrompt() throws Throwable {
-        mActivityTestRule.executeScriptSync("initiate_watchPosition();", false);
-        waitForDialog();
-        mTestWebLayer.clickPermissionDialogButton(false);
-        waitForCountEqual("errorCount", 1);
-        Assert.assertEquals(0, getCountFromJS("positionCount"));
-    }
-
     // helper methods
 
     private void waitForCountEqual(String variableName, int count) {
         CriteriaHelper.pollInstrumentationThread(
                 () -> { return getCountFromJS(variableName) == count; });
-    }
-
-    private void waitForDialog() {
-        CriteriaHelper.pollInstrumentationThread(
-                () -> { return mTestWebLayer.isPermissionDialogShown(); });
     }
 
     private void waitForCountGreaterThan(String variableName, int count) {

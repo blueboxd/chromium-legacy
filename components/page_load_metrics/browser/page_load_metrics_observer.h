@@ -370,7 +370,7 @@ class PageLoadMetricsObserver {
 
   // Invoked when a frame's intersections with page elements changes and an
   // update is received. The main_frame_document_intersection_rect
-  // returns an empty rect for out of view subframes and the root document size
+  // returns an empty rect for out of view subframes and does not send updates
   // for the main frame.
   // TODO(crbug/1048175): Expose intersections to observers via shared delegate.
   virtual void OnFrameIntersectionUpdate(

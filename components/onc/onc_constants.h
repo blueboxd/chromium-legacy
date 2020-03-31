@@ -391,6 +391,7 @@ ONC_EXPORT extern const char kAuth[];
 ONC_EXPORT extern const char kCipher[];
 ONC_EXPORT extern const char kCompLZO[];
 ONC_EXPORT extern const char kCompNoAdapt[];
+ONC_EXPORT extern const char kCompressionAlgorithm[];
 ONC_EXPORT extern const char kExtraHosts[];
 ONC_EXPORT extern const char kIgnoreDefaultRoute[];
 ONC_EXPORT extern const char kInteract[];
@@ -424,6 +425,14 @@ ONC_EXPORT extern const char kVerb[];
 ONC_EXPORT extern const char kVerifyHash[];
 ONC_EXPORT extern const char kVerifyX509[];
 }  // namespace openvpn
+
+namespace openvpn_compression_algorithm {
+ONC_EXPORT extern const char kFramingOnly[];
+ONC_EXPORT extern const char kLz4[];
+ONC_EXPORT extern const char kLz4V2[];
+ONC_EXPORT extern const char kLzo[];
+ONC_EXPORT extern const char kNone[];
+}  // namespace openvpn_compression_algorithm
 
 namespace openvpn_user_auth_type {
 ONC_EXPORT extern const char kNone[];

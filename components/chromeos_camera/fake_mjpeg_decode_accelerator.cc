@@ -4,6 +4,8 @@
 
 #include "components/chromeos_camera/fake_mjpeg_decode_accelerator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -58,7 +60,7 @@ void FakeMjpegDecodeAccelerator::Decode(
       FROM_HERE,
       base::BindOnce(&FakeMjpegDecodeAccelerator::DecodeOnDecoderThread,
                      base::Unretained(this), bitstream_buffer.id(),
-                     std::move(video_frame), base::Passed(&src_shm)));
+                     std::move(video_frame), std::move(src_shm)));
 }
 
 void FakeMjpegDecodeAccelerator::Decode(

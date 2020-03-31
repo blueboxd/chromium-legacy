@@ -529,6 +529,10 @@ public class DecoderServiceHost
                 Log.e(TAG, "Unable to obtain FileDescriptor: " + e);
                 closeRequestWithError(params.mUri.getPath());
                 return;
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "Invalid ContentResolver state: " + e);
+                closeRequestWithError(params.mUri.getPath());
+                return;
             }
             pfd = afd.getParcelFileDescriptor();
             if (pfd == null) {

@@ -583,7 +583,9 @@ public class RootUiCoordinator
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         mDirectActionInitializer = new DirectActionInitializer(mActivity, activityType, mActivity,
                 mActivity::onBackPressed, tabModelSelector, mFindToolbarManager,
-                mActivity.getBottomSheetController(), mScrimView);
+                mActivity.getBottomSheetController(), mActivity.getFullscreenManager(),
+                mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
+                mScrimView);
         mActivity.getLifecycleDispatcher().register(mDirectActionInitializer);
     }
 

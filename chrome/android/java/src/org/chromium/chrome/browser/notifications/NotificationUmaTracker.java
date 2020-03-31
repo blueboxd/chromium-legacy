@@ -52,7 +52,8 @@ public class NotificationUmaTracker {
             SystemNotificationType.SEND_TAB_TO_SELF, SystemNotificationType.UPDATES,
             SystemNotificationType.CLICK_TO_CALL, SystemNotificationType.SHARED_CLIPBOARD,
             SystemNotificationType.PERMISSION_REQUESTS,
-            SystemNotificationType.PERMISSION_REQUESTS_HIGH, SystemNotificationType.ANNOUNCEMENT})
+            SystemNotificationType.PERMISSION_REQUESTS_HIGH, SystemNotificationType.ANNOUNCEMENT,
+            SystemNotificationType.SHARE_SAVE_IMAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -78,8 +79,9 @@ public class NotificationUmaTracker {
         int PERMISSION_REQUESTS = 19;
         int PERMISSION_REQUESTS_HIGH = 20;
         int ANNOUNCEMENT = 21;
+        int SHARE_SAVE_IMAGE = 22;
 
-        int NUM_ENTRIES = 22;
+        int NUM_ENTRIES = 23;
     }
 
     /*

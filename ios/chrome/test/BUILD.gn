@@ -249,7 +249,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/context_menu:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests_internal",
-    "//ios/chrome/browser/ui/dialogs/non_modal:unit_tests",
     "//ios/chrome/browser/ui/download:unit_tests",
     "//ios/chrome/browser/ui/elements:unit_tests",
     "//ios/chrome/browser/ui/fancy_ui:unit_tests",

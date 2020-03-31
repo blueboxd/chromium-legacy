@@ -317,6 +317,14 @@ void TabImpl::AttachToView(views::WebView* web_view) {
 }
 #endif
 
+void TabImpl::WebPreferencesChanged() {
+  web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
+}
+
+bool TabImpl::GetPasswordEchoEnabled() {
+  return browser_->GetPasswordEchoEnabled();
+}
+
 bool TabImpl::IsActive() {
   return browser_->GetActiveTab() == this;
 }

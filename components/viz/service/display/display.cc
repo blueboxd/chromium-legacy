@@ -313,7 +313,8 @@ Display::~Display() {
 
 void Display::Initialize(DisplayClient* client,
                          SurfaceManager* surface_manager,
-                         bool enable_shared_images) {
+                         bool enable_shared_images,
+                         bool using_synthetic_bfs) {
   DCHECK(client);
   DCHECK(surface_manager);
   gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
@@ -324,8 +325,8 @@ void Display::Initialize(DisplayClient* client,
   if (output_surface_->software_device())
     output_surface_->software_device()->BindToClient(this);
 
-  frame_rate_decider_ =
-      std::make_unique<FrameRateDecider>(surface_manager_, this);
+  frame_rate_decider_ = std::make_unique<FrameRateDecider>(
+      surface_manager_, this, using_synthetic_bfs);
 
   InitializeRenderer(enable_shared_images);
 

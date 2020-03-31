@@ -441,7 +441,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
 
   bool is_main_frame = render_frame_host->GetParent() == nullptr;
   if (is_main_frame) {
-    UpdateMainFrameMetadata(render_frame_host, std::move(new_metadata));
+    UpdateMainFrameMetadata(std::move(new_metadata));
     UpdateMainFrameTiming(std::move(new_timing));
     UpdateMainFrameRenderData(*render_data);
   } else {
@@ -535,41 +535,34 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
   subframe_metadata_->behavior_flags |= subframe_metadata->behavior_flags;
   client_->OnSubframeMetadataChanged(render_frame_host, *subframe_metadata);
 
-  MaybeUpdateFrameIntersection(render_frame_host, subframe_metadata);
-}
-
-void PageLoadMetricsUpdateDispatcher::MaybeUpdateFrameIntersection(
-    content::RenderFrameHost* render_frame_host,
-    const mojom::FrameMetadataPtr& frame_metadata) {
   // Handle intersection updates if included in the metadata.
-  if (frame_metadata->intersection_update.is_null())
+  if (subframe_metadata->intersection_update.is_null()) {
     return;
+  }
 
   // Do not notify intersections for untracked loads,
   // subframe_navigation_start_offset_ excludes untracked loads.
   // TODO(crbug/1061091): Document definition of untracked loads in page load
   // metrics.
   const int frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
-  bool is_main_frame = render_frame_host->GetParent() == nullptr;
-  if (!is_main_frame &&
-      subframe_navigation_start_offset_.find(frame_tree_node_id) ==
-          subframe_navigation_start_offset_.end()) {
+  if (subframe_navigation_start_offset_.find(frame_tree_node_id) ==
+      subframe_navigation_start_offset_.end()) {
     return;
   }
 
   auto existing_intersection_it =
-      frame_intersection_updates_.find(frame_tree_node_id);
+      frame_intersection_updates_.find(render_frame_host->GetFrameTreeNodeId());
 
   // Check if we already have a frame intersection update for the frame,
   // dispatch updates for the first frame intersection update or if
   // the intersection has changed.
   if (existing_intersection_it == frame_intersection_updates_.end() ||
       !existing_intersection_it->second.Equals(
-          *frame_metadata->intersection_update)) {
+          *subframe_metadata->intersection_update)) {
     frame_intersection_updates_[frame_tree_node_id] =
-        *frame_metadata->intersection_update;
+        *subframe_metadata->intersection_update;
     client_->OnFrameIntersectionUpdate(render_frame_host,
-                                       *frame_metadata->intersection_update);
+                                       *subframe_metadata->intersection_update);
   }
 }
 
@@ -616,7 +609,6 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
-    content::RenderFrameHost* render_frame_host,
     mojom::FrameMetadataPtr new_metadata) {
   if (main_frame_metadata_->Equals(*new_metadata))
     return;
@@ -632,9 +624,6 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 
   main_frame_metadata_ = std::move(new_metadata);
   client_->OnMainFrameMetadataChanged();
-
-  if (!main_frame_metadata_.is_null())
-    MaybeUpdateFrameIntersection(render_frame_host, main_frame_metadata_);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdatePageInputTiming(

@@ -29,6 +29,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
@@ -125,9 +126,16 @@ void AppendSuggestionIfMatching(
     suggestion.label = GetHumanReadableRealm(signon_realm);
     suggestion.additional_label =
         base::string16(password_length, kPasswordReplacementChar);
-    suggestion.frontend_id = is_password_field
-                                 ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
-                                 : autofill::POPUP_ITEM_ID_USERNAME_ENTRY;
+    if (from_account_store) {
+      suggestion.frontend_id =
+          is_password_field
+              ? autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY
+              : autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY;
+    } else {
+      suggestion.frontend_id = is_password_field
+                                   ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
+                                   : autofill::POPUP_ITEM_ID_USERNAME_ENTRY;
+    }
     suggestion.match =
         show_all || base::StartsWith(lower_suggestion, lower_contents,
                                      base::CompareCase::SENSITIVE)
@@ -314,7 +322,8 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
       identifier ==
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE)
     return;
-  bool success = PreviewSuggestion(GetUsernameFromSuggestion(value));
+  bool success =
+      PreviewSuggestion(GetUsernameFromSuggestion(value), identifier);
   DCHECK(success);
 }
 
@@ -378,7 +387,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kPassword,
         password_client_->IsIncognito());
-    bool success = FillSuggestion(GetUsernameFromSuggestion(value));
+    bool success = FillSuggestion(GetUsernameFromSuggestion(value), identifier);
     DCHECK(success);
   }
 
@@ -493,12 +502,12 @@ void PasswordAutofillManager::DidNavigateMainFrame() {
 
 bool PasswordAutofillManager::FillSuggestionForTest(
     const base::string16& username) {
-  return FillSuggestion(username);
+  return FillSuggestion(username, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
 }
 
 bool PasswordAutofillManager::PreviewSuggestionForTest(
     const base::string16& username) {
-  return PreviewSuggestion(username);
+  return PreviewSuggestion(username, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -598,10 +607,12 @@ void PasswordAutofillManager::UpdatePopup(
   autofill_client_->UpdatePopup(suggestions, autofill::PopupType::kPasswords);
 }
 
-bool PasswordAutofillManager::FillSuggestion(const base::string16& username) {
+bool PasswordAutofillManager::FillSuggestion(const base::string16& username,
+                                             int item_id) {
   autofill::PasswordAndMetadata password_and_meta_data;
-  if (fill_data_ && GetPasswordAndMetadataForUsername(
-                        username, *fill_data_, &password_and_meta_data)) {
+  if (fill_data_ &&
+      GetPasswordAndMetadataForUsername(username, item_id, *fill_data_,
+                                        &password_and_meta_data)) {
     bool is_android_credential =
         FacetURI::FromPotentiallyInvalidSpec(password_and_meta_data.realm)
             .IsValidAndroidFacetURI();
@@ -613,11 +624,12 @@ bool PasswordAutofillManager::FillSuggestion(const base::string16& username) {
   return false;
 }
 
-bool PasswordAutofillManager::PreviewSuggestion(
-    const base::string16& username) {
+bool PasswordAutofillManager::PreviewSuggestion(const base::string16& username,
+                                                int item_id) {
   autofill::PasswordAndMetadata password_and_meta_data;
-  if (fill_data_ && GetPasswordAndMetadataForUsername(
-                        username, *fill_data_, &password_and_meta_data)) {
+  if (fill_data_ &&
+      GetPasswordAndMetadataForUsername(username, item_id, *fill_data_,
+                                        &password_and_meta_data)) {
     password_manager_driver_->PreviewSuggestion(
         username, password_and_meta_data.password);
     return true;
@@ -627,14 +639,20 @@ bool PasswordAutofillManager::PreviewSuggestion(
 
 bool PasswordAutofillManager::GetPasswordAndMetadataForUsername(
     const base::string16& current_username,
+    int item_id,
     const autofill::PasswordFormFillData& fill_data,
     autofill::PasswordAndMetadata* password_and_meta_data) {
   // TODO(dubroy): When password access requires some kind of authentication
   // (e.g. Keychain access on Mac OS), use |password_manager_client_| here to
   // fetch the actual password. See crbug.com/178358 for more context.
 
+  bool item_uses_account_store =
+      item_id == autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY ||
+      item_id == autofill::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY;
+
   // Look for any suitable matches to current field text.
-  if (fill_data.username_field.value == current_username) {
+  if (fill_data.username_field.value == current_username &&
+      fill_data.uses_account_store == item_uses_account_store) {
     password_and_meta_data->password = fill_data.password_field.value;
     password_and_meta_data->realm = fill_data.preferred_realm;
     password_and_meta_data->uses_account_store = fill_data.uses_account_store;
@@ -645,7 +663,8 @@ bool PasswordAutofillManager::GetPasswordAndMetadataForUsername(
   auto iter = fill_data.additional_logins.find(current_username);
   if (iter != fill_data.additional_logins.end()) {
     *password_and_meta_data = iter->second;
-    return true;
+    return password_and_meta_data->uses_account_store ==
+           item_uses_account_store;
   }
 
   return false;

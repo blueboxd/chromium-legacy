@@ -22,7 +22,6 @@
 #include "media/base/media_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/video/video_decode_accelerator.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -209,7 +208,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
   if (shm_id < shm_buffers_.size() && shm_buffers_[shm_id].busy)
     return PP_ERROR_FAILED;
 
-  auto shm = mojo::CreateUnsafeSharedMemoryRegion(shm_size);
+  auto shm = base::UnsafeSharedMemoryRegion::Create(shm_size);
   auto mapping = shm.Map();
   if (!shm.IsValid() || !mapping.IsValid())
     return PP_ERROR_FAILED;

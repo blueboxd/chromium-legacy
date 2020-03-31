@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace webrtc {
 class TransformableVideoFrameInterface;
@@ -27,9 +26,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
 
  public:
   explicit RTCEncodedVideoFrame(
-      std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate,
-      Vector<uint8_t> generic_descriptor,
-      uint32_t ssrc);
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate);
 
   // rtc_encoded_video_frame.idl implementation.
   String type() const;
@@ -52,11 +49,9 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
 
  private:
   std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate_;
-  Vector<uint8_t> additional_data_vector_;
-  const uint32_t ssrc_;
   // Exposes encoded frame data from |delegate_|.
   mutable Member<DOMArrayBuffer> frame_data_;
-  // Exposes data from |additional_data_vector_|.
+  // Exposes additional data from |delegate_|.
   mutable Member<DOMArrayBuffer> additional_data_;
 };
 

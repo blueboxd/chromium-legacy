@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "components/signin/public/base/signin_metrics.h"
-#import "ios/chrome/browser/ui/authentication/signin/signin_enums.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 
 @class AuthenticationFlow;
 class AuthenticationService;

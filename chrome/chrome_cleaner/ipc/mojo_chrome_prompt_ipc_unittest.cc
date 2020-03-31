@@ -183,7 +183,7 @@ class ChromePromptIPCChildProcess : public ChildProcess {
         std::move(files_to_delete), std::move(registry_keys),
         std::move(extension_ids),
         base::BindOnce(&ChromePromptIPCChildProcess::ReceivePromptResult,
-                       base::Unretained(this), base::Passed(&done)));
+                       base::Unretained(this), std::move(done)));
   }
 
   ParentDisconnected expected_parent_disconnected() const {

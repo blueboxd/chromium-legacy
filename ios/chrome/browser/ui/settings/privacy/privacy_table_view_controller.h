@@ -8,16 +8,36 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 class Browser;
+@class PrivacyTableViewController;
 
 // The accessibility identifier of the privacy settings collection view.
 extern NSString* const kPrivacyTableViewId;
 
+@protocol PrivacyNavigationCommands;
+
+// Delegate for presentation events related to
+// PrivacyTableViewController.
+@protocol PrivacyTableViewControllerPresentationDelegate
+
+// Called when the view controller is removed from its parent.
+- (void)privacyTableViewControllerViewControllerWasRemoved:
+    (PrivacyTableViewController*)controller;
+
+@end
+
 @interface PrivacyTableViewController : SettingsRootTableViewController
+
+// Presentation delegate.
+@property(nonatomic, weak) id<PrivacyTableViewControllerPresentationDelegate>
+    presentationDelegate;
 
 // |browserState| cannot be nil
 - (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+
+// Handler used to navigate inside the privacy.
+@property(nonatomic, weak) id<PrivacyNavigationCommands> handler;
 
 @end
 

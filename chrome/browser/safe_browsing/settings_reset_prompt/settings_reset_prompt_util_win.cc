@@ -107,8 +107,7 @@ void SettingsResetPromptDelegateImpl::ShowSettingsResetPromptWithDelay() const {
   base::TimeDelta delay = config->delay_before_prompt();
   base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(MaybeShowSettingsResetPrompt, base::Passed(&config)),
-      delay);
+      base::BindOnce(MaybeShowSettingsResetPrompt, std::move(config)), delay);
 }
 
 SettingsResetPromptDelegate* g_settings_reset_prompt_delegate = nullptr;

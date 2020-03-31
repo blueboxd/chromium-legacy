@@ -32,42 +32,51 @@ class SafetyCheckHandler
  public:
   // The following enums represent the state of each component of the safety
   // check and should be kept in sync with the JS frontend
-  // (safety_check_browser_proxy.js).
+  // (safety_check_browser_proxy.js) and |SafetyCheck*| metrics enums in
+  // enums.xml.
   enum class UpdateStatus {
-    kChecking,
-    kUpdated,
-    kUpdating,
-    kRelaunch,
-    kDisabledByAdmin,
-    kFailedOffline,
-    kFailed,
+    kChecking = 0,
+    kUpdated = 1,
+    kUpdating = 2,
+    kRelaunch = 3,
+    kDisabledByAdmin = 4,
+    kFailedOffline = 5,
+    kFailed = 6,
+    // New enum values must go above here.
+    kMaxValue = kFailed,
   };
   enum class SafeBrowsingStatus {
-    kChecking,
-    kEnabled,
-    kDisabled,
-    kDisabledByAdmin,
-    kDisabledByExtension,
+    kChecking = 0,
+    kEnabled = 1,
+    kDisabled = 2,
+    kDisabledByAdmin = 3,
+    kDisabledByExtension = 4,
+    // New enum values must go above here.
+    kMaxValue = kDisabledByExtension,
   };
   enum class PasswordsStatus {
-    kChecking,
-    kSafe,
-    kCompromisedExist,
-    kOffline,
-    kNoPasswords,
-    kSignedOut,
-    kQuotaLimit,
-    kError,
+    kChecking = 0,
+    kSafe = 1,
+    kCompromisedExist = 2,
+    kOffline = 3,
+    kNoPasswords = 4,
+    kSignedOut = 5,
+    kQuotaLimit = 6,
+    kError = 7,
+    // New enum values must go above here.
+    kMaxValue = kError,
   };
   enum class ExtensionsStatus {
-    kChecking,
-    kError,
-    kNoneBlocklisted,
-    kBlocklistedAllDisabled,
-    kBlocklistedReenabledAllByUser,
+    kChecking = 0,
+    kError = 1,
+    kNoneBlocklisted = 2,
+    kBlocklistedAllDisabled = 3,
+    kBlocklistedReenabledAllByUser = 4,
     // In this case, at least one of the extensions was re-enabled by admin.
-    kBlocklistedReenabledSomeByUser,
-    kBlocklistedReenabledAllByAdmin,
+    kBlocklistedReenabledSomeByUser = 5,
+    kBlocklistedReenabledAllByAdmin = 6,
+    // New enum values must go above here.
+    kMaxValue = kBlocklistedReenabledAllByAdmin,
   };
 
   SafetyCheckHandler();

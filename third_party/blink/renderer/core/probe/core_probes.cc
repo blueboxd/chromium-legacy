@@ -124,7 +124,7 @@ void AsyncTaskScheduled(ExecutionContext* context,
 
   blink::AdTracker* ad_tracker = AdTracker::FromExecutionContext(context);
   if (ad_tracker)
-    ad_tracker->DidCreateAsyncTask(task, context);
+    ad_tracker->DidCreateAsyncTask(task);
 }
 
 void AsyncTaskScheduledBreakable(ExecutionContext* context,

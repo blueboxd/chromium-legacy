@@ -19,6 +19,7 @@
 #include "components/payments/content/developer_console_logger.h"
 #include "components/payments/core/error_logger.h"
 #include "content/public/browser/web_contents.h"
+#include "url/android/gurl_android.h"
 #include "url/gurl.h"
 
 namespace payments {
@@ -131,9 +132,11 @@ PaymentManifestParserAndroid::~PaymentManifestParserAndroid() {}
 
 void PaymentManifestParserAndroid::ParsePaymentMethodManifest(
     JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jmanifest_url,
     const base::android::JavaParamRef<jstring>& jcontent,
     const base::android::JavaParamRef<jobject>& jcallback) {
   parser_.ParsePaymentMethodManifest(
+      *url::GURLAndroid::ToNativeGURL(env, jmanifest_url),
       base::android::ConvertJavaStringToUTF8(env, jcontent),
       base::BindOnce(&ParseCallback::OnPaymentMethodManifestParsed,
                      std::make_unique<ParseCallback>(jcallback)));

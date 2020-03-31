@@ -374,11 +374,11 @@ public class PaymentManifestVerifier
 
     @Override
     public void onPaymentMethodManifestDownloadSuccess(
-            Origin paymentMethodManifestOrigin, String content) {
+            URI paymentMethodManifestUrl, Origin paymentMethodManifestOrigin, String content) {
         assert mPaymentMethodManifestOrigin
                 == null : "Each verifier downloads exactly one payment method manifest file";
         mPaymentMethodManifestOrigin = paymentMethodManifestOrigin;
-        mParser.parsePaymentMethodManifest(content, this);
+        mParser.parsePaymentMethodManifest(paymentMethodManifestUrl, content, this);
     }
 
     @Override

@@ -165,5 +165,11 @@ Polymer({
   handleGoBack_(e) {
     e.stopPropagation();
     this.navigateBackInWebview_();
-  }
+  },
+
+  /** @param {Authenticator} authExtHost */
+  setAuthExtHostForTest(authExtHost) {
+    this.authExtHost_ = authExtHost;
+    this.addAuthExtHostListeners_();
+  },
 });

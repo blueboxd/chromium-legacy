@@ -24,8 +24,9 @@ void ExpectUnableToParsePaymentMethodManifest(const std::string& input) {
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
 
   PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
-      std::move(value), ErrorLogger(), &actual_web_app_urls,
-      &actual_supported_origins, &actual_all_origins_supported);
+      GURL("https://bobpay.com/pmm.json"), std::move(value), ErrorLogger(),
+      &actual_web_app_urls, &actual_supported_origins,
+      &actual_all_origins_supported);
 
   EXPECT_TRUE(actual_web_app_urls.empty()) << actual_web_app_urls.front();
   EXPECT_TRUE(actual_supported_origins.empty())
@@ -45,8 +46,9 @@ void ExpectParsedPaymentMethodManifest(
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
 
   PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
-      std::move(value), ErrorLogger(), &actual_web_app_urls,
-      &actual_supported_origins, &actual_all_origins_supported);
+      GURL("https://bobpay.com/pmm.json"), std::move(value), ErrorLogger(),
+      &actual_web_app_urls, &actual_supported_origins,
+      &actual_all_origins_supported);
 
   EXPECT_EQ(expected_web_app_urls, actual_web_app_urls);
   EXPECT_EQ(expected_supported_origins, actual_supported_origins);
@@ -91,9 +93,10 @@ TEST(PaymentManifestParserTest, ListOfEmptyDefaultApplicationsIsMalformed) {
       "{\"default_applications\": [\"\"]}");
 }
 
-TEST(PaymentManifestParserTest, RelativeURLDefaultApplicationIsMalformed) {
-  ExpectUnableToParsePaymentMethodManifest(
-      "{\"default_applications\": [\"manifest.json\"]}");
+TEST(PaymentManifestParserTest, DefaultApplicationCanBeRelativeURL) {
+  ExpectParsedPaymentMethodManifest(
+      "{\"default_applications\": [\"manifest.json\"]}",
+      {GURL("https://bobpay.com/manifest.json")}, {}, false);
 }
 
 TEST(PaymentManifestParserTest, DefaultApplicationsShouldNotHaveNulCharacters) {
@@ -111,11 +114,15 @@ TEST(PaymentManifestParserTest, DefaultApplicationKeyShouldBeLowercase) {
       "{\"Default_Applications\": [\"https://bobpay.com/app.json\"]}");
 }
 
-TEST(PaymentManifestParserTest, DefaultApplicationsShouldBeAbsoluteUrls) {
-  ExpectUnableToParsePaymentMethodManifest(
+TEST(PaymentManifestParserTest,
+     DefaultApplicationsCanBeEitherAbsoluteOrRelative) {
+  ExpectParsedPaymentMethodManifest(
       "{\"default_applications\": ["
-      "\"https://bobpay.com/app.json\","
-      "\"app.json\"]}");
+      "\"https://bobpay.com/app1.json\","
+      "\"app2.json\"]}",
+      {GURL("https://bobpay.com/app1.json"),
+       GURL("https://bobpay.com/app2.json")},
+      {}, false);
 }
 
 TEST(PaymentManifestParserTest, DefaultApplicationsShouldBeHttps) {

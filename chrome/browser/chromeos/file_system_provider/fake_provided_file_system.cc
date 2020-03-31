@@ -139,7 +139,7 @@ AbortCallback FakeProvidedFileSystem::GetMetadata(
   }
 
   return PostAbortableTask(base::BindOnce(
-      std::move(callback), base::Passed(&metadata), base::File::FILE_OK));
+      std::move(callback), std::move(metadata), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::GetActions(

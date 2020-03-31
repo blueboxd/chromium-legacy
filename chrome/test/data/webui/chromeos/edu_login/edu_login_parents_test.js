@@ -9,8 +9,7 @@ import {ParentAccount} from 'chrome://chrome-signin/edu_login_util.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
-import {getFakeParent} from './edu_login_test_util.js';
+import {getFakeParent, getFakeParentsList, TestEduAccountLoginBrowserProxy} from './edu_login_test_util.js';
 
 window.edu_login_parents_tests = {};
 edu_login_parents_tests.suiteName = 'EduLoginParentsTest';
@@ -23,30 +22,9 @@ edu_login_parents_tests.TestNames = {
   SelectedParent: 'Selected parent',
 };
 
-/** @return {Array<ParentAccount>} */
-function getFakeParentsList() {
-  return [
-    getFakeParent('parent1@gmail.com', 'Parent 1', '', 'parent1gaia'),
-    getFakeParent('parent2@gmail.com', 'Parent 2', '', 'parent2gaia'),
-  ];
-}
-
 suite(edu_login_parents_tests.suiteName, function() {
   let parentsComponent;
   let testBrowserProxy;
-
-  /** @implements {EduAccountLoginBrowserProxy} */
-  class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
-    constructor() {
-      super(['getParents']);
-    }
-
-    /** @override */
-    getParents() {
-      this.methodCalled('getParents');
-      return Promise.resolve(getFakeParentsList());
-    }
-  }
 
   /** @return {NodeList} */
   function getAccountListItems() {

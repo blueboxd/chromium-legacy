@@ -273,54 +273,6 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   EXPECT_EQ(7u, set.size());
 }
 
-TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
-  using Set = TypeParam;
-  bool can_modify_while_iterating =
-      !std::is_same<Set, LinkedHashSet<int>>::value;
-  Set set;
-  set.insert(-1);
-  set.insert(0);
-  set.insert(1);
-  set.insert(2);
-
-  typename Set::iterator it = set.AddReturnIterator(3);
-  EXPECT_EQ(3, *it);
-  --it;
-  EXPECT_EQ(2, *it);
-  EXPECT_EQ(5u, set.size());
-  --it;
-  EXPECT_EQ(1, *it);
-  --it;
-  EXPECT_EQ(0, *it);
-  it = set.AddReturnIterator(4);
-  if (can_modify_while_iterating) {
-    set.erase(3);
-    set.erase(2);
-    set.erase(1);
-    set.erase(0);
-    set.erase(-1);
-    EXPECT_EQ(1u, set.size());
-  }
-  EXPECT_EQ(4, *it);
-  ++it;
-  EXPECT_EQ(it, set.end());
-  --it;
-  EXPECT_EQ(4, *it);
-  if (can_modify_while_iterating) {
-    set.InsertBefore(it, -1);
-    set.InsertBefore(it, 0);
-    set.InsertBefore(it, 1);
-    set.InsertBefore(it, 2);
-    set.InsertBefore(it, 3);
-  }
-  EXPECT_EQ(6u, set.size());
-  it = set.AddReturnIterator(5);
-  EXPECT_EQ(7u, set.size());
-  set.erase(it);
-  EXPECT_EQ(6u, set.size());
-  EXPECT_EQ(4, set.back());
-}
-
 TYPED_TEST(ListOrLinkedHashSetTest, Swap) {
   using Set = TypeParam;
   int num = 10;
@@ -460,11 +412,10 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
   const Set& const_set(set);
   const_set.find(ptr);
   EXPECT_TRUE(set.Contains(ptr));
-  typename Set::iterator it = set.AddReturnIterator(ptr);
+  set.insert(ptr);
   set.AppendOrMoveToLast(ptr);
   set.PrependOrMoveToFirst(ptr);
   set.InsertBefore(ptr, ptr);
-  set.InsertBefore(it, ptr);
   EXPECT_EQ(1u, set.size());
   set.insert(ptr2);
   ptr2 = nullptr;
@@ -685,14 +636,6 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
   EXPECT_TRUE(iter == set.end());
 
   // ListHashSet and LinkedHashSet have several flavors of add().
-  iter = set.AddReturnIterator(MoveOnlyHashValue(2, 2));
-  EXPECT_EQ(2, iter->Value());
-  EXPECT_EQ(2, iter->Id());
-
-  iter = set.AddReturnIterator(MoveOnlyHashValue(2, 222));
-  EXPECT_EQ(2, iter->Value());
-  EXPECT_EQ(2, iter->Id());
-
   {
     AddResult add_result = set.AppendOrMoveToLast(MoveOnlyHashValue(3, 3));
     EXPECT_TRUE(add_result.is_new_entry);

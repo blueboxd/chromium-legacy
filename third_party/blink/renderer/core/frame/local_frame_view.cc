@@ -1067,16 +1067,8 @@ void LocalFrameView::RunIntersectionObserverSteps() {
     return;
   }
 
-  if (frame_->IsMainFrame()) {
+  if (frame_->IsMainFrame())
     EnsureOverlayInterstitialAdDetector().MaybeFireDetection(frame_.Get());
-
-    // Report the main frame's document intersection with itself.
-    LayoutObject* layout_object = GetLayoutView();
-    IntRect main_frame_dimensions =
-        ToLayoutBox(layout_object)->PixelSnappedLayoutOverflowRect();
-    GetFrame().Client()->OnMainFrameDocumentIntersectionChanged(WebRect(
-        0, 0, main_frame_dimensions.Width(), main_frame_dimensions.Height()));
-  }
 
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::UpdateViewportIntersectionsForSubtree");

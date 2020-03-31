@@ -5,6 +5,7 @@
 #include "ash/rotator/screen_rotation_animator.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -281,7 +282,7 @@ ScreenRotationAnimator::CreateAfterCopyCallbackBeforeRotation(
   return base::BindOnce(&ScreenRotationAnimator::
                             OnScreenRotationContainerLayerCopiedBeforeRotation,
                         weak_factory_.GetWeakPtr(),
-                        base::Passed(&rotation_request));
+                        std::move(rotation_request));
 }
 
 ScreenRotationAnimator::CopyCallback
@@ -290,7 +291,7 @@ ScreenRotationAnimator::CreateAfterCopyCallbackAfterRotation(
   return base::BindOnce(&ScreenRotationAnimator::
                             OnScreenRotationContainerLayerCopiedAfterRotation,
                         weak_factory_.GetWeakPtr(),
-                        base::Passed(&rotation_request));
+                        std::move(rotation_request));
 }
 
 void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(

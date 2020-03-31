@@ -379,6 +379,7 @@ const char kAuth[] = "Auth";
 const char kCipher[] = "Cipher";
 const char kCompLZO[] = "CompLZO";
 const char kCompNoAdapt[] = "CompNoAdapt";
+const char kCompressionAlgorithm[] = "CompressionAlgorithm";
 const char kExtraHosts[] = "ExtraHosts";
 const char kIgnoreDefaultRoute[] = "IgnoreDefaultRoute";
 const char kInteract[] = "interact";
@@ -412,6 +413,14 @@ const char kVerb[] = "Verb";
 const char kVerifyHash[] = "VerifyHash";
 const char kVerifyX509[] = "VerifyX509";
 }  // namespace openvpn
+
+namespace openvpn_compression_algorithm {
+const char kFramingOnly[] = "FramingOnly";
+const char kLz4[] = "LZ4";
+const char kLz4V2[] = "LZ4-V2";
+const char kLzo[] = "LZO";
+const char kNone[] = "None";
+}  // namespace openvpn_compression_algorithm
 
 namespace openvpn_user_auth_type {
 const char kNone[] = "None";

@@ -224,9 +224,9 @@ void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
                            "VideoCaptureDeviceAndroid::TakePhoto enqueuing to "
                            "wait for first frame",
                            TRACE_EVENT_SCOPE_PROCESS);
-      photo_requests_queue_.push_back(base::BindOnce(
-          &VideoCaptureDeviceAndroid::DoTakePhoto,
-          weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      photo_requests_queue_.push_back(
+          base::BindOnce(&VideoCaptureDeviceAndroid::DoTakePhoto,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
       return;
     }
   }
@@ -240,9 +240,9 @@ void VideoCaptureDeviceAndroid::GetPhotoState(GetPhotoStateCallback callback) {
     if (state_ != kConfigured)
       return;
     if (!got_first_frame_) {  // We have to wait until we get the first frame.
-      photo_requests_queue_.push_back(base::BindOnce(
-          &VideoCaptureDeviceAndroid::DoGetPhotoState,
-          weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      photo_requests_queue_.push_back(
+          base::BindOnce(&VideoCaptureDeviceAndroid::DoGetPhotoState,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
       return;
     }
   }
@@ -260,8 +260,8 @@ void VideoCaptureDeviceAndroid::SetPhotoOptions(
     if (!got_first_frame_) {  // We have to wait until we get the first frame.
       photo_requests_queue_.push_back(
           base::BindOnce(&VideoCaptureDeviceAndroid::DoSetPhotoOptions,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         base::Passed(&settings), base::Passed(&callback)));
+                         weak_ptr_factory_.GetWeakPtr(), std::move(settings),
+                         std::move(callback)));
       return;
     }
   }

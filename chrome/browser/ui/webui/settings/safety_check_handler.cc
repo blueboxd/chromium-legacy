@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -245,6 +246,9 @@ void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
   event.SetIntKey(kNewState, static_cast<int>(update_status));
   event.SetStringKey(kDisplayString, GetStringForUpdates(update_status));
   FireWebUIListener(kUpdatesEvent, event);
+  if (update_status != UpdateStatus::kChecking) {
+    base::UmaHistogramEnumeration("SafetyCheck.UpdatesResult", update_status);
+  }
 }
 
 void SafetyCheckHandler::OnSafeBrowsingCheckResult(
@@ -253,6 +257,9 @@ void SafetyCheckHandler::OnSafeBrowsingCheckResult(
   event.SetIntKey(kNewState, static_cast<int>(status));
   event.SetStringKey(kDisplayString, GetStringForSafeBrowsing(status));
   FireWebUIListener(kSafeBrowsingEvent, event);
+  if (status != SafeBrowsingStatus::kChecking) {
+    base::UmaHistogramEnumeration("SafetyCheck.SafeBrowsingResult", status);
+  }
 }
 
 void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
@@ -271,6 +278,9 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
   event.SetStringKey(kDisplayString,
                      GetStringForPasswords(status, compromised, done, total));
   FireWebUIListener(kPasswordsEvent, event);
+  if (status != PasswordsStatus::kChecking) {
+    base::UmaHistogramEnumeration("SafetyCheck.PasswordsResult", status);
+  }
 }
 
 void SafetyCheckHandler::OnExtensionsCheckResult(
@@ -292,6 +302,9 @@ void SafetyCheckHandler::OnExtensionsCheckResult(
                      GetStringForExtensions(status, Blocklisted(blocklisted),
                                             reenabled_user, reenabled_admin));
   FireWebUIListener(kExtensionsEvent, event);
+  if (status != ExtensionsStatus::kChecking) {
+    base::UmaHistogramEnumeration("SafetyCheck.ExtensionsResult", status);
+  }
 }
 
 base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {

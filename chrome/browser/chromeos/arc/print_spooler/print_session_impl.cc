@@ -29,7 +29,6 @@
 #include "components/arc/mojom/print_common.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "net/base/filename_util.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
@@ -157,7 +156,7 @@ base::ReadOnlySharedMemoryRegion ReadPreviewDocument(
   }
 
   base::MappedReadOnlyRegion region_mapping =
-      mojo::CreateReadOnlySharedMemoryRegion(data_size);
+      base::ReadOnlySharedMemoryRegion::Create(data_size);
   if (!region_mapping.IsValid())
     return std::move(region_mapping.region);
 

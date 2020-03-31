@@ -70,9 +70,8 @@ ParentProcess::~ParentProcess() {}
 void ParentProcess::CreateImplOnIPCThread(
     mojo::ScopedMessagePipeHandle mojo_pipe) {
   mojo_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ParentProcess::CreateImpl, base::RetainedRef(this),
-                     base::Passed(&mojo_pipe)));
+      FROM_HERE, base::BindOnce(&ParentProcess::CreateImpl,
+                                base::RetainedRef(this), std::move(mojo_pipe)));
 }
 
 void ParentProcess::DestroyImplOnIPCThread() {

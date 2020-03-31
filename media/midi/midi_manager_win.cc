@@ -386,7 +386,7 @@ class MidiManagerWin::InPort final : public Port {
   void Finalize(scoped_refptr<base::SingleThreadTaskRunner> runner) {
     if (in_handle_ != kInvalidInHandle) {
       runner->PostTask(FROM_HERE, base::BindOnce(&FinalizeInPort, in_handle_,
-                                                 base::Passed(&hdr_)));
+                                                 std::move(hdr_)));
       manager_->port_manager()->UnregisterInHandle(in_handle_);
       in_handle_ = kInvalidInHandle;
     }

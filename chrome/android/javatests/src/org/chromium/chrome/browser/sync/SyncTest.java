@@ -26,7 +26,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -133,15 +132,6 @@ public class SyncTest {
             // SystemSyncTestRule.getSyncContentResolver().
             mSyncTestRule.getSyncContentResolver().renameAccounts(
                     oldAccount, newAccount, AndroidSyncSettings.get().getContractAuthority());
-
-            // Inform the AccountTracker, these would normally be done by account validation
-            // or signin. We will only be calling the testing versions of it.
-            String[] accountEmails = {oldAccount.name, newAccount.name};
-            String[] accountIds = {
-                    AccountManagerFacadeProvider.getInstance().getAccountGaiaId(accountEmails[0]),
-                    AccountManagerFacadeProvider.getInstance().getAccountGaiaId(accountEmails[1])};
-            IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
-                    accountIds, accountEmails);
 
             // Starts the rename process. Normally, this is triggered by the broadcast
             // listener as well.

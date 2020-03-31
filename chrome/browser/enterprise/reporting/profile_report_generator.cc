@@ -31,6 +31,8 @@ namespace em = enterprise_management;
 namespace enterprise_reporting {
 namespace {
 
+const int kMaxNumberOfExtensionRequest = 1000;
+
 // Extension request are moved out of the pending list once user confirm the
 // notification. However, there is no need to upload these requests anymore as
 // long as admin made a decision.
@@ -135,11 +137,19 @@ void ProfileReportGenerator::GetExtensionRequest() {
   std::string webstore_update_url =
       extension_urls::GetDefaultWebstoreUpdateUrl().spec();
 
+  int number_of_requests = 0;
   for (const auto& it : *pending_requests) {
     if (!ShouldUploadExtensionRequest(it.first, webstore_update_url,
                                       extension_management)) {
       continue;
     }
+
+    // Use a hard limitation to prevent users adding too many requests. 1000
+    // requests should use less than 50 kb report space.
+    number_of_requests += 1;
+    if (number_of_requests > kMaxNumberOfExtensionRequest)
+      break;
+
     auto* request = report_->add_extension_requests();
     request->set_id(it.first);
     base::Optional<base::Time> timestamp = ::util::ValueToTime(

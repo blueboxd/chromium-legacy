@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/frame_transformer_interface.h"
 
 namespace blink {
@@ -58,17 +57,8 @@ void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
     return;
   }
 
-  auto additional_data = webrtc_frame->GetAdditionalData();
-  Vector<uint8_t> wtf_additional_data;
-  wtf_additional_data.ReserveInitialCapacity(
-      static_cast<wtf_size_t>(additional_data.size()));
-  wtf_additional_data.AppendRange(additional_data.begin(),
-                                  additional_data.end());
-
   RTCEncodedVideoFrame* encoded_frame =
-      MakeGarbageCollected<RTCEncodedVideoFrame>(std::move(webrtc_frame),
-                                                 std::move(wtf_additional_data),
-                                                 webrtc_frame->GetSsrc());
+      MakeGarbageCollected<RTCEncodedVideoFrame>(std::move(webrtc_frame));
   Controller()->Enqueue(encoded_frame);
 }
 

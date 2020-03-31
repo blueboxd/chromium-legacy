@@ -178,7 +178,7 @@ void VideoCaptureDeviceChromeOSHalv3::TakePhoto(TakePhotoCallback callback) {
   camera_device_ipc_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&CameraDeviceDelegate::TakePhoto,
                                 camera_device_delegate_->GetWeakPtr(),
-                                base::Passed(&callback)));
+                                std::move(callback)));
 }
 
 void VideoCaptureDeviceChromeOSHalv3::GetPhotoState(
@@ -187,7 +187,7 @@ void VideoCaptureDeviceChromeOSHalv3::GetPhotoState(
   camera_device_ipc_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&CameraDeviceDelegate::GetPhotoState,
                                 camera_device_delegate_->GetWeakPtr(),
-                                base::Passed(&callback)));
+                                std::move(callback)));
 }
 
 void VideoCaptureDeviceChromeOSHalv3::SetPhotoOptions(
@@ -195,10 +195,9 @@ void VideoCaptureDeviceChromeOSHalv3::SetPhotoOptions(
     SetPhotoOptionsCallback callback) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   camera_device_ipc_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CameraDeviceDelegate::SetPhotoOptions,
-                     camera_device_delegate_->GetWeakPtr(),
-                     base::Passed(&settings), base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&CameraDeviceDelegate::SetPhotoOptions,
+                                camera_device_delegate_->GetWeakPtr(),
+                                std::move(settings), std::move(callback)));
 }
 
 void VideoCaptureDeviceChromeOSHalv3::OpenDevice() {

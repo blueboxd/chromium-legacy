@@ -235,7 +235,7 @@ void ManifestVerifier::OnPaymentMethodManifestDownloaded(
   }
 
   parser_->ParsePaymentMethodManifest(
-      content,
+      method_manifest_url, content,
       base::BindOnce(&ManifestVerifier::OnPaymentMethodManifestParsed,
                      weak_ptr_factory_.GetWeakPtr(), method_manifest_url));
 }

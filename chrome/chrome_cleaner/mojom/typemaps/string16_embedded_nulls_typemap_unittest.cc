@@ -134,7 +134,7 @@ scoped_refptr<SandboxChildProcess> InitChildProcess() {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   mojo_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&SandboxChildProcess::BindToPipe, child_process,
-                                base::Passed(&message_pipe_handle), &event));
+                                std::move(message_pipe_handle), &event));
   event.Wait();
 
   return child_process;

@@ -80,6 +80,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableSmbfs() {
+    enable_smbfs = true;
+    return *this;
+  }
+
   TestCase& EnableUnifiedMediaView() {
     enable_unified_media_view.emplace(true);
     return *this;
@@ -141,6 +146,7 @@ struct TestCase {
   bool offline = false;
   base::Optional<bool> files_ng;
   bool enable_native_smb = true;
+  bool enable_smbfs = false;
   base::Optional<bool> enable_unified_media_view;
   bool mount_no_volumes = false;
   bool observe_file_tasks = true;
@@ -207,6 +213,8 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetEnableNativeSmb() const override {
     return GetParam().enable_native_smb;
   }
+
+  bool GetEnableSmbfs() const override { return GetParam().enable_smbfs; }
 
   bool GetEnableUnifiedMediaView() const override {
     return GetParam().enable_unified_media_view.value_or(
@@ -493,6 +501,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewScrollHtml"),
         TestCase("openQuickViewBackgroundColorHtml"),
         TestCase("openQuickViewDrive"),
+        TestCase("openQuickViewSmbfs").EnableSmbfs(),
         TestCase("openQuickViewAndroid"),
         TestCase("openQuickViewDocumentsProvider").EnableDocumentsProvider(),
         TestCase("openQuickViewCrostini"),

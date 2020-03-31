@@ -12,7 +12,6 @@
 #include "content/common/pepper_file_util.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -141,7 +140,7 @@ bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
   height_ = height;
   uint32_t buffer_size = width_ * height_ * 4;
   base::UnsafeSharedMemoryRegion region =
-      mojo::CreateUnsafeSharedMemoryRegion(buffer_size);
+      base::UnsafeSharedMemoryRegion::Create(buffer_size);
   if (!region.IsValid())
     return false;
 
@@ -216,7 +215,7 @@ bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
   skia_bitmap_.setInfo(
       SkImageInfo::MakeN32Premul(impl->width(), impl->height()));
   shm_region_ =
-      mojo::CreateUnsafeSharedMemoryRegion(skia_bitmap_.computeByteSize());
+      base::UnsafeSharedMemoryRegion::Create(skia_bitmap_.computeByteSize());
   return shm_region_.IsValid();
 }
 

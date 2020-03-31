@@ -133,22 +133,26 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Validates and forwards the given objects to the autofill client.
   void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions);
 
-  // Attempts to fill the password associated with user name |username|, and
-  // returns true if it was successful.
-  bool FillSuggestion(const base::string16& username);
+  // Attempts to find and fill the suggestions with the user name |username| and
+  // the |item_id| indicating the store (account-stored or local). Returns true
+  // if it was successful.
+  bool FillSuggestion(const base::string16& username, int item_id);
 
-  // Attempts to preview the password associated with user name |username|, and
-  // returns true if it was successful.
-  bool PreviewSuggestion(const base::string16& username);
+  // Attempts to find and preview the suggestions with the user name |username|
+  // and the |item_id| indicating the store (account-stored or local). Returns
+  // true if it was successful.
+  bool PreviewSuggestion(const base::string16& username, int item_id);
 
-  // If |current_username| matches a username for one of the login mappings in
-  // |fill_data|, returns true and assigns the password and the original signon
+  // If one of the login mappings in |fill_data| matches |current_username| and
+  // |item_id| (indicating whether a credential is stored in account or
+  // locally), return true and assign the password and the original signon
   // realm to |password_and_meta_data|. Note that if the credential comes from
   // the same realm as the one we're filling to, the |realm| field will be left
   // empty, as this is the behavior of |PasswordFormFillData|.
   // Otherwise, returns false and leaves |password_and_meta_data| untouched.
   bool GetPasswordAndMetadataForUsername(
       const base::string16& current_username,
+      int item_id,
       const autofill::PasswordFormFillData& fill_data,
       autofill::PasswordAndMetadata* password_and_meta_data);
 

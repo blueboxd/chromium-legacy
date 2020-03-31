@@ -4,6 +4,8 @@
 
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 
+#include <utility>
+
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
@@ -37,9 +39,9 @@ void DeviceOAuth2TokenStoreChromeOS::RegisterPrefs(
 void DeviceOAuth2TokenStoreChromeOS::Init(InitCallback callback) {
   state_ = State::INITIALIZING;
   // Pull in the system salt.
-  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
-      &DeviceOAuth2TokenStoreChromeOS::DidGetSystemSalt,
-      weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
+  SystemSaltGetter::Get()->GetSystemSalt(
+      base::BindOnce(&DeviceOAuth2TokenStoreChromeOS::DidGetSystemSalt,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 CoreAccountId DeviceOAuth2TokenStoreChromeOS::GetAccountId() const {

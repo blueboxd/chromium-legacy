@@ -15,12 +15,13 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
@@ -102,7 +103,9 @@ public class AutofillAssistantFacade {
                             return;
                         }
 
-                        moduleEntry.start(tab, tab.getWebContents(),
+                        moduleEntry.start(activity.getBottomSheetController(),
+                                activity.getFullscreenManager(), activity.getCompositorViewHolder(),
+                                activity.getScrim(), activity, tab.getWebContents(),
                                 !AutofillAssistantPreferencesUtil.getShowOnboarding(),
                                 arguments.getInitialUrl(), arguments.getParameters(),
                                 arguments.getExperimentIds(), arguments.getCallerAccount(),
@@ -129,12 +132,12 @@ public class AutofillAssistantFacade {
      * can also return null if autofill assistant is not available for some other reasons.
      */
     public static DirectActionHandler createDirectActionHandler(Context context,
-            BottomSheetController bottomSheetController, ScrimView scrimView,
-            TabModelSelector tabModelSelector) {
-        // TODO(b/134740534): Consider restricting signature of createDirectActionHandler() to get
-        // only getCurrentTab instead of a TabModelSelector.
-        return new AutofillAssistantDirectActionHandler(context, bottomSheetController, scrimView,
-                tabModelSelector::getCurrentTab, AutofillAssistantModuleEntryProvider.INSTANCE);
+            BottomSheetController bottomSheetController, ChromeFullscreenManager fullscreenManager,
+            CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
+            ScrimView scrimView) {
+        return new AutofillAssistantDirectActionHandler(context, bottomSheetController,
+                fullscreenManager, compositorViewHolder, activityTabProvider, scrimView,
+                AutofillAssistantModuleEntryProvider.INSTANCE);
     }
 
     /** Provides the callback with a tab that has a web contents, waits if necessary. */

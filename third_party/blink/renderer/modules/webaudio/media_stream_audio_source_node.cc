@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 
@@ -91,6 +92,9 @@ void MediaStreamAudioSourceHandler::SetFormat(uint32_t number_of_channels,
 }
 
 void MediaStreamAudioSourceHandler::Process(uint32_t number_of_frames) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "MediaStreamAudioSourceHandler::Process");
+
   AudioBus* output_bus = Output(0).Bus();
 
   if (!GetAudioSourceProvider()) {

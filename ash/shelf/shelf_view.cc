@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/drag_drop/drag_image_view.h"
@@ -660,8 +661,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   model_->GetShelfItemDelegate(item.id)->ItemSelected(
       ui::Event::Clone(event), GetDisplayIdForView(this), LAUNCH_FROM_SHELF,
       base::BindOnce(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
-                     item, sender, base::Passed(ui::Event::Clone(event)),
-                     ink_drop));
+                     item, sender, ui::Event::Clone(event), ink_drop));
 }
 
 bool ShelfView::IsShowingMenuForView(const views::View* view) const {

@@ -12,7 +12,6 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ui/gfx/gpu_fence.h"
 
 namespace gpu {
@@ -279,7 +278,7 @@ bool SharedImageInterfaceProxy::GetSHMForPixelData(
       GetRemainingSize(upload_buffer_, upload_buffer_offset_) <
           pixel_data.size()) {
     size_t size_to_alloc = std::max(kUploadBufferSize, pixel_data.size());
-    auto shm = mojo::CreateReadOnlySharedMemoryRegion(size_to_alloc);
+    auto shm = base::ReadOnlySharedMemoryRegion::Create(size_to_alloc);
     if (!shm.IsValid())
       return false;
 

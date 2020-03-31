@@ -39,7 +39,6 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
   @autoreleasepool {
     BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
                initWithBrowserState:chrome_browser_state_.get()
-               webStateListObserver:nil
          applicationCommandEndpoint:(id<ApplicationCommands>)nil
         browsingDataCommandEndpoint:nil
                appURLLoadingService:nil];
@@ -70,7 +69,6 @@ TEST_F(BrowserViewWranglerTest, TestBrowserList) {
 
   BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:chrome_browser_state_.get()
-             webStateListObserver:nil
        applicationCommandEndpoint:nil
       browsingDataCommandEndpoint:nil
              appURLLoadingService:nil];

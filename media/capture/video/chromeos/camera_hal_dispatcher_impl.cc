@@ -9,6 +9,7 @@
 #include <poll.h>
 #include <sys/uio.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -138,7 +139,7 @@ void CameraHalDispatcherImpl::AddClientObserver(
   proxy_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImpl::AddClientObserverOnProxyThread,
-                     base::Unretained(this), base::Passed(&observer)));
+                     base::Unretained(this), std::move(observer)));
 }
 
 bool CameraHalDispatcherImpl::IsStarted() {
@@ -339,9 +340,8 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
         PLOG(ERROR) << "sendmsg()";
       } else {
         proxy_task_runner_->PostTask(
-            FROM_HERE,
-            base::BindOnce(&CameraHalDispatcherImpl::OnPeerConnected,
-                           base::Unretained(this), base::Passed(&pipe)));
+            FROM_HERE, base::BindOnce(&CameraHalDispatcherImpl::OnPeerConnected,
+                                      base::Unretained(this), std::move(pipe)));
       }
     }
   }

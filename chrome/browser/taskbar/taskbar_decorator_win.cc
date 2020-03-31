@@ -106,7 +106,7 @@ void PostSetOverlayIcon(HWND hwnd,
   base::ThreadPool::CreateCOMSTATaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
       ->PostTask(FROM_HERE, base::BindOnce(&SetOverlayIcon, hwnd,
-                                           base::Passed(&bitmap), alt_text));
+                                           std::move(bitmap), alt_text));
 }
 
 }  // namespace

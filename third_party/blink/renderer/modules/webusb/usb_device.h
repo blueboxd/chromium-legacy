@@ -109,7 +109,6 @@ class USBDevice : public ScriptWrappable,
   wtf_size_t FindAlternateIndex(wtf_size_t interface_index,
                                 uint8_t alternate_setting) const;
   bool IsProtectedInterfaceClass(wtf_size_t interface_index) const;
-  bool IsClassWhitelistedForExtension(uint8_t class_code) const;
   bool EnsureNoDeviceChangeInProgress(ScriptPromiseResolver*) const;
   bool EnsureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*) const;
   bool EnsureDeviceConfigured(ScriptPromiseResolver*) const;

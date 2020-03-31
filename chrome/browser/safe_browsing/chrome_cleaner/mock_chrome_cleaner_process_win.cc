@@ -526,13 +526,12 @@ int MockChromeCleanerProcess::Run() {
          base::Closure quit_closure) {
         main_runner->PostTask(FROM_HERE, std::move(quit_closure));
       },
-      base::SequencedTaskRunnerHandle::Get(),
-      base::Passed(run_loop.QuitClosure()));
+      base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure());
 
   io_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&MockCleanerResults::SendScanResults,
-                                base::Unretained(&mock_results),
-                                base::Passed(&quit_closure)));
+      FROM_HERE,
+      base::BindOnce(&MockCleanerResults::SendScanResults,
+                     base::Unretained(&mock_results), std::move(quit_closure)));
 
   run_loop.Run();
 

@@ -128,8 +128,20 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   IsolatedPrerenderTabHelper* tab_helper() const { return tab_helper_.get(); }
 
-  size_t PrefetchedResponseSize() const {
-    return tab_helper_->prefetched_responses_size_for_testing();
+  int64_t ordered_eligible_pages_bitmask() const {
+    return tab_helper_->metrics().ordered_eligible_pages_bitmask;
+  }
+
+  size_t prefetch_eligible_count() const {
+    return tab_helper_->metrics().prefetch_eligible_count;
+  }
+
+  size_t prefetch_attempted_count() const {
+    return tab_helper_->metrics().prefetch_attempted_count;
+  }
+
+  size_t prefetch_successful_count() const {
+    return tab_helper_->metrics().prefetch_successful_count;
   }
 
   void VerifyNIK(const net::NetworkIsolationKey& key) {
@@ -257,6 +269,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, FeatureDisabled) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, DataSaverDisabled) {
@@ -270,6 +285,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, DataSaverDisabled) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, GoogleSRPOnly) {
@@ -281,6 +299,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, GoogleSRPOnly) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, SRPOnly) {
@@ -292,6 +313,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, SRPOnly) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, HTTPSPredictionsOnly) {
@@ -303,6 +327,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, HTTPSPredictionsOnly) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, DontFetchGoogleLinks) {
@@ -314,6 +341,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, DontFetchGoogleLinks) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, DontFetchIPAddresses) {
@@ -325,6 +355,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, DontFetchIPAddresses) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, WrongWebContents) {
@@ -336,6 +369,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, WrongWebContents) {
   MakeNavigationPrediction(nullptr, doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, HasPurposePrefetchHeader) {
@@ -348,6 +384,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, HasPurposePrefetchHeader) {
 
   VerifyCommonRequestState(prediction_url);
   EXPECT_EQ(RequestHeader("Purpose"), "prefetch");
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
@@ -363,6 +403,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
@@ -377,7 +420,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
   VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_NOT_FOUND, net::OK, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
-  EXPECT_EQ(PrefetchedResponseSize(), 0U);
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -405,7 +451,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
   VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
-  EXPECT_EQ(PrefetchedResponseSize(), 0U);
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError",
@@ -433,7 +482,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
   VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_OK, net::OK, "application/javascript",
                       /*headers=*/{}, body);
-  EXPECT_EQ(PrefetchedResponseSize(), 0U);
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -462,6 +514,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
@@ -477,8 +532,6 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType,
                       {"X-Testing: Hello World"}, kHTMLBody);
 
-  EXPECT_EQ(PrefetchedResponseSize(), 1U);
-
   std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
       tab_helper()->TakePrefetchResponse(prediction_url);
   ASSERT_TRUE(resp);
@@ -490,6 +543,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   EXPECT_EQ(resp->network_isolation_key(),
             request.trusted_params.value().network_isolation_key);
   VerifyNIK(resp->network_isolation_key());
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 1U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -516,6 +573,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest,
@@ -544,6 +604,10 @@ TEST_F(IsolatedPrerenderTabHelperTest,
 
   EXPECT_EQ(RequestCount(), 0);
 
+  EXPECT_EQ(prefetch_eligible_count(), 3U);
+  EXPECT_EQ(prefetch_attempted_count(), 3U);
+  EXPECT_EQ(prefetch_successful_count(), 2U);
+
   histogram_tester.ExpectBucketCount(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 2);
   histogram_tester.ExpectBucketCount(
@@ -564,6 +628,28 @@ TEST_F(IsolatedPrerenderTabHelperTest,
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       2);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, OrderedBitMask) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "isolated-prerender-unlimited-prefetches");
+
+  MakeNavigationPrediction(web_contents(),
+                           GURL("https://www.google.com/search?q=cats"),
+                           {
+                               GURL("http://not-eligible-1.com"),
+                               GURL("http://not-eligible-2.com"),
+                               GURL("https://eligible-1.com"),
+                               GURL("https://eligible-2.com"),
+                               GURL("https://eligible-3.com"),
+                               GURL("http://not-eligible-3.com"),
+                           });
+
+  EXPECT_EQ(prefetch_eligible_count(), 3U);
+  EXPECT_EQ(ordered_eligible_pages_bitmask(), 0b011100);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NumberOfPrefetches_UnlimitedByCmdLine) {
@@ -592,6 +678,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, NumberOfPrefetches_UnlimitedByCmdLine) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
 
   EXPECT_EQ(RequestCount(), 0);
+
+  EXPECT_EQ(prefetch_eligible_count(), 3U);
+  EXPECT_EQ(prefetch_attempted_count(), 3U);
+  EXPECT_EQ(prefetch_successful_count(), 2U);
 
   histogram_tester.ExpectBucketCount(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 2);
@@ -638,6 +728,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
 
   EXPECT_EQ(RequestCount(), 0);
 
+  EXPECT_EQ(prefetch_eligible_count(), 3U);
+  EXPECT_EQ(prefetch_attempted_count(), 2U);
+  EXPECT_EQ(prefetch_successful_count(), 1U);
+
   histogram_tester.ExpectBucketCount(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
   histogram_tester.ExpectBucketCount(
@@ -672,6 +766,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingNotStartedWhileInvisible) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
@@ -694,6 +791,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
 
   // But no more prefetches should start when hidden.
   EXPECT_EQ(RequestCount(), 0);
+
+  EXPECT_EQ(prefetch_eligible_count(), 2U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 1U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -721,10 +822,16 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingRestartedWhenVisible) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 
   web_contents()->WasShown();
 
   VerifyCommonRequestState(prediction_url);
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
@@ -743,6 +850,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(prefetch_eligible_count(), 0U);
+  EXPECT_EQ(prefetch_attempted_count(), 0U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
@@ -762,6 +872,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   VerifyCommonRequestState(prediction_url);
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 class IsolatedPrerenderTabHelperRedirectTest
@@ -852,7 +966,6 @@ class IsolatedPrerenderTabHelperRedirectTest
     WalkRedirectChainUntilFinalRequest({prediction_url, redirect_url});
     // Redirect should not be followed.
     EXPECT_EQ(RequestCount(), 0);
-    EXPECT_EQ(PrefetchedResponseSize(), 0U);
   }
 };
 
@@ -860,14 +973,26 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Cookies) {
   GURL site_with_cookies("https://cookies.com");
   ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
   RunNoRedirectTest(site_with_cookies);
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
   RunNoRedirectTest(GURL("http://insecure.com"));
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Google) {
   RunNoRedirectTest(GURL("https://www.google.com"));
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
@@ -880,6 +1005,10 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
   observer->OnRegistrationCompleted(site_with_worker);
 
   RunNoRedirectTest(site_with_worker);
+
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
@@ -888,8 +1017,11 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
   GURL prediction_url("https://www.cat-food.com/");
   GURL redirect_url("https://redirect-here.com");
 
+  // Enable unlimited prefetches so we can follow the redirect chain all the
+  // way.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kIsolatePrerenders, {{"max_srp_prefetches", "-1"}});
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
   VerifyCommonRequestState(prediction_url);
@@ -898,8 +1030,6 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
   MakeFinalResponse(redirect_url, net::HTTP_OK, {"X-Testing: Hello World"},
                     kHTMLBody);
 
-  EXPECT_EQ(PrefetchedResponseSize(), 1U);
-
   std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
       tab_helper()->TakePrefetchResponse(redirect_url);
   ASSERT_TRUE(resp);
@@ -907,6 +1037,10 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
 
   network::mojom::URLResponseHeadPtr head = resp->TakeHead();
   EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
+
+  EXPECT_EQ(prefetch_eligible_count(), 2U);
+  EXPECT_EQ(prefetch_attempted_count(), 2U);
+  EXPECT_EQ(prefetch_successful_count(), 1U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);

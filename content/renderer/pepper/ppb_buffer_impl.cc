@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "content/common/pepper_file_util.h"
 #include "content/renderer/render_thread_impl.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
@@ -52,7 +51,7 @@ bool PPB_Buffer_Impl::Init(uint32_t size) {
   if (size == 0)
     return false;
   size_ = size;
-  shared_memory_ = mojo::CreateUnsafeSharedMemoryRegion(size);
+  shared_memory_ = base::UnsafeSharedMemoryRegion::Create(size);
   return shared_memory_.IsValid();
 }
 

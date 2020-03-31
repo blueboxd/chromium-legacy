@@ -92,13 +92,13 @@ Polymer({
     this.addWebUIListener(
         'storage-crostini-size-changed',
         this.handleCrostiniSizeChanged_.bind(this));
-    this.addWebUIListener(
-        'storage-system-size-changed',
-        this.handleSystemSizeChanged_.bind(this));
     if (!this.isGuest_) {
       this.addWebUIListener(
           'storage-other-users-size-changed',
           this.handleOtherUsersSizeChanged_.bind(this));
+      this.addWebUIListener(
+          'storage-system-size-changed',
+          this.handleSystemSizeChanged_.bind(this));
     }
   },
 

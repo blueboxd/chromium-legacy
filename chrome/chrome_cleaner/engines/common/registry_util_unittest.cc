@@ -149,7 +149,7 @@ class SandboxChildProcess : public chrome_cleaner::ChildProcess {
                                                   std::move(callback));
                        },
                        base::Unretained(test_windows_handle_.get()),
-                       base::Passed(&scoped_handle), std::move(callback)));
+                       std::move(scoped_handle), std::move(callback)));
     event.Wait();
 
     return output_handle.ReleaseHandle();
@@ -163,7 +163,7 @@ class SandboxChildProcess : public chrome_cleaner::ChildProcess {
             [](std::unique_ptr<mojo::Remote<TestWindowsHandle>> remote) {
               remote.reset();
             },
-            base::Passed(&test_windows_handle_)));
+            std::move(test_windows_handle_)));
   }
 
   std::unique_ptr<mojo::Remote<TestWindowsHandle>> test_windows_handle_;
@@ -221,7 +221,7 @@ MULTIPROCESS_TEST_MAIN(HandleWrappingIPCMain) {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   mojo_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&SandboxChildProcess::BindToPipe, child_process,
-                                base::Passed(&message_pipe_handle), &event));
+                                std::move(message_pipe_handle), &event));
   event.Wait();
 
   // Check that this test is actually testing what it thinks it is: when

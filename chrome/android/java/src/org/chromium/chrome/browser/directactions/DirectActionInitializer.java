@@ -12,10 +12,13 @@ import android.os.CancellationSignal;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -34,18 +37,20 @@ import java.util.function.Consumer;
  */
 @TargetApi(29)
 public class DirectActionInitializer implements NativeInitObserver, Destroyable {
-    private Context mContext;
+    private final Context mContext;
+    private final BottomSheetController mBottomSheetController;
+    private final ChromeFullscreenManager mFullscreenManager;
+    private final CompositorViewHolder mCompositorViewHolder;
+    private final ActivityTabProvider mActivityTabProvider;
+    private final TabModelSelector mTabModelSelector;
+    private final ScrimView mScrim;
+
     @ActivityType
     private int mActivityType;
     private MenuOrKeyboardActionController mMenuOrKeyboardActionController;
     private Runnable mGoBackAction;
-    private TabModelSelector mTabModelSelector;
     @Nullable
     private FindToolbarManager mFindToolbarManager;
-    @Nullable
-    private BottomSheetController mBottomSheetController;
-    private ScrimView mScrim;
-
     private boolean mDirectActionsRegistered;
     @Nullable
     private DirectActionCoordinator mCoordinator;
@@ -61,12 +66,17 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param tabModelSelector The activity's {@link TabModelSelector}
      * @param findToolbarManager Manager to use for the "find_in_page" action, if it exists
      * @param bottomSheetController Controller for the activity's bottom sheet, if it exists
+     * @param fullscreenManager fullscreen manager of the activity
+     * @param compositorViewHolder compositor view holder of the activity
+     * @param activityTabProvider activity tab provider
      * @param scrim The activity's scrim view, if it exists
      */
     public DirectActionInitializer(Context context, @ActivityType int activityType,
             MenuOrKeyboardActionController actionController, Runnable goBackAction,
             TabModelSelector tabModelSelector, @Nullable FindToolbarManager findToolbarManager,
-            @Nullable BottomSheetController bottomSheetController, ScrimView scrim) {
+            @Nullable BottomSheetController bottomSheetController,
+            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider, ScrimView scrim) {
         mContext = context;
         mActivityType = activityType;
         mMenuOrKeyboardActionController = actionController;
@@ -74,6 +84,9 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
         mTabModelSelector = tabModelSelector;
         mFindToolbarManager = findToolbarManager;
         mBottomSheetController = bottomSheetController;
+        mFullscreenManager = fullscreenManager;
+        mCompositorViewHolder = compositorViewHolder;
+        mActivityTabProvider = activityTabProvider;
         mScrim = scrim;
 
         mDirectActionsRegistered = false;
@@ -124,12 +137,17 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param tabModelSelector The activity's {@link TabModelSelector}
      * @param findToolbarManager Manager to use for the "find_in_page" action, if it exists
      * @param bottomSheetController Controller for the activity's bottom sheet, if it exists
+     * @param fullscreenManager fullscreen manager of the activity
+     * @param compositorViewHolder compositor view holder of the activity
+     * @param activityTabProvider activity tab provider
      * @param scrim The activity's scrim view, if it exists
      */
-    void registerCommonChromeActions(Context context, @ActivityType int activityType,
+    private void registerCommonChromeActions(Context context, @ActivityType int activityType,
             MenuOrKeyboardActionController actionController, Runnable goBackAction,
             TabModelSelector tabModelSelector, @Nullable FindToolbarManager findToolbarManager,
-            @Nullable BottomSheetController bottomSheetController, ScrimView scrim) {
+            @Nullable BottomSheetController bottomSheetController,
+            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider, ScrimView scrim) {
         mCoordinator.register(new GoBackDirectActionHandler(goBackAction));
         mCoordinator.register(
                 new FindInPageDirectActionHandler(tabModelSelector, findToolbarManager));
@@ -138,8 +156,9 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
                 .whitelistActions(R.id.forward_menu_id, R.id.reload_menu_id);
 
         if (AutofillAssistantFacade.areDirectActionsAvailable(activityType)) {
-            DirectActionHandler handler = AutofillAssistantFacade.createDirectActionHandler(
-                    context, bottomSheetController, scrim, tabModelSelector);
+            DirectActionHandler handler = AutofillAssistantFacade.createDirectActionHandler(context,
+                    bottomSheetController, fullscreenManager, compositorViewHolder,
+                    activityTabProvider, scrim);
             if (handler != null) mCoordinator.register(handler);
         }
     }
@@ -194,7 +213,7 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
                 AutofillAssistantFacade.areDirectActionsAvailable(mActivityType)
                         ? mBottomSheetController
                         : null,
-                mScrim);
+                mFullscreenManager, mCompositorViewHolder, mActivityTabProvider, mScrim);
 
         if (mActivityType == ActivityType.TABBED) {
             registerTabManipulationActions(mMenuOrKeyboardActionController, mTabModelSelector);

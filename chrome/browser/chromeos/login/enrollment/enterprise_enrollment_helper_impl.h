@@ -13,16 +13,16 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/chromeos/policy/device_account_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/policy/device_account_initializer.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace policy {
 class DMAuth;
 class PolicyOAuth2TokenFetcher;
-}
+}  // namespace policy
 
 namespace chromeos {
 

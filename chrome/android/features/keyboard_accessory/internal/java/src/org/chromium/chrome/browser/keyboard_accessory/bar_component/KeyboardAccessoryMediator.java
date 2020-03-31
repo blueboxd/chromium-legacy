@@ -145,6 +145,8 @@ class KeyboardAccessoryMediator
             case PopupItemId.ITEM_ID_TITLE:
             case PopupItemId.ITEM_ID_USERNAME_ENTRY:
             case PopupItemId.ITEM_ID_CREATE_HINT:
+            case PopupItemId.ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY:
+            case PopupItemId.ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY:
                 return true;
         }
         return true; // If it's not a special id, show the regular suggestion!

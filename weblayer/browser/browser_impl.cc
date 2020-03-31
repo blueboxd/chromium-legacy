@@ -186,11 +186,26 @@ void BrowserImpl::RestoreStateIfNecessary(
     RestoreStateIfNecessary(*persistence_info_ptr);
 }
 
+void BrowserImpl::WebPreferencesChanged(JNIEnv* env) {
+  for (const auto& tab : tabs_) {
+    TabImpl* tab_impl = static_cast<TabImpl*>(tab.get());
+    tab_impl->WebPreferencesChanged();
+  }
+}
 #endif
 
 std::vector<uint8_t> BrowserImpl::GetMinimalPersistenceState(
     int max_size_in_bytes) {
   return PersistMinimalState(this, max_size_in_bytes);
+}
+
+bool BrowserImpl::GetPasswordEchoEnabled() {
+#if defined(OS_ANDROID)
+  return Java_BrowserImpl_getPasswordEchoEnabled(AttachCurrentThread(),
+                                                 java_impl_);
+#else
+  return false;
+#endif
 }
 
 Tab* BrowserImpl::AddTab(std::unique_ptr<Tab> tab) {

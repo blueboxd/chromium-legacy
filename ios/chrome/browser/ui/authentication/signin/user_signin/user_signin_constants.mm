@@ -8,8 +8,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kUserSigninAttemptedNotification = @"kUserSigninAttempted";
-
 NSString* kDisplayedSSORecallForMajorVersionKey =
     @"DisplayedSSORecallForMajorVersionKey";
 

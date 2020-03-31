@@ -12066,6 +12066,7 @@
         'android:30-',
         'chrome.*:37-',
         'chrome_os:37-',
+        'ios:83-',
       ],
       'features': {
         'dynamic_refresh': True,

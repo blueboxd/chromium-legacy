@@ -29,6 +29,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   // ContentBrowserClient overrides.
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
+  void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
+                                      int child_process_id) override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(

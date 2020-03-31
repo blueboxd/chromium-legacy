@@ -62,7 +62,7 @@ void MediaDrmStorageBridge::OnProvisioned(
                          // Bind callback to WeakPtr in case callback is called
                          // after object is deleted.
                          weak_factory_.GetWeakPtr(),
-                         base::Passed(CreateJavaObjectPtr(j_callback.obj())))));
+                         CreateJavaObjectPtr(j_callback.obj()))));
 }
 
 void MediaDrmStorageBridge::OnLoadInfo(
@@ -81,8 +81,7 @@ void MediaDrmStorageBridge::OnLoadInfo(
           session_id,
           base::BindOnce(&MediaDrmStorageBridge::OnSessionDataLoaded,
                          weak_factory_.GetWeakPtr(),
-                         base::Passed(CreateJavaObjectPtr(j_callback.obj())),
-                         session_id)));
+                         CreateJavaObjectPtr(j_callback.obj()), session_id)));
 }
 
 void MediaDrmStorageBridge::OnSaveInfo(
@@ -120,7 +119,7 @@ void MediaDrmStorageBridge::OnSaveInfo(
                                        key_type),
           base::BindOnce(&MediaDrmStorageBridge::RunAndroidBoolCallback,
                          weak_factory_.GetWeakPtr(),
-                         base::Passed(CreateJavaObjectPtr(j_callback.obj())))));
+                         CreateJavaObjectPtr(j_callback.obj()))));
 }
 
 void MediaDrmStorageBridge::OnClearInfo(
@@ -139,7 +138,7 @@ void MediaDrmStorageBridge::OnClearInfo(
           std::move(session_id),
           base::BindOnce(&MediaDrmStorageBridge::RunAndroidBoolCallback,
                          weak_factory_.GetWeakPtr(),
-                         base::Passed(CreateJavaObjectPtr(j_callback.obj())))));
+                         CreateJavaObjectPtr(j_callback.obj()))));
 }
 
 void MediaDrmStorageBridge::RunAndroidBoolCallback(JavaObjectPtr j_callback,

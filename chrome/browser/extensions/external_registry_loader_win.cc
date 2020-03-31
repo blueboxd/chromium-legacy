@@ -285,7 +285,7 @@ void ExternalRegistryLoader::UpatePrefsOnBlockingThread() {
                         base::TimeTicks::Now() - start_time);
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&ExternalRegistryLoader::OnUpdated, this,
-                                base::Passed(&prefs)));
+                                std::move(prefs)));
 }
 
 }  // namespace extensions

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
@@ -149,7 +151,7 @@ scoped_refptr<EchoingChildProcess> InitChildProcess() {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   mojo_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&EchoingChildProcess::BindToPipe, child_process,
-                                base::Passed(&message_pipe_handle), &event));
+                                std::move(message_pipe_handle), &event));
   event.Wait();
 
   return child_process;

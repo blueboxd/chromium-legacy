@@ -296,7 +296,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
       FROM_HERE,
       base::BindOnce(
           &MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
-          encoder_task_weak_factory_.GetWeakPtr(), base::Passed(&buffer_ref)));
+          encoder_task_weak_factory_.GetWeakPtr(), std::move(buffer_ref)));
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(

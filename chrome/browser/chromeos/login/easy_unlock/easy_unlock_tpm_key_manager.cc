@@ -43,7 +43,7 @@ void RunCallbackOnTaskRunner(
     const base::Callback<void(crypto::ScopedPK11Slot)>& callback,
     crypto::ScopedPK11Slot slot) {
   response_task_runner->PostTask(FROM_HERE,
-                                 base::BindOnce(callback, base::Passed(&slot)));
+                                 base::BindOnce(callback, std::move(slot)));
 }
 
 // Gets TPM system slot. Must be called on IO thread.
@@ -340,9 +340,8 @@ void EasyUnlockTpmKeyManager::CreateKeyInSystemSlot(
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&CreateTpmKeyPairOnWorkerThread,
-                     base::Passed(&system_slot), public_key,
-                     base::ThreadTaskRunnerHandle::Get(),
+      base::BindOnce(&CreateTpmKeyPairOnWorkerThread, std::move(system_slot),
+                     public_key, base::ThreadTaskRunnerHandle::Get(),
                      base::Bind(&EasyUnlockTpmKeyManager::OnTpmKeyCreated,
                                 weak_ptr_factory_.GetWeakPtr())));
 }
@@ -358,7 +357,7 @@ void EasyUnlockTpmKeyManager::SignDataWithSystemSlot(
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&SignDataOnWorkerThread, base::Passed(&system_slot),
+      base::BindOnce(&SignDataOnWorkerThread, std::move(system_slot),
                      public_key, data, base::ThreadTaskRunnerHandle::Get(),
                      base::Bind(&EasyUnlockTpmKeyManager::OnDataSigned,
                                 weak_ptr_factory_.GetWeakPtr(), callback)));

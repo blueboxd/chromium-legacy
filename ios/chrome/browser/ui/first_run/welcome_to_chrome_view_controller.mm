@@ -19,14 +19,18 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/first_run/first_run_configuration.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
 #include "ios/chrome/browser/ui/first_run/static_file_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/terms_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -70,6 +74,12 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 @property(nonatomic, readonly, weak)
     id<ApplicationCommands, BrowsingDataCommands>
         dispatcher;
+
+// The coordinator used to control sign-in UI flows.
+@property(nonatomic, strong) SigninCoordinator* coordinator;
+
+// Holds the state of the first run flow.
+@property(nonatomic, strong) FirstRunConfiguration* firstRunConfig;
 
 @end
 
@@ -198,25 +208,90 @@ const BOOL kDefaultStatsCheckboxValue = YES;
       base::RecordAction(base::UserMetricsAction("MobileFreTOSLinkTapped"));
   }
 
-  FirstRunConfiguration* firstRunConfig = [[FirstRunConfiguration alloc] init];
-  bool hasSSOAccounts = ios::GetChromeBrowserProvider()
-                            ->GetChromeIdentityService()
-                            ->HasIdentities();
-  [firstRunConfig setHasSSOAccount:hasSSOAccounts];
-  FirstRunChromeSigninViewController* signInController =
-      [[FirstRunChromeSigninViewController alloc]
-          initWithBrowser:_browser
-           firstRunConfig:firstRunConfig
-           signInIdentity:nil
-                presenter:self.presenter
-               dispatcher:self.dispatcher];
+  self.firstRunConfig = [[FirstRunConfiguration alloc] init];
+  self.firstRunConfig.hasSSOAccount = ios::GetChromeBrowserProvider()
+                                          ->GetChromeIdentityService()
+                                          ->HasIdentities();
 
-  CATransition* transition = [CATransition animation];
-  transition.duration = kFadeOutAnimationDuration;
-  transition.type = kCATransitionFade;
-  [self.navigationController.view.layer addAnimation:transition
-                                              forKey:kCATransition];
-  [self.navigationController pushViewController:signInController animated:NO];
+  if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
+    self.coordinator = [SigninCoordinator
+        firstRunCoordinatorWithBaseNavigationController:
+            self.navigationController
+                                                browser:_browser];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(markSigninAttempted:)
+               name:kUserSigninAttemptedNotification
+             object:self.coordinator];
+    __weak WelcomeToChromeViewController* weakSelf = self;
+    self.coordinator.signinCompletion =
+        ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+          [weakSelf.coordinator stop];
+          weakSelf.coordinator = nil;
+          [weakSelf finishFirstRunWithSigninResult:signinResult];
+        };
+
+    [self.coordinator start];
+  } else {
+    FirstRunChromeSigninViewController* signInController =
+        [[FirstRunChromeSigninViewController alloc]
+            initWithBrowser:_browser
+             firstRunConfig:self.firstRunConfig
+             signInIdentity:nil
+                  presenter:self.presenter
+                 dispatcher:self.dispatcher];
+
+    CATransition* transition = [CATransition animation];
+    transition.duration = kFadeOutAnimationDuration;
+    transition.type = kCATransitionFade;
+    [self.navigationController.view.layer addAnimation:transition
+                                                forKey:kCATransition];
+    [self.navigationController pushViewController:signInController animated:NO];
+  }
+}
+
+// Completes the first run operation depending on the |signinResult| state.
+- (void)finishFirstRunWithSigninResult:(SigninCoordinatorResult)signinResult {
+  switch (signinResult) {
+    case SigninCoordinatorResultSuccess: {
+      // User is considered done with First Run only after successful sign-in.
+      WriteFirstRunSentinelAndRecordMetrics(
+          _browser->GetBrowserState(), YES,
+          [self.firstRunConfig hasSSOAccount]);
+      web::WebState* currentWebState =
+          _browser->GetWebStateList()->GetActiveWebState();
+      FinishFirstRun(_browser->GetBrowserState(), currentWebState,
+                     self.firstRunConfig, self.presenter);
+      break;
+    }
+    case SigninCoordinatorResultCanceledByUser: {
+      web::WebState* currentWebState =
+          _browser->GetWebStateList()->GetActiveWebState();
+      FinishFirstRun(_browser->GetBrowserState(), currentWebState,
+                     self.firstRunConfig, self.presenter);
+      break;
+    }
+    case SigninCoordinatorResultInterrupted: {
+      NOTREACHED();
+    }
+  }
+  [self.navigationController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:^{
+                           FirstRunDismissed();
+                         }];
+}
+
+#pragma mark - Notifications
+
+// Marks the sign-in attempted field in first run config.
+- (void)markSigninAttempted:(NSNotification*)notification {
+  [self.firstRunConfig setSignInAttempted:YES];
+
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:kUserSigninAttemptedNotification
+              object:self.coordinator];
 }
 
 #pragma mark - UINavigationControllerDelegate

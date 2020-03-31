@@ -68,7 +68,7 @@ class PaymentManifestParserTest : public InProcessBrowserTest {
   void ParsePaymentMethodManifest(const std::string& content) {
     base::RunLoop run_loop;
     parser_.ParsePaymentMethodManifest(
-        content, base::BindOnce(
+        GURL("https://alicepay.com/"), content, base::BindOnce(
                      &PaymentManifestParserTest::OnPaymentMethodManifestParsed,
                      base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

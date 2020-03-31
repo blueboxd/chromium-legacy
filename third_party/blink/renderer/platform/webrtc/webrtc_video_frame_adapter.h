@@ -12,6 +12,7 @@
 #include "third_party/webrtc/api/video/video_frame_buffer.h"
 
 namespace blink {
+
 // Thin adapter from media::VideoFrame to webrtc::VideoFrameBuffer. This
 // implementation is read-only and will return null if trying to get a
 // non-const pointer to the pixel data. This object will be accessed from
@@ -19,7 +20,10 @@ namespace blink {
 class PLATFORM_EXPORT WebRtcVideoFrameAdapter
     : public webrtc::VideoFrameBuffer {
  public:
-  explicit WebRtcVideoFrameAdapter(scoped_refptr<media::VideoFrame> frame);
+  enum class LogStatus { kNoLogging, kLogToWebRtc };
+
+  WebRtcVideoFrameAdapter(scoped_refptr<media::VideoFrame> frame,
+                          LogStatus log_to_webrtc);
 
   scoped_refptr<media::VideoFrame> getMediaVideoFrame() const { return frame_; }
 
@@ -41,6 +45,8 @@ class PLATFORM_EXPORT WebRtcVideoFrameAdapter
   mutable rtc::scoped_refptr<webrtc::I420BufferInterface> frame_adapter_;
 
   scoped_refptr<media::VideoFrame> frame_;
+
+  const LogStatus log_to_webrtc_;
 };
 
 }  // namespace blink

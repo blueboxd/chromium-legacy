@@ -65,7 +65,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
   if (success) {
     success = DB()->Execute(
         base::StringPrintf(
-            "CREATE INDEX IF NOT EXISTS media_feed_origin_id_index ON "
+            "CREATE INDEX IF NOT EXISTS mediaFeed_origin_id_index ON "
             "%s (origin_id)",
             kTableName)
             .c_str());

@@ -156,7 +156,7 @@ class IsolatedPrerenderTabHelper
 
   // NavigationPredictorKeyedService::Observer:
   void OnPredictionUpdated(
-      const base::Optional<NavigationPredictorKeyedService::Prediction>&
+      const base::Optional<NavigationPredictorKeyedService::Prediction>
           prediction) override;
 
   // Runs |url| through all the eligibility checks and appends it to

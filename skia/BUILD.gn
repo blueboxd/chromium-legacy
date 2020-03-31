@@ -823,15 +823,6 @@ if (is_mac) {
 }
 
 # Font copies.
-if (is_android) {
-  copy("copy_android_fonts_config") {
-    sources = [
-      "ext/data/test_fonts/android_fallback_fonts.xml",
-      "ext/data/test_fonts/android_main_fonts.xml",
-    ]
-    outputs = [ "$root_out_dir/test_fonts/{{source_file_part}}" ]
-  }
-}
 if (is_fuchsia) {
   copy("copy_fuchsia_fonts_manifest") {
     sources = [ "ext/data/test_fonts/fuchsia_test_fonts_manifest.json" ]
@@ -863,10 +854,6 @@ group("test_fonts_resources") {
     data_deps += [ "//third_party/test_fonts" ]
   }
 
-  if (is_android) {
-    deps += [ ":copy_android_fonts_config" ]
-    data_deps += [ ":copy_android_fonts_config" ]
-  }
   if (is_fuchsia) {
     deps += [ ":copy_fuchsia_fonts_manifest" ]
     data_deps += [ ":copy_fuchsia_fonts_manifest" ]
@@ -883,9 +870,6 @@ source_set("test_fonts") {
     "//skia",
   ]
 
-  if (is_android) {
-    sources += [ "ext/test_fonts_android.cc" ]
-  }
   if (is_fuchsia) {
     sources += [
       "ext/test_fonts_fuchsia.cc",

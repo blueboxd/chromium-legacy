@@ -102,6 +102,15 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   gfx::Rect bounds;
   if (is_main_frame_ || params->clip_rect == gfx::Rect(0, 0, 0, 0)) {
     auto size = frame->DocumentSize();
+
+    // |size| may be 0 if a tab is captured prior to layout finishing. This
+    // shouldn't occur often, if at all, in normal usage. However, this may
+    // occur during tests. Capturing prior to layout is non-sensical as the
+    // canvas size cannot be deremined so just abort.
+    if (size.height == 0 || size.width == 0) {
+      *status = mojom::PaintPreviewStatus::kCaptureFailed;
+      return;
+    }
     bounds = gfx::Rect(0, 0, size.width, size.height);
   } else {
     bounds = gfx::Rect(params->clip_rect.size());

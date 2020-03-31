@@ -25,6 +25,7 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/embedder_support/pref_names.h"
@@ -805,6 +806,35 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
         base::Value(browser_pref_value->GetBool()));
   }
 
+  // Whenever an extension takes control of the |kSafeBrowsingEnabled|
+  // preference, it must also set |kSafeBrowsingEnhanced| to false.
+  // See crbug.com/1064722 for more background.
+  //
+  // TODO(crbug.com/1064722): Consider extending
+  // chrome.privacy.services.safeBrowsingEnabled to a three-state enum.
+  if (prefs::kSafeBrowsingEnabled == browser_pref) {
+    preference_api->SetExtensionControlledPref(extension_id(),
+                                               prefs::kSafeBrowsingEnhanced,
+                                               scope, base::Value(false));
+  }
+
+  // Whenever an extension takes control of the |kBlockThirdPartyCookies|
+  // preference, we must also set |kCookieControlsMode|.
+  // See crbug.com/1065392 for more background.
+  //
+  // kCookieControlsMode offers an additional setting to only block third-party
+  // cookies in incognito mode that can't be selected by extensions.
+  // Instead they can use the preference api in incognito mode directly if they
+  // are permitted to run there.
+  if (browser_pref == prefs::kBlockThirdPartyCookies) {
+    preference_api->SetExtensionControlledPref(
+        extension_id(), prefs::kCookieControlsMode, scope,
+        base::Value(static_cast<int>(
+            browser_pref_value->GetBool()
+                ? content_settings::CookieControlsMode::kOn
+                : content_settings::CookieControlsMode::kOff)));
+  }
+
   preference_api->SetExtensionControlledPref(
       extension_id(), browser_pref, scope,
       base::Value::FromUniquePtrValue(std::move(browser_pref_value)));
@@ -855,8 +885,30 @@ ExtensionFunction::ResponseAction ClearPreferenceFunction::Run() {
         Error(extensions::preference_api_constants::kPermissionErrorMessage,
               pref_key));
 
+  // Whenever an extension clears the |kBlockThirdPartyCookies| preference,
+  // it must also clear |kCookieControlsMode|.
+  // See crbug.com/1065392 for more background.
+  if (browser_pref == prefs::kBlockThirdPartyCookies) {
+    PreferenceAPI::Get(browser_context())
+        ->RemoveExtensionControlledPref(extension_id(),
+                                        prefs::kCookieControlsMode, scope);
+  }
+
   PreferenceAPI::Get(browser_context())
       ->RemoveExtensionControlledPref(extension_id(), browser_pref, scope);
+
+  // Whenever an extension clears the |kSafeBrowsingEnabled| preference,
+  // it must also clear |kSafeBrowsingEnhanced|. See crbug.com/1064722 for
+  // more background.
+  //
+  // TODO(crbug.com/1064722): Consider extending
+  // chrome.privacy.services.safeBrowsingEnabled to a three-state enum.
+  if (prefs::kSafeBrowsingEnabled == browser_pref) {
+    PreferenceAPI::Get(browser_context())
+        ->RemoveExtensionControlledPref(extension_id(),
+                                        prefs::kSafeBrowsingEnhanced, scope);
+  }
+
   return RespondNow(NoArguments());
 }
 

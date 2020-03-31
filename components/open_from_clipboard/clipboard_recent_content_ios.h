@@ -42,12 +42,17 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   // ClipboardRecentContent implementation.
   base::Optional<GURL> GetRecentURLFromClipboard() override;
   base::Optional<base::string16> GetRecentTextFromClipboard() override;
-  base::Optional<gfx::Image> GetRecentImageFromClipboard() override;
+  void GetRecentImageFromClipboard(GetRecentImageCallback callback) override;
+  bool HasRecentImageFromClipboard() override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
   void ClearClipboardContent() override;
 
  private:
+  base::Optional<gfx::Image> GetRecentImageFromClipboardInternal();
+  void OnGetRecentImageFromClipboard(GetRecentImageCallback callback,
+                                     const SkBitmap& sk_bitmap);
+
   // The implementation instance.
   __strong ClipboardRecentContentImplIOS* implementation_;
 

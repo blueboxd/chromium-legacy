@@ -1421,8 +1421,9 @@ TEST_F(WebSocketChannelEventInterfaceTest, SmallWriteDoesntUpdateQuota) {
   }
 
   CreateChannelAndConnectSuccessfully();
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText, AsIOBuffer("B"),
-                      1U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("B"), 1U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // If we send enough to go below |send_quota_low_water_mark_| we should get our
@@ -1442,9 +1443,11 @@ TEST_F(WebSocketChannelEventInterfaceTest, LargeWriteUpdatesQuota) {
 
   CreateChannelAndConnectSuccessfully();
   checkpoint.Call(1);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer(std::string(kDefaultInitialQuota, 'B')),
-                      kDefaultInitialQuota);
+  EXPECT_EQ(
+      channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                          AsIOBuffer(std::string(kDefaultInitialQuota, 'B')),
+                          kDefaultInitialQuota),
+      WebSocketChannel::CHANNEL_ALIVE);
   checkpoint.Call(2);
 }
 
@@ -1466,14 +1469,18 @@ TEST_F(WebSocketChannelEventInterfaceTest, QuotaReallyIsRefreshed) {
 
   CreateChannelAndConnectSuccessfully();
   checkpoint.Call(1);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer(std::string(kDefaultQuotaRefreshTrigger, 'D')),
-                      kDefaultQuotaRefreshTrigger);
+  EXPECT_EQ(channel_->SendFrame(
+                true, WebSocketFrameHeader::kOpCodeText,
+                AsIOBuffer(std::string(kDefaultQuotaRefreshTrigger, 'D')),
+                kDefaultQuotaRefreshTrigger),
+            WebSocketChannel::CHANNEL_ALIVE);
   checkpoint.Call(2);
   // We should have received more quota at this point.
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer(std::string(kDefaultQuotaRefreshTrigger, 'E')),
-                      kDefaultQuotaRefreshTrigger);
+  EXPECT_EQ(channel_->SendFrame(
+                true, WebSocketFrameHeader::kOpCodeText,
+                AsIOBuffer(std::string(kDefaultQuotaRefreshTrigger, 'E')),
+                kDefaultQuotaRefreshTrigger),
+            WebSocketChannel::CHANNEL_ALIVE);
   checkpoint.Call(3);
 }
 
@@ -1489,9 +1496,11 @@ TEST_F(WebSocketChannelEventInterfaceTest, WriteOverQuotaIsRejected) {
   }
 
   CreateChannelAndConnectSuccessfully();
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer(std::string(kDefaultInitialQuota + 1, 'C')),
-                      kDefaultInitialQuota + 1);
+  EXPECT_EQ(channel_->SendFrame(
+                true, WebSocketFrameHeader::kOpCodeText,
+                AsIOBuffer(std::string(kDefaultInitialQuota + 1, 'C')),
+                kDefaultInitialQuota + 1),
+            WebSocketChannel::CHANNEL_DELETED);
 }
 
 // If a write fails, the channel is dropped.
@@ -1510,8 +1519,9 @@ TEST_F(WebSocketChannelEventInterfaceTest, FailedWrite) {
   CreateChannelAndConnectSuccessfully();
   checkpoint.Call(1);
 
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText, AsIOBuffer("H"),
-                      1U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("H"), 1U),
+            WebSocketChannel::CHANNEL_DELETED);
   checkpoint.Call(2);
 }
 
@@ -1555,8 +1565,9 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnDropChannelCalledOnce) {
 
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("yt?"), 3U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("yt?"), 3U),
+            WebSocketChannel::CHANNEL_ALIVE);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1956,8 +1967,9 @@ TEST_F(WebSocketChannelStreamTest, SentFramesAreMasked) {
       .WillOnce(Return(OK));
 
   CreateChannelAndConnectSuccessfully();
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("NEEDS MASKING"), 13U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("NEEDS MASKING"), 13U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // RFC6455 5.5.1 "The application MUST NOT send any more data frames after
@@ -1973,8 +1985,9 @@ TEST_F(WebSocketChannelStreamTest, NothingIsSentAfterClose) {
 
   CreateChannelAndConnectSuccessfully();
   ASSERT_EQ(CHANNEL_ALIVE, channel_->StartClosingHandshake(1000, "Success"));
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("SHOULD  BE IGNORED"), 18U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("SHOULD  BE IGNORED"), 18U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // RFC6455 5.5.1 "If an endpoint receives a Close frame and did not previously
@@ -2190,12 +2203,14 @@ TEST_F(WebSocketChannelStreamTest, PongInTheMiddleOfDataMessage) {
   }
 
   CreateChannelAndConnectSuccessfully();
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("Hello "), 6U);
+  EXPECT_EQ(channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("Hello "), 6U),
+            WebSocketChannel::CHANNEL_ALIVE);
   *read_frames = CreateFrameVector(frames, &result_frame_data_);
   std::move(read_callback).Run(OK);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
-                      AsIOBuffer("World"), 5U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
+                                AsIOBuffer("World"), 5U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // WriteFrames() may not be called until the previous write has completed.
@@ -2223,10 +2238,12 @@ TEST_F(WebSocketChannelStreamTest, WriteFramesOneAtATime) {
 
   CreateChannelAndConnectSuccessfully();
   checkpoint.Call(1);
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("Hello "), 6U);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("World"), 5U);
+  EXPECT_EQ(channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("Hello "), 6U),
+            WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("World"), 5U),
+            WebSocketChannel::CHANNEL_ALIVE);
   checkpoint.Call(2);
   std::move(write_callback).Run(OK);
   checkpoint.Call(3);
@@ -2258,8 +2275,10 @@ TEST_F(WebSocketChannelStreamTest, WaitingMessagesAreBatched) {
 
   CreateChannelAndConnectSuccessfully();
   for (size_t i = 0; i < strlen(input_letters); ++i) {
-    channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                        AsIOBuffer(std::string(1, input_letters[i])), 1U);
+    EXPECT_EQ(
+        channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                            AsIOBuffer(std::string(1, input_letters[i])), 1U),
+        WebSocketChannel::CHANNEL_ALIVE);
   }
   std::move(write_callback).Run(OK);
 }
@@ -2277,9 +2296,11 @@ TEST_F(WebSocketChannelStreamTest, SendGoingAwayOnRendererQuotaExceeded) {
   EXPECT_CALL(*mock_stream_, Close());
 
   CreateChannelAndConnectSuccessfully();
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer(std::string(kDefaultInitialQuota + 1, 'C')),
-                      kDefaultInitialQuota + 1);
+  EXPECT_EQ(channel_->SendFrame(
+                true, WebSocketFrameHeader::kOpCodeText,
+                AsIOBuffer(std::string(kDefaultInitialQuota + 1, 'C')),
+                kDefaultInitialQuota + 1),
+            WebSocketChannel::CHANNEL_DELETED);
 }
 
 // For convenience, most of these tests use Text frames. However, the WebSocket
@@ -2294,10 +2315,12 @@ TEST_F(WebSocketChannelStreamTest, WrittenBinaryFramesAre8BitClean) {
       .WillOnce(DoAll(SaveArg<0>(&frames), Return(ERR_IO_PENDING)));
 
   CreateChannelAndConnectSuccessfully();
-  channel_->SendFrame(
-      true, WebSocketFrameHeader::kOpCodeBinary,
-      AsIOBuffer(std::string(kBinaryBlob, kBinaryBlob + kBinaryBlobSize)),
-      kBinaryBlobSize);
+  EXPECT_EQ(
+      channel_->SendFrame(
+          true, WebSocketFrameHeader::kOpCodeBinary,
+          AsIOBuffer(std::string(kBinaryBlob, kBinaryBlob + kBinaryBlobSize)),
+          kBinaryBlobSize),
+      WebSocketChannel::CHANNEL_ALIVE);
   ASSERT_TRUE(frames != nullptr);
   ASSERT_EQ(1U, frames->size());
   const WebSocketFrame* out_frame = (*frames)[0].get();
@@ -2340,8 +2363,9 @@ TEST_F(WebSocketChannelSendUtf8Test, InvalidUtf8Rejected) {
 
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("\xff"), 1U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("\xff"), 1U),
+            WebSocketChannel::CHANNEL_DELETED);
 }
 
 // A Text message cannot end with a partial UTF-8 character.
@@ -2352,8 +2376,9 @@ TEST_F(WebSocketChannelSendUtf8Test, IncompleteCharacterInFinalFrame) {
 
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("\xc2"), 1U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("\xc2"), 1U),
+            WebSocketChannel::CHANNEL_DELETED);
 }
 
 // A non-final Text frame may end with a partial UTF-8 character (compare to
@@ -2361,18 +2386,21 @@ TEST_F(WebSocketChannelSendUtf8Test, IncompleteCharacterInFinalFrame) {
 TEST_F(WebSocketChannelSendUtf8Test, IncompleteCharacterInNonFinalFrame) {
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("\xc2"), 1U);
+  EXPECT_EQ(channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("\xc2"), 1U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // UTF-8 parsing context must be retained between frames.
 TEST_F(WebSocketChannelSendUtf8Test, ValidCharacterSplitBetweenFrames) {
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("\xf1"), 1U);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
-                      AsIOBuffer("\x80\xa0\xbf"), 3U);
+  EXPECT_EQ(channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("\xf1"), 1U),
+            WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
+                                AsIOBuffer("\x80\xa0\xbf"), 3U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // Similarly, an invalid character should be detected even if split.
@@ -2383,10 +2411,12 @@ TEST_F(WebSocketChannelSendUtf8Test, InvalidCharacterSplit) {
 
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("\xe1"), 1U);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
-                      AsIOBuffer("\x80\xa0\xbf"), 3U);
+  EXPECT_EQ(channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("\xe1"), 1U),
+            WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
+                                AsIOBuffer("\x80\xa0\xbf"), 3U),
+            WebSocketChannel::CHANNEL_DELETED);
 }
 
 // An invalid character must be detected in continuation frames.
@@ -2397,12 +2427,16 @@ TEST_F(WebSocketChannelSendUtf8Test, InvalidByteInContinuation) {
 
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("foo"), 3U);
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeContinuation,
-                      AsIOBuffer("bar"), 3U);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
-                      AsIOBuffer("\xff"), 1U);
+  EXPECT_EQ(channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("foo"), 3U),
+            WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(
+      channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeContinuation,
+                          AsIOBuffer("bar"), 3U),
+      WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
+                                AsIOBuffer("\xff"), 1U),
+            WebSocketChannel::CHANNEL_DELETED);
 }
 
 // However, continuation frames of a Binary frame will not be tested for UTF-8
@@ -2410,12 +2444,16 @@ TEST_F(WebSocketChannelSendUtf8Test, InvalidByteInContinuation) {
 TEST_F(WebSocketChannelSendUtf8Test, BinaryContinuationNotChecked) {
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeBinary,
-                      AsIOBuffer("foo"), 3U);
-  channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeContinuation,
-                      AsIOBuffer("bar"), 3U);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
-                      AsIOBuffer("\xff"), 1U);
+  EXPECT_EQ(channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeBinary,
+                                AsIOBuffer("foo"), 3U),
+            WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(
+      channel_->SendFrame(false, WebSocketFrameHeader::kOpCodeContinuation,
+                          AsIOBuffer("bar"), 3U),
+      WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeContinuation,
+                                AsIOBuffer("\xff"), 1U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // Multiple text messages can be validated without the validation state getting
@@ -2423,10 +2461,12 @@ TEST_F(WebSocketChannelSendUtf8Test, BinaryContinuationNotChecked) {
 TEST_F(WebSocketChannelSendUtf8Test, ValidateMultipleTextMessages) {
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("foo"), 3U);
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("bar"), 3U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("foo"), 3U),
+            WebSocketChannel::CHANNEL_ALIVE);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("bar"), 3U),
+            WebSocketChannel::CHANNEL_ALIVE);
 }
 
 // UTF-8 validation is enforced on received Text frames.
@@ -2459,8 +2499,9 @@ TEST_F(WebSocketChannelStreamTest, InvalidUtf8TextFrameNotSent) {
 
   CreateChannelAndConnectSuccessfully();
 
-  channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
-                      AsIOBuffer("\xff"), 1U);
+  EXPECT_EQ(channel_->SendFrame(true, WebSocketFrameHeader::kOpCodeText,
+                                AsIOBuffer("\xff"), 1U),
+            WebSocketChannel::CHANNEL_DELETED);
 }
 
 // The rest of the tests for receiving invalid UTF-8 test the communication with
@@ -2900,10 +2941,11 @@ TEST_F(WebSocketChannelTest, CurrentSendQuotaUpdated) {
   int initial_send_quota = channel_->current_send_quota();
   EXPECT_GE(initial_send_quota, kMessageSize);
 
-  channel_->SendFrame(
-      true, WebSocketFrameHeader::kOpCodeText,
-      AsIOBuffer(std::string(static_cast<size_t>(kMessageSize), 'a')),
-      static_cast<size_t>(kMessageSize));
+  EXPECT_EQ(channel_->SendFrame(
+                true, WebSocketFrameHeader::kOpCodeText,
+                AsIOBuffer(std::string(static_cast<size_t>(kMessageSize), 'a')),
+                static_cast<size_t>(kMessageSize)),
+            WebSocketChannel::CHANNEL_ALIVE);
   int new_send_quota = channel_->current_send_quota();
   EXPECT_EQ(kMessageSize, initial_send_quota - new_send_quota);
 }

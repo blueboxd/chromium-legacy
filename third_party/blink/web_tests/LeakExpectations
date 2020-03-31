@@ -106,6 +106,12 @@ crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html [ Failure ]
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
 
+# Sheriff 2019-09-04
+crbug.com/1000768 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.any.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/geolocation-API/idlharness.window.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/web-share/idlharness.https.window.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/storage/idlharness.https.any.html [ Pass Failure ]
+
 # Sheriff 2019-11-29
 crbug.com/1029417 [ Linux ] external/wpt/web-nfc/NDEFReader_scan_filter.https.html [ Failure ]
 

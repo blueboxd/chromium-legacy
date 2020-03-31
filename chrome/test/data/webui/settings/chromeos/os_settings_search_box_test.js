@@ -37,13 +37,15 @@ suite('OSSettingsSearchBox', () => {
 
   /**
    * @param {string} resultText Exact string of the result to be displayed.
+   * @param {string} path Url path with optional params.
    * @return {!chromeos.settings.mojom.SearchResult} A search result.
    */
-  function fakeResult(resultText) {
+  function fakeResult(resultText, urlPathWithParameters) {
     return /** @type {!mojom.SearchResult} */ ({
       resultText: {
         data: Array.from(resultText, c => c.charCodeAt()),
       },
+      urlPathWithParameters: urlPathWithParameters,
     });
   }
 
@@ -64,6 +66,7 @@ suite('OSSettingsSearchBox', () => {
 
     userActionRecorder = new settings.FakeUserActionRecorder();
     settings.setUserActionRecorderForTesting(userActionRecorder);
+    settings.Router.getInstance().navigateTo(settings.routes.BASIC);
   });
 
   teardown(async () => {
@@ -176,5 +179,51 @@ suite('OSSettingsSearchBox', () => {
     // No change on ArrowRight
     searchBox.dispatchEvent(arrowRightEvent);
     assertEquals(resultList.selectedItem, resultList.items[0]);
+  });
+
+  test('Keydown Enter causes route change on selected row', async () => {
+    settingsSearchHandler.setFakeResults(
+        [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
+    await simulateSearch('query');
+
+    // Adding two flushTasks ensures that all events are fully handled, so that
+    // the iron-list is fully rendered and that the physical
+    // <os-search-result-row>s are available to dispatch 'Enter' on.
+    await test_util.flushTasks();
+    await test_util.flushTasks();
+
+    const enterEvent = new KeyboardEvent(
+        'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
+
+    // Clicking on the row correctly changes the route and dropdown to close.
+    searchBox.dispatchEvent(enterEvent);
+    Polymer.dom.flush();
+    assertFalse(dropDown.opened);
+    const router = settings.Router.getInstance();
+    assertEquals(router.getCurrentRoute().path, '/networks');
+    assertEquals(router.getQueryParameters().get('type'), 'WiFi');
+  });
+
+  test('Route change when result row is clicked', async () => {
+    settingsSearchHandler.setFakeResults(
+        [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
+    await simulateSearch('query');
+
+    // Adding two flushTasks ensures that all events are fully handled, so that
+    // the iron-list is fully rendered and that the physical
+    // <os-search-result-row>s are available to dispatch 'Enter' on.
+    await test_util.flushTasks();
+    await test_util.flushTasks();
+
+    const searchResultRow = searchBox.getSelectedOsSearchResultRow_();
+
+    // Clicking on the searchResultContainer of the row correctly changes the
+    // route and dropdown to close.
+    searchResultRow.$.searchResultContainer.click();
+
+    assertFalse(dropDown.opened);
+    const router = settings.Router.getInstance();
+    assertEquals(router.getCurrentRoute().path, '/networks');
+    assertEquals(router.getQueryParameters().get('type'), 'WiFi');
   });
 });

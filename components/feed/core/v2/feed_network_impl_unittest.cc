@@ -4,6 +4,7 @@
 
 #include "components/feed/core/v2/feed_network_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,6 +19,7 @@
 #include "components/feed/core/proto/v2/wire/feed_action_response.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
+#include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/http/http_response_headers.h"
@@ -65,20 +67,6 @@ feedwire::FeedActionResponse GetTestActionResponse() {
   response.mutable_consistency_token()->set_token("tok");
   return response;
 }
-
-template <typename T>
-class CallbackReceiver {
- public:
-  void Done(T result) { result_ = std::move(result); }
-  base::OnceCallback<void(T)> Bind() {
-    return base::BindOnce(&CallbackReceiver::Done, base::Unretained(this));
-  }
-
-  const base::Optional<T>& GetResult() { return result_; }
-
- private:
-  base::Optional<T> result_;
-};
 
 class TestDelegate : public FeedNetworkImpl::Delegate {
  public:

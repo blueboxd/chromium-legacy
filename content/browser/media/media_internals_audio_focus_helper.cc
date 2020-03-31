@@ -45,6 +45,9 @@ const char kMediaSessionPlaybackStatePlaying[] = "Playing";
 const char kMediaSessionIsControllable[] = "Controllable";
 const char kMediaSessionIsSensitive[] = "Sensitive";
 
+const char kMediaSessionHasAudio[] = "HasAudio";
+const char kMediaSessionHasAudioVideo[] = "HasAudioVideo";
+
 }  // namespace
 
 MediaInternalsAudioFocusHelper::MediaInternalsAudioFocusHelper() = default;
@@ -284,6 +287,18 @@ std::string MediaInternalsAudioFocusHelper::BuildStateString(
       break;
     case media_session::mojom::MediaPlaybackState::kPlaying:
       stream << " " << kMediaSessionPlaybackStatePlaying;
+      break;
+  }
+
+  // Convert the audio_video_state to a string.
+  switch (state->session_info->audio_video_state) {
+    case media_session::mojom::MediaAudioVideoState::kUnknown:
+      break;
+    case media_session::mojom::MediaAudioVideoState::kAudioOnly:
+      stream << " " << kMediaSessionHasAudio;
+      break;
+    case media_session::mojom::MediaAudioVideoState::kAudioVideo:
+      stream << " " << kMediaSessionHasAudioVideo;
       break;
   }
 

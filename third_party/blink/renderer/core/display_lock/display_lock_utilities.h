@@ -95,6 +95,10 @@ class CORE_EXPORT DisplayLockUtilities {
   // ensure that focused element ancestors remain unlocked for 'auto' state.
   static void ElementLostFocus(Element*);
   static void ElementGainedFocus(Element*);
+
+  static void SelectionChanged(const EphemeralRangeInFlatTree& old_selection,
+                               const EphemeralRangeInFlatTree& new_selection);
+  static void SelectionRemovedFromDocument(Document& document);
 };
 
 }  // namespace blink

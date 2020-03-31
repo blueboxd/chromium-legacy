@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
+#include "base/bind.h"
 #include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
@@ -489,7 +490,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
     if (self.searchByImageEnabled &&
-        clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
+        clipboardRecentContent->HasRecentImageFromClipboard()) {
       return action == @selector(searchCopiedImage:);
     }
     if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {
@@ -510,11 +511,12 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 - (void)searchCopiedImage:(id)sender {
   RecordAction(
       UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
-  if (base::Optional<gfx::Image> optionalImage =
-          ClipboardRecentContent::GetInstance()
-              ->GetRecentImageFromClipboard()) {
-    UIImage* image = optionalImage.value().ToUIImage();
-    [self.dispatcher searchByImage:image];
+  if (ClipboardRecentContent::GetInstance()->HasRecentImageFromClipboard()) {
+    ClipboardRecentContent::GetInstance()->GetRecentImageFromClipboard(
+        base::BindOnce(^(base::Optional<gfx::Image> optionalImage) {
+          UIImage* image = optionalImage.value().ToUIImage();
+          [self.dispatcher searchByImage:image];
+        }));
   }
 }
 

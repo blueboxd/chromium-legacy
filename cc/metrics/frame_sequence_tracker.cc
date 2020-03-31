@@ -971,8 +971,10 @@ void FrameSequenceTracker::ReportFramePresented(
           // if the main frame reports no-damage later on.
           impl_frames_produced_while_expecting_main_ += impl_frames_produced;
         } else {
-          DCHECK_EQ(impl_frames_produced_while_expecting_main_, 0u)
-              << TRACKER_DCHECK_MSG;
+          // TODO(https://crbug.com/1066455): Determine why this DCHECK is
+          // causing PageLoadMetricsBrowserTests to flake, and re-enable.
+          // DCHECK_EQ(impl_frames_produced_while_expecting_main_, 0u)
+          //    << TRACKER_DCHECK_MSG;
           aggregated_throughput().frames_produced += impl_frames_produced;
           impl_frames_produced_while_expecting_main_ = 0;
         }

@@ -15,6 +15,7 @@
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/web/web_hit_test_result.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/types/scroll_types.h"
@@ -82,6 +83,9 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   // Process the new cursor and returns true if it has changed from the last
   // cursor.
   bool DidChangeCursor(const WebCursor& cursor);
+
+  // Do a hit test for a given point in viewport coordinate.
+  blink::WebHitTestResult GetHitTestResultAtPoint(const gfx::PointF& point);
 
  private:
   class HandlingState;

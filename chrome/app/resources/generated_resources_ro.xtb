@@ -1681,7 +1681,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
     Pentru a beneficia de experiența școlară completă pe acest dispozitiv, copilul trebuie să facă următoarele lucruri:
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />să se deconecteze de la contul gestionat cu Family Link;
-      <ph name="OLIST_ITEM" />să se conecteze cu contul G Suite for Education pe ecranul de conectare. Reține că, astfel, politicile școlii, inclusiv setările pentru accesul la aplicații și site-uri, se vor aplica funcțiilor tale de supraveghere din Family Link (de exemplu, administratorii școlii pot să permită folosirea YouTube, dacă este necesar pentru teme, pot să nu aplice limite pentru durata de folosire a dispozitivului etc.).
+      <ph name="OLIST_ITEM" />să se conecteze cu contul G Suite for Education pe ecranul de conectare. Reține că, astfel, politicile școlii, inclusiv setările pentru accesul la aplicații și site-uri, se vor aplica în locul funcțiilor tale de supraveghere din Family Link (de exemplu, administratorii școlii pot să permită folosirea YouTube, dacă este necesar pentru teme, pot să nu aplice limite pentru durata de folosire a dispozitivului etc.).
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Neconfirmat</translation>
 <translation id="32101887417650595">Nu se poate conecta la imprimantă</translation>
@@ -1715,7 +1715,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3264544094376351444">Font Sans-Serif</translation>
 <translation id="3264582393905923483">Context</translation>
 <translation id="3265459715026181080">Închide fereastra</translation>
-<translation id="3266274118485960573">Rulează verificarea de siguranță.</translation>
+<translation id="3266274118485960573">Verificarea de siguranță rulează.</translation>
 <translation id="3267726687589094446">Permiteți în continuare descărcarea automată a mai multor fișiere</translation>
 <translation id="3268451620468152448">File deschise</translation>
 <translation id="3269069891205016797">Informațiile tale vor fi eliminate de pe dispozitiv după ce te deconectezi.</translation>

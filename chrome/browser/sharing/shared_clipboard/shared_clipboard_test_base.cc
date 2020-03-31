@@ -11,6 +11,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -47,8 +48,8 @@ std::string SharedClipboardTestBase::GetClipboardText() {
 }
 
 SkBitmap SharedClipboardTestBase::GetClipboardImage() {
-  return ui::Clipboard::GetForCurrentThread()->ReadImage(
-      ui::ClipboardBuffer::kCopyPaste);
+  return ui::clipboard_test_util::ReadImage(
+      ui::Clipboard::GetForCurrentThread());
 }
 
 bool SharedClipboardTestBase::HasImageNotification() {

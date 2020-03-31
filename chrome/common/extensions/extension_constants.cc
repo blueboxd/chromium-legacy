@@ -45,7 +45,6 @@ const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
 const char kTextEditorAppId[] = "mmfbcljfglbokpmkimbfghdkjmjhdgbg";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 const char kMediaRouterStableExtensionId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
-const char kCloudReportingExtensionId[] = "oempjldejiginopiohodkdoklcjklbaa";
 
 const char* const kBuiltInFirstPartyExtensionIds[] = {
     kCalculatorAppId,
@@ -73,7 +72,6 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
     kTextEditorAppId,
     kInAppPaymentsSupportAppId,
     kMediaRouterStableExtensionId,
-    kCloudReportingExtensionId,
 #if defined(OS_CHROMEOS)
     kAssessmentAssistantExtensionId,
     kAutoclickExtensionId,

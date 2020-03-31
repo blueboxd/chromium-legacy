@@ -98,7 +98,7 @@ class NET_EXPORT WebSocketChannel {
   ChannelState SendFrame(bool fin,
                          WebSocketFrameHeader::OpCode op_code,
                          scoped_refptr<IOBuffer> buffer,
-                         size_t buffer_size);
+                         size_t buffer_size) WARN_UNUSED_RESULT;
 
   // Calls WebSocketStream::ReadFrames() with the appropriate arguments. Stops
   // calling ReadFrames if no writable buffer in dataframe or WebSocketStream

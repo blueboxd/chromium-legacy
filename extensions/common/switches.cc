@@ -30,9 +30,6 @@ const char kDisableDesktopCaptureAudio[] =
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
-// Enables extensions to hide bookmarks UI elements.
-const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
-
 // Disable the net::URLRequestThrottlerManager functionality for
 // requests originating from extensions.
 const char kDisableExtensionsHttpThrottling[] =

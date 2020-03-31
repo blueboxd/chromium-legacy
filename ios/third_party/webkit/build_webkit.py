@@ -17,6 +17,8 @@ def main():
                       help='Use "iphoneos" SDK instead of "macos".')
   parser.add_argument('--asan', action='store_true', default=False,
                       help='Make Asan build.')
+  parser.add_argument('--debug', action='store_true', default=False,
+                      help='Make debug build.')
   parser.add_argument('-j',
                     help='Number of parallel jobs to run.')
   (opts, extra_args) = parser.parse_known_args()
@@ -29,10 +31,13 @@ def main():
       '../../..',
       'out', 'Debug-iphonesimulator', 'obj', 'ios', 'third_party', 'webkit'));
 
-  command = ['src/Tools/Scripts/build-webkit', '--debug']
+  command = ['src/Tools/Scripts/build-webkit']
 
   if opts.ios_simulator:
     command.append('--ios-simulator')
+
+  if opts.debug:
+    command.append('--debug')
 
   if opts.j:
     command.extend(['-jobs', opts.j])
@@ -42,7 +47,9 @@ def main():
   cwd = os.path.dirname(os.path.realpath(__file__))
 
   if opts.asan:
-     config_command = ['src/Tools/Scripts/set-webkit-configuration', '--debug', '--asan']
+     config_command = ['src/Tools/Scripts/set-webkit-configuration', '--asan']
+     if opts.debug:
+       config_command.append('--debug')
      proc = subprocess.Popen(config_command, cwd=cwd, env=env)
      proc.communicate()
      if proc.returncode:

@@ -457,4 +457,36 @@ bool BasicInteractions::RunConditionalCallback(
   return true;
 }
 
+bool BasicInteractions::UpdateRadioButtonGroup(
+    const std::vector<std::string>& model_identifiers,
+    const std::string& selected_model_identifier) {
+  auto selected_iterator =
+      std::find(model_identifiers.begin(), model_identifiers.end(),
+                selected_model_identifier);
+  if (selected_iterator == model_identifiers.end()) {
+    return false;
+  }
+
+  auto values = delegate_->GetUserModel()->GetValues(model_identifiers);
+  if (!values.has_value()) {
+    return false;
+  }
+
+  if (!AreAllValuesOfType(*values, ValueProto::kBooleans)) {
+    return false;
+  }
+
+  if (!AreAllValuesOfSize(*values, 1)) {
+    return false;
+  }
+
+  for (const auto& model_identifier : model_identifiers) {
+    if (model_identifier == selected_model_identifier) {
+      continue;
+    }
+    delegate_->GetUserModel()->SetValue(model_identifier, SimpleValue(false));
+  }
+  return true;
+}
+
 }  // namespace autofill_assistant

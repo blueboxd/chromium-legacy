@@ -40,8 +40,8 @@ static const int kPlayerId = 0;
 
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
-  explicit MockMediaSessionPlayerObserver(RenderFrameHost* rfh)
-      : render_frame_host_(rfh) {}
+  explicit MockMediaSessionPlayerObserver(RenderFrameHost* rfh, bool has_video)
+      : render_frame_host_(rfh), has_video_(has_video) {}
 
   ~MockMediaSessionPlayerObserver() override = default;
 
@@ -68,12 +68,16 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     return false;
   }
 
+  bool HasVideo(int player_id) const override { return has_video_; }
+
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }
 
  private:
   RenderFrameHost* render_frame_host_;
+
+  bool const has_video_;
 
   base::Optional<media_session::MediaPosition> position_;
 };
@@ -126,14 +130,16 @@ class MediaSessionImplServiceRoutingTest
                                      : nullptr;
   }
 
-  void StartPlayerForFrame(TestRenderFrameHost* frame) {
-    StartPlayerForFrame(frame, media::MediaContentType::Persistent);
+  void StartPlayerForFrame(TestRenderFrameHost* frame, bool has_video = false) {
+    StartPlayerForFrame(frame, media::MediaContentType::Persistent, has_video);
   }
 
   void StartPlayerForFrame(TestRenderFrameHost* frame,
-                           media::MediaContentType type) {
+                           media::MediaContentType type,
+                           bool has_video = false) {
     players_[frame] =
-        std::make_unique<NiceMock<MockMediaSessionPlayerObserver>>(frame);
+        std::make_unique<NiceMock<MockMediaSessionPlayerObserver>>(frame,
+                                                                   has_video);
     MediaSessionImpl::Get(contents())
         ->AddPlayer(players_[frame].get(), kPlayerId, type);
   }
@@ -1044,6 +1050,113 @@ TEST_F(MediaSessionImplServiceRoutingTest, PositionFromServiceCanBeReset) {
   EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
 
   observer.WaitForExpectedPosition(player_position);
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, RouteAudioVideoState) {
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // The default state should be unknown.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kUnknown);
+  }
+
+  StartPlayerForFrame(main_frame_, false /* has_video */);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // We should set the state to audio only.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioOnly);
+  }
+
+  StartPlayerForFrame(sub_frame_, true /* has_video */);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // The new player has a video track so we should now be AudioVideo.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
+  }
+
+  CreateServiceForFrame(main_frame_);
+  ASSERT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // The service on the main frame will restrict the audio video state to
+    // only look at the routed frame.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioOnly);
+  }
+
+  CreateServiceForFrame(sub_frame_);
+  ASSERT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // The service on the main frame will restrict the audio video state to
+    // only look at the routed frame.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioOnly);
+  }
+
+  DestroyServiceForFrame(main_frame_);
+  ASSERT_EQ(services_[sub_frame_].get(), ComputeServiceForRouting());
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // Now that the service on the main frame has been destroyed then we should
+    // only look at players on the sub frame.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
+  }
+
+  DestroyServiceForFrame(sub_frame_);
+  ASSERT_EQ(nullptr, ComputeServiceForRouting());
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // Now that there is no service we should be looking at all the players
+    // again.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
+  }
+
+  ClearPlayersForFrame(sub_frame_);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // The state should be updated when we remove the sub frame players.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioOnly);
+  }
+
+  ClearPlayersForFrame(main_frame_);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    // We should fallback to the default state.
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kUnknown);
+  }
 }
 
 }  // namespace content

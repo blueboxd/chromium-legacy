@@ -1212,23 +1212,6 @@ void HTMLInputElement::setValue(const String& value,
 
   if (value_changed)
     NotifyFormStateChanged();
-
-  if (isConnected()) {
-    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-      auto* page = GetDocument().GetPage();
-      auto* view = GetDocument().View();
-      // Run the document lifecycle to ensure AX notifications fire,
-      // even if the value didn't change.
-      if (page && view) {
-        // TODO(aboxhall): add a lifecycle phase for accessibility updates.
-        if (!view->CanThrottleRendering())
-          page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
-
-        GetDocument().Lifecycle().EnsureStateAtMost(
-            DocumentLifecycle::kVisualUpdatePending);
-      }
-    }
-  }
 }
 
 void HTMLInputElement::SetNonAttributeValue(const String& sanitized_value) {

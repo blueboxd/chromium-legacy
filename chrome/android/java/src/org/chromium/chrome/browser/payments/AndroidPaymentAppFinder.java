@@ -60,8 +60,14 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     /* package */ static final String META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME =
             "org.chromium.default_payment_method_name";
 
-    private final Set<String> mNonUriPaymentMethods;
-    private final Set<URI> mUriPaymentMethods;
+    /**
+     * The ignored payment method identifiers. Payment apps with this payment method identifier are
+     * ignored.
+     */
+    private final Set<String> mIgnoredMethods = new HashSet<>();
+
+    private final Set<String> mNonUriPaymentMethods = new HashSet<>();
+    private final Set<URI> mUriPaymentMethods = new HashSet<>();
     private final PaymentManifestDownloader mDownloader;
     private final PaymentManifestWebDataService mWebDataService;
     private final PaymentManifestParser mParser;
@@ -152,26 +158,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             PaymentAppFactoryInterface factory) {
         mDelegate = delegate;
 
-        // For non-URI payment method names, only names published by W3C should be supported. Keep
-        // this in sync with manifest_verifier.cc.
-        Set<String> supportedNonUriPaymentMethods = new HashSet<>();
-        supportedNonUriPaymentMethods.add(MethodStrings.BASIC_CARD);
-        supportedNonUriPaymentMethods.add(MethodStrings.INTERLEDGER);
-        supportedNonUriPaymentMethods.add(MethodStrings.PAYEE_CREDIT_TRANSFER);
-        supportedNonUriPaymentMethods.add(MethodStrings.PAYER_CREDIT_TRANSFER);
-        supportedNonUriPaymentMethods.add(MethodStrings.TOKENIZED_CARD);
-
-        mNonUriPaymentMethods = new HashSet<>();
-        mUriPaymentMethods = new HashSet<>();
-        for (String method : mDelegate.getParams().getMethodData().keySet()) {
-            assert !TextUtils.isEmpty(method);
-            if (supportedNonUriPaymentMethods.contains(method)) {
-                mNonUriPaymentMethods.add(method);
-            } else if (UriUtils.looksLikeUriMethod(method)) {
-                URI uri = UriUtils.parseUriFromString(method);
-                if (uri != null) mUriPaymentMethods.add(uri);
-            }
-        }
+        mIgnoredMethods.add(MethodStrings.GOOGLE_PLAY_BILLING);
 
         mDownloader = downloader;
         mWebDataService = webDataService;
@@ -188,6 +175,26 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      * that the merchant is using.
      */
     /* package */ void findAndroidPaymentApps() {
+        // For non-URI payment method names, only names published by W3C should be supported. Keep
+        // this in sync with manifest_verifier.cc.
+        Set<String> supportedNonUriPaymentMethods = new HashSet<>();
+        supportedNonUriPaymentMethods.add(MethodStrings.BASIC_CARD);
+        supportedNonUriPaymentMethods.add(MethodStrings.INTERLEDGER);
+        supportedNonUriPaymentMethods.add(MethodStrings.PAYEE_CREDIT_TRANSFER);
+        supportedNonUriPaymentMethods.add(MethodStrings.PAYER_CREDIT_TRANSFER);
+        supportedNonUriPaymentMethods.add(MethodStrings.TOKENIZED_CARD);
+
+        for (String method : mDelegate.getParams().getMethodData().keySet()) {
+            assert !TextUtils.isEmpty(method);
+            if (mIgnoredMethods.contains(method)) continue;
+            if (supportedNonUriPaymentMethods.contains(method)) {
+                mNonUriPaymentMethods.add(method);
+            } else if (UriUtils.looksLikeUriMethod(method)) {
+                URI uri = UriUtils.parseUriFromString(method);
+                if (uri != null) mUriPaymentMethods.add(uri);
+            }
+        }
+
         List<ResolveInfo> allInstalledPaymentApps =
                 mPackageManagerDelegate.getActivitiesThatCanRespondToIntentWithMetaData(
                         new Intent(WebPaymentIntentHelper.ACTION_PAY));
@@ -591,5 +598,17 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         if (uri == null) return null;
         String string = uri.toString();
         return string.endsWith("/") ? string.substring(0, string.length() - 1) : string;
+    }
+
+    /**
+     * Ignores the given payment method identifier, so no Android payment apps for this method are
+     * looked up in findAndroidPaymentApps(). Calling this multiple times will union the new payment
+     * methods with the existing set.
+     *
+     * @param ignoredPaymentMethodIdentifier The ignored payment method identifier.
+     */
+    @VisibleForTesting
+    /* package */ void ignorePaymentMethodForTest(String ignoredPaymentMethodIdentifier) {
+        mIgnoredMethods.add(ignoredPaymentMethodIdentifier);
     }
 }

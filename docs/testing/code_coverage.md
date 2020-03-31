@@ -130,7 +130,8 @@ Here is an example usage:
 
 ```
 $ gn gen out/coverage \
-    --args='use_clang_coverage=true is_component_build=false dcheck_always_on=true'
+    --args="use_clang_coverage=true is_component_build=false
+    dcheck_always_on=true is_debug=false"
 $ python tools/code_coverage/coverage.py \
     crypto_unittests url_unittests \
     -b out/coverage -o out/report \

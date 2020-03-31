@@ -342,6 +342,11 @@ void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
   }
 }
 
+network::mojom::blink::TrustTokenParamsPtr
+HTMLFrameOwnerElement::ConstructTrustTokenParams() const {
+  return nullptr;
+}
+
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet; or if we are in the middle of

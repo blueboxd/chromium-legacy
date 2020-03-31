@@ -136,6 +136,17 @@
     });
   };
 
+  window.test_driver_internal.generate_test_report = function(message) {
+    return new Promise(function(resolve, reject) {
+      if (internals) {
+        internals.generateTestReport(message);
+        resolve();
+      } else {
+        reject(new Error("window.internals not enabled."));
+      }
+    });
+  };
+
   window.test_driver_internal.action_sequence = function(actions) {
     if (window.top !== window) {
       return Promise.reject(new Error("can only send keys in top-level window"));

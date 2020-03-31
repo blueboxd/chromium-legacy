@@ -1882,6 +1882,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="3479685872808224578">Tidak dapat mengesan pelayan cetak. Sila semak alamat dan cuba lagi.</translation>
 <translation id="3481268647794498892">Membuka dalam <ph name="ALTERNATIVE_BROWSER_NAME" /> dalam masa <ph name="COUNTDOWN_SECONDS" /> saat</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> boleh melihat fail berikut</translation>
 <translation id="3484273680291419129">Mengalih keluar perisian berbahaya...</translation>
 <translation id="3484869148456018791">Dapatkan sijil baharu</translation>
 <translation id="3487007233252413104">fungsi awanama</translation>
@@ -1944,6 +1945,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3564848315152754834">Kunci keselamatan USB</translation>
 <translation id="3566721612727112615">Tiada tapak ditambahkan</translation>
 <translation id="3569382839528428029">Adakah anda ingin <ph name="APP_NAME" /> berkongsi skrin anda?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> boleh melihat fail dan folder berikut</translation>
 <translation id="3571734092741541777">Sediakan</translation>
 <translation id="3574210789297084292">log masuk</translation>
 <translation id="3574917942258583917">Keluar daripada mod inkognito juga?</translation>
@@ -1953,6 +1955,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3578594933904494462">Kandungan tab ini sedang dikongsi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin berkongsi pencetak &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan kumpulan yang anda miliki: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jika anda terima, semua ahli kumpulan boleh menggunakan pencetak tersebut.</translation>
 <translation id="357889014807611375">Wi-Fi bermeter</translation>
+<translation id="3582057310199111521">Dimasukkan pada tapak penipuan dan dijumpai dalam pelanggaran data</translation>
 <translation id="3584169441612580296">Baca dan ubah foto, muzik dan media lain daripada komputer anda</translation>
 <translation id="3586806079541226322">Tidak dapat membuka fail ini</translation>
 <translation id="3586931643579894722">Sembunyikan butiran</translation>
@@ -3090,6 +3093,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5117930984404104619">Pantau gelagat sambungan lain, termasuk URL yang dilawati</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Cakera keras anda telah penuh. Sila simpan ke lokasi lain atau sediakan lagi ruang pada cakera keras.</translation>
+<translation id="5122384452788334261">Peranti anda kekurangan ruang storan. Sekurang-kurangnya <ph name="RECOMMENDED_SPACE" /> ruang kosong disyorkan untuk menggunakan Plugin VM. Untuk mengosongkan ruang, padamkan fail daripada storan peranti.</translation>
 <translation id="5123433949759960244">Bola Keranjang</translation>
 <translation id="5125751979347152379">URL tidak sah.</translation>
 <translation id="5126611267288187364">Lihat perubahan</translation>
@@ -5191,6 +5195,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="7915471803647590281">Sila beritahu kami kejadian yang berlaku sebelum menghantar maklum balas.</translation>
 <translation id="7918257978052780342">Daftar</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />s</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> boleh melihat <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Ralat semasa mengirim semula port</translation>
 <translation id="792514962475806987">Tahap zum dok:</translation>
 <translation id="7925247922861151263">Gagal periksa AAA</translation>
@@ -5354,6 +5359,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Penyemak imbas anda diurus<ph name="END_LINK" /> oleh organisasi anda</translation>
 <translation id="8118860139461251237">Urus muat turun anda</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> dan sebagainya</translation>
+<translation id="8120715633374652536">Peranti anda kekurangan ruang storan. Sekurang-kurangnya <ph name="MINIMUM_SPACE" /> ruang kosong diperlukan untuk menggunakan Plugin VM dan kami mengesyorkan lebih daripada <ph name="RECOMMENDED_SPACE" /> ruang kosong. Untuk mengosongkan ruang, padamkan fail daripada storan peranti.</translation>
 <translation id="8123590694679414600">Data disulitkan dengan ungkapan laluan penyegerakan anda pada
           <ph name="TIME" />. Penyulitan ini tidak termasuk kaedah pembayaran dan alamat daripada Google Pay.</translation>
 <translation id="81238879832906896">Bunga kuning dan putih</translation>

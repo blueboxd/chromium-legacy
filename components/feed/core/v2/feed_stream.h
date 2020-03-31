@@ -15,8 +15,11 @@
 #include "components/feed/core/common/enums.h"
 #include "components/feed/core/common/user_classifier.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/master_refresh_throttler.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/stream_model.h"
+#include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/offline_pages/task/task_queue.h"
 
 class PrefService;
@@ -27,6 +30,7 @@ class TickClock;
 }  // namespace base
 
 namespace feed {
+class FeedStore;
 class StreamModel;
 class FeedNetwork;
 class RefreshTaskScheduler;
@@ -35,7 +39,8 @@ struct StreamModelUpdateRequest;
 // Implements FeedStreamApi. |FeedStream| additionally exposes functionality
 // needed by other classes within the Feed component.
 class FeedStream : public FeedStreamApi,
-                   public offline_pages::TaskQueue::Delegate {
+                   public offline_pages::TaskQueue::Delegate,
+                   public StreamModel::StoreObserver {
  public:
   class Delegate {
    public:
@@ -71,6 +76,7 @@ class FeedStream : public FeedStreamApi,
              Delegate* delegate,
              PrefService* profile_prefs,
              FeedNetwork* feed_network,
+             FeedStore* feed_store,
              const base::Clock* clock,
              const base::TickClock* tick_clock,
              scoped_refptr<base::SequencedTaskRunner> background_task_runner);
@@ -98,6 +104,9 @@ class FeedStream : public FeedStreamApi,
   // offline_pages::TaskQueue::Delegate.
   void OnTaskQueueIsIdle() override;
 
+  // StreamModel::StoreObserver.
+  void OnStoreChange(const StreamModel::StoreUpdate& update) override;
+
   // Event indicators. These functions are called from an external source
   // to indicate an event.
 
@@ -123,6 +132,7 @@ class FeedStream : public FeedStreamApi,
   void LoadModel(std::unique_ptr<StreamModel> model);
 
   FeedNetwork* GetNetwork() { return feed_network_; }
+  FeedStore* GetStore() { return store_; }
 
   // Returns the computed UserClass for the active user.
   UserClass GetUserClass();
@@ -134,6 +144,7 @@ class FeedStream : public FeedStreamApi,
   // loading from network or storage.
   void LoadModelForTesting(std::unique_ptr<StreamModel> model);
   offline_pages::TaskQueue* GetTaskQueueForTesting();
+  void UnloadModelForTesting() { UnloadModel(); }
 
   // Returns the model if it is loaded, or null otherwise.
   StreamModel* GetModel() { return model_.get(); }
@@ -147,14 +158,17 @@ class FeedStream : public FeedStreamApi,
     wire_response_translator_ = wire_response_translator;
   }
 
+  void SetIdleCallbackForTesting(base::RepeatingClosure idle_callback);
+
  private:
   class ModelMonitor;
+  class ModelStoreChangeMonitor;
   void MaybeTriggerRefresh(TriggerType trigger,
                            bool clear_all_before_refresh = false);
   void TriggerStreamLoad();
   void UnloadModel();
 
-  void LoadStreamTaskComplete();
+  void LoadStreamTaskComplete(LoadStreamTask::Result result);
 
   // Determines whether or not a fetch should be allowed.
   // If a fetch is allowed, quota is reserved with the assumption that a fetch
@@ -170,6 +184,7 @@ class FeedStream : public FeedStreamApi,
   Delegate* delegate_;
   PrefService* profile_prefs_;
   FeedNetwork* feed_network_;
+  FeedStore* store_;
   const base::Clock* clock_;
   const base::TickClock* tick_clock_;
   WireResponseTranslator* wire_response_translator_;
@@ -194,6 +209,9 @@ class FeedStream : public FeedStreamApi,
   UserClassifier user_classifier_;
   MasterRefreshThrottler refresh_throttler_;
   base::TimeTicks suppress_refreshes_until_;
+
+  // To allow tests to wait on task queue idle.
+  base::RepeatingClosure idle_callback_;
 };
 
 }  // namespace feed

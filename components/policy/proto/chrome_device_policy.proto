@@ -395,6 +395,18 @@ message WebKioskAppInfoProto {
   // In case it is the only field provided, title and icon will be deduced
   // during first app launch.
   optional string url = 1;
+
+  // Title (optional).
+  // User-friendly app name that should be used in Chrome UI where kiosk app
+  // name is shown. Chrome side could override the string with an updated
+  // value that it will get during actual app launch.
+  optional string title = 2;
+
+  // Icon url (optional).
+  // Is not used in the current Implementation. Will be used instead of the
+  // placeholder icon that is displayed before the first successful app
+  // launch.
+  optional string icon_url = 3;
 }
 
 // Describes a single device-local account.

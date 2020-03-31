@@ -93,4 +93,9 @@ void PepperPlayerDelegate::SetVolume(int player_id, double volume) {
       render_frame_host_->GetRoutingID(), pp_instance_, volume));
 }
 
+bool PepperPlayerDelegate::HasVideo(int player_id) const {
+  // We don't actually know whether a pepper player has both audio/video.
+  return true;
+}
+
 }  // namespace content

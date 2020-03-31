@@ -221,6 +221,18 @@ void WidgetInputHandlerManager::DispatchNonBlockingEventToMainThread(
       INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING, HandledEventCallback());
 }
 
+void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
+    const gfx::PointF& point,
+    ElementAtPointCallback callback) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  uint64_t element_id =
+      render_widget_->GetHitTestResultAtPoint(point).GetScrollableContainerId();
+
+  InputThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), element_id));
+}
+
 void WidgetInputHandlerManager::DidOverscroll(
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::Vector2dF& latest_overscroll_delta,

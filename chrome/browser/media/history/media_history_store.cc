@@ -165,6 +165,11 @@ void MediaHistoryStoreInternal::SavePlayback(
 
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kPlaybackWriteResultHistogramName,
+        MediaHistoryStore::PlaybackWriteResult::kFailedToEstablishTransaction);
+
     return;
   }
 
@@ -172,8 +177,23 @@ void MediaHistoryStoreInternal::SavePlayback(
   auto origin = url::Origin::Create(watch_time.origin);
   CHECK_EQ(origin, url::Origin::Create(watch_time.url));
 
-  if (!(CreateOriginId(origin) && playback_table_->SavePlayback(watch_time))) {
+  if (!CreateOriginId(origin)) {
     DB()->RollbackTransaction();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kPlaybackWriteResultHistogramName,
+        MediaHistoryStore::PlaybackWriteResult::kFailedToWriteOrigin);
+
+    return;
+  }
+
+  if (!playback_table_->SavePlayback(watch_time)) {
+    DB()->RollbackTransaction();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kPlaybackWriteResultHistogramName,
+        MediaHistoryStore::PlaybackWriteResult::kFailedToWritePlayback);
+
     return;
   }
 
@@ -181,11 +201,21 @@ void MediaHistoryStoreInternal::SavePlayback(
     if (!origin_table_->IncrementAggregateAudioVideoWatchTime(
             origin, watch_time.cumulative_watch_time)) {
       DB()->RollbackTransaction();
+
+      base::UmaHistogramEnumeration(
+          MediaHistoryStore::kPlaybackWriteResultHistogramName,
+          MediaHistoryStore::PlaybackWriteResult::
+              kFailedToIncrementAggreatedWatchtime);
+
       return;
     }
   }
 
   DB()->CommitTransaction();
+
+  base::UmaHistogramEnumeration(
+      MediaHistoryStore::kPlaybackWriteResultHistogramName,
+      MediaHistoryStore::PlaybackWriteResult::kSuccess);
 }
 
 void MediaHistoryStoreInternal::Initialize() {
@@ -390,12 +420,21 @@ void MediaHistoryStoreInternal::SavePlaybackSession(
 
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kSessionWriteResultHistogramName,
+        MediaHistoryStore::SessionWriteResult::kFailedToEstablishTransaction);
+
     return;
   }
 
   auto origin = url::Origin::Create(url);
   if (!CreateOriginId(origin)) {
     DB()->RollbackTransaction();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kSessionWriteResultHistogramName,
+        MediaHistoryStore::SessionWriteResult::kFailedToWriteOrigin);
     return;
   }
 
@@ -403,6 +442,10 @@ void MediaHistoryStoreInternal::SavePlaybackSession(
       session_table_->SavePlaybackSession(url, origin, metadata, position);
   if (!session_id) {
     DB()->RollbackTransaction();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kSessionWriteResultHistogramName,
+        MediaHistoryStore::SessionWriteResult::kFailedToWriteSession);
     return;
   }
 
@@ -411,6 +454,10 @@ void MediaHistoryStoreInternal::SavePlaybackSession(
         images_table_->SaveOrGetImage(image.src, origin, image.type);
     if (!image_id) {
       DB()->RollbackTransaction();
+
+      base::UmaHistogramEnumeration(
+          MediaHistoryStore::kSessionWriteResultHistogramName,
+          MediaHistoryStore::SessionWriteResult::kFailedToWriteImage);
       return;
     }
 
@@ -426,6 +473,10 @@ void MediaHistoryStoreInternal::SavePlaybackSession(
   }
 
   DB()->CommitTransaction();
+
+  base::UmaHistogramEnumeration(
+      MediaHistoryStore::kSessionWriteResultHistogramName,
+      MediaHistoryStore::SessionWriteResult::kSuccess);
 }
 
 std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
@@ -626,6 +677,12 @@ MediaHistoryStoreInternal::GetItemsForMediaFeedForDebug(const int64_t feed_id) {
 
 const char MediaHistoryStore::kInitResultHistogramName[] =
     "Media.History.Init.Result";
+
+const char MediaHistoryStore::kPlaybackWriteResultHistogramName[] =
+    "Media.History.Playback.WriteResult";
+
+const char MediaHistoryStore::kSessionWriteResultHistogramName[] =
+    "Media.History.Session.WriteResult";
 
 MediaHistoryStore::MediaHistoryStore(
     Profile* profile,

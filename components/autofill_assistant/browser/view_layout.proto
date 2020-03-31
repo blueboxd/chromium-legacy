@@ -32,6 +32,8 @@ message ViewProto {
     TextInputViewProto text_input_view = 8;
     // A vertical expander with fixed title, collapsed, and expanded sections.
     VerticalExpanderViewProto vertical_expander_view = 9;
+    // A toggle button (checkbox or radio button).
+    ToggleButtonViewProto toggle_button_view = 10;
   }
 }
 
@@ -203,7 +205,7 @@ message TextViewProto {
     // Static text.
     string text = 1;
     // Dynamic text. Will update automatically to track the value. Should point
-    // to a single string value.
+    // to a single string value. If specified, view identifier is mandatory!
     string model_identifier = 3;
   }
   optional string text_appearance = 2;
@@ -215,7 +217,7 @@ message ImageViewProto {
   optional DrawableProto image = 1;
 }
 
-// A text input widget.
+// A text input widget. Note: View identifier is mandatory!
 message TextInputViewProto {
   // This mirrors the type hints specified in
   // https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/autofill/prefeditor/EditorFieldModel.java
@@ -269,4 +271,31 @@ message InfoPopupProto {
   optional DialogButton negative_button = 4;
   // Optional: adds a neutral button.
   optional DialogButton neutral_button = 5;
+}
+
+// A toggle button (either a radio button or a check box). Note: view identifier
+// is mandatory!
+message ToggleButtonViewProto {
+  message CheckBox {}
+  message RadioButton {
+    // This is an arbitrary string that should be shared among all radio buttons
+    // belonging to the same exclusion group.
+    optional string radio_group_identifier = 1;
+  }
+
+  // The type of toggle button.
+  oneof kind {
+    CheckBox check_box = 1;
+    RadioButton radio_button = 2;
+  }
+
+  // The view to display to the left of the toggle (if any).
+  optional ViewProto left_content_view = 3;
+
+  // The view to display to the right of the toggle (if any).
+  optional ViewProto right_content_view = 4;
+
+  // The model identifier to keep in sync with the selection. Should point to a
+  // single bool value.
+  optional string model_identifier = 5;
 }

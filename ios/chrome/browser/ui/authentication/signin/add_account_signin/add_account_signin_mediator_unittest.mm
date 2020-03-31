@@ -95,26 +95,30 @@ class AddAccountSigninMediatorTest : public PlatformTest {
 
  protected:
   void SetUp() override {
+    PlatformTest::SetUp();
     mediator_ = [[AddAccountSigninMediator alloc]
         initWithIdentityInteractionManager:identity_interaction_manager_
                                prefService:GetPrefService()
                            identityManager:GetIdentityManager()];
     mediator_delegate_ =
-        OCMProtocolMock(@protocol(AddAccountSigninMediatorDelegate));
+        OCMStrictProtocolMock(@protocol(AddAccountSigninMediatorDelegate));
     mediator_.delegate = mediator_delegate_;
   }
 
-  void TearDown() override { EXPECT_OCMOCK_VERIFY(mediator_delegate_); }
+  void TearDown() override {
+    EXPECT_OCMOCK_VERIFY((id)mediator_delegate_);
+    PlatformTest::TearDown();
+  }
 
   // Needed for test browser state created by TestChromeBrowserState().
   base::test::TaskEnvironment environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 
   AddAccountSigninMediator* mediator_ = nil;
-  id mediator_delegate_ = nil;
+  id<AddAccountSigninMediatorDelegate> mediator_delegate_ = nil;
   id<ChromeIdentityInteractionManagerDelegate> manager_delegate_ = nil;
 
-  ios::FakeChromeIdentityService* identity_service_ = nil;
+  ios::FakeChromeIdentityService* identity_service_ = nullptr;
   FakeChromeIdentityInteractionManager* identity_interaction_manager_ = nil;
   FakeChromeIdentity* fake_identity_ = nil;
 };
@@ -124,16 +128,12 @@ class AddAccountSigninMediatorTest : public PlatformTest {
 //   - Completion callback is called with success state
 TEST_F(AddAccountSigninMediatorTest, AddAccountIntent) {
   // Verify that completion was called with success state.
-  [[mediator_delegate_ expect]
+  OCMExpect([mediator_delegate_
       addAccountSigninMediatorFinishedWithSigninResult:
           SigninCoordinatorResultSuccess
-                                              identity:fake_identity_];
+                                              identity:fake_identity_]);
 
-  [mediator_
-      handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount
-                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                 promoAction:signin_metrics::PromoAction::
-                                 PROMO_ACTION_WITH_DEFAULT];
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount];
   [identity_interaction_manager_ addAccountViewControllerDidTapSignIn];
 
   // Account added.
@@ -145,18 +145,12 @@ TEST_F(AddAccountSigninMediatorTest, AddAccountIntent) {
 //   - Completion callback is called with user cancel state
 TEST_F(AddAccountSigninMediatorTest, AddAccountIntentWithUserCancel) {
   // Verify that completion was called with canceled result state.
-  [[mediator_delegate_ expect]
+  OCMExpect([mediator_delegate_
       addAccountSigninMediatorFinishedWithSigninResult:
           SigninCoordinatorResultCanceledByUser
-                                              identity:nil];
-  [[mediator_delegate_ reject]
-      addAccountSigninMediatorFailedWithError:[OCMArg any]];
+                                              identity:nil]);
 
-  [mediator_
-      handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount
-                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                 promoAction:signin_metrics::PromoAction::
-                                 PROMO_ACTION_WITH_DEFAULT];
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount];
   [identity_interaction_manager_ addAccountViewControllerDidTapCancel];
 
   // No account is present.
@@ -171,14 +165,10 @@ TEST_F(AddAccountSigninMediatorTest,
        AddAccountIntentWithErrorHandledByMediator) {
   // Verify that completion was called with canceled result state and an error
   // is shown.
-  [[mediator_delegate_ expect]
-      addAccountSigninMediatorFailedWithError:[OCMArg any]];
+  OCMExpect([mediator_delegate_
+      addAccountSigninMediatorFailedWithError:[OCMArg any]]);
 
-  [mediator_
-      handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount
-                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                 promoAction:signin_metrics::PromoAction::
-                                 PROMO_ACTION_WITH_DEFAULT];
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount];
   [identity_interaction_manager_
       addAccountViewControllerDidThrowUnhandledError];
 
@@ -186,28 +176,33 @@ TEST_F(AddAccountSigninMediatorTest,
   EXPECT_FALSE(identity_service_->HasIdentities());
 }
 
-// TODO(crbug.com/971989): Add the ReauthIntent test.
 // Verifies the following state in the successful reauth flow:
 //   - Account is added to the identity service
 //   - Completion callback is called with success state
+TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithSuccess) {
+  // Verify that completion was called with canceled result state.
+  OCMExpect([mediator_delegate_
+      addAccountSigninMediatorFinishedWithSigninResult:
+          SigninCoordinatorResultSuccess
+                                              identity:fake_identity_]);
+
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount];
+  [identity_interaction_manager_ addAccountViewControllerDidTapSignIn];
+
+  EXPECT_TRUE(identity_service_->HasIdentities());
+}
 
 // Verifies the following state in the reauth flow with a user cancel:
 //   - Account is not added to the identity service
 //   - Completion callback is called with user cancel state
 TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithUserCancel) {
   // Verify that completion was called with canceled result state.
-  [[mediator_delegate_ expect]
+  OCMExpect([mediator_delegate_
       addAccountSigninMediatorFinishedWithSigninResult:
           SigninCoordinatorResultCanceledByUser
-                                              identity:nil];
-  [[mediator_delegate_ reject]
-      addAccountSigninMediatorFailedWithError:[OCMArg any]];
+                                              identity:nil]);
 
-  [mediator_
-      handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount
-                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                 promoAction:signin_metrics::PromoAction::
-                                 PROMO_ACTION_WITH_DEFAULT];
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount];
   [identity_interaction_manager_ addAccountViewControllerDidTapCancel];
 
   // No account is present.
@@ -221,14 +216,10 @@ TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithUserCancel) {
 TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithErrorHandledByMediator) {
   // Verify that completion was called with canceled result state and an error
   // is shown.
-  [[mediator_delegate_ expect]
-      addAccountSigninMediatorFailedWithError:[OCMArg any]];
+  OCMExpect([mediator_delegate_
+      addAccountSigninMediatorFailedWithError:[OCMArg any]]);
 
-  [mediator_
-      handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount
-                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                 promoAction:signin_metrics::PromoAction::
-                                 PROMO_ACTION_WITH_DEFAULT];
+  [mediator_ handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount];
   [identity_interaction_manager_
       addAccountViewControllerDidThrowUnhandledError];
 

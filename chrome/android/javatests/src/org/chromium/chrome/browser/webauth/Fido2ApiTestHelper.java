@@ -231,8 +231,8 @@ public class Fido2ApiTestHelper {
         options.user.displayName = "Avery A. Jones";
         options.user.icon = createUrl("https://usericon.example.test");
 
-        options.adjustedTimeout = new TimeDelta();
-        options.adjustedTimeout.microseconds = TimeUnit.MILLISECONDS.toMicros(TIMEOUT_MS);
+        options.timeout = new TimeDelta();
+        options.timeout.microseconds = TimeUnit.MILLISECONDS.toMicros(TIMEOUT_MS);
 
         PublicKeyCredentialParameters parameters = new PublicKeyCredentialParameters();
         parameters.algorithmIdentifier = -7;
@@ -274,8 +274,8 @@ public class Fido2ApiTestHelper {
             throws Exception {
         PublicKeyCredentialRequestOptions options = new PublicKeyCredentialRequestOptions();
         options.challenge = "climb a mountain".getBytes("UTF8");
-        options.adjustedTimeout = new TimeDelta();
-        options.adjustedTimeout.microseconds = TimeUnit.MILLISECONDS.toMicros(TIMEOUT_MS);
+        options.timeout = new TimeDelta();
+        options.timeout.microseconds = TimeUnit.MILLISECONDS.toMicros(TIMEOUT_MS);
         options.relyingPartyId = "subdomain.example.test";
 
         PublicKeyCredentialDescriptor descriptor = new PublicKeyCredentialDescriptor();

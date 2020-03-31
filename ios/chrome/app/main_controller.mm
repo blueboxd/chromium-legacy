@@ -24,7 +24,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/ukm/ios/features.h"
 #include "components/web_resource/web_resource_pref_names.h"
-#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/memory_monitor.h"
@@ -394,11 +393,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
              selector:@selector(sceneWillConnect:)
                  name:UISceneWillConnectNotification
                object:nil];
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(sceneDidActivate:)
-                 name:UISceneDidActivateNotification
-               object:nil];
     }
   }
 }
@@ -616,6 +610,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       triggerSystemPromptForNewUser:YES];
 }
 
+#pragma mark - AppStateObserver
+
+// Called when the first scene becomes active.
+- (void)appState:(AppState*)appState
+    firstSceneActivated:(SceneState*)sceneState {
+  [self startUpAfterFirstWindowCreated];
+}
+
 #pragma mark - Scene notifications
 
 // Handler for UISceneWillConnectNotification.
@@ -628,16 +630,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
     self.sceneController = sceneDelegate.sceneController;
     sceneDelegate.sceneController.mainController = self;
-  }
-}
-
-// Handler for UISceneDidActivateNotification.
-- (void)sceneDidActivate:(NSNotification*)notification {
-  DCHECK(IsMultiwindowSupported());
-  if (@available(iOS 13, *)) {
-    if (UIApplication.sharedApplication.connectedScenes.count == 1) {
-      [self startUpAfterFirstWindowCreated];
-    }
   }
 }
 

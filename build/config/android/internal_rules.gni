@@ -1077,11 +1077,15 @@ if (enable_java_templates) {
         inputs += [ _proguard_jar_path ]
       }
 
-      _enable_assert = is_java_debug || dcheck_always_on || report_java_assert
+      _enable_assert = is_java_debug || dcheck_always_on
       if (_enable_assert) {
         # The default for generating dex file format is
         # --force-disable-assertions.
         args += [ "--force-enable-assertions" ]
+      }
+
+      if (desugar_with_d8) {
+        args += [ "--desugar" ]
       }
 
       if (defined(invoker.args)) {
@@ -1170,6 +1174,10 @@ if (enable_java_templates) {
       _main_dex_rules = "//build/android/main_dex_classes.flags"
     }
 
+    if (invoker.enable_desugar || _proguard_enabled) {
+      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+    }
+
     if (_proguard_enabled) {
       if (_proguarding_with_r8) {
         _proguard_output_path = invoker.output
@@ -1203,7 +1211,6 @@ if (enable_java_templates) {
           inputs += invoker.proguard_configs
         }
 
-        _rebased_build_config = rebase_path(build_config, root_build_dir)
         args = [
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
@@ -1441,13 +1448,30 @@ if (enable_java_templates) {
           ]
         }
 
+        if (invoker.enable_desugar) {
+          args += [
+            "--desugar",
+            "--bootclasspath=@FileArg($_rebased_build_config:android:sdk_jars)",
+            "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
+          ]
+          if (defined(invoker.final_ijar_path)) {
+            # Need to include the input .interface.jar on the classpath in order to make
+            # jar_excluded_patterns classes visible to desugar.
+            args += [
+              "--classpath",
+              rebase_path(invoker.final_ijar_path, root_build_dir),
+            ]
+            inputs += [ invoker.final_ijar_path ]
+          }
+        }
+
         inputs += [ _r8_path ]
         args += [
           "--r8-jar-path",
           rebase_path(_r8_path, root_build_dir),
         ]
 
-        _enable_assert = is_java_debug || dcheck_always_on || report_java_assert
+        _enable_assert = is_java_debug || dcheck_always_on
         if (_enable_assert) {
           # The default for generating dex file format is
           # --force-disable-assertions.
@@ -1506,7 +1530,6 @@ if (enable_java_templates) {
   #  build_config:
   #  input_jar_path:
   #  output_jar_path:
-  #  enable_build_hooks:
   #  enable_build_hooks_android:
   #  supports_android:
   #  jacoco_instrument: Use Jacoco-instrumented classes to generate Java
@@ -1542,7 +1565,6 @@ if (enable_java_templates) {
     # Turned off because of existing code which fails the assertion
     _enable_thread_annotations = false
 
-    _desugar = defined(invoker.supports_android) && invoker.supports_android
     _jacoco_instrument = invoker.jacoco_instrument
     _skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
 
@@ -1677,7 +1699,7 @@ if (enable_java_templates) {
       _previous_output_jar = _java_bytecode_rewriter_output_jar
     }
 
-    if (_desugar) {
+    if (invoker.enable_desugar) {
       _desugar_target = "${target_name}__desugar"
       _desugar_input_jar = _previous_output_jar
       _desugar_output_jar = "$target_out_dir/$target_name-desugar.jar"
@@ -3187,26 +3209,25 @@ if (enable_java_templates) {
       }
     }
 
-    _enable_build_hooks =
-        _supports_android &&
-        (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks)
-    if (_enable_build_hooks) {
-      _java_full_deps += [ "//build/android/buildhooks:build_hooks_java" ]
-      _java_header_deps +=
-          [ "//build/android/buildhooks:build_hooks_java__header" ]
-    }
-
     # Some testonly targets use their own resources and the code being
     # tested will use custom resources so there's no need to enable this
     # for testonly targets.
     _enable_build_hooks_android =
-        _enable_build_hooks && _requires_android &&
-        (!defined(invoker.testonly) || !invoker.testonly)
+        (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks) &&
+        _requires_android && (!defined(invoker.testonly) || !invoker.testonly)
     if (_enable_build_hooks_android) {
       _java_full_deps +=
           [ "//build/android/buildhooks:build_hooks_android_java" ]
       _java_header_deps +=
           [ "//build/android/buildhooks:build_hooks_android_java__header" ]
+    }
+
+    if (_supports_android &&
+        (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks)) {
+      # Android targets that are desugared rely on the desugar runtime library.
+      _java_full_deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
+      _java_header_deps +=
+          [ "//third_party/bazel/desugar:desugar_runtime_java__header" ]
     }
 
     # Don't enable coverage or lint unless the target has some non-generated
@@ -3532,6 +3553,8 @@ if (enable_java_templates) {
         }
         _public_deps += [ ":$_copy_system_library_target_name" ]
       } else {
+        _enable_desugar = (!defined(invoker.enable_desugar) ||
+                           !invoker.enable_desugar) && _supports_android
         _process_prebuilt_target_name = "${target_name}__process_prebuilt"
         process_java_prebuilt(_process_prebuilt_target_name) {
           forward_variables_from(invoker,
@@ -3542,8 +3565,8 @@ if (enable_java_templates) {
                                    "jar_included_patterns",
                                    "skip_jetify",
                                  ])
+          enable_desugar = _enable_desugar && !desugar_with_d8
           is_prebuilt = _is_prebuilt
-          supports_android = _supports_android
           enable_build_hooks_android = _enable_build_hooks_android
           build_config = _build_config
           input_jar_path = _unprocessed_jar_path
@@ -3578,11 +3601,19 @@ if (enable_java_templates) {
           dex("${target_name}__dex") {
             input_class_jars = [ _final_jar_path ]
 
+            enable_desugar = _enable_desugar && desugar_with_d8
+
             # There's no value in per-class dexing prebuilts since they never
             # change just one class at a time.
             disable_incremental = _is_prebuilt
             output = _dex_path
             deps = [ ":$_process_prebuilt_target_name" ]
+
+            if (enable_desugar) {
+              build_config = _build_config
+              final_ijar_path = _final_ijar_path
+              deps += _java_header_deps + [ ":$_header_target_name" ]
+            }
 
             # For library targets, we do not need a proper main dex list, but do
             # need to allow multiple dex files.

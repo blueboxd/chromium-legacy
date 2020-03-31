@@ -73,6 +73,10 @@ class FakeCrosHealthdService final
   void RunPrimeSearchRoutine(uint32_t length_seconds,
                              uint64_t max_num,
                              RunPrimeSearchRoutineCallback callback) override;
+  void RunBatteryDischargeRoutine(
+      uint32_t length_seconds,
+      uint32_t maximum_discharge_percent_allowed,
+      RunBatteryDischargeRoutineCallback callback) override;
 
   // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(

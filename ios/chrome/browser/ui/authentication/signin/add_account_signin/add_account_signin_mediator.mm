@@ -15,9 +15,6 @@
 #error "This file requires ARC support."
 #endif
 
-using signin_metrics::AccessPoint;
-using signin_metrics::PromoAction;
-
 @interface AddAccountSigninMediator ()
 
 // The coordinator's manager that handles interactions to add identities.
@@ -49,30 +46,22 @@ using signin_metrics::PromoAction;
   return self;
 }
 
-- (void)handleSigninWithIntent:(AddAccountSigninIntent)signinIntent
-                   accessPoint:(AccessPoint)accessPoint
-                   promoAction:(PromoAction)promoAction {
+- (void)handleSigninWithIntent:(AddAccountSigninIntent)signinIntent {
   switch (signinIntent) {
     case AddAccountSigninIntentAddSecondaryAccount: {
       [self addAccount];
       break;
     }
     case AddAccountSigninIntentReauthPrimaryAccount: {
-      signin_metrics::LogSigninAccessPointStarted(accessPoint, promoAction);
       [self reauthenticate];
       break;
-    }
-    default: {
-      NOTREACHED();
     }
   }
 }
 
 #pragma mark - Private
 
-// Completes the add account flow including handling any errors that have not
-// been handled internally by ChromeIdentity. Will return the sign-in status of
-// the user.
+// Returns the sign-in result status of the user.
 // |identity| is the identity of the added account.
 // |error| is an error reported by the SSOAuth following adding an account.
 - (SigninCoordinatorResult)signinStateWithIdentity:(ChromeIdentity*)identity
@@ -90,7 +79,7 @@ using signin_metrics::PromoAction;
   return SigninCoordinatorResultSuccess;
 }
 
-// Handles the add account operation for a user. User account will be
+// Handles the reauth operation for a user. User account will be
 // automatically populated using the primary user account. In the case of a
 // sign-in error will display a modal alert and abort adding an account.
 - (void)reauthenticate {
@@ -122,8 +111,8 @@ using signin_metrics::PromoAction;
                     }];
 }
 
-// Handles the reauthentication or add account operation if the flow has not
-// been interrupted by a sign-in error.
+// Handles the reauthentication or add account operation or displays an alert
+// if the flow is interrupted by a sign-in error.
 - (void)operationCompletedWithIdentity:(ChromeIdentity*)identity
                                  error:(NSError*)error {
   SigninCoordinatorResult signinResult = [self signinStateWithIdentity:identity

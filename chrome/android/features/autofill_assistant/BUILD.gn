@@ -119,6 +119,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantGenericUiDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantGenericUiModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantGenericUiViewBinder.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantToggleButton.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantValue.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantViewEvents.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantViewFactory.java",

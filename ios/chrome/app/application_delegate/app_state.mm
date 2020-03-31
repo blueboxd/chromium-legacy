@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/critical_closure.h"
+#import "base/ios/crb_protocol_observers.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -74,6 +75,16 @@ void PostTaskOnUIThread(base::OnceClosure closure) {
 NSString* const kStartupAttemptReset = @"StartupAttempReset";
 }  // namespace
 
+#pragma mark - AppStateObserverList
+
+@interface AppStateObserverList : CRBProtocolObservers <AppStateObserver>
+@end
+
+@implementation AppStateObserverList
+@end
+
+#pragma mark - AppState
+
 @interface AppState ()<SafeModeCoordinatorDelegate> {
   // Container for startup information.
   __weak id<StartupInformation> _startupInformation;
@@ -102,6 +113,9 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
   BOOL _savingCookies;
 }
 
+// Container for observers.
+@property(nonatomic, strong) AppStateObserverList* observers;
+
 // Safe mode coordinator. If this is non-nil, the app is displaying the safe
 // mode UI.
 @property(nonatomic, strong) SafeModeCoordinator* safeModeCoordinator;
@@ -119,6 +133,10 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 // Saves the current launch details to user defaults.
 - (void)saveLaunchDetailsToDefaults;
 
+// This flag is set when the first scene has activated since the startup, and
+// never reset.
+@property(nonatomic, assign) BOOL firstSceneHasActivated;
+
 @end
 
 @implementation AppState
@@ -133,9 +151,22 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     applicationDelegate:(MainApplicationDelegate*)applicationDelegate {
   self = [super init];
   if (self) {
+    _observers = [AppStateObserverList
+        observersWithProtocol:@protocol(AppStateObserver)];
     _startupInformation = startupInformation;
     _browserLauncher = browserLauncher;
     _mainApplicationDelegate = applicationDelegate;
+
+    if (@available(iOS 13, *)) {
+      if (IsMultiwindowSupported()) {
+        // Subscribe for scene activation notifications.
+        [[NSNotificationCenter defaultCenter]
+            addObserver:self
+               selector:@selector(sceneDidActivate:)
+                   name:UISceneDidActivateNotification
+                 object:nil];
+      }
+    }
   }
   return self;
 }
@@ -464,6 +495,14 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   self.shouldPerformAdditionalDelegateHandling = !URLHandled;
 }
 
+- (void)addObserver:(id<SceneStateObserver>)observer {
+  [self.observers addObserver:observer];
+}
+
+- (void)removeObserver:(id<SceneStateObserver>)observer {
+  [self.observers removeObserver:observer];
+}
+
 #pragma mark - Multiwindow-related
 
 - (NSArray<SceneState*>*)connectedScenes {
@@ -534,6 +573,25 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   // Start recording info about this session.
   [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
+}
+
+#pragma mark - Scene notifications
+
+// Handler for UISceneDidActivateNotification.
+- (void)sceneDidActivate:(NSNotification*)notification {
+  DCHECK(IsMultiwindowSupported());
+  if (@available(iOS 13, *)) {
+    if (!self.firstSceneHasActivated) {
+      self.firstSceneHasActivated = YES;
+
+      UIWindowScene* scene =
+          base::mac::ObjCCastStrict<UIWindowScene>(notification.object);
+      SceneDelegate* sceneDelegate =
+          base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
+      [self.observers appState:self
+           firstSceneActivated:sceneDelegate.sceneState];
+    }
+  }
 }
 
 @end

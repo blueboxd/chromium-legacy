@@ -432,11 +432,6 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
       web_stream_, internal_frame_->web_frame(),
       initial_audio_output_device_id_);
 
-  if (!audio_renderer_) {
-    SendLogMessage(String::Format(
-        "%s => (WARNING: failed to instantiate audio renderer)", __func__));
-  }
-
   if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::kNetworkStateNetworkError);
     SendLogMessage(String::Format(

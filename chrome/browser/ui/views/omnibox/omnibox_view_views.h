@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "ui/base/window_open_disposition.h"
@@ -301,9 +302,6 @@ class OmniboxViewViews : public OmniboxView,
   // TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
 
-  // Toggle whether to show full URLs in the omnibox.
-  virtual void ToggleShowFullUrlsPref();
-
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;
@@ -386,6 +384,8 @@ class OmniboxViewViews : public OmniboxView,
   // Send tab to self submenu.
   std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
       send_tab_to_self_sub_menu_model_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

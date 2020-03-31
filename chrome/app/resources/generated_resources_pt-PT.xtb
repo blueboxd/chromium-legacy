@@ -1882,6 +1882,7 @@ Pretende pará-lo?</translation>
 <translation id="3479552764303398839">Agora não</translation>
 <translation id="3479685872808224578">Não foi possível detetar o servidor de impressão. Verifique o endereço e tente novamente.</translation>
 <translation id="3481268647794498892">A abrir o <ph name="ALTERNATIVE_BROWSER_NAME" /> dentro de <ph name="COUNTDOWN_SECONDS" /> segundos</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> pode ver os seguintes ficheiros</translation>
 <translation id="3484273680291419129">A remover software prejudicial…</translation>
 <translation id="3484869148456018791">Obter novo certificado</translation>
 <translation id="3487007233252413104">função anónima</translation>
@@ -1944,6 +1945,7 @@ Pretende pará-lo?</translation>
 <translation id="3564848315152754834">Chave de segurança USB</translation>
 <translation id="3566721612727112615">Nenhum site adicionado</translation>
 <translation id="3569382839528428029">Deseja que <ph name="APP_NAME" /> partilhe o seu ecrã?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> pode ver os seguintes ficheiros e pastas</translation>
 <translation id="3571734092741541777">Configurar</translation>
 <translation id="3574210789297084292">iniciar sessão</translation>
 <translation id="3574917942258583917">Pretende sair do modo de navegação anónima mesmo assim?</translation>
@@ -1953,6 +1955,7 @@ Pretende pará-lo?</translation>
 <translation id="3578594933904494462">O conteúdo deste separador está a ser partilhado.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; pretende partilhar uma impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; com um grupo de que é proprietário: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Se aceitar, todos os membros do grupo poderão utilizar a impressora.</translation>
 <translation id="357889014807611375">Wi-Fi com acesso limitado</translation>
+<translation id="3582057310199111521">Acedeu a um site fraudulento e encontrou uma violação de dados.</translation>
 <translation id="3584169441612580296">Ler e alterar fotos, música e outros elementos multimédia a partir do computador</translation>
 <translation id="3586806079541226322">Não é possível abrir este ficheiro</translation>
 <translation id="3586931643579894722">Ocultar detalhes</translation>
@@ -3090,6 +3093,7 @@ Pretende pará-lo?</translation>
 <translation id="5117930984404104619">Monitorizar o comportamento de outras extensões, incluindo URLs visitados</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">O seu disco rígido está cheio. Guarde noutra localização ou liberte espaço no disco rígido.</translation>
+<translation id="5122384452788334261">O seu dispositivo está a ficar sem espaço de armazenamento. Recomenda-se, pelo menos, <ph name="RECOMMENDED_SPACE" /> de espaço livre para utilizar o Plugin VM. Para libertar espaço, elimine ficheiros do armazenamento do dispositivo.</translation>
 <translation id="5123433949759960244">Bola de basquetebol</translation>
 <translation id="5125751979347152379">URL inválido.</translation>
 <translation id="5126611267288187364">Ver alterações</translation>
@@ -5192,6 +5196,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7915471803647590281">Indique-nos o que está a acontecer antes de enviar os comentários.</translation>
 <translation id="7918257978052780342">Inscrever</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> pode ver <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Ocorreu um erro no encaminhamento de porta.</translation>
 <translation id="792514962475806987">Nível de zoom da lupa ancorada:</translation>
 <translation id="7925247922861151263">A verificação AAA falhou</translation>
@@ -5355,6 +5360,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8118488170956489476">O seu <ph name="BEGIN_LINK" />navegador é gerido<ph name="END_LINK" /> pela sua entidade.</translation>
 <translation id="8118860139461251237">Gerir as transferências</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> e mais.</translation>
+<translation id="8120715633374652536">O seu dispositivo está a ficar sem espaço de armazenamento. Precisa de, pelo menos, <ph name="MINIMUM_SPACE" /> de espaço livre para utilizar o Plugin VM e recomenda-se mais de <ph name="RECOMMENDED_SPACE" /> de espaço livre. Para libertar espaço, elimine ficheiros do armazenamento do dispositivo.</translation>
 <translation id="8123590694679414600">Os dados foram encriptados com a sua frase de acesso de sincronização a <ph name="TIME" />. Não estão incluídos métodos de pagamento e endereços do Google Pay.</translation>
 <translation id="81238879832906896">Flor amarela e branca</translation>
 <translation id="8124313775439841391">ONC gerido</translation>

@@ -138,7 +138,10 @@ class BookmarksObserver : public BookmarksExportObserver {
     DCHECK(loop);
   }
 
-  void OnExportFinished() override { loop_->Quit(); }
+  void OnExportFinished(Result result) override {
+    EXPECT_EQ(Result::kSuccess, result);
+    loop_->Quit();
+  }
 
  private:
   base::RunLoop* loop_;
@@ -232,6 +235,10 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   BookmarksObserver observer(&run_loop);
   bookmark_html_writer::WriteBookmarks(&profile, path_, &observer);
   run_loop.Run();
+  if (HasFailure()) {
+    // WriteBookmarks has failed, no point in trying to read the file.
+    return;
+  }
 
   // Clear favicon so that it would be read from file.
   FaviconServiceFactory::GetForProfile(&profile,

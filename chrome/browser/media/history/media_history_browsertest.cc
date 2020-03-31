@@ -350,6 +350,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
     observer.WaitForExpectedImagesOfType(
         media_session::mojom::MediaSessionImageType::kArtwork,
         expected_artwork);
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
   }
 
   SimulateNavigationToCommit(browser);
@@ -422,6 +424,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
   }
 
   SimulateNavigationToCommit(browser);
@@ -464,6 +468,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
   }
 
   SimulateNavigationToCommit(browser);
@@ -542,6 +548,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, GetPlaybackSessions) {
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(GetExpectedMetadata());
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
   }
 
   SimulateNavigationToCommit(browser);
@@ -555,6 +563,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, GetPlaybackSessions) {
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_default_metadata);
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
   }
 
   SimulateNavigationToCommit(browser);
@@ -646,6 +656,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, GetPlaybackSessions) {
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_default_metadata);
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
   }
 
   SimulateNavigationToCommit(browser);
@@ -677,6 +689,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, GetPlaybackSessions) {
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(GetExpectedMetadata());
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioVideo);
   }
 
   SimulateNavigationToCommit(browser);
@@ -975,6 +989,42 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_VideoOnly) {
       EXPECT_EQ(origins, GetOriginsSync(GetOTRMediaHistoryService(browser)));
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
+                       DoNotRecordSessionForAudioOnly) {
+  auto* browser = CreateBrowserFromParam();
+
+  SetupPageAndStartPlayingAudioOnly(browser, GetTestURL());
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession(browser));
+    observer.WaitForState(
+        media_session::mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForAudioVideoState(
+        media_session::mojom::MediaAudioVideoState::kAudioOnly);
+  }
+
+  SimulateNavigationToCommit(browser);
+
+  // Verify the session was not recorded.
+  auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1);
+  EXPECT_TRUE(sessions.empty());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
+                       DoNotRecordSessionForVideoOnly) {
+  auto* browser = CreateBrowserFromParam();
+
+  SetupPageAndStartPlayingVideoOnly(browser, GetTestURL());
+  WaitForSignificantPlayback(browser);
+
+  SimulateNavigationToCommit(browser);
+
+  // Verify the session was not recorded.
+  auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser), 1);
+  EXPECT_TRUE(sessions.empty());
 }
 
 }  // namespace media_history

@@ -42,6 +42,11 @@ public class IncognitoNewTabPageView extends FrameLayout {
         void initCookieControlsManager();
 
         /**
+         * Tells the caller whether a new snapshot is required or not.
+         * */
+        boolean shouldCaptureThumbnail();
+
+        /**
          * Cleans up the manager after it is finished being used.
          * */
         void destroy();
@@ -113,9 +118,8 @@ public class IncognitoNewTabPageView extends FrameLayout {
     boolean shouldCaptureThumbnail() {
         if (getWidth() == 0 || getHeight() == 0) return false;
 
-        return getWidth() != mSnapshotWidth
-                || getHeight() != mSnapshotHeight
-                || mScrollView.getScrollY() != mSnapshotScrollY;
+        return mManager.shouldCaptureThumbnail() || getWidth() != mSnapshotWidth
+                || getHeight() != mSnapshotHeight || mScrollView.getScrollY() != mSnapshotScrollY;
     }
 
     /**

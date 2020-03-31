@@ -11,6 +11,7 @@
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 #import "chrome/updater/server/mac/update_service_wrappers.h"
 #include "chrome/updater/update_service.h"
@@ -19,17 +20,23 @@
 
 // Designated initializer.
 - (instancetype)initWithUpdateService:(updater::UpdateService*)service
+                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
+                                          callbackRunner
     NS_DESIGNATED_INITIALIZER;
 
 @end
 
 @implementation CRUUpdateCheckXPCServiceImpl {
   updater::UpdateService* _service;
+  scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
 }
 
-- (instancetype)initWithUpdateService:(updater::UpdateService*)service {
+- (instancetype)initWithUpdateService:(updater::UpdateService*)service
+                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
+                                          callbackRunner {
   if (self = [super init]) {
     _service = service;
+    _callbackRunner = callbackRunner;
   }
   return self;
 }
@@ -38,31 +45,51 @@
   // Unsupported, but we must override NSObject's designated initializer.
   DLOG(ERROR)
       << "Plain init method not supported for CRUUpdateCheckXPCServiceImpl.";
-  return [self initWithUpdateService:nullptr];
+  return [self initWithUpdateService:nullptr callbackRunner:nullptr];
 }
 
-- (void)checkForUpdatesWithReply:(void (^_Nullable)(int rc))reply {
-  base::OnceCallback<void(updater::UpdateService::Result)> cb =
+- (void)checkForUpdatesWithUpdateState:(id<CRUUpdateStateObserving>)updateState
+                                 reply:(void (^_Nullable)(int rc))reply {
+  auto cb =
       base::BindOnce(base::RetainBlock(^(updater::UpdateService::Result error) {
         VLOG(0) << "UpdateAll complete: error = " << static_cast<int>(error);
         reply(static_cast<int>(error));
       }));
 
-  _service->UpdateAll({}, base::BindOnce(std::move(cb)));
+  auto sccb = base::BindRepeating(
+      base::RetainBlock(^(updater::UpdateService::UpdateState state) {
+        base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
+            [[CRUUpdateStateWrapper alloc] initWithUpdateState:state]);
+        [updateState observeUpdateState:updateStateWrapper.get()];
+      }));
+
+  _callbackRunner->PostTask(
+      FROM_HERE, base::BindOnce(&updater::UpdateService::UpdateAll, _service,
+                                std::move(sccb), std::move(cb)));
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
                        priority:(CRUPriorityWrapper* _Nonnull)priority
-                    updateState:(CRUUpdateStateObserver* _Nonnull)updateState
+                    updateState:(id<CRUUpdateStateObserving>)updateState
                           reply:(void (^_Nullable)(int rc))reply {
-  base::OnceCallback<void(updater::UpdateService::Result)> cb =
+  auto cb =
       base::BindOnce(base::RetainBlock(^(updater::UpdateService::Result error) {
         VLOG(0) << "Update complete: error = " << static_cast<int>(error);
         reply(static_cast<int>(error));
       }));
 
-  _service->Update(base::SysNSStringToUTF8(appID), [priority priority],
-                   [updateState callback], base::BindOnce(std::move(cb)));
+  auto sccb = base::BindRepeating(
+      base::RetainBlock(^(updater::UpdateService::UpdateState state) {
+        base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
+            [[CRUUpdateStateWrapper alloc] initWithUpdateState:state]);
+        [updateState observeUpdateState:updateStateWrapper.get()];
+      }));
+
+  _callbackRunner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&updater::UpdateService::Update, _service,
+                     base::SysNSStringToUTF8(appID), [priority priority],
+                     std::move(sccb), std::move(cb)));
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -79,27 +106,30 @@
   request.existence_checker_path =
       base::FilePath(base::SysNSStringToUTF8(existenceCheckerPath));
 
-  base::OnceCallback<void(const updater::RegistrationResponse&)> cb =
-      base::BindOnce(
-          base::RetainBlock(^(const updater::RegistrationResponse& response) {
-            VLOG(0) << "Registration complete: status code = "
-                    << response.status_code;
-            reply(response.status_code);
-          }));
+  auto cb = base::BindOnce(
+      base::RetainBlock(^(const updater::RegistrationResponse& response) {
+        VLOG(0) << "Registration complete: status code = "
+                << response.status_code;
+        reply(response.status_code);
+      }));
 
-  _service->RegisterApp(request, base::BindOnce(std::move(cb)));
+  _callbackRunner->PostTask(
+      FROM_HERE, base::BindOnce(&updater::UpdateService::RegisterApp, _service,
+                                request, std::move(cb)));
 }
 
 @end
 
 @implementation CRUUpdateCheckXPCServiceDelegate {
   scoped_refptr<updater::UpdateService> _service;
+  scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
 }
 
 - (instancetype)initWithUpdateService:
     (scoped_refptr<updater::UpdateService>)service {
   if (self = [super init]) {
     _service = service;
+    _callbackRunner = base::SequencedTaskRunnerHandle::Get();
   }
   return self;
 }
@@ -115,22 +145,13 @@
     shouldAcceptNewConnection:(NSXPCConnection*)newConnection {
   // Check to see if the other side of the connection is "okay";
   // if not, invalidate newConnection and return NO.
-  NSXPCInterface* updateCheckingInterface =
-      [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateChecking)];
-  NSXPCInterface* updateStateObservingInterface =
-      [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateStateObserving)];
-  [updateCheckingInterface
-       setInterface:updateStateObservingInterface
-        forSelector:@selector(checkForUpdateWithAppID:
-                                             priority:updateState:reply:)
-      argumentIndex:2
-            ofReply:NO];
 
-  newConnection.exportedInterface = updateCheckingInterface;
+  newConnection.exportedInterface = updater::GetXpcInterface();
 
   base::scoped_nsobject<CRUUpdateCheckXPCServiceImpl> object(
       [[CRUUpdateCheckXPCServiceImpl alloc]
-          initWithUpdateService:_service.get()]);
+          initWithUpdateService:_service.get()
+                 callbackRunner:_callbackRunner.get()]);
   newConnection.exportedObject = object.get();
   [newConnection resume];
   return YES;

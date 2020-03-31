@@ -6,10 +6,8 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 
@@ -128,11 +126,8 @@ void FontPreloadManager::RenderBlockingFontLoadingStarted() {
   DCHECK(
       base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering));
   DCHECK_NE(State::kUnblocked, state_);
-  if (state_ == State::kInitial) {
+  if (state_ == State::kInitial)
     render_delay_timer_.StartOneShot(render_delay_timeout_, FROM_HERE);
-    document_->Loader()->DidObserveLoadingBehavior(
-        kLoadingBehaviorRenderDelayedForWebFontPreloading);
-  }
   state_ = State::kLoading;
 }
 

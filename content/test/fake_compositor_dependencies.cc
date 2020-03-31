@@ -23,10 +23,6 @@ FakeCompositorDependencies::FakeCompositorDependencies() {
 FakeCompositorDependencies::~FakeCompositorDependencies() {
 }
 
-bool FakeCompositorDependencies::IsGpuRasterizationForced() {
-  return false;
-}
-
 int FakeCompositorDependencies::GetGpuRasterizationMSAASampleCount() {
   return 0;
 }

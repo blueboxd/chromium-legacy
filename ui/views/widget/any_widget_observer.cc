@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "ui/views/widget/any_widget_observer.h"
+#include "base/bind.h"
 #include "ui/views/widget/any_widget_observer_singleton.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
-AnyWidgetObserver::AnyWidgetObserver(AnyWidgetObserver::Passkey passkey)
+AnyWidgetObserver::AnyWidgetObserver(AnyWidgetPasskey passkey)
     : AnyWidgetObserver() {}
 AnyWidgetObserver::AnyWidgetObserver(test::AnyWidgetTestPasskey passkey)
     : AnyWidgetObserver() {}
@@ -32,5 +34,37 @@ PROPAGATE_NOTIFICATION(OnAnyWidgetHidden, hidden_callback_)
 PROPAGATE_NOTIFICATION(OnAnyWidgetClosing, closing_callback_)
 
 #undef PROPAGATE_NOTIFICATION
+
+NamedWidgetShownWaiter::NamedWidgetShownWaiter(AnyWidgetPasskey passkey,
+                                               const std::string& name)
+    : NamedWidgetShownWaiter(name) {}
+
+NamedWidgetShownWaiter::NamedWidgetShownWaiter(
+    test::AnyWidgetTestPasskey passkey,
+    const std::string& name)
+    : NamedWidgetShownWaiter(name) {}
+
+NamedWidgetShownWaiter::~NamedWidgetShownWaiter() = default;
+
+Widget* NamedWidgetShownWaiter::WaitIfNeededAndGet() {
+  run_loop_.Run();
+  DCHECK(widget_);
+  return widget_;
+}
+
+NamedWidgetShownWaiter::NamedWidgetShownWaiter(const std::string& name)
+    : observer_(views::AnyWidgetPasskey{}), name_(name) {
+  observer_.set_shown_callback(base::BindRepeating(
+      &NamedWidgetShownWaiter::OnAnyWidgetShown, base::Unretained(this)));
+}
+
+void NamedWidgetShownWaiter::OnAnyWidgetShown(Widget* widget) {
+  if (widget->GetName() == name_) {
+    widget_ = widget;
+    run_loop_.Quit();
+  }
+}
+
+AnyWidgetPasskey::AnyWidgetPasskey() = default;
 
 }  // namespace views

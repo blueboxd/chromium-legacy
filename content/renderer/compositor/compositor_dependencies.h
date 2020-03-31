@@ -40,7 +40,6 @@ class RenderWidget;
 
 class CONTENT_EXPORT CompositorDependencies {
  public:
-  virtual bool IsGpuRasterizationForced() = 0;
   virtual int GetGpuRasterizationMSAASampleCount() = 0;
   virtual bool IsLcdTextEnabled() = 0;
   virtual bool IsZeroCopyEnabled() = 0;

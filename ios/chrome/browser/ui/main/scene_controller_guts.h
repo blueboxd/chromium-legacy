@@ -10,7 +10,6 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
-#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 

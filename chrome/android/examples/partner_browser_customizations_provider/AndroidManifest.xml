@@ -5,14 +5,16 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="org.chromium.example.partnercustomizations">
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14" />
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" />
     <application>
         <!-- Provider for partner bookmarks. android:authorities must not be changed. -->
         <provider android:name="PartnerBookmarksProviderExample"
-            android:authorities="com.android.partnerbookmarks" />
+            android:authorities="com.android.partnerbookmarks"
+            android:exported="true" />
 
         <!-- Provider for other partner customizations. android:authorities must not be changed. -->
         <provider android:name="PartnerBrowserCustomizationsProviderExample"
-            android:authorities="com.android.partnerbrowsercustomizations" />
+            android:authorities="com.android.partnerbrowsercustomizations"
+            android:exported="true" />
     </application>
 </manifest>

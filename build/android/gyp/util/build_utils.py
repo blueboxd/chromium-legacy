@@ -208,7 +208,7 @@ def FilterLines(output, filter_string):
   """
   re_filter = re.compile(filter_string)
   return '\n'.join(
-      line for line in output.splitlines() if not re_filter.search(line))
+      line for line in output.split('\n') if not re_filter.search(line))
 
 
 def FilterReflectiveAccessJavaWarnings(output):

@@ -247,6 +247,7 @@ void PixelTest::SetUpGLWithoutRenderer(
 
   auto context_provider =
       base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_gpu_rasterization=*/false,
           /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   gpu::ContextResult result = context_provider->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
@@ -261,6 +262,7 @@ void PixelTest::SetUpGLWithoutRenderer(
 
   child_context_provider_ =
       base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_gpu_rasterization=*/false,
           /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   result = child_context_provider_->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
@@ -303,6 +305,7 @@ void PixelTest::SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin) {
   // Set up the client side context provider, etc
   child_context_provider_ =
       base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_gpu_rasterization=*/false,
           /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   gpu::ContextResult result = child_context_provider_->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);

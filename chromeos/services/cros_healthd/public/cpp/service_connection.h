@@ -140,6 +140,15 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunPrimeSearchRoutineCallback
           callback) = 0;
 
+  // Requests that cros_healthd runs the battery discharge routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunBatteryDischargeRoutine(
+      base::TimeDelta exec_duration,
+      uint32_t maximum_discharge_percent_allowed,
+      mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
+          callback) = 0;
+
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

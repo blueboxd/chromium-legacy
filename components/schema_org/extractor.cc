@@ -43,6 +43,7 @@ constexpr size_t kMaxNumFields = 25;
 constexpr size_t kMaxRepeatedSize = 100;
 
 constexpr char kJSONLDKeyType[] = "@type";
+constexpr char kJSONLDKeyId[] = "@id";
 
 using improved::mojom::Entity;
 using improved::mojom::EntityPtr;
@@ -190,6 +191,11 @@ void ExtractEntity(const base::DictionaryValue& val,
     type = "Thing";
   }
   entity->type = type;
+
+  std::string id;
+  if (val.GetString(kJSONLDKeyId, &id)) {
+    entity->id = id;
+  }
 
   for (const auto& entry : val.DictItems()) {
     if (entity->properties.size() >= kMaxNumFields) {

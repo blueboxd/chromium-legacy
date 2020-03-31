@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/html_all_collection.h"
@@ -61,6 +62,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -272,6 +274,14 @@ void WebDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
 
   Document* doc = Unwrap<Document>();
   doc->SetShowBeforeUnloadDialog(show_dialog);
+}
+
+uint64_t WebDocument::GetVisualViewportScrollingElementIdForTesting() {
+  return blink::To<Document>(private_.Get())
+      ->GetPage()
+      ->GetVisualViewport()
+      .GetScrollElementId()
+      .GetStableId();
 }
 
 WebDocument::WebDocument(Document* elem) : WebNode(elem) {}

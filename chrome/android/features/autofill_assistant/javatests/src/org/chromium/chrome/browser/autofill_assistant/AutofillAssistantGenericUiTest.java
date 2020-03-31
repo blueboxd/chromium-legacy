@@ -13,6 +13,8 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.PickerActions.setDate;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
+import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
+import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -23,6 +25,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -39,7 +42,9 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
+import android.widget.RadioButton;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -100,6 +105,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ToStringProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ToggleButtonViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ToggleUserActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionList;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionProto;
@@ -166,6 +172,33 @@ public class AutofillAssistantGenericUiTest {
                                 .setLayoutWeight(1.0f)
                                 .setLayoutHeight(ViewLayoutParamsProto.Size.WRAP_CONTENT_VALUE))
                 .setIdentifier(identifier)
+                .build();
+    }
+
+    private ViewProto createRadioButtonView(
+            String text, String radioGroup, String viewIdentifier, String modelIdentifier) {
+        return (ViewProto) ViewProto.newBuilder()
+                .setToggleButtonView(
+                        ToggleButtonViewProto.newBuilder()
+                                .setRadioButton(ToggleButtonViewProto.RadioButton.newBuilder()
+                                                        .setRadioGroupIdentifier(radioGroup))
+                                .setRightContentView(ViewProto.newBuilder().setTextView(
+                                        TextViewProto.newBuilder().setText(text)))
+                                .setModelIdentifier(modelIdentifier))
+                .setIdentifier(viewIdentifier)
+                .build();
+    }
+
+    private ViewProto createCheckBoxView(
+            String text, String viewIdentifier, String modelIdentifier) {
+        return (ViewProto) ViewProto.newBuilder()
+                .setToggleButtonView(
+                        ToggleButtonViewProto.newBuilder()
+                                .setCheckBox(ToggleButtonViewProto.CheckBox.newBuilder())
+                                .setRightContentView(ViewProto.newBuilder().setTextView(
+                                        TextViewProto.newBuilder().setText(text)))
+                                .setModelIdentifier(modelIdentifier))
+                .setIdentifier(viewIdentifier)
                 .build();
     }
 
@@ -1800,5 +1833,188 @@ public class AutofillAssistantGenericUiTest {
         onView(withText("Expander C Title")).perform(click());
         waitUntilViewMatchesCondition(withText("Expander C Expanded"), not(isDisplayed()));
         onView(withText("Expander A Expanded")).check(matches(not(isDisplayed())));
+    }
+
+    /**
+     * Tests checkboxes and radio buttons.
+     */
+    @Test
+    @MediumTest
+    public void testToggleButtons() {
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("chips")
+                        .setValue(ValueProto.newBuilder().setUserActions(
+                                UserActionList.newBuilder().addValues(
+                                        UserActionProto.newBuilder()
+                                                .setChip(ChipProto.newBuilder()
+                                                                 .setText("Done")
+                                                                 .setType(ChipType.NORMAL_ACTION))
+                                                .setIdentifier("done_chip"))))
+                        .build());
+
+        // First radio button group, pre-select nothing.
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_a_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_b_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+
+        // Second radio button group, pre-select option d.
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_c_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_d_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(true)))
+                                .build());
+
+        // Pre-select check box e.
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_e_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+
+        // The only explicit interaction is for the chips. All others are defined implicitly.
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "chips")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
+                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                        .build());
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
+                                         OnUserActionCalled.newBuilder().setUserActionIdentifier(
+                                                 "done_chip")))
+                                 .addCallbacks(CallbackProto.newBuilder().setEndAction(
+                                         EndActionProto.newBuilder().setStatus(
+                                                 ProcessedActionStatusProto.ACTION_APPLIED)))
+                                 .build());
+
+        // Shows two groups of two radio buttons each, as well as a final checkbox.
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(ViewProto.newBuilder().setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addAllViews(Arrays.asList(
+                                                createRadioButtonView("Option A", "group_a",
+                                                        "option_a_view", "option_a_toggled"),
+                                                createRadioButtonView("Option B", "group_a",
+                                                        "option_b_view", "option_b_toggled"),
+                                                createRadioButtonView("Option C", "group_b",
+                                                        "option_c_view", "option_c_toggled"),
+                                                createRadioButtonView("Option D", "group_b",
+                                                        "option_d_view", "option_d_toggled"),
+                                                createCheckBoxView("Optional option E",
+                                                        "option_e_view", "option_e_toggled")))))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder()
+                                                   .setGenericUserInterface(genericUserInterface)
+                                                   .addAllOutputModelIdentifiers(Arrays.asList(
+                                                           "option_a_toggled", "option_b_toggled",
+                                                           "option_c_toggled", "option_d_toggled",
+                                                           "option_e_toggled")))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Done"), isCompletelyDisplayed());
+
+        onView(allOf(withClassName(is(RadioButton.class.getName())),
+                       hasSibling(withText("Option A"))))
+                .check(matches(not(isChecked())));
+        onView(allOf(withClassName(is(RadioButton.class.getName())),
+                       hasSibling(withText("Option B"))))
+                .check(matches(not(isChecked())));
+        onView(allOf(withClassName(is(RadioButton.class.getName())),
+                       hasSibling(withText("Option C"))))
+                .check(matches(not(isChecked())));
+        onView(allOf(withClassName(is(RadioButton.class.getName())),
+                       hasSibling(withText("Option D"))))
+                .check(matches(isChecked()));
+        onView(allOf(withClassName(is(CheckBox.class.getName())),
+                       hasSibling(withText("Optional option E"))))
+                .check(matches(not(isChecked())));
+
+        onView(withText("Option A")).perform(click());
+        onView(withText("Option B")).perform(click());
+        onView(withText("Option A")).perform(click());
+
+        // Selecting an already checked radio button does nothing.
+        onView(withText("Option C")).perform(click());
+        onView(withText("Option C")).perform(click());
+
+        // Selecting an already checked check box inverts its value.
+        onView(withText("Optional option E")).perform(click());
+        onView(withText("Optional option E")).perform(click());
+
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(withText("Done")).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        assertThat(processedActions, iterableWithSize(1));
+        assertThat(
+                processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
+        ShowGenericUiProto.Result result = processedActions.get(0).getShowGenericUiResult();
+        List<ModelProto.ModelValue> resultModelValues = result.getModel().getValuesList();
+        assertThat(resultModelValues, iterableWithSize(5));
+        assertThat(resultModelValues,
+                containsInAnyOrder((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                           .setIdentifier("option_a_toggled")
+                                           .setValue(ValueProto.newBuilder().setBooleans(
+                                                   BooleanList.newBuilder().addValues(true)))
+                                           .build(),
+                        (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_b_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build(),
+                        (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_c_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(true)))
+                                .build(),
+                        (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_d_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build(),
+                        (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("option_e_toggled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build()));
     }
 }

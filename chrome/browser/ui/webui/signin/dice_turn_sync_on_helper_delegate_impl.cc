@@ -135,7 +135,7 @@ void DiceTurnSyncOnHelperDelegateImpl::ShowSyncConfirmation(
   scoped_login_ui_service_observer_.Add(
       LoginUIServiceFactory::GetForProfile(profile_));
   browser_ = EnsureBrowser(browser_, profile_);
-  browser_->signin_view_controller()->ShowModalSyncConfirmationDialog(browser_);
+  browser_->signin_view_controller()->ShowModalSyncConfirmationDialog();
 }
 
 void DiceTurnSyncOnHelperDelegateImpl::ShowMergeSyncDataConfirmation(
@@ -145,7 +145,7 @@ void DiceTurnSyncOnHelperDelegateImpl::ShowMergeSyncDataConfirmation(
   DCHECK(callback);
   browser_ = EnsureBrowser(browser_, profile_);
   browser_->signin_view_controller()->ShowModalSigninEmailConfirmationDialog(
-      browser_, previous_email, new_email,
+      previous_email, new_email,
       base::BindOnce(&OnEmailConfirmation, std::move(callback)));
 }
 

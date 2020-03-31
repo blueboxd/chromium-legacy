@@ -17,7 +17,6 @@ extern const char kDisableDesktopCaptureAudio[];
 extern const char kDisableExtensionsHttpThrottling[];
 extern const char kEmbeddedExtensionOptions[];
 extern const char kEnableExperimentalExtensionApis[];
-extern const char kEnableOverrideBookmarksUI[];
 extern const char kEnableBLEAdvertising[];
 extern const char kErrorConsole[];
 extern const char kExtensionProcess[];

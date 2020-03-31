@@ -78,6 +78,12 @@ void PaintPreviewTabService::CaptureTab(int tab_id,
                                         content::WebContents* contents,
                                         FinishedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Mark |contents| as being captured so that the renderer doesn't go away
+  // until the capture is finished. This is done even before a file is created
+  // to ensure the renderer doesn't go away while that happens.
+  contents->IncrementCapturerCount(gfx::Size(), true);
+
   auto file_manager = GetFileManager();
   auto key = file_manager->CreateKey(tab_id);
   GetTaskRunner()->PostTaskAndReplyWithResult(
@@ -197,19 +203,26 @@ void PaintPreviewTabService::CaptureTabInternal(
     std::move(callback).Run(Status::kWebContentsGone);
     return;
   }
-  CapturePaintPreview(contents, file_path.value(), gfx::Rect(0, 0, 0, 0),
-                      base::BindOnce(&PaintPreviewTabService::OnCaptured,
-                                     weak_ptr_factory_.GetWeakPtr(), tab_id,
-                                     key, std::move(callback)));
+  CapturePaintPreview(
+      contents, file_path.value(), gfx::Rect(0, 0, 0, 0),
+      base::BindOnce(&PaintPreviewTabService::OnCaptured,
+                     weak_ptr_factory_.GetWeakPtr(), tab_id, key,
+                     frame_tree_node_id, std::move(callback)));
 }
 
 void PaintPreviewTabService::OnCaptured(
     int tab_id,
     const DirectoryKey& key,
+    int frame_tree_node_id,
     FinishedCallback callback,
     PaintPreviewBaseService::CaptureStatus status,
     std::unique_ptr<PaintPreviewProto> proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (web_contents)
+    web_contents->DecrementCapturerCount(true);
+
   if (status != PaintPreviewBaseService::CaptureStatus::kOk || !proto) {
     std::move(callback).Run(Status::kCaptureFailed);
     return;

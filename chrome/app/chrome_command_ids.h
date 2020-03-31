@@ -207,6 +207,7 @@
 #define IDC_PASTE_AND_GO                40256
 #define IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE 40257
 #define IDC_CLOSE_SIGN_IN_PROMO        40258
+#define IDC_SHOW_FULL_URLS             40259
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

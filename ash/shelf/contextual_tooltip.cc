@@ -115,9 +115,12 @@ bool ShouldShowNudge(PrefService* prefs,
   }
 
   const int success_count = GetSuccessCount(prefs, type);
-  if (success_count >= kSuccessLimit ||
-      (type == TooltipType::kHomeToOverview &&
-       success_count >= kSuccessLimitHomeToOverview)) {
+  if ((type == TooltipType::kHomeToOverview &&
+       success_count >= kSuccessLimitHomeToOverview) ||
+      (type == TooltipType::kBackGesture &&
+       success_count >= kSuccessLimitBackGesture) ||
+      (type == TooltipType::kInAppToHome &&
+       success_count >= kSuccessLimitInAppToHome)) {
     set_recheck_delay(base::TimeDelta());
     return false;
   }

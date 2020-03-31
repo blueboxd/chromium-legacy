@@ -18,6 +18,29 @@ Turning off outlining because it caused issues when synchronized proguarding
 Trichrome due to illegal dex references (crbug.com/956839). Will only be used
 for android_apk() targets that set `disable_r8_outlining = true`):
 
-Increase callGraphCycleEliminatorMaxDepthThreshold (b/143685705).
+Added --feature-jar flag for doing dex splitting.
 
-Patch is located at //third_party/r8/local_modifications.diff.
+local_modifications.diff created via:
+git diff >local_modifications.diff
+
+Update Instructions:
+# Download R8:
+git clone https://r8.googlesource.com/r8
+cd r8
+# Apply the patch:
+git apply $CHROMIUM_SRC/third_party/r8/local_modifications.diff
+# Build:
+tools/gradle.py r8
+# Shrink (improves r8/d8 launch time):
+java -jar build/libs/r8.jar --debug --classfile --output r8.jar \
+    --lib $CHROMIUM_SRC/third_party/jdk/current --pg-conf src/main/keep.txt \
+    --no-minification --no-desugaring build/libs/r8.jar
+rm $CHROMIUM_SRC/third_party/r8/libs/r8.jar
+cp r8.jar $CHROMIUM_SRC/third_party/r8/libs/r8.jar
+
+# Upload to CIPD:
+cipd create --pkg-def cipd.yaml # Make note of the instance ID
+
+# Manually update:
+* README.chromium (version number via "java -jar lib/r8.jar --version")
+* //DEPS (instance ID output by cipd create)

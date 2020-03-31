@@ -27,6 +27,7 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
         return std::make_unique<content::NestedMessagePumpAndroid>();
       });
 
-  content::SetContentMainDelegate(new content::ShellMainDelegate());
+  content::SetContentMainDelegate(
+      new content::ShellMainDelegate(/*is_browsertest=*/true));
   return JNI_VERSION_1_4;
 }

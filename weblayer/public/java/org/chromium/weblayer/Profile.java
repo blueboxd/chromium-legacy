@@ -213,7 +213,7 @@ public class Profile {
         return mCookieManager;
     }
 
-    private static final class DownloadCallbackClientImpl extends IDownloadCallbackClient.Stub {
+    static final class DownloadCallbackClientImpl extends IDownloadCallbackClient.Stub {
         private final DownloadCallback mCallback;
 
         DownloadCallbackClientImpl(DownloadCallback callback) {

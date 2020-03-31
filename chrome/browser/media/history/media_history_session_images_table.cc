@@ -48,26 +48,28 @@ sql::InitStatus MediaHistorySessionImagesTable::CreateTableIfNonExistent() {
 
   if (success) {
     success = DB()->Execute(
-        base::StringPrintf("CREATE INDEX IF NOT EXISTS session_id_index ON "
-                           "%s (session_id)",
-                           kTableName)
-            .c_str());
-  }
-
-  if (success) {
-    success = DB()->Execute(
-        base::StringPrintf("CREATE INDEX IF NOT EXISTS image_id_index ON "
-                           "%s (image_id)",
-                           kTableName)
+        base::StringPrintf(
+            "CREATE INDEX IF NOT EXISTS sessionImage_session_id_index ON "
+            "%s (session_id)",
+            kTableName)
             .c_str());
   }
 
   if (success) {
     success = DB()->Execute(
         base::StringPrintf(
-            "CREATE UNIQUE INDEX IF NOT EXISTS session_image_index ON "
-            "%s (session_id, image_id, width, height)",
+            "CREATE INDEX IF NOT EXISTS sessionImage_image_id_index ON "
+            "%s (image_id)",
             kTableName)
+            .c_str());
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        base::StringPrintf("CREATE UNIQUE INDEX IF NOT EXISTS "
+                           "sessionImage_session_image_index ON "
+                           "%s (session_id, image_id, width, height)",
+                           kTableName)
             .c_str());
   }
 

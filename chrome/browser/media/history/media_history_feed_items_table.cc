@@ -158,7 +158,7 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
 
   if (success) {
     success = DB()->Execute(
-        "CREATE INDEX IF NOT EXISTS media_feed_item_feed_id_index ON "
+        "CREATE INDEX IF NOT EXISTS mediaFeedItem_feed_id_index ON "
         "mediaFeedItem (feed_id)");
   }
 

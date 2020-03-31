@@ -47,7 +47,7 @@ const char kRawPtrToGCManagedClassNote[] =
     "[blink-gc] Raw pointer field %0 to a GC managed class declared here:";
 
 const char kRefPtrToGCManagedClassNote[] =
-    "[blink-gc] RefPtr field %0 to a GC managed class declared here:";
+    "[blink-gc] scoped_refptr field %0 to a GC managed class declared here:";
 
 const char kReferencePtrToGCManagedClassNote[] =
     "[blink-gc] Reference pointer field %0 to a GC managed class"

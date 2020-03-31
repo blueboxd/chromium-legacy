@@ -133,12 +133,13 @@ TEST_F(SchemaOrgExtractorTest, Empty) {
 }
 
 TEST_F(SchemaOrgExtractorTest, Basic) {
-  EntityPtr extracted =
-      Extract("{\"@type\": \"VideoObject\", \"name\": \"a video!\"}");
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\", \"@id\": \"1\", \"name\": \"a video!\"}");
   ASSERT_FALSE(extracted.is_null());
 
   EntityPtr expected = Entity::New();
   expected->type = "VideoObject";
+  expected->id = "1";
   expected->properties.push_back(CreateStringProperty("name", "a video!"));
 
   EXPECT_EQ(expected, extracted);

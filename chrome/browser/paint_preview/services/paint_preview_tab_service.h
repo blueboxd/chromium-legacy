@@ -108,6 +108,7 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
 
   void OnCaptured(int tab_id,
                   const DirectoryKey& key,
+                  int frame_tree_node_id,
                   FinishedCallback callback,
                   PaintPreviewBaseService::CaptureStatus status,
                   std::unique_ptr<PaintPreviewProto>);

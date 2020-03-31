@@ -5,12 +5,12 @@
 source_set("url_loading") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "app_url_loading_service.h",
-    "app_url_loading_service.mm",
     "image_search_param_generator.h",
     "image_search_param_generator.mm",
-    "test_app_url_loading_service.h",
-    "test_app_url_loading_service.mm",
+    "scene_url_loading_service.h",
+    "scene_url_loading_service.mm",
+    "test_scene_url_loading_service.h",
+    "test_scene_url_loading_service.mm",
     "url_loading_browser_agent.h",
     "url_loading_browser_agent.mm",
     "url_loading_notifier_browser_agent.h",

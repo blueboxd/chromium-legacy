@@ -522,7 +522,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
           or intel_gpu_generation or 'Intel' in driver_vendor):
         if not check_intel_driver_version(driver_version['value']):
           assert False, INTEL_DRIVER_VERSION_SCHEMA
-        if driver_version.has_key('value2'):
+        if 'value2' in driver_version:
           if not check_intel_driver_version(driver_version['value2']):
             assert False, INTEL_DRIVER_VERSION_SCHEMA
 

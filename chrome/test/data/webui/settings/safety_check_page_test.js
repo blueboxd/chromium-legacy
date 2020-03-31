@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
+// #import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckElementInteractions, SafetyCheckExtensionsStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // #import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.m.js';
 // #import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
+// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
 // #import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.m.js';
 // clang-format on
@@ -15,6 +16,8 @@
 suite('SafetyCheckUiTests', function() {
   /** @type {?settings.LifetimeBrowserProxy} */
   let lifetimeBrowserProxy = null;
+  /** @type {settings.TestMetricsBrowserProxy} */
+  let metricsBrowserProxy;
   /** @type {settings.OpenWindowProxy} */
   let openWindowProxy = null;
   /** @type {settings.SafetyCheckBrowserProxy} */
@@ -25,6 +28,8 @@ suite('SafetyCheckUiTests', function() {
   setup(function() {
     lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
     settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
+    metricsBrowserProxy = new TestMetricsBrowserProxy();
+    settings.MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
     openWindowProxy = new TestOpenWindowProxy();
     settings.OpenWindowProxyImpl.instance_ = openWindowProxy;
     safetyCheckBrowserProxy =
@@ -81,6 +86,13 @@ suite('SafetyCheckUiTests', function() {
   async function expectExtensionsButtonClickActions() {
     // User clicks review extensions button.
     page.$$('#safetyCheckExtensionsButton').click();
+    // Ensure UMA is logged.
+    assertEquals(
+        settings.SafetyCheckElementInteractions.SAFETY_CHECK_EXTENSIONS_REVIEW,
+        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+    assertEquals(
+        'SafetyCheck.Extensions.Review',
+        await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the browser proxy call is done.
     assertEquals(
         'chrome://extensions', await openWindowProxy.whenCalled('openURL'));
@@ -156,7 +168,7 @@ suite('SafetyCheckUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
   });
 
-  test('updatesRelaunchUiTest', function() {
+  test('updatesRelaunchUiTest', async function() {
     fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.RELAUNCH);
     Polymer.dom.flush();
     assertTrue(!!page.$$('#safetyCheckUpdatesButton'));
@@ -164,6 +176,13 @@ suite('SafetyCheckUiTests', function() {
 
     // User clicks the relaunch button.
     page.$$('#safetyCheckUpdatesButton').click();
+    // Ensure UMA is logged.
+    assertEquals(
+        settings.SafetyCheckElementInteractions.SAFETY_CHECK_UPDATES_RELAUNCH,
+        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+    assertEquals(
+        'SafetyCheck.Updates.Relaunch',
+        await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the browser proxy call is done.
     return lifetimeBrowserProxy.whenCalled('relaunch');
   });
@@ -216,7 +235,13 @@ suite('SafetyCheckUiTests', function() {
 
     // User clicks the manage passwords button.
     page.$$('#safetyCheckPasswordsButton').click();
-
+    // Ensure UMA is logged.
+    assertEquals(
+        settings.SafetyCheckElementInteractions.SAFETY_CHECK_PASSWORDS_MANAGE,
+        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+    assertEquals(
+        'SafetyCheck.Passwords.Manage',
+        await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the correct Settings page is shown.
     assertEquals(
         settings.routes.CHECK_PASSWORDS,
@@ -245,7 +270,7 @@ suite('SafetyCheckUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
   });
 
-  test('safeBrowsingCheckingUiTest', function() {
+  test('safeBrowsingCheckingUiTest', async function() {
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.DISABLED);
     Polymer.dom.flush();
@@ -254,7 +279,14 @@ suite('SafetyCheckUiTests', function() {
 
     // User clicks the manage safe browsing button.
     page.$$('#safetyCheckSafeBrowsingButton').click();
-
+    // Ensure UMA is logged.
+    assertEquals(
+        settings.SafetyCheckElementInteractions
+            .SAFETY_CHECK_SAFE_BROWSING_MANAGE,
+        await metricsBrowserProxy.whenCalled('recordSafetyCheckPageHistogram'));
+    assertEquals(
+        'SafetyCheck.SafeBrowsing.Manage',
+        await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the correct Settings page is shown.
     assertEquals(
         settings.routes.SECURITY,
@@ -291,7 +323,6 @@ suite('SafetyCheckUiTests', function() {
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
-
 
   test('extensionsCheckingUiTest', function() {
     fireSafetyCheckExtensionsEvent(

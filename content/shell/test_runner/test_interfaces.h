@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/shell/test_runner/test_runner_export.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -18,13 +19,12 @@ class WebView;
 }
 
 namespace test_runner {
-
 class GamepadController;
 class TestRunner;
 class WebTestDelegate;
 class WebViewTestProxy;
 
-class TestInterfaces {
+class TEST_RUNNER_EXPORT TestInterfaces {
  public:
   TestInterfaces();
   ~TestInterfaces();
@@ -56,10 +56,10 @@ class TestInterfaces {
 
   std::unique_ptr<GamepadController> gamepad_controller_;
   std::unique_ptr<TestRunner> test_runner_;
-  WebTestDelegate* delegate_;
+  WebTestDelegate* delegate_ = nullptr;
 
   std::vector<WebViewTestProxy*> window_list_;
-  blink::WebView* main_view_;
+  blink::WebView* main_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestInterfaces);
 };

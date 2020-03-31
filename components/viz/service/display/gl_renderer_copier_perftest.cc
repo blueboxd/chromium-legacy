@@ -62,6 +62,7 @@ class GLRendererCopierPerfTest : public testing::Test {
  public:
   GLRendererCopierPerfTest() {
     auto context_provider = base::MakeRefCounted<TestInProcessContextProvider>(
+        /*enable_gpu_rasterization=*/false,
         /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     gpu::ContextResult result = context_provider->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);

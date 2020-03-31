@@ -11,7 +11,7 @@
 namespace chromeos {
 class CrosSettings;
 class OwnerSettingsServiceChromeOS;
-}
+}  // namespace chromeos
 
 namespace policy {
 
@@ -38,16 +38,21 @@ struct ArcKioskAppBasicInfo {
   std::string display_name_;
 };
 
-// TODO(apotapchuk): Might be expanded to include title and icon_url.
 struct WebKioskAppBasicInfo {
-  explicit WebKioskAppBasicInfo(const std::string& url);
+  WebKioskAppBasicInfo(const std::string& url,
+                       const std::string& title,
+                       const std::string& icon_url);
   WebKioskAppBasicInfo();
   ~WebKioskAppBasicInfo();
 
   const std::string& url() const { return url_; }
+  const std::string& title() const { return title_; }
+  const std::string& icon_url() const { return icon_url_; }
 
  private:
   std::string url_;
+  std::string title_;
+  std::string icon_url_;
 };
 
 // This must match DeviceLocalAccountInfoProto.AccountType in

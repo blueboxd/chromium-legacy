@@ -36,6 +36,11 @@ struct Property {
 // Tree structure of entities is possible.
 // Ref: https://developers.google.com/schemas/formats/json-ld
 struct Entity {
-  string type;  // Correspond to the "@type" key, defined in JSON-LD.
+  // Corresponds to the "@type" key, defined in JSON-LD.
+  // See: https://w3c.github.io/json-ld-syntax/#specifying-the-type
+  string type;
+  // Corresponds to the "@id" key, defined in JSON-LD.
+  // See: https://w3c.github.io/json-ld-syntax/#node-identifiers
+  string id;
   array<Property> properties;
 };

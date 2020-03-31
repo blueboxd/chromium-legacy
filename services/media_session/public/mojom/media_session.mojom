@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 [Extensible]
 enum MediaPlaybackState {
@@ -46,6 +46,13 @@ enum MediaSessionImageType {
 enum MediaPictureInPictureState {
   kNotInPictureInPicture,
   kInPictureInPicture,
+};
+
+[Extensible]
+enum MediaAudioVideoState {
+  kUnknown,
+  kAudioOnly,
+  kAudioVideo,
 };
 
 // Album art in MediaMetadata
@@ -136,6 +143,9 @@ struct MediaSessionInfo {
   // The picture-in-picture state tells the client whether the media is
   // currently in a picture-in-picture window.
   [MinVersion=7] MediaPictureInPictureState picture_in_picture_state;
+
+  // The audio/video state of the Media Session (if known).
+  [MinVersion=8] MediaAudioVideoState audio_video_state;
 };
 
 // Contains debugging information about a MediaSession. This will be displayed

@@ -168,10 +168,6 @@ if (is_android || is_chromeos) {
     # off will enable proguard.
     is_java_debug = is_debug
 
-    # Report Java assert failure on Android. Turning it on will report Java
-    # assert failure without crash.
-    report_java_assert = false
-
     # Mark APKs as android:debuggable="true".
     debuggable_apks = !is_official_build
 
@@ -234,6 +230,9 @@ if (is_android || is_chromeos) {
 
     # For local development, it's nice to not fail builds on warnings.
     java_warnings_as_errors = !is_java_debug
+
+    # Desugar with D8 rather than Desugar tool.
+    desugar_with_d8 = false
   }
 
   # Path to where selected build variables are written to.

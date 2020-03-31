@@ -174,6 +174,12 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   // By default, output surface recreation is synchronous.
   void RequestNewLayerTreeFrameSink() override;
+  // Override this to modify the TestContextProviders before they are bound
+  // and used. Override CreateLayerTreeFrameSink() instead if the test does not
+  // want to use TestContextProviders.
+  virtual void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_context_provider);
   // Override this and call the base class to change what viz::ContextProviders
   // will be used (such as for pixel tests). Or override it and create your own
   // TestLayerTreeFrameSink to control how it is created.

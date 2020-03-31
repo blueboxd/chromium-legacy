@@ -32,7 +32,7 @@ class B : public GarbageCollected<B> {
 
  private:
   Member<A> m_a;
-  RefPtr<C> m_c;
+  scoped_refptr<C> m_c;
 };
 
 class C : public RefCounted<C> {

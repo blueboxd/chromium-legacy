@@ -253,7 +253,7 @@ class API_AVAILABLE(macos(10.11)) MTLLibraryCache {
   // Technically, _device is of protocol MTLDevice which inherits from protocol
   // NSObject, and protocol NSObject does not have -methodSignatureForSelector:.
   // Assume that the implementing class derives from NSObject.
-  return [base::mac::ObjCCast<NSObject>(_device)
+  return [base::mac::ObjCCastStrict<NSObject>(_device)
       methodSignatureForSelector:selector];
 }
 

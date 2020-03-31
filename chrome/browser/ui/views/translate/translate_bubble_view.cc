@@ -189,8 +189,6 @@ views::Widget* TranslateBubbleView::ShowBubble(
     view->SetHighlightedButton(highlighted_button);
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(view);
-  view->GetBubbleFrameView()->set_preferred_arrow_adjustment(
-      views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
 
   // TAB UI has the same view throughout. Select the right tab based on |step|
   // upon initialization.

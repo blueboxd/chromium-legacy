@@ -86,8 +86,6 @@ class BrowserContextImpl : public content::BrowserContext {
       resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
   std::unique_ptr<PrefService> user_pref_service_;
-  std::unique_ptr<content::PermissionControllerDelegate>
-      permission_controller_delegate_;
   std::unique_ptr<WebLayerVariationsClient> weblayer_variations_client_;
 };
 }  // namespace weblayer

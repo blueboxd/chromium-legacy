@@ -335,10 +335,9 @@ bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
     return false;
   }
 
-  base::Optional<gfx::Image> optional_image =
-      clipboard_content_->GetRecentImageFromClipboard();
-  if (!optional_image)
+  if (!clipboard_content_->HasRecentImageFromClipboard()) {
     return false;
+  }
 
   // Make sure current provider supports image search
   TemplateURLService* url_service = client_->GetTemplateURLService();
@@ -355,6 +354,20 @@ bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
   // when the match is created).
   base::TimeDelta clipboard_contents_age =
       clipboard_content_->GetClipboardContentAge();
+  clipboard_content_->GetRecentImageFromClipboard(
+      base::BindOnce(&ClipboardProvider::OnReceiveImage,
+                     callback_weak_ptr_factory_.GetWeakPtr(), input,
+                     url_service, clipboard_contents_age));
+  return true;
+}
+
+void ClipboardProvider::OnReceiveImage(
+    const AutocompleteInput& input,
+    TemplateURLService* url_service,
+    base::TimeDelta clipboard_contents_age,
+    base::Optional<gfx::Image> optional_image) {
+  if (!optional_image)
+    return;
   done_ = false;
   PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -363,7 +376,6 @@ bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
       base::BindOnce(&ClipboardProvider::ConstructImageMatchCallback,
                      callback_weak_ptr_factory_.GetWeakPtr(), input,
                      url_service, clipboard_contents_age));
-  return true;
 }
 
 scoped_refptr<base::RefCountedMemory> ClipboardProvider::EncodeClipboardImage(

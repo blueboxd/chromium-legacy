@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
@@ -38,7 +39,10 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
@@ -172,6 +176,31 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
 
   if (shadow_host)
     SetInnerNode(shadow_host);
+}
+
+CompositorElementId HitTestResult::GetScrollableContainer() const {
+  DCHECK(InnerNode());
+  LayoutBox* cur_box = InnerNode()->GetLayoutObject()->EnclosingBox();
+
+  // Scrolling propagates along the containing block chain and ends at the
+  // RootScroller node. The RootScroller node will have a custom applyScroll
+  // callback that performs scrolling as well as associated "root" actions like
+  // browser control movement and overscroll glow.
+  while (cur_box) {
+    if (cur_box->IsGlobalRootScroller() ||
+        cur_box->NeedsScrollNode(CompositingReason::kNone)) {
+      return CompositorElementIdFromUniqueObjectId(
+          cur_box->UniqueId(), CompositorElementIdNamespace::kScroll);
+    }
+
+    cur_box = cur_box->ContainingBlock();
+  }
+
+  return InnerNode()
+      ->GetDocument()
+      .GetPage()
+      ->GetVisualViewport()
+      .GetScrollElementId();
 }
 
 HTMLAreaElement* HitTestResult::ImageAreaForImage() const {

@@ -338,10 +338,6 @@ Still reading?
   <issue id="TypographyDashes" severity="Error">
     <ignore regexp="chrome/app/policy/android/values-v21/restriction_values.xml"/>
   </issue>
-  <!-- If no space is after ... in a translation grit does not automatically change it to … -->
-  <issue id="TypographyEllipsis" severity="Error">
-    <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-az/android_chrome_strings.xml"/>
-  </issue>
   <!-- Typos check disabled due to lint bug: http://crbug.com/671170 -->
   <issue id="Typos" severity="ignore"/>
   <!-- Our generated enums are allowed to have the same values. -->

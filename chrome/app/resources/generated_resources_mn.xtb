@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Ил Сүлжээ:</translation>
 <translation id="1094607894174825014">Бичих, унших үйлдлийг хүчингүй офсетээс дараахд хүссэн байна: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Бүртгүүлэхээсээ өмнө сүлжээг идэвхжүүлэхийн тулд Зочны хувиар нэвтэрч орно уу <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708"><ph name="DEVICE_NAME" />-с хуулсан зураг</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />-ийг үргэлж орчуулах</translation>
 <translation id="1104038495841596279">Бид таны SIM картыг илрүүлж чадсангүй</translation>
 <translation id="1108600514891325577">&amp; Зогс</translation>
@@ -557,6 +558,7 @@
 <translation id="1744108098763830590">дэвсгэр хуудас</translation>
 <translation id="1745520510852184940">Үргэлж үүнийг хий</translation>
 <translation id="1750172676754093297">Таны аюулгүй байдлын түлхүүрт хурууны хээ хадгалах боломжгүй</translation>
+<translation id="1751262127955453661">Таныг энэ сайтын бүх табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FOLDERNAME" /> доторх файлуудыг засах боломжтой байна</translation>
 <translation id="175196451752279553">Хаагдсан цонхыг дахин нээ</translation>
 <translation id="1753067873202720523">Таны Chromebook асаалттай байгаа үед цэнэглэгдэхгүй байж магадгүй.</translation>
 <translation id="1753905327828125965">Түгээмэл зочилсон</translation>
@@ -623,6 +625,7 @@
 <translation id="1822140782238030981">Chrome-н хэрэглэгч үү? Нэвтэрнэ үү</translation>
 <translation id="18245044880483936">Нөөцлөлтийн өгөгдөл нь таны хүүхдийн Драйв сангийн багтаамжид нөлөөлөхгүй.</translation>
 <translation id="1826516787628120939">Шалгаж байна</translation>
+<translation id="1827738518074806965">Уран зургийн галерей</translation>
 <translation id="1828378091493947763">Энэ залгаасыг энэ төхөөрөмжид дэмжээгүй</translation>
 <translation id="1828901632669367785">Системийн цонхыг ашиглан хэвлэх ...</translation>
 <translation id="1829129547161959350">Пенгвин</translation>
@@ -1024,6 +1027,7 @@
 <translation id="2359808026110333948">Цааш</translation>
 <translation id="236117173274098341">Оновчлох</translation>
 <translation id="236141728043665931">Үргэлж микрофоны хандалтыг хаа</translation>
+<translation id="2364498172489649528">Давсан</translation>
 <translation id="2365507699358342471">Энэ сайт түр санах ойд хуулсан текст, зургийг харах боломжтой.</translation>
 <translation id="2366260648632264559">Системийн текстийг энэ хэлээр харуулах</translation>
 <translation id="2367972762794486313">Аппликейшнүүдийг харуулах</translation>
@@ -1337,6 +1341,7 @@
 <translation id="2762441749940182211">Камерыг блоклосон</translation>
 <translation id="2765217105034171413">Жижиг</translation>
 <translation id="2766161002040448006">Эцэг эхээс асуух</translation>
+<translation id="2767127727915954024">Таныг энэ сайтын бүх табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FILENAME" />-г засах боломжтой байна</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" />-н нэрээр нэвтэрсэн байна.</translation>
 <translation id="2770465223704140727">Жагсаалтаас устгах</translation>
 <translation id="2770690685823456775">Нууц үгээ өөр фолдерт экспортлох</translation>
@@ -1661,6 +1666,18 @@
 <translation id="3202173864863109533">Энэ табны дууг хаасан байна.</translation>
 <translation id="3208321278970793882">Апп</translation>
 <translation id="3208584281581115441">Одоо шалгах</translation>
+<translation id="3208640652501208439">Хичээл эсвэл гэрийн даалгаврын нөөц нь боломжгүй эсвэл автоматаар ачаалагдаагүй байж магадгүй
+    Таны хүүхэд дараахад хандах эрхгүй байж болзошгүй:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Сургуулийн суулгасан аппликэйшнүүд, өргөтгөлүүд
+      <ph name="LIST_ITEM" />Сургуулийн Chromebook-н хавчуургууд
+      <ph name="LIST_ITEM" />Боловсролын сайтуудын нууц үгийг автоматаар бөглөх
+    <ph name="END_LIST" />
+    Энэ төхөөрөмж дээр сургуулийн туршлагыг бүрэн авахын тулд таны хүүхэд дараахыг хийх хэрэгтэй:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Family Link-р удирддаг бүртгэлээсээ гарах
+      <ph name="OLIST_ITEM" />GSuite for Education бүртгэлээрээ нэвтрэх дэлгэц дээр нэвтрэх. Гэсэн хэдий ч апп болон вэб сайтын хандалтын тохиргоо зэрэг сургуулийн удирдамж нь таны Family Link-н хяналтын онцлогуудыг давж хэрэгжинэ гэдгийг анхаарна уу (жишээ нь, сургуулийн администраторын зүгээс гэрийн даалгаварт шаардлагатай бол YouTube-г зөвшөөрч болзошгүй бөгөөд дэлгэцийн цагийг мөрдүүлэхгүй гэх мэт)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Баталгаажуулаагүй</translation>
 <translation id="32101887417650595">Хэвлэгчид холбогдох боломжгүй байна</translation>
 <translation id="321084946921799184">Шар ба цагаан</translation>
@@ -1739,6 +1756,7 @@
 <translation id="3312424061798279731">Идэвхжсэн хэл</translation>
 <translation id="3313622045786997898">Certificate Signature Value</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" />-ийг нуух</translation>
+<translation id="3317284582048881482">Эцэг эхэд зориулсан сургуулийн бүртгэлийн мэдээлэл</translation>
 <translation id="3317459757438853210">Хоёр талт</translation>
 <translation id="3317678681329786349">Камер болон микрофоныг блоклосон</translation>
 <translation id="3319048459796106952">Шинэ incognito цонх</translation>
@@ -1925,6 +1943,7 @@
 <translation id="3574210789297084292">-д нэвтрэх</translation>
 <translation id="3574917942258583917">Нууцлалын горимоос гарах уу?</translation>
 <translation id="3575121482199441727">Энэ сайтад зориулж зөвшөөрөх</translation>
+<translation id="3575919114596668130">Таны Family Link-н эцэг эхийн тохиргоог хэрэгжүүлсэн хэвээр байна. Хэрэв та өмнө нь апп эсвэл сайтыг блоклосон бол үүнийг дахин хийх шаардлагагүй.</translation>
 <translation id="3576324189521867626">Амжилттай суулгасан</translation>
 <translation id="3578594933904494462">Энэ цонхны кентентыг хуваалцаж байна.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; принтерийг танай бүлгэмтэй <ph name="GROUP_NAME" /> хуваалцахыг хүсэж байна. Хэрвээ та зөвшөөрвөл, танай бүлгэмийн бүх гишүүд тус принтерийг ашиглах боломжтой болно.</translation>
@@ -2764,6 +2783,7 @@
 <translation id="4689235506267737042">Өөрт тохирох демо тохируулгыг сонгоно уу</translation>
 <translation id="4689421377817139245">Энэ хавчуургыг iPhone-д синк хийх</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi жижиг програмаас гаргасан дөрвөн файлд: csr.lst, fh_regs.lst, radio.lst, monitor.lst.sysmon. Эхний гурван файлд бүртгэлийн хаягдал мэдээллийг агуулдаг бөгөөд эдгээр нь ямар ч хувийн эсвэл төхөөрөмжийг таних мэдээлэл агуулаагүйг Intel-с баталдаг хоёртын файл байна. Сүүлийн файл нь Intel жижиг програмын гүйцэтгэлийн ул мөр юм. Түүнчлэн, тус файл нь хувийн эсвэл төхөөрөмжийг таних мэдээллийг агуулдаггүй хэдий ч хэт том хэмжээтэй учир энд харуулах боломжгүй байдаг. Эдгээр файл нь таны төхөөрөмжийн саяхны Wi-Fi-н асуудлаас шалтгаалан үүссэн бөгөөд эдгээр асуудлыг шийдвэрлэхийн тулд Intel-тэй хуваалцах болно.&gt;</translation>
+<translation id="4691791363716065510">Таныг энэ сайтын бүх табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FILENAME" />-г үзэх боломжтой байна</translation>
 <translation id="4692623383562244444">Хайлтын систем</translation>
 <translation id="4693155481716051732">Сүши</translation>
 <translation id="4694024090038830733">Админ хэвлэгчийн тохиргоог зохицуулж байна.</translation>
@@ -3119,6 +3139,7 @@
 <translation id="5204967432542742771">Нууц үгээ оруулна уу</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />"-г устгах уу?</translation>
 <translation id="520621735928254154">Сертификатыг импортлоход алдаа гарлаа</translation>
+<translation id="5209307736170827035">Анги доторх таны хүүхдийн өгөгдлийг хамгаалах болно. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Төхөөрөмж олдсонгүй</translation>
 <translation id="5210990770352357081">Plugin VM-г устгаж чадсангүй</translation>
 <translation id="5213481667492808996">Таны '<ph name="NAME" />'-н дата үйлчилгээ ашиглахад бэлэн байна</translation>
@@ -3230,6 +3251,7 @@
 <translation id="5341980496415249280">Багцалж байгаа тул хүлээнэ үү...</translation>
 <translation id="5342091991439452114">ПИН хамгийн багадаа <ph name="MINIMUM" /> оронтой байх ёстой</translation>
 <translation id="5344036115151554031">Linux-г сэргээж байна</translation>
+<translation id="535123479159372765">Өөр төхөөрөмжөөс хуулсан текст</translation>
 <translation id="5352033265844765294">Цагаар тамгалах</translation>
 <translation id="5353252989841766347">Нууц үгийг Chrome-с экспортлох</translation>
 <translation id="5355099869024327351">Туслахад танд мэдэгдэл харуулахыг зөвшөөрөх</translation>
@@ -3352,6 +3374,7 @@
 <translation id="5511379779384092781">Маш жижиг</translation>
 <translation id="5511823366942919280">Та энэ төхөөрөмжийг "Shark" хэлбэрээр тохируулахыг хүсч байгаа гэдэгтээ итгэлтэй байна уу?</translation>
 <translation id="5512653252560939721">Хэрэглэгчийн гэрчилгээ нь апп хангамж дээр үндэслэн хадгалсан байх шаардлагатай.</translation>
+<translation id="5515923816438946203">Дэлгэц дээрээ харж байгаа зүйлээ сонгоно уу</translation>
 <translation id="5517304475148761050">Энэ аппад Play Store-д хандах хандалт шаардлагатай</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Таны дансанд хэвлэгч машиныг нэмж байна. Та түр хүлээнэ үү...</translation>
@@ -3802,6 +3825,7 @@
 <translation id="6097480669505687979">Хэрэв хангалттай багтаамж гаргахгүй бол хэрэглэгчид, өгөгдлийг автоматаар устгах болно.</translation>
 <translation id="6097600385983390082">Дуут хайлтыг хаалаа</translation>
 <translation id="6098793583803863900">Үл таних файлд аюултай агуулгын скан хийж байна.</translation>
+<translation id="609942571968311933"><ph name="DEVICE_NAME" />-с хуулсан текст</translation>
 <translation id="6100736666660498114">Эхлэх цэс</translation>
 <translation id="6101226222197207147">Шинэ (<ph name="EXTENSION_NAME" />) апп нэмэгдсэн</translation>
 <translation id="6102043788063419338">Дэвшилтэт хамгаалалт энэ файлыг блоклосон байна.</translation>
@@ -4172,6 +4196,7 @@
 <translation id="6612358246767739896">Хамгаалагдсан агуулга</translation>
 <translation id="6615455863669487791">Надад үзүүлнэ үү</translation>
 <translation id="6618097958368085618">Ямар ч үед хадгалах</translation>
+<translation id="6618744767048954150">Ажиллуулж байна</translation>
 <translation id="6619058681307408113">Шугам хэвлэгчийн Дэмон (LPD)</translation>
 <translation id="661907246513853610">Сайт таны байршлыг шинжлэх боломжтой</translation>
 <translation id="6619801788773578757">Киоск апп нэмэх</translation>
@@ -4557,6 +4582,7 @@
 <translation id="7131040479572660648"><ph name="WEBSITE_1" /> , <ph name="WEBSITE_2" /> болон <ph name="WEBSITE_3" /> дээрх өөрийнхөө мэдээллийг уншина уу</translation>
 <translation id="713122686776214250">Хуудас нэмэх...</translation>
 <translation id="7133578150266914903">Таны админ энэ төхөөрөмжийг буцаан шилжүүлж байна (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="TOTAL" /> нууц үгээс <ph name="DONE" />-г нь шалгасан...</translation>
 <translation id="7134098520442464001">Текстийг хэмжээг бууруул</translation>
 <translation id="7135729336746831607">Bluetooth-г асаах уу?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> таныг өөрийн <ph name="DEVICE_TYPE" />-г нэн даруй шинэчлэхийг шаардаж байна.</translation>
@@ -4905,6 +4931,7 @@
 <translation id="761530003705945209">Google Драйвд хуулбарлана уу. Өгөгдлөө амархан сэргээх эсвэл хүссэн үедээ төхөөрөмж хооронд сэлгэнэ үү. Таны нөөцлөлтөд аппын өгөгдөл багтана. Таны нөөцлөлтийг Google-д байршуулдаг бөгөөд таны Google Бүртгэлийн нууц үгийг ашиглан шифрлэдэг.</translation>
 <translation id="7616214729753637086">Төхөөрөмжийг бүртгүүлж байна...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" руу холбогдож байна</translation>
+<translation id="761763866592998929">Орчиндоо зохицох горим</translation>
 <translation id="762068974690945752">Энд сургуулийн бүртгэлийг нэмж эсвэл хүүхдийн бүртгэлүүдийг удирдана уу. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Систем төхөөрөмжийн тохируулгыг хадгалж чадсангүй.</translation>
 <translation id="7622114377921274169">Цэнэглэж байна.</translation>
@@ -5016,6 +5043,7 @@
 <translation id="7766838926148951335">Зөвшөөрлийг зөвшөөрөх</translation>
 <translation id="7768770796815395237">Өөрчлөх</translation>
 <translation id="7769672763586021400">Загварын ID</translation>
+<translation id="7770612696274572992">Өөр төхөөрөмжөөс хуулсан зураг</translation>
 <translation id="7770651108375708429">Wi-Fi-г салгах</translation>
 <translation id="7771452384635174008">Төлөвлөлт</translation>
 <translation id="7772032839648071052">Нэвтрэх үгүүдийг баталгаажуул</translation>
@@ -5023,6 +5051,7 @@
 <translation id="7772773261844472235">Chromebook-н төлөвөө шалгах</translation>
 <translation id="7773726648746946405">Ажиллах талбарын хадгалалтын сан</translation>
 <translation id="7774365994322694683">Шувуу</translation>
+<translation id="7776156998370251340">Таныг энэ сайтын бүх табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FOLDERNAME" /> доторх файлуудыг үзэх боломжтой байна</translation>
 <translation id="7776701556330691704">Дуу хоолой олдсонгүй</translation>
 <translation id="7780252971640011240">Холбогдоход асуудал гарлаа. Тусламж авахын тулд оператор компанитайгаа холбоо барина уу.</translation>
 <translation id="7781335840981796660">Бүх хэрэглэгчийн бүртгэлүүд болон суурин өгөгдлүүд устах болно.</translation>
@@ -6036,6 +6065,7 @@
 <translation id="9055636786322918818">RC4 шифрлэлтийг мөрдүүлнэ үү. RC4 цифр нь аюултай учир энэхүү сонголтыг ашигласнаар таны эрсдэлийг нэмэгдүүлнэ.</translation>
 <translation id="9056810968620647706">Ямар ч таарах зүйл олдсонгүй.</translation>
 <translation id="9057354806206861646">Хуваарийг шинэчлэх</translation>
+<translation id="9058976525724291037">Таны хүүхэд энэ төхөөрөмжид өөр Google Бүртгэл нэмэх хүсэлтэй байна. Зөвхөн G Suite for Education бүртгэлийг Family Link-р удирддаг төхөөрөмжүүдэд нэмэх боломжтой.</translation>
 <translation id="9062065967472365419">Намайг гайхшруул</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933"><ph name="ERROR_LINE_START" />-с <ph name="ERROR_LINE_END" /> мөрийн алдаа</translation>

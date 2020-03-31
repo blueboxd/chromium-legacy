@@ -672,7 +672,9 @@ CommandHandler.onCommand = function(command) {
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
       return false;
     case 'showFormsList':
-      (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_form')).send();
+      (new PanelCommand(
+           PanelCommandType.OPEN_MENUS, 'panel_menu_form_controls'))
+          .send();
       return false;
     case 'showLandmarksList':
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_landmark')).send();

@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
+#import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -68,7 +68,8 @@ UrlLoadingBrowserAgent::UrlLoadingBrowserAgent(Browser* browser)
 
 UrlLoadingBrowserAgent::~UrlLoadingBrowserAgent() {}
 
-void UrlLoadingBrowserAgent::SetAppService(AppUrlLoadingService* app_service) {
+void UrlLoadingBrowserAgent::SetSceneService(
+    SceneUrlLoadingService* app_service) {
   app_service_ = app_service;
 }
 
@@ -264,11 +265,11 @@ void UrlLoadingBrowserAgent::LoadUrlInNewTab(const UrlLoadParams& params) {
       app_service_->GetCurrentBrowser()->GetBrowserState();
 
   // Two UrlLoadingServices exist, normal and incognito.  Handle two special
-  // cases that need to be sent up to the AppUrlLoadingService:
+  // cases that need to be sent up to the SceneUrlLoadingService:
   // 1) The URL needs to be loaded by the UrlLoadingService for the other mode.
   // 2) The URL will be loaded in a foreground tab by this UrlLoadingService,
   // but the UI associated with this UrlLoadingService is not currently visible,
-  // so the AppUrlLoadingService needs to switch modes before loading the URL.
+  // so the SceneUrlLoadingService needs to switch modes before loading the URL.
   if (params.in_incognito != browser_state->IsOffTheRecord() ||
       (!params.in_background() &&
        params.in_incognito != active_browser_state->IsOffTheRecord())) {

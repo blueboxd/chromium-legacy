@@ -259,9 +259,6 @@ void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(
                                                             child_process_id);
 
   static const char* kForwardSwitches[] = {
-    // Indicates we're running web tests. Would be present in order to get
-    // here.
-    switches::kRunWebTests,
     // Switches from web_test_switches.h that are used in the renderer.
     switches::kEnableAccelerated2DCanvas,
     switches::kEnableFontAntialiasing,
@@ -388,8 +385,7 @@ void WebTestContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
 }
 
 bool WebTestContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kRunWebTests);
+  return true;
 }
 
 BluetoothDelegate* WebTestContentBrowserClient::GetBluetoothDelegate() {

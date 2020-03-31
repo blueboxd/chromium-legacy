@@ -126,9 +126,9 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     for (size_t i = 0; i < num_planes; ++i) {
       void* mapped_data;
       void* addr =
-          gbm_bo_map(buffer_object_, 0, 0, gbm_bo_get_width(buffer_object_),
-                     gbm_bo_get_height(buffer_object_),
-                     GBM_BO_TRANSFER_READ_WRITE, &stride, &mapped_data, i);
+          gbm_bo_map2(buffer_object_, 0, 0, gbm_bo_get_width(buffer_object_),
+                      gbm_bo_get_height(buffer_object_),
+                      GBM_BO_TRANSFER_READ_WRITE, &stride, &mapped_data, i);
       if (!addr) {
         LOG(ERROR) << "Failed to map GpuMemoryBufferImplGbm plane " << i;
         Unmap();

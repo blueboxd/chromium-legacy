@@ -1882,6 +1882,7 @@
 <translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3479685872808224578">Δεν ήταν δυνατή η διαγραφή του διακομιστή εκτύπωσης. Βεβαιωθείτε ότι η διεύθυνση είναι σωστή και δοκιμάστε ξανά.</translation>
 <translation id="3481268647794498892">Άνοιγμα σε <ph name="ALTERNATIVE_BROWSER_NAME" /> σε <ph name="COUNTDOWN_SECONDS" /> δευτερόλεπτα</translation>
+<translation id="3482719661246593752">Το <ph name="ORIGIN" /> μπορεί να προβάλλει τα παρακάτω αρχεία.</translation>
 <translation id="3484273680291419129">Κατάργηση επιβλαβούς λογισμικού…</translation>
 <translation id="3484869148456018791">Λήψη νέου πιστοποιητικού</translation>
 <translation id="3487007233252413104">ανώνυμη λειτουργία</translation>
@@ -1944,6 +1945,7 @@
 <translation id="3564848315152754834">Κλειδί ασφαλείας USB</translation>
 <translation id="3566721612727112615">Δεν προστέθηκαν ιστότοποι</translation>
 <translation id="3569382839528428029">Θέλετε να μοιράζεστε την οθόνη σας με την εφαρμογή <ph name="APP_NAME" />;</translation>
+<translation id="3569682580018832495">Το <ph name="ORIGIN" /> μπορεί να προβάλλει τα παρακάτω αρχεία και φακέλους.</translation>
 <translation id="3571734092741541777">Ρύθμιση</translation>
 <translation id="3574210789297084292">σύνδεση</translation>
 <translation id="3574917942258583917">Θέλετε να εξέλθετε από την κατάσταση ανώνυμης περιήγησης;</translation>
@@ -1953,6 +1955,7 @@
 <translation id="3578594933904494462">Το περιεχόμενο αυτής της ετικέτας είναι κοινόχρηστο.</translation>
 <translation id="357886715122934472">Ο χρήστης &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; θέλει να μοιραστεί έναν εκτυπωτή &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; με μια ομάδα που σας ανήκει: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Εάν δεχτείτε, όλα τα μέλη της ομάδας θα έχουν τη δυνατότητα να χρησιμοποιούν τον εκτυπωτή.</translation>
 <translation id="357889014807611375">Wi-Fi με ογκοχρέωση</translation>
+<translation id="3582057310199111521">Εισήχθη σε παραπλανητικό ιστότοπο και βρέθηκε σε παραβίαση δεδομένων</translation>
 <translation id="3584169441612580296">Ανάγνωση και αλλαγή φωτογραφιών, μουσικής και άλλων μέσων από τον υπολογιστή σας</translation>
 <translation id="3586806079541226322">Δεν είναι δυνατό το άνοιγμα αυτού του αρχείου</translation>
 <translation id="3586931643579894722">Απόκρυψη λεπτομερειών</translation>
@@ -3090,6 +3093,7 @@
 <translation id="5117930984404104619">Παρακολούθηση της συμπεριφοράς άλλων επεκτάσεων, συμπεριλαμβανομένων των διευθύνσεων URL που έχουν δεχτεί επίσκεψη</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ο σκληρός σας δίσκος είναι πλήρης. Αποθηκεύστε σε άλλη τοποθεσία ή αδειάστε τον σκληρό δίσκο.</translation>
+<translation id="5122384452788334261">Ο αποθηκευτικός χώρος της συσκευής σας περιορισμένος. Συνιστώνται τουλάχιστον <ph name="RECOMMENDED_SPACE" /> ελεύθερου αποθηκευτικού χώρου για χρήση του Plugin VM. Για να ελευθερώσετε χώρο, διαγράψτε αρχεία από τον αποθηκευτικό χώρο της συσκευής.</translation>
 <translation id="5123433949759960244">Μπάλα μπάσκετ</translation>
 <translation id="5125751979347152379">Μη έγκυρη διεύθυνση URL.</translation>
 <translation id="5126611267288187364">Προβολή αλλαγών</translation>
@@ -5192,6 +5196,7 @@
 <translation id="7915471803647590281">Πριν από την αποστολή σχολίων, πείτε μας τι συμβαίνει.</translation>
 <translation id="7918257978052780342">Εγγραφή</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> δ.</translation>
+<translation id="7920363873148656176">Το <ph name="ORIGIN" /> μπορεί να προβάλλει το <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Σφάλμα κατά την προώθηση θύρας</translation>
 <translation id="792514962475806987">Επίπεδο εστίασης σε παράθυρο:</translation>
 <translation id="7925247922861151263">Ο έλεγχος ΑΑΑ απέτυχε</translation>
@@ -5355,6 +5360,7 @@
 <translation id="8118488170956489476">Η <ph name="BEGIN_LINK" />διαχείριση του προγράμματος περιήγησής σας<ph name="END_LINK" /> πραγματοποιείται από τον οργανισμό σας</translation>
 <translation id="8118860139461251237">Διαχείριση των λήψεών σας</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> κ.α.</translation>
+<translation id="8120715633374652536">Ο αποθηκευτικός χώρος της συσκευής σας περιορισμένος. Απαιτούνται τουλάχιστον <ph name="MINIMUM_SPACE" /> ελεύθερου αποθηκευτικού χώρου για χρήση του Plugin VM ενώ συνιστώνται περισσότερα από <ph name="RECOMMENDED_SPACE" />. Για να ελευθερώσετε χώρο, διαγράψτε αρχεία από τον αποθηκευτικό χώρο της συσκευής.</translation>
 <translation id="8123590694679414600">Τα δεδομένα κρυπτογραφήθηκαν με τη δική σας φράση πρόσβασης συγχρονισμού στις
           <ph name="TIME" />. Αυτά τα δεδομένα δεν περιλαμβάνουν τρόπους πληρωμής και διευθύνσεις από το Google Pay.</translation>
 <translation id="81238879832906896">Κίτρινο και λευκό λουλούδι</translation>

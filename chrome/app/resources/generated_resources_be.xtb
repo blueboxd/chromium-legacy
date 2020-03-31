@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Бачныя сеткі:</translation>
 <translation id="1094607894174825014">Аперацыі чытання або запісу былі запытаны з недапушчальным зрухам на прыладзе "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Перш чым увайсці ва ўліковы запіс, увайдзіце ў рэжыме госця, каб актываваць сетку <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">Відарыс скапіраваны з прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1103523840287552314">Заўсёды перакладаць з мовы: <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Не ўдалося выявіць SIM-карту</translation>
 <translation id="1108600514891325577">&amp;Спыніць</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">фонавая старонка</translation>
 <translation id="1745520510852184940">Заўсёды перакладаць</translation>
 <translation id="1750172676754093297">Не ўдалося захаваць адбіткі пальцаў на вашым ключы бяспекі</translation>
+<translation id="1751262127955453661">Сайт <ph name="ORIGIN" /> зможа змяняць файлы ў папцы "<ph name="FOLDERNAME" />", пакуль вы не закрыеце ўсе яго ўкладкі</translation>
 <translation id="175196451752279553">Паў&amp;торна адкрыць закрытыя ўкладкі</translation>
 <translation id="1753067873202720523">Chromebook можа не зараджацца ва ўключаным стане.</translation>
 <translation id="1753905327828125965">Часцей за ўсё наведваліся</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">Ужо выкарыстоўваеце Chrome? Увайсці</translation>
 <translation id="18245044880483936">Даныя рэзервовай копіі не будуць улічвацца ў квоце сховішча вашага дзіцяці на Дыску.</translation>
 <translation id="1826516787628120939">Ідзе праверка</translation>
+<translation id="1827738518074806965">Мастацкая галерэя</translation>
 <translation id="1828378091493947763">Прылада не падтрымлівае гэту ўбудову</translation>
 <translation id="1828901632669367785">Друк з выкарыстаннем сістэмнага дыялогавага акна...</translation>
 <translation id="1829129547161959350">Пінгвін</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="236117173274098341">Аптымізаваць</translation>
 <translation id="236141728043665931">Заўсёды блакіраваць доступ да мікрафона</translation>
+<translation id="2364498172489649528">Пройдзена</translation>
 <translation id="2365507699358342471">Гэтаму сайту дазволены доступ да тэксту і відарысаў, скапіраваных у буфер абмену.</translation>
 <translation id="2366260648632264559">Паказваць тэкст сістэмы на гэтай мове</translation>
 <translation id="2367972762794486313">Паказаць праграмы</translation>
@@ -1342,6 +1346,7 @@
 <translation id="2762441749940182211">Камера заблакіравана</translation>
 <translation id="2765217105034171413">Малы</translation>
 <translation id="2766161002040448006">Папрасіць дазвол у бацькоў</translation>
+<translation id="2767127727915954024">Сайт <ph name="ORIGIN" /> зможа змяняць файл <ph name="FILENAME" />, пакуль вы не закрыеце ўсе ўкладкі гэтага сайта</translation>
 <translation id="276969039800130567">Вы ўвайшлі як <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Выдаліць са спіса</translation>
 <translation id="2770690685823456775">Экспартуйце свае паролі ў іншую папку</translation>
@@ -1666,6 +1671,18 @@
 <translation id="3202173864863109533">Гук на гэтай укладцы выключаны.</translation>
 <translation id="3208321278970793882">Праграма</translation>
 <translation id="3208584281581115441">Праверыць</translation>
+<translation id="3208640652501208439">Магчыма, рэсурсы для навучання недаступныя або не загрузіліся аўтаматычна
+    Ваша дзіця можа не мець доступу да наступнага:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />праграм і пашырэнняў, усталяваных навучальнай установай;
+      <ph name="LIST_ITEM" />закладак з навучальнай прылады Chromebook;
+      <ph name="LIST_ITEM" />функцыі аўтазапаўнення пароляў на навучальных сайтах.
+    <ph name="END_LIST" />
+    Каб мець доступ да ўсіх навучальных функцый на гэтай прыладзе, вашаму дзіцяці трэба:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Выйсці з уліковага запісу, які знаходзіцца пад кіраваннем Family Link.
+      <ph name="OLIST_ITEM" />Увайсці ва ўліковы запіс G Suite for Education на экране ўваходу. Пры гэтым прыміце пад увагу, што палітыкі навучальнай установы, у тым ліку налады доступу да праграм і вэб-сайтаў, будуць мець перавагу над функцыямі бацькоўскага кантролю Family Link (напрыклад, адміністратары навучальнай установы могуць дазволіць YouTube, калі гэта неабходна для выканання дамашніх заданняў, час карыстання можа не абмяжоўвацца і г. д.).
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Непацверджаны</translation>
 <translation id="32101887417650595">Не ўдаецца падключыцца да прынтара</translation>
 <translation id="321084946921799184">Жоўты і белы</translation>
@@ -1744,6 +1761,7 @@
 <translation id="3312424061798279731">Уключаныя мовы</translation>
 <translation id="3313622045786997898">Значэнне подпісу сертыфіката</translation>
 <translation id="3315158641124845231">Схаваць: <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Звесткі пра школьны ўліковы запіс для бацькоў</translation>
 <translation id="3317459757438853210">Двухбаковы</translation>
 <translation id="3317678681329786349">Камера і мікрафон заблакіраваны</translation>
 <translation id="3319048459796106952">Новае &amp;акно ў рэжыме інкогніта</translation>
@@ -1930,6 +1948,7 @@
 <translation id="3574210789297084292">увайсці</translation>
 <translation id="3574917942258583917">Усё роўна выйсці з рэжыму інкогніта?</translation>
 <translation id="3575121482199441727">Дазволіць для гэтага сайта</translation>
+<translation id="3575919114596668130">Налады бацькоўскага кантролю, зададзеныя з дапамогай сэрвісу Family Link, па-ранейшаму будуць працаваць. І калі вы раней заблакіравалі праграму або сайт, вам не трэба будзе рабіць гэта зноў.</translation>
 <translation id="3576324189521867626">Усталявана</translation>
 <translation id="3578594933904494462">Змесціва гэтай укладкі абагульваецца.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хоча абагуліць прынтар &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; з групай, якой вы валодаеце: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Калі вы згадзіцеся, усе ўдзельнікі групы змогуць друкаваць на прынтары.</translation>
@@ -2770,6 +2789,7 @@
 <translation id="4689235506267737042">Выберыце параметры дэманстрацыйнага рэжыму</translation>
 <translation id="4689421377817139245">Сінхранізуйце гэту закладку са сваім iPhone</translation>
 <translation id="4690091457710545971">&lt;Чатыры файлы, створаныя ўбудаваным праграмным забеспячэннем Intel Wi-Fi: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Першыя тры з'яўляюцца бінарнымі файламі, якія змяшчаюць дампы рэгістраў і якім карпарацыяй Intel забаронена змяшчаць асабістую інфармацыю і інфармацыю, праз якую можна ідэнтыфікаваць прыладу.  Чацвёрты файл уяўляе сабой трасіроўку выканання ад убудаванага праграмнага забеспячэння Intel. Ён ачышчаны ад асабістай інфармацыі і інфармацыі, праз якую можна ідэнтыфікаваць прыладу, але занадта вялікі, каб паказаць яго тут.  Гэтыя файлы былі створаны з-за нядаўніх праблем з Wi-Fi на вашай прыладзе, і ў мэтах пошуку і выпраўлення непаладак яны будуць абагулены з карпарацыяй Intel.&gt;</translation>
+<translation id="4691791363716065510">Сайт <ph name="ORIGIN" /> зможа праглядаць файл <ph name="FILENAME" />, пакуль вы не закрыеце ўсе ўкладкі гэтага сайта</translation>
 <translation id="4692623383562244444">Пошукавыя сістэмы</translation>
 <translation id="4693155481716051732">Сушы</translation>
 <translation id="4694024090038830733">Канфігурацыя прынтара ажыццяўляецца адміністратарам.</translation>
@@ -3125,6 +3145,7 @@
 <translation id="5204967432542742771">Увядзіце пароль</translation>
 <translation id="5206215183583316675">Выдаліць "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Памылка імпарту сертыфіката</translation>
+<translation id="5209307736170827035">Даныя вашага дзіцяці ў Classroom будуць абароненыя. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Прылады не знойдзены</translation>
 <translation id="5210990770352357081">Не ўдалося выдаліць Plugin VM</translation>
 <translation id="5213481667492808996">Сэрвіс перадачы даных "<ph name="NAME" />" гатовы да выкарыстання</translation>
@@ -3236,6 +3257,7 @@
 <translation id="5341980496415249280">Пачакайце: ідзе запакоўванне...</translation>
 <translation id="5342091991439452114">Мінімальная колькасць лічбаў PIN-кода: <ph name="MINIMUM" /></translation>
 <translation id="5344036115151554031">Ідзе аднаўленне Linux</translation>
+<translation id="535123479159372765">Тэкст скапіраваны з іншай прылады</translation>
 <translation id="5352033265844765294">Меткі часу</translation>
 <translation id="5353252989841766347">Эспарт пароляў з Chrome</translation>
 <translation id="5355099869024327351">Дазволіць Памочніку паказваць вам апавяшчэнні</translation>
@@ -3358,6 +3380,7 @@
 <translation id="5511379779384092781">Вельмі малы</translation>
 <translation id="5511823366942919280">Сапраўды наладзіць гэту прыладу як "Shark"?</translation>
 <translation id="5512653252560939721">Сертыфікат карыстальніка павінен быць апаратна забяспечаны.</translation>
+<translation id="5515923816438946203">Выберыце, што паказваць на экране</translation>
 <translation id="5517304475148761050">Гэтай праграме патрабуецца доступ да Крамы Play</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Ідзе дадаванне прынтара ва ўліковы запіс. Гэта можа заняць некаторы час...</translation>
@@ -3808,6 +3831,7 @@
 <translation id="6097480669505687979">Калі не вызваліць месца, могуць быць аўтаматычна выдалены карыстальнікі і даныя.</translation>
 <translation id="6097600385983390082">Галасавы пошук закрыты</translation>
 <translation id="6098793583803863900">Невядомы файл правяраецца на наяўнасць небяспечнага змесціва.</translation>
+<translation id="609942571968311933">Тэкст скапіраваны з прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="6100736666660498114">Меню "Пуск"</translation>
 <translation id="6101226222197207147">Дададзена новая праграма (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Гэты файл заблакіраваны Палепшанай абаронай.</translation>
@@ -4178,6 +4202,7 @@
 <translation id="6612358246767739896">Абароненае змесціва</translation>
 <translation id="6615455863669487791">Паказаць</translation>
 <translation id="6618097958368085618">Захаваць усё роўна</translation>
+<translation id="6618744767048954150">Выконваецца</translation>
 <translation id="6619058681307408113">Праграма кіравання радковымі прынтарамі (LPD)</translation>
 <translation id="661907246513853610">Сайт можа адсочваць ваша месцазнаходжанне</translation>
 <translation id="6619801788773578757">Дадаць праграму-кіёск</translation>
@@ -4563,6 +4588,7 @@
 <translation id="7131040479572660648">Прагляд вашых даных на вэб-сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Дадаць ста&amp;ронку...</translation>
 <translation id="7133578150266914903">Адміністратар робіць адкат гэтай прылады (<ph name="PROGRESS_PERCENT" />).</translation>
+<translation id="7133728868075973271">Праверана пароляў: <ph name="DONE" /> з <ph name="TOTAL" />...</translation>
 <translation id="7134098520442464001">Паменшыць тэкст</translation>
 <translation id="7135729336746831607">Уключыць Bluetooth?</translation>
 <translation id="7136639886842764730">Выкарыстанне дамена "<ph name="DOMAIN" />" патрабуе неадкладнага абнаўлення прылады "<ph name="DEVICE_TYPE" />".</translation>
@@ -4911,6 +4937,7 @@
 <translation id="761530003705945209">Рэзервовае капіраванне на Google Дыск. Лёгка аднаўляйце даныя і пераносьце іх на іншыя прылады. У рэзервовую копію ўваходзяць даныя праграм. Рэзервовыя копіі запампоўваюцца ў Google і шыфруюцца пад паролем ад вашага Уліковага запісу Google.</translation>
 <translation id="7616214729753637086">Прылада рэгіструецца...</translation>
 <translation id="7617366389578322136">Ідзе падключэнне да прылады "<ph name="DEVICE_NAME" />"</translation>
+<translation id="761763866592998929">Неактыўны рэжым</translation>
 <translation id="762068974690945752">Тут можна дадаць навучальны ўліковы запіс або кіраваць уліковымі запісамі дзяцей. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Сістэме не ўдалося захаваць канфігурацыю прылады.</translation>
 <translation id="7622114377921274169">Ідзе зарадка.</translation>
@@ -5022,6 +5049,7 @@
 <translation id="7766838926148951335">Прыняць дазволы</translation>
 <translation id="7768770796815395237">Змяніць</translation>
 <translation id="7769672763586021400">Ідэнтыфікатар мадэлі</translation>
+<translation id="7770612696274572992">Відарыс скапіраваны з іншай прылады</translation>
 <translation id="7770651108375708429">Адключыцца ад сеткі Wi-Fi</translation>
 <translation id="7771452384635174008">Раскладка</translation>
 <translation id="7772032839648071052">Пацвердзіце фразу-пароль</translation>
@@ -5029,6 +5057,7 @@
 <translation id="7772773261844472235">Праверце стан вашага Chromebook</translation>
 <translation id="7773726648746946405">Захаванне сеанса</translation>
 <translation id="7774365994322694683">Птушка</translation>
+<translation id="7776156998370251340">Сайт <ph name="ORIGIN" /> зможа праглядаць файлы ў папцы "<ph name="FOLDERNAME" />", пакуль вы не закрыеце ўсе яго ўкладкі</translation>
 <translation id="7776701556330691704">Галасы не знойдзены</translation>
 <translation id="7780252971640011240">Праблемы з падключэннем. Звярніцеся да аператара па дапамогу.</translation>
 <translation id="7781335840981796660">Усе ўліковыя запісы карыстальнікаў і лакальныя даныя будуць выдалены.</translation>
@@ -6047,6 +6076,7 @@
 <translation id="9055636786322918818">Уключыць шыфраванне RC4. Выкарыстанне гэтага параметра павялічвае рызыкі з-за небяспечнасці шыфраў RC4.</translation>
 <translation id="9056810968620647706">Супадзенняў не знойдзена.</translation>
 <translation id="9057354806206861646">Абнавіць расклад</translation>
+<translation id="9058976525724291037">Ваша дзіця хоча дадаць іншы Уліковы запіс Google на гэту прыладу. На прыладу, якой кіруюць з дапамогай сэрвісу Family Link, можна дадаваць толькі ўліковыя запісы G Suite for Education.</translation>
 <translation id="9062065967472365419">Здзівіце мяне</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Памылка з радка <ph name="ERROR_LINE_START" /> па <ph name="ERROR_LINE_END" /></translation>

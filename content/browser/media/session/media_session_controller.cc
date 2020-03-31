@@ -31,10 +31,12 @@ bool MediaSessionController::Initialize(
     bool is_remote,
     media::MediaContentType media_content_type,
     media_session::MediaPosition* position,
-    bool is_pip_available) {
+    bool is_pip_available,
+    bool has_video) {
   // Store these as we will need them later.
   is_remote_ = is_remote;
   has_audio_ = has_audio;
+  has_video_ = has_video;
   media_content_type_ = media_content_type;
 
   if (position)
@@ -194,6 +196,11 @@ void MediaSessionController::AddOrRemovePlayer() {
     has_session_ = false;
     media_session_->RemovePlayer(this, player_id_);
   }
+}
+
+bool MediaSessionController::HasVideo(int player_id) const {
+  DCHECK_EQ(player_id_, player_id);
+  return has_video_ && has_audio_;
 }
 
 }  // namespace content

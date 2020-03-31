@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/stream_model/feature_tree.h"
+
+#include <algorithm>
+#include <sstream>
+
 #include "base/logging.h"
 
 namespace feed {
@@ -181,6 +185,38 @@ std::vector<ContentRevision> FeatureTree::GetVisibleContent() {
     }
   }
   return result;
+}
+
+std::string FeatureTree::DumpStateForTesting() {
+  std::stringstream ss;
+  ss << "FeatureTree{\n";
+  ResolveRoot();
+  std::vector<std::pair<int, ContentTag>> stack;
+
+  stack.push_back({1, root_tag_});
+  while (!stack.empty()) {
+    const ContentTag tag = stack.back().second;
+    const int depth = stack.back().first;
+    stack.pop_back();
+    const StreamNode* node = FindNode(tag);
+    if (!node || node->tombstoned)
+      continue;
+    ss << std::string(depth, ' ') << "|-";
+    ss << (node->is_stream ? "ROOT" : "node");
+    if (!node->last_child.is_null()) {
+      for (ContentTag child_id = node->last_child; !child_id.is_null();
+           child_id = nodes_[child_id.value()].previous_sibling) {
+        stack.push_back({depth + 1, child_id});
+      }
+    }
+    if (!node->content_revision.is_null()) {
+      const feedstore::Content* content = FindContent(node->content_revision);
+      ss << " content.frame=" << content->frame();
+    }
+    ss << '\n';
+  }
+  ss << "}FeatureTree\n";
+  return ss.str();
 }
 
 }  // namespace stream_model

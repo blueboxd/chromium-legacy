@@ -36,7 +36,16 @@ class LayerTreeHostTilesPixelTest
     : public LayerTreePixelTest,
       public ::testing::WithParamInterface<TilesTestConfig> {
  protected:
-  LayerTreeHostTilesPixelTest() : LayerTreePixelTest(renderer_type()) {}
+  LayerTreeHostTilesPixelTest() : LayerTreePixelTest(renderer_type()) {
+    switch (raster_mode()) {
+      case GPU:
+      case GPU_LOW_BIT_DEPTH:
+        set_gpu_rasterization();
+        break;
+      default:
+        break;
+    }
+  }
 
   RendererType renderer_type() const { return GetParam().renderer_type; }
 
@@ -47,14 +56,8 @@ class LayerTreeHostTilesPixelTest
     switch (raster_mode()) {
       case ONE_COPY:
         settings->use_zero_copy = false;
-        settings->gpu_rasterization_disabled = true;
-        settings->gpu_rasterization_forced = false;
-        break;
-      case GPU:
-        settings->gpu_rasterization_forced = true;
         break;
       case GPU_LOW_BIT_DEPTH:
-        settings->gpu_rasterization_forced = true;
         settings->use_rgba_4444 = true;
         settings->unpremultiply_and_dither_low_bit_depth_tiles = true;
         break;

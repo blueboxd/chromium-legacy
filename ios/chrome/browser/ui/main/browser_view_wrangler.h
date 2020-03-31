@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 @protocol ApplicationCommands;
-class AppUrlLoadingService;
 @protocol BrowsingDataCommands;
 class ChromeBrowserState;
 
@@ -40,7 +39,6 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
               (id<ApplicationCommands>)applicationCommandEndpoint
          browsingDataCommandEndpoint:
              (id<BrowsingDataCommands>)browsingDataCommandEndpoint
-                appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

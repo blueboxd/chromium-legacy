@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1645368109819982629">پروتکل پشتیبانی‌نشده</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">‏Chrome این صفحه را ساده کرده است تا خواندن آن آسان‌تر باشد Chrome صفحه اصلی را ازطریق اتصالی ایمن بازیابی کرد.</translation>
 <translation id="1656489000284462475">تحویل گرفتن</translation>
 <translation id="1662550410081243962">ذخیره و تکمیل روش‌های پرداخت</translation>
 <translation id="1663943134801823270">‏کارت‌ها و نشانی‌ها از Chrome‌ هستند. می‌توانید آن‌ها را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> مدیریت کنید.</translation>
@@ -565,6 +566,7 @@
 <translation id="342781501876943858">‏Chromium توصیه می‌کند اگر از گذرواژه‌تان در سایت‌های دیگری استفاده کردید آن را بازنشانی کنید.</translation>
 <translation id="3428151540071562330">‏یک یا چند سرور نشانی وب الگوی سرور DnsOverHttpsTemplates نامعتبر است و استفاده نخواهد شد.</translation>
 <translation id="3431636764301398940">این کارت را در این دستگاه ذخیره کنید</translation>
+<translation id="3432601291244612633">بستن صفحه</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">مالک این دستگاه بازی دایناسور را خاموش کرده است</translation>
 <translation id="3447884698081792621">نمایش  گواهی (صادرشده توسط <ph name="ISSUER" />)</translation>
@@ -871,6 +873,7 @@
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> می‌خواهد از موقعیت مکانی دستگاهتان استفاده کند</translation>
 <translation id="4736825316280949806">‏Chromium را راه‌اندازی مجدد کنید</translation>
+<translation id="4737121147659370456">‏سرپرستتان «رابط‌های Chrome Enterprise» را در مرورگرتان فعال کرده است. این رابط‌ها به برخی از داده‌هایتان دسترسی دارند.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4738601419177586157">پیشنهاد جستجوی <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">مدیریت گذرواژه‌ها…</translation>
@@ -1210,6 +1213,8 @@
 <translation id="610911394827799129">‏ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد</translation>
 <translation id="6116338172782435947">به نوشتار و تصاویر کپی‌شده در بریده‌دان دسترسی پیدا کند</translation>
 <translation id="6120179357481664955">‏شناسه «رابط پرداخت‌های یکپارچه» (UPI) شما به‌خاطر سپرده شود؟</translation>
+<translation id="6124432979022149706">‏رابط‌های Chrome Enterprise</translation>
+<translation id="6135641591018127088">‏استفاده از حساب Google برای ایجاد گذرواژه‌ای قوی</translation>
 <translation id="6146055958333702838">همه کابل‌ها را بررسی کنید و همه ره‌یاب‌ها، مودم‌ها، یا دیگر دستگاه‌های
    شبکه‌ای را که ممکن است درحال استفاده از آن‌ها باشید مجدداً راه‌اندازی کنید.</translation>
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
@@ -1255,6 +1260,7 @@
 <translation id="6328639280570009161">غیرفعال کردن پیش‌بینی شبکه را امتحان کنید</translation>
 <translation id="6328784461820205019">‏«اتصالتان خصوصی نیست» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» یا «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» یا «خطای گواهینامه SSL»</translation>
 <translation id="6328786501058569169">این سایت گول‌زننده است</translation>
+<translation id="6333334544069706521">‏استفاده از گذرواژه‌های ذخیره‌شده در حساب Google</translation>
 <translation id="6337133576188860026">کمتر از <ph name="SIZE" /> از فضا را آزاد می‌کند. ممکن است برخی از سایت‌ها در بازدیدهای بعدی کندتر بارگیری شوند.</translation>
 <translation id="6337534724793800597">فیلتر کردن خط‌مشی‌ها براساس نام</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{هیچ‌کدام}=1{۱ گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}=2{۲ گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}one{# گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}other{# گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}}</translation>
@@ -1300,6 +1306,7 @@
 <translation id="6521745193039995384">غیرفعال</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
 <translation id="6534179046333460208">پیشنهادهای «وب فیزیکی»</translation>
+<translation id="6543609420755597723">‏هم‌رسانی داده‌های مربوط به آن دسته از رویدادهای امنیتی با سرپرست که با «رابط‌های Chrome Enterprise» پرچم‌گذاری شده است. ممکن است شامل این‌ها شود: نشانی‌های وب صفحاتی که بازدید می‌کنید، نام فایل‌ها یا فراداده‌ها، و نام کاربری‌ای که برای ورود به سیستم دستگاه و Chrome استفاده می‌کنید.</translation>
 <translation id="6545864417968258051">اسکن کردن بلوتوث</translation>
 <translation id="6547208576736763147">دو سوراخ در چپ</translation>
 <translation id="6554795675067793129">حساب شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
@@ -1365,6 +1372,7 @@
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
 <translation id="6884662655240309489">اندازه ۱</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">‏Chrome این صفحه را ساده کرده است تا خواندن آن آسان‌تر باشد Chrome صفحه اصلی را ازطریق اتصالی غیرایمن بازیابی کرد.</translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="6895330447102777224">کارتتان تأیید شد</translation>
 <translation id="6897140037006041989">نماینده کاربر</translation>
@@ -1593,6 +1601,7 @@
 <translation id="777702478322588152">اداره ریاست</translation>
 <translation id="7791196057686275387">بسته</translation>
 <translation id="7791543448312431591">افزودن</translation>
+<translation id="7798389633136518089">نادیده گرفته شد چون خط‌مشی توسط منبع ابری تنظیم نشده است.</translation>
 <translation id="7800304661137206267">اتصال با استفاده از <ph name="CIPHER" /> و با <ph name="MAC" /> برای راستی‌آزمایی پیام و <ph name="KX" /> به‌عنوان مکانیسم تبدیل کلید رمزگذاری می‌شود.</translation>
 <translation id="7802523362929240268">سایت مجاز است</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
@@ -1728,6 +1737,7 @@
 <translation id="8371889962595521444">گواهی‌نامه ریشه سفارشی</translation>
 <translation id="8380941800586852976">خطرناک</translation>
 <translation id="8381674639488873545">ممکن است این هزینه‌ها یک‌باره یا تکرارشونده باشند و واضح نباشند. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837">‏<ph name="ENROLLMENT_DOMAIN" /> «رابط‌های Chrome Enterprise» را در مرورگرتان فعال کرده است. این رابط‌ها به برخی از داده‌هایتان دسترسی دارند.</translation>
 <translation id="8412145213513410671">خرابی ها (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">شما باید همان عبارت عبور را دوبار وارد کنید.</translation>
 <translation id="8416694386774425977">پیکربندی شبکه نامعتبر است و نمی‌توان آن را وارد کرد.

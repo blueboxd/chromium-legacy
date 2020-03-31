@@ -22,6 +22,10 @@
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace extensions {
 
 namespace {
@@ -86,8 +90,14 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   // dedicated policy to disable the camera, at which point the special check in
   // the 'if' statement should be removed.
   // TODO(http://crbug.com/1002935)
+  // TODO(crbug.com/1065865): The special check for kOsSettingsAppId should be
+  // removed once OSSettings is moved to WebApps.
   if (Manifest::IsComponentLocation(extension->location()) &&
-      extension->id() != extension_misc::kCameraAppId) {
+      extension->id() != extension_misc::kCameraAppId
+#if defined(OS_CHROMEOS)
+      && extension->id() != chromeos::default_web_apps::kOsSettingsAppId
+#endif  // defined(OS_CHROMEOS)
+  ) {
     return true;
   }
 
@@ -102,7 +112,13 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   // by extension management policies. See crbug.com/786061.
   // TODO(calamity): This special case should be removed by removing bookmark
   // apps from external sources. See crbug.com/788245.
-  if (extension->from_bookmark())
+  // TODO(crbug.com/1065865): The special check for kOsSettingsAppId should be
+  // removed once OSSettings is moved to WebApps.
+  if (extension->from_bookmark()
+#if defined(OS_CHROMEOS)
+      && extension->id() != chromeos::default_web_apps::kOsSettingsAppId
+#endif  // defined(OS_CHROMEOS)
+  )
     return true;
 
   // Check whether the extension type is allowed.
@@ -137,6 +153,12 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   if (installation_mode == ExtensionManagement::INSTALLATION_BLOCKED ||
       installation_mode == ExtensionManagement::INSTALLATION_REMOVED) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    if (IsSupervisedUserAllowlistExtensionInstallActive() &&
+        extension->is_theme()) {
+      // Themes should always be allowed, to maintain current functionality
+      // that supervised users already possess.
+      return true;
+    }
     RecordAllowlistExtensionUmaMetrics(
         UmaExtensionStateAllowlist::kAllowlistMiss, extension);
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -248,12 +270,17 @@ bool StandardManagementPolicyProvider::ReturnLoadError(
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+bool StandardManagementPolicyProvider::
+    IsSupervisedUserAllowlistExtensionInstallActive() const {
+  return base::FeatureList::IsEnabled(
+             supervised_users::kSupervisedUserAllowlistExtensionInstall) &&
+         settings_->is_child() && settings_->BlacklistedByDefault();
+}
+
 void StandardManagementPolicyProvider::RecordAllowlistExtensionUmaMetrics(
     UmaExtensionStateAllowlist state,
     const Extension* extension) const {
-  if (base::FeatureList::IsEnabled(
-          supervised_users::kSupervisedUserAllowlistExtensionInstall) &&
-      settings_->IsChild() && settings_->BlacklistedByDefault()) {
+  if (IsSupervisedUserAllowlistExtensionInstallActive()) {
     // If extensions are blacklisted by default, then all extension installs
     // must go through the ExtensionInstallWhitelist. Record the whitelist hit
     // rate here.

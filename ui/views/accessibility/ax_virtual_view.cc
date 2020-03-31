@@ -239,7 +239,7 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
   return node_data;
 }
 
-int AXVirtualView::GetChildCount() {
+int AXVirtualView::GetChildCount() const {
   int count = 0;
   for (const std::unique_ptr<AXVirtualView>& child : children_) {
     if (child->IsIgnored()) {

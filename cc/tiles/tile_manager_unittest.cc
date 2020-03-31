@@ -1834,13 +1834,7 @@ class ActivationTasksDoNotBlockReadyToDrawTest : public TileManagerTest {
   }
 
   std::unique_ptr<LayerTreeFrameSink> CreateLayerTreeFrameSink() override {
-    return FakeLayerTreeFrameSink::Create3d();
-  }
-
-  LayerTreeSettings CreateSettings() override {
-    auto settings = TileManagerTest::CreateSettings();
-    settings.gpu_rasterization_forced = true;
-    return settings;
+    return FakeLayerTreeFrameSink::Create3dForGpuRasterization();
   }
 };
 

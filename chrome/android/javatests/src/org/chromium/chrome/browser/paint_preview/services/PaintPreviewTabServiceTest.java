@@ -27,6 +27,8 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.concurrent.TimeUnit;
+
 /** Tests for the Paint Preview Tab Manager. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -67,6 +69,11 @@ public class PaintPreviewTabServiceTest {
             mPaintPreviewTabService.onRestoreCompleted(mTabModelSelector);
             mTab.loadUrl(new LoadUrlParams(url));
         });
+        // Give the tab time to complete layout before hiding.
+        TimeUnit.SECONDS.sleep(1);
+
+        // This will hide mTab so that a capture occurs.
+        mActivityTestRule.loadUrlInNewTab(url);
 
         int tabId = mTab.getId();
         CriteriaHelper.pollUiThread(() -> {

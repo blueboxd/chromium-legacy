@@ -54,7 +54,7 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetParent() {
   return nullptr;
 }
 
-int AXPlatformNodeDelegateBase::GetChildCount() {
+int AXPlatformNodeDelegateBase::GetChildCount() const {
   return 0;
 }
 

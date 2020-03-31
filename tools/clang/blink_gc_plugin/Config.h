@@ -59,9 +59,7 @@ class Config {
            name == "CrossThreadWeakPersistent" ;
   }
 
-  static bool IsRefPtr(llvm::StringRef name) {
-    return name == "RefPtr";
-  }
+  static bool IsRefPtr(llvm::StringRef name) { return name == "scoped_refptr"; }
 
   static bool IsUniquePtr(llvm::StringRef name) {
     return name == "unique_ptr";

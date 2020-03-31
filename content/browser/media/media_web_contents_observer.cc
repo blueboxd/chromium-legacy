@@ -233,7 +233,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
     AddMediaPlayerEntry(id, &active_video_players_);
 
   if (!session_controllers_manager_.RequestPlay(
-          id, has_audio, is_remote, media_content_type)) {
+          id, has_audio, is_remote, media_content_type, has_video)) {
     return;
   }
 

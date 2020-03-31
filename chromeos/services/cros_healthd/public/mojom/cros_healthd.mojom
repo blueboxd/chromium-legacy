@@ -22,7 +22,8 @@ interface CrosHealthdServiceFactory {
   GetProbeService(CrosHealthdProbeService& service);
 };
 
-// Diagnostics interface exposed by the cros_healthd daemon.
+// Diagnostics interface exposed by the cros_healthd daemon. Consumed in Chrome
+// by remote commands, which are made available via the cloud EMM API.
 interface CrosHealthdDiagnosticsService {
   // Returns an array of all diagnostic routines that the platform supports.
   GetAvailableRoutines()
@@ -244,6 +245,24 @@ interface CrosHealthdDiagnosticsService {
   // * |response| - contains a unique identifier and status for the created
   //                routine.
   RunPrimeSearchRoutine(uint32 length_seconds, uint64 max_num)
+      => (RunRoutineResponse response);
+
+  // Requests that the BatteryDischarge routine is created and started on the
+  // platform. This routine checks the battery's discharge rate over a period of
+  // time. This routine is only available if GetAvailableRoutines returned
+  // kBatteryDischarge.
+  //
+  // The request:
+  // * |length_seconds| - length of time to run the routine for.
+  // * |maximum_discharge_percent_allowed| - the routine will fail if the
+  //                                         battery discharges by more than
+  //                                         this percentage.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunBatteryDischargeRoutine(uint32 length_seconds,
+                             uint32 maximum_discharge_percent_allowed)
       => (RunRoutineResponse response);
 };
 

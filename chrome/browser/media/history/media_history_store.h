@@ -57,6 +57,8 @@ class MediaHistoryStore {
                                    const base::TimeDelta& position)>;
 
   static const char kInitResultHistogramName[];
+  static const char kPlaybackWriteResultHistogramName[];
+  static const char kSessionWriteResultHistogramName[];
 
   // When we initialize the database we store the result in
   // |kInitResultHistogramName|. Do not change the numbering since this
@@ -67,6 +69,30 @@ class MediaHistoryStore {
     kFailedDatabaseTooNew = 2,
     kFailedInitializeTables = 3,
     kMaxValue = kFailedInitializeTables,
+  };
+
+  // If we write a playback into the database then we record the result to
+  // |kPlaybackWriteResultHistogramName|. Do not change the numbering since this
+  // is recorded.
+  enum class PlaybackWriteResult {
+    kSuccess = 0,
+    kFailedToEstablishTransaction = 1,
+    kFailedToWriteOrigin = 2,
+    kFailedToWritePlayback = 3,
+    kFailedToIncrementAggreatedWatchtime = 4,
+    kMaxValue = kFailedToIncrementAggreatedWatchtime,
+  };
+
+  // If we write a session into the database then we record the result to
+  // |kSessionWriteResultHistogramName|. Do not change the numbering since this
+  // is recorded.
+  enum class SessionWriteResult {
+    kSuccess = 0,
+    kFailedToEstablishTransaction = 1,
+    kFailedToWriteOrigin = 2,
+    kFailedToWriteSession = 3,
+    kFailedToWriteImage = 4,
+    kMaxValue = kFailedToWriteImage,
   };
 
  protected:

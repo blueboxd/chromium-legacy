@@ -552,6 +552,12 @@
       initial: false,
     },
 
+    {
+      name: "parserScriptingFlagPolicy",
+      initial: "ParserScriptingFlagPolicy::kOnlyIfScriptIsEnabled",
+      type: "ParserScriptingFlagPolicy"
+    },
+
     // Forces Android Overlay Scrollbar for mobile emulator.
     {
       name: "forceAndroidOverlayScrollbar",

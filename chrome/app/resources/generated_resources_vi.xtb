@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Mạng hiển thị:</translation>
 <translation id="1094607894174825014">Đã yêu cầu tác vụ đọc hoặc ghi với hiệu số không hợp lệ trên: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Trước khi đăng nhập, vui lòng đăng nhập với tư cách khách để kích hoạt mạng <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">Hình ảnh được sao chép từ <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Chúng tôi không phát hiện được thẻ SIM của bạn</translation>
 <translation id="1108600514891325577">&amp;Dừng</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">trang nền</translation>
 <translation id="1745520510852184940">Luôn làm điều này</translation>
 <translation id="1750172676754093297">Khóa bảo mật của bạn không thể lưu trữ vân tay số</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> sẽ có thể chỉnh sửa các tệp trong <ph name="FOLDERNAME" /> cho đến khi bạn đóng tất cả các thẻ cho trang web này</translation>
 <translation id="175196451752279553">&amp;Mở lại tab đã đóng</translation>
 <translation id="1753067873202720523">Chromebook có thể không sạc khi đang bật.</translation>
 <translation id="1753905327828125965">Truy cập nhiều nhất</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">Bạn đã là người dùng Chrome? Hãy đăng nhập</translation>
 <translation id="18245044880483936">Dữ liệu sao lưu sẽ không tính vào định mức bộ nhớ Drive của con bạn.</translation>
 <translation id="1826516787628120939">Đang kiểm tra</translation>
+<translation id="1827738518074806965">Phòng trưng bày nghệ thuật</translation>
 <translation id="1828378091493947763">Thiết bị này không hỗ trợ plugin này</translation>
 <translation id="1828901632669367785">In bằng hộp thoại hệ thống...</translation>
 <translation id="1829129547161959350">Chim cánh cụt</translation>
@@ -1028,6 +1031,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="236117173274098341">Tối ưu hóa</translation>
 <translation id="236141728043665931">Luôn chặn quyền truy cập micrô</translation>
+<translation id="2364498172489649528">Đã đạt</translation>
 <translation id="2365507699358342471">Trang web này có thể xem văn bản và hình ảnh đã sao chép sang khay nhớ tạm.</translation>
 <translation id="2366260648632264559">Hiển thị văn bản trên hệ thống bằng ngôn ngữ này</translation>
 <translation id="2367972762794486313">Hiển thị ứng dụng</translation>
@@ -1342,6 +1346,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2762441749940182211">Máy ảnh bị chặn</translation>
 <translation id="2765217105034171413">Nhỏ</translation>
 <translation id="2766161002040448006">Xin phép cha mẹ</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> sẽ có thể chỉnh sửa <ph name="FILENAME" /> cho đến khi bạn đóng tất cả các thẻ cho trang web này</translation>
 <translation id="276969039800130567">Đăng nhập bằng địa chỉ <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Xóa khỏi danh sách</translation>
 <translation id="2770690685823456775">Xuất mật khẩu của bạn sang thư mục khác</translation>
@@ -1666,6 +1671,18 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3202173864863109533">Âm thanh của tab này hiện bị tắt.</translation>
 <translation id="3208321278970793882">Ứng dụng</translation>
 <translation id="3208584281581115441">Kiểm tra ngay</translation>
+<translation id="3208640652501208439">Tài nguyên cho bài tập về nhà có thể không có sẵn hoặc không được tải tự động
+    Con bạn có thể không có quyền truy cập vào:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Các ứng dụng và tiện ích mà nhà trường đã cài đặt
+      <ph name="LIST_ITEM" />Dấu trang từ Chromebook của trường
+      <ph name="LIST_ITEM" />Tính năng tự động điền mật khẩu cho các trang web về giáo dục
+    <ph name="END_LIST" />
+    Để có trải nghiệm học tập đầy đủ trên thiết bị này, con bạn cần phải:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Đăng xuất khỏi tài khoản do Family Link quản lý
+      <ph name="OLIST_ITEM" />Đăng nhập bằng tài khoản G Suite cho Giáo dục của con trên màn hình đăng nhập. Tuy nhiên, lưu ý rằng điều này đồng nghĩa với việc các chính sách của trường học, bao gồm cả các tùy chọn cài đặt truy cập ứng dụng và trang web, sẽ có hiệu lực cao hơn các tính năng giám sát của Family Link (chẳng hạn như quản trị viên của trường có thể cho phép YouTube nếu học sinh cần truy cập vào ứng dụng này để làm bài tập về nhà, không thực thi thời gian sử dụng thiết bị, v.v.)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Không được xác nhận</translation>
 <translation id="32101887417650595">Không thể kết nối với máy in</translation>
 <translation id="321084946921799184">Vàng và trắng</translation>
@@ -1744,6 +1761,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3312424061798279731">Ngôn ngữ đã bật</translation>
 <translation id="3313622045786997898">Giá trị Chữ ký Chứng chỉ</translation>
 <translation id="3315158641124845231">Ẩn <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Thông tin về tài khoản trường học dành cho cha mẹ</translation>
 <translation id="3317459757438853210">Hai mặt</translation>
 <translation id="3317678681329786349">Máy ảnh và micrô bị chặn</translation>
 <translation id="3319048459796106952">Cửa sổ ẩn &amp;danh mới</translation>
@@ -1930,6 +1948,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3574210789297084292">đăng nhập</translation>
 <translation id="3574917942258583917">Bạn vẫn muốn thoát khỏi chế độ ẩn danh?</translation>
 <translation id="3575121482199441727">Cho phép đối với trang web này</translation>
+<translation id="3575919114596668130">Các tùy chọn cài đặt Family Link dành cho cha mẹ sẽ vẫn được áp dụng. Nếu trước đây bạn đã chặn một ứng dụng hoặc trang web, thì bạn sẽ không phải chặn lại.</translation>
 <translation id="3576324189521867626">Đã cài đặt thành công</translation>
 <translation id="3578594933904494462">Nội dung của tab này đang được chia sẻ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; muốn chia sẻ máy in &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; với một nhóm bạn sở hữu: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Nếu bạn chấp nhận, tất cả thành viên của nhóm sẽ có thể in tới máy in.</translation>
@@ -2770,6 +2789,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4689235506267737042">Chọn tùy chọn minh họa</translation>
 <translation id="4689421377817139245">Đồng bộ hóa dấu trang này với iPhone của bạn</translation>
 <translation id="4690091457710545971">&lt;Bốn tệp do chương trình cơ sở Intel Wi-Fi tạo ra: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Ba tệp đầu tiên là tệp nhị phân có chứa nội dung kết xuất đăng ký và được Intel xác nhận là không chứa thông tin nhận dạng cá nhân hoặc thiết bị.  Tệp cuối cùng là dấu vết thực thi từ chương trình cơ sở Intel; tệp này đã được xóa mọi thông tin nhận dạng cá nhân hoặc thiết bị, nhưng kích thước tệp quá lớn nên không hiển thị được ở đây.  Các tệp này được tạo do các sự cố Wi-Fi xảy ra gần đây với thiết bị của bạn và sẽ được chia sẻ với Intel để giúp khắc phục các sự cố này.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> sẽ có thể xem <ph name="FILENAME" /> cho đến khi bạn đóng tất cả các thẻ cho trang web này</translation>
 <translation id="4692623383562244444">Công cụ tìm kiếm</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Chỉ quản trị viên mới có thể thiết lập cấu hình máy in.</translation>
@@ -3125,6 +3145,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5204967432542742771">Nhập mật khẩu</translation>
 <translation id="5206215183583316675">Xóa "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Lỗi nhập chứng chỉ</translation>
+<translation id="5209307736170827035">Dữ liệu của con bạn trong Lớp học sẽ được bảo vệ. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Không tìm thấy thiết bị nào</translation>
 <translation id="5210990770352357081">Không thể gỡ cài đặt Plugin VM</translation>
 <translation id="5213481667492808996">Dịch vụ dữ liệu '<ph name="NAME" />' đã sẵn sàng cho bạn sử dụng</translation>
@@ -3236,6 +3257,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5341980496415249280">Vui lòng đợi, đang đóng gói...</translation>
 <translation id="5342091991439452114">Mã PIN phải có ít nhất <ph name="MINIMUM" /> chữ số</translation>
 <translation id="5344036115151554031">Đang khôi phục Linux</translation>
+<translation id="535123479159372765">Văn bản được sao chép từ thiết bị khác</translation>
 <translation id="5352033265844765294">Dấu Thời gian</translation>
 <translation id="5353252989841766347">Xuất mật khẩu từ Chrome</translation>
 <translation id="5355099869024327351">Cho phép Trợ lý hiển thị thông báo cho bạn</translation>
@@ -3358,6 +3380,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5511379779384092781">Quá nhỏ</translation>
 <translation id="5511823366942919280">Bạn có chắc chắn muốn thiết lập thiết bị này là "Shark" không?</translation>
 <translation id="5512653252560939721">Chứng chỉ người dùng phải được phần cứng hỗ trợ.</translation>
+<translation id="5515923816438946203">Chọn những nội dung bạn thấy trên màn hình</translation>
 <translation id="5517304475148761050">Ứng dụng này cần có quyền truy cập vào Cửa hàng Play</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> — <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Đang thêm máy in vào tài khoản của bạn - quá trình này có thể mất một chút thời gian...</translation>
@@ -3808,6 +3831,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6097480669505687979">Nếu bạn không giải phóng dung lượng, người dùng và dữ liệu có thể tự động bị xóa.</translation>
 <translation id="6097600385983390082">Tùy chọn tìm kiếm bằng giọng nói đã đóng</translation>
 <translation id="6098793583803863900">Đang quét một tệp không xác định để tìm nội dung nguy hiểm.</translation>
+<translation id="609942571968311933">Văn bản được sao chép từ <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Menu Start</translation>
 <translation id="6101226222197207147">Đã thêm ứng dụng mới (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Chương trình Bảo vệ nâng cao đã chặn tệp này.</translation>
@@ -4178,6 +4202,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6615455863669487791">Hiển thị cho tôi</translation>
 <translation id="6618097958368085618">Vẫn tiếp tục</translation>
+<translation id="6618744767048954150">Đang chạy</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Trang web có thể theo dõi vị trí của bạn</translation>
 <translation id="6619801788773578757">Thêm ứng dụng kiosk</translation>
@@ -4563,6 +4588,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7131040479572660648">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Thêm tran&amp;g...</translation>
 <translation id="7133578150266914903">Quản trị viên đang hạ cấp hệ điều hành của thiết bị này (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">Đã kiểm tra <ph name="DONE" />/<ph name="TOTAL" /> mật khẩu...</translation>
 <translation id="7134098520442464001">Thu nhỏ Văn bản</translation>
 <translation id="7135729336746831607">Bạn muốn bật Bluetooth?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> yêu cầu bạn cập nhật ngay <ph name="DEVICE_TYPE" /> của mình.</translation>
@@ -4911,6 +4937,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="761530003705945209">Sao lưu vào Google Drive. Dễ dàng khôi phục dữ liệu hoặc chuyển đổi thiết bị bất cứ lúc nào. Nội dung sao lưu của bạn bao gồm các dữ liệu ứng dụng. Các bản sao lưu được tải lên Google và mã hóa bằng mật khẩu Tài khoản Google của bạn.</translation>
 <translation id="7616214729753637086">Đang đăng ký thiết bị...</translation>
 <translation id="7617366389578322136">Đang kết nối với "<ph name="DEVICE_NAME" />"</translation>
+<translation id="761763866592998929">Chế độ môi trường xung quanh</translation>
 <translation id="762068974690945752">Thêm tài khoản trường học hoặc quản lý tài khoản người dùng là trẻ em tại đây. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Hệ thống không lưu được cấu hình thiết bị.</translation>
 <translation id="7622114377921274169">Đang sạc.</translation>
@@ -5022,6 +5049,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7766838926148951335">Chấp nhận quyền</translation>
 <translation id="7768770796815395237">Thay đổi</translation>
 <translation id="7769672763586021400">ID kiểu máy</translation>
+<translation id="7770612696274572992">Hình ảnh được sao chép từ thiết bị khác</translation>
 <translation id="7770651108375708429">Ngắt kết nối Wi-Fi</translation>
 <translation id="7771452384635174008">Bố cục</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
@@ -5029,6 +5057,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7772773261844472235">Xem trạng thái Chromebook của bạn</translation>
 <translation id="7773726648746946405">Bộ nhớ phiên</translation>
 <translation id="7774365994322694683">Chim</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> có thể xem các tệp trong <ph name="FOLDERNAME" /> cho đến khi bạn đóng tất cả các thẻ cho trang web này</translation>
 <translation id="7776701556330691704">Không tìm thấy giọng nói nào</translation>
 <translation id="7780252971640011240">Đã xảy ra lỗi khi kết nối. Vui lòng liên hệ với nhà mạng để được trợ giúp.</translation>
 <translation id="7781335840981796660">Tất cả tài khoản người dùng và dữ liệu trên máy đều sẽ bị xóa.</translation>
@@ -6048,6 +6077,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9055636786322918818">Thực thi mã hóa RC4. Việc sử dụng tùy chọn này sẽ làm gia tăng rủi ro vì các thuật toán mã hóa RC4 là không an toàn.</translation>
 <translation id="9056810968620647706">Không tìm thấy kết quả phù hợp nào.</translation>
 <translation id="9057354806206861646">Cập nhật lịch biểu</translation>
+<translation id="9058976525724291037">Con bạn muốn thêm một Tài khoản Google khác vào thiết bị này. Con bạn chỉ có thể thêm tài khoản G Suite cho Giáo dục vào thiết bị do Family Link quản lý.</translation>
 <translation id="9062065967472365419">Khiến tôi ngạc nhiên</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Lỗi từ dòng <ph name="ERROR_LINE_START" /> đến <ph name="ERROR_LINE_END" /></translation>

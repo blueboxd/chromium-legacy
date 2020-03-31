@@ -68,7 +68,10 @@ KioskAppManagerBase::App WebKioskController::GetAppData() {
   const WebKioskAppData* app =
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_);
   DCHECK(app);
-  return KioskAppManagerBase::App(*app);
+
+  auto data = KioskAppManagerBase::App(*app);
+  data.url = app->install_url();
+  return data;
 }
 
 void WebKioskController::OnTimerFire() {

@@ -56,7 +56,7 @@ using signin_metrics::PromoAction;
     upgradeSigninPromoCoordinatorWithBaseViewController:
         (UIViewController*)viewController
                                                 browser:(Browser*)browser {
-  UpgradeSigninLogger* logger = [[UpgradeSigninLogger alloc]
+  UserSigninLogger* logger = [[UpgradeSigninLogger alloc]
       initWithAccessPoint:AccessPoint::ACCESS_POINT_SIGNIN_PROMO
               promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO];
   return [[UserSigninCoordinator alloc]

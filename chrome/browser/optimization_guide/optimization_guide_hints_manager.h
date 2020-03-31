@@ -177,6 +177,9 @@ class OptimizationGuideHintsManager
   FRIEND_TEST_ALL_PREFIXES(
       OptimizationGuideHintsManagerFetchingTest,
       HintsFetched_AtSRP_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved);
+  FRIEND_TEST_ALL_PREFIXES(
+      OptimizationGuideHintsManagerFetchingTest,
+      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved);
 
   // Processes the hints component.
   //
@@ -303,7 +306,7 @@ class OptimizationGuideHintsManager
 
   // NavigationPredictorKeyedService::Observer:
   void OnPredictionUpdated(
-      const base::Optional<NavigationPredictorKeyedService::Prediction>&
+      const base::Optional<NavigationPredictorKeyedService::Prediction>
           prediction) override;
 
   // Creates a hints fetch for |navigation_handle| if it is allowed. The

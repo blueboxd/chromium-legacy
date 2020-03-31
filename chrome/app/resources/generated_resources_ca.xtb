@@ -1879,6 +1879,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="3479685872808224578">No s'ha pogut detectar el servidor d'impressió. Comprova l'adreça i torna-ho a provar.</translation>
 <translation id="3481268647794498892">S'obrirà a <ph name="ALTERNATIVE_BROWSER_NAME" /> d'aquí a <ph name="COUNTDOWN_SECONDS" /> segons</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> pot veure els fitxers següents</translation>
 <translation id="3484273680291419129">S'està suprimint el programari nociu...</translation>
 <translation id="3484869148456018791">Obtén el certificat nou</translation>
 <translation id="3487007233252413104">funció anònima</translation>
@@ -1941,6 +1942,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3564848315152754834">Clau de seguretat per USB</translation>
 <translation id="3566721612727112615">No s'ha afegit cap lloc</translation>
 <translation id="3569382839528428029">Voleu que <ph name="APP_NAME" /> comparteixi la vostra pantalla?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> pot veure els fitxers i les carpetes següents</translation>
 <translation id="3571734092741541777">Configura</translation>
 <translation id="3574210789297084292">inicia la sessió</translation>
 <translation id="3574917942258583917">Vols sortir del mode d'incògnit de totes maneres?</translation>
@@ -1950,6 +1952,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3578594933904494462">El contingut d'aquesta pestanya es comparteix.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vol compartir una impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; amb un dels vostres grups: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si accepteu, tots els membres del grup la podran fer servir.</translation>
 <translation id="357889014807611375">Wi‑Fi d'ús mesurat</translation>
+<translation id="3582057310199111521">S'ha introduït en un lloc web enganyós i s'ha trobat en una violació de les dades</translation>
 <translation id="3584169441612580296">Accedeix a fotos, a música i a altres fitxers multimèdia de l'ordinador i modifica'ls</translation>
 <translation id="3586806079541226322">No es pot obrir aquest fitxer</translation>
 <translation id="3586931643579894722">Oculta els detalls</translation>
@@ -3087,6 +3090,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5117930984404104619">Control del comportament d'altres extensions, inclosos els URL visitats</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">El vostre disc dur és ple. Deseu-ho en una altra ubicació o allibereu espai del disc dur.</translation>
+<translation id="5122384452788334261">Queda poc espai d'emmagatzematge al dispositiu. Per fer servir Plugin VM, es recomana tenir com a mínim <ph name="RECOMMENDED_SPACE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="5123433949759960244">Pilota de bàsquet</translation>
 <translation id="5125751979347152379">URL no vàlid.</translation>
 <translation id="5126611267288187364">Mostra els canvis</translation>
@@ -5190,6 +5194,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7915471803647590281">Indica'ns el problema abans d'enviar els comentaris.</translation>
 <translation id="7918257978052780342">Inscriu</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> pot veure <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Error en redireccionar el port</translation>
 <translation id="792514962475806987">Nivell de zoom acoblat:</translation>
 <translation id="7925247922861151263">Error en la comprovació d'AAA</translation>
@@ -5353,6 +5358,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8118488170956489476">La teva organització <ph name="BEGIN_LINK" />gestiona el navegador<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Gestionar les baixades</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> i més</translation>
+<translation id="8120715633374652536">Queda poc espai d'emmagatzematge al dispositiu. Cal tenir almenys <ph name="MINIMUM_SPACE" /> d'espai lliure per fer servir Plugin VM, tot i que es recomana tenir-ne, com a mínim, <ph name="RECOMMENDED_SPACE" />. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="8123590694679414600">Les dades es van encriptar el dia <ph name="TIME" /> amb la teva frase de contrasenya de sincronització. No inclouen les formes de pagament ni les adreces de Google Pay.</translation>
 <translation id="81238879832906896">Flor groga i blanca</translation>
 <translation id="8124313775439841391">ONC gestionat</translation>

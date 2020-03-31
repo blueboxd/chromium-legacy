@@ -95,12 +95,6 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
   if (switches::IsRunWebTestsSwitchPresent()) {
     headless_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableHeadlessMode);
-    // Disable occlusion tracking. In a headless shell WebContents would always
-    // behave as if they were occluded, i.e. would not render frames and would
-    // not receive input events. For non-headless mode we do not want tests
-    // running in parallel to trigger occlusion tracking.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableBackgroundingOccludedWindowsForTesting);
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -523,9 +517,10 @@ void Shell::NavigationStateChanged(WebContents* source,
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
     WebContents* source) {
   if (!dialog_manager_) {
-    dialog_manager_.reset(switches::IsRunWebTestsSwitchPresent()
-                              ? new WebTestJavaScriptDialogManager
-                              : new ShellJavaScriptDialogManager);
+    if (switches::IsRunWebTestsSwitchPresent())
+      dialog_manager_ = std::make_unique<WebTestJavaScriptDialogManager>();
+    else
+      dialog_manager_ = std::make_unique<ShellJavaScriptDialogManager>();
   }
   return dialog_manager_.get();
 }

@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Lokadagur er <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Uppsett</translation>
 <translation id="1792959175193046959">Þú getur breytt staðsetningu niðurhals hvenær sem er</translation>
+<translation id="1795251344124198516">Viðbótarskilmálar Google Chrome og Chrome OS</translation>
 <translation id="1807246157184219062">Ljóst</translation>
 <translation id="1810845389119482123">Fyrstu uppsetningu samstillingar ekki lokið</translation>
 <translation id="1821253160463689938">Notar fótspor til að muna kjörstillingarnar þínar, jafnvel þótt þú heimsækir ekki þessar síður</translation>
@@ -236,6 +237,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="2650751991977523696">Sækja skrá aftur?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# hljóðskrá}one{# hljóðskrá}other{# hljóðskrár}}</translation>
 <translation id="2687403674020088961">Loka á öll fótspor (ekki mælt með)</translation>
+<translation id="2689830683995595741">Með því að nota Chrome samþykkir þú <ph name="BEGIN_LINK1" />þjónustuskilmála Google<ph name="END_LINK1" />og <ph name="BEGIN_LINK2" />viðbótarskilmála Google Chrome og Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Persónuvernd fyrir Google reikninga sem stjórnað er með Family Link<ph name="END_LINK3" /> gildir einnig.</translation>
 <translation id="2707726405694321444">Endurnýja síðu</translation>
 <translation id="2709516037105925701">Sjálfvirk útfylling</translation>
 <translation id="2717722538473713889">Netföng</translation>
@@ -376,6 +378,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3749259744154402564">Ekki stutt</translation>
 <translation id="3771001275138982843">Ekki var hægt að sækja uppfærslu</translation>
 <translation id="3771033907050503522">Huliðsflipar</translation>
+<translation id="3771694256347217732">Þjónustuskilmálar Google</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Kveiktu á Bluetooth<ph name="END_LINK" /> til að leyfa pörun</translation>
 <translation id="3775705724665058594">Senda í tækin þín</translation>
 <translation id="3778956594442850293">Bætt við heimaskjá</translation>
@@ -403,6 +406,7 @@ Aðeins þú getur séð að hverju myndavélin beinist. Vefsvæðið getur ekki
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome hleður síðunni þegar hún er tilbúin}one{Chrome hleður síðunum þegar þær eru tilbúnar}other{Chrome hleður síðunum þegar þær eru tilbúnar}}</translation>
 <translation id="3963007978381181125">Dulkóðun aðgangsorðs inniheldur ekki greiðslumáta og heimilisföng af Google Pay. Aðeins þeir sem vita aðgangsorðið þitt geta lesið dulkóðuðu gögnin þín. Aðgangsorðið er hvorki sent til Google né geymt. Ef þú gleymir aðgangsorðinu eða vilt breyta þessari stillingu þarftu að endurstilla samstillingu. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Niðurhali lokið</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> mun opnast í Chrome. Með því að halda áfram samþykkir þú <ph name="BEGIN_LINK1" />þjónustuskilmála Google<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />viðbótarskilmála Google Chrome og Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Persónuvernd fyrir Google reikninga sem stjórnað er með Family Link<ph name="END_LINK3" /> gildir einnig.</translation>
 <translation id="397583555483684758">Samstilling er hætt að virka</translation>
 <translation id="3976396876660209797">Fjarlægðu flýtileiðina og búðu hana til aftur</translation>
 <translation id="3985215325736559418">Viltu sækja <ph name="FILE_NAME" /> aftur?</translation>
@@ -713,6 +717,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6255999984061454636">Tillögur að efni</translation>
 <translation id="6270391203985052864">Vefsvæði geta óskað eftir því að senda tilkynningar</translation>
 <translation id="6277522088822131679">Vandamál kom upp við að prenta síðuna. Reyndu aftur.</translation>
+<translation id="6292420053234093573">Með því að nota Chrome samþykkir þú <ph name="BEGIN_LINK1" />þjónustuskilmála Google<ph name="END_LINK1" />og <ph name="BEGIN_LINK2" />viðbótarskilmála Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Öll vefsvæði</translation>
 <translation id="629730747756840877">Reikningur</translation>
 <translation id="6297765934698848803">Fyrirtækið sem hefur umsjón með tækinu þínu hefur slökkt á myndavélinni.</translation>
@@ -727,6 +732,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6364438453358674297">Fjarlægja tillögu úr ferlinum?</translation>
 <translation id="6369229450655021117">Leitaðu á vefnum, deildu með vinum og skoðaðu opnar síður héðan</translation>
 <translation id="6378173571450987352">Upplýsingar: Raðað eftir gagnanotkun</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> mun opnast í Chrome. Með því að halda áfram samþykkir þú <ph name="BEGIN_LINK1" />þjónustuskilmála Google<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />viðbótarskilmála Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Dekkja vefsvæði</translation>
 <translation id="6388207532828177975">Hreinsa og endurstilla</translation>
 <translation id="6395288395575013217">TENGILL</translation>

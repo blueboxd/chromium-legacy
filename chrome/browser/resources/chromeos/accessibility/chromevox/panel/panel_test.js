@@ -69,33 +69,28 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
   }
 };
 
-
-// TODO: Flaky timeouts. https://crbug.com/795840 and https://crbug.com/990229
-TEST_F('ChromeVoxPanelTest', 'DISABLED_ActivateMenu', function() {
+TEST_F('ChromeVoxPanelTest', 'ActivateMenu', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     const openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
     mockFeedback.call(openMenus.send.bind(openMenus))
         .expectSpeech(
             'Jump', 'Menu',
-            'Go To Beginning Of Table ChromeVox+Alt+Shift+Left arrow',
+            'Go To Beginning Of Table Search+Alt+Shift+Left arrow',
             / 1 of [0-9]{2} /)
         .call(this.fireMockEvent('ArrowRight'))
         .expectSpeech(
             'Speech', 'Menu',
-            'Announce The Title Of The Current Page ChromeVox+A>W', 'Menu item',
+            'Announce Current Battery Status Search+O, then B',
             / 1 of [0-9]{2} /)
         .replay();
   });
 });
 
-// TODO: Flaky timeouts. https://crbug.com/795840 and https://crbug.com/990229
-TEST_F('ChromeVoxPanelTest', 'DISABLED_LinkMenu', function() {
+TEST_F('ChromeVoxPanelTest', 'LinkMenu', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
-    const openMenus =
-        new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');
-    mockFeedback.call(openMenus.send.bind(openMenus))
+    mockFeedback.call(() => CommandHandler.onCommand('showLinksList'))
         .expectSpeech(
             'Link',
             'Menu',
@@ -104,7 +99,7 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_LinkMenu', function() {
             ' 1 of 3 ',
             )
         .call(this.fireMockEvent('ArrowLeft'))
-        .expectSpeech('Landmark', 'Menu', 'No items.', 'Menu item', ' 1 of 1 ')
+        .expectSpeech('Landmark', 'Menu', 'No items', 'Menu item', ' 1 of 1 ')
         .call(this.fireMockEvent('ArrowRight'))
         .expectSpeech('Link', 'Menu', 'apple Link', 'Menu item', ' 1 of 3 ')
         .call(this.fireMockEvent('ArrowUp'))
@@ -114,4 +109,24 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_LinkMenu', function() {
         .expectSpeech('banana', 'Link')
         .replay();
   });
+});
+
+TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `<button>Cancel</button><button>OK</button>`, function(root) {
+        mockFeedback.call(() => CommandHandler.onCommand('nextObject'))
+            .expectSpeech('OK', 'Button')
+            .call(() => CommandHandler.onCommand('showFormsList'))
+            .expectSpeech(
+                'Form Controls',
+                'Menu',
+                'OK Button',
+                'Menu item',
+                /2 of /,
+                )
+            .call(this.fireMockEvent('ArrowUp'))
+            .expectSpeech('Cancel Button', 'Menu item', /1 of/)
+            .replay();
+      });
 });

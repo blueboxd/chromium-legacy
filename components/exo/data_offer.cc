@@ -142,7 +142,7 @@ void ReadRTFFromClipboard(base::ScopedFD fd) {
   WriteFileDescriptor(std::move(fd), base::RefCountedString::TakeString(&text));
 }
 
-void SendAsPNGOnWorkerThread(base::ScopedFD fd, const SkBitmap sk_bitmap) {
+void SendAsPNGOnWorkerThread(base::ScopedFD fd, const SkBitmap& sk_bitmap) {
   SkDynamicMemoryWStream data_stream;
   if (SkEncodeImage(&data_stream, sk_bitmap.pixmap(),
                     SkEncodedImageFormat::kPNG, 100)) {
@@ -155,13 +155,17 @@ void SendAsPNGOnWorkerThread(base::ScopedFD fd, const SkBitmap sk_bitmap) {
   }
 }
 
-void ReadPNGFromClipboard(base::ScopedFD fd) {
-  const SkBitmap sk_bitmap = ui::Clipboard::GetForCurrentThread()->ReadImage(
-      ui::ClipboardBuffer::kCopyPaste);
+void OnReceivePNGFromClipboard(base::ScopedFD fd, const SkBitmap& sk_bitmap) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&SendAsPNGOnWorkerThread, std::move(fd),
                      std::move(sk_bitmap)));
+}
+
+void ReadPNGFromClipboard(base::ScopedFD fd) {
+  ui::Clipboard::GetForCurrentThread()->ReadImage(
+      ui::ClipboardBuffer::kCopyPaste,
+      base::BindOnce(&OnReceivePNGFromClipboard, std::move(fd)));
 }
 
 }  // namespace

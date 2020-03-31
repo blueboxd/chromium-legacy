@@ -62,6 +62,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
@@ -204,6 +206,35 @@ class ExtensionPolicyTest : public PolicyTest {
     return details.ptr();
   }
 
+#if defined(OS_CHROMEOS)
+  const extensions::Extension* InstallOSSettings() {
+    WebApplicationInfo web_app;
+    web_app.title = base::ASCIIToUTF16("Settings");
+    web_app.app_url = GURL("chrome://os-settings/");
+
+    scoped_refptr<extensions::CrxInstaller> installer =
+        extensions::CrxInstaller::CreateSilent(extension_service());
+    installer->set_install_source(extensions::Manifest::EXTERNAL_COMPONENT);
+    installer->set_creation_flags(
+        extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    installer->InstallWebApp(web_app);
+    observer.Wait();
+
+    web_app::ExternallyInstalledWebAppPrefs web_app_prefs(
+        browser()->profile()->GetPrefs());
+    web_app_prefs.Insert(GURL("chrome://os-settings/"),
+                         chromeos::default_web_apps::kOsSettingsAppId,
+                         web_app::ExternalInstallSource::kSystemInstalled);
+
+    content::Details<const extensions::Extension> details = observer.details();
+    return details.ptr();
+  }
+#endif
+
   void UninstallExtension(const std::string& id, bool expect_success) {
     if (expect_success) {
       extensions::TestExtensionRegistryObserver observer(extension_registry());
@@ -313,6 +344,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   ASSERT_TRUE(
       registry->enabled_extensions().GetByID(extensions::kWebStoreAppId));
   EXPECT_EQ(enabled_count - 1, registry->enabled_extensions().size());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallBlacklistOsSettings) {
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(browser()->profile());
+
+  extensions::ExtensionRegistry* registry = extension_registry();
+  const extensions::Extension* bookmark_app = InstallOSSettings();
+  ASSERT_TRUE(bookmark_app);
+  ASSERT_TRUE(registry->enabled_extensions().GetByID(
+      chromeos::default_web_apps::kOsSettingsAppId));
+
+  base::ListValue blacklist;
+  blacklist.AppendString(chromeos::default_web_apps::kOsSettingsAppId);
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               blacklist.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_EQ(1u, registry->disabled_extensions().size());
+  extensions::ExtensionService* service = extension_service();
+  EXPECT_FALSE(service->IsExtensionEnabled(
+      chromeos::default_web_apps::kOsSettingsAppId));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
+            extension_prefs->GetDisableReasons(
+                chromeos::default_web_apps::kOsSettingsAppId));
 }
 #endif  // defined(OS_CHROMEOS)
 

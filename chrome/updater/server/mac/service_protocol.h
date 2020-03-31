@@ -26,7 +26,9 @@
 @protocol CRUUpdateChecking <NSObject>
 
 // Checks for updates and returns the result in the reply block.
-- (void)checkForUpdatesWithReply:(void (^_Nullable)(int rc))reply;
+- (void)checkForUpdatesWithUpdateState:
+            (CRUUpdateStateObserver* _Nonnull)updateState
+                                 reply:(void (^_Nullable)(int rc))reply;
 
 // Checks for update of a given app, with specified priority. Sends repeated
 // updates of progress and returns the result in the reply block.
@@ -44,5 +46,13 @@
                               reply:(void (^_Nullable)(int rc))reply;
 
 @end
+
+namespace updater {
+
+// Constructs an NSXPCInterface for a connection using CRUUpdateChecking and
+// CRUUpdateStateObserving protocols.
+NSXPCInterface* _Nonnull GetXpcInterface();
+
+}  // namespace updater
 
 #endif  // CHROME_UPDATER_SERVER_MAC_SERVICE_PROTOCOL_H_

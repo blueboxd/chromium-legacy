@@ -61,6 +61,8 @@ class FakeStreamSocket : public net::StreamSocket {
   void ApplySocketTag(const net::SocketTag& tag) override;
 
  private:
+  void RemoteDisconnected();
+
   const net::IPEndPoint local_address_;
   const std::unique_ptr<SocketBuffer> buffer_;
   FakeStreamSocket* peer_;

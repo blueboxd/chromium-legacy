@@ -13954,18 +13954,16 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnLayerTreeFrameSinkChange) {
   host_impl_->ReleaseLayerTreeFrameSink();
   host_impl_ = nullptr;
 
-  LayerTreeSettings settings = DefaultSettings();
-  settings.gpu_rasterization_forced = true;
-
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &task_runner_provider_, &stats_instrumentation_,
+      DefaultSettings(), this, &task_runner_provider_, &stats_instrumentation_,
       &task_graph_runner_,
       AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr,
       nullptr);
   host_impl_->SetVisible(true);
 
   // InitializeFrameSink with a gpu-raster enabled output surface.
-  auto gpu_raster_layer_tree_frame_sink = FakeLayerTreeFrameSink::Create3d();
+  auto gpu_raster_layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::Create3dForGpuRasterization();
   host_impl_->InitializeFrameSink(gpu_raster_layer_tree_frame_sink.get());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 

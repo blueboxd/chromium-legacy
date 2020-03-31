@@ -4,7 +4,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/android/chrome_jni_headers/SslValidityChecker_jni.h"
+#include "chrome/browser/payments/android/jni_headers/SslValidityChecker_jni.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "content/public/browser/web_contents.h"
 

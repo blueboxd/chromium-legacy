@@ -198,6 +198,21 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kStyleClean)
         return true;
+      // InAccessibility only runs if there is an ExistingAXObjectCache.
+      if (next_state == kInAccessibility)
+        return true;
+      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+          next_state == kInCompositingUpdate)
+        return true;
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+          next_state == kInPrePaint)
+        return true;
+      break;
+    case kInAccessibility:
+      if (next_state == kAccessibilityClean)
+        return true;
+      break;
+    case kAccessibilityClean:
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
           next_state == kInCompositingUpdate)
         return true;
@@ -220,6 +235,8 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kInCompositingUpdate)
         return true;
+      if (next_state == kInAccessibility)
+        return true;
       // Otherwise, we can continue onwards.
       if (next_state == kCompositingClean)
         return true;
@@ -233,6 +250,8 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       if (next_state == kInCompositingUpdate)
         return true;
       if (next_state == kInPrePaint)
+        return true;
+      if (next_state == kInAccessibility)
         return true;
       break;
     case kInPrePaint:
@@ -251,6 +270,8 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kInPrePaint)
         return true;
+      if (next_state == kInAccessibility)
+        return true;
       break;
     case kInPaint:
       if (next_state == kPaintClean)
@@ -267,6 +288,8 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       if (next_state == kInPrePaint)
         return true;
       if (next_state == kInPaint)
+        return true;
+      if (next_state == kInAccessibility)
         return true;
       break;
     case kStopping:
@@ -288,8 +311,9 @@ bool DocumentLifecycle::CanRewindTo(LifecycleState next_state) const {
     return true;
   return state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
          state_ == kAfterPerformLayout || state_ == kLayoutClean ||
-         state_ == kCompositingInputsClean || state_ == kCompositingClean ||
-         state_ == kPrePaintClean || state_ == kPaintClean;
+         state_ == kAccessibilityClean || state_ == kCompositingInputsClean ||
+         state_ == kCompositingClean || state_ == kPrePaintClean ||
+         state_ == kPaintClean;
 }
 
 #define DEBUG_STRING_CASE(StateName) \
@@ -310,6 +334,8 @@ static WTF::String StateAsDebugString(
     DEBUG_STRING_CASE(kInPerformLayout);
     DEBUG_STRING_CASE(kAfterPerformLayout);
     DEBUG_STRING_CASE(kLayoutClean);
+    DEBUG_STRING_CASE(kInAccessibility);
+    DEBUG_STRING_CASE(kAccessibilityClean);
     DEBUG_STRING_CASE(kInCompositingUpdate);
     DEBUG_STRING_CASE(kCompositingInputsClean);
     DEBUG_STRING_CASE(kCompositingClean);

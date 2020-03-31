@@ -11,8 +11,10 @@ import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.style.CharacterStyle;
@@ -24,6 +26,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -31,6 +34,8 @@ import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
+
+import java.io.IOException;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android clipboard.
@@ -166,6 +171,34 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
 
             return clipData.getItemAt(0).getUri();
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @CalledByNative
+    private String getImageUriString() {
+        Uri uri = getImageUri();
+        return uri == null ? null : uri.toString();
+    }
+
+    /**
+     * Reads the Uri of top item on the primary clip on the Android clipboard, and try to get the
+     * {@link Bitmap}. for that Uri.
+     * Fetching images can result in I/O, so should not be called on UI thread.
+     *
+     * @return an {@link Bitmap} if available, otherwise null.
+     */
+    @CalledByNative
+    public Bitmap getImage() {
+        ThreadUtils.assertOnBackgroundThread();
+        try {
+            Uri uri = getImageUri();
+            if (uri == null) return null;
+
+            // TODO(crbug.com/1065914): Use ImageDecoder.decodeBitmap for API level 29 and up.
+            return MediaStore.Images.Media.getBitmap(
+                    ContextUtils.getApplicationContext().getContentResolver(), uri);
+        } catch (IOException | SecurityException e) {
             return null;
         }
     }

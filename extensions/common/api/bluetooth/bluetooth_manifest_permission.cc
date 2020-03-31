@@ -195,9 +195,4 @@ bool BluetoothManifestPermission::RequiresManagementUIWarning() const {
   return false;
 }
 
-bool BluetoothManifestPermission::RequiresManagedSessionFullLoginWarning()
-    const {
-  return false;
-}
-
 }  // namespace extensions

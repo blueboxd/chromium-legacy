@@ -51,6 +51,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     return false;
   }
 
+  bool HasVideo(int player_id) const override { return false; }
+
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }

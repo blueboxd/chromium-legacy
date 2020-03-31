@@ -23,14 +23,17 @@ const char kKeyLaunchUrl[] = "launch_url";
 WebKioskAppData::WebKioskAppData(KioskAppDataDelegate* delegate,
                                  const std::string& app_id,
                                  const AccountId& account_id,
-                                 const GURL url)
+                                 const GURL url,
+                                 const std::string& title,
+                                 const GURL icon_url)
     : KioskAppDataBase(WebKioskAppManager::kWebKioskDictionaryName,
                        app_id,
                        account_id),
       delegate_(delegate),
       status_(STATUS_INIT),
-      install_url_(url) {
-  name_ = install_url_.spec();
+      install_url_(url),
+      icon_url_(icon_url) {
+  name_ = title.empty() ? install_url_.spec() : title;
 }
 
 WebKioskAppData::~WebKioskAppData() = default;

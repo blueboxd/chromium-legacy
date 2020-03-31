@@ -415,8 +415,15 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 // Tests mouse lock and fullscreen for the privileged fullscreen case (e.g.,
 // embedded flash fullscreen, since the Flash plugin handles user permissions
 // requests itself).
+// Flaky on Linux: crbug.com/1066607
+#if defined(OS_LINUX)
+#define MAYBE_PrivilegedMouseLockAndFullscreen \
+  DISABLED_PrivilegedMouseLockAndFullscreen
+#else
+#define MAYBE_PrivilegedMouseLockAndFullscreen PrivilegedMouseLockAndFullscreen
+#endif
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       PrivilegedMouseLockAndFullscreen) {
+                       MAYBE_PrivilegedMouseLockAndFullscreen) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kFullscreenMouseLockHTML));

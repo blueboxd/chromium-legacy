@@ -104,6 +104,19 @@ UserContext LoginManagerMixin::CreateDefaultUserContext(
   return user_context;
 }
 
+std::vector<LoginManagerMixin::TestUserInfo>
+LoginManagerMixin::CreateRegularUsers(int n) {
+  std::vector<LoginManagerMixin::TestUserInfo> users;
+  for (int i = 0; i < n; ++i) {
+    const std::string email =
+        "test_user_" + base::NumberToString(i) + "@gmail.com";
+    const std::string gaia_id = base::NumberToString(i) + "111111111";
+    users.push_back(LoginManagerMixin::TestUserInfo(
+        AccountId::FromUserEmailGaiaId(email, gaia_id)));
+  }
+  return users;
+}
+
 LoginManagerMixin::LoginManagerMixin(
     InProcessBrowserTestMixinHost* host,
     const std::vector<TestUserInfo>& initial_users)

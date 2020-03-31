@@ -8,7 +8,6 @@
 namespace switches {
 
 extern const char kWebLayerUserDataDir[];
-extern const char kWebLayerFakePermissions[];
 
 }  // namespace switches
 

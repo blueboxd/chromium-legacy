@@ -199,10 +199,6 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   const url::Origin& origin() const { return origin_; }
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
   MockPageInfoUI* mock_ui() { return mock_ui_.get(); }
-  security_state::SecurityLevel security_level() { return security_level_; }
-  const security_state::VisibleSecurityState& visible_security_state() {
-    return visible_security_state_;
-  }
   const std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>&
   last_chosen_object_info() {
     return last_chosen_object_info_;
@@ -216,9 +212,11 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
 
   PageInfo* page_info() {
     if (!page_info_.get()) {
-      page_info_ = std::make_unique<PageInfo>(
-          std::make_unique<ChromePageInfoDelegate>(web_contents()),
-          web_contents(), url(), security_level(), visible_security_state());
+      auto delegate = std::make_unique<ChromePageInfoDelegate>(web_contents());
+      delegate->SetSecurityStateForTests(security_level_,
+                                         visible_security_state_);
+      page_info_ = std::make_unique<PageInfo>(std::move(delegate),
+                                              web_contents(), url());
       page_info_->InitializeUiState(mock_ui());
     }
     return page_info_.get();

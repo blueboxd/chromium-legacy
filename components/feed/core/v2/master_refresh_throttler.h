@@ -14,7 +14,7 @@ class PrefService;
 namespace feed {
 
 // A refresh throttler that supports all |UserClass|es.
-// TODO(harringtond): When v2 is the only Feed implementation, make
+// TODO(crbug.com/1066230): When v2 is the only Feed implementation, make
 // |RefreshThrottler| a private implementation detail of this class.
 class MasterRefreshThrottler {
  public:

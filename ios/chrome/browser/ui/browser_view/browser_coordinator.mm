@@ -906,7 +906,6 @@
   UrlLoadingBrowserAgent* loadingAgent =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
   if (loadingAgent) {
-    loadingAgent->SetAppService(self.appURLLoadingService);
     loadingAgent->SetDelegate(self);
   }
 }
@@ -916,7 +915,6 @@
   UrlLoadingBrowserAgent* loadingAgent =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
   if (loadingAgent) {
-    loadingAgent->SetAppService(nullptr);
     loadingAgent->SetDelegate(nil);
   }
 }

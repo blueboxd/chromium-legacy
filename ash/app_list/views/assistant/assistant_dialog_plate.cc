@@ -245,6 +245,9 @@ void AssistantDialogPlate::OnInputModalityChanged(
 
 void AssistantDialogPlate::OnCommittedQueryChanged(
     const AssistantQuery& committed_query) {
+  // Whenever a query is submitted we return the focus to the dialog plate.
+  RequestFocus();
+
   DCHECK(query_history_iterator_);
   query_history_iterator_->ResetToLast();
 }

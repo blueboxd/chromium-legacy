@@ -25,8 +25,6 @@ class LayerTreeHostSynchronousPixelTest
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
     settings->single_thread_proxy_scheduler = false;
-    settings->gpu_rasterization_forced = gpu_rasterization_forced_;
-    settings->gpu_rasterization_disabled = !settings->gpu_rasterization_forced;
     settings->use_zero_copy = use_zero_copy_;
   }
 
@@ -53,7 +51,6 @@ class LayerTreeHostSynchronousPixelTest
                                base::FilePath(FILE_PATH_LITERAL("green.png")));
   }
 
-  bool gpu_rasterization_forced_ = false;
   bool use_zero_copy_ = false;
 };
 
@@ -79,7 +76,7 @@ TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerZeroCopy) {
 }
 
 TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerGpuRasterization) {
-  gpu_rasterization_forced_ = true;
+  set_gpu_rasterization();
   DoContentLayerTest();
 }
 

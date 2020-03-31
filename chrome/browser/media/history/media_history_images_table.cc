@@ -40,7 +40,7 @@ sql::InitStatus MediaHistoryImagesTable::CreateTableIfNonExistent() {
   if (success) {
     success = DB()->Execute(
         base::StringPrintf(
-            "CREATE INDEX IF NOT EXISTS playback_origin_id_index ON "
+            "CREATE INDEX IF NOT EXISTS mediaImage_playback_origin_id_index ON "
             "%s (playback_origin_id)",
             kTableName)
             .c_str());
@@ -48,10 +48,10 @@ sql::InitStatus MediaHistoryImagesTable::CreateTableIfNonExistent() {
 
   if (success) {
     success = DB()->Execute(
-        base::StringPrintf(
-            "CREATE UNIQUE INDEX IF NOT EXISTS image_origin_url_index ON "
-            "%s (playback_origin_id, url)",
-            kTableName)
+        base::StringPrintf("CREATE UNIQUE INDEX IF NOT EXISTS "
+                           "mediaImage_playback_origin_id_url_index ON "
+                           "%s (playback_origin_id, url)",
+                           kTableName)
             .c_str());
   }
 

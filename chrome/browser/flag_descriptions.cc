@@ -982,9 +982,7 @@ const char kGlobalMediaControlsPictureInPictureDescription[] =
     "#global-media-controls to also be enabled.";
 
 const char kGpuRasterizationName[] = "GPU rasterization";
-const char kGpuRasterizationDescription[] =
-    "Use GPU to rasterize web content. Requires impl-side painting.";
-const char kForceGpuRasterization[] = "Force-enabled for all layers";
+const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
 
 const char kGooglePasswordManagerName[] = "Google Password Manager UI";
 const char kGooglePasswordManagerDescription[] =
@@ -2722,13 +2720,6 @@ const char kEnableReaderModeDescription[] =
     "Allows viewing of simplified web pages by selecting 'Customize and "
     "control Chrome'>'Distill page'";
 
-const char kEnterpriseReportingInBrowserName[] =
-    "Enterprise cloud reporting in browser";
-const char kEnterpriseReportingInBrowserDescription[] =
-    "Enable the enterprise cloud reporting in browser without installing the "
-    "reporting companion extension. This feature requires device level cloud "
-    "mangement.";
-
 const char kHappinessTrackingSurveysForDesktopName[] =
     "Happiness Tracking Surveys";
 const char kHappinessTrackingSurveysForDesktopDescription[] =
@@ -3414,16 +3405,6 @@ const char kExperimentalAccessibilityChromeVoxSearchMenusName[] =
     "Enable experimental ChromeVox search menus feature.";
 const char kExperimentalAccessibilityChromeVoxSearchMenusDescription[] =
     "Allows users to search for items in the ChromeVox menu.";
-
-const char kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName[] =
-    "Enable experimental ChromeVox sub-node (word-level) language "
-    "switching.";
-const char
-    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription[] =
-        "Enable ChromeVox language switching at the sub-node level, "
-        "which changes ChromeVox's output language upon detection of a new "
-        "language. This type of switching is more granular than the ChromeVox"
-        "node-level language switching.";
 
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";

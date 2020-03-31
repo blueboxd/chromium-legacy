@@ -88,7 +88,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3dForGpuRasterization(
-      int max_msaa_samples = 0,
+      int max_msaa_samples = -1,
       bool msaa_is_slow = false) {
     return Builder()
         .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
@@ -98,7 +98,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3dForOopRasterization(
-      int max_msaa_samples = 0,
+      int max_msaa_samples = -1,
       bool msaa_is_slow = false) {
     // TODO(enne): this should really use a TestRasterInterface.
     // It's very fake to use "supports oop raster" on a gles2 interface.

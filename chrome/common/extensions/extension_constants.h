@@ -102,9 +102,6 @@ extern const char kInAppPaymentsSupportAppId[];
 // The extension id of the stable media router extension.
 extern const char kMediaRouterStableExtensionId[];
 
-// The extension id of the Chrome Reporting extension.
-extern const char kCloudReportingExtensionId[];
-
 // A list of all the first party extension IDs, last entry is null.
 extern const char* const kBuiltInFirstPartyExtensionIds[];
 

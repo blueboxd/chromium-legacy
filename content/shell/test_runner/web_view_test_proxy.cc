@@ -12,7 +12,6 @@
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_test_delegate.h"
-#include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -22,10 +21,10 @@
 
 namespace test_runner {
 
-void WebViewTestProxy::Initialize(WebTestInterfaces* interfaces,
+void WebViewTestProxy::Initialize(TestInterfaces* interfaces,
                                   std::unique_ptr<WebTestDelegate> delegate) {
   delegate_ = std::move(delegate);
-  test_interfaces_ = interfaces->GetTestInterfaces();
+  test_interfaces_ = interfaces;
   test_interfaces()->WindowOpened(this);
 }
 

@@ -432,4 +432,7 @@
 
     void useMockOverlayScrollbars();
     readonly attribute boolean overlayScrollbarsEnabled;
+
+    // Request generation of a Reporting report.
+    void generateTestReport(DOMString message);
 };

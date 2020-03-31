@@ -80,11 +80,23 @@ void MediaSessionAndroid::MediaSessionInfoChanged(
   if (j_local_session.is_null())
     return;
 
+  bool is_paused = session_info->playback_state ==
+                   media_session::mojom::MediaPlaybackState::kPaused;
+
+  // The media session info changed event might be called more often than we
+  // need to notify Android since we only need a couple of bits of data.
+  // Therefore, we only notify Android if the bits have changed.
+  if (is_paused == is_paused_ &&
+      is_controllable_ == session_info->is_controllable) {
+    return;
+  }
+
+  is_paused_ = is_paused;
+  is_controllable_ = session_info->is_controllable;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaSessionImpl_mediaSessionStateChanged(
-      env, j_local_session, session_info->is_controllable,
-      session_info->playback_state ==
-          media_session::mojom::MediaPlaybackState::kPaused);
+      env, j_local_session, session_info->is_controllable, is_paused);
 }
 
 void MediaSessionAndroid::MediaSessionMetadataChanged(

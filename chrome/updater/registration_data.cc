@@ -7,6 +7,7 @@
 namespace updater {
 
 RegistrationRequest::RegistrationRequest() = default;
+RegistrationRequest::RegistrationRequest(const RegistrationRequest&) = default;
 RegistrationRequest::~RegistrationRequest() = default;
 
 }  // namespace updater

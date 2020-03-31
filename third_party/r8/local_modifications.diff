@@ -1,5 +1,84 @@
+diff --git a/src/main/java/com/android/tools/r8/D8CommandParser.java b/src/main/java/com/android/tools/r8/D8CommandParser.java
+index f66fff8f3..c63f4f566 100644
+--- a/src/main/java/com/android/tools/r8/D8CommandParser.java
++++ b/src/main/java/com/android/tools/r8/D8CommandParser.java
+@@ -205,7 +205,7 @@ public class D8CommandParser extends BaseCompilerCommandParser<D8Command, D8Comm
+         }
+         compilationMode = CompilationMode.RELEASE;
+       } else if (arg.equals("--file-per-class")) {
+-        outputMode = OutputMode.DexFilePerClass;
++        outputMode = OutputMode.DexFilePerClassFile;
+       } else if (arg.equals("--output")) {
+         if (outputPath != null) {
+           builder.error(
+diff --git a/src/main/java/com/android/tools/r8/R8Command.java b/src/main/java/com/android/tools/r8/R8Command.java
+index 4051f9cef..6d034d5b8 100644
+--- a/src/main/java/com/android/tools/r8/R8Command.java
++++ b/src/main/java/com/android/tools/r8/R8Command.java
+@@ -42,6 +42,8 @@ import java.util.function.BiPredicate;
+ import java.util.function.Consumer;
+ import java.util.function.Function;
+ 
++import com.android.tools.r8.DexIndexedConsumer.DirectoryConsumer;
++
+ /**
+  * Immutable command structure for an invocation of the {@link R8} compiler.
+  *
+@@ -234,6 +236,15 @@ public final class R8Command extends BaseCompilerCommand {
+       return self();
+     }
+ 
++    public Builder addFeatureJar(Path inputJarPath, Path outputPath) {
++      addFeatureSplit(splitBuilder ->
++          splitBuilder
++            .addProgramResourceProvider(ArchiveProgramResourceProvider.fromArchive(inputJarPath))
++            .setProgramConsumer(new DirectoryConsumer(outputPath))
++            .build());
++      return self();
++    }
++
+     /**
+      * Set a consumer for receiving the proguard-map content.
+      *
+diff --git a/src/main/java/com/android/tools/r8/R8CommandParser.java b/src/main/java/com/android/tools/r8/R8CommandParser.java
+index 22ebb5e42..b53e4c59e 100644
+--- a/src/main/java/com/android/tools/r8/R8CommandParser.java
++++ b/src/main/java/com/android/tools/r8/R8CommandParser.java
+@@ -24,6 +24,7 @@ public class R8CommandParser extends BaseCompilerCommandParser<R8Command, R8Comm
+           "--min-api",
+           "--main-dex-rules",
+           "--main-dex-list",
++          "--feature-jar",
+           "--main-dex-list-output",
+           "--pg-conf",
+           "--pg-map-output",
+@@ -205,6 +206,11 @@ public class R8CommandParser extends BaseCompilerCommandParser<R8Command, R8Comm
+         builder.setDisableDesugaring(true);
+       } else if (arg.equals("--main-dex-rules")) {
+         builder.addMainDexRulesFiles(Paths.get(nextArg));
++      } else if (arg.equals("--feature-jar")) {
++        String[] argParts = nextArg.split(":");
++        String featureJarInputPath = argParts[0];
++        String featureJarOutputPath = argParts[1];
++        builder.addFeatureJar(Paths.get(featureJarInputPath), Paths.get(featureJarOutputPath));
+       } else if (arg.equals("--main-dex-list")) {
+         builder.addMainDexListFiles(Paths.get(nextArg));
+       } else if (arg.equals("--main-dex-list-output")) {
+diff --git a/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java b/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
+index 0831e6d93..49c1a202b 100644
+--- a/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
++++ b/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
+@@ -206,7 +206,7 @@ public final class LambdaClass {
+   }
+ 
+   public final boolean isStateless() {
+-    return descriptor.isStateless();
++    return false;  // descriptor.isStateless();
+   }
+ 
+   void addSynthesizedFrom(DexProgramClass clazz) {
 diff --git a/src/main/java/com/android/tools/r8/utils/InternalOptions.java b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
-index 232b54a54..5c3a227b3 100644
+index 232b54a54..fd45dfe36 100644
 --- a/src/main/java/com/android/tools/r8/utils/InternalOptions.java
 +++ b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
 @@ -198,8 +198,8 @@ public class InternalOptions {
@@ -8,8 +87,8 @@ index 232b54a54..5c3a227b3 100644
        System.getProperty("com.android.tools.r8.fieldBitAccessAnalysis") != null;
 -  public boolean enableHorizontalClassMerging = true;
 -  public boolean enableVerticalClassMerging = true;
-+  public boolean enableHorizontalClassMerging = System.getProperty("com.android.tools.r8.enableClassMerging") != null;
-+  public boolean enableVerticalClassMerging = System.getProperty("com.android.tools.r8.enableClassMerging") != null;
++  public boolean enableHorizontalClassMerging = System.getProperty("com.android.tools.r8.enableHorizontalClassMerging") != null;
++  public boolean enableVerticalClassMerging = System.getProperty("com.android.tools.r8.enableVerticalClassMerging") != null;
    public boolean enableArgumentRemoval = true;
    public boolean enableUnusedArgumentRemoval = true;
    public boolean enableUnusedInterfaceRemoval = true;
@@ -22,3 +101,20 @@ index 232b54a54..5c3a227b3 100644
      public int minSize = 3;
      public int maxSize = 99;
      public int threshold = 20;
+diff --git a/src/main/keep.txt b/src/main/keep.txt
+index b0c58c916..5e4405175 100644
+--- a/src/main/keep.txt
++++ b/src/main/keep.txt
+@@ -27,4 +27,10 @@
+ -keep public class com.android.tools.r8.compatproguard.CompatProguard { public static void main(java.lang.String[]); }
+ 
+ # Compatibility command line program used by in google3.
+--keep public class com.android.tools.r8.compatdx.CompatDx { public static void main(java.lang.String[]); }
+\ No newline at end of file
++-keep public class com.android.tools.r8.compatdx.CompatDx { public static void main(java.lang.String[]); }
++
++-keep public class com.android.tools.r8.SwissArmyKnife { *; }
++
++# Chrome: We want to maintain stack traces from the R8 tool, so disable
++# optimizations.
++-dontoptimize

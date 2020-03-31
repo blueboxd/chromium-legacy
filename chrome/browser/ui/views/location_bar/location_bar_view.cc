@@ -1145,16 +1145,11 @@ bool LocationBarView::ShowPageInfoDialog() {
   if (!entry)
     return false;
 
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  DCHECK(helper);
-
   DCHECK(GetWidget());
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
           this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile_, contents,
-          entry->GetVirtualURL(), helper->GetSecurityLevel(),
-          *helper->GetVisibleSecurityState(),
+          entry->GetVirtualURL(),
           base::BindOnce(&LocationBarView::OnPageInfoBubbleClosed,
                          weak_factory_.GetWeakPtr()));
   bubble->SetHighlightedButton(location_icon_view_);

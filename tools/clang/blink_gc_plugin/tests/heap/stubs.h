@@ -25,9 +25,9 @@ public:
     T* operator->() { return 0; }
 };
 
-template<typename T> class RefPtr {
+template<typename T> class scoped_refptr {
 public:
-    ~RefPtr() { }
+    ~scoped_refptr() { }
     operator T*() const { return 0; }
     T* operator->() { return 0; }
 };

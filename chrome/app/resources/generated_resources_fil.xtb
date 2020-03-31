@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Mga Nakikitang Network:</translation>
 <translation id="1094607894174825014">Ang read o write na operation ay hiniling nang may di-wastong offset sa: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Bago mag-sign in, mangyaring pumasok bilang Bisita upang i-activate ang network <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">Nakopya ang larawan mula sa <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Hindi namin matukoy ang iyong SIM card</translation>
 <translation id="1108600514891325577">&amp;Huminto</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">pahina ng background</translation>
 <translation id="1745520510852184940">Palagi Itong Gawin</translation>
 <translation id="1750172676754093297">Hindi puwedeng mag-store ng mga fingerprint ang iyong security key</translation>
+<translation id="1751262127955453661">Mae-edit ng <ph name="ORIGIN" /> ang mga file sa <ph name="FOLDERNAME" /> hanggang sa isara mo ang lahat ng tab para sa site na ito</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="1753067873202720523">Maaaring hindi mag-charge ang iyong Chromebook habang naka-on ito.</translation>
 <translation id="1753905327828125965">Most Visited</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">Chrome user ka na ba? Mag-sign in</translation>
 <translation id="18245044880483936">Hindi mabibilang ang data ng backup sa quota sa storage ng Drive ng iyong anak.</translation>
 <translation id="1826516787628120939">Sinusuri</translation>
+<translation id="1827738518074806965">Art gallery</translation>
 <translation id="1828378091493947763">Hindi sinusuportahan ang plugin na ito para sa device na ito</translation>
 <translation id="1828901632669367785">I-print Gamit ang Dialog ng System...</translation>
 <translation id="1829129547161959350">Penguin</translation>
@@ -1028,6 +1031,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="236117173274098341">I-optimize</translation>
 <translation id="236141728043665931">Palaging i-block ang pag-access sa mikropono</translation>
+<translation id="2364498172489649528">Nakapasa</translation>
 <translation id="2365507699358342471">Makikita ng site na ito ang text at mga larawang kinopya sa clipboard.</translation>
 <translation id="2366260648632264559">Ipakita ang system text sa wikang ito</translation>
 <translation id="2367972762794486313">Ipakita ang apps</translation>
@@ -1342,6 +1346,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2762441749940182211">Naka-block ang camera</translation>
 <translation id="2765217105034171413">Maliit</translation>
 <translation id="2766161002040448006">Hilingin sa magulang</translation>
+<translation id="2767127727915954024">Mae-edit ng <ph name="ORIGIN" /> ang <ph name="FILENAME" /> hanggang sa isara mo ang lahat ng tab para sa site na ito</translation>
 <translation id="276969039800130567">Naka-sign in bilang <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Alisin sa listahan</translation>
 <translation id="2770690685823456775">I-export ang iyong mga password sa isa pang folder</translation>
@@ -1666,6 +1671,18 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3202173864863109533">Iminu-mute ang audio ng tab na ito.</translation>
 <translation id="3208321278970793882">App</translation>
 <translation id="3208584281581115441">Suriin ngayon</translation>
+<translation id="3208640652501208439">Posibleng hindi available o hindi awtomatikong ma-load ang mga resource para sa gawaing pampaaralan
+    Posibleng walang access ang iyong anak sa:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Mga application at extension na na-install ng paaralan
+      <ph name="LIST_ITEM" />Mga bookmark mula sa isang Chromebook ng paaralan
+      <ph name="LIST_ITEM" />Mga autofill na password sa mga site na pang-edukasyon
+    <ph name="END_LIST" />
+    Para makuha ang kumpletong karanasang pampaaralan sa device na ito, dapat gawin ng iyong anak ang mga sumusunod:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Mag-sign out sa kanyang account na pinapamahalaan ng Family Link
+      <ph name="OLIST_ITEM" />Mag-sign in sa kanyang GSuite for Education account sa screen sa pag-sign in. Gayunpaman, tandaang mangangahulugan ito na ang mga patakaran ng paaralan, kasama na ang mga setting ng pag-access sa mga app at website, ay mangingibabaw sa mga feature para sa pagsubaybay ng iyong Family Link (halimbawa, posibleng payagan ng mga administrator ng paaralan ang YouTube kung kailangan ito para sa homework, hindi magpapatupad ng tagal ng paggamit, atbp.)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Hindi kumpirmado</translation>
 <translation id="32101887417650595">Hindi makakonekta sa printer</translation>
 <translation id="321084946921799184">Dilaw at puti</translation>
@@ -1744,6 +1761,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3312424061798279731">Mga naka-enable na wika</translation>
 <translation id="3313622045786997898">Certificate Signature Value</translation>
 <translation id="3315158641124845231">Itago ang <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Impormasyon ng pampaaralang account para sa mga magulang</translation>
 <translation id="3317459757438853210">Magkabilaan</translation>
 <translation id="3317678681329786349">Naka-block ang camera at mikropono</translation>
 <translation id="3319048459796106952">Bagong &amp;incognito window</translation>
@@ -1930,6 +1948,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3574210789297084292">mag-sign in</translation>
 <translation id="3574917942258583917">Umalis pa rin sa incognito mode?</translation>
 <translation id="3575121482199441727">Payagan para sa site na ito</translation>
+<translation id="3575919114596668130">Mailalapat pa rin ang iyong mga setting bilang magulang sa Family Link. Kung nag-block ka dati ng app o site, hindi mo na iyon kailangang ulitin.</translation>
 <translation id="3576324189521867626">Matagumpay na na-install</translation>
 <translation id="3578594933904494462">Ibinabahagi ang nilalaman ng tab na ito.</translation>
 <translation id="357886715122934472">Gustong magbahagi ng &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ng printer na &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; sa isang pangkat na pagmamay-ari mo: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Kung tatanggapin mo, makakapag-print ang lahat ng miyembro ng pangkat sa printer.</translation>
@@ -2770,6 +2789,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4689235506267737042">Piliin ang mga kagustuhan mo sa demo</translation>
 <translation id="4689421377817139245">I-sync ang bookmark na ito sa iyong iPhone</translation>
 <translation id="4690091457710545971">&lt;Apat na file na ginawa ng Intel Wi-Fi firmware: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Ang unang tatlo ay mga binary file na may mga dump sa pagpaparehistro at iginiit ng Intel na walang personal na impormasyon o impormasyong nakakapagpakilala sa device.  Ang panghuling file ay isang execution trace mula sa Intel firmware; tinanggalan ito ng anumang personal na impormasyon o impormasyong nakakapagpakilala sa device, ngunit masyado itong malaki para maipakita rito.  Nagawa ang mga file na ito bilang tugon sa mga kamakailang naging problema sa Wi-Fi sa iyong device, at ibabahagi ito sa Intel para makatulong sa pag-troubleshoot ng mga problemang ito.&gt;</translation>
+<translation id="4691791363716065510">Matitingnan ng <ph name="ORIGIN" /> ang <ph name="FILENAME" /> hanggang sa isara mo ang lahat ng tab para sa site na ito</translation>
 <translation id="4692623383562244444">Mga search engine</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Pinapangasiwaan ng administrator ang pag-configure ng printer.</translation>
@@ -3125,6 +3145,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5204967432542742771">Ipasok ang password</translation>
 <translation id="5206215183583316675">I-delete ang "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Error sa Pag-import ng Certificate</translation>
+<translation id="5209307736170827035">Poprotektahan ang data ng iyong anak sa Classroom. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Walang nahanap na mga device</translation>
 <translation id="5210990770352357081">Hindi ma-uninstall ang Plugin VM</translation>
 <translation id="5213481667492808996">Magagamit na ang iyong serbisyo ng data ng '<ph name="NAME" />'</translation>
@@ -3236,6 +3257,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5341980496415249280">Pakihintay, nagpa-pack...</translation>
 <translation id="5342091991439452114">Hindi dapat bababa sa <ph name="MINIMUM" /> (na) digit ang PIN</translation>
 <translation id="5344036115151554031">Nire-restore ang Linux</translation>
+<translation id="535123479159372765">Nakopya ang text mula sa isa pang device</translation>
 <translation id="5352033265844765294">Time Stamping</translation>
 <translation id="5353252989841766347">Mag-export ng Mga Password mula sa Chrome</translation>
 <translation id="5355099869024327351">Payagan ang Assistant na magpakita sa iyo ng mga notification</translation>
@@ -3358,6 +3380,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5511379779384092781">Sobrang liit</translation>
 <translation id="5511823366942919280">Sigurado ka bang gusto mong i-set up ang device na ito bilang "Shark"?</translation>
 <translation id="5512653252560939721">Dapat na hardware-backed ang certificate ng user.</translation>
+<translation id="5515923816438946203">Piliin kung ano ang nakikita mo sa iyong screen</translation>
 <translation id="5517304475148761050">Kinakailangan ng app na ito ng access sa Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Idinaragdag ang printer sa iyong account - maaari itong tumagal ng ilang sandali...</translation>
@@ -3808,6 +3831,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6097480669505687979">Kung hindi ka magbabakante ng espasyo, maaaring awtomatikong alisin ang mga user at data.</translation>
 <translation id="6097600385983390082">Isinara ang paghahanap gamit ang boses</translation>
 <translation id="6098793583803863900">Sina-scan ang isang hindi kilalang file para matukoy kung may mapanganib na content.</translation>
+<translation id="609942571968311933">Nakopya ang text mula sa <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Start menu</translation>
 <translation id="6101226222197207147">Nagdagdag ng bagong app (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Na-block ng Advanced Protection ang file na ito.</translation>
@@ -4178,6 +4202,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6612358246767739896">Pinoprotektahang content</translation>
 <translation id="6615455863669487791">Ipakita sa akin</translation>
 <translation id="6618097958368085618">Panatilihin pa rin</translation>
+<translation id="6618744767048954150">Tumatakbo</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Maaaring subaybayan ng site ang iyong lokasyon</translation>
 <translation id="6619801788773578757">Magdagdag ng kiosk application</translation>
@@ -4563,6 +4588,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7131040479572660648">Basahin ang iyong data sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> at <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Magdagdag ng Pahina...</translation>
 <translation id="7133578150266914903">Niro-roll back ng iyong administrator ang device na ito (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" /> (na) password ang nasuri...</translation>
 <translation id="7134098520442464001">Gawing Mas Maliit ang Teksto</translation>
 <translation id="7135729336746831607">I-on ang Bluetooth?</translation>
 <translation id="7136639886842764730">Hinihiling sa iyo ng <ph name="DOMAIN" /> na i-update kaagad ang <ph name="DEVICE_TYPE" /> mo.</translation>
@@ -4911,6 +4937,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="761530003705945209">I-back up sa Google Drive. Walang hirap na i-restore ang iyong data o magpalit ng device anumang oras. Kasama sa iyong backup ang data ng app. Ina-upload ang mga backup mo sa Google at ine-encrypt ang mga ito gamit ang password ng iyong Google Account.</translation>
 <translation id="7616214729753637086">Ine-enroll ang device...</translation>
 <translation id="7617366389578322136">Kumokonekta sa "<ph name="DEVICE_NAME" />"</translation>
+<translation id="761763866592998929">Ambient mode</translation>
 <translation id="762068974690945752">Magdagdag ng pampaaralang account o pamahalaan ang mga child account dito. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Hindi na-save ng system ang configuration ng device.</translation>
 <translation id="7622114377921274169">Nagcha-charge.</translation>
@@ -5022,6 +5049,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7766838926148951335">Tanggapin ang mga pahintulot</translation>
 <translation id="7768770796815395237">Baguhin</translation>
 <translation id="7769672763586021400">Model ID</translation>
+<translation id="7770612696274572992">Nakopya ang larawan mula sa isa pang device</translation>
 <translation id="7770651108375708429">Magdiskonekta sa Wi-Fi</translation>
 <translation id="7771452384635174008">Layout</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
@@ -5029,6 +5057,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7772773261844472235">Tingnan ang status ng iyong Chromebook</translation>
 <translation id="7773726648746946405">Storage ng session</translation>
 <translation id="7774365994322694683">Ibon</translation>
+<translation id="7776156998370251340">Matitingnan ng <ph name="ORIGIN" /> ang mga file sa <ph name="FOLDERNAME" /> hanggang sa isara mo ang lahat ng tab para sa site na ito</translation>
 <translation id="7776701556330691704">Walang nakitang boses</translation>
 <translation id="7780252971640011240">Nagkakaproblema sa pagkonekta. Makipag-ugnayan sa iyong carrier para sa tulong.</translation>
 <translation id="7781335840981796660">Aalisin ang lahat ng user account at lokal na data.</translation>
@@ -6050,6 +6079,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9055636786322918818">Ipatupad ang RC4 encryption. Magiging mas mapanganib para sa iyo kapag ginamit ang opsyong ito, dahil hindi secure ang mga RC4 cipher.</translation>
 <translation id="9056810968620647706">Walang nakitang tugma.</translation>
 <translation id="9057354806206861646">I-update ang iskedyul</translation>
+<translation id="9058976525724291037">Gustong magdagdag ng iyong anak ng isa pang Google account sa device na ito. Mga G Suite for Education account lang ang puwedeng idagdag sa mga device na pinapamahalaan ng Family Link.</translation>
 <translation id="9062065967472365419">Sorpresahin ako</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Error mula sa linya <ph name="ERROR_LINE_START" /> hanggang <ph name="ERROR_LINE_END" /></translation>

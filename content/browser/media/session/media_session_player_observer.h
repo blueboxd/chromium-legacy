@@ -48,8 +48,11 @@ class MediaSessionPlayerObserver {
   virtual base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const = 0;
 
-  // Returns if picture-in-picture is available ofr |player_id|.
+  // Returns if picture-in-picture is available for |player_id|.
   virtual bool IsPictureInPictureAvailable(int player_id) const = 0;
+
+  // Returns true if the |player_id| has video tracks.
+  virtual bool HasVideo(int player_id) const = 0;
 
   // Returns the RenderFrameHost this player observer belongs to. Returns
   // nullptr if unavailable.

@@ -88,6 +88,25 @@ bool IsEnterpriseDevice() {
 bool IsUserConsentRequired() {
   return !IsEnterpriseDevice();
 }
+
+// Returns the key name that should be used for the attestation platform APIs.
+std::string GetKeyNameWithDefault(AttestationKeyType key_type,
+                                  const std::string& key_name) {
+  if (!key_name.empty())
+    return key_name;
+
+  // If no key name was given, use default well-known key names so they can be
+  // reused across attestation operations (multiple challenge responses can be
+  // generated using the same key).
+  switch (key_type) {
+    case KEY_DEVICE:
+      return kEnterpriseMachineKey;
+    case KEY_USER:
+      return kEnterpriseUserKey;
+  }
+  NOTREACHED();
+}
+
 }  // namespace
 
 TpmChallengeKeySubtleImpl::TpmChallengeKeySubtleImpl()
@@ -112,7 +131,7 @@ void TpmChallengeKeySubtleImpl::RestorePreparedKeyState(
     const std::string& key_name_for_spkac) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   key_type_ = key_type;
-  key_name_ = key_name;
+  key_name_ = GetKeyNameWithDefault(key_type, key_name);
   profile_ = profile;
   key_name_for_spkac_ = key_name_for_spkac;
 }
@@ -131,7 +150,7 @@ void TpmChallengeKeySubtleImpl::StartPrepareKeyStep(
       << "Key name for SPKAC will be unused.";
 
   key_type_ = key_type;
-  key_name_ = key_name;
+  key_name_ = GetKeyNameWithDefault(key_type, key_name);
   profile_ = profile;
   callback_ = std::move(callback);
   key_name_for_spkac_ = key_name_for_spkac;
@@ -235,18 +254,6 @@ std::string TpmChallengeKeySubtleImpl::GetEmail() const {
   NOTREACHED();
 }
 
-const char* TpmChallengeKeySubtleImpl::GetKeyName() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  switch (key_type_) {
-    case KEY_DEVICE:
-      return kEnterpriseMachineKey;
-    case KEY_USER:
-      return kEnterpriseUserKey;
-  }
-  NOTREACHED();
-}
-
 AttestationCertificateProfile TpmChallengeKeySubtleImpl::GetCertificateProfile()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -267,7 +274,7 @@ std::string TpmChallengeKeySubtleImpl::GetKeyNameForRegister() const {
     case KEY_DEVICE:
       return key_name_for_spkac_;
     case KEY_USER:
-      return GetKeyName();
+      return key_name_;
   }
   NOTREACHED();
 }
@@ -371,7 +378,7 @@ void TpmChallengeKeySubtleImpl::IsAttestationPreparedCallback(
   CryptohomeClient::Get()->TpmAttestationDoesKeyExist(
       key_type_,
       cryptohome::CreateAccountIdentifierFromAccountId(GetAccountId()),
-      GetKeyName(),
+      key_name_,
       base::BindRepeating(&TpmChallengeKeySubtleImpl::DoesKeyExistCallback,
                           weak_factory_.GetWeakPtr()));
 }
@@ -445,7 +452,7 @@ void TpmChallengeKeySubtleImpl::AskForUserConsentCallback(bool result) {
       GetCertificateProfile(), GetAccountId(),
       std::string(),  // Not used.
       true,           // Force a new key to be generated.
-      key_name_,  // If |key_name_| is empty, a default name will be generated.
+      key_name_,
       base::BindRepeating(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
                           weak_factory_.GetWeakPtr()));
 }
@@ -470,7 +477,7 @@ void TpmChallengeKeySubtleImpl::GetPublicKey() {
   CryptohomeClient::Get()->TpmAttestationGetPublicKey(
       key_type_,
       cryptohome::CreateAccountIdentifierFromAccountId(GetAccountId()),
-      GetKeyName(),
+      key_name_,
       base::BindOnce(&TpmChallengeKeySubtleImpl::PrepareKeyFinished,
                      weak_factory_.GetWeakPtr()));
 }
@@ -501,7 +508,7 @@ void TpmChallengeKeySubtleImpl::StartSignChallengeStep(
   // Everything is checked. Sign the challenge.
   cryptohome::AsyncMethodCaller::GetInstance()
       ->TpmAttestationSignEnterpriseChallenge(
-          key_type_, cryptohome::Identification(GetAccountId()), GetKeyName(),
+          key_type_, cryptohome::Identification(GetAccountId()), key_name_,
           GetEmail(), InstallAttributes::Get()->GetDeviceId(),
           include_signed_public_key ? CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY
                                     : CHALLENGE_OPTION_NONE,

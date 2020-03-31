@@ -90,8 +90,6 @@ class ReportSchedulerTest : public ::testing::Test {
         profile_manager_(TestingBrowserProcess::GetGlobal(), &local_state_) {}
   ~ReportSchedulerTest() override = default;
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnterpriseReportingInBrowser);
     ASSERT_TRUE(profile_manager_.SetUp());
     client_ptr_ = std::make_unique<policy::MockCloudPolicyClient>();
     client_ = client_ptr_.get();

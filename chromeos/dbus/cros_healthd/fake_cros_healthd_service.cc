@@ -115,6 +115,13 @@ void FakeCrosHealthdService::RunPrimeSearchRoutine(
   std::move(callback).Run(run_routine_response_.Clone());
 }
 
+void FakeCrosHealthdService::RunBatteryDischargeRoutine(
+    uint32_t length_seconds,
+    uint32_t maximum_discharge_percent_allowed,
+    RunBatteryDischargeRoutineCallback callback) {
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
 void FakeCrosHealthdService::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories,
     ProbeTelemetryInfoCallback callback) {

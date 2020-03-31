@@ -549,7 +549,7 @@ bool CommandService::CanAutoAssign(const Command &command,
   }
 
   // Not a global command, check if the command is a Chrome shortcut.
-  return !chrome::IsChromeAccelerator(command.accelerator(), profile_);
+  return !chrome::IsChromeAccelerator(command.accelerator());
 }
 
 void CommandService::UpdateExtensionSuggestedCommandPrefs(

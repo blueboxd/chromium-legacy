@@ -501,6 +501,7 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
         gfx::CreateVectorIcon(kGoogleGLogoIcon, kTouchBarIconSize,
                               gfx::kPlaceholderColor),
         base::mac::GetSRGBColorSpace());
+  } else {
     image = CreateNSImageFromIcon(vector_icons::kSearchIcon);
   }
 #endif

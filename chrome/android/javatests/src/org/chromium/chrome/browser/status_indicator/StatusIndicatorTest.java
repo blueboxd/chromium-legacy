@@ -4,6 +4,14 @@
 
 package org.chromium.chrome.browser.status_indicator;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
+import static android.support.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -12,6 +20,9 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +39,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -61,6 +73,7 @@ public class StatusIndicatorTest {
     private StatusIndicatorSceneLayer mStatusIndicatorSceneLayer;
     private View mStatusIndicatorContainer;
     private ViewGroup.MarginLayoutParams mControlContainerLayoutParams;
+    private ChromeFullscreenManager mFullscreenManager;
 
     @Before
     public void setUp() throws InterruptedException {
@@ -76,6 +89,7 @@ public class StatusIndicatorTest {
                 mActivityTestRule.getActivity().findViewById(R.id.control_container);
         mControlContainerLayoutParams =
                 (ViewGroup.MarginLayoutParams) controlContainer.getLayoutParams();
+        mFullscreenManager = mActivityTestRule.getActivity().getFullscreenManager();
     }
 
     @After
@@ -139,5 +153,69 @@ public class StatusIndicatorTest {
 
         Assert.assertFalse("Composited view shouldn't be visible.",
                 mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
+            "force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:start_surface_variation/single"})
+    public void testShowAndHideOnStartSurface() {
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+
+        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
+        Assert.assertFalse("Wrong initial composited view visibility.",
+                mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.show(
+                "Status", null, Color.BLACK, Color.WHITE, Color.WHITE));
+
+        // The status indicator will be immediately visible.
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(VISIBLE)));
+        onView(withId(R.id.control_container))
+                .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
+                .check(matches(withTopMargin(mFullscreenManager.getTopControlsHeight())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mStatusIndicatorCoordinator.updateContent("Exit status", null,
+                        Color.WHITE, Color.BLACK, Color.BLACK, () -> {}));
+
+        // #updateContent shouldn't change the layout.
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(VISIBLE)));
+        onView(withId(R.id.control_container))
+                .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
+                .check(matches(withTopMargin(mFullscreenManager.getTopControlsHeight())));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.hide());
+
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
+        onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
+                .check(matches(withTopMargin(mFullscreenManager.getTopControlsHeight())));
+    }
+
+    private static Matcher<View> withTopMargin(final int expected) {
+        return new TypeSafeMatcher<View>() {
+            private int mActual;
+            @Override
+            public boolean matchesSafely(final View view) {
+                mActual = ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).topMargin;
+                return mActual == expected;
+            }
+            @Override
+            public void describeTo(final Description description) {
+                // TODO(sinansahin): This is a work-around because the message from
+                // #describeMismatchSafely is ignored. If it is fixed one day, we can implement
+                // #describeMismatchSafely.
+                description.appendText("View should have a topMargin of " + expected)
+                        .appendText(System.lineSeparator())
+                        .appendText("but actually has " + mActual);
+            }
+        };
     }
 }

@@ -98,8 +98,6 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& url,
-      security_state::SecurityLevel security_level,
-      const security_state::VisibleSecurityState& visible_security_state,
       PageInfoClosingCallback closing_callback);
 
  protected:
@@ -117,8 +115,6 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& url,
-      security_state::SecurityLevel security_level,
-      const security_state::VisibleSecurityState& visible_security_state,
       PageInfoClosingCallback closing_callback);
 
   // PageInfoBubbleViewBase:

@@ -143,8 +143,11 @@ class MapFileParserGold(object):
       if not parts:
         break
       name, size_str, path = parts
-      sym = models.Symbol(models.SECTION_BSS,  int(size_str[2:], 16),
-                          full_name=name, object_path=path)
+      sym = models.Symbol(
+          models.SECTION_BSS,
+          int(size_str[2:], 16),
+          full_name=name,
+          object_path=path)
       ret.append(sym)
     return ret
 

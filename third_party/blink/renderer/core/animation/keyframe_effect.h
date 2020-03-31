@@ -135,6 +135,11 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   ActiveInterpolationsMap InterpolationsForCommitStyles();
 
+  // Explicitly setting the keyframes via KeyfrfameEffect.setFrames or
+  // Animation.effect block subseuqent changes via CSS keyframe rules.
+  bool GetIgnoreCSSKeyframes() { return ignore_css_keyframes_; }
+  void SetIgnoreCSSKeyframes() { ignore_css_keyframes_ = true; }
+
  private:
   EffectModel::CompositeOperation CompositeInternal() const;
 
@@ -164,6 +169,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   Priority priority_;
 
   Vector<int> compositor_keyframe_model_ids_;
+
+  bool ignore_css_keyframes_;
 };
 
 template <>

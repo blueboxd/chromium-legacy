@@ -6,7 +6,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/optional.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewInteractions_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -272,6 +271,49 @@ void SetViewVisibility(
   Java_AssistantViewInteractions_setViewVisibility(
       env, jview->second,
       ui_controller_android_utils::ToJavaValue(env, *visible_value));
+}
+
+void RunConditionalCallback(
+    base::WeakPtr<BasicInteractions> basic_interactions,
+    const std::string& condition_identifier,
+    InteractionHandlerAndroid::InteractionCallback callback) {
+  if (!basic_interactions) {
+    return;
+  }
+  basic_interactions->RunConditionalCallback(condition_identifier, callback);
+}
+
+void SetToggleButtonChecked(
+    base::WeakPtr<UserModel> user_model,
+    const std::string& view_identifier,
+    const std::string& model_identifier,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+  if (!user_model) {
+    return;
+  }
+
+  auto jview = views->find(view_identifier);
+  if (jview == views->end()) {
+    DVLOG(2) << "Failed to set toggle state for " << view_identifier
+             << ": view not found";
+    return;
+  }
+
+  auto checked_value = user_model->GetValue(model_identifier);
+  if (!checked_value.has_value() ||
+      checked_value->booleans().values_size() != 1) {
+    DVLOG(2) << "Failed to set toggle state for " << view_identifier << ": "
+             << model_identifier << " did not contain single boolean";
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!Java_AssistantViewInteractions_setToggleButtonChecked(
+          env, jview->second,
+          ui_controller_android_utils::ToJavaValue(env, *checked_value))) {
+    DVLOG(2) << "Failed to set toggle state for " << view_identifier
+             << ": JNI call failed";
+  }
 }
 
 }  // namespace android_interactions

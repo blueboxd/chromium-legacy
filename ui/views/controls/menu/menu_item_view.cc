@@ -262,9 +262,9 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     int item_id,
     const base::string16& label,
     const base::string16& minor_text,
-    const gfx::VectorIcon* minor_icon,
+    const ui::ThemedVectorIcon& minor_icon,
     const gfx::ImageSkia& icon,
-    const gfx::VectorIcon* vector_icon,
+    const ui::ThemedVectorIcon& vector_icon,
     Type type,
     ui::MenuSeparatorType separator_style) {
   DCHECK_NE(type, Type::kEmpty);
@@ -284,7 +284,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     item->SetTitle(label);
   item->SetMinorText(minor_text);
   item->SetMinorIcon(minor_icon);
-  if (vector_icon) {
+  if (!vector_icon.empty()) {
     DCHECK(icon.isNull());
     item->SetIcon(vector_icon);
   }
@@ -337,8 +337,10 @@ void MenuItemView::AppendSeparator() {
 
 void MenuItemView::AddSeparatorAt(int index) {
   AddMenuItemAt(index, /*item_id=*/0, /*label=*/base::string16(),
-                /*minor_text=*/base::string16(), /*minor_icon=*/nullptr,
-                /*icon=*/gfx::ImageSkia(), /*vector_icon=*/nullptr,
+                /*minor_text=*/base::string16(),
+                /*minor_icon=*/ui::ThemedVectorIcon(),
+                /*icon=*/gfx::ImageSkia(),
+                /*vector_icon=*/ui::ThemedVectorIcon(),
                 /*type=*/Type::kSeparator,
                 /*separator_style=*/ui::NORMAL_SEPARATOR);
 }
@@ -348,8 +350,9 @@ MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
                                                const gfx::ImageSkia& icon,
                                                Type type) {
   const int index = submenu_ ? int{submenu_->children().size()} : 0;
-  return AddMenuItemAt(index, item_id, label, base::string16(), nullptr, icon,
-                       nullptr, type, ui::NORMAL_SEPARATOR);
+  return AddMenuItemAt(index, item_id, label, base::string16(),
+                       ui::ThemedVectorIcon(), icon, ui::ThemedVectorIcon(),
+                       type, ui::NORMAL_SEPARATOR);
 }
 
 SubmenuView* MenuItemView::CreateSubmenu() {
@@ -385,7 +388,7 @@ void MenuItemView::SetMinorText(const base::string16& minor_text) {
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
 
-void MenuItemView::SetMinorIcon(const gfx::VectorIcon* minor_icon) {
+void MenuItemView::SetMinorIcon(const ui::ThemedVectorIcon& minor_icon) {
   minor_icon_ = minor_icon;
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
@@ -421,48 +424,44 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
 }
 
 void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
-  vector_icon_ = nullptr;
+  vector_icon_.clear();
 
   if (icon.isNull()) {
     SetIconView(nullptr);
     return;
   }
 
-  ImageView* icon_view = new ImageView();
+  auto icon_view = std::make_unique<ImageView>();
   icon_view->SetImage(&icon);
-  SetIconView(icon_view);
+  SetIconView(std::move(icon_view));
 }
 
-void MenuItemView::SetIcon(const gfx::VectorIcon* icon) {
+void MenuItemView::SetIcon(const ui::ThemedVectorIcon& icon) {
   vector_icon_ = icon;
 }
 
 void MenuItemView::UpdateIconViewFromVectorIconAndTheme() {
-  if (!vector_icon_)
+  if (vector_icon_.empty())
     return;
 
   if (!icon_view_)
-    SetIconView(new ImageView());
+    SetIconView(std::make_unique<ImageView>());
 
   const bool use_touchable_layout =
       GetMenuController() && GetMenuController()->use_touchable_layout();
   const int icon_size = use_touchable_layout ? 20 : 16;
-  icon_view_->SetImage(
-      gfx::CreateVectorIcon(*vector_icon_, icon_size,
-                            GetNativeTheme()->GetSystemColor(
-                                ui::NativeTheme::kColorId_DefaultIconColor)));
+  icon_view_->SetImage(vector_icon_.GetImageSkia(GetNativeTheme(), icon_size));
 }
 
-void MenuItemView::SetIconView(ImageView* icon_view) {
+void MenuItemView::SetIconView(std::unique_ptr<ImageView> icon_view) {
   if (icon_view_) {
-    RemoveChildView(icon_view_);
-    delete icon_view_;
+    RemoveChildViewT(icon_view_);
     icon_view_ = nullptr;
   }
-  if (icon_view) {
-    AddChildView(icon_view);
-    icon_view_ = icon_view;
-  }
+
+  if (icon_view)
+    icon_view_ = AddChildView(std::move(icon_view));
+
   InvalidateLayout();
   SchedulePaint();
 }
@@ -1011,8 +1010,8 @@ void MenuItemView::PaintMinorIconAndText(
     gfx::Canvas* canvas,
     const MenuDelegate::LabelStyle& style) {
   base::string16 minor_text = GetMinorText();
-  const gfx::VectorIcon* minor_icon = GetMinorIcon();
-  if (minor_text.empty() && !minor_icon)
+  const ui::ThemedVectorIcon minor_icon = GetMinorIcon();
+  if (minor_text.empty() && minor_icon.empty())
     return;
 
   int available_height = height() - GetTopMargin() - GetBottomMargin();
@@ -1039,8 +1038,8 @@ void MenuItemView::PaintMinorIconAndText(
     render_text->Draw(canvas);
   }
 
-  if (minor_icon) {
-    gfx::ImageSkia image = CreateVectorIcon(*minor_icon, style.foreground);
+  if (!minor_icon.empty()) {
+    gfx::ImageSkia image = minor_icon.GetImageSkia(style.foreground);
 
     int image_x = GetMirroredRect(minor_text_bounds).right() -
                   render_text->GetContentWidth() -
@@ -1266,7 +1265,7 @@ base::string16 MenuItemView::GetMinorText() const {
   return minor_text_;
 }
 
-const gfx::VectorIcon* MenuItemView::GetMinorIcon() const {
+ui::ThemedVectorIcon MenuItemView::GetMinorIcon() const {
   return minor_icon_;
 }
 

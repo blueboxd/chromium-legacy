@@ -3217,8 +3217,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
                                                &bubble_view_mode);
 #if !defined(OS_CHROMEOS)
   if (SigninViewController::ShouldShowSigninForMode(bubble_view_mode)) {
-    browser_->signin_view_controller()->ShowSignin(
-        bubble_view_mode, browser_.get(), access_point);
+    browser_->signin_view_controller()->ShowSignin(bubble_view_mode,
+                                                   access_point);
     return;
   }
 #endif

@@ -139,6 +139,13 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // hit test regions.
   void AllowPreCommitInput() { allow_pre_commit_input_ = true; }
 
+  // Called on the main thread. Finds the matching element under the given
+  // point in visual viewport coordinates and runs the callback with the
+  // found element id on input thread task runner.
+  using ElementAtPointCallback = base::OnceCallback<void(uint64_t)>;
+  void FindScrollTargetOnMainThread(const gfx::PointF& point,
+                                    ElementAtPointCallback callback);
+
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
   ~WidgetInputHandlerManager() override;

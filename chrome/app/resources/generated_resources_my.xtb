@@ -1883,6 +1883,7 @@
 <translation id="3479552764303398839">ယခု မလို</translation>
 <translation id="3479685872808224578">ပုံနှိပ်စက်ဆာဗာကို ‌မတွေ့ပါ။ လိပ်စာကို ပြန်စစ်ပြီး ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="3481268647794498892"><ph name="ALTERNATIVE_BROWSER_NAME" /> ကို <ph name="COUNTDOWN_SECONDS" /> စက္ကန့်အကြာတွင် ဖွင့်ပါမည်</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> သည် အောက်ပါဖိုင်များကို ကြည့်နိုင်သည်</translation>
 <translation id="3484273680291419129">အန္တရာယ်ဖြစ်စေနိုင်သော ဆော့ဖ်ဝဲများကို ဖယ်ရှားနေပါသည်...</translation>
 <translation id="3484869148456018791">အသိမှတ်ပြု လက်မှတ်အသစ် ရယူရန်</translation>
 <translation id="3487007233252413104">အမည်မသိရ လုပ်ကိုင်မှု</translation>
@@ -1945,6 +1946,7 @@
 <translation id="3564848315152754834">USB လုံခြုံရေးကီး</translation>
 <translation id="3566721612727112615">မည်သည့်ဆိုက်မျှ ထည့်သွင်းထားခြင်း မရှိပါ</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" />က သင်၏ မျက်နှာပြင်ကို မျှဝေမှာကို သင်လိုချင်ပါသလား?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> သည် အောက်ပါဖိုင်နှင့် ဖိုင်တွဲများကို ကြည့်နိုင်သည်</translation>
 <translation id="3571734092741541777">စဖွင့်သတ်မှတ်ရန်</translation>
 <translation id="3574210789297084292">လက်မှတ်ထိုး ဝင်ရန်</translation>
 <translation id="3574917942258583917">မည်သို့ပင်ဖြစ်စေ ရုပ်ဖျက်မုဒ်မှ ထွက်လိုပါသလား။</translation>
@@ -1954,6 +1956,7 @@
 <translation id="3578594933904494462">ဤတဲပ်အကြောင်းအရာအား ဝေမျှထားသည်။</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; သည် ပရင်တာ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; တစ်လုံးအား သင်ပိုင်သည့် အဖွဲ့- &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;နှင့် ဝေမျှသုံးစွဲလိုသည်။ သင်လက်ခံပါက၊ ထိုပရင်တာအားတွင် အဖွဲ့ဝင်အားလုံး ပုံထုတ်နိုင်မည်ဖြစ်သည်။</translation>
 <translation id="357889014807611375">အခမဲ့မဟုတ်သော Wi-Fi</translation>
+<translation id="3582057310199111521">လိမ်လှည်သည့်ဝဘ်ဆိုက်တွင် ထည့်သွင်းထားပြီး ဒေတာပေါက်ကြားမှုတွင် တွေ့ရှိရသည်</translation>
 <translation id="3584169441612580296">ဓာတ်ပုံများ၊ ဂီတ၊ နှင့် အခြား မီဒီယာကို သင့် ကွန်ပျူတာမှ ဖတ်ပါ၊ ပြောင်းလဲပါ။</translation>
 <translation id="3586806079541226322">ဤဖိုင်ကို ဖွင့်၍မရပါ</translation>
 <translation id="3586931643579894722">အသေးစိတ်များ ဝှက်ထားရန်</translation>
@@ -3090,6 +3093,7 @@
 <translation id="5117930984404104619">လည်ပတ်ပြီးသည့် URL များအပါအဝင်၊ အခြားအိတ်စတန်းရှင်းများ၏ အမူအကျင့်ကို စောင့်ကြည့်စစ်ဆေးမည်</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">သင့်ဟာ့ဒစ် ပြည့်ပါပြီ။ ကျေးဇူးပြု၍ အခြားတည်နေရာတစ်ခုသို့ သိမ်းပါ သို့မဟုတ် ဟာ့ဒစ်ပေါ်တွင် နေရာများရန် ပြုလုပ်ပါ။</translation>
+<translation id="5122384452788334261">သင့်စက်တွင် သိုလှောင်ခန်းနေရာ နည်းနေသည်။ Plugin VM ကို အသုံးပြုရန် အနည်းဆုံး နေရာလွတ် <ph name="RECOMMENDED_SPACE" /> ရှိရန် အကြံပြုထားသည်။ နေရာလွတ်ပြုလုပ်ရန် စက်ပစ္စည်းသိုလှောင်ခန်းမှ ဖိုင်များကို ဖျက်ပါ။</translation>
 <translation id="5123433949759960244">ဘတ်စကက်ဘော</translation>
 <translation id="5125751979347152379">URL မမှန်</translation>
 <translation id="5126611267288187364">ပြောင်းလဲမှုများကို ကြည့်ရန်</translation>
@@ -5189,6 +5193,7 @@
 <translation id="7915471803647590281">ကျေးဇူးပြုပြီး တုံ့ပြန်ချက်ကို မပို့မီ ဘာတွေ ဖြစ်ပျက်နေကြောင်း ကျွန်ုပ်တို့ကို ပြောပြပါ။</translation>
 <translation id="7918257978052780342">စာရင်းသွင်းရန်</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />စက္ကန့်</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> သည် <ph name="FILENAME" /> ကို ကြည့်နိုင်သည်</translation>
 <translation id="7924358170328001543">ပို့တ်ထပ်ဆင့်ပို့ရာတွင် အမှားဖြစ်သွားသည်</translation>
 <translation id="792514962475806987">နေရာချထားသည့် ဇူးမ်အဆင့်−</translation>
 <translation id="7925247922861151263">AAA စစ်ဆေးခြင်း မအောင်မြင်ပါ</translation>
@@ -5351,6 +5356,7 @@
 <translation id="8118488170956489476">သင့်အဖွဲ့အစည်းက သင်၏ <ph name="BEGIN_LINK" />ဘရောင်ဇာကို စီမံခန့်ခွဲထားပါသည်<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">သင့်ဒေါင်းလုပ်များအား စီမံမည်</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />၊ <ph name="RECENT_PERMISSIONS_CHANGE_1" />၊ <ph name="RECENT_PERMISSIONS_CHANGE_2" /> နှင့် အခြားအရာများ</translation>
+<translation id="8120715633374652536">သင့်စက်တွင် သိုလှောင်ခန်းနေရာ နည်းနေသည်။ Plugin VM ကို အသုံးပြုရန် အနည်းဆုံး နေရာလွတ် <ph name="MINIMUM_SPACE" /> လိုအပ်ပြီး နေရာလွတ်<ph name="RECOMMENDED_SPACE" /> ကျော်ရှိရန် အကြံပြုထားသည်။ နေရာလွတ်ပြုလုပ်ရန် စက်ပစ္စည်းသိုလှောင်ခန်းမှ ဖိုင်များကို ဖျက်ပါ။</translation>
 <translation id="8123590694679414600"><ph name="TIME" /> တွင် သင်၏စင့်ခ်စကားဝှက်ဖြင့် ဒေတာကို 
           အသွင်ဝှက်ထားသည်။ ၎င်းတွင် ငွေပေးချေနည်းလမ်းများနှင့် Google Pay မှ လိပ်စာများ မပါဝင်ပါ။</translation>
 <translation id="81238879832906896">အဝါရောင်နှင့် အဖြူရောင်ပန်း</translation>

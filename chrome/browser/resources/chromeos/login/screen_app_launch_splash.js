@@ -92,7 +92,8 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
      */
     updateApp(app) {
       $('splash-header').textContent = app.name;
-      $('splash-header').style.backgroundImage = 'url(' + app.iconURL + ')';
+      $('splash-subheader').textContent = app.url;
+      $('splash-title').style.backgroundImage = 'url(' + app.iconURL + ')';
     },
 
     /**

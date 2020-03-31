@@ -575,7 +575,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   for (const auto& entry : pending_update_.AnimationsWithUpdates()) {
     if (entry.animation->effect()) {
       auto* effect = To<KeyframeEffect>(entry.animation->effect());
-      effect->SetModel(entry.effect->Model());
+      if (!effect->GetIgnoreCSSKeyframes())
+        effect->SetModel(entry.effect->Model());
       effect->UpdateSpecifiedTiming(entry.effect->SpecifiedTiming());
     }
 

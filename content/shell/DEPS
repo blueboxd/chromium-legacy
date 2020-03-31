@@ -43,6 +43,13 @@ include_rules = [
 
   # Access to the process specific switches.
   "+services/service_manager/embedder",
+
+  # Separating content shell and web test code. Only narrow parts of content
+  # shell may access and inject web test code at runtime.
+  # TODO(danakj): Drop browser/web_test too.
+  "-content/shell/common/web_test",
+  "-content/shell/renderer/web_test",
+  "-content/test_runner",
 ]
 
 specific_include_rules = {

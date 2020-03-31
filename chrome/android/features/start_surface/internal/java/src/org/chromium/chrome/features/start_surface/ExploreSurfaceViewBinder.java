@@ -28,6 +28,8 @@ class ExploreSurfaceViewBinder {
         } else if (propertyKey == IS_SHOWING_OVERVIEW) {
             setVisibility(parentView, model,
                     model.get(IS_EXPLORE_SURFACE_VISIBLE) && model.get(IS_SHOWING_OVERVIEW));
+        } else if (propertyKey == TOP_BAR_HEIGHT) {
+            setTopBarHeight(model);
         }
     }
 
@@ -59,5 +61,19 @@ class ExploreSurfaceViewBinder {
         } else {
             UiUtils.removeViewFromParent(feedSurfaceView);
         }
+    }
+
+    private static void setTopBarHeight(PropertyModel model) {
+        if (model.get(FEED_SURFACE_COORDINATOR) == null) return;
+        if (!model.get(IS_BOTTOM_BAR_VISIBLE)) return;
+
+        View feedSurfaceView = model.get(FEED_SURFACE_COORDINATOR).getView();
+        assert feedSurfaceView != null;
+        FrameLayout.LayoutParams layoutParams =
+                (FrameLayout.LayoutParams) feedSurfaceView.getLayoutParams();
+        if (layoutParams == null) return;
+
+        layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
+        feedSurfaceView.setLayoutParams(layoutParams);
     }
 }

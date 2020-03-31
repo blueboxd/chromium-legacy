@@ -79,8 +79,8 @@ TEST_F(ClipboardMacTest, ReadImageRetina) {
   Clipboard* clipboard = Clipboard::GetForCurrentThread();
   ClipboardMac* clipboard_mac = static_cast<ClipboardMac*>(clipboard);
 
-  SkBitmap bitmap =
-      clipboard_mac->ReadImage(ClipboardBuffer::kCopyPaste, pasteboard->get());
+  SkBitmap bitmap = clipboard_mac->ReadImageInternal(
+      ClipboardBuffer::kCopyPaste, pasteboard->get());
   EXPECT_EQ(2 * width, bitmap.width());
   EXPECT_EQ(2 * height, bitmap.height());
 }
@@ -95,8 +95,8 @@ TEST_F(ClipboardMacTest, ReadImageNonRetina) {
   Clipboard* clipboard = Clipboard::GetForCurrentThread();
   ClipboardMac* clipboard_mac = static_cast<ClipboardMac*>(clipboard);
 
-  SkBitmap bitmap =
-      clipboard_mac->ReadImage(ClipboardBuffer::kCopyPaste, pasteboard->get());
+  SkBitmap bitmap = clipboard_mac->ReadImageInternal(
+      ClipboardBuffer::kCopyPaste, pasteboard->get());
   EXPECT_EQ(width, bitmap.width());
   EXPECT_EQ(height, bitmap.height());
 }
@@ -109,8 +109,8 @@ TEST_F(ClipboardMacTest, EmptyImage) {
   Clipboard* clipboard = Clipboard::GetForCurrentThread();
   ClipboardMac* clipboard_mac = static_cast<ClipboardMac*>(clipboard);
 
-  SkBitmap bitmap =
-      clipboard_mac->ReadImage(ClipboardBuffer::kCopyPaste, pasteboard->get());
+  SkBitmap bitmap = clipboard_mac->ReadImageInternal(
+      ClipboardBuffer::kCopyPaste, pasteboard->get());
   EXPECT_EQ(0, bitmap.width());
   EXPECT_EQ(0, bitmap.height());
 }
@@ -132,8 +132,8 @@ TEST_F(ClipboardMacTest, PDFImage) {
   Clipboard* clipboard = Clipboard::GetForCurrentThread();
   ClipboardMac* clipboard_mac = static_cast<ClipboardMac*>(clipboard);
 
-  SkBitmap bitmap =
-      clipboard_mac->ReadImage(ClipboardBuffer::kCopyPaste, pasteboard->get());
+  SkBitmap bitmap = clipboard_mac->ReadImageInternal(
+      ClipboardBuffer::kCopyPaste, pasteboard->get());
   EXPECT_EQ(width, bitmap.width());
   EXPECT_EQ(height, bitmap.height());
 }

@@ -1879,6 +1879,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3479552764303398839">Si sasa</translation>
 <translation id="3479685872808224578">Imeshindwa kutambua seva ya kuchapisha. Tafadhali thibitisha anwani kisha ujaribu tena.</translation>
 <translation id="3481268647794498892">Inafungua katika <ph name="ALTERNATIVE_BROWSER_NAME" /> baada ya sekunde <ph name="COUNTDOWN_SECONDS" /></translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> inaweza kuona faili zifuatazo</translation>
 <translation id="3484273680291419129">Inaondoa programu hatari...</translation>
 <translation id="3484869148456018791">Pata cheti kipya</translation>
 <translation id="3487007233252413104">chaguo za kukokotoa zisizo na jina</translation>
@@ -1941,6 +1942,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3564848315152754834">Ufunguo wa usalama wa USB</translation>
 <translation id="3566721612727112615">Hakuna tovuti zilizoongezwa</translation>
 <translation id="3569382839528428029">Je, unataka <ph name="APP_NAME" /> ishiriki skrini yako?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> inaweza kuona faili na folda zifuatazo</translation>
 <translation id="3571734092741541777">Weka mipangilio</translation>
 <translation id="3574210789297084292">ingia</translation>
 <translation id="3574917942258583917">Ungependa kufunga hali fiche?</translation>
@@ -1950,6 +1952,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3578594933904494462">Maudhui ya kichupo hiki yanashirikiwa</translation>
 <translation id="357886715122934472">&lt;Strong&gt; <ph name="SENDER" /> &lt;/Strong&gt; anataka kushiriki printa &lt;strong&gt; <ph name="PRINTER_NAME" /> &lt;/Strong&gt; na kundi unalomiliki: &lt;strong&gt; <ph name="GROUP_NAME" /> &lt;/Strong&gt;. Ukikubali, wanachama wote wa kundi wataweza kuchapisha kwenye printa.</translation>
 <translation id="357889014807611375">Wi-Fi inayopima data</translation>
+<translation id="3582057310199111521">Liliwekwa kwenye tovuti ya kulaghai na lilipatikana kwenye tukio la ufichuzi haramu wa data</translation>
 <translation id="3584169441612580296">Kusoma na kubadilisha picha, muziki na maudhui mengine kwenye kompyuta yako</translation>
 <translation id="3586806079541226322">Imeshindwa kufungua faili</translation>
 <translation id="3586931643579894722">Ficha maelezo</translation>
@@ -3085,6 +3088,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5117930984404104619">Ufuatiliaji wa tabia ya viendelezi vingine, pamoja na URL zilizotembelewa</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Diski yako kuu imejaa. Tafadhali hifadhi kwenye eneo jingine au utafute nafasi zaidi kwenye diski kuu.</translation>
+<translation id="5122384452788334261">Nafasi ya hifadhi ya kifaa chako inakaribia kuisha. Tunapendekeza uwe na hifadhi ya angalau <ph name="RECOMMENDED_SPACE" /> ambayo haijatumika ili utumie Plugin VM. Ili uokoe nafasi, futa faili zilizo kwenye hifadhi ya kifaa.</translation>
 <translation id="5123433949759960244">Mpira wa kikapu</translation>
 <translation id="5125751979347152379">URL hiyo si sahihi.</translation>
 <translation id="5126611267288187364">Angalia mabadiliko</translation>
@@ -4179,7 +4183,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6586451623538375658">Badilisha kitufe msingi cha kipanya</translation>
 <translation id="6586604979641883411">Unahitaji angalau <ph name="REQUIRED_SPACE" /> ya nafasi ambayo haijatumika katika diski ili upate toleo jipya la Linux. Tafadhali futa ili upate nafasi kwenye kifaa chako na ujaribu tena.</translation>
 <translation id="6588043302623806746">Tumia DNS salama</translation>
-<translation id="659005207229852190">Imekamilisha ukaguzi wa usalama</translation>
+<translation id="659005207229852190">Imekamilisha ukaguzi wa usalama.</translation>
 <translation id="6590458744723262880">Badilisha jina la folda</translation>
 <translation id="6592267180249644460">Kumbukumbu ya WebRTC ilipigwa picha <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Imenasa alama yako ya kidole</translation>
@@ -5188,6 +5192,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7915471803647590281">Tafadhali tuelezee kinachofanyika kabla ya kutuma mwitiko.</translation>
 <translation id="7918257978052780342">Jiandikishe</translation>
 <translation id="7919210519031517829">Sek <ph name="DURATION" /></translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> inaweza kuona <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Hitilafu imetokea wakati wa kusambaza mlango</translation>
 <translation id="792514962475806987">Kiwango cha ukuzaji uliofungwa:</translation>
 <translation id="7925247922861151263">Ukaguzi wa AAA umeshindikana</translation>
@@ -5351,6 +5356,7 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Kivinjari chako kinathibitiwa<ph name="END_LINK" /> na shirika lako</translation>
 <translation id="8118860139461251237">Kudhibiti maudhui unayopakua</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> na zaidi</translation>
+<translation id="8120715633374652536">Nafasi ya hifadhi ya kifaa chako inakaribia kuisha. Unahitaji hifadhi ya angalau <ph name="MINIMUM_SPACE" /> ili utumie Plugin VM na tunapendekeza uwe na hifadhi inayozidi <ph name="RECOMMENDED_SPACE" /> ambayo haijatumika. Ili uokoe nafasi, futa faili zilizo kwenye hifadhi ya kifaa.</translation>
 <translation id="8123590694679414600">Data yako imesimbwa kwa njia fiche kwa kutumia kauli siri yako ya usawazishaji
           <ph name="TIME" />. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
 <translation id="81238879832906896">Ua la rangi ya manjano na nyeupe</translation>

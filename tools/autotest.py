@@ -39,8 +39,11 @@ _TEST_TARGET_SUFFIXES = [
     '_unittests',
 ]
 
+# Some test suites use suffixes that would also match non-test-suite targets.
+# Those test suites should be manually added here.
 _OTHER_TEST_TARGETS = [
     '//chrome/test:browser_tests',
+    '//chrome/test:unit_tests',
 ]
 
 

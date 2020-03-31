@@ -6,6 +6,7 @@
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
@@ -176,6 +177,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
+  base::HistogramTester histogram_tester;
   const int n = test_users_.size();
   for (int i = 1; i < n; ++i) {
     UserAddingScreen::Get()->Start();
@@ -194,6 +196,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
     EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
     ASSERT_EQ(unsigned(i + 1), user_manager->GetLoggedInUsers().size());
   }
+  histogram_tester.ExpectTotalCount("ChromeOS.UserAddingScreen.LoadTime",
+                                    n - 1);
 
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());

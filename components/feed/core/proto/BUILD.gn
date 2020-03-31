@@ -113,4 +113,9 @@ if (is_android) {
       "wire/version.proto",
     ]
   }
+
+  proto_java_library("proto_java_v2") {
+    proto_path = "../../../../"
+    sources = [ "v2/ui.proto" ]
+  }
 }

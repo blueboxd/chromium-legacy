@@ -182,7 +182,7 @@ class ExtensionManagement : public KeyedService {
                            std::string* required_version) const;
 
   // Returns whether the profile associated with this instance is supervised.
-  bool IsChild() const { return is_child_; }
+  bool is_child() const { return is_child_; }
 
  private:
   using SettingsIdMap =
@@ -215,12 +215,6 @@ class ExtensionManagement : public KeyedService {
 
   // Helper to update |extension_dict| for forced installs.
   void UpdateForcedExtensions(const base::DictionaryValue* extension_dict);
-
-  // Helper to update |settings_by_id_| for forced cloud reporting extension.
-  void UpdateForcedCloudReportingExtension();
-
-  // Returns true if cloud reporting policy is enabled.
-  bool IsCloudReportingPolicyEnabled() const;
 
   // Helper function to access |settings_by_id_| with |id| as key.
   // Adds a new IndividualSettings entry to |settings_by_id_| if none exists for

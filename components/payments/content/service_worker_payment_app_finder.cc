@@ -289,13 +289,27 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
     content::RenderFrameHost* initiator_render_frame_host,
     content::WebContents* web_contents,
     scoped_refptr<PaymentManifestWebDataService> cache,
-    const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+    std::vector<mojom::PaymentMethodDataPtr> requested_method_data,
     bool may_crawl_for_installable_payment_apps,
     GetAllPaymentAppsCallback callback,
     base::OnceClosure finished_writing_cache_callback_for_testing) {
+  DCHECK(!requested_method_data.empty());
+  // Do not look up payment handlers for ignored payment methods.
+  base::EraseIf(requested_method_data,
+                [&](const mojom::PaymentMethodDataPtr& method_data) {
+                  return base::Contains(ignored_methods_,
+                                        method_data->supported_method);
+                });
+  if (requested_method_data.empty()) {
+    std::move(callback).Run(
+        content::PaymentAppProvider::PaymentApps(),
+        std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>(),
+        /*error_message=*/"");
+    return;
+  }
+
   SelfDeletingServiceWorkerPaymentAppFinder* self_delete_factory =
       new SelfDeletingServiceWorkerPaymentAppFinder();
-
   std::unique_ptr<PaymentManifestDownloader> downloader;
   if (test_downloader_ != nullptr) {
     downloader = std::move(test_downloader_);
@@ -329,10 +343,16 @@ void ServiceWorkerPaymentAppFinder::RemoveAppsWithoutMatchingMethodData(
   }
 }
 
-ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder()
-    : test_downloader_(nullptr) {}
+void ServiceWorkerPaymentAppFinder::IgnorePaymentMethodForTest(
+    const std::string& method) {
+  ignored_methods_.insert(method);
+}
 
-ServiceWorkerPaymentAppFinder::~ServiceWorkerPaymentAppFinder() {}
+ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder()
+    : ignored_methods_({methods::kGooglePlayBilling}),
+      test_downloader_(nullptr) {}
+
+ServiceWorkerPaymentAppFinder::~ServiceWorkerPaymentAppFinder() = default;
 
 void ServiceWorkerPaymentAppFinder::
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(

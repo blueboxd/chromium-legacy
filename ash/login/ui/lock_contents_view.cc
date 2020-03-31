@@ -414,6 +414,8 @@ bool LockContentsView::TestApi::RemoveUser(const AccountId& account_id) {
   LoginBigUserView* big_view = FindUser(account_id);
   if (!big_view)
     return false;
+  if (!big_view->GetCurrentUser().can_remove)
+    return false;
   LoginBigUserView::TestApi user_api(big_view);
   user_api.Remove();
   return true;

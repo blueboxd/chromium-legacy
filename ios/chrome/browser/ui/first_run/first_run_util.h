@@ -27,12 +27,6 @@ extern NSString* const kChromeFirstRunUIWillFinishNotification;
 // of Service modal view.
 extern NSString* const kChromeFirstRunUIDidFinishNotification;
 
-// Checks if the last line of the label only contains one word and if so, insert
-// a newline character before the second to last word so that there are two
-// words on the last line. Should only be called on labels that span multiple
-// lines. Returns YES if a newline was added.
-BOOL FixOrphanWord(UILabel* label);
-
 // Creates the First Run sentinel file so that the user will not be shown First
 // Run on subsequent cold starts. The user is considered done with First Run
 // only after a successful sign-in or explicitly skipping signing in. First Run

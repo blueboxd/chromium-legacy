@@ -69,7 +69,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
       int offset) const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;
-  int GetChildCount() override;
+  int GetChildCount() const override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::Rect GetBoundsRect(const AXCoordinateSystem coordinate_system,
                           const AXClippingBehavior clipping_behavior,

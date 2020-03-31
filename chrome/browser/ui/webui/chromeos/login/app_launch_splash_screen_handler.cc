@@ -65,14 +65,12 @@ void AppLaunchSplashScreenHandler::DeclareLocalizedValues(
 
   const base::string16 product_os_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
-  builder->Add(
-      "shortcutInfo",
-      l10n_util::GetStringFUTF16(IDS_APP_START_BAILOUT_SHORTCUT_FORMAT,
-                                 product_os_name));
+  builder->Add("shortcutInfo",
+               l10n_util::GetStringFUTF16(IDS_APP_START_BAILOUT_SHORTCUT_FORMAT,
+                                          product_os_name));
 
-  builder->Add(
-      "productName",
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
+  builder->Add("productName",
+               l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
 }
 
 void AppLaunchSplashScreenHandler::Initialize() {
@@ -111,8 +109,7 @@ void AppLaunchSplashScreenHandler::RegisterMessages() {
               &AppLaunchSplashScreenHandler::HandleNetworkConfigRequested);
 }
 
-void AppLaunchSplashScreenHandler::Hide() {
-}
+void AppLaunchSplashScreenHandler::Hide() {}
 
 void AppLaunchSplashScreenHandler::ToggleNetworkConfig(bool visible) {
   CallJS("login.AppLaunchSplashScreen.toggleNetworkConfig", visible);
@@ -230,8 +227,14 @@ void AppLaunchSplashScreenHandler::PopulateAppInfo(
         IDR_PRODUCT_LOGO_128);
   }
 
+  // Display app domain if present.
+  if (!app.url.is_empty()) {
+    app.url = app.url.GetOrigin();
+  }
+
   out_info->SetString("name", app.name);
   out_info->SetString("iconURL", webui::GetBitmapDataUrl(*app.icon.bitmap()));
+  out_info->SetString("url", app.url.spec());
 }
 
 void AppLaunchSplashScreenHandler::SetLaunchText(const std::string& text) {

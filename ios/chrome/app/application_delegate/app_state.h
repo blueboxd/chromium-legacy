@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@class AppState;
 @protocol BrowserLauncher;
 @class SceneState;
 @class MainApplicationDelegate;
@@ -15,6 +16,16 @@
 @protocol StartupInformation;
 @protocol TabOpening;
 @protocol TabSwitching;
+
+@protocol AppStateObserver <NSObject>
+
+@optional
+
+// Called when the first scene becomes active.
+- (void)appState:(AppState*)appState
+    firstSceneActivated:(SceneState*)sceneState;
+
+@end
 
 // Represents the application state and responds to application state changes
 // and system events.
@@ -87,6 +98,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 // Returns a list of all connected scenes.
 - (NSArray<SceneState*>*)connectedScenes;
+
+// Adds an observer to this app state. The observers will be notified about
+// app state changes per AppStateObserver protocol.
+- (void)addObserver:(id<AppStateObserver>)observer;
+// Removes the observer. It's safe to call this at any time, including from
+// AppStateObserver callbacks.
+- (void)removeObserver:(id<AppStateObserver>)observer;
 
 @end
 

@@ -1641,6 +1641,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_STATUS_INTERRUPTED" desc="Status text for a download item that was interrupted.">
         Failed - <ph name="INTERRUPT_REASON">$1<ex>Disk full</ex></ph>
       </message>
+      <message name="IDS_DOWNLOAD_STATUS_SCANNED" desc="Status text for a download item that being scanned.">
+        Being scanned
+      </message>
       <message name="IDS_DOWNLOAD_UNCONFIRMED_PREFIX" desc="The prefix used in the unconfirmed download file.">
         Unconfirmed
       </message>
@@ -4093,9 +4096,6 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_SCREENLOCK_PRIVATE" desc="Permission string for locking an unlocking the screen.">
           Lock and unlock the screen
-        </message>
-        <message name="IDS_EXTENSION_PROMPT_WARNING_OVERRIDE_BOOKMARKS_UI" desc="Permission string for overriding elements of the bookmarks user interface.">
-          Change the bookmarks user interface
         </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_ACTIVITY_LOG_PRIVATE" desc="Permission string for the observing other extensions' API calls">
           Monitor the behavior of other extensions, including visited URLs

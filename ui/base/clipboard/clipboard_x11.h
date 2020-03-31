@@ -42,7 +42,8 @@ class ClipboardX11 : public Clipboard {
                 uint32_t* fragment_start,
                 uint32_t* fragment_end) const override;
   void ReadRTF(ClipboardBuffer buffer, std::string* result) const override;
-  SkBitmap ReadImage(ClipboardBuffer buffer) const override;
+  void ReadImage(ClipboardBuffer buffer,
+                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const base::string16& type,
                       base::string16* result) const override;
@@ -70,6 +71,8 @@ class ClipboardX11 : public Clipboard {
   void WriteData(const ClipboardFormatType& format,
                  const char* data_data,
                  size_t data_len) override;
+
+  SkBitmap ReadImageInternal(ClipboardBuffer buffer) const;
 
   // TODO(dcheng): Is this still needed now that each platform clipboard has its
   // own class derived from Clipboard?

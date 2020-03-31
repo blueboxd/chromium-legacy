@@ -52,9 +52,13 @@ function assert_is_upgraded(element, className, description) {
   assert_equals(Object.getPrototypeOf(element), className.prototype, description);
 }
 
-// Asserts that func synchronously invokes the error event handler in w
-// with the expected error.
-function assert_reports(w, expected_error, func, description) {
+// Asserts that func synchronously invokes the error event handler in w.
+// Captures and returns the error that is reported.
+//
+// Do not use this function directly; instead use one of assert_reports_js,
+// assert_reports_dom, or assert_reports_exactly. Those functions also check
+// that the error reported is the expected one.
+function assert_reports_impl(w, func) {
   let old_onerror = w.onerror;
   let errors = [];
   w.onerror = (event, source, line_number, column_number, error) => {
@@ -69,36 +73,26 @@ function assert_reports(w, expected_error, func, description) {
     w.onerror = old_onerror;
   }
   assert_equals(errors.length, 1, 'only one error should have been reported');
-  // The testharness.js methods have error expectation matchers that can only be
-  // accessed by throwing the error.
-  if (typeof(expected_error) == 'string') {
-    assert_throws_dom(expected_error, () => { throw errors[0]; });
-  } else if (typeof(expected_error) == 'function') {
-    assert_throws_js(expected_error, () => { throw errors[0]; });
-  } else {
-    assert_throws_exactly(expected_error, () => { throw errors[0]; });
-  }
+  return errors[0];
 }
 
 // Asserts that func synchronously invokes the error event handler in w
-// with the expected error.
+// with the expected DOMException.
+function assert_reports_dom(w, expected_error, func, description) {
+  const e = assert_reports_impl(w, func);
+  assert_throws_dom(expected_error, () => { throw e; }, description);
+}
+
+// Asserts that func synchronously invokes the error event handler in w
+// with the expected JavaScript error.
 function assert_reports_js(w, expected_error, func, description) {
-  let old_onerror = w.onerror;
-  let errors = [];
-  w.onerror = (event, source, line_number, column_number, error) => {
-    errors.push(error);
-    return true;  // the error is handled
-  };
-  try {
-    func();
-  } catch (e) {
-    assert_unreached(`should report, not throw, an exception: ${e}`);
-  } finally {
-    w.onerror = old_onerror;
-  }
-  assert_equals(errors.length, 1, 'only one error should have been reported');
-  assert_true(
-      typeof errors[0] === 'object' && errors[0] !== null,
-      'got something other than an error');
-  assert_equals(expected_error.name, errors[0].name);
+  const e = assert_reports_impl(w, func);
+  assert_throws_js(expected_error, () => { throw e; }, description);
+}
+
+// Asserts that func synchronously invokes the error event handler in w
+// with exactly the expected error.
+function assert_reports_exactly(w, expected_error, func, description) {
+  const e = assert_reports_impl(w, func);
+  assert_throws_exactly(expected_error, () => { throw e; }, description);
 }

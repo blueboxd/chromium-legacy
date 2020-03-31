@@ -180,7 +180,6 @@ const char kTtsVoicesLang[] = "lang";
 const char kTtsVoicesRemote[] = "remote";
 const char kTtsVoicesVoiceName[] = "voice_name";
 const char kType[] = "type";
-const char kUIOverride[] = "chrome_ui_overrides";
 const char kUpdateURL[] = "update_url";
 const char kUrlHandlers[] = "url_handlers";
 const char kUrlHandlerTitle[] = "title";

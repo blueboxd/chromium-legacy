@@ -182,7 +182,6 @@ public class AwContentsClientFullScreenTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/1065092")
     public void testOnShowCustomViewAndPlayWithHtmlControl_video() throws Throwable {
         doTestOnShowCustomViewAndPlayWithHtmlControl(VIDEO_TEST_URL);
     }
@@ -230,7 +229,6 @@ public class AwContentsClientFullScreenTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/1065115")
     public void testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_video() throws Throwable {
         doTestPowerSaveBlockerIsEnabledDuringFullscreenPlayback(VIDEO_TEST_URL);
     }

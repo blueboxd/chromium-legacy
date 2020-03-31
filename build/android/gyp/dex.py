@@ -22,6 +22,11 @@ sys.path.insert(1, os.path.join(os.path.dirname(__file__), os.path.pardir))
 import convert_dex_profile
 
 
+_IGNORE_WARNINGS = (
+    # A play services library triggers this.
+    'Type `libcore.io.Memory` was not found', )
+
+
 def _ParseArgs(args):
   args = build_utils.ExpandFileArgs(args)
   parser = argparse.ArgumentParser()
@@ -53,6 +58,15 @@ def _ParseArgs(args):
       action='store_true',
       help='Allow multiple dex files within output.')
   parser.add_argument('--r8-jar-path', required=True, help='Path to R8 jar.')
+  parser.add_argument('--desugar', action='store_true')
+  parser.add_argument(
+      '--bootclasspath',
+      action='append',
+      help='GN-list of bootclasspath. Needed for --desugar')
+  parser.add_argument(
+      '--classpath',
+      action='append',
+      help='GN-list of full classpath. Needed for --desugar')
   parser.add_argument(
       '--release',
       action='store_true',
@@ -100,9 +114,16 @@ def _ParseArgs(args):
   if options.main_dex_list_path and not options.multi_dex:
     parser.error('--main-dex-list-path is unused if multidex is not enabled')
 
+  if options.desugar and options.classpath is None:
+    parser.error('--classpath required with use of --desugar')
+  if options.desugar and options.bootclasspath is None:
+    parser.error('--bootclasspath required with use of --desugar')
+
   options.class_inputs = build_utils.ParseGnList(options.class_inputs)
   options.class_inputs_filearg = build_utils.ParseGnList(
       options.class_inputs_filearg)
+  options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
+  options.classpath = build_utils.ParseGnList(options.classpath)
   options.dex_inputs = build_utils.ParseGnList(options.dex_inputs)
   options.dex_inputs_filearg = build_utils.ParseGnList(
       options.dex_inputs_filearg)
@@ -112,7 +133,27 @@ def _ParseArgs(args):
 
 def _RunD8(dex_cmd, input_paths, output_path):
   dex_cmd = dex_cmd + ['--output', output_path] + input_paths
-  build_utils.CheckOutput(dex_cmd, print_stderr=False)
+
+  def stderr_filter(output):
+    # Filter out warnings caused by our fake main dex list used to enable
+    # multidex on library targets.
+    # Warning: Application does not contain `Foo` as referenced in main-dex-list
+    pattern = r'does not contain `Foo`'
+    pattern += '|' + '|'.join(re.escape(p) for p in _IGNORE_WARNINGS)
+    output = build_utils.FilterLines(output, pattern)
+
+    # Each warning has a prefix line of tthe file it's from. If we've filtered
+    # out the warning, then also filter out the file header.
+    # E.g.:
+    # Warning in path/to/Foo.class:
+    #   Error message #1 indented here.
+    #   Error message #2 indented here.
+    output = re.sub(r'^Warning in .*?:\n(?!  )', '', output, flags=re.MULTILINE)
+    return output
+
+  # stdout sometimes spams with things like:
+  # Stripped invalid locals information from 1 method.
+  build_utils.CheckOutput(dex_cmd, stderr_filter=stderr_filter)
 
 
 def _EnvWithArtLibPath(binary_path):
@@ -353,12 +394,16 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
   tmp_extract_dir = os.path.join(tmp_dir, 'tmp_extract_dir')
   os.mkdir(tmp_extract_dir)
 
-  # Check whether changes were to a non-jar file, requiring full re-dex.
-  # E.g. r8.jar updated.
-  rebuild_all = changes.HasStringChanges() or not all(
-      p.endswith('.jar') for p in changes.IterChangedPaths())
+  # Do a full rebuild when changes are to classpath or other non-input files.
+  allowed_changed = set(options.class_inputs)
+  allowed_changed.update(options.dex_inputs)
+  strings_changed = changes.HasStringChanges()
+  non_direct_input_changed = next(
+      (p for p in changes.IterChangedPaths() if p not in allowed_changed), None)
 
-  if rebuild_all:
+  if strings_changed or non_direct_input_changed:
+    logging.debug('Full dex required: strings_changed=%s path_changed=%s',
+                  strings_changed, non_direct_input_changed)
     changes = None
   class_files = _ExtractClassFiles(changes, tmp_extract_dir,
                                    options.class_inputs)
@@ -411,6 +456,8 @@ def main(args):
     input_paths.append(options.main_dex_list_path)
   input_paths.append(options.r8_jar_path)
 
+  depfile_deps = options.class_inputs_filearg + options.dex_inputs_filearg
+
   output_paths = [options.output]
 
   if options.incremental_dir:
@@ -425,12 +472,24 @@ def main(args):
 
   dex_cmd = [
       build_utils.JAVA_PATH, '-jar', options.r8_jar_path, 'd8',
-      '--no-desugaring'
   ]
   if options.release:
     dex_cmd += ['--release']
   if options.min_api:
     dex_cmd += ['--min-api', options.min_api]
+
+  if options.desugar:
+    dex_cmd += ['--lib', build_utils.JAVA_HOME]
+    for path in options.bootclasspath:
+      dex_cmd += ['--lib', path]
+    for path in options.classpath:
+      dex_cmd += ['--classpath', path]
+    depfile_deps += options.classpath
+    depfile_deps += options.bootclasspath
+    input_paths += options.classpath
+    input_paths += options.bootclasspath
+  else:
+    dex_cmd += ['--no-desugaring']
 
   if options.force_enable_assertions:
     dex_cmd += ['--force-enable-assertions']
@@ -438,12 +497,12 @@ def main(args):
   md5_check.CallAndWriteDepfileIfStale(
       lambda changes: _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd),
       options,
-      depfile_deps=options.class_inputs_filearg + options.dex_inputs_filearg,
-      output_paths=output_paths,
       input_paths=input_paths,
       input_strings=dex_cmd + [bool(options.incremental_dir)],
+      output_paths=output_paths,
       pass_changes=True,
-      track_subpaths_allowlist=track_subpaths_allowlist)
+      track_subpaths_allowlist=track_subpaths_allowlist,
+      depfile_deps=depfile_deps)
 
 
 if __name__ == '__main__':

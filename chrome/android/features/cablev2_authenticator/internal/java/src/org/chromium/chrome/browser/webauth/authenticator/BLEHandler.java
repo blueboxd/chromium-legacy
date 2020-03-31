@@ -73,6 +73,9 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     private static final String STATE_FILE_NAME = "cablev2_authenticator";
     private static final String STATE_VALUE_NAME = "keys";
 
+    // The (G)ATT op-code and attribute handle take three bytes.
+    private static final int GATT_MTU_OVERHEAD = 3;
+
     /**
      * The pending fragments to send to each client. If present, the value is
      * never an empty array.
@@ -173,9 +176,19 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     @Override
     public void onMtuChanged(BluetoothDevice device, int mtu) {
         Long client = addressToLong(device.getAddress());
+        // At least six bytes is required: three bytes of GATT overhead and
+        // three bytes of CTAP2 framing. If the requested MTU is less than
+        // this, try six bytes anyway. The operations will probably fail but
+        // there's nothing we can do about it.
+        if (mtu < 6) {
+            mtu = 6;
+        }
+
+        int clientMTU = mtu - GATT_MTU_OVERHEAD;
+
         mTaskRunner.postTask(() -> {
-            mKnownMtus.put(client, mtu);
-            BLEHandlerJni.get().recordClientMtu(client, mtu);
+            mKnownMtus.put(client, clientMTU);
+            BLEHandlerJni.get().recordClientMtu(client, clientMTU);
         });
     }
 
@@ -195,17 +208,10 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                 mTaskRunner.postTask(() -> {
                     Integer mtu = mKnownMtus.get(client);
                     if (mtu == null) {
-                        // If no MTU is negotiated, the GATT default is just 23 bytes.
-                        mtu = 23;
+                        // If no MTU is negotiated, the GATT default is just 23
+                        // bytes. Subtract three bytes of GATT overhead.
+                        mtu = 23 - GATT_MTU_OVERHEAD;
                     }
-                    if (mtu < 4) {
-                        Log.i(TAG, "MTU unusably small");
-                        mServer.sendResponse(
-                                device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
-                        return;
-                    }
-                    // The (G)ATT op-code and attribute handle take three bytes.
-                    mtu -= 3;
                     byte[] mtuBytes = {(byte) (mtu >> 8), (byte) (mtu & 0xff)};
                     mServer.sendResponse(
                             device, requestId, BluetoothGatt.GATT_SUCCESS, 0, mtuBytes);

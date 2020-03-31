@@ -153,16 +153,6 @@
         en-US
       </message>
 
-      <!-- The width of the Extension Wipeout bubble in characters (See above). -->
-      <message name="IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
-        55
-      </message>
-
-      <!-- The width of the Extension Toolbar Redesign bubble in characters (See above). -->
-      <message name="IDS_EXTENSION_TOOLBAR_REDESIGN_NOTIFICATION_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
-        55
-      </message>
-
       <!-- The width and height of the Edit Bookmark dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_EDITBOOKMARK_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -170,11 +160,6 @@
       </message>
       <message name="IDS_EDITBOOKMARK_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         25
-      </message>
-
-      <!-- The language dependent download view size. -->
-      <message name="IDS_DOWNLOAD_BIG_PROGRESS_SIZE" use_name_for_id="true">
-        52
       </message>
 
       <!-- The URL for the themes gallery. -->
@@ -200,26 +185,10 @@
         http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager06.html
       </message>
 
-      <message name="IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL" translateable="false">
-        https://support.google.com/chrome/answer/1181420
-      </message>
-
       <!-- The width for the "create application shortcuts" dialog in characters. -->
       <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         65
       </message>
-
-      <if expr="is_win">
-        <!-- The width of the make-default-in-metro dialog in characters. -->
-        <message name="IDS_METRO_FLOW_WIDTH_CHARS" use_name_for_id="true">
-          78
-        </message>
-
-        <!-- The height of the make-default-in-metro dialog in characters. -->
-        <message name="IDS_METRO_FLOW_HEIGHT_LINES" use_name_for_id="true">
-          26
-        </message>
-      </if>
 
       <!-- The width of the media galleries configuration dialog in characters. -->
       <message name="IDS_MEDIA_GALLERIES_DIALOG_CONTENT_WIDTH_CHARS" use_name_for_id="true">

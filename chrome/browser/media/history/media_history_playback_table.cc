@@ -43,9 +43,10 @@ sql::InitStatus MediaHistoryPlaybackTable::CreateTableIfNonExistent() {
 
   if (success) {
     success = DB()->Execute(
-        base::StringPrintf("CREATE INDEX IF NOT EXISTS origin_id_index ON "
-                           "%s (origin_id)",
-                           kTableName)
+        base::StringPrintf(
+            "CREATE INDEX IF NOT EXISTS playback_origin_id_index ON "
+            "%s (origin_id)",
+            kTableName)
             .c_str());
   }
 

@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">شبکه‌های قابل مشاهده:</translation>
 <translation id="1094607894174825014">عملیات خواندن یا نوشتن با فاصله نامعتبری در این دستگاه درخواست شد: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="1097658378307015415">قبل از ورود به سیستم، لطفاً جهت فعال کردن شبکه <ph name="NETWORK_ID" />، به‌عنوان مهمان وارد شوید</translation>
+<translation id="1099962274138857708">تصویر از <ph name="DEVICE_NAME" /> کپی شده است</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> همیشه ترجمه شود</translation>
 <translation id="1104038495841596279">سیم‌کارت شناسایی نشد</translation>
 <translation id="1108600514891325577">&amp;توقف</translation>
@@ -558,6 +559,7 @@
 <translation id="1744108098763830590">صفحه پس‌زمینه</translation>
 <translation id="1745520510852184940">این کار همیشه انجام شود</translation>
 <translation id="1750172676754093297">کلید امنیتی نمی‌تواند اثر انگشت را ذخیره کند</translation>
+<translation id="1751262127955453661">تا زمانی که همه برگه‌های <ph name="ORIGIN" /> را نبندید، این سایت می‌تواند فایل‌های موجود در <ph name="FOLDERNAME" /> را ویرایش کند</translation>
 <translation id="175196451752279553">با&amp;ز کردن مجدد برگه بسته</translation>
 <translation id="1753067873202720523">‏ممکن است Chromebook شما هنگام روشن بودن شارژ نشود.</translation>
 <translation id="1753905327828125965">بیشترین موارد بازدید شده</translation>
@@ -624,6 +626,7 @@
 <translation id="1822140782238030981">‏قبلاً کاربر Chrome بوده‌اید؟ به سیستم وارد شوید</translation>
 <translation id="18245044880483936">‏داده‌های پشتیبان‌گیری‌شده جزو سهمیه فضای ذخیره‌سازی Drive فرزندتان حساب نمی‌شود.</translation>
 <translation id="1826516787628120939">در حال بررسی</translation>
+<translation id="1827738518074806965">گالری هنری</translation>
 <translation id="1828378091493947763">این افزایه در این دستگاه پشتیبانی نمی‌شود</translation>
 <translation id="1828901632669367785">چاپ با استفاده از گفتگوی سیستم...</translation>
 <translation id="1829129547161959350">پنگوئن</translation>
@@ -1025,6 +1028,7 @@
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="236117173274098341">بهینه‌سازی</translation>
 <translation id="236141728043665931">دسترسی به میکروفون همیشه مسدود شود</translation>
+<translation id="2364498172489649528">موفق</translation>
 <translation id="2365507699358342471">این سایت می‌تواند به نوشتار و تصاویر کپی‌شده در بریده‌دان دسترسی پیدا کند.</translation>
 <translation id="2366260648632264559">نمایش نوشتار سیستم به این زبان</translation>
 <translation id="2367972762794486313">نمایش برنامه‌ها</translation>
@@ -1339,6 +1343,7 @@
 <translation id="2762441749940182211">دوربین مسدود شده است</translation>
 <translation id="2765217105034171413">کوچک</translation>
 <translation id="2766161002040448006">پرسش از ولی</translation>
+<translation id="2767127727915954024">تا زمانی‌که همه برگه‌های <ph name="ORIGIN" /> را نبندید، این سایت می‌تواند <ph name="FILENAME" /> را ویرایش کند</translation>
 <translation id="276969039800130567">با <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شد.</translation>
 <translation id="2770465223704140727">حذف از فهرست</translation>
 <translation id="2770690685823456775">گذرواژه‌ها را به پوشه دیگری صادر کنید</translation>
@@ -1663,6 +1668,18 @@
 <translation id="3202173864863109533">صدای این برگه قطع شده است.</translation>
 <translation id="3208321278970793882">برنامه</translation>
 <translation id="3208584281581115441">اکنون بررسی شود</translation>
+<translation id="3208640652501208439">‏ممکن است منابع تکالیف مدرسه در دسترس نباشد یا به‌طور خودکار بارگیری نشود
+    ممکن است فرزندتان به این موارد دسترسی نداشته باشد:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />برنامه‌ها و افزونه‌هایی که مدرسه نصب کرده است
+      <ph name="LIST_ITEM" />نشانک‌های دستگاه Chromebook مدرسه
+      <ph name="LIST_ITEM" />گذرواژه‌های تکمیل خودکار در سایت‌های آموزشی
+    <ph name="END_LIST" />
+    برای داشتن تجربه کاملی از مدرسه در این دستگاه، فرزندتان باید:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />از سیستم حساب مدیریت‌شده توسط Family Link خارج شود
+      <ph name="OLIST_ITEM" />در صفحه ورود به سیستم، با حساب G Suite for Education خود به سیستم وارد شود. بااین‌حال، توجه داشته باشید این بدین معنی خواهد بود که خط‌مشی‌های مدرسه، ازجمله تنظیمات دسترسی به برنامه‌ها و وب‌سایت‌ها بر ویژگی‌های نظارتی Family Link اولویت خواهد داشت (برای نمونه، ممکن است سرپرستان مدرسه YouTube را درصورت لزوم برای انجام تکالیف مجاز کنند، مدت تماشای صفحه اعمال نشود، یا غیره).
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">تأیید نشده</translation>
 <translation id="32101887417650595">اتصال به چاپگر ممکن نیست</translation>
 <translation id="321084946921799184">زرد و سفید</translation>
@@ -1741,6 +1758,7 @@
 <translation id="3312424061798279731">زبان‌های فعال</translation>
 <translation id="3313622045786997898">ارزش امضای گواهی</translation>
 <translation id="3315158641124845231">عدم نمایش <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">اطلاعات حساب محل تحصیل ویژه والدین</translation>
 <translation id="3317459757438853210">دو طرفه</translation>
 <translation id="3317678681329786349">دوربین و میکروفون مسدود شده‌اند</translation>
 <translation id="3319048459796106952">&amp;پنجره جدید حالت ناشناس</translation>
@@ -1861,6 +1879,7 @@
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3479685872808224578">سرور چاپ شناسایی نشد. لطفاً نشانی را بررسی و دوباره امتحان کنید.</translation>
 <translation id="3481268647794498892">درحال باز شدن در <ph name="ALTERNATIVE_BROWSER_NAME" /> در<ph name="COUNTDOWN_SECONDS" /> ثانیه</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> می‌تواند فایل‌های زیر را مشاهده کند</translation>
 <translation id="3484273680291419129">درحال پاک کردن نرم‌افزار مضر…</translation>
 <translation id="3484869148456018791">دریافت گواهی‌نامه جدید</translation>
 <translation id="3487007233252413104">تابع ناشناس</translation>
@@ -1923,14 +1942,17 @@
 <translation id="3564848315152754834">‏کلید امنیتی USB</translation>
 <translation id="3566721612727112615">سایتی اضافه نشد</translation>
 <translation id="3569382839528428029">آیا می‌خواهید <ph name="APP_NAME" /> صفحه شما را به اشتراک بگذارد؟</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> می‌تواند فایل‌ها و پوشه‌های زیر را مشاهده کند</translation>
 <translation id="3571734092741541777">تنظیم</translation>
 <translation id="3574210789297084292">ورود به سیستم</translation>
 <translation id="3574917942258583917">درهرصورت از حالت ناشناس خارج می‌شوید؟</translation>
 <translation id="3575121482199441727">مجاز برای این سایت</translation>
+<translation id="3575919114596668130">‏تنظیمات والدینی Family Link شما همچنان اعمال خواهد شد. اگر قبلاً برنامه یا سایتی را مسدود کرده باشید، نیازی نیست این کار را دوباره انجام دهید.</translation>
 <translation id="3576324189521867626">نصب موفقیت‌آمیز بود</translation>
 <translation id="3578594933904494462">محتوای این برگه اشتراک‌گذاری می‌شود.</translation>
 <translation id="357886715122934472">‏&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; می‌خواهد چاپگر &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; را با گروهی که شما مالک آن هستید، به اشتراک بگذارد: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. اگر بپذیرید، تمام اعضای گروه می‌توانند با چاپگر چاپ کنند.</translation>
 <translation id="357889014807611375">‏Wi-Fi کنتوردار</translation>
+<translation id="3582057310199111521">در سایت فریب‌دهنده وارد و در نقض داده پیدا شد</translation>
 <translation id="3584169441612580296">خواندن و تغییر عکس‌ها، موسیقی، و رسانه‌های دیگر از رایانه‌تان</translation>
 <translation id="3586806079541226322">این فایل باز نمی‌شود</translation>
 <translation id="3586931643579894722">عدم نمایش جزئیات</translation>
@@ -2767,6 +2789,7 @@
 <translation id="4689235506267737042">انتخاب تنظیمات برگزیده حالت نمایشی</translation>
 <translation id="4689421377817139245">‏این نشانک را در iPhone خود همگام‌سازی کنید</translation>
 <translation id="4690091457710545971">‏&lt;سفت‌افزار Wi-Fi ‏Intel چهار فایل ایجاد می‌کند: csr.lst، ‏fh_regs.lst، ‏radio_reg.lst، ‏monitor.lst.sysmon.  سه فایل اول فایل‌های دودویی حاوی رونوشت‌های ثبت هستند و Intel تصریح کرده این فایل‌ها حاوی اطلاعات شخصی یا اطلاعات هویتی دستگاه نیست.  فایل آخر ردیابی اجرا از سفت‌افزار Intel است؛ هرگونه اطلاعات شخصی یا هویتی دستگاه از این فایل حذف شده اما برای نمایش در اینجا بسیار حجیم است.  این فایل‌ها جهت رفع مشکلات اخیر Wi-Fi در دستگاهتان ایجاد شده است و با Intel هم‌رسانی خواهد شد تا به عیب‌یابی این مشکلات کمک کند.&gt;</translation>
+<translation id="4691791363716065510">تا زمانی که همه برگه‌های <ph name="ORIGIN" /> را نبندید، این سایت می‌تواند <ph name="FILENAME" /> را مشاهده کند</translation>
 <translation id="4692623383562244444">موتورهای جستجو</translation>
 <translation id="4693155481716051732">سوشی</translation>
 <translation id="4694024090038830733">سرپرست سیستم، پیکربندی چاپگر را انجام می‌دهد.</translation>
@@ -3067,6 +3090,7 @@
 <translation id="5117930984404104619">کنترل رفتار افزودنی‌های دیگر از جمله نشانی‌های وب بازدید شده</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">دیسک سخت پر است. لطفاً در محل دیگری ذخیره کنید یا فضای بیشتری در دیسک سخت ایجاد کنید.</translation>
+<translation id="5122384452788334261">‏فضای ذخیره‌سازی دستگاهتان کم است. برای استفاده از Plugin VM، توصیه می‌شود حداقل <ph name="RECOMMENDED_SPACE" /> فضای آزاد داشته باشید. برای آزاد کردن فضا، فایل‌ها را از فضای ذخیره‌سازی دستگاه حذف کنید.</translation>
 <translation id="5123433949759960244">بسکتبال</translation>
 <translation id="5125751979347152379">نشانی وب نامعتبر است.</translation>
 <translation id="5126611267288187364">مشاهده تغییرات</translation>
@@ -3122,6 +3146,7 @@
 <translation id="5204967432542742771">گذرواژه را وارد کنید</translation>
 <translation id="5206215183583316675">«<ph name="CERTIFICATE_NAME" />» حذف شود؟</translation>
 <translation id="520621735928254154">خطا در وارد کردن گواهی</translation>
+<translation id="5209307736170827035">‏از داده‌های فرزندتان در Classroom محافظت می‌شود. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">دستگاهی یافت نشد</translation>
 <translation id="5210990770352357081">‏Plugin VM حذف نصب نشد</translation>
 <translation id="5213481667492808996">سرویس داده «<ph name="NAME" />» شما آماده استفاده است</translation>
@@ -3233,6 +3258,7 @@
 <translation id="5341980496415249280">لطفاً منتظر بمانید، درحال بسته‌بندی…</translation>
 <translation id="5342091991439452114">پین باید حداقل <ph name="MINIMUM" /> رقم باشد</translation>
 <translation id="5344036115151554031">‏درحال بازیابی Linux</translation>
+<translation id="535123479159372765">نوشتار از دستگاه دیگری کپی شده است</translation>
 <translation id="5352033265844765294">مهر زمان</translation>
 <translation id="5353252989841766347">‏صادر کردن گذرواژه‌ها از Chrome</translation>
 <translation id="5355099869024327351">به «دستیار» اجازه می‌دهد اعلان نشان دهد</translation>
@@ -3355,6 +3381,7 @@
 <translation id="5511379779384092781">بسیار کوچک</translation>
 <translation id="5511823366942919280">‏مطمئنید می‌خواهید این دستگاه را به عنوان «Shark» تنظیم کنید؟</translation>
 <translation id="5512653252560939721">گواهی‌نامه کاربر باید با سخت‌افزار پشتیبانی شود.</translation>
+<translation id="5515923816438946203">مواردی را که می‌خواهید روی صفحه ببینید انتخاب کنید</translation>
 <translation id="5517304475148761050">‏این برنامه باید به «فروشگاه Play» دسترسی پیدا کند</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">در حال افزودن چاپگر به حسابتان - این کار ممکن است چند دقیقه طول بکشد...</translation>
@@ -3805,6 +3832,7 @@
 <translation id="6097480669505687979">اگر فضا را آزاد نکنید، ممکن است کاربران و داده‌ها به‌طور خودکار حذف شوند.</translation>
 <translation id="6097600385983390082">جستجوی گفتاری بسته شد</translation>
 <translation id="6098793583803863900">فایل ناشناسی از نظر وجود محتوای خطرناک درحال اسکن شدن است.</translation>
+<translation id="609942571968311933">نوشتار از <ph name="DEVICE_NAME" /> کپی شده است</translation>
 <translation id="6100736666660498114">منوی شروع</translation>
 <translation id="6101226222197207147">برنامه جدید اضافه شده (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">این فایل توسط «محافظت پیشرفته» مسدود شده است.</translation>
@@ -4175,6 +4203,7 @@
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6615455863669487791">به من نشان بده</translation>
 <translation id="6618097958368085618">درهرصورت حفظ شود</translation>
+<translation id="6618744767048954150">درحال اجرا</translation>
 <translation id="6619058681307408113">‏Line Printer Daemon‏ (LPD)</translation>
 <translation id="661907246513853610">سایت می‌تواند مکانتان را ردیابی کند</translation>
 <translation id="6619801788773578757">افزودن برنامه کیوسک</translation>
@@ -4560,6 +4589,7 @@
 <translation id="7131040479572660648">خواندن داده‌های شما در <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> و <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">افزودن &amp;صفحه...</translation>
 <translation id="7133578150266914903">سرپرست درحال عقب‌گرد کردن این دستگاه است (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" /> گذرواژه از <ph name="TOTAL" /> گذرواژه بررسی شده است…</translation>
 <translation id="7134098520442464001">متن را کوتاهتر کنید</translation>
 <translation id="7135729336746831607">بلوتوث روشن شود؟</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> از شما می‌خواهد فوراً <ph name="DEVICE_TYPE" /> را به‌روزرسانی کنید.</translation>
@@ -4908,6 +4938,7 @@
 <translation id="761530003705945209">‏در Google Drive پشتیبان‌گیری کنید. به‌آسانی داده‌های خود را بازیابی کنید یا هرزمان خواستید دستگاهتان را عوض کنید. نسخه پشتیبان شما حاوی داده‌های برنامه است. داده‌های پشتیبان در Google بارگذاری می‌شود و بااستفاده از گذرواژه «حساب Google» رمزگذاری می‌شود.</translation>
 <translation id="7616214729753637086">درحال ثبت دستگاه...</translation>
 <translation id="7617366389578322136">اتصال به «<ph name="DEVICE_NAME" />»</translation>
+<translation id="761763866592998929">حالت گزینشی</translation>
 <translation id="762068974690945752">در اینجا حساب مدرسه اضافه کنید یا حساب‌های فرزند را مدیریت کنید. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">سیستم نتوانست پیکربندی دستگاه را ذخیره کند.</translation>
 <translation id="7622114377921274169">درحال شارژ شدن.</translation>
@@ -5019,6 +5050,7 @@
 <translation id="7766838926148951335">پذیرفتن مجوزها</translation>
 <translation id="7768770796815395237">تغییر دادن</translation>
 <translation id="7769672763586021400">شناسه مدل</translation>
+<translation id="7770612696274572992">تصویر از دستگاه دیگری کپی شده است</translation>
 <translation id="7770651108375708429">‏قطع اتصال Wi-Fi</translation>
 <translation id="7771452384635174008">صفحه آرایی</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
@@ -5026,6 +5058,7 @@
 <translation id="7772773261844472235">‏بررسی وضعیت Chromebook</translation>
 <translation id="7773726648746946405">ذخیره جلسه</translation>
 <translation id="7774365994322694683">پرنده</translation>
+<translation id="7776156998370251340">تا زمانی‌که همه برگه‌های <ph name="ORIGIN" /> را نبندید، این سایت می‌تواند فایل‌های موجود در <ph name="FOLDERNAME" /> را مشاهده کند</translation>
 <translation id="7776701556330691704">صدایی پیدا نشد</translation>
 <translation id="7780252971640011240">مشکلی در برقراری ارتباط وجود دارد. لطفاً برای دریافت راهنمایی با شرکت مخابراتی خود تماس بگیرید.</translation>
 <translation id="7781335840981796660">همه حساب‌های کاربر و داده‌های محلی حذف می‌شوند.</translation>
@@ -5159,6 +5192,7 @@
 <translation id="7915471803647590281">لطفاً قبل از ارسال بازخورد، به ما بگویید چه اتفاقی در حال وقوع است.</translation>
 <translation id="7918257978052780342">ثبت‌نام</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /></translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> می‌تواند <ph name="FILENAME" /> را مشاهده کند</translation>
 <translation id="7924358170328001543">خطا هنگام ارسال درگاه</translation>
 <translation id="792514962475806987">میزان بزرگ‌نمایی متصل:</translation>
 <translation id="7925247922861151263">‏بررسی AAA انجام نشد</translation>
@@ -5322,6 +5356,7 @@
 <translation id="8118488170956489476">سازمانتان<ph name="BEGIN_LINK" />مرورگر را مدیریت می‌کند<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">مدیریت بارگیری‌ها</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />، <ph name="RECENT_PERMISSIONS_CHANGE_1" />، <ph name="RECENT_PERMISSIONS_CHANGE_2" /> و بیشتر</translation>
+<translation id="8120715633374652536">‏فضای ذخیره‌سازی دستگاهتان کم است. برای استفاده از Plugin VM، حداقل <ph name="MINIMUM_SPACE" /> فضای آزاد لازم است اما توصیه می‌شود بیش از <ph name="RECOMMENDED_SPACE" /> فضای آزاد داشته باشید. برای آزاد کردن فضا، فایل‌ها را از فضای ذخیره‌سازی دستگاه حذف کنید.</translation>
 <translation id="8123590694679414600">‏داده‌هایتان در <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد.
           این کار شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay‌ نمی‌شود.</translation>
 <translation id="81238879832906896">گل زرد و سفید</translation>
@@ -6045,6 +6080,7 @@
 <translation id="9055636786322918818">‏اجرای اجباری رمزگذاری RC4. استفاده از این گزینه احتمال خطر را بالا می‌برد، زیرا رمزهای RC4 امن نیست.</translation>
 <translation id="9056810968620647706">مورد منطبقی یافت نشد.</translation>
 <translation id="9057354806206861646">زمان‌بندی به‌روزرسانی</translation>
+<translation id="9058976525724291037">‏فرزندتان می‌خواهد حساب Google دیگری را به این دستگاه اضافه کند. فقط حساب‌های G Suite for Education را می‌توان به دستگاه‌های مدیریت‌شده توسط Family Link اضافه کرد.</translation>
 <translation id="9062065967472365419">غافلگیرم کن</translation>
 <translation id="9062468308252555888">۱۴ برابر</translation>
 <translation id="9063208415146866933">خطا از خط <ph name="ERROR_LINE_START" /> تا <ph name="ERROR_LINE_END" /></translation>

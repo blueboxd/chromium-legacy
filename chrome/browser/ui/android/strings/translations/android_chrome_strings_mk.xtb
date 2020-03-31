@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Датум на завршување: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Инсталирано</translation>
 <translation id="1792959175193046959">Променете ја стандардната локација за преземање во секое време</translation>
+<translation id="1795251344124198516">Дополнителни услови за користење на Chrome и Chrome OS</translation>
 <translation id="1807246157184219062">Светла</translation>
 <translation id="1810845389119482123">Првичното поставување на синхронизацијата не е завршено</translation>
 <translation id="1821253160463689938">Користи колачиња за да ги запамети вашите поставки, дури и ако не ги посетувате тие страници</translation>
@@ -236,6 +237,7 @@
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиодатотека}one{# аудиодатотека}other{# аудиодатотеки}}</translation>
 <translation id="2687403674020088961">Блокирај ги сите колачиња (не се препорачува)</translation>
+<translation id="2689830683995595741">Ако користите Chrome, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Известувањето за приватност за сметките на Google управувани со Family Link<ph name="END_LINK3" /> исто така важи.</translation>
 <translation id="2707726405694321444">Освежи ја страницата</translation>
 <translation id="2709516037105925701">Автоматско пополнување</translation>
 <translation id="2717722538473713889">Адреси за е-пошта</translation>
@@ -376,6 +378,7 @@
 <translation id="3749259744154402564">Неподдржано</translation>
 <translation id="3771001275138982843">Не можеше да се преземе ажурирањето</translation>
 <translation id="3771033907050503522">Инкогнито картички</translation>
+<translation id="3771694256347217732">Услови за користење на Google</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Вклучете Bluetooth<ph name="END_LINK" /> за да овозможите спарување</translation>
 <translation id="3775705724665058594">Испратете до вашите уреди</translation>
 <translation id="3778956594442850293">Додадено на почетен екран</translation>
@@ -403,6 +406,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome ќе ја вчита страницата кога ќе биде спремна}one{Chrome ќе ги вчита страниците кога ќе бидат спремни}other{Chrome ќе ги вчита страниците кога ќе бидат спремни}}</translation>
 <translation id="3963007978381181125">Шифрирањето на лозинката не ги вклучува начините на плаќање и адресите од Google Pay. Само некој што ја има вашата лозинка може да ги чита вашите шифрирани податоци. Лозинката не се испраќа, ниту зачувува во Google. Доколку ја заборавите лозинката или сакате да ја промените поставкава, ќе треба да ја ресетирате синхронизацијата. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Преземањето е завршено</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> ќе се отвори во Chrome. Ако продолжите, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" />и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Известувањето за приватност за сметките на Google управувани со Family Link<ph name="END_LINK3" /> исто така важи.</translation>
 <translation id="397583555483684758">Синхронизирањето престана да работи</translation>
 <translation id="3976396876660209797">Отстранете ја и создајте ја повторно кратенкава</translation>
 <translation id="3985215325736559418">Дали сакате да ја преземете датотеката <ph name="FILE_NAME" /> повторно?</translation>
@@ -713,6 +717,7 @@
 <translation id="6255999984061454636">Предлози за содржини</translation>
 <translation id="6270391203985052864">Сајтовите можат да прашуваат дали да испраќаат известувања</translation>
 <translation id="6277522088822131679">Настана проблем при печатење на страницата. Обидете се повторно.</translation>
+<translation id="6292420053234093573">Ако користите Chrome, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Сите локации</translation>
 <translation id="629730747756840877">Сметка</translation>
 <translation id="6297765934698848803">Организацијата што управува со вашиот уред ви ја исклучила камерата.</translation>
@@ -727,6 +732,7 @@
 <translation id="6364438453358674297">Да се отстрани предлогот од историјата?</translation>
 <translation id="6369229450655021117">Оттука, може да пребарувате на интернет, споделувате со пријателите и да ги гледате отворените страници</translation>
 <translation id="6378173571450987352">Детали: подредени по количината на податоци што се користат</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> ќе се отвори во Chrome. Ако продолжите, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" />и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Затемнете ги веб-сајтовите</translation>
 <translation id="6388207532828177975">Исчисти и ресетирај</translation>
 <translation id="6395288395575013217">ЛИНК</translation>

@@ -12,8 +12,11 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+
+#include <set>
 
 namespace blink {
 namespace {
@@ -55,6 +58,18 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
         DocumentUpdateReason::kDisplayLock);
   }
   return !scoped_forced_update_list_.IsEmpty();
+}
+
+void PopulateAncestorContexts(Node* node,
+                              std::set<DisplayLockContext*>* contexts) {
+  DCHECK(node);
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
+      continue;
+    if (auto* context = ancestor_element->GetDisplayLockContext())
+      contexts->insert(context);
+  }
 }
 
 }  // namespace
@@ -348,7 +363,8 @@ bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
 }
 
 void DisplayLockUtilities::ElementLostFocus(Element* element) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+      (element && element->GetDocument().DisplayLockCount() == 0))
     return;
   for (; element; element = FlatTreeTraversal::ParentElement(*element)) {
     auto* context = element->GetDisplayLockContext();
@@ -357,13 +373,88 @@ void DisplayLockUtilities::ElementLostFocus(Element* element) {
   }
 }
 void DisplayLockUtilities::ElementGainedFocus(Element* element) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+      (element && element->GetDocument().DisplayLockCount() == 0))
     return;
+
   for (; element; element = FlatTreeTraversal::ParentElement(*element)) {
     auto* context = element->GetDisplayLockContext();
     if (context)
       context->NotifySubtreeGainedFocus();
   }
+}
+
+void DisplayLockUtilities::SelectionChanged(
+    const EphemeralRangeInFlatTree& old_selection,
+    const EphemeralRangeInFlatTree& new_selection) {
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+      (!old_selection.IsNull() &&
+       old_selection.GetDocument().DisplayLockCount() == 0) ||
+      (!new_selection.IsNull() &&
+       new_selection.GetDocument().DisplayLockCount() == 0))
+    return;
+
+  TRACE_EVENT0("blink", "DisplayLockUtilities::SelectionChanged");
+  std::set<Node*> old_nodes;
+  for (Node& node : old_selection.Nodes())
+    old_nodes.insert(&node);
+
+  std::set<Node*> new_nodes;
+  for (Node& node : new_selection.Nodes())
+    new_nodes.insert(&node);
+
+  std::set<DisplayLockContext*> lost_selection_contexts;
+  std::set<DisplayLockContext*> gained_selection_contexts;
+
+  // Skip common nodes and extract contexts from nodes that lost selection and
+  // contexts from nodes that gained selection.
+  // This is similar to std::set_symmetric_difference except that we need to
+  // know which set the resulting item came from. In this version, we simply do
+  // the relevant operation on each of the items instead of storing the
+  // difference.
+  std::set<Node*>::iterator old_it = old_nodes.begin();
+  std::set<Node*>::iterator new_it = new_nodes.begin();
+  while (old_it != old_nodes.end() && new_it != new_nodes.end()) {
+    // Compare the addresses since that's how the nodes are ordered in the set.
+    if (*old_it < *new_it) {
+      PopulateAncestorContexts(*old_it++, &lost_selection_contexts);
+    } else if (*old_it > *new_it) {
+      PopulateAncestorContexts(*new_it++, &gained_selection_contexts);
+    } else {
+      ++old_it;
+      ++new_it;
+    }
+  }
+  while (old_it != old_nodes.end())
+    PopulateAncestorContexts(*old_it++, &lost_selection_contexts);
+  while (new_it != new_nodes.end())
+    PopulateAncestorContexts(*new_it++, &gained_selection_contexts);
+
+  // Now do a similar thing with contexts: skip common ones, and mark the ones
+  // that lost selection or gained selection as such.
+  std::set<DisplayLockContext*>::iterator lost_it =
+      lost_selection_contexts.begin();
+  std::set<DisplayLockContext*>::iterator gained_it =
+      gained_selection_contexts.begin();
+  while (lost_it != lost_selection_contexts.end() &&
+         gained_it != gained_selection_contexts.end()) {
+    if (*lost_it < *gained_it) {
+      (*lost_it++)->NotifySubtreeLostSelection();
+    } else if (*lost_it > *gained_it) {
+      (*gained_it++)->NotifySubtreeGainedSelection();
+    } else {
+      ++lost_it;
+      ++gained_it;
+    }
+  }
+  while (lost_it != lost_selection_contexts.end())
+    (*lost_it++)->NotifySubtreeLostSelection();
+  while (gained_it != gained_selection_contexts.end())
+    (*gained_it++)->NotifySubtreeGainedSelection();
+}
+
+void DisplayLockUtilities::SelectionRemovedFromDocument(Document& document) {
+  document.NotifySelectionRemovedFromDisplayLocks();
 }
 
 }  // namespace blink

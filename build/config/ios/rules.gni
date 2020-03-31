@@ -1938,7 +1938,7 @@ template("ios_xcuitest_test_runner_bundle") {
     outputs = [ "{{bundle_contents_dir}}/PkgInfo" ]
 
     if (ios_use_goma_rbe) {
-      deps = [ "//build/config/ios:copy_xctrunner_app" ]
+      public_deps = [ "//build/config/ios:copy_xctrunner_app" ]
     }
   }
 
@@ -1946,7 +1946,8 @@ template("ios_xcuitest_test_runner_bundle") {
   create_signed_bundle(_target_name) {
     testonly = true
 
-    bundle_binary_path = "$_xctrunner_path/XCTRunner"
+    bundle_binary_target = "//build/config/ios:xctest_runner_without_arm64e"
+    bundle_binary_output = "XCTRunner"
     bundle_extension = ".app"
     product_type = "com.apple.product-type.application"
 
@@ -1969,10 +1970,6 @@ template("ios_xcuitest_test_runner_bundle") {
       ":$_pkginfo_bundle",
       ":$_xctest_bundle",
     ]
-
-    if (ios_use_goma_rbe) {
-      deps = [ "//build/config/ios:copy_xctrunner_app" ]
-    }
   }
 }
 

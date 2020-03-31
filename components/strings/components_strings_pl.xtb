@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1645368109819982629">Nieobsługiwany protokół</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Strona została uproszczona przez Chrome, by było ją łatwiej przeczytać. Przeglądarka Chrome pobrała oryginalną stronę przez zabezpieczone połączenie.</translation>
 <translation id="1656489000284462475">Odbiór</translation>
 <translation id="1662550410081243962">Zapisuj i automatycznie uzupełniaj informacje o formach płatności</translation>
 <translation id="1663943134801823270">Karty i adresy pochodzą z Chrome. Możesz nimi zarządzać w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
@@ -567,6 +568,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="342781501876943858">Chromium zaleca zresetowanie hasła, jeśli zostało użyte na innej stronie.</translation>
 <translation id="3428151540071562330">Co najmniej jeden identyfikator URI szablonu serwera DnsOverHttpsTemplates jest nieprawidłowy i nie zostanie użyty.</translation>
 <translation id="3431636764301398940">Zapisz tę kartę na tym urządzeniu</translation>
+<translation id="3432601291244612633">Zamknij stronę</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Właściciel tego urządzenia wyłączył grę z dinozaurem.</translation>
 <translation id="3447884698081792621">Pokaż certyfikat (wydany przez: <ph name="ISSUER" />)</translation>
@@ -873,6 +875,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="4731967714531604179">Prc2 (koperta)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> chce używać lokalizacji Twojego urządzenia</translation>
 <translation id="4736825316280949806">Uruchom ponownie Chromium</translation>
+<translation id="4737121147659370456">Administrator włączył oprogramowanie sprzęgające Chrome Enterprise w Twojej przeglądarce. Może ono mieć dostęp do niektórych Twoich danych.</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="4738601419177586157">Propozycja wyszukiwania: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Zarządzaj hasłami…</translation>
@@ -1208,6 +1211,8 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="610911394827799129">Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6116338172782435947">Mieć dostęp do tekstu i obrazów skopiowanych do schowka</translation>
 <translation id="6120179357481664955">Zapamiętać Twój identyfikator UPI?</translation>
+<translation id="6124432979022149706">Oprogramowanie sprzęgające Chrome Enterprise</translation>
+<translation id="6135641591018127088">Użyj konta Google do wygenerowania silnego hasła</translation>
 <translation id="6146055958333702838">Sprawdź wszystkie kable i uruchom ponownie wszelkie używane routery, modemy
     i inne urządzenia sieciowe.</translation>
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
@@ -1253,6 +1258,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6328639280570009161">Wyłącz przewidywanie działań sieciowych</translation>
 <translation id="6328784461820205019">„Połączenie nie jest prywatne” lub „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” lub „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” lub „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” lub „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” lub „Błąd certyfikatu SSL”</translation>
 <translation id="6328786501058569169">Ta strona wprowadza w błąd</translation>
+<translation id="6333334544069706521">Użyj haseł zapisanych na koncie Google</translation>
 <translation id="6337133576188860026">Zwolni się mniej niż <ph name="SIZE" />. Podczas następnej wizyty niektóre strony mogą ładować się wolniej.</translation>
 <translation id="6337534724793800597">Filtruj zasady według nazwy</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Brak}=1{1 hasło (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}=2{2 hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}few{# hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}many{# haseł (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}other{# hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}}</translation>
@@ -1298,6 +1304,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6521745193039995384">Nieaktywna</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
+<translation id="6543609420755597723">Udostępniaj administratorowi dane dotyczące zdarzeń związanych z bezpieczeństwem zgłoszonych przez oprogramowanie sprzęgające Chrome Enterprise. Mogą one obejmować adresy URL odwiedzanych przez Ciebie stron, nazwy plików lub metadane oraz nazwę użytkownika, pod którą logujesz się na swoim urządzeniu i w Chrome.</translation>
 <translation id="6545864417968258051">Skanowanie Bluetooth</translation>
 <translation id="6547208576736763147">Dwa otwory po lewej</translation>
 <translation id="6554795675067793129">To konto jest zarządzane przez: <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1363,6 +1370,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6874604403660855544">&amp;Ponów dodanie</translation>
 <translation id="6884662655240309489">Rozmiar 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Strona została uproszczona przez Chrome, by było ją łatwiej przeczytać. Przeglądarka Chrome pobrała oryginalną stronę przez niezabezpieczone połączenie.</translation>
 <translation id="6891596781022320156">Ten poziom zasad nie jest obsługiwany.</translation>
 <translation id="6895330447102777224">Karta została potwierdzona</translation>
 <translation id="6897140037006041989">Klient</translation>
@@ -1591,6 +1599,7 @@ Dodatkowe informacje:
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791196057686275387">Owijanie</translation>
 <translation id="7791543448312431591">Dodaj</translation>
+<translation id="7798389633136518089">Zignorowano, ponieważ zasada nie została ustawiona przez źródło w chmurze.</translation>
 <translation id="7800304661137206267">Przesyłane dane są szyfrowane za pomocą algorytmu <ph name="CIPHER" />. Metoda uwierzytelniania komunikatów to <ph name="MAC" />, a mechanizm wymiany kluczy to <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Strona spełnia wymagania prawne</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
@@ -1726,6 +1735,7 @@ Dodatkowe informacje:
 <translation id="8371889962595521444">Niestandardowy certyfikat główny</translation>
 <translation id="8380941800586852976">Niebezpieczna</translation>
 <translation id="8381674639488873545">Może to być opłata jednorazowa lub cykliczna, a informacje o niej mogą nie być wyraźnie podane. <ph name="BEGIN_LINK" />Pokaż mimo to<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837">Administrator domeny <ph name="ENROLLMENT_DOMAIN" /> włączył oprogramowanie sprzęgające Chrome Enterprise w Twojej przeglądarce. Może ono mieć dostęp do niektórych Twoich danych.</translation>
 <translation id="8412145213513410671">Awarie (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Musisz dwukrotnie wpisać to samo hasło.</translation>
 <translation id="8416694386774425977">Konfiguracja sieci jest nieprawidłowa i nie można jej zaimportować.

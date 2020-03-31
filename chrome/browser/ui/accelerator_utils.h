@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_ACCELERATOR_UTILS_H_
 #define CHROME_BROWSER_UI_ACCELERATOR_UTILS_H_
 
-class Profile;
-
 namespace ui {
 class Accelerator;
 }
@@ -15,9 +13,7 @@ namespace chrome {
 
 // Returns true if the given |accelerator| is currently registered by
 // Chrome.
-bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile);
-
-ui::Accelerator GetPrimaryChromeAcceleratorForBookmarkTab();
+bool IsChromeAccelerator(const ui::Accelerator& accelerator);
 
 }  // namespace chrome
 

@@ -44,10 +44,20 @@ public final class ShareButtonControllerTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    private boolean mButtonExpected;
+
     @Before
     public void setUp() {
         SigninTestUtil.setUpAuthForTest();
         mActivityTestRule.startMainActivityOnBlankPage();
+
+        int minimumWidthDp = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, "minimum_width",
+                ShareButtonController.MIN_WIDTH_DP);
+        int deviceWidth =
+                mActivityTestRule.getActivity().getResources().getConfiguration().screenWidthDp;
+
+        mButtonExpected = deviceWidth > minimumWidthDp;
     }
 
     @After
@@ -64,8 +74,13 @@ public final class ShareButtonControllerTest {
                                           .getToolbarManager()
                                           .getToolbarLayoutForTesting()
                                           .getOptionalButtonView();
-        assertNotNull("experimental button not found", experimentalButton);
-        assertEquals(View.GONE, experimentalButton.getVisibility());
+        if (experimentalButton != null) {
+            String shareString =
+                    mActivityTestRule.getActivity().getResources().getString(R.string.share);
+            assertTrue("Share button isnt showing",
+                    (View.GONE == experimentalButton.getVisibility()
+                            || !shareString.equals(experimentalButton.getContentDescription())));
+        }
     }
 
     @Test
@@ -76,12 +91,17 @@ public final class ShareButtonControllerTest {
                                           .getToolbarLayoutForTesting()
                                           .getOptionalButtonView();
 
-        assertNotNull("experimental button not found", experimentalButton);
-        assertEquals(View.VISIBLE, experimentalButton.getVisibility());
-        String shareString =
-                mActivityTestRule.getActivity().getResources().getString(R.string.share);
+        if (!mButtonExpected) {
+            assertTrue(
+                    experimentalButton == null || View.GONE == experimentalButton.getVisibility());
+        } else {
+            assertNotNull("experimental button not found", experimentalButton);
+            assertEquals(View.VISIBLE, experimentalButton.getVisibility());
+            String shareString =
+                    mActivityTestRule.getActivity().getResources().getString(R.string.share);
 
-        assertTrue(shareString.equals(experimentalButton.getContentDescription()));
+            assertTrue(shareString.equals(experimentalButton.getContentDescription()));
+        }
     }
 
     @Test
@@ -106,12 +126,16 @@ public final class ShareButtonControllerTest {
                                       .getToolbarManager()
                                       .getToolbarLayoutForTesting()
                                       .getOptionalButtonView();
-        assertNotNull("optional button not found", optionalButton);
+        if (!mButtonExpected) {
+            assertTrue(optionalButton == null || View.GONE == optionalButton.getVisibility());
+        } else {
+            assertNotNull("optional button not found", optionalButton);
 
-        String shareString =
-                mActivityTestRule.getActivity().getResources().getString(R.string.share);
+            String shareString =
+                    mActivityTestRule.getActivity().getResources().getString(R.string.share);
 
-        assertEquals(shareString, optionalButton.getContentDescription());
+            assertEquals(shareString, optionalButton.getContentDescription());
+        }
     }
 
     @Test
@@ -126,8 +150,13 @@ public final class ShareButtonControllerTest {
                                           .getToolbarManager()
                                           .getToolbarLayoutForTesting()
                                           .getOptionalButtonView();
-        assertNotNull("experimental button not found", experimentalButton);
-        assertEquals(View.GONE, experimentalButton.getVisibility());
+        if (experimentalButton != null) {
+            String shareString =
+                    mActivityTestRule.getActivity().getResources().getString(R.string.share);
+            assertTrue("Share button isnt showing",
+                    (View.GONE == experimentalButton.getVisibility()
+                            || !shareString.equals(experimentalButton.getContentDescription())));
+        }
     }
 
     // TODO(crbug/1036023) Add a test that checks that expected intents are fired.

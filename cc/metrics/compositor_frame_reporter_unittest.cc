@@ -13,6 +13,7 @@
 #include "cc/input/scroll_input_type.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/event_metrics.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,14 +37,31 @@ class CompositorFrameReporterTest : public testing::Test {
     AdvanceNowByMs(1);
   }
 
+ protected:
   void AdvanceNowByMs(int advance_ms) {
     now_ += base::TimeDelta::FromMicroseconds(advance_ms);
   }
 
   base::TimeTicks Now() { return now_; }
 
- protected:
+  viz::FrameTimingDetails BuildFrameTimingDetails() {
+    viz::FrameTimingDetails frame_timing_details;
+    AdvanceNowByMs(1);
+    frame_timing_details.received_compositor_frame_timestamp = Now();
+    AdvanceNowByMs(1);
+    frame_timing_details.draw_start_timestamp = Now();
+    AdvanceNowByMs(1);
+    frame_timing_details.swap_timings.swap_start = Now();
+    AdvanceNowByMs(1);
+    frame_timing_details.swap_timings.swap_end = Now();
+    AdvanceNowByMs(1);
+    frame_timing_details.presentation_feedback.timestamp = Now();
+    return frame_timing_details;
+  }
+
   std::unique_ptr<CompositorFrameReporter> pipeline_reporter_;
+
+ private:
   base::TimeTicks now_;
 };
 
@@ -270,22 +288,40 @@ TEST_F(CompositorFrameReporterTest,
   pipeline_reporter_->SetEventsMetrics(std::move(events_metrics));
 
   AdvanceNowByMs(3);
-  const base::TimeTicks presentation_time = Now();
+  viz::FrameTimingDetails frame_timing_details = BuildFrameTimingDetails();
+  pipeline_reporter_->SetVizBreakdown(frame_timing_details);
   pipeline_reporter_->TerminateFrame(
       CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
-      presentation_time);
+      frame_timing_details.presentation_feedback.timestamp);
 
   pipeline_reporter_ = nullptr;
 
-  const int latency_ms = (presentation_time - event_time).InMicroseconds();
+  const int total_latency_ms =
+      (frame_timing_details.presentation_feedback.timestamp - event_time)
+          .InMicroseconds();
+  const int swap_end_latency_ms =
+      (frame_timing_details.swap_timings.swap_end - event_time)
+          .InMicroseconds();
   histogram_tester.ExpectTotalCount(
       "EventLatency.GestureScrollBegin.Wheel.TotalLatency", 1);
   histogram_tester.ExpectTotalCount(
+      "EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapEnd", 1);
+  histogram_tester.ExpectTotalCount(
       "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", 2);
+  histogram_tester.ExpectTotalCount(
+      "EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapEnd", 2);
   histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", latency_ms, 1);
+      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", total_latency_ms,
+      1);
   histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", latency_ms, 2);
+      "EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapEnd",
+      swap_end_latency_ms, 1);
+  histogram_tester.ExpectBucketCount(
+      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", total_latency_ms,
+      2);
+  histogram_tester.ExpectBucketCount(
+      "EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapEnd",
+      swap_end_latency_ms, 2);
 }
 
 // Tests that when the frame is not presented to the user, event latency metrics

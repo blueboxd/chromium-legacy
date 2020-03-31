@@ -599,6 +599,8 @@ class Internals final : public ScriptWrappable {
   void useMockOverlayScrollbars();
   bool overlayScrollbarsEnabled() const;
 
+  void generateTestReport(const String& message);
+
  private:
   Document* ContextDocument() const;
   Vector<String> IconURLs(Document*, int icon_types_mask) const;

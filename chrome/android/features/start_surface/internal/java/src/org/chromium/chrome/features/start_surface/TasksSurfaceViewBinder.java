@@ -38,6 +38,8 @@ class TasksSurfaceViewBinder {
             updateLayoutAndVisibility(viewHolder, model, model.get(IS_SHOWING_OVERVIEW));
         } else if (BOTTOM_BAR_HEIGHT == propertyKey) {
             setBottomBarHeight(viewHolder, model.get(BOTTOM_BAR_HEIGHT));
+        } else if (TOP_BAR_HEIGHT == propertyKey) {
+            setTopBarHeight(viewHolder, model.get(TOP_BAR_HEIGHT));
         }
     }
 
@@ -70,5 +72,14 @@ class TasksSurfaceViewBinder {
         MarginLayoutParams layoutParams =
                 (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
         if (layoutParams != null) layoutParams.bottomMargin = height;
+    }
+
+    private static void setTopBarHeight(ViewHolder viewHolder, int height) {
+        MarginLayoutParams layoutParams =
+                (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
+        if (layoutParams == null) return;
+
+        layoutParams.topMargin = height;
+        viewHolder.tasksSurfaceView.setLayoutParams(layoutParams);
     }
 }

@@ -86,6 +86,9 @@ class ExtensionUninstallDialogDelegateView
   void DialogDestroyed() { dialog_ = NULL; }
 
  private:
+  // views::View:
+  const char* GetClassName() const override;
+
   // views::DialogDelegateView:
   bool Accept() override;
   bool Cancel() override;
@@ -262,6 +265,10 @@ ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
     reinterpret_cast<ToolbarActionView*>(anchor_view)
         ->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   }
+}
+
+const char* ExtensionUninstallDialogDelegateView::GetClassName() const {
+  return "ExtensionUninstallDialogDelegateView";
 }
 
 bool ExtensionUninstallDialogDelegateView::Accept() {

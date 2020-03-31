@@ -50,6 +50,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
+  void WaitForAudioVideoState(mojom::MediaAudioVideoState wanted_state);
   void WaitForControllable(bool is_controllable);
 
   void WaitForEmptyMetadata();
@@ -105,6 +106,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
+  base::Optional<mojom::MediaAudioVideoState> wanted_audio_video_state_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   mojo::Receiver<mojom::MediaSessionObserver> receiver_{this};

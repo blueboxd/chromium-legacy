@@ -2532,6 +2532,10 @@ enum WebFeature {
   kThirdPartyLocalStorage = 3194,
   kThirdPartySessionStorage = 3195,
   kDeclarativeShadowRoot = 3196,
+  kCrossOriginOpenerPolicySameOrigin = 3197,
+  kCrossOriginOpenerPolicySameOriginAllowPopups = 3198,
+  kCrossOriginEmbedderPolicyRequireCorp = 3199,
+  kCoopAndCoepIsolated = 3200,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

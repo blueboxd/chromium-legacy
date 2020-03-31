@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
@@ -194,10 +195,10 @@ using base::UserMetricsAction;
       RecordAction(UserMetricsAction("MobileMenuSearchCopiedImage"));
       ClipboardRecentContent* clipboardRecentContent =
           ClipboardRecentContent::GetInstance();
-      if (base::Optional<gfx::Image> image =
-              clipboardRecentContent->GetRecentImageFromClipboard()) {
-        [self.dispatcher searchByImage:[image.value().ToUIImage() copy]];
-      }
+      clipboardRecentContent->GetRecentImageFromClipboard(
+          base::BindOnce(^(base::Optional<gfx::Image> image) {
+            [self.dispatcher searchByImage:[image.value().ToUIImage() copy]];
+          }));
       break;
     }
     default:

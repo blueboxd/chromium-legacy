@@ -87,9 +87,9 @@ ChromeBrowserState* GetCurrentIncognitoBrowserState() {
 }
 
 id<BrowserCommands> BrowserCommandDispatcherForMainBVC() {
-  BrowserViewController* mainBVC =
-      GetMainController().interfaceProvider.mainInterface.bvc;
-  return mainBVC.dispatcher;
+  Browser* mainBrowser =
+      GetMainController().interfaceProvider.mainInterface.browser;
+  return static_cast<id<BrowserCommands>>(mainBrowser->GetCommandDispatcher());
 }
 
 UIViewController* GetActiveViewController() {

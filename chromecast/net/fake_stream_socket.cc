@@ -8,8 +8,12 @@
 #include <cstring>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/next_proto.h"
@@ -31,8 +35,11 @@ class SocketBuffer {
   int Read(char* data, size_t len, net::CompletionOnceCallback callback) {
     DCHECK(data);
     DCHECK_GT(len, 0u);
-    DCHECK(!callback.is_null());
+    DCHECK(callback);
     if (data_.empty()) {
+      if (eos_) {
+        return 0;
+      }
       pending_read_data_ = data;
       pending_read_len_ = len;
       pending_read_callback_ = std::move(callback);
@@ -51,7 +58,15 @@ class SocketBuffer {
       int result = ReadInternal(pending_read_data_, pending_read_len_);
       pending_read_data_ = nullptr;
       pending_read_len_ = 0;
-      std::move(pending_read_callback_).Run(result);
+      PostReadCallback(std::move(pending_read_callback_), result);
+    }
+  }
+
+  // Called when the remote end of the fake connection disconnects.
+  void ReceiveEOS() {
+    eos_ = true;
+    if (pending_read_callback_ && data_.empty()) {
+      PostReadCallback(std::move(pending_read_callback_), 0);
     }
   }
 
@@ -65,10 +80,25 @@ class SocketBuffer {
     return len;
   }
 
+  void PostReadCallback(net::CompletionOnceCallback callback, int result) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&SocketBuffer::CallReadCallback,
+                                  weak_factory_.GetWeakPtr(),
+                                  std::move(callback), result));
+  }
+
+  // Need a member function to asynchronously call the read callback, so we
+  // can use weak ptr.
+  void CallReadCallback(net::CompletionOnceCallback callback, int result) {
+    std::move(callback).Run(result);
+  }
+
   std::vector<char> data_;
   char* pending_read_data_;
   size_t pending_read_len_;
   net::CompletionOnceCallback pending_read_callback_;
+  bool eos_ = false;
+  base::WeakPtrFactory<SocketBuffer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SocketBuffer);
 };
@@ -82,13 +112,18 @@ FakeStreamSocket::FakeStreamSocket(const net::IPEndPoint& local_address)
 
 FakeStreamSocket::~FakeStreamSocket() {
   if (peer_) {
-    peer_->peer_ = nullptr;
+    peer_->RemoteDisconnected();
   }
 }
 
 void FakeStreamSocket::SetPeer(FakeStreamSocket* peer) {
   DCHECK(peer);
   peer_ = peer;
+}
+
+void FakeStreamSocket::RemoteDisconnected() {
+  peer_ = nullptr;
+  buffer_->ReceiveEOS();
 }
 
 void FakeStreamSocket::SetBadSenderMode(bool bad_sender) {

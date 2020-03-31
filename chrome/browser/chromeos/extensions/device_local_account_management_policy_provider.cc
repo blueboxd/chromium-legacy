@@ -64,10 +64,6 @@ const char* const kSafeManifestEntries[] = {
     // double check how the search provider policy behaves in PS.
     // emk::kSettingsOverride,
 
-    // Custom bookmark managers - I think this is fair game, bookmarks should be
-    // URLs only, and it's restricted to whitelist on stable.
-    emk::kUIOverride,
-
     // Bookmark manager, history, new tab - should be safe.
     emk::kChromeURLOverrides,
 

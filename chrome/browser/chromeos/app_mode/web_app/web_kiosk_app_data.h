@@ -32,7 +32,9 @@ class WebKioskAppData : public KioskAppDataBase {
   WebKioskAppData(KioskAppDataDelegate* delegate,
                   const std::string& app_id,
                   const AccountId& account_id,
-                  const GURL url);
+                  const GURL url,
+                  const std::string& title,
+                  const GURL icon_url);
 
   ~WebKioskAppData() override;
 
@@ -58,6 +60,9 @@ class WebKioskAppData : public KioskAppDataBase {
   Status status_;
   const GURL install_url_;  // installation url.
   GURL launch_url_;         // app launch url.
+
+  // TODO(crbug.com/1066496): Start fetching the icon when kiosk menu is opened.
+  const GURL icon_url_;  // Url of the icon in case nothing is cached.
 
   DISALLOW_COPY_AND_ASSIGN(WebKioskAppData);
 };

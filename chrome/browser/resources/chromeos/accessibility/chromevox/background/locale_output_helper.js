@@ -31,20 +31,8 @@ LocaleOutputHelper = class {
      * @private {number}
      */
     LocaleOutputHelper.PROBABILITY_THRESHOLD_ = 0.9;
-    /**
-     * Set to false as default, since sub-node language detection is still
-     * experimental.
-     * @private {boolean}
-     */
-    this.subNodeSwitchingEnabled_ = false;
     /** @private {!Array<!TtsVoice>} */
     this.availableVoices_ = [];
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-chromevox-sub-node-language-' +
-            'switching',
-        (enabled) => {
-          this.subNodeSwitchingEnabled_ = enabled;
-        });
     const setAvailableVoices = () => {
       chrome.tts.getVoices((voices) => {
         this.availableVoices_ = voices || [];
@@ -58,57 +46,17 @@ LocaleOutputHelper = class {
   }
 
   /**
-   * Main entry point. Routes arguments to either |atNodeLevel_| or
-   * |atSubNodeLevel_| depending on the kind of locale switching the user
-   * has specified.
-   * @param {AutomationNode} node
-   * @param {string} stringAttribute The string attribute whose value we want
-   * to output.
+   * Main entry point for locale switching logic.
+   * @param {string} text The text we want to queue for output.
+   * @param {AutomationNode} contextNode The AutomationNode that owns |text|.
    * @param {function(string, string)} appendWithLocaleCallback
    */
-  assignLocalesAndAppend(node, stringAttribute, appendWithLocaleCallback) {
-    if (!node || !node[stringAttribute]) {
+  assignLocalesAndAppend(text, contextNode, appendWithLocaleCallback) {
+    if (!text || !contextNode) {
       return;
     }
 
-    const text = node[stringAttribute];
-    if (this.subNodeSwitchingEnabled_) {
-      this.atSubNodeLevel_(
-          text, node, stringAttribute, appendWithLocaleCallback);
-    } else {
-      this.atNodeLevel_(text, node, appendWithLocaleCallback);
-    }
-  }
-
-  /**
-   * Assigns one locale to the entirety of |text|.
-   * @param {string} text The text we want to append.
-   * @param {!AutomationNode} node
-   * @param {function(string, string)} appendWithLocaleCallback
-   * @private
-   */
-  atNodeLevel_(text, node, appendWithLocaleCallback) {
-    this.processText_(text, node, appendWithLocaleCallback);
-  }
-
-  /**
-   * Assigns one or more locales to disjoint spans of |text|.
-   * @param {string} text The text we want to append.
-   * @param {!AutomationNode} node
-   * @param {function(string, string)} appendWithLocaleCallback
-   * @private
-   */
-  atSubNodeLevel_(text, node, stringAttribute, appendWithLocaleCallback) {
-    const languageAnnotation =
-        node.languageAnnotationForStringAttribute(stringAttribute);
-    if (!languageAnnotation || languageAnnotation.length === 0) {
-      appendWithLocaleCallback(text, LocaleOutputHelper.BROWSER_UI_LOCALE_);
-      return;
-    }
-
-    for (const langSpan of languageAnnotation) {
-      this.processText_(text, node, appendWithLocaleCallback, langSpan);
-    }
+    this.processText_(text, contextNode, appendWithLocaleCallback);
   }
 
   /**
@@ -117,33 +65,17 @@ LocaleOutputHelper = class {
    * 2. Computes |outputString|
    * 3. Calls |appendWithLocaleCallback|
    * @param {string} text
-   * @param {!AutomationNode} node The AutomationNode that owns |text|. Used
-   * for context.
+   * @param {!AutomationNode} contextNode The AutomationNode that owns |text|.
    * @param {function(string, string)} appendWithLocaleCallback
-   * @param {!{
-   *    language: string,
-   *    startIndex: number,
-   *    endIndex: number,
-   *    probability: number}=} opt_langSpan
    * @private
    */
-  processText_(text, node, appendWithLocaleCallback, opt_langSpan) {
-    let startIndex = 0;
-    let endIndex = text.length;
-    let subNodeLocale = '';
-    let subNodeProbability = 0;
-    if (opt_langSpan) {
-      startIndex = opt_langSpan.startIndex;
-      endIndex = opt_langSpan.endIndex;
-      subNodeLocale = opt_langSpan.language.toLowerCase();
-      subNodeProbability = opt_langSpan.probability;
-    }
-
-    const nodeLocale = node.detectedLanguage || node.language || '';
-    const newLocale =
-        this.computeNewLocale_(nodeLocale, subNodeLocale, subNodeProbability);
-    let outputString =
-        StringUtil.getUnicodeSubstring_(text, startIndex, endIndex);
+  processText_(text, contextNode, appendWithLocaleCallback) {
+    // Prefer the node's detected locale and fall back on the author-assigned
+    // locale.
+    const nodeLocale =
+        contextNode.detectedLanguage || contextNode.language || '';
+    const newLocale = this.computeNewLocale_(nodeLocale);
+    let outputString = text;
     const shouldUpdate = this.shouldUpdateLocale_(newLocale);
     if (this.hasVoiceForLocale_(newLocale)) {
       this.setCurrentLocale_(newLocale);
@@ -171,21 +103,11 @@ LocaleOutputHelper = class {
   }
 
   /**
-   * Use the following priority rankings:
-   * 1. |subNodeLocale|, if we are confident in its accuracy.
-   * 2. |nodeLocale|.
-   * 3. |BROWSER_UI_LOCALE_|.
    * @param {string} nodeLocale
-   * @param {string} subNodeLocale
-   * @param {number} subNodeProbability
    * @return {string}
    * @private
    */
-  computeNewLocale_(nodeLocale, subNodeLocale, subNodeProbability) {
-    if (subNodeProbability > LocaleOutputHelper.PROBABILITY_THRESHOLD_) {
-      return subNodeLocale;
-    }
-
+  computeNewLocale_(nodeLocale) {
     nodeLocale = nodeLocale.toLowerCase();
     if (LocaleOutputHelper.isValidLocale_(nodeLocale)) {
       return nodeLocale;

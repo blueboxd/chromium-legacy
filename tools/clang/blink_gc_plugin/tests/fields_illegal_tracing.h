@@ -34,7 +34,7 @@ class PartObject {
 public:
     void Trace(Visitor*);
 private:
-    RefPtr<HeapObject> m_obj2;
+    scoped_refptr<HeapObject> m_obj2;
     bar::unique_ptr<HeapObject> m_obj3;
     std::unique_ptr<HeapObject> m_obj4;
     Vector<int>::iterator m_iterator1;
@@ -48,7 +48,7 @@ class HeapObject : public GarbageCollected<HeapObject> {
 
  private:
   PartObject m_part;
-  RefPtr<HeapObject> m_obj2;
+  scoped_refptr<HeapObject> m_obj2;
   bar::unique_ptr<HeapObject> m_obj3;
   std::unique_ptr<HeapObject> m_obj4;
   HeapHashMap<int, Member<HeapObject>>::reverse_iterator m_iterator3;

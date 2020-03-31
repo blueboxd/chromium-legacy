@@ -15,7 +15,9 @@ namespace base {
 std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
-    StackSamplerTestDelegate* test_delegate) {
+    StackSamplerTestDelegate* test_delegate,
+    std::unique_ptr<Unwinder> native_unwinder) {
+  DCHECK(!native_unwinder);
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<StackCopierSuspend>(
           std::make_unique<SuspendableThreadDelegateMac>(thread_token)),

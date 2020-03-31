@@ -44,6 +44,7 @@ public class Tab {
     private final FindInPageController mFindInPageController;
     private final ObserverList<TabCallback> mCallbacks;
     private Browser mBrowser;
+    private Profile.DownloadCallbackClientImpl mDownloadCallbackClient;
     private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private NewTabCallback mNewTabCallback;
     // Id from the remote side.
@@ -111,12 +112,21 @@ public class Tab {
     }
 
     /**
-     * Deprecated. Use Profile.setDownloadCallback instead. For now this works by always using
-     * the last DownloadCallback that has been set by any tab in the same Profile.
+     * Deprecated. Use Profile.setDownloadCallback instead.
      */
     public void setDownloadCallback(@Nullable DownloadCallback callback) {
         ThreadCheck.ensureOnUiThread();
-        mBrowser.getProfile().setDownloadCallback(callback);
+        try {
+            if (callback != null) {
+                mDownloadCallbackClient = new Profile.DownloadCallbackClientImpl(callback);
+                mImpl.setDownloadCallbackClient(mDownloadCallbackClient);
+            } else {
+                mDownloadCallbackClient = null;
+                mImpl.setDownloadCallbackClient(null);
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     public void setErrorPageCallback(@Nullable ErrorPageCallback callback) {

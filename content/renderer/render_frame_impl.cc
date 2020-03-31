@@ -5402,6 +5402,12 @@ void RenderFrameImpl::DidCommitNavigationInternal(
                                                std::move(interface_params));
     }
   }
+
+  // Ensure we will propagate frame intersections when the main frame commits
+  // even if the intersection does not change across navigations.
+  if (IsMainFrame()) {
+    mainframe_document_intersection_rect_.reset();
+  }
 }
 
 void RenderFrameImpl::PrepareFrameForCommit(

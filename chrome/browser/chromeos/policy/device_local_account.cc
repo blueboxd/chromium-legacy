@@ -59,8 +59,10 @@ bool ArcKioskAppBasicInfo::operator==(const ArcKioskAppBasicInfo& other) const {
          this->display_name_ == other.display_name_;
 }
 
-WebKioskAppBasicInfo::WebKioskAppBasicInfo(const std::string& url)
-    : url_(url) {}
+WebKioskAppBasicInfo::WebKioskAppBasicInfo(const std::string& url,
+                                           const std::string& title,
+                                           const std::string& icon_url)
+    : url_(url), title_(title), icon_url_(icon_url) {}
 
 WebKioskAppBasicInfo::WebKioskAppBasicInfo() {}
 
@@ -74,8 +76,7 @@ DeviceLocalAccount::DeviceLocalAccount(Type type,
       account_id(account_id),
       user_id(GenerateDeviceLocalAccountUserId(account_id, type)),
       kiosk_app_id(kiosk_app_id),
-      kiosk_app_update_url(kiosk_app_update_url) {
-}
+      kiosk_app_update_url(kiosk_app_update_url) {}
 
 DeviceLocalAccount::DeviceLocalAccount(
     const ArcKioskAppBasicInfo& arc_kiosk_app_info,
@@ -96,8 +97,7 @@ DeviceLocalAccount::DeviceLocalAccount(
 DeviceLocalAccount::DeviceLocalAccount(const DeviceLocalAccount& other) =
     default;
 
-DeviceLocalAccount::~DeviceLocalAccount() {
-}
+DeviceLocalAccount::~DeviceLocalAccount() {}
 
 std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
                                              DeviceLocalAccount::Type type) {
@@ -215,6 +215,16 @@ void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
     } else if (it->type == DeviceLocalAccount::TYPE_WEB_KIOSK_APP) {
       entry->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
                     base::Value(it->web_kiosk_app_info.url()));
+      if (!it->web_kiosk_app_info.title().empty()) {
+        entry->SetKey(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle,
+            base::Value(it->web_kiosk_app_info.title()));
+      }
+      if (!it->web_kiosk_app_info.icon_url().empty()) {
+        entry->SetKey(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
+            base::Value(it->web_kiosk_app_info.icon_url()));
+      }
     }
     list.Append(std::move(entry));
   }
@@ -323,6 +333,8 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
       }
       case DeviceLocalAccount::TYPE_WEB_KIOSK_APP: {
         std::string url;
+        std::string title;
+        std::string icon_url;
         if (!entry->GetStringWithoutPathExpansion(
                 chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
                 &url)) {
@@ -332,8 +344,14 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
           continue;
         }
 
-        accounts.push_back(
-            DeviceLocalAccount(WebKioskAppBasicInfo(url), account_id));
+        entry->GetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle, &title);
+        entry->GetStringWithoutPathExpansion(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
+            &icon_url);
+
+        accounts.push_back(DeviceLocalAccount(
+            WebKioskAppBasicInfo(url, title, icon_url), account_id));
         break;
       }
       default:

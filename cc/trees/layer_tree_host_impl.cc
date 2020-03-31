@@ -2507,10 +2507,8 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
   *max_msaa_samples = 0;
   *supports_disable_msaa = false;
 
-  if (settings_.gpu_rasterization_disabled) {
-    DCHECK(!settings_.gpu_rasterization_forced);
+  if (settings_.gpu_rasterization_disabled)
     return;
-  }
 
   if (!(layer_tree_frame_sink_ && layer_tree_frame_sink_->context_provider() &&
         layer_tree_frame_sink_->worker_context_provider())) {
@@ -2524,7 +2522,7 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
 
   const auto& caps = context_provider->ContextCapabilities();
   *gpu_rasterization_enabled = caps.gpu_rasterization;
-  if (!*gpu_rasterization_enabled && !settings_.gpu_rasterization_forced)
+  if (!*gpu_rasterization_enabled)
     return;
 
   bool use_msaa = !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
@@ -2590,11 +2588,11 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   bool can_use_msaa =
       requested_msaa_samples > 0 && max_msaa_samples >= requested_msaa_samples;
 
-  if (settings_.gpu_rasterization_forced) {
-    use_gpu = true;
-    gpu_rasterization_status_ = GpuRasterizationStatus::ON_FORCED;
-  } else if (!gpu_rasterization_enabled) {
-    gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
+  if (!gpu_rasterization_enabled) {
+    if (gpu_rasterization_supported)
+      gpu_rasterization_status_ = GpuRasterizationStatus::OFF_FORCED;
+    else
+      gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
   } else {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON;

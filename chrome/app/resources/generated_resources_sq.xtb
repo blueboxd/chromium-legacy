@@ -1879,6 +1879,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3479552764303398839">Jo tani</translation>
 <translation id="3479685872808224578">Serveri i printimit nuk mund të zbulohej. Kontrollo adresën dhe provo përsëri.</translation>
 <translation id="3481268647794498892">Po hapet në <ph name="ALTERNATIVE_BROWSER_NAME" /> pas <ph name="COUNTDOWN_SECONDS" /> sekondash</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> mund të shikojë skedarët e mëposhtëm</translation>
 <translation id="3484273680291419129">Po hiqet softueri keqdashës...</translation>
 <translation id="3484869148456018791">Gjej certifikatë të re</translation>
 <translation id="3487007233252413104">funksion anonim</translation>
@@ -1941,6 +1942,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3564848315152754834">Çelësi i sigurisë me USB</translation>
 <translation id="3566721612727112615">Nuk u shtuan sajte</translation>
 <translation id="3569382839528428029">Dëshiron që <ph name="APP_NAME" /> të ndajë ekranin tënd?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> mund t'i shikojë skedarët dhe dosjet e mëposhtme</translation>
 <translation id="3571734092741541777">Konfigurimi</translation>
 <translation id="3574210789297084292">identifikohu</translation>
 <translation id="3574917942258583917">Dëshiron të dalësh gjithsesi nga modaliteti "i fshehtë"?</translation>
@@ -1950,6 +1952,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3578594933904494462">Përmbajtja e kësaj skede po ndahet.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; do të ndajë një printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; me një grup që ti zotëron: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Nëse pranon, të gjithë anëtarët e grupit do të mund të printojnë në printer.</translation>
 <translation id="357889014807611375">Wi-Fi me matje</translation>
+<translation id="3582057310199111521">Është futur në një sajt mashtrues dhe është gjendur në një nxjerrje të paautorizuar të të dhënave</translation>
 <translation id="3584169441612580296">Lexo dhe ndrysho fotografi, muzikë dhe media të tjera nga kompjuteri yt</translation>
 <translation id="3586806079541226322">Ky skedar nuk mund të hapet</translation>
 <translation id="3586931643579894722">Fshih detajet</translation>
@@ -3087,6 +3090,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5117930984404104619">Monitoro sjelljen e shtesave të tjera, duke përfshirë URL-të e vizituara.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Disku është plot. Ruaje në një vend tjetër ose liro pak vend në disk.</translation>
+<translation id="5122384452788334261">Pajisja jote ka pak hapësirë ruajtëse. Rekomandohet të paktën <ph name="RECOMMENDED_SPACE" /> hapësirë e lirë për të përdorur Plugin VM. Për të liruar hapësirë, fshi skedarë nga hapësira ruajtëse e pajisjes.</translation>
 <translation id="5123433949759960244">Basketboll</translation>
 <translation id="5125751979347152379">URL e pavlefshme.</translation>
 <translation id="5126611267288187364">Shiko ndryshimet</translation>
@@ -5187,6 +5191,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7915471803647590281">Na trego çfarë po ndodh, para se të dërgosh komentin.</translation>
 <translation id="7918257978052780342">Regjistroje</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> sek.</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> mund të shikojë <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Gabim në transferimin e portës</translation>
 <translation id="792514962475806987">Niveli i zmadhimit të stacionimit:</translation>
 <translation id="7925247922861151263">Kontrolli AAA dështoi</translation>
@@ -5349,6 +5354,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Shfletuesi yt menaxhohet<ph name="END_LINK" /> nga organizata jote</translation>
 <translation id="8118860139461251237">Menaxho shkarkimet e tua</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> etj.</translation>
+<translation id="8120715633374652536">Pajisja jote ka pak hapësirë ruajtëse. Kërkohet të paktën <ph name="MINIMUM_SPACE" /> hapësirë e lirë për të përdorur Plugin VM dhe rekomandohet mbi <ph name="RECOMMENDED_SPACE" /> hapësirë e lirë. Për të liruar hapësirë, fshi skedarë nga hapësira ruajtëse e pajisjes.</translation>
 <translation id="8123590694679414600">Të dhënat janë enkriptuar me frazën tënde të kalimit në datën
           <ph name="TIME" />. Kjo nuk përfshin mënyrat e pagesës dhe adresat nga Google Pay.</translation>
 <translation id="81238879832906896">Lule e verdhë dhe e bardhë</translation>

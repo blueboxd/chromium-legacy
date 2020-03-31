@@ -56,7 +56,7 @@ constexpr int kLabelHeight = 80;
 
 // Duration of the pause before sliding in to show the nudge.
 constexpr base::TimeDelta kPauseBeforeShowAnimationDuration =
-    base::TimeDelta::FromSeconds(2);
+    base::TimeDelta::FromSeconds(10);
 
 // Duration for the animation to show the nudge.
 constexpr base::TimeDelta kNudgeShowAnimationDuration =

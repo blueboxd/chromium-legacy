@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.core.widget.TextViewCompat;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.components.browser_ui.modaldialog.R;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -24,8 +25,7 @@ class PermissionDialogModel {
             ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
         Context context = delegate.getWindow().getContext().get();
         assert context != null;
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View customView = inflater.inflate(R.layout.permission_dialog, null);
+        View customView = loadDialogView(context);
 
         String messageText = delegate.getMessageText();
         assert !TextUtils.isEmpty(messageText);
@@ -43,5 +43,13 @@ class PermissionDialogModel {
                 .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
                 .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
                 .build();
+    }
+
+    private static View loadDialogView(Context context) {
+        // LayoutInflater may access the disk.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+            return inflater.inflate(R.layout.permission_dialog, null);
+        }
     }
 }

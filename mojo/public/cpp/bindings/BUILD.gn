@@ -270,7 +270,6 @@ source_set("struct_traits") {
 }
 
 if (!is_ios) {
-  # TODO(yzshen): crbug.com/617718 Consider moving this into blink.
   component("wtf_support") {
     sources = [
       "array_traits_web_vector.h",

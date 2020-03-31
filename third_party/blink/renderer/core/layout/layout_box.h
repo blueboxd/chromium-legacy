@@ -223,6 +223,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual bool BackgroundShouldAlwaysBeClipped() const { return false; }
 
+  // Returns whether this object needs a scroll paint property tree node. These
+  // are a requirement for composited scrolling but are also created for
+  // non-composited scrollers.
+  bool NeedsScrollNode(CompositingReasons direct_compositing_reasons) const;
+
   // Use this with caution! No type checking is done!
   LayoutBox* FirstChildBox() const;
   LayoutBox* FirstInFlowChildBox() const;

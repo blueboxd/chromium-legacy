@@ -63,6 +63,7 @@ const char kChallenge[] = "challenge";
 const char kResponse[] = "response";
 const char kPublicKey[] = "fake_public_key_for_test";
 const char kKeyNameForSpkac[] = "attest-ent-machine-123456";
+const char kNonDefaultKeyName[] = "fake_key_name_1";
 
 void RegisterKeyCallbackTrue(chromeos::attestation::AttestationKeyType key_type,
                              const cryptohome::Identification& user_id,
@@ -259,7 +260,6 @@ class TpmChallengeKeyTestBase : public BrowserWithTestWindowTest {
       *res = tpm_result;
       std::move(done_closure).Run();
     };
-    const std::string key_name = "fake_key_name_1";
 
     TpmChallengeKeySubtleFactory::SetForTesting(
         std::make_unique<TpmChallengeKeySubtleImpl>(&mock_attestation_flow_));
@@ -270,7 +270,7 @@ class TpmChallengeKeyTestBase : public BrowserWithTestWindowTest {
     {
       base::RunLoop loop;
       challenge_key_subtle_impl_->StartPrepareKeyStep(
-          key_type_, key_name, GetProfile(), key_name_for_spkac,
+          key_type_, kNonDefaultKeyName, GetProfile(), key_name_for_spkac,
           base::BindOnce(callback, loop.QuitClosure(), public_key_res));
       loop.Run();
     }
@@ -281,7 +281,7 @@ class TpmChallengeKeyTestBase : public BrowserWithTestWindowTest {
     // Destroy existing object and create a new one.
     challenge_key_subtle_impl_ =
         TpmChallengeKeySubtleFactory::CreateForPreparedKey(
-            key_type_, key_name, GetProfile(), key_name_for_spkac);
+            key_type_, kNonDefaultKeyName, GetProfile(), key_name_for_spkac);
 
     // Continue building challenge response.
     {
@@ -298,7 +298,7 @@ class TpmChallengeKeyTestBase : public BrowserWithTestWindowTest {
     // Destroy existing object and create a new one.
     challenge_key_subtle_impl_ =
         TpmChallengeKeySubtleFactory::CreateForPreparedKey(
-            key_type_, key_name, GetProfile(), key_name_for_spkac);
+            key_type_, kNonDefaultKeyName, GetProfile(), key_name_for_spkac);
 
     // Register key.
     {
@@ -545,7 +545,7 @@ TEST_P(TpmChallengeMachineKeyAllProfilesTest, MultistepSuccess) {
   // SignEnterpriseChallenge must be called exactly once.
   EXPECT_CALL(*mock_async_method_caller_,
               TpmAttestationSignEnterpriseChallenge(
-                  chromeos::attestation::KEY_DEVICE, _, "attest-ent-machine",
+                  chromeos::attestation::KEY_DEVICE, _, kNonDefaultKeyName,
                   "google.com", "device_id", _, "challenge", _, _))
       .Times(1);
 
@@ -756,7 +756,7 @@ TEST_F(TpmChallengeUserKeyTest, MultistepSuccess) {
   EXPECT_CALL(*mock_async_method_caller_,
               TpmAttestationSignEnterpriseChallenge(
                   chromeos::attestation::KEY_USER,
-                  cryptohome::Identification(account_id), "attest-ent-user",
+                  cryptohome::Identification(account_id), kNonDefaultKeyName,
                   cryptohome::Identification(account_id).id(), "device_id", _,
                   "challenge", _, _))
       .Times(1);
@@ -764,7 +764,7 @@ TEST_F(TpmChallengeUserKeyTest, MultistepSuccess) {
   EXPECT_CALL(*mock_async_method_caller_,
               TpmAttestationRegisterKey(chromeos::attestation::KEY_USER,
                                         cryptohome::Identification(account_id),
-                                        "attest-ent-user", _))
+                                        kNonDefaultKeyName, _))
       .Times(1);
 
   TpmChallengeKeyResult public_key_res;

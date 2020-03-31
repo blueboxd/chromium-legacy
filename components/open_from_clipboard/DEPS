@@ -1,6 +1,7 @@
 include_rules = [
   "+components/variations",
   "+net",
+  "+third_party/skia",
   "+ui/base/clipboard",
   "+ui/base/test",
   "+ui/gfx/image",

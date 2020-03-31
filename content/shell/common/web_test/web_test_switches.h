@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Defines all the "web_test" command-line switches.
-
 #ifndef CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_
 #define CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_
 
@@ -22,7 +20,6 @@ extern const char kEnableFontAntialiasing[];
 extern const char kAlwaysUseComplexText[];
 extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
-extern const char kRunWebTests[];
 extern const char kStableReleaseMode[];
 extern const char kDisableHeadlessMode[];
 

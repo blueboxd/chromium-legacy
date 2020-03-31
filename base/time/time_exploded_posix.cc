@@ -134,8 +134,7 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
     millisecond = milliseconds % kMillisecondsPerSecond;
   } else {
     // Round these *down* (towards -infinity).
-    seconds =
-        (milliseconds - kMillisecondsPerSecond + 1) / kMillisecondsPerSecond;
+    seconds = (milliseconds + 1) / kMillisecondsPerSecond - 1;
     // Make this nonnegative (and between 0 and 999 inclusive).
     millisecond = milliseconds % kMillisecondsPerSecond;
     if (millisecond < 0)

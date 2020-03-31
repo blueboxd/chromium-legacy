@@ -114,7 +114,8 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
   // Get the status text.
   base::string16 GetStatusString() const;
 
-  bool IsNotificationVisible() const;
+  bool IsScanning() const;
+  bool AllowedToOpenWhileScanning() const;
 
   Browser* GetBrowser() const;
   Profile* profile() const;

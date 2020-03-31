@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/editing/selection_strategy.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
+#include "third_party/blink/renderer/core/html/parser/parser_scripting_flag_policy.h"
 #include "third_party/blink/renderer/core/html/track/text_track_kind_user_preference.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/settings_macros.h"

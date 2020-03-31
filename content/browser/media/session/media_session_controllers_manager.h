@@ -51,7 +51,8 @@ class CONTENT_EXPORT MediaSessionControllersManager {
   bool RequestPlay(const MediaPlayerId& id,
                    bool has_audio,
                    bool is_remote,
-                   media::MediaContentType media_content_type);
+                   media::MediaContentType media_content_type,
+                   bool has_video);
 
   // Called when the given player |id| has paused.
   void OnPause(const MediaPlayerId& id);

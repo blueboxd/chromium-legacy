@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
-
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
@@ -208,8 +206,6 @@ public class StartSurfaceCoordinator implements StartSurface {
                 new ArrayList<>(Arrays.asList(TasksSurfaceProperties.ALL_KEYS));
         allProperties.addAll(Arrays.asList(StartSurfaceProperties.ALL_KEYS));
         mPropertyModel = new PropertyModel(allProperties);
-        mPropertyModel.set(TOP_BAR_HEIGHT,
-                mActivity.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow));
 
         mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
                 mPropertyModel, mSurfaceMode == SurfaceMode.SINGLE_PANE, !excludeMVTiles);

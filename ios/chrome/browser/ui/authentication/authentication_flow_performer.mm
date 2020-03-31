@@ -490,7 +490,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 }
 
 - (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
-    dispatcherForSettings {
+    handlerForSettings {
   NOTREACHED();
   return nil;
 }

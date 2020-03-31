@@ -181,7 +181,6 @@ extern const char kTtsVoicesLang[];
 extern const char kTtsVoicesRemote[];
 extern const char kTtsVoicesVoiceName[];
 extern const char kType[];
-extern const char kUIOverride[];
 extern const char kUpdateURL[];
 extern const char kUrlHandlers[];
 extern const char kUrlHandlerTitle[];

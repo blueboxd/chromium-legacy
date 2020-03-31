@@ -11,8 +11,8 @@
 #include "content/public/renderer/render_view.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
-#include "content/shell/test_runner/web_test_interfaces.h"
-#include "content/shell/test_runner/web_test_runner.h"
+#include "content/shell/test_runner/test_interfaces.h"
+#include "content/shell/test_runner/test_runner.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -25,10 +25,10 @@ namespace content {
 WebTestRenderFrameObserver::WebTestRenderFrameObserver(
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
-  test_runner::WebTestRunner* test_runner =
+  test_runner::TestRunner* test_runner =
       WebTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
-          ->TestRunner();
+          ->GetTestRunner();
   render_frame->GetWebFrame()->SetContentSettingsClient(
       test_runner->GetWebContentSettings());
   render_frame->GetWebFrame()->SetTextCheckClient(
@@ -78,11 +78,11 @@ void WebTestRenderFrameObserver::CompositeWithRaster(
 
 void WebTestRenderFrameObserver::DumpFrameLayout(
     DumpFrameLayoutCallback callback) {
-  std::string dump = WebTestRenderThreadObserver::GetInstance()
-                         ->test_interfaces()
-                         ->TestRunner()
-                         ->DumpLayout(render_frame()->GetWebFrame());
-  std::move(callback).Run(dump);
+  test_runner::TestInterfaces* interfaces =
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
+  test_runner::TestRunner* test_runner = interfaces->GetTestRunner();
+  std::string dump = test_runner->DumpLayout(render_frame()->GetWebFrame());
+  std::move(callback).Run(std::move(dump));
 }
 
 void WebTestRenderFrameObserver::ReplicateTestConfiguration(

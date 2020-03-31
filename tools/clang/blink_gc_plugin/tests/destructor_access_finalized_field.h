@@ -35,7 +35,7 @@ class HeapObject : public GarbageCollected<HeapObject> {
   void bar(HeapObject*) {}
 
  private:
-  RefPtr<Other> m_ref;
+  scoped_refptr<Other> m_ref;
   Member<HeapObject> m_obj;
   Vector<Member<HeapObject>> m_objs;
   PartOther m_part;

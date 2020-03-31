@@ -46,16 +46,16 @@ function fakeSettingsSearchHandlerSearch(query) {
 
   const Icon = mojom.SearchResultIcon;
   const fakeRandomResults = [
-    ['bluetooth devices', '/bluetoothDevices', Icon.kWifi],
-    ['wifi', '/networks?type=WiFi', Icon.kWifi],
-    ['languages', '/languages/details', Icon.kWifi],
-    ['people', '/people', Icon.kWifi],
-    ['security', '/privacy', Icon.kWifi],
-    ['personalization', '/personalization', Icon.kWifi],
-    ['keyboard', '/keyboard-overlay', Icon.kWifi],
-    ['touchpad', '/pointer-overlay', Icon.kWifi],
-    ['lock screen', '/lockScreen', Icon.kWifi],
-    ['time zone', '/dateTime/timeZone', Icon.kWifi],
+    ['bluetooth devices', 'bluetoothDevices', Icon.kWifi],
+    ['wifi', 'networks?type=WiFi', Icon.kWifi],
+    ['languages', 'languages/details', Icon.kWifi],
+    ['people', 'people', Icon.kWifi],
+    ['security', 'privacy', Icon.kWifi],
+    ['personalization', 'personalization', Icon.kWifi],
+    ['keyboard', 'keyboard-overlay', Icon.kWifi],
+    ['touchpad', 'pointer-overlay', Icon.kWifi],
+    ['lock screen', 'lockScreen', Icon.kWifi],
+    ['time zone', 'dateTime/timeZone', Icon.kWifi],
   ].map(result => generateFakeResult(result));
 
   fakeRandomResults.sort(() => Math.random() - 0.5);
@@ -98,6 +98,16 @@ Polymer({
      * @private {!mojom.SearchResult}
      */
     selectedItem_: {
+      type: Object,
+    },
+
+    /**
+     * Prevent user deselection by tracking last item selected. This item must
+     * only be assigned to an item within |this.$.searchResultList|, and not
+     * directly to |this.selectedItem_| or an item within |this.searchResults_|.
+     * @private {!mojom.SearchResult}
+     */
+    lastSelectedItem_: {
       type: Object,
     },
 
@@ -164,6 +174,17 @@ Polymer({
   },
 
   /**
+   * @return {!OsSearchResultRowElement} The <os-search-result-row> that is
+   *     associated with the selectedItem.
+   * @private
+   */
+  getSelectedOsSearchResultRow_() {
+    return assert(
+        this.$.searchResultList.querySelector('os-search-result-row[selected]'),
+        'No OsSearchResultRow is selected.');
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -217,7 +238,21 @@ Polymer({
   },
 
   /** @private */
-  onBlur_() {
+  onNavigatedtoResultRowRoute_() {
+    // Settings has navigated to another page; close search results dropdown.
+    this.$.searchResults.close();
+
+    // Blur search input to prevent blinking caret.
+    this.$.search.blur();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onBlur_(e) {
+    e.stopPropagation();
+
     // The user has clicked a region outside the search box or the input has
     // been blurred; close the dropdown regardless if there are searchResults_.
     this.$.searchResults.close();
@@ -269,12 +304,33 @@ Polymer({
   },
 
   /**
+   * |selectedItem| is not changed by the time this is called. The value that
+   * |selectedItem| will be assigned to is stored in
+   * |this.$.searchResultList.selectedItem|.
+   * TODO(crbug/1056909): Add test for this specific case.
+   * @private
+   */
+  onSelectedItemChanged_() {
+    // <iron-list> causes |this.$.searchResultList.selectedItem| to be null if
+    // tapped a second time.
+    if (!this.$.searchResultList.selectedItem && this.lastSelectedItem_) {
+      // In the case that the user deselects a search result, reselect the item
+      // manually by altering the list. Setting |selectedItem| will be no use
+      // as |selectedItem| has not been assigned at this point. Adding an
+      // observer on |selectedItem| to address a value change will also be no
+      // use as it will perpetuate an infinite select and deselect chain in this
+      // case.
+      this.$.searchResultList.selectItem(this.lastSelectedItem_);
+    }
+    this.lastSelectedItem_ = this.$.searchResultList.selectedItem;
+  },
+
+  /**
    * @param {string} key The string associated with a key.
    * @private
    */
   selectRowViaKeys_(key) {
-    assert(key === 'ArrowDown' || key === 'ArrowUp' || key === 'Tab');
-
+    assert(key === 'ArrowDown' || key === 'ArrowUp', 'Only arrow keys.');
     assert(!!this.selectedItem_, 'There should be a selected item already.');
 
     // Select the new item.
@@ -284,19 +340,18 @@ Polymer({
     const indexOfNewRow = (numRows + selectedRowIndex + delta) % numRows;
     this.selectedItem_ = this.searchResults_[indexOfNewRow];
 
-    // If a row is focused, ensure it is the selectedResult's row.
     if (this.lastFocused_) {
-      const rowEls = Array.from(
-          this.$.searchResultList.querySelectorAll('os-search-result-row'));
+      // If a row was previously focused, focus the currently selected row.
       // Calling focus() on a <os-search-result-row> focuses the element within
       // containing the attribute 'focus-row-control'.
-      rowEls[indexOfNewRow].focus();
+      this.getSelectedOsSearchResultRow_().focus();
     }
   },
 
   /**
    * Keydown handler to specify how enter-key, arrow-up key, and arrow-down-key
-   * interacts with search results in the dropdown.
+   * interacts with search results in the dropdown. Note that 'Enter' on keyDown
+   * when a row is focused is blocked by cr.ui.FocusRowBehavior behavior.
    * @param {!KeyboardEvent} e
    * @private
    */
@@ -307,16 +362,7 @@ Polymer({
     }
 
     if (e.key === 'Enter') {
-      // TODO(crbug/1056909): Take action on selected row.
-      return;
-    }
-
-    if (e.key === 'Tab') {
-      if (this.lastFocused_) {
-        // Prevent continuous tabbing from leaving search result
-        e.preventDefault();
-        this.selectRowViaKeys_(e.key);
-      }
+      this.getSelectedOsSearchResultRow_().navigateToSearchResultRoute();
       return;
     }
 

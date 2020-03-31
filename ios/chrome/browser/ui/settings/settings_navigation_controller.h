@@ -30,10 +30,10 @@ extern NSString* const kSettingsDoneButtonId;
 // need to perform some clean up tasks.
 - (void)settingsWasDismissed;
 
-// Asks the delegate for a dispatcher that can be passed into child view
+// Asks the delegate for a handler that can be passed into child view
 // controllers when they are created.
 - (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
-    dispatcherForSettings;
+    handlerForSettings;
 
 @end
 

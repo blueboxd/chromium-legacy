@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">เครือข่ายที่แสดงตัว:</translation>
 <translation id="1094607894174825014">ได้รับคำขอการอ่านหรือเขียนที่มีออฟเซ็ตไม่ถูกต้องใน "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1097658378307015415">ก่อนที่จะลงชื่อเข้าใช้ โปรดเข้าใช้ในฐานะผู้มาเยือนเพื่อเปิดใช้งานเครือข่าย <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">รูปภาพคัดลอกมาจาก <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">แปลภาษา<ph name="LANGUAGE" />ทุกครั้ง</translation>
 <translation id="1104038495841596279">เราไม่พบซิมการ์ด</translation>
 <translation id="1108600514891325577">&amp;หยุด</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">หน้าพื้นหลัง</translation>
 <translation id="1745520510852184940">แปลทุกครั้ง</translation>
 <translation id="1750172676754093297">คีย์ความปลอดภัยบันทึกลายนิ้วมือไม่ได้</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> จะยังแก้ไขไฟล์ใน <ph name="FOLDERNAME" /> ได้อยู่จนกว่าคุณจะปิดทุกแท็บของเว็บไซต์นี้</translation>
 <translation id="175196451752279553">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="1753067873202720523">Chromebook อาจไม่ชาร์จขณะที่เปิดอยู่</translation>
 <translation id="1753905327828125965">เข้าชมบ่อยสุด</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">หากเป็นผู้ใช้ Chrome แล้วก็ลงชื่อเข้าใช้เลย</translation>
 <translation id="18245044880483936">ข้อมูลสำรองจะไม่นับรวมในโควต้าพื้นที่เก็บข้อมูล Google ไดรฟ์ของบุตรหลาน</translation>
 <translation id="1826516787628120939">กำลังตรวจสอบ</translation>
+<translation id="1827738518074806965">แกลเลอรีศิลปะ</translation>
 <translation id="1828378091493947763">อุปกรณ์นี้ไม่รองรับปลั๊กอินนี้</translation>
 <translation id="1828901632669367785">พิมพ์โดยใช้ช่องโต้ตอบของระบบ…</translation>
 <translation id="1829129547161959350">นกเพนกวิน</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2359808026110333948">ต่อไป</translation>
 <translation id="236117173274098341">เพิ่มประสิทธิภาพ</translation>
 <translation id="236141728043665931">บล็อกการเข้าถึงไมโครโฟนเสมอ</translation>
+<translation id="2364498172489649528">ผ่าน</translation>
 <translation id="2365507699358342471">เว็บไซต์นี้จะดูข้อความและรูปภาพที่คัดลอกไปยังคลิปบอร์ดได้</translation>
 <translation id="2366260648632264559">แสดงข้อความของระบบเป็นภาษานี้</translation>
 <translation id="2367972762794486313">แสดงแอป</translation>
@@ -1342,6 +1346,7 @@
 <translation id="2762441749940182211">บล็อกกล้องถ่ายรูป</translation>
 <translation id="2765217105034171413">ขนาดเล็ก</translation>
 <translation id="2766161002040448006">ถามผู้ปกครอง</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> จะแก้ไข <ph name="FILENAME" /> ได้อยู่จนกว่าคุณจะปิดทุกแท็บของเว็บไซต์นี้</translation>
 <translation id="276969039800130567">ลงชื่อเข้าใช้โดยใช้ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="2770465223704140727">ลบจากรายการ</translation>
 <translation id="2770690685823456775">ส่งออกรหัสผ่านไปยังโฟลเดอร์อื่น</translation>
@@ -1666,6 +1671,18 @@
 <translation id="3202173864863109533">กำลังปิดเสียงของแท็บนี้อยู่</translation>
 <translation id="3208321278970793882">แอป</translation>
 <translation id="3208584281581115441">ตรวจสอบเลย</translation>
+<translation id="3208640652501208439">อาจไม่มีแหล่งข้อมูลสำหรับการบ้านหรือแหล่งข้อมูลไม่โหลดโดยอัตโนมัติ
+    บุตรหลานอาจไม่มีสิทธิ์เข้าถึงสิ่งต่อไปนี้
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />แอปพลิเคชันและส่วนขยายที่โรงเรียนเป็นผู้ติดตั้ง
+      <ph name="LIST_ITEM" />บุ๊กมาร์กจาก Chromebook ของโรงเรียน
+      <ph name="LIST_ITEM" />การป้อนรหัสผ่านอัตโนมัติในเว็บไซต์การศึกษา
+    <ph name="END_LIST" />
+    หากต้องการใช้งานอุปกรณ์นี้ให้ได้เหมือนกับอยู่ที่โรงเรียนทุกอย่าง บุตรหลานควรทำดังนี้
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />ออกจากระบบบัญชีที่จัดการโดย Family Link
+      <ph name="OLIST_ITEM" />ลงชื่อเข้าใช้ด้วยบัญชี G Suite for Education ในหน้าจอลงชื่อเข้าใช้ อย่างไรก็ตาม โปรดทราบว่าขั้นตอนนี้จะทำให้นโยบายของโรงเรียนรวมถึงการตั้งค่าการเข้าถึงแอปและเว็บไซต์มีผลเหนือฟีเจอร์การควบคุมดูแลของ Family Link (เช่น ผู้ดูแลระบบของโรงเรียนอาจอนุญาตให้เปิด YouTube หากจำเป็นต่อการทำการบ้าน ไม่บังคับใช้เวลาอยู่หน้าจอ เป็นต้น)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">ยังไม่ยืนยัน</translation>
 <translation id="32101887417650595">เชื่อมต่อเครื่องพิมพ์ไม่ได้</translation>
 <translation id="321084946921799184">สีเหลืองและสีขาว</translation>
@@ -1744,6 +1761,7 @@
 <translation id="3312424061798279731">ภาษาที่เปิดใช้</translation>
 <translation id="3313622045786997898">ค่าลายเซ็นใบรับรอง</translation>
 <translation id="3315158641124845231">ซ่อน <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">ข้อมูลบัญชีโรงเรียนสำหรับผู้ปกครอง</translation>
 <translation id="3317459757438853210">สองด้าน</translation>
 <translation id="3317678681329786349">บล็อกกล้องถ่ายรูปและไมโครโฟน</translation>
 <translation id="3319048459796106952">หน้าต่างใหม่และไม่ระบุตัวตน</translation>
@@ -1930,6 +1948,7 @@
 <translation id="3574210789297084292">ลงชื่อเข้าใช้</translation>
 <translation id="3574917942258583917">ต้องการออกจากโหมดไม่ระบุตัวตนไหม</translation>
 <translation id="3575121482199441727">อนุญาตสำหรับเว็บไซต์นี้</translation>
+<translation id="3575919114596668130">การตั้งค่า Family Link ของผู้ปกครองจะยังมีผลอยู่ หากเคยบล็อกแอปหรือเว็บไซต์ไว้ คุณก็ไม่ต้องบล็อกซ้ำอีก</translation>
 <translation id="3576324189521867626">ติดตั้งเรียบร้อยแล้ว</translation>
 <translation id="3578594933904494462">เนื้อหาของแท็บนี้กำลังถูกแชร์</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ต้องการแชร์เครื่องพิมพ์ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; กับกลุ่มที่คุณเป็นเจ้าของ: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; หากคุณยอมรับ สมาชิกในกลุ่มทั้งหมดจะสามารถสั่งพิมพ์ไปยังเครื่องพิมพ์ดังกล่าวได้</translation>
@@ -2770,6 +2789,7 @@
 <translation id="4689235506267737042">เลือกค่ากำหนดการสาธิต</translation>
 <translation id="4689421377817139245">ซิงค์บุ๊กมาร์กนี้กับ iPhone ของคุณ</translation>
 <translation id="4690091457710545971">&lt;มีไฟล์ 4 ไฟล์ที่สร้างขึ้นโดยเฟิร์มแวร์ Wi-Fi ของ Intel ได้แก่ csr.lst, fh_regs.lst, radio_reg.lst และ monitor.lst.sysmon  โดย 3 ไฟล์แรกเป็นไฟล์ไบนารีที่มี Register Dump ซึ่งผ่านการยืนยันโดย Intel เพื่อไม่ให้รวมข้อมูลส่วนตัวหรือข้อมูลที่ระบุอุปกรณ์  ส่วนไฟล์สุดท้ายเป็นการติดตามการทำงานจากเฟิร์มแวร์ของ Intel โดยมีการลบข้อมูลส่วนตัวหรือข้อมูลที่ระบุอุปกรณ์ออกไปแล้ว แต่ไฟล์มีขนาดใหญ่เกินกว่าที่จะแสดงตรงนี้ได้  ไฟล์เหล่านี้สร้างขึ้นมาเพื่อตอบสนองต่อปัญหา Wi-Fi ล่าสุดในอุปกรณ์ของคุณและระบบจะแชร์ไฟล์กับ Intel เพื่อช่วยแก้ปัญหาเหล่านี้&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> จะดู <ph name="FILENAME" /> ได้อยู่จนกว่าคุณจะปิดทุกแท็บของเว็บไซต์นี้</translation>
 <translation id="4692623383562244444">เครื่องมือค้นหา</translation>
 <translation id="4693155481716051732">ซูชิ</translation>
 <translation id="4694024090038830733">ผู้ดูแลระบบเป็นผู้จัดการการกำหนดค่าเครื่องพิมพ์</translation>
@@ -3125,6 +3145,7 @@
 <translation id="5204967432542742771">ป้อนรหัสผ่าน</translation>
 <translation id="5206215183583316675">ลบ " <ph name="CERTIFICATE_NAME" /> " ไหม</translation>
 <translation id="520621735928254154">เกิดข้อผิดพลาดในการนำเข้าใบรับรอง</translation>
+<translation id="5209307736170827035">ข้อมูลของบุตรหลานจะได้รับการปกป้องใน Classroom <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">ไม่พบอุปกรณ์</translation>
 <translation id="5210990770352357081">ถอนการติดตั้ง Plugin VM ไม่ได้</translation>
 <translation id="5213481667492808996">บริการอินเทอร์เน็ต "<ph name="NAME" />" พร้อมใช้งานแล้ว</translation>
@@ -3236,6 +3257,7 @@
 <translation id="5341980496415249280">โปรดรอ กำลังบรรจุ...</translation>
 <translation id="5342091991439452114">PIN ต้องมีอย่างน้อย <ph name="MINIMUM" /> หลัก</translation>
 <translation id="5344036115151554031">กำลังคืนค่า Linux</translation>
+<translation id="535123479159372765">ข้อความคัดลอกมาจากอุปกรณ์อื่น</translation>
 <translation id="5352033265844765294">การระบุเวลา</translation>
 <translation id="5353252989841766347">ส่งออกรหัสผ่านจาก Chrome</translation>
 <translation id="5355099869024327351">อนุญาตให้ Assistant แสดงการแจ้งเตือน</translation>
@@ -3358,6 +3380,7 @@
 <translation id="5511379779384092781">เล็กพิเศษ</translation>
 <translation id="5511823366942919280">คุณแน่ใจไหมว่าต้องการตั้งค่าอุปกรณ์นี้เป็น "Shark"</translation>
 <translation id="5512653252560939721">ใบรับรองผู้ใช้ต้องได้รับการสนับสนุนฮาร์ดแวร์</translation>
+<translation id="5515923816438946203">เลือกเนื้อหาที่ต้องการดูในหน้าจอ</translation>
 <translation id="5517304475148761050">แอปนี้ต้องการสิทธิ์เข้าถึง Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">กำลังเพิ่มเครื่องพิมพ์ไปยังบัญชีของคุณ อาจใช้เวลาสักครู่...</translation>
@@ -3808,6 +3831,7 @@
 <translation id="6097480669505687979">หากคุณไม่เพิ่มพื้นที่ว่าง ระบบจะนำผู้ใช้และข้อมูลออกโดยอัตโนมัติ</translation>
 <translation id="6097600385983390082">ปิดการค้นหาด้วยเสียงแล้ว</translation>
 <translation id="6098793583803863900">กำลังสแกนไฟล์ที่ไม่รู้จักเพื่อตรวจหาเนื้อหาที่เป็นอันตราย</translation>
+<translation id="609942571968311933">ข้อความคัดลอกมาจาก <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">เมนูเริ่มต้น</translation>
 <translation id="6101226222197207147">เพิ่มแอปพลิเคชันใหม่แล้ว (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">ไฟล์นี้ถูกบล็อกโดยการปกป้องขั้นสูง</translation>
@@ -4178,6 +4202,7 @@
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6615455863669487791">แสดงให้ฉันเห็น</translation>
 <translation id="6618097958368085618">อย่างไรก็เก็บไว้</translation>
+<translation id="6618744767048954150">กำลังดำเนินการ</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">เว็บไซต์ติดตามตำแหน่งของคุณได้</translation>
 <translation id="6619801788773578757">เพิ่มแอปพลิเคชันคีออสก์</translation>
@@ -4563,6 +4588,7 @@
 <translation id="7131040479572660648">อ่านข้อมูลบน <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และ <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">เพิ่มห&amp;น้า...</translation>
 <translation id="7133578150266914903">ผู้ดูแลระบบกำลังคืนค่าสถานะของอุปกรณ์เครื่องนี้ (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">ตรวจสอบรหัสผ่านแล้ว <ph name="DONE" />/<ph name="TOTAL" /> รายการ...</translation>
 <translation id="7134098520442464001">ทำให้ข้อความเล็กลง</translation>
 <translation id="7135729336746831607">เปิดบลูทูธไหม</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> ต้องการให้คุณอัปเดต <ph name="DEVICE_TYPE" /> ทันที</translation>
@@ -4911,6 +4937,7 @@
 <translation id="761530003705945209">สำรองข้อมูลไปที่ Google ไดรฟ์ กู้คืนข้อมูลหรือเปลี่ยนอุปกรณ์ได้ง่ายๆ ทุกเมื่อ ข้อมูลสำรองจะมีข้อมูลแอปอยู่ด้วย ข้อมูลสำรองดังกล่าวจะอัปโหลดขึ้น Google และเข้ารหัสโดยใช้รหัสผ่านบัญชี Google</translation>
 <translation id="7616214729753637086">กำลังลงทะเบียนอุปกรณ์...</translation>
 <translation id="7617366389578322136">กำลังเชื่อมต่อกับ "<ph name="DEVICE_NAME" />"</translation>
+<translation id="761763866592998929">โหมดแอมเบียนท์</translation>
 <translation id="762068974690945752">เพิ่มบัญชีโรงเรียนหรือจัดการบัญชีของบุตรหลานที่นี่ <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">ระบบบันทึกการกำหนดค่าอุปกรณ์ไม่สำเร็จ</translation>
 <translation id="7622114377921274169">กำลังชาร์จ</translation>
@@ -5022,6 +5049,7 @@
 <translation id="7766838926148951335">ยอมรับสิทธิ์</translation>
 <translation id="7768770796815395237">เปลี่ยน</translation>
 <translation id="7769672763586021400">รหัสรุ่น</translation>
+<translation id="7770612696274572992">รูปภาพคัดลอกมาจากอุปกรณ์อื่น</translation>
 <translation id="7770651108375708429">ยกเลิกการเชื่อมต่อ Wi-Fi</translation>
 <translation id="7771452384635174008">รูปแบบ</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
@@ -5029,6 +5057,7 @@
 <translation id="7772773261844472235">ตรวจสอบสถานะ Chromebook</translation>
 <translation id="7773726648746946405">พื้นที่จัดเก็บเซสชัน</translation>
 <translation id="7774365994322694683">นก</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> จะยังดูไฟล์ใน <ph name="FOLDERNAME" /> ได้อยู่จนกว่าคุณจะปิดทุกแท็บของเว็บไซต์นี้</translation>
 <translation id="7776701556330691704">ไม่พบเสียง</translation>
 <translation id="7780252971640011240">มีปัญหาในการเชื่อมต่อ โปรดติดต่อรับความช่วยเหลือจากผู้ให้บริการ</translation>
 <translation id="7781335840981796660">บัญชีผู้ใช้ทั้งหมดและข้อมูลในเครื่องจะถูกลบ</translation>
@@ -6048,6 +6077,7 @@
 <translation id="9055636786322918818">บังคับใช้การเข้ารหัส RC4 การใช้ตัวเลือกนี้เป็นการเพิ่มความเสี่ยงเนื่องจากการเข้ารหัส RC4 นั้นไม่ปลอดภัย</translation>
 <translation id="9056810968620647706">ไม่พบรายการที่ตรงกัน</translation>
 <translation id="9057354806206861646">อัปเดตกำหนดการ</translation>
+<translation id="9058976525724291037">บุตรหลานต้องการเพิ่มบัญชี Google อีกบัญชีหนึ่งลงในอุปกรณ์นี้ การเพิ่มบัญชีลงในอุปกรณ์ที่จัดการโดย Family Link จะทำได้เฉพาะบัญชี G Suite for Education เท่านั้น</translation>
 <translation id="9062065967472365419">ทำให้ฉันประหลาดใจ</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">เกิดข้อผิดพลาดในบรรทัดที่ <ph name="ERROR_LINE_START" /> ถึง <ph name="ERROR_LINE_END" /></translation>

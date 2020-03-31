@@ -8,12 +8,24 @@
 /* #export */ class TestMetricsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
+      'recordAction',
+      'recordSafetyCheckPageHistogram',
       'recordSettingsPageHistogram',
     ]);
   }
 
   /** @override */
-  recordSettingsPageHistogram(value) {
-    this.methodCalled('recordSettingsPageHistogram', value);
+  recordAction(action) {
+    this.methodCalled('recordAction', action);
+  }
+
+  /** @override */
+  recordSafetyCheckPageHistogram(interaction) {
+    this.methodCalled('recordSafetyCheckPageHistogram', interaction);
+  }
+
+  /** @override */
+  recordSettingsPageHistogram(interaction) {
+    this.methodCalled('recordSettingsPageHistogram', interaction);
   }
 }

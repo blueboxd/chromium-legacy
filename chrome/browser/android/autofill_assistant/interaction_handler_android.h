@@ -43,20 +43,40 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
       base::android::ScopedJavaGlobalRef<jobject> jdelegate);
   ~InteractionHandlerAndroid() override;
 
+  base::WeakPtr<InteractionHandlerAndroid> GetWeakPtr();
+
   void StartListening();
   void StopListening();
+
+  // Access to the user model that this interaction handler is bound to.
+  UserModel* GetUserModel() const;
+
+  // Access to the basic interactions that this interaction handler is bound to.
+  BasicInteractions* GetBasicInteractions() const;
 
   // Creates interaction callbacks as specified by |proto|. Returns false if
   // |proto| is invalid.
   bool AddInteractionsFromProto(const InteractionProto& proto);
 
-  // Overrides autofill_assistant::EventHandler::Observer.
-  void OnEvent(const EventHandler::EventKey& key) override;
-
- private:
+  // Adds a single interaction. This can be used to add internal interactions
+  // which are not exposed in the proto interface.
   void AddInteraction(const EventHandler::EventKey& key,
                       const InteractionCallback& callback);
 
+  // Overrides autofill_assistant::EventHandler::Observer.
+  void OnEvent(const EventHandler::EventKey& key) override;
+
+  // Adds |model_identifier| to the list of model identifiers belonging to
+  // |radio_group|.
+  void AddRadioButtonToGroup(const std::string& radio_group,
+                             const std::string& model_identifier);
+
+  // Ensures that only |selected_model_identifier| is set to true in
+  // |radio_group|.
+  void UpdateRadioButtonGroup(const std::string& radio_group,
+                              const std::string& selected_model_identifier);
+
+ private:
   // Maps event keys to the corresponding list of callbacks to execute.
   std::map<EventHandler::EventKey, std::vector<InteractionCallback>>
       interactions_;
@@ -68,6 +88,9 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   base::android::ScopedJavaGlobalRef<jobject> jcontext_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_ = nullptr;
   bool is_listening_ = false;
+  // Maps radiogroup identifiers to the list of corresponding model identifiers.
+  std::map<std::string, std::vector<std::string>> radio_groups_;
+  base::WeakPtrFactory<InteractionHandlerAndroid> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(InteractionHandlerAndroid);
 };
 

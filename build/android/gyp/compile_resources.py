@@ -32,7 +32,6 @@ from xml.etree import ElementTree
 from util import build_utils
 from util import diff_utils
 from util import manifest_utils
-from util import md5_check
 from util import resource_utils
 
 # `Resources_pb2` module imports `descriptor`, which imports `six`.
@@ -1100,7 +1099,11 @@ def _WriteOutputs(options, build):
       shutil.move(temp, final)
 
 
-def _OnStaleMd5(options):
+def main(args):
+  build_utils.InitLogging('RESOURCE_DEBUG')
+  args = build_utils.ExpandFileArgs(args)
+  options = _ParseArgs(args)
+
   path = options.arsc_path or options.proto_path
   debug_temp_resources_dir = os.environ.get('TEMP_RESOURCES_DIR')
   if debug_temp_resources_dir:
@@ -1177,69 +1180,12 @@ def _OnStaleMd5(options):
     logging.debug('Copying outputs')
     _WriteOutputs(options, build)
 
-
-def main(args):
-  build_utils.InitLogging('RESOURCE_DEBUG')
-  args = build_utils.ExpandFileArgs(args)
-  options = _ParseArgs(args)
-
-  depfile_deps = options.dependencies_res_zips + options.extra_r_text_files
-
-  input_paths = depfile_deps
-  input_strings = [
-      options.include_resources,
-      options.extra_res_packages,
-      options.extra_main_r_text_files,
-      options.min_sdk_version,
-      options.target_sdk_version,
-      options.webp_cache_dir,
-      options.no_xml_namespaces,
-      options.version_code,
-      options.version_name,
-      options.r_java_root_package_name,
-      options.strip_resource_names,
-      options.debuggable,
-      options.rename_manifest_package,
-      options.shared_resources,
-      options.app_as_shared_lib,
-      options.package_id,
-      options.package_name,
-      options.arsc_package_name,
-      options.shared_resources_allowlist_locales,
-      options.locale_allowlist,
-      options.png_to_webp,
-      options.resource_exclusion_regex,
-      options.resource_exclusion_exceptions,
-      options.support_zh_hk,
-      options.include_resources,
-      options.max_sdk_version,
-      options.manifest_package,
-  ]
-  possible_output_paths = [
-      options.srcjar_out,
-      options.r_text_out,
-      options.arsc_path,
-      options.proto_path,
-      options.optimized_arsc_path,
-      options.optimized_proto_path,
-      options.proguard_file,
-      options.proguard_file_main_dex,
-      options.emit_ids_out,
-      options.info_path,
-  ]
-  output_paths = [p for p in possible_output_paths if p]
-
-  # Since we overspecify deps, this target depends on java deps that are not
-  # going to change its output. This target is also slow (6-12 seconds) and
-  # blocking the critical path. We want changes to java_library targets to not
-  # trigger re-compilation of resources, thus we need to use md5_check.
-  md5_check.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options),
-      options,
-      input_paths=input_paths,
-      input_strings=input_strings,
-      output_paths=output_paths,
-      depfile_deps=depfile_deps)
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        options.srcjar_out,
+        inputs=options.dependencies_res_zips + options.extra_r_text_files,
+        add_pydeps=False)
 
 
 if __name__ == '__main__':

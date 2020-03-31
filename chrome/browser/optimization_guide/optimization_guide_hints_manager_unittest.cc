@@ -2127,7 +2127,11 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
   NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+      nullptr, GURL("https://www.google.com/"),
+      /*external_app_packages_name=*/{},
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      sorted_predicted_urls);
 
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectUniqueSample(
@@ -2149,7 +2153,11 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
   NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+      nullptr, GURL("https://www.google.com/"),
+      /*external_app_packages_name=*/{},
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      sorted_predicted_urls);
 
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectTotalCount(
@@ -2177,7 +2185,11 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   sorted_predicted_urls.push_back(GURL("https://bar.com/"));
 
   NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+      nullptr, GURL("https://www.google.com/"),
+      /*external_app_packages_name=*/{},
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      sorted_predicted_urls);
 
   {
     base::HistogramTester histogram_tester;
@@ -2220,9 +2232,64 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   sorted_predicted_urls.push_back(GURL("http://httppage.com/"));
 
   NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+      nullptr, GURL("https://www.google.com/"),
+      /*external_app_packages_name=*/{},
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      sorted_predicted_urls);
 
   hints_manager()->OnPredictionUpdated(prediction);
+  // Ensure that we include both web hosts in the request. These would be
+  // foo.com and httppage.com.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+  // Ensure that we only include 2 URLs in the request.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 2, 1);
+}
+
+// Verify that optimization hints are not fetched if the prediction for the next
+// likely navigations are provided by external Android app.
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
+  sorted_predicted_urls.push_back(GURL("file://non-web-bar.com/"));
+  sorted_predicted_urls.push_back(GURL("http://httppage.com/"));
+
+  std::vector<std::string> external_app_packages_name;
+  external_app_packages_name.push_back("com.example.foo");
+
+  NavigationPredictorKeyedService::Prediction prediction_external_android_app(
+      nullptr, base::nullopt, external_app_packages_name,
+      NavigationPredictorKeyedService::PredictionSource::kExternalAndroidApp,
+      sorted_predicted_urls);
+  hints_manager()->OnPredictionUpdated(prediction_external_android_app);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  // Ensure that we only include 2 URLs in the request.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
+
+  // Now fetch again with a prediction from anchor elements. This time
+  // optimization hints should be requested.
+  NavigationPredictorKeyedService::Prediction prediction_anchor_elements(
+      nullptr, GURL("https://www.google.com/"),
+      /*external_app_packages_name=*/{},
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      sorted_predicted_urls);
+  hints_manager()->OnPredictionUpdated(prediction_anchor_elements);
   // Ensure that we include both web hosts in the request. These would be
   // foo.com and httppage.com.
   histogram_tester.ExpectUniqueSample(
@@ -2246,7 +2313,11 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
   NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+      nullptr, GURL("https://www.google.com/"),
+      /*external_app_packages_name=*/{},
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      sorted_predicted_urls);
 
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectTotalCount(
@@ -2270,7 +2341,11 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
   NavigationPredictorKeyedService::Prediction prediction(
-      nullptr, GURL("https://www.not-google.com/"), sorted_predicted_urls);
+      nullptr, GURL("https://www.not-google.com/"),
+      /*external_app_packages_name=*/{},
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      sorted_predicted_urls);
 
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectTotalCount(

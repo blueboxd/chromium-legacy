@@ -128,6 +128,9 @@ group("xctest") {
   public_configs = [ ":xctest_config" ]
 }
 
+_xctrunner_path =
+    "$ios_sdk_platform_abs_path/Developer/Library/Xcode/Agents/XCTRunner.app"
+
 # When building with Goma RBE, $ios_sdk_platform_abs_path corresponds to a
 # symlink below $root_build_dir that points to the real SDK to use. Because
 # the files are below $root_build_dir, it is not possible to list them as a
@@ -142,9 +145,6 @@ group("xctest") {
 # To workaround this, add a target that pretends to create those files
 # (but does nothing). See https://crbug.com/1061487 for why this is needed.
 if (ios_use_goma_rbe) {
-  _xctrunner_path =
-      "$ios_sdk_platform_abs_path/Developer/Library/Xcode/Agents/XCTRunner.app"
-
   action("copy_xctrunner_app") {
     testonly = true
     script = "//build/noop.py"
@@ -153,5 +153,25 @@ if (ios_use_goma_rbe) {
       "$_xctrunner_path/PkgInfo",
       "$_xctrunner_path/XCTRunner",
     ]
+  }
+}
+
+# When creating the test runner for an XCUITest, the arm64e slice of the binary
+# must be removed (at least until the app ships with arm64e slice which is not
+# yet supported by Apple).
+action("xctest_runner_without_arm64e") {
+  testonly = true
+  script = "//build/config/ios/strip_arm64e.py"
+  sources = [ "$_xctrunner_path/XCTRunner" ]
+  outputs = [ "$target_out_dir/XCTRunner" ]
+  args = [
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
+    "--input",
+    rebase_path(sources[0], root_build_dir),
+  ]
+
+  if (ios_use_goma_rbe) {
+    deps = [ ":copy_xctrunner_app" ]
   }
 }

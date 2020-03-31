@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/main/browser_user_data.h"
 
-class AppUrlLoadingService;
+class SceneUrlLoadingService;
 class Browser;
 class UrlLoadingNotifierBrowserAgent;
 struct UrlLoadParams;
@@ -33,7 +33,7 @@ class UrlLoadingBrowserAgent : public BrowserUserData<UrlLoadingBrowserAgent> {
   UrlLoadingBrowserAgent& operator=(const UrlLoadingBrowserAgent&) = delete;
   ~UrlLoadingBrowserAgent() override;
 
-  void SetAppService(AppUrlLoadingService* app_service);
+  void SetSceneService(SceneUrlLoadingService* app_service);
   void SetIncognitoLoader(UrlLoadingBrowserAgent* loader);
   void SetDelegate(id<URLLoadingDelegate> delegate);
 
@@ -63,7 +63,7 @@ class UrlLoadingBrowserAgent : public BrowserUserData<UrlLoadingBrowserAgent> {
   Browser* browser_;
   UrlLoadingNotifierBrowserAgent* notifier_ = nullptr;
   UrlLoadingBrowserAgent* incognito_loader_ = nullptr;
-  AppUrlLoadingService* app_service_ = nullptr;
+  SceneUrlLoadingService* app_service_ = nullptr;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_BROWSER_AGENT_H_

@@ -1472,17 +1472,16 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @RetryOnFailure
-    @DisabledTest(message = "crbug.com/863676")
     public void testToolbarSwipePrevTab() throws InterruptedException, TimeoutException {
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        mActivityTestRule.loadUrl(generateSolidColorUrl("#00ff00"));
+        mActivityTestRule.loadUrlInNewTab(generateSolidColorUrl("#0000ff"));
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
         final TabModel tabModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
 
         Assert.assertEquals("Incorrect starting index", 1, tabModel.index());
+        Assert.assertEquals("Incorrect tab count.", 2, tabModel.getCount());
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0, true);
     }
 
@@ -1490,18 +1489,17 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @RetryOnFailure
-    @DisabledTest(message = "crbug.com/802183")
     public void testToolbarSwipeNextTab() throws InterruptedException, TimeoutException {
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        mActivityTestRule.loadUrl(generateSolidColorUrl("#00ff00"));
+        mActivityTestRule.loadUrlInNewTab(generateSolidColorUrl("#0000ff"));
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
         final TabModel tabModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
 
-        Assert.assertEquals("Incorrect starting index", 0, tabModel.index());
+        Assert.assertEquals("Incorrect starting index.", 0, tabModel.index());
+        Assert.assertEquals("Incorrect tab count.", 2, tabModel.getCount());
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 1, true);
     }
 
@@ -1901,6 +1899,18 @@ public class TabsTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         assertFileExists(normalTabFile, true);
         assertFileExists(incognitoTabFile, false);
+    }
+
+    /**
+     * Generate a URL that shows a web page with a solid color. This makes visual debugging easier.
+     * @param htmlColor The HTML/CSS color the page should display.
+     * @return A URL that shows the solid color when loaded.
+     */
+    private static String generateSolidColorUrl(String htmlColor) {
+        return UrlUtils.encodeHtmlDataUri("<html><head><style>"
+                + "  body { background-color: " + htmlColor + ";}"
+                + "</style></head>"
+                + "<body></body></html>");
     }
 
     private void assertFileExists(final File fileToCheck, final boolean expected) {

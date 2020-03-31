@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/menu_test_base.h"
+#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
@@ -91,8 +92,8 @@ class MenuItemViewTestInsert : public MenuTestBase {
 
     inserted_item_ = menu()->AddMenuItemAt(
         INSERT_INDEX, 1000, ASCIIToUTF16("inserted item"), base::string16(),
-        nullptr, gfx::ImageSkia(), nullptr, views::MenuItemView::Type::kNormal,
-        ui::NORMAL_SEPARATOR);
+        ui::ThemedVectorIcon(), gfx::ImageSkia(), ui::ThemedVectorIcon(),
+        views::MenuItemView::Type::kNormal, ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu()->ChildrenChanged();
 
@@ -186,8 +187,8 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
   void Step2() {
     inserted_item_ = menu()->AddMenuItemAt(
         INSERT_INDEX, 1000, ASCIIToUTF16("inserted item"), base::string16(),
-        nullptr, gfx::ImageSkia(), nullptr, views::MenuItemView::Type::kNormal,
-        ui::NORMAL_SEPARATOR);
+        ui::ThemedVectorIcon(), gfx::ImageSkia(), ui::ThemedVectorIcon(),
+        views::MenuItemView::Type::kNormal, ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu()->ChildrenChanged();
 

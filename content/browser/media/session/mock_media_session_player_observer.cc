@@ -144,6 +144,12 @@ int MockMediaSessionPlayerObserver::received_exit_picture_in_picture_calls()
   return received_exit_picture_in_picture_calls_;
 }
 
+bool MockMediaSessionPlayerObserver::HasVideo(int player_id) const {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  return false;
+}
+
 MockMediaSessionPlayerObserver::MockPlayer::MockPlayer(bool is_playing,
                                                        double volume_multiplier)
     : is_playing_(is_playing), volume_multiplier_(volume_multiplier) {}

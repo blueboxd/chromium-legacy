@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">ပြီးဆုံးရက် <ph name="DATE" /></translation>
 <translation id="1791662854739702043">ထည့်သွင်းပြီးပါပြီ</translation>
 <translation id="1792959175193046959">ဒေါင်းလုဒ်လုပ်ရန် နေရာမူရင်းကို အချိန်မရွေး ပြောင်းနိုင်သည်</translation>
+<translation id="1795251344124198516">Chrome နှင့် Chrome OS ထပ်တိုး ဝန်ဆောင်မှု စည်းမျဉ်းများ</translation>
 <translation id="1807246157184219062">အလင်း</translation>
 <translation id="1810845389119482123">စင့်ခ်စတင်လုပ်ရန် စနစ်ထည့်သွင်းခြင်းကို အပြီးသတ်မထားပါ</translation>
 <translation id="1821253160463689938">အဆိုပါ စာမျက်နှာများကို ဝင်ကြည့်မထားလျှင်ပင် သင့်ဦးစားပေးများကို မှတ်သားရန် ကွတ်ကီးများအား အသုံးပြုသည်</translation>
@@ -236,6 +237,7 @@
 <translation id="2650751991977523696">ဖိုင်ကို ထပ်မံဒေါင်းလုဒ်လုပ်လိုပါသလား။</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{အသံဖိုင် # ဖိုင်}other{အသံဖိုင် # ဖိုင်}}</translation>
 <translation id="2687403674020088961">ကွတ်ကီးများအားလုံးကို ပိတ်ရန် (အကြံမပြုပါ)</translation>
+<translation id="2689830683995595741">Chrome ကို အသုံးပြုခြင်းဖြင့် သင်သည် <ph name="BEGIN_LINK1" />Google ဝန်ဆောင်မှုဆိုင်ရာ စည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />Google Chrome နှင့် Chrome OS ထပ်တိုးဝန်ဆောင်မှု စည်းမှဉ်းများ<ph name="END_LINK2" /> ကို သဘောတူရာရောက်သည်။ <ph name="BEGIN_LINK3" />Family Link ဖြင့် ကြီးကြပ်ထားသည့် Google Account များအတွက် ပုဂ္ဂိုလ်ရေးဆိုင်ရာ ကြေညာချက်<ph name="END_LINK3" /> လည်း အကျုံးဝင်သည်။</translation>
 <translation id="2707726405694321444">စာမျက်နှာကို ဆန်းသစ်ယူရန်</translation>
 <translation id="2709516037105925701">အလိုလျောက် ဖြည့်စွက်</translation>
 <translation id="2717722538473713889">အီးမေးလ်လိပ်စာများ</translation>
@@ -376,6 +378,7 @@
 <translation id="3749259744154402564">ပံ့ပိုးမထားပါ</translation>
 <translation id="3771001275138982843">အပ်ဒိတ်ကို ဒေါင်းလုဒ်လုပ်ရ မရပါ</translation>
 <translation id="3771033907050503522">ကိုယ်ပျောက် တဲဘ်များ</translation>
+<translation id="3771694256347217732">Google ဝန်ဆောင်မှု စည်းမျဉ်းများ</translation>
 <translation id="3773755127849930740">ချိတ်တွဲခြင်းကို ခွင့်ပြုရန် <ph name="BEGIN_LINK" />ဘလူးတုသ်ကိုဖွင့်ပါ<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">သင့်ကိရိယာများသို့ ပို့ပါ</translation>
 <translation id="3778956594442850293">ပင်မစာမျက်နှာသို့ ထည့်ပြီးပါပြီ</translation>
@@ -403,6 +406,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{အဆင်သင့်ဖြစ်သည့်အခါ Chrome က သင့်စာမျက်နှာကို ဖွင့်ပါမည်}other{အဆင်သင့်ဖြစ်သည့်အခါ Chrome က သင့်စာမျက်နှာများကို ဖွင့်ပါမည်}}</translation>
 <translation id="3963007978381181125">စကားဝှက်စာ အသွင်ဝှက်ခြင်းတွင် ငွေပေးချေနည်းလမ်းများနှင့် Google Pay မှ လိပ်စာများ မပါဝင်ပါ။ သင့်စကားဝှက်ရှိသူသာ သင်အသွင်ဝှက်ထားသည့် ဒေတာများကို ဖတ်နိုင်မည် ဖြစ်သည်။ စကားဝှက်ကို Google သို့ပို့ခြင်း သို့မဟုတ် သိမ်းဆည်းထားခြင်း မရှိပါ။ သင့်စကားဝှက်ကို မေ့သွားလျှင် သို့မဟုတ် ဤဆက်တင်ကို ပြောင်းလဲလိုလျှင် စင့်ခ်လုပ်ခြင်းကို ပြင်ဆင်သတ်မှတ်ရန် လိုအပ်ပါသည်။ <ph name="BEGIN_LINK" />ပိုမို လေ့လာရန်<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">ဒေါင်းလုဒ်လုပ်ခြင်း ပြည့်စုံပါပြီ</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> ကို Chrome တွင် ဖွင့်ပါမည်။ ရှေ့ဆက်ခြင်းအားဖြင့် သင်သည် <ph name="BEGIN_LINK1" />Google ဝန်ဆောင်မှုစည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />Google Chrome နှင့် Chrome OS ထပ်တိုး ဝန်ဆောင်မှုစည်းမျဉ်းများ<ph name="END_LINK2" /> ကို သဘောတူရာရောက်သည်။ <ph name="BEGIN_LINK3" />Family Link ဖြင့် ကြီးကြပ်ထားသည့် Google Account များအတွက် ပုဂ္ဂိုလ်ရေးဆိုင်ရာ ကြေညာချက်<ph name="END_LINK3" /> လည်း အကျုံးဝင်သည်။</translation>
 <translation id="397583555483684758">စင့်ခ်ပြုလုပ်ခြင်း ရပ်တန့်သွားပါပြီ</translation>
 <translation id="3976396876660209797">ဤဖြတ်လမ်းလင့်ခ်ကို ဖယ်ရှားပြီး အသစ်ပြန်လုပ်ပါ</translation>
 <translation id="3985215325736559418"><ph name="FILE_NAME" /> ကို ထပ်မံဒေါင်းလုဒ်လုပ်လိုပါသလား။</translation>
@@ -712,6 +716,7 @@
 <translation id="6255999984061454636">ပါဝင်သည့်အကြောင်းအရာ အကြံပြုချက်များ</translation>
 <translation id="6270391203985052864">ဝဘ်ဆိုက်များက အကြောင်းကြားချက်များပို့ရန် တောင်းဆိုနိုင်သည်</translation>
 <translation id="6277522088822131679">စာမျက်နှာ ပရင်ထုတ်ရာတွင် ပြဿနာရှိသည်။ ကျေးဇူးပြု၍ နောက်မှ ကြိုးစားပါ။</translation>
+<translation id="6292420053234093573">Chrome ကို အသုံးပြုခြင်းဖြင့် သင်သည် <ph name="BEGIN_LINK1" />Google ဝန်ဆောင်မှုဆိုင်ရာ စည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />Google Chrome နှင့် Chrome OS ထပ်တိုးဝန်ဆောင်မှု စည်းမှဉ်းများ<ph name="END_LINK2" /> ကို သဘောတူရာရောက်သည်။</translation>
 <translation id="6295158916970320988">ဆိုဒ်များအားလုံး</translation>
 <translation id="629730747756840877">အကောင့်</translation>
 <translation id="6297765934698848803">သင့်စက်ကိုစီမံခန့်ခွဲသည့် အဖွဲ့အစည်းက ကင်မရာကို ပိတ်ထားသည်။</translation>
@@ -726,6 +731,7 @@
 <translation id="6364438453358674297">အကြံပေးချက်ကို မှတ်တမ်း ထဲမှ ဖယ်ရှားမလား?</translation>
 <translation id="6369229450655021117">ဤနေရာမှနေ၍ ဝဘ်ရှာဖွေခြင်း၊ မိတ်ဆွေများနှင့် မျှဝေခြင်း၊ ဖွင့်ထားသည့် စာမျက်နှာများ ကြည့်ခြင်းတို့ ပြုလုပ်နိုင်သည်</translation>
 <translation id="6378173571450987352">အသေးစိတ်များ− အသုံးပြုသည့် ဒေတာပမာဏအလိုက် စီထားသည်</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> ကို Chrome တွင် ဖွင့်ပါမည်။ ရှေ့ဆက်ခြင်းအားဖြင့် သင်သည် <ph name="BEGIN_LINK1" />Google ဝန်ဆောင်မှုစည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />Google Chrome နှင့် Chrome OS ထပ်တိုး ဝန်ဆောင်မှုစည်းမျဉ်းများ<ph name="END_LINK2" /> ကို သဘောတူရာရောက်သည်။</translation>
 <translation id="6381421346744604172">ဝဘ်ဆိုက် မှောင်အောင်လုပ်ခြင်း</translation>
 <translation id="6388207532828177975">ရှင်းလင်းပြီး ပြန်လည်သတ်မှတ်မည်</translation>
 <translation id="6395288395575013217">လင့်ခ်</translation>

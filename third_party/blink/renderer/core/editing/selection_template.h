@@ -130,6 +130,7 @@ class SelectionTemplate final {
 
  private:
   friend class SelectionEditor;
+  friend class FrameSelection;
 
   enum class Direction {
     kNotComputed,

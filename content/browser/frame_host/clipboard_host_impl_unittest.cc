@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/gfx/skia_util.h"
 
@@ -90,8 +91,7 @@ TEST_F(ClipboardHostImplTest, SimpleImage) {
       ui::ClipboardFormatType::GetBitmapType(),
       ui::ClipboardBuffer::kCopyPaste));
 
-  SkBitmap actual =
-      system_clipboard()->ReadImage(ui::ClipboardBuffer::kCopyPaste);
+  SkBitmap actual = ui::clipboard_test_util::ReadImage(system_clipboard());
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, actual));
 }
 

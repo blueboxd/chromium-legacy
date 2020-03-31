@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">ਦ੍ਰਿਸ਼ਮਾਨ ਨੈਟਵਰਕ:</translation>
 <translation id="1094607894174825014">ਇਸ 'ਤੇ ਇੱਕ ਅਵੈਧ ਫ਼ਰਕ ਨਾਲ ਪੜ੍ਹਨ ਜਾਂ ਲਿਖਣ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਗਈ: "<ph name="DEVICE_NAME" />"।</translation>
 <translation id="1097658378307015415">ਸਾਈਨ-ਇਨ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ, ਕਿਰਪਾ ਕਰਕੇ ਨੈੱਟਵਰਕ <ph name="NETWORK_ID" /> ਨੂੰ ਸਰਗਰਮ ਕਰਨ ਲਈ ਮਹਿਮਾਨ ਦੇ ਤੌਰ 'ਤੇ ਦਰਜ ਕਰੋ</translation>
+<translation id="1099962274138857708"><ph name="DEVICE_NAME" /> ਤੋਂ ਚਿੱਤਰ ਕਾਪੀ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> ਦਾ ਹਮੇਸ਼ਾਂ ਅਨੁਵਾਦ ਕਰੋ</translation>
 <translation id="1104038495841596279">ਅਸੀਂ ਤੁਹਾਡੇ ਸਿਮ ਕਾਰਡ ਦਾ ਪਤਾ ਨਹੀਂ ਲਗਾ ਸਕੇ</translation>
 <translation id="1108600514891325577">&amp;ਬੰਦ ਕਰੋ</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">ਪਿਛੋਕੜ ਸਫ਼ਾ</translation>
 <translation id="1745520510852184940">ਹਮੇਸ਼ਾ ਇੰਝ ਕਰੋ</translation>
 <translation id="1750172676754093297">ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਫਿੰਗਰਪ੍ਰਿੰਟਾਂ ਨੂੰ ਸਟੋਰ ਨਹੀਂ ਕਰ ਸਕਦੀ</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> ਇਸ ਸਾਈਟ ਲਈ ਸਾਰੀਆਂ ਟੈਬਾਂ ਬੰਦ ਨਾ ਕੀਤੇ ਜਾਣ ਤੱਕ <ph name="FOLDERNAME" /> ਵਿੱਚ ਫ਼ਾਈਲਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰ ਸਕੇਗੀ</translation>
 <translation id="175196451752279553">ਬੰਦ ਟੈਬ ਦੁ&amp;ਬਾਰਾ ਖੋਲ੍ਹੋ</translation>
 <translation id="1753067873202720523">ਤੁਹਾਡਾ Chromebook ਚਾਰਜ ਨਹੀਂ ਹੋ ਸਕਦਾ ਜਦੋਂ ਇਹ ਚਾਲੂ ਹੁੰਦਾ ਹੈ।</translation>
 <translation id="1753905327828125965">ਸਭ ਤੋਂ ਵੱਧ ਵਿਜਿਟ ਕੀਤੇ</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">ਕੀ ਪਹਿਲਾਂ ਤੋਂ ਹੀ ਇੱਕ Chrome ਵਰਤੋਂਕਾਰ ਹੋ? ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="18245044880483936">ਬੈਕਅੱਪ ਡਾਟੇ ਨੂੰ ਤੁਹਾਡੇ ਬੱਚੇ ਦੇ 'ਡਰਾਈਵ' ਸਟੋਰੇਜ ਕੋਟੇ ਵਿੱਚ ਨਹੀਂ ਗਿਣਿਆ ਜਾਵੇਗਾ।</translation>
 <translation id="1826516787628120939">ਜਾਂਚ ਕਰ ਰਿਹਾ ਹੈ</translation>
+<translation id="1827738518074806965">ਕਲਾ ਗੈਲਰੀ</translation>
 <translation id="1828378091493947763">ਇਹ ਪਲੱਗਇਨ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="1828901632669367785">ਸਿਸਟਮ ਵਿੰਡੋ ਵਰਤਦੇ ਹੋਏ ਪ੍ਰਿੰਟ ਕਰੋ...</translation>
 <translation id="1829129547161959350">ਪੈਂਗਵਿਨ</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2359808026110333948">ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="236117173274098341">ਸੁਯੋਗ ਬਣਾਓ</translation>
 <translation id="236141728043665931">ਹਮੇਸ਼ਾਂ ਮਾਈਕ੍ਰੋਫੋਨ ਪਹੁੰਚ ਨੂੰ ਬਲੌਕ ਕਰੋ</translation>
+<translation id="2364498172489649528">ਪਾਸ ਕੀਤਾ</translation>
 <translation id="2365507699358342471">ਇਹ ਸਾਈਟ ਕਲਿੱਪਬੋਰਡ 'ਤੇ ਕਾਪੀ ਕੀਤੀ ਲਿਖਤ ਅਤੇ ਚਿੱਤਰਾਂ ਨੂੰ ਦੇਖ ਸਕਦੀ ਹੈ।</translation>
 <translation id="2366260648632264559">ਸਿਸਟਮ ਲਿਖਤ ਇਸ ਭਾਸ਼ਾ ਵਿੱਚ ਦਿਖਾਓ</translation>
 <translation id="2367972762794486313">ਐਪਸ ਦਿਖਾਓ</translation>
@@ -1341,6 +1345,7 @@
 <translation id="2762441749940182211">ਕੈਮਰਾ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="2765217105034171413">ਛੋਟਾ</translation>
 <translation id="2766161002040448006">ਮਾਂ-ਪਿਓ ਨੂੰ ਪੁੱਛੋ</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> ਇਸ ਸਾਈਟ ਲਈ ਸਾਰੀਆਂ ਟੈਬਾਂ ਬੰਦ ਨਾ ਕੀਤੇ ਜਾਣ ਤੱਕ <ph name="FILENAME" /> ਦਾ ਸੰਪਾਦਨ ਕਰ ਸਕੇਗੀ</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> ਦੇ ਤੌਰ ਤੇ ਸਾਈਨ ਇਨ ਕੀਤਾ।</translation>
 <translation id="2770465223704140727">ਸੂਚੀ ਵਿੱਚੋਂ ਹਟਾਓ</translation>
 <translation id="2770690685823456775">ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਕਿਸੇ ਹੋਰ ਫੋਲਡਰ ਵਿੱਚ ਨਿਰਯਾਤ ਕਰੋ</translation>
@@ -1664,6 +1669,18 @@
 <translation id="3202173864863109533">ਇਸ ਟੈਬ ਦੀ ਆਡੀਓ ਮਿਊਟ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ।</translation>
 <translation id="3208321278970793882">ਐਪ</translation>
 <translation id="3208584281581115441">ਹੁਣ ਜਾਂਚ ਕਰੋ</translation>
+<translation id="3208640652501208439">ਸਕੂਲ ਦੇ ਕੰਮ ਲਈ ਸਰੋਤ ਸ਼ਾਇਦ ਉਪਲਬਧ ਜਾਂ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਲੋਡ ਨਾ ਹੋਣ
+    ਤੁਹਾਡੇ ਬੱਚੇ ਨੂੰ ਸ਼ਾਇਦ ਹੇਠਾਂ ਦਿੱਤੀ ਸੂਚੀ ਤੱਕ ਪਹੁੰਚ ਨਾ ਹੋਵੇ:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />ਸਕੂਲ ਵੱਲੋਂ ਸਥਾਪਤ ਐਪਲੀਕੇਸ਼ਨਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ
+      <ph name="LIST_ITEM" />ਸਕੂਲ Chromebook ਤੋਂ ਬੁੱਕਮਾਰਕ
+      <ph name="LIST_ITEM" />ਸਿੱਖਿਆ ਸੰਬੰਧੀ ਸਾਈਟਾਂ ਦੇ ਲਈ ਆਟੋਫਿਲ ਪਾਸਵਰਡ
+    <ph name="END_LIST" />
+    ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਪੂਰਾ ਸਕੂਲੀ ਅਨੁਭਵ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ, ਤੁਹਾਡੇ ਬੱਚੇ ਨੂੰ:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />ਆਪਣੇ Family Link ਪ੍ਰਬੰਧਿਤ ਖਾਤੇ ਤੋਂ ਸਾਈਨ-ਆਊਟ ਕਰਨ ਦੀ ਲੋੜ ਹੈ
+      <ph name="OLIST_ITEM" />ਸਾਈਨ-ਇਨ ਸਕ੍ਰੀਨ 'ਤੇ ਆਪਣੇ 'ਸਿੱਖਿਆ ਲਈ G Suite' ਖਾਤੇ 'ਤੇ ਸਾਈਨ-ਇਨ ਕਰਨ ਦੀ ਲੋੜ ਹੈ। ਨੋਟ ਕਰੋ, ਹਾਲਾਂਕਿ, ਇਸ ਦਾ ਮਤਲਬ ਇਹ ਹੋਵੇਗਾ ਕਿ ਐਪਾਂ ਅਤੇ ਵੈੱਬਸਾਈਟਾਂ ਦੀਆਂ ਪਹੁੰਚ ਸੈਟਿੰਗਾਂ ਸਮੇਤ ਸਕੂਲ ਦੀਆਂ ਨੀਤੀਆਂ ਨਾਲ ਤੁਹਾਡੀ Family Link ਨਿਗਰਾਨੀ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ 'ਤੇ ਪ੍ਰਭਾਵ ਪਵੇਗਾ (ਉਦਾਹਰਨ ਦੇ ਤੌਰ 'ਤੇ ਸਕੂਲ ਪ੍ਰਸ਼ਾਸਕ YouTube ਦੀ ਇਜਾਜ਼ਤ ਦੇ ਸਕਦੇ ਹਨ ਜੇ ਇਹ ਹੋਮਵਰਕ ਲਈ ਜ਼ਰੂਰੀ ਹੈ, ਸਕ੍ਰੀਨ ਸਮਾਂ ਲਾਗੂ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ, ਆਦਿ)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">ਅਪ੍ਰਮਾਣਿਤ</translation>
 <translation id="32101887417650595">ਪ੍ਰਿੰਟਰ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="321084946921799184">ਪੀਲਾ ਅਤੇ ਸਫ਼ੈਦ</translation>
@@ -1742,6 +1759,7 @@
 <translation id="3312424061798279731">ਸਮਰਥਿਤ ਭਾਸ਼ਾਵਾਂ</translation>
 <translation id="3313622045786997898">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਹਸਤਾਖਰ ਲਾਭ</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> ਨੂੰ ਲੁਕਾਓ</translation>
+<translation id="3317284582048881482">ਮਾਂ-ਪਿਓ ਲਈ ਸਕੂਲ ਖਾਤਾ ਜਾਣਕਾਰੀ</translation>
 <translation id="3317459757438853210">ਦੋ-ਪੱਖੀ</translation>
 <translation id="3317678681329786349">ਕੈਮਰਾ ਅਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਬਲਾਕ ਕੀਤੇ ਗਏ</translation>
 <translation id="3319048459796106952">ਨਵੀਂ &amp;ਗੁਮਨਾਮ window</translation>
@@ -1928,6 +1946,7 @@
 <translation id="3574210789297084292">ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="3574917942258583917">ਕੀ ਫਿਰ ਵੀ ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਤੋਂ ਬਾਹਰ ਜਾਣਾ ਹੈ?</translation>
 <translation id="3575121482199441727">ਇਸ ਸਾਈਟ ਨੂੰ ਦਿਖਾਉਣ ਦਿਓ</translation>
+<translation id="3575919114596668130">ਤੁਹਾਡੀਆਂ Family Link ਮਾਂ-ਪਿਓ ਸੈਟਿੰਗਾਂ ਹਾਲੇ ਵੀ ਲਾਗੂ ਹੋਣਗੀਆਂ। ਜੇ ਤੁਸੀਂ ਪਹਿਲਾਂ ਕੋਈ ਐਪ ਜਾਂ ਸਾਈਟ ਬਲਾਕ ਕੀਤੀ ਸੀ, ਤਾਂ ਤੁਹਾਨੂੰ ਇਹ ਦੁਬਾਰਾ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ ਹੋਵੇਗੀ।</translation>
 <translation id="3576324189521867626">ਸਫਲਤਾਪੂਰਵਕ ਸਥਾਪਤ ਕੀਤੀ ਗਈ</translation>
 <translation id="3578594933904494462">ਇਸ ਟੈਬ ਦੀ ਸਮੱਗਰੀ ਸ਼ੇਅਰ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ।</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ਤੁਹਾਡੇ ਹੀ ਕਿਸੇ ਗਰੁੱਪ ਨਾਲ ਇੱਕ ਪ੍ਰਿੰਟਰ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ਸਾਂਝਾ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹਨ: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. ਜੇਕਰ ਤੁਸੀਂ ਸਵੀਕਾਰ ਕਰਦੇ ਹੋ, ਤਾਂ ਗਰੁੱਪ ਦੇ ਸਾਰੇ ਮੈਂਬਰ ਪ੍ਰਿੰਟਰ 'ਤੇ ਪ੍ਰਿੰਟ ਦੇ ਸਕਣਗੇ।</translation>
@@ -2768,6 +2787,7 @@
 <translation id="4689235506267737042">ਆਪਣੇ ਡੈਮੋ ਦੀਆਂ ਤਰਜੀਹਾਂ ਚੁਣੋ</translation>
 <translation id="4689421377817139245">ਆਪਣੇ iPhone 'ਤੇ ਇਸ ਬੁੱਕਮਾਰਕ ਨੂੰ ਸਮਕਾਲੀਕਿਰਤ ਕਰੋ</translation>
 <translation id="4690091457710545971">&lt;Intel ਵਾਈ-ਫਾਈ ਫ਼ਰਮਵੇਅਰ ਦੁਆਰਾ ਚਾਰ ਫਾਈਲਾਂ ਬਣਾਈਆਂ ਗਈਆਂ: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon। ਪਹਿਲੀਆਂ ਤਿੰਨ ਬਾਈਨਰੀ ਫ਼ਾਈਲਾਂ ਹਨ ਜਿਨ੍ਹਾਂ ਵਿੱਚ ਰਜਿਸਟਰ ਡੰਪ ਹਨ, ਅਤੇ ਇਹਨਾਂ ਬਾਰੇ Intel ਦੁਆਰਾ ਕੋਈ ਨਿੱਜੀ ਜਾਂ ਡੀਵਾਈਸ ਦੀ ਪਛਾਣ ਕਰਨ ਵਾਲੀ ਜਾਣਕਾਰੀ ਨਾ ਹੋਣ ਦਾ ਦਾਅਵਾ ਕੀਤਾ ਗਿਆ ਹੈ। ਆਖਰੀ ਫ਼ਾਈਲ Intel ਫ਼ਰਮਵੇਅਰ ਤੋਂ ਚਲਾਏ ਜਾਣ ਦਾ ਟ੍ਰੇਸ ਹੈ; ਇਸ ਤੋਂ ਕੋਈ ਵੀ ਨਿੱਜੀ ਜਾਂ ਡੀਵਾਈਸ ਦੀ ਪਛਾਣ ਕਰਨ ਵਾਲੀ ਜਾਣਕਾਰੀ ਸਾਫ਼ ਕਰ ਦਿੱਤੀ ਗਈ ਹੈ, ਪਰ ਇੱਥੇ ਪ੍ਰਦਰਸ਼ਿਤ ਕੀਤੇ ਜਾਣ ਲਈ ਬਹੁਤ ਵੱਡੀ ਹੈ। ਇਹ ਫ਼ਾਈਲਾਂ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨਾਲ ਹਾਲੀਆ ਵਾਈ-ਫਾਈ ਸਮੱਸਿਆਵਾਂ 'ਤੇ ਪ੍ਰਤਿਕਿਰਿਆ ਵਿੱਚ ਉਤਪੰਨ ਹੋਈਆਂ ਸਨ, ਅਤੇ ਇਹਨਾਂ ਸਮੱਸਿਆਵਾਂ ਦਾ ਨਿਪਟਾਰਾ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਨ ਲਈ Intel ਨਾਲ ਸਾਂਝੀਆਂ ਕੀਤੀਆਂ ਜਾਣਗੀਆਂ।&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> ਇਸ ਸਾਈਟ ਲਈ ਸਾਰੀਆਂ ਟੈਬਾਂ ਬੰਦ ਨਾ ਕੀਤੇ ਜਾਣ ਤੱਕ <ph name="FILENAME" /> ਨੂੰ ਦੇਖ ਸਕੇਗੀ</translation>
 <translation id="4692623383562244444">ਖੋਜ ਇੰਜਣ</translation>
 <translation id="4693155481716051732">ਸੁਸ਼ੀ</translation>
 <translation id="4694024090038830733">ਪ੍ਰਿੰਟਰ ਦਾ ਸੰਰੂਪਣ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਸੰਭਾਲਿਆ ਜਾਂਦਾ ਹੈ।</translation>
@@ -3123,6 +3143,7 @@
 <translation id="5204967432542742771">ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ</translation>
 <translation id="5206215183583316675">ਕੀ "<ph name="CERTIFICATE_NAME" />" ਮਿਟਾਉਣਾ ਹੈ?</translation>
 <translation id="520621735928254154">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਆਯਾਤ ਗੜਬੜ</translation>
+<translation id="5209307736170827035">Classroom ਵਿੱਚ ਤੁਹਾਡੇ ਬੱਚੇ ਦੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਿਆ ਜਾਵੇਗਾ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">ਕੋਈ ਡਿਵਾਈਸਾਂ ਨਹੀਂ ਮਿਲੀਆਂ</translation>
 <translation id="5210990770352357081">Plugin VM ਨੂੰ ਅਣਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
 <translation id="5213481667492808996">ਤੁਹਾਡੀ '<ph name="NAME" />' ਡਾਟਾ ਸੇਵਾ ਵਰਤਣ ਲਈ ਤਿਆਰ ਹੈ</translation>
@@ -3234,6 +3255,7 @@
 <translation id="5341980496415249280">ਕਿਰਪਾ ਕਰਕੇ ਉਡੀਕ ਕਰੋ, ਪੈਕਿੰਗ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...</translation>
 <translation id="5342091991439452114">PIN ਘੱਟੋ-ਘੱਟ <ph name="MINIMUM" /> ਅੰਕਾਂ ਦਾ ਹੋਣਾ ਲਾਜ਼ਮੀ ਹੈ</translation>
 <translation id="5344036115151554031">Linux ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
+<translation id="535123479159372765">ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ਤੋਂ ਲਿਖਤ ਕਾਪੀ ਕੀਤੀ ਗਈ</translation>
 <translation id="5352033265844765294">ਸਮਾਂ ਸਟੈਂਪਿੰਗ</translation>
 <translation id="5353252989841766347">ਪਾਸਵਰਡਾਂ ਨੂੰ Chrome ਤੋਂ ਨਿਰਯਾਤ ਕਰੋ</translation>
 <translation id="5355099869024327351">'ਅਸਿਸਟੈਂਟ' ਨੂੰ ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਦਿਖਾਉਣ ਦਿਓ</translation>
@@ -3356,6 +3378,7 @@
 <translation id="5511379779384092781">ਬਹੁਤ ਘੱਟ</translation>
 <translation id="5511823366942919280">ਕੀ ਤੁਸੀਂ ਪੱਕੇ ਤੌਰ 'ਤੇ ਇਸ ਡਿਵਾਈਸ ਨੂੰ ਇੱਕ "Shark" ਦੇ ਤੌਰ 'ਤੇ ਸਥਾਪਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="5512653252560939721">ਵਰਤੋਂਕਾਰ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਹਾਰਡਵੇਅਰ-ਬੈਕਅੱਪ ਕੀਤਾ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ।</translation>
+<translation id="5515923816438946203">ਚੁਣੋ ਕਿ ਤੁਸੀਂ ਆਪਣੀ ਸਕ੍ਰੀਨ 'ਤੇ ਕੀ ਦੇਖਦੇ ਹੋ</translation>
 <translation id="5517304475148761050">ਇਸ ਐਪ ਨੂੰ 'Play ਸਟੋਰ' ਤੱਕ ਪਹੁੰਚ ਦੀ ਲੋੜ ਹੈ</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">ਤੁਹਾਡੇ ਖਾਤੇ ਵਿੱਚ ਪ੍ਰਿੰਟਰ ਸ਼ਾਮਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ - ਇਸ ਵਿੱਚ ਥੋੜ੍ਹੀ ਦੇਰ ਲੱਗ ਸਕਦੀ ਹੈ...</translation>
@@ -3806,6 +3829,7 @@
 <translation id="6097480669505687979">ਜੇਕਰ ਤੁਸੀਂ ਜਗ੍ਹਾ ਖਾਲੀ ਨਹੀਂ ਕਰਦੇ, ਤਾਂ ਵਰਤੋਂਕਾਰਾਂ ਅਤੇ ਡਾਟੇ ਨੂੰ ਆਪਣੇ ਆਪ ਹਟਾਇਆ ਜਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="6097600385983390082">ਅਵਾਜ਼ੀ ਖੋਜ ਬੰਦ ਹੈ</translation>
 <translation id="6098793583803863900">ਕਿਸੇ ਅਗਿਆਤ ਫ਼ਾਈਲ ਨੂੰ ਖਤਰਨਾਕ ਸਮੱਗਰੀ ਲਈ ਸਕੈਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ।</translation>
+<translation id="609942571968311933"><ph name="DEVICE_NAME" /> ਤੋਂ ਲਿਖਤ ਕਾਪੀ ਕੀਤੀ ਗਈ</translation>
 <translation id="6100736666660498114">ਸਟਾਰਟ ਮੀਨੂ</translation>
 <translation id="6101226222197207147">ਨਵੀਂ ਐਪ ਸ਼ਾਮਲ ਕੀਤੀ ਗਈ (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਵਿਕਸਿਤ ਸੁਰੱਖਿਆ ਵੱਲੋਂ ਬਲਾਕ ਕੀਤਾ ਗਿਆ।</translation>
@@ -4176,6 +4200,7 @@
 <translation id="6612358246767739896">ਸੁਰੱਖਿਅਤ ਸਮੱਗਰੀ</translation>
 <translation id="6615455863669487791">ਮੈਨੂੰ ਦਿਖਾਓ</translation>
 <translation id="6618097958368085618">ਫਿਰ ਵੀ ਰੱਖੋ</translation>
+<translation id="6618744767048954150">ਚੱਲ ਰਿਹਾ ਹੈ</translation>
 <translation id="6619058681307408113">ਲਾਈਨ ਪ੍ਰਿੰਟਰ ਡੀਮਨ (LPD)</translation>
 <translation id="661907246513853610">ਸਾਈਟ ਤੁਹਾਡੇ ਟਿਕਾਣੇ ਨੂੰ ਟਰੈਕ ਕਰ ਸਕਦੀ ਹੈ</translation>
 <translation id="6619801788773578757">ਕਿਓਸਕ ਐਪਲੀਕੇਸ਼ਨ ਸ਼ਾਮਲ ਕਰੋ</translation>
@@ -4561,6 +4586,7 @@
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ਅਤੇ <ph name="WEBSITE_3" /> ਤੇ ਆਪਣਾ ਡਾਟਾ ਪੜ੍ਹੋ</translation>
 <translation id="713122686776214250">ਸ&amp;ਫ਼ਾ ਜੋੜੋ...</translation>
 <translation id="7133578150266914903">ਤੁਹਾਡਾ ਪ੍ਰਸ਼ਾਸਕ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਪਿਛਲੇ ਵਰਜਨ 'ਤੇ ਵਾਪਸ ਲਿਆ ਰਿਹਾ ਹੈ (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" /> ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕੀਤੀ ਗਈ...</translation>
 <translation id="7134098520442464001">ਟੈਕਸਟ ਨੂੰ ਛੋਟਾ ਕਰੋ</translation>
 <translation id="7135729336746831607">ਕੀ ਬਲੂਟੁੱਥ ਚਾਲੂ ਕਰਨਾ ਹੈ?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> ਲਈ ਤੁਹਾਨੂੰ ਹੁਣ ਤੁਰੰਤ ਆਪਣੇ <ph name="DEVICE_TYPE" /> ਡੀਵਾਈਸ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।</translation>
@@ -4909,6 +4935,7 @@
 <translation id="761530003705945209">'Google ਡਰਾਈਵ' ਵਿੱਚ ਬੈਕਅੱਪ ਲਓ। ਕਿਸੇ ਵੇਲੇ ਵੀ ਅਸਾਨੀ ਨਾਲ ਆਪਣਾ ਡਾਟਾ ਮੁੜ-ਬਹਾਲ ਕਰੋ ਜਾਂ ਡੀਵਾਈਸਾਂ ਵਿਚਾਲੇ ਅਦਲਾ-ਬਦਲੀ ਕਰੋ। ਤੁਹਾਡੇ ਬੈਕਅੱਪ ਵਿੱਚ ਐਪ ਡਾਟਾ ਸ਼ਾਮਲ ਹੈ। ਤੁਹਾਡੇ ਬੈਕਅੱਪ Google 'ਤੇ ਅੱਪਲੋਡ ਕੀਤੇ ਜਾਂਦੇ ਹਨ ਅਤੇ ਤੁਹਾਡੇ Google ਖਾਤੇ ਦੇ ਪਾਸਵਰਡ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਇਨਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।</translation>
 <translation id="7616214729753637086">ਡੀਵਾਈਸ ਦਰਜ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
+<translation id="761763866592998929">ਸਰਗਰਮ ਮੋਡ</translation>
 <translation id="762068974690945752">ਇੱਥੇ ਕੋਈ ਸਕੂਲੀ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰੋ ਜਾਂ ਬੱਚੇ ਦੇ ਖਾਤਿਆਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">ਸਿਸਟਮ ਡੀਵਾਈਸ ਸੰਰੂਪਣ ਨੂੰ ਰੱਖਿਅਤ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਰਿਹਾ।</translation>
 <translation id="7622114377921274169">ਚਾਰਜ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ।</translation>
@@ -5020,6 +5047,7 @@
 <translation id="7766838926148951335">ਇਜਾਜ਼ਤਾਂ ਸਵੀਕਾਰ ਕਰੋ</translation>
 <translation id="7768770796815395237">ਬਦਲੋ</translation>
 <translation id="7769672763586021400">ਮਾਡਲ ਆਈ.ਡੀ.</translation>
+<translation id="7770612696274572992">ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ਤੋਂ ਚਿੱਤਰ ਕਾਪੀ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="7770651108375708429">ਵਾਈ-ਫਾਈ ਡਿਸਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="7771452384635174008">ਲੇਆਉਟ</translation>
 <translation id="7772032839648071052">ਪਾਸਫਰੇਜ਼ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
@@ -5027,6 +5055,7 @@
 <translation id="7772773261844472235">ਆਪਣੀ Chromebook ਸਥਿਤੀ ਦੀ ਜਾਂਚ ਕਰੋ</translation>
 <translation id="7773726648746946405">ਸੈਸ਼ਨ ਸਟੋਰੇਜ</translation>
 <translation id="7774365994322694683">ਪੰਛੀ</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> ਇਸ ਸਾਈਟ ਲਈ ਸਾਰੀਆਂ ਟੈਬਾਂ ਬੰਦ ਨਾ ਕੀਤੇ ਜਾਣ ਤੱਕ <ph name="FOLDERNAME" /> ਵਿੱਚ ਫ਼ਾਈਲਾਂ ਨੂੰ ਦੇਖ ਸਕੇਗੀ</translation>
 <translation id="7776701556330691704">ਕੋਈ ਅਵਾਜ਼ਾਂ ਨਹੀਂ ਮਿਲੀਆਂ</translation>
 <translation id="7780252971640011240">ਕਨੈਕਟ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ ਆਈ। ਕਿਰਪਾ ਕਰਕੇ ਸਹਾਇਤਾ ਲਈ ਆਪਣੇ ਕੈਰੀਅਰ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="7781335840981796660">ਸਾਰੇ ਵਰਤੋਂਕਾਰ ਖਾਤੇ ਅਤੇ ਸਥਾਨਕ ਡਾਟਾ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
@@ -6043,6 +6072,7 @@
 <translation id="9055636786322918818">RC4 ਇਨਕ੍ਰਿਪਸ਼ਨ ਲਾਜ਼ਮੀ ਬਣਾਓ। ਇਸ ਵਿਕਲਪ ਦੀ ਵਰਤੋਂ ਕਰਨਾ, RC4 ciphers ਦੇ ਅਸੁਰੱਖਿਅਤ ਹੋਣ ਕਰਕੇ ਤੁਹਾਡੇ ਜੋਖਮ ਨੂੰ ਵਧਾਉਂਦਾ ਹੈ।</translation>
 <translation id="9056810968620647706">ਕੋਈ ਮੇਲ ਨਹੀਂ ਮਿਲੇ ਸਨ।</translation>
 <translation id="9057354806206861646">ਅੱਪਡੇਟਾਂ ਦੀ ਸਮਾਂ-ਸੂਚੀ</translation>
+<translation id="9058976525724291037">ਤੁਹਾਡਾ ਬੱਚਾ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਇੱਕ ਹੋਰ Google ਖਾਤਾ ਸ਼ਾਮਲ ਕਰਨਾ ਚਾਹੁੰਦਾ ਹੈ। Family Link ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਡੀਵਾਈਸਾਂ 'ਤੇ ਸਿਰਫ਼ 'ਸਿੱਖਿਆ ਲਈ G Suite' ਖਾਤੇ ਹੀ ਸ਼ਾਮਲ ਕੀਤੇ ਜਾ ਸਕਦੇ ਹਨ।</translation>
 <translation id="9062065967472365419">ਮੈਨੂੰ ਕੁਝ ਮਜ਼ੇਦਾਰ ਦਿਖਾਓ</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933"><ph name="ERROR_LINE_START" /> ਤੋਂ <ph name="ERROR_LINE_END" /> ਲਾਈਨਾਂ ਤੱਕ ਗੜਬੜ</translation>

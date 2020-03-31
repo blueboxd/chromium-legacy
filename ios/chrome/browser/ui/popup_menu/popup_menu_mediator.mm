@@ -725,7 +725,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       ClipboardRecentContent::GetInstance();
 
   if (search_engines::SupportsSearchByImage(self.templateURLService) &&
-      clipboardRecentContent->GetRecentImageFromClipboard()) {
+      clipboardRecentContent->HasRecentImageFromClipboard()) {
     copiedContentItem = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
         PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",

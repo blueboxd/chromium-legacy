@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Slutdato <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Installeret</translation>
 <translation id="1792959175193046959">Du kan til enhver tid skifte standardplaceringen for downloads</translation>
+<translation id="1795251344124198516">Yderligere servicevilkår for Google Chrome og Chrome OS</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="1810845389119482123">Indledende konfiguration af synkronisering er ikke afsluttet</translation>
 <translation id="1821253160463689938">Anvender cookies til at huske dine præferencer, også selvom du ikke besøger siderne</translation>
@@ -236,6 +237,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="2650751991977523696">Vil du downloade filen igen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# lydfil}one{# lydfil}other{# lydfiler}}</translation>
 <translation id="2687403674020088961">Bloker alle cookies (anbefales ikke)</translation>
+<translation id="2689830683995595741">Når du bruger Chrome, accepterer du <ph name="BEGIN_LINK1" />Googles servicevilkår<ph name="END_LINK1" /> og de <ph name="BEGIN_LINK2" />yderligere servicevilkår for Google Chrome og Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Erklæringen om privatliv for Google-konti, der administreres med Family Link<ph name="END_LINK3" />, gælder også.</translation>
 <translation id="2707726405694321444">Opdater siden</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="2717722538473713889">Mailadresser</translation>
@@ -376,6 +378,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3749259744154402564">Understøttes ikke</translation>
 <translation id="3771001275138982843">Opdateringen kunne ikke downloades</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
+<translation id="3771694256347217732">Googles servicevilkår</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå Bluetooth til<ph name="END_LINK" /> for at tillade parring</translation>
 <translation id="3775705724665058594">Send til dine enheder</translation>
 <translation id="3778956594442850293">Føjet til startskærmen</translation>
@@ -403,6 +406,7 @@ Det er kun dig, der kan se, hvad kameraet ser. Websitet kan ikke se kameraets bi
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome indlæser din side, når det er muligt}one{Chrome indlæser din side, når det er muligt}other{Chrome indlæser dine sider, når det er muligt}}</translation>
 <translation id="3963007978381181125">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay. Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkronisering. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Download fuldført</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du <ph name="BEGIN_LINK1" />Googles servicevilkår<ph name="END_LINK1" /> og de <ph name="BEGIN_LINK2" />yderligere servicevilkår for Google Chrome og Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Erklæringen om privatliv for Google-konti, der administreres med Family Link<ph name="END_LINK3" />, gælder også.</translation>
 <translation id="397583555483684758">Synkroniseringen fungerer ikke mere</translation>
 <translation id="3976396876660209797">Fjern og genskab denne genvej</translation>
 <translation id="3985215325736559418">Vil du downloade <ph name="FILE_NAME" /> igen?</translation>
@@ -713,6 +717,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6255999984061454636">Indholdsforslag</translation>
 <translation id="6270391203985052864">Websites kan spørge dig, om de må sende dig notifikationer</translation>
 <translation id="6277522088822131679">Der opstod et problem med udskrivning af siden. Prøv igen.</translation>
+<translation id="6292420053234093573">Når du bruger Chrome, accepterer du <ph name="BEGIN_LINK1" />Googles servicevilkår<ph name="END_LINK1" /> og de <ph name="BEGIN_LINK2" />yderligere servicevilkår for Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Alle websites</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6297765934698848803">Den organisation, der administrerer din enhed, har deaktiveret dit kamera.</translation>
@@ -727,6 +732,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6364438453358674297">Vil du fjerne forslaget fra historikken?</translation>
 <translation id="6369229450655021117">Herfra kan du søge på nettet, dele indhold med venner og se åbne sider</translation>
 <translation id="6378173571450987352">Info: Sorteret efter mængden af brugte data</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du <ph name="BEGIN_LINK1" />Googles servicevilkår<ph name="END_LINK1" /> og de <ph name="BEGIN_LINK2" />yderligere servicevilkår for Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Gør websites mørkere</translation>
 <translation id="6388207532828177975">Ryd og nulstil</translation>
 <translation id="6395288395575013217">LINK</translation>

@@ -20364,7 +20364,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
       'id': 685,
       'caption': '''Enable additional protections for users enrolled in the Advanced Protection program''',
       'tags': [],
-      'desc': '''This policy controls whether users enrolled in the Advanced Protection program receive extra features. Some of these features may involve the sharing of data with Google (for example, Advanced Protection users will be able to send their downloads to Google for malware scanning). If set to True or not set, enrolled users will receive extra features. If set to False, Advanced Protection users will receive only the standard consumer features.''',
+      'desc': '''This policy controls whether users enrolled in the Advanced Protection program receive extra protections. Some of these features may involve the sharing of data with Google (for example, Advanced Protection users will be able to send their downloads to Google for malware scanning). If set to True or not set, enrolled users will receive extra protections. If set to False, Advanced Protection users will receive only the standard consumer features.''',
     },
     {
       'name': 'ScrollToTextFragmentEnabled',

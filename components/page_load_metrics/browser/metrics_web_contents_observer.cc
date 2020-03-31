@@ -720,14 +720,6 @@ void MetricsWebContentsObserver::OnTimingUpdated(
       error = true;
     }
 
-    if (!metadata->intersection_update.is_null()) {
-      mojo::ReportBadMessage(
-          "page_load_metrics.mojom.FrameMetadata does not report an "
-          "intersection "
-          "update for the main frame. ");
-      error = true;
-    }
-
     if (error)
       return;
   } else if (!committed_load_) {

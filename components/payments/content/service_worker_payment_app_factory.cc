@@ -17,6 +17,18 @@
 #include "content/public/browser/web_contents.h"
 
 namespace payments {
+namespace {
+
+std::vector<mojom::PaymentMethodDataPtr> Clone(
+    const std::vector<mojom::PaymentMethodDataPtr>& original) {
+  std::vector<mojom::PaymentMethodDataPtr> clone(original.size());
+  std::transform(
+      original.begin(), original.end(), clone.begin(),
+      [](const mojom::PaymentMethodDataPtr& item) { return item.Clone(); });
+  return clone;
+}
+
+}  // namespace
 
 class ServiceWorkerPaymentAppCreator {
  public:
@@ -125,11 +137,12 @@ void ServiceWorkerPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
       /*owner=*/this, delegate);
   ServiceWorkerPaymentAppCreator* creator_raw_pointer = creator.get();
   creators_[creator_raw_pointer] = std::move(creator);
+
   ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
       delegate->GetFrameSecurityOrigin(),
       delegate->GetInitiatorRenderFrameHost(), delegate->GetWebContents(),
       delegate->GetPaymentRequestDelegate()->GetPaymentManifestWebDataService(),
-      delegate->GetSpec()->method_data(),
+      Clone(delegate->GetSpec()->method_data()),
       delegate->MayCrawlForInstallablePaymentApps(),
       base::BindOnce(&ServiceWorkerPaymentAppCreator::CreatePaymentApps,
                      creator_raw_pointer->GetWeakPtr()),

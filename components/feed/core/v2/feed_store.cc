@@ -3,19 +3,33 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/feed_store.h"
+
+#include <utility>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace feed {
 namespace {
 
+// Keys are defined as:
+// 'S/<stream-id>' -> stream_data
+// 'T/<stream-id>/<sequence-number>' -> stream_structures
+// 'c/<content-id>' -> content
+// 'a/<id>' -> action
+// 's/<content-id>' -> shared_state
+// 'N' -> next_stream_state
+constexpr char kMainStreamId[] = "0";
 const char kStreamDataKey[] = "S/0";
 const char kLocalActionPrefix[] = "a/";
 const char kNextStreamStateKey[] = "N";
@@ -45,6 +59,10 @@ std::string KeyForRecord(const feedstore::Record& record) {
   switch (record.data_case()) {
     case feedstore::Record::kStreamData:
       return kStreamDataKey;
+    case feedstore::Record::kStreamStructures:
+      return base::StrCat(
+          {"T/", record.stream_structures().stream_id(), "/",
+           base::NumberToString(record.stream_structures().sequence_number())});
     case feedstore::Record::kContent:
       return ContentKey(record.content().content_id());
     case feedstore::Record::kLocalAction:
@@ -55,7 +73,7 @@ std::string KeyForRecord(const feedstore::Record& record) {
     case feedstore::Record::kNextStreamState:
       return kNextStreamStateKey;
     case feedstore::Record::DATA_NOT_SET:  // fall through
-    default:
+      NOTREACHED() << "Invalid record case " << record.data_case();
       return "";
   }
 }
@@ -65,35 +83,69 @@ bool FilterByKey(const base::flat_set<std::string>& key_set,
   return key_set.contains(key);
 }
 
+feedstore::Record MakeRecord(feedstore::Content content) {
+  feedstore::Record record;
+  *record.mutable_content() = std::move(content);
+  return record;
+}
+
+feedstore::Record MakeRecord(
+    feedstore::StreamStructureSet stream_structure_set) {
+  feedstore::Record record;
+  *record.mutable_stream_structures() = std::move(stream_structure_set);
+  return record;
+}
+
+feedstore::Record MakeRecord(feedstore::StreamSharedState shared_state) {
+  feedstore::Record record;
+  *record.mutable_shared_state() = std::move(shared_state);
+  return record;
+}
+
+feedstore::Record MakeRecord(feedstore::StreamData stream_data) {
+  feedstore::Record record;
+  *record.mutable_stream_data() = std::move(stream_data);
+  return record;
+}
+
+template <typename T>
+std::pair<std::string, feedstore::Record> MakeKeyAndRecord(T record_data) {
+  std::pair<std::string, feedstore::Record> result;
+  result.second = MakeRecord(std::move(record_data));
+  result.first = KeyForRecord(result.second);
+  return result;
+}
+
 }  // namespace
 
-FeedStore::FeedStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
-                     const base::FilePath& feed_directory,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
-      database_(database_provider->GetDB<feedstore::Record>(
-          leveldb_proto::ProtoDbType::FEED_STREAM_DATABASE,
-          feed_directory,
-          task_runner)) {
-  Initialize();
-}
+FeedStore::LoadStreamResult::LoadStreamResult() = default;
+FeedStore::LoadStreamResult::~LoadStreamResult() = default;
+FeedStore::LoadStreamResult::LoadStreamResult(LoadStreamResult&&) = default;
+FeedStore::LoadStreamResult& FeedStore::LoadStreamResult::operator=(
+    LoadStreamResult&&) = default;
 
 FeedStore::FeedStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database)
     : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
       database_(std::move(database)) {
-  Initialize();
 }
 
 FeedStore::~FeedStore() = default;
 
-void FeedStore::Initialize() {
-  database_->Init(base::BindOnce(&FeedStore::OnDatabaseInitialized,
-                                 weak_ptr_factory_.GetWeakPtr()));
+void FeedStore::Initialize(base::OnceClosure initialize_complete) {
+  if (IsInitialized()) {
+    std::move(initialize_complete).Run();
+  } else {
+    initialize_callback_ = std::move(initialize_complete);
+    database_->Init(base::BindOnce(&FeedStore::OnDatabaseInitialized,
+                                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void FeedStore::OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status) {
   database_status_ = status;
+  if (initialize_callback_)
+    std::move(initialize_callback_).Run();
 }
 
 bool FeedStore::IsInitialized() const {
@@ -131,25 +183,114 @@ void FeedStore::ReadMany(
       /*target_prefix=*/"", std::move(callback));
 }
 
-void FeedStore::ReadStreamData(
-    base::OnceCallback<void(std::unique_ptr<feedstore::StreamData>)>
-        stream_data_callback) {
-  ReadSingle(kStreamDataKey,
-             base::BindOnce(&FeedStore::OnReadStreamDataFinished,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            std::move(stream_data_callback)));
-}
-
-void FeedStore::OnReadStreamDataFinished(
-    base::OnceCallback<void(std::unique_ptr<feedstore::StreamData>)> callback,
-    bool success,
-    std::unique_ptr<feedstore::Record> record) {
-  if (!success || !record) {
-    std::move(callback).Run(nullptr);
+void FeedStore::LoadStream(
+    base::OnceCallback<void(LoadStreamResult)> callback) {
+  if (!IsInitialized()) {
+    LoadStreamResult result;
+    result.read_error = true;
+    std::move(callback).Run(std::move(result));
     return;
   }
+  auto filter = [](const std::string& key) {
+    return key == "S/0" || (key.size() > 3 && key[0] == 'T' && key[1] == '/' &&
+                            key[2] == '0' && key[3] == '/');
+  };
+  database_->LoadEntriesWithFilter(
+      base::BindRepeating(filter), CreateReadOptions(),
+      /*target_prefix=*/"",
+      base::BindOnce(&FeedStore::OnLoadStreamFinished, base::Unretained(this),
+                     std::move(callback)));
+}
 
-  std::move(callback).Run(base::WrapUnique(record->release_stream_data()));
+void FeedStore::OnLoadStreamFinished(
+    base::OnceCallback<void(LoadStreamResult)> callback,
+    bool success,
+    std::unique_ptr<std::vector<feedstore::Record>> records) {
+  LoadStreamResult result;
+  if (!records || !success) {
+    result.read_error = true;
+  } else {
+    for (feedstore::Record& record : *records) {
+      if (record.has_stream_structures()) {
+        result.stream_structures.push_back(
+            std::move(*record.mutable_stream_structures()));
+      } else if (record.has_stream_data()) {
+        result.stream_data = std::move(*record.mutable_stream_data());
+      }
+    }
+  }
+  std::move(callback).Run(std::move(result));
+}
+
+void FeedStore::SaveFullStream(
+    std::unique_ptr<StreamModelUpdateRequest> update_request,
+    base::OnceCallback<void(bool)> callback) {
+  auto updates = std::make_unique<
+      std::vector<std::pair<std::string, feedstore::Record>>>();
+  updates->push_back(MakeKeyAndRecord(std::move(update_request->stream_data)));
+  for (feedstore::Content& content : update_request->content) {
+    updates->push_back(MakeKeyAndRecord(std::move(content)));
+  }
+  for (feedstore::StreamSharedState& shared_state :
+       update_request->shared_states) {
+    updates->push_back(MakeKeyAndRecord(std::move(shared_state)));
+  }
+  feedstore::StreamStructureSet stream_structure_set;
+  stream_structure_set.set_stream_id(kMainStreamId);
+  for (feedstore::StreamStructure& structure :
+       update_request->stream_structures) {
+    *stream_structure_set.add_structures() = std::move(structure);
+  }
+  updates->push_back(MakeKeyAndRecord(std::move(stream_structure_set)));
+
+  // Set up a filter to delete all stream-related data.
+  // But we need to exclude keys being written right now.
+  std::vector<std::string> key_vector(updates->size());
+  for (size_t i = 0; i < key_vector.size(); ++i) {
+    key_vector[i] = (*updates)[i].first;
+  }
+  base::flat_set<std::string> updated_keys(std::move(key_vector));
+
+  auto filter = [](const base::flat_set<std::string>& updated_keys,
+                   const std::string& key) {
+    if (key.empty() || updated_keys.contains(key))
+      return false;
+    return key[0] == 'S' || key[0] == 'T' || key[0] == 'c' || key[0] == 's' ||
+           key[0] == 'N';
+  };
+
+  database_->UpdateEntriesWithRemoveFilter(
+      std::move(updates), base::BindRepeating(filter, std::move(updated_keys)),
+      base::BindOnce(&FeedStore::OnSaveStreamEntriesUpdated,
+                     base::Unretained(this), std::move(callback)));
+}
+
+void FeedStore::OnSaveStreamEntriesUpdated(
+    base::OnceCallback<void(bool)> complete_callback,
+    bool ok) {
+  std::move(complete_callback).Run(ok);
+}
+
+void FeedStore::WriteOperations(
+    int32_t sequence_number,
+    std::vector<feedstore::DataOperation> operations) {
+  std::vector<feedstore::Record> records;
+  feedstore::Record structures_record;
+  feedstore::StreamStructureSet& structure_set =
+      *structures_record.mutable_stream_structures();
+  for (feedstore::DataOperation& operation : operations) {
+    *structure_set.add_structures() = std::move(*operation.mutable_structure());
+    if (operation.has_content()) {
+      feedstore::Record record;
+      record.set_allocated_content(operation.release_content());
+      records.push_back(std::move(record));
+    }
+  }
+  structure_set.set_stream_id(kMainStreamId);
+  structure_set.set_sequence_number(sequence_number);
+
+  records.push_back(std::move(structures_record));
+  Write(std::move(records), base::DoNothing());
 }
 
 void FeedStore::ReadContent(
@@ -160,10 +301,12 @@ void FeedStore::ReadContent(
         content_callback) {
   std::vector<std::string> key_vector;
   key_vector.reserve(content_ids.size() + shared_state_ids.size());
-  for (auto& content_id : content_ids)
+  for (const auto& content_id : content_ids)
     key_vector.push_back(ContentKey(content_id));
+  for (const auto& content_id : shared_state_ids)
+    key_vector.push_back(SharedStateKey(content_id));
 
-  for (auto& shared_state_id : shared_state_ids)
+  for (const auto& shared_state_id : shared_state_ids)
     key_vector.push_back(SharedStateKey(shared_state_id));
 
   ReadMany(base::flat_set<std::string>(std::move(key_vector)),

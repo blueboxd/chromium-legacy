@@ -24,8 +24,9 @@ enum class TooltipType {
 // Maximum number of times a user can be shown a contextual nudge if the user
 // hasn't performed the gesture |kSuccessLimit| times successfully.
 constexpr int kNotificationLimit = 3;
-constexpr int kSuccessLimit = 7;
+constexpr int kSuccessLimitInAppToHome = 7;
 constexpr int kSuccessLimitHomeToOverview = 3;
+constexpr int kSuccessLimitBackGesture = 1;
 
 // Minimum time between showing contextual nudges to the user.
 constexpr base::TimeDelta kMinInterval = base::TimeDelta::FromDays(1);

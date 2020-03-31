@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Sichtbare Netzwerke:</translation>
 <translation id="1094607894174825014">Auf folgendem Gerät wurde ein Lese- oder Schreibvorgang mit ungültiger Abweichung angefordert: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Melden Sie vor der Anmeldung als Gast an, um das Netzwerk <ph name="NETWORK_ID" /> zu aktivieren.</translation>
+<translation id="1099962274138857708">Bild kopiert von <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
 <translation id="1104038495841596279">Es wurde keine SIM-Karte erkannt</translation>
 <translation id="1108600514891325577">&amp;Anhalten</translation>
@@ -558,6 +559,7 @@
 <translation id="1744108098763830590">Hintergrundseite</translation>
 <translation id="1745520510852184940">Immer so verfahren</translation>
 <translation id="1750172676754093297">Auf Ihrem Sicherheitsschlüssel können keine Fingerabdrücke gespeichert werden</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> kann dann Dateien im Ordner <ph name="FOLDERNAME" /> bearbeiten, solange Tabs dieser Website geöffnet sind</translation>
 <translation id="175196451752279553">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="1753067873202720523">Das Chromebook wird möglicherweise nicht geladen, während es eingeschaltet ist.</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
@@ -624,6 +626,7 @@
 <translation id="1822140782238030981">Sie sind bereits Chrome-Nutzer? Anmelden</translation>
 <translation id="18245044880483936">Sicherungsdaten werden nicht auf das Google Drive-Speicherkontingent Ihres Kindes angerechnet.</translation>
 <translation id="1826516787628120939">Überprüfung läuft</translation>
+<translation id="1827738518074806965">Kunstgalerie</translation>
 <translation id="1828378091493947763">Dieses Plug-in wird auf diesem Gerät nicht unterstützt</translation>
 <translation id="1828901632669367785">Über das Systemdialogfeld drucken...</translation>
 <translation id="1829129547161959350">Pinguin</translation>
@@ -1025,6 +1028,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="236117173274098341">Optimieren</translation>
 <translation id="236141728043665931">Zugriff auf das Mikrofon immer blockieren</translation>
+<translation id="2364498172489649528">Bestanden</translation>
 <translation id="2365507699358342471">Diese Website kann Texte und Bilder aus der Zwischenablage abrufen.</translation>
 <translation id="2366260648632264559">Systemtext in dieser Sprache anzeigen</translation>
 <translation id="2367972762794486313">Apps anzeigen</translation>
@@ -1338,6 +1342,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2762441749940182211">Kamera blockiert</translation>
 <translation id="2765217105034171413">Klein</translation>
 <translation id="2766161002040448006">Elternteil fragen</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> kann dann <ph name="FILENAME" /> bearbeiten, solange Tabs dieser Website geöffnet sind</translation>
 <translation id="276969039800130567">Angemeldet als <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="2770465223704140727">Aus Liste entfernen</translation>
 <translation id="2770690685823456775">Exportieren Sie Ihre Passwörter in einen anderen Ordner</translation>
@@ -1662,6 +1667,18 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3202173864863109533">Der Ton dieses Tabs wird stummgeschaltet.</translation>
 <translation id="3208321278970793882">App</translation>
 <translation id="3208584281581115441">Jetzt prüfen</translation>
+<translation id="3208640652501208439">Infomaterial für Schulaufgaben sind möglicherweise nicht verfügbar oder werden nicht automatisch geladen
+    Ihr Kind hat unter Umständen keinen Zugriff auf Folgendes:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Von der Bildungseinrichtung installierte Anwendungen und Erweiterungen
+      <ph name="LIST_ITEM" />Lesezeichen eines Chromebooks der Bildungseinrichtung
+      <ph name="LIST_ITEM" />AutoFill-Passwörter für Bildungseinrichtungen
+    <ph name="END_LIST" />
+    Ihr Kind sollte Folgendes ausführen, um alle Funktionen auf diesem Gerät nutzen zu können:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Von seinem mit Family Link verwalteten Konto abmelden
+      <ph name="OLIST_ITEM" />Mit seinem G Suite for Education-Konto auf dem Anmeldebildschirm anmelden. Beachten Sie jedoch, dass die Richtlinien der Bildungseinrichtung, wie Zugriffseinstellungen für Apps und Websites, Vorrang vor Ihren Family Link-Funktionen der Elternaufsicht haben. Beispielsweise können Schuladministratoren YouTube erlauben, wenn es für die Hausaufgaben nötig ist, oder die begrenzte Gerätenutzungsdauer wird nicht durchgesetzt.
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Nicht bestätigt</translation>
 <translation id="32101887417650595">Keine Verbindung zum Drucker möglich</translation>
 <translation id="321084946921799184">Gelb und Weiß</translation>
@@ -1740,6 +1757,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3312424061798279731">Aktivierte Sprachen</translation>
 <translation id="3313622045786997898">Wert für Zertifikatsignatur</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> ausblenden</translation>
+<translation id="3317284582048881482">Informationen für Eltern zum Konto einer Bildungseinrichtung</translation>
 <translation id="3317459757438853210">Beidseitig</translation>
 <translation id="3317678681329786349">Kamera und Mikrofon blockiert</translation>
 <translation id="3319048459796106952">Neues &amp;Inkognito-Fenster</translation>
@@ -1926,6 +1944,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3574210789297084292">Anmelden</translation>
 <translation id="3574917942258583917">Inkognitomodus trotzdem beenden?</translation>
 <translation id="3575121482199441727">Für diese Website zulassen</translation>
+<translation id="3575919114596668130">Ihre Einstellungen für Eltern in Family Link gelten weiterhin. Wenn Sie eine App oder Website bereits blockiert haben, müssen Sie das nicht noch einmal tun.</translation>
 <translation id="3576324189521867626">Installation war erfolgreich</translation>
 <translation id="3578594933904494462">Der Inhalt dieses Tabs wird geteilt.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; möchte den Drucker &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; für eine Gruppe freigeben, deren Inhaber Sie sind: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Falls Sie zustimmen, können alle Gruppenmitglieder diesen Drucker nutzen.</translation>
@@ -2766,6 +2785,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4689235506267737042">Einstellungen für den Demomodus auswählen</translation>
 <translation id="4689421377817139245">Lesezeichen mit meinem iPhone synchronisieren</translation>
 <translation id="4690091457710545971">&lt;Vier Dateien wurden von der Intel-WLAN-Firmware erstellt: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Bei den ersten drei handelt es sich um Binärdateien mit Registrierungsabbildern, für die Intel angibt, dass sie keine personenbezogenen oder zur Geräteidentifikation nutzbaren Informationen enthält. Die letzte Datei ist eine Ablaufverfolgungsdatei von der Intel-Firmware, aus der alle personenbezogenen oder zur Geräteidentifikation nutzbaren Informationen entfernt wurden. Sie ist allerdings zu groß, um hier angezeigt zu werden. Diese Dateien wurden wegen WLAN-Problemen auf Ihrem Gerät erstellt, die kürzlich aufgetreten sind. Sie werden zur Fehlerbehebung an Intel weitergegeben.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> kann dann <ph name="FILENAME" /> lesen, solange Tabs dieser Website geöffnet sind</translation>
 <translation id="4692623383562244444">Suchmaschinen</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Um die Druckerkonfiguration kümmert sich der Administrator.</translation>
@@ -3121,6 +3141,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5204967432542742771">Passwort eingeben</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" löschen?</translation>
 <translation id="520621735928254154">Fehler beim Importieren des Zertifikats</translation>
+<translation id="5209307736170827035">Die Daten Ihres Kindes in Classroom sind geschützt. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Keine Geräte gefunden</translation>
 <translation id="5210990770352357081">Plugin VM konnte nicht deinstalliert werden</translation>
 <translation id="5213481667492808996">Der "<ph name="NAME" />"-Datendienst kann nun verwendet werden</translation>
@@ -3232,6 +3253,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5341980496415249280">Bitte warten, Paket wird erstellt...</translation>
 <translation id="5342091991439452114">PIN muss mindestens <ph name="MINIMUM" /> Ziffern umfassen</translation>
 <translation id="5344036115151554031">Linux wird wiederhergestellt</translation>
+<translation id="535123479159372765">Text wurde von einem anderen Gerät kopiert</translation>
 <translation id="5352033265844765294">Zeitstempeldienst</translation>
 <translation id="5353252989841766347">Passwörter aus Chrome exportieren</translation>
 <translation id="5355099869024327351">Zulassen, dass Assistant Ihnen Benachrichtigungen anzeigt</translation>
@@ -3354,6 +3376,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5511379779384092781">Sehr klein</translation>
 <translation id="5511823366942919280">Möchten Sie dieses Gerät wirklich als "Shark" einrichten?</translation>
 <translation id="5512653252560939721">Hardwaregestütztes Nutzerzertifikat erforderlich</translation>
+<translation id="5515923816438946203">Festlegen, was auf dem Bildschirm angezeigt wird</translation>
 <translation id="5517304475148761050">Diese App benötigt Zugriff auf den Google Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Drucker wird zu Ihrem Konto hinzugefügt. Bitte warten...</translation>
@@ -3804,6 +3827,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6097480669505687979">Wenn kein Speicherplatz freigegeben wird, können Nutzer und Daten automatisch entfernt werden.</translation>
 <translation id="6097600385983390082">Sprachsuche geschlossen</translation>
 <translation id="6098793583803863900">Eine unbekannte Datei wird zur Untersuchung auf schädliche Inhalte gescannt.</translation>
+<translation id="609942571968311933">Text kopiert von <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Startmenü</translation>
 <translation id="6101226222197207147">Neue App hinzugefügt (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Diese Datei wurde vom Erweiterten Sicherheitsprogramm blockiert.</translation>
@@ -4174,6 +4198,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6615455863669487791">Zeigen</translation>
 <translation id="6618097958368085618">Trotzdem beibehalten</translation>
+<translation id="6618744767048954150">Läuft</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Die Website kann Ihren Standort verfolgen</translation>
 <translation id="6619801788773578757">Kioskanwendung hinzufügen</translation>
@@ -4559,6 +4584,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7131040479572660648">Ihre Daten auf <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> und <ph name="WEBSITE_3" /> lesen</translation>
 <translation id="713122686776214250">&amp;Seite hinzufügen...</translation>
 <translation id="7133578150266914903">Ihr Administrator setzt dieses Gerät zurück (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" /> Passwörtern geprüft…</translation>
 <translation id="7134098520442464001">Schrift verkleinern</translation>
 <translation id="7135729336746831607">Bluetooth aktivieren?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> erfordert, dass das <ph name="DEVICE_TYPE" /> sofort aktualisiert wird.</translation>
@@ -4907,6 +4933,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="761530003705945209">In Google Drive sichern. Sie können Ihre Daten jederzeit wiederherstellen – auch auf einem anderen Gerät. In Ihrer Sicherung sind auch App-Daten enthalten. Ihre Sicherungen werden an Google gesendet und mit dem Passwort Ihres Google-Kontos verschlüsselt.</translation>
 <translation id="7616214729753637086">Gerät wird registriert…</translation>
 <translation id="7617366389578322136">Verbindung zu "<ph name="DEVICE_NAME" />" wird hergestellt</translation>
+<translation id="761763866592998929">Inaktivmodus</translation>
 <translation id="762068974690945752">Hier können Sie ein Konto einer Bildungseinrichtung hinzufügen oder Kinderkonten verwalten. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Das System konnte die Gerätekonfiguration nicht speichern.</translation>
 <translation id="7622114377921274169">Wird aufgeladen.</translation>
@@ -5018,6 +5045,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7766838926148951335">Berechtigungen akzeptieren</translation>
 <translation id="7768770796815395237">Ändern</translation>
 <translation id="7769672763586021400">Modell-ID</translation>
+<translation id="7770612696274572992">Bild wurde von einem anderen Gerät kopiert</translation>
 <translation id="7770651108375708429">WLAN trennen</translation>
 <translation id="7771452384635174008">Layout</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
@@ -5025,6 +5053,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7772773261844472235">Ihren Chromebook-Status prüfen</translation>
 <translation id="7773726648746946405">Sitzungsspeicher</translation>
 <translation id="7774365994322694683">Vogel</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> kann dann Dateien im Ordner <ph name="FOLDERNAME" /> lesen, solange Tabs dieser Website geöffnet sind</translation>
 <translation id="7776701556330691704">Keine Stimmen gefunden</translation>
 <translation id="7780252971640011240">Fehler bei der Verbindung. Wenden Sie sich bitte an Ihren Mobilfunkanbieter.</translation>
 <translation id="7781335840981796660">Alle Benutzerkonten und lokalen Daten werden entfernt.</translation>
@@ -6043,6 +6072,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9055636786322918818">RC4-Verschlüsselung durchsetzen. Mit dieser Option ist ein höheres Risiko verbunden, da RC4-Verschlüsselungen nicht sicher sind.</translation>
 <translation id="9056810968620647706">Keine Übereinstimmungen gefunden.</translation>
 <translation id="9057354806206861646">Zeitplan aktualisieren</translation>
+<translation id="9058976525724291037">Ihr Kind möchte auf diesem Gerät ein weiteres Google-Konto hinzufügen. Zu mit Family Link verwalteten Geräten können nur G Suite for Education-Konten hinzugefügt werden.</translation>
 <translation id="9062065967472365419">Zufällig</translation>
 <translation id="9062468308252555888">14-fach</translation>
 <translation id="9063208415146866933">Fehler von Zeile <ph name="ERROR_LINE_START" /> bis <ph name="ERROR_LINE_END" /></translation>

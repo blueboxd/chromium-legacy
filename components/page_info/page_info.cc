@@ -301,12 +301,9 @@ const char kPageInfoTimeNoActionPrefix[] =
 
 }  // namespace
 
-PageInfo::PageInfo(
-    std::unique_ptr<PageInfoDelegate> delegate,
-    content::WebContents* web_contents,
-    const GURL& url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state)
+PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
+                   content::WebContents* web_contents,
+                   const GURL& url)
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
       show_info_bar_(false),
@@ -317,11 +314,11 @@ PageInfo::PageInfo(
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button_(false),
       did_revoke_user_ssl_decisions_(false),
-      security_level_(security_level),
-      visible_security_state_for_metrics_(visible_security_state),
       show_change_password_buttons_(false),
       did_perform_action_(false) {
   DCHECK(delegate_);
+  security_level_ = delegate_->GetSecurityLevel();
+  visible_security_state_for_metrics_ = delegate_->GetVisibleSecurityState();
 }
 
 PageInfo::~PageInfo() {
@@ -399,8 +396,7 @@ void PageInfo::InitializeUiState(PageInfoUI* ui) {
   ui_ = ui;
   DCHECK(ui_);
 
-  ComputeUIInputs(site_url_, security_level_,
-                  visible_security_state_for_metrics_);
+  ComputeUIInputs(site_url_);
   PresentSitePermissions();
   PresentSiteIdentity();
   PresentSiteData();
@@ -415,11 +411,8 @@ void PageInfo::InitializeUiState(PageInfoUI* ui) {
   start_time_ = base::TimeTicks::Now();
 }
 
-void PageInfo::UpdateSecurityState(
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state) {
-  visible_security_state_for_metrics_ = visible_security_state;
-  ComputeUIInputs(site_url_, security_level, visible_security_state);
+void PageInfo::UpdateSecurityState() {
+  ComputeUIInputs(site_url_);
   PresentSiteIdentity();
 }
 
@@ -618,10 +611,9 @@ permissions::ChooserContextBase* PageInfo::GetChooserContextFromUIInfo(
   return delegate_->GetChooserContext(ui_info.content_settings_type);
 }
 
-void PageInfo::ComputeUIInputs(
-    const GURL& url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state) {
+void PageInfo::ComputeUIInputs(const GURL& url) {
+  auto security_level = delegate_->GetSecurityLevel();
+  auto visible_security_state = delegate_->GetVisibleSecurityState();
 #if !defined(OS_ANDROID)
   // On desktop, internal URLs aren't handled by this class. Instead, a
   // custom and simpler bubble is shown.
@@ -635,8 +627,6 @@ void PageInfo::ComputeUIInputs(
 #if defined(OS_ANDROID)
   is_chrome_ui_native_scheme = url.SchemeIs(browser_ui::kChromeUINativeScheme);
 #endif
-
-  security_level_ = security_level;
 
   if (url.SchemeIs(url::kAboutScheme)) {
     // All about: URLs except about:blank are redirected.

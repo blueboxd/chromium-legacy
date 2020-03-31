@@ -16,7 +16,6 @@ source_set("logging") {
   ]
   deps = [
     "//components/signin/public/base",
-    "//ios/chrome/browser/ui/settings/sync/utils",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
   ]

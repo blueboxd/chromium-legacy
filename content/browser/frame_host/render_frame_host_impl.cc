@@ -554,6 +554,35 @@ void OnDataURLRetrieved(
 // TODO(crbug.com/977040): Remove when no longer needed.
 const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 
+void RecordCrossOriginIsolationMetrics(RenderFrameHostImpl* rfh) {
+  ContentBrowserClient* client = GetContentClient()->browser();
+  if (rfh->cross_origin_opener_policy() ==
+      network::mojom::CrossOriginOpenerPolicy::kSameOrigin) {
+    client->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kCrossOriginOpenerPolicySameOrigin);
+  }
+  if (rfh->cross_origin_opener_policy() ==
+      network::mojom::CrossOriginOpenerPolicy::kSameOriginAllowPopups) {
+    client->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::
+                 kCrossOriginOpenerPolicySameOriginAllowPopups);
+  }
+
+  if (rfh->cross_origin_embedder_policy().value ==
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) {
+    client->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kCrossOriginEmbedderPolicyRequireCorp);
+  }
+
+  if ((rfh->cross_origin_opener_policy() ==
+       network::mojom::CrossOriginOpenerPolicy::kSameOrigin) &&
+      (rfh->cross_origin_embedder_policy().value ==
+       network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp)) {
+    client->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kCoopAndCoepIsolated);
+  }
+}
+
 }  // namespace
 
 bool CreateNewHostForCrashedFrame() {
@@ -7549,6 +7578,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     last_committed_client_security_state_ = std::move(client_security_state);
     coep_reporter_ = std::move(coep_reporter);
   }
+
+  RecordCrossOriginIsolationMetrics(this);
 
   return true;
 }

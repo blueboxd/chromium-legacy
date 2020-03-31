@@ -177,6 +177,8 @@ jumbo_source_set("clipboard_test_support") {
 
   if (!is_ios) {
     sources = [
+      "test/clipboard_test_util.cc",
+      "test/clipboard_test_util.h",
       "test/test_clipboard.cc",
       "test/test_clipboard.h",
     ]
@@ -187,6 +189,8 @@ jumbo_source_set("clipboard_test_support") {
     "//base",
     "//skia",
   ]
+
+  deps = [ "//base/test:test_support" ]
 }
 
 source_set("clipboard_test") {

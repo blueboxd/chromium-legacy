@@ -583,7 +583,6 @@ extern const char kGlobalMediaControlsPictureInPictureDescription[];
 
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
-extern const char kForceGpuRasterization[];
 
 extern const char kGooglePasswordManagerName[];
 extern const char kGooglePasswordManagerDescription[];
@@ -1556,9 +1555,6 @@ extern const char kNtpWebUIDescription[];
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 
-extern const char kEnterpriseReportingInBrowserName[];
-extern const char kEnterpriseReportingInBrowserDescription[];
-
 extern const char kHappinessTrackingSurveysForDesktopName[];
 extern const char kHappinessTrackingSurveysForDesktopDescription[];
 
@@ -1980,11 +1976,6 @@ extern const char
 
 extern const char kExperimentalAccessibilityChromeVoxSearchMenusName[];
 extern const char kExperimentalAccessibilityChromeVoxSearchMenusDescription[];
-
-extern const char
-    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName[];
-extern const char
-    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessName[];
 extern const char kExperimentalAccessibilitySwitchAccessDescription[];

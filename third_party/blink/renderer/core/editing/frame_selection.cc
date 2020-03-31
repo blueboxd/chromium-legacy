@@ -241,8 +241,19 @@ bool FrameSelection::SetSelectionDeprecated(
   if (is_changed) {
     AssertUserSelection(new_selection, options);
     selection_editor_->SetSelectionAndEndTyping(new_selection);
-    DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
-        ToEphemeralRangeInFlatTree(new_selection.ComputeRange()));
+
+    // The old selection might not be valid, and thus not iteratable. If that's
+    // the case, notify that all selection was removed and use an empty range as
+    // the old selection.
+    EphemeralRangeInFlatTree old_range;
+    if (old_selection_in_dom_tree.IsValidFor(GetDocument())) {
+      old_range =
+          ToEphemeralRangeInFlatTree(old_selection_in_dom_tree.ComputeRange());
+    } else {
+      DisplayLockUtilities::SelectionRemovedFromDocument(GetDocument());
+    }
+    DisplayLockUtilities::SelectionChanged(
+        old_range, ToEphemeralRangeInFlatTree(new_selection.ComputeRange()));
   }
   is_directional_ = options.IsDirectional();
   should_shrink_next_tap_ = options.ShouldShrinkNextTap();

@@ -27,8 +27,6 @@
 #include "content/shell/renderer/web_test/web_test_render_frame_observer.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
-#include "content/shell/test_runner/web_test_interfaces.h"
-#include "content/shell/test_runner/web_test_runner.h"
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
 #include "media/media_buildflags.h"
@@ -47,7 +45,7 @@
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #endif
 
-#if defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_FUCHSIA) || defined(OS_MACOSX)
 #include "skia/ext/test_fonts.h"
 #endif
 
@@ -71,7 +69,7 @@ void WebTestContentRendererClient::RenderThreadStarted() {
   ShellContentRendererClient::RenderThreadStarted();
   shell_observer_ = std::make_unique<WebTestRenderThreadObserver>();
 
-#if defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_FUCHSIA) || defined(OS_MACOSX)
   // On these platforms, fonts are set up in the renderer process. Other
   // platforms set up fonts as part of WebTestBrowserMainRunner in the
   // browser process, via WebTestBrowserPlatformInitialize().

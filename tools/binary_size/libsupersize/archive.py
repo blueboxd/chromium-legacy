@@ -486,7 +486,10 @@ def _CreateMergeStringsReplacements(merge_string_syms,
       for offset, size in positions:
         address = merge_sym_address + offset
         symbol = models.Symbol(
-            models.SECTION_RODATA, size, address, STRING_LITERAL_NAME,
+            models.SECTION_RODATA,
+            size,
+            address=address,
+            full_name=STRING_LITERAL_NAME,
             object_path=object_path)
         new_symbols.append(symbol)
 

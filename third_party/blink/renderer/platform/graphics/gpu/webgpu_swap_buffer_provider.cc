@@ -95,7 +95,9 @@ WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(const IntSize& size) {
   // TODO(cwallez@chromium.org): have some recycling mechanism.
   gpu::Mailbox mailbox = sii->CreateSharedImage(
       format_, static_cast<gfx::Size>(size), gfx::ColorSpace::CreateSRGB(),
-      gpu::SHARED_IMAGE_USAGE_WEBGPU | gpu::SHARED_IMAGE_USAGE_DISPLAY);
+      gpu::SHARED_IMAGE_USAGE_WEBGPU |
+          gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
+          gpu::SHARED_IMAGE_USAGE_DISPLAY);
   gpu::SyncToken creation_token = sii->GenUnverifiedSyncToken();
 
   current_swap_buffer_ = base::AdoptRef(new SwapBuffer(

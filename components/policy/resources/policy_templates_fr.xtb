@@ -416,6 +416,7 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 
       Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.</translation>
 <translation id="1617235075406854669">Activer la suppression de l'historique du navigateur et de l'historique des téléchargements</translation>
+<translation id="1620510694547887537">Caméra</translation>
 <translation id="163200210584085447">Les formats de cette liste seront mis en correspondance avec la source
       de sécurité de l'URL à l'origine de la demande. En cas de correspondance,
       l'accès aux appareils de capture vidéo est autorisé sur les pages de
@@ -709,6 +710,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 <translation id="2024476116966025075">Configurer le nom de domaine requis pour les clients d'accès à distance</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="203096360153626918">Cette règle n'a aucun effet sur les applications Android. L'utilisation du mode plein écran est possible même si cette règle est définie sur "<ph name="FALSE" />".</translation>
+<translation id="2042881179131103248">Configurer la caméra et la fonctionnalité de paramètres à désactiver</translation>
 <translation id="2043749682619281558">Activer la mise en surbrillance du curseur sur l'écran de connexion</translation>
 <translation id="2043770014371753404">Imprimantes d'entreprise désactivées</translation>
 <translation id="2050629715135525072">Vérifie la possibilité pour un utilisateur connecté à un hôte distant de transférer des fichiers entre le client et l'hôte. Cette règle ne s'applique pas aux connexions d'assistance à distance, qui ne sont pas compatibles avec le transfert de fichiers.
@@ -1546,6 +1548,7 @@ Si elle est désactivée, la page d'accueil n'est pas importée.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="3219421230122020860">Mode navigation privée disponible</translation>
 <translation id="3220624000494482595">Si l'application kiosque est une application Android, elle ne contrôlera pas la version <ph name="PRODUCT_OS_NAME" /> même si cette règle est définie sur "<ph name="TRUE" />".</translation>
+<translation id="322359555555487980">Déterminer la disponibilité des variantes de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="3240609035816615922">Règle d'accès à la configuration des imprimantes.</translation>
 <translation id="3240655340884151271">Adresse MAC de la carte d'interface réseau intégrée de la station d'accueil</translation>
@@ -2928,6 +2931,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 
       Sur <ph name="PRODUCT_NAME" /> version M76 ou inférieure, si la règle n'est pas définie, l'application ne peut, par défaut, ni collecter ni importer ces journaux. À partir de la version M77, <ph name="PRODUCT_NAME" /> est, par défaut, en mesure de collecter et d'importer ces journaux à partir de la plupart des profils affectés par les règles d'entreprise au niveau de l'utilisateur dans le cloud. De la version M77 à la version M80, <ph name="PRODUCT_NAME" /> peut également, par défaut, collecter et importer ces journaux à partir des profils affectés par la fonction de gestion sur site de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">Les règles relatives au cloud de <ph name="PRODUCT_NAME" /> sont prioritaires sur les règles relatives à la plate-forme.</translation>
+<translation id="53381168777357359">Fonctionnalité de paramètres</translation>
 <translation id="5362531528507578966">Permet d'ignorer le mode d'impression d'images de fond par défaut.</translation>
 <translation id="5365476955714838841">Paramètres de ligne de commande pour le navigateur secondaire.</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
@@ -4583,6 +4587,11 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
 <translation id="8050080920415773384">Impression en mode natif</translation>
 <translation id="8053580360728293758">Remplace le mode d'impression couleur par défaut. Si le mode est indisponible, cette règle est ignorée.</translation>
+<translation id="8057841287222359526">Permet de dresser la liste des fonctionnalités <ph name="PRODUCT_OS_NAME" /> à désactiver.
+
+      Si vous désactivez l'une de ces fonctionnalités, elle est accompagnée de la mention "Désactivé par l'administrateur", et l'utilisateur ne peut pas y accéder depuis l'interface utilisateur.
+
+      Si cette règle n'est pas configurée, toutes les fonctionnalités <ph name="PRODUCT_OS_NAME" /> sont activées par défaut, et l'utilisateur peut alors employer n'importe laquelle.</translation>
 <translation id="8059164285174960932">URL où les clients d'accès à distance doivent obtenir leur jeton d'authentification</translation>
 <translation id="806523868782250975">Configure une liste de favoris gérés.
 

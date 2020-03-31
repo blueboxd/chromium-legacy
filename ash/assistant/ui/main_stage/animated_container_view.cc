@@ -277,6 +277,9 @@ void AnimatedContainerView::FadeOutViews() {
 }
 
 void AnimatedContainerView::SetInteractionsEnabled(bool enabled) {
+  set_can_process_events_within_subtree(enabled);
+  // We also need to enable/disable the individual views, to enable/disable
+  // processing of key events.
   for (const auto& animator : animators_)
     animator->view()->SetEnabled(enabled);
 }

@@ -371,6 +371,21 @@ public class AndroidPaymentAppFinderTest
         Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
     }
 
+    /** Ignored payment methods should be filtered out. */
+    @Test
+    @Feature({"Payments"})
+    public void testIgnoredPaymentMethodIdentifier() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://bobpay.com/webpay");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
+
+        ignorePaymentMethodIdentifierAndFindApps(
+                /*ignoredPaymentMethodIdentifier=*/"https://bobpay.com/webpay", methods);
+
+        Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
+    }
+
     /**
      * Test BobPay with an incorrect signature and https://bobpay.com/webpay payment method name.
      */
@@ -1166,7 +1181,13 @@ public class AndroidPaymentAppFinderTest
                 mPaymentApps.get(0).getInstrumentMethodNames().contains("tokenized-card"));
     }
 
-    private void findApps(final Set<String> methodNames) throws Throwable {
+    private void findApps(Set<String> methodNames) throws Throwable {
+        ignorePaymentMethodIdentifierAndFindApps(
+                /*ignoredPaymentMethodIdentifier=*/null, methodNames);
+    }
+
+    private void ignorePaymentMethodIdentifierAndFindApps(
+            String ignoredPaymentMethodIdentifier, Set<String> methodNames) throws Throwable {
         mMethodData = buildMethodData(methodNames);
         mRule.runOnUiThread(() -> {
             AndroidPaymentAppFinder finder =
@@ -1174,6 +1195,9 @@ public class AndroidPaymentAppFinderTest
                             new PaymentManifestParser(), mPackageManager,
                             /*delegate=*/AndroidPaymentAppFinderTest.this, /*factory=*/null);
             finder.bypassIsReadyToPayServiceInTest();
+            if (ignoredPaymentMethodIdentifier != null) {
+                finder.ignorePaymentMethodForTest(ignoredPaymentMethodIdentifier);
+            }
             finder.findAndroidPaymentApps();
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {

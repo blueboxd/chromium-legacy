@@ -399,22 +399,6 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   DCHECK_NE(0u, privacyLinkTextRange.length);
 
   self.TOSLabel.text = TOSText;
-  if (FixOrphanWord(self.TOSLabel)) {
-    // If a newline is inserted, check whether it was added mid-link and adjust
-    // |tosLinkTextRange| and |privacyLinkTextRange| accordingly.
-    NSRange newlineRange = [self.TOSLabel.text rangeOfString:@"\n"
-                                                     options:0
-                                                       range:tosLinkTextRange];
-    if (newlineRange.length) {
-      tosLinkTextRange.location++;
-      privacyLinkTextRange.location++;
-    }
-    newlineRange = [self.TOSLabel.text rangeOfString:@"\n"
-                                             options:0
-                                               range:privacyLinkTextRange];
-    if (newlineRange.length)
-      privacyLinkTextRange.location++;
-  }
 
   __weak WelcomeToChromeView* weakSelf = self;
   ProceduralBlockWithURL action = ^(const GURL& url) {
@@ -465,7 +449,6 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
       CGRectMake(optInLabelOriginX,
                  CGRectGetMaxY(self.TOSLabel.frame) + optInLabelTopPadding,
                  optInLabelSize.width, optInLabelSize.height));
-  FixOrphanWord(self.optInLabel);
 }
 
 - (void)layoutCheckBoxButton {

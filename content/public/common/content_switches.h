@@ -148,7 +148,6 @@ CONTENT_EXPORT extern const char kEnableZeroCopy[];
 CONTENT_EXPORT extern const char kFieldTrialHandle[];
 CONTENT_EXPORT extern const char kFileUrlPathAlias[];
 CONTENT_EXPORT extern const char kForceDisplayList2dCanvas[];
-CONTENT_EXPORT extern const char kForceGpuRasterization[];
 CONTENT_EXPORT extern const char kDisableOopRasterization[];
 CONTENT_EXPORT extern const char kEnableOopRasterization[];
 CONTENT_EXPORT extern const char kEnableOopRasterizationDDL[];

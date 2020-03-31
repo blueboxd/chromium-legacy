@@ -162,7 +162,6 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
 
   // Returns the enterprise domain the device is enrolled to or user email.
   std::string GetEmail() const;
-  const char* GetKeyName() const;
   AttestationCertificateProfile GetCertificateProfile() const;
   std::string GetKeyNameForRegister() const;
   const user_manager::User* GetUser() const;

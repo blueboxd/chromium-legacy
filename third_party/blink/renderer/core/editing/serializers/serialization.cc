@@ -773,6 +773,8 @@ static Document* CreateStagingDocumentForMarkupSanitization() {
   page->GetSettings().SetScriptEnabled(false);
   page->GetSettings().SetPluginsEnabled(false);
   page->GetSettings().SetAcceleratedCompositingEnabled(false);
+  page->GetSettings().SetParserScriptingFlagPolicy(
+      ParserScriptingFlagPolicy::kEnabled);
 
   LocalFrame* frame = MakeGarbageCollected<LocalFrame>(
       MakeGarbageCollected<EmptyLocalFrameClient>(), *page,

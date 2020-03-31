@@ -183,6 +183,7 @@ bool CanOpenTaskManager();
 void OpenTaskManager(Browser* browser);
 void OpenFeedbackDialog(Browser* browser, FeedbackSource source);
 void ToggleBookmarkBar(Browser* browser);
+void ToggleShowFullURLs(Browser* browser);
 void ShowAppMenu(Browser* browser);
 void ShowAvatarMenu(Browser* browser);
 void OpenUpdateChromeDialog(Browser* browser);

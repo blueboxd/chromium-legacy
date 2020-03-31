@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_coordinator.h"
 
-#import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -115,9 +114,7 @@ using signin_metrics::PromoAction;
                                              ->GetPrefs()
                          identityManager:identityManager];
   self.mediator.delegate = self;
-  [self.mediator handleSigninWithIntent:self.signinIntent
-                            accessPoint:self.accessPoint
-                            promoAction:self.promoAction];
+  [self.mediator handleSigninWithIntent:self.signinIntent];
 }
 
 - (void)stop {

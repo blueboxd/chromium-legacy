@@ -405,6 +405,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
       Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.</translation>
 <translation id="1617235075406854669">Tarayıcı ve indirme geçmişinin silinmesini etkinleştir</translation>
+<translation id="1620510694547887537">Kamera</translation>
 <translation id="163200210584085447">Bu listedeki kalıplar, istek yapan URL'nin güvenlik kaynağı ile
       karşılaştırılır. Eşleşme bulunursa, SAML giriş sayfalarında video
       yakalama cihazlarına erişim izni verilir. Herhangi bir eşleşme
@@ -697,6 +698,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="2024476116966025075">Uzaktan erişim istemcileri için gereken alan adını yapılandır</translation>
 <translation id="2030905906517501646">Varsayılan arama sağlayıcı anahtar kelimesi</translation>
 <translation id="203096360153626918">Bu politikanın Android uygulamaları üzerinde hiçbir etkisi yoktur. Bu politika <ph name="FALSE" /> seçeneğine ayarlansa bile uygulamalar tam ekran moduna girebilir.</translation>
+<translation id="2042881179131103248">Devre dışı bırakılacak kamera yapılandırması ve ayarlar özelliği</translation>
 <translation id="2043749682619281558">Giriş ekranında imleç vurgulamayı etkinleştir</translation>
 <translation id="2043770014371753404">Devre dışı bırakılmış kurumsal yazıcılar</translation>
 <translation id="2050629715135525072">Uzaktan erişim ana makinesine bağlı bir kullanıcının istemci ile ana makine arasında dosya aktarımı yapma imkanını kontrol eder. Bu politika, dosya aktarımını desteklemeyen uzaktan yardım bağlantıları için geçerli değildir.
@@ -1530,6 +1532,7 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="3219421230122020860">Gizli mod kullanılabilir</translation>
 <translation id="3220624000494482595">Kiosk uygulaması bir Android uygulamasıysa bu politika <ph name="TRUE" /> seçeneğine ayarlansa dahi <ph name="PRODUCT_OS_NAME" /> sürümü üzerinde herhangi bir kontrolü olmaz.</translation>
+<translation id="322359555555487980"><ph name="PRODUCT_OS_NAME" /> üzerinde varyasyonların kullanılabilirliğini belirle</translation>
 <translation id="3236046242843493070">Uzantı, uygulama ve kullanıcı komut dosyası yüklemelerine izin veren URL kalıpları</translation>
 <translation id="3240609035816615922">Yazıcı yapılandırması erişim politikası.</translation>
 <translation id="3240655340884151271">Yuvanın dahili NIC MAC adresi</translation>
@@ -2908,6 +2911,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa M76 ve önceki sürümlerde <ph name="PRODUCT_NAME" /> bu günlükleri toplayıp yükleyemez. M77'den başlayarak <ph name="PRODUCT_NAME" /> varsayılan olarak, bu günlükleri bulut tabanlı kullanıcı düzeyi kurumsal politikalardan etkilenen profillerin çoğundan toplayıp yükleyebilir. M77'den M80'e (dahil) kadar, <ph name="PRODUCT_NAME" /> bu günlükleri varsayılan olarak <ph name="PRODUCT_NAME" /> şirket içi yönetiminden etkilenen profillerden toplayıp yükleyebilir.</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> bulut politikası, Platform politikasını geçersiz kılar.</translation>
+<translation id="53381168777357359">Ayarlar özelliği</translation>
 <translation id="5362531528507578966">Varsayılan arka plan grafikleri yazdırma modunu geçersiz kılar.</translation>
 <translation id="5365476955714838841">Alternatif tarayıcı için komut satırı parametreleri.</translation>
 <translation id="5365946944967967336">Araç çubuğunda Ana Sayfa düğmesini göster</translation>
@@ -4556,6 +4560,11 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8044493735196713914">Rapor cihazı önyükleme modu</translation>
 <translation id="8050080920415773384">Yerel Yazdırma</translation>
 <translation id="8053580360728293758">Varsayılan renkli yazdırma modunu geçersiz kılar. Mod mevcut değilse bu politika yoksayılır.</translation>
+<translation id="8057841287222359526">Devre dışı bırakılacak <ph name="PRODUCT_OS_NAME" /> özellikleri listesini ayarlamanıza izin verir.
+
+      Bu özelliklerin herhangi birisini iptal etmek, kullanıcının arayüzde ilgili özelliğe erişemeyeceği ve bunu "yönetici tarafından engellendi" olarak göreceği anlamına gelir.
+
+      Politika ayarlanmadan bırakılırsa tüm <ph name="PRODUCT_OS_NAME" /> özellikleri varsayılan olarak kalır ve kullanıcı bu özelliklerden herhangi birini kullanabilir.</translation>
 <translation id="8059164285174960932">Uzaktan erişim istemcilerinin kimlik doğrulama jetonunu edinmesi gerektiği URL</translation>
 <translation id="806523868782250975">Yönetilen yer işaretleri listesini yapılandırır.
 

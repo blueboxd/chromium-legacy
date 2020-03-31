@@ -473,7 +473,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       int offset) const override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
-  int GetChildCount() override;
+  int GetChildCount() const override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeViewAccessible GetFirstChild() override;
   gfx::NativeViewAccessible GetLastChild() override;

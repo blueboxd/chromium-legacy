@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Befejezés dátuma: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Telepítve</translation>
 <translation id="1792959175193046959">Az alapértelmezett letöltési helyet bármikor módosíthatja</translation>
+<translation id="1795251344124198516">A Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételei</translation>
 <translation id="1807246157184219062">Világos</translation>
 <translation id="1810845389119482123">A szinkronizálás kezdeti beállítása nem fejeződött be</translation>
 <translation id="1821253160463689938">Cookie-kat használ a preferenciák megjegyzésére még akkor is, ha Ön nem keresi fel az adott oldalakat</translation>
@@ -236,6 +237,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="2650751991977523696">Letölti újra a fájlt?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# hangfájl}other{# hangfájl}}</translation>
 <translation id="2687403674020088961">Az összes cookie letiltása (nem ajánlott)</translation>
+<translation id="2689830683995595741">A Chrome használatával elfogadja a <ph name="BEGIN_LINK1" />Google Általános Szerződési Feltételeket<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />A Google Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételeit<ph name="END_LINK2" />. A <ph name="BEGIN_LINK3" />Family Link szolgáltatással kezelt Google-fiókokra vonatkozó adatvédelmi közlemény<ph name="END_LINK3" /> is érvényben van.</translation>
 <translation id="2707726405694321444">Oldal frissítése</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2717722538473713889">E-mail-címek</translation>
@@ -376,6 +378,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="3749259744154402564">Nem támogatott</translation>
 <translation id="3771001275138982843">Nem sikerült letölteni a frissítést</translation>
 <translation id="3771033907050503522">Inkognitólapok</translation>
+<translation id="3771694256347217732">Google Általános Szerződési Feltételek</translation>
 <translation id="3773755127849930740">A párosítás engedélyezéséhez <ph name="BEGIN_LINK" />kapcsolja be a Bluetooth funkciót<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Küldés a saját eszközökre</translation>
 <translation id="3778956594442850293">Hozzáadva a kezdőképernyőhöz</translation>
@@ -403,6 +406,7 @@ Csak Ön láthatja, hogy mi van a kamera látóterében. A webhely nem látja a 
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{A Chrome betölti az oldalt, amint lehetséges}other{A Chrome betölti az oldalakat, amint lehetséges}}</translation>
 <translation id="3963007978381181125">Az összetett jelszavas titkosítás nem tartalmazza a Google Payben megadott fizetési módokat és címeket. Titkosított adatait csak az olvashatja el, aki rendelkezik az Ön összetett jelszavával. Az összetett jelszót a Google nem kapja meg, és nem is tárolja. Ha elfelejtette összetett jelszavát, vagy módosítaná ezt a beállítást, alaphelyzetbe kell állítania a szinkronizálást. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="3967822245660637423">A letöltés sikeres</translation>
+<translation id="3974987681202239636">A(z) <ph name="APP_NAME" /> a Chrome-ban fog megnyílni. A továbblépéssel elfogadja a <ph name="BEGIN_LINK1" />Google Általános Szerződési Feltételeket<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />A Google Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételeit<ph name="END_LINK2" />. A <ph name="BEGIN_LINK3" />Family Link szolgáltatással kezelt Google-fiókokra vonatkozó adatvédelmi közlemény<ph name="END_LINK3" /> is érvényben van.</translation>
 <translation id="397583555483684758">A szinkronizálás leállt</translation>
 <translation id="3976396876660209797">A gyorsparancs eltávolítása és újbóli létrehozása</translation>
 <translation id="3985215325736559418">Ismét letölti a(z) <ph name="FILE_NAME" /> fájlt?</translation>
@@ -713,6 +717,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6255999984061454636">Javasolt tartalmak</translation>
 <translation id="6270391203985052864">A webhelyek rákérdezhetnek, hogy küldjenek-e Önnek értesítéseket</translation>
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
+<translation id="6292420053234093573">A Chrome használatával elfogadja a <ph name="BEGIN_LINK1" />Google Általános Szerződési Feltételeket<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />A Google Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételeit<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Az összes webhely</translation>
 <translation id="629730747756840877">Fiók</translation>
 <translation id="6297765934698848803">Az eszközét kezelő szervezet kikapcsolta a kamerát.</translation>
@@ -727,6 +732,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6364438453358674297">Eltávolítja a javaslatot az előzményekből?</translation>
 <translation id="6369229450655021117">Itt internetes kereséseket indíthat, megoszthat tartalmakat barátaival, és megtekintheti a megnyitott oldalakat</translation>
 <translation id="6378173571450987352">Részletek: Felhasznált adatmennyiség szerinti rendezés</translation>
+<translation id="6379829913050047669">A(z) <ph name="APP_NAME" /> a Chrome-ban fog megnyílni. A továbblépéssel elfogadja a <ph name="BEGIN_LINK1" />Google Általános Szerződési Feltételeket<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />A Google Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételeit<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Webhelyek sötétítése</translation>
 <translation id="6388207532828177975">Törlés és visszaállítás</translation>
 <translation id="6395288395575013217">LINK</translation>

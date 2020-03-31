@@ -99,11 +99,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using ::testing::Return;
-using ::testing::ReturnRef;
 using base::Time;
 using base::TimeDelta;
 using chromeos::disks::DiskMountManager;
+using ::testing::Return;
+using ::testing::ReturnRef;
 
 namespace em = enterprise_management;
 
@@ -131,7 +131,7 @@ constexpr int kFakeSmartBatteryTemperature = 3004;
 constexpr char kFakeBatteryModel[] = "fake_battery_model";
 constexpr int kExpectedBatteryChargeNow = 5281;  // (mAh)
 constexpr double kFakeBatteryChargeNow =
-    kExpectedBatteryChargeNow / 1000.0;  // (Ah)
+    kExpectedBatteryChargeNow / 1000.0;            // (Ah)
 constexpr int kExpectedBatteryCurrentNow = 87659;  // (mA)
 constexpr double kFakeBatteryCurrentNow =
     kExpectedBatteryCurrentNow / 1000.0;  // (A)
@@ -286,8 +286,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     kiosk_account_ = std::move(account);
   }
 
-  std::unique_ptr<policy::DeviceLocalAccount>
-  GetAutoLaunchedKioskSessionInfo() override {
+  std::unique_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
+      override {
     if (kiosk_account_)
       return std::make_unique<policy::DeviceLocalAccount>(*kiosk_account_);
     return std::unique_ptr<policy::DeviceLocalAccount>();
@@ -487,7 +487,8 @@ void GetFakeCrosHealthdData(
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
       cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone(),
-      memory_info.Clone(), std::move(backlight_vector));
+      memory_info.Clone(), std::move(backlight_vector),
+      base::nullopt /* fan_info */);
 
   // Create fake SampledData.
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -556,7 +557,9 @@ class DeviceStatusCollectorTest : public testing::Test {
                                        std::string() /* display_name */),
         fake_arc_kiosk_device_local_account_(fake_arc_kiosk_app_basic_info_,
                                              kArcKioskAccountId),
-        fake_web_kiosk_app_basic_info_(kWebKioskAppUrl),
+        fake_web_kiosk_app_basic_info_(kWebKioskAppUrl,
+                                       std::string() /* title */,
+                                       std::string() /* icon_url */),
         fake_web_kiosk_device_local_account_(fake_web_kiosk_app_basic_info_,
                                              kWebKioskAccountId),
         user_data_dir_override_(chrome::DIR_USER_DATA),
@@ -900,11 +903,8 @@ class DeviceStatusCollectorTest : public testing::Test {
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_IDLE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_IDLE, ui::IDLE_STATE_IDLE,
+                                 ui::IDLE_STATE_IDLE};
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceActivityTimes, true);
 
@@ -928,11 +928,8 @@ TEST_F(DeviceStatusCollectorTest, AllIdle) {
 }
 
 TEST_F(DeviceStatusCollectorTest, AllActive) {
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceActivityTimes, true);
 
@@ -954,15 +951,10 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
 }
 
 TEST_F(DeviceStatusCollectorTest, MixedStates) {
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_ACTIVE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
+                                 ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_IDLE,   ui::IDLE_STATE_IDLE,
+                                 ui::IDLE_STATE_ACTIVE};
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceActivityTimes, true);
 
@@ -976,12 +968,8 @@ TEST_F(DeviceStatusCollectorTest, MixedStates) {
 // For kiosks report total uptime instead of only active periods.
 TEST_F(DeviceStatusCollectorTest, MixedStatesForKiosk) {
   ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_IDLE,
+      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE, ui::IDLE_STATE_ACTIVE,
+      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE, ui::IDLE_STATE_IDLE,
   };
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_ACTIVE,
@@ -998,11 +986,8 @@ TEST_F(DeviceStatusCollectorTest, MixedStatesForKiosk) {
 // For Arc kiosks report total uptime instead of only active periods.
 TEST_F(DeviceStatusCollectorTest, MixedStatesForArcKiosk) {
   ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
+      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE, ui::IDLE_STATE_ACTIVE,
+      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
   };
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_ACTIVE,
@@ -1017,14 +1002,9 @@ TEST_F(DeviceStatusCollectorTest, MixedStatesForArcKiosk) {
 }
 
 TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_IDLE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
+                                 ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_IDLE,   ui::IDLE_STATE_IDLE};
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
@@ -1062,10 +1042,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityNotWrittenToProfilePref) {
 }
 
 TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE};
   const int kMaxDays = 10;
 
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -1112,11 +1089,8 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesEnabledByDefault) {
   // Device activity times should be reported by default.
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
@@ -1129,11 +1103,8 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesOff) {
   // Device activity times should not be reported if explicitly disabled.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceActivityTimes, false);
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
@@ -1142,15 +1113,13 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesOff) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE
-  };
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE};
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceActivityTimes, true);
 
   // Set the baseline time to 10 seconds after midnight.
-  status_collector_->SetBaselineTime(
-      Time::Now().LocalMidnight() + TimeDelta::FromSeconds(10));
+  status_collector_->SetBaselineTime(Time::Now().LocalMidnight() +
+                                     TimeDelta::FromSeconds(10));
 
   status_collector_->Simulate(test_states, 1);
   GetStatus();
@@ -1175,7 +1144,8 @@ TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
   ui::IdleState test_states[] = {
-      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+      ui::IDLE_STATE_ACTIVE,
+      ui::IDLE_STATE_ACTIVE,
   };
   // Make sure CPU stats get reported in time. If we don't run this, the second
   // call to |GetStatus()| will contain these stats, but the first call won't
@@ -3033,21 +3003,15 @@ struct FakeDeviceData {
 };
 
 static const FakeDeviceData kFakeDevices[] = {
-  { "/device/ethernet", shill::kTypeEthernet, "ethernet",
-    "112233445566", "", "",
-    em::NetworkInterface::TYPE_ETHERNET },
-  { "/device/cellular1", shill::kTypeCellular, "cellular1",
-    "abcdefabcdef", "A10000009296F2", "",
-    em::NetworkInterface::TYPE_CELLULAR },
-  { "/device/cellular2", shill::kTypeCellular, "cellular2",
-    "abcdefabcdef", "", "352099001761481",
-    em::NetworkInterface::TYPE_CELLULAR },
-  { "/device/wifi", shill::kTypeWifi, "wifi",
-    "aabbccddeeff", "", "",
-    em::NetworkInterface::TYPE_WIFI },
-  { "/device/vpn", shill::kTypeVPN, "vpn",
-    "", "", "",
-    -1 },
+    {"/device/ethernet", shill::kTypeEthernet, "ethernet", "112233445566", "",
+     "", em::NetworkInterface::TYPE_ETHERNET},
+    {"/device/cellular1", shill::kTypeCellular, "cellular1", "abcdefabcdef",
+     "A10000009296F2", "", em::NetworkInterface::TYPE_CELLULAR},
+    {"/device/cellular2", shill::kTypeCellular, "cellular2", "abcdefabcdef", "",
+     "352099001761481", em::NetworkInterface::TYPE_CELLULAR},
+    {"/device/wifi", shill::kTypeWifi, "wifi", "aabbccddeeff", "", "",
+     em::NetworkInterface::TYPE_WIFI},
+    {"/device/vpn", shill::kTypeVPN, "vpn", "", "", "", -1},
 };
 
 // Fake network state.
@@ -3097,10 +3061,15 @@ static const FakeNetworkState kFakeNetworks[] = {
      em::NetworkState::IDLE, "", "", true},
 };
 
-static const FakeNetworkState kUnconfiguredNetwork = {
-  "unconfigured", "/device/unconfigured", shill::kTypeWifi, 35, -85,
-  shill::kStateOffline, em::NetworkState::OFFLINE, "", ""
-};
+static const FakeNetworkState kUnconfiguredNetwork = {"unconfigured",
+                                                      "/device/unconfigured",
+                                                      shill::kTypeWifi,
+                                                      35,
+                                                      -85,
+                                                      shill::kStateOffline,
+                                                      em::NetworkState::OFFLINE,
+                                                      "",
+                                                      ""};
 
 class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
  protected:

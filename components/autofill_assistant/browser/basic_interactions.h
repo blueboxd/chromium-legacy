@@ -59,6 +59,12 @@ class BasicInteractions {
   bool RunConditionalCallback(const std::string& condition_identifier,
                               base::RepeatingCallback<void()> callback);
 
+  // Disables all radio buttons in |model_identifiers| except
+  // |selected_model_identifier|. Fails if one or more model identifiers are not
+  // found.
+  bool UpdateRadioButtonGroup(const std::vector<std::string>& model_identifiers,
+                              const std::string& selected_model_identifier);
+
  private:
   ScriptExecutorDelegate* delegate_;
   // Only valid during a ShowGenericUiAction.

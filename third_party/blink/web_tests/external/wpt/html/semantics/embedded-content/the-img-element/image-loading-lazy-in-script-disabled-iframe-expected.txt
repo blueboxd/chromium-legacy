@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Images with loading='lazy' in script disabled iframe are not handled
-       as 'lazy' assert_true: lazy-load image shouldn't be honored in script disabled iframe expected true got false
-Harness: the test ran to completion.
-

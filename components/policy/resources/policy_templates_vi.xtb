@@ -416,6 +416,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.</translation>
 <translation id="1617235075406854669">Bật xóa lịch sử trình duyệt và lịch sử tải xuống</translation>
+<translation id="1620510694547887537">Camera</translation>
 <translation id="163200210584085447">Các mẫu trong danh sách này sẽ được đối sánh dựa trên nguồn gốc
       bảo mật của URL yêu cầu.  Nếu tìm thấy mẫu phù hợp, quyền
       truy cập thiết bị quay video sẽ được cấp trên
@@ -702,6 +703,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="2024476116966025075">Định cấu hình tên miền được yêu cầu cho ứng dụng truy cập từ xa</translation>
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="203096360153626918">Chính sách này không ảnh hưởng đến các ứng dụng Android. Các ứng dụng đó sẽ có thể vào chế độ toàn màn hình ngay cả khi chính sách này được đặt thành <ph name="FALSE" />.</translation>
+<translation id="2042881179131103248">Định cấu hình để tắt camera và tính năng cài đặt</translation>
 <translation id="2043749682619281558">Bật tính năng làm nổi bật con trỏ trên màn hình đăng nhập</translation>
 <translation id="2043770014371753404">Đã tắt máy in dành cho doanh nghiệp</translation>
 <translation id="2050629715135525072">Kiểm soát xem người dùng kết nối với máy chủ truy cập từ xa có thể chuyển tệp giữa máy chủ và máy khách không. Chính sách này không áp dụng cho các đường kết nối trợ giúp từ xa không hỗ trợ tính năng chuyển tệp.
@@ -1535,6 +1537,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="3219421230122020860">Chế độ ẩn danh khả dụng</translation>
 <translation id="3220624000494482595">Nếu ứng dụng kiosk là một ứng dụng Android thì ứng dụng này không có quyền kiểm soát đối với phiên bản <ph name="PRODUCT_OS_NAME" /> ngay cả khi chính sách này được đặt thành <ph name="TRUE" />.</translation>
+<translation id="322359555555487980">Xác định tình trạng có sẵn của các biến thể trên <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3236046242843493070">Mẫu URL để cho phép cài đặt tiện ích, ứng dụng và tập lệnh người dùng từ</translation>
 <translation id="3240609035816615922">Chính sách truy cập vào cấu hình máy in.</translation>
 <translation id="3240655340884151271">Địa chỉ NIC MAC tích hợp sẵn của đế sạc</translation>
@@ -2922,6 +2925,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn không đặt chính sách này trên các phiên bản M76 trở xuống, thì <ph name="PRODUCT_NAME" /> sẽ không thể thu thập và tải các nhật ký này lên theo mặc định. Kể từ phiên bản M77, theo mặc định, <ph name="PRODUCT_NAME" /> sẽ có thể thu thập và tải các nhật ký này lên từ hầu hết các hồ sơ chịu ảnh hưởng bởi chính sách doanh nghiệp dựa trên đám mây ở cấp người dùng. Kể từ phiên bản M77 đến M80, theo mặc định, <ph name="PRODUCT_NAME" /> cũng có thể thu thập và tải các nhật ký này lên từ các hồ sơ chịu ảnh hưởng bởi tính năng quản lý tại chỗ của <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">Chính sách đám mây <ph name="PRODUCT_NAME" /> ghi đè chính sách Nền tảng.</translation>
+<translation id="53381168777357359">Tính năng cài đặt</translation>
 <translation id="5362531528507578966">Ghi đè chế độ in đồ họa nền mặc định.</translation>
 <translation id="5365476955714838841">Các tham số dòng lệnh cho trình duyệt thay thế.</translation>
 <translation id="5365946944967967336">Hiển thị nút Trang chủ trên thanh công cụ</translation>
@@ -4581,6 +4585,11 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="8044493735196713914">Báo cáo chế độ khởi động thiết bị</translation>
 <translation id="8050080920415773384">In bản gốc</translation>
 <translation id="8053580360728293758">Ghi đè chế độ in màu mặc định. Nếu không có chế độ này thì chính sách này sẽ bị bỏ qua.</translation>
+<translation id="8057841287222359526">Cho phép bạn thiết lập danh sách các tính năng của <ph name="PRODUCT_OS_NAME" /> sẽ bị tắt.
+
+      Khi tắt bất kỳ tính năng nào trong số các tính năng này, người dùng sẽ không truy cập được vào tính năng đó từ giao diện người dùng và sẽ thấy trạng thái của tính năng đó là "do quản trị viên tắt".
+
+      Nếu bạn không đặt chính sách này, thì tất cả các tính năng của <ph name="PRODUCT_OS_NAME" /> sẽ được bật theo mặc định và người dùng có thể sử dụng bất kỳ tính năng nào trong số đó.</translation>
 <translation id="8059164285174960932">URL nơi ứng dụng truy cập từ xa sẽ lấy mã thông báo xác thực</translation>
 <translation id="806523868782250975">Định cấu hình danh sách dấu trang được quản lý.
 

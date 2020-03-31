@@ -121,8 +121,6 @@ source_set("weblayer_lib_base") {
     "browser/download_impl.h",
     "browser/download_manager_delegate_impl.cc",
     "browser/download_manager_delegate_impl.h",
-    "browser/fake_permission_controller_delegate.cc",
-    "browser/fake_permission_controller_delegate.h",
     "browser/feature_list_creator.cc",
     "browser/feature_list_creator.h",
     "browser/file_select_helper.cc",

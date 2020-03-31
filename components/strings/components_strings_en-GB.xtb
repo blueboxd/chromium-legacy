@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">History</translation>
 <translation id="1645368109819982629">Unsupported protocol</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome simplified this page to make it easier to read. Chrome retrieved the original page over a secure connection.</translation>
 <translation id="1656489000284462475">Pick up</translation>
 <translation id="1662550410081243962">Save and fill payment methods</translation>
 <translation id="1663943134801823270">Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
@@ -563,6 +564,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="342781501876943858">Chromium recommends resetting your password if you reused it on other sites.</translation>
 <translation id="3428151540071562330">One or more of the DnsOverHttpsTemplates server template URIs is invalid and will not be used.</translation>
 <translation id="3431636764301398940">Save this card to this device</translation>
+<translation id="3432601291244612633">Close page</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">The owner of this device turned off the dinosaur game.</translation>
 <translation id="3447884698081792621">Show certificate (issued by <ph name="ISSUER" />)</translation>
@@ -868,6 +870,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> wants to use your device's location</translation>
 <translation id="4736825316280949806">Restart Chromium</translation>
+<translation id="4737121147659370456">Your administrator has enabled Chrome Enterprise connectors on your browser. These connectors have access to some of your data.</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="4738601419177586157"><ph name="TEXT" /> search suggestion</translation>
 <translation id="4742407542027196863">Manage passwords…</translation>
@@ -1206,6 +1209,8 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="610911394827799129">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6116338172782435947">See text and images copied to the clipboard</translation>
 <translation id="6120179357481664955">Remember your UPI ID?</translation>
+<translation id="6124432979022149706">Chrome Enterprise connectors</translation>
+<translation id="6135641591018127088">Use your Google Account to generate a strong password</translation>
 <translation id="6146055958333702838">Check any cables and reboot any routers, modems or other network
     devices you may be using.</translation>
 <translation id="614940544461990577">Try:</translation>
@@ -1251,6 +1256,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6328639280570009161">Try disabling network prediction</translation>
 <translation id="6328784461820205019">'Your connection is not private' or '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' or 'SSL certificate error'</translation>
 <translation id="6328786501058569169">This site is deceptive</translation>
+<translation id="6333334544069706521">Use passwords stored in your Google Account</translation>
 <translation id="6337133576188860026">Frees up less than <ph name="SIZE" />. Some sites may load more slowly on your next visit.</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{None}=1{1 password (for <ph name="DOMAIN_LIST" />, synced)}=2{2 passwords (for <ph name="DOMAIN_LIST" />, synced)}other{# passwords (for <ph name="DOMAIN_LIST" />, synced)}}</translation>
@@ -1296,6 +1302,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6521745193039995384">Not active</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6534179046333460208">Physical Web suggestions</translation>
+<translation id="6543609420755597723">Share data about security events that have been flagged by Chrome Enterprise connectors with your administrator. This may include URLs of pages that you visit, file names or metadata, and the username that you use to sign in to your device and Chrome.</translation>
 <translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6547208576736763147">Dual punch left</translation>
 <translation id="6554795675067793129">Your account is managed by <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1361,6 +1368,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6874604403660855544">&amp;Redo add</translation>
 <translation id="6884662655240309489">Size 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome simplified this page to make it easier to read. Chrome retrieved the original page over an insecure connection.</translation>
 <translation id="6891596781022320156">Policy level is not supported.</translation>
 <translation id="6895330447102777224">Your card is confirmed</translation>
 <translation id="6897140037006041989">User Agent</translation>
@@ -1589,6 +1597,7 @@ Additional details:
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="7791196057686275387">Bale</translation>
 <translation id="7791543448312431591">Add</translation>
+<translation id="7798389633136518089">Ignored because the policy is not set by a cloud source.</translation>
 <translation id="7800304661137206267">The connection is encrypted using <ph name="CIPHER" />, with <ph name="MAC" /> for message authentication and <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="7802523362929240268">Site is legitimate</translation>
 <translation id="780301667611848630">No, thanks</translation>
@@ -1724,6 +1733,7 @@ Additional details:
 <translation id="8371889962595521444">Custom root certificates</translation>
 <translation id="8380941800586852976">Dangerous</translation>
 <translation id="8381674639488873545">These charges could be one-time or recurring and may not be obvious. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> has enabled Chrome Enterprise connectors on your browser. These connectors have access to some of your data.</translation>
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">You must enter the same passphrase twice.</translation>
 <translation id="8416694386774425977">The network configuration is invalid and couldn't be imported.

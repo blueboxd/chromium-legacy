@@ -11,6 +11,8 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
 
 namespace cc {
 namespace {
@@ -147,8 +149,11 @@ MULTI_THREAD_TEST_F(LayerTreeHostPictureTestTwinLayer);
 
 class LayerTreeHostPictureTestResizeViewportWithGpuRaster
     : public LayerTreeHostPictureTest {
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_forced = true;
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
   }
 
   void SetupTree() override {

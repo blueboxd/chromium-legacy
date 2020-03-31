@@ -23,7 +23,7 @@ class B : public A {
 public:
     virtual void Trace(Visitor*);
 private:
-    RefPtr<C> m_c;
+    scoped_refptr<C> m_c;
 };
 
 class C : public RefCounted<C> {

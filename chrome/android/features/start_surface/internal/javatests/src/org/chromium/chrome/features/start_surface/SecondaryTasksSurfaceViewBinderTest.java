@@ -133,4 +133,26 @@ public class SecondaryTasksSurfaceViewBinderTest extends DummyUiActivityTestCase
         assertNotEquals(mTasksSurfaceView.getParent(), null);
         assertEquals(mTasksSurfaceView.getVisibility(), View.GONE);
     }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetTopBarHeight() {
+        assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
+        assertFalse(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE));
+        assertNull(mTasksSurfaceView.getParent());
+
+        // Setting the top bar height shouldn't cause a NullPointerException when the layout params
+        // are null, since this should be handled in the *ViewBinder.
+        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+        mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
+        mPropertyModel.set(IS_SECONDARY_SURFACE_VISIBLE, true);
+
+        MarginLayoutParams layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
+        assertEquals("Top bar height isn't initialized correctly.", 20, layoutParams.topMargin);
+
+        layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
+        mPropertyModel.set(TOP_BAR_HEIGHT, 40);
+        assertEquals("Wrong top bar height.", 40, layoutParams.topMargin);
+    }
 }

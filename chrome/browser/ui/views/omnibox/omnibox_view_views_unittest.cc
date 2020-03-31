@@ -72,16 +72,9 @@ class TestingOmniboxView : public OmniboxViewViews {
 
   void CheckUpdatePopupNotCalled();
 
-  void ToggleShowFullUrlsPref() override {
-    toggle_show_full_urls_called_ = true;
-  }
-
   Range scheme_range() const { return scheme_range_; }
   Range emphasis_range() const { return emphasis_range_; }
   bool base_text_emphasis() const { return base_text_emphasis_; }
-  bool toggle_show_full_urls_called() const {
-    return toggle_show_full_urls_called_;
-  }
 
   // OmniboxViewViews:
   void EmphasizeURLComponents() override;
@@ -100,7 +93,6 @@ class TestingOmniboxView : public OmniboxViewViews {
   size_t update_popup_call_count_ = 0;
   base::string16 update_popup_text_;
   Range update_popup_selection_range_;
-  bool toggle_show_full_urls_called_ = false;
 
   // Range of the last scheme logged by UpdateSchemeStyle().
   Range scheme_range_;
@@ -1344,9 +1336,4 @@ TEST_F(OmniboxViewViewsTest, OverflowingAutocompleteText) {
   omnibox_textfield()->OnBlur();
   EXPECT_EQ(render_text->GetUpdatedDisplayOffset().x(), 0);
   EXPECT_FALSE(omnibox_view()->IsSelectAll());
-}
-
-TEST_F(OmniboxViewViewsTest, ContextMenuShowFullUrlsTogglesPref) {
-  omnibox_view()->ExecuteCommand(IDS_CONTEXT_MENU_SHOW_FULL_URLS, ui::EF_NONE);
-  EXPECT_TRUE(omnibox_view()->toggle_show_full_urls_called());
 }

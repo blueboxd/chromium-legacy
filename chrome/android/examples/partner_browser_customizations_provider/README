@@ -14,6 +14,9 @@ disable bookmark editing.
     adb remount
 
 * Build an example customizations content provider APK.
+  * autoninja -C $CHROMIUM_OUTPUT_DIR partner_browser_customizations_example_apk
+
+* [LEGACY non-GN] Build an example customizations content provider APK.
   * Rollback the SDK version before 25.3.0
     cd src/third_party/android_tools
     git checkout b65c4776d
@@ -25,6 +28,9 @@ disable bookmark editing.
 * Install the compiled APK.
 
 adb shell mkdir -p /system/app
+adb push $CHROMIUM_OUTPUT_DIR/apks/PartnerCustomizationProviderExample.apk /system/app/ChromeCustomizations.apk
+
+[LEGACY non-GN]
 adb push bin/PartnerCustomizationProviderExample-debug.apk /system/app/ChromeCustomizations.apk
 
 * If you want partner bookmarks to work, delete or rename the preinstalled

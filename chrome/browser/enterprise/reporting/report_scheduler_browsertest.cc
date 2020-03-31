@@ -42,9 +42,6 @@ class ReportSchedulerTest
  public:
   ReportSchedulerTest() {
     policy::BrowserDMTokenStorage::SetForTesting(&storage_);
-
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnterpriseReportingInBrowser);
   }
   ~ReportSchedulerTest() override = default;
 

@@ -21,6 +21,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -89,6 +91,30 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
   }
 
+  // Verifies whether the boolean |preference| has the |expected_value| and is
+  // |expected_controlled| by an extension.
+
+  void VerifyPrefValueAndControlledState(const std::string& preference,
+                                         const base::Value& expected_value,
+                                         bool expected_controlled) {
+    SCOPED_TRACE(preference);
+
+    PrefService* prefs = profile_->GetPrefs();
+    const PrefService::Preference* pref = prefs->FindPreference(preference);
+    ASSERT_TRUE(pref);
+    const base::Value* actual_value = pref->GetValue();
+    EXPECT_EQ(expected_value.type(), actual_value->type());
+
+    EXPECT_EQ(expected_value, *actual_value);
+    EXPECT_EQ(expected_controlled, pref->IsExtensionControlled());
+  }
+
+  void SetUp() override {
+    extensions::ExtensionApiTest::SetUp();
+    feature_list.InitAndEnableFeature(
+        content_settings::kImprovedCookieControls);
+  }
+
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
 
@@ -114,6 +140,7 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
+  base::test::ScopedFeatureList feature_list;
   Profile* profile_;
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 };
@@ -407,4 +434,142 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, DataReductionProxy) {
   EXPECT_TRUE(RunExtensionTest("preference/data_reduction_proxy")) <<
       message_;
+}
+
+// Tests the behavior of the Safe Browsing API as described in
+// crbug.com/1064722.
+IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, SafeBrowsing_SetTrue) {
+  ExtensionTestMessageListener listener_true("set to true",
+                                             /* will_reply */ true);
+  ExtensionTestMessageListener listener_clear("cleared", /* will_reply */ true);
+  ExtensionTestMessageListener listener_false("set to false",
+                                              /* will_reply */ true);
+  ExtensionTestMessageListener listener_done("done", /* will_reply */ false);
+
+  const base::FilePath extension_path =
+      test_data_dir_.AppendASCII("preference").AppendASCII("safe_browsing");
+  const extensions::Extension* extension = LoadExtension(extension_path);
+  ASSERT_TRUE(extension);
+
+  // Step 1. of the test sets the API to TRUE.
+  // Both preferences are now controlled by extension. |kSafeBrowsingEnabled| is
+  // set to TRUE, while |kSafeBrowsingEnhanced| is always FALSE.
+  ASSERT_TRUE(listener_true.WaitUntilSatisfied());
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnabled,
+                                    base::Value(true),
+                                    /* expected_controlled */ true);
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnhanced,
+                                    base::Value(false),
+                                    /* expected_controlled */ true);
+  listener_true.Reply("ok");
+
+  // Step 2. of the test clears the value.
+  // Neither preference is now controlled by extension, and they take on their
+  // default values - TRUE and FALSE, respectively.
+  ASSERT_TRUE(listener_clear.WaitUntilSatisfied());
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnabled,
+                                    base::Value(true),
+                                    /* expected_controlled */ false);
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnhanced,
+                                    base::Value(false),
+                                    /* expected_controlled */ false);
+  listener_clear.Reply("ok");
+
+  // Step 3. of the test sets the API to FALSE.
+  // Both preferences are now controlled by extension. |kSafeBrowsingEnabled| is
+  // set to FALSE, and |kSafeBrowsingEnhanced| is also FALSE.
+  ASSERT_TRUE(listener_false.WaitUntilSatisfied());
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnabled,
+                                    base::Value(false),
+                                    /* expected_controlled */ true);
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnhanced,
+                                    base::Value(false),
+                                    /* expected_controlled */ true);
+  listener_false.Reply("ok");
+
+  // Step 4. of the test uninstalls the extension.
+  // Neither preference is now controlled by extension, and they take on their
+  // default values - TRUE and FALSE, respectively.
+  ASSERT_TRUE(listener_done.WaitUntilSatisfied());
+  UninstallExtension(extension->id());
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnabled,
+                                    base::Value(true),
+                                    /* expected_controlled */ false);
+  VerifyPrefValueAndControlledState(prefs::kSafeBrowsingEnhanced,
+                                    base::Value(false),
+                                    /* expected_controlled */ false);
+}
+
+// Tests the behavior of the ThirdPartyCookies preference API.
+// kCookieControlsMode should be enforced to kOn/kOff if kBlockThirdPartyCookies
+// is set to true/false by an extension.
+IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, ThirdPartyCookiesAllowed) {
+  ExtensionTestMessageListener listener_true("set to true",
+                                             /* will_reply */ true);
+  ExtensionTestMessageListener listener_clear("cleared", /* will_reply */ true);
+  ExtensionTestMessageListener listener_false("set to false",
+                                              /* will_reply */ true);
+  ExtensionTestMessageListener listener_done("done", /* will_reply */ false);
+
+  // Verify initial state.
+  VerifyPrefValueAndControlledState(prefs::kBlockThirdPartyCookies,
+                                    base::Value(false),
+                                    /* expected_controlled */ false);
+  VerifyPrefValueAndControlledState(
+      prefs::kCookieControlsMode,
+      base::Value(static_cast<int>(
+          content_settings::CookieControlsMode::kIncognitoOnly)),
+      /* expected_controlled */ false);
+
+  const base::FilePath extension_path =
+      test_data_dir_.AppendASCII("preference")
+          .AppendASCII("third_party_cookies_allowed");
+  const extensions::Extension* extension = LoadExtension(extension_path);
+  ASSERT_TRUE(extension);
+
+  // Step 1. of the test sets the API to TRUE.
+  ASSERT_TRUE(listener_true.WaitUntilSatisfied());
+  VerifyPrefValueAndControlledState(prefs::kBlockThirdPartyCookies,
+                                    base::Value(false),
+                                    /* expected_controlled */ true);
+  VerifyPrefValueAndControlledState(
+      prefs::kCookieControlsMode,
+      base::Value(static_cast<int>(content_settings::CookieControlsMode::kOff)),
+      /* expected_controlled */ true);
+  listener_true.Reply("ok");
+
+  // Step 2. of the test clears the value.
+  ASSERT_TRUE(listener_clear.WaitUntilSatisfied());
+  VerifyPrefValueAndControlledState(prefs::kBlockThirdPartyCookies,
+                                    base::Value(false),
+                                    /* expected_controlled */ false);
+  VerifyPrefValueAndControlledState(
+      prefs::kCookieControlsMode,
+      base::Value(static_cast<int>(
+          content_settings::CookieControlsMode::kIncognitoOnly)),
+      /* expected_controlled */ false);
+  listener_clear.Reply("ok");
+
+  // Step 3. of the test sets the API to FALSE.
+  ASSERT_TRUE(listener_false.WaitUntilSatisfied());
+  VerifyPrefValueAndControlledState(prefs::kBlockThirdPartyCookies,
+                                    base::Value(true),
+                                    /* expected_controlled */ true);
+  VerifyPrefValueAndControlledState(
+      prefs::kCookieControlsMode,
+      base::Value(static_cast<int>(content_settings::CookieControlsMode::kOn)),
+      /* expected_controlled */ true);
+  listener_false.Reply("ok");
+
+  // Step 4. of the test uninstalls the extension.
+  ASSERT_TRUE(listener_done.WaitUntilSatisfied());
+  UninstallExtension(extension->id());
+  VerifyPrefValueAndControlledState(prefs::kBlockThirdPartyCookies,
+                                    base::Value(false),
+                                    /* expected_controlled */ false);
+  VerifyPrefValueAndControlledState(
+      prefs::kCookieControlsMode,
+      base::Value(static_cast<int>(
+          content_settings::CookieControlsMode::kIncognitoOnly)),
+      /* expected_controlled */ false);
 }

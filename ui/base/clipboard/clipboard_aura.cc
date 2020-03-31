@@ -545,9 +545,10 @@ void ClipboardAura::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   clipboard_internal_->ReadRTF(result);
 }
 
-SkBitmap ClipboardAura::ReadImage(ClipboardBuffer buffer) const {
+void ClipboardAura::ReadImage(ClipboardBuffer buffer,
+                              ReadImageCallback callback) const {
   DCHECK(CalledOnValidThread());
-  return clipboard_internal_->ReadImage();
+  std::move(callback).Run(clipboard_internal_->ReadImage());
 }
 
 void ClipboardAura::ReadCustomData(ClipboardBuffer buffer,

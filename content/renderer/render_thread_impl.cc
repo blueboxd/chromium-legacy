@@ -682,9 +682,6 @@ void RenderThreadImpl::Init() {
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     is_gpu_compositing_disabled_ = true;
 
-  is_gpu_rasterization_forced_ =
-      command_line.HasSwitch(switches::kForceGpuRasterization);
-
   if (command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount)) {
     std::string string_value = command_line.GetSwitchValueASCII(
         switches::kGpuRasterizationMSAASampleCount);
@@ -1324,10 +1321,6 @@ void RenderThreadImpl::OnAssociatedInterfaceRequest(
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
-}
-
-bool RenderThreadImpl::IsGpuRasterizationForced() {
-  return is_gpu_rasterization_forced_;
 }
 
 int RenderThreadImpl::GetGpuRasterizationMSAASampleCount() {
@@ -2090,10 +2083,9 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider(
       gpu::kGpuFeatureStatusEnabled;
   bool support_gpu_rasterization =
       try_gpu_rasterization && !support_oop_rasterization &&
-      (IsGpuRasterizationForced() ||
-       gpu_channel_host->gpu_feature_info()
-               .status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-           gpu::kGpuFeatureStatusEnabled);
+      gpu_channel_host->gpu_feature_info()
+              .status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+          gpu::kGpuFeatureStatusEnabled;
   bool support_gles2_interface = support_gpu_rasterization;
   bool support_raster_interface = true;
   bool support_grcontext = support_gpu_rasterization;
@@ -2120,11 +2112,8 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider(
     {
       viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
           shared_worker_context_provider_.get());
-      bool forced_or_supported =
-          IsGpuRasterizationForced() ||
-          shared_worker_context_provider_->ContextCapabilities()
-              .gpu_rasterization;
-      if (forced_or_supported &&
+      if (shared_worker_context_provider_->ContextCapabilities()
+              .gpu_rasterization &&
           shared_worker_context_provider_->ContextSupport()
               ->HasGrContextSupport()) {
         // Do not check GrContext above. It is lazy-created, and we only want to

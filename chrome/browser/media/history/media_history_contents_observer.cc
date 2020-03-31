@@ -61,9 +61,19 @@ void MediaHistoryContentsObserver::WebContentsDestroyed() {
 
 void MediaHistoryContentsObserver::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
+  if (frozen_)
+    return;
+
   if (session_info->state ==
       media_session::mojom::MediaSessionInfo::SessionState::kActive) {
     has_been_active_ = true;
+  }
+
+  if (session_info->audio_video_state ==
+      media_session::mojom::MediaAudioVideoState::kAudioVideo) {
+    has_video_ = true;
+  } else {
+    has_video_ = false;
   }
 }
 
@@ -99,10 +109,10 @@ void MediaHistoryContentsObserver::MediaSessionPositionChanged(
 }
 
 void MediaHistoryContentsObserver::MaybeCommitMediaSession() {
-  // If the media session has never played anything or does not have any
-  // metadata then we should not commit the media session.
+  // If the media session has never played anything, does not have any metadata
+  // or does not have video then we should not commit the media session.
   if (!has_been_active_ || !cached_metadata_ || cached_metadata_->IsEmpty() ||
-      !service_) {
+      !service_ || !has_video_) {
     return;
   }
 

@@ -1634,9 +1634,10 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
       return SkColorSetRGB(0xB9, 0xB9, 0xB9);
     case kDisabledAccent:
       return SkColorSetARGB(0x4D, 0xC3, 0xC3, 0xC3);
+    case kProgressValue:
+      return SkColorSetRGB(0x63, 0xAD, 0xE5);
     case kFill:
     case kLightenLayer:
-    case kProgressValue:
     case kAutoCompleteBackground:
     case kBackground:
       return SkColorSetRGB(0x3B, 0x3B, 0x3B);

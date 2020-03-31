@@ -150,7 +150,7 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
       nullptr;
 }
 
-int TestAXNodeWrapper::GetChildCount() {
+int TestAXNodeWrapper::GetChildCount() const {
   return InternalChildCount();
 }
 

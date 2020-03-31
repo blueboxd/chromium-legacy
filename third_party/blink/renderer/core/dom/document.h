@@ -1636,6 +1636,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void AddDisplayLockContext(DisplayLockContext*);
   void RemoveDisplayLockContext(DisplayLockContext*);
+  int DisplayLockCount() const;
+  void NotifySelectionRemovedFromDisplayLocks();
 
   // Manage the element's observation for display lock activation.
   void RegisterDisplayLockActivationObservation(Element*);

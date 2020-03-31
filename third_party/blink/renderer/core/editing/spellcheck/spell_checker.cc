@@ -308,9 +308,6 @@ void SpellChecker::MarkAndReplaceFor(
   GetFrame().GetDocument()->UpdateStyleAndLayout(
       DocumentUpdateReason::kSpellCheck);
 
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      GetFrame().GetDocument()->Lifecycle());
-
   EphemeralRange checking_range(request->CheckingRange());
 
   // Abort marking if the content of the checking change has been modified.

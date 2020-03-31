@@ -1455,6 +1455,9 @@ if (enable_java_templates) {
   #   bypass_platform_checks: Disables checks about cross-platform (Java/Android)
   #     dependencies for this target. This will allow depending on an
   #     android_library target, for example.
+  #   enable_desugar: If false, disables desugaring of lambdas, etc. Use this
+  #     only when you are sure the library does not require desugaring. E.g.
+  #     to hide warnings shown from desugaring.
   #
   #   additional_jar_files: Use to package additional files (Java resources)
   #     into the output jar. Pass a list of length-2 lists with format:
@@ -1673,6 +1676,7 @@ if (enable_java_templates) {
       deps = _deps
       build_config = _build_config
       proguard_enabled = true
+      enable_desugar = desugar_with_d8
       forward_variables_from(invoker,
                              [
                                "proguard_configs",
@@ -1914,8 +1918,6 @@ if (enable_java_templates) {
       sources = [ "//base/android/java/templates/BuildConfig.template" ]
       defines = []
 
-      # TODO(agrieve): These two are not target-specific and should be moved
-      #     to BuildHooks.java.
       # Set these even when !use_final_fields so that they have correct default
       # values withnin junit_binary().
       if (is_java_debug || dcheck_always_on) {
@@ -2917,6 +2919,7 @@ if (enable_java_templates) {
                                  "disable_r8_outlining",
                                  "dexlayout_profile",
                                ])
+        enable_desugar = desugar_with_d8
         min_sdk_version = _min_sdk_version
         proguard_enabled = _proguard_enabled
         build_config = _build_config
@@ -4631,6 +4634,7 @@ if (enable_java_templates) {
                                    "min_sdk_version",
                                  ])
           enable_multidex = _enable_multidex
+          enable_desugar = desugar_with_d8
           proguard_enabled = true
           proguard_mapping_path = _proguard_mapping_path
           proguard_sourcefile_suffix = "$android_channel-$_version_code"

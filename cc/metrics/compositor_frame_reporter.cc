@@ -188,12 +188,12 @@ std::string GetCompositorLatencyHistogramName(
                        GetStageName(stage_type_index)});
 }
 
-std::string GetEventLatencyHistogramName(const EventMetrics& event_metrics) {
+std::string GetEventLatencyHistogramBaseName(
+    const EventMetrics& event_metrics) {
   const bool is_scroll = event_metrics.scroll_input_type().has_value();
-  return base::StrCat({"EventLatency.", event_metrics.GetTypeName(),
-                       is_scroll ? "." : nullptr,
-                       is_scroll ? event_metrics.GetScrollTypeName() : nullptr,
-                       ".TotalLatency"});
+  return base::StrCat(
+      {"EventLatency.", event_metrics.GetTypeName(), is_scroll ? "." : nullptr,
+       is_scroll ? event_metrics.GetScrollTypeName() : nullptr});
 }
 
 }  // namespace
@@ -529,28 +529,50 @@ void CompositorFrameReporter::ReportCompositorLatencyHistogram(
 
 void CompositorFrameReporter::ReportEventLatencyHistograms() const {
   for (const EventMetrics& event_metrics : events_metrics_) {
-    base::TimeDelta total_latency =
-        frame_termination_time_ - event_metrics.time_stamp();
-    const auto trace_id = TRACE_ID_LOCAL(&event_metrics);
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
-        "cc,input", "EventLatency", trace_id, event_metrics.time_stamp(),
-        "event", event_metrics.GetTypeName());
-    const int type_index = static_cast<int>(event_metrics.type());
+    const std::string histogram_base_name =
+        GetEventLatencyHistogramBaseName(event_metrics);
+    const int event_type_index = static_cast<int>(event_metrics.type());
     const int scroll_type_index =
         event_metrics.scroll_input_type()
             ? static_cast<int>(*event_metrics.scroll_input_type())
             : 0;
     const int histogram_index =
-        type_index * kEventLatencyScrollTypeCount + scroll_type_index;
+        event_type_index * kEventLatencyScrollTypeCount + scroll_type_index;
+
+    // For scroll events, report total latency up to gpu-swap-end. This is
+    // useful in comparing new EventLatency metrics with LatencyInfo-based
+    // scroll event latency metrics.
+    if (event_metrics.scroll_input_type() &&
+        !viz_breakdown_.swap_timings.is_null()) {
+      const base::TimeDelta swap_end_latency =
+          viz_breakdown_.swap_timings.swap_end - event_metrics.time_stamp();
+      const std::string swap_end_histogram_name =
+          histogram_base_name + ".TotalLatencyToSwapEnd";
+      STATIC_HISTOGRAM_POINTER_GROUP(
+          swap_end_histogram_name, histogram_index,
+          kMaxEventLatencyHistogramIndex,
+          AddTimeMicrosecondsGranularity(swap_end_latency),
+          base::Histogram::FactoryGet(
+              swap_end_histogram_name, kEventLatencyHistogramMin,
+              kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
+              base::HistogramBase::kUmaTargetedHistogramFlag));
+    }
+
+    base::TimeDelta total_latency =
+        frame_termination_time_ - event_metrics.time_stamp();
+    const std::string histogram_name = histogram_base_name + ".TotalLatency";
     STATIC_HISTOGRAM_POINTER_GROUP(
-        GetEventLatencyHistogramName(event_metrics), histogram_index,
-        kMaxEventLatencyHistogramIndex,
+        histogram_name, histogram_index, kMaxEventLatencyHistogramIndex,
         AddTimeMicrosecondsGranularity(total_latency),
         base::Histogram::FactoryGet(
-            GetEventLatencyHistogramName(event_metrics),
-            kEventLatencyHistogramMin, kEventLatencyHistogramMax,
-            kEventLatencyHistogramBucketCount,
+            histogram_name, kEventLatencyHistogramMin,
+            kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
             base::HistogramBase::kUmaTargetedHistogramFlag));
+
+    const auto trace_id = TRACE_ID_LOCAL(&event_metrics);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "cc,input", "EventLatency", trace_id, event_metrics.time_stamp(),
+        "event", event_metrics.GetTypeName());
 
     // Report the breakdowns.
     // It is possible for an event to arrive in the compositor in the middle of

@@ -34,6 +34,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
       int player_id) const override;
   bool IsPictureInPictureAvailable(int player_id) const override;
   RenderFrameHost* render_frame_host() const override;
+  bool HasVideo(int player_id) const override;
 
   // Simulate that a new player started.
   // Returns the player_id.

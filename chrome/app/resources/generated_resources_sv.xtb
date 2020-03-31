@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Synliga nätverk:</translation>
 <translation id="1094607894174825014">Läs- eller skrivåtgärden begärdes med en ogiltig offset på: <ph name="DEVICE_NAME" />.</translation>
 <translation id="1097658378307015415">Aktivera nätverket <ph name="NETWORK_ID" /> genom att logga in som gäst innan du loggar in</translation>
+<translation id="1099962274138857708">Bild kopierad från <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Översätt alltid <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Det gick inte att hitta SIM-kortet.</translation>
 <translation id="1108600514891325577">&amp;Stopp</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">bakgrundssida</translation>
 <translation id="1745520510852184940">Gör alltid detta</translation>
 <translation id="1750172676754093297">Det går inte att lagra fingeravtryck på säkerhetsnyckeln</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> har redigeringsbehörighet till filer i <ph name="FOLDERNAME" /> tills du stänger alla flikar för den här webbplatsen</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="1753067873202720523">Din Chromebook kanske inte laddas medan den är på.</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">Använder du redan Chrome? Logga in</translation>
 <translation id="18245044880483936">Säkerhetskopierad data tar inte upp lagringsutrymme på barnets Drive.</translation>
 <translation id="1826516787628120939">Kontrollerar</translation>
+<translation id="1827738518074806965">Konstgalleri</translation>
 <translation id="1828378091493947763">Enheten har inte stöd för det här pluginprogrammet</translation>
 <translation id="1828901632669367785">Skriv ut via systemets dialogruta ...</translation>
 <translation id="1829129547161959350">Pingvin</translation>
@@ -1028,6 +1031,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="236117173274098341">Optimera</translation>
 <translation id="236141728043665931">Blockera alltid mikrofonåtkomsten</translation>
+<translation id="2364498172489649528">Godkänd</translation>
 <translation id="2365507699358342471">Den här webbplatsen får tillgång till text och bilder som kopierats till Urklipp.</translation>
 <translation id="2366260648632264559">Visa systemtext på det här språket</translation>
 <translation id="2367972762794486313">Visa appar</translation>
@@ -1342,6 +1346,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2762441749940182211">Kamera är blockerad</translation>
 <translation id="2765217105034171413">Liten</translation>
 <translation id="2766161002040448006">Fråga en förälder</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> har redigeringsbehörighet till <ph name="FILENAME" /> tills du stänger alla flikar för den här webbplatsen</translation>
 <translation id="276969039800130567">Inloggad som <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Ta bort från listan</translation>
 <translation id="2770690685823456775">Exportera lösenorden till en annan mapp</translation>
@@ -1666,6 +1671,18 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3202173864863109533">Ljudet är avstängt på den här fliken.</translation>
 <translation id="3208321278970793882">App</translation>
 <translation id="3208584281581115441">Kontrollera nu</translation>
+<translation id="3208640652501208439">Skolresurser kanske inte blir tillgängliga eller inte läses in automatiskt
+    Barnet kanske inte får tillgång till
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />appar och tillägg som skolan har installerat
+      <ph name="LIST_ITEM" />bokmärken från skolans Chromebook
+      <ph name="LIST_ITEM" />automatiskt ifyllda lösenord till utbildningswebbplatser.
+    <ph name="END_LIST" />
+    Barnet bör göra följande för att få tillgång till alla skolresurser:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Logga ut från kontot som hanteras via Family Link
+      <ph name="OLIST_ITEM" />Logga in på inloggningsskärmen med sitt G Suite for Education-konto. Observera dock att detta innebär att skolans policy, inklusive åtkomstinställningar för appar och webbplatser, ges företräde framför de kontrollfunktioner som du har ställt in med Family Link (till exempel kan skolans administratör tillåta YouTube om det behövs för läxorna, skärmtid slutar gälla och så vidare).
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Obekräftade</translation>
 <translation id="32101887417650595">Det gick inte att ansluta till skrivaren</translation>
 <translation id="321084946921799184">Gul och vit</translation>
@@ -1744,6 +1761,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3312424061798279731">Aktiverade språk</translation>
 <translation id="3313622045786997898">Certifikatets signaturvärde</translation>
 <translation id="3315158641124845231">Dölj <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Information om skolkonton för föräldrar</translation>
 <translation id="3317459757438853210">Dubbelsidig</translation>
 <translation id="3317678681329786349">Kamera och mikrofon är blockerade</translation>
 <translation id="3319048459796106952">Nytt &amp;inkognitofönster</translation>
@@ -1864,6 +1882,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="3479685872808224578">Utskriftsservern hittades inte. Kontrollera webbadressen och försök igen.</translation>
 <translation id="3481268647794498892">Öppnas i <ph name="ALTERNATIVE_BROWSER_NAME" /> om <ph name="COUNTDOWN_SECONDS" /> sekunder</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> har visningsbehörighet till följande filer</translation>
 <translation id="3484273680291419129">Den skadliga programvaran tas bort …</translation>
 <translation id="3484869148456018791">Hämta nytt certifikat</translation>
 <translation id="3487007233252413104">anonym funktion</translation>
@@ -1926,14 +1945,17 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3564848315152754834">USB-säkerhetsnyckel</translation>
 <translation id="3566721612727112615">Inga webbplatser har lagts till</translation>
 <translation id="3569382839528428029">Vill du att <ph name="APP_NAME" /> ska dela din skärm?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> har visningsbehörighet till följande filer och mappar</translation>
 <translation id="3571734092741541777">Konfigurera</translation>
 <translation id="3574210789297084292">logga in</translation>
 <translation id="3574917942258583917">Vill du stänga inkognitoläget ändå?</translation>
 <translation id="3575121482199441727">Tillåt för den här webbplatsen</translation>
+<translation id="3575919114596668130">Föräldrainställningarna i Family Link gäller fortfarande. Om du tidigare har blockerat en app eller webbplats måste du inte göra det igen.</translation>
 <translation id="3576324189521867626">Appen har installerats</translation>
 <translation id="3578594933904494462">Flikens innehåll delas.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vill dela skrivaren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med en grupp som du äger: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Om du accepterar kan alla medlemmar i gruppen skriva ut till skrivaren.</translation>
 <translation id="357889014807611375">Wi-Fi med datapriser</translation>
+<translation id="3582057310199111521">Har angetts på en bedräglig webbplats och upptäckts i ett dataintrång</translation>
 <translation id="3584169441612580296">Läsa och ändra foton, musik och andra media från datorn</translation>
 <translation id="3586806079541226322">Det går inte att öppna den här filen</translation>
 <translation id="3586931643579894722">Dölj detaljerad information</translation>
@@ -2770,6 +2792,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4689235506267737042">Välj demoinställningar</translation>
 <translation id="4689421377817139245">Synkronisera det här bokmärket med din iPhone</translation>
 <translation id="4690091457710545971">&lt;Fyra filer som genererats av Intels Wi-Fi-firmware: csr.lst, fh_regs.lst, radio_reg.lst och monitor.lst.sysmon. De tre första är binärfiler med registerdumpar, och Intel intygar att de inte innehåller några personliga uppgifter eller uppgifter som kan identifiera en enhet. Den sista filen är en körningsspårning från Intels firmware. Alla personliga uppgifter eller uppgifter som kan identifiera en enhet har tagits bort från den, men filen är för stor att visa här. Filerna genererades på grund av problem med Wi-Fi på enheten nyligen och delas med Intel så att de kan hjälpa till med felsökningen.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> har läsbehörighet till <ph name="FILENAME" /> tills du stänger alla flikar för den här webbplatsen</translation>
 <translation id="4692623383562244444">Sökmotorer</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Skrivarkonfigurationen hanteras av administratören.</translation>
@@ -3070,6 +3093,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5117930984404104619">Bevaka hur övriga tillägg fungerar, däribland besökta webbadresser</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Hårddisken är full. Spara på en annan plats eller gör mer plats på hårddisken.</translation>
+<translation id="5122384452788334261">Enhetens lagringsutrymme är nästan fullt. Minst <ph name="RECOMMENDED_SPACE" /> ledigt utrymme rekommenderas för att använda Plugin VM. Frigör utrymme genom att ta bort filer från lagringsutrymmet på enheten.</translation>
 <translation id="5123433949759960244">Basketboll</translation>
 <translation id="5125751979347152379">Ogiltig webbadress.</translation>
 <translation id="5126611267288187364">Visa ändringar</translation>
@@ -3125,6 +3149,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5204967432542742771">Ange lösenord</translation>
 <translation id="5206215183583316675">Vill du radera <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Fel vid import av certifikat</translation>
+<translation id="5209307736170827035">Barnets data i Classroom skyddas. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Det gick inte att hitta några enheter</translation>
 <translation id="5210990770352357081">Det gick inte att avinstallera Plugin VM</translation>
 <translation id="5213481667492808996">Datatjänsten <ph name="NAME" /> är klar att använda</translation>
@@ -3236,6 +3261,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5341980496415249280">Komprimering pågår, vänta …</translation>
 <translation id="5342091991439452114">Pinkoden måste bestå av minst <ph name="MINIMUM" /> siffror</translation>
 <translation id="5344036115151554031">Återställer Linux</translation>
+<translation id="535123479159372765">Text kopierad från en annan enhet</translation>
 <translation id="5352033265844765294">Tidsstämpling</translation>
 <translation id="5353252989841766347">Exportera lösenord från Chrome</translation>
 <translation id="5355099869024327351">Tillåt att assistenten visar aviseringar</translation>
@@ -3358,6 +3384,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5511379779384092781">Extra liten</translation>
 <translation id="5511823366942919280">Vill du ställa in enheten som en Shark?</translation>
 <translation id="5512653252560939721">Användarcertifikat måste vara maskinvarustödda.</translation>
+<translation id="5515923816438946203">Välj vad som ska visas på skärmen</translation>
 <translation id="5517304475148761050">Den här appen kräver åtkomst till Play Butik</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Skrivaren läggs till i kontot. Det kan ta en stund ...</translation>
@@ -3808,6 +3835,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6097480669505687979">Om du inte frigör utrymme kan användare och data tas bort automatiskt.</translation>
 <translation id="6097600385983390082">Röstsökning har stängts</translation>
 <translation id="6098793583803863900">En okänd fil genomsöks efter farligt innehåll.</translation>
+<translation id="609942571968311933">Text kopierad från <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Start-meny</translation>
 <translation id="6101226222197207147">En ny app har lagts till (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Den här filen blockerades av Avancerat skydd.</translation>
@@ -4178,6 +4206,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="6615455863669487791">Visa mig</translation>
 <translation id="6618097958368085618">Behåll ändå</translation>
+<translation id="6618744767048954150">Körs</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Webbplatsen kan spåra din plats</translation>
 <translation id="6619801788773578757">Lägg till en kioskapp</translation>
@@ -4563,6 +4592,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7131040479572660648">Läsa din data på <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Lägg till si&amp;da ...</translation>
 <translation id="7133578150266914903">Enheten återställs av administratören (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" /> lösenord har kontrollerats …</translation>
 <translation id="7134098520442464001">Förminska texten</translation>
 <translation id="7135729336746831607">Vill du aktivera Bluetooth?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> kräver att du uppdaterar din <ph name="DEVICE_TYPE" /> omedelbart.</translation>
@@ -4911,6 +4941,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="761530003705945209">Säkerhetskopiera på Google Drive. Återställ data eller byt enkelt enhet när du vill. Säkerhetskopian innehåller appdata. Säkerhetskopiorna krypteras med hjälp av Google-kontots lösenord och laddas upp på Google.</translation>
 <translation id="7616214729753637086">Enheten registreras …</translation>
 <translation id="7617366389578322136">Ansluter till <ph name="DEVICE_NAME" /></translation>
+<translation id="761763866592998929">Viloläge</translation>
 <translation id="762068974690945752">Lägg till ett skolkonto eller hantera konton för barn här. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Det gick inte att spara enhetskonfigurationen.</translation>
 <translation id="7622114377921274169">Laddas.</translation>
@@ -5022,6 +5053,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7766838926148951335">Godkänn behörigheterna</translation>
 <translation id="7768770796815395237">Ändra</translation>
 <translation id="7769672763586021400">Modell-id</translation>
+<translation id="7770612696274572992">Bild kopierad från en annan enhet</translation>
 <translation id="7770651108375708429">Koppla från Wi-Fi</translation>
 <translation id="7771452384635174008">Layout</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
@@ -5029,6 +5061,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7772773261844472235">Kontrollera Chromebooks status</translation>
 <translation id="7773726648746946405">Sessionslagring</translation>
 <translation id="7774365994322694683">Fågel</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> har läsbehörighet till filer i <ph name="FOLDERNAME" /> tills du stänger alla flikar för den här webbplatsen</translation>
 <translation id="7776701556330691704">Inga röster hittades</translation>
 <translation id="7780252971640011240">Anslutningsproblem. Kontakta operatören för hjälp.</translation>
 <translation id="7781335840981796660">Alla användarkonton och all lokal data tas bort.</translation>
@@ -5162,6 +5195,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7915471803647590281">Berätta för oss vad som händer innan du skickar feedback.</translation>
 <translation id="7918257978052780342">Registrera</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> sek</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> har visningsbehörighet till <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Det gick inte att vidarebefordra porten</translation>
 <translation id="792514962475806987">Zoomnivå för dockad skärmförstoring</translation>
 <translation id="7925247922861151263">Kontroll med AAA misslyckades</translation>
@@ -5325,6 +5359,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Webbläsaren hanteras<ph name="END_LINK" /> av din organisation</translation>
 <translation id="8118860139461251237">Hantera dina nedladdningar</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> med flera ändringar</translation>
+<translation id="8120715633374652536">Enhetens lagringsutrymme är nästan fullt. Minst <ph name="MINIMUM_SPACE" /> ledigt utrymme krävs för att använda Plugin VM, och mer än <ph name="RECOMMENDED_SPACE" /> ledigt utrymme rekommenderas. Frigör utrymme genom att ta bort filer från lagringsutrymmet på enheten.</translation>
 <translation id="8123590694679414600">Data krypterades med din lösenfras för synkronisering den
           <ph name="TIME" />. Betalningsuppgifter och adresser från Google Pay omfattas inte.</translation>
 <translation id="81238879832906896">Gul och vit blomma</translation>
@@ -6048,6 +6083,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9055636786322918818">Tillämpa RC4-kryptering. Det här alternativet är mer riskabelt eftersom RC4-chiffer är osäkra.</translation>
 <translation id="9056810968620647706">Inga träffar hittades.</translation>
 <translation id="9057354806206861646">Uppdatera schema</translation>
+<translation id="9058976525724291037">Ditt barn vill lägga till ett Google-konto på den här enheten. Endast G Suite for Education-konton kan läggas till på enheter som hanteras via Family Link.</translation>
 <translation id="9062065967472365419">Överraska mig</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Fel på rad <ph name="ERROR_LINE_START" /> till och med <ph name="ERROR_LINE_END" /></translation>

@@ -64,23 +64,21 @@ LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() = default;
 
 void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason,
                                                   bool allow_refocus_alert) {
-  if (web_contents()) {
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-    if (browser && base::FeatureList::IsEnabled(
-                       autofill::features::kAutofillEnableToolbarStatusChip)) {
-      ToolbarAccountIconContainerView* toolbar_account_icon_container =
-          BrowserView::GetBrowserViewForBrowser(browser)
-              ->toolbar()
-              ->toolbar_account_icon_container();
-      if (toolbar_account_icon_container &&
-          toolbar_account_icon_container->Contains(GetAnchorView())) {
-        // These must be set after the bubble is created.
-        set_adjust_if_offscreen(true);
-        GetBubbleFrameView()->set_preferred_arrow_adjustment(
-            views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
-      }
-    }
-  }
+  // These bubbles all anchor to the location bar or toolbar. We selectively
+  // anchor location bar bubbles to one end or the other of the toolbar based on
+  // whether their normal anchor point is visible. However, if part or all of
+  // the toolbar is off-screen, we should ajust the bubbles so that they are
+  // visible on the screen and not cut off.
+  //
+  // Note: These must be set after the bubble is created.
+  // Note also: |set_adjust_if_offscreen| is disabled by default on some
+  // platforms for arbitrary dialog bubbles to be consistent with platform
+  // standards, however in this case there is no good reason not to ensure the
+  // bubbles are displayed on-screen.
+  set_adjust_if_offscreen(true);
+  GetBubbleFrameView()->set_preferred_arrow_adjustment(
+      views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
+
   if (reason == USER_GESTURE) {
     GetWidget()->Show();
   } else {

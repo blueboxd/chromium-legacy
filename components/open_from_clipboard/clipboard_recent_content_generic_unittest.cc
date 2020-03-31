@@ -107,6 +107,8 @@ TEST_F(ClipboardRecentContentGenericTest, SuppressClipboardContent) {
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
   EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
+  EXPECT_TRUE(recent_content.GetRecentTextFromClipboard().has_value());
+  EXPECT_FALSE(recent_content.HasRecentImageFromClipboard());
 
   // After suppressing it, it shouldn't be suggested.
   recent_content.SuppressClipboardContent();
@@ -117,6 +119,8 @@ TEST_F(ClipboardRecentContentGenericTest, SuppressClipboardContent) {
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now);
   EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
+  EXPECT_TRUE(recent_content.GetRecentTextFromClipboard().has_value());
+  EXPECT_FALSE(recent_content.HasRecentImageFromClipboard());
 }
 
 TEST_F(ClipboardRecentContentGenericTest, GetRecentTextFromClipboard) {
@@ -127,6 +131,8 @@ TEST_F(ClipboardRecentContentGenericTest, GetRecentTextFromClipboard) {
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
   EXPECT_TRUE(recent_content.GetRecentTextFromClipboard().has_value());
+  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
+  EXPECT_FALSE(recent_content.HasRecentImageFromClipboard());
   EXPECT_STREQ(
       "Foo Bar",
       base::UTF16ToUTF8(recent_content.GetRecentTextFromClipboard().value())
@@ -151,4 +157,19 @@ TEST_F(ClipboardRecentContentGenericTest, ClearClipboardContent) {
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now);
   EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
+}
+
+TEST_F(ClipboardRecentContentGenericTest, HasRecentImageFromClipboard) {
+  ClipboardRecentContentGeneric recent_content;
+  base::Time now = base::Time::Now();
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(3, 2);
+  bitmap.eraseARGB(255, 0, 255, 0);
+
+  EXPECT_FALSE(recent_content.HasRecentImageFromClipboard());
+  test_clipboard_->WriteBitmap(bitmap);
+  test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
+  EXPECT_TRUE(recent_content.HasRecentImageFromClipboard());
+  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
+  EXPECT_FALSE(recent_content.GetRecentTextFromClipboard().has_value());
 }

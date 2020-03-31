@@ -76,6 +76,9 @@ class MediaSessionAndroid final
 
   MediaSessionImpl* const media_session_;
 
+  bool is_paused_ = false;
+  bool is_controllable_ = false;
+
   mojo::Receiver<media_session::mojom::MediaSessionObserver> observer_receiver_{
       this};
 

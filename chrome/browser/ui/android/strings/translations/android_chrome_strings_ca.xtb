@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Data de finalització: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Instal·lat</translation>
 <translation id="1792959175193046959">Canvia la ubicació predeterminada de baixada en qualsevol moment</translation>
+<translation id="1795251344124198516">Condicions del servei addicionals de Chrome i Chrome OS</translation>
 <translation id="1807246157184219062">Clar</translation>
 <translation id="1810845389119482123">La configuració de la sincronització inicial no ha finalitzat</translation>
 <translation id="1821253160463689938">Utilitza galetes per recordar les teves preferències, fins i tot si no visites aquestes pàgines</translation>
@@ -236,6 +237,7 @@ Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, se
 <translation id="2650751991977523696">Vols tornar a baixar el fitxer?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# fitxer d'àudio}other{# fitxers d'àudio}}</translation>
 <translation id="2687403674020088961">Bloqueja totes les galetes (opció no recomanada)</translation>
+<translation id="2689830683995595741">En utilitzar Chrome, acceptes les <ph name="BEGIN_LINK1" />condicions del servei de Google<ph name="END_LINK1" /> i les <ph name="BEGIN_LINK2" />condicions del servei addicionals de Google Chrome i Chrome OS<ph name="END_LINK2" />. També s'aplica l'<ph name="BEGIN_LINK3" />avís de privadesa per als Comptes de Google gestionats amb Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Actualitza la pàgina</translation>
 <translation id="2709516037105925701">Emplenament automàtic</translation>
 <translation id="2717722538473713889">Adreces electròniques</translation>
@@ -376,6 +378,7 @@ Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, se
 <translation id="3749259744154402564">No s'admet</translation>
 <translation id="3771001275138982843">No s'ha pogut baixar l'actualització</translation>
 <translation id="3771033907050503522">Pestanyes d'incògnit</translation>
+<translation id="3771694256347217732">Condicions del servei de Google</translation>
 <translation id="3773755127849930740">Per permetre la vinculació, <ph name="BEGIN_LINK" />activa el Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Envia als teus dispositius</translation>
 <translation id="3778956594442850293">S'ha afegit a la pantalla d'inici</translation>
@@ -403,6 +406,7 @@ Només tu pots veure allò que la càmera veu. El lloc web no pot veure les imat
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome carregarà la pàgina quan estigui a punt}other{Chrome carregarà les pàgines quan estiguin a punt}}</translation>
 <translation id="3963007978381181125">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces de Google Pay. Només els usuaris que sàpiguen la teva frase de contrasenya poden llegir les dades que encriptes. La frase de contrasenya no s'envia a Google, i Google tampoc no l'emmagatzema. Si l'oblides o vols canviar aquesta opció, has de restablir la sincronització. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">S'ha completat la baixada</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> s'obrirà a Chrome. En continuar, acceptes les <ph name="BEGIN_LINK1" />condicions del servei de Google<ph name="END_LINK1" /> i les <ph name="BEGIN_LINK2" />condicions del servei addicionals de Google Chrome i Chrome OS<ph name="END_LINK2" />. També s'aplica l'<ph name="BEGIN_LINK3" />avís de privadesa per als Comptes de Google gestionats amb Family Link<ph name="END_LINK3" />.</translation>
 <translation id="397583555483684758">La sincronització ha deixat de funcionar</translation>
 <translation id="3976396876660209797">Suprimeix aquesta drecera i torna-la a crear</translation>
 <translation id="3985215325736559418">Vols tornar a baixar <ph name="FILE_NAME" />?</translation>
@@ -713,6 +717,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6255999984061454636">Suggeriments de contingut</translation>
 <translation id="6270391203985052864">Els llocs web poden demanar-te permís per enviar-te notificacions</translation>
 <translation id="6277522088822131679">S'ha produït un problema en imprimir la pàgina. Torneu-ho a provar.</translation>
+<translation id="6292420053234093573">En utilitzar Chrome, acceptes les <ph name="BEGIN_LINK1" />condicions del servei de Google<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />les condicions del servei addicionals de Google Chrome i Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Tots els llocs web</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6297765934698848803">L'organització que gestiona el dispositiu ha desactivat la càmera.</translation>
@@ -727,6 +732,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6364438453358674297">Voleu suprimir el suggeriment de l'historial?</translation>
 <translation id="6369229450655021117">Des d'aquí, pots fer cerques al web, compartir contingut amb els amics i veure les pàgines obertes</translation>
 <translation id="6378173571450987352">Detalls: files ordenades per quantitat de dades utilitzades</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> s'obrirà a Chrome. En continuar, acceptes les <ph name="BEGIN_LINK1" />condicions del servei de Google<ph name="END_LINK1" /> i les <ph name="BEGIN_LINK2" />condicions del servei addicionals de Google Chrome i Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Enfosqueix els llocs web</translation>
 <translation id="6388207532828177975">Esborra i restableix</translation>
 <translation id="6395288395575013217">ENLLAÇ</translation>

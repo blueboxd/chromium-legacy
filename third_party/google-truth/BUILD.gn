@@ -5,9 +5,11 @@
 import("//build/config/android/rules.gni")
 
 java_prebuilt("google_truth_java") {
+  testonly = true
+
   # Uses the difflib package, which doesn't exist in third_party.
   enable_bytecode_checks = false
-  testonly = true
+  enable_desugar = false
   supports_android = true
 
   # requires_android because of dependency on guava_android.

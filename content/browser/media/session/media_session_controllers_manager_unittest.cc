@@ -134,14 +134,14 @@ TEST_P(MediaSessionControllersManagerTest, RequestPlayAddsSessionsToMap) {
   EXPECT_TRUE(GetControllersMap()->empty());
 
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                    media::MediaContentType::Transient));
+                                    media::MediaContentType::Transient, false));
   if (!IsMediaSessionEnabled()) {
     EXPECT_TRUE(GetControllersMap()->empty());
   } else {
     EXPECT_EQ(1U, GetControllersMap()->size());
-    EXPECT_TRUE(
-        manager_->RequestPlay(MediaPlayerId(contents()->GetMainFrame(), 2),
-                              true, false, media::MediaContentType::Transient));
+    EXPECT_TRUE(manager_->RequestPlay(
+        MediaPlayerId(contents()->GetMainFrame(), 2), true, false,
+        media::MediaContentType::Transient, false));
     EXPECT_EQ(2U, GetControllersMap()->size());
   }
 }
@@ -154,11 +154,11 @@ TEST_P(MediaSessionControllersManagerTest, RepeatAddsOfInitializablePlayer) {
   EXPECT_TRUE(GetControllersMap()->empty());
 
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                    media::MediaContentType::Transient));
+                                    media::MediaContentType::Transient, false));
   EXPECT_EQ(1U, GetControllersMap()->size());
 
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                    media::MediaContentType::Transient));
+                                    media::MediaContentType::Transient, false));
   EXPECT_EQ(1U, GetControllersMap()->size());
 }
 
@@ -176,7 +176,8 @@ TEST_P(MediaSessionControllersManagerTest, RenderFrameDeletedRemovesHost) {
     EXPECT_EQ(1U, GetControllersMap()->size());
   } else {
     EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                      media::MediaContentType::Transient));
+                                      media::MediaContentType::Transient,
+                                      false));
     EXPECT_EQ(1U, GetControllersMap()->size());
 
     manager_->RenderFrameDeleted(contents()->GetMainFrame());
@@ -221,7 +222,8 @@ TEST_P(MediaSessionControllersManagerTest, OnEndRemovesMediaPlayerId) {
     EXPECT_EQ(1U, GetControllersMap()->size());
   } else {
     EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                      media::MediaContentType::Transient));
+                                      media::MediaContentType::Transient,
+                                      false));
     EXPECT_EQ(1U, GetControllersMap()->size());
 
     manager_->OnEnd(media_player_id_);
@@ -241,7 +243,8 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
     manager_->OnMediaPositionStateChanged(media_player_id_, expected_position);
 
     EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                      media::MediaContentType::Transient));
+                                      media::MediaContentType::Transient,
+                                      false));
     EXPECT_EQ(1U, GetControllersMap()->size());
 
     // The controller should be created with the last received position for
@@ -264,7 +267,8 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
 
     // Recreate the current controller.
     EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                      media::MediaContentType::Transient));
+                                      media::MediaContentType::Transient,
+                                      false));
     EXPECT_EQ(1U, GetControllersMap()->size());
 
     // The controller should be created with the last received position for
@@ -290,9 +294,9 @@ TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
   manager_->OnMediaPositionStateChanged(media_player_id_2, expected_position2);
 
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                    media::MediaContentType::Transient));
+                                    media::MediaContentType::Transient, false));
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_2, true, false,
-                                    media::MediaContentType::Transient));
+                                    media::MediaContentType::Transient, false));
 
   EXPECT_EQ(2U, GetControllersMap()->size());
 
@@ -316,7 +320,7 @@ TEST_P(MediaSessionControllersManagerTest, PictureInPictureAvailability) {
 
   manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, true);
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                    media::MediaContentType::Transient));
+                                    media::MediaContentType::Transient, false));
   EXPECT_TRUE(IsPictureInPictureAvailable(media_player_id_));
 
   manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, false);
@@ -334,9 +338,11 @@ TEST_P(MediaSessionControllersManagerTest,
   manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, true);
   manager_->OnPictureInPictureAvailabilityChanged(media_player_id_2, true);
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
-                                    media::MediaContentType::Persistent));
+                                    media::MediaContentType::Persistent,
+                                    false));
   EXPECT_TRUE(manager_->RequestPlay(media_player_id_2, true, false,
-                                    media::MediaContentType::Persistent));
+                                    media::MediaContentType::Persistent,
+                                    false));
   EXPECT_TRUE(IsPictureInPictureAvailable(media_player_id_));
   EXPECT_TRUE(IsPictureInPictureAvailable(media_player_id_2));
 

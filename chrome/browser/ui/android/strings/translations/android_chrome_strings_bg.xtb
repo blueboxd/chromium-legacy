@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Крайна дата: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Инсталиран</translation>
 <translation id="1792959175193046959">Променете стандартното местоположение за изтегляне по всяко време</translation>
+<translation id="1795251344124198516">Допълнителни общи условия на Chrome и Chrome OS</translation>
 <translation id="1807246157184219062">Светло</translation>
 <translation id="1810845389119482123">Първоначалното настройване на синхронизирането не завърши</translation>
 <translation id="1821253160463689938">Използва „бисквитки“ за запомняне на предпочитанията ви дори ако не посещавате тези страници</translation>
@@ -236,6 +237,7 @@
 <translation id="2650751991977523696">Да се изтегли ли отново файлът?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайла}}</translation>
 <translation id="2687403674020088961">Блокиране на всички „бисквитки“ (не се препоръчва)</translation>
+<translation id="2689830683995595741">С използването на Chrome приемате <ph name="BEGIN_LINK1" />Общите условия на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Допълнителните общи условия на Chrome и Chrome OS<ph name="END_LINK2" />. В сила е и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профилите в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Опресняване на страницата</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="2717722538473713889">Имейл адреси</translation>
@@ -376,6 +378,7 @@
 <translation id="3749259744154402564">Не се поддържа</translation>
 <translation id="3771001275138982843">Актуализацията не можа да бъде изтеглена</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
+<translation id="3771694256347217732">Общи условия на Google</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Включете Bluetooth<ph name="END_LINK" />, за да разрешите сдвояването</translation>
 <translation id="3775705724665058594">Изпращане до устройствата ви</translation>
 <translation id="3778956594442850293">Добавено към началния екран</translation>
@@ -403,6 +406,7 @@
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome ще зареди страницата при готовност}other{Chrome ще зареди страниците при готовност}}</translation>
 <translation id="3963007978381181125">Шифроването с пропуск не включва начините на плащане и адресите от Google Pay. Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи да нулирате синхронизирането. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Изтеглянето завърши</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Допълнителните общи условия на Chrome и Chrome OS<ph name="END_LINK2" />. В сила е и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профилите в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="397583555483684758">Синхронизирането спря да работи</translation>
 <translation id="3976396876660209797">Премахнете и създайте отново този пряк път</translation>
 <translation id="3985215325736559418">Искате ли отново да изтеглите „<ph name="FILE_NAME" />“?</translation>
@@ -713,6 +717,7 @@
 <translation id="6255999984061454636">Предложения за съдържание</translation>
 <translation id="6270391203985052864">Сайтовете могат да извеждат подкани за изпращане на известия</translation>
 <translation id="6277522088822131679">При отпечатването на страницата възникна проблем. Моля, опитайте отново.</translation>
+<translation id="6292420053234093573">С използването на Chrome приемате <ph name="BEGIN_LINK1" />Общите условия на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Допълнителните общи условия на Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Всички сайтове</translation>
 <translation id="629730747756840877">Профил</translation>
 <translation id="6297765934698848803">Организацията, която управлява устройството ви, е изключила камерата.</translation>
@@ -727,6 +732,7 @@
 <translation id="6364438453358674297">Предложението да се премахне ли от историята?</translation>
 <translation id="6369229450655021117">Оттук можете да търсите в мрежата, да споделяте с приятели и да преглеждате отворените страници</translation>
 <translation id="6378173571450987352">Подробности: сортирани по количество използвани данни</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Допълнителните общи условия на Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Потъмняване на уебсайтовете</translation>
 <translation id="6388207532828177975">Изчистване и нулиране</translation>
 <translation id="6395288395575013217">ВРЪЗКА</translation>

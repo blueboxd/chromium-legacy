@@ -56,7 +56,6 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.PAINT_PREVIEW_DEMO,
                 ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
                 ChromeFeatureList.INSTANT_START,
-                ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR,
                 ChromeFeatureList.START_SURFACE_ANDROID,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,

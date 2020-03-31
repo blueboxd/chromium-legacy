@@ -297,6 +297,16 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
               chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
               base::Value(entry.web_kiosk_app().url()));
         }
+        if (entry.web_kiosk_app().has_title()) {
+          entry_dict->SetKey(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle,
+              base::Value(entry.web_kiosk_app().title()));
+        }
+        if (entry.web_kiosk_app().has_icon_url()) {
+          entry_dict->SetKey(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
+              base::Value(entry.web_kiosk_app().icon_url()));
+        }
 
       } else if (entry.has_deprecated_public_session_id()) {
         // Deprecated public session specification.

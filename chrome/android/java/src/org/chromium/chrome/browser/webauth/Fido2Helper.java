@@ -35,6 +35,7 @@ import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
 import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.blink.mojom.UvmEntry;
+import org.chromium.mojo_base.mojom.TimeDelta;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ public final class Fido2Helper {
     private static final String CREDENTIAL_EXISTS_ERROR_MSG =
             "One of the excluded credentials exists on the local device";
     private static final String LOW_LEVEL_ERROR_MSG = "Low level error 0x6a80";
+    static final double MIN_TIMEOUT_SECONDS = 10;
+    static final double MAX_TIMEOUT_SECONDS = 600;
 
     /**
      * Converts mojo options to gmscore options.
@@ -95,9 +98,6 @@ public final class Fido2Helper {
         List<PublicKeyCredentialDescriptor> excludeCredentials =
                 convertCredentialDescriptor(options.excludeCredentials);
 
-        double timeoutSeconds =
-                TimeUnit.MICROSECONDS.toSeconds(options.adjustedTimeout.microseconds);
-
         AuthenticatorSelectionCriteria selection =
                 convertSelectionCriteria(options.authenticatorSelection);
 
@@ -110,7 +110,7 @@ public final class Fido2Helper {
                         .setUser(user)
                         .setChallenge(options.challenge)
                         .setParameters(parameters)
-                        .setTimeoutSeconds(timeoutSeconds)
+                        .setTimeoutSeconds(adjustTimeout(options.timeout))
                         .setExcludeList(excludeCredentials)
                         .setAuthenticatorSelection(selection)
                         .setAttestationConveyancePreference(attestationPreference)
@@ -153,9 +153,6 @@ public final class Fido2Helper {
      */
     public static com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialRequestOptions
     toGetAssertionOptions(PublicKeyCredentialRequestOptions options) {
-        double timeoutSeconds =
-                TimeUnit.MICROSECONDS.toSeconds(options.adjustedTimeout.microseconds);
-
         List<PublicKeyCredentialDescriptor> allowCredentials =
                 convertCredentialDescriptor(options.allowCredentials);
 
@@ -175,7 +172,7 @@ public final class Fido2Helper {
                 new com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialRequestOptions
                         .Builder()
                         .setChallenge(options.challenge)
-                        .setTimeoutSeconds(timeoutSeconds)
+                        .setTimeoutSeconds(adjustTimeout(options.timeout))
                         .setRpId(options.relyingPartyId)
                         .setAllowList(allowCredentials)
                         /* TODO add back UserVerificationRequirement when the FIDO2 API supports it
@@ -376,5 +373,19 @@ public final class Fido2Helper {
             default:
                 return AttestationConveyancePreference.NONE;
         }
+    }
+
+    /**
+     * Adjusts a timeout between a reasonable minimum and maximum.
+     *
+     * @param timeout The unadjusted timeout as specified by the website. May be null.
+     * @return The adjusted timeout in seconds.
+     */
+    private static double adjustTimeout(TimeDelta timeout) {
+        if (timeout == null) return MAX_TIMEOUT_SECONDS;
+
+        return Math.max(MIN_TIMEOUT_SECONDS,
+                Math.min(MAX_TIMEOUT_SECONDS,
+                        TimeUnit.MICROSECONDS.toSeconds(timeout.microseconds)));
     }
 }

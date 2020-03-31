@@ -82,6 +82,7 @@
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/google/core/common/google_util.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sessions/core/live_tab_context.h"
@@ -1329,6 +1330,13 @@ void OpenFeedbackDialog(Browser* browser, FeedbackSource source) {
 void ToggleBookmarkBar(Browser* browser) {
   base::RecordAction(UserMetricsAction("ShowBookmarksBar"));
   ToggleBookmarkBarWhenVisible(browser->profile());
+}
+
+void ToggleShowFullURLs(Browser* browser) {
+  bool pref_enabled = browser->profile()->GetPrefs()->GetBoolean(
+      omnibox::kPreventUrlElisionsInOmnibox);
+  browser->profile()->GetPrefs()->SetBoolean(
+      omnibox::kPreventUrlElisionsInOmnibox, !pref_enabled);
 }
 
 void ShowAppMenu(Browser* browser) {

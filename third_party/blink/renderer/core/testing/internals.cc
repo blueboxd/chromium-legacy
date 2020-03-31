@@ -86,7 +86,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/remote_dom_window.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/test_report_body.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -3530,6 +3533,16 @@ void Internals::useMockOverlayScrollbars() {
 
 bool Internals::overlayScrollbarsEnabled() const {
   return ScrollbarThemeSettings::OverlayScrollbarsEnabled();
+}
+
+void Internals::generateTestReport(const String& message) {
+  // Construct the test report.
+  TestReportBody* body = MakeGarbageCollected<TestReportBody>(message);
+  Report* report =
+      MakeGarbageCollected<Report>("test", document_->Url().GetString(), body);
+
+  // Send the test report to any ReportingObservers.
+  ReportingContext::From(document_->ExecutingWindow())->QueueReport(report);
 }
 
 }  // namespace blink

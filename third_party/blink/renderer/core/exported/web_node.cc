@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
@@ -207,6 +208,13 @@ WebVector<WebElement> WebNode::QuerySelectorAll(
 
 bool WebNode::Focused() const {
   return private_->IsFocused();
+}
+
+uint64_t WebNode::ScrollingElementIdForTesting() const {
+  return private_->GetLayoutBox()
+      ->GetScrollableArea()
+      ->GetScrollElementId()
+      .GetStableId();
 }
 
 WebPluginContainer* WebNode::PluginContainer() const {

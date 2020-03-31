@@ -190,7 +190,7 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS),
-        method_data,
+        std::move(method_data),
         /*may_crawl_for_installable_payment_apps=*/true,
         base::BindOnce(
             &ServiceWorkerPaymentAppFinderBrowserTest::OnGotAllPaymentApps,

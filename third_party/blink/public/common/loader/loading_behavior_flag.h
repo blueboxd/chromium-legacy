@@ -37,9 +37,6 @@ enum LoadingBehaviorFlag {
   kLoadingBehaviorSubresourceFilterMatch = 1 << 6,
   // Indicates that the page is an AMP document, with <html amp> tag.
   kLoadingBehaviorAmpDocumentLoaded = 1 << 7,
-  // Indicates that the first rendering of the page has been delayed for
-  // preloading web fonts.
-  kLoadingBehaviorRenderDelayedForWebFontPreloading = 1 << 8,
 };
 
 }  // namespace blink

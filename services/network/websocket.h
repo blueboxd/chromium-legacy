@@ -161,6 +161,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   // Datapipe functions to send.
   void OnReadable(MojoResult result, const mojo::HandleSignalsState& state);
+
+  // ReadAndSendFromDataPipe() may indirectly delete |this|.
   void ReadAndSendFromDataPipe();
 
   // |factory_| owns |this|.

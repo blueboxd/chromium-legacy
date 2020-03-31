@@ -664,19 +664,10 @@ void ClipboardX11::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
     data.AssignTo(result);
 }
 
-SkBitmap ClipboardX11::ReadImage(ClipboardBuffer buffer) const {
-  DCHECK(CalledOnValidThread());
-
-  SelectionData data(x11_details_->RequestAndWaitForTypes(
-      buffer,
-      x11_details_->GetAtomsForFormat(ClipboardFormatType::GetBitmapType())));
-  if (data.IsValid()) {
-    SkBitmap bitmap;
-    if (gfx::PNGCodec::Decode(data.GetData(), data.GetSize(), &bitmap))
-      return SkBitmap(bitmap);
-  }
-
-  return SkBitmap();
+void ClipboardX11::ReadImage(ClipboardBuffer buffer,
+                             ReadImageCallback callback) const {
+  DCHECK(IsSupportedClipboardBuffer(buffer));
+  std::move(callback).Run(ReadImageInternal(buffer));
 }
 
 void ClipboardX11::ReadCustomData(ClipboardBuffer buffer,
@@ -819,6 +810,24 @@ void ClipboardX11::WriteData(const ClipboardFormatType& format,
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
   x11_details_->InsertMapping(format.GetName(), mem);
+}
+
+SkBitmap ClipboardX11::ReadImageInternal(ClipboardBuffer buffer) const {
+  DCHECK(CalledOnValidThread());
+
+  // TODO(https://crbug.com/443355): Since now that ReadImage() is async,
+  // refactor the code to keep a callback with the request, and invoke the
+  // callback when the request is satisfied.
+  SelectionData data(x11_details_->RequestAndWaitForTypes(
+      buffer,
+      x11_details_->GetAtomsForFormat(ClipboardFormatType::GetBitmapType())));
+  if (data.IsValid()) {
+    SkBitmap bitmap;
+    if (gfx::PNGCodec::Decode(data.GetData(), data.GetSize(), &bitmap))
+      return SkBitmap(bitmap);
+  }
+
+  return SkBitmap();
 }
 
 }  // namespace ui

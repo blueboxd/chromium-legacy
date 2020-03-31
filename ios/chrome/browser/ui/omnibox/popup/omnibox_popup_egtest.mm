@@ -163,8 +163,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Tests that the incognito tabs aren't displayed as "opened" tab in the
-// non-incognito suggestions and vice-versa.
-- (void)testIncognitoSeparation {
+// non-incognito suggestions and vice-versa. TODO(crbug.com/1059464): Test is
+// flaky.
+- (void)DISABLED_testIncognitoSeparation {
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   GURL URL2 = self.testServer->GetURL(kPage2URL);
   GURL URL3 = self.testServer->GetURL(kPage3URL);
@@ -322,8 +323,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Tests that having multiple suggestions with corresponding opened tabs display
-// multiple buttons.
-- (void)testMultiplePageOpened {
+// multiple buttons. TODO(crbug.com/1059464): Test is flaky.
+- (void)DISABLED_testMultiplePageOpened {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];

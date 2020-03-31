@@ -111,6 +111,13 @@ void WebTestBrowserMainRunner::Initialize() {
 
   command_line.AppendSwitch(switches::kIgnoreCertificateErrors);
 
+  // Disable occlusion tracking. In a headless shell WebContents would always
+  // behave as if they were occluded, i.e. would not render frames and would
+  // not receive input events. For non-headless mode we do not want tests
+  // running in parallel to trigger occlusion tracking.
+  command_line.AppendSwitch(
+      switches::kDisableBackgroundingOccludedWindowsForTesting);
+
   // Always disable the unsandbox GPU process for DX12 and Vulkan Info
   // collection to avoid interference. This GPU process is launched 120
   // seconds after chrome starts.
@@ -173,20 +180,10 @@ void WebTestBrowserMainRunner::Initialize() {
   // We want to know determanistically from command line flags if the Gpu
   // process will provide gpu raster in its capabilities or not.
   //
-  // If kForceGpuRasterization is specified, the renderer ignores the gpu
-  // capabilities and uses gpu raster always.
   // If kEnableGpuRasterization is specified, the Gpu process always reports
-  // that it can gpu raster, and the renderer will use it.
-  // Thus, kForceGpuRasterization nad kEnableGpuRasterization have the same
-  // effect.
-  // TODO(danakj): We should remove the kForceGpuRasterization switch and just
-  // have the gpu process report the right thing (with the
-  // kEnableGpuRasterization switch) instead of ignoring it in the renderer.
-  //
-  // If neither is specified, then we don't want to choose at runtime, and we
-  // ensure that gpu raster is disabled.
-  if (!command_line.HasSwitch(switches::kForceGpuRasterization) &&
-      !command_line.HasSwitch(switches::kEnableGpuRasterization))
+  // that it can gpu raster, and the renderer will use it. Otherwise, we don't
+  // want to choose at runtime, and we ensure that gpu raster is disabled.
+  if (!command_line.HasSwitch(switches::kEnableGpuRasterization))
     command_line.AppendSwitch(switches::kDisableGpuRasterization);
 
   // If the virtual test suite didn't specify a display color space, then

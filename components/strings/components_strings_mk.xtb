@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">Историја</translation>
 <translation id="1645368109819982629">Неподдржан протокол</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome ја поедностави страницава за да биде полесна за читање. Chrome ја презеде оригиналната страница преку безбедна врска.</translation>
 <translation id="1656489000284462475">Подигнување</translation>
 <translation id="1662550410081243962">Зачувувај и пополнувај начини на плаќање</translation>
 <translation id="1663943134801823270">Картичките и адресите се од Chrome. Со нив може да управувате во <ph name="BEGIN_LINK" />Поставки<ph name="END_LINK" />.</translation>
@@ -567,6 +568,7 @@
 <translation id="342781501876943858">Chromium препорачува ресетирање на лозинката ако повторно сте ја употребиле на други сајтови.</translation>
 <translation id="3428151540071562330">Една или повеќе од шаблонските URI на серверот DnsOverHttpsTemplates се неважечки и нема да се користат.</translation>
 <translation id="3431636764301398940">Зачувај ја картичкава на уредов</translation>
+<translation id="3432601291244612633">Затвори ја страницата</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Сопственикот на уредов ја исклучил играта со диносауруси.</translation>
 <translation id="3447884698081792621">Прикажи сертификат (издаден од <ph name="ISSUER" />)</translation>
@@ -873,6 +875,7 @@
 <translation id="4731967714531604179">Prc2 (плик)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> сака да ја користи локацијата на вашиот уред</translation>
 <translation id="4736825316280949806">Рестартирајте го Chromium</translation>
+<translation id="4737121147659370456">Администраторот овозможил Chrome Enterprise Connectors на вашиот прелистувач. Овие конектори имаат пристап до дел од вашите податоци.</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4738601419177586157">Предлог за пребарување: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Управувајте со лозинките…</translation>
@@ -1212,6 +1215,8 @@
 <translation id="610911394827799129">Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6116338172782435947">гледа текст и слики копирани на привремената меморија</translation>
 <translation id="6120179357481664955">Да се запомни ID за UPI?</translation>
+<translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
+<translation id="6135641591018127088">Користете ја сметката на Google за да генерирате силна лозинка</translation>
 <translation id="6146055958333702838">Проверете ги каблите и рестартирајте ги рутерите, модемите или другите мрежни
         уреди што ги користите.</translation>
 <translation id="614940544461990577">Обидете се:</translation>
@@ -1257,6 +1262,7 @@
 <translation id="6328639280570009161">Обидете се да го оневозможите мрежното предвидување</translation>
 <translation id="6328784461820205019">„Врската не е приватна“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ или „Грешка со SSL-сертификатот“</translation>
 <translation id="6328786501058569169">Сајтов е лажен</translation>
+<translation id="6333334544069706521">Користете лозинки складирани во вашата сметка на Google</translation>
 <translation id="6337133576188860026">Ќе ослободи помалку од <ph name="SIZE" />. Некои сајтови може да се вчитуваат побавно при вашата следна посета.</translation>
 <translation id="6337534724793800597">Филтрирај правила по име</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ниедна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />, синхронизирана)}=2{2 лозинка (за <ph name="DOMAIN_LIST" />, синхронизирани)}one{# лозинка (за <ph name="DOMAIN_LIST" />, синхронизирани)}other{# лозинки (за <ph name="DOMAIN_LIST" />, синхронизирани)}}</translation>
@@ -1302,6 +1308,7 @@
 <translation id="6521745193039995384">Неактивна</translation>
 <translation id="6529602333819889595">&amp;Повтори бришење</translation>
 <translation id="6534179046333460208">Предлози на Опипливата мрежа</translation>
+<translation id="6543609420755597723">Споделувајте податоци со администраторот за безбедносните настани пријавени од Chrome Enterprise Connectors. Тука спаѓаат URL-адресите на страниците што ги посетувате, имињата или метаподатоците на датотеките и корисничкото име што го користите за најавување на вашиот уред и Chrome.</translation>
 <translation id="6545864417968258051">Скенирање за Bluetooth</translation>
 <translation id="6547208576736763147">Две дупки лево</translation>
 <translation id="6554795675067793129">Со сметката управува <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1367,6 +1374,7 @@
 <translation id="6874604403660855544">&amp;Повтори додавање</translation>
 <translation id="6884662655240309489">Големина 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome ја поедностави страницава за да биде полесна за читање. Chrome ја презеде оригиналната страница преку небезбедна врска.</translation>
 <translation id="6891596781022320156">Нивото на политика не е поддржано.</translation>
 <translation id="6895330447102777224">Вашата картичка е потврдена</translation>
 <translation id="6897140037006041989">Кориснички агент</translation>
@@ -1595,6 +1603,7 @@
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791196057686275387">Бала</translation>
 <translation id="7791543448312431591">Додај</translation>
+<translation id="7798389633136518089">Игнорирано бидејќи правилотот не е поставено од извор во облак.</translation>
 <translation id="7800304661137206267">Врската е шифрирана со употреба на <ph name="CIPHER" />, со <ph name="MAC" /> за автентикација на пораките и <ph name="KX" /> како механизам за размена на клучевите.</translation>
 <translation id="7802523362929240268">Сајтот е легитимен</translation>
 <translation id="780301667611848630">Не, фала</translation>
@@ -1730,6 +1739,7 @@
 <translation id="8371889962595521444">Приспособен сертификат за администраторски права</translation>
 <translation id="8380941800586852976">Опасно</translation>
 <translation id="8381674639488873545">Овие трошоци може да бидат еднократни или повторливи и може нема да бидат очигледни. <ph name="BEGIN_LINK" />Сепак прикажи<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> овозможил Chrome Enterprise Connectors на вашиот прелистувач. Овие конектори имаат пристап до дел од вашите податоци.</translation>
 <translation id="8412145213513410671">Падови (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Мора да ја внесете истата лозинка двапати.</translation>
 <translation id="8416694386774425977">Конфигурацијата на мрежата е неважечка и не можеше да се увезе.

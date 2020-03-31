@@ -14,6 +14,7 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -206,4 +207,39 @@ HostContentSettingsMap* ChromePageInfoDelegate::GetContentSettings() {
 
 bool ChromePageInfoDelegate::IsContentDisplayedInVrHeadset() {
   return vr::VrTabHelper::IsContentDisplayedInHeadset(web_contents_);
+}
+
+security_state::SecurityLevel ChromePageInfoDelegate::GetSecurityLevel() {
+  if (security_state_for_tests_set_)
+    return security_level_for_tests_;
+
+  // This is a no-op if a SecurityStateTabHelper already exists for
+  // |web_contents|.
+  SecurityStateTabHelper::CreateForWebContents(web_contents_);
+
+  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents_);
+  DCHECK(helper);
+  return helper->GetSecurityLevel();
+}
+
+security_state::VisibleSecurityState
+ChromePageInfoDelegate::GetVisibleSecurityState() {
+  if (security_state_for_tests_set_)
+    return visible_security_state_for_tests_;
+
+  // This is a no-op if a SecurityStateTabHelper already exists for
+  // |web_contents|.
+  SecurityStateTabHelper::CreateForWebContents(web_contents_);
+
+  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents_);
+  DCHECK(helper);
+  return *helper->GetVisibleSecurityState();
+}
+
+void ChromePageInfoDelegate::SetSecurityStateForTests(
+    security_state::SecurityLevel security_level,
+    security_state::VisibleSecurityState visible_security_state) {
+  security_state_for_tests_set_ = true;
+  security_level_for_tests_ = security_level;
+  visible_security_state_for_tests_ = visible_security_state;
 }

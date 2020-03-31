@@ -3383,6 +3383,7 @@ interface HTMLIFrameElement : HTMLElement
     getter scrolling
     getter src
     getter srcdoc
+    getter trustToken
     getter width
     method constructor
     method getSVGDocument
@@ -3405,6 +3406,7 @@ interface HTMLIFrameElement : HTMLElement
     setter scrolling
     setter src
     setter srcdoc
+    setter trustToken
     setter width
 interface HTMLImageElement : HTMLElement
     attribute @@toStringTag

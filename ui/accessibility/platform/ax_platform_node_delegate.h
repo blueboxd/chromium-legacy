@@ -102,7 +102,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual int GetIndexInParent() = 0;
 
   // Get the number of children of this node.
-  virtual int GetChildCount() = 0;
+  virtual int GetChildCount() const = 0;
 
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;

@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -91,6 +93,7 @@ DisplayLockContext::DisplayLockContext(Element* element)
     : element_(element), document_(&element_->GetDocument()) {
   document_->AddDisplayLockContext(this);
   DetermineIfSubtreeHasFocus();
+  DetermineIfSubtreeHasSelection();
 }
 
 void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
@@ -756,6 +759,7 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   }
 
   DetermineIfSubtreeHasFocus();
+  DetermineIfSubtreeHasSelection();
 }
 
 void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
@@ -793,6 +797,7 @@ void DisplayLockContext::ElementDisconnected() {
 void DisplayLockContext::ElementConnected() {
   UpdateActivationObservationIfNeeded();
   DetermineIfSubtreeHasFocus();
+  DetermineIfSubtreeHasSelection();
 }
 
 void DisplayLockContext::ScheduleAnimation() {
@@ -905,6 +910,39 @@ void DisplayLockContext::DetermineIfSubtreeHasFocus() {
                           subtree_has_focus);
 }
 
+void DisplayLockContext::NotifySubtreeGainedSelection() {
+  SetRenderAffectingState(RenderAffectingState::kSubtreeHasSelection, true);
+}
+
+void DisplayLockContext::NotifySubtreeLostSelection() {
+  SetRenderAffectingState(RenderAffectingState::kSubtreeHasSelection, false);
+}
+
+void DisplayLockContext::DetermineIfSubtreeHasSelection() {
+  if (!ConnectedToView() || !document_->GetFrame()) {
+    SetRenderAffectingState(RenderAffectingState::kSubtreeHasSelection, false);
+    return;
+  }
+
+  auto range = ToEphemeralRangeInFlatTree(document_->GetFrame()
+                                              ->Selection()
+                                              .GetSelectionInDOMTree()
+                                              .ComputeRange());
+  bool subtree_has_selection = false;
+  for (auto& node : range.Nodes()) {
+    for (auto& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
+      if (&ancestor == element_.Get()) {
+        subtree_has_selection = true;
+        break;
+      }
+    }
+    if (subtree_has_selection)
+      break;
+  }
+  SetRenderAffectingState(RenderAffectingState::kSubtreeHasSelection,
+                          subtree_has_selection);
+}
+
 void DisplayLockContext::SetRenderAffectingState(RenderAffectingState state,
                                                  bool new_flag) {
   render_affecting_state_[static_cast<int>(state)] = new_flag;
@@ -927,11 +965,15 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
   // following is true:
   // - We are not in 'auto' mode (meaning 'hidden') or
   // - We are in 'auto' mode and nothing blocks locking: viewport is
-  //   not intersecting, and subtree doesn't have focus.
-  bool should_be_locked = state(RenderAffectingState::kLockRequested) &&
-                          (state_ != ESubtreeVisibility::kAuto ||
-                           (!state(RenderAffectingState::kIntersectsViewport) &&
-                            !state(RenderAffectingState::kSubtreeHasFocus)));
+  //   not intersecting, subtree doesn't have focus, and subtree doesn't have
+  //   selection.
+  bool should_be_locked =
+      state(RenderAffectingState::kLockRequested) &&
+      (state_ != ESubtreeVisibility::kAuto ||
+       (!state(RenderAffectingState::kIntersectsViewport) &&
+        !state(RenderAffectingState::kSubtreeHasFocus) &&
+        !state(RenderAffectingState::kSubtreeHasSelection)));
+
   if (should_be_locked && !IsLocked())
     Lock();
   else if (!should_be_locked && IsLocked())

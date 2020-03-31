@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr/ui/focus_row_behavior.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 
 <dom-module id="os-search-result-row">
@@ -12,27 +14,29 @@
         height: 40px;
       }
 
-      :host([selected]) .search-result-container {
+      :host([selected]) #searchResultContainer {
         background-color: var(--cros-menu-button-bg-color-active);
       }
 
-      :host(:not([selected])) .search-result-container:hover {
+      :host(:not([selected])) #searchResultContainer:hover {
         background-color: var(--cros-menu-button-bg-color-hover);
       }
 
-      .search-result-container {
+      #searchResultContainer {
         display: flex;
         flex-basis: 100%;
       }
 
-      .text {
+      #resultText {
         flex-basis: 100%;
       }
     </style>
-    <div class="search-result-container" focus-row-container>
+    <div id="searchResultContainer" on-click="navigateToSearchResultRoute"
+        focus-row-container>
       <!-- TODO(crbug/1056909): Focus right hand icon instead; move
            focus-row-control to that icon when available-->
-      <div class="text" focus-type="rowWrapper" focus-row-control selectable>
+      <div id="resultText" focus-row-control selectable
+          on-keypress="onKeyPress_" focus-type="rowWrapper">
         [[getResultText_(searchResult)]]
       </div>
     </div>

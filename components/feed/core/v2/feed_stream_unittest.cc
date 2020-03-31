@@ -5,11 +5,13 @@
 #include "components/feed/core/v2/feed_stream.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
@@ -23,7 +25,9 @@
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
 #include "components/feed/core/v2/test/stream_builder.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,25 +35,76 @@
 namespace feed {
 namespace {
 
+std::unique_ptr<StreamModel> LoadModelFromStore(FeedStore* store) {
+  LoadStreamFromStoreTask::Result result;
+  auto complete = [&](LoadStreamFromStoreTask::Result task_result) {
+    result = std::move(task_result);
+  };
+  LoadStreamFromStoreTask load_task(store,
+                                    base::BindLambdaForTesting(complete));
+  base::RunLoop run_loop;
+  load_task.Execute(run_loop.QuitClosure());
+  run_loop.Run();
+
+  if (result.status == LoadStreamStatus::kLoadedFromStore) {
+    auto model = std::make_unique<StreamModel>();
+    model->Update(std::move(result.update_request));
+    return model;
+  }
+  LOG(WARNING) << "LoadModelFromStore failed with " << result.status;
+  return nullptr;
+}
+
+// Returns the model state string (|StreamModel::DumpStateForTesting()|),
+// given a model initialized with |update_request| and having |operations|
+// applied.
+std::string ModelStateFor(
+    std::unique_ptr<StreamModelUpdateRequest> update_request,
+    std::vector<feedstore::DataOperation> operations = {},
+    std::vector<feedstore::DataOperation> more_operations = {}) {
+  StreamModel model;
+  model.Update(std::move(update_request));
+  model.ExecuteOperations(operations);
+  model.ExecuteOperations(more_operations);
+  return model.DumpStateForTesting();
+}
+
+// Returns the model state string (|StreamModel::DumpStateForTesting()|),
+// given a model initialized with |store|.
+std::string ModelStateFor(FeedStore* store) {
+  auto model = LoadModelFromStore(store);
+  if (model) {
+    return model->DumpStateForTesting();
+  }
+  return "{Failed to load model from store}";
+}
+
+// This is EXPECT_EQ, but also dumps the string values for ease of reading.
+#define EXPECT_STRINGS_EQUAL(WANT, GOT)                                       \
+  {                                                                           \
+    std::string want = (WANT), got = (GOT);                                   \
+    EXPECT_EQ(want, got) << "Wanted:\n" << (want) << "\nBut got:\n" << (got); \
+  }
+
 class TestSurface : public FeedStream::SurfaceInterface {
  public:
   // FeedStream::SurfaceInterface.
   void InitialStreamState(const feedui::StreamUpdate& stream_update) override {
     initial_state = stream_update;
-    if (on_initial_stream_state)
-      on_initial_stream_state.Run();
   }
   void StreamUpdate(const feedui::StreamUpdate& stream_update) override {
     update = stream_update;
-    if (on_stream_update)
-      on_stream_update.Run();
+  }
+
+  // Test functions.
+
+  void Clear() {
+    initial_state = base::nullopt;
+    update = base::nullopt;
   }
 
   base::Optional<feedui::StreamUpdate> initial_state;
   base::Optional<feedui::StreamUpdate> update;
-
-  base::RepeatingClosure on_initial_stream_state;
-  base::RepeatingClosure on_stream_update;
 };
 
 class TestFeedNetwork : public FeedNetwork {
@@ -71,8 +126,10 @@ class TestFeedNetwork : public FeedNetwork {
   }
   void SendActionRequest(
       const feedwire::ActionRequest& request,
-      base::OnceCallback<void(ActionRequestResult)> callback) override {}
-  void CancelRequests() override {}
+      base::OnceCallback<void(ActionRequestResult)> callback) override {
+    NOTIMPLEMENTED();
+  }
+  void CancelRequests() override { NOTIMPLEMENTED(); }
 
   base::Optional<feedwire::Request> query_request_sent;
   int send_query_call_count = 0;
@@ -136,20 +193,50 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   void SetUp() override {
     feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
     feed::RegisterProfilePrefs(profile_prefs_.registry());
+
     stream_ = std::make_unique<FeedStream>(
         &refresh_scheduler_, &event_observer_, this, &profile_prefs_, &network_,
-        &clock_, &tick_clock_, task_environment_.GetMainThreadTaskRunner());
+        store_.get(), &clock_, &tick_clock_,
+        task_environment_.GetMainThreadTaskRunner());
+
+    WaitForIdleTaskQueue();  // Wait for any initialization.
+
     stream_->SetWireResponseTranslatorForTesting(&response_translator_);
+  }
+
+  void TearDown() override {
+    // Ensure the task queue can return to idle. Failure to do so may be due
+    // to a stuck task that never called |TaskComplete()|.
+    WaitForIdleTaskQueue();
+    // Store requires PostTask to clean up.
+    store_.reset();
+    task_environment_.RunUntilIdle();
   }
 
   // FeedStream::Delegate.
   bool IsEulaAccepted() override { return true; }
   bool IsOffline() override { return false; }
 
-  // For test access.
+  // For tests.
+
   bool IsTaskQueueIdle() const {
     return !stream_->GetTaskQueueForTesting()->HasPendingTasks() &&
            !stream_->GetTaskQueueForTesting()->HasRunningTask();
+  }
+
+  void WaitForIdleTaskQueue() {
+    if (IsTaskQueueIdle())
+      return;
+    base::test::ScopedRunLoopTimeout run_timeout(
+        FROM_HERE, base::TimeDelta::FromSeconds(1));
+    base::RunLoop run_loop;
+    stream_->SetIdleCallbackForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void UnloadModel() {
+    WaitForIdleTaskQueue();
+    stream_->UnloadModelForTesting();
   }
 
  protected:
@@ -159,6 +246,12 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   TestingPrefServiceSimple profile_prefs_;
   TestFeedNetwork network_;
   TestWireResponseTranslator response_translator_;
+
+  std::unique_ptr<FeedStore> store_ = std::make_unique<FeedStore>(
+      leveldb_proto::ProtoDatabaseProvider::GetUniqueDB<feedstore::Record>(
+          leveldb_proto::ProtoDbType::FEED_STREAM_DATABASE,
+          /*file_path=*/{},
+          task_environment_.GetMainThreadTaskRunner()));
   base::SimpleTestClock clock_;
   base::SimpleTestTickClock tick_clock_;
   FakeRefreshTaskScheduler refresh_scheduler_;
@@ -339,19 +432,35 @@ TEST_F(FeedStreamTest, DetachSurface) {
   EXPECT_FALSE(surface.update);
 }
 
-TEST_F(FeedStreamTest, AttachSurfaceTriggersModelLoad) {
+TEST_F(FeedStreamTest, LoadFromNetwork) {
+  // Store is empty, so we should fallback to a network request.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestSurface surface;
   stream_->AttachSurface(&surface);
-
-  base::RunLoop run_loop;
-  surface.on_initial_stream_state = run_loop.QuitClosure();
-  run_loop.Run();
+  WaitForIdleTaskQueue();
 
   EXPECT_TRUE(network_.query_request_sent);
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
   ASSERT_TRUE(surface.initial_state);
   ASSERT_EQ(2, surface.initial_state->updated_slices().size());
+  // Verify the model is filled correctly.
+  EXPECT_STRINGS_EQUAL(ModelStateFor(MakeTypicalInitialModelState()),
+                       stream_->GetModel()->DumpStateForTesting());
+}
+
+TEST_F(FeedStreamTest, LoadStreamFromStore) {
+  // Fill the store with stream data, and verify it loads.
+  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+
+  ASSERT_TRUE(surface.initial_state);
+  EXPECT_FALSE(network_.query_request_sent);
+  EXPECT_EQ(2, surface.initial_state->updated_slices().size());
+  // Verify the model is filled correctly.
+  EXPECT_STRINGS_EQUAL(ModelStateFor(MakeTypicalInitialModelState()),
+                       stream_->GetModel()->DumpStateForTesting());
 }
 
 TEST_F(FeedStreamTest, DetachSurfaceWhileLoadingModel) {
@@ -359,8 +468,7 @@ TEST_F(FeedStreamTest, DetachSurfaceWhileLoadingModel) {
   TestSurface surface;
   stream_->AttachSurface(&surface);
   stream_->DetachSurface(&surface);
-
-  base::RunLoop().RunUntilIdle();
+  WaitForIdleTaskQueue();
 
   EXPECT_TRUE(network_.query_request_sent);
   EXPECT_FALSE(surface.initial_state);
@@ -372,21 +480,62 @@ TEST_F(FeedStreamTest, AttachMultipleSurfacesLoadsModelOnce) {
   TestSurface other_surface;
   stream_->AttachSurface(&surface);
   stream_->AttachSurface(&other_surface);
+  WaitForIdleTaskQueue();
 
-  {
-    base::RunLoop run_loop;
-    surface.on_initial_stream_state = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  EXPECT_EQ(1, network_.send_query_call_count);
-  base::RunLoop().RunUntilIdle();  // Make sure tasks are complete.
+  ASSERT_EQ(1, network_.send_query_call_count);
 
   // After load, another surface doesn't trigger any tasks.
   TestSurface later_surface;
   stream_->AttachSurface(&later_surface);
 
   EXPECT_TRUE(IsTaskQueueIdle());
+}
+
+TEST_F(FeedStreamTest, ModelChangesAreSavedToStorage) {
+  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+  ASSERT_TRUE(surface.initial_state);
+
+  // Remove #1, add #2.
+  const std::vector<feedstore::DataOperation> operations = {
+      MakeOperation(MakeRemove(MakeClusterId(1))),
+      MakeOperation(MakeCluster(2, MakeRootId())),
+      MakeOperation(MakeContentNode(2, MakeClusterId(2))),
+      MakeOperation(MakeContent(2)),
+  };
+  stream_->ExecuteOperations(operations);
+
+  WaitForIdleTaskQueue();
+
+  // Verify changes are applied to storage.
+  EXPECT_STRINGS_EQUAL(
+      ModelStateFor(MakeTypicalInitialModelState(), operations),
+      ModelStateFor(store_.get()));
+
+  // Unload and reload the model from the store, and verify we can still apply
+  // operations correctly.
+  stream_->DetachSurface(&surface);
+  surface.Clear();
+  UnloadModel();
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+  ASSERT_TRUE(surface.initial_state);
+
+  // Remove #2, add #3.
+  const std::vector<feedstore::DataOperation> operations2 = {
+      MakeOperation(MakeRemove(MakeClusterId(2))),
+      MakeOperation(MakeCluster(3, MakeRootId())),
+      MakeOperation(MakeContentNode(3, MakeClusterId(3))),
+      MakeOperation(MakeContent(3)),
+  };
+  stream_->ExecuteOperations(operations2);
+
+  WaitForIdleTaskQueue();
+  EXPECT_STRINGS_EQUAL(
+      ModelStateFor(MakeTypicalInitialModelState(), operations, operations2),
+      ModelStateFor(store_.get()));
 }
 
 }  // namespace

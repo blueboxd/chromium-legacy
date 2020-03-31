@@ -59,6 +59,7 @@ def main():
       '-jar',
       args.r8_path,
       '--classfile',
+      '--no-desugaring',
       '--lib',
       args.shrinked_android_path,
   ]

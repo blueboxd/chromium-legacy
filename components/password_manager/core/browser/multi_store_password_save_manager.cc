@@ -118,7 +118,7 @@ void MultiStorePasswordSaveManager::SaveInternal(
 
   switch (pending_credentials_.in_store) {
     case PasswordForm::Store::kAccountStore:
-      if (account_store_form_saver_ && IsAccountStoreEnabled()) {
+      if (account_store_form_saver_ && IsOptedInForAccountStorage()) {
         account_store_form_saver_->Save(
             pending_credentials_, AccountStoreMatches(matches), old_password);
       }
@@ -143,7 +143,7 @@ void MultiStorePasswordSaveManager::UpdateInternal(
   // update operation is no-op.
   form_saver_->Update(pending_credentials_, ProfileStoreMatches(matches),
                       old_password);
-  if (account_store_form_saver_ && IsAccountStoreEnabled()) {
+  if (account_store_form_saver_ && IsOptedInForAccountStorage()) {
     account_store_form_saver_->Update(
         pending_credentials_, AccountStoreMatches(matches), old_password);
   }
@@ -152,11 +152,13 @@ void MultiStorePasswordSaveManager::UpdateInternal(
 void MultiStorePasswordSaveManager::PermanentlyBlacklist(
     const PasswordStore::FormDigest& form_digest) {
   DCHECK(!client_->IsIncognito());
-  if (account_store_form_saver_ && IsAccountStoreEnabled() &&
+  if (account_store_form_saver_ && IsOptedInForAccountStorage() &&
       client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
           PasswordForm::Store::kAccountStore) {
     account_store_form_saver_->PermanentlyBlacklist(form_digest);
   } else {
+    // For users who aren't yet opted-in to the account storage, we store their
+    // blacklisted entries in the profile store.
     form_saver_->PermanentlyBlacklist(form_digest);
   }
 }
@@ -166,7 +168,7 @@ void MultiStorePasswordSaveManager::Unblacklist(
   // Try to unblacklist in both stores anyway because if credentials don't
   // exist, the unblacklist operation is no-op.
   form_saver_->Unblacklist(form_digest);
-  if (account_store_form_saver_ && IsAccountStoreEnabled()) {
+  if (account_store_form_saver_ && IsOptedInForAccountStorage()) {
     account_store_form_saver_->Unblacklist(form_digest);
   }
 }
@@ -254,12 +256,12 @@ MultiStorePasswordSaveManager::FindSimilarSavedFormAndComputeState(
 }
 
 FormSaver* MultiStorePasswordSaveManager::GetFormSaverForGeneration() {
-  return IsAccountStoreEnabled() && account_store_form_saver_
+  return IsOptedInForAccountStorage() && account_store_form_saver_
              ? account_store_form_saver_.get()
              : form_saver_.get();
 }
 
-bool MultiStorePasswordSaveManager::IsAccountStoreEnabled() {
+bool MultiStorePasswordSaveManager::IsOptedInForAccountStorage() {
   return client_->GetPasswordFeatureManager()->IsOptedInForAccountStorage();
 }
 

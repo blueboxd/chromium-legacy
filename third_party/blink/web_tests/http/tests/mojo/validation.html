@@ -100,7 +100,7 @@ test(() => {
 
 test(() => {
   function parserShouldFail(input) {
-    assert_throws(new mojo.test.InputError(), function() {
+    assert_throws_js(mojo.test.InputError, function() {
       mojo.test.parseTestMessage(input);
     });
   }

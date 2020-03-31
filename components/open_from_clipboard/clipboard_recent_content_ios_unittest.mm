@@ -166,8 +166,7 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
   }
 
   void VerifyIfClipboardImageExists(bool exists) {
-    EXPECT_EQ(clipboard_content_->GetRecentImageFromClipboard().has_value(),
-              exists);
+    EXPECT_EQ(clipboard_content_->HasRecentImageFromClipboard(), exists);
   }
 };
 

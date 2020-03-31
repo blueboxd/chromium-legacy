@@ -97,6 +97,7 @@ if (is_win || is_mac) {
         "server/mac/server.mm",
         "server/mac/service_delegate.h",
         "server/mac/service_delegate.mm",
+        "server/mac/service_protocol.mm",
         "server/mac/update_service_wrappers.h",
         "server/mac/update_service_wrappers.mm",
         "update_apps_mac.mm",

@@ -143,9 +143,7 @@ class PageInfo : public content::WebContentsObserver {
   // object to determine the status of the site's connection.
   PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
            content::WebContents* web_contents,
-           const GURL& url,
-           security_state::SecurityLevel security_level,
-           const security_state::VisibleSecurityState& visible_security_state);
+           const GURL& url);
   ~PageInfo() override;
 
   // Initializes UI state that is dependent on having access to the PageInfoUI
@@ -159,9 +157,7 @@ class PageInfo : public content::WebContentsObserver {
 
   // This method is called to update the presenter's security state and forwards
   // that change on to the UI to be redrawn.
-  void UpdateSecurityState(
-      security_state::SecurityLevel security_level,
-      const security_state::VisibleSecurityState& visible_security_state);
+  void UpdateSecurityState();
 
   void RecordPageInfoAction(PageInfoAction action);
 
@@ -217,10 +213,7 @@ class PageInfo : public content::WebContentsObserver {
   friend class PageInfoBubbleViewBrowserTest;
   // Populates this object's UI state with provided security context. This
   // function does not update visible UI-- that's part of Present*().
-  void ComputeUIInputs(
-      const GURL& url,
-      const security_state::SecurityLevel security_level,
-      const security_state::VisibleSecurityState& visible_security_state);
+  void ComputeUIInputs(const GURL& url);
 
   // Sets (presents) the information about the site's permissions in the |ui_|.
   void PresentSitePermissions();

@@ -504,7 +504,6 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = blink::mojom::PublicKeyCredentialCreationOptions::New(
         rp, user, kTestChallenge, parameters, base::TimeDelta::FromSeconds(30),
-        base::TimeDelta::FromSeconds(30),
         std::vector<device::PublicKeyCredentialDescriptor>(),
         device::AuthenticatorSelectionCriteria(),
         device::AttestationConveyancePreference::kNone, nullptr,
@@ -529,10 +528,9 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
 
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = blink::mojom::PublicKeyCredentialRequestOptions::New(
-        kTestChallenge, base::TimeDelta::FromSeconds(30),
-        base::TimeDelta::FromSeconds(30), "acme.com", std::move(credentials),
-        device::UserVerificationRequirement::kPreferred, base::nullopt,
-        std::vector<device::CableDiscoveryData>());
+        kTestChallenge, base::TimeDelta::FromSeconds(30), "acme.com",
+        std::move(credentials), device::UserVerificationRequirement::kPreferred,
+        base::nullopt, std::vector<device::CableDiscoveryData>());
     return mojo_options;
   }
 

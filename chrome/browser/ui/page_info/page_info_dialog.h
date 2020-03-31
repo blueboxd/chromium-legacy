@@ -39,8 +39,6 @@ void ShowPageInfoDialogImpl(
     Browser* browser,
     content::WebContents* web_contents,
     const GURL& virtual_url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state,
     bubble_anchor_util::Anchor,
     PageInfoClosingCallback closing_callback);
 

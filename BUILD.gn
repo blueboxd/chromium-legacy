@@ -383,6 +383,7 @@ group("gn_all") {
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
+        "//chrome/android/examples/partner_browser_customizations_provider:partner_browser_customizations_example_apk",
         "//chrome/android/features/media_router:media_router_junit_tests",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
         "//content/shell/android:content_shell_test_apk",

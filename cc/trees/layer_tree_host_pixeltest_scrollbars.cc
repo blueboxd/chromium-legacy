@@ -162,6 +162,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   background->AddChild(layer);
 
   auto context = base::MakeRefCounted<viz::TestInProcessContextProvider>(
+      /*enable_gpu_rasterization=*/false,
       /*enable_oop_rasterization=*/false,
       /*support_locking=*/false);
   gpu::ContextResult result = context->BindToCurrentThread();

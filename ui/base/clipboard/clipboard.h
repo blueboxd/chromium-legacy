@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
@@ -39,6 +40,9 @@ class ScopedClipboardWriter;
 // - specifies an ordering in which to write types to the clipboard
 //   (see PortableFormat).
 // - is generalized for all targets/operating systems.
+// TODO(https://crbug.com/443355): Make all functions asynchronous.
+// Currently, only ReadImage() is asynchronous, but eventually, we would like
+// all interfaces to be async.
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
     : public base::ThreadChecker {
  public:
@@ -144,8 +148,11 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // vector.
   virtual void ReadRTF(ClipboardBuffer buffer, std::string* result) const = 0;
 
+  using ReadImageCallback = base::OnceCallback<void(const SkBitmap&)>;
+
   // Reads an image from the clipboard, if available.
-  virtual SkBitmap ReadImage(ClipboardBuffer buffer) const = 0;
+  virtual void ReadImage(ClipboardBuffer buffer,
+                         ReadImageCallback callback) const = 0;
 
   virtual void ReadCustomData(ClipboardBuffer buffer,
                               const base::string16& type,

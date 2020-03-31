@@ -72,6 +72,8 @@ class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
                        base::string16* error) const;
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  bool IsSupervisedUserAllowlistExtensionInstallActive() const;
+
   // TODO(crbug/1063104): Remove this function once full extensions launches.
   void RecordAllowlistExtensionUmaMetrics(UmaExtensionStateAllowlist state,
                                           const Extension* extension) const;

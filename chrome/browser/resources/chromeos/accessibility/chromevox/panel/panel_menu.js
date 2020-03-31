@@ -340,16 +340,17 @@ PanelNodeMenu = class extends PanelMenu {
     this.walker_;
     /** @private {number} */
     this.nodeCount_ = 0;
-    /** @private {boolean} */
-    this.selectNext_ = false;
     this.populate_();
   }
 
   /** @override */
   activate(activateFirstItem) {
-    PanelMenu.prototype.activate.call(this, activateFirstItem);
+    super.activate(false);
     if (activateFirstItem) {
-      this.activateItem(this.activeIndex_);
+      // The active index might have been set prior to this call in
+      // |findMoreNodes|. We want to start the menu there.
+      const index = this.activeIndex_ == -1 ? 0 : this.activeIndex_;
+      this.activateItem(index);
     }
   }
 
@@ -376,7 +377,6 @@ PanelNodeMenu = class extends PanelMenu {
       }
     });
     this.nodeCount_ = 0;
-    this.selectNext_ = false;
     this.findMoreNodes_();
   }
 
@@ -393,9 +393,6 @@ PanelNodeMenu = class extends PanelMenu {
   findMoreNodes_() {
     while (this.walker_.next().node) {
       const node = this.walker_.node;
-      if (node == this.node_) {
-        this.selectNext_ = true;
-      }
       if (this.pred_(node)) {
         const output = new Output();
         const range = cursors.Range.fromNode(node);
@@ -411,9 +408,8 @@ PanelNodeMenu = class extends PanelMenu {
                            };
                          }()));
 
-        if (this.selectNext_) {
-          this.activateItem(this.items_.length - 1);
-          this.selectNext_ = false;
+        if (node == this.node_ && !this.async_) {
+          this.activeIndex_ = this.items_.length - 1;
         }
       }
 
@@ -438,7 +434,6 @@ PanelNodeMenu = class extends PanelMenu {
     if (!this.items_.length) {
       this.addMenuItem(
           Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
-      this.activateItem(0);
     }
   }
 };

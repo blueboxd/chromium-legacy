@@ -1881,6 +1881,7 @@
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="3479685872808224578">प्रिंट सर्व्हर डिटेक्ट करता आला नाही. कृपया ॲड्रेस तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="3481268647794498892"><ph name="ALTERNATIVE_BROWSER_NAME" /> मध्ये <ph name="COUNTDOWN_SECONDS" /> सेकंदांत उघडत आहे</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> ला पुढील फाइल पाहता येतात</translation>
 <translation id="3484273680291419129">धोकादायक सॉफ्टवेअर काढत आहे...</translation>
 <translation id="3484869148456018791">नवीन सर्टिफिकेट मिळवा</translation>
 <translation id="3487007233252413104">अनामित कार्य</translation>
@@ -1943,6 +1944,7 @@
 <translation id="3564848315152754834">USB सिक्युरिटी की</translation>
 <translation id="3566721612727112615">कोणत्याही साइट जोडल्या नाहीत</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> नी तुमची स्क्रीन शेअर करावी असे तुम्ही इच्छिता?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> ला पुढील फाइल आणि फोल्डर पाहता येतात</translation>
 <translation id="3571734092741541777">सेट अप</translation>
 <translation id="3574210789297084292">साइन इन करा</translation>
 <translation id="3574917942258583917">गुप्त मोडमधून कसेही बाहेर पडायचे?</translation>
@@ -1952,6 +1954,7 @@
 <translation id="3578594933904494462">या टॅबचा आशय शेअर केली जात आहे.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपल्‍या मालकीच्या गटासह &lt;strong&gt;<ph name="PRINTER_NAME" /> &lt;/strong&gt; प्रिंटर शेअर करू इच्‍छितो: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. तुम्ही स्‍वीकार केल्यास, सर्व गट सदस्य प्रिंटरवर प्रिंट करण्‍यास सक्षम असतील.</translation>
 <translation id="357889014807611375">मर्यादित वाय-फाय</translation>
+<translation id="3582057310199111521">फसव्या साइटवर एंटर केला आणि डेटा भंग करत असल्याचे आढळले</translation>
 <translation id="3584169441612580296">तुमच्या कॉंप्युटरवरील फोटो, संगीत आणि अन्य मीडिया वाचा आणि बदला</translation>
 <translation id="3586806079541226322">ही फाइल उघडू शकत नाही</translation>
 <translation id="3586931643579894722">तपशील लपवा</translation>
@@ -3087,6 +3090,7 @@
 <translation id="5117930984404104619">भेट दिलेल्या URL सह, अन्य विस्तारांच्या वर्तनाचे परीक्षण करा</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">तुमची हार्ड डिस्क पूर्ण भरली आहे. कृपया दुसर्‍या स्‍थानावर सेव्ह करा किंवा हार्ड डिस्कवर अधिक जागा तयार करा.</translation>
+<translation id="5122384452788334261">तुमच्या डिव्हाइसवर स्टोरेज जागा कमी आहे. Plugin VM वापरण्यासाठी किमान <ph name="RECOMMENDED_SPACE" /> मोकळ्या जागेची शिफारस केली जाते. जागा मोकळी करण्यासाठी, डिव्हाइस स्टोरेजमधून फाइल हटवा.</translation>
 <translation id="5123433949759960244">बास्केटबॉल</translation>
 <translation id="5125751979347152379">चुकीची URL.</translation>
 <translation id="5126611267288187364">बदल पाहा</translation>
@@ -5187,6 +5191,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="7915471803647590281">कृपया अभिप्राय पाठविण्यापूर्वी काय होत आहे ते आम्हाला सांगा.</translation>
 <translation id="7918257978052780342">नोंदणी</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> से</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> ला <ph name="FILENAME" /> पाहता येते</translation>
 <translation id="7924358170328001543">पोर्ट फॉरवर्ड करताना एरर आली</translation>
 <translation id="792514962475806987">डॉक केलेली झूम पातळी:</translation>
 <translation id="7925247922861151263">AAA तपास अयशस्वी</translation>
@@ -5350,6 +5355,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8118488170956489476">तुमच्या संस्थेद्वारे तुमचा <ph name="BEGIN_LINK" />ब्राउझर व्यवस्थापित केलेला आहे<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">तुमचे डाउनलोड व्यवस्थापित करा</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> आणि आणखी</translation>
+<translation id="8120715633374652536">तुमच्या डिव्हाइसवर स्टोरेज जागा कमी आहे. Plugin VM वापरण्यासाठी किमान <ph name="MINIMUM_SPACE" /> जागा आवश्यक आहे आणि <ph name="RECOMMENDED_SPACE" /> पेक्षा जास्त मोकळ्या जागेची शिफारस केली जाते. जागा मोकळी करण्यासाठी, डिव्हाइस स्टोरेजमधून फाइल हटवा.</translation>
 <translation id="8123590694679414600"><ph name="TIME" /> रोजी तुमचा डेटा तुमच्या सिंक पासफ्रेजसह एंक्रिप्ट केला होता.
           यामध्ये Google Pay वरील पेमेंट पद्धतींचा आणि पत्त्यांचा समावेश नसतो.</translation>
 <translation id="81238879832906896">पिवळे आणि पांढरे फूल</translation>

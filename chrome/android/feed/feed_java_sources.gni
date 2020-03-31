@@ -379,6 +379,7 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/tooltip/BasicTooltipSupportedApi.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/tooltip/FeedTooltipUtils.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedServiceBridge.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedStreamSurface.java",
   ]
 
   feed_srcjar_deps = [ "//components/feed/core:feed_core_java_enums_srcjar" ]

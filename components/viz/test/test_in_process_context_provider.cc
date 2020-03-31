@@ -68,11 +68,13 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
 }
 
 TestInProcessContextProvider::TestInProcessContextProvider(
+    bool enable_gpu_rasterization,
     bool enable_oop_rasterization,
     bool support_locking,
     gpu::raster::GrShaderCache* gr_shader_cache,
     gpu::GpuProcessActivityFlags* activity_flags)
-    : enable_oop_rasterization_(enable_oop_rasterization),
+    : enable_gpu_rasterization_(enable_gpu_rasterization),
+      enable_oop_rasterization_(enable_oop_rasterization),
       activity_flags_(activity_flags) {
   if (support_locking)
     context_lock_.emplace();
@@ -108,6 +110,8 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     cache_controller_.reset(
         new ContextCacheController(raster_context_->GetContextSupport(),
                                    base::ThreadTaskRunnerHandle::Get()));
+
+    caps_ = raster_context_->GetCapabilities();
   } else {
     gles2_context_ = CreateGLInProcessContext(
         &gpu_memory_buffer_manager_, &image_factory_,
@@ -118,7 +122,14 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     raster_implementation_gles2_ =
         std::make_unique<gpu::raster::RasterImplementationGLES>(
             gles2_context_->GetImplementation(), ContextSupport());
+
+    caps_ = gles2_context_->GetCapabilities();
   }
+
+  // We don't have a good way for tests to change what the in process gpu
+  // service will return for this capability. But we want to use gpu
+  // rasterization if and only if the test requests it.
+  caps_.gpu_rasterization = enable_gpu_rasterization_;
 
   cache_controller_->SetLock(GetLock());
   return gpu::ContextResult::kSuccess;
@@ -182,11 +193,7 @@ base::Lock* TestInProcessContextProvider::GetLock() {
 
 const gpu::Capabilities& TestInProcessContextProvider::ContextCapabilities()
     const {
-  if (gles2_context_) {
-    return gles2_context_->GetCapabilities();
-  } else {
-    return raster_context_->GetCapabilities();
-  }
+  return caps_;
 }
 
 const gpu::GpuFeatureInfo& TestInProcessContextProvider::GetGpuFeatureInfo()

@@ -2200,10 +2200,10 @@
     For security, sign out when your computer isn't being used.
   </message>
   <message name="IDS_KIOSK_APP_FAILED_TO_LAUNCH" desc="Generic error message used when a kiosk app fails to launch.">
-    Darn, the kiosk application could not be launched.
+    The kiosk application could not be launched.
   </message>
   <message name="IDS_KIOSK_APP_ERROR_UNABLE_TO_MOUNT" desc="Error message used when a kiosk app fails to launch due to cryptohome error.">
-    Kryptonite! The cryptohome for the kiosk application could not be mounted.
+    The cryptohome for the kiosk application could not be mounted.
   </message>
   <message name="IDS_KIOSK_APP_ERROR_UNABLE_TO_INSTALL" desc="Error message used when a kiosk app fails to launch due to install failure.">
     Kiosk application could not be installed.
@@ -4292,7 +4292,7 @@
     Go Home
   </message>
   <message name="IDS_OOBE_GESTURE_NAVIGATION_HOME_DESCRIPTION" desc="The description for the gesture navigation education home OOBE screen shown on the first user login.">
-    To get to the Homescreen at any time, swipe up from the bottom.
+    To get to the Home screen at any time, swipe up from the bottom.
   </message>
   <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_TITLE" desc="The title in the gesture navigation education back OOBE screen shown on the first user login.">
     Go Back

@@ -95,11 +95,9 @@ class BASE_EXPORT StackSamplingProfiler {
 
   // Same as above function, with custom |sampler| implementation. The sampler
   // on Android is not implemented in base.
-  StackSamplingProfiler(SamplingProfilerThreadToken thread_token,
-                        const SamplingParams& params,
+  StackSamplingProfiler(const SamplingParams& params,
                         std::unique_ptr<ProfileBuilder> profile_builder,
-                        std::unique_ptr<StackSampler> sampler,
-                        StackSamplerTestDelegate* test_delegate = nullptr);
+                        std::unique_ptr<StackSampler> sampler);
 
   // Stops any profiling currently taking place before destroying the profiler.
   // This will block until profile_builder_'s OnProfileCompleted function has
@@ -201,9 +199,6 @@ class BASE_EXPORT StackSamplingProfiler {
   // An ID uniquely identifying this profiler to the sampling thread. This
   // will be an internal "null" value when no collection has been started.
   int profiler_id_;
-
-  // Stored until it can be passed to the StackSampler created in Start().
-  StackSamplerTestDelegate* const test_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(StackSamplingProfiler);
 };

@@ -86,3 +86,42 @@ usage we obtain the following usage counts:
   has blocked a string assignment.
 
 [tt]: https://github.com/w3c/webappsec-trusted-types/
+
+## Cross Origin Isolation policies
+
+Cross Origin Isolation policies refer to a number of header based policies that
+developers can send to enforce specific rules about how their content can be
+embedded, opened from, etc. It is also used to gate certain APIs that would be
+otherwise too powerful to use in a post-Spectre world.
+
+[Cross-Origin-Resource-Policy][corp] restricts a resource to only be fetched by
+"same-origin" or "same-site" pages.
+
+* We do not currently track this metric.
+
+[Cross-Origin-Opener-Policy][coop] is used to restrict the usage of window
+openers. Pages can choose to restrict this relation to same-origin pages with
+similar COOP value, same-origin unless they are opening popups or put no
+restriction by default.
+
+* Explicit values of "same-origin" and "same-origin-allow-popups" are tracked
+  via `kCrossOriginOpenerPolicySameOrigin` and
+  `kCrossOriginOpenerPolicySameOriginAllowPopups` respectively.
+
+[Cross-Origin-Embedder-Policy][coep] is used to restrict the embedding of
+subresources to only those that have explicitly opted in via
+[Cross-Origin-Resource-Policy].
+
+* COEP is simply "require-corp" or nothing and we track uses of the feature via
+  `kCrossOriginEmbedderPolicyRequireCorp`.
+
+Note that some APIs having precise timers or memory measurement are enabled only
+for pages that set COOP to "same-origin" and COEP to "require-corp".
+
+* We track such pages via `kCoopAndCoepIsolated`.
+
+
+[corp]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cross-Origin_Resource_Policy_(CORP)
+[coep]: https://wicg.github.io/cross-origin-embedder-policy/
+[coop]: https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+

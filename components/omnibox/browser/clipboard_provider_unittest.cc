@@ -69,7 +69,7 @@ class ClipboardProviderTest : public testing::Test,
   bool IsClipboardEmpty() {
     return clipboard_content_.GetRecentURLFromClipboard() == base::nullopt &&
            clipboard_content_.GetRecentTextFromClipboard() == base::nullopt &&
-           clipboard_content_.GetRecentImageFromClipboard() == base::nullopt;
+           !clipboard_content_.HasRecentImageFromClipboard();
   }
 
   AutocompleteInput CreateAutocompleteInput(bool from_omnibox_focus) {

@@ -476,7 +476,8 @@ Browser::Browser(const CreateParams& params)
           web_app::AppBrowserController::MaybeCreateWebAppController(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
-      window_has_shown_(false)
+      window_has_shown_(false),
+      signin_view_controller_(this)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       ,
       extension_browser_window_helper_(

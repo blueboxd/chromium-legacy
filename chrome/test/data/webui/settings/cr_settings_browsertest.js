@@ -1050,8 +1050,7 @@ TEST_F(
       runMochaSuite('PrivacyPageSound');
     });
 
-// TODO(sauski): Privacy page UMA changing, tests need updating/removal.
-TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_UMALoggingTests', function() {
+TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
   runMochaSuite('PrivacyPageUMACheck');
 });
 
@@ -1164,8 +1163,9 @@ CrSettingsSafetyCheckPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
     'passwords_and_autofill_fake_data.js',
-    'test_password_manager_proxy.js',
     'safety_check_page_test.js',
+    'test_metrics_browser_proxy.js',
+    'test_password_manager_proxy.js',
     'test_lifetime_browser_proxy.js',
     'test_open_window_proxy.js',
     'test_hats_browser_proxy.js',

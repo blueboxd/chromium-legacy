@@ -402,8 +402,7 @@ int64_t Time::ToRoundedDownMillisecondsSinceUnixEpoch() const {
     // In this case, rounding towards -infinity means rounding towards 0.
     return microseconds / kMicrosecondsPerMillisecond;
   } else {
-    return (microseconds - kMicrosecondsPerMillisecond + 1) /
-           kMicrosecondsPerMillisecond;
+    return (microseconds + 1) / kMicrosecondsPerMillisecond - 1;
   }
 }
 

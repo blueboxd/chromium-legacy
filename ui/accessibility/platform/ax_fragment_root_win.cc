@@ -266,7 +266,7 @@ gfx::NativeViewAccessible AXFragmentRootWin::GetParent() {
   return delegate_->GetParentOfAXFragmentRoot();
 }
 
-int AXFragmentRootWin::GetChildCount() {
+int AXFragmentRootWin::GetChildCount() const {
   return delegate_->GetChildOfAXFragmentRoot() ? 1 : 0;
 }
 

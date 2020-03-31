@@ -25,7 +25,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   ~FakeCompositorDependencies() override;
 
   // CompositorDependencies implementation.
-  bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
   bool IsZeroCopyEnabled() override;

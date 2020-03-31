@@ -55,6 +55,8 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // result can be used with Login* methods below.
   static UserContext CreateDefaultUserContext(const TestUserInfo& account_id);
 
+  static std::vector<TestUserInfo> CreateRegularUsers(int n);
+
   LoginManagerMixin(InProcessBrowserTestMixinHost* host,
                     const std::vector<TestUserInfo>& initial_users);
 

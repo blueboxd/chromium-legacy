@@ -28,7 +28,6 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/shell/renderer/web_test/web_test_content_renderer_client.h"

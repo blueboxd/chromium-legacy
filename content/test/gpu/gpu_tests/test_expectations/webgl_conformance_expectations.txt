@@ -148,6 +148,9 @@ crbug.com/1023745 [ win intel d3d9 passthrough ] conformance2/textures/image_bit
 crbug.com/854100 [ win intel opengl passthrough intel_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
 crbug.com/angleproject/2909 [ win intel vulkan passthrough intel_lt_26.20.100.7000 ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
 crbug.com/angleproject/2722 [ win intel vulkan passthrough intel_lt_26.20.100.7323 ] conformance/rendering/clipping-wide-points.html [ Failure ]
+crbug.com/1063472 [ win intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/1063472 [ win intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
+crbug.com/1063472 [ win intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ Failure ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.

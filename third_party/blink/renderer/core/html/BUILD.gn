@@ -580,6 +580,8 @@ blink_core_sources("html") {
     "track/vtt/vtt_token.h",
     "track/vtt/vtt_tokenizer.cc",
     "track/vtt/vtt_tokenizer.h",
+    "trust_token_attribute_parsing.cc",
+    "trust_token_attribute_parsing.h",
     "window_name_collection.cc",
     "window_name_collection.h",
   ]
@@ -699,5 +701,8 @@ blink_core_tests("unit_tests") {
     "track/text_track_list_test.cc",
     "track/vtt/buffered_line_reader_test.cc",
     "track/vtt/vtt_scanner_test.cc",
+    "trust_token_attribute_parsing_test.cc",
   ]
+
+  deps = [ "//services/network/trust_tokens:test_support" ]
 }

@@ -18,19 +18,14 @@
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/view.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
-
-#include "ui/native_theme/native_theme.h"
 #endif
-
-namespace gfx {
-struct VectorIcon;
-}
 
 namespace views {
 
@@ -154,9 +149,9 @@ class VIEWS_EXPORT MenuItemView : public View {
                               int item_id,
                               const base::string16& label,
                               const base::string16& minor_text,
-                              const gfx::VectorIcon* minor_icon,
+                              const ui::ThemedVectorIcon& minor_icon,
                               const gfx::ImageSkia& icon,
-                              const gfx::VectorIcon* vector_icon,
+                              const ui::ThemedVectorIcon& vector_icon,
                               Type type,
                               ui::MenuSeparatorType separator_style);
 
@@ -223,7 +218,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void SetMinorText(const base::string16& minor_text);
 
   // Sets the minor icon.
-  void SetMinorIcon(const gfx::VectorIcon* minor_icon);
+  void SetMinorIcon(const ui::ThemedVectorIcon& minor_icon);
 
   // Returns the type of this menu.
   const Type& GetType() const { return type_; }
@@ -253,12 +248,13 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Sets the icon of this menu item.
   void SetIcon(const gfx::ImageSkia& icon);
 
-  // Sets the icon as a vector icon which gets its color from the NativeTheme.
-  void SetIcon(const gfx::VectorIcon* icon);
+  // Sets the icon as a vector icon which gets its color from the NativeTheme or
+  // the included color.
+  void SetIcon(const ui::ThemedVectorIcon& icon);
 
   // Sets the view used to render the icon. This clobbers any icon set via
   // SetIcon(). MenuItemView takes ownership of |icon_view|.
-  void SetIconView(ImageView* icon_view);
+  void SetIconView(std::unique_ptr<ImageView> icon_view);
 
   void UpdateIconViewFromVectorIconAndTheme();
 
@@ -428,7 +424,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   base::string16 GetMinorText() const;
 
   // Returns the icon that should be displayed to the left of the minor text.
-  const gfx::VectorIcon* GetMinorIcon() const;
+  ui::ThemedVectorIcon GetMinorIcon() const;
 
   // Returns the text color for the current state.  |minor| specifies if the
   // minor text or the normal text is desired.
@@ -519,11 +515,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   base::string16 minor_text_;
 
   // Minor icon.
-  const gfx::VectorIcon* minor_icon_ = nullptr;
+  ui::ThemedVectorIcon minor_icon_;
 
   // The icon used for |icon_view_| when a vector icon has been set instead of a
   // gfx::Image.
-  const gfx::VectorIcon* vector_icon_ = nullptr;
+  ui::ThemedVectorIcon vector_icon_;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_ = false;

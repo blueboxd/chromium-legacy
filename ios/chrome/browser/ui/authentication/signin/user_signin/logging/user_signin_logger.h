@@ -7,7 +7,6 @@
 
 #import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 
 // Logs metrics for user sign-in operations.
 @interface UserSigninLogger : NSObject

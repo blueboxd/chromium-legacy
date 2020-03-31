@@ -99,7 +99,7 @@ static HTMLTokenizer::State TokenizerStateForContextElement(
       context_tag.Matches(html_names::kIFrameTag) ||
       context_tag.Matches(html_names::kNoembedTag) ||
       (context_tag.Matches(html_names::kNoscriptTag) &&
-       options.script_enabled) ||
+       options.scripting_flag) ||
       context_tag.Matches(html_names::kNoframesTag))
     return report_errors ? HTMLTokenizer::kRAWTEXTState
                          : HTMLTokenizer::kPLAINTEXTState;

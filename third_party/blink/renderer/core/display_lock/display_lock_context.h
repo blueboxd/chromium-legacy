@@ -191,6 +191,9 @@ class CORE_EXPORT DisplayLockContext final
   void NotifySubtreeLostFocus();
   void NotifySubtreeGainedFocus();
 
+  void NotifySubtreeLostSelection();
+  void NotifySubtreeGainedSelection();
+
   void SetNeedsPrePaintSubtreeWalk(
       bool needs_effective_allowed_touch_action_update) {
     needs_effective_allowed_touch_action_update_ =
@@ -308,6 +311,10 @@ class CORE_EXPORT DisplayLockContext final
   // element to its root element.
   void DetermineIfSubtreeHasFocus();
 
+  // Determines if the subtree has selection. This will walk from each of the
+  // selected notes up to its root looking for `element_`.
+  void DetermineIfSubtreeHasSelection();
+
   WeakMember<Element> element_;
   WeakMember<Document> document_;
   ESubtreeVisibility state_ = ESubtreeVisibility::kVisible;
@@ -363,6 +370,7 @@ class CORE_EXPORT DisplayLockContext final
     kLockRequested,
     kIntersectsViewport,
     kSubtreeHasFocus,
+    kSubtreeHasSelection,
     kNumRenderAffectingStates
   };
   void SetRenderAffectingState(RenderAffectingState state, bool flag);

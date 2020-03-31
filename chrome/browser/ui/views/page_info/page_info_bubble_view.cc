@@ -424,8 +424,6 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state,
     PageInfoClosingCallback closing_callback) {
   gfx::NativeView parent_view = platform_util::GetViewForWindow(parent_window);
 
@@ -439,9 +437,8 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
                                           web_contents, url);
   }
 
-  return new PageInfoBubbleView(
-      anchor_view, anchor_rect, parent_view, profile, web_contents, url,
-      security_level, visible_security_state, std::move(closing_callback));
+  return new PageInfoBubbleView(anchor_view, anchor_rect, parent_view, profile,
+                                web_contents, url, std::move(closing_callback));
 }
 
 PageInfoBubbleView::PageInfoBubbleView(
@@ -451,8 +448,6 @@ PageInfoBubbleView::PageInfoBubbleView(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state,
     PageInfoClosingCallback closing_callback)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
@@ -522,8 +517,8 @@ PageInfoBubbleView::PageInfoBubbleView(
   // |TabSpecificContentSettings| and need to create one; otherwise, noop.
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
-      std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents, url,
-      security_level, visible_security_state);
+      std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents,
+      url);
   presenter_->InitializeUiState(this);
 }
 
@@ -923,16 +918,7 @@ void PageInfoBubbleView::LayoutPermissionsLikeUiRow(views::GridLayout* layout,
 }
 
 void PageInfoBubbleView::DidChangeVisibleSecurityState() {
-  content::WebContents* contents = web_contents();
-  if (!contents)
-    return;
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  DCHECK(helper);
-
-  presenter_->UpdateSecurityState(helper->GetSecurityLevel(),
-                                  *helper->GetVisibleSecurityState());
+  presenter_->UpdateSecurityState();
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -1030,14 +1016,11 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   }
 }
 
-void ShowPageInfoDialogImpl(
-    Browser* browser,
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state,
-    bubble_anchor_util::Anchor anchor,
-    PageInfoClosingCallback closing_callback) {
+void ShowPageInfoDialogImpl(Browser* browser,
+                            content::WebContents* web_contents,
+                            const GURL& virtual_url,
+                            bubble_anchor_util::Anchor anchor,
+                            PageInfoClosingCallback closing_callback) {
   AnchorConfiguration configuration =
       GetPageInfoAnchorConfiguration(browser, anchor);
   gfx::Rect anchor_rect =
@@ -1046,8 +1029,8 @@ void ShowPageInfoDialogImpl(
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
           configuration.anchor_view, anchor_rect, parent_window,
-          browser->profile(), web_contents, virtual_url, security_level,
-          visible_security_state, std::move(closing_callback));
+          browser->profile(), web_contents, virtual_url,
+          std::move(closing_callback));
   bubble->SetHighlightedButton(configuration.highlighted_button);
   bubble->SetArrow(configuration.bubble_arrow);
   bubble->GetWidget()->Show();

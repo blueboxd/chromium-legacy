@@ -37,10 +37,8 @@ const char* LayerTreeHostPixelResourceTest::GetRendererSuffix() const {
 void LayerTreeHostPixelResourceTest::InitializeSettings(
     LayerTreeSettings* settings) {
   LayerTreePixelTest::InitializeSettings(settings);
-  if (raster_type() != GPU) {
+  if (raster_type() != GPU)
     settings->gpu_rasterization_disabled = true;
-    settings->gpu_rasterization_forced = false;
-  }
 }
 
 std::unique_ptr<RasterBufferProvider>

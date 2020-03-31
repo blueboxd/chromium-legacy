@@ -28,6 +28,8 @@ jumbo_component("native_theme") {
     "native_theme_features.h",
     "native_theme_observer.cc",
     "native_theme_observer.h",
+    "themed_vector_icon.cc",
+    "themed_vector_icon.h",
   ]
 
   if (is_android) {

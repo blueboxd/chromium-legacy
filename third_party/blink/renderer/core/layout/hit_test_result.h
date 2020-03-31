@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -86,6 +87,7 @@ class CORE_EXPORT HitTestResult {
   Node* InnerPossiblyPseudoNode() const {
     return inner_possibly_pseudo_node_.Get();
   }
+  CompositorElementId GetScrollableContainer() const;
   Element* InnerElement() const { return inner_element_.Get(); }
 
   // If innerNode is an image map or image map area, return the associated image

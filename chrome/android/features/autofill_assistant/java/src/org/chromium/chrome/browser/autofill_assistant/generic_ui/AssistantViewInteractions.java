@@ -115,4 +115,16 @@ public class AssistantViewInteractions {
             view.setVisibility(visible.getBooleans()[0] ? View.VISIBLE : View.GONE);
         }
     }
+
+    @CalledByNative
+    private static boolean setToggleButtonChecked(View view, AssistantValue checked) {
+        if (!(view instanceof AssistantToggleButton)) {
+            return false;
+        }
+        if (checked.getBooleans() == null || checked.getBooleans().length != 1) {
+            return false;
+        }
+        ((AssistantToggleButton) view).setChecked(checked.getBooleans()[0]);
+        return true;
+    }
 }

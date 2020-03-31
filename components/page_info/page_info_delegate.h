@@ -12,6 +12,7 @@
 #include "components/permissions/permission_uma_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/security_state/core/security_state.h"
 
 namespace safe_browsing {
 class PasswordProtectionService;
@@ -86,6 +87,8 @@ class PageInfoDelegate {
   virtual HostContentSettingsMap* GetContentSettings() = 0;
 
   virtual bool IsContentDisplayedInVrHeadset() = 0;
+  virtual security_state::SecurityLevel GetSecurityLevel() = 0;
+  virtual security_state::VisibleSecurityState GetVisibleSecurityState() = 0;
 };
 
 #endif  // COMPONENTS_PAGE_INFO_PAGE_INFO_DELEGATE_H_

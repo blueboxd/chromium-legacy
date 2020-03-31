@@ -106,9 +106,8 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
   // Calculate milliseconds ourselves, since we rounded the |seconds|, making
   // sure to round towards -infinity.
   exploded->millisecond =
-      (microsecond >= 0) ? microsecond / kMicrosecondsPerMillisecond :
-                           (microsecond - kMicrosecondsPerMillisecond + 1) /
-                               kMicrosecondsPerMillisecond;
+      (microsecond >= 0) ? microsecond / kMicrosecondsPerMillisecond
+                         : ((microsecond + 1) / kMicrosecondsPerMillisecond - 1);
 }
 
 }  // namespace base

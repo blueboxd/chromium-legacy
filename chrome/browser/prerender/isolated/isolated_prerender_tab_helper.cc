@@ -111,9 +111,6 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame()) {
     return;
   }
-  if (navigation_handle->IsSameDocument()) {
-    return;
-  }
 
   // User is navigating, don't bother prefetching further.
   page_->url_loader_.reset();
@@ -123,9 +120,6 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!navigation_handle->IsInMainFrame()) {
-    return;
-  }
-  if (navigation_handle->IsSameDocument()) {
     return;
   }
   if (!navigation_handle->HasCommitted()) {
@@ -281,6 +275,9 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
       page_->url_loader_->ResponseInfo()) {
     network::mojom::URLResponseHeadPtr head =
         page_->url_loader_->ResponseInfo()->Clone();
+
+    DCHECK(!head->proxy_server.is_direct());
+
     HandlePrefetchResponse(url, key, std::move(head), std::move(body));
   }
   Prefetch();
@@ -342,7 +339,7 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
 }
 
 void IsolatedPrerenderTabHelper::OnPredictionUpdated(
-    const base::Optional<NavigationPredictorKeyedService::Prediction>&
+    const base::Optional<NavigationPredictorKeyedService::Prediction>
         prediction) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!IsolatedPrerenderIsEnabled()) {
@@ -365,13 +362,24 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
     return;
   }
 
+  if (prediction->prediction_source() !=
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage) {
+    return;
+  }
+
   if (prediction.value().web_contents() != web_contents()) {
     // We only care about predictions in this tab.
     return;
   }
 
-  if (!google_util::IsGoogleSearchUrl(
-          prediction.value().source_document_url())) {
+  const base::Optional<GURL>& source_document_url =
+      prediction->source_document_url();
+
+  if (!source_document_url || source_document_url->is_empty())
+    return;
+
+  if (!google_util::IsGoogleSearchUrl(source_document_url.value())) {
     return;
   }
 

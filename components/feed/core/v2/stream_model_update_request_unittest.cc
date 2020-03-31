@@ -4,6 +4,8 @@
 
 #include "components/feed/core/v2/stream_model_update_request.h"
 
+#include <string>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -76,11 +78,11 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
       TranslateWireResponse(response, kResponseTime);
 
   ASSERT_TRUE(translated);
-  ASSERT_EQ(translated->stream_data.structures_size(),
-            kExpectedStreamStructureCount);
+  ASSERT_EQ(translated->stream_structures.size(),
+            static_cast<size_t>(kExpectedStreamStructureCount));
 
-  const google::protobuf::RepeatedPtrField<feedstore::StreamStructure>&
-      structures = translated->stream_data.structures();
+  const std::vector<feedstore::StreamStructure>& structures =
+      translated->stream_structures;
 
   // Check CLEAR_ALL:
   EXPECT_EQ(structures[0].operation(), feedstore::StreamStructure::CLEAR_ALL);
@@ -110,10 +112,10 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
   // EXPECT_TRUE(structures[3].content_info().has_representation_data());
   // EXPECT_TRUE(structures[3].content_info().has_offline_metadata());
 
-  ASSERT_TRUE(translated->content.size() > 0);
+  ASSERT_GT(translated->content.size(), 0UL);
   EXPECT_EQ(ContentIdToString(translated->content[0].content_id()),
             ContentIdToString(structures[2].content_id()));
-  // TODO: Check content.frame() once this is available.
+  // TODO(iwells): Check content.frame() once this is available.
 
   // Non-content structures:
   EXPECT_EQ(structures[3].operation(),

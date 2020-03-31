@@ -13,4 +13,4 @@
 -DesktopWidgetTest.MinimumSizeConstraints
 -DesktopWidgetTest.SingleWindowClosing
 -DesktopWidgetTest.WidgetDestroyedItselfDoesNotCrash
--TooltipControllerCaptureTest.Capture
+-TooltipControllerTest.Capture

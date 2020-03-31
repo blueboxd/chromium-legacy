@@ -82,7 +82,7 @@ test_with_window((w) => {
 
 test_with_window((w) => {
   w.customElements.define('a-a', w.HTMLButtonElement);
-  assert_reports(w, w.TypeError, () => {
+  assert_reports_js(w, w.TypeError, () => {
     w.document.createElement('a-a');
   }, 'If NewTarget is equal to active function object, TypeError should be ' +
      'reported');
@@ -90,7 +90,7 @@ test_with_window((w) => {
 
 test_with_window((w) => {
   w.customElements.define('a-a', class extends w.HTMLButtonElement {} );
-  assert_reports(w, w.TypeError, () => {
+  assert_reports_js(w, w.TypeError, () => {
     w.document.createElement('a-a');
   }, 'If NewTarget is equal to active function object, TypeError should be ' +
      'reported');
@@ -146,7 +146,7 @@ test_with_window((w) => {
   }
   w.customElements.define('a-a', A);
   let d = w.document.createElement('div');
-  assert_reports_js(window, TypeError, () => {
+  assert_reports_js(window, w.TypeError, () => {
     d.innerHTML = '<a-a>';
   }, 'Creating an element that is already constructed marker should report ' +
      'InvalidStateError');

@@ -275,7 +275,7 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   return data_;
 }
 
-int ViewAXPlatformNodeDelegate::GetChildCount() {
+int ViewAXPlatformNodeDelegate::GetChildCount() const {
   if (IsLeaf())
     return 0;
 

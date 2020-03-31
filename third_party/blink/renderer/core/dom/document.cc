@@ -8497,6 +8497,15 @@ void Document::RemoveDisplayLockContext(DisplayLockContext* context) {
   display_lock_contexts_.erase(context);
 }
 
+int Document::DisplayLockCount() const {
+  return display_lock_contexts_.size();
+}
+
+void Document::NotifySelectionRemovedFromDisplayLocks() {
+  for (auto context : display_lock_contexts_)
+    context->NotifySubtreeLostSelection();
+}
+
 Document::ScopedForceActivatableDisplayLocks
 Document::GetScopedForceActivatableLocks() {
   return ScopedForceActivatableDisplayLocks(this);

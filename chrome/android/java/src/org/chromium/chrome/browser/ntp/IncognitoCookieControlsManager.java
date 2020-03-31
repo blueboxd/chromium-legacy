@@ -46,7 +46,13 @@ public class IncognitoCookieControlsManager
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private boolean mIsInitialized;
     private boolean mShowCard;
+    private boolean mChecked;
     private @CookieControlsEnforcement int mEnforcement = CookieControlsEnforcement.NO_ENFORCEMENT;
+
+    // State variables for cookie controls at the last UI snapshot
+    private boolean mSnapshotChecked;
+    private @CookieControlsEnforcement int mSnapshotEnforcement =
+            CookieControlsEnforcement.NO_ENFORCEMENT;
 
     /**
      * Initializes the IncognitoCookieControlsManager explicitly.
@@ -90,9 +96,21 @@ public class IncognitoCookieControlsManager
         if (mShowCard) mServiceBridge.updateServiceIfNecessary();
     }
 
+    /**
+     * Tells the caller if the state has changed since the last snaptshot.
+     * @return whether a new snapshot should be captured or not.
+     */
+    protected boolean shouldCaptureThumbnail() {
+        boolean changed = mSnapshotEnforcement != mEnforcement || mSnapshotChecked != mChecked;
+        mSnapshotChecked = mChecked;
+        mSnapshotEnforcement = mEnforcement;
+        return changed;
+    }
+
     @Override
     public void sendCookieControlsUIChanges(
             boolean checked, @CookieControlsEnforcement int enforcement) {
+        mChecked = checked;
         mEnforcement = enforcement;
         for (Observer obs : mObservers) {
             obs.onUpdate(checked, enforcement);

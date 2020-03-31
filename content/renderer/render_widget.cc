@@ -2784,8 +2784,6 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 
   settings.gpu_rasterization_msaa_sample_count =
       compositor_deps->GetGpuRasterizationMSAASampleCount();
-  settings.gpu_rasterization_forced =
-      compositor_deps->IsGpuRasterizationForced();
 
   settings.can_use_lcd_text = compositor_deps->IsLcdTextEnabled();
   settings.use_zero_copy = compositor_deps->IsZeroCopyEnabled();
@@ -3389,6 +3387,11 @@ void RenderWidget::SetMouseCapture(bool capture) {
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
   synchronous_resize_mode_for_testing_ = enable;
+}
+
+blink::WebHitTestResult RenderWidget::GetHitTestResultAtPoint(
+    const gfx::PointF& point) {
+  return input_handler_->GetHitTestResultAtPoint(point);
 }
 
 void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {

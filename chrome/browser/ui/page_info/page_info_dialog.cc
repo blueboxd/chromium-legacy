@@ -26,11 +26,8 @@ bool ShowPageInfoDialog(content::WebContents* web_contents,
   if (!entry)
     return false;
 
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  ShowPageInfoDialogImpl(
-      browser, web_contents, entry->GetVirtualURL(), helper->GetSecurityLevel(),
-      *helper->GetVisibleSecurityState(), anchor, std::move(closing_callback));
+  ShowPageInfoDialogImpl(browser, web_contents, entry->GetVirtualURL(), anchor,
+                         std::move(closing_callback));
 
   if (GetPageInfoDialogCreatedCallbackForTesting())
     std::move(GetPageInfoDialogCreatedCallbackForTesting()).Run();

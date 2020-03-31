@@ -35,12 +35,10 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {APIPermission::kDeclarativeContent, "declarativeContent"},
     {APIPermission::kDesktopCapture, "desktopCapture"},
-    {APIPermission::kDesktopCapturePrivate, "desktopCapturePrivate",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+    {APIPermission::kDesktopCapturePrivate, "desktopCapturePrivate"},
     {APIPermission::kDownloads, "downloads"},
     {APIPermission::kDownloadsOpen, "downloads.open"},
-    {APIPermission::kDownloadsShelf, "downloads.shelf",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+    {APIPermission::kDownloadsShelf, "downloads.shelf"},
     {APIPermission::kIdentity, "identity"},
     {APIPermission::kIdentityEmail, "identity.email"},
     {APIPermission::kExperimental, "experimental",
@@ -58,13 +56,11 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {APIPermission::kAccessibilityFeaturesRead, "accessibilityFeatures.read"},
     {APIPermission::kAccessibilityPrivate, "accessibilityPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kActiveTab, "activeTab"},
     {APIPermission::kBookmark, "bookmarks"},
     {APIPermission::kBrailleDisplayPrivate, "brailleDisplayPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kBrowsingData, "browsingData",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {APIPermission::kCertificateProvider, "certificateProvider",
@@ -72,14 +68,11 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kContentSettings, "contentSettings"},
     {APIPermission::kContextMenus, "contextMenus",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kCookie, "cookies",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kCryptotokenPrivate, "cryptotokenPrivate",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+    {APIPermission::kCookie, "cookies"},
+    {APIPermission::kCryptotokenPrivate, "cryptotokenPrivate"},
     {APIPermission::kDataReductionProxy, "dataReductionProxy",
      APIPermissionInfo::kFlagImpliesFullURLAccess |
-         APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+         APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kEnterpriseDeviceAttributes, "enterprise.deviceAttributes",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {APIPermission::kEnterpriseHardwarePlatform, "enterprise.hardwarePlatform",
@@ -112,8 +105,7 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kTopSites, "topSites",
      APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kTransientBackground, "transientBackground",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kTts, "tts", APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kTtsEngine, "ttsEngine",
      APIPermissionInfo::kFlagCannotBeOptional},
@@ -125,121 +117,82 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
 
     // Register private permissions.
     {APIPermission::kActivityLogPrivate, "activityLogPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kAutoTestPrivate, "autotestPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kBookmarkManagerPrivate, "bookmarkManagerPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kCast, "cast", APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kCommandsAccessibility, "commands.accessibility",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kCommandLinePrivate, "commandLinePrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kDeveloperPrivate, "developerPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kDownloadsInternal, "downloadsInternal",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
+    {APIPermission::kDownloadsInternal, "downloadsInternal"},
     {APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kFileManagerPrivate, "fileManagerPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kIdentityPrivate, "identityPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kWebcamPrivate, "webcamPrivate",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
+    {APIPermission::kWebcamPrivate, "webcamPrivate"},
     {APIPermission::kMediaPlayerPrivate, "mediaPlayerPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kMediaRouterPrivate, "mediaRouterPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kNetworkingCastPrivate, "networking.castPrivate",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
+    {APIPermission::kNetworkingCastPrivate, "networking.castPrivate"},
     {APIPermission::kSystemPrivate, "systemPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kCloudPrintPrivate, "cloudPrintPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kInputMethodPrivate, "inputMethodPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kEchoPrivate, "echoPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kImageWriterPrivate, "imageWriterPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kRtcPrivate, "rtcPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kTerminalPrivate, "terminalPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kVirtualKeyboardPrivate, "virtualKeyboardPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWallpaperPrivate, "wallpaperPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWebstorePrivate, "webstorePrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kEnterprisePlatformKeysPrivate,
      "enterprise.platformKeysPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kEnterpriseReportingPrivate, "enterprise.reportingPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWebrtcAudioPrivate, "webrtcAudioPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWebrtcDesktopCapturePrivate, "webrtcDesktopCapturePrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWebrtcLoggingPrivate, "webrtcLoggingPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWebrtcLoggingPrivateAudioDebug,
      "webrtcLoggingPrivate.audioDebug",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kSettingsPrivate, "settingsPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kAutofillAssistantPrivate, "autofillAssistantPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kAutofillPrivate, "autofillPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kPasswordsPrivate, "passwordsPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kUsersPrivate, "usersPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kLanguageSettingsPrivate, "languageSettingsPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kResourcesPrivate, "resourcesPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional |
-         APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kSafeBrowsingPrivate, "safeBrowsingPrivate",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+     APIPermissionInfo::kFlagCannotBeOptional},
+    {APIPermission::kSafeBrowsingPrivate, "safeBrowsingPrivate"},
 
     // Full url access permissions.
     {APIPermission::kDebugger, "debugger",
@@ -261,13 +214,10 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
          APIPermissionInfo::kFlagCannotBeOptional},
 
     // Platform-app permissions.
-
     {APIPermission::kFileSystemProvider, "fileSystemProvider",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kCastStreaming, "cast.streaming",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
-    {APIPermission::kLauncherSearchProvider, "launcherSearchProvider",
-     APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
+    {APIPermission::kCastStreaming, "cast.streaming"},
+    {APIPermission::kLauncherSearchProvider, "launcherSearchProvider"},
 
     // Settings override permissions.
     {APIPermission::kHomepage, "homepage",

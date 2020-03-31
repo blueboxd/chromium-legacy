@@ -92,7 +92,7 @@ void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
 
     Browser* browser = GetBrowser();
     browser->signin_view_controller()->ShowSignin(
-        profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser,
+        profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
         signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, redirect_url);
   }
 }

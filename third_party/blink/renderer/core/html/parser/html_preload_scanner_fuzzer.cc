@@ -40,7 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   FuzzedDataProvider fuzzed_data(data, size);
 
   HTMLParserOptions options;
-  options.script_enabled = fuzzed_data.ConsumeBool();
+  options.scripting_flag = fuzzed_data.ConsumeBool();
 
   std::unique_ptr<CachedDocumentParameters> document_parameters =
       CachedDocumentParametersForFuzzing(fuzzed_data);

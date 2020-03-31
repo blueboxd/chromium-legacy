@@ -23,7 +23,6 @@ class RenderViewImpl;
 }  // namespace content
 
 namespace test_runner {
-class WebTestInterfaces;
 
 // WebFrameTestProxy is used during running web tests instead of a
 // RenderFrameImpl to inject test-only behaviour by overriding methods in the
@@ -35,8 +34,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
       : RenderFrameImpl(std::forward<Args>(args)...) {}
   ~WebFrameTestProxy() override;
 
-  void Initialize(WebTestInterfaces* interfaces,
-                  content::RenderViewImpl* render_view_for_frame);
+  void Initialize(content::RenderViewImpl* render_view_for_frame);
 
   // Returns a frame name that can be used in the output of web tests
   // (the name is derived from the frame's unique name).

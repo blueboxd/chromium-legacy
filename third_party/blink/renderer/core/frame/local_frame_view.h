@@ -754,6 +754,8 @@ class CORE_EXPORT LocalFrameView final
   // earlier if we don't need to run future lifecycle phases.
   bool RunStyleAndLayoutLifecyclePhases(
       DocumentLifecycle::LifecycleState target_state);
+  bool RunAccessibilityLifecyclePhase(
+      DocumentLifecycle::LifecycleState target_state);
   bool RunCompositingLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);
   bool RunPrePaintLifecyclePhase(

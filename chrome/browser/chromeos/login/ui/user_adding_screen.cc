@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h"
@@ -33,6 +35,43 @@ class UserAddingScreenImpl : public UserAddingScreen {
 
  private:
   friend struct base::DefaultSingletonTraits<UserAddingScreenImpl>;
+  class LoadTimeReporter : public OobeUI::Observer {
+   public:
+    LoadTimeReporter() : start_time_(base::TimeTicks::Now()) {}
+    LoadTimeReporter(const LoadTimeReporter&) = delete;
+    LoadTimeReporter& operator=(const LoadTimeReporter&) = delete;
+
+    ~LoadTimeReporter() override {
+      if (remove_observer_)
+        oobe_ui_->RemoveObserver(this);
+      remove_observer_ = false;
+    }
+
+    void Observe(OobeUI* oobe_ui) {
+      oobe_ui_ = oobe_ui;
+      oobe_ui_->AddObserver(this);
+      remove_observer_ = true;
+    }
+
+   private:
+    void OnCurrentScreenChanged(OobeScreenId current_screen,
+                                OobeScreenId new_screen) override {
+      if (new_screen != OobeScreen::SCREEN_ACCOUNT_PICKER)
+        return;
+      const base::TimeDelta load_time = base::TimeTicks::Now() - start_time_;
+      UMA_HISTOGRAM_TIMES("ChromeOS.UserAddingScreen.LoadTime", load_time);
+      remove_observer_ = false;
+      oobe_ui_->RemoveObserver(this);
+    }
+    void OnDestroyingOobeUI() override { remove_observer_ = false; }
+
+   private:
+    const base::TimeTicks start_time_;
+    OobeUI* oobe_ui_ = nullptr;
+    bool remove_observer_ = false;
+  };
+
+  std::unique_ptr<LoadTimeReporter> reporter_;
 
   void OnDisplayHostCompletion();
 
@@ -47,9 +86,11 @@ class UserAddingScreenImpl : public UserAddingScreen {
 
 void UserAddingScreenImpl::Start() {
   CHECK(!IsRunning());
+  reporter_ = std::make_unique<LoadTimeReporter>();
   display_host_ = new chromeos::LoginDisplayHostWebUI();
   display_host_->StartUserAdding(base::BindOnce(
       &UserAddingScreenImpl::OnDisplayHostCompletion, base::Unretained(this)));
+  reporter_->Observe(display_host_->GetOobeUI());
 
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGIN_SECONDARY);
@@ -59,6 +100,7 @@ void UserAddingScreenImpl::Start() {
 
 void UserAddingScreenImpl::Cancel() {
   CHECK(IsRunning());
+  reporter_.reset();
 
   display_host_->CancelUserAdding();
 

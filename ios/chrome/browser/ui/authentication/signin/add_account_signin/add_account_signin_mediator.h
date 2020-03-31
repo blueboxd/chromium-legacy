@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_ADD_ACCOUNT_SIGNIN_ADD_ACCOUNT_SIGNIN_MEDIATOR_H_
 #define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_ADD_ACCOUNT_SIGNIN_ADD_ACCOUNT_SIGNIN_MEDIATOR_H_
 
-#import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_enums.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 
@@ -51,11 +50,7 @@ class IdentityManager;
 
 // Handles the sign-in operation.
 // |signinIntent| is the add account sign-in flow intent.
-// |accessPoint| is the view where the sign-in button was displayed.
-// |promoAction| is promo button used to trigger the sign-in.
-- (void)handleSigninWithIntent:(AddAccountSigninIntent)addAccountSigninIntent
-                   accessPoint:(signin_metrics::AccessPoint)accessPoint
-                   promoAction:(signin_metrics::PromoAction)promoAction;
+- (void)handleSigninWithIntent:(AddAccountSigninIntent)addAccountSigninIntent;
 
 @end
 

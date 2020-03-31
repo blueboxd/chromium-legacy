@@ -48,7 +48,7 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
   FormSaver* GetFormSaverForGeneration() override;
 
  private:
-  bool IsAccountStoreEnabled();
+  bool IsOptedInForAccountStorage();
 
   const std::unique_ptr<FormSaver> account_store_form_saver_;
   DISALLOW_COPY_AND_ASSIGN(MultiStorePasswordSaveManager);

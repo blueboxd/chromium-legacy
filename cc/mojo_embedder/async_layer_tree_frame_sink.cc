@@ -252,6 +252,10 @@ void AsyncLayerTreeFrameSink::DidNotProduceFrame(
   // BeginFrames. https://crbug.com/881949
   auto it = pipeline_reporting_frame_times_.find(ack.trace_id);
   if (it != pipeline_reporting_frame_times_.end()) {
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(ack.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "DidNotProduceFrame");
     compositor_frame_sink_ptr_->DidNotProduceFrame(ack);
     pipeline_reporting_frame_times_.erase(it);
   }
@@ -335,6 +339,13 @@ void AsyncLayerTreeFrameSink::ReclaimResources(
 
 void AsyncLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   DCHECK(compositor_frame_sink_ptr_);
+  if (needs_begin_frames_ != needs_begin_frames) {
+    if (needs_begin_frames_) {
+      TRACE_EVENT_ASYNC_END0("cc,benchmark", "NeedsBeginFrames", this);
+    } else {
+      TRACE_EVENT_ASYNC_BEGIN0("cc,benchmark", "NeedsBeginFrames", this);
+    }
+  }
   needs_begin_frames_ = needs_begin_frames;
   compositor_frame_sink_ptr_->SetNeedsBeginFrame(needs_begin_frames);
 }

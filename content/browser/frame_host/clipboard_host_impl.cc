@@ -236,22 +236,29 @@ void ClipboardHostImpl::ReadRtf(ui::ClipboardBuffer clipboard_buffer,
 
 void ClipboardHostImpl::ReadImage(ui::ClipboardBuffer clipboard_buffer,
                                   ReadImageCallback callback) {
-  SkBitmap result = clipboard_->ReadImage(clipboard_buffer);
+  clipboard_->ReadImage(clipboard_buffer,
+                        base::BindOnce(&ClipboardHostImpl::OnReadImage,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       clipboard_buffer, std::move(callback)));
+}
 
+void ClipboardHostImpl::OnReadImage(ui::ClipboardBuffer clipboard_buffer,
+                                    ReadImageCallback callback,
+                                    const SkBitmap& bitmap) {
   std::string data =
-      std::string(reinterpret_cast<const char*>(result.getPixels()),
-                  result.computeByteSize());
+      std::string(reinterpret_cast<const char*>(bitmap.getPixels()),
+                  bitmap.computeByteSize());
   PerformPasteIfAllowed(clipboard_->GetSequenceNumber(clipboard_buffer),
                         ui::ClipboardFormatType::GetBitmapType(),
                         std::move(data),
                         base::BindOnce(
-                            [](SkBitmap result, ReadImageCallback callback,
+                            [](SkBitmap bitmap, ReadImageCallback callback,
                                ClipboardPasteAllowed allowed) {
                               if (!allowed)
-                                result.reset();
-                              std::move(callback).Run(result);
+                                bitmap.reset();
+                              std::move(callback).Run(bitmap);
                             },
-                            std::move(result), std::move(callback)));
+                            std::move(bitmap), std::move(callback)));
 }
 
 void ClipboardHostImpl::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
@@ -339,7 +346,7 @@ void ClipboardHostImpl::StartIsPasteAllowedRequest(
     render_frame_host->IsClipboardPasteAllowed(
         data_type, data,
         base::BindOnce(&ClipboardHostImpl::FinishPasteIfAllowed,
-                       base::Unretained(this), seqno));
+                       weak_ptr_factory_.GetWeakPtr(), seqno));
   } else {
     FinishPasteIfAllowed(seqno, ClipboardPasteAllowed(true));
   }

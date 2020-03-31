@@ -48,8 +48,9 @@ class GpuImageDecodeCachePerfTest
                kTimeCheckInterval),
         context_provider_(
             base::MakeRefCounted<viz::TestInProcessContextProvider>(
-                UseTransferCache(),
-                false /* support_locking */)) {}
+                /*gpu_rasterization=*/GetParam() != TestMode::kSw,
+                /*oop_rasterization=*/UseTransferCache(),
+                /*support_locking=*/false)) {}
 
   void SetUp() override {
     gpu::ContextResult result = context_provider_->BindToCurrentThread();

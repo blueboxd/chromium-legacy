@@ -745,35 +745,14 @@ Output = class {
             options.annotation.push(new Output.SelectionSpan(0, 0));
           }
 
-          // Language Switching. Only execute if feature is enabled.
+          const nameOrAnnotation =
+              UserAnnotationHandler.getAnnotationForNode(node) || node.name;
           if (localStorage['languageSwitching'] === 'true') {
-            /**
-             * Passed as a callback to assignLocalesAndAppend.
-             * Appends |outputString| to |buff| with |newLocale|.
-             * @param {!Array<Spannable>} buff
-             * @param {{isUnique: (boolean|undefined),
-             *      annotation: !Array<*>}} options
-             * @param {string} outputString
-             * @param {string} newLocale
-             */
-            const appendStringWithLocale = function(
-                buff, options, outputString, newLocale) {
-              const speechProps = new Output.SpeechProperties();
-              speechProps.properties['lang'] = newLocale;
-              this.append_(buff, outputString, options);
-              // Attach associated SpeechProperties if the buffer is
-              // non-empty.
-              if (buff.length > 0) {
-                buff[buff.length - 1].setSpan(speechProps, 0, 0);
-              }
-            };
-            LocaleOutputHelper.instance.assignLocalesAndAppend(
-                node, 'name', appendStringWithLocale.bind(this, buff, options));
+            this.assignLocalesAndAppend(nameOrAnnotation, node, buff, options);
           } else {
-            const nameOrAnnotation =
-                UserAnnotationHandler.getAnnotationForNode(node) || node.name;
             this.append_(buff, nameOrAnnotation || '', options);
           }
+
           ruleStr.writeTokenWithValue(token, node.name);
         } else if (token == 'description') {
           if (node.name == node.description) {
@@ -1689,7 +1668,11 @@ Output = class {
       text = range.start.getText().substring(rangeStart, rangeEnd);
     }
 
-    this.append_(buff, text, options);
+    if (localStorage['languageSwitching'] === 'true') {
+      this.assignLocalesAndAppend(text, node, buff, options);
+    } else {
+      this.append_(buff, text, options);
+    }
     ruleStr.write('subNode_: ' + text + '\n');
 
     if (!this.outputContextFirst_) {
@@ -2108,6 +2091,36 @@ Output = class {
    */
   get brailleOutputForTest() {
     return this.mergeBraille_(this.brailleBuffer_);
+  }
+
+  /**
+   * @param {string} text
+   * @param {!AutomationNode} contextNode
+   * @param {!Array<Spannable>} buff
+   * @param {{isUnique: (boolean|undefined), annotation: !Array<*>}} options
+   */
+  assignLocalesAndAppend(text, contextNode, buff, options) {
+    /**
+     * A callback that appends |outputString| to |buff| with |newLocale|.
+     * @param {!Array<Spannable>} buff
+     * @param {{isUnique: (boolean|undefined),
+     *      annotation: !Array<*>}} options
+     * @param {string} outputString
+     * @param {string} newLocale
+     */
+    const appendStringWithLocale = function(
+        buff, options, outputString, newLocale) {
+      const speechProps = new Output.SpeechProperties();
+      speechProps.properties['lang'] = newLocale;
+      this.append_(buff, outputString, options);
+      // Attach associated SpeechProperties if the buffer is
+      // non-empty.
+      if (buff.length > 0) {
+        buff[buff.length - 1].setSpan(speechProps, 0, 0);
+      }
+    };
+    LocaleOutputHelper.instance.assignLocalesAndAppend(
+        text, contextNode, appendStringWithLocale.bind(this, buff, options));
   }
 };
 

@@ -1,0 +1,5 @@
+package: chromium/third_party/glslang_js
+description: 'JS+WASM build of glslang (Khronos reference front-end for GLSL and ESSL)'
+data:
+  - file: lib/glslang.js
+  - file: lib/glslang.wasm

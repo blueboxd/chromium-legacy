@@ -495,8 +495,7 @@ TEST_F(TooltipControllerTest, DISABLED_CloseOnCaptureLost) {
 // Disabled on X11 as DesktopScreenX11::GetWindowAtScreenPoint() doesn't
 // consider z-order.
 // Disabled on Windows due to failing bots. http://crbug.com/604479
-// Disabled on Ozone due to failing bots: crbug.com/1065474
-#if defined(USE_X11) || defined(OS_WIN) || defined(USE_OZONE)
+#if defined(USE_X11) || defined(OS_WIN)
 #define MAYBE_Capture DISABLED_Capture
 #else
 #define MAYBE_Capture Capture

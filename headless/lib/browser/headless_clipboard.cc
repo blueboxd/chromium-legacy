@@ -105,8 +105,9 @@ void HeadlessClipboard::ReadRTF(ui::ClipboardBuffer buffer,
     *result = it->second;
 }
 
-SkBitmap HeadlessClipboard::ReadImage(ui::ClipboardBuffer buffer) const {
-  return GetStore(buffer).image;
+void HeadlessClipboard::ReadImage(ui::ClipboardBuffer buffer,
+                                  ReadImageCallback callback) const {
+  std::move(callback).Run(GetStore(buffer).image);
 }
 
 void HeadlessClipboard::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,

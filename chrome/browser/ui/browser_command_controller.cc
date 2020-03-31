@@ -51,6 +51,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/feature_engagement/buildflags.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -682,6 +683,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SHOW_BOOKMARK_BAR:
       ToggleBookmarkBar(browser_);
       break;
+    case IDC_SHOW_FULL_URLS:
+      ToggleShowFullURLs(browser_);
+      break;
     case IDC_PROFILING_ENABLED:
       content::Profiling::Toggle();
       break;
@@ -1113,6 +1117,10 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
       extensions::ExtensionSystem::Get(profile)->extension_service();
   const bool enable_extensions =
       extension_service && extension_service->extensions_enabled();
+
+  command_updater->UpdateCommandEnabled(
+      IDC_SHOW_FULL_URLS,
+      base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls));
 
   // Bookmark manager and settings page/subpages are forced to open in normal
   // mode. For this reason we disable these commands when incognito is forced.

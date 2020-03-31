@@ -33,7 +33,8 @@ class BASE_EXPORT StackSampler {
   static std::unique_ptr<StackSampler> Create(
       SamplingProfilerThreadToken thread_token,
       ModuleCache* module_cache,
-      StackSamplerTestDelegate* test_delegate);
+      StackSamplerTestDelegate* test_delegate,
+      std::unique_ptr<Unwinder> native_unwinder = nullptr);
 
   // Gets the required size of the stack buffer.
   static size_t GetStackBufferSize();

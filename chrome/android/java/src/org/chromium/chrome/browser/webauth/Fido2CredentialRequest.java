@@ -45,7 +45,6 @@ import org.chromium.ui.base.WindowAndroid;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Uses the Google Play Services Fido2 APIs.
@@ -60,7 +59,6 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
     private ActivityWindowAndroid mWindow;
     private @RequestStatus int mRequestStatus;
     private boolean mAppIdExtensionUsed;
-    private long mTimeoutMs;
     private long mStartTimeMs;
 
     @IntDef({
@@ -148,7 +146,6 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         }
 
         mRequestStatus = REGISTER_REQUEST;
-        mTimeoutMs = TimeUnit.MICROSECONDS.toMillis(options.adjustedTimeout.microseconds);
 
         if (!initFido2ApiClient()) {
             Log.e(TAG, "Google Play Services' Fido2PrivilegedApi is not available.");
@@ -190,7 +187,6 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         }
 
         mRequestStatus = SIGN_REQUEST;
-        mTimeoutMs = TimeUnit.MICROSECONDS.toMillis(options.adjustedTimeout.microseconds);
 
         if (!initFido2ApiClient()) {
             Log.e(TAG, "Google Play Services' Fido2PrivilegedApi is not available.");

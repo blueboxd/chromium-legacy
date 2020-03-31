@@ -34,9 +34,10 @@ using base::SysUTF8ToNSString;
 - (instancetype)init {
   if ((self = [super init])) {
     _xpcConnection.reset([[NSXPCConnection alloc]
-        initWithServiceName:updater::GetGoogleUpdateServiceMachName().get()]);
-    _xpcConnection.get().remoteObjectInterface =
-        [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateChecking)];
+        initWithMachServiceName:updater::GetGoogleUpdateServiceMachName().get()
+                        options:0]);
+
+    _xpcConnection.get().remoteObjectInterface = updater::GetXpcInterface();
 
     _xpcConnection.get().interruptionHandler = ^{
       LOG(WARNING) << "CRUUpdateCheckingService: XPC connection interrupted.";
@@ -73,7 +74,9 @@ using base::SysUTF8ToNSString;
                             reply:reply];
 }
 
-- (void)checkForUpdatesWithReply:(void (^_Nullable)(int rc))reply {
+- (void)checkForUpdatesWithUpdateState:
+            (id<CRUUpdateStateObserving> _Nonnull)updateState
+                                 reply:(void (^_Nullable)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);
@@ -81,12 +84,14 @@ using base::SysUTF8ToNSString;
   };
 
   [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
-      checkForUpdatesWithReply:reply];
+      checkForUpdatesWithUpdateState:updateState
+                               reply:reply];
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
                        priority:(CRUPriorityWrapper* _Nonnull)priority
-                    updateState:(CRUUpdateStateObserver* _Nonnull)updateState
+                    updateState:
+                        (id<CRUUpdateStateObserving> _Nonnull)updateState
                           reply:(void (^_Nullable)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC connection failed: "
@@ -147,7 +152,11 @@ void UpdateServiceOutOfProcess::UpdateAll(StateChangeCallback state_update,
                                   static_cast<update_client::Error>(error)));
   };
 
-  [client_ checkForUpdatesWithReply:reply];
+  base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
+      [[CRUUpdateStateObserver alloc]
+          initWithRepeatingCallback:state_update
+                     callbackRunner:callback_runner_]);
+  [client_ checkForUpdatesWithUpdateState:stateObserver.get() reply:reply];
 }
 
 void UpdateServiceOutOfProcess::Update(const std::string& app_id,
@@ -166,7 +175,7 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
 
   base::scoped_nsobject<CRUPriorityWrapper> priorityWrapper(
       [[CRUPriorityWrapper alloc] initWithPriority:priority]);
-  base::scoped_nsobject<CRUUpdateStateObserver> stateObserver(
+  base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
       [[CRUUpdateStateObserver alloc]
           initWithRepeatingCallback:state_update
                      callbackRunner:callback_runner_]);

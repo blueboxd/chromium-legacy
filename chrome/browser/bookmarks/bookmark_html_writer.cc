@@ -18,6 +18,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -163,24 +164,29 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
   // Writing bookmarks and favicons data to file.
   void DoWrite() {
-    if (!OpenFile())
+    if (!OpenFile()) {
+      NotifyOnFinish(BookmarksExportObserver::Result::kCouldNotCreateFile);
       return;
+    }
 
-    base::Value* roots = NULL;
-    if (!Write(kHeader) ||
-        bookmarks_->type() != base::Value::Type::DICTIONARY ||
+    base::Value* roots = nullptr;
+    if (!Write(kHeader)) {
+      NotifyOnFinish(BookmarksExportObserver::Result::kCouldNotWriteHeader);
+      return;
+    }
+
+    if (bookmarks_->type() != base::Value::Type::DICTIONARY ||
         !static_cast<base::DictionaryValue*>(bookmarks_.get())
              ->Get(BookmarkCodec::kRootsKey, &roots) ||
         roots->type() != base::Value::Type::DICTIONARY) {
-      NOTREACHED();
-      return;
+      NOTREACHED();  // Invalid type for roots key.
     }
 
     base::DictionaryValue* roots_d_value =
         static_cast<base::DictionaryValue*>(roots);
     base::Value* root_folder_value;
-    base::Value* other_folder_value = NULL;
-    base::Value* mobile_folder_value = NULL;
+    base::Value* other_folder_value = nullptr;
+    base::Value* mobile_folder_value = nullptr;
     if (!roots_d_value->Get(BookmarkCodec::kRootFolderNameKey,
                             &root_folder_value) ||
         root_folder_value->type() != base::Value::Type::DICTIONARY ||
@@ -190,8 +196,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
         !roots_d_value->Get(BookmarkCodec::kMobileBookmarkFolderNameKey,
                             &mobile_folder_value) ||
         mobile_folder_value->type() != base::Value::Type::DICTIONARY) {
-      NOTREACHED();
-      return;  // Invalid type for root folder and/or other folder.
+      NOTREACHED();  // Invalid type for root folder and/or other folder.
     }
 
     IncrementIndent();
@@ -202,6 +207,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
                    BookmarkNode::OTHER_NODE) ||
         !WriteNode(*static_cast<base::DictionaryValue*>(mobile_folder_value),
                    BookmarkNode::MOBILE)) {
+      NotifyOnFinish(BookmarksExportObserver::Result::kCouldNotWriteNodes);
       return;
     }
 
@@ -212,7 +218,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     // File close is forced so that unit test could read it.
     file_.reset();
 
-    NotifyOnFinish();
+    NotifyOnFinish(BookmarksExportObserver::Result::kSuccess);
   }
 
  private:
@@ -235,7 +241,11 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   bool OpenFile() {
     int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
     file_.reset(new base::File(path_, flags));
-    return file_->IsValid();
+    if (!file_->IsValid()) {
+      PLOG(ERROR) << "Could not create " << path_;
+      return false;
+    }
+    return true;
   }
 
   // Increments the indent.
@@ -250,9 +260,9 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   }
 
   // Called at the end of the export process.
-  void NotifyOnFinish() {
-    if (observer_ != NULL) {
-      observer_->OnExportFinished();
+  void NotifyOnFinish(BookmarksExportObserver::Result result) {
+    if (observer_ != nullptr) {
+      observer_->OnExportFinished(result);
     }
   }
 
@@ -263,8 +273,11 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
       return true;
     size_t wrote = file_->WriteAtCurrentPos(text.c_str(), text.length());
     bool result = (wrote == text.length());
-    DCHECK(result);
-    return result;
+    if (!result) {
+      PLOG(ERROR) << "Could not write text to " << path_;
+      return false;
+    }
+    return true;
   }
 
   // Writes out the text string (as UTF8). The text is escaped based on
@@ -356,7 +369,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
     // Folder.
     std::string last_modified_date;
-    const base::Value* child_values = NULL;
+    const base::Value* child_values = nullptr;
     if (!value.GetString(BookmarkCodec::kDateModifiedKey,
                          &last_modified_date) ||
         !value.Get(BookmarkCodec::kChildrenKey, &child_values) ||

@@ -71,6 +71,7 @@ settings_namespace_rewrites = [
   "settings.ResolverOption|ResolverOption",
   "settings.Route|Route",
   "settings.routes|routes",
+  "settings.SafetyCheckElementInteractions|SafetyCheckElementInteractions",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
   "settings.SearchRequest|SearchRequest",
   "settings.SearchResult|SearchResult",

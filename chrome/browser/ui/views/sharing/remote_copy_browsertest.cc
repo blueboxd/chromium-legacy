@@ -29,6 +29,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
+#include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -59,6 +60,7 @@ class ClipboardObserver : public ui::ClipboardObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardObserver);
 };
+
 }  // namespace
 
 // Browser tests for the Remote Copy feature.
@@ -134,8 +136,8 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
   }
 
   SkBitmap ReadClipboardImage() {
-    return ui::Clipboard::GetForCurrentThread()->ReadImage(
-        ui::ClipboardBuffer::kCopyPaste);
+    return ui::clipboard_test_util::ReadImage(
+        ui::Clipboard::GetForCurrentThread());
   }
 
   message_center::Notification GetNotification() {

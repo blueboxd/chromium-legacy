@@ -10,6 +10,7 @@ source_set("browsertests") {
     "has_enrolled_instrument_browsertest.cc",
     "has_enrolled_instrument_query_quota_browsertest.cc",
     "iframe_csp_browsertest.cc",
+    "ignore_payment_method_browsertest.cc",
     "journey_logger_browsertest.cc",
     "payment_handler_change_shipping_address_option_browsertest.cc",
     "payment_handler_enable_delegations_browsertest.cc",
@@ -28,6 +29,7 @@ source_set("browsertests") {
     "//chrome/test:test_support",
     "//chrome/test/payments:test_support",
     "//components/payments/content",
+    "//components/payments/content:utils",
     "//components/payments/core:test_support",
     "//components/ukm:test_support",
   ]

@@ -54,12 +54,14 @@ constexpr char kKeyAlarmDbFS[] = "dbfs.alarm";
 constexpr char kKeyCommunicationDbFS[] = "dbfs.communication";
 constexpr char kKeyDefaultVolume[] = "default_volume";
 
+#if !BUILDFLAG(SYSTEM_OWNS_VOLUME)
 float DbFsToScale(float db) {
   if (db <= kMinDbFS) {
     return 0.0f;
   }
   return std::pow(10, db / 20);
 }
+#endif
 
 std::string ContentTypeToDbFSKey(AudioContentType type) {
   switch (type) {

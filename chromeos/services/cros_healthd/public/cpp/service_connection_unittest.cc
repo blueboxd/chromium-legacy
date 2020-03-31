@@ -138,6 +138,13 @@ base::Optional<std::vector<mojom::BacklightInfoPtr>> MakeBacklightInfo() {
   return backlight_info;
 }
 
+base::Optional<std::vector<mojom::FanInfoPtr>> MakeFanInfo() {
+  std::vector<mojom::FanInfoPtr> fan_info;
+  fan_info.push_back(mojom::FanInfo::New(1200 /* speed_rpm */));
+  fan_info.push_back(mojom::FanInfo::New(2650 /* speed_rpm */));
+  return fan_info;
+}
+
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryInfo() /* battery_info */,
@@ -145,7 +152,7 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
       MakeCachedVpdInfo() /* vpd_info */, MakeCpuInfo() /* cpu_info */,
       MakeTimezoneInfo() /* timezone_info */,
       MakeMemoryInfo() /* memory_info */,
-      MakeBacklightInfo() /* backlight_info */
+      MakeBacklightInfo() /* backlight_info */, MakeFanInfo() /* fan_info */
   );
 }
 
@@ -400,6 +407,21 @@ TEST_F(CrosHealthdServiceConnectionTest, RunPrimeSearchRoutine) {
   run_loop.Run();
 }
 
+TEST_F(CrosHealthdServiceConnectionTest, RunBatteryDischargeRoutine) {
+  // Test that we can run the battery discharge routine.
+  auto response = MakeRunRoutineResponse();
+  FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->RunBatteryDischargeRoutine(
+      /*exec_duration=*/base::TimeDelta::FromSeconds(12),
+      /*maximum_discharge_percent_allowed=*/99,
+      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+        EXPECT_EQ(response, MakeRunRoutineResponse());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
 TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {
   // Test that we can send a request without categories.
   auto empty_info = mojom::TelemetryInfo::New();
@@ -424,7 +446,12 @@ TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {
   const std::vector<mojom::ProbeCategoryEnum> categories_to_test = {
       mojom::ProbeCategoryEnum::kBattery,
       mojom::ProbeCategoryEnum::kNonRemovableBlockDevices,
-      mojom::ProbeCategoryEnum::kCachedVpdData, mojom::ProbeCategoryEnum::kCpu};
+      mojom::ProbeCategoryEnum::kCachedVpdData,
+      mojom::ProbeCategoryEnum::kCpu,
+      mojom::ProbeCategoryEnum::kTimezone,
+      mojom::ProbeCategoryEnum::kMemory,
+      mojom::ProbeCategoryEnum::kBacklight,
+      mojom::ProbeCategoryEnum::kFan};
   callback_done = false;
   ServiceConnection::GetInstance()->ProbeTelemetryInfo(
       categories_to_test,

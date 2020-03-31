@@ -3004,6 +3004,7 @@ jumbo_static_library("browser") {
       "//chrome/browser/notifications/scheduler/public",
       "//chrome/browser/offline_pages/prefetch/notifications",
       "//chrome/browser/optimization_guide/android:jni_headers",
+      "//chrome/browser/payments/android:jni_headers",
       "//chrome/browser/share",
       "//chrome/browser/upboarding",
       "//chrome/browser/updates",
@@ -4903,6 +4904,8 @@ jumbo_static_library("browser") {
       "android/feed/v2/feed_service_bridge.h",
       "android/feed/v2/feed_service_factory.cc",
       "android/feed/v2/feed_service_factory.h",
+      "android/feed/v2/feed_stream_surface.cc",
+      "android/feed/v2/feed_stream_surface.h",
     ]
     deps += [
       "//components/feed/content:feed_content",

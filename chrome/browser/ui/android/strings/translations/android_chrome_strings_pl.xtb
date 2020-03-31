@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Data zakończenia: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Zainstalowano</translation>
 <translation id="1792959175193046959">W dowolnej chwili możesz zmienić domyślną lokalizację pobierania</translation>
+<translation id="1795251344124198516">Dodatkowe warunki korzystania z Chrome i Chrome OS</translation>
 <translation id="1807246157184219062">Jasny</translation>
 <translation id="1810845389119482123">Nie dokończono wstępnego konfigurowania synchronizacji</translation>
 <translation id="1821253160463689938">Twoje ustawienia będą zapisywane w plikach cookie, nawet jeśli nie odwiedzisz tych stron</translation>
@@ -236,6 +237,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2650751991977523696">Czy pobrać plik ponownie?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# plik dźwiękowy}few{# pliki dźwiękowe}many{# plików dźwiękowych}other{# pliku dźwiękowego}}</translation>
 <translation id="2687403674020088961">Blokuj wszystkie pliki cookie (niezalecane)</translation>
+<translation id="2689830683995595741">Korzystając z Chrome, wyrażasz zgodę na <ph name="BEGIN_LINK1" />Warunki korzystania z usług Google<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Dodatkowe warunki korzystania z Google Chrome i Chrome OS<ph name="END_LINK2" />. Obowiązują też <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności na kontach Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Odśwież stronę</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="2717722538473713889">Adresy e-mail</translation>
@@ -376,6 +378,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3749259744154402564">Nieobsługiwane</translation>
 <translation id="3771001275138982843">Nie udało się pobrać aktualizacji</translation>
 <translation id="3771033907050503522">Karty incognito</translation>
+<translation id="3771694256347217732">Warunki korzystania z usług Google</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Włącz Bluetooth<ph name="END_LINK" />, by umożliwić parowanie</translation>
 <translation id="3775705724665058594">Wyślij na swoje urządzenia</translation>
 <translation id="3778956594442850293">Dodano do ekranu głównego</translation>
@@ -403,6 +406,7 @@ Obraz z kamery będziesz widzieć tylko Ty. Strona nie będzie mieć do niego d
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome wczyta stronę, gdy będzie gotowa}few{Chrome wczyta strony, gdy będą gotowe}many{Chrome wczyta strony, gdy będą gotowe}other{Chrome wczyta strony, gdy będą gotowe}}</translation>
 <translation id="3963007978381181125">Szyfrowanie hasłem nie obejmuje form płatności ani adresów w Google Pay. Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, konieczne będzie zresetowanie synchronizacji. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Pobieranie zakończone</translation>
+<translation id="3974987681202239636">Aplikacja <ph name="APP_NAME" /> zostanie otwarta w Chrome. Przechodząc dalej, wyrażasz zgodę na <ph name="BEGIN_LINK1" />Warunki korzystania z usług Google<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Dodatkowe warunki korzystania z Google Chrome i Chrome OS<ph name="END_LINK2" />. Obowiązują też <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności na kontach Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="397583555483684758">Synchronizacja przestała działać</translation>
 <translation id="3976396876660209797">Usuń i utwórz ponownie ten skrót</translation>
 <translation id="3985215325736559418">Czy chcesz ponownie pobrać plik <ph name="FILE_NAME" />?</translation>
@@ -713,6 +717,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6255999984061454636">Polecane treści</translation>
 <translation id="6270391203985052864">Strony mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
+<translation id="6292420053234093573">Korzystając z Chrome, wyrażasz zgodę na <ph name="BEGIN_LINK1" />Warunki korzystania z usług Google<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Dodatkowe warunki korzystania z Google Chrome i Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6297765934698848803">Organizacja, która zarządza Twoim urządzeniem, wyłączyła aparat.</translation>
@@ -727,6 +732,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6364438453358674297">Usunąć sugestię z historii?</translation>
 <translation id="6369229450655021117">Tutaj możesz wyszukiwać informacje w internecie, udostępniać treści znajomym i przeglądać otwarte strony</translation>
 <translation id="6378173571450987352">Szczegóły: posortowane według wykorzystanych danych</translation>
+<translation id="6379829913050047669">Aplikacja <ph name="APP_NAME" /> zostanie otwarta w Chrome. Przechodząc dalej, wyrażasz zgodę na <ph name="BEGIN_LINK1" />Warunki korzystania z usług Google<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Dodatkowe warunki korzystania z Google Chrome i Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Przyciemnij strony internetowe</translation>
 <translation id="6388207532828177975">Wyczyść i zresetuj</translation>
 <translation id="6395288395575013217">LINK</translation>

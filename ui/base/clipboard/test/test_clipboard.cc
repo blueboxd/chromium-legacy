@@ -139,8 +139,9 @@ void TestClipboard::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
     *result = it->second;
 }
 
-SkBitmap TestClipboard::ReadImage(ClipboardBuffer buffer) const {
-  return GetStore(buffer).image;
+void TestClipboard::ReadImage(ClipboardBuffer buffer,
+                              ReadImageCallback callback) const {
+  std::move(callback).Run(GetStore(buffer).image);
 }
 
 void TestClipboard::ReadCustomData(ClipboardBuffer buffer,

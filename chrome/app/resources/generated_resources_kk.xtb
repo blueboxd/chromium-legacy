@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Көрінетін желілер:</translation>
 <translation id="1094607894174825014">Оқу не жазу операциясы жарамсыз ауытқумен сұралды: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Кіруден бұрын <ph name="NETWORK_ID" /> желісін белсендіру үшін Қонақ ретінде кіріңіз</translation>
+<translation id="1099962274138857708">Сурет <ph name="DEVICE_NAME" /> құрылғысынан көшірілді</translation>
 <translation id="1103523840287552314">Әрқашан <ph name="LANGUAGE" /> тіліне аудару</translation>
 <translation id="1104038495841596279">SIM картаңыз анықталмады</translation>
 <translation id="1108600514891325577">&amp;Тоқтату</translation>
@@ -558,6 +559,7 @@
 <translation id="1744108098763830590">фондық бет</translation>
 <translation id="1745520510852184940">Әрқашан осылай істеу</translation>
 <translation id="1750172676754093297">Қауіпсіздік кілті саусақ іздерін сақтай алмайды.</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> сайтынң барлық қойындысы жабылғанға дейін, ол <ph name="FOLDERNAME" /> қалтасындағы файлдарды өзгерте алады.</translation>
 <translation id="175196451752279553">Жабық қойындыны қ&amp;айта ашу</translation>
 <translation id="1753067873202720523">Chromebook қосулы тұрғанда зарядталмауы мүмкін.</translation>
 <translation id="1753905327828125965">Ең көп қаралған</translation>
@@ -624,6 +626,7 @@
 <translation id="1822140782238030981">Chrome браузерін бұрыннан пайдаланып жүрсіз бе? Есептік жазбаға кіріңіз.</translation>
 <translation id="18245044880483936">Сақтық көшірме деректері балаңыздың Drive жадынан орын алмайды.</translation>
 <translation id="1826516787628120939">Тексеру</translation>
+<translation id="1827738518074806965">Өнер галереясы</translation>
 <translation id="1828378091493947763">Плагинге бұл құрылғыда қолдау көрсетілмейді</translation>
 <translation id="1828901632669367785">Жүйелік диалогтік терезесі арқылы басып шығару…</translation>
 <translation id="1829129547161959350">Пингвин</translation>
@@ -1025,6 +1028,7 @@
 <translation id="2359808026110333948">Жалғастыру</translation>
 <translation id="236117173274098341">Оңтайландыру</translation>
 <translation id="236141728043665931">Микрофонды пайдалануға әрдайым тыйым салу</translation>
+<translation id="2364498172489649528">Сынақтан өтті</translation>
 <translation id="2365507699358342471">Бұл сайтта буферге көшірілген мәтін мен кескіндерді ашуға болады.</translation>
 <translation id="2366260648632264559">Жүйе мәтінін осы тілде көрсету</translation>
 <translation id="2367972762794486313">Қолданбаларды көрсету</translation>
@@ -1339,6 +1343,7 @@
 <translation id="2762441749940182211">Камераға тыйым салынған</translation>
 <translation id="2765217105034171413">Кіші</translation>
 <translation id="2766161002040448006">Ата-анадан сұрау</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> сайтының барлық қойындысы жабылғанға дейін, ол <ph name="FILENAME" /> файлын өзгерте алады.</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> ретінде кірген.</translation>
 <translation id="2770465223704140727">Тізімнен алып тастау</translation>
 <translation id="2770690685823456775">Құпия сөздерді басқа қалтаға экспорттаңыз</translation>
@@ -1663,6 +1668,18 @@
 <translation id="3202173864863109533">Бұл қойынды аудиосының дыбысы өшірілуде.</translation>
 <translation id="3208321278970793882">Қолданба</translation>
 <translation id="3208584281581115441">Қазір тексеру</translation>
+<translation id="3208640652501208439">Үй жұмысына арналған ресурстар қолжетімді болмауы мүмкін немесе автоматты түрде жүктелмейді.
+    Балаңыз мыналарды пайдалана алмауы мүмкін:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />мектеп орнатқан қолданбалар мен кеңейтімдер;
+      <ph name="LIST_ITEM" />мектептің Chromebook құрылғысындағы бетбелгілер;
+      <ph name="LIST_ITEM" />оқу сайттарындағы автотолтыру құпия сөздері.
+    <ph name="END_LIST" />
+    Құрылғыдан сабақ оқудың барлық мүмкіндігін пайдалану үшін балаңыз мына әрекетті орындауы қажет:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Family Link басқарылатын есептік жазбадан шығу;
+      <ph name="OLIST_ITEM" />кіру бетінде GSuite for Education есептік жазбасын пайдалану. Дегенмен мектеп саясаттарының, сонымен қатар қолданба және веб-сайт пайдалану параметрлерінің Family Link басқару функцияларынан басым түсетінін (мысалы, мектеп әкімшілерінің үй жұмысы үшін YouTube пайдалануға рұқсат етуі, пайдалану уақытын шектемеу және т.б.) ескеріңіз.
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Расталмаған</translation>
 <translation id="32101887417650595">Принтерге қосылмады</translation>
 <translation id="321084946921799184">Сары және ақ</translation>
@@ -1741,6 +1758,7 @@
 <translation id="3312424061798279731">Қосылған тілдер</translation>
 <translation id="3313622045786997898">Сертификат қолтаңбасы мәні</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> жасыру</translation>
+<translation id="3317284582048881482">Ата-аналарға арналған оқу есептік жазбасы туралы ақпарат</translation>
 <translation id="3317459757438853210">Екі жақты</translation>
 <translation id="3317678681329786349">Камера мен микрофонға тыйым салынған</translation>
 <translation id="3319048459796106952">Жаңа &amp;инкогнито терезесі</translation>
@@ -1927,6 +1945,7 @@
 <translation id="3574210789297084292">кіру</translation>
 <translation id="3574917942258583917">Инкогнито режимінен бәрібір шығасыз ба?</translation>
 <translation id="3575121482199441727">Осы сайт үшін рұқсат ету</translation>
+<translation id="3575919114596668130">Family Link қолданбасының ата-аналарға арналған параметрлері әлі де қолданылады. Сізде бұрын тыйым салынған қолданба не сайт болса, мұны қайта орындау қажет емес.</translation>
 <translation id="3576324189521867626">Сәтті орнатылды</translation>
 <translation id="3578594933904494462">Бұл қойынды мазмұны бөлісілуде.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; иелігіңіздегі топпен &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; принтерін бөліскісі келеді: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Қабылдасаңыз, принтерді барлық топ мүшелері қолданатын болады.</translation>
@@ -2767,6 +2786,7 @@
 <translation id="4689235506267737042">Демо параметрлерін таңдаңыз</translation>
 <translation id="4689421377817139245">Осы бетбелгіні iPhone телефоныңызға синхрондаңыз</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi микробағдарламасы жасаған төрт файл: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Алғашқы үшеуі тіркеу қателерінен тұратын бинарлы файлдар болып табылады және Intel-дің мәлімдеуі бойынша оларда жеке тұлғаны не құрылғыны айқындайтын ақпарат қамтылмайды. Соңғы файл – Intel микробағдарламасындағы бағдарламаның орындалу трассасы. Ондағы жеке тұлғаны не құрылғыны айқындайтын барлық ақпарат жойылған, бірақ ол үлкен болғандықтан, осы жерде көрсету мүмкін емес. Осы файлдар құрылғыңыздағы Wi-Fi желісіне қатысты соңғы мәселелерге сәйкес жасалды және олар Intel компаниясына жіберіліп, аталған мәселелерді шешуге көмектеседі.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> сайтының барлық қойындысы жабылғанға дейін, ол <ph name="FILENAME" /> файлын көре алады.</translation>
 <translation id="4692623383562244444">Іздеу жүйелері</translation>
 <translation id="4693155481716051732">Суши</translation>
 <translation id="4694024090038830733">Принтер конфигурациясын әкімші реттейді.</translation>
@@ -3122,6 +3142,7 @@
 <translation id="5204967432542742771">Құпия сөз енгізу</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" сертификатын жою керек пе?</translation>
 <translation id="520621735928254154">Сертификатты импорттау қатесі</translation>
+<translation id="5209307736170827035">Classroom қызметіндегі балаңыздың деректері қорғалады. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Құрылғылар табылмады</translation>
 <translation id="5210990770352357081">Plugin VM плагині жойылмады.</translation>
 <translation id="5213481667492808996">"<ph name="NAME" />" деректер қызметі пайдалануға дайын</translation>
@@ -3233,6 +3254,7 @@
 <translation id="5341980496415249280">Күте тұрыңыз, қысылуда...</translation>
 <translation id="5342091991439452114">PIN коды кемінде <ph name="MINIMUM" /> таңбадан құралуы керек</translation>
 <translation id="5344036115151554031">Linux қалпына келтірілуде</translation>
+<translation id="535123479159372765">Мәтін басқа құрылғыдан көшірілді</translation>
 <translation id="5352033265844765294">Уақыт белгілеу</translation>
 <translation id="5353252989841766347">Құпия сөздердерді Chrome жүйесінен экспорттау</translation>
 <translation id="5355099869024327351">Assistant қолданбасына хабарландыруларды көрсетуге рұқсат беріңіз</translation>
@@ -3355,6 +3377,7 @@
 <translation id="5511379779384092781">Өте кішкентай</translation>
 <translation id="5511823366942919280">Бұл құрылғыны "Shark" ретінде орнатқыңыз келе ме?</translation>
 <translation id="5512653252560939721">Пайдаланушы сертификатының аппараттық көшірмесі болуы керек.</translation>
+<translation id="5515923816438946203">Экранда не көргіңіз келетінін таңдаңыз</translation>
 <translation id="5517304475148761050">Қолданбаға Play Store дүкеніне кіру рұқсаты қажет</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Есептік жазбаңызға принтер қосу – бұл бір сәтті алуы мүмкін…</translation>
@@ -3805,6 +3828,7 @@
 <translation id="6097480669505687979">Орын босатпасаңыз, пайдаланушылар мен деректер автоматты өшірілуі мүмкін.</translation>
 <translation id="6097600385983390082">Дауыспен іздеу жабық</translation>
 <translation id="6098793583803863900">Белгісіз файлда қауіпті мазмұнның бар-жоғы тексерілуде.</translation>
+<translation id="609942571968311933">Мәтін <ph name="DEVICE_NAME" /> құрылғысынан көшірілді</translation>
 <translation id="6100736666660498114">Іске қосу мәзірі</translation>
 <translation id="6101226222197207147">Жаңа қолданба қосылды (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Бұл файлды "Күшейтілген қорғаныс" функциясы бөгеген.</translation>
@@ -4175,6 +4199,7 @@
 <translation id="6612358246767739896">Қорғалған мазмұн</translation>
 <translation id="6615455863669487791">Маған көрсету</translation>
 <translation id="6618097958368085618">Сақтала берсін</translation>
+<translation id="6618744767048954150">Жұмыс істеп тұр</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Сайт орналасқан жеріңізді бақылай алады</translation>
 <translation id="6619801788773578757">Киоск қолданбасын қосу</translation>
@@ -4560,6 +4585,7 @@
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> және <ph name="WEBSITE_3" /> сайттарындағы деректеріңізді оқу</translation>
 <translation id="713122686776214250">Б&amp;ет қосу…</translation>
 <translation id="7133578150266914903">Әкімші құрылғыны қалпына келтіруде (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" /> құпия сөз тексерілді...</translation>
 <translation id="7134098520442464001">Мәтінді кішірейту</translation>
 <translation id="7135729336746831607">Bluetooth функциясы қосылсын ба?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> ережесі бойынша <ph name="DEVICE_TYPE" /> құрылғысын дереу жаңарту қажет.</translation>
@@ -4908,6 +4934,7 @@
 <translation id="761530003705945209">Google Drive жадына сақтық көшірме жасау. Деректерді қалпына келтіруге немесе құрылғыны кез келген уақытта ауыстыруға болады. Сақтық көшірмеге қолданба туралы дерек кіреді. Сақтық көшірмелер Google-ға жүктеп салынады және Google есептік жазбаңыздың құпия сөзі арқылы шифрланады.</translation>
 <translation id="7616214729753637086">Құрылғы тіркелуде ...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" құрылғысына қосылуда</translation>
+<translation id="761763866592998929">Ұйқы режимі</translation>
 <translation id="762068974690945752">Осы жерде оқу есептік жазбасын енгізуге немесе балаңыздың есептік жазбаларын басқаруға болады. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Жүйе құрылғы конфигурациясын сақтай алмады.</translation>
 <translation id="7622114377921274169">Зарядталуда.</translation>
@@ -5019,6 +5046,7 @@
 <translation id="7766838926148951335">Рұқсаттарды қабылдау</translation>
 <translation id="7768770796815395237">Өзгерту</translation>
 <translation id="7769672763586021400">Үлгі идентификаторы</translation>
+<translation id="7770612696274572992">Сурет басқа құрылғыдан көшірілді</translation>
 <translation id="7770651108375708429">Wi-Fi желісін ажырату</translation>
 <translation id="7771452384635174008">Құрылым</translation>
 <translation id="7772032839648071052">Құпия фразаны растау</translation>
@@ -5026,6 +5054,7 @@
 <translation id="7772773261844472235">Chromebook күйін тексеру</translation>
 <translation id="7773726648746946405">Сеанс жады</translation>
 <translation id="7774365994322694683">Құс</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> сайтының барлық қойындысы жабылғанға дейін, ол<ph name="FOLDERNAME" /> қалтасындағы файлдарды көре алады.</translation>
 <translation id="7776701556330691704">Ешқандай дауыс табылмады</translation>
 <translation id="7780252971640011240">Қосылу кезінде қиындық туындады. Операторыңызға хабарласып, көмек сұраңыз.</translation>
 <translation id="7781335840981796660">Барлық пайдаланушы есептік жазбалары мен жергілікті деректер жойылады.</translation>
@@ -6044,6 +6073,7 @@
 <translation id="9055636786322918818">RC4 шифрлауын күшіне енгізу. RC4 шифрлары қауіпті болғандықтан, бұл параметрді пайдалану қауіпті арттырады.</translation>
 <translation id="9056810968620647706">Сәйкестіктер табылмады.</translation>
 <translation id="9057354806206861646">Кестені жаңарту</translation>
+<translation id="9058976525724291037">Балаңыз осы құрылғыға басқа Google есептік жазбасын енгізгісі келеді. G Suite for Education есептік жазбаларын ғана Family Link басқаратын құрылғыларға қосуға болады.</translation>
 <translation id="9062065967472365419">Мені таңғалдыр</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933"><ph name="ERROR_LINE_START" /> - <ph name="ERROR_LINE_END" /> аралығындағы жолдарда қате шықты</translation>

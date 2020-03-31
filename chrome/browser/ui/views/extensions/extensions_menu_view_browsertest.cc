@@ -37,6 +37,7 @@
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/widget/any_widget_observer.h"
 
 class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
  public:
@@ -78,23 +79,16 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
           container->GetViewForId(extensions()[0]->id())->GetVisible());
 
       // Trigger uninstall dialog.
+      views::NamedWidgetShownWaiter waiter(
+          views::test::AnyWidgetTestPasskey{},
+          "ExtensionUninstallDialogDelegateView");
       extensions::ExtensionContextMenuModel menu_model(
           extensions()[0].get(), browser(),
           extensions::ExtensionContextMenuModel::VISIBLE, nullptr,
           false /* can_show_icon_in_toolbar */);
       menu_model.ExecuteCommand(
           extensions::ExtensionContextMenuModel::UNINSTALL, 0);
-
-      // Executing UNINSTALL consists of two separate asynchronous processes:
-      // - the command itself, which is immediately queued for execution
-      // - the animation and display of the uninstall dialog, which is driven by
-      //   an animation in the layout
-      //
-      // Flush the task queue so the first asynchronous process has completed.
-      base::RunLoop run_loop;
-      base::PostTask(FROM_HERE, run_loop.QuitClosure());
-      run_loop.Run();
-
+      ASSERT_TRUE(waiter.WaitIfNeededAndGet());
     } else if (ui_test_name_ == "InstallDialog") {
       LoadTestExtension("extensions/uitest/long_name");
       LoadTestExtension("extensions/uitest/window_open");

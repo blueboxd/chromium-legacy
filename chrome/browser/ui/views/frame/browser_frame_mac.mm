@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
@@ -210,6 +211,12 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
       PrefService* prefs = browser->profile()->GetPrefs();
       result->new_toggle_state =
           prefs->GetBoolean(prefs::kShowFullscreenToolbar);
+      break;
+    }
+    case IDC_SHOW_FULL_URLS: {
+      PrefService* prefs = browser->profile()->GetPrefs();
+      result->new_toggle_state =
+          prefs->GetBoolean(omnibox::kPreventUrlElisionsInOmnibox);
       break;
     }
     case IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS: {

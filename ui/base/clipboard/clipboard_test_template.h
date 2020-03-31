@@ -36,6 +36,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/half_float.h"
@@ -416,7 +417,7 @@ static void TestBitmapWrite(Clipboard* clipboard,
 
   EXPECT_TRUE(clipboard->IsFormatAvailable(ClipboardFormatType::GetBitmapType(),
                                            ClipboardBuffer::kCopyPaste));
-  const SkBitmap& image = clipboard->ReadImage(ClipboardBuffer::kCopyPaste);
+  const SkBitmap& image = clipboard_test_util::ReadImage(clipboard);
   ASSERT_EQ(image.info().colorType(), kN32_SkColorType);
   ASSERT_NE(image.info().alphaType(), kUnpremul_SkAlphaType);
   EXPECT_EQ(gfx::Size(info.width(), info.height()),

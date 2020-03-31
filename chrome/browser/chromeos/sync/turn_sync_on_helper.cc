@@ -65,7 +65,7 @@ class DelegateImpl : public TurnSyncOnHelper::Delegate {
 
   void ShowSyncConfirmation(Profile* profile, Browser* browser) override {
     browser = EnsureBrowser(browser, profile);
-    browser->signin_view_controller()->ShowModalSyncConfirmationDialog(browser);
+    browser->signin_view_controller()->ShowModalSyncConfirmationDialog();
   }
 
   void ShowSyncSettings(Profile* profile, Browser* browser) override {

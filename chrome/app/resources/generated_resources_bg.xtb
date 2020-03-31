@@ -1879,6 +1879,7 @@
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="3479685872808224578">Сървърът за отпечатване не бе открит. Моля, проверете адреса и опитайте отново.</translation>
 <translation id="3481268647794498892">Ще се отвори чрез <ph name="ALTERNATIVE_BROWSER_NAME" /> след <ph name="COUNTDOWN_SECONDS" /> секунди</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> може да преглежда следните файлове</translation>
 <translation id="3484273680291419129">Опасният софтуер се премахва...</translation>
 <translation id="3484869148456018791">Получаване на нов сертификат</translation>
 <translation id="3487007233252413104">анонимна функция</translation>
@@ -1941,6 +1942,7 @@
 <translation id="3564848315152754834">Ключ за сигурност с USB</translation>
 <translation id="3566721612727112615">Няма добавени сайтове</translation>
 <translation id="3569382839528428029">Искате ли <ph name="APP_NAME" /> да споделя екрана ви?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> може да преглежда следните файлове и папки</translation>
 <translation id="3571734092741541777">Настройване</translation>
 <translation id="3574210789297084292">вход</translation>
 <translation id="3574917942258583917">Да се излезе ли от режим „инкогнито“ въпреки това?</translation>
@@ -1950,6 +1952,7 @@
 <translation id="3578594933904494462">Съдържанието на този раздел се споделя.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; иска да сподели принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; с притежавана от вас група: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако приемете, всичките й членове ще могат да отпечатват с него.</translation>
 <translation id="357889014807611375">Wi-Fi мрежа с отчитане</translation>
+<translation id="3582057310199111521">Въведена в измамнически сайт и разкрита при нарушение на сигурността на данните</translation>
 <translation id="3584169441612580296">Четене и промяна на снимки, музика и друга мултимедия от компютъра ви</translation>
 <translation id="3586806079541226322">Този файл не може да се отвори</translation>
 <translation id="3586931643579894722">Скриване на подробностите</translation>
@@ -3089,6 +3092,7 @@
 <translation id="5117930984404104619">Наблюдение на поведението на други разширения, включително посетените URL адреси</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Твърдият ви диск е пълен.  Моля, запазете на друго място или освободете още пространство на диска.</translation>
+<translation id="5122384452788334261">Мястото в хранилището на устройството ви е малко. За използването на Plugin VM е препоръчително да разполагате с поне <ph name="RECOMMENDED_SPACE" /> свободно място. За да освободите място, изтрийте файлове от хранилището на устройството.</translation>
 <translation id="5123433949759960244">Баскетболна топка</translation>
 <translation id="5125751979347152379">Невалиден URL адрес.</translation>
 <translation id="5126611267288187364">Преглед на промените</translation>
@@ -5191,6 +5195,7 @@
 <translation id="7915471803647590281">Моля, кажете ни какво става, преди да изпратите отзивите.</translation>
 <translation id="7918257978052780342">Записване</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> сек</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> може да преглежда <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Грешка при пренасочване на порта</translation>
 <translation id="792514962475806987">Ниво на мащаба при прикрепен режим:</translation>
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
@@ -5354,6 +5359,7 @@
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Браузърът се управлява<ph name="END_LINK" /> от организацията ви</translation>
 <translation id="8118860139461251237">Управление на изтеглянията ви</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> и др.</translation>
+<translation id="8120715633374652536">Мястото в хранилището на устройството ви е малко. За използването на Plugin VM e необходимo свободно място от поне <ph name="MINIMUM_SPACE" />. Препоръчва се да разполагате с над <ph name="RECOMMENDED_SPACE" />. За да освободите място, изтрийте файлове от хранилището на устройството.</translation>
 <translation id="8123590694679414600">Данните бяха шифровани с пропуска ви за синхронизиране на
 <ph name="TIME" />. Това не включва начините на плащане и адресите от Google Pay.</translation>
 <translation id="81238879832906896">Жълто-бяло цвете</translation>

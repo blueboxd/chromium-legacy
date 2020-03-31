@@ -73,6 +73,7 @@
                                        startupInformation:_startupInformation
                                       applicationDelegate:self];
     [_mainController setAppState:_appState];
+    [_appState addObserver:_mainController];
 
     if (!IsMultiwindowSupported()) {
       // When multiwindow is not supported, this object holds a "scene" state

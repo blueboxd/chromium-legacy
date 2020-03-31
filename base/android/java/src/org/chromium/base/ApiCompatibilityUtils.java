@@ -19,17 +19,20 @@ import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.ImageDecoder;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.StrictMode;
 import android.os.UserManager;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.Html;
 import android.text.Spanned;
@@ -57,6 +60,8 @@ import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.annotations.VerifiesOnP;
 import org.chromium.base.annotations.VerifiesOnQ;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -82,6 +87,11 @@ public class ApiCompatibilityUtils {
     private static class ApisP {
         static String getProcessName() {
             return Application.getProcessName();
+        }
+
+        static Bitmap getBitmapByUri(ContentResolver cr, Uri uri) throws IOException {
+            ImageDecoder.Source imageSource = ImageDecoder.createSource(cr, uri);
+            return ImageDecoder.decodeBitmap(imageSource);
         }
     }
 
@@ -767,5 +777,16 @@ public class ApiCompatibilityUtils {
         for (int i = 0; i < layerDrawable.getNumberOfLayers(); i++) {
             layerDrawable.getDrawable(i).setBounds(oldBounds[i]);
         }
+    }
+
+    /**
+     * Retrieves an image for the given url as a Bitmap.
+     */
+    public static Bitmap getBitmapByUri(ContentResolver cr, Uri uri)
+            throws FileNotFoundException, IOException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return ApisP.getBitmapByUri(cr, uri);
+        }
+        return MediaStore.Images.Media.getBitmap(cr, uri);
     }
 }

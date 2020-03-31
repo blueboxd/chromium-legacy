@@ -401,6 +401,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.</translation>
 <translation id="1617235075406854669">Aktifkan penghapusan histori download atau browser</translation>
+<translation id="1620510694547887537">Kamera</translation>
 <translation id="163200210584085447">Pola dalam daftar ini akan dicocokkan dengan
       asal keamanan URL yang meminta.  Jika ditemukan kecocokan, akses ke perangkat
       perekam video akan diberikan di halaman masuk SAML.  Jika tidak ditemukan
@@ -687,6 +688,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 <translation id="2024476116966025075">Mengonfigurasi nama domain yang diperlukan untuk klien akses jarak jauh</translation>
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="203096360153626918">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi akan dapat memasuki mode layar penuh meski kebijakan ini disetel ke <ph name="FALSE" />.</translation>
+<translation id="2042881179131103248">Mengonfigurasi kamera dan fitur setelan untuk dinonaktifkan</translation>
 <translation id="2043749682619281558">Mengaktifkan sorotan kursor di layar login</translation>
 <translation id="2043770014371753404">Menonaktifkan printer perusahaan</translation>
 <translation id="2050629715135525072">Mengontrol kemampuan pengguna yang terhubung ke host akses jarak jauh untuk mentransfer file antara klien dan host. Kebijakan ini tidak berlaku untuk sambungan bantuan jarak jauh, yang tidak mendukung transfer file.
@@ -1500,6 +1502,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="3214164532079860003">Kebijakan ini memaksa beranda diimpor dari browser default yang sedang digunakan, jika diaktifkan. Jika dinonaktifkan, beranda tidak diimpor. Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="3219421230122020860">Mode samaran tersedia</translation>
 <translation id="3220624000494482595">Jika aplikasi kios adalah aplikasi Android, aplikasi tersebut tidak akan memiliki kontrol terhadap versi <ph name="PRODUCT_OS_NAME" />, meski kebijakan ini disetel ke <ph name="TRUE" />.</translation>
+<translation id="322359555555487980">Menentukan ketersediaan variasi di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3236046242843493070">Pola URL untuk memungkinkan pemasangan skrip pengguna, aplikasi, dan ekstensi dari</translation>
 <translation id="3240609035816615922">Kebijakan akses konfigurasi untuk printer.</translation>
 <translation id="3240655340884151271">Alamat MAC NIC bawaan dok</translation>
@@ -2858,6 +2861,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Tidak menetapkan kebijakan pada versi hingga dan termasuk M76 berarti default <ph name="PRODUCT_NAME" /> tidak dapat mengumpulkan atau mengupload log tersebut. Mulai versi M77, default <ph name="PRODUCT_NAME" /> akan dapat mengumpulkan dan mengupload log tersebut dari sebagian besar profil yang terdampak oleh kebijakan perusahaan tingkat pengguna berbasis cloud. Mulai versi M77 hingga dan termasuk M80, <ph name="PRODUCT_NAME" /> juga dapat mengumpulkan dan mengupload log secara default dari profil yang terdampak oleh manajemen lokal <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">Kebijakan cloud <ph name="PRODUCT_NAME" /> menggantikan kebijakan Platform.</translation>
+<translation id="53381168777357359">Fitur setelan</translation>
 <translation id="5362531528507578966">Mengganti mode pencetakan grafis latar belakang default.</translation>
 <translation id="5365476955714838841">Parameter command line untuk browser alternatif.</translation>
 <translation id="5365946944967967336">Tampilkan tombol Layar Utama di toolbar</translation>
@@ -4463,6 +4467,11 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="8044493735196713914">Laporkan mode boot perangkat</translation>
 <translation id="8050080920415773384">Pencetakan Asli</translation>
 <translation id="8053580360728293758">Mengganti mode warna pencetakan default. Jika mode tersebut tidak tersedia, kebijakan ini akan diabaikan.</translation>
+<translation id="8057841287222359526">Memungkinkan Anda menetapkan daftar fitur <ph name="PRODUCT_OS_NAME" /> untuk dinonaktifkan.
+
+      Jika salah satu fitur ini dinonaktifkan, pengguna tidak dapat mengaksesnya dari UI dan akan melihatnya sebagai"dinonaktifkan oleh admin".
+
+      Jika kebijakan tidak ditetapkan, semua fitur <ph name="PRODUCT_OS_NAME" /> akan diaktifkan secara default dan pengguna dapat menggunakan semua fitur tersebut.</translation>
 <translation id="8059164285174960932">URL tempat klien akses jarak jauh seharusnya memperoleh token autentikasi mereka</translation>
 <translation id="806523868782250975">Mengonfigurasi daftar bookmark terkelola.
 

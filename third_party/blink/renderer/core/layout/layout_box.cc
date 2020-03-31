@@ -6578,4 +6578,15 @@ TextDirection LayoutBox::ResolvedDirection() const {
   return StyleRef().Direction();
 }
 
+bool LayoutBox::NeedsScrollNode(
+    CompositingReasons direct_compositing_reasons) const {
+  if (!HasOverflowClip())
+    return false;
+
+  if (direct_compositing_reasons & CompositingReason::kRootScroller)
+    return true;
+
+  return GetScrollableArea()->ScrollsOverflow();
+}
+
 }  // namespace blink

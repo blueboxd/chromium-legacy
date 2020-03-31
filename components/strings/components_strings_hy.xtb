@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">Պատմություն</translation>
 <translation id="1645368109819982629">Չաջակցվող հաղորդակարգ</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome-ը պարզեցրել է այս էջը՝ այն ավելի ընթեռնելի դարձնելու համար։ Chrome-ը բեռնել է սկզբնական էջը ապահով կապի միջոցով։</translation>
 <translation id="1656489000284462475">Ստացում</translation>
 <translation id="1662550410081243962">Պահել վճարման եղանակները և դրանց տվյալներով ինքնալրացնել ձևերը</translation>
 <translation id="1663943134801823270">Քարտերն ու հասցեները նշված են Chrome-ում: Դրանք կարող եք կառավարել <ph name="BEGIN_LINK" />Կարգավորումներում<ph name="END_LINK" />:</translation>
@@ -567,6 +568,7 @@
 <translation id="342781501876943858">Խորհուրդ ենք տալիս վերակայել ձեր գաղտնաբառը, եթե այն օգտագործել եք այլ կայքերում:</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates կանոնի սերվերի ձևանմուշների URI-ներից առնվազն մեկն անվավեր է և չի կարող օգտագործվել:</translation>
 <translation id="3431636764301398940">Պահել քարտն այս սարքում</translation>
+<translation id="3432601291244612633">Փակել էջը</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Սարքի սեփականատերն անջատել է Dinosaur խաղը:</translation>
 <translation id="3447884698081792621">Ցուցադրել հավաստագիրը (թողարկող՝ <ph name="ISSUER" />)</translation>
@@ -873,6 +875,7 @@
 <translation id="4731967714531604179">Prc2 (ծրար)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> կայքն ուզում է օգտագործել ձեր սարքի տեղադրությունը</translation>
 <translation id="4736825316280949806">Վերագործարկեք Chromium-ը</translation>
+<translation id="4737121147659370456">Ձեր ադմինիստրատորը միացրել է Chrome Enterprise-ի միակցիչները ձեր դիտարկիչում։ Այս միակցիչներին հասանելի են ձեզ պատկանող որոշ տվյալներ։</translation>
 <translation id="473775607612524610">Թարմացնել</translation>
 <translation id="4738601419177586157">Առաջարկվող որոնման հարցում՝ «<ph name="TEXT" />»</translation>
 <translation id="4742407542027196863">Գաղտնաբառերի կառավարում…</translation>
@@ -1212,6 +1215,8 @@
 <translation id="610911394827799129">Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում:</translation>
 <translation id="6116338172782435947">Տեսնել սեղմատախտակին պատճենված տեքստը և պատկերները</translation>
 <translation id="6120179357481664955">Հիշո՞ւմ եք ձեր UPI ID-ն</translation>
+<translation id="6124432979022149706">Chrome Enterprise-ի միակցիչներ</translation>
+<translation id="6135641591018127088">Հուսալի գաղտնաբառ ստեղծելու համար օգտագործեք ձեր Google հաշիվը։</translation>
 <translation id="6146055958333702838">Ստուգեք բոլոր մալուխները և վերաբեռնեք երթուղիչները, մոդեմները կամ օգտագործվող
     այլ ցանցային սարքերը:</translation>
 <translation id="614940544461990577">Փորձեք՝</translation>
@@ -1257,6 +1262,7 @@
 <translation id="6328639280570009161">Անջատեք ցանցի գործողությունների կանխատեսումը</translation>
 <translation id="6328784461820205019">«Ձեր կապը պաշտպանված չէ» կամ «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» կամ «SSL հավաստագրի սխալ»</translation>
 <translation id="6328786501058569169">Սա կեղծ կայք է</translation>
+<translation id="6333334544069706521">Օգտագործել Google հաշվում պահված գաղտնաբառերը</translation>
 <translation id="6337133576188860026">Կազատվի մինչև <ph name="SIZE" /> տարածք։ Դրանից հետո որոշ կայքեր հնարավոր է՝ ավելի դանդաղ բեռնվեն։</translation>
 <translation id="6337534724793800597">Զտել կանոններն ըստ անվան</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Չկա}=1{1 գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված է)}=2{2 գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}one{# գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}other{# գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}}</translation>
@@ -1302,6 +1308,7 @@
 <translation id="6521745193039995384">Ակտիվ չէ</translation>
 <translation id="6529602333819889595">&amp;Վերարկել ջնջումը</translation>
 <translation id="6534179046333460208">«Համացանցը մեր շուրջ» ծառայության առաջարկներ</translation>
+<translation id="6543609420755597723">Ուղարկեք ձեր ադմինիստրատորին անվտանգությանը սպառնացող գործողությունների մասին տվյալները, որոնք նշվել են Chrome Enterprise-ի միակցիչների կողմից որպես վտանգավոր։ Սա կարող է ներառել ձեր այցելած էջերի հասցեները, ֆայլերի անուններ կամ մետատվյալներ, ինչպես նաև օգտանուններ, որոնք օգտագործում եք ձեր սարքում կամ Chrome-ում հաշիվ մտնելու համար։</translation>
 <translation id="6545864417968258051">Bluetooth սարքերի որոնում</translation>
 <translation id="6547208576736763147">Երկու անցք ձախ կողմում</translation>
 <translation id="6554795675067793129">Ձեր հաշիվը պատկանում է <ph name="ENROLLMENT_DOMAIN" /> տիրույթին:</translation>
@@ -1367,6 +1374,7 @@
 <translation id="6874604403660855544">&amp;Վերարկել հավելումը</translation>
 <translation id="6884662655240309489">Չափ 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome-ը պարզեցրել է այս էջը՝ այն ավելի ընթեռնելի դարձնելու համար։ Chrome-ը բեռնել է սկզբնական էջը ոչ ապահով կապի միջոցով։</translation>
 <translation id="6891596781022320156">Կանոնի մակարդակը չի աջակցվում:</translation>
 <translation id="6895330447102777224">Ձեր քարտը հաստատված է</translation>
 <translation id="6897140037006041989">Օգտատիրոջ գործակալ</translation>
@@ -1595,6 +1603,7 @@
 <translation id="777702478322588152">Պրեֆեկտուրա</translation>
 <translation id="7791196057686275387">Սեղմում</translation>
 <translation id="7791543448312431591">Ավելացնել</translation>
+<translation id="7798389633136518089">Անտեսվել է, քանի որ կանոնը չի սահմանվել ամպային աղբյուրի կողմից։</translation>
 <translation id="7800304661137206267">Հաղորդագրությունների իսկորոշման համար օգտագործվում է <ph name="CIPHER" />՝ <ph name="MAC" />-ով, բանալիների փոխանակման համար օգտագործվում է <ph name="KX" />:</translation>
 <translation id="7802523362929240268">Կայքը անվտանգ է</translation>
 <translation id="780301667611848630">Ոչ</translation>
@@ -1730,6 +1739,7 @@
 <translation id="8371889962595521444">Հատուկ արմատային հավաստագրեր</translation>
 <translation id="8380941800586852976">Վտանգավոր</translation>
 <translation id="8381674639488873545">Այս գանձումները կարող են մեկանգամյա կամ պարբերական լինել և հնարավոր է ակնհայտ չերևան: <ph name="BEGIN_LINK" />Միևնույն է ցուցադրել<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> կայքը միացրել է Chrome Enterprise-ի միակցիչները ձեր դիտարկիչում։ Այս միակցիչներին հասանելի են ձեզ պատկանող որոշ տվյալներ։</translation>
 <translation id="8412145213513410671">Խափանումներ (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Դուք պետք է երկու անգամ մուտքագրեք միևնույն անցաբառը:</translation>
 <translation id="8416694386774425977">Ցանցի կազմաձևումը սխալ է և չի կարող ներմուծվել:

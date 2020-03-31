@@ -13,11 +13,11 @@ async_test(function(t) {
       assert_equals(axFutureParent.childrenCount, 0);
 
       var notification = yield;
-      assert_equals(notification, "TextChanged");
-
-      var notification = yield;
       assert_equals(notification, "ChildrenChanged");
       assert_equals(axFutureParent.childrenCount, 1);
+
+      var notification = yield;
+      assert_equals(notification, "TextChanged");
     }();
     testRunner.next();
     var listener = function(notification) {

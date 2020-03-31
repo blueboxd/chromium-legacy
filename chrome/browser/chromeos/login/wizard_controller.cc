@@ -225,17 +225,17 @@ bool CanShowHIDDetectionScreen() {
   }
 }
 
-bool IsResumableScreen(chromeos::OobeScreenId screen) {
+bool IsResumableScreen(chromeos::OobeScreenId screen_id) {
   for (const auto& resumable_screen : kResumableScreens) {
-    if (screen == resumable_screen)
+    if (screen_id == resumable_screen)
       return true;
   }
   return false;
 }
 
-bool ShouldHideStatusArea(chromeos::OobeScreenId screen) {
+bool ShouldHideStatusArea(chromeos::OobeScreenId screen_id) {
   for (const auto& s : kScreensWithHiddenStatusArea) {
-    if (screen == s)
+    if (screen_id == s)
       return true;
   }
   return false;
@@ -447,14 +447,14 @@ ErrorScreen* WizardController::GetErrorScreen() {
   return GetOobeUI()->GetErrorScreen();
 }
 
-bool WizardController::HasScreen(OobeScreenId screen) {
-  return screen_manager_->HasScreen(screen);
+bool WizardController::HasScreen(OobeScreenId screen_id) {
+  return screen_manager_->HasScreen(screen_id);
 }
 
-BaseScreen* WizardController::GetScreen(OobeScreenId screen) {
-  if (screen == ErrorScreenView::kScreenId)
+BaseScreen* WizardController::GetScreen(OobeScreenId screen_id) {
+  if (screen_id == ErrorScreenView::kScreenId)
     return GetErrorScreen();
-  return screen_manager_->GetScreen(screen);
+  return screen_manager_->GetScreen(screen_id);
 }
 
 void WizardController::SetCurrentScreenForTesting(BaseScreen* screen) {
@@ -1454,14 +1454,15 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
 }
 
 void WizardController::UpdateStatusAreaVisibilityForScreen(
-    OobeScreenId screen) {
-  if (screen == WelcomeView::kScreenId) {
+    OobeScreenId screen_id) {
+  if (screen_id == WelcomeView::kScreenId) {
     // Hide the status area initially; it only appears after OOBE first animates
     // in. Keep it visible if the user goes back to the existing welcome screen.
     GetLoginDisplayHost()->SetStatusAreaVisible(
         screen_manager_->HasScreen(WelcomeView::kScreenId));
   } else {
-    GetLoginDisplayHost()->SetStatusAreaVisible(!ShouldHideStatusArea(screen));
+    GetLoginDisplayHost()->SetStatusAreaVisible(
+        !ShouldHideStatusArea(screen_id));
   }
 }
 
@@ -1503,74 +1504,74 @@ void WizardController::UpdateOobeConfiguration() {
   }
 }
 
-void WizardController::AdvanceToScreen(OobeScreenId screen) {
-  if (screen == WelcomeView::kScreenId) {
+void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
+  if (screen_id == WelcomeView::kScreenId) {
     ShowWelcomeScreen();
-  } else if (screen == NetworkScreenView::kScreenId) {
+  } else if (screen_id == NetworkScreenView::kScreenId) {
     ShowNetworkScreen();
-  } else if (screen == OobeScreen::SCREEN_SPECIAL_LOGIN) {
+  } else if (screen_id == OobeScreen::SCREEN_SPECIAL_LOGIN) {
     ShowLoginScreen();
-  } else if (screen == PackagedLicenseView::kScreenId) {
+  } else if (screen_id == PackagedLicenseView::kScreenId) {
     ShowPackagedLicenseScreen();
-  } else if (screen == UpdateView::kScreenId) {
+  } else if (screen_id == UpdateView::kScreenId) {
     InitiateOOBEUpdate();
-  } else if (screen == EulaView::kScreenId) {
+  } else if (screen_id == EulaView::kScreenId) {
     ShowEulaScreen();
-  } else if (screen == ResetView::kScreenId) {
+  } else if (screen_id == ResetView::kScreenId) {
     ShowResetScreen();
-  } else if (screen == KioskEnableScreenView::kScreenId) {
+  } else if (screen_id == KioskEnableScreenView::kScreenId) {
     ShowKioskEnableScreen();
-  } else if (screen == KioskAutolaunchScreenView::kScreenId) {
+  } else if (screen_id == KioskAutolaunchScreenView::kScreenId) {
     ShowKioskAutolaunchScreen();
-  } else if (screen == EnableAdbSideloadingScreenView::kScreenId) {
+  } else if (screen_id == EnableAdbSideloadingScreenView::kScreenId) {
     ShowEnableAdbSideloadingScreen();
-  } else if (screen == EnableDebuggingScreenView::kScreenId) {
+  } else if (screen_id == EnableDebuggingScreenView::kScreenId) {
     ShowEnableDebuggingScreen();
-  } else if (screen == EnrollmentScreenView::kScreenId) {
+  } else if (screen_id == EnrollmentScreenView::kScreenId) {
     ShowEnrollmentScreen();
-  } else if (screen == DemoSetupScreenView::kScreenId) {
+  } else if (screen_id == DemoSetupScreenView::kScreenId) {
     ShowDemoModeSetupScreen();
-  } else if (screen == DemoPreferencesScreenView::kScreenId) {
+  } else if (screen_id == DemoPreferencesScreenView::kScreenId) {
     ShowDemoModePreferencesScreen();
-  } else if (screen == TermsOfServiceScreenView::kScreenId) {
+  } else if (screen_id == TermsOfServiceScreenView::kScreenId) {
     ShowTermsOfServiceScreen();
-  } else if (screen == SyncConsentScreenView::kScreenId) {
+  } else if (screen_id == SyncConsentScreenView::kScreenId) {
     ShowSyncConsentScreen();
-  } else if (screen == ArcTermsOfServiceScreenView::kScreenId) {
+  } else if (screen_id == ArcTermsOfServiceScreenView::kScreenId) {
     ShowArcTermsOfServiceScreen();
-  } else if (screen == RecommendAppsScreenView::kScreenId) {
+  } else if (screen_id == RecommendAppsScreenView::kScreenId) {
     ShowRecommendAppsScreen();
-  } else if (screen == AppDownloadingScreenView::kScreenId) {
+  } else if (screen_id == AppDownloadingScreenView::kScreenId) {
     ShowAppDownloadingScreen();
-  } else if (screen == WrongHWIDScreenView::kScreenId) {
+  } else if (screen_id == WrongHWIDScreenView::kScreenId) {
     ShowWrongHWIDScreen();
-  } else if (screen == AutoEnrollmentCheckScreenView::kScreenId) {
+  } else if (screen_id == AutoEnrollmentCheckScreenView::kScreenId) {
     ShowAutoEnrollmentCheckScreen();
-  } else if (screen == AppLaunchSplashScreenView::kScreenId) {
+  } else if (screen_id == AppLaunchSplashScreenView::kScreenId) {
     AutoLaunchKioskApp();
-  } else if (screen == HIDDetectionView::kScreenId) {
+  } else if (screen_id == HIDDetectionView::kScreenId) {
     ShowHIDDetectionScreen();
-  } else if (screen == DeviceDisabledScreenView::kScreenId) {
+  } else if (screen_id == DeviceDisabledScreenView::kScreenId) {
     ShowDeviceDisabledScreen();
-  } else if (screen == EncryptionMigrationScreenView::kScreenId) {
+  } else if (screen_id == EncryptionMigrationScreenView::kScreenId) {
     ShowEncryptionMigrationScreen();
-  } else if (screen == UpdateRequiredView::kScreenId) {
+  } else if (screen_id == UpdateRequiredView::kScreenId) {
     ShowUpdateRequiredScreen();
-  } else if (screen == AssistantOptInFlowScreenView::kScreenId) {
+  } else if (screen_id == AssistantOptInFlowScreenView::kScreenId) {
     ShowAssistantOptInFlowScreen();
-  } else if (screen == MultiDeviceSetupScreenView::kScreenId) {
+  } else if (screen_id == MultiDeviceSetupScreenView::kScreenId) {
     ShowMultiDeviceSetupScreen();
-  } else if (screen == GestureNavigationScreenView::kScreenId) {
+  } else if (screen_id == GestureNavigationScreenView::kScreenId) {
     ShowGestureNavigationScreen();
-  } else if (screen == DiscoverScreenView::kScreenId) {
+  } else if (screen_id == DiscoverScreenView::kScreenId) {
     ShowDiscoverScreen();
-  } else if (screen == FingerprintSetupScreenView::kScreenId) {
+  } else if (screen_id == FingerprintSetupScreenView::kScreenId) {
     ShowFingerprintSetupScreen();
-  } else if (screen == MarketingOptInScreenView::kScreenId) {
+  } else if (screen_id == MarketingOptInScreenView::kScreenId) {
     ShowMarketingOptInScreen();
-  } else if (screen == SupervisionTransitionScreenView::kScreenId) {
+  } else if (screen_id == SupervisionTransitionScreenView::kScreenId) {
     ShowSupervisionTransitionScreen();
-  } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
+  } else if (screen_id != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
       if (CanShowHIDDetectionScreen()) {

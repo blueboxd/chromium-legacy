@@ -89,6 +89,11 @@ class ServiceConnectionImpl : public ServiceConnection {
       uint64_t max_num,
       mojom::CrosHealthdDiagnosticsService::RunPrimeSearchRoutineCallback
           callback) override;
+  void RunBatteryDischargeRoutine(
+      base::TimeDelta exec_duration,
+      uint32_t maximum_discharge_percent_allowed,
+      mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
+          callback) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -265,6 +270,18 @@ void ServiceConnectionImpl::RunPrimeSearchRoutine(
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunPrimeSearchRoutine(
       exec_duration.InSeconds(), max_num, std::move(callback));
+}
+
+void ServiceConnectionImpl::RunBatteryDischargeRoutine(
+    base::TimeDelta exec_duration,
+    uint32_t maximum_discharge_percent_allowed,
+    mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunBatteryDischargeRoutine(
+      exec_duration.InSeconds(), maximum_discharge_percent_allowed,
+      std::move(callback));
 }
 
 void ServiceConnectionImpl::ProbeTelemetryInfo(

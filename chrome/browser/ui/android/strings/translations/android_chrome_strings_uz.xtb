@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Tugash sanasi: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Oʻrnatilgan</translation>
 <translation id="1792959175193046959">Yuklanmalar standart jildini istalgan vaqtda o‘zgartirish mumkin</translation>
+<translation id="1795251344124198516">Google Chrome va Chrome OS qoʻshimcha shartlari</translation>
 <translation id="1807246157184219062">Yorqin</translation>
 <translation id="1810845389119482123">Sinxronizatsiya oxirigacha sozlanmagan</translation>
 <translation id="1821253160463689938">Saytlarga tashrif buyurmasangiz ham, cookie-axborot ulardagi afzalliklaringizni eslab qolish uchun foydalaniladi</translation>
@@ -236,6 +237,7 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="2650751991977523696">Fayl qayta yuklab olinsinmi?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ta audio fayl}other{# ta audio fayl}}</translation>
 <translation id="2687403674020088961">Barcha cookie fayllarini taqiqlash (tavsiya etilmaydi)</translation>
+<translation id="2689830683995595741">Chromeni ishlatish bilan siz <ph name="BEGIN_LINK1" />Google xizmat shartlari<ph name="END_LINK1" /> bilan <ph name="BEGIN_LINK2" />Google Chrome va Chrome OS qoʻshimcha xizmat shartlariga<ph name="END_LINK2" /> rozilik bildirgan hisoblanasiz. <ph name="BEGIN_LINK3" />Family Link bilan boshqariladigan Google hisoblari uchun Maxfiylik eslatmasi<ph name="END_LINK3" /> ham tatbiq qilinadi.</translation>
 <translation id="2707726405694321444">Sahifani yangilash</translation>
 <translation id="2709516037105925701">Avtoto‘ldirish</translation>
 <translation id="2717722538473713889">Email manzillar</translation>
@@ -376,6 +378,7 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3749259744154402564">Mos kelmaydi</translation>
 <translation id="3771001275138982843">Yangilanish yuklab olinmadi</translation>
 <translation id="3771033907050503522">Inkognito tab‘lar</translation>
+<translation id="3771694256347217732">Google xizmat shartlari</translation>
 <translation id="3773755127849930740">Ulanishga ruxsat berish uchun <ph name="BEGIN_LINK" />Bluetooth’ni yoqing<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Qurilmalaringizga yuborish</translation>
 <translation id="3778956594442850293">Bosh ekranga chiqarildi</translation>
@@ -403,6 +406,7 @@ Kameradagi tasvirlar faqat sizga koʻrinadi. Kamera tasvirlari saytga koʻrinmay
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome sahifani tayyor boʻlishi bilan ochadi}other{Chrome sahifalarni tayyor boʻlishi bilan ochadi}}</translation>
 <translation id="3963007978381181125">Kodli ibora yordamida shifrlaganda Google Pay manzillari va toʻlov usullari shifrlanmaydi. Shifrlangan maʼlumotlaringizni faqat kodli iborani biladiganlar koʻra oladi. Bu iborani Google bilmaydi va serverlarida saqlamaydi. Agar kodli iborani unutsangiz, sinxronizatsiya sozlamalarini qayta tiklash kerak bo‘ladi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Yuklab olindi</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> ilovasi Chrome ichida ochiladi. Davom etish bilan siz <ph name="BEGIN_LINK1" />Google xizmat shartlari<ph name="END_LINK1" /> bilan <ph name="BEGIN_LINK2" />Google Chrome va Chrome OS qoʻshimcha xizmat shartlariga<ph name="END_LINK2" /> rozilik bildirgan hisoblanasiz. <ph name="BEGIN_LINK3" />Family Link bilan boshqariladigan Google hisoblari uchun Maxfiylik eslatmasi<ph name="END_LINK3" /> ham tatbiq qilinadi.</translation>
 <translation id="397583555483684758">Sinxronizatsiya to‘xtadi</translation>
 <translation id="3976396876660209797">Yorliqni o‘chirib qaytadan yarating</translation>
 <translation id="3985215325736559418"><ph name="FILE_NAME" /> fayli qaytadan yuklab olinsinmi?</translation>
@@ -713,6 +717,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6255999984061454636">Kontent takliflari</translation>
 <translation id="6270391203985052864">Saytlar bildirishnoma chiqarishga ruxsat soʻray oladi</translation>
 <translation id="6277522088822131679">Sahifani chop etishda muammo yuzaga keldi. Qayta urinib ko‘ring.</translation>
+<translation id="6292420053234093573">Chromeni ishlatish bilan siz <ph name="BEGIN_LINK1" />Google xizmat shartlari<ph name="END_LINK1" /> bilan <ph name="BEGIN_LINK2" />Google Chrome va Chrome OS qoʻshimcha xizmat shartlariga<ph name="END_LINK2" /> rozilik bildirgan hisoblanasiz.</translation>
 <translation id="6295158916970320988">Barcha saytlar</translation>
 <translation id="629730747756840877">Hisob</translation>
 <translation id="6297765934698848803">Kamerangiz qurilmangizni boshqaruvchi tashkilot tomonidan oʻchirib qoʻyildi.</translation>
@@ -727,6 +732,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6364438453358674297">Bu taklif tarixdan o‘chirib tashlansinmi?</translation>
 <translation id="6369229450655021117">Bu yerda internet orqali qidirish, tanishlar bilan ulashish va ochiq sahifalarni koʻrish mumkin</translation>
 <translation id="6378173571450987352">Tafsilot: Sarflangan trafik asosida saralandi</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> ilovasi Chrome ichida ochiladi. Davom etish bilan siz <ph name="BEGIN_LINK1" />Google xizmat shartlari<ph name="END_LINK1" /> bilan <ph name="BEGIN_LINK2" />Google Chrome va Chrome OS qoʻshimcha xizmat shartlariga<ph name="END_LINK2" /> rozilik bildirgan hisoblanasiz.</translation>
 <translation id="6381421346744604172">Darken saytlari</translation>
 <translation id="6388207532828177975">Tozalash va asl holiga qaytarish</translation>
 <translation id="6395288395575013217">HAVOLA</translation>

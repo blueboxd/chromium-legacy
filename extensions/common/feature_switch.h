@@ -31,7 +31,6 @@ class FeatureSwitch {
   static FeatureSwitch* force_dev_mode_highlighting();
   static FeatureSwitch* prompt_for_external_extensions();
   static FeatureSwitch* error_console();
-  static FeatureSwitch* enable_override_bookmarks_ui();
   static FeatureSwitch* embedded_extension_options();
   static FeatureSwitch* trace_app_source();
   static FeatureSwitch* load_media_router_component_extension();

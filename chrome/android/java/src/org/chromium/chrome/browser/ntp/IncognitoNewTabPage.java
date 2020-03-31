@@ -99,6 +99,11 @@ public class IncognitoNewTabPage
             }
 
             @Override
+            public boolean shouldCaptureThumbnail() {
+                return mCookieControlsManager.shouldCaptureThumbnail();
+            }
+
+            @Override
             public void destroy() {
                 if (mCookieControlsManager != null) {
                     mCookieControlsManager.removeObserver(mCookieControlsObserver);

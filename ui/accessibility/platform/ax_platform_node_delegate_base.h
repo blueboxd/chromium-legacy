@@ -57,7 +57,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   int GetIndexInParent() override;
 
   // Get the number of children of this node.
-  int GetChildCount() override;
+  int GetChildCount() const override;
 
   // Get the child of a node given a 0-based index.
   gfx::NativeViewAccessible ChildAtIndex(int index) override;

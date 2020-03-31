@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Réseaux visibles :</translation>
 <translation id="1094607894174825014">Une opération de lecture ou d'écriture a été demandée avec un décalage non valide sur « <ph name="DEVICE_NAME" /> ».</translation>
 <translation id="1097658378307015415">Avant de vous connecter, veuillez démarrer une session d'invité afin d'activer le réseau <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">Image copiée de l'appareil <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Toujours traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Impossible de détecter votre carte SIM</translation>
 <translation id="1108600514891325577">&amp;Arrêter</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">page en arrière-plan</translation>
 <translation id="1745520510852184940">Toujours traduire</translation>
 <translation id="1750172676754093297">Cette clé de sécurité ne peut pas stocker d'empreintes digitales</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> sera en mesure de modifier les fichiers dans le dossier <ph name="FOLDERNAME" /> jusqu'à ce que vous fermiez tous les onglets pour ce site</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
 <translation id="1753067873202720523">Votre Chromebook risque de ne pas se charger lorsqu'il est allumé.</translation>
 <translation id="1753905327828125965">Les plus visités</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">Vous utilisez déjà Chrome? Connectez-vous à votre compte</translation>
 <translation id="18245044880483936">Les données des sauvegardes ne sont pas prises en compte dans le quota de stockage Google Disque de votre enfant.</translation>
 <translation id="1826516787628120939">Vérification en cours…</translation>
+<translation id="1827738518074806965">Galerie d'art</translation>
 <translation id="1828378091493947763">Ce plugiciel n'est pas pris en charge sur cet appareil</translation>
 <translation id="1828901632669367785">Imprimer à l'aide de la boîte de dialogue système...</translation>
 <translation id="1829129547161959350">Pingouin</translation>
@@ -1028,6 +1031,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="236117173274098341">Optimiser</translation>
 <translation id="236141728043665931">Toujours bloquer l'accès au microphone</translation>
+<translation id="2364498172489649528">Vérification réussie</translation>
 <translation id="2365507699358342471">Ce site peut voir le texte et les images copiés dans le presse-papiers.</translation>
 <translation id="2366260648632264559">Afficher le texte du système dans cette langue</translation>
 <translation id="2367972762794486313">Afficher les applications</translation>
@@ -1343,6 +1347,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2762441749940182211">La caméra est bloquée</translation>
 <translation id="2765217105034171413">Petit</translation>
 <translation id="2766161002040448006">Demande à un parent</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> sera en mesure de modifier le fichier <ph name="FILENAME" /> jusqu'à ce que vous fermiez tous les onglets pour ce site</translation>
 <translation id="276969039800130567">Connecté en tant que <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
 <translation id="2770690685823456775">Exportez vos mots de passe dans un autre dossier</translation>
@@ -1667,6 +1672,18 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3202173864863109533">L'audio de cet onglet est désactivé.</translation>
 <translation id="3208321278970793882">Application</translation>
 <translation id="3208584281581115441">Vérifier maintenant</translation>
+<translation id="3208640652501208439">Les ressources pour le travail scolaire pourraient ne pas être accessible ni ne se charger automatiquement
+    Votre enfant pourrait ne pas avoir accès aux éléments suivants :
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Applications et extensions installées par l'école
+      <ph name="LIST_ITEM" />Favoris provenant d'un Chromebook appartenant à l'école
+      <ph name="LIST_ITEM" />Les mots de passe à remplissage automatique pour les sites éducatifs
+    <ph name="END_LIST" />
+    Pour profiter d'une expérience scolaire optimale, votre enfant devrait effectuer les actions suivantes :
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Se déconnecter de son compte géré par Family Link
+      <ph name="OLIST_ITEM" />Se connecter avec son compte G Suite for Educationà l'écran de connexion. Prenez note, cependant, que les politiques de l'école, y compris les paramètres d'applications et d'accès, auront préséance sur vos fonctionnalités de supervision Family Link (par exemple, les administrateurs de l'école peuvent autoriser l'accès à YouTube si nécessaire pour les devoirs, le temps d'utilisation des écrans pourrait ne pas être applicable, etc.)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Non confirmé</translation>
 <translation id="32101887417650595">Impossible de se connecter à l'imprimante</translation>
 <translation id="321084946921799184">Jaune et blanc</translation>
@@ -1745,6 +1762,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3312424061798279731">Langues activées</translation>
 <translation id="3313622045786997898">Valeur de la signature du certificat</translation>
 <translation id="3315158641124845231">Masquer <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Renseignements sur le compte scolaire à l'intention des parents</translation>
 <translation id="3317459757438853210">Recto verso</translation>
 <translation id="3317678681329786349">La caméra et le microphone sont bloqués</translation>
 <translation id="3319048459796106952">Nouvelle fenêtre de navigation pr&amp;ivée</translation>
@@ -1931,6 +1949,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3574210789297084292">Se connecter</translation>
 <translation id="3574917942258583917">Quitter le mode de navigation privée malgré tout?</translation>
 <translation id="3575121482199441727">Autoriser pour ce site</translation>
+<translation id="3575919114596668130">Vos paramètres parentaux Family Link s'appliqueront toujours. Si vous avez déjà bloqué une application ou un site, vous n'aurez plus à le faire.</translation>
 <translation id="3576324189521867626">Installation réussie</translation>
 <translation id="3578594933904494462">Le contenu de cet onglet est en cours de partage.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; souhaite partager une imprimante &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; avec un groupe qui vous appartient : &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si vous acceptez, tous les membres du groupe seront en mesure d'utiliser l'imprimante pour effectuer une impression.</translation>
@@ -2771,6 +2790,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4689235506267737042">Choisir vos préférences pour la démonstration</translation>
 <translation id="4689421377817139245">Synchronisez ce favori sur votre iPhone</translation>
 <translation id="4690091457710545971">&lt;Quatre fichiers générés par le micrologiciel Intel Wi-Fi : csr.lst, fh_regs.lst, radio_reg.lst et monitor.lst.sysmon. Les trois premiers sont des fichiers binaires qui contiennent des images mémoire de registres et qui sont déclarés par Intel comme ne renfermant aucune donnée personnelle ni aucune donnée permettant l'identification de l'appareil. Le dernier fichier est une trace d'exécution du micrologiciel Intel; il a été vidé de toute donnée personnelle et permettant d'identifier l'appareil, mais il est trop volumineux pour s'afficher ici. Ces fichiers ont été générés en réponse aux récents problèmes de Wi-Fi rencontrés avec votre appareil. Ils seront partagés avec Intel afin qu'une solution soit trouvée.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> sera en mesure d'afficher le fichier <ph name="FILENAME" /> jusqu'à ce que vous fermiez tous les onglets pour ce site</translation>
 <translation id="4692623383562244444">Moteurs de recherche</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">La configuration de l'imprimante relève de l'administrateur.</translation>
@@ -3126,6 +3146,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5204967432542742771">Entrez le mot de passe</translation>
 <translation id="5206215183583316675">Supprimer « <ph name="CERTIFICATE_NAME" /> »?</translation>
 <translation id="520621735928254154">Erreur d'importation du certificat</translation>
+<translation id="5209307736170827035">Les données de votre enfant dans Classroom seront protégées. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Aucun appareil trouvé</translation>
 <translation id="5210990770352357081">Impossible de désinstaller Plugin VM</translation>
 <translation id="5213481667492808996">Vous pouvez utiliser votre service de données « <ph name="NAME" /> »</translation>
@@ -3237,6 +3258,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5341980496415249280">Veuillez patienter, emballage en cours…</translation>
 <translation id="5342091991439452114">Le NIP doit comporter au moins <ph name="MINIMUM" /> chiffres</translation>
 <translation id="5344036115151554031">Restauration de Linux en cours…</translation>
+<translation id="535123479159372765">Texte copié à partir d'un autre appareil</translation>
 <translation id="5352033265844765294">Horodatage</translation>
 <translation id="5353252989841766347">Exporter les mots de passe à partir de Chrome</translation>
 <translation id="5355099869024327351">Permet à l'Assistant Google de vous montrer des notifications</translation>
@@ -3359,6 +3381,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5511379779384092781">Très petit</translation>
 <translation id="5511823366942919280">Voulez-vous vraiment configurer cet appareil en tant que « Requin »?</translation>
 <translation id="5512653252560939721">Le certificat de l'utilisateur doit être soutenu par du matériel.</translation>
+<translation id="5515923816438946203">Choisir ce que vous voyez sur votre écran</translation>
 <translation id="5517304475148761050">Cette application a besoin de l'accès à la boutique Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" />, <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Ajout de l'imprimante à votre compte. Cette opération peut prendre quelques instants…</translation>
@@ -3809,6 +3832,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6097480669505687979">Si vous ne libérez d'espace, des utilisateurs et des données peuvent être supprimés automatiquement.</translation>
 <translation id="6097600385983390082">Recherche vocale fermée</translation>
 <translation id="6098793583803863900">Un fichier inconnu est en cours d'analyse afin de vérifier que son contenu n'est pas dangereux.</translation>
+<translation id="609942571968311933">Texte copié de l'appareil <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Menu Démarrer</translation>
 <translation id="6101226222197207147">Nouvelle application installée (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Ce fichier a été bloqué par la protection avancée.</translation>
@@ -4179,6 +4203,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="6615455863669487791">Démonstration</translation>
 <translation id="6618097958368085618">Conserver quand même</translation>
+<translation id="6618744767048954150">En cours…</translation>
 <translation id="6619058681307408113">Protocole LPD (Line Printer Daemon)</translation>
 <translation id="661907246513853610">Le site peut effectuer le suivi de votre position</translation>
 <translation id="6619801788773578757">Ajouter une application de kiosque</translation>
@@ -4564,6 +4589,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7131040479572660648">Lire vos données sur <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Ajouter une pa&amp;ge...</translation>
 <translation id="7133578150266914903">Votre administrateur est en train de restaurer cet appareil (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" /> mots de passe sur <ph name="TOTAL" /> ont été vérifiés…</translation>
 <translation id="7134098520442464001">Réduire la taille du texte</translation>
 <translation id="7135729336746831607">Activer le Bluetooth?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> exige que vous mettiez immédiatement à jour votre <ph name="DEVICE_TYPE" />.</translation>
@@ -4912,6 +4938,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="761530003705945209">Sauvegarder sur Google Disque. Restaurez facilement vos données ou changez d'appareil à tout moment. Votre sauvegarde inclut les données des applications. Vos sauvegardes sont téléversées vers les serveurs de Google et sont chiffrées en utilisant le mot de passe de votre compte Google.</translation>
 <translation id="7616214729753637086">Enregistrement de l'appareil en cours…</translation>
 <translation id="7617366389578322136">Connexion à « <ph name="DEVICE_NAME" /> » en cours…</translation>
+<translation id="761763866592998929">Mode Veille</translation>
 <translation id="762068974690945752">Ajoutez un compte scolaire ou gérez les comptes d'enfants ici. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Le système n'a pas réussi à enregistrer la configuration de l'appareil.</translation>
 <translation id="7622114377921274169">Charge en cours…</translation>
@@ -5023,6 +5050,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7766838926148951335">Accepter les autorisations</translation>
 <translation id="7768770796815395237">Changer</translation>
 <translation id="7769672763586021400">Identifiant de modèle</translation>
+<translation id="7770612696274572992">Image copiée d'un autre appareil</translation>
 <translation id="7770651108375708429">Déconnecter le Wi-Fi</translation>
 <translation id="7771452384635174008">Disposition</translation>
 <translation id="7772032839648071052">Confirmer la phrase de passe</translation>
@@ -5030,6 +5058,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7772773261844472235">Vérifiez l'état de votre Chromebook</translation>
 <translation id="7773726648746946405">Stockage de session</translation>
 <translation id="7774365994322694683">Oiseau</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> sera en mesure d'afficher les fichiers dans le dossier <ph name="FOLDERNAME" /> jusqu'à ce que vous fermiez tous les onglets pour ce site</translation>
 <translation id="7776701556330691704">Aucune voix trouvée</translation>
 <translation id="7780252971640011240">Problèmes de connexion. Veuillez communiquer avec votre fournisseur de services pour obtenir de l'assistance.</translation>
 <translation id="7781335840981796660">Tous les comptes utilisateur et toutes les données locales seront supprimés.</translation>
@@ -6048,6 +6077,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9055636786322918818">Appliquer le chiffrement RC4. L'utilisation de cette option augmente les risques, car les chiffrements RC4 ne sont pas sécurisés.</translation>
 <translation id="9056810968620647706">Aucune correspondance trouvée</translation>
 <translation id="9057354806206861646">Mettre à jour le calendrier</translation>
+<translation id="9058976525724291037">Votre enfant souhaite ajouter un autre compte Google à cet appareil. Seuls des comptes G Suite for Education peuvent être ajoutés à des appareils gérés avec Family Link.</translation>
 <translation id="9062065967472365419">Me surprendre</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Erreur de la ligne <ph name="ERROR_LINE_START" /> à la ligne <ph name="ERROR_LINE_END" /></translation>

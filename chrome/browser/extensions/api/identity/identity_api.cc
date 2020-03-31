@@ -176,6 +176,20 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
   return token_cache_;
 }
 
+void IdentityAPI::SetGaiaIdForExtension(const std::string& extension_id,
+                                        const std::string& gaia_id) {
+  gaia_id_cache_[extension_id] = gaia_id;
+}
+
+const std::string& IdentityAPI::GetGaiaIdForExtension(
+    const std::string& extension_id) {
+  return gaia_id_cache_[extension_id];
+}
+
+void IdentityAPI::EraseAllGaiaIds() {
+  gaia_id_cache_.clear();
+}
+
 void IdentityAPI::SetConsentResult(const std::string& result,
                                    const std::string& window_id) {
   on_set_consent_result_callback_list_.Notify(result, window_id);

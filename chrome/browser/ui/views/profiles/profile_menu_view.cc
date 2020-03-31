@@ -279,14 +279,14 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
             signin_metrics::SignoutDelete::IGNORE_METRIC);
         Hide();
         browser()->signin_view_controller()->ShowSignin(
-            profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(),
+            profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
             signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
       }
       break;
     case sync_ui_util::AUTH_ERROR:
       Hide();
       browser()->signin_view_controller()->ShowSignin(
-          profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH, browser(),
+          profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH,
           signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
       break;
     case sync_ui_util::UPGRADE_CLIENT_ERROR:
@@ -333,7 +333,7 @@ void ProfileMenuView::OnSigninButtonClicked() {
   RecordClick(ActionableItem::kSigninButton);
   Hide();
   browser()->signin_view_controller()->ShowSignin(
-      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(),
+      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 

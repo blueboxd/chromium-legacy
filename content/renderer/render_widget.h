@@ -598,11 +598,13 @@ class CONTENT_EXPORT RenderWidget
   void SetZoomLevelForTesting(double zoom_level);
   void ResetZoomLevelForTesting();
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
-  void SetPageZoomLevelForTesting(double zoom_level);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
+
+  // Do a hit test for a given point in viewport coordinate.
+  blink::WebHitTestResult GetHitTestResultAtPoint(const gfx::PointF& point);
 
   // Forces a redraw and invokes the callback once the frame's been displayed
   // to the user.

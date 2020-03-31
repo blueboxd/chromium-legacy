@@ -6,8 +6,10 @@ package org.chromium.chrome.features.start_surface;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -28,6 +30,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SECONDARY_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
 import android.view.View;
 
@@ -36,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -939,7 +943,13 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(30).when(mChromeFullscreenManager).getBottomControlsHeight();
         doReturn(2).when(mNormalTabModel).getCount();
         mediator.showOverview(false);
-        verify(mChromeFullscreenManager, never()).addListener(mFullscreenListenerCaptor.capture());
+        verify(mChromeFullscreenManager).addListener(mFullscreenListenerCaptor.capture());
+        assertThat(mPropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
+
+        // Even though the FullscreenListener is added, changes to the bottom bar height should be
+        // ignored.
+        mFullscreenListenerCaptor.getValue().onBottomControlsHeightChanged(100, 0);
         assertThat(mPropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
         assertThat(mSecondaryTasksSurfacePropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
     }
@@ -1200,6 +1210,25 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE),
                 equalTo(false));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
+    }
+
+    @Test
+    public void changeTopControlsHeight() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        doNothing().when(mChromeFullscreenManager).addListener(mFullscreenListenerCaptor.capture());
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE, false);
+        mediator.showOverview(false);
+
+        verify(mChromeFullscreenManager).addListener(ArgumentMatchers.any());
+
+        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(100, 20);
+        assertEquals("Wrong top bar height.", 100, mPropertyModel.get(TOP_BAR_HEIGHT));
+
+        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(50, 20);
+        assertEquals("Wrong top bar height.", 50, mPropertyModel.get(TOP_BAR_HEIGHT));
     }
 
     private StartSurfaceMediator createStartSurfaceMediator(

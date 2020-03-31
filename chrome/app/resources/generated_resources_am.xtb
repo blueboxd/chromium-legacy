@@ -1881,6 +1881,7 @@
 <translation id="3479552764303398839">አሁን አይደለም</translation>
 <translation id="3479685872808224578">የህትመት አገልጋዩን ማግኘት አልተቻለም። እባክዎ አድራሻውን ይፈትሹ እና እንደገና ይሞክሩ።</translation>
 <translation id="3481268647794498892"><ph name="ALTERNATIVE_BROWSER_NAME" />ን በ<ph name="COUNTDOWN_SECONDS" /> ሰከንዶች ውስጥ ይከፈታል</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> የሚከተሉትን ፋይሎች መመልከት ይችላል</translation>
 <translation id="3484273680291419129">ጎጂ ሶፍትዌርን በማስወገድ ላይ...</translation>
 <translation id="3484869148456018791">አዲስ የእውቅና ማረጋገጫ ያግኙ</translation>
 <translation id="3487007233252413104">ስም-አልባ ተግባር</translation>
@@ -1943,6 +1944,7 @@
 <translation id="3564848315152754834">የዩኤስቢ ደህነንት ቁልፍ</translation>
 <translation id="3566721612727112615">ምንም ጣቢያዎች አልታከሉም</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> ማያ ገጽዎን እንዲያጋራ ይፈልጋሉ?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> የሚከተሉትን ፋይሎች እና አቃፊዎች መመልከት ይችላል</translation>
 <translation id="3571734092741541777">አዋቅር</translation>
 <translation id="3574210789297084292">ግባ</translation>
 <translation id="3574917942258583917">ለማንኛውም ማንነት ከማያሳውቅ ሁነታ ይውጡ?</translation>
@@ -1952,6 +1954,7 @@
 <translation id="3578594933904494462">የዚህ ትር ይዘት በመጋራት ላይ ነው።</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; የ&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; አታሚ እርስዎ ባለቤት ለሆኑበት ቡድን ማጋራት ይፈልጋሉ፦ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;። ከተቀበሉ ሁሉም የቡድን አባላት ወደ አታሚው ማተም ይችላሉ።</translation>
 <translation id="357889014807611375">የተመጠነ Wi-Fi</translation>
+<translation id="3582057310199111521">በአታላይ ጣቢያ ላይ ገብቶ በውሂብ ጥሰት ላይ ተገኝቷል</translation>
 <translation id="3584169441612580296">በኮምፒውተርዎ ላይ ያሉ ፎቶዎችን፣ ሙዚቃን እና ሌላ ማህደረመረጃ ያነብባል እና ይቀይራል</translation>
 <translation id="3586806079541226322">ይህን ፋይል መክፈት አይቻልም</translation>
 <translation id="3586931643579894722">ዝርዝር ደብቅ</translation>
@@ -3087,6 +3090,7 @@
 <translation id="5117930984404104619">የተጎበኙ ዩ አር ኤሎችንም ጨምሮ የሌሎች ቅጥያዎች ባህሪ ይከታተሉ</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ደረቅ አንጻፊዎ ሙሉ ነው። እባክዎ ሌላ ቦታ ላይ ያስቀምጡ ወይም ደረቅ አንጻፊው ላይ ቦታ ያስለቅቁ።</translation>
+<translation id="5122384452788334261">የእርስዎ መሣሪያ ማከማቻ ባዶ ቦታው ዝቅተኛ ነው። Plugin VMን ለመጠቀም ቢያንስ <ph name="RECOMMENDED_SPACE" /> ነጻ ቦታ ይመከራል። ባዶ ቦታ ለማስለቀቅ ከመሣሪያ ማከማቻ ፋይሎችን ይሰርዙ።</translation>
 <translation id="5123433949759960244">ቅርጫት ኳስ</translation>
 <translation id="5125751979347152379">ልክ ያልሆነ URL።</translation>
 <translation id="5126611267288187364">ለውጦችን ይመልከቱ</translation>
@@ -5188,6 +5192,7 @@
 <translation id="7915471803647590281">ግብረ መልሱን ከመላክዎ በፊት እባክዎ ምን እየተከሰተ እንደሆነ ይንገሩን።</translation>
 <translation id="7918257978052780342">ተመዝገብ</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> ሴ</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> <ph name="FILENAME" />ን ማየት ይችላል</translation>
 <translation id="7924358170328001543">ወደብን የማስተላለፍ ስህተት</translation>
 <translation id="792514962475806987">የተተከለ ማጉያ ደረጃ፦</translation>
 <translation id="7925247922861151263">የAAA ማረጋገጥ አልተሳካም</translation>
@@ -5356,6 +5361,7 @@ nil</translation>
 <translation id="8118488170956489476">የእርስዎ <ph name="BEGIN_LINK" />አሳሽ በእርስዎ ድርጅት<ph name="END_LINK" /> የሚተዳደር ነው</translation>
 <translation id="8118860139461251237">ማውረድዎችዎን ያስተዳድሩ</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />፣ <ph name="RECENT_PERMISSIONS_CHANGE_1" />፣ <ph name="RECENT_PERMISSIONS_CHANGE_2" /> እና ተጨማሪ</translation>
+<translation id="8120715633374652536">የእርስዎ መሣሪያ ማከማቻ ባዶ ቦታው ዝቅተኛ ነው። Plugin VMን ለመጠቀም ቢያንስ <ph name="MINIMUM_SPACE" /> ነጻ ቦታ ያስፈልጋል፣ እና ከ<ph name="RECOMMENDED_SPACE" /> በላይ ነጻ ቦታ ይመከራል። ባዶ ቦታ ለማስለቀቅ ከመሣሪያ ማከማቻ ፋይሎችን ይሰርዙ።</translation>
 <translation id="8123590694679414600">ውሂብ <ph name="TIME" /> ላይ በነበረው የስምረት ይለፍ ሐረግዎ የተመሠጠረ ነው። ይህ ከGoogle Pay የመክፈያ ዘዴዎችን እና አድራሻዎችን አያካትትም።</translation>
 <translation id="81238879832906896">ቢጫ እና ነጭ አበባ</translation>
 <translation id="8124313775439841391">የሚቀናበር ONC</translation>

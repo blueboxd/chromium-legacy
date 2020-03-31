@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/task_environment.h"
 #include "chromecast/net/fake_stream_socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -45,6 +46,7 @@ class FakeStreamSocketTest : public ::testing::Test {
         socket_2_(endpoint_2_) {}
   ~FakeStreamSocketTest() override {}
 
+  base::test::TaskEnvironment task_environment_;
   net::IPEndPoint endpoint_1_;
   FakeStreamSocket socket_1_;
   net::IPEndPoint endpoint_2_;
@@ -65,6 +67,7 @@ TEST_F(FakeStreamSocketTest, GetPeerAddressWithoutPeer) {
 
 TEST_F(FakeStreamSocketTest, GetPeerAddressWithPeer) {
   socket_1_.SetPeer(&socket_2_);
+  socket_2_.SetPeer(&socket_1_);
   net::IPEndPoint peer_address;
   ASSERT_EQ(net::OK, socket_1_.GetPeerAddress(&peer_address));
   EXPECT_EQ(endpoint_2_, peer_address);

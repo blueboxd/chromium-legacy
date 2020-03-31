@@ -50,55 +50,51 @@ enum class ReauthResult;
 // Chrome OS has its own sign-in flow and doesn't use DICE.
 class SigninViewController {
  public:
-  SigninViewController();
+  explicit SigninViewController(Browser* browser);
   virtual ~SigninViewController();
 
   // Returns true if the signin flow should be shown for |mode|.
   static bool ShouldShowSigninForMode(profiles::BubbleViewMode mode);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // Shows the signin attached to |browser|'s active web contents.
+  // Shows the signin attached to |browser_|'s active web contents.
   // |access_point| indicates the access point used to open the Gaia sign in
   // page.
   // DEPRECATED: Use ShowDiceEnableSyncTab instead.
   void ShowSignin(profiles::BubbleViewMode mode,
-                  Browser* browser,
                   signin_metrics::AccessPoint access_point,
                   const GURL& redirect_url = GURL::EmptyGURL());
 
   // Shows a Chrome Sync signin tab. |email_hint| may be empty.
   // Note: If the user has already set a primary account, then this is
   // considered a reauth of the primary account, and |email_hint| is ignored.
-  void ShowDiceEnableSyncTab(Browser* browser,
-                             signin_metrics::AccessPoint access_point,
+  void ShowDiceEnableSyncTab(signin_metrics::AccessPoint access_point,
                              signin_metrics::PromoAction promo_action,
                              const std::string& email_hint);
 
   // Shows the Dice "add account" tab, which adds an account to the browser but
   // does not turn sync on. |email_hint| may be empty.
-  void ShowDiceAddAccountTab(Browser* browser,
-                             signin_metrics::AccessPoint access_point,
+  void ShowDiceAddAccountTab(signin_metrics::AccessPoint access_point,
                              const std::string& email_hint);
 
   // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
-  // top of the currently displayed WebContents in |browser|.
+  // top of the currently displayed WebContents in |browser_|.
   void ShowModalSigninEmailConfirmationDialog(
-      Browser* browser,
       const std::string& last_email,
       const std::string& email,
       base::OnceCallback<void(SigninEmailConfirmationDialog::Action)> callback);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
-  // of the |browser|'s window.
-  void ShowModalSyncConfirmationDialog(Browser* browser);
+  // of the |browser_|'s window.
+  void ShowModalSyncConfirmationDialog();
 
   // Shows the modal sign-in error dialog as a browser-modal dialog on top of
-  // the |browser|'s window.
-  void ShowModalSigninErrorDialog(Browser* browser);
+  // the |browser_|'s window.
+  void ShowModalSigninErrorDialog();
 
   // Shows the reauth prompt for |account_id| as either:
-  // - a browser-modal dialog on top of the |browser|'s window, or
+  // - a browser-modal dialog on top of the |browser_|'s window, or
   // - a popup window
   // |account_id| should be signed into the content area. Otherwise, the method
   // fails with |kAccountNotSignedIn| error.
@@ -108,7 +104,6 @@ class SigninViewController {
   // The reauth prompt that is currently displayed can be cancelled by
   // CloseModalSignin().
   void ShowReauthPrompt(
-      Browser* browser,
       const CoreAccountId& account_id,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
@@ -130,9 +125,8 @@ class SigninViewController {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
-  // tab attached to |browser|. |email_hint| may be empty.
-  void ShowDiceSigninTab(Browser* browser,
-                         signin_metrics::Reason signin_reason,
+  // tab attached to |browser_|. |email_hint| may be empty.
+  void ShowDiceSigninTab(signin_metrics::Reason signin_reason,
                          signin_metrics::AccessPoint access_point,
                          signin_metrics::PromoAction promo_action,
                          const std::string& email_hint,
@@ -141,6 +135,9 @@ class SigninViewController {
 
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();
+
+  // Browser owning this controller.
+  Browser* browser_;
 
   SigninViewControllerDelegate* delegate_;
 

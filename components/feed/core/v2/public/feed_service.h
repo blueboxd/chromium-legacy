@@ -8,16 +8,18 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
-namespace leveldb_proto {
-class ProtoDatabaseProvider;
+namespace feedstore {
+class Record;
 }
 namespace network {
 class SharedURLLoaderFactory;
@@ -29,6 +31,7 @@ class IdentityManager;
 namespace feed {
 class RefreshTaskScheduler;
 class FeedNetwork;
+class FeedStore;
 
 class FeedService : public KeyedService {
  public:
@@ -45,15 +48,16 @@ class FeedService : public KeyedService {
   explicit FeedService(std::unique_ptr<FeedStreamApi> stream);
 
   // Construct a new FeedStreamApi along with FeedService.
-  FeedService(std::unique_ptr<Delegate> delegate,
-              std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler,
-              PrefService* profile_prefs,
-              PrefService* local_state,
-              leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-              signin::IdentityManager* identity_manager,
-              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-              scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-              const std::string& api_key);
+  FeedService(
+      std::unique_ptr<Delegate> delegate,
+      std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler,
+      PrefService* profile_prefs,
+      PrefService* local_state,
+      std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database,
+      signin::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+      const std::string& api_key);
   ~FeedService() override;
   FeedService(const FeedService&) = delete;
   FeedService& operator=(const FeedService&) = delete;
@@ -70,6 +74,7 @@ class FeedService : public KeyedService {
   std::unique_ptr<StreamDelegateImpl> stream_delegate_;
   std::unique_ptr<NetworkDelegateImpl> network_delegate_;
   std::unique_ptr<FeedNetwork> feed_network_;
+  std::unique_ptr<FeedStore> store_;
   std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
 
   std::unique_ptr<FeedStreamApi> stream_;

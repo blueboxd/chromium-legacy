@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">可見的網絡：</translation>
 <translation id="1094607894174825014">已在「<ph name="DEVICE_NAME" />」上作出包含無效偏移的讀取或寫入操作請求。</translation>
 <translation id="1097658378307015415">請在登入前以訪客身分進入，啟用網絡 <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">從「<ph name="DEVICE_NAME" />」複製的圖片</translation>
 <translation id="1103523840287552314">永遠翻譯<ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">無法偵測您的 SIM 卡</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">背景頁面</translation>
 <translation id="1745520510852184940">一律執行此操作</translation>
 <translation id="1750172676754093297">您的安全密鑰無法儲存指紋</translation>
+<translation id="1751262127955453661">在您關閉此網站所有分頁前，<ph name="ORIGIN" /> 都能編輯「<ph name="FOLDERNAME" />」中的檔案</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="1753067873202720523">您的 Chromebook 可能無法在開啟時充電。</translation>
 <translation id="1753905327828125965">最常瀏覽</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">已是 Chrome 使用者嗎？請登入</translation>
 <translation id="18245044880483936">備份資料將不會佔用您子女的「雲端硬碟」儲存空間配額。</translation>
 <translation id="1826516787628120939">檢查中</translation>
+<translation id="1827738518074806965">畫廊</translation>
 <translation id="1828378091493947763">此裝置不支援此外掛程式</translation>
 <translation id="1828901632669367785">使用系統對話方塊進行列印…</translation>
 <translation id="1829129547161959350">企鵝</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="236117173274098341">優化</translation>
 <translation id="236141728043665931">永遠封鎖存取麥克風</translation>
+<translation id="2364498172489649528">已通過</translation>
 <translation id="2365507699358342471">此網站可以查看複製到剪貼簿的文字和圖片。</translation>
 <translation id="2366260648632264559">以此語言顯示系統文字</translation>
 <translation id="2367972762794486313">顯示應用程式</translation>
@@ -1341,6 +1345,7 @@
 <translation id="2762441749940182211">已禁止使用相機</translation>
 <translation id="2765217105034171413">小</translation>
 <translation id="2766161002040448006">詢問家長</translation>
+<translation id="2767127727915954024">在您關閉此網站的所有分頁前，<ph name="ORIGIN" /> 都能編輯「<ph name="FILENAME" />」</translation>
 <translation id="276969039800130567">以 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入。</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
 <translation id="2770690685823456775">將您的密碼匯出至其他資料夾</translation>
@@ -1664,6 +1669,18 @@
 <translation id="3202173864863109533">此分頁的音效已設為靜音。</translation>
 <translation id="3208321278970793882">應用程式</translation>
 <translation id="3208584281581115441">立即檢查</translation>
+<translation id="3208640652501208439">學校作業的資源可能無法使用或無法自動載入
+    您子女可能無法存取以下項目：
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />由學校安裝的應用程式和擴充程式
+      <ph name="LIST_ITEM" />學校用 Chromebook 的書籤
+      <ph name="LIST_ITEM" />在教學網站上自動填入密碼的功能
+    <ph name="END_LIST" />
+    您子女必須執行以下操作，才能在此裝置上享有完整的學校帳戶體驗：
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />登出由 Family Link 管理的帳戶
+      <ph name="OLIST_ITEM" />在登入畫面上使用「G Suite 教育版」帳戶登入。請注意，此操作會讓學校政策 (包括應用程式和網站存取設定) 優先於 Family Link 的監管功能 (例如，學校管理員可能允許存取 YouTube 做功課，或系統將不會強制執行裝置使用時間等等。)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">尚未確認的</translation>
 <translation id="32101887417650595">無法連線至打印機</translation>
 <translation id="321084946921799184">黃色和白色</translation>
@@ -1742,6 +1759,7 @@
 <translation id="3312424061798279731">已啟用的語言</translation>
 <translation id="3313622045786997898">憑證簽署值</translation>
 <translation id="3315158641124845231">隱藏 <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">家長專用的學校帳戶資料</translation>
 <translation id="3317459757438853210">雙面</translation>
 <translation id="3317678681329786349">已禁止使用相機和麥克風</translation>
 <translation id="3319048459796106952">新增無痕式視窗(&amp;I)</translation>
@@ -1928,6 +1946,7 @@
 <translation id="3574210789297084292">登入</translation>
 <translation id="3574917942258583917">仍要結束無痕模式嗎？</translation>
 <translation id="3575121482199441727">允許此網站的通知</translation>
+<translation id="3575919114596668130">您的 Family Link 家長設定仍然適用。如果您先前已封鎖某個應用程式或網站，則不必重新封鎖。</translation>
 <translation id="3576324189521867626">已成功安裝</translation>
 <translation id="3578594933904494462">正在分享這個分頁的內容。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; 想與您的群組 (<ph name="GROUP_NAME" />) 共用打印機 &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。如果您接受，所有群組成員即可使用這部打印機列印。</translation>
@@ -2768,6 +2787,7 @@
 <translation id="4689235506267737042">選擇示範偏好設定</translation>
 <translation id="4689421377817139245">將此書籤同步到 iPhone</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 韌體產生的 4 個檔案：csr.lst、fh_regs.lst、radio_reg.lst、monitor.lst.sysmon。首 3 個檔案是包含註冊表的二進制檔案，而這些檔案由 Intel 設定不包含任何個人資料或可識別裝置的資料。最後一個檔案是 Intel 韌體的執行蹤跡，而當中的個人資料或可識別裝置的資料已被清除，但檔案過大而無法在此顯示。若您的裝置最近發生 Wi-Fi 問題，系統便會產生這些檔案，且會將檔案傳送給 Intel 以供解決相關問題。&gt;</translation>
+<translation id="4691791363716065510">在您關閉此網站的所有分頁前，<ph name="ORIGIN" /> 都能查看「<ph name="FILENAME" />」</translation>
 <translation id="4692623383562244444">搜尋引擎</translation>
 <translation id="4693155481716051732">壽司</translation>
 <translation id="4694024090038830733">打印機由管理員設定。</translation>
@@ -3123,6 +3143,7 @@
 <translation id="5204967432542742771">輸入密碼</translation>
 <translation id="5206215183583316675">要刪除「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="520621735928254154">憑證匯入錯誤</translation>
+<translation id="5209307736170827035">您子女的 Classroom 資料將受到保護。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">找不到裝置</translation>
 <translation id="5210990770352357081">無法解除安裝 Plugin VM</translation>
 <translation id="5213481667492808996">「<ph name="NAME" />」的數據服務現可使用</translation>
@@ -3234,6 +3255,7 @@
 <translation id="5341980496415249280">正在封裝，請稍候…</translation>
 <translation id="5342091991439452114">PIN 必須至少有 <ph name="MINIMUM" /> 位數字</translation>
 <translation id="5344036115151554031">正在還原 Linux</translation>
+<translation id="535123479159372765">從其他裝置複製的文字</translation>
 <translation id="5352033265844765294">時間戳記</translation>
 <translation id="5353252989841766347">從 Chrome 中匯出密碼</translation>
 <translation id="5355099869024327351">允許「Google 助理」顯示通知</translation>
@@ -3356,6 +3378,7 @@
 <translation id="5511379779384092781">非常小</translation>
 <translation id="5511823366942919280">您確定要將這部裝置設為 "Shark" 嗎？</translation>
 <translation id="5512653252560939721">必須使用硬件支援的使用者憑證。</translation>
+<translation id="5515923816438946203">選擇畫面上顯示的內容</translation>
 <translation id="5517304475148761050">此應用程式需要存取「Play 商店」才能執行</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">正在將打印機新增到您的帳戶中，這可能需要幾分鐘的時間…</translation>
@@ -3806,6 +3829,7 @@
 <translation id="6097480669505687979">如不釋出儲存空間，系統可能會自動移除使用者和資料。</translation>
 <translation id="6097600385983390082">閂咗語音搜尋</translation>
 <translation id="6098793583803863900">系統正在掃瞄不明檔案是否包含危險內容。</translation>
+<translation id="609942571968311933">從「<ph name="DEVICE_NAME" />」複製的文字</translation>
 <translation id="6100736666660498114">開始選單</translation>
 <translation id="6101226222197207147">已新增應用程式 (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">「進階保護功能」已封鎖此檔案。</translation>
@@ -4176,6 +4200,7 @@
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6615455863669487791">顯示</translation>
 <translation id="6618097958368085618">仍要保留</translation>
+<translation id="6618744767048954150">正在執行</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">網站可以追蹤您的位置</translation>
 <translation id="6619801788773578757">新增 Kiosk 應用程式</translation>
@@ -4561,6 +4586,7 @@
 <translation id="7131040479572660648">讀取您在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上的資料</translation>
 <translation id="713122686776214250">新增網頁(&amp;G)…</translation>
 <translation id="7133578150266914903">您的管理員正在回復裝置 (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">已檢查 <ph name="DONE" /> 個密碼，共 <ph name="TOTAL" /> 個…</translation>
 <translation id="7134098520442464001">縮小文字</translation>
 <translation id="7135729336746831607">要開啟藍牙嗎？</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> 要求您立即更新 <ph name="DEVICE_TYPE" />。</translation>
@@ -4909,6 +4935,7 @@
 <translation id="761530003705945209">備份至「Google 雲端硬碟」。您可隨時輕鬆還原資料或轉用其他裝置。備份包含應用程式資料。您的備份會上載至 Google，並透過您的 Google 帳戶密碼加密。</translation>
 <translation id="7616214729753637086">正在註冊裝置…</translation>
 <translation id="7617366389578322136">正在連線至「<ph name="DEVICE_NAME" />」</translation>
+<translation id="761763866592998929">氛圍模式</translation>
 <translation id="762068974690945752">您可在這裡新增學校帳戶或管理兒童帳戶。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">系統無法儲存裝置設定。</translation>
 <translation id="7622114377921274169">正在充電。</translation>
@@ -5020,6 +5047,7 @@
 <translation id="7766838926148951335">接受權限</translation>
 <translation id="7768770796815395237">變更</translation>
 <translation id="7769672763586021400">型號識別碼</translation>
+<translation id="7770612696274572992">從其他裝置複製的圖片</translation>
 <translation id="7770651108375708429">中斷 Wi-Fi 連線</translation>
 <translation id="7771452384635174008">版面配置</translation>
 <translation id="7772032839648071052">確認複雜密碼</translation>
@@ -5027,6 +5055,7 @@
 <translation id="7772773261844472235">檢查 Chromebook 狀態</translation>
 <translation id="7773726648746946405">工作階段儲存空間</translation>
 <translation id="7774365994322694683">鳥</translation>
+<translation id="7776156998370251340">在您關閉此網站的所有分頁前，<ph name="ORIGIN" /> 都能查看「<ph name="FOLDERNAME" />」中的檔案</translation>
 <translation id="7776701556330691704">找不到語音</translation>
 <translation id="7780252971640011240">連線發生問題。請聯絡流動網絡供應商尋求協助。</translation>
 <translation id="7781335840981796660">系統將移除所有使用者帳戶和本機數據。</translation>
@@ -6045,6 +6074,7 @@
 <translation id="9055636786322918818">強制執行 RC4 加密。由於 RC4 加密不安全，因此使用此選項會提高風險。</translation>
 <translation id="9056810968620647706">找不到相符的項目。</translation>
 <translation id="9057354806206861646">更新時間表</translation>
+<translation id="9058976525724291037">您子女要求在此裝置上新增其他 Google 帳戶。只有「G Suite 教育版」帳戶才能新增至由 Family Link 管理的裝置。</translation>
 <translation id="9062065967472365419">隨機桌布</translation>
 <translation id="9062468308252555888">14 倍</translation>
 <translation id="9063208415146866933">第<ph name="ERROR_LINE_START" />至第<ph name="ERROR_LINE_END" />行有錯</translation>

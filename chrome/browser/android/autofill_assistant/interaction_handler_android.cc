@@ -22,18 +22,6 @@ namespace autofill_assistant {
 
 namespace {
 
-// A simple wrapper around a basic interaction, needed because we can't directly
-// bind a repeating callback to a method with non-void return value.
-void TryRunConditionalCallback(
-    base::WeakPtr<BasicInteractions> basic_interactions,
-    const std::string& condition_identifier,
-    InteractionHandlerAndroid::InteractionCallback callback) {
-  if (!basic_interactions) {
-    return;
-  }
-  basic_interactions->RunConditionalCallback(condition_identifier, callback);
-}
-
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     const EventProto& proto,
     std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
@@ -231,6 +219,11 @@ InteractionHandlerAndroid::~InteractionHandlerAndroid() {
   event_handler_->RemoveObserver(this);
 }
 
+base::WeakPtr<InteractionHandlerAndroid>
+InteractionHandlerAndroid::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void InteractionHandlerAndroid::StartListening() {
   is_listening_ = true;
   event_handler_->AddObserver(this);
@@ -239,6 +232,14 @@ void InteractionHandlerAndroid::StartListening() {
 void InteractionHandlerAndroid::StopListening() {
   event_handler_->RemoveObserver(this);
   is_listening_ = false;
+}
+
+UserModel* InteractionHandlerAndroid::GetUserModel() const {
+  return user_model_;
+}
+
+BasicInteractions* InteractionHandlerAndroid::GetBasicInteractions() const {
+  return basic_interactions_;
 }
 
 bool InteractionHandlerAndroid::AddInteractionsFromProto(
@@ -264,9 +265,10 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     // Wrap callback in condition handler if necessary.
     if (callback_proto.has_condition_model_identifier()) {
       callback = base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(
-              &TryRunConditionalCallback, basic_interactions_->GetWeakPtr(),
-              callback_proto.condition_model_identifier(), *callback));
+          base::BindRepeating(&android_interactions::RunConditionalCallback,
+                              basic_interactions_->GetWeakPtr(),
+                              callback_proto.condition_model_identifier(),
+                              *callback));
     }
     AddInteraction(*key, *callback);
   }
@@ -286,6 +288,22 @@ void InteractionHandlerAndroid::OnEvent(const EventHandler::EventKey& key) {
       callback.Run();
     }
   }
+}
+
+void InteractionHandlerAndroid::AddRadioButtonToGroup(
+    const std::string& radio_group,
+    const std::string& model_identifier) {
+  radio_groups_[radio_group].emplace_back(model_identifier);
+}
+
+void InteractionHandlerAndroid::UpdateRadioButtonGroup(
+    const std::string& radio_group,
+    const std::string& selected_model_identifier) {
+  if (radio_groups_.find(radio_group) == radio_groups_.end()) {
+    return;
+  }
+  basic_interactions_->UpdateRadioButtonGroup(radio_groups_[radio_group],
+                                              selected_model_identifier);
 }
 
 }  // namespace autofill_assistant

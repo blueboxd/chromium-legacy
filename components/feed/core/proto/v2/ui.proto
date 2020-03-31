@@ -8,6 +8,9 @@ package feedui;
 
 option optimize_for = LITE_RUNTIME;
 
+option java_package = "org.chromium.components.feed.proto";
+option java_outer_classname = "FeedUiProto";
+
 // This is a simplified and complete set of protos that define UI.
 // It includes everything from search.now.ui needed in the UI, and excludes
 // other data to reduce complexity. These proto messages should be constructible

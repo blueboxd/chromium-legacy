@@ -210,13 +210,6 @@ def main():
                     e.returncode, " Details: " + e.output if e.output else "")
       return 1
 
-  # Always re-generate sdk/BUILD.gn, even if the SDK hash has not changed,
-  # in case the gen_build_defs.py script changed.
-  logging.info("Generating sdk/BUILD.gn")
-  cmd = [os.path.join(SDK_ROOT, '..', 'gen_build_defs.py')]
-  logging.debug("Running '%s'", " ".join(cmd))
-  subprocess.check_call(cmd)
-
   with open(signature_filename, 'w') as f:
     f.write(GetSdkSignature(sdk_hash, args.boot_images))
 

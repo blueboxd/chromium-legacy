@@ -552,10 +552,6 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
         std::move(test_worker_context_provider));
   }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_forced = true;
-  }
-
   void BeginTest() override {}
 
  protected:
@@ -1497,7 +1493,7 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
 
 // This behavior is specific to Android WebView, which only uses
 // multi-threaded compositor.
-// TODO (crbug.com/1043900): Disabled because test is flaky on Mac10.13.
+// TODO(crbug.com/1043900): Disabled because test is flaky on Mac10.13.
 // MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
 
 // When settings->enable_early_damage_check is true, verifies that PrepareTiles
@@ -2362,8 +2358,11 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     client_.set_bounds(layer_->bounds());
   }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_forced = true;
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
@@ -6202,10 +6201,18 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources);
 
-class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
+class LayerTreeHostTestGpuRasterizationDisabled : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    EXPECT_FALSE(settings->gpu_rasterization_forced);
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    // The test contexts have gpu raster disabled by default.
+    gpu::Capabilities caps =
+        context_provider->UnboundTestContextGL()->test_capabilities();
+    EXPECT_FALSE(caps.gpu_rasterization);
+    gpu::Capabilities worker_caps =
+        context_provider->UnboundTestContextGL()->test_capabilities();
+    EXPECT_FALSE(worker_caps.gpu_rasterization);
   }
 
   void SetupTree() override {
@@ -6245,35 +6252,22 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   FakeRecordingSource* recording_source_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationDefault);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationDisabled);
 
-class LayerTreeHostWithGpuRasterizationSupportedTest
-    : public LayerTreeHostTest {
+class LayerTreeHostTestGpuRasterizationSupportedButDisabled
+    : public LayerTreeTest {
  protected:
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+  }
+
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_msaa_sample_count = 4;
+    settings->gpu_rasterization_disabled = true;
   }
-  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
-      const viz::RendererSettings& renderer_settings,
-      double refresh_rate,
-      scoped_refptr<viz::ContextProvider> ignored_compositor_context_provider,
-      scoped_refptr<viz::RasterContextProvider> ignored_worker_context_provider)
-      override {
-    auto context_provider = viz::TestContextProvider::Create();
-    viz::TestGLES2Interface* gl = context_provider->UnboundTestContextGL();
-    gl->SetMaxSamples(4);
-    gl->set_support_multisample_compatibility(false);
-    gl->set_gpu_rasterization(true);
-    auto worker_context_provider = viz::TestContextProvider::CreateWorker();
-    viz::TestGLES2Interface* worker_gl =
-        worker_context_provider->UnboundTestContextGL();
-    worker_gl->SetMaxSamples(4);
-    worker_gl->set_support_multisample_compatibility(false);
-    worker_gl->set_gpu_rasterization(true);
-    return LayerTreeHostTest::CreateLayerTreeFrameSink(
-        renderer_settings, refresh_rate, std::move(context_provider),
-        std::move(worker_context_provider));
-  }
+
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
@@ -6285,10 +6279,24 @@ class LayerTreeHostWithGpuRasterizationSupportedTest
         FakePictureLayer::CreateWithRecordingSource(
             &layer_client_, std::move(recording_source));
     layer_ = layer.get();
+
     layer->SetBounds(gfx::Size(10, 10));
     layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(layer);
     layer_client_.set_bounds(layer_->bounds());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(host_impl->sync_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    EndTest();
   }
 
   FakeContentLayerClient layer_client_;
@@ -6296,66 +6304,15 @@ class LayerTreeHostWithGpuRasterizationSupportedTest
   FakeRecordingSource* recording_source_;
 };
 
-class LayerTreeHostTestGpuRasterizationEnabled
-    : public LayerTreeHostWithGpuRasterizationSupportedTest {
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationSupportedButDisabled);
+
+class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
  protected:
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    auto* raster_source = static_cast<PictureLayerImpl*>(
-                              host_impl->sync_tree()->LayerById(layer_->id()))
-                              ->GetRasterSource();
-    EXPECT_EQ(host_impl->GetMSAASampleCountForRaster(
-                  raster_source->GetDisplayItemList()),
-              0);
-    EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
-    EXPECT_TRUE(host_impl->use_gpu_rasterization());
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
-    EXPECT_TRUE(host_impl->use_gpu_rasterization());
-    EndTest();
-  }
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
-
-class LayerTreeHostTestGpuRasterizationEnabledWithMSAA
-    : public LayerTreeHostWithGpuRasterizationSupportedTest {
- protected:
-  void BeginTest() override {
-    // Content-based MSAA trigger.
-    layer_client_.set_contains_slow_paths(true);
-
-    // MSAA trigger will take effect when layers are updated.
-    // The results will be verified after commit is completed below.
-    // Since we are manually marking the source as containing slow paths,
-    // make sure that the layer gets a chance to update.
-    layer_->SetNeedsDisplay();
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    auto* raster_source = static_cast<PictureLayerImpl*>(
-                              host_impl->sync_tree()->LayerById(layer_->id()))
-                              ->GetRasterSource();
-    EXPECT_GT(host_impl->GetMSAASampleCountForRaster(
-                  raster_source->GetDisplayItemList()),
-              0);
-    EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
-    EXPECT_TRUE(host_impl->use_gpu_rasterization());
-    EndTest();
-  }
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabledWithMSAA);
-
-class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
- protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    EXPECT_FALSE(settings->gpu_rasterization_forced);
-    settings->gpu_rasterization_forced = true;
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
   }
 
   void SetupTree() override {
@@ -6377,11 +6334,6 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
-    // Veto will take effect when layers are updated.
-    // The results will be verified after commit is completed below.
-    // Since we are manually marking the source as containing slow paths,
-    // make sure that the layer gets a chance to update.
-    layer_->SetNeedsDisplay();
     PostSetNeedsCommitToMainThread();
   }
 
@@ -6401,30 +6353,75 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   FakeRecordingSource* recording_source_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationForced);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
 
-class LayerTreeHostTestGpuRasterizationSupportedButDisabled
-    : public LayerTreeHostWithGpuRasterizationSupportedTest {
+class LayerTreeHostTestGpuRasterizationEnabledWithMSAA : public LayerTreeTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_disabled = true;
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    viz::TestGLES2Interface* gl = context_provider->UnboundTestContextGL();
+    gl->set_gpu_rasterization(true);
+    gl->set_support_multisample_compatibility(false);
+    gl->SetMaxSamples(4);
+    viz::TestGLES2Interface* worker = worker_provider->UnboundTestContextGL();
+    worker->set_gpu_rasterization(true);
+    worker->set_support_multisample_compatibility(false);
+    worker->SetMaxSamples(4);
   }
 
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // GetMSAASampleCountForRaster() will return this value if there are too
+    // many slow paths.
+    settings->gpu_rasterization_msaa_sample_count = 4;
+  }
+
+  void SetupTree() override {
+    LayerTreeHostTest::SetupTree();
+
+    auto recording_source = std::make_unique<FakeRecordingSource>();
+    recording_source_ = recording_source.get();
+
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::CreateWithRecordingSource(
+            &layer_client_, std::move(recording_source));
+    layer_ = layer.get();
+    layer->SetBounds(gfx::Size(10, 10));
+    layer->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(layer);
+    layer_client_.set_bounds(layer_->bounds());
+  }
+
+  void BeginTest() override {
+    // Content-based MSAA trigger.
+    layer_client_.set_contains_slow_paths(true);
+    // MSAA trigger will take effect when layers are updated.
+    // The results will be verified after commit is completed below.
+    // Since we are manually marking the source as containing slow paths,
+    // make sure that the layer gets a chance to update.
+    layer_->SetNeedsDisplay();
+
+    PostSetNeedsCommitToMainThread();
+  }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(host_impl->sync_tree()->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_gpu_rasterization());
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    auto* raster_source = static_cast<PictureLayerImpl*>(
+                              host_impl->sync_tree()->LayerById(layer_->id()))
+                              ->GetRasterSource();
+    EXPECT_GT(host_impl->GetMSAASampleCountForRaster(
+                  raster_source->GetDisplayItemList()),
+              0);
+    EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_gpu_rasterization());
     EndTest();
   }
+
+  FakeContentLayerClient layer_client_;
+  FakePictureLayer* layer_;
+  FakeRecordingSource* recording_source_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationSupportedButDisabled);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabledWithMSAA);
 
 class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
     : public LayerTreeHostTest {
@@ -7020,10 +7017,11 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy);
 
 class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
  protected:
-  RasterizeWithGpuRasterizationCreatesResources() = default;
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_forced = true;
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
   }
 
   void SetupTree() override {
@@ -7065,8 +7063,11 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
  protected:
   GpuRasterizationRasterizesBorderTiles() : viewport_size_(1024, 2048) {}
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_forced = true;
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
   }
 
   void SetupTree() override {
@@ -7727,9 +7728,14 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
   GpuRasterizationSucceedsWithLargeImage()
       : viewport_size_(1024, 2048), large_image_size_(20000, 10) {}
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_forced = true;
+  void SetUpUnboundContextProviders(
+      viz::TestContextProvider* context_provider,
+      viz::TestContextProvider* worker_provider) override {
+    context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+  }
 
+  void InitializeSettings(LayerTreeSettings* settings) override {
     // Set to 0 to force at-raster GPU image decode.
     settings->decoded_image_working_set_budget_bytes = 0;
   }
@@ -7830,9 +7836,9 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider)
       override {
-    auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-    gl_owned->set_have_extension_egl_image(true);
-    auto provider = viz::TestContextProvider::Create(std::move(gl_owned));
+    auto gl = std::make_unique<viz::TestGLES2Interface>();
+    gl->set_have_extension_egl_image(true);
+    auto provider = viz::TestContextProvider::Create(std::move(gl));
     return LayerTreeTest::CreateLayerTreeFrameSink(
         renderer_settings, refresh_rate, std::move(provider),
         std::move(worker_context_provider));

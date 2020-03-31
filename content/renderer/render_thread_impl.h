@@ -191,7 +191,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
   // CompositorDependencies implementation.
-  bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
   bool IsZeroCopyEnabled() override;
@@ -610,7 +609,6 @@ class CONTENT_EXPORT RenderThreadImpl
       main_thread_compositor_task_runner_;
 
   // Compositor settings.
-  bool is_gpu_rasterization_forced_;
   int gpu_rasterization_msaa_sample_count_;
   bool is_lcd_text_enabled_;
   bool is_zero_copy_enabled_;

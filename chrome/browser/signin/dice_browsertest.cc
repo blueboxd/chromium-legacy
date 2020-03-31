@@ -827,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
 
   // Signin using the Chrome Sync endpoint.
   browser()->signin_view_controller()->ShowSignin(
-      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(),
+      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 
   // Receive token.
@@ -879,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncBeforeToken) {
 
   // Signin using the Chrome Sync endpoint.
   browser()->signin_view_controller()->ShowSignin(
-      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(),
+      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 
   // Receive ENABLE_SYNC.

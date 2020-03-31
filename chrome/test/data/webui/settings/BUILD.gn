@@ -51,6 +51,7 @@ js_modulizer("modulize") {
     "prefs_test_cases.js",
     "prefs_tests.js",
     "pref_util_tests.js",
+    "privacy_page_test.js",
     "protocol_handlers_tests.js",
     "recent_site_permissions_test.js",
     "reset_page_test.js",

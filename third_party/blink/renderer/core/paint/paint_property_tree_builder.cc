@@ -279,17 +279,6 @@ class FragmentPaintPropertyTreeBuilder {
       PaintPropertyChangeType::kUnchanged;
 };
 
-static bool NeedsScrollNode(const LayoutObject& object,
-                            CompositingReasons direct_compositing_reasons) {
-  if (!object.HasOverflowClip())
-    return false;
-
-  if (direct_compositing_reasons & CompositingReason::kRootScroller)
-    return true;
-
-  return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
-}
-
 // True if a scroll translation is needed for static scroll offset (e.g.,
 // overflow hidden with scroll), or if a scroll node is needed for composited
 // scrolling.
@@ -305,7 +294,7 @@ static bool NeedsScrollOrScrollTranslation(
 
   ScrollOffset scroll_offset = box.GetScrollableArea()->GetScrollOffset();
   return !scroll_offset.IsZero() ||
-         NeedsScrollNode(object, direct_compositing_reasons);
+         box.NeedsScrollNode(direct_compositing_reasons);
 }
 
 static bool NeedsReplacedContentTransform(const LayoutObject& object) {
@@ -1872,7 +1861,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
   DCHECK(properties_);
 
   if (NeedsPaintPropertyUpdate()) {
-    if (NeedsScrollNode(object_, full_context_.direct_compositing_reasons)) {
+    if (object_.IsBox() && ToLayoutBox(object_).NeedsScrollNode(
+                               full_context_.direct_compositing_reasons)) {
       const LayoutBox& box = ToLayoutBox(object_);
       PaintLayerScrollableArea* scrollable_area = box.GetScrollableArea();
       ScrollPaintPropertyNode::State state;

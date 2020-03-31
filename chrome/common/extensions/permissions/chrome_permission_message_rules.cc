@@ -589,9 +589,7 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kStartupPages},
        {}},
 
-      {IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
-       {APIPermission::kBookmark},
-       {APIPermission::kOverrideBookmarksUI}},
+      {IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS, {APIPermission::kBookmark}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD_READWRITE,
        {APIPermission::kClipboardRead, APIPermission::kClipboardWrite},
        {}},

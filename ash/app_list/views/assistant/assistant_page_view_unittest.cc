@@ -359,7 +359,7 @@ TEST_F(AssistantPageViewTest, FocusShouldRemainInAssistantViewWhenPressingTab) {
   int num_views = 0;
 
   do {
-    PressKeyAndWait(ui::KeyboardCode::VKEY_TAB);
+    PressKeyAndWait(ui::VKEY_TAB);
     focused_view = GetFocusedView();
     EXPECT_TRUE(page_view()->Contains(focused_view))
         << "Focus advanced to view '" << focused_view->GetClassName()
@@ -479,7 +479,7 @@ TEST_F(AssistantPageViewTest,
       CreateAndGetSuggestionChip("<suggestion chip query>");
 
   suggestion_chip->RequestFocus();
-  PressKeyAndWait(ui::KeyboardCode::VKEY_RETURN);
+  PressKeyAndWait(ui::VKEY_RETURN);
 
   EXPECT_INTERACTION_OF_TYPE(AssistantInteractionType::kText);
   EXPECT_EQ("<suggestion chip query>", current_interaction()->query);
@@ -492,7 +492,7 @@ TEST_F(AssistantPageViewTest,
       CreateAndGetSuggestionChip("<suggestion chip query>");
 
   suggestion_chip->RequestFocus();
-  PressKeyAndWait(ui::KeyboardCode::VKEY_SPACE);
+  PressKeyAndWait(ui::VKEY_SPACE);
 
   EXPECT_NO_INTERACTION();
 }
@@ -545,7 +545,7 @@ TEST_F(AssistantPageViewTest,
   auto suggestion_chips = GetSuggestionChips();
 
   suggestion_chips[0]->RequestFocus();
-  PressKeyAndWait(ui::KeyboardCode::VKEY_RETURN);
+  PressKeyAndWait(ui::VKEY_RETURN);
 
   for (auto* suggestion_chip : suggestion_chips) {
     EXPECT_FALSE(suggestion_chip->IsFocusable())
@@ -561,7 +561,7 @@ TEST_F(AssistantPageViewTest,
       CreateAndGetSuggestionChip("<suggestion chip query>");
 
   suggestion_chip->RequestFocus();
-  PressKeyAndWait(ui::KeyboardCode::VKEY_RETURN);
+  PressKeyAndWait(ui::VKEY_RETURN);
 
   EXPECT_HAS_FOCUS(input_text_field());
 }
@@ -574,7 +574,7 @@ TEST_F(AssistantPageViewTest,
   ClickOnAndWait(voice_input_toggle());
 
   suggestion_chip->RequestFocus();
-  PressKeyAndWait(ui::KeyboardCode::VKEY_RETURN);
+  PressKeyAndWait(ui::VKEY_RETURN);
 
   EXPECT_HAS_FOCUS(mic_view());
 }
@@ -588,6 +588,28 @@ TEST_F(AssistantPageViewTest,
   EXPECT_HAS_FOCUS(input_text_field());
 }
 
+TEST_F(AssistantPageViewTest,
+       ShouldNotScrollSuggestionChipsWhenSubmittingQuery) {
+  ShowAssistantUiInTextMode();
+  MockTextInteraction()
+      .WithSuggestionChip("there are                                        x")
+      .WithSuggestionChip("enough queries                                   x")
+      .WithSuggestionChip("to ensure                                        x")
+      .WithSuggestionChip("the                                              x")
+      .WithSuggestionChip("suggestion chips container                       x")
+      .WithSuggestionChip("can scroll.                                      x");
+
+  views::View* chip = GetSuggestionChips()[3];
+  chip->RequestFocus();
+  chip->ScrollViewToVisible();
+
+  gfx::Rect initial_bounds = chip->GetBoundsInScreen();
+  PressKeyAndWait(ui::VKEY_RETURN);
+  gfx::Rect final_bounds = chip->GetBoundsInScreen();
+
+  EXPECT_EQ(initial_bounds, final_bounds);
+}
+
 TEST_F(AssistantPageViewTest, RememberAndShowHistory) {
   ShowAssistantUiInTextMode();
   EXPECT_HAS_FOCUS(input_text_field());
@@ -599,19 +621,19 @@ TEST_F(AssistantPageViewTest, RememberAndShowHistory) {
 
   EXPECT_TRUE(input_text_field()->GetText().empty());
 
-  PressKey(ui::KeyboardCode::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 2"));
 
-  PressKey(ui::KeyboardCode::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 1"));
 
-  PressKey(ui::KeyboardCode::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 1"));
 
-  PressKey(ui::KeyboardCode::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 2"));
 
-  PressKey(ui::KeyboardCode::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_TRUE(input_text_field()->GetText().empty());
 }
 

@@ -50,5 +50,5 @@
 
 # Crashed tests.
 -DesktopWidgetTest.MinimumSizeConstraints
--TooltipControllerCaptureTest.Capture
+-TooltipControllerTest.Capture
 

@@ -448,9 +448,6 @@ void ChromeBrowserCloudManagementController::CreateReportSchedulerAsync(
 }
 
 void ChromeBrowserCloudManagementController::CreateReportScheduler() {
-  if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
-    return;
-
   cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       std::string() /* brand_code */, std::string() /* ethernet_mac_address */,

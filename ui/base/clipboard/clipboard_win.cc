@@ -433,89 +433,9 @@ void ClipboardWin::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   TrimAfterNull(result);
 }
 
-SkBitmap ClipboardWin::ReadImage(ClipboardBuffer buffer) const {
-  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  // Acquire the clipboard.
-  ScopedClipboard clipboard;
-  if (!clipboard.Acquire(GetClipboardWindow()))
-    return SkBitmap();
-
-  // We use a DIB rather than a DDB here since ::GetObject() with the
-  // HBITMAP returned from ::GetClipboardData(CF_BITMAP) always reports a color
-  // depth of 32bpp.
-  BITMAPINFO* bitmap = static_cast<BITMAPINFO*>(::GetClipboardData(CF_DIB));
-  if (!bitmap)
-    return SkBitmap();
-  int color_table_length = 0;
-
-  // For more information on BITMAPINFOHEADER and biBitCount definition,
-  // see https://docs.microsoft.com/en-us/windows/win32/wmdm/-bitmapinfoheader
-  switch (bitmap->bmiHeader.biBitCount) {
-    case 1:
-    case 4:
-    case 8:
-      color_table_length = bitmap->bmiHeader.biClrUsed
-          ? bitmap->bmiHeader.biClrUsed
-          : 1 << bitmap->bmiHeader.biBitCount;
-      break;
-    case 16:
-    case 32:
-      if (bitmap->bmiHeader.biCompression == BI_BITFIELDS)
-        color_table_length = 3;
-      break;
-    case 24:
-      break;
-    default:
-      NOTREACHED();
-  }
-  const void* bitmap_bits = reinterpret_cast<const char*>(bitmap)
-      + bitmap->bmiHeader.biSize + color_table_length * sizeof(RGBQUAD);
-
-  void* dst_bits;
-  // dst_hbitmap is freed by the release_proc in skia_bitmap (below)
-  HBITMAP dst_hbitmap =
-      skia::CreateHBitmap(bitmap->bmiHeader.biWidth, bitmap->bmiHeader.biHeight,
-                          false, 0, &dst_bits);
-
-  {
-    base::win::ScopedCreateDC hdc(CreateCompatibleDC(nullptr));
-    HBITMAP old_hbitmap =
-        static_cast<HBITMAP>(SelectObject(hdc.Get(), dst_hbitmap));
-    ::SetDIBitsToDevice(hdc.Get(), 0, 0, bitmap->bmiHeader.biWidth,
-                        bitmap->bmiHeader.biHeight, 0, 0, 0,
-                        bitmap->bmiHeader.biHeight, bitmap_bits, bitmap,
-                        DIB_RGB_COLORS);
-    SelectObject(hdc.Get(), old_hbitmap);
-  }
-  // Windows doesn't really handle alpha channels well in many situations. When
-  // the source image is < 32 bpp, we force the bitmap to be opaque. When the
-  // source image is 32 bpp, the alpha channel might still contain garbage data.
-  // Since Windows uses premultiplied alpha, we scan for instances where
-  // (R, G, B) > A. If there are any invalid premultiplied colors in the image,
-  // we assume the alpha channel contains garbage and force the bitmap to be
-  // opaque as well. Note that this heuristic will fail on a transparent bitmap
-  // containing only black pixels...
-  SkPixmap device_pixels(SkImageInfo::MakeN32Premul(bitmap->bmiHeader.biWidth,
-                                                    bitmap->bmiHeader.biHeight),
-                         dst_bits, bitmap->bmiHeader.biWidth * 4);
-
-  {
-    bool has_invalid_alpha_channel = bitmap->bmiHeader.biBitCount < 32 ||
-        BitmapHasInvalidPremultipliedColors(device_pixels);
-    if (has_invalid_alpha_channel) {
-      MakeBitmapOpaque(&device_pixels);
-    }
-  }
-
-  SkBitmap skia_bitmap;
-  skia_bitmap.installPixels(device_pixels.info(), device_pixels.writable_addr(),
-                            device_pixels.rowBytes(),
-                            [](void* pixels, void* hbitmap) {
-                              DeleteObject(static_cast<HBITMAP>(hbitmap));
-                            },
-                            dst_hbitmap);
-  return skia_bitmap;
+void ClipboardWin::ReadImage(ClipboardBuffer buffer,
+                             ReadImageCallback callback) const {
+  std::move(callback).Run(ReadImageInternal(buffer));
 }
 
 void ClipboardWin::ReadCustomData(ClipboardBuffer buffer,
@@ -764,6 +684,94 @@ void ClipboardWin::WriteBitmapFromHandle(HBITMAP source_hbitmap,
   ::ReleaseDC(nullptr, dc);
 
   WriteToClipboard(ClipboardFormatType::GetBitmapType(), hbitmap);
+}
+
+SkBitmap ClipboardWin::ReadImageInternal(ClipboardBuffer buffer) const {
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+
+  // Acquire the clipboard.
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return SkBitmap();
+
+  // We use a DIB rather than a DDB here since ::GetObject() with the
+  // HBITMAP returned from ::GetClipboardData(CF_BITMAP) always reports a color
+  // depth of 32bpp.
+  BITMAPINFO* bitmap = static_cast<BITMAPINFO*>(::GetClipboardData(CF_DIB));
+  if (!bitmap)
+    return SkBitmap();
+  int color_table_length = 0;
+
+  // For more information on BITMAPINFOHEADER and biBitCount definition,
+  // see https://docs.microsoft.com/en-us/windows/win32/wmdm/-bitmapinfoheader
+  switch (bitmap->bmiHeader.biBitCount) {
+    case 1:
+    case 4:
+    case 8:
+      color_table_length = bitmap->bmiHeader.biClrUsed
+                               ? bitmap->bmiHeader.biClrUsed
+                               : 1 << bitmap->bmiHeader.biBitCount;
+      break;
+    case 16:
+    case 32:
+      if (bitmap->bmiHeader.biCompression == BI_BITFIELDS)
+        color_table_length = 3;
+      break;
+    case 24:
+      break;
+    default:
+      NOTREACHED();
+  }
+  const void* bitmap_bits = reinterpret_cast<const char*>(bitmap) +
+                            bitmap->bmiHeader.biSize +
+                            color_table_length * sizeof(RGBQUAD);
+
+  void* dst_bits;
+  // dst_hbitmap is freed by the release_proc in skia_bitmap (below)
+  HBITMAP dst_hbitmap =
+      skia::CreateHBitmap(bitmap->bmiHeader.biWidth, bitmap->bmiHeader.biHeight,
+                          false, 0, &dst_bits);
+
+  {
+    base::win::ScopedCreateDC hdc(CreateCompatibleDC(nullptr));
+    HBITMAP old_hbitmap =
+        static_cast<HBITMAP>(SelectObject(hdc.Get(), dst_hbitmap));
+    ::SetDIBitsToDevice(hdc.Get(), 0, 0, bitmap->bmiHeader.biWidth,
+                        bitmap->bmiHeader.biHeight, 0, 0, 0,
+                        bitmap->bmiHeader.biHeight, bitmap_bits, bitmap,
+                        DIB_RGB_COLORS);
+    SelectObject(hdc.Get(), old_hbitmap);
+  }
+  // Windows doesn't really handle alpha channels well in many situations. When
+  // the source image is < 32 bpp, we force the bitmap to be opaque. When the
+  // source image is 32 bpp, the alpha channel might still contain garbage data.
+  // Since Windows uses premultiplied alpha, we scan for instances where
+  // (R, G, B) > A. If there are any invalid premultiplied colors in the image,
+  // we assume the alpha channel contains garbage and force the bitmap to be
+  // opaque as well. Note that this heuristic will fail on a transparent bitmap
+  // containing only black pixels...
+  SkPixmap device_pixels(SkImageInfo::MakeN32Premul(bitmap->bmiHeader.biWidth,
+                                                    bitmap->bmiHeader.biHeight),
+                         dst_bits, bitmap->bmiHeader.biWidth * 4);
+
+  {
+    bool has_invalid_alpha_channel =
+        bitmap->bmiHeader.biBitCount < 32 ||
+        BitmapHasInvalidPremultipliedColors(device_pixels);
+    if (has_invalid_alpha_channel) {
+      MakeBitmapOpaque(&device_pixels);
+    }
+  }
+
+  SkBitmap skia_bitmap;
+  skia_bitmap.installPixels(
+      device_pixels.info(), device_pixels.writable_addr(),
+      device_pixels.rowBytes(),
+      [](void* pixels, void* hbitmap) {
+        DeleteObject(static_cast<HBITMAP>(hbitmap));
+      },
+      dst_hbitmap);
+  return skia_bitmap;
 }
 
 void ClipboardWin::WriteToClipboard(ClipboardFormatType format, HANDLE handle) {

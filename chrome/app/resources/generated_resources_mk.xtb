@@ -1882,6 +1882,7 @@
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="3479685872808224578">Не можеше да се открие серверот за печатење. Проверете ја адресата и обидете се повторно.</translation>
 <translation id="3481268647794498892">Ќе се отвори во <ph name="ALTERNATIVE_BROWSER_NAME" /> за <ph name="COUNTDOWN_SECONDS" /> секунди</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> може да ги прегледува следниве датотеки</translation>
 <translation id="3484273680291419129">Се отстранува штетниот софтвер…</translation>
 <translation id="3484869148456018791">Добиј нов сертификат</translation>
 <translation id="3487007233252413104">анонимна функција</translation>
@@ -1944,6 +1945,7 @@
 <translation id="3564848315152754834">USB-безбедносен клуч</translation>
 <translation id="3566721612727112615">Не се додадени сајтови</translation>
 <translation id="3569382839528428029">Дали сакате <ph name="APP_NAME" /> да го сподели вашиот екран?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> може да ги прегледува следниве датотеки и папки</translation>
 <translation id="3571734092741541777">Постави</translation>
 <translation id="3574210789297084292">најави се</translation>
 <translation id="3574917942258583917">Сепак да се излезе од режим „Инкогнито“?</translation>
@@ -1953,6 +1955,7 @@
 <translation id="3578594933904494462">Содржината на картичкава се споделува.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; сака да сподели печатач &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; со група којашто ја поседувате: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Доколку прифатите, сите членови на групата ќе можат да печатат на печатачот.</translation>
 <translation id="357889014807611375">Wi-Fi со ограничен интернет</translation>
+<translation id="3582057310199111521">Внесена на измамнички сајт и откриена при упад во податоци</translation>
 <translation id="3584169441612580296">Прочитајте ги и променете ги фотографиите, музиката и другите медиуми од компјутерoт</translation>
 <translation id="3586806079541226322">Датотекава не може да се отвори</translation>
 <translation id="3586931643579894722">Сокриј детали</translation>
@@ -3090,6 +3093,7 @@
 <translation id="5117930984404104619">Следење на однесувањето на други наставки, вклучувајќи посетени URL-адреси</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Тврдиот диск е полн. Зачувувајте на друга локација или направете простор на тврдиот диск.</translation>
+<translation id="5122384452788334261">На уредот нема доволно простор за складирање. Се препорачува слободен простор од најмалку <ph name="RECOMMENDED_SPACE" /> за да се користи Plugin VM За да ослободите простор, избришете датотеки од капацитетот на уредот.</translation>
 <translation id="5123433949759960244">Баскет</translation>
 <translation id="5125751979347152379">Неважечка URL-адреса.</translation>
 <translation id="5126611267288187364">Погледнете ги промените</translation>
@@ -5191,6 +5195,7 @@
 <translation id="7915471803647590281">Пред да ни испратите повратни информации кажете ни што се случува.</translation>
 <translation id="7918257978052780342">Запиши</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> сек.</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> може да ја прегледува <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Грешка при проследувањето порта</translation>
 <translation id="792514962475806987">Ниво на зумирање на закотвената лупа:</translation>
 <translation id="7925247922861151263">AAA-проверката не успеа</translation>
@@ -5353,6 +5358,7 @@
 <translation id="8118488170956489476">Вашата организација <ph name="BEGIN_LINK" />управува со прелистувачот<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Управувај со преземањата</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> и други</translation>
+<translation id="8120715633374652536">На уредот нема доволно простор за складирање. Потребен е слободен простор од најмалку <ph name="MINIMUM_SPACE" /> за да се користи Plugin VM, а се препорачува слободен простор поголем од<ph name="RECOMMENDED_SPACE" />. За да ослободите простор, избришете датотеки од капацитетот на уредот.</translation>
 <translation id="8123590694679414600">Податоците се шифрирани со вашата лозинка за синхронизација во
           <ph name="TIME" />. Тоа не ги вклучува начините на плаќање и адресите од Google Pay.</translation>
 <translation id="81238879832906896">Жолт и бел цвет</translation>

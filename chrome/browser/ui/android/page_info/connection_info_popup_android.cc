@@ -10,7 +10,6 @@
 #include "chrome/android/chrome_jni_headers/ConnectionInfoPopup_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "components/page_info/page_info.h"
 #include "components/security_state/core/security_state.h"
@@ -55,14 +54,9 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
 
   popup_jobject_.Reset(env, java_page_info_pop);
 
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  DCHECK(helper);
-
   presenter_ = std::make_unique<PageInfo>(
       std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents,
-      nav_entry->GetURL(), helper->GetSecurityLevel(),
-      *helper->GetVisibleSecurityState());
+      nav_entry->GetURL());
   presenter_->InitializeUiState(this);
 }
 

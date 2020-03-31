@@ -411,6 +411,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.</translation>
 <translation id="1617235075406854669">Löschen des Browserverlaufs und des Downloadverlaufs aktivieren</translation>
+<translation id="1620510694547887537">Kamera</translation>
 <translation id="163200210584085447">Muster in dieser Liste werden mit der Sicherheitsherkunft
       der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der Zugriff
       auf Videoaufnahmegeräte auf SAML-Log-in-Seiten gestattet. Wird keine Übereinstimmung
@@ -693,6 +694,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="2024476116966025075">Erforderlichen Domainnamen für Remotezugriff-Clients konfigurieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="203096360153626918">Diese Richtlinie hat keine Auswirkungen auf die Android-Apps. Der Vollbildmodus kann aktiviert werden, auch wenn diese Richtlinie auf <ph name="FALSE" /> gesetzt ist.</translation>
+<translation id="2042881179131103248">Kamera und die Funktion "Einstellungen" deaktivieren</translation>
 <translation id="2043749682619281558">Hiermit wird die Funktion "Mauscursor hervorheben" auf dem Anmeldebildschirm aktiviert</translation>
 <translation id="2043770014371753404">Deaktivierte Unternehmensdrucker</translation>
 <translation id="2050629715135525072">Damit wird gesteuert, ob ein Nutzer, der mit einem Host für den Remotezugriff verbunden ist, Dateien zwischen Client und Host übertragen kann. Verbindungen zur Remoteunterstützung sind hiervon ausgenommen, da sie keine Dateiübertragung unterstützen.
@@ -1509,6 +1511,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="3219421230122020860">Inkognitomodus verfügbar</translation>
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
+<translation id="322359555555487980">Verfügbarkeit von Variationen auf <ph name="PRODUCT_OS_NAME" /> festlegen</translation>
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="3240609035816615922">Richtlinie für den Zugriff auf die Konfiguration von Druckern.</translation>
 <translation id="3240655340884151271">MAC-Adresse der im Dock verbauten NIC</translation>
@@ -2859,6 +2862,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Ist diese Richtlinie nicht konfiguriert (bis einschließlich Version M76), kann <ph name="PRODUCT_NAME" /> diese Protokolle standardmäßig weder erfassen noch hochladen. Ab Version M77 kann <ph name="PRODUCT_NAME" /> diese Protokolle standardmäßig von den meisten Profilen erfassen und hochladen, die von cloudbasierten Unternehmensrichtlinien auf Nutzerebene betroffen sind. Ab Version M77 bis einschließlich M80 kann <ph name="PRODUCT_NAME" /> diese Protokolle außerdem standardmäßig von Profilen erfassen und hochladen, die mit <ph name="PRODUCT_NAME" /> lokal verwaltet werden.</translation>
 <translation id="5331746669335642668">Cloud-Richtlinie von <ph name="PRODUCT_NAME" /> überschreibt Plattformrichtlinie.</translation>
+<translation id="53381168777357359">Funktion "Einstellungen"</translation>
 <translation id="5362531528507578966">Überschreibt den Standarddruckmodus mit Hintergrundgrafiken.</translation>
 <translation id="5365476955714838841">Befehlszeilenparameter für den alternativen Browser.</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
@@ -4472,6 +4476,11 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
 <translation id="8044493735196713914">Startmodus von Geräten melden</translation>
 <translation id="8050080920415773384">Natives Drucken</translation>
 <translation id="8053580360728293758">Dadurch wird der standardmäßige Farbdruckmodus überschrieben. Wenn der Modus nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
+<translation id="8057841287222359526">Ermöglicht die Zusammenstellung einer Liste mit <ph name="PRODUCT_OS_NAME" />-Funktionen, die deaktiviert werden sollen.
+
+      Wenn diese Funktionen deaktiviert werden, kann der Nutzer nicht über die Benutzeroberfläche darauf zugreifen und sie erscheinen als "Vom Administrator deaktiviert".
+
+      Ist die Richtlinie nicht konfiguriert, sind alle <ph name="PRODUCT_OS_NAME" />-Funktionen standardmäßig aktiviert und können vom Nutzer verwendet werden.</translation>
 <translation id="8059164285174960932">URL, unter der Remotezugriff-Clients ihr Authentifizierungs-Token abrufen sollten</translation>
 <translation id="806523868782250975">Konfiguriert eine Liste verwalteter Lesezeichen.
 

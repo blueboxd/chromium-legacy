@@ -2728,6 +2728,25 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteInstallAllowlisted) {
   histogram_tester.ExpectTotalCount("SupervisedUsers.ExtensionsAllowlist", 2);
 }
 
+// Tests that theme installation is not blocked for supervised users, even if
+// the id is not on the allowlist.
+TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteThemesAllowed) {
+  InitSupervisedUserExtensionInstallFeatures(
+      SupervisedUserExtensionInstallFeatureMode::kLite);
+  InitServices(/*profile_is_supervised=*/true);
+
+  {
+    ManagementPrefUpdater pref_updater(testing_pref_service());
+    pref_updater.SetBlacklistedByDefault(true);
+  }
+
+  base::FilePath path = data_dir().AppendASCII("theme.crx");
+  const Extension* theme = InstallCRX(path, INSTALL_NEW);
+  ASSERT_TRUE(theme);
+  std::string id = theme->id();
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+}
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 // Tests sync behavior in the case of an item that starts out as an app and gets

@@ -8,6 +8,7 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewFactory_jni.h"
 #include "chrome/browser/android/autofill_assistant/assistant_generic_ui_delegate.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_events_android.h"
+#include "chrome/browser/android/autofill_assistant/generic_ui_interactions_android.h"
 #include "chrome/browser/android/autofill_assistant/interaction_handler_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/event_handler.h"
@@ -18,19 +19,14 @@ namespace autofill_assistant {
 
 namespace {
 
-// Forward declarations to allow recursive calls.
-base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
+// Forward declaration to allow recursive calls.
+base::android::ScopedJavaGlobalRef<jobject> CreateViewHierarchy(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jobject>& jcontext,
     const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
     const ViewProto& proto,
+    InteractionHandlerAndroid* interaction_handler,
     std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
-
-// Creates all implicit interactions for the views defined in |proto|. Returns
-// true on success, false on failure.
-bool CreateImplicitInteractionsForView(
-    const ViewProto& proto,
-    InteractionHandlerAndroid* interaction_handler);
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
     JNIEnv* env,
@@ -134,11 +130,13 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaVerticalExpander(
     const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
     const base::android::ScopedJavaLocalRef<jstring>& jidentifier,
     const VerticalExpanderViewProto& proto,
+    InteractionHandlerAndroid* interaction_handler,
     std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
   base::android::ScopedJavaGlobalRef<jobject> jtitle_view = nullptr;
   if (proto.has_title_view()) {
     jtitle_view =
-        CreateJavaView(env, jcontext, jdelegate, proto.title_view(), views);
+        CreateViewHierarchy(env, jcontext, jdelegate, proto.title_view(),
+                            interaction_handler, views);
     if (!jtitle_view) {
       return nullptr;
     }
@@ -146,7 +144,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaVerticalExpander(
   base::android::ScopedJavaGlobalRef<jobject> jcollapsed_view = nullptr;
   if (proto.has_collapsed_view()) {
     jcollapsed_view =
-        CreateJavaView(env, jcontext, jdelegate, proto.collapsed_view(), views);
+        CreateViewHierarchy(env, jcontext, jdelegate, proto.collapsed_view(),
+                            interaction_handler, views);
     if (!jcollapsed_view) {
       return nullptr;
     }
@@ -154,7 +153,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaVerticalExpander(
   base::android::ScopedJavaGlobalRef<jobject> jexpanded_view = nullptr;
   if (proto.has_expanded_view()) {
     jexpanded_view =
-        CreateJavaView(env, jcontext, jdelegate, proto.expanded_view(), views);
+        CreateViewHierarchy(env, jcontext, jdelegate, proto.expanded_view(),
+                            interaction_handler, views);
     if (!jexpanded_view) {
       return nullptr;
     }
@@ -179,11 +179,64 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaVerticalExpander(
       static_cast<int>(chevron_style));
 }
 
+base::android::ScopedJavaLocalRef<jobject> CreateJavaToggleButton(
+    JNIEnv* env,
+    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
+    const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
+    const base::android::ScopedJavaLocalRef<jstring>& jidentifier,
+    const ToggleButtonViewProto& proto,
+    InteractionHandlerAndroid* interaction_handler,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+  if (proto.model_identifier().empty()) {
+    VLOG(1) << "Failed to create ToggleButtonViewProto: model_identifier not "
+               "specified";
+    return nullptr;
+  }
+  if (proto.kind_case() == ToggleButtonViewProto::KIND_NOT_SET) {
+    VLOG(1) << "Failed to create ToggleButtonViewProto: kind not set";
+    return nullptr;
+  }
+
+  base::android::ScopedJavaGlobalRef<jobject> jcontent_left_view = nullptr;
+  if (proto.has_left_content_view()) {
+    jcontent_left_view =
+        CreateViewHierarchy(env, jcontext, jdelegate, proto.left_content_view(),
+                            interaction_handler, views);
+    if (!jcontent_left_view) {
+      return nullptr;
+    }
+  }
+  base::android::ScopedJavaGlobalRef<jobject> jcontent_right_view = nullptr;
+  if (proto.has_right_content_view()) {
+    jcontent_right_view = CreateViewHierarchy(env, jcontext, jdelegate,
+                                              proto.right_content_view(),
+                                              interaction_handler, views);
+    if (!jcontent_right_view) {
+      return nullptr;
+    }
+  }
+  switch (proto.kind_case()) {
+    case ToggleButtonViewProto::kCheckBox:
+    case ToggleButtonViewProto::kRadioButton:
+      return Java_AssistantViewFactory_createToggleButton(
+          env, jcontext, jdelegate, jidentifier, jcontent_left_view,
+          jcontent_right_view,
+          proto.kind_case() == ToggleButtonViewProto::kCheckBox,
+          base::android::ConvertUTF8ToJavaString(env,
+                                                 proto.model_identifier()));
+    case ToggleButtonViewProto::KIND_NOT_SET:
+      NOTREACHED();
+      return nullptr;
+  }
+  return nullptr;
+}
+
 base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jobject>& jcontext,
     const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
     const ViewProto& proto,
+    InteractionHandlerAndroid* interaction_handler,
     std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
   auto jidentifier =
       base::android::ConvertUTF8ToJavaString(env, proto.identifier());
@@ -205,7 +258,7 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
       auto jimage =
           CreateJavaDrawable(env, jcontext, proto.image_view().image());
       if (!jimage) {
-        LOG(ERROR) << "Failed to create image for " << proto.identifier();
+        VLOG(1) << "Failed to create image for " << proto.identifier();
         return nullptr;
       }
       jview = Java_AssistantViewFactory_createImageView(env, jcontext,
@@ -214,7 +267,8 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
     }
     case ViewProto::kVerticalExpanderView: {
       jview = CreateJavaVerticalExpander(env, jcontext, jdelegate, jidentifier,
-                                         proto.vertical_expander_view(), views);
+                                         proto.vertical_expander_view(),
+                                         interaction_handler, views);
       break;
     }
     case ViewProto::kTextInputView: {
@@ -232,12 +286,16 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
               env, proto.text_input_view().model_identifier()));
       break;
     }
+    case ViewProto::kToggleButtonView:
+      jview = CreateJavaToggleButton(env, jcontext, jdelegate, jidentifier,
+                                     proto.toggle_button_view(),
+                                     interaction_handler, views);
+      break;
     case ViewProto::VIEW_NOT_SET:
       NOTREACHED();
       return nullptr;
   }
   if (!jview) {
-    LOG(ERROR) << "Failed to create view " << proto.identifier();
     return nullptr;
   }
 
@@ -266,31 +324,13 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
         proto.layout_params().minimum_height());
   }
 
-  if (proto.view_case() == ViewProto::kViewContainer) {
-    for (const auto& child : proto.view_container().views()) {
-      auto jchild = CreateJavaView(env, jcontext, jdelegate, child, views);
-      if (!jchild) {
-        return nullptr;
-      }
-      Java_AssistantViewFactory_addViewToContainer(env, jview, jchild);
-    }
-  }
-
-  if (!jview) {
-    return nullptr;
-  }
-
-  auto jview_global_ref = base::android::ScopedJavaGlobalRef<jobject>(jview);
-  if (!proto.identifier().empty()) {
-    DCHECK(views->find(proto.identifier()) == views->end());
-    views->emplace(proto.identifier(), jview_global_ref);
-  }
-  return jview_global_ref;
+  return base::android::ScopedJavaGlobalRef<jobject>(jview);
 }
 
 bool CreateImplicitInteractionsForView(
     const ViewProto& proto,
-    InteractionHandlerAndroid* interaction_handler) {
+    InteractionHandlerAndroid* interaction_handler,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
   switch (proto.view_case()) {
     case ViewProto::kTextInputView: {
       // Auto-update the text of the view whenever the corresponding value in
@@ -314,26 +354,6 @@ bool CreateImplicitInteractionsForView(
       }
       break;
     }
-    case ViewProto::kVerticalExpanderView:
-      if (proto.vertical_expander_view().has_title_view() &&
-          !CreateImplicitInteractionsForView(
-              proto.vertical_expander_view().title_view(),
-              interaction_handler)) {
-        return false;
-      }
-      if (proto.vertical_expander_view().has_collapsed_view() &&
-          !CreateImplicitInteractionsForView(
-              proto.vertical_expander_view().collapsed_view(),
-              interaction_handler)) {
-        return false;
-      }
-      if (proto.vertical_expander_view().has_expanded_view() &&
-          !CreateImplicitInteractionsForView(
-              proto.vertical_expander_view().expanded_view(),
-              interaction_handler)) {
-        return false;
-      }
-      break;
     case ViewProto::kTextView: {
       if (proto.text_view().model_identifier().empty()) {
         break;
@@ -358,13 +378,43 @@ bool CreateImplicitInteractionsForView(
       }
       break;
     }
-    case ViewProto::kViewContainer:
-      for (const auto& child : proto.view_container().views()) {
-        if (!CreateImplicitInteractionsForView(child, interaction_handler)) {
-          return false;
-        }
+    case ViewProto::kToggleButtonView: {
+      if (proto.identifier().empty()) {
+        VLOG(1) << "Failed to create toggle button: view_identifier not set, "
+                   "but mandatory for toggle buttons";
+        return false;
       }
+      // Auto-update toggle state.
+      auto model_identifier = proto.toggle_button_view().model_identifier();
+      auto toggle_callback =
+          base::BindRepeating(&android_interactions::SetToggleButtonChecked,
+                              interaction_handler->GetUserModel()->GetWeakPtr(),
+                              proto.identifier(), model_identifier, views);
+      interaction_handler->AddInteraction(
+          {EventProto::kOnValueChanged, model_identifier}, toggle_callback);
+      if (proto.toggle_button_view().kind_case() !=
+          ToggleButtonViewProto::kRadioButton) {
+        break;
+      }
+      auto radio_group =
+          proto.toggle_button_view().radio_button().radio_group_identifier();
+      interaction_handler->AddRadioButtonToGroup(radio_group, model_identifier);
+
+      // De-select all other radio buttons whenever |model_identifier| is set to
+      // true.
+      auto radio_callback = base::BindRepeating(
+          &InteractionHandlerAndroid::UpdateRadioButtonGroup,
+          interaction_handler->GetWeakPtr(), radio_group, model_identifier);
+      radio_callback = base::BindRepeating(
+          &android_interactions::RunConditionalCallback,
+          interaction_handler->GetBasicInteractions()->GetWeakPtr(),
+          model_identifier, radio_callback);
+      interaction_handler->AddInteraction(
+          {EventProto::kOnValueChanged, model_identifier}, radio_callback);
       break;
+    }
+    case ViewProto::kViewContainer:
+    case ViewProto::kVerticalExpanderView:
     case ViewProto::kDividerView:
     case ViewProto::kImageView:
       // Nothing to do, no implicit interactions necessary.
@@ -375,6 +425,49 @@ bool CreateImplicitInteractionsForView(
   }
 
   return true;
+}
+
+// Recursively runs through all views defined in |proto| in a depth-first
+// manner and inflates and configures each view. Implicit interactions will be
+// added to |interaction_handler|, and views with identifiers will be added to
+// the |views| lookup map. Returns the root of the created java view hierarchy
+// or null in case of error.
+base::android::ScopedJavaGlobalRef<jobject> CreateViewHierarchy(
+    JNIEnv* env,
+    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
+    const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
+    const ViewProto& proto,
+    InteractionHandlerAndroid* interaction_handler,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+  auto jview = CreateJavaView(env, jcontext, jdelegate, proto,
+                              interaction_handler, views);
+  if (!jview) {
+    VLOG(1) << "View inflation failed for '" << proto.identifier() << "'";
+    return nullptr;
+  }
+  if (proto.view_case() == ViewProto::kViewContainer) {
+    for (const auto& child : proto.view_container().views()) {
+      auto jchild = CreateViewHierarchy(env, jcontext, jdelegate, child,
+                                        interaction_handler, views);
+      if (!jchild) {
+        return nullptr;
+      }
+      Java_AssistantViewFactory_addViewToContainer(env, jview, jchild);
+    }
+  }
+
+  if (!CreateImplicitInteractionsForView(proto, interaction_handler, views)) {
+    VLOG(1) << "Implicit interaction creation failed for '"
+            << proto.identifier() << "'";
+    return nullptr;
+  }
+
+  if (!proto.identifier().empty()) {
+    DCHECK(views->find(proto.identifier()) == views->end());
+    views->emplace(proto.identifier(), jview);
+  }
+
+  return jview;
 }
 
 }  // namespace
@@ -405,23 +498,17 @@ GenericUiControllerAndroid::CreateFromProto(
   // Create view layout.
   auto views = std::make_unique<
       std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>>();
-  JNIEnv* env = base::android::AttachCurrentThread();
-  auto jroot_view =
-      proto.has_root_view()
-          ? CreateJavaView(env,
-                           base::android::ScopedJavaLocalRef<jobject>(jcontext),
-                           jdelegate, proto.root_view(), views.get())
-          : nullptr;
-
-  // Create implicit interactions.
   auto interaction_handler = std::make_unique<InteractionHandlerAndroid>(
       event_handler, user_model, basic_interactions, views.get(), jcontext,
       jdelegate);
-  if (proto.has_root_view() &&
-      !CreateImplicitInteractionsForView(proto.root_view(),
-                                         interaction_handler.get())) {
-    return nullptr;
-  }
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto jroot_view =
+      proto.has_root_view()
+          ? CreateViewHierarchy(
+                env, base::android::ScopedJavaLocalRef<jobject>(jcontext),
+                jdelegate, proto.root_view(), interaction_handler.get(),
+                views.get())
+          : nullptr;
 
   // Create proto interactions (i.e., native -> java).
   for (const auto& interaction : proto.interactions().interactions()) {

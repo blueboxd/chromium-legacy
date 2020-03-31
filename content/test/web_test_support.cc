@@ -24,8 +24,8 @@
 #include "content/renderer/render_widget.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
+#include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
-#include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -56,22 +56,22 @@ namespace {
 
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
-  test_runner::WebTestInterfaces* interfaces =
+  test_runner::TestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   auto* render_view_proxy =
       new test_runner::WebViewTestProxy(compositor_deps, params);
 
-  auto test_runner = std::make_unique<BlinkTestRunner>(render_view_proxy);
+  auto blink_test_runner = std::make_unique<BlinkTestRunner>(render_view_proxy);
   // TODO(lukasza): Using the first BlinkTestRunner as the main delegate is
   // wrong, but it is difficult to change because this behavior has been baked
   // for a long time into test assumptions (i.e. which PrintMessage gets
   // delivered to the browser depends on this).
-  if (!interfaces->HasDelegate()) {
-    interfaces->SetDelegate(test_runner.get());
+  if (!interfaces->GetDelegate()) {
+    interfaces->SetDelegate(blink_test_runner.get());
   }
 
-  render_view_proxy->Initialize(interfaces, std::move(test_runner));
+  render_view_proxy->Initialize(interfaces, std::move(blink_test_runner));
   return render_view_proxy;
 }
 
@@ -87,15 +87,12 @@ std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
-  test_runner::WebTestInterfaces* interfaces =
-      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-
   // RenderFrameImpl always has a RenderViewImpl for it.
   RenderViewImpl* render_view_impl = params.render_view;
 
   auto* render_frame_proxy =
       new test_runner::WebFrameTestProxy(std::move(params));
-  render_frame_proxy->Initialize(interfaces, render_view_impl);
+  render_frame_proxy->Initialize(render_view_impl);
   return render_frame_proxy;
 }
 

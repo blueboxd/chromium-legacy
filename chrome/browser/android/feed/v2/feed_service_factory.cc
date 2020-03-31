@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -27,6 +28,8 @@
 
 namespace feed {
 namespace {
+const char kFeedv2Folder[] = "feedv2";
+
 class FeedServiceDelegateImpl : public FeedService::Delegate {
  public:
   ~FeedServiceDelegateImpl() override = default;
@@ -75,14 +78,23 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
                                 : google_apis::GetNonStableAPIKey();
   }
 
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+
+  base::FilePath feed_dir(profile->GetPath().Append(kFeedv2Folder));
+
   return new FeedService(
       std::make_unique<FeedServiceDelegateImpl>(),
       std::unique_ptr<RefreshTaskScheduler>(),  // TODO(harringtond): implement
                                                 // one of these.
       profile->GetPrefs(), g_browser_process->local_state(),
-      storage_partition->GetProtoDatabaseProvider(), identity_manager,
+      storage_partition->GetProtoDatabaseProvider()->GetDB<feedstore::Record>(
+          leveldb_proto::ProtoDbType::FEED_STREAM_DATABASE,
+          feed_dir.AppendASCII("streamdb"), background_task_runner),
+      identity_manager,
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
-      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}), api_key);
+      background_task_runner, api_key);
 }
 
 content::BrowserContext* FeedServiceFactory::GetBrowserContextToUse(

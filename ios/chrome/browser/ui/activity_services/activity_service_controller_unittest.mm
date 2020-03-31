@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activities/generate_qr_code_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
@@ -30,6 +31,7 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -77,9 +79,9 @@
 - (NSArray*)activityItemsForData:(ShareToData*)data;
 - (NSArray*)
     applicationActivitiesForData:(ShareToData*)data
-           browserCommandHandler:(id<BrowserCommands>)browserCommandHandler
-               findInPageHandler:
-                   (id<FindInPageCommands>)findInPageCommandHandler
+                  commandHandler:(id<BrowserCommands,
+                                     FindInPageCommands,
+                                     QRGenerationCommands>)commandHandler
                    bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                 canSendTabToSelf:(BOOL)canSendTabToSelf;
 
@@ -183,6 +185,9 @@ class ActivityServiceControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
+
+    scoped_features_.InitAndDisableFeature(kQRCodeGeneration);
+
     TestChromeBrowserState::Builder test_cbs_builder;
 
     ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
@@ -327,6 +332,7 @@ class ActivityServiceControllerTest : public PlatformTest {
   // databases. See https://crbug.com/546640 for more details.
   base::ScopedTempDir state_dir_;
 
+  base::test::ScopedFeatureList scoped_features_;
   web::WebTaskEnvironment task_environment_;
   UIViewController* parentController_;
   ShareToData* shareData_;
@@ -551,8 +557,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
-                                 browserCommandHandler:nil
-                                     findInPageHandler:nil
+                                        commandHandler:nil
                                          bookmarkModel:bookmark_model_
                                       canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
@@ -569,8 +574,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
                userAgent:web::UserAgentType::NONE
       thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
-                                     browserCommandHandler:nil
-                                         findInPageHandler:nil
+                                            commandHandler:nil
                                              bookmarkModel:bookmark_model_
                                           canSendTabToSelf:false];
   EXPECT_EQ(4U, [items count]);
@@ -596,8 +600,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
-                                 browserCommandHandler:nil
-                                     findInPageHandler:nil
+                                        commandHandler:nil
                                          bookmarkModel:bookmark_model_
                                       canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
@@ -612,8 +615,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
                                      userAgent:web::UserAgentType::MOBILE
                             thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
-                                     browserCommandHandler:nil
-                                         findInPageHandler:nil
+                                            commandHandler:nil
                                              bookmarkModel:bookmark_model_
                                           canSendTabToSelf:false];
   ASSERT_EQ(2U, [items count]);
@@ -637,8 +639,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
-                                 browserCommandHandler:nil
-                                     findInPageHandler:nil
+                                        commandHandler:nil
                                          bookmarkModel:bookmark_model_
                                       canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
@@ -664,8 +665,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
                userAgent:web::UserAgentType::NONE
       thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
-                                     browserCommandHandler:nil
-                                         findInPageHandler:nil
+                                            commandHandler:nil
                                              bookmarkModel:bookmark_model_
                                           canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
@@ -698,8 +698,7 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
   OCMExpect([mockBrowserCommandHandler requestDesktopSite]);
   NSArray* items =
       [activityController applicationActivitiesForData:data
-                                 browserCommandHandler:mockBrowserCommandHandler
-                                     findInPageHandler:nil
+                                        commandHandler:mockBrowserCommandHandler
                                          bookmarkModel:bookmark_model_
                                       canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
@@ -725,8 +724,7 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
   OCMExpect([mockBrowserCommandHandler requestMobileSite]);
   items =
       [activityController applicationActivitiesForData:data
-                                 browserCommandHandler:mockBrowserCommandHandler
-                                     findInPageHandler:nil
+                                        commandHandler:mockBrowserCommandHandler
                                          bookmarkModel:bookmark_model_
                                       canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
@@ -844,8 +842,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
-                                 browserCommandHandler:nil
-                                     findInPageHandler:nil
+                                        commandHandler:nil
                                          bookmarkModel:bookmark_model_
                                       canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
@@ -862,8 +859,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
                userAgent:web::UserAgentType::NONE
       thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
-                                     browserCommandHandler:nil
-                                         findInPageHandler:nil
+                                            commandHandler:nil
                                              bookmarkModel:bookmark_model_
                                           canSendTabToSelf:false];
   EXPECT_EQ(4U, [items count]);
@@ -889,8 +885,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
-                                 browserCommandHandler:nil
-                                     findInPageHandler:nil
+                                        commandHandler:nil
                                          bookmarkModel:bookmark_model_
                                       canSendTabToSelf:true];
   ASSERT_EQ(6U, [items count]);
@@ -912,8 +907,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
       thumbnailGenerator:thumbnail_generator_];
 
   items = [activityController applicationActivitiesForData:data
-                                     browserCommandHandler:nil
-                                         findInPageHandler:nil
+                                            commandHandler:nil
                                              bookmarkModel:bookmark_model_
                                           canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
@@ -930,8 +924,7 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
                                      userAgent:web::UserAgentType::NONE
                             thumbnailGenerator:thumbnail_generator_];
   items = [activityController applicationActivitiesForData:data
-                                     browserCommandHandler:nil
-                                         findInPageHandler:nil
+                                            commandHandler:nil
                                              bookmarkModel:bookmark_model_
                                           canSendTabToSelf:true];
   EXPECT_EQ(2U, [items count]);
@@ -940,8 +933,6 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
 }
 
 TEST_F(ActivityServiceControllerTest, PresentWhenOffTheRecord) {
-  base::test::ScopedFeatureList scoped_features;
-
   UIViewController* parentController =
       static_cast<UIViewController*>(parentController_);
 
@@ -961,6 +952,41 @@ TEST_F(ActivityServiceControllerTest, PresentWhenOffTheRecord) {
                presentationProvider:provider];
 
   EXPECT_TRUE([activityController isActive]);
+}
+
+// Tests that the QR Code generation activity is present when the flag is
+// enabled.
+TEST_F(ActivityServiceControllerTest, GenerateQRCodeActivity_FlagEnabled) {
+  scoped_features_.Reset();
+  scoped_features_.InitAndEnableFeature(kQRCodeGeneration);
+
+  ActivityServiceController* activityController =
+      [[ActivityServiceController alloc] init];
+
+  ShareToData* data = [[ShareToData alloc]
+        initWithShareURL:GURL("https://chromium.org/printable")
+              visibleURL:GURL("https://chromium.org/printable")
+                   title:@"bar"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+        isPageSearchable:YES
+               userAgent:web::UserAgentType::NONE
+      thumbnailGenerator:thumbnail_generator_];
+
+  NSArray* items =
+      [activityController applicationActivitiesForData:data
+                                        commandHandler:nil
+                                         bookmarkModel:bookmark_model_
+                                      canSendTabToSelf:false];
+
+  // Verify that the QR code activity is present at the right index and has the
+  // correct string.
+  ASSERT_EQ(6U, [items count]);
+  UIActivity* activity = [items objectAtIndex:3];
+  EXPECT_EQ([GenerateQrCodeActivity class], [activity class]);
+  NSString* generateQRCodeString =
+      l10n_util::GetNSString(IDS_IOS_SHARE_MENU_GENERATE_QR_CODE_ACTION);
+  EXPECT_TRUE([generateQRCodeString isEqualToString:activity.activityTitle]);
 }
 
 }  // namespace

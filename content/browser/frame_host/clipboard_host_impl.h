@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -170,6 +171,10 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
       const ui::ClipboardFormatType& data_type,
       std::string data);
 
+  void OnReadImage(ui::ClipboardBuffer clipboard_buffer,
+                   ReadImageCallback callback,
+                   const SkBitmap& bitmap);
+
   mojo::Receiver<blink::mojom::ClipboardHost> receiver_;
   ui::Clipboard* const clipboard_;  // Not owned
   int render_frame_routing_id_;
@@ -179,6 +184,8 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   // Outstanding is allowed requests per clipboard contents.  Maps a clipboard
   // sequence number to an outstanding request.
   std::map<uint64_t, IsPasteAllowedRequest> is_allowed_requests_;
+
+  base::WeakPtrFactory<ClipboardHostImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace content

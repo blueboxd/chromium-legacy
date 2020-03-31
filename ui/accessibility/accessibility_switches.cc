@@ -48,12 +48,6 @@ const char kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
 const char kEnableExperimentalAccessibilityChromeVoxSearchMenus[] =
     "enable-experimental-accessibility-chromevox-search-menus";
 
-// Enables ChromeVox language switching at the inner node level. This feature
-// hasn't launched yet.
-const char kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching[] =
-    "enable-experimental-accessibility-chromevox-sub-node-language-"
-    "switching";
-
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);

@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Data de conclusão: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Instalado</translation>
 <translation id="1792959175193046959">Altere a localização de transferência predefinida em qualquer altura.</translation>
+<translation id="1795251344124198516">Termos de Utilização Adicionais do Chrome e do Chrome OS</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1810845389119482123">A configuração da sincronização inicial não está concluída</translation>
 <translation id="1821253160463689938">Utiliza cookies para memorizar as suas preferências, mesmo que não visite essas páginas.</translation>
@@ -236,6 +237,7 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="2650751991977523696">Pretende transferir o ficheiro novamente?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ficheiro de áudio}other{# ficheiros de áudio}}</translation>
 <translation id="2687403674020088961">Bloquear todos os cookies (não recomendado).</translation>
+<translation id="2689830683995595741">Ao utilizar o Chrome, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização do Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e do Chrome OS<ph name="END_LINK2" />. O <ph name="BEGIN_LINK3" />Aviso de Privacidade para Contas Google geridas com o Family Link<ph name="END_LINK3" /> também se aplica.</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="2717722538473713889">Endereços de email</translation>
@@ -376,6 +378,7 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="3749259744154402564">Não suportado</translation>
 <translation id="3771001275138982843">Não foi possível transferir a atualização.</translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
+<translation id="3771694256347217732">Termos de Utilização do Google</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ative o Bluetooth<ph name="END_LINK" /> para permitir a sincronização</translation>
 <translation id="3775705724665058594">Envie para os seus dispositivos</translation>
 <translation id="3778956594442850293">Adicionado ao ecrã principal</translation>
@@ -403,6 +406,7 @@ Aquilo que a câmara vê apenas é visível para si. Este site não pode ver as 
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{O Chrome irá carregar a página quando estiver pronta.}other{O Chrome irá carregar as páginas quando estiverem prontas.}}</translation>
 <translation id="3963007978381181125">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay. Apenas alguém que conheça a sua frase de acesso pode ler os seus dados encriptados. A frase de acesso não é enviada para a Google nem armazenada pela mesma. Se se esquecer da frase de acesso ou pretender alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Transferência concluída</translation>
+<translation id="3974987681202239636">A app <ph name="APP_NAME" /> vai abrir no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização do Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e do Chrome OS<ph name="END_LINK2" />. O <ph name="BEGIN_LINK3" />Aviso de Privacidade para Contas Google geridas com o Family Link<ph name="END_LINK3" /> também se aplica.</translation>
 <translation id="397583555483684758">A sincronização deixou de funcionar</translation>
 <translation id="3976396876660209797">Remova este atalho e crie-o novamente</translation>
 <translation id="3985215325736559418">Pretende transferir <ph name="FILE_NAME" /> novamente?</translation>
@@ -713,6 +717,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6255999984061454636">Sugestões de conteúdo</translation>
 <translation id="6270391203985052864">Os sites podem pedir para enviar notificações.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
+<translation id="6292420053234093573">Ao utilizar o Chrome, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização do Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e do Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="629730747756840877">Conta</translation>
 <translation id="6297765934698848803">A entidade que gere o seu dispositivo desativou a sua câmara.</translation>
@@ -727,6 +732,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6364438453358674297">Pretende remover a sugestão do histórico?</translation>
 <translation id="6369229450655021117">A partir daqui, pode pesquisar na Web, partilhar com amigos e ver as páginas abertas.</translation>
 <translation id="6378173571450987352">Detalhes: ordenado por quantidade de dados utilizados</translation>
+<translation id="6379829913050047669">A app <ph name="APP_NAME" /> vai abrir no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização do Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e do Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Escurecer Websites</translation>
 <translation id="6388207532828177975">Limpar e repor</translation>
 <translation id="6395288395575013217">LINK</translation>

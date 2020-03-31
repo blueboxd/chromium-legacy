@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -380,7 +381,7 @@ const CGFloat kClearButtonSize = 28.0f;
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
     if (self.searchByImageEnabled &&
-        clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
+        clipboardRecentContent->HasRecentImageFromClipboard()) {
       return action == @selector(searchCopiedImage:);
     }
     if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {
@@ -398,12 +399,13 @@ const CGFloat kClearButtonSize = 28.0f;
   RecordAction(
       UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
   self.omniboxInteractedWhileFocused = YES;
-  if (base::Optional<gfx::Image> optionalImage =
-          ClipboardRecentContent::GetInstance()
-              ->GetRecentImageFromClipboard()) {
-    UIImage* image = optionalImage.value().ToUIImage();
-    [self.dispatcher searchByImage:image];
-    [self.dispatcher cancelOmniboxEdit];
+  if (ClipboardRecentContent::GetInstance()->HasRecentImageFromClipboard()) {
+    ClipboardRecentContent::GetInstance()->GetRecentImageFromClipboard(
+        base::BindOnce(^(base::Optional<gfx::Image> optionalImage) {
+          UIImage* image = optionalImage.value().ToUIImage();
+          [self.dispatcher searchByImage:image];
+          [self.dispatcher cancelOmniboxEdit];
+        }));
   }
 }
 

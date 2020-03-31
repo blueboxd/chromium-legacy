@@ -297,6 +297,64 @@ TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuildsOld', function() {
   runMochaSuite('PersonalizationOptionsTests_AllBuilds_Old');
 });
 
+// eslint-disable-next-line no-var
+var CrSettingsPrivacyPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyPageTests', function() {
+  runMochaSuite('PrivacyPage');
+});
+
+TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyPageRedesignTests', function() {
+  runMochaSuite('PrivacyPageRedesignEnabled');
+});
+
+// TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
+TEST_F(
+    'CrSettingsPrivacyPageV3Test', 'DISABLED_PrivacyPageSoundTests',
+    function() {
+      runMochaSuite('PrivacyPageSound');
+    });
+
+// TODO(sauski): Privacy page UMA changing, tests need updating/removal.
+TEST_F('CrSettingsPrivacyPageV3Test', 'DISABLED_UMALoggingTests', function() {
+  runMochaSuite('PrivacyPageUMACheck');
+});
+
+GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
+// TODO(crbug.com/1043665): disabling due to failures on several builders.
+TEST_F(
+    'CrSettingsPrivacyPageV3Test', 'DISABLED_CertificateManagerTests',
+    function() {
+      runMochaSuite('NativeCertificateManager');
+    });
+GEN('#endif');
+
+// eslint-disable-next-line no-var
+var CrSettingsPrivacyPageRedesignV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.m.js';
+  }
+
+  get featureList() {
+    const list = super.featureList;
+    list.enabled.push('features::kPrivacySettingsRedesign');
+    return list;
+  }
+};
+
+TEST_F(
+    'CrSettingsPrivacyPageRedesignV3Test', 'HappinessTrackingSurveysTests',
+    function() {
+      runMochaSuite('HappinessTrackingSurveys');
+    });
+
 [['AllSites', 'all_sites_tests.m.js'],
  ['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
  ['AppearancePage', 'appearance_page_test.m.js'],

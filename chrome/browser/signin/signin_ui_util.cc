@@ -237,7 +237,7 @@ void EnableSyncFromPromo(
           account.account_id);
   if (needs_reauth_before_enable_sync) {
     browser->signin_view_controller()->ShowDiceEnableSyncTab(
-        browser, access_point, promo_action, account.email);
+        access_point, promo_action, account.email);
     return;
   }
 

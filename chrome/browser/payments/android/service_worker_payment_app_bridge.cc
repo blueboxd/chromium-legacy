@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "chrome/android/chrome_jni_headers/ServiceWorkerPaymentAppBridge_jni.h"
+#include "chrome/browser/payments/android/jni_headers/ServiceWorkerPaymentAppBridge_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_data_service_factory.h"

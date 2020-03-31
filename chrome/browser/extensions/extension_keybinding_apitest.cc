@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -524,10 +523,6 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  // This functionality requires a feature flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui", "1");
 
   ASSERT_TRUE(RunExtensionTest("keybinding/basics"))
       << message_;

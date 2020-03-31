@@ -1882,6 +1882,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="3479685872808224578">Otkrivanje servera za štampanje nije uspjelo. Provjerite adresu i pokušajte ponovo.</translation>
 <translation id="3481268647794498892">Otvaranje u pregledniku <ph name="ALTERNATIVE_BROWSER_NAME" /> za <ph name="COUNTDOWN_SECONDS" /> s</translation>
+<translation id="3482719661246593752">Web lokacija <ph name="ORIGIN" /> može pregledati sljedeće fajlove</translation>
 <translation id="3484273680291419129">Uklanjanje štetnog softvera...</translation>
 <translation id="3484869148456018791">Preuzmi novu potvrdu</translation>
 <translation id="3487007233252413104">anonimna funkcija</translation>
@@ -1944,6 +1945,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3564848315152754834">USB sigurnosni ključ</translation>
 <translation id="3566721612727112615">Nije dodana nijedna web lokacija</translation>
 <translation id="3569382839528428029">Želite li da <ph name="APP_NAME" /> dijeli vaš zaslon?</translation>
+<translation id="3569682580018832495">Web lokacija <ph name="ORIGIN" /> može pregledati sljedeće fajlove i foldere</translation>
 <translation id="3571734092741541777">Postavi</translation>
 <translation id="3574210789297084292">prijava</translation>
 <translation id="3574917942258583917">Svejedno izaći iz anonimnog načina rada?</translation>
@@ -1953,6 +1955,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3578594933904494462">Sadržaj ove kartice se dijeli.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; želi dijeliti štampač &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; s grupom koju posjedujete: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ako prihvatite, svi članovi grupe će moći da štampaju na štampač.</translation>
 <translation id="357889014807611375">WiFi mreža s naplatom</translation>
+<translation id="3582057310199111521">Uneseno na obmanjujućoj web lokaciji i pronađeno u narušavanju podataka</translation>
 <translation id="3584169441612580296">Čitanje i promjena fotografija, muzike i drugih medijskih fajlova na vašem računaru</translation>
 <translation id="3586806079541226322">Nije moguće otvoriti ovaj fajl</translation>
 <translation id="3586931643579894722">Sakrij detalje</translation>
@@ -3090,6 +3093,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5117930984404104619">Praćenje ponašanja drugih ekstenzija, uključujući posjećene URL-ove</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Vaš tvrdi disk je pun.  Sačuvajte na drugoj lokaciji ili oslobodite više prostora na tvrdom disku.</translation>
+<translation id="5122384452788334261">Na vašem uređaju ima malo prostora za pohranu. Da koristite Plugin VM, preporučuje se najmanje <ph name="RECOMMENDED_SPACE" /> slobodnog prostora. Izbrišite fajlove iz pohrane uređaja da oslobodite prostor.</translation>
 <translation id="5123433949759960244">Košarka</translation>
 <translation id="5125751979347152379">Nevažeći URL.</translation>
 <translation id="5126611267288187364">Pogledajte promjene</translation>
@@ -5191,6 +5195,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7915471803647590281">Objasnite nam šta se dešava prije slanja povratnih informacija.</translation>
 <translation id="7918257978052780342">Registriraj</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176">Web lokacija <ph name="ORIGIN" /> može pregledati <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Greška pri prosljeđivanju priključka</translation>
 <translation id="792514962475806987">Nivo priključenog povećala:</translation>
 <translation id="7925247922861151263">AAA provjera nije uspjela</translation>
@@ -5354,6 +5359,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8118488170956489476">Vašim <ph name="BEGIN_LINK" />preglednikom upravlja<ph name="END_LINK" /> vaša organizacija</translation>
 <translation id="8118860139461251237">Upravljanje preuzimanjima</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> i drugo</translation>
+<translation id="8120715633374652536">Na vašem uređaju ima malo prostora za pohranu. Potrebno je najmanje <ph name="MINIMUM_SPACE" /> slobodnog prostora da koristite Plugin VM, a preporučuje se više od <ph name="RECOMMENDED_SPACE" /> slobodnog prostora. Izbrišite fajlove iz pohrane uređaja da oslobodite prostor.</translation>
 <translation id="8123590694679414600">Vaši podaci su šifrirani sinhroniziranim pristupnim izrazom dana
           <ph name="TIME" />. To ne obuhvata načine plaćanja i adrese iz Google Paya.</translation>
 <translation id="81238879832906896">Žuto-bijeli cvijet</translation>

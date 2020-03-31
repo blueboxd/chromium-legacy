@@ -178,6 +178,9 @@ void OobeBaseTest::WaitForSigninScreen() {
 
   MaybeWaitForLoginScreenLoad();
 }
+void OobeBaseTest::CheckJsExceptionErrors(int number) {
+  test::OobeJS().ExpectEQ("cr.ErrorStore.getInstance().length", number);
+}
 
 test::JSChecker OobeBaseTest::SigninFrameJS() {
   content::RenderFrameHost* frame = signin::GetAuthFrame(

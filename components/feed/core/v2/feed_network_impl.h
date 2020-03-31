@@ -35,8 +35,6 @@ class FeedNetworkImpl : public FeedNetwork {
     virtual ~Delegate() = default;
     // Returns a string which represents the top locale and region of the
     // device.
-    // TODO(harringtond): Implement this. See
-    // https://cs.chromium.org/chromium/src/chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/common/locale/LocaleUtils.java
     virtual std::string GetLanguageTag() = 0;
   };
 

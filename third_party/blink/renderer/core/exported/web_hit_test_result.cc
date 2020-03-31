@@ -101,6 +101,10 @@ bool WebHitTestResult::IsContentEditable() const {
   return private_->Result().IsContentEditable();
 }
 
+uint64_t WebHitTestResult::GetScrollableContainerId() const {
+  return private_->Result().GetScrollableContainer().GetStableId();
+}
+
 WebHitTestResult::WebHitTestResult(const HitTestResult& result)
     : private_(MakeGarbageCollected<WebHitTestResultPrivate>(result)) {}
 

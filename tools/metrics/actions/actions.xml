@@ -18670,10 +18670,46 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SafetyCheck.Extensions.Review">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the review extensions button in safety check.
+  </description>
+</action>
+
+<action name="SafetyCheck.Passwords.Manage">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the manage passwords button in safety check.
+  </description>
+</action>
+
+<action name="SafetyCheck.SafeBrowsing.Manage">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the manage safe browsing button in safety check.
+  </description>
+</action>
+
 <action name="SafetyCheck.Started">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <description>User started a browser safety check in settings.</description>
+</action>
+
+<action name="SafetyCheck.Updates.Relaunch">
+  <owner>rainhard@chromium.org</owner>
+  <owner>andzaytsev@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the relaunch browser button in safety check after an update.
+  </description>
 </action>
 
 <action name="Save">

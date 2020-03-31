@@ -1882,6 +1882,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3479685872808224578">Couldn't detect the print server. Please check the address and try again.</translation>
 <translation id="3481268647794498892">Opening in <ph name="ALTERNATIVE_BROWSER_NAME" /> in <ph name="COUNTDOWN_SECONDS" /> seconds</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> can view the following files</translation>
 <translation id="3484273680291419129">Removing harmful software...</translation>
 <translation id="3484869148456018791">Get new certificate</translation>
 <translation id="3487007233252413104">anonymous function</translation>
@@ -1944,6 +1945,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3564848315152754834">USB security key</translation>
 <translation id="3566721612727112615">No sites added</translation>
 <translation id="3569382839528428029">Do you want <ph name="APP_NAME" /> to share your screen?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> can view the following files and folders</translation>
 <translation id="3571734092741541777">Set up</translation>
 <translation id="3574210789297084292">sign in</translation>
 <translation id="3574917942258583917">Exit incognito mode anyway?</translation>
@@ -1953,6 +1955,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3578594933904494462">This tab's content is being shared.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wants to share a printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; with a group that you own: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. If you accept, all group members will be able to print to the printer.</translation>
 <translation id="357889014807611375">metered Wi-Fi</translation>
+<translation id="3582057310199111521">Entered on deceptive site and found in data breach</translation>
 <translation id="3584169441612580296">Read and change photos, music and other media from your computer</translation>
 <translation id="3586806079541226322">Can't open this file</translation>
 <translation id="3586931643579894722">Hide details</translation>
@@ -3090,6 +3093,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5117930984404104619">Monitor the behaviour of other extensions, including visited URLs</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Your hard disk is full.  Please save to another location or make more room on the hard disk.</translation>
+<translation id="5122384452788334261">Your device is low on storage space. At least <ph name="RECOMMENDED_SPACE" /> of free space is recommended to use Plugin VM. To free up space, delete files from device storage.</translation>
 <translation id="5123433949759960244">Basketball</translation>
 <translation id="5125751979347152379">Invalid URL.</translation>
 <translation id="5126611267288187364">View changes</translation>
@@ -5191,6 +5195,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7915471803647590281">Please tell us what is happening before sending the feedback.</translation>
 <translation id="7918257978052780342">Enrol</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> can view <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Error forwarding port</translation>
 <translation id="792514962475806987">Docked zoom level:</translation>
 <translation id="7925247922861151263">AAA check failed</translation>
@@ -5354,6 +5359,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8118488170956489476">Your <ph name="BEGIN_LINK" />browser is managed<ph name="END_LINK" /> by your organisation</translation>
 <translation id="8118860139461251237">Manage your downloads</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> and more</translation>
+<translation id="8120715633374652536">Your device is low on storage space. At least <ph name="MINIMUM_SPACE" /> of free space is required to use Plugin VM, and over <ph name="RECOMMENDED_SPACE" /> of free space is recommended. To free up space, delete files from device storage.</translation>
 <translation id="8123590694679414600">Data was encrypted with your sync passphrase on
           <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="81238879832906896">Yellow and white flower</translation>

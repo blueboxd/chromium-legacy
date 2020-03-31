@@ -19,7 +19,7 @@ class A : public GarbageCollected<A> {
   virtual void Trace(Visitor*);
 
  private:
-  RefPtr<D> m_d;
+  scoped_refptr<D> m_d;
 };
 
 class B : public A {

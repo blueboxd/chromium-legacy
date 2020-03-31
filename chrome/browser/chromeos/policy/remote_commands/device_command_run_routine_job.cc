@@ -425,6 +425,37 @@ void DeviceCommandRunRoutineJob::RunImpl(CallbackWithResult succeeded_callback,
                   std::move(failed_callback)));
       break;
     }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::
+        kBatteryDischarge: {
+      constexpr char kLengthSecondsFieldName[] = "lengthSeconds";
+      constexpr char kMaximumDischargePercentAllowedFieldName[] =
+          "maximumDischargePercentAllowed";
+      base::Optional<int> length_seconds =
+          params_dict_.FindIntKey(kLengthSecondsFieldName);
+      base::Optional<int> maximum_discharge_percent_allowed =
+          params_dict_.FindIntKey(kMaximumDischargePercentAllowedFieldName);
+      // The battery discharge routine expects two integers >= 0.
+      if (!length_seconds.has_value() ||
+          !maximum_discharge_percent_allowed.has_value() ||
+          length_seconds.value() < 0 ||
+          maximum_discharge_percent_allowed.value() < 0) {
+        SYSLOG(ERROR) << "Invalid parameters for BatteryDischarge routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunBatteryDischargeRoutine(
+              base::TimeDelta::FromSeconds(length_seconds.value()),
+              maximum_discharge_percent_allowed.value(),
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
   }
 }
 

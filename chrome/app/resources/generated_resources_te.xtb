@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">కనిపిస్తున్న నెట్‌వర్క్‌లు:</translation>
 <translation id="1094607894174825014">దీనిలో చెల్లని ఆఫ్‌సెట్‌తో చదివే లేదా రాసే చర్య అభ్యర్థించబడింది: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">సైన్ ఇన్ చేయడానికి ముందుగా, దయచేసి <ph name="NETWORK_ID" /> నెట్‌వర్క్‌ను యాక్టివేట్ చేయడానికి అతిథి లాగా ప్రవేశించండి</translation>
+<translation id="1099962274138857708"><ph name="DEVICE_NAME" /> నుండి కాపీ చేసిన ఇమేజ్</translation>
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE" />ను అనువదించు</translation>
 <translation id="1104038495841596279">మీ SIM కార్డ్‌ను మేము గుర్తించలేకపోయాము</translation>
 <translation id="1108600514891325577">&amp;ఆపు</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">నేపథ్య పేజీ</translation>
 <translation id="1745520510852184940">ఎల్లప్పుడూ దీన్ని చేయి</translation>
 <translation id="1750172676754093297">మీ సెక్యూరిటీ కీ, వేలిముద్రలను నిల్వ చేయలేదు</translation>
+<translation id="1751262127955453661">మీరు ఈ సైట్ కోసం అన్ని ట్యాబ్‌లను మూసివేసే వరకు <ph name="ORIGIN" /> <ph name="FOLDERNAME" />లో ఉన్న ఫైల్స్‌ను ఎడిట్ చేయగలదు</translation>
 <translation id="175196451752279553">మూసివేయబడిన ట్యాబ్‌ను మళ్లీ తె&amp;రవండి</translation>
 <translation id="1753067873202720523">మీ Chromebook ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="1753905327828125965">అధికంగా సందర్శించేది</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">ఇప్పటికే Chrome వినియోగదారా? సైన్ ఇన్ చేయండి</translation>
 <translation id="18245044880483936">బ్యాకప్ డేటా మీ చిన్నారి డిస్క్ స్టోరేజ్ కోటాలో లెక్కించబడదు.</translation>
 <translation id="1826516787628120939">తనిఖీ చేస్తోంది</translation>
+<translation id="1827738518074806965">చిత్రకళా గ్యాలరీ</translation>
 <translation id="1828378091493947763">ఈ పరికరంలో ఈ ప్లగిన్‌కు మద్దతు లేదు</translation>
 <translation id="1828901632669367785">సిస్టమ్ డైలాగ్‌ను ఉపయోగించి ముద్రించు...</translation>
 <translation id="1829129547161959350">పెంగ్విన్</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2359808026110333948">కొనసాగించు</translation>
 <translation id="236117173274098341">ఆప్టిమైజ్ చేయండి</translation>
 <translation id="236141728043665931">ఎల్లప్పుడూ మైక్రోఫోన్ యాక్సెస్‌ను బ్లాక్ చేయి</translation>
+<translation id="2364498172489649528">ఆమోదించినవి</translation>
 <translation id="2365507699358342471">క్లిప్‌బోర్డ్‌కు కాపీ చేసిన వచనం మరియు చిత్రాలను ఈ సైట్ చూడగలదు.</translation>
 <translation id="2366260648632264559">సిస్టమ్ వచనాన్ని ఈ భాషలో చూపు</translation>
 <translation id="2367972762794486313">అనువర్తనాలను చూపు</translation>
@@ -1342,6 +1346,7 @@
 <translation id="2762441749940182211">కెమెరా బ్లాక్ చేయబడింది</translation>
 <translation id="2765217105034171413">చిన్నది</translation>
 <translation id="2766161002040448006">తల్లి/తండ్రిని అడగండి</translation>
+<translation id="2767127727915954024">మీరు ఈ సైట్‌లో అన్ని ట్యాబ్‌లను మూసివేసే వరకు <ph name="ORIGIN" />, <ph name="FILENAME" />ను ఎడిట్ చేయగలదు</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు.</translation>
 <translation id="2770465223704140727">జాబితాను నుండి తొలగించు</translation>
 <translation id="2770690685823456775">మీ పాస్‌వర్డ్‌లను మరో ఫోల్డర్‌కు ఎగుమతి చేయండి</translation>
@@ -1666,6 +1671,18 @@
 <translation id="3202173864863109533">ఈ ట్యాబ్ ఆడియో మ్యూట్ చేయబడుతోంది.</translation>
 <translation id="3208321278970793882">యాప్</translation>
 <translation id="3208584281581115441">ఇప్పుడే తనిఖీ చేయి</translation>
+<translation id="3208640652501208439">పాఠశాల విద్య కోసం రిసోర్స్‌లు అందుబాటులో ఉండకపోవచ్చు లేదా ఆటోమేటిక్‌గా లోడ్ చేయకపోవచ్చు
+    మీ చిన్నారికి ఈ కింది వాటికి యాక్సెస్ ఉండకపోవచ్చు:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />పాఠశాల ద్వారా ఇన్‌స్టాల్ చేయబడిన యాప్‌లు, ఎక్స్‌టెన్షన్‌లు
+      <ph name="LIST_ITEM" />పాఠశాల Chromebookలో బుక్‌మార్క్‌లు
+      <ph name="LIST_ITEM" />
+    <ph name="END_LIST" />విద్యా సైట్‌ల కోసం ఆటోఫిల్ పాస్‌వర్డ్‌లు
+    ఈ పరికరంలో పాఠశాల అనుభవాన్ని పొందడానికి, మీ చిన్నారి వీటిని చేయాలి:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />వారి Family Link నిర్వహించబడుతున్న ఖాతా నుండి సైన్ అవుట్ చేయాలి
+      <ph name="OLIST_ITEM" />సైన్ ఇన్ స్క్రీన్‌లో విద్యా ఖాతా కోసం వారి GSuiteతో సైన్ ఇన్ చేయాలి. గమనిక, అయితే, మీ Family Link పర్యవేక్షణ ఫీచర్‌ల‌పై యాప్, వెబ్‌సైట్ యాక్సెస్ సెట్టింగ్‌లతో సహా పాఠశాల పాలసీలు ప్రభావం చూపుతాయని దీని అర్థం (ఉదాహరణకు, హోంవర్క్‌కు YouTube అవసరమనిపిస్తే పాఠశాల నిర్వాహకులు అనుమతించవచ్చు, పరికర వినియోగ వ్యవధి అమలు చేయబడదు, మొదలైనవి.)
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">నిర్థారించబడలేదు</translation>
 <translation id="32101887417650595">ప్రింటర్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="321084946921799184">పసుపు పచ్చ మరియు తెలుపు</translation>
@@ -1744,6 +1761,7 @@
 <translation id="3312424061798279731">ప్రారంభించబడిన భాషలు</translation>
 <translation id="3313622045786997898">సర్టిఫికెట్ సంతకం విలువ</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" />ను దాచిపెట్టు</translation>
+<translation id="3317284582048881482">తల్లితండ్రుల కోసం పాఠశాల ఖాతా సమాచారం</translation>
 <translation id="3317459757438853210">రెండు-వైపులా ఉండేది</translation>
 <translation id="3317678681329786349">కెమెరా మరియు మైక్రోఫోన్ బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="3319048459796106952">కొత్త &amp;అజ్ఞాత విండో</translation>
@@ -1930,6 +1948,7 @@
 <translation id="3574210789297084292">సైన్ ఇన్</translation>
 <translation id="3574917942258583917">ఏదేమైనా అజ్ఞాత మోడ్ నుండి నిష్క్రమించాలా?</translation>
 <translation id="3575121482199441727">ఈ సైట్‌కు అనుమతించు</translation>
+<translation id="3575919114596668130">మీ Family Link తల్లి/తండ్రి సెట్టింగ్‌లు ఇంకా వర్తిస్తాయి. మీరు ఇది వరకే ఒక యాప్ లేదా సైట్‌ను బ్లాక్ చేసి ఉంటే, దానిని మీరు మళ్లీ చేయాల్సిన అవసరం లేదు.</translation>
 <translation id="3576324189521867626">విజయవంతంగా ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="3578594933904494462">ఈ ట్యాబ్ యొక్క కంటెంట్ భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="357886715122934472">మీరు యజమానిగా ఉన్న గ్రూప్ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;తో, &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ఒక ప్రింటర్ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;ను షేర్ చేయాలనుకుంటున్నారు.మీరు ఆమోదిస్తే, గ్రూప్ మెంబర్‌లందరూ ప్రింటర్‌కు ముద్రించగలరు.</translation>
@@ -2770,6 +2789,7 @@
 <translation id="4689235506267737042">మీ డెమో ప్రాధాన్యతలను ఎంచుకోండి</translation>
 <translation id="4689421377817139245">ఈ బుక్‌మార్క్‌ను మీ iPhoneకు సింక్ చేయండి</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi ఫర్మ్‌వేర్ రూపొందించిన నాలుగు ఫైల్‌లు: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  మొదటి మూడు బైనరీ ఫైల్‌లు, వీటిలో రిజిస్టర్ డంప్‌లు ఉంటాయి మరియు వ్యక్తిగత లేదా పరికర సమాచారం కలిగి ఉండకుండా వీటిని Intel అందిస్తోంది.  చివరిది Intel ఫర్మ్‌వేర్ అందించే, అమలు స్థితిగతిని కనుగొనే ఫైల్; ఇందులో వ్యక్తిగత లేదా పరికర గుర్తింపు సమాచారం తీసివేయబడింది, కానీ ఇది చాలా పెద్దదిగా ఉన్న కారణంగా ఇక్కడ ప్రదర్శించడం సాధ్యం కాదు.  మీ పరికరంలో ఉన్న ఇటీవల Wi-Fi సమస్యలకు ప్రతిస్పందనగా ఈ ఫైల్‌లు రూపొందించబడ్డాయి మరియు ఈ సమస్యలను పరిష్కరించడంలో సహాయపడటం కోసం ఇవి Intelతో షేర్ చేయబడతాయి.&gt;</translation>
+<translation id="4691791363716065510">మీరు ఈ సైట్ కోసం అన్ని ట్యాబ్‌లను మూసివేసే వరకు <ph name="ORIGIN" /><ph name="FILENAME" />ను చూడగలదు</translation>
 <translation id="4692623383562244444">శోధన ఇంజిన్‌లు</translation>
 <translation id="4693155481716051732">సుషి</translation>
 <translation id="4694024090038830733">ప్రింటర్ కాన్ఫిగరేషన్‌ను నిర్వాహకుడు నిర్వహిస్తారు.</translation>
@@ -3125,6 +3145,7 @@
 <translation id="5204967432542742771">పాస్‌వర్డ్‌ని నమోదు చేయండి</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />"ని తొలగించాలా?</translation>
 <translation id="520621735928254154">ప్రమాణపత్ర దిగుమతి లోపం</translation>
+<translation id="5209307736170827035">తరగతిలోని మీ చిన్నారి డేటా రక్షించబడుతుంది. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">పరికరాలు కనుగొనబడలేదు</translation>
 <translation id="5210990770352357081">Plugin VMను అన్‌ఇన్‌స్టాల్ చేయడం సాధ్యం కాలేదు</translation>
 <translation id="5213481667492808996">మీ '<ph name="NAME" />' డేటా సేవ ఉపయోగించడానికి సిద్ధంగా ఉంది</translation>
@@ -3236,6 +3257,7 @@
 <translation id="5341980496415249280">దయచేసి వేచి ఉండండి, ప్యాకింగ్ జరుగుతోంది...</translation>
 <translation id="5342091991439452114">PIN తప్పనిసరిగా కనీసం <ph name="MINIMUM" /> అంకెలు ఉండాలి</translation>
 <translation id="5344036115151554031">Linux రీస్టోర్ చేయబడుతోంది</translation>
+<translation id="535123479159372765">ఇతర పరికరం నుండి కాపీ చేసిన వచనం</translation>
 <translation id="5352033265844765294">టైమ్ స్టాంపింగ్</translation>
 <translation id="5353252989841766347">Chrome నుండి పాస్‌వర్డ్‌లను ఎగుమతి చేయండి</translation>
 <translation id="5355099869024327351">మీకు నోటిఫికేషన్‌లను చూపించడానికి అసిస్టెంట్‌ను అనుమతించండి</translation>
@@ -3358,6 +3380,7 @@
 <translation id="5511379779384092781">అతి చిన్నది</translation>
 <translation id="5511823366942919280">మీరు ఖచ్చితంగా ఈ పరికరాన్ని "షార్క్"గా సెటప్ చేయాలని అనుకుంటున్నారా?</translation>
 <translation id="5512653252560939721">వినియోగదారు సర్టిఫికెట్ ఖచ్చితంగా హార్డ్‌వేర్-బ్యాకెడ్ అయి ఉండాలి.</translation>
+<translation id="5515923816438946203">మీ స్క్రీన్‌లో మీరు చూసేదాన్ని ఎంచుకోండి</translation>
 <translation id="5517304475148761050">Play స్టోర్‌ను యాక్సెస్ చేయగలిగేలా ఈ యాప్‌ను అనుమతించాలి</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">మీ ఖాతాకు ప్రింటర్‌ను జోడిస్తోంది - దీనికి కొంత సమయం పట్టవచ్చు...</translation>
@@ -3808,6 +3831,7 @@
 <translation id="6097480669505687979">మీరు నిల్వ స్థలాన్ని ఖాళీ చేయకపోతే, వినియోగదారులు మరియు డేటా స్వయంచాలకంగా తొలగించబడవచ్చు.</translation>
 <translation id="6097600385983390082">వాయిస్ శోధన మూసివేయబడింది</translation>
 <translation id="6098793583803863900">ప్రమాదకరమైన కంటెంట్ ఉంటే కనుగొనడానికి, ఒక తెలియని ఫైల్ స్కాన్ చేయబడుతోంది.</translation>
+<translation id="609942571968311933"><ph name="DEVICE_NAME" /> నుండి కాపీ చేసిన వచనం</translation>
 <translation id="6100736666660498114">ప్రారంభ మెను</translation>
 <translation id="6101226222197207147">కొత్త యాప్ జోడించబడింది (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">అధునాతన రక్షణ ప్రోగ్రామ్ ద్వారా ఈ ఫైల్ బ్లాక్ చేయబడింది.</translation>
@@ -4178,6 +4202,7 @@
 <translation id="6612358246767739896">రక్షిత కంటెంట్</translation>
 <translation id="6615455863669487791">నాకు చూపించు</translation>
 <translation id="6618097958368085618">ఏదేమైనా ఉంచు</translation>
+<translation id="6618744767048954150">రన్ అవుతున్నాయి</translation>
 <translation id="6619058681307408113">లైన్ ప్రింటర్ డెమాన్ (LPD)</translation>
 <translation id="661907246513853610">సైట్ మీ స్థానాన్ని ట్రాక్ చేయవచ్చు</translation>
 <translation id="6619801788773578757">కియోస్క్ అప్లికేషన్‌ని జోడించండి</translation>
@@ -4563,6 +4588,7 @@
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> మరియు <ph name="WEBSITE_3" />లోని మీ డేటాను చదవండి</translation>
 <translation id="713122686776214250">పే&amp;జీని జోడించండి...</translation>
 <translation id="7133578150266914903">మీ నిర్వాహకుడు మీ పరికరాన్ని ఉపసంహరిస్తున్నారు (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" /> పాస్‌వర్డ్‌లను తనిఖీ అవుతున్నాయి...</translation>
 <translation id="7134098520442464001">టెక్స్ట్‌ని చిన్నదిగా చెయ్యండి</translation>
 <translation id="7135729336746831607">బ్లూటూత్ ఆన్ చేయాలా?</translation>
 <translation id="7136639886842764730">వెంటనే మీ <ph name="DEVICE_TYPE" />ను అప్‌డేట్ చేయాలని <ph name="DOMAIN" /> తెలియజేస్తోంది.</translation>
@@ -4911,6 +4937,7 @@
 <translation id="761530003705945209">Google డిస్క్‌లో బ్యాకప్ చేయండి. సులభంగా మీ డేటాను పునరుద్ధరించండి లేదా ఎప్పుడైనా పరికరాన్ని స్విచ్ చేయండి. మీ బ్యాకప్‌లో యాప్ డేటా కూడా ఉంటుంది. మీ బ్యాకప్‌లు Googleకు అప్‌లోడ్ చేయబడతాయి, మీ Google ఖాతా పాస్‌వర్డ్‌ను ఉపయోగించి ఎన్‌క్రిప్ట్ చేయబడతాయి.</translation>
 <translation id="7616214729753637086">పరికరాన్ని నమోదు చేస్తోంది...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేస్తోంది</translation>
+<translation id="761763866592998929">యాంబియెంట్ మోడ్</translation>
 <translation id="762068974690945752">ఇక్కడ పాఠశాల ఖాతాను యాడ్ చేయండి లేదా చిన్నారి ఖాతాలను మేనేజ్ చేయండి. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">పరికర కాన్ఫిగరేషన్‌ను సేవ్ చేయడంలో సిస్టమ్ విఫలమైంది.</translation>
 <translation id="7622114377921274169">ఛార్జింగ్.</translation>
@@ -5022,6 +5049,7 @@
 <translation id="7766838926148951335">అనుమతులను ఆమోదించు</translation>
 <translation id="7768770796815395237">మార్చు</translation>
 <translation id="7769672763586021400">మోడల్ ID</translation>
+<translation id="7770612696274572992">ఇతర పరికరం నుండి కాపీ చేసిన ఇమేజ్</translation>
 <translation id="7770651108375708429">Wi-Fiని డిస్‌కనెక్ట్ చేయండి</translation>
 <translation id="7771452384635174008">లేఅవుట్</translation>
 <translation id="7772032839648071052">రహస్య పదబంధాన్ని నిర్ధారించండి</translation>
@@ -5029,6 +5057,7 @@
 <translation id="7772773261844472235">మీ Chromebook స్థితిని తనిఖీ చేయండి</translation>
 <translation id="7773726648746946405">సెషన్ నిల్వ</translation>
 <translation id="7774365994322694683">పక్షి</translation>
+<translation id="7776156998370251340">మీరు ఈ సైట్‌లోని అన్ని ట్యాబ్‌లను మూసివేసే వరకు <ph name="ORIGIN" /> <ph name="FOLDERNAME" />లో ఉన్న ఫైల్స్‌ను చూడగలదు</translation>
 <translation id="7776701556330691704">వాయిస్‌లు ఏవీ కనుగొనబడలేదు</translation>
 <translation id="7780252971640011240">కనెక్ట్ చేయడంలో సమస్య ఉంది. సహాయం కోసం, దయచేసి మీ క్యారియర్‌ను సంప్రదించండి.</translation>
 <translation id="7781335840981796660">అన్ని వినియోగదారు ఖాతాలు మరియు స్థానిక డేటా తీసివేయబడతాయి.</translation>
@@ -6044,6 +6073,7 @@
 <translation id="9055636786322918818">RC4 ఎన్‌క్రిప్షన్‌ను అమలు చేయండి. ఈ ఎంపికను ఉపయోగించడం వలన RC4 సైఫర్‌లు అసురక్షితమైనవి కాబట్టి మీకు హాని పెరుగుతుంది.</translation>
 <translation id="9056810968620647706">పోలికలు ఏవీ దొరకలేదు.</translation>
 <translation id="9057354806206861646">షెడ్యూల్‌ను అప్‌డేట్ చేయండి</translation>
+<translation id="9058976525724291037">మీ చిన్నారి ఈ పరికరంలో మరొక Google ఖాతాను జోడించాలనుకుంటున్నారు. Family Link ద్వారా మేనేజ్ చేయబడే పరికరాలకు కేవలం విద్య కోసం మాత్రమే G Suite ఖాతాలు జోడించబడతాయి.</translation>
 <translation id="9062065967472365419">నాకు ఆశ్చర్యం కలిగించు</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">పంక్తి <ph name="ERROR_LINE_START" /> నుండి <ph name="ERROR_LINE_END" /> వరకు ఎర్రర్</translation>

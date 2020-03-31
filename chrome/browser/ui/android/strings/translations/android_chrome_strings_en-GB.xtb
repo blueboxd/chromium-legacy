@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">End date <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Installed</translation>
 <translation id="1792959175193046959">Change the default download location at any time</translation>
+<translation id="1795251344124198516">Chrome &amp; Chrome OS Additional Terms of Service</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1810845389119482123">Initial sync setup not finished</translation>
 <translation id="1821253160463689938">Uses cookies to remember your preferences, even if you don't visit those pages</translation>
@@ -236,6 +237,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="2650751991977523696">Download file again?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio file}other{# Audio files}}</translation>
 <translation id="2687403674020088961">Block all cookies (not recommended)</translation>
+<translation id="2689830683995595741">By using Chrome, you agree to the <ph name="BEGIN_LINK1" />Google Terms of Service<ph name="END_LINK1" />, and the <ph name="BEGIN_LINK2" />Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2" />. The <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts managed with Family Link<ph name="END_LINK3" /> also applies.</translation>
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="2717722538473713889">Email addresses</translation>
@@ -376,6 +378,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3749259744154402564">Unsupported</translation>
 <translation id="3771001275138982843">Couldn’t download the update</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
+<translation id="3771694256347217732">Google Terms of Service</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Turn on Bluetooth<ph name="END_LINK" /> to allow pairing</translation>
 <translation id="3775705724665058594">Send to your devices</translation>
 <translation id="3778956594442850293">Added to Home screen</translation>
@@ -403,6 +406,7 @@ Only you can see what your camera is looking at. The site can't see your camera'
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome will load your page when ready}other{Chrome will load your pages when ready}}</translation>
 <translation id="3963007978381181125">Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you'll need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Download complete</translation>
+<translation id="3974987681202239636"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to the <ph name="BEGIN_LINK1" />Google Terms of Service<ph name="END_LINK1" />, and the <ph name="BEGIN_LINK2" />Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2" />. The <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts managed with Family Link<ph name="END_LINK3" /> also applies.</translation>
 <translation id="397583555483684758">Sync has stopped working</translation>
 <translation id="3976396876660209797">Remove and recreate this shortcut</translation>
 <translation id="3985215325736559418">Do you want to download <ph name="FILE_NAME" /> again?</translation>
@@ -713,6 +717,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6255999984061454636">Content suggestions</translation>
 <translation id="6270391203985052864">Sites can ask to send notifications</translation>
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
+<translation id="6292420053234093573">By using Chrome, you agree to the <ph name="BEGIN_LINK1" />Google Terms of Service<ph name="END_LINK1" />, and the <ph name="BEGIN_LINK2" />Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6297765934698848803">The organisation that manages your device has turned off your camera.</translation>
@@ -727,6 +732,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6364438453358674297">Remove suggestion from history?</translation>
 <translation id="6369229450655021117">From here, you can search the web, share with friends and see open pages</translation>
 <translation id="6378173571450987352">Details: Sorted by amount of data used</translation>
+<translation id="6379829913050047669"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to the <ph name="BEGIN_LINK1" />Google Terms of Service<ph name="END_LINK1" />, and the <ph name="BEGIN_LINK2" />Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Darken websites</translation>
 <translation id="6388207532828177975">Clear &amp; reset</translation>
 <translation id="6395288395575013217">LINK</translation>

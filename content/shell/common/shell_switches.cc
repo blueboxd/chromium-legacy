@@ -5,7 +5,6 @@
 #include "content/shell/common/shell_switches.h"
 
 #include "base/command_line.h"
-#include "content/shell/common/web_test/web_test_switches.h"
 
 namespace switches {
 
@@ -24,6 +23,10 @@ const char kContentShellHostWindowSize[] = "content-shell-host-window-size";
 
 // Hides toolbar from content_shell's host window.
 const char kContentShellHideToolbar[] = "content-shell-hide-toolbar";
+
+// Runs Content Shell in web test mode, injecting test-only behaviour for
+// blink web tests.
+const char kRunWebTests[] = "run-web-tests";
 
 bool IsRunWebTestsSwitchPresent() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

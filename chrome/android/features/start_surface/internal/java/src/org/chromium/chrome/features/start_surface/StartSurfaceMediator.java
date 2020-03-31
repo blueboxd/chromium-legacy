@@ -215,24 +215,25 @@ class StartSurfaceMediator
                                 mTabModelSelector.getModel(false).getCount() > 0 && !mIsIncognito);
                     }
                 };
-
-                mFullScreenListener = new ChromeFullscreenManager.FullscreenListener() {
-                    @Override
-                    public void onBottomControlsHeightChanged(
-                            int bottomControlsHeight, int bottomControlsMinHeight) {
-                        // Only pad single pane home page since tabs grid has already been
-                        // padded for the bottom bar.
-                        if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
-                            mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomControlsHeight);
-                        }
-                    }
-                };
             }
 
-            int toolbarHeight =
-                    ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                            R.dimen.toolbar_height_no_shadow);
-            mPropertyModel.set(TOP_BAR_HEIGHT, toolbarHeight);
+            mFullScreenListener = new ChromeFullscreenManager.FullscreenListener() {
+                @Override
+                public void onTopControlsHeightChanged(
+                        int topControlsHeight, int topControlsMinHeight) {
+                    mPropertyModel.set(TOP_BAR_HEIGHT, topControlsHeight);
+                }
+
+                @Override
+                public void onBottomControlsHeightChanged(
+                        int bottomControlsHeight, int bottomControlsMinHeight) {
+                    // Only pad single pane home page since tabs grid has already been
+                    // padded for the bottom bar.
+                    if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
+                        mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomControlsHeight);
+                    }
+                }
+            };
 
             mUrlFocusChangeListener = new UrlFocusChangeListener() {
                 @Override
@@ -445,6 +446,8 @@ class StartSurfaceMediator
             if (mFullScreenListener != null) {
                 mFullScreenManager.addListener(mFullScreenListener);
             }
+
+            mPropertyModel.set(TOP_BAR_HEIGHT, mFullScreenManager.getTopControlsHeight());
 
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);

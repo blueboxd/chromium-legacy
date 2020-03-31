@@ -21,6 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_
 
+#include "services/network/public/mojom/trust_tokens.mojom-blink-forward.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -181,6 +182,11 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // Update the required policy and notify the frame loader client of any
   // changes.
   void UpdateRequiredPolicy();
+
+  // Return a set of Trust Tokens parameters for requests for this frame,
+  // based on the frame attributes.
+  virtual network::mojom::blink::TrustTokenParamsPtr ConstructTrustTokenParams()
+      const;
 
  private:
   // Intentionally private to prevent redundant checks when the type is

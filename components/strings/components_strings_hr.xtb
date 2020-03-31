@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">Povijest</translation>
 <translation id="1645368109819982629">Protokol nije podržan</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome je pojednostavio ovu stranicu radi lakšeg čitanja. Chrome je dohvatio izvornu stranicu sigurnom vezom.</translation>
 <translation id="1656489000284462475">Preuzimanje</translation>
 <translation id="1662550410081243962">Spremi i popuni načine plaćanja</translation>
 <translation id="1663943134801823270">Kartice i adrese dolaze iz Chromea. Njima možete upravljati u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>
@@ -567,6 +568,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="342781501876943858">Chromium preporučuje poništavanje zaporke ako ste je upotrebljavali za druge web-lokacije.</translation>
 <translation id="3428151540071562330">Jedan ili više URI-ja predloška poslužitelja DnsOverHttpsTemplates nije točan i neće se koristiti.</translation>
 <translation id="3431636764301398940">Spremi tu karticu na ovaj uređaj</translation>
+<translation id="3432601291244612633">Zatvori stranicu</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Vlasnik tog uređaja isključio je igru s dinosaurima.</translation>
 <translation id="3447884698081792621">Prikaz certifikata (izdavač: <ph name="ISSUER" />)</translation>
@@ -872,6 +874,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="4731967714531604179">Prc2 (omotnica)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> želi upotrijebiti lokaciju vašeg uređaja</translation>
 <translation id="4736825316280949806">Ponovo pokrenite Chromium</translation>
+<translation id="4737121147659370456">Vaš je administrator omogućio priključke za Chrome za poduzeća u vašem pregledniku. Ti priključci imaju pristup nekim vašim podacima.</translation>
 <translation id="473775607612524610">Ažuriraj</translation>
 <translation id="4738601419177586157">Prijedlog za pretraživanje <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Upravljaj zaporkama…</translation>
@@ -1211,6 +1214,8 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="610911394827799129">Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6116338172782435947">vidjeti tekst i slike koje kopirate u međuspremnik</translation>
 <translation id="6120179357481664955">Upamtiti vaš UPI ID?</translation>
+<translation id="6124432979022149706">Priključci za Chrome za poduzeća</translation>
+<translation id="6135641591018127088">Upotrijebite Google račun da biste generirali snažnu zaporku</translation>
 <translation id="6146055958333702838">Provjerite kabele i ponovo pokrenite usmjerivače, modeme ili druge mrežne
         uređaje koje možda upotrebljavate.</translation>
 <translation id="614940544461990577">Pokušajte sljedeće:</translation>
@@ -1256,6 +1261,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6328639280570009161">Pokušajte onemogućiti predviđanja mreže</translation>
 <translation id="6328784461820205019">"Vaša veza nije privatna" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ili "Pogreška SSL certifikata"</translation>
 <translation id="6328786501058569169">Ova je web-lokacija obmanjujuća</translation>
+<translation id="6333334544069706521">Koristite zaporke pohranjene na vašem Google računu</translation>
 <translation id="6337133576188860026">Oslobodit će se <ph name="SIZE" />. Neke bi se web-lokacije pri sljedećem otvaranju mogle sporije učitavati.</translation>
 <translation id="6337534724793800597">Filtriranje pravila prema nazivu</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nijedna}=1{Jedna zaporka (za <ph name="DOMAIN_LIST" />, sinkronizirano)}=2{Dvije zaporke (za <ph name="DOMAIN_LIST" />, sinkronizirano)}one{# zaporka (za <ph name="DOMAIN_LIST" />, sinkronizirano)}few{# zaporke (za <ph name="DOMAIN_LIST" />, sinkronizirano)}other{# zaporki (za <ph name="DOMAIN_LIST" />, sinkronizirano)}}</translation>
@@ -1301,6 +1307,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6521745193039995384">Nije aktivno</translation>
 <translation id="6529602333819889595">&amp;Ponovi brisanje</translation>
 <translation id="6534179046333460208">Prijedlozi Fizičkog weba</translation>
+<translation id="6543609420755597723">Podatke o sigurnosnim događajima koje su označili Priključci za Chrome za poduzeća podijelite s administratorom. To može uključivati URL-ove stranica koje posjetite, nazive ili metapodatke datoteka i korisničko ime koje koristite za prijavu na svoj uređaj i Chrome.</translation>
 <translation id="6545864417968258051">Traženje Bluetootha</translation>
 <translation id="6547208576736763147">Dvostruko bušenje s lijeve strane</translation>
 <translation id="6554795675067793129">Vašim računom upravlja <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1366,6 +1373,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6874604403660855544">&amp;Ponovi dodavanje</translation>
 <translation id="6884662655240309489">Veličina 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome je pojednostavio ovu stranicu radi lakšeg čitanja. Chrome je dohvatio izvornu stranicu sigurnom vezom.</translation>
 <translation id="6891596781022320156">Razina pravila nije podržana.</translation>
 <translation id="6895330447102777224">Kartica je potvrđena</translation>
 <translation id="6897140037006041989">Korisnički agent</translation>
@@ -1594,6 +1602,7 @@ Dodatne pojedinosti:
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791196057686275387">Napusti</translation>
 <translation id="7791543448312431591">Dodaj</translation>
+<translation id="7798389633136518089">Zanemareno jer pravilo nije postavio izvor u oblaku.</translation>
 <translation id="7800304661137206267">Veza je šifrirana pomoću <ph name="CIPHER" />, za provjeru autentičnosti poruke koristi se <ph name="MAC" />, a <ph name="KX" /> služi za mehanizam razmjene ključeva.</translation>
 <translation id="7802523362929240268">Web-lokacija je legitimna</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
@@ -1729,6 +1738,7 @@ Dodatne pojedinosti:
 <translation id="8371889962595521444">Prilagođeni korijenski certifikati</translation>
 <translation id="8380941800586852976">Opasno</translation>
 <translation id="8381674639488873545">Ta terećenja mogu biti jednokratna ili ponavljajuća i možda nisu vidljiva odmah. <ph name="BEGIN_LINK" />Ipak prikaži<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837">Domena <ph name="ENROLLMENT_DOMAIN" /> omogućila je Priključke za Chrome za poduzeća u vašem pregledniku. Ti priključci imaju pristup nekim vašim podacima.</translation>
 <translation id="8412145213513410671">Padovi (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Morate dvaput unijeti istu zaporku.</translation>
 <translation id="8416694386774425977">Konfiguracija mreže nije važeća i nije se mogla uvesti.

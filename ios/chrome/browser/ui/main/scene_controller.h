@@ -13,13 +13,11 @@
 #import "ios/chrome/browser/ui/main/scene_controller_guts.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
-#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 
 @protocol MainControllerGuts;
 
 // The controller object for a scene. Reacts to scene state changes.
-@interface SceneController : NSObject <AppURLLoadingServiceDelegate,
-                                       SceneStateObserver,
+@interface SceneController : NSObject <SceneStateObserver,
                                        ApplicationCommands,
                                        TabSwitcherDelegate,
                                        TabSwitching,

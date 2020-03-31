@@ -226,7 +226,7 @@ class APIPermission {
     kMediaGalleriesAllGalleriesDelete = 182,
     kMediaGalleriesAllGalleriesRead = 183,
     kNetworkState = 184,
-    kOverrideBookmarksUI = 185,
+    kDeleted_OverrideBookmarksUI = 185,
     kShouldWarnAllHosts = 186,
     kSocketAnyHost = 187,
     kSocketDomainHosts = 188,

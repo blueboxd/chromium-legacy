@@ -27,6 +27,7 @@ enum ProbeCategoryEnum {
   kTimezone,
   kMemory,
   kBacklight,
+  kFan,
 };
 
 // Information related to a Smart Battery, as defined in
@@ -133,6 +134,12 @@ struct BacklightInfo {
   uint32 brightness;
 };
 
+// Fan information.
+struct FanInfo {
+  // Fan speed in RPM.
+  uint32 speed_rpm;
+};
+
 // A collection of all the device's telemetry information that cros_healthd is
 // capable of reporting. Note that every field in TelemetryInfo is nullable, and
 // the response for a particular ProbeTelemetryInfo request will only contain
@@ -163,4 +170,7 @@ struct TelemetryInfo {
   // Information about all of the device's backlights. Only present when
   // kBacklight was included in the categories input to ProbeTelemetryInfo.
   array<BacklightInfo>? backlight_info;
+  // Information about each of the device's fans. Only present when kFan was
+  // included in the categories input to ProbeTelemetryInfo.
+  array<FanInfo>? fan_info;
 };

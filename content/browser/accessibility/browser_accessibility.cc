@@ -1515,7 +1515,7 @@ gfx::NativeViewAccessible BrowserAccessibility::GetParent() {
   return delegate->AccessibilityGetNativeViewAccessible();
 }
 
-int BrowserAccessibility::GetChildCount() {
+int BrowserAccessibility::GetChildCount() const {
   return PlatformChildCount();
 }
 

@@ -76,8 +76,7 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
     ASSERT_TRUE(browser_);
     // Simulate what |BrowserView| does for a regular Chrome sign-in flow.
     browser_->signin_view_controller()->ShowSignin(
-        profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser_,
-        access_point);
+        profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN, access_point);
   }
 
  private:

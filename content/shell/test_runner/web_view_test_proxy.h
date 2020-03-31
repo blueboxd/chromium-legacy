@@ -41,7 +41,6 @@ class TestInterfaces;
 class TestRunnerForSpecificView;
 class TextInputController;
 class WebTestDelegate;
-class WebTestInterfaces;
 
 // WebViewTestProxy is used to run web tests. This class is a partial fake
 // implementation of RenderViewImpl that overrides the minimal necessary
@@ -65,7 +64,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
   template <typename... Args>
   explicit WebViewTestProxy(Args&&... args)
       : RenderViewImpl(std::forward<Args>(args)...) {}
-  void Initialize(WebTestInterfaces* interfaces,
+  void Initialize(TestInterfaces* interfaces,
                   std::unique_ptr<WebTestDelegate> delegate);
 
   // WebViewClient implementation.

@@ -1,4 +1,6 @@
 include_rules = [
+  "+content/shell/common/web_test",
+
   # Web test code is interconnected with test_runner. It would be nice to merge
   # these two layers and drop extra abstractions between them.
   "+content/shell/test_runner",

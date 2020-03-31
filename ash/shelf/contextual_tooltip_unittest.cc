@@ -136,7 +136,8 @@ TEST_P(ContextualTooltipTest, ShouldShowTimedDragHandleNudge) {
 TEST_P(ContextualTooltipTest, ShouldNotShowNudgeAfterSuccessLimit) {
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
       GetPrefService(), TooltipType::kInAppToHome, nullptr));
-  for (int success_count = 0; success_count < contextual_tooltip::kSuccessLimit;
+  for (int success_count = 0;
+       success_count < contextual_tooltip::kSuccessLimitInAppToHome;
        success_count++) {
     contextual_tooltip::HandleGesturePerformed(GetPrefService(),
                                                TooltipType::kInAppToHome);

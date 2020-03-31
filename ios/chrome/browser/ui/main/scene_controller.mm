@@ -61,7 +61,7 @@
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
+#import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -116,6 +116,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 @interface SceneController () <UserFeedbackDataSource,
                                SettingsNavigationControllerDelegate,
+                               SceneURLLoadingServiceDelegate,
                                WebStateListObserving> {
   std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
 }
@@ -126,7 +127,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 // The scene level component for url loading. Is passed down to
 // browser state level UrlLoadingService instances.
-@property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
+@property(nonatomic, assign) SceneUrlLoadingService* sceneURLLoadingService;
 
 // A flag that keeps track of the UI initialization for the controlled scene.
 @property(nonatomic, assign) BOOL hasInitializedUI;
@@ -196,8 +197,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 @end
 
 @implementation SceneController
-@synthesize appURLLoadingService =
-    _appURLLoadingService;  //< From SceneControllerGuts
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
   self = [super init];
@@ -212,8 +211,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       self.sceneState.window = [[ChromeOverlayWindow alloc]
           initWithFrame:[[UIScreen mainScreen] bounds]];
     }
-    _appURLLoadingService = new AppUrlLoadingService();
-    _appURLLoadingService->SetDelegate(self);
+    _sceneURLLoadingService = new SceneUrlLoadingService();
+    _sceneURLLoadingService->SetDelegate(self);
 
     _webStateListForwardingObserver =
         std::make_unique<WebStateListObserverBridge>(self);
@@ -302,15 +301,14 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
                  needRestoration:(BOOL)needsRestoration {
   DCHECK(!self.browserViewWrangler);
-  DCHECK(self.appURLLoadingService);
+  DCHECK(self.sceneURLLoadingService);
   DCHECK(self.mainController);
   DCHECK(self.mainController.mainBrowserState);
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainController.mainBrowserState
        applicationCommandEndpoint:self
-      browsingDataCommandEndpoint:self.mainController
-             appURLLoadingService:self.appURLLoadingService];
+      browsingDataCommandEndpoint:self.mainController];
 
   // Ensure the main browser is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];
@@ -360,14 +358,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)createInitialUI:(ApplicationMode)launchMode {
   DCHECK(self.mainController.mainBrowserState);
 
-  // In order to correctly set the mode switch icon, we need to know how many
-  // tabs are in the other tab model. That means loading both models.  They
-  // may already be loaded.
-  // TODO(crbug.com/546203): Find a way to handle this that's closer to the
-  // point where it is necessary.
-  TabModel* mainTabModel = self.mainInterface.tabModel;
-  TabModel* otrTabModel = self.incognitoInterface.tabModel;
-
+  // Set the Scene application URL loader on the URL loading browser interface
+  // for the regular and incognito interfaces. This will lazily instantiate the
+  // incognito interface if it isn't already created.
+  UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
+      ->SetSceneService(self.sceneURLLoadingService);
+  UrlLoadingBrowserAgent::FromBrowser(self.incognitoInterface.browser)
+      ->SetSceneService(self.sceneURLLoadingService);
   // Observe the web state lists for both browsers.
   self.mainInterface.browser->GetWebStateList()->AddObserver(
       _webStateListForwardingObserver.get());
@@ -380,7 +377,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // Lazy init of mainCoordinator.
   [self.mainCoordinator start];
 
-  _tabSwitcher = self.mainCoordinator.tabSwitcher;
+  self.tabSwitcher = self.mainCoordinator.tabSwitcher;
   // Call -restoreInternalState so that the grid shows the correct panel.
   [_tabSwitcher
       restoreInternalStateWithMainBrowser:self.mainInterface.browser
@@ -396,10 +393,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
   TabModel* tabModel;
   if (launchMode == ApplicationMode::INCOGNITO) {
-    tabModel = otrTabModel;
+    tabModel = self.incognitoInterface.tabModel;
     [self setCurrentInterfaceForMode:ApplicationMode::INCOGNITO];
   } else {
-    tabModel = mainTabModel;
+    tabModel = self.mainInterface.tabModel;
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
   }
   if (self.tabSwitcherIsActive) {
@@ -409,11 +406,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     [self finishDismissingTabSwitcher];
   }
   if (firstRun || [self shouldOpenNTPTabOnActivationOfTabModel:tabModel]) {
-    OpenNewTabCommand* command =
-        [OpenNewTabCommand commandWithIncognito:(self.currentInterface.bvc ==
-                                                 self.incognitoInterface.bvc)];
+    OpenNewTabCommand* command = [OpenNewTabCommand
+        commandWithIncognito:self.currentInterface.incognito];
     command.userInitiated = NO;
-    [self.currentInterface.bvc.dispatcher openURLInNewTab:command];
+    Browser* browser = self.currentInterface.browser;
+    id<ApplicationCommands> applicationHandler = HandlerForProtocol(
+        browser->GetCommandDispatcher(), ApplicationCommands);
+    [applicationHandler openURLInNewTab:command];
   }
 
   if (firstRun) {
@@ -465,12 +464,16 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
          selector:@selector(handleFirstRunUIWillFinish)
              name:kChromeFirstRunUIWillFinishNotification
            object:nil];
+  Browser* browser = self.mainInterface.browser;
+  id<ApplicationCommands, BrowsingDataCommands> welcomeHandler =
+      static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
+          browser->GetCommandDispatcher());
 
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
-          initWithBrowser:self.mainInterface.browser
+          initWithBrowser:browser
                 presenter:self.mainInterface.bvc
-               dispatcher:self.mainInterface.bvc.dispatcher];
+               dispatcher:welcomeHandler];
   UINavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
           initWithRootViewController:welcomeToChrome];
@@ -479,9 +482,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   CGRect appFrame = [[UIScreen mainScreen] bounds];
   [[navController view] setFrame:appFrame];
   self.presentingFirstRunUI = YES;
-  [self.mainInterface.bvc presentViewController:navController
-                                       animated:NO
-                                     completion:nil];
+  [self.mainInterface.viewController presentViewController:navController
+                                                  animated:NO
+                                                completion:nil];
 }
 
 - (void)handleFirstRunUIWillFinish {
@@ -513,14 +516,17 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   if (SigninShouldPresentUserSigninUpgrade(
           self.mainController.mainBrowserState)) {
     Browser* browser = self.mainInterface.browser;
-    UIViewController* promoController = [[SigninPromoViewController alloc]
-        initWithBrowser:browser
-             dispatcher:self.mainInterface.bvc.dispatcher];
+    id<ApplicationCommands, BrowsingDataCommands> promoHandler =
+        static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
+            browser->GetCommandDispatcher());
+    UIViewController* promoController =
+        [[SigninPromoViewController alloc] initWithBrowser:browser
+                                                dispatcher:promoHandler];
 
     if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
       self.signinCoordinator = [SigninCoordinator
-          upgradeSigninPromoCoordinatorWithBaseViewController:self.mainInterface
-                                                                  .bvc
+          upgradeSigninPromoCoordinatorWithBaseViewController:
+              self.mainInterface.viewController
                                                       browser:browser];
       __weak SceneController* weakSelf = self;
       self.signinCoordinator.signinCompletion =
@@ -543,8 +549,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 }
 
 - (void)showPromo:(UIViewController*)promo {
-  // Make sure we have the BVC here with a valid profile.
-  DCHECK([self.currentInterface.bvc browserState]);
+  // Make sure we have a valid browser
+  DCHECK(self.currentInterface.browser);
 
   OrientationLimitingNavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
@@ -564,9 +570,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   [navController setNavigationBarHidden:YES];
   [[navController view] setFrame:[[UIScreen mainScreen] bounds]];
 
-  [self.mainInterface.bvc presentViewController:navController
-                                       animated:YES
-                                     completion:nil];
+  [self.mainInterface.viewController presentViewController:navController
+                                                  animated:YES
+                                                completion:nil];
 }
 
 #pragma mark - ApplicationCommands
@@ -577,7 +583,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (void)showHistory {
   self.historyCoordinator = [[HistoryCoordinator alloc]
-      initWithBaseViewController:self.currentInterface.bvc
+      initWithBaseViewController:self.currentInterface.viewController
                          browser:self.mainInterface.browser];
   self.historyCoordinator.loadStrategy =
       self.currentInterface.incognito ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
@@ -685,7 +691,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   params.from_chrome = command.fromChrome;
   params.user_initiated = command.userInitiated;
   params.should_focus_omnibox = command.shouldFocusOmnibox;
-  self.appURLLoadingService->LoadUrlInNewTab(params);
+  self.sceneURLLoadingService->LoadUrlInNewTab(params);
 }
 
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
@@ -801,9 +807,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     (UIViewController*)baseViewController {
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
-    DCHECK_EQ(self.currentInterface.bvc,
+    DCHECK_EQ(self.currentInterface.viewController,
               self.mainCoordinator.activeViewController);
-    baseViewController = self.currentInterface.bvc;
+    baseViewController = self.currentInterface.viewController;
   }
 
   if (self.currentInterface.incognito) {
@@ -830,9 +836,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     (UIViewController*)baseViewController {
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
-    DCHECK_EQ(self.currentInterface.bvc,
+    DCHECK_EQ(self.currentInterface.viewController,
               self.mainCoordinator.activeViewController);
-    baseViewController = self.currentInterface.bvc;
+    baseViewController = self.currentInterface.viewController;
   }
 
   if (self.settingsNavigationController) {
@@ -878,7 +884,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   if (!baseViewController) {
     // TODO(crbug.com/779791): Don't pass base view controller through
     // dispatched command.
-    baseViewController = self.currentInterface.bvc;
+    baseViewController = self.currentInterface.viewController;
   }
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController) {
@@ -1000,9 +1006,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   self.settingsNavigationController = nil;
 }
 
-- (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
+- (id<ApplicationCommands, BrowserCommands>)handlerForSettings {
   // Assume that settings always wants the dispatcher from the main BVC.
-  return self.mainInterface.bvc.dispatcher;
+  return static_cast<id<ApplicationCommands, BrowserCommands>>(
+      self.mainInterface.browser->GetCommandDispatcher());
 }
 
 #pragma mark - TabSwitcherDelegate
@@ -1064,7 +1071,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // as part of the BVC presentation process.  The BVC is presented before the
   // animations begin, so it should be the current active VC at this point.
   DCHECK_EQ(self.mainCoordinator.activeViewController,
-            self.currentInterface.bvc);
+            self.currentInterface.viewController);
 
   if (self.modeToDisplayOnTabSwitcherDismissal ==
       TabSwitcherDismissalMode::NORMAL) {
@@ -1188,9 +1195,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
   if (self.tabSwitcherIsActive) {
-    TabModel* mainTabModel = self.browserViewWrangler.mainInterface.tabModel;
-    TabModel* otrTabModel =
-        self.browserViewWrangler.incognitoInterface.tabModel;
+    TabModel* mainTabModel = self.mainInterface.tabModel;
+    TabModel* otrTabModel = self.incognitoInterface.tabModel;
     // Only attempt to dismiss the tab switcher and open a new tab if:
     // - there are no tabs open in either tab model, and
     // - the tab switcher controller is not directly or indirectly presenting
@@ -1216,7 +1222,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
              ![tabModel browserState] -> IsOffTheRecord();
 }
 
-#pragma mark - AppURLLoadingServiceDelegate
+#pragma mark - SceneURLLoadingServiceDelegate
 
 // Note that the current tab of |browserCoordinator|'s BVC will normally be
 // reloaded by this method. If a new tab is about to be added, call
@@ -1267,7 +1273,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // Then, depending on what the SSO view controller is presented on, dismiss
   // it.
   ProceduralBlock completionWithBVC = ^{
-    DCHECK(self.currentInterface.bvc);
+    DCHECK(self.currentInterface.viewController);
     DCHECK(!self.tabSwitcherIsActive);
     DCHECK(!self.signinInteractionCoordinator.isActive);
     // This will dismiss the SSO view controller.
@@ -1394,7 +1400,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                       atIndex:tabIndex];
     }
   } else {
-    if (!self.currentInterface.bvc.presentedViewController) {
+    if (!self.currentInterface.viewController.presentedViewController) {
       [targetInterface.bvc expectNewForegroundTab];
     }
     [self setCurrentInterfaceForMode:targetMode];
@@ -1439,13 +1445,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 // Asks the respective Snapshot helper to update the snapshot for the active
 // WebState.
 - (void)updateActiveWebStateSnapshot {
-  WebStateList* webStateList = self.currentInterface.bvc.tabModel.webStateList;
-  if (webStateList) {
-    web::WebState* webState = webStateList->GetActiveWebState();
-    if (webState) {
-      SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(
-          nil);
-    }
+  // Durinhg startup, there may be no current interface. Do nothing in that
+  // case.
+  if (!self.currentInterface)
+    return;
+
+  WebStateList* webStateList = self.currentInterface.browser->GetWebStateList();
+  web::WebState* webState = webStateList->GetActiveWebState();
+  if (webState) {
+    SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(nil);
   }
 }
 
@@ -1514,11 +1522,12 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       [weakCurrentBVC.dispatcher focusOmnibox];
     };
   }
-  [self.mainCoordinator showTabViewController:self.currentInterface.bvc
-                                   completion:completion];
-  [self.currentInterface.bvc.dispatcher
-      setIncognitoContentVisible:(self.currentInterface ==
-                                  self.incognitoInterface)];
+  [self.mainCoordinator
+      showTabViewController:self.currentInterface.viewController
+                 completion:completion];
+  [HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                      ApplicationCommands)
+      setIncognitoContentVisible:self.currentInterface.incognito];
 }
 
 #pragma mark - Sign In UI presentation
@@ -1526,10 +1535,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ChromeBrowserState*)browserState {
   UMA_HISTOGRAM_BOOLEAN("Signin.SignedInAccountsViewImpression", true);
+  id<ApplicationSettingsCommands> settingsHandler =
+      HandlerForProtocol(self.mainInterface.browser->GetCommandDispatcher(),
+                         ApplicationSettingsCommands);
   UIViewController* accountsViewController =
       [[SignedInAccountsViewController alloc]
           initWithBrowserState:browserState
-                    dispatcher:self.mainInterface.bvc.dispatcher];
+                    dispatcher:settingsHandler];
   [[self topPresentedViewController]
       presentViewController:accountsViewController
                    animated:YES
@@ -1693,9 +1705,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 // Destroys and rebuilds the incognito browser state.
 - (void)destroyAndRebuildIncognitoBrowserState {
-  BOOL otrBVCIsCurrent = (self.interfaceProvider.mainInterface.bvc ==
-                          self.interfaceProvider.incognitoInterface.bvc);
-
   // Clear the Incognito Browser and notify the _tabSwitcher that its otrBrowser
   // will be destroyed.
   [self.tabSwitcher setOtrBrowser:nil];
@@ -1712,6 +1721,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
       _webStateListForwardingObserver.get());
   [self.browserViewWrangler destroyAndRebuildIncognitoBrowser];
+  // There should be a new URL loading browser agent for the incognito browser,
+  // so set the scene URL loading service on it.
+  UrlLoadingBrowserAgent::FromBrowser(self.incognitoInterface.browser)
+      ->SetSceneService(self.sceneURLLoadingService);
   self.incognitoInterface.browser->GetWebStateList()->AddObserver(
       _webStateListForwardingObserver.get());
 
@@ -1721,7 +1734,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
             self.incognitoInterface.browserState));
   }
 
-  if (otrBVCIsCurrent) {
+  if (self.currentInterface.incognito) {
     [self activateBVCAndMakeCurrentBVCPrimary];
   }
 

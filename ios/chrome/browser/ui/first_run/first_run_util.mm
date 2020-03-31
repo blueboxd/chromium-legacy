@@ -37,45 +37,6 @@ NSString* const kChromeFirstRunUIDidFinishNotification =
 
 namespace {
 
-NSString* RemoveLastWord(NSString* text) {
-  __block NSRange range = NSMakeRange(0, [text length]);
-  NSStringEnumerationOptions options = NSStringEnumerationByWords |
-                                       NSStringEnumerationReverse |
-                                       NSStringEnumerationSubstringNotRequired;
-
-  // Enumerate backwards through the words in |text| to get the range of the
-  // last word.
-  [text
-      enumerateSubstringsInRange:range
-                         options:options
-                      usingBlock:^(NSString* substring, NSRange substringRange,
-                                   NSRange enclosingRange, BOOL* stop) {
-                        range = substringRange;
-                        *stop = YES;
-                      }];
-  return [text substringToIndex:range.location];
-}
-
-NSString* InsertNewlineBeforeNthToLastWord(NSString* text, int index) {
-  __block NSRange range = NSMakeRange(0, [text length]);
-  __block int count = 0;
-  NSStringEnumerationOptions options = NSStringEnumerationByWords |
-                                       NSStringEnumerationReverse |
-                                       NSStringEnumerationSubstringNotRequired;
-  [text
-      enumerateSubstringsInRange:range
-                         options:options
-                      usingBlock:^(NSString* substring, NSRange substringRange,
-                                   NSRange enclosingRange, BOOL* stop) {
-                        range = substringRange;
-                        count++;
-                        *stop = count == index;
-                      }];
-  NSMutableString* textWithNewline = [text mutableCopy];
-  [textWithNewline insertString:@"\n" atIndex:range.location];
-  return textWithNewline;
-}
-
 // Trampoline method for Bind to create the sentinel file.
 void CreateSentinel() {
   base::File::Error file_error;
@@ -115,30 +76,6 @@ void RecordFirstRunMetricsInternal(ChromeBrowserState* browserState,
 }
 
 }  // namespace
-
-BOOL FixOrphanWord(UILabel* label) {
-  // Calculate the height of the label's text.
-  NSString* text = label.text;
-  CGSize textSize =
-      [text cr_boundingSizeWithSize:label.frame.size font:label.font];
-  CGFloat textHeight = AlignValueToPixel(textSize.height);
-
-  // Remove the last word and calculate the height of the new text.
-  NSString* textMinusLastWord = RemoveLastWord(text);
-  CGSize minusLastWordSize =
-      [textMinusLastWord cr_boundingSizeWithSize:label.frame.size
-                                            font:label.font];
-  CGFloat minusLastWordHeight = AlignValueToPixel(minusLastWordSize.height);
-
-  // Check if removing the last word results in a smaller height.
-  if (minusLastWordHeight < textHeight) {
-    // The last word was the only word on its line. Add a newline before the
-    // second to last word.
-    label.text = InsertNewlineBeforeNthToLastWord(text, 2);
-    return true;
-  }
-  return false;
-}
 
 void WriteFirstRunSentinelAndRecordMetrics(ChromeBrowserState* browserState,
                                            BOOL sign_in_attempted,

@@ -1882,6 +1882,7 @@
 <translation id="3479552764303398839">Հիմա չէ</translation>
 <translation id="3479685872808224578">Չհաջողվեց հայտնաբերել տպման սերվերը։ Ստուգեք հասցեն և նորից փորձեք։</translation>
 <translation id="3481268647794498892">Կբացվի <ph name="ALTERNATIVE_BROWSER_NAME" /> դիտարկիչով <ph name="COUNTDOWN_SECONDS" /> վայրկյանից</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> կայքը կարող է դիտել հետևյալ ֆայլերը</translation>
 <translation id="3484273680291419129">Վնասարար ծրագրի հեռացում...</translation>
 <translation id="3484869148456018791">Ստանալ նոր վկայագիր</translation>
 <translation id="3487007233252413104">անանուն գործառույթ</translation>
@@ -1944,6 +1945,7 @@
 <translation id="3564848315152754834">USB անվտանգության բանալի</translation>
 <translation id="3566721612727112615">Կայքեր չեն ավելացվել</translation>
 <translation id="3569382839528428029">Ուզո՞ւմ եք, որ <ph name="APP_NAME" />-ը համօգտագործի ձեր էկրանը:</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> կայքը կարող է դիտել հետևյալ ֆայլերն ու պանակները</translation>
 <translation id="3571734092741541777">Տեղակայել</translation>
 <translation id="3574210789297084292">մուտք գործել</translation>
 <translation id="3574917942258583917">Փակե՞լ ինկոգնիտո ռեժիմը։</translation>
@@ -1953,6 +1955,7 @@
 <translation id="3578594933904494462">Այս ներդիրի բովանդակությունը համօգտագործվում է:</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;-ն ուզում է համօգտագործել &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; տպիչը ձեր խմբի հետ՝ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;: Համաձայնելու դեպքում խմբի բոլոր անդամները կկարողանան տպել այդ տպիչի օգնությամբ:</translation>
 <translation id="357889014807611375">սահմանափակ Wi-Fi</translation>
+<translation id="3582057310199111521">Մուտքագրվել է կասկածելի կայքում և հայտնաբերվել տվյալների արտահոսքում</translation>
 <translation id="3584169441612580296">Կարդալ և փոխել լուսանկարները, երաժշտությունը և ձեր համակարգչում պահվող այլ մեդիա ֆայլերը</translation>
 <translation id="3586806079541226322">Չհաջողվեց բացել ֆայլը</translation>
 <translation id="3586931643579894722">Թաքցնել մանրամասները</translation>
@@ -3091,6 +3094,7 @@
 <translation id="5117930984404104619">Վերահսկել այլ ընդլայնումների աշխատանքի ռեժիմը, այդ թվում նաև այցելած URL-ները</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ձեր կոշտ սկավառակը լցված է: Պահեք այլ տեղադրությունում կամ տեղ ազատեք կոշտ սկավառակի վրա:</translation>
+<translation id="5122384452788334261">Սարքի հիշողությունը սպառվում է։ Plugin VM-ն օգտագործելու համար խորհուրդ է տրվում ունենալ առնվազն <ph name="RECOMMENDED_SPACE" /> ազատ տարածք։ Տարածք ազատելու համար սարքի հիշողությունից ֆայլեր ջնջեք։</translation>
 <translation id="5123433949759960244">Բասկետբոլ</translation>
 <translation id="5125751979347152379">URL-ն անվավեր է:</translation>
 <translation id="5126611267288187364">Դիտել փոփոխությունները</translation>
@@ -5193,6 +5197,7 @@
 <translation id="7915471803647590281">Նկարագրեք մանրամասն խնդիրը՝ մինչ արձագանքն ուղարկելը:</translation>
 <translation id="7918257978052780342">Գրանցվել</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> վ</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> կայքը կարող է դիտել <ph name="FILENAME" /> ֆայլը</translation>
 <translation id="7924358170328001543">Չհաջողվեց փոխանցել միացքը</translation>
 <translation id="792514962475806987">Ամրացված խոշորացույցի մասշտաբը՝</translation>
 <translation id="7925247922861151263">AAA ստուգումը չհաջողվեց</translation>
@@ -5355,6 +5360,7 @@
 <translation id="8118488170956489476">Ձեր <ph name="BEGIN_LINK" />դիտարկիչը կառավարվում է<ph name="END_LINK" /> ձեր կազմակերպության կողմից</translation>
 <translation id="8118860139461251237">Կառավարել ձեր ներբեռնումները</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> և այլ փոփոխություններ</translation>
+<translation id="8120715633374652536">Սարքի հիշողությունը սպառվում է։ Plugin VM-ն օգտագործելու համար անհրաժեշտ է առնվազն <ph name="MINIMUM_SPACE" /> տարածք, սակայն խորհուրդ է տրվում ունենալ <ph name="RECOMMENDED_SPACE" />-ից ավել տարածք։ Տարածք ազատելու համար սարքի հիշողությունից ֆայլեր ջնջեք։</translation>
 <translation id="8123590694679414600">Տվյալները գաղտնագրվել են ձեր համաժամացման անցաբառով
           <ph name="TIME" />-ին։ Գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։</translation>
 <translation id="81238879832906896">Դեղին ու սպիտակ ծաղիկ</translation>

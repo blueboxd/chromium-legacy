@@ -511,8 +511,6 @@ const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
      switches::kEnableGpuRasterization, ""},
     {flags_ui::kGenericExperimentChoiceDisabled,
      switches::kDisableGpuRasterization, ""},
-    {flag_descriptions::kForceGpuRasterization,
-     switches::kForceGpuRasterization, ""},
 };
 
 const FeatureEntry::Choice kEnableOopRasterizationChoices[] = {
@@ -2852,16 +2850,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::
              kEnableExperimentalAccessibilityChromeVoxLanguageSwitching)},
-    {"enable-experimental-accessibility-chromevox-sub-node-language-"
-     "switching",
-     flag_descriptions::
-         kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName,
-     flag_descriptions::
-         kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::
-             kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -4491,13 +4479,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureName,
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kCookiesWithoutSameSiteMustBeSecure)},
-
-#if !defined(OS_ANDROID)
-    {"enterprise-reporting-in-browser",
-     flag_descriptions::kEnterpriseReportingInBrowserName,
-     flag_descriptions::kEnterpriseReportingInBrowserDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kEnterpriseReportingInBrowser)},
-#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
     {"enterprise-reporting-in-chromeos",

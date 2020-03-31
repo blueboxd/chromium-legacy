@@ -5,8 +5,8 @@
 """Deals with loading & saving .size and .sizediff files.
 
 The .size file is written in the following format. There are no section
-delimeters, instead the end of a section is usually determined by a row count
-on the first line of a section, followed by that amount of rows. In other
+delimiters, instead the end of a section is usually determined by a row count
+on the first line of a section, followed by that number of rows. In other
 cases, the sections have a known size.
 
 Header
@@ -14,8 +14,8 @@ Header
 4 lines long.
 Line 0 of the file is a header comment.
 Line 1 is the serialization version of the file.
-Line 2 is the number of characters in the metadata string.
-Line 3 is the metadata string, a stringified JSON object.
+Line 2 is the number of characters in the header fields string.
+Line 3 is the header fields string, a stringified JSON object.
 
 Path list
 ---------
@@ -28,7 +28,7 @@ Component list
 A list of components. The first line is the size of the list,
 and the next N lines that follow are items in the list. Each item is a unique
 COMPONENT which is referenced later.
-This section is only present if 'has_components' is True in the metadata.
+This section is only present if 'has_components' is True in header fields.
 
 Symbol counts
 -------------
@@ -54,7 +54,7 @@ The number of bytes this symbol takes up.
 Padding
 ~~~~~~~
 The number of padding bytes this symbol has.
-This section is only present if 'has_padding' is True in the metadata.
+This section is only present if 'has_padding' is True in header fields.
 
 Path indices
 ~~~~~~~~~~~~~
@@ -64,7 +64,7 @@ Component indices
 ~~~~~~~~~~~~~~~~~~
 Indices that reference components in the prior Component list section.
 Delta-encoded.
-This section is only present if 'has_components' is True in the metadata.
+This section is only present if 'has_components' is True in header fields.
 
 Symbols
 -------
@@ -85,14 +85,14 @@ Header
 ------
 3 lines long.
 Line 0 of the file is a header comment.
-Line 1 is the number of characters in the metadata string.
-Line 2 is the metadata string, a stringified JSON object. This currently
+Line 1 is the number of characters in the header fields string.
+Line 2 is the header fields string, a stringified JSON object. This currently
 contains two fields, 'before_length' (the length in bytes of the 'before'
 section) and 'version', which is always 1.
 
 Before
 ------
-The next |metadata.before_length| bytes are a valid gzipped sparse .size file
+The next |header.before_length| bytes are a valid gzipped sparse .size file
 containing the "before" snapshot.
 
 After
@@ -251,16 +251,16 @@ def _SaveSizeInfoToFile(size_info,
   # Created by supersize header
   w.WriteLine('# Created by //tools/binary_size')
   w.WriteLine(_SERIALIZATION_VERSION)
-  # JSON metadata
-  headers = {
+  # JSON header fields
+  fields = {
       'metadata': size_info.metadata,
       'section_sizes': size_info.section_sizes,
       'has_components': True,
       'has_padding': include_padding,
   }
-  metadata_str = json.dumps(headers, indent=2, sort_keys=True)
-  w.WriteLine(str(len(metadata_str)))
-  w.WriteLine(metadata_str)
+  fields_str = json.dumps(fields, indent=2, sort_keys=True)
+  w.WriteLine(str(len(fields_str)))
+  w.WriteLine(fields_str)
   w.LogSize('header')  # For libchrome: 570 bytes.
 
   # Store a single copy of all paths and have them referenced by index.
@@ -375,15 +375,15 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   actual_version = _ReadLine(lines)
   assert actual_version == _SERIALIZATION_VERSION, (
       'Version mismatch. Need to write some upgrade code.')
-  # JSON metadata
+  # JSON header fields
   json_len = int(_ReadLine(lines))
   json_str = lines.read(json_len)
 
-  headers = json.loads(json_str)
-  section_sizes = headers['section_sizes']
-  metadata = headers.get('metadata')
-  has_components = headers.get('has_components', False)
-  has_padding = headers.get('has_padding', False)
+  fields = json.loads(json_str)
+  section_sizes = fields['section_sizes']
+  metadata = fields.get('metadata')
+  has_components = fields.get('has_components', False)
+  has_padding = fields.get('has_padding', False)
 
   # Eat empty line.
   _ReadLine(lines)
@@ -591,14 +591,14 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
     # WriteString() instead of WriteLine().
     w.WriteString(_SIZEDIFF_HEADER)
 
-    # JSON metadata
-    headers = {
+    # JSON header fields
+    fields = {
         'version': 1,
         'before_length': before_size_file.tell(),
     }
-    metadata_str = json.dumps(headers, indent=2, sort_keys=True)
-    w.WriteLine(str(len(metadata_str)))
-    w.WriteLine(metadata_str)
+    fields_str = json.dumps(fields, indent=2, sort_keys=True)
+    w.WriteLine(str(len(fields_str)))
+    w.WriteLine(fields_str)
 
     before_size_file.seek(0)
     shutil.copyfileobj(before_size_file, output_file)

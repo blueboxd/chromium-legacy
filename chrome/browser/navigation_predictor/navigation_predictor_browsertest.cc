@@ -156,7 +156,7 @@ class TestObserver : public NavigationPredictorKeyedService::Observer {
 
  private:
   void OnPredictionUpdated(
-      const base::Optional<NavigationPredictorKeyedService::Prediction>&
+      const base::Optional<NavigationPredictorKeyedService::Prediction>
           prediction) override {
     ++count_predictions_;
     last_prediction_ = prediction;
@@ -773,7 +773,8 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   EXPECT_EQ(1u, observer.count_predictions());
   EXPECT_EQ(url, observer.last_prediction()->source_document_url());
-  EXPECT_EQ(2u, observer.last_prediction()->sorted_predicted_urls().size());
+  ASSERT_EQ(2u, observer.last_prediction()->sorted_predicted_urls().size());
+
   EXPECT_NE(
       observer.last_prediction()->sorted_predicted_urls().end(),
       std::find(observer.last_prediction()->sorted_predicted_urls().begin(),
@@ -783,7 +784,8 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       observer.last_prediction()->sorted_predicted_urls().end(),
       std::find(observer.last_prediction()->sorted_predicted_urls().begin(),
                 observer.last_prediction()->sorted_predicted_urls().end(),
-                "https://example.com/"));
+                "https://example.com/"))
+      << observer.last_prediction()->sorted_predicted_urls().at(1);
 
   // Doing another navigation after removing the observer should not cause a
   // crash.

@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_iframe_element.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -35,12 +36,14 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html/trust_token_attribute_parsing.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_iframe.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -262,6 +265,10 @@ void HTMLIFrameElement::ParseAttribute(
       required_policy_ = value;
       UpdateRequiredPolicy();
     }
+  } else if (name == html_names::kTrusttokenAttr) {
+    if (trust_token_ != value) {
+      trust_token_ = value;
+    }
   } else {
     // Websites picked up a Chromium article that used this non-specified
     // attribute which ended up changing shape after the specification process.
@@ -412,6 +419,57 @@ bool HTMLIFrameElement::IsInteractiveContent() const {
 
 network::mojom::ReferrerPolicy HTMLIFrameElement::ReferrerPolicyAttribute() {
   return referrer_policy_;
+}
+
+network::mojom::blink::TrustTokenParamsPtr
+HTMLIFrameElement::ConstructTrustTokenParams() const {
+  if (!trust_token_)
+    return nullptr;
+
+  JSONParseError parse_error;
+  std::unique_ptr<JSONValue> parsed_attribute =
+      ParseJSON(trust_token_, &parse_error);
+  if (!parsed_attribute) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "iframe trusttoken attribute was invalid JSON: " + parse_error.message +
+            String::Format(" (line %d, col %d)", parse_error.line,
+                           parse_error.column)));
+    return nullptr;
+  }
+
+  network::mojom::blink::TrustTokenParamsPtr parsed_params =
+      internal::TrustTokenParamsFromJson(std::move(parsed_attribute));
+  if (!parsed_params) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Couldn't parse iframe trusttoken attribute (was it missing a "
+        "field?)"));
+    return nullptr;
+  }
+
+  // Trust token redemption and signing (but not issuance) require that the
+  // trust-token-redemption feature policy be present.
+  bool operation_requires_feature_policy =
+      parsed_params->type ==
+          network::mojom::blink::TrustTokenOperationType::kRedemption ||
+      parsed_params->type ==
+          network::mojom::blink::TrustTokenOperationType::kSigning;
+
+  if (operation_requires_feature_policy &&
+      (!GetDocument().IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kTrustTokenRedemption))) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Trust Tokens: Attempted redemption or signing without the "
+        "trust-token-redemption Feature Policy feature present."));
+    return nullptr;
+  }
+
+  return parsed_params;
 }
 
 }  // namespace blink

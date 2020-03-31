@@ -109,7 +109,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
       const Element* form_control) = 0;
 
   // Handle any notifications which arrived while layout was dirty.
-  virtual void ProcessUpdatesAfterLayout(Document&) = 0;
+  virtual void ProcessDeferredAccessibilityEvents(Document&) = 0;
 
   // Changes to virtual Accessibility Object Model nodes.
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,

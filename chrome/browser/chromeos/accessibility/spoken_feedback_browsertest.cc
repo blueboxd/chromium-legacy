@@ -22,7 +22,7 @@
 #include "base/task/post_task.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
@@ -800,14 +800,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SmartStickyMode) {
 // Spoken feedback tests of the out-of-box experience.
 //
 
-class OobeSpokenFeedbackTest : public LoginManagerTest {
+class OobeSpokenFeedbackTest : public OobeBaseTest {
  protected:
-  OobeSpokenFeedbackTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {}
+  OobeSpokenFeedbackTest() = default;
   ~OobeSpokenFeedbackTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginManagerTest::SetUpCommandLine(command_line);
+    OobeBaseTest::SetUpCommandLine(command_line);
     // Many bots don't have keyboard/mice which triggers the HID detection
     // dialog in the OOBE.  Avoid confusing the tests with that.
     command_line->AppendSwitch(chromeos::switches::kDisableHIDDetectionOnOOBE);

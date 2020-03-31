@@ -35,10 +35,6 @@ const char kEnableLeakDetection[] = "enable-leak-detection";
 // Encode binary web test results (images, audio) using base64.
 const char kEncodeBinary[] = "encode-binary";
 
-// Request the render trees of pages to be dumped as text once they have
-// finished loading.
-const char kRunWebTests[] = "run-web-tests";
-
 // This makes us disable some web-platform runtime features so that we test
 // content_shell as if it was a stable release. It is only followed when
 // kRunWebTest is set. For the features' level, see

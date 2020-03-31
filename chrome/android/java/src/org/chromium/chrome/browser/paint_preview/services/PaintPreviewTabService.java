@@ -9,6 +9,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -36,14 +37,8 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
             mTabService = tabService;
         }
 
-        /**
-         * TODO(crbug/1061190): Ideally we would use {@link TabObserver#onHidden(Tab, int)};
-         * however, that was flaky due to renderers being killed before capture was completed. For
-         * now we will use {@link TabObserver#onPageLoadFinished(Tab, String)}, but this should be
-         * revisted.
-         */
         @Override
-        public void onPageLoadFinished(Tab tab, String url) {
+        public void onHidden(Tab tab, @TabHidingType int reason) {
             if (qualifiesForCapture(tab)) {
                 mTabService.captureTab(tab, success -> {
                     if (!success) {

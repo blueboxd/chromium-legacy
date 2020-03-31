@@ -53,6 +53,10 @@ COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kPepperCustomDataPboardType;
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeImageURI[];
+#endif  // defined(OS_ANDROID)
+
 }  // namespace ui
 
-#endif  // UI_BASE_CLIPBOARD_CLIPBOARD_H_
+#endif  // UI_BASE_CLIPBOARD_CLIPBOARD_CONSTANTS_H_

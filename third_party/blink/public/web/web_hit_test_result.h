@@ -76,6 +76,10 @@ class WebHitTestResult {
   // Return whether an editable input element was hit.
   BLINK_EXPORT bool IsContentEditable() const;
 
+  // Return the ElementId of the first scrollable containing block ancestor
+  // of the target, including the target itself if it is scrollable
+  BLINK_EXPORT uint64_t GetScrollableContainerId() const;
+
 #if INSIDE_BLINK
   BLINK_EXPORT WebHitTestResult(const HitTestResult&);
   BLINK_EXPORT WebHitTestResult& operator=(const HitTestResult&);

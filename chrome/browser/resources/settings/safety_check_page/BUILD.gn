@@ -11,6 +11,9 @@ js_type_check("closure_compile") {
   deps = [
     ":safety_check_browser_proxy",
     ":safety_check_page",
+    "..:lifetime_browser_proxy",
+    "..:metrics_browser_proxy",
+    "../autofill_page:password_manager_proxy",
   ]
 }
 
@@ -19,6 +22,7 @@ js_library("safety_check_page") {
     ":safety_check_browser_proxy",
     "..:hats_browser_proxy",
     "..:lifetime_browser_proxy",
+    "..:metrics_browser_proxy",
     "..:open_window_proxy",
     "..:route",
     "..:router",
@@ -55,6 +59,7 @@ js_library("safety_check_page.m") {
     ":safety_check_browser_proxy.m",
     "..:hats_browser_proxy.m",
     "..:lifetime_browser_proxy.m",
+    "..:metrics_browser_proxy.m",
     "..:open_window_proxy.m",
     "..:route.m",
     "..:router.m",
@@ -85,6 +90,7 @@ polymer_modulizer("safety_check_page") {
                    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
                    "chrome/browser/resources/settings/lifetime_browser_proxy.html|LifetimeBrowserProxy,LifetimeBrowserProxyImpl",
                    "chrome/browser/resources/settings/hats_browser_proxy.html|HatsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/metrics_browser_proxy.html|SafetyCheckElementInteractions,MetricsBrowserProxy,MetricsBrowserProxyImpl",
                    "chrome/browser/resources/settings/open_window_proxy.html|OpenWindowProxyImpl",
                    "chrome/browser/resources/settings/safety_check_page/safety_check_browser_proxy.html|SafetyCheckBrowserProxy,SafetyCheckBrowserProxyImpl,SafetyCheckExtensionsStatus,SafetyCheckPasswordsStatus,SafetyCheckUpdatesStatus,SafetyCheckSafeBrowsingStatus,SafetyCheckCallbackConstants",
                    "ui/webui/resources/html/assert.html|assertNotReached",

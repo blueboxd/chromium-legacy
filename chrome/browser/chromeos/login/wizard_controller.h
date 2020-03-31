@@ -96,7 +96,7 @@ class WizardController {
   void Init(OobeScreenId first_screen);
 
   // Advances to screen defined by |screen| and shows it.
-  void AdvanceToScreen(OobeScreenId screen);
+  void AdvanceToScreen(OobeScreenId screen_id);
 
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
@@ -148,10 +148,10 @@ class WizardController {
   }
 
   // Returns true if a given screen exists.
-  bool HasScreen(OobeScreenId screen);
+  bool HasScreen(OobeScreenId screen_id);
 
   // Returns a given screen. Creates it lazily.
-  BaseScreen* GetScreen(OobeScreenId screen);
+  BaseScreen* GetScreen(OobeScreenId screen_id);
 
   // Returns the current ScreenManager instance.
   ScreenManager* screen_manager() const { return screen_manager_.get(); }
@@ -289,7 +289,7 @@ class WizardController {
   void SetCurrentScreen(BaseScreen* screen);
 
   // Update the status area visibility for |screen|.
-  void UpdateStatusAreaVisibilityForScreen(OobeScreenId screen);
+  void UpdateStatusAreaVisibilityForScreen(OobeScreenId screen_id);
 
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();

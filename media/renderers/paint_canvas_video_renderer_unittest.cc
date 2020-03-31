@@ -1129,13 +1129,15 @@ class PaintCanvasVideoRendererWithGLTest : public PaintCanvasVideoRendererTest {
     gl::GLSurfaceTestSupport::InitializeOneOff();
     enable_pixels_.emplace();
     media_context_ = base::MakeRefCounted<viz::TestInProcessContextProvider>(
-        false /* enable_oop_rasterization */, false /* support_locking */);
+        /*enable_gpu_rasterization=*/false,
+        /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     gpu::ContextResult result = media_context_->BindToCurrentThread();
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
 
     destination_context_ =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            false /* enable_oop_rasterization */, false /* support_locking */);
+            /*enable_gpu_rasterization=*/false,
+            /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     result = destination_context_->BindToCurrentThread();
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
   }

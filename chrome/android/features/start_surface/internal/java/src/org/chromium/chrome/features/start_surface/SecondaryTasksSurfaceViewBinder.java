@@ -24,6 +24,8 @@ class SecondaryTasksSurfaceViewBinder {
         } else if (IS_SHOWING_OVERVIEW == propertyKey) {
             setVisibility(viewHolder, model,
                     model.get(IS_SHOWING_OVERVIEW) && model.get(IS_SECONDARY_SURFACE_VISIBLE));
+        } else if (TOP_BAR_HEIGHT == propertyKey) {
+            setTopBarHeight(viewHolder, model.get(TOP_BAR_HEIGHT));
         }
     }
 
@@ -37,5 +39,14 @@ class SecondaryTasksSurfaceViewBinder {
         }
 
         viewHolder.tasksSurfaceView.setVisibility(isShowing ? View.VISIBLE : View.GONE);
+    }
+
+    private static void setTopBarHeight(TasksSurfaceViewBinder.ViewHolder viewHolder, int height) {
+        MarginLayoutParams layoutParams =
+                (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
+        if (layoutParams == null) return;
+
+        layoutParams.topMargin = height;
+        viewHolder.tasksSurfaceView.setLayoutParams(layoutParams);
     }
 }

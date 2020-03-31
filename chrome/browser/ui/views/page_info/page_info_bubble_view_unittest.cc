@@ -79,7 +79,6 @@ class PageInfoBubbleViewTestApi {
     views::View* anchor_view = nullptr;
     view_ = new PageInfoBubbleView(
         anchor_view, gfx::Rect(), parent_, profile_, web_contents_, GURL(kUrl),
-        security_state::NONE, security_state::VisibleSecurityState(),
         base::BindOnce(&PageInfoBubbleViewTestApi::OnPageInfoBubbleClosed,
                        base::Unretained(this), run_loop_.QuitClosure()));
   }

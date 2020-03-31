@@ -243,6 +243,8 @@ TEST_P(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
 }
 
 TEST_P(MediaHistoryStoreUnitTest, SavePlayback) {
+  base::HistogramTester histogram_tester;
+
   const auto now_before =
       (base::Time::Now() - base::TimeDelta::FromMinutes(1)).ToJsTime();
 
@@ -302,6 +304,10 @@ TEST_P(MediaHistoryStoreUnitTest, SavePlayback) {
   // The OTR service should have the same data.
   EXPECT_EQ(origins, GetOriginRowsSync(otr_service()));
   EXPECT_EQ(playbacks, GetPlaybackRowsSync(otr_service()));
+
+  histogram_tester.ExpectBucketCount(
+      MediaHistoryStore::kPlaybackWriteResultHistogramName,
+      MediaHistoryStore::PlaybackWriteResult::kSuccess, IsReadOnly() ? 0 : 2);
 }
 
 TEST_P(MediaHistoryStoreUnitTest, GetStats) {
@@ -365,6 +371,8 @@ TEST_P(MediaHistoryStoreUnitTest, GetStats) {
 }
 
 TEST_P(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
+  base::HistogramTester histogram_tester;
+
   GURL url_a("https://www.google.com");
   GURL url_b("https://www.example.org");
 
@@ -438,6 +446,10 @@ TEST_P(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
       EXPECT_EQ(3, s.ColumnInt(0));
     }
   }
+
+  histogram_tester.ExpectBucketCount(
+      MediaHistoryStore::kSessionWriteResultHistogramName,
+      MediaHistoryStore::SessionWriteResult::kSuccess, IsReadOnly() ? 0 : 3);
 }
 
 TEST_P(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {

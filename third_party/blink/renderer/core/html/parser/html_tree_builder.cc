@@ -813,7 +813,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     ProcessGenericRawTextStartTag(token);
     return;
   }
-  if (token->GetName() == html_names::kNoscriptTag && options_.script_enabled) {
+  if (token->GetName() == html_names::kNoscriptTag && options_.scripting_flag) {
     ProcessGenericRawTextStartTag(token);
     return;
   }
@@ -2664,7 +2664,7 @@ bool HTMLTreeBuilder::ProcessStartTagForInHead(AtomicHTMLToken* token) {
     return true;
   }
   if (token->GetName() == html_names::kNoscriptTag) {
-    if (options_.script_enabled) {
+    if (options_.scripting_flag) {
       ProcessGenericRawTextStartTag(token);
       return true;
     }

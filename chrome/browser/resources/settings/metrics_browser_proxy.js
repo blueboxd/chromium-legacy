@@ -29,13 +29,46 @@ cr.define('settings', function() {
     SAFE_BROWSING: 6,
     PASSWORD_CHECK: 7,
     IMPROVE_SECURITY: 8,
-
     // Leave this at the end.
     MAX_VALUE: 8,
   };
 
+  /**
+   * Contains all safety check interactions.
+   *
+   * These values are persisted to logs. Entries should not be renumbered and
+   * numeric values should never be reused.
+   *
+   * Must be kept in sync with the SafetyCheckElementInteractions enum in
+   * histograms/enums.xml
+   * @enum {number}
+   */
+  /* #export */ const SafetyCheckElementInteractions = {
+    SAFETY_CHECK_STARTED: 0,
+    SAFETY_CHECK_UPDATES_RELAUNCH: 1,
+    SAFETY_CHECK_PASSWORDS_MANAGE: 2,
+    SAFETY_CHECK_SAFE_BROWSING_MANAGE: 3,
+    SAFETY_CHECK_EXTENSIONS_REVIEW: 4,
+    // Leave this at the end.
+    COUNT: 5,
+  };
+
   /** @interface */
   /* #export */ class MetricsBrowserProxy {
+    /**
+     * Helper function that calls recordAction with one action from
+     * tools/metrics/actions/actions.xml.
+     * @param {!string} action One action to be recorded.
+     */
+    recordAction(action) {}
+
+    /**
+     * Helper function that calls recordHistogram for the
+     * SettingsPage.SafetyCheckElementInteractions histogram
+     * @param {!settings.SafetyCheckElementInteractions} interaction
+     */
+    recordSafetyCheckPageHistogram(interaction) {}
+
     /**
      * Helper function that calls recordHistogram for the
      * SettingsPage.PrivacyElementInteractions histogram
@@ -48,6 +81,19 @@ cr.define('settings', function() {
    * @implements {settings.MetricsBrowserProxy}
    */
   /* #export */ class MetricsBrowserProxyImpl {
+    /** @override */
+    recordAction(action) {
+      chrome.send('metricsHandler:recordAction', [action]);
+    }
+
+    /** @override*/
+    recordSafetyCheckPageHistogram(interaction) {
+      chrome.send('metricsHandler:recordInHistogram', [
+        'SettingsPage.SafetyCheckElementInteractions', interaction,
+        settings.SafetyCheckElementInteractions.COUNT
+      ]);
+    }
+
     /** @override*/
     recordSettingsPageHistogram(interaction) {
       chrome.send('metricsHandler:recordInHistogram', [
@@ -63,6 +109,7 @@ cr.define('settings', function() {
   return {
     MetricsBrowserProxy,
     MetricsBrowserProxyImpl,
-    PrivacyElementInteractions
+    PrivacyElementInteractions,
+    SafetyCheckElementInteractions,
   };
 });

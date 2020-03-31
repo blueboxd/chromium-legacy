@@ -462,8 +462,10 @@ void WebSocket::SendFrame(bool fin,
   auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(data.size());
   memcpy(data_to_pass->data(), data.data(), data.size());
 
-  channel_->SendFrame(fin, MessageTypeToOpCode(type), std::move(data_to_pass),
-                      data.size());
+  // It's okay to ignore the result here because we don't access |this| after
+  // this point.
+  ignore_result(channel_->SendFrame(fin, MessageTypeToOpCode(type),
+                                    std::move(data_to_pass), data.size()));
 }
 
 void WebSocket::SendMessage(mojom::WebSocketMessageType type,
@@ -483,6 +485,9 @@ void WebSocket::SendMessage(mojom::WebSocketMessageType type,
   DCHECK(IsKnownEnumValue(type));
 
   pending_send_data_frames_.push(DataFrame(type, data_length));
+
+  // Safe if ReadAndSendFromDataPipe() deletes |this| because this method is
+  // only called from mojo.
   ReadAndSendFromDataPipe();
 }
 
@@ -672,6 +677,9 @@ void WebSocket::OnReadable(MojoResult result,
     return;
   }
   wait_for_readable_ = false;
+
+  // Safe if ReadAndSendFromDataPipe() deletes |this| because this method is
+  // only called from mojo.
   ReadAndSendFromDataPipe();
 }
 
@@ -685,8 +693,12 @@ void WebSocket::ReadAndSendFromDataPipe() {
              << ", (data_length = " << data_frame.data_length << "))";
     if (data_frame.data_length == 0) {
       auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(0);
-      channel_->SendFrame(true, MessageTypeToOpCode(data_frame.type),
-                          std::move(data_to_pass), 0);
+      if (channel_->SendFrame(true, MessageTypeToOpCode(data_frame.type),
+                              std::move(data_to_pass),
+                              0) == net::WebSocketChannel::CHANNEL_DELETED) {
+        // |this| has been deleted.
+        return;
+      }
       pending_send_data_frames_.pop();
       continue;
     }
@@ -710,8 +722,12 @@ void WebSocket::ReadAndSendFromDataPipe() {
     auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(size_to_send);
     const bool is_final = (size_to_send == data_frame.data_length);
     memcpy(data_to_pass->data(), buffer, size_to_send);
-    channel_->SendFrame(is_final, MessageTypeToOpCode(data_frame.type),
-                        std::move(data_to_pass), size_to_send);
+    if (channel_->SendFrame(is_final, MessageTypeToOpCode(data_frame.type),
+                            std::move(data_to_pass), size_to_send) ==
+        net::WebSocketChannel::CHANNEL_DELETED) {
+      // |this| has been deleted.
+      return;
+    }
 
     const MojoResult end_result = readable_->EndReadData(size_to_send);
     DCHECK_EQ(end_result, MOJO_RESULT_OK);

@@ -588,7 +588,7 @@ void ChromePasswordManagerClient::TriggerReauthForAccount(
     return;
   }
   signin_view_controller->ShowReauthPrompt(
-      browser, account_id,
+      account_id,
       base::BindOnce(
           [](base::OnceCallback<void(ReauthSucceeded)> reauth_callback,
              signin::ReauthResult result) {

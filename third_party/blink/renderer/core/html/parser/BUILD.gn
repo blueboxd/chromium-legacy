@@ -64,6 +64,7 @@ blink_core_sources("parser") {
     "input_stream_preprocessor.h",
     "markup_tokenizer_inlines.h",
     "nesting_level_incrementer.h",
+    "parser_scripting_flag_policy.h",
     "parser_synchronization_policy.h",
     "preload_request.cc",
     "preload_request.h",

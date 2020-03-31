@@ -107,7 +107,7 @@ class Viewport;
 
 enum class GpuRasterizationStatus {
   ON,
-  ON_FORCED,
+  OFF_FORCED,
   OFF_DEVICE,
 };
 

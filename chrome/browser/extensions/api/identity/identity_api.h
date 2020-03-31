@@ -88,6 +88,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
                     public signin::IdentityManager::Observer {
  public:
   using CachedTokens = std::map<ExtensionTokenKey, IdentityTokenCacheValue>;
+  using CachedGaiaIds = std::map<std::string, std::string>;
   using OnSetConsentResultSignature = void(const std::string&,
                                            const std::string&);
 
@@ -97,15 +98,21 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   // Request serialization queue for getAuthToken.
   IdentityMintRequestQueue* mint_queue();
 
-  // Token cache
+  // Token cache.
   void SetCachedToken(const ExtensionTokenKey& key,
                       const IdentityTokenCacheValue& token_data);
   void EraseCachedToken(const std::string& extension_id,
                         const std::string& token);
   void EraseAllCachedTokens();
   const IdentityTokenCacheValue& GetCachedToken(const ExtensionTokenKey& key);
-
   const CachedTokens& GetAllCachedTokens();
+
+  // GAIA id cache.
+  // TODO(https://crbug.com/1026237): migrate storage to the user preferences.
+  void SetGaiaIdForExtension(const std::string& extension_id,
+                             const std::string& gaia_id);
+  const std::string& GetGaiaIdForExtension(const std::string& extension_id);
+  void EraseAllGaiaIds();
 
   // Consent result.
   void SetConsentResult(const std::string& result,
@@ -156,6 +163,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   Profile* profile_;
   IdentityMintRequestQueue mint_queue_;
   CachedTokens token_cache_;
+  CachedGaiaIds gaia_id_cache_;
 
   OnSignInChangedCallback on_signin_changed_callback_for_testing_;
 

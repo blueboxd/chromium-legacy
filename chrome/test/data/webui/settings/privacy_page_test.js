@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl, HatsBrowserProxyImpl, Router, routes} from 'chrome://settings/settings.js';
+// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
+// #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
+// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+// #import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.m.js';
+// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+// #import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {whenAttributeIs, flushTasks, isChildVisible} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('PrivacyPageUMACheck', function() {
   /** @type {settings.TestPrivacyPageBrowserProxy} */
   let testBrowserProxy;
@@ -125,7 +139,7 @@ suite('PrivacyPage', function() {
 
   setup(async function() {
     PolymerTest.clearBody();
-    await settings.forceLazyLoaded();
+    /* #ignore */ await settings.forceLazyLoaded();
 
     const testBrowserProxy = new TestPrivacyPageBrowserProxy();
     settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;

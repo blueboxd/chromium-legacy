@@ -19,6 +19,7 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -205,6 +206,16 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       friendly_suggestion_text_prefix_length_(0) {
   SetID(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
+
+  // Unit tests may use a mock location bar that has no browser,
+  // or use no location bar at all.
+  if (location_bar_view_ && location_bar_view_->browser()) {
+    pref_change_registrar_.Init(
+        location_bar_view_->browser()->profile()->GetPrefs());
+    pref_change_registrar_.Add(
+        omnibox::kPreventUrlElisionsInOmnibox,
+        base::BindRepeating(&OmniboxViewViews::Update, base::Unretained(this)));
+  }
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -485,6 +496,13 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   // In the base class, touch text selection is deactivated when a command is
   // executed. Since we are not always calling the base class implementation
   // here, we need to deactivate touch text selection here, too.
+  //
+  // Note: while it looks weird that some of these cases are IDC_* and some are
+  // IDS_*, that is intentional. The commands that do not have matching IDC_*
+  // constants are registered using their names' IDS constants as their command
+  // IDs. If at some point in the future someone adds a new IDC constant that
+  // clashes with one of these IDS constants, this stanza will fail to compile
+  // because there'll be a duplicate switch case.
   DestroyTouchSelection();
   switch (command_id) {
     // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
@@ -494,9 +512,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDS_SHOW_URL:
       model()->Unelide(true /* exit_query_in_omnibox */);
       return;
-    case IDS_CONTEXT_MENU_SHOW_FULL_URLS:
-      ToggleShowFullUrlsPref();
-      return;
+    case IDC_SHOW_FULL_URLS:
     case IDC_EDIT_SEARCH_ENGINES:
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
@@ -524,14 +540,6 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       OnAfterPossibleChange(true);
       return;
   }
-}
-
-void OmniboxViewViews::ToggleShowFullUrlsPref() {
-  bool pref_enabled = location_bar_view_->profile()->GetPrefs()->GetBoolean(
-      omnibox::kPreventUrlElisionsInOmnibox);
-  location_bar_view_->profile()->GetPrefs()->SetBoolean(
-      omnibox::kPreventUrlElisionsInOmnibox, !pref_enabled);
-  Update();
 }
 
 ui::TextInputType OmniboxViewViews::GetTextInputType() const {
@@ -1505,7 +1513,7 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   // Menu item is only shown when it is valid.
   if (command_id == IDS_SHOW_URL)
     return true;
-  if (command_id == IDS_CONTEXT_MENU_SHOW_FULL_URLS)
+  if (command_id == IDC_SHOW_FULL_URLS)
     return true;
 
   return Textfield::IsCommandIdEnabled(command_id) ||
@@ -1933,13 +1941,13 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
                                      IDS_EDIT_SEARCH_ENGINES);
 
   if (base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls)) {
-    menu_contents->AddCheckItemWithStringId(IDS_CONTEXT_MENU_SHOW_FULL_URLS,
+    menu_contents->AddCheckItemWithStringId(IDC_SHOW_FULL_URLS,
                                             IDS_CONTEXT_MENU_SHOW_FULL_URLS);
   }
 }
 
 bool OmniboxViewViews::IsCommandIdChecked(int id) const {
-  if (id == IDS_CONTEXT_MENU_SHOW_FULL_URLS) {
+  if (id == IDC_SHOW_FULL_URLS) {
     return location_bar_view_->profile()->GetPrefs()->GetBoolean(
         omnibox::kPreventUrlElisionsInOmnibox);
   }

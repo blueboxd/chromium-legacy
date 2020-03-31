@@ -562,7 +562,7 @@
 <translation id="1744108098763830590">strona w tle</translation>
 <translation id="1745520510852184940">Tłumacz zawsze</translation>
 <translation id="1750172676754093297">Na Twoim kluczu bezpieczeństwa nie można zapisywać odcisków palców</translation>
-<translation id="1751262127955453661">Witryna <ph name="ORIGIN" /> będzie mogła edytować pliki z folderu <ph name="FOLDERNAME" />, dopóki nie zamkniesz wszystkich kart tej witryny</translation>
+<translation id="1751262127955453661">Strona <ph name="ORIGIN" /> będzie mogła edytować pliki z folderu <ph name="FOLDERNAME" />, dopóki nie zamkniesz wszystkich jej kart</translation>
 <translation id="175196451752279553">Prz&amp;ywróć zamkniętą kartę</translation>
 <translation id="1753067873202720523">Włączonego Chromebooka nie można ładować.</translation>
 <translation id="1753905327828125965">Najczęstsze</translation>
@@ -1671,7 +1671,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3202173864863109533">Dźwięk z karty został wyciszony.</translation>
 <translation id="3208321278970793882">Aplikacja</translation>
 <translation id="3208584281581115441">Sprawdź teraz</translation>
-<translation id="3208640652501208439">Materiały do zadań szkolnych mogą być niedostępne lub nie być ładowane automatycznie
+<translation id="3208640652501208439">Materiały do zadań szkolnych mogą być niedostępne lub nie ładować się automatycznie.
     Dziecko może nie mieć dostępu do:
     <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />aplikacji i rozszerzeń zainstalowanych przez szkołę,
@@ -1681,7 +1681,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
     Aby w pełni korzystać ze wszystkich zasobów szkolnych, dziecko musi:
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />wylogować się ze swojego konta zarządzanego przez Family Link,
-      <ph name="OLIST_ITEM" />zalogować się na swoje konto G Suite dla Szkół i Uczelni na ekranie logowania. Uwaga: spowoduje to, że stosowane będą zasady szkolne (w tym ustawienia dostępu do aplikacji i stron internetowych) zamiast Twoich funkcji nadzoru rodzicielskiego Family Link (na przykład szkolni administratorzy mogą zezwalać na dostęp do YouTube, jeśli jest potrzebny do wykonania pracy domowej, nie będzie wymuszany limit czasu używania urządzenia itd.).
+      <ph name="OLIST_ITEM" />zalogować się na swoje konto G Suite dla Szkół i Uczelni na ekranie logowania. Uwaga: spowoduje to, że zamiast Twoich funkcji nadzoru rodzicielskiego Family Link będą stosowane zasady szkolne, w tym ustawienia dostępu do aplikacji i stron internetowych. Szkolni administratorzy mogą na przykład zezwalać na dostęp do YouTube, jeśli jest potrzebny do wykonania pracy domowej, albo mogą nie wymuszać limitu czasu używania urządzenia.
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Niepotwierdzony</translation>
 <translation id="32101887417650595">Nie można połączyć się z drukarką</translation>
@@ -1882,6 +1882,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3479552764303398839">Nie teraz</translation>
 <translation id="3479685872808224578">Nie udało się wykryć serwera druku. Sprawdź adres i spróbuj ponownie.</translation>
 <translation id="3481268647794498892">Strona zostanie otwarta w przeglądarce <ph name="ALTERNATIVE_BROWSER_NAME" /> za <ph name="COUNTDOWN_SECONDS" /> s</translation>
+<translation id="3482719661246593752">Strona <ph name="ORIGIN" /> może wyświetlać te pliki:</translation>
 <translation id="3484273680291419129">Usuwam szkodliwe oprogramowanie…</translation>
 <translation id="3484869148456018791">Pobierz nowy certyfikat</translation>
 <translation id="3487007233252413104">funkcja anonimowa</translation>
@@ -1944,6 +1945,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3564848315152754834">Klucz bezpieczeństwa USB</translation>
 <translation id="3566721612727112615">Nie dodano żadnych stron</translation>
 <translation id="3569382839528428029">Czy chcesz, aby aplikacja <ph name="APP_NAME" /> miała dostęp do Twojego ekranu?</translation>
+<translation id="3569682580018832495">Strona <ph name="ORIGIN" /> może wyświetlać te pliki i foldery:</translation>
 <translation id="3571734092741541777">Konfiguruj</translation>
 <translation id="3574210789297084292">zaloguj się</translation>
 <translation id="3574917942258583917">Zamknąć tryb incognito mimo to?</translation>
@@ -1953,6 +1955,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3578594933904494462">Treść tej karty jest udostępniana.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce udostępnić drukarkę &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; należącej do Ciebie grupie: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jeśli się na to zgodzisz, wszyscy członkowie grupy będą mogli na niej drukować.</translation>
 <translation id="357889014807611375">Wi-Fi z pomiarem użycia danych</translation>
+<translation id="3582057310199111521">Wpisano na stronie wprowadzającej w błąd i doszło do naruszenia bezpieczeństwa danych</translation>
 <translation id="3584169441612580296">Odczyt i zmiana zdjęć, muzyki oraz innych multimediów na komputerze</translation>
 <translation id="3586806079541226322">Nie można otworzyć tego pliku</translation>
 <translation id="3586931643579894722">Ukryj szczegóły</translation>
@@ -2789,7 +2792,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4689235506267737042">Wybierz ustawienia trybu demonstracyjnego</translation>
 <translation id="4689421377817139245">Zsynchronizuj tę zakładkę ze swoim iPhonem</translation>
 <translation id="4690091457710545971">&lt;Cztery pliki wygenerowane przez oprogramowanie układowe Wi-Fi firmy Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Pierwsze trzy to pliki binarne zawierające zrzuty rejestru. Intel twierdzi, że nie zawierają żadnych danych umożliwiających identyfikację osoby lub urządzenia. Ostatni plik zawiera ślad wykonywania oprogramowania układowego firmy Intel. Wszelkie dane umożliwiające identyfikację osoby lub urządzenia zostały z niego usunięte, ale jest zbyt duży, by go tu wyświetlić. Te pliki zostały wygenerowane w reakcji na niedawne problemy z Wi-Fi na Twoim urządzeniu i zostaną przekazane firmie Intel, by pomóc w rozwiązaniu tych problemów.&gt;</translation>
-<translation id="4691791363716065510">Witryna <ph name="ORIGIN" /> będzie mogła wyświetlać plik <ph name="FILENAME" />, dopóki nie zamkniesz wszystkich kart tej witryny</translation>
+<translation id="4691791363716065510">Strona <ph name="ORIGIN" /> będzie mogła wyświetlać plik <ph name="FILENAME" />, dopóki nie zamkniesz wszystkich jej kart</translation>
 <translation id="4692623383562244444">Wyszukiwarki</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Konfiguracją drukarek zajmuje się administrator.</translation>
@@ -3090,6 +3093,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5117930984404104619">Monitorowanie działania innych rozszerzeń, w tym otwieranych adresów URL</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Dysk twardy jest pełny. Zapisz w innej lokalizacji lub zwolnij miejsce na dysku.</translation>
+<translation id="5122384452788334261">Na urządzeniu jest mało miejsca na dane. Do korzystania z Plugin VM zalecane jest co najmniej <ph name="RECOMMENDED_SPACE" /> wolnego miejsca. Aby zwolnić miejsce, usuń pliki z pamięci urządzenia.</translation>
 <translation id="5123433949759960244">Piłka do koszykówki</translation>
 <translation id="5125751979347152379">Nieprawidłowy adres URL.</translation>
 <translation id="5126611267288187364">Pokaż zmiany</translation>
@@ -5057,7 +5061,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7772773261844472235">Sprawdź stan Chromebooka</translation>
 <translation id="7773726648746946405">Przechowywanie sesji</translation>
 <translation id="7774365994322694683">Ptak</translation>
-<translation id="7776156998370251340">Witryna <ph name="ORIGIN" /> będzie mogła wyświetlać pliki z folderu <ph name="FOLDERNAME" />, dopóki nie zamkniesz wszystkich kart tej witryny</translation>
+<translation id="7776156998370251340">Strona <ph name="ORIGIN" /> będzie mogła wyświetlać pliki z folderu <ph name="FOLDERNAME" />, dopóki nie zamkniesz wszystkich jej kart</translation>
 <translation id="7776701556330691704">Nie znaleziono głosów</translation>
 <translation id="7780252971640011240">Problemy z połączeniem. Poproś o pomoc operatora sieci komórkowej.</translation>
 <translation id="7781335840981796660">Wszystkie konta użytkowników i dane lokalne zostaną usunięte.</translation>
@@ -5191,6 +5195,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7915471803647590281">Zanim wyślesz opinię, powiedz nam, co się dzieje.</translation>
 <translation id="7918257978052780342">Zarejestruj</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176">Strona <ph name="ORIGIN" /> może wyświetlać: <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Błąd przekierowania portów</translation>
 <translation id="792514962475806987">Poziom powiększenia lupy zadokowanej:</translation>
 <translation id="7925247922861151263">Sprawdzenie AAA nie powiodło się</translation>
@@ -5354,6 +5359,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />Przeglądarka jest zarządzana<ph name="END_LINK" /> przez Twoją organizację</translation>
 <translation id="8118860139461251237">Zarządzanie pobranymi plikami</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> i inne uprawnienia</translation>
+<translation id="8120715633374652536">Na urządzeniu jest mało miejsca na dane. Do korzystania z Plugin VM wymagane jest co najmniej <ph name="MINIMUM_SPACE" /> wolnego miejsca, a zalecana ilość miejsca to <ph name="RECOMMENDED_SPACE" />. Aby zwolnić miejsce, usuń pliki z pamięci urządzenia.</translation>
 <translation id="8123590694679414600">Dane zostały zaszyfrowane Twoim hasłem synchronizacji w dniu <ph name="TIME" />.
           Nie obejmuje to form płatności ani adresów w Google Pay.</translation>
 <translation id="81238879832906896">Żółto-biały kwiat</translation>

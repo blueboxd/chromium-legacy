@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image_representation_d3d.h"
 
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image_backing_d3d.h"
 
 namespace gpu {
@@ -93,6 +94,9 @@ WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
   descriptor.isCleared = IsCleared();
   descriptor.sharedHandle = shared_handle;
   descriptor.acquireMutexKey = shared_mutex_acquire_key;
+  descriptor.isSwapChainTexture =
+      (d3d_image_backing->usage() &
+       SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE);
 
   texture_ = dawn_native::d3d12::WrapSharedHandle(device_, &descriptor);
   if (texture_) {

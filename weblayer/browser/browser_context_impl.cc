@@ -23,7 +23,6 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
-#include "weblayer/browser/fake_permission_controller_delegate.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/public/common/switches.h"
@@ -154,14 +153,6 @@ content::SSLHostStateDelegate* BrowserContextImpl::GetSSLHostStateDelegate() {
 
 content::PermissionControllerDelegate*
 BrowserContextImpl::GetPermissionControllerDelegate() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebLayerFakePermissions)) {
-    if (!permission_controller_delegate_) {
-      permission_controller_delegate_ =
-          std::make_unique<FakePermissionControllerDelegate>();
-    }
-    return permission_controller_delegate_.get();
-  }
   return PermissionManagerFactory::GetForBrowserContext(this);
 }
 

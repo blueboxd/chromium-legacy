@@ -754,11 +754,15 @@ class CableInterface : public Client::Delegate {
                                          const JavaParamRef<jbyteArray>& data) {
     auto it = clients_.find(client_addr);
     if (it == clients_.end()) {
-      DCHECK(known_mtus_.find(client_addr) != known_mtus_.end());
-      uint16_t mtu = known_mtus_[client_addr];
-      if (mtu == 0) {
-        mtu = 512;
-      }
+      // If no MTU is negotiated, the GATT default is just 23 bytes. Subtract
+      // three bytes of GATT overhead.
+      static constexpr uint16_t kDefaultMTU = 23 - 3;
+      // TODO: once we only handle a single client, the Java code can ensure
+      // that an MTU has always been set and this code wont need to know a
+      // default.
+      const auto& mtu_it = known_mtus_.find(client_addr);
+      const uint16_t mtu =
+          mtu_it == known_mtus_.end() ? kDefaultMTU : mtu_it->second;
       it = clients_
                .emplace(client_addr,
                         new Client(client_addr, mtu, &auth_state_, this))

@@ -473,11 +473,6 @@ const char kFieldTrialHandle[] = "field-trial-handle";
 // file:///alias/some/path.html into file:///replacement/some/path.html.
 const char kFileUrlPathAlias[] = "file-url-path-alias";
 
-// Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
-// accelerated compositing + impl-side painting. Overrides the
-// kEnableGpuRasterization flag.
-const char kForceGpuRasterization[] = "force-gpu-rasterization";
-
 // Disables OOP rasterization.  Takes precedence over the enable flag.
 const char kDisableOopRasterization[] = "disable-oop-rasterization";
 

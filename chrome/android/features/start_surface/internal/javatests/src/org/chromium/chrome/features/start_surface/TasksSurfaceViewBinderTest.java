@@ -91,4 +91,18 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
         layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
         assertEquals(20, layoutParams.bottomMargin);
     }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetTopBarHeight() {
+        mPropertyModel.set(TOP_BAR_HEIGHT, 10);
+        mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
+        MarginLayoutParams layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
+        assertEquals(10, layoutParams.topMargin);
+
+        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+        layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
+        assertEquals(20, layoutParams.topMargin);
+    }
 }

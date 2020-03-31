@@ -27,10 +27,7 @@ namespace test_runner {
 
 TestInterfaces::TestInterfaces()
     : gamepad_controller_(new GamepadController()),
-      test_runner_(new TestRunner(this)),
-      delegate_(nullptr),
-      main_view_(nullptr) {
-  blink::SetWebTestMode(true);
+      test_runner_(new TestRunner(this)) {
   // NOTE: please don't put feature specific enable flags here,
   // instead add them to runtime_enabled_features.json5
 }

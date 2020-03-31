@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">표시된 네트워크:</translation>
 <translation id="1094607894174825014">기기(<ph name="DEVICE_NAME" />)에서 잘못된 오프셋으로 읽기 또는 쓰기 작업을 요청했습니다.</translation>
 <translation id="1097658378307015415">로그인하기 전에 게스트로 로그인하여 <ph name="NETWORK_ID" /> 네트워크를 활성화하세요.</translation>
+<translation id="1099962274138857708"><ph name="DEVICE_NAME" />에서 이미지가 복사됨</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> 항상 번역</translation>
 <translation id="1104038495841596279">SIM 카드를 감지할 수 없음</translation>
 <translation id="1108600514891325577">중지(&amp;S)</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">백그라운드 페이지</translation>
 <translation id="1745520510852184940">항상 번역</translation>
 <translation id="1750172676754093297">보안 키에 지문을 저장할 수 없습니다.</translation>
+<translation id="1751262127955453661">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FOLDERNAME" />의 파일을 수정할 수 있게 됩니다.</translation>
 <translation id="175196451752279553">닫은 탭 다시 열기(&amp;E)</translation>
 <translation id="1753067873202720523">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다.</translation>
 <translation id="1753905327828125965">자주 방문한 페이지</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">이미 Chrome을 사용 중이신가요? 로그인하세요.</translation>
 <translation id="18245044880483936">백업 데이터는 자녀의 드라이브 스토리지 저장용량에 포함되지 않습니다.</translation>
 <translation id="1826516787628120939">확인 중</translation>
+<translation id="1827738518074806965">아트 갤러리</translation>
 <translation id="1828378091493947763">이 기기에서 지원되지 않는 플러그인입니다.</translation>
 <translation id="1828901632669367785">시스템 대화상자를 사용하여 인쇄...</translation>
 <translation id="1829129547161959350">펭귄</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2359808026110333948">계속</translation>
 <translation id="236117173274098341">최적화</translation>
 <translation id="236141728043665931">마이크 액세스 항상 차단</translation>
+<translation id="2364498172489649528">통과</translation>
 <translation id="2365507699358342471">이 사이트는 클립보드에 복사된 텍스트와 이미지에 액세스할 수 있습니다.</translation>
 <translation id="2366260648632264559">이 언어로 시스템 텍스트 표시</translation>
 <translation id="2367972762794486313">앱 표시</translation>
@@ -1342,6 +1346,7 @@
 <translation id="2762441749940182211">카메라 차단됨</translation>
 <translation id="2765217105034171413">작게</translation>
 <translation id="2766161002040448006">부모님에게 묻기</translation>
+<translation id="2767127727915954024">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FILENAME" /> 파일을 수정할 수 있게 됩니다.</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되었습니다.</translation>
 <translation id="2770465223704140727">목록에서 삭제</translation>
 <translation id="2770690685823456775">비밀번호를 다른 폴더로 내보냅니다.</translation>
@@ -1666,6 +1671,18 @@
 <translation id="3202173864863109533">이 탭의 오디오가 음소거됩니다.</translation>
 <translation id="3208321278970793882">앱</translation>
 <translation id="3208584281581115441">지금 확인</translation>
+<translation id="3208640652501208439">학교 과제용 리소스가 제공되지 않거나 자동으로 로드되지 않을 수 있습니다.
+    자녀가 다음 항목에 액세스하지 못할 수 있습니다.
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />학교에서 설치한 애플리케이션 및 확장 프로그램
+      <ph name="LIST_ITEM" />학교 Chromebook의 북마크
+      <ph name="LIST_ITEM" />교육 사이트의 자동 완성 비밀번호
+    <ph name="END_LIST" />
+    기기에서 학교용 환경을 정상적으로 사용하려면 자녀가 다음 작업을 해야 합니다.
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Family Link 관리 계정에서 로그아웃
+      <ph name="OLIST_ITEM" />로그인 화면에서 G Suite for Education 계정으로 로그인 하지만 이렇게 하면 앱 및 웹사이트 액세스 설정을 포함한 학교 정책이 Family Link 감독 기능보다 우선적으로 적용됩니다. 예를 들어, 과제에 필요한 경우 학교 관리자가 YouTube를 허용하거나 기기 사용 시간이 적용되지 않을 수 있습니다.
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">미확인</translation>
 <translation id="32101887417650595">프린터에 연결할 수 없음</translation>
 <translation id="321084946921799184">노란색 및 흰색</translation>
@@ -1744,6 +1761,7 @@
 <translation id="3312424061798279731">사용 설정된 언어</translation>
 <translation id="3313622045786997898">인증서 서명 값</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> 숨기기</translation>
+<translation id="3317284582048881482">부모님을 위한 학교 계정 정보</translation>
 <translation id="3317459757438853210">양면</translation>
 <translation id="3317678681329786349">카메라 및 마이크 차단됨</translation>
 <translation id="3319048459796106952">새 시크릿 창(&amp;I)</translation>
@@ -1930,6 +1948,7 @@
 <translation id="3574210789297084292">로그인</translation>
 <translation id="3574917942258583917">시크릿 모드를 종료하시겠습니까?</translation>
 <translation id="3575121482199441727">이 사이트에 허용</translation>
+<translation id="3575919114596668130">Family Link 부모 설정은 계속 적용됩니다. 이전에 앱 또는 사이트를 차단했다면 다시 차단하지 않아도 됩니다.</translation>
 <translation id="3576324189521867626">설치되었습니다.</translation>
 <translation id="3578594933904494462">이 탭의 콘텐츠를 공유 중입니다.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;님이 내가 소유한 그룹(&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;)과의 프린터(&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) 공유를 요청했습니다. 동의하면 모든 그룹 회원이 해당 프린터로 인쇄할 수 있게 됩니다.</translation>
@@ -2768,6 +2787,7 @@
 <translation id="4689235506267737042">데모 환경설정 선택</translation>
 <translation id="4689421377817139245">이 북마크를 내 iPhone에 동기화</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 펌웨어에서 csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon 의 4개 파일을 생성하였습니다. 처음 3개 파일은 레지스터 덤프를 포함하는 바이너리 파일로 Intel에서 개인정보나 기기 식별 정보를 포함하지 않도록 선언되었습니다. 4번째 파일은 Intel 펌웨어의 실행 기록으로 모든 개인정보나 기기 식별 정보가 삭제되었지만 너무 커서 여기에 표시할 수 없습니다. 이러한 4개 파일은 최근에 발생한 기기의 Wi-Fi 문제로 인해 생성되었으며 관련 문제를 해결하기 위해 Intel과 공유됩니다.&gt;</translation>
+<translation id="4691791363716065510">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FILENAME" /> 폴더를 볼 수 있게 됩니다.</translation>
 <translation id="4692623383562244444">검색엔진</translation>
 <translation id="4693155481716051732">초밥</translation>
 <translation id="4694024090038830733">프린터 구성은 관리자가 처리합니다.</translation>
@@ -3123,6 +3143,7 @@
 <translation id="5204967432542742771">비밀번호 입력</translation>
 <translation id="5206215183583316675">'<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="520621735928254154">인증서 가져오기 오류</translation>
+<translation id="5209307736170827035">클래스룸에 저장된 자녀의 데이터는 안전하게 보호됩니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">기기를 찾을 수 없음</translation>
 <translation id="5210990770352357081">Plugin VM을 제거할 수 없음</translation>
 <translation id="5213481667492808996">'<ph name="NAME" />' 데이터 서비스를 사용할 수 있습니다.</translation>
@@ -3234,6 +3255,7 @@
 <translation id="5341980496415249280">잠시 기다려 주세요. 압축 중입니다...</translation>
 <translation id="5342091991439452114">PIN은 <ph name="MINIMUM" />자리 이상이어야 합니다.</translation>
 <translation id="5344036115151554031">Linux 복원 중</translation>
+<translation id="535123479159372765">다른 기기에서 텍스트가 복사됨</translation>
 <translation id="5352033265844765294">시간 기록</translation>
 <translation id="5353252989841766347">Chrome에서 비밀번호 내보내기</translation>
 <translation id="5355099869024327351">어시스턴트에서 알림을 표시할 수 있도록 허용</translation>
@@ -3356,6 +3378,7 @@
 <translation id="5511379779384092781">아주 작게</translation>
 <translation id="5511823366942919280">이 기기를 'Shark'로 설정하시겠습니까?</translation>
 <translation id="5512653252560939721">사용자 인증서를 하드웨어에 백업해야 합니다.</translation>
+<translation id="5515923816438946203">화면에 표시되는 항목 선택</translation>
 <translation id="5517304475148761050">Play 스토어 액세스가 필요한 앱입니다</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">계정에 프린터를 추가하고 있습니다. 잠시만 기다려 주세요...</translation>
@@ -3806,6 +3829,7 @@
 <translation id="6097480669505687979">저장 공간을 확보하지 않으면 사용자 및 데이터가 자동으로 삭제될 수 있습니다.</translation>
 <translation id="6097600385983390082">음성 검색 닫힘</translation>
 <translation id="6098793583803863900">위험한 콘텐츠가 있는지 확인하기 위해 알 수 없는 파일을 검사 중입니다.</translation>
+<translation id="609942571968311933"><ph name="DEVICE_NAME" />에서 텍스트가 복사됨</translation>
 <translation id="6100736666660498114">시작 메뉴</translation>
 <translation id="6101226222197207147">새 앱이 추가됨(<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">고급 보호 기능이 이 파일을 차단했습니다.</translation>
@@ -4176,6 +4200,7 @@
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6615455863669487791">표시</translation>
 <translation id="6618097958368085618">보관</translation>
+<translation id="6618744767048954150">실행 중</translation>
 <translation id="6619058681307408113">라인 프린터 데몬(LPD)</translation>
 <translation id="661907246513853610">사이트에서 내 위치를 추적할 수 있습니다.</translation>
 <translation id="6619801788773578757">키오스크 애플리케이션 추가</translation>
@@ -4561,6 +4586,7 @@
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />에서 데이터 읽기</translation>
 <translation id="713122686776214250">페이지 추가(&amp;G)...</translation>
 <translation id="7133578150266914903">관리자가 이 기기를 롤백하는 중(<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">비밀번호 <ph name="TOTAL" />개 중 <ph name="DONE" />개 확인됨...</translation>
 <translation id="7134098520442464001">텍스트 축소</translation>
 <translation id="7135729336746831607">블루투스를 사용 설정하시겠습니까?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" />에서 <ph name="DEVICE_TYPE" /> 기기를 즉시 업데이트할 것을 요청합니다.</translation>
@@ -4909,6 +4935,7 @@
 <translation id="761530003705945209">Google 드라이브에 백업합니다. 언제든지 간편하게 데이터를 복원하거나 다른 기기로 전환할 수 있습니다. 앱 데이터도 백업에 포함됩니다. 백업 항목은 Google에 업로드되며 내 Google 계정 비밀번호를 사용하여 암호화됩니다.</translation>
 <translation id="7616214729753637086">기기 등록 중...</translation>
 <translation id="7617366389578322136">'<ph name="DEVICE_NAME" />'에 연결 중입니다.</translation>
+<translation id="761763866592998929">대기 모드</translation>
 <translation id="762068974690945752">여기에서 학교 계정을 추가하거나 자녀 계정을 관리하세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">시스템에서 기기 설정을 저장하지 못했습니다.</translation>
 <translation id="7622114377921274169">충전 중</translation>
@@ -5020,6 +5047,7 @@
 <translation id="7766838926148951335">권한 수락</translation>
 <translation id="7768770796815395237">변경</translation>
 <translation id="7769672763586021400">모델 ID</translation>
+<translation id="7770612696274572992">다른 기기에서 이미지가 복사됨</translation>
 <translation id="7770651108375708429">Wi-Fi 연결 해제</translation>
 <translation id="7771452384635174008">레이아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>
@@ -5027,6 +5055,7 @@
 <translation id="7772773261844472235">Chromebook 상태 확인</translation>
 <translation id="7773726648746946405">세션 저장소</translation>
 <translation id="7774365994322694683">새</translation>
+<translation id="7776156998370251340">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FOLDERNAME" />의 파일을 볼 수 있게 됩니다.</translation>
 <translation id="7776701556330691704">음성을 찾을 수 없음</translation>
 <translation id="7780252971640011240">연결하는 중에 문제가 발생했습니다. 이동통신사에 지원을 요청하세요.</translation>
 <translation id="7781335840981796660">모든 사용자 계정과 로컬 데이터가 삭제됩니다.</translation>
@@ -6046,6 +6075,7 @@
 <translation id="9055636786322918818">RC4 암호화를 적용합니다. RC4 암호화는 안전하지 않으므로 이 옵션을 사용하면 보안 위험도가 높아집니다.</translation>
 <translation id="9056810968620647706">일치하는 항목이 없습니다.</translation>
 <translation id="9057354806206861646">업데이트 일정</translation>
+<translation id="9058976525724291037">자녀가 기기에 다른 Google 계정을 추가하려고 합니다. Family Link 관리 기기에는 G Suite for Education 계정만 추가할 수 있습니다.</translation>
 <translation id="9062065967472365419">임의 선택</translation>
 <translation id="9062468308252555888">14배</translation>
 <translation id="9063208415146866933"><ph name="ERROR_LINE_START" />행부터 <ph name="ERROR_LINE_END" />행까지에 오류가 있음</translation>

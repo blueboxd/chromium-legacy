@@ -58,7 +58,7 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
  private:
   // AXPlatformNodeDelegate overrides.
   gfx::NativeViewAccessible GetParent() override;
-  int GetChildCount() override;
+  int GetChildCount() const override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;

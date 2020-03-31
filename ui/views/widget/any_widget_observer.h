@@ -5,8 +5,11 @@
 #ifndef UI_VIEWS_WIDGET_ANY_WIDGET_OBSERVER_H_
 #define UI_VIEWS_WIDGET_ANY_WIDGET_OBSERVER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/observer_list_types.h"
+#include "base/run_loop.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -19,6 +22,7 @@ namespace test {
 class AnyWidgetTestPasskey;
 }
 
+class AnyWidgetPasskey;
 class Widget;
 
 // AnyWidgetObserver is used when you want to observe widget changes but don't
@@ -38,17 +42,27 @@ class Widget;
 //    RunLoop run_loop;
 //    AnyWidgetCallbackObserver observer(views::test::AnyWidgetTestPasskey{});
 //    Widget* widget;
-//    observer.set_shown_callback(
+//    observer.set_initialized_callback(
 //        base::BindLambdaForTesting([&](Widget* w) {
 //            if (w->GetName() == "MyWidget") {
 //                widget = w;
 //                run_loop.Quit();
 //            }
 //        }));
-//    ThingThatCreatesAndShowsWidget();
+//    ThingThatCreatesWidget();
 //    run_loop.Run();
 //
 // with your widget getting the name "MyWidget" via InitParams::name.
+//
+// Note: if you're trying to wait for a named widget to be *shown*, there is an
+// ergonomic wrapper for that - see NamedWidgetShownWaiter below. You use it
+// like this:
+//
+//    NamedWidgetShownWaiter waiter(
+//        "MyWidget", views::test::AnyWidgetTestPasskey{});
+//    ThingThatCreatesAndShowsWidget();
+//    Widget* widget = waiter.WaitIfNeededAndGet();
+//
 // TODO(ellyjones): Add Widget::SetDebugName and add a remark about that here.
 //
 // This allows you to create a test that is robust even if
@@ -58,17 +72,9 @@ class VIEWS_EXPORT AnyWidgetObserver : public base::CheckedObserver {
  public:
   using AnyWidgetCallback = base::RepeatingCallback<void(Widget*)>;
 
-  class Passkey {
-   private:
-    Passkey();
-
-    // Add friend classes here that are allowed to use AnyWidgetObserver in
-    // production code.
-  };
-
-  // Using this in production requires an AnyWidgetObserver::Passkey, which can
-  // only be constructed by a list of allowed friend classes...
-  explicit AnyWidgetObserver(Passkey passkey);
+  // Using this in production requires an AnyWidgetPasskey, which can only be
+  // constructed by a list of allowed friend classes...
+  explicit AnyWidgetObserver(AnyWidgetPasskey passkey);
 
   // ... but for tests or debugging, anyone can construct a
   // views::test::AnyWidgetTestPasskey.
@@ -90,6 +96,7 @@ class VIEWS_EXPORT AnyWidgetObserver : public base::CheckedObserver {
   // actually be drawn on the screen when these callbacks are run, because there
   // are more layers of asynchronousness at the OS layer.
   void set_shown_callback(const AnyWidgetCallback& callback) {
+    // Check out NamedWidgetShownWaiter for an alternative to this method.
     shown_callback_ = callback;
   }
   void set_hidden_callback(const AnyWidgetCallback& callback) {
@@ -130,6 +137,54 @@ class VIEWS_EXPORT AnyWidgetObserver : public base::CheckedObserver {
   AnyWidgetCallback shown_callback_;
   AnyWidgetCallback hidden_callback_;
   AnyWidgetCallback closing_callback_;
+};
+
+// NamedWidgetShownWaiter provides a more ergonomic way to do the most common
+// thing clients want to use AnyWidgetObserver for: waiting for a Widget with a
+// specific name to be shown. Use it like:
+//
+//    NamedWidgetShownWaiter waiter(Passkey{}, "MyDialogView");
+//    ThingThatShowsDialog();
+//    Widget* dialog_widget = waiter.WaitIfNeededAndGet();
+//
+// It is important that NamedWidgetShownWaiter be constructed before any code
+// that might show the named Widget, because if the Widget is shown before the
+// waiter is constructed, the waiter won't have observed the show and will
+// instead hang forever. Worse, if the widget *sometimes* shows before the
+// waiter is constructed and sometimes doesn't, you will be introducing flake.
+// THIS IS A DANGEROUS PATTERN, DON'T DO THIS:
+//
+//   ThingThatShowsDialogAsynchronously();
+//   NamedWidgetShownWaiter waiter(...);
+//   waiter.WaitIfNeededAndGet();
+class VIEWS_EXPORT NamedWidgetShownWaiter {
+ public:
+  NamedWidgetShownWaiter(AnyWidgetPasskey passkey, const std::string& name);
+  NamedWidgetShownWaiter(test::AnyWidgetTestPasskey passkey,
+                         const std::string& name);
+
+  virtual ~NamedWidgetShownWaiter();
+
+  Widget* WaitIfNeededAndGet();
+
+ private:
+  explicit NamedWidgetShownWaiter(const std::string& name);
+
+  void OnAnyWidgetShown(Widget* widget);
+
+  AnyWidgetObserver observer_;
+  Widget* widget_ = nullptr;
+  base::RunLoop run_loop_;
+  const std::string name_;
+};
+
+class AnyWidgetPasskey {
+ private:
+  AnyWidgetPasskey();
+
+  // Add friend classes here that are allowed to use AnyWidgetObserver in
+  // production code.
+  friend class NamedWidgetShownWaiter;
 };
 
 namespace test {

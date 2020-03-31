@@ -1078,6 +1078,11 @@ void LayerTreeTest::RequestNewLayerTreeFrameSink() {
       use_software_renderer() ? nullptr
                               : viz::TestContextProvider::CreateWorker();
 
+  if (!use_software_renderer()) {
+    SetUpUnboundContextProviders(shared_context_provider.get(),
+                                 worker_context_provider.get());
+  }
+
   viz::RendererSettings renderer_settings;
   // Spend less time waiting for BeginFrame because the output is
   // mocked out.
@@ -1089,6 +1094,10 @@ void LayerTreeTest::RequestNewLayerTreeFrameSink() {
   layer_tree_frame_sink->SetClient(layer_tree_frame_sink_client_.get());
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
+
+void LayerTreeTest::SetUpUnboundContextProviders(
+    viz::TestContextProvider* context_provider,
+    viz::TestContextProvider* worker_context_provider) {}
 
 std::unique_ptr<TestLayerTreeFrameSink> LayerTreeTest::CreateLayerTreeFrameSink(
     const viz::RendererSettings& renderer_settings,

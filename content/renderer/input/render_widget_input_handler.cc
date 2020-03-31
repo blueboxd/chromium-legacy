@@ -256,24 +256,23 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
   delegate->SetInputHandler(this);
 }
 
-RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
+RenderWidgetInputHandler::~RenderWidgetInputHandler() = default;
 
-viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
-    const gfx::PointF& point,
-    gfx::PointF* local_point) {
-  // This method must only be called on a local root, which is guaranteed to
-  // have a WebWidget.
-  // TODO(https://crbug.com/995981): Eventually we should be able to remove this
-  // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
-  // synchronized with the WebWidget.
-  DCHECK(widget_->GetWebWidget());
+blink::WebHitTestResult RenderWidgetInputHandler::GetHitTestResultAtPoint(
+    const gfx::PointF& point) {
   gfx::PointF point_in_pixel(point);
   if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
     point_in_pixel = gfx::ConvertPointToPixel(
         widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }
-  blink::WebHitTestResult result =
-      widget_->GetWebWidget()->HitTestResultAt(ToRoundedPoint(point_in_pixel));
+  return widget_->GetWebWidget()->HitTestResultAt(
+      ToRoundedPoint(point_in_pixel));
+}
+
+viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
+    const gfx::PointF& point,
+    gfx::PointF* local_point) {
+  blink::WebHitTestResult result = GetHitTestResultAtPoint(point);
 
   blink::WebNode result_node = result.GetNode();
   *local_point = gfx::PointF(point);

@@ -59,10 +59,7 @@ class LocalFrameView;
 // This class should only be used from inside the accessibility directory.
 class MODULES_EXPORT AXObjectCacheImpl
     : public AXObjectCacheBase,
-      public mojom::blink::PermissionObserver,
-      public LocalFrameView::LifecycleNotificationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(AXObjectCacheImpl);
-
+      public mojom::blink::PermissionObserver {
  public:
   static AXObjectCache* Create(Document&);
 
@@ -144,7 +141,7 @@ class MODULES_EXPORT AXObjectCacheImpl
                              const LayoutRect&) override;
 
   void InlineTextBoxesUpdated(LineLayoutItem) override;
-  void ProcessUpdatesAfterLayout(Document&) override;
+  void ProcessDeferredAccessibilityEvents(Document&) override;
 
   // Called when the scroll offset changes.
   void HandleScrollPositionChanged(LocalFrameView*) override;
@@ -264,10 +261,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   // For built-in HTML form validation messages.
   AXObject* ValidationMessageObjectIfInvalid();
 
-  // LifecycleNotificationObserver overrides.
-  void WillStartLifecycleUpdate(const LocalFrameView&) override;
-  void DidFinishLifecycleUpdate(const LocalFrameView&) override;
-
   void set_is_handling_action(bool value) { is_handling_action_ = value; }
 
   WebAXAutofillState GetAutofillState(AXID id) const;
@@ -337,7 +330,9 @@ class MODULES_EXPORT AXObjectCacheImpl
 #endif
 
   HeapVector<Member<AXEventParams>> notifications_to_post_;
-  void PostNotificationsAfterLayout(Document*);
+
+  void ProcessUpdates(Document&);
+  void PostNotifications(Document&);
 
   // Get the currently focused Node element.
   Node* FocusedElement();
@@ -392,6 +387,14 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ChildrenChangedWithCleanLayout(Node* node);
   void HandleAttributeChangedWithCleanLayout(const QualifiedName& attr_name,
                                              Element* element);
+
+  void ScheduleVisualUpdate();
+  void FireTreeUpdatedEventImmediately(Node* node,
+                                       base::OnceClosure callback,
+                                       ax::mojom::EventFrom event_from);
+  void FireAXEventImmediately(AXObject* obj,
+                              ax::mojom::Event event_type,
+                              ax::mojom::EventFrom event_from);
 
   // Whether the user has granted permission for the user to install event
   // listeners for accessibility events using the AOM.

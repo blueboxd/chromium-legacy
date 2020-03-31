@@ -28,9 +28,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
-import org.chromium.build.BuildHooksConfig;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.crash.ApplicationStatusTracker;
 import org.chromium.chrome.browser.crash.FirebaseConfig;
@@ -144,10 +142,6 @@ public class ChromeApplication extends Application {
             // Incremental install disables process isolation, so things in this block will actually
             // be run for incremental apks, but not normal apks.
             PureJavaExceptionHandler.installHandler();
-            if (BuildHooksConfig.REPORT_JAVA_ASSERT) {
-                BuildHooks.setReportAssertionCallback(
-                        PureJavaExceptionReporter::reportJavaException);
-            }
         }
 
         AsyncTask.takeOverAndroidThreadPool();

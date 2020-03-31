@@ -87,8 +87,15 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
                                 device_id.Utf8().c_str()));
   WebVector<WebMediaStreamTrack> audio_tracks = web_stream.AudioTracks();
   if (audio_tracks.empty()) {
-    SendLogMessage(String::Format(
-        "%s => (ERROR: no audio tracks in media stream)", __func__));
+    // The stream contains no audio tracks. Log error message if the stream
+    // contains no video tracks either. Without this extra check, video-only
+    // streams would generate error messages at this stage and we want to
+    // avoid that.
+    WebVector<WebMediaStreamTrack> video_tracks = web_stream.VideoTracks();
+    if (video_tracks.empty()) {
+      SendLogMessage(String::Format(
+          "%s => (ERROR: no audio tracks in media stream)", __func__));
+    }
     return nullptr;
   }
 

@@ -54,6 +54,12 @@ class ClipboardProvider : public AutocompleteProvider {
   // match.
   bool CreateImageMatch(const AutocompleteInput& input);
 
+  // Called when received image data from clipboard.
+  void OnReceiveImage(const AutocompleteInput& input,
+                      TemplateURLService* url_service,
+                      base::TimeDelta clipboard_contents_age,
+                      base::Optional<gfx::Image> optional_image);
+
   // Resize and encode the image data into bytes. This can take some time if the
   // image is large, so this should happen on a background thread.
   static scoped_refptr<base::RefCountedMemory> EncodeClipboardImage(

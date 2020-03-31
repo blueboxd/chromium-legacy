@@ -206,4 +206,17 @@ public class AssistantViewFactory {
         accordion.setTag(identifier);
         return accordion;
     }
+
+    /** Creates a {@code CompoundButton} widget. */
+    @CalledByNative
+    public static View createToggleButton(Context context, AssistantGenericUiDelegate delegate,
+            String identifier, @Nullable View leftContentView, @Nullable View rightContentView,
+            boolean isCheckbox, String modelIdentifier) {
+        AssistantToggleButton view = new AssistantToggleButton(context,
+                result
+                -> delegate.onValueChanged(
+                        modelIdentifier, AssistantValue.createForBooleans(new boolean[] {result})),
+                leftContentView, rightContentView, isCheckbox);
+        return view;
+    }
 }

@@ -35,9 +35,9 @@ class ChromeBrowserState;
 @property(nonatomic, readonly) BrowserViewController* bvc;
 // The tab model to which the current tab belongs.
 @property(nonatomic, readonly) TabModel* tabModel;
-// The active browser.
+// The active browser. This can never be nullptr.
 @property(nonatomic, readonly) Browser* browser;
-// The browser state for this interface.
+// The browser state for this interface. This can never be nullptr.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;
 // YES if the tab view is available for user interaction.
 @property(nonatomic) BOOL userInteractionEnabled;

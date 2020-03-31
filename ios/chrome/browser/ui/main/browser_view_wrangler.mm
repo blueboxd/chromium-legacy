@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,6 +44,7 @@
 
 - (instancetype)initWithCoordinator:(BrowserCoordinator*)coordinator {
   if (self = [super init]) {
+    DCHECK(coordinator.browser);
     _coordinator = coordinator;
   }
   return self;
@@ -59,7 +59,7 @@
 }
 
 - (TabModel*)tabModel {
-  return self.coordinator.browser->GetTabModel();
+  return self.browser->GetTabModel();
 }
 
 - (Browser*)browser {
@@ -67,7 +67,7 @@
 }
 
 - (ChromeBrowserState*)browserState {
-  return self.coordinator.viewController.browserState;
+  return self.browser->GetBrowserState();
 }
 
 - (BOOL)userInteractionEnabled {
@@ -98,7 +98,6 @@
   ChromeBrowserState* _browserState;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   __weak id<BrowsingDataCommands> _browsingDataCommandEndpoint;
-  AppUrlLoadingService* _appURLLoadingService;
   BOOL _isShutdown;
 
   std::unique_ptr<Browser> _mainBrowser;
@@ -141,14 +140,11 @@
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
          browsingDataCommandEndpoint:
-             (id<BrowsingDataCommands>)browsingDataCommandEndpoint
-                appURLLoadingService:
-                    (AppUrlLoadingService*)appURLLoadingService {
+             (id<BrowsingDataCommands>)browsingDataCommandEndpoint {
   if ((self = [super init])) {
     _browserState = browserState;
     _applicationCommandEndpoint = applicationCommandEndpoint;
     _browsingDataCommandEndpoint = browsingDataCommandEndpoint;
-    _appURLLoadingService = appURLLoadingService;
   }
   return self;
 }
@@ -384,7 +380,6 @@
   BrowserCoordinator* coordinator =
       [[BrowserCoordinator alloc] initWithBaseViewController:nil
                                                      browser:browser];
-  coordinator.appURLLoadingService = _appURLLoadingService;
   return coordinator;
 }
 

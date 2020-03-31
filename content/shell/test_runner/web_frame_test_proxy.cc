@@ -10,7 +10,6 @@
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
 #include "content/shell/test_runner/web_test_delegate.h"
-#include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -120,14 +119,16 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
 WebFrameTestProxy::~WebFrameTestProxy() = default;
 
 void WebFrameTestProxy::Initialize(
-    WebTestInterfaces* interfaces,
     content::RenderViewImpl* render_view_for_frame) {
   // The RenderViewImpl will also be a test proxy type.
   auto* view_proxy_for_frame =
       static_cast<WebViewTestProxy*>(render_view_for_frame);
 
+  // Creates a WebLocalFrameClient implementation providing test behavior (i.e.
+  // forwarding javascript console output to the test harness).
   test_client_ =
-      interfaces->CreateWebFrameTestClient(view_proxy_for_frame, this);
+      std::make_unique<WebFrameTestClient>(view_proxy_for_frame, this);
+
   new TestRenderFrameObserver(this, view_proxy_for_frame);  // deletes itself.
 }
 

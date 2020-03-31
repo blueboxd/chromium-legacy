@@ -266,7 +266,7 @@ void BrowserTestBase::SetUp() {
 
   // The layout of windows on screen is unpredictable during tests, so disable
   // occlusion when running browser tests.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+  command_line->AppendSwitch(
       switches::kDisableBackgroundingOccludedWindowsForTesting);
 
 #if defined(USE_AURA)

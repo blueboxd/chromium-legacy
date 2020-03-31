@@ -73,7 +73,7 @@
 <translation id="1093457606523402488">Synlige netværk:</translation>
 <translation id="1094607894174825014">Der blev anmodet om en læse- eller skrivehandling med en ugyldig forskydning på: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Før du logger ind, skal du logge ind som gæst for at aktivere netværket <ph name="NETWORK_ID" /></translation>
-<translation id="1099962274138857708">Billede, der er kopieret fra <ph name="DEVICE_NAME" /></translation>
+<translation id="1099962274138857708">Billede kopieret fra <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Vi kunne ikke registrere dit SIM-kort</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -562,7 +562,7 @@
 <translation id="1744108098763830590">baggrundsside</translation>
 <translation id="1745520510852184940">Gør altid dette</translation>
 <translation id="1750172676754093297">Din sikkerhedsnøgle kan ikke gemme fingeraftryk</translation>
-<translation id="1751262127955453661"><ph name="ORIGIN" /> kan redigere filer i <ph name="FOLDERNAME" />, indtil du har lukket alle faner for dette website</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> vil kunne redigere filer i <ph name="FOLDERNAME" />, indtil du har lukket alle faner for dette website</translation>
 <translation id="175196451752279553">G&amp;enåbn lukket fane</translation>
 <translation id="1753067873202720523">Din Chromebook oplades muligvis ikke, når den er tændt.</translation>
 <translation id="1753905327828125965">Mest besøgte</translation>
@@ -1346,7 +1346,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2762441749940182211">Der er blokeret for adgang til kameraet</translation>
 <translation id="2765217105034171413">Lille</translation>
 <translation id="2766161002040448006">Spørg en forælder</translation>
-<translation id="2767127727915954024"><ph name="ORIGIN" /> kan redigere <ph name="FILENAME" />, indtil du har lukket alle faner for dette website</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> vil kunne redigere <ph name="FILENAME" />, indtil du har lukket alle faner for dette website</translation>
 <translation id="276969039800130567">Logget ind som <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="2770690685823456775">Eksportér dine adgangskoder til en anden mappe</translation>
@@ -1674,7 +1674,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3208640652501208439">Skolerelaterede ressourcer er muligvis ikke tilgængelige eller indlæses ikke automatisk
     Dit barn har muligvis ikke adgang til:
     <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />Programmer og udvidelser, der er installeret af skolen
+      <ph name="LIST_ITEM" />Apps og udvidelser, der er installeret af skolen
       <ph name="LIST_ITEM" />Bogmærker, der findes på Chromebooks fra skolen
       <ph name="LIST_ITEM" />Autofyld for adgangskoder til undervisningsrelaterede websites
     <ph name="END_LIST" />
@@ -1761,7 +1761,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3312424061798279731">Aktiverede sprog</translation>
 <translation id="3313622045786997898">Signaturværdi for certifikat</translation>
 <translation id="3315158641124845231">Skjul <ph name="PRODUCT_NAME" /></translation>
-<translation id="3317284582048881482">Oplysninger til forældre om skolekonti</translation>
+<translation id="3317284582048881482">Information til forældre om skolekonti</translation>
 <translation id="3317459757438853210">Tosidet</translation>
 <translation id="3317678681329786349">Der er blokeret for adgang til kameraet og mikrofonen</translation>
 <translation id="3319048459796106952">Nyt &amp;inkognito-vindue</translation>
@@ -1882,6 +1882,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="3479685872808224578">Printerserveren kunne ikke registreres. Tjek adressen, og prøv igen.</translation>
 <translation id="3481268647794498892">Åbner i <ph name="ALTERNATIVE_BROWSER_NAME" /> om <ph name="COUNTDOWN_SECONDS" /> sekunder</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> kan se følgende filer</translation>
 <translation id="3484273680291419129">Sletter skadelig software...</translation>
 <translation id="3484869148456018791">Få et nyt certifikat</translation>
 <translation id="3487007233252413104">anonym funktion</translation>
@@ -1944,6 +1945,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3564848315152754834">USB-sikkerhedsnøgle</translation>
 <translation id="3566721612727112615">Der er ikke tilføjet nogen websites</translation>
 <translation id="3569382839528428029">Vil du acceptere, at <ph name="APP_NAME" /> deler din skærm?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> kan se følgende filer og mapper</translation>
 <translation id="3571734092741541777">Konfigurer</translation>
 <translation id="3574210789297084292">log ind</translation>
 <translation id="3574917942258583917">Vil du afslutte inkognitotilstand alligevel?</translation>
@@ -1953,6 +1955,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3578594933904494462">Indholdet på denne fane deles.</translation>
 <translation id="357886715122934472">&lt;Strong&gt;<ph name="SENDER" />&lt;/ Strong&gt; vil gerne dele printeren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/ Strong&gt; med en gruppe, som du ejer: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/ Strong&gt;. Hvis du accepterer, kan alle gruppens medlemmer udskrive til printeren.</translation>
 <translation id="357889014807611375">forbrugsafregnet Wi-Fi</translation>
+<translation id="3582057310199111521">Adgangskoden blev angivet på et vildledende website og blev fundet i et brud på datasikkerheden</translation>
 <translation id="3584169441612580296">Læs og rediger billeder, musik og andre medier på din computer</translation>
 <translation id="3586806079541226322">Denne fil kan ikke åbnes</translation>
 <translation id="3586931643579894722">Skjul oplysninger</translation>
@@ -2789,7 +2792,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4689235506267737042">Vælg dine demopræferencer</translation>
 <translation id="4689421377817139245">Synkroniser dette bogmærke med din iPhone</translation>
 <translation id="4690091457710545971">&lt;Fire filer er genereret af Intel Wi-Fi-firmware: Csr.lst, fh_regs.lst, radio_reg.lst og monitor.lst.sysmon.  De første tre er binære filer, der indeholder register dumps, og som ifølge Intel ikke indeholder nogen personlige eller enhedsidentificerende oplysninger.  Den sidste fil er et udførelsesspor fra Intel-firmwaren. De personlige eller enhedsidentificerende oplysninger er blevet ryddet fra denne fil, men fylder for meget til at blive vist her.  Disse filer blev genereret som følge af nyligt registrerede problemer med Wi-Fi-forbindelsen på din enhed og deles med Intel for at hjælpe med at løse de pågældende problemer.&gt;</translation>
-<translation id="4691791363716065510"><ph name="ORIGIN" /> kan se <ph name="FILENAME" />, indtil du har lukket alle faner for dette website</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> vil kunne se <ph name="FILENAME" />, indtil du har lukket alle faner for dette website</translation>
 <translation id="4692623383562244444">Søgemaskiner</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Printerkonfigurationen håndteres af administratoren.</translation>
@@ -3090,6 +3093,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5117930984404104619">Overvåge adfærden for andre udvidelser, herunder de webadresser, du har besøgt.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Din harddisk er fuld. Gem på en anden placering, eller frigør mere plads på harddisken.</translation>
+<translation id="5122384452788334261">Din enhed er ved at løbe tør for lagerplads. Du bør have mindst <ph name="RECOMMENDED_SPACE" /> ledig plads for at bruge Plugin VM. Slet filer fra lageret på din enhed for at frigøre plads.</translation>
 <translation id="5123433949759960244">Basketball</translation>
 <translation id="5125751979347152379">Ugyldig webadresse.</translation>
 <translation id="5126611267288187364">Se ændringer</translation>
@@ -3257,7 +3261,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5341980496415249280">Vent et øjeblik, mens der pakkes...</translation>
 <translation id="5342091991439452114">Pinkoden skal være på mindst <ph name="MINIMUM" /> cifre</translation>
 <translation id="5344036115151554031">Gendanner Linux</translation>
-<translation id="535123479159372765">Tekst, der er kopieret fra en anden enhed</translation>
+<translation id="535123479159372765">Tekst kopieret fra en anden enhed</translation>
 <translation id="5352033265844765294">Tidsstempling</translation>
 <translation id="5353252989841766347">Eksportér adgangskoder fra Chrome</translation>
 <translation id="5355099869024327351">Tillad, at Google Assistent viser dig notifikationer</translation>
@@ -3831,7 +3835,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6097480669505687979">Hvis du ikke frigør plads, kan brugere og data blive fjernet automatisk.</translation>
 <translation id="6097600385983390082">Stemmesøgning er lukket</translation>
 <translation id="6098793583803863900">En ukendt fil scannes for skadeligt indhold.</translation>
-<translation id="609942571968311933">Tekst, der er kopieret fra <ph name="DEVICE_NAME" /></translation>
+<translation id="609942571968311933">Tekst kopieret fra <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Startmenu</translation>
 <translation id="6101226222197207147">Ny app er tilføjet (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Denne fil blev blokeret af Avanceret beskyttelse.</translation>
@@ -5050,7 +5054,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7766838926148951335">Acceptér tilladelser</translation>
 <translation id="7768770796815395237">Skift</translation>
 <translation id="7769672763586021400">Model-id</translation>
-<translation id="7770612696274572992">Tekst, der er kopieret fra en anden enhed</translation>
+<translation id="7770612696274572992">Billede kopieret fra en anden enhed</translation>
 <translation id="7770651108375708429">Afbryd forbindelsen til Wi-Fi</translation>
 <translation id="7771452384635174008">Layout</translation>
 <translation id="7772032839648071052">Bekræft adgangssætning</translation>
@@ -5058,7 +5062,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7772773261844472235">Tjek din Chromebook-status</translation>
 <translation id="7773726648746946405">Sessionlagring</translation>
 <translation id="7774365994322694683">Fugl</translation>
-<translation id="7776156998370251340"><ph name="ORIGIN" /> kan se filer i <ph name="FOLDERNAME" />, indtil du har lukket alle faner for dette website</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> vil kunne se filer i <ph name="FOLDERNAME" />, indtil du har lukket alle faner for dette website</translation>
 <translation id="7776701556330691704">Der blev ikke fundet nogen stemmer</translation>
 <translation id="7780252971640011240">Der kunne ikke oprettes forbindelse. Kontakt dit mobilselskab for at få hjælp.</translation>
 <translation id="7781335840981796660">Alle brugerkonti og lokale data fjernes.</translation>
@@ -5191,6 +5195,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7915471803647590281">Fortæl os, hvad der sker, inden du sender feedback.</translation>
 <translation id="7918257978052780342">Tilmeld dig</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> sek.</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> kan se <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Fejl i forbindelse med omdirigering af port</translation>
 <translation id="792514962475806987">Zoomniveau i fastgjort lupvindue</translation>
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
@@ -5354,6 +5359,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8118488170956489476">Din <ph name="BEGIN_LINK" />browser administreres<ph name="END_LINK" /> af din organisation</translation>
 <translation id="8118860139461251237">Administrere dine downloads</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> og andre</translation>
+<translation id="8120715633374652536">Din enhed er ved at løbe tør for lagerplads. Der kræves mindst <ph name="MINIMUM_SPACE" /> ledig plads for at bruge Plugin VM, og det anbefales, at du har over <ph name="RECOMMENDED_SPACE" /> ledig plads. Slet filer fra lageret på din enhed for at frigøre plads.</translation>
 <translation id="8123590694679414600">Dataene blev krypteret med din adgangssætning til synkronisering
           <ph name="TIME" />. Dette omfatter ikke betalingsmetoder og adresser fra Google Pay.</translation>
 <translation id="81238879832906896">Gul og hvid blomst</translation>

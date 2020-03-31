@@ -43,6 +43,7 @@ namespace content {
 
 using blink::mojom::MediaSessionPlaybackState;
 using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
+using media_session::mojom::MediaAudioVideoState;
 using media_session::mojom::MediaPlaybackState;
 using media_session::mojom::MediaSessionImageType;
 using media_session::mojom::MediaSessionInfo;
@@ -925,6 +926,7 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
     info->playback_state = MediaPlaybackState::kPlaying;
   }
 
+  info->audio_video_state = GetMediaAudioVideoState();
   info->is_controllable = IsControllable();
 
   // If the browser context is off the record then it should be sensitive.
@@ -1448,6 +1450,42 @@ bool MediaSessionImpl::IsPictureInPictureAvailable() const {
 
   auto& first = normal_players_.begin()->first;
   return first.observer->IsPictureInPictureAvailable(first.player_id);
+}
+
+MediaAudioVideoState MediaSessionImpl::GetMediaAudioVideoState() {
+  RenderFrameHost* routed_rfh =
+      routed_service_ ? routed_service_->GetRenderFrameHost() : nullptr;
+  MediaAudioVideoState state = MediaAudioVideoState::kUnknown;
+
+  ForAllPlayers(base::BindRepeating(
+      [](RenderFrameHost* routed_rfh, MediaAudioVideoState* state,
+         const PlayerIdentifier& player) {
+        // If we have a routed frame then we should limit the players to the
+        // frame so it is aligned with the media metadata.
+        if (routed_rfh && player.observer->render_frame_host() != routed_rfh)
+          return;
+
+        if (player.observer->HasVideo(player.player_id))
+          *state = MediaAudioVideoState::kAudioVideo;
+
+        if (*state != MediaAudioVideoState::kAudioVideo)
+          *state = MediaAudioVideoState::kAudioOnly;
+      },
+      routed_rfh, &state));
+
+  return state;
+}
+
+void MediaSessionImpl::ForAllPlayers(
+    base::RepeatingCallback<void(const PlayerIdentifier&)> callback) {
+  for (const auto& player : normal_players_)
+    callback.Run(player.first);
+
+  for (const auto& player : one_shot_players_)
+    callback.Run(player);
+
+  for (const auto& player : pepper_players_)
+    callback.Run(player);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl)

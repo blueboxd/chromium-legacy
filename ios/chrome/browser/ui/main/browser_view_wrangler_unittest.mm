@@ -40,19 +40,18 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
     BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
                initWithBrowserState:chrome_browser_state_.get()
          applicationCommandEndpoint:(id<ApplicationCommands>)nil
-        browsingDataCommandEndpoint:nil
-               appURLLoadingService:nil];
+        browsingDataCommandEndpoint:nil];
     [wrangler createMainBrowser];
     // Test that BVC is created on demand.
-    BrowserViewController* bvc = wrangler.mainInterface.bvc;
+    UIViewController* bvc = wrangler.mainInterface.viewController;
     EXPECT_NE(bvc, nil);
 
     // Test that once created the BVC isn't re-created.
-    EXPECT_EQ(bvc, wrangler.mainInterface.bvc);
+    EXPECT_EQ(bvc, wrangler.mainInterface.viewController);
 
     // Test that the OTR objects are (a) OTR and (b) not the same as the non-OTR
     // objects.
-    EXPECT_NE(bvc, wrangler.incognitoInterface.bvc);
+    EXPECT_NE(bvc, wrangler.incognitoInterface.viewController);
     EXPECT_NE(wrangler.mainInterface.tabModel,
               wrangler.incognitoInterface.tabModel);
     EXPECT_TRUE(wrangler.incognitoInterface.browserState->IsOffTheRecord());
@@ -70,8 +69,7 @@ TEST_F(BrowserViewWranglerTest, TestBrowserList) {
   BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:chrome_browser_state_.get()
        applicationCommandEndpoint:nil
-      browsingDataCommandEndpoint:nil
-             appURLLoadingService:nil];
+      browsingDataCommandEndpoint:nil];
 
   // After creating the main browser, it should have been added to the browser
   // list.

@@ -40,6 +40,10 @@ extern const char kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginId[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[];

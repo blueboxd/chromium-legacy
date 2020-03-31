@@ -23094,7 +23094,7 @@ Called by update_extension_histograms.py.-->
   <int value="182" label="kMediaGalleriesAllGalleriesDelete"/>
   <int value="183" label="kMediaGalleriesAllGalleriesRead"/>
   <int value="184" label="kNetworkState"/>
-  <int value="185" label="kOverrideBookmarksUI"/>
+  <int value="185" label="kDeleted_OverrideBookmarksUI"/>
   <int value="186" label="kShouldWarnAllHosts"/>
   <int value="187" label="kSocketAnyHost"/>
   <int value="188" label="kSocketDomainHosts"/>
@@ -26862,6 +26862,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3194" label="ThirdPartyLocalStorage"/>
   <int value="3195" label="ThirdPartySessionStorage"/>
   <int value="3196" label="DeclarativeShadowRoot"/>
+  <int value="3197" label="CrossOriginOpenerPolicySameOrigin"/>
+  <int value="3198" label="CrossOriginOpenerPolicySameOriginAllowPopups"/>
+  <int value="3199" label="CrossOriginEmbedderPolicyRequireCorp"/>
+  <int value="3200" label="CoopAndCoepIsolated"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40537,8 +40541,6 @@ from previous Chrome versions.
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1581002467" label="enable-explicit-dma-fences"/>
   <int value="1584536816" label="LimitAltTabToActiveDesk:enabled"/>
-  <int value="1585660881"
-      label="enable-experimental-accessibility-chromevox-sub-node-language-switching"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
@@ -42824,6 +42826,22 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Failed due to no foreign key support"/>
   <int value="2" label="Failed since database is too new"/>
   <int value="3" label="Failed to create tables"/>
+</enum>
+
+<enum name="MediaHistoryPlaybackWriteResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to establish DB transaction"/>
+  <int value="2" label="Failed to write origin"/>
+  <int value="3" label="Failed to write playback"/>
+  <int value="4" label="Failed to increment aggregated watchtime"/>
+</enum>
+
+<enum name="MediaHistorySessionWriteResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to establish DB transaction"/>
+  <int value="2" label="Failed to write origin"/>
+  <int value="3" label="Failed to write session"/>
+  <int value="4" label="Failed to write image"/>
 </enum>
 
 <enum name="MediaKeyError">
@@ -59672,6 +59690,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Homepage"/>
   <int value="2" label="Default search engine"/>
   <int value="3" label="Startup URLs"/>
+</enum>
+
+<enum name="SettingsSafetyCheckElementInteractions">
+  <int value="0" label="Safety check started"/>
+  <int value="1" label="Safety check, relaunch after updates"/>
+  <int value="2" label="Safety check, manage passwords"/>
+  <int value="3" label="Safety check, manage safe browsing"/>
+  <int value="4" label="Safety check, review extensions"/>
 </enum>
 
 <enum name="SettingsSections">

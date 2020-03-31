@@ -158,7 +158,8 @@ KeyframeEffect::KeyframeEffect(Element* target,
       target_pseudo_(),
       model_(model),
       sampled_effect_(nullptr),
-      priority_(priority) {
+      priority_(priority),
+      ignore_css_keyframes_(false) {
   DCHECK(model_);
 
   // fix target for css animations and transitions
@@ -229,6 +230,9 @@ void KeyframeEffect::setComposite(String composite_string) {
 
 HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
     ScriptState* script_state) {
+  if (Animation* animation = GetAnimation())
+    animation->FlushPendingUpdates();
+
   HeapVector<ScriptValue> computed_keyframes;
   if (!model_->HasFrames())
     return computed_keyframes;
@@ -271,6 +275,7 @@ void KeyframeEffect::setKeyframes(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
+  ignore_css_keyframes_ = true;
   SetKeyframes(new_keyframes);
 }
 

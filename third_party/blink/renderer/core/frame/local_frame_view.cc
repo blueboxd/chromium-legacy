@@ -929,10 +929,12 @@ void LocalFrameView::UpdateLayout() {
   if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
     const KURL& url = document->Url();
     if (url.IsValid() && !url.IsAboutBlankURL()) {
+      // TODO(kschmi) move HandleLayoutComplete to the accessibility lifecycle
+      // stage. crbug.com/1062122
       cache->HandleLayoutComplete(document);
-      cache->ProcessUpdatesAfterLayout(*document);
     }
   }
+
   UpdateDocumentAnnotatedRegions();
   CheckDoesNotNeedLayout();
 
@@ -1067,8 +1069,16 @@ void LocalFrameView::RunIntersectionObserverSteps() {
     return;
   }
 
-  if (frame_->IsMainFrame())
+  if (frame_->IsMainFrame()) {
     EnsureOverlayInterstitialAdDetector().MaybeFireDetection(frame_.Get());
+
+    // Report the main frame's document intersection with itself.
+    LayoutObject* layout_object = GetLayoutView();
+    IntRect main_frame_dimensions =
+        ToLayoutBox(layout_object)->PixelSnappedLayoutOverflowRect();
+    GetFrame().Client()->OnMainFrameDocumentIntersectionChanged(WebRect(
+        0, 0, main_frame_dimensions.Width(), main_frame_dimensions.Height()));
+  }
 
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::UpdateViewportIntersectionsForSubtree");
@@ -2246,6 +2256,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   // Only the following target states are supported.
   DCHECK(target_state == DocumentLifecycle::kLayoutClean ||
+         target_state == DocumentLifecycle::kAccessibilityClean ||
          target_state == DocumentLifecycle::kCompositingInputsClean ||
          target_state == DocumentLifecycle::kCompositingClean ||
          target_state == DocumentLifecycle::kPrePaintClean ||
@@ -2357,6 +2368,14 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 #if DCHECK_IS_ON()
       DisallowLayoutInvalidationScope disallow_layout_invalidation(this);
 #endif
+
+      DCHECK_GE(target_state, DocumentLifecycle::kAccessibilityClean);
+      run_more_lifecycle_phases = RunAccessibilityLifecyclePhase(target_state);
+      DCHECK(ShouldThrottleRendering() || !ExistingAXObjectCache() ||
+             Lifecycle().GetState() == DocumentLifecycle::kAccessibilityClean);
+      if (!run_more_lifecycle_phases)
+        return;
+
       TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                            "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
                            inspector_set_layer_tree_id::Data(frame_.Get()));
@@ -2636,6 +2655,22 @@ void LocalFrameView::RunPaintLifecyclePhase() {
       }
     }
   }
+}
+
+bool LocalFrameView::RunAccessibilityLifecyclePhase(
+    DocumentLifecycle::LifecycleState target_state) {
+  TRACE_EVENT0("blink,benchmark",
+               "LocalFrameView::RunAccessibilityLifecyclePhase");
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    if (AXObjectCache* cache = frame_view.ExistingAXObjectCache()) {
+      frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInAccessibility);
+      cache->ProcessDeferredAccessibilityEvents(
+          *frame_view.GetFrame().GetDocument());
+      frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kAccessibilityClean);
+    }
+  });
+
+  return target_state > DocumentLifecycle::kAccessibilityClean;
 }
 
 void LocalFrameView::EnqueueScrollAnchoringAdjustment(
@@ -3044,9 +3079,6 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   // If we're restoring a scroll position from history, that takes precedence
   // over scrolling to the anchor in the URL.
   frame_->GetDocument()->ApplyScrollRestorationLogic();
-
-  if (AXObjectCache* cache = GetFrame().GetDocument()->ExistingAXObjectCache())
-    cache->ProcessUpdatesAfterLayout(*GetFrame().GetDocument());
 
   // Ensure that we become visually non-empty eventually.
   // TODO(esprehn): This should check isRenderingReady() instead.

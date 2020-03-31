@@ -22,6 +22,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -42,6 +43,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -231,6 +233,7 @@ public class TabbedAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main", "Bookmark", "RenderTest"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // See https://crbug.com/1065043.
     public void testBookmarkMenuItem() throws IOException {
         MenuItem bookmarkStar =
                 AppMenuTestSupport.getMenu(mActivityTestRule.getAppMenuCoordinator())

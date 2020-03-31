@@ -57,6 +57,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   CreateDisplaySkiaOutputSurfaceOnThread() override;
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override;
 
   virtual std::unique_ptr<viz::CopyOutputRequest> CreateCopyOutputRequest();
 
@@ -66,7 +67,6 @@ class LayerTreePixelTest : public LayerTreeTest {
   void SetupTree() override;
   void AfterTest() override;
   void EndTest() override;
-  void InitializeSettings(LayerTreeSettings* settings) override;
 
   void TryEndTest();
 
@@ -114,6 +114,10 @@ class LayerTreePixelTest : public LayerTreeTest {
     enlarge_texture_amount_ = enlarge_texture_amount;
   }
 
+  // Gpu rasterization is not used in pixel tests by default, except on Vulkan
+  // where it is required. Tests may opt into using it.
+  void set_gpu_rasterization() { gpu_rasterization_ = true; }
+
   // Common CSS colors defined for tests to use.
   static const SkColor kCSSOrange = 0xffffa500;
   static const SkColor kCSSBrown = 0xffa52a2a;
@@ -121,6 +125,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   static const SkColor kCSSLime = 0xff00ff00;
   static const SkColor kCSSBlack = 0xff000000;
 
+  bool gpu_rasterization_ = use_vulkan();
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<PixelComparator> pixel_comparator_;
   scoped_refptr<Layer> content_root_;  // Not used in layer list mode.

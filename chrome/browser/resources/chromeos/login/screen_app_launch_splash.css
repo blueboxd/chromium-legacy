@@ -18,16 +18,31 @@
   position: relative;
 }
 
-#splash-header {
+#splash-title {
   background: left center no-repeat;
   background-size: 96px;
+  display: flex;
+  flex-direction: column;
+  height: 96px;
+  justify-content: center;
+  max-width: 100%;
+  padding-inline-start: 108px;
+}
+
+#splash-header {
   color: #666;
   font-size: 48px;
-  height: 96px;
-  line-height: 96px;
-  max-width: 100%;
   overflow: hidden;
-  padding-inline-start: 108px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+}
+
+#splash-subheader {
+  color: #666;
+  font-size: 18px;
+  font-style: italic;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   word-break: break-all;

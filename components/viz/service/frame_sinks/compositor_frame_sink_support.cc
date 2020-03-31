@@ -41,6 +41,7 @@ enum class SendBeginFrameResult {
 };
 
 void RecordShouldSendBeginFrame(SendBeginFrameResult result) {
+  TRACE_EVENT1("viz", "ShouldNotSendBeginFrame", "reason", result);
   UMA_HISTOGRAM_ENUMERATION(
       "Compositing.CompositorFrameSinkSupport.ShouldSendBeginFrame", result);
 }
@@ -323,9 +324,10 @@ bool CompositorFrameSinkSupport::IsRoot() const {
 }
 
 void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
-  TRACE_EVENT2("viz", "CompositorFrameSinkSupport::DidNotProduceFrame",
-               "ack.source_id", ack.frame_id.source_id, "ack.sequence_number",
-               ack.frame_id.sequence_number);
+  TRACE_EVENT_WITH_FLOW2(
+      "viz,benchmark", "Graphics.Pipeline", TRACE_ID_GLOBAL(ack.trace_id),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "DidNotProduceFrame", "FrameSinkId", frame_sink_id_.ToString());
   DCHECK(ack.frame_id.IsSequenceValid());
 
   begin_frame_tracker_.ReceivedAck(ack);

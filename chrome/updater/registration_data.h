@@ -15,10 +15,9 @@ namespace updater {
 
 struct RegistrationRequest {
   RegistrationRequest();
+  RegistrationRequest(const RegistrationRequest&);
+  RegistrationRequest& operator=(const RegistrationRequest& other) = default;
   ~RegistrationRequest();
-  RegistrationRequest(const RegistrationRequest&) = delete;
-  RegistrationRequest& operator=(const RegistrationRequest&) = delete;
-
   // Application ID of the app.
   std::string app_id;
 

@@ -315,212 +315,224 @@ Panel = class {
 
     Panel.setMode(Panel.Mode.FULLSCREEN_MENUS);
 
-    // Clear any existing menus and clear the callback.
-    Panel.clearMenus();
-    Panel.pendingCallback_ = null;
+    const onFocusDo = () => {
+      window.removeEventListener('focus', onFocusDo);
+      // Clear any existing menus and clear the callback.
+      Panel.clearMenus();
+      Panel.pendingCallback_ = null;
 
-    const searchMenu = (Panel.menuSearchEnabled_) ?
-        Panel.addSearchMenu('panel_search_menu') :
-        null;
-    const jumpMenu = Panel.addMenu('panel_menu_jump');
-    const speechMenu = Panel.addMenu('panel_menu_speech');
-    const tabsMenu = Panel.addMenu('panel_menu_tabs');
-    const chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
-    const actionsMenu = Panel.addMenu('panel_menu_actions');
+      const searchMenu = (Panel.menuSearchEnabled_) ?
+          Panel.addSearchMenu('panel_search_menu') :
+          null;
+      const jumpMenu = Panel.addMenu('panel_menu_jump');
+      const speechMenu = Panel.addMenu('panel_menu_speech');
+      const tabsMenu = Panel.addMenu('panel_menu_tabs');
+      const chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
+      const actionsMenu = Panel.addMenu('panel_menu_actions');
 
-    // Add a menu item that opens the full list of ChromeBook keyboard
-    // shortcuts. We want this to be at the top of the ChromeVox menu.
-    chromevoxMenu.addMenuItem(
-        Msgs.getMsg('open_keyboard_shortcuts_menu'), 'Ctrl+Alt+/', '', '',
-        function() {
-          BackgroundKeyboardHandler.sendKeyPress(
-              191, {'ctrl': true, 'alt': true});
+      // Add a menu item that opens the full list of ChromeBook keyboard
+      // shortcuts. We want this to be at the top of the ChromeVox menu.
+      chromevoxMenu.addMenuItem(
+          Msgs.getMsg('open_keyboard_shortcuts_menu'), 'Ctrl+Alt+/', '', '',
+          function() {
+            BackgroundKeyboardHandler.sendKeyPress(
+                191, {'ctrl': true, 'alt': true});
+          });
+
+      // Create a mapping between categories from CommandStore, and our
+      // top-level menus. Some categories aren't mapped to any menu.
+      const categoryToMenu = {
+        'navigation': jumpMenu,
+        'jump_commands': jumpMenu,
+        'overview': jumpMenu,
+        'tables': jumpMenu,
+        'controlling_speech': speechMenu,
+        'information': speechMenu,
+        'modifier_keys': chromevoxMenu,
+        'help_commands': chromevoxMenu,
+        'actions': actionsMenu,
+
+        'braille': null,
+        'developer': null
+      };
+
+      // Get the key map from the background page.
+      const bkgnd = chrome.extension.getBackgroundPage();
+      const keymap = bkgnd['KeyMap']['fromCurrentKeyMap']();
+
+      // Make a copy of the key bindings, get the localized title of each
+      // command, and then sort them.
+      const sortedBindings = keymap.bindings().slice();
+      sortedBindings.forEach(goog.bind(function(binding) {
+        const command = binding.command;
+        const keySeq = binding.sequence;
+        binding.keySeq = KeyUtil.keySequenceToString(keySeq, true);
+        const titleMsgId = CommandStore.messageForCommand(command);
+        if (!titleMsgId) {
+          console.error('No localization for: ' + command);
+          binding.title = '';
+          return;
+        }
+        let title = Msgs.getMsg(titleMsgId);
+        // Convert to title case.
+        title = title.replace(/\w\S*/g, function(word) {
+          return word.charAt(0).toUpperCase() + word.substr(1);
         });
+        binding.title = title;
+      }, this));
+      sortedBindings.sort(function(binding1, binding2) {
+        return binding1.title.localeCompare(binding2.title);
+      });
 
-    // Create a mapping between categories from CommandStore, and our
-    // top-level menus. Some categories aren't mapped to any menu.
-    const categoryToMenu = {
-      'navigation': jumpMenu,
-      'jump_commands': jumpMenu,
-      'overview': jumpMenu,
-      'tables': jumpMenu,
-      'controlling_speech': speechMenu,
-      'information': speechMenu,
-      'modifier_keys': chromevoxMenu,
-      'help_commands': chromevoxMenu,
-      'actions': actionsMenu,
+      // Insert items from the bindings into the menus.
+      const sawBindingSet = {};
+      const gestures = Object.keys(GestureCommandData.GESTURE_COMMAND_MAP);
+      sortedBindings.forEach(goog.bind(function(binding) {
+        const command = binding.command;
+        if (sawBindingSet[command]) {
+          return;
+        }
+        sawBindingSet[command] = true;
+        const category = CommandStore.categoryForCommand(binding.command);
+        const menu = category ? categoryToMenu[category] : null;
+        const eventSource = bkgnd['EventSourceState']['get']();
+        if (binding.title && menu) {
+          let keyText;
+          let brailleText;
+          let gestureText;
+          if (eventSource == EventSourceType.TOUCH_GESTURE) {
+            for (let i = 0, gesture; gesture = gestures[i]; i++) {
+              const data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
+              if (data && data.command == command) {
+                gestureText = Msgs.getMsg(data.msgId);
+                break;
+              }
+            }
+          } else {
+            keyText = binding.keySeq;
+            brailleText =
+                BrailleCommandData.getDotShortcut(binding.command, true);
+          }
 
-      'braille': null,
-      'developer': null
+          menu.addMenuItem(
+              binding.title, keyText, brailleText, gestureText, function() {
+                const CommandHandler =
+                    chrome.extension.getBackgroundPage()['CommandHandler'];
+                CommandHandler['onCommand'](binding.command);
+              }, binding.command);
+        }
+      }, this));
+
+      // Add all open tabs to the Tabs menu.
+      bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
+        bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
+          for (let i = 0; i < windows.length; i++) {
+            const tabs = windows[i].tabs;
+            for (let j = 0; j < tabs.length; j++) {
+              let title = tabs[j].title;
+              if (tabs[j].active && windows[i].id == lastFocusedWindow.id) {
+                title += ' ' + Msgs.getMsg('active_tab');
+              }
+              tabsMenu.addMenuItem(
+                  title, '', '', '', (function(win, tab) {
+                                       bkgnd.chrome.windows.update(
+                                           win.id, {focused: true}, function() {
+                                             bkgnd.chrome.tabs.update(
+                                                 tab.id, {active: true});
+                                           });
+                                     }).bind(this, windows[i], tabs[j]));
+            }
+          }
+        });
+      });
+
+      if (Panel.sessionState !== 'IN_SESSION') {
+        tabsMenu.disable();
+        // Disable commands that contain the property 'disallowOOBE'.
+        for (let i = 0; i < Panel.menus_.length; ++i) {
+          const menu = Panel.menus_[i];
+          for (let j = 0; j < menu.items.length; ++j) {
+            const item = menu.items[j];
+            if (CommandStore.disallowOOBE(item.element.id)) {
+              item.disable();
+            }
+          }
+        }
+      }
+
+      // Add a menu item that disables / closes ChromeVox.
+      chromevoxMenu.addMenuItem(
+          Msgs.getMsg('disable_chromevox'), 'Ctrl+Alt+Z', '', '', function() {
+            Panel.onClose();
+          });
+
+      const roleListMenuMapping = [
+        {menuTitle: 'role_heading', predicate: AutomationPredicate.heading},
+        {menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark},
+        {menuTitle: 'role_link', predicate: AutomationPredicate.link}, {
+          menuTitle: 'panel_menu_form_controls',
+          predicate: AutomationPredicate.formField
+        },
+        {menuTitle: 'role_table', predicate: AutomationPredicate.table}
+      ];
+
+      const node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
+      for (let i = 0; i < roleListMenuMapping.length; ++i) {
+        const menuTitle = roleListMenuMapping[i].menuTitle;
+        const predicate = roleListMenuMapping[i].predicate;
+        // Create node menus asynchronously (because it may require
+        // searching a long document) unless that's the specific menu the
+        // user requested.
+        const async = (menuTitle != opt_activateMenuTitle);
+        Panel.addNodeMenu(menuTitle, node, predicate, async);
+      }
+
+      if (node.standardActions) {
+        for (let i = 0; i < node.standardActions.length; i++) {
+          const standardAction = node.standardActions[i];
+          const actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
+          if (!actionMsg) {
+            continue;
+          }
+          const actionDesc = Msgs.getMsg(actionMsg);
+          actionsMenu.addMenuItem(
+              actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
+              '' /* gesture */,
+              node.performStandardAction.bind(node, standardAction));
+        }
+      }
+
+      if (node.customActions) {
+        for (let i = 0; i < node.customActions.length; i++) {
+          const customAction = node.customActions[i];
+          actionsMenu.addMenuItem(
+              customAction.description, '' /* menuItemShortcut */,
+              '' /* menuItemBraille */, '' /* gesture */,
+              node.performCustomAction.bind(node, customAction.id));
+        }
+      }
+
+      // Activate either the specified menu or the search menu.
+      // Search menu can be null, since it is hidden behind a flag.
+      let selectedMenu = Panel.searchMenu || Panel.menus_[0];
+      for (let i = 0; i < Panel.menus_.length; i++) {
+        if (Panel.menus_[i].menuMsg == opt_activateMenuTitle) {
+          selectedMenu = Panel.menus_[i];
+        }
+      }
+
+      const activateFirstItem = (selectedMenu != Panel.searchMenu);
+      Panel.activateMenu(selectedMenu, activateFirstItem);
     };
 
-    // Get the key map from the background page.
-    const bkgnd = chrome.extension.getBackgroundPage();
-    const keymap = bkgnd['KeyMap']['fromCurrentKeyMap']();
-
-    // Make a copy of the key bindings, get the localized title of each
-    // command, and then sort them.
-    const sortedBindings = keymap.bindings().slice();
-    sortedBindings.forEach(goog.bind(function(binding) {
-      const command = binding.command;
-      const keySeq = binding.sequence;
-      binding.keySeq = KeyUtil.keySequenceToString(keySeq, true);
-      const titleMsgId = CommandStore.messageForCommand(command);
-      if (!titleMsgId) {
-        console.error('No localization for: ' + command);
-        binding.title = '';
-        return;
-      }
-      let title = Msgs.getMsg(titleMsgId);
-      // Convert to title case.
-      title = title.replace(/\w\S*/g, function(word) {
-        return word.charAt(0).toUpperCase() + word.substr(1);
-      });
-      binding.title = title;
-    }, this));
-    sortedBindings.sort(function(binding1, binding2) {
-      return binding1.title.localeCompare(binding2.title);
-    });
-
-    // Insert items from the bindings into the menus.
-    const sawBindingSet = {};
-    const gestures = Object.keys(GestureCommandData.GESTURE_COMMAND_MAP);
-    sortedBindings.forEach(goog.bind(function(binding) {
-      const command = binding.command;
-      if (sawBindingSet[command]) {
-        return;
-      }
-      sawBindingSet[command] = true;
-      const category = CommandStore.categoryForCommand(binding.command);
-      const menu = category ? categoryToMenu[category] : null;
-      const eventSource = bkgnd['EventSourceState']['get']();
-      if (binding.title && menu) {
-        let keyText;
-        let brailleText;
-        let gestureText;
-        if (eventSource == EventSourceType.TOUCH_GESTURE) {
-          for (let i = 0, gesture; gesture = gestures[i]; i++) {
-            const data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
-            if (data && data.command == command) {
-              gestureText = Msgs.getMsg(data.msgId);
-              break;
-            }
-          }
-        } else {
-          keyText = binding.keySeq;
-          brailleText =
-              BrailleCommandData.getDotShortcut(binding.command, true);
-        }
-
-        menu.addMenuItem(
-            binding.title, keyText, brailleText, gestureText, function() {
-              const CommandHandler =
-                  chrome.extension.getBackgroundPage()['CommandHandler'];
-              CommandHandler['onCommand'](binding.command);
-            }, binding.command);
-      }
-    }, this));
-
-    // Add all open tabs to the Tabs menu.
-    bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
-      bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
-        for (let i = 0; i < windows.length; i++) {
-          const tabs = windows[i].tabs;
-          for (let j = 0; j < tabs.length; j++) {
-            let title = tabs[j].title;
-            if (tabs[j].active && windows[i].id == lastFocusedWindow.id) {
-              title += ' ' + Msgs.getMsg('active_tab');
-            }
-            tabsMenu.addMenuItem(
-                title, '', '', '', (function(win, tab) {
-                                     bkgnd.chrome.windows.update(
-                                         win.id, {focused: true}, function() {
-                                           bkgnd.chrome.tabs.update(
-                                               tab.id, {active: true});
-                                         });
-                                   }).bind(this, windows[i], tabs[j]));
-          }
-        }
-      });
-    });
-
-    if (Panel.sessionState !== 'IN_SESSION') {
-      tabsMenu.disable();
-      // Disable commands that contain the property 'disallowOOBE'.
-      for (let i = 0; i < Panel.menus_.length; ++i) {
-        const menu = Panel.menus_[i];
-        for (let j = 0; j < menu.items.length; ++j) {
-          const item = menu.items[j];
-          if (CommandStore.disallowOOBE(item.element.id)) {
-            item.disable();
-          }
-        }
-      }
+    // The panel does not get focus immediately when we request to be full
+    // screen (handled in ChromeVoxPanel natively on hash changed). Wait, if
+    // needed, for focus to begin initialization.
+    if (document.hasFocus()) {
+      onFocusDo();
+    } else {
+      window.addEventListener('focus', onFocusDo);
     }
-
-    // Add a menu item that disables / closes ChromeVox.
-    chromevoxMenu.addMenuItem(
-        Msgs.getMsg('disable_chromevox'), 'Ctrl+Alt+Z', '', '', function() {
-          Panel.onClose();
-        });
-
-    const roleListMenuMapping = [
-      {menuTitle: 'role_heading', predicate: AutomationPredicate.heading},
-      {menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark},
-      {menuTitle: 'role_link', predicate: AutomationPredicate.link}, {
-        menuTitle: 'panel_menu_form_controls',
-        predicate: AutomationPredicate.formField
-      },
-      {menuTitle: 'role_table', predicate: AutomationPredicate.table}
-    ];
-
-    const node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
-    for (let i = 0; i < roleListMenuMapping.length; ++i) {
-      const menuTitle = roleListMenuMapping[i].menuTitle;
-      const predicate = roleListMenuMapping[i].predicate;
-      // Create node menus asynchronously (because it may require searching a
-      // long document) unless that's the specific menu the
-      // user requested.
-      const async = (menuTitle != opt_activateMenuTitle);
-      Panel.addNodeMenu(menuTitle, node, predicate, async);
-    }
-
-    if (node.standardActions) {
-      for (let i = 0; i < node.standardActions.length; i++) {
-        const standardAction = node.standardActions[i];
-        const actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
-        if (!actionMsg) {
-          continue;
-        }
-        const actionDesc = Msgs.getMsg(actionMsg);
-        actionsMenu.addMenuItem(
-            actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
-            '' /* gesture */,
-            node.performStandardAction.bind(node, standardAction));
-      }
-    }
-
-    if (node.customActions) {
-      for (let i = 0; i < node.customActions.length; i++) {
-        const customAction = node.customActions[i];
-        actionsMenu.addMenuItem(
-            customAction.description, '' /* menuItemShortcut */,
-            '' /* menuItemBraille */, '' /* gesture */,
-            node.performCustomAction.bind(node, customAction.id));
-      }
-    }
-
-    // Activate either the specified menu or the search menu.
-    // Search menu can be null, since it is hidden behind a flag.
-    let selectedMenu = Panel.searchMenu || Panel.menus_[0];
-    for (let i = 0; i < Panel.menus_.length; i++) {
-      if (Panel.menus_[i].menuMsg == opt_activateMenuTitle) {
-        selectedMenu = Panel.menus_[i];
-      }
-    }
-
-    const activateFirstItem = (selectedMenu != Panel.searchMenu);
-    Panel.activateMenu(selectedMenu, activateFirstItem);
   }
 
   /** Open incremental search. */

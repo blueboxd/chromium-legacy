@@ -10,7 +10,6 @@
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/test_runner_for_specific_view.h"
 #include "content/shell/test_runner/web_test_delegate.h"
-#include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"

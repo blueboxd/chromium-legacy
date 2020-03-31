@@ -840,8 +840,11 @@ void Animation::setEffect(AnimationEffect* new_effect) {
   NotifyProbe();
 
   // The effect is no longer associated with CSS properties.
-  if (new_effect)
+  if (new_effect) {
     new_effect->SetIgnoreCssTimingProperties();
+    if (KeyframeEffect* keyframe_effect = DynamicTo<KeyframeEffect>(new_effect))
+      keyframe_effect->SetIgnoreCSSKeyframes();
+  }
 
   // The remaining steps are for handling CSS animation and transition events.
   // Both use an event delegate to dispatch events, which must be reattached to
@@ -1474,10 +1477,15 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
 }
 
 ScriptPromise Animation::ready(ScriptState* script_state) {
+  // Check for a pending state change prior to checking the ready promise, since
+  // the pending check may force a style flush, which in turn could trigger a
+  // reset of the ready promise when resolving a change to the
+  // animationPlayState style.
+  bool is_pending = pending();
   if (!ready_promise_) {
     ready_promise_ = MakeGarbageCollected<AnimationPromise>(
         ExecutionContext::From(script_state));
-    if (!PendingInternal())
+    if (!is_pending)
       ready_promise_->Resolve(this);
   }
   return ready_promise_->Promise(script_state->World());

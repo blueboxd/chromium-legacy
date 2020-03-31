@@ -136,6 +136,12 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   token_key_.scopes = scopes;
   token_key_.extension_id = extension()->id();
 
+  if (gaia_id.empty()) {
+    gaia_id = IdentityAPI::GetFactoryInstance()
+                  ->Get(GetProfile())
+                  ->GetGaiaIdForExtension(token_key_.extension_id);
+  }
+
   // From here on out, results must be returned asynchronously.
   StartAsyncRun();
 
@@ -316,6 +322,7 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
   IdentityAPI* id_api =
       extensions::IdentityAPI::GetFactoryInstance()->Get(GetProfile());
   id_api->EraseAllCachedTokens();
+  id_api->EraseAllGaiaIds();
 
   // If the signin flow fails, don't display the login prompt again.
   should_prompt_for_signin_ = false;
@@ -727,8 +734,6 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowFailed(
 void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
     const std::string& consent_result,
     const std::string& gaia_id) {
-  // TODO(crbug.com/1026237): Reuse the same gaia id for this extension the next
-  // time.
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
       "identity", "OnGaiaRemoteConsentFlowApproved", this, "gaia_id", gaia_id);
   DCHECK(!consent_result.empty());
@@ -742,15 +747,16 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
     return;
   }
 
+  IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->Get(GetProfile());
+  id_api->SetGaiaIdForExtension(token_key_.extension_id, gaia_id);
+
   token_key_.account_id = account->account_id;
   consent_result_ = consent_result;
   should_prompt_for_scopes_ = false;
   should_prompt_for_signin_ = false;
-  IdentityAPI::GetFactoryInstance()
-      ->Get(GetProfile())
-      ->SetCachedToken(
-          token_key_,
-          IdentityTokenCacheValue::CreateRemoteConsentApproved(consent_result));
+  id_api->SetCachedToken(
+      token_key_,
+      IdentityTokenCacheValue::CreateRemoteConsentApproved(consent_result));
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
 }
 

@@ -102,6 +102,7 @@ if (_build_custom_webkit) {
     ]
     args = [
       "--ios-simulator",
+      "--debug",
       "--output_dir",
       rebase_path("$_webkit_ios_out_base_dir"),
     ]

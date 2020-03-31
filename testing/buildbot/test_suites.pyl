@@ -3190,9 +3190,8 @@
         'experiment_percentage': 100,
       },
       'headless_content_unittests': {
-        'args': [
-          '--ozone-platform=headless',
-        ],
+        # TODO(https://crbug.com/106023): Use variants to uniquify the test
+        # name instead of manually prepending "headless_".
         'test': 'content_unittests',
       },
       'ozone_unittests': {},

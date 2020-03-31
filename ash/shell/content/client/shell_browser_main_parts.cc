@@ -83,18 +83,16 @@ void ShellBrowserMainParts::ToolkitInitialized() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
 
-  AshTestHelper::InitParams init_params;
-  init_params.delegate = std::make_unique<ShellDelegateImpl>();
-  init_params.context_factory = content::GetContextFactory();
+  if (!parameters_.ui_task)
+    new_window_delegate_ = std::make_unique<ShellNewWindowDelegate>();
+
   // TODO(oshima): Separate the class for ash_shell to reduce the test binary
   // size.
-  if (parameters_.ui_task) {
-    init_params.config_type = AshTestHelper::kPerfTest;
-  } else {
-    new_window_delegate_ = std::make_unique<ShellNewWindowDelegate>();
-    init_params.config_type = AshTestHelper::kShell;
-  }
-  ash_test_helper_ = std::make_unique<AshTestHelper>();
+  ash_test_helper_ = std::make_unique<AshTestHelper>(
+      parameters_.ui_task ? AshTestHelper::kPerfTest : AshTestHelper::kShell,
+      content::GetContextFactory());
+  AshTestHelper::InitParams init_params;
+  init_params.delegate = std::make_unique<ShellDelegateImpl>();
   ash_test_helper_->SetUp(std::move(init_params));
 
   window_watcher_ = std::make_unique<WindowWatcher>();
@@ -155,7 +153,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   example_app_list_client_.reset();
   example_session_controller_client_.reset();
 
-  ash_test_helper_->TearDown();
   ash_test_helper_.reset();
 
   views_delegate_.reset();

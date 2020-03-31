@@ -4,6 +4,10 @@
 
 #include "ui/views/controls/button/toggle_button.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/accessibility/ax_enums.mojom.h"

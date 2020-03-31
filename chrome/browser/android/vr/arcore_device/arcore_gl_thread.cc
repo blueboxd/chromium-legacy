@@ -18,9 +18,12 @@ ArCoreGlThread::ArCoreGlThread(
     : base::android::JavaHandlerThread("ArCoreGL"),
       ar_image_transport_factory_(std::move(ar_image_transport_factory)),
       mailbox_bridge_(std::move(mailbox_bridge)),
-      initialized_callback_(std::move(initialized_callback)) {}
+      initialized_callback_(std::move(initialized_callback)) {
+  DVLOG(3) << __func__;
+}
 
 ArCoreGlThread::~ArCoreGlThread() {
+  DVLOG(3) << __func__;
   Stop();
 }
 

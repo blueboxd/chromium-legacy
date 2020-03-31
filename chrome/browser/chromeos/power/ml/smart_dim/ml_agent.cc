@@ -10,8 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim/model_impl.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
@@ -33,10 +32,6 @@ using ::chromeos::machine_learning::mojom::Int64List;
 using ::chromeos::machine_learning::mojom::Tensor;
 using ::chromeos::machine_learning::mojom::TensorPtr;
 using ::chromeos::machine_learning::mojom::ValueList;
-
-void LogPowerMLSmartDimModelResult(SmartDimModelResult result) {
-  UMA_HISTOGRAM_ENUMERATION("PowerML.SmartDimModel.Result", result);
-}
 
 int ScoreToProbability(float score) {
   const float sigmoid = 1.0f / (1.0f + exp(-score));
@@ -262,12 +257,8 @@ bool SmartDimMlAgent::IsDownloadWorkerReady() {
   return download_worker_.IsReady();
 }
 
-void SmartDimMlAgent::OnComponentReady(const std::string& metadata_json,
-                                       const std::string& preprocessor_proto,
-                                       const std::string& model_flatbuffer) {
-  download_worker_.InitializeFromComponent(std::move(metadata_json),
-                                           std::move(preprocessor_proto),
-                                           std::move(model_flatbuffer));
+void SmartDimMlAgent::OnComponentReady(const ComponentFileContents& contents) {
+  download_worker_.InitializeFromComponent(std::move(contents));
 }
 
 void SmartDimMlAgent::RequestDimDecision(
@@ -319,11 +310,10 @@ void SmartDimMlAgent::RequestDimDecision(
       features::kUserActivityPrediction, "dim_threshold",
       worker->dim_threshold());
   if (std::abs(dim_threshold - worker->dim_threshold()) < 1e-10)
-    UMA_HISTOGRAM_ENUMERATION("PowerML.SmartDimParameter.Result",
-                              SmartDimParameterResult::kUseDefaultValue);
+    LogPowerMLSmartDimParameterResult(
+        SmartDimParameterResult::kUseDefaultValue);
   else
-    UMA_HISTOGRAM_ENUMERATION("PowerML.SmartDimParameter.Result",
-                              SmartDimParameterResult::kSuccess);
+    LogPowerMLSmartDimParameterResult(SmartDimParameterResult::kSuccess);
 
   worker->GetExecutor()->Execute(
       std::move(inputs), std::move(outputs),
@@ -346,8 +336,10 @@ SmartDimWorker* SmartDimMlAgent::GetWorker() {
     // When download_worker_ is ready, builtin_worker_ is not useful any more,
     // we can release it to save memory.
     builtin_worker_.Reset();
+    LogWorkerType(WorkerType::kDownloadWorker);
     return &download_worker_;
   }
+  LogWorkerType(WorkerType::kBuiltinWorker);
   return &builtin_worker_;
 }
 

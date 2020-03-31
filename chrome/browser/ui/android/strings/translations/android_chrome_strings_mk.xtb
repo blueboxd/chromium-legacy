@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Отсега Chrome побрзо презема датотеки</translation>
 <translation id="1883903952484604915">Мои датотеки</translation>
 <translation id="1887786770086287077">Пристапот до локацијата е исклучен за уредов. Вклучете го во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> ќе се отвори во Chrome. Ако продолжите, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Известувањето за приватност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1919950603503897840">Изберете контакти</translation>
 <translation id="1922076542920281912">За да може Chrome да пристапува до вашата локација, вклучете ја дозволата за локација и во <ph name="BEGIN_LINK" />Поставките за Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">СЛИКА</translation>
 <translation id="257088987046510401">Теми</translation>
 <translation id="2570922361219980984">Пристапот до локацијата е исклучен и за уредов. Вклучете го во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Проширено - кликни да се сокрие.</translation>
 <translation id="2581165646603367611">Ова ќе ги избрише колачињата, кешот и другите податоци од сајтовите за коишто Chrome смета дека не се важни.</translation>
 <translation id="2586657967955657006">Табла со исечоци</translation>
 <translation id="2587052924345400782">Достапна е понова верзија</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">Отстранета ставка: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Отвори <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Употреби ја лозинката</translation>
-<translation id="4645575059429386691">Управувано од вашиот родител</translation>
 <translation id="4650364565596261010">Стандардна поставка за системот</translation>
 <translation id="4660838440047236328">распоредот на вашата соба</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> обележувачи се избришани</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="488187801263602086">Преименување датотеката</translation>
 <translation id="4882831918239250449">Контролирајте како вашата историја на прелистување се користи за персонализирање на „Пребарувањето“, рекламите и друго</translation>
-<translation id="4883854917563148705">Управуваните поставки не може да се ресетираат</translation>
 <translation id="4885273946141277891">Неподдржан број примероци на Chrome.</translation>
 <translation id="4887024562049524730">Прашувај пред да им дозволиш на сајтовите да ги користат уредот и податоците за виртуелна реалност (препорачано)</translation>
 <translation id="4910889077668685004">Апликации за плаќање</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">Дозволете сајтовите да пристапуваат до сензорите за движење (препорачано)</translation>
 <translation id="5063480226653192405">Користење</translation>
 <translation id="5087580092889165836">Додај картичка</translation>
-<translation id="5100237604440890931">Проширено - кликни да се прошири.</translation>
 <translation id="510275257476243843">Остана 1 час</translation>
 <translation id="5123685120097942451">Картичка инкогнито</translation>
 <translation id="5127805178023152808">Синхронизацијата е исклучена</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">Примена е картичка</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворена ка​ртичка, допрете за да се префрлите помеѓу картичките}one{<ph name="OPEN_TABS_MANY" /> отворена ка​ртичка, допрете за да се префрлите помеѓу картичките}other{<ph name="OPEN_TABS_MANY" /> отворени ка​ртички, допрете за да се префрлите помеѓу картичките}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и уште 1)}one{(и уште #)}other{(и уште #)}}</translation>
-<translation id="5400569084694353794">Ако ја користите апликацијава, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Известувањето за приватност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="5403592356182871684">Имиња</translation>
 <translation id="5403644198645076998">Дозволи само одредени сајтови</translation>
 <translation id="5414836363063783498">Се проверува…</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">Претходно вчитувај страници за побрзо прелистување и пребарување</translation>
 <translation id="79859296434321399">За да прегледувате содржини во проширена реалност, инсталирајте го ARCore</translation>
 <translation id="7986741934819883144">Изберете контакт</translation>
-<translation id="7987073022710626672">Услови за користење на Chrome</translation>
 <translation id="7993619969781047893">Функциите на некои сајтови може да не функционираат</translation>
 <translation id="7998918019931843664">Повторно отвори ја затворената картичка</translation>
 <translation id="7999064672810608036">Дали сте сигурни дека сакате да ги исчистите сите локални податоци, вклучувајќи ги колачињата, и да ги ресетирате сите дозволи за веб-локацијата?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">Преостануваат <ph name="FILES" /> датотеки</translation>
 <translation id="8190358571722158785">Остана 1 ден</translation>
 <translation id="8200772114523450471">Продолжи</translation>
-<translation id="8206354486702514201">Поставката ја наметнува администраторот.</translation>
 <translation id="8209050860603202033">отвори слика</translation>
 <translation id="8218622182176210845">Управувајте со сметката</translation>
 <translation id="8224471946457685718">Преземање статии за вас преку Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Ниво на јачина на сигналот: # бар}one{Ниво на јачина на сигналот: # бар}other{Ниво на јачина на сигналот: # бари}}</translation>
 <translation id="868929229000858085">Пребарајте ги контактите</translation>
 <translation id="869891660844655955">Рок на важност</translation>
-<translation id="8728487861892616501">Ако ја користите апликацијава, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Известувањето за приватност<ph name="END_LINK2" /> на Chrome, како и <ph name="BEGIN_LINK3" />Известувањето за приватност за сметките на Google управувани со Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Содржината е скриена</translation>
 <translation id="8751914237388039244">Изберете слика</translation>
 <translation id="8758557275681689734">Видете ги сите отворени картички</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">Блокирај JavaScript за одреден сајт.</translation>
 <translation id="8812260976093120287">На некои веб-сајтови, може да плаќате со горенаведените поддржани апликации за плаќање на вашиот уред.</translation>
 <translation id="8816026460808729765">Блокирајте го пристапот до сензорите за сајтовите</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> ќе се отвори во Chrome. Ако продолжите, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Известувањето за приватност<ph name="END_LINK2" /> на Chrome и со <ph name="BEGIN_LINK3" />Известувањето за приватност за сметките на Google управувани со Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Обележувачи</translation>
 <translation id="8833831881926404480">Еден сајт го споделува вашиот екран</translation>
 <translation id="883806473910249246">Грешка при преземањето на содржината.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">Користете го телефонот како безбедносен клуч</translation>
 <translation id="8993760627012879038">Отворете нова картичка во режим инкогнито</translation>
 <translation id="8998729206196772491">Се најавувате со сметка управувана од <ph name="MANAGED_DOMAIN" /> и му давате контрола над податоците на Chrome на нејзиниот администратор. Вашите податоци ќе бидат трајно врзани за оваа сметка. Одјавувањето од Chrome ќе ги избрише податоците од уредов, но тие ќе останат зачувани на сметката на Google.</translation>
-<translation id="9019902583201351841">Управувано од вашите родители</translation>
 <translation id="9028914725102941583">Вклучете ја синхронизацијата за да споделувате на сите уреди</translation>
 <translation id="9040142327097499898">Дозволени се известувања. Локацијата е исклучена за уредов.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видео}one{# видео}other{# видеа}}</translation>

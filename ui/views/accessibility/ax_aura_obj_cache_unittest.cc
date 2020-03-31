@@ -4,6 +4,9 @@
 
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
+#include <string>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"

@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">계속</translation>
 <translation id="2501278716633472235">뒤로 이동</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{쿠키 1개 차단됨}other{쿠키 #개 차단됨}}</translation>
+<translation id="257931822824936280">펼쳐짐 - 접으려면 클릭</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2704606927547763573">복사됨</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">링크 복사</translation>
 <translation id="4002066346123236978">제목</translation>
 <translation id="4570913071927164677">세부정보</translation>
+<translation id="4645575059429386691">부모님이 관리합니다.</translation>
+<translation id="4883854917563148705">관리 설정은 재설정할 수 없습니다.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
+<translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5301954838959518834">확인</translation>
 <translation id="5317780077021120954">저장</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="8131740175452115882">확인</translation>
+<translation id="8206354486702514201">이 설정은 관리자가 강제로 설정해 놓았습니다.</translation>
 <translation id="8249310407154411074">맨 위로 이동</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8609465669617005112">위로 이동</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8730621377337864115">완료</translation>
+<translation id="9019902583201351841">부모님이 관리합니다.</translation>
 </translationbundle>

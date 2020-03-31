@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <limits>
 #include <set>
 #include <string>
 
@@ -14,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -849,39 +847,13 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
                                                  switch_pair.second);
   }
 
-  // TODO(scottmg): DEBUG_ variables added for https://crbug.com/614753.
-  size_t DEBUG_num_profiles_on_entry = last_opened_profiles.size();
-  base::debug::Alias(&DEBUG_num_profiles_on_entry);
-  int DEBUG_loop_counter = 0;
-  base::debug::Alias(&DEBUG_loop_counter);
-
-  base::debug::Alias(&last_opened_profiles);
-  const Profile* DEBUG_profile_0 = nullptr;
-  const Profile* DEBUG_profile_1 = nullptr;
-  if (!last_opened_profiles.empty())
-    DEBUG_profile_0 = last_opened_profiles[0];
-  if (last_opened_profiles.size() > 1)
-    DEBUG_profile_1 = last_opened_profiles[1];
-  base::debug::Alias(&DEBUG_profile_0);
-  base::debug::Alias(&DEBUG_profile_1);
-
-  size_t DEBUG_num_profiles_at_loop_start = std::numeric_limits<size_t>::max();
-  base::debug::Alias(&DEBUG_num_profiles_at_loop_start);
-
-  auto DEBUG_it_begin = last_opened_profiles.begin();
-  base::debug::Alias(&DEBUG_it_begin);
-  auto DEBUG_it_end = last_opened_profiles.end();
-  base::debug::Alias(&DEBUG_it_end);
-
   // Launch the profiles in the order they became active.
-  for (auto it = last_opened_profiles.begin(); it != last_opened_profiles.end();
-       ++it, ++DEBUG_loop_counter) {
-    DEBUG_num_profiles_at_loop_start = last_opened_profiles.size();
-    DCHECK(!(*it)->IsGuestSession());
+  for (Profile* profile : last_opened_profiles) {
+    DCHECK(!profile->IsGuestSession());
 
 #if !defined(OS_CHROMEOS)
     // Skip any locked profile.
-    if (!CanOpenProfileOnStartup(*it))
+    if (!CanOpenProfileOnStartup(profile))
       continue;
 
     // Guest profiles should not be reopened on startup. This can happen if
@@ -890,21 +862,23 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
     // to be the active one, since the Guest profile is never added to the
     // list of open profiles.
     if (last_used_profile->IsGuestSession())
-      last_used_profile = *it;
+      last_used_profile = profile;
 #endif
 
     // Don't launch additional profiles which would only open a new tab
     // page. When restarting after an update, all profiles will reopen last
     // open pages.
-    SessionStartupPref startup_pref = GetSessionStartupPref(command_line, *it);
-    if (*it != last_used_profile &&
+    SessionStartupPref startup_pref =
+        GetSessionStartupPref(command_line, profile);
+    if (profile != last_used_profile &&
         startup_pref.type == SessionStartupPref::DEFAULT &&
-        !HasPendingUncleanExit(*it)) {
+        !HasPendingUncleanExit(profile)) {
       continue;
     }
-    if (!LaunchBrowser((*it == last_used_profile) ? command_line
-                                                  : command_line_without_urls,
-                       *it, cur_dir, is_process_startup, is_first_run)) {
+    if (!LaunchBrowser((profile == last_used_profile)
+                           ? command_line
+                           : command_line_without_urls,
+                       profile, cur_dir, is_process_startup, is_first_run)) {
       return false;
     }
     // We've launched at least one browser.

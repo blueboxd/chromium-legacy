@@ -64,11 +64,8 @@ void ExtensionActionPlatformDelegateViews::RegisterCommand() {
   if (focus_manager && controller_->GetExtensionCommand(&extension_command)) {
     action_keybinding_.reset(
         new ui::Accelerator(extension_command.accelerator()));
-    focus_manager->RegisterAccelerator(
-        *action_keybinding_,
-        GetAcceleratorPriority(extension_command.accelerator(),
-                               controller_->extension()),
-        this);
+    focus_manager->RegisterAccelerator(*action_keybinding_,
+                                       kExtensionAcceleratorPriority, this);
   }
 }
 
@@ -118,12 +115,6 @@ void ExtensionActionPlatformDelegateViews::Observe(
 bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK(controller_->CanHandleAccelerators());
-
-  // Normal priority shortcuts must be handled via standard browser commands to
-  // be processed at the proper time.
-  if (GetAcceleratorPriority(accelerator, controller_->extension()) ==
-      ui::AcceleratorManager::kNormalPriority)
-    return false;
 
   if (controller_->IsShowingPopup())
     controller_->HidePopup();

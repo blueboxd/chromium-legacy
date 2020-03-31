@@ -93,9 +93,3 @@ group("perf_without_chrome") {
     data_deps += [ "//chrome/android/webapk/shell_apk:maps_go_webapk" ]
   }
 }
-
-# This group makes visible those targets in subdirectories that are not
-# explicitly depended on.
-group("gn_all") {
-  deps = [ "//tools/perf/core/perfetto_binary_roller:upload_trace_processor" ]
-}

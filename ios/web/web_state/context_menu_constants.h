@@ -38,6 +38,10 @@ extern NSString* const kContextMenuElementReferrerPolicy;
 // elements with href only).
 extern NSString* const kContextMenuElementInnerText;
 
+// Optional key. Represents element's alt attribute if present (<img> element
+// only).
+extern NSString* const kContextMenuElementAlt;
+
 // The maximum character length for the context menu title.
 // Value was chosen for no particular reason; Usually results in a 2-3 line
 // title.

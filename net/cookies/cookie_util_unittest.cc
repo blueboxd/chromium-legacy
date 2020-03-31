@@ -264,12 +264,48 @@ TEST(CookieUtilTest, TestComputeSameSiteContextForScriptGet) {
           base::nullopt /*initiator*/, false /* attach_same_site_cookies */));
 
   EXPECT_EQ(
+      SameSiteCookieContext(
+          SameSiteCookieContext::ContextType::CROSS_SITE,
+          SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
+      cookie_util::ComputeSameSiteContextForScriptGet(
+          GURL("https://example.com"),
+          SiteForCookies::FromUrl(GURL("http://notexample.com")),
+          base::nullopt /*initiator*/, false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(
+      SameSiteCookieContext(
+          SameSiteCookieContext::ContextType::CROSS_SITE,
+          SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
+      cookie_util::ComputeSameSiteContextForScriptGet(
+          GURL("http://example.com"),
+          SiteForCookies::FromUrl(GURL("https://notexample.com")),
+          base::nullopt /*initiator*/, false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(
       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
       cookie_util::ComputeSameSiteContextForScriptGet(
           GURL("http://example.com"),
           SiteForCookies::FromUrl(GURL("http://notexample.com")),
           url::Origin::Create(GURL("http://example.com")),
           false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(SameSiteCookieContext(
+                SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                GURL("https://example.com"),
+                SiteForCookies::FromUrl(GURL("http://notexample.com")),
+                url::Origin::Create(GURL("http://example.com")),
+                false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(SameSiteCookieContext(
+                SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                GURL("http://example.com"),
+                SiteForCookies::FromUrl(GURL("https://notexample.com")),
+                url::Origin::Create(GURL("http://example.com")),
+                false /* attach_same_site_cookies */));
 
   EXPECT_EQ(
       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
@@ -449,6 +485,23 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
           "GET", GURL("http://example.com"),
           SiteForCookies::FromUrl(GURL("http://notexample.com")),
           base::nullopt /*initiator*/, false /*attach_same_site_cookies*/));
+  EXPECT_EQ(
+      SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+          SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
+      cookie_util::ComputeSameSiteContextForRequest(
+          "GET", GURL("https://example.com"),
+          SiteForCookies::FromUrl(GURL("http://notexample.com")),
+          base::nullopt /*initiator*/, false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(
+      SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+          SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
+      cookie_util::ComputeSameSiteContextForRequest(
+          "GET", GURL("http://example.com"),
+          SiteForCookies::FromUrl(GURL("https://notexample.com")),
+          base::nullopt /*initiator*/, false /*attach_same_site_cookies*/));
 
   // |attach_same_site_cookies| = true bypasses all checks.
   EXPECT_EQ(
@@ -614,6 +667,22 @@ TEST(CookieUtilTest, ComputeSameSiteContextForSet) {
                 SiteForCookies::FromUrl(GURL("http://notexample.com")),
                 base::nullopt, false /* attach_same_site_cookies */));
 
+  EXPECT_EQ(SameSiteCookieContext(
+                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
+            cookie_util::ComputeSameSiteContextForResponse(
+                GURL("https://example.com"),
+                SiteForCookies::FromUrl(GURL("http://notexample.com")),
+                base::nullopt, false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(SameSiteCookieContext(
+                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
+            cookie_util::ComputeSameSiteContextForResponse(
+                GURL("http://example.com"),
+                SiteForCookies::FromUrl(GURL("https://notexample.com")),
+                base::nullopt, false /* attach_same_site_cookies */));
+
   // Same as above except |attach_same_site_cookies| makes it return LAX.
   EXPECT_EQ(
       SameSiteCookieContext(
@@ -628,6 +697,22 @@ TEST(CookieUtilTest, ComputeSameSiteContextForSet) {
             cookie_util::ComputeSameSiteContextForScriptSet(
                 GURL("http://example.com"),
                 SiteForCookies::FromUrl(GURL("http://notexample.com")),
+                false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(SameSiteCookieContext(
+                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
+            cookie_util::ComputeSameSiteContextForScriptSet(
+                GURL("https://example.com"),
+                SiteForCookies::FromUrl(GURL("http://notexample.com")),
+                false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(SameSiteCookieContext(
+                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
+            cookie_util::ComputeSameSiteContextForScriptSet(
+                GURL("http://example.com"),
+                SiteForCookies::FromUrl(GURL("https://notexample.com")),
                 false /* attach_same_site_cookies */));
 
   // Same as above except |attach_same_site_cookies| makes it return LAX.
@@ -714,6 +799,22 @@ TEST(CookieUtilTest, TestComputeSameSiteContextForSubresource) {
           GURL("http://example.com"),
           SiteForCookies::FromUrl(GURL("http://notexample.com")),
           false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(SameSiteCookieContext(
+                SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
+            cookie_util::ComputeSameSiteContextForSubresource(
+                GURL("https://example.com"),
+                SiteForCookies::FromUrl(GURL("http://notexample.com")),
+                false /* attach_same_site_cookies */));
+
+  EXPECT_EQ(SameSiteCookieContext(
+                SameSiteCookieContext::ContextType::CROSS_SITE,
+                SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
+            cookie_util::ComputeSameSiteContextForSubresource(
+                GURL("http://example.com"),
+                SiteForCookies::FromUrl(GURL("https://notexample.com")),
+                false /* attach_same_site_cookies */));
 
   // Same as above except |attach_same_site_cookies| makes it return STRICT.
   EXPECT_EQ(SameSiteCookieContext(

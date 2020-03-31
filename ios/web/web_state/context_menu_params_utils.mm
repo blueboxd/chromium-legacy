@@ -14,6 +14,43 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+NSString* GetContextMenuTitle(NSDictionary* element) {
+  NSString* title = nil;
+  NSString* href = element[web::kContextMenuElementHyperlink];
+  if (href) {
+    GURL link_url = GURL(base::SysNSStringToUTF8(href));
+    if (link_url.SchemeIs(url::kJavaScriptScheme)) {
+      title = @"JavaScript";
+    } else {
+      base::string16 URLText = url_formatter::FormatUrl(link_url);
+      title = base::SysUTF16ToNSString(URLText);
+    }
+  }
+  NSString* src = element[web::kContextMenuElementSource];
+  if (!title)
+    title = [src copy];
+  if ([title hasPrefix:base::SysUTF8ToNSString(url::kDataScheme)])
+    title = nil;
+  NSString* title_attribute = element[web::kContextMenuElementTitle];
+  if (title_attribute)
+    title = title_attribute;
+  // Prepend the alt text attribute if element is an image without a link.
+  NSString* alt_text = element[web::kContextMenuElementAlt];
+  if (alt_text && src && !href)
+    title = [NSString stringWithFormat:@"%@ – %@", alt_text, title];
+  if ([title length] > web::kContextMenuMaxTitleLength) {
+    base::string16 shortened_title;
+    gfx::ElideString(base::SysNSStringToUTF16(title),
+                     web::kContextMenuMaxTitleLength, &shortened_title);
+    title = base::SysUTF16ToNSString(shortened_title);
+  }
+  return title;
+}
+
+}  // namespace
+
 namespace web {
 
 BOOL CanShowContextMenuForElementDictionary(NSDictionary* element) {
@@ -31,46 +68,21 @@ BOOL CanShowContextMenuForElementDictionary(NSDictionary* element) {
 ContextMenuParams ContextMenuParamsFromElementDictionary(
     NSDictionary* element) {
   ContextMenuParams params;
-  NSString* title = nil;
   NSString* href = element[kContextMenuElementHyperlink];
-  if (href) {
+  if (href)
     params.link_url = GURL(base::SysNSStringToUTF8(href));
-    if (params.link_url.SchemeIs(url::kJavaScriptScheme)) {
-      title = @"JavaScript";
-    } else {
-      base::string16 URLText = url_formatter::FormatUrl(params.link_url);
-      title = base::SysUTF16ToNSString(URLText);
-    }
-  }
   NSString* src = element[kContextMenuElementSource];
-  if (src) {
+  if (src)
     params.src_url = GURL(base::SysNSStringToUTF8(src));
-    if (!title)
-      title = [src copy];
-    if ([title hasPrefix:base::SysUTF8ToNSString(url::kDataScheme)])
-      title = nil;
-  }
-  NSString* titleAttribute = element[kContextMenuElementTitle];
-  if (titleAttribute)
-    title = titleAttribute;
-  if (title) {
-    params.menu_title = [title copy];
-  }
-  NSString* referrerPolicy = element[kContextMenuElementReferrerPolicy];
-  if (referrerPolicy) {
+  NSString* referrer_policy = element[kContextMenuElementReferrerPolicy];
+  if (referrer_policy) {
     params.referrer_policy =
-        web::ReferrerPolicyFromString(base::SysNSStringToUTF8(referrerPolicy));
+        web::ReferrerPolicyFromString(base::SysNSStringToUTF8(referrer_policy));
   }
-  NSString* innerText = element[kContextMenuElementInnerText];
-  if ([innerText length] > 0) {
-    params.link_text = [innerText copy];
-  }
-  if ([params.menu_title length] > kContextMenuMaxTitleLength) {
-    base::string16 shortenedTitle;
-    gfx::ElideString(base::SysNSStringToUTF16(params.menu_title),
-                     kContextMenuMaxTitleLength, &shortenedTitle);
-    params.menu_title = base::SysUTF16ToNSString(shortenedTitle);
-  }
+  NSString* inner_text = element[kContextMenuElementInnerText];
+  if ([inner_text length] > 0)
+    params.link_text = [inner_text copy];
+  params.menu_title = GetContextMenuTitle(element);
   return params;
 }
 

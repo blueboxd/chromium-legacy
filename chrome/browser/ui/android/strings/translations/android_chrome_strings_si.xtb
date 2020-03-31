@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome දැන් ගොනු වේගවත්ව බාගනී</translation>
 <translation id="1883903952484604915">මගේ ගොනු</translation>
 <translation id="1887786770086287077">මෙම උපාංගය සඳහා ස්ථාන ප්‍රවේශය ක්‍රියා විරහිතයි. <ph name="BEGIN_LINK" />Android සැකසීම්<ph name="END_LINK" /> තුළ එය ක්‍රියාත්මක කරන්න.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome තුළ විවෘත වනු ඇත. ඉදිරියට යාමෙන්, ඔබ Chrome හි <ph name="BEGIN_LINK1" />සේවා නියම<ph name="END_LINK1" /> සහ <ph name="BEGIN_LINK2" />රහස්‍යතා නිවේදනය<ph name="END_LINK2" /> වෙත එකඟ වේ.</translation>
 <translation id="1919345977826869612">වෙළඳ දැන්වීම්</translation>
 <translation id="1919950603503897840">සම්බන්ධතා තෝරන්න</translation>
 <translation id="1922076542920281912">Chrome හට ඔබේ ස්ථානයට ප්‍රවේශ වීමට ඉඩ දීමට, <ph name="BEGIN_LINK" />Android සැකසීම්<ph name="END_LINK" /> තුළ ද ස්ථානය සක්‍රීය කරන්න.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">රූපය</translation>
 <translation id="257088987046510401">තේමා</translation>
 <translation id="2570922361219980984">මෙම උපාංගය සඳහා ස්ථාන ප්‍රවේශයත් ක්‍රියා විරහිතයි. <ph name="BEGIN_LINK" />Android සැකසීම්<ph name="END_LINK" /> තුළ එය ක්‍රියාත්මක කරන්න.</translation>
-<translation id="257931822824936280">පුඵල් කරන ලදි - හැකිලීමට ක්ලික් කරන්න</translation>
 <translation id="2581165646603367611">මෙය Chrome වැදගත් යැයි නොසිතන කුකීස්, හැඹිලිය, සහ අඩවිවල අනෙකුත් දත්ත හිස් කරනු ඇත.</translation>
 <translation id="2586657967955657006">පසුරු පුවරුව</translation>
 <translation id="2587052924345400782">වඩා අලුත් අනුවාදයක් තිබේ</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">අයිතමය ඉවත් කරන ලදී: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> විවෘත කරන්න</translation>
 <translation id="4634124774493850572">මුරපදය භාවිත කරන්න</translation>
-<translation id="4645575059429386691">ඔබේ දෙමව්පියන් පාලනය කරයි</translation>
 <translation id="4650364565596261010">පද්ධති පෙරනිමිය</translation>
 <translation id="4660838440047236328">ඔබේ කාමරයේ වින්‍යාසය</translation>
 <translation id="4663756553811254707">පිටුසන් <ph name="NUMBER_OF_BOOKMARKS" /> ක් මකන ලදී</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">විවෘත කරන්න</translation>
 <translation id="488187801263602086">ගොනුව නැවත නම් කරන්න</translation>
 <translation id="4882831918239250449">ඔබගේ බ්‍රවුස් කිරීමේ ඉතිහාසය සෙවීම, වෙළඳ දැන්වීම් සහ තවත් දේ පෞද්ගලිකකරණය කිරීමට භාවිත කරන ආකාරය පාලනය කිරීම</translation>
-<translation id="4883854917563148705">කළමනා කෙරෙන සැකසීම් යළි සැකසිය නොහැක</translation>
 <translation id="4885273946141277891">සහාය නොදක්වන Chrome අවස්ථා සංඛ්‍යාව.</translation>
 <translation id="4887024562049524730">වෙබ් අඩවිවලට ඔබේ අතත්‍ය යථාර්ථ උපාංගය සහ දත්ත භාවිත කිරීමට ඉඩ දීමට පෙර අසන්න (නිර්දේශිතයි)</translation>
 <translation id="4910889077668685004">ගෙවීම් යෙදුම්</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">වෙබ් අඩවිවලට චලන සංවේදකවලට ප්‍රවේශ වීමට ඉඩ දෙන්න (නිර්දේශිතයි)</translation>
 <translation id="5063480226653192405">භාවිතය</translation>
 <translation id="5087580092889165836">කාඩ්පත එක් කරන්න</translation>
-<translation id="5100237604440890931">හකුළන ලදි - දිග හැරීමට ක්ලික් කරන්න</translation>
 <translation id="510275257476243843">පැය 1ක් ඉතිරියි</translation>
 <translation id="5123685120097942451">අප්‍රකට පටිත්ත</translation>
 <translation id="5127805178023152808">සමමුහුර්තකරණය අක්‍රියයි</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">පටිත්ත ලැබුණා</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> විවෘත පටිත්තක්, පටිති මාරු කිරීමට තට්ටු කරන්න}one{විවෘත පටිති <ph name="OPEN_TABS_MANY" />ක්, පටිති මාරු කිරීමට තට්ටු කරන්න}other{විවෘත පටිති <ph name="OPEN_TABS_MANY" />ක්, පටිති මාරු කිරීමට තට්ටු කරන්න}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(තවත් + 1ක්)}one{(තවත් + #ක්)}other{(තවත් + #ක්)}}</translation>
-<translation id="5400569084694353794">මෙම යෙදුම භාවිතයෙන්, ඔබ Chrome හි <ph name="BEGIN_LINK1" />සේවා නියම<ph name="END_LINK1" /> සහ <ph name="BEGIN_LINK2" />රහස්‍යතා නිවේදනය<ph name="END_LINK2" /> වෙත එකඟ වේ.</translation>
 <translation id="5403592356182871684">නම්</translation>
 <translation id="5403644198645076998">නිශ්චිත අඩවිවලට පමණක් ඉඩ දෙන්න</translation>
 <translation id="5414836363063783498">ස්ථිර කරයි…</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">වේගවත් බ්‍රවුස් කිරීම සහ සෙවීම සඳහා පිටු පෙර පූරණය කරන්න</translation>
 <translation id="79859296434321399">වැඩි දියුණු කළ යතාර්ථ අන්තර්ගතය බැලීමට, ARCore ස්ථාපනය කරන්න</translation>
 <translation id="7986741934819883144">සම්බන්ධතාවක් තෝරාගන්න</translation>
-<translation id="7987073022710626672">Chrome සේවා නියම</translation>
 <translation id="7993619969781047893">සමහර වෙබ් අඩවි මත විශේෂාංග කැඩී ගිය හැක</translation>
 <translation id="7998918019931843664">වැසූ ටැබය යළි විවෘත කරන්න</translation>
 <translation id="7999064672810608036">කුකීස් ඇතුළු සියලු පෙදෙසි දත්ත හිස් කිරීමට අවශ්‍ය යැයි සහ මෙම වෙබ් අඩවිය සඳහා සියලු අවසර නැවත සැකසිය යුතු යැයි ඔබට විශ්වාස ද?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">ගොනු <ph name="FILES" />ක් ඉතිරියි</translation>
 <translation id="8190358571722158785">දින 1ක් ඉතිරියි</translation>
 <translation id="8200772114523450471">කරගෙන යන්න</translation>
-<translation id="8206354486702514201">මෙම සැකසුම පරිපාලකයා විසින් බලකර ඇත.</translation>
 <translation id="8209050860603202033">රූපය විවෘත කරන්න</translation>
 <translation id="8218622182176210845">ඔබගේ ගිණුම කළමනා කරන්න</translation>
 <translation id="8224471946457685718">Wi-Fi මත ඔබ සඳහා ලිපි බාගන්න</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{සංඥා ප්‍රබලතා මට්ටම: කණු #}one{සංඥා ප්‍රබලතා මට්ටම: කණු #}other{සංඥා ප්‍රබලතා මට්ටම: කණු #}}</translation>
 <translation id="868929229000858085">ඔබේ සම්බන්ධතා සොයන්න</translation>
 <translation id="869891660844655955">කල් ඉකුත් වීමේ දිනය:</translation>
-<translation id="8728487861892616501">මෙම යෙදුම භාවිතා කිරීමෙන්, ඔබ Chrome හි <ph name="BEGIN_LINK1" />සේවා නියම<ph name="END_LINK1" /> සහ <ph name="BEGIN_LINK2" />රහස්‍යතා නිවේදනය<ph name="END_LINK2" />, සහ <ph name="BEGIN_LINK3" />Family Link සමඟ කළමනාකරණය කරන ලද Google ගිණුම් සඳහා වන රහස්‍යතා නිවේදනය<ph name="END_LINK3" /> වෙත එකඟ වේ.</translation>
 <translation id="8748850008226585750">අන්තර්ගත සැඟවිණි</translation>
 <translation id="8751914237388039244">රූපයක් තෝරන්න</translation>
 <translation id="8758557275681689734">ඔබේ සියලුම විවෘත පටිති බලන්න</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">නිශ්චිත වෙබ් අඩවියක් සඳහා ජාවාස්ක්‍රිප්ට් අවහිර කරන්න.</translation>
 <translation id="8812260976093120287">සමහර වෙබ් අඩවිවල, ඔබේ උපාංගයෙහි සහාය දක්වන ඉහත ගෙවීම් යෙදුම් සමඟින් ඔබට ගෙවිය හැකිය.</translation>
 <translation id="8816026460808729765">වෙබ් අඩවි සංවේදක වෙත ප්‍රවේශ වීම අවහිර කරන්න</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome තුළ විවෘත වනු ඇත. ඉදිරියට යාමෙන්, ඔබ Chrome හි <ph name="BEGIN_LINK1" />සේවා නියම<ph name="END_LINK1" /> සහ <ph name="BEGIN_LINK2" />රහස්‍යතා නිවේදනය<ph name="END_LINK2" />, සහ <ph name="BEGIN_LINK3" />Family Link සමඟ කළමනාකරණය කරන ලද Google ගිණුම් සඳහා රහස්‍යතා නිවේදනය<ph name="END_LINK3" /> වෙත එකඟ වේ.</translation>
 <translation id="8820817407110198400">පිටුසන්</translation>
 <translation id="8833831881926404480">වෙබ් අඩවියක් ඔබගේ තිරය බෙදා ගනියි</translation>
 <translation id="883806473910249246">අන්තර්ගතය බාගැනිමේදී දෝෂයක් සිදු විය.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">දුරකථනය ආරක්‍ෂක යතුරක් ලෙස භාවිත කරන්න</translation>
 <translation id="8993760627012879038">අප්‍රකට ප්‍රකාරය තුළ නව ටැබයක් විවෘත කරන්න</translation>
 <translation id="8998729206196772491">ඔබ <ph name="MANAGED_DOMAIN" /> මගින් කළමනාකරණය කරන ගිණුමක් සමගින් පුරමින් සහ එහි පරිපාලකට ඔබේ Chrome දත්තවල පාලනය දෙමින් සිටී. ඔබේ දත්ත මෙම ගිණුමට ස්ථිරව බැඳෙනු ඇත. Chrome වෙතින් වැරීම ඔබේ දත්ත මෙම උපාංගය වෙතින් මකනු ඇති නමුත්, ඔබේ දත්ත Google ගිණුම තුළ ගබඩා වී තිබෙනු ඇත.</translation>
-<translation id="9019902583201351841">ඔබේ දෙමව්පියන් පාලනය කරයි</translation>
 <translation id="9028914725102941583">උපාංග හරහා බෙදා ගැනීමට සමමුහුව ක්‍රියාත්මක කරන්න</translation>
 <translation id="9040142327097499898">දැනුම්දීම්වලට ඉඩ දේ. මෙම උපාංගය සඳහා ස්ථානය ක්‍රියා විරහිතයි.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# වීඩියෝවක්}one{වීඩියෝ #ක්}other{වීඩියෝ #ක්}}</translation>

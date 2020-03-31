@@ -4,6 +4,9 @@
 
 #include "ui/views/examples/dialog_example.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"

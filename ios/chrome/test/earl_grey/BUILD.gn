@@ -108,7 +108,6 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/tabs:eg_tests",
     "//ios/chrome/browser/ui/toolbar:eg_tests",
     "//ios/chrome/browser/ui/webui:eg_tests",
-    "//ios/chrome/browser/ui/webui/interstitials:eg_tests",
   ]
 
   shards = 2

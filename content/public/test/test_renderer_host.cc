@@ -205,10 +205,10 @@ std::unique_ptr<WebContents>
 RenderViewHostTestHarness::CreateTestWebContents() {
 // Make sure we ran SetUp() already.
 #if defined(OS_WIN)
-  DCHECK(ole_initializer_ != NULL);
+  DCHECK(ole_initializer_);
 #endif
 #if defined(USE_AURA)
-  DCHECK(aura_test_helper_ != nullptr);
+  DCHECK(aura_test_helper_);
 #endif
 
   scoped_refptr<SiteInstance> instance =
@@ -232,22 +232,20 @@ void RenderViewHostTestHarness::NavigateAndCommit(
 }
 
 void RenderViewHostTestHarness::SetUp() {
-  rvh_test_enabler_.reset(new RenderViewHostTestEnabler);
+  rvh_test_enabler_ = std::make_unique<RenderViewHostTestEnabler>();
   if (factory_)
     rvh_test_enabler_->rvh_factory_->set_render_process_host_factory(factory_);
 
 #if defined(OS_WIN)
-  ole_initializer_.reset(new ui::ScopedOleInitializer());
+  ole_initializer_ = std::make_unique<ui::ScopedOleInitializer>();
 #endif
 #if defined(USE_AURA)
-  ui::ContextFactory* context_factory =
-      ImageTransportFactory::GetInstance()->GetContextFactory();
-
-  aura_test_helper_.reset(new aura::test::AuraTestHelper(context_factory));
+  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>(
+      ImageTransportFactory::GetInstance()->GetContextFactory());
   aura_test_helper_->SetUp();
 #endif
 
-  sanity_checker_.reset(new ContentBrowserSanityChecker());
+  sanity_checker_ = std::make_unique<ContentBrowserSanityChecker>();
 
 #if !defined(OS_ANDROID)
   network_change_notifier_ = net::test::MockNetworkChangeNotifier::Create();

@@ -190,7 +190,11 @@ void RulesMonitorService::OnExtensionLoaded(
 
   // Static ruleset.
   {
-    RulesetInfo static_ruleset(RulesetSource::CreateStatic(*extension));
+    std::vector<RulesetSource> static_rulesets =
+        RulesetSource::CreateStatic(*extension);
+
+    // TODO(crbug.com/754526): Load all static rulesets for the extension.
+    RulesetInfo static_ruleset(std::move(static_rulesets[0]));
     bool has_checksum = prefs_->GetDNRStaticRulesetChecksum(
         extension->id(), static_ruleset.source().id(),
         &expected_ruleset_checksum);

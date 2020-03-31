@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/common/content_export.h"
@@ -144,11 +145,14 @@ class CONTENT_EXPORT CacheStorageContextImpl
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const scoped_refptr<ObserverList> observers_;
 
+  // Used to synchronize shutdown state aross multiple threads.
+  base::Lock shutdown_lock_;
+
   // Initialized in Init(); true if the user data directory is empty.
   bool is_incognito_ = false;
 
   // True once Shutdown() has been called on the UI thread.
-  std::atomic<bool> shutdown_;
+  bool shutdown_ = false;
 
   // Initialized in Init().
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

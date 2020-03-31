@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">Карталарды көрүү</translation>
 <translation id="3369192424181595722">Саат катасы</translation>
 <translation id="337363190475750230">Чыгарылды</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> серепчиңиздеги Enterprise Service Hooks кызматын иштетти. Бул илмектердин айрым маалыматыңызга кирүү мүмкүнчүлүктөрү бар.</translation>
 <translation id="3377144306166885718">Сервер TLS'тин жоюлган версиясын колдонду.</translation>
 <translation id="3377188786107721145">Саясатты талдоо катасы</translation>
 <translation id="3377736046129930310">Карталарды тезирээк ырастоо үчүн экрандын кулпусун колдонуңуз</translation>
@@ -984,7 +983,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> тилинде эмеспи? Бул ката тууралуу кабарлаңыз</translation>
 <translation id="5190835502935405962">Кыстармалар тилкеси</translation>
 <translation id="519422657042045905">Аннотация жеткиликсиз</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Бул веб баракчада кыстарылган барак мындай дейт:</translation>
 <translation id="5205222826937269299">Атын киргизиңиз</translation>
 <translation id="5209518306177824490">SHA-1 Манжа изи</translation>
@@ -1458,7 +1456,6 @@
 <translation id="725866823122871198">Компьютериңиздин күнү жана убакыты (<ph name="DATE_AND_TIME" />) туура эмес болгондуктан, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> менен купуя туташуу мүмкүн болбой жатат.</translation>
 <translation id="7260504762447901703">Мүмкүнчүлүктү жоюу</translation>
 <translation id="7275334191706090484">Башкарылган кыстармалар</translation>
-<translation id="7288778322931489286">Администраторуңуз серепчиңиздеги Enterprise Service Hooks кызматын иштетти. Бул илмектердин айрым маалыматыңызга кирүү мүмкүнчүлүктөрү бар.</translation>
 <translation id="7292031607255951991">Алуучунун аты</translation>
 <translation id="7298195798382681320">Сунушталат</translation>
 <translation id="7300012071106347854">Кочкул көк</translation>
@@ -1815,7 +1812,6 @@
 <translation id="8866481888320382733">Саясат жөндөөлөрүн талдоо катасы</translation>
 <translation id="8866928039507595380">Бүктөө</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks аркылуу белгиленген коопсуздук иш-чаралары тууралуу маалыматты администраторуңуз менен бөлүшүңүз. Анда сиз ачкан барактардын URL даректери, файлдардын аталыштары же метадайындар, түзмөгүңүзгө жана Chrome'го кирүүдө колдонгон колдонуучунун аты бар.</translation>
 <translation id="8870413625673593573">Жакында жабылган</translation>
 <translation id="8870494189203302833">Ошол эле иретте алдыңкы бетин ылдый каратып</translation>
 <translation id="8874824191258364635">Жарактуу карточканын номерин киргизиңиз</translation>

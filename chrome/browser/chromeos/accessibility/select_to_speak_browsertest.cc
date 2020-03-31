@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/pattern.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,7 +73,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   }
 
-  SpeechMonitor speech_monitor_;
+  SpeechMonitor sm_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
   gfx::Rect GetWebContentsBounds() const {
@@ -140,8 +139,8 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  void ExecuteJavaScriptInForeground(const std::string& script) {
-    CHECK(content::ExecuteScript(GetWebContents(), script));
+  void ExecuteJavaScriptAsync(const std::string& script) {
+    content::ExecuteScriptAsync(GetWebContents(), script);
   }
 
  private:
@@ -176,8 +175,8 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SpeakStatusTray) {
   generator_->ReleaseLeftButton();
   generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
 
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(), "Status tray*"));
+  sm_.ExpectSpeechPattern("Status tray*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ActivatesWithTapOnSelectToSpeakTray) {
@@ -199,8 +198,8 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ActivatesWithTapOnSelectToSpeakTray) {
                           bounds.y() + bounds.height());
   generator_->ReleaseLeftButton();
 
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "This is some text*"));
+  sm_.ExpectSpeechPattern("This is some text*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SelectToSpeakTrayNotSpoken) {
@@ -218,8 +217,9 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SelectToSpeakTrayNotSpoken) {
   // The next should be the first thing spoken -- the tray was not spoken.
   ActivateSelectToSpeakInWindowBounds(
       "data:text/html;charset=utf-8,<p>This is some text</p>");
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "This is some text*"));
+
+  sm_.ExpectSpeechPattern("This is some text*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SmoothlyReadsAcrossInlineUrl) {
@@ -230,9 +230,8 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SmoothlyReadsAcrossInlineUrl) {
   // Should combine nodes in a paragraph into one utterance.
   // Includes some wildcards between words because there may be extra
   // spaces. Spaces are not pronounced, so extra spaces do not impact output.
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                         "This is some text*with a node*in the middle*"));
+  sm_.ExpectSpeechPattern("This is some text*with a node*in the middle*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SmoothlyReadsAcrossMultipleLines) {
@@ -245,9 +244,8 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SmoothlyReadsAcrossMultipleLines) {
   // spaces, for example at line wraps. Extra wildcards included to
   // reduce flakyness in case wrapping is not consistent.
   // Spaces are not pronounced, so extra spaces do not impact output.
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                         "This is some*text*with*a*node*in*the*middle*"));
+  sm_.ExpectSpeechPattern("This is some*text*with*a*node*in*the*middle*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SmoothlyReadsAcrossFormattedText) {
@@ -259,9 +257,8 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SmoothlyReadsAcrossFormattedText) {
   // Should combine nodes in a paragraph into one utterance.
   // Includes some wildcards between words because there may be extra
   // spaces. Spaces are not pronounced, so extra spaces do not impact output.
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                         "This is some text*with a node*in the middle*"));
+  sm_.ExpectSpeechPattern("This is some text*with a node*in the middle*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest,
@@ -269,8 +266,9 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest,
   // Bold or formatted text
   ActivateSelectToSpeakInWindowBounds(
       "data:text/html;charset=utf-8,<canvas>This is some text</canvas>");
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "This is some text*"));
+
+  sm_.ExpectSpeechPattern("This is some text*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, BreaksAtParagraphBounds) {
@@ -279,10 +277,9 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, BreaksAtParagraphBounds) {
       "<p>Second paragraph</p></div>");
 
   // Should keep each paragraph as its own utterance.
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "First paragraph*"));
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Second paragraph*"));
+  sm_.ExpectSpeechPattern("First paragraph*");
+  sm_.ExpectSpeechPattern("Second paragraph*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, LanguageBoundsIgnoredByDefault) {
@@ -293,9 +290,8 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, LanguageBoundsIgnoredByDefault) {
       "<span lang='en-US'>The first paragraph</span>"
       "<span lang='fr-FR'>la deuxième paragraphe</span></div>");
 
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                         "The first paragraph* la deuxième paragraphe*"));
+  sm_.ExpectSpeechPattern("The first paragraph* la deuxième paragraphe*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTestWithLanguageDetection,
@@ -305,15 +301,9 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTestWithLanguageDetection,
       "<span lang='en-US'>The first paragraph</span>"
       "<span lang='fr-FR'>la deuxième paragraphe</span></div>");
 
-  SpeechMonitorUtterance result1 =
-      speech_monitor_.GetNextUtteranceWithLanguage();
-  EXPECT_TRUE(base::MatchPattern(result1.text, "The first paragraph*"));
-  EXPECT_EQ("en-US", result1.lang);
-
-  SpeechMonitorUtterance result2 =
-      speech_monitor_.GetNextUtteranceWithLanguage();
-  EXPECT_TRUE(base::MatchPattern(result2.text, "la deuxième paragraphe*"));
-  EXPECT_EQ("fr-FR", result2.lang);
+  sm_.ExpectSpeechPatternWithLocale("The first paragraph*", "en-US");
+  sm_.ExpectSpeechPatternWithLocale("la deuxième paragraphe*", "fr-FR");
+  sm_.Replay();
 }
 
 // Flaky test. https://crbug.com/950049
@@ -399,15 +389,16 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ContinuesReadingDuringResize) {
       "<p>Second paragraph is longer than 300 pixels and will wrap when "
       "resized</p></div>");
 
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "First paragraph*"));
+  sm_.ExpectSpeechPattern("First paragraph*");
 
   // Resize before second is spoken. If resizing caused errors finding the
   // inlineTextBoxes in the node, speech would be stopped early.
-  ExecuteJavaScriptInForeground(
-      "document.getElementById('resize').style.width='100px'");
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(), "*when*resized*"));
+  sm_.Call([this]() {
+    ExecuteJavaScriptAsync(
+        "document.getElementById('resize').style.width='100px'");
+  });
+  sm_.ExpectSpeechPattern("*when*resized*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, WorksWithStickyKeys) {
@@ -429,11 +420,12 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, WorksWithStickyKeys) {
                           bounds.y() + bounds.height());
   generator_->ReleaseLeftButton();
 
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "This is some text*"));
+  sm_.ExpectSpeechPattern("This is some text*");
 
   // Reset state.
-  AccessibilityManager::Get()->EnableStickyKeys(false);
+  sm_.Call([]() { AccessibilityManager::Get()->EnableStickyKeys(false); });
+
+  sm_.Replay();
 }
 
 }  // namespace chromeos

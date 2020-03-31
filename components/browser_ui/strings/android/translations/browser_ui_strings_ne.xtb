@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
 <translation id="2501278716633472235">पछाडि जानुहोस्</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{१ कुकीमाथि रोक लगाइयो}other{# कुकीहरूमाथि रोक लगाइयो}}</translation>
+<translation id="257931822824936280">विस्तृत गरिएको - संक्षिप्त पार्न क्लिक गर्नुहोस्</translation>
 <translation id="2653659639078652383">पेश गर्नुहोस्</translation>
 <translation id="2704606927547763573">प्रतिलिपि गरियो</translation>
 <translation id="2968755619301702150">प्रमाणपत्र दर्शक</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">लिंक प्रतिलिपि गर्नुहोस्</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4570913071927164677">विवरणहरू</translation>
+<translation id="4645575059429386691">तपाईँको अविभावक द्वारा प्रबन्ध गरिएको</translation>
+<translation id="4883854917563148705">व्यवस्थित सेटिङ रिसेट गर्न सकिँदैन</translation>
 <translation id="497421865427891073">अगाडि जानुहोस्</translation>
+<translation id="5100237604440890931">संक्षिप्त भयो - विस्तृत गर्न क्लिक गर्नुहोस्</translation>
 <translation id="5300589172476337783">देखाउनुहोस्</translation>
 <translation id="5301954838959518834">ठिक छ, बुझेँ</translation>
 <translation id="5317780077021120954">बचत गर्नुहोस्</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7846076177841592234">चयन रद्द गर्नुहोस्</translation>
 <translation id="8131740175452115882">निश्चित</translation>
+<translation id="8206354486702514201">यो सेटिङ तपाईंको प्रशासकद्वारा जोड दिएको छ।</translation>
 <translation id="8249310407154411074">शीर्षभागमा सार्नुहोस्</translation>
 <translation id="8261506727792406068">मेट्नुहोस्</translation>
 <translation id="8609465669617005112">माथि सार्नुहोस्</translation>
 <translation id="8676374126336081632">आगत मेटाउनुहोस्</translation>
 <translation id="8725066075913043281">पुन: प्रयास गर्नुहोस्</translation>
 <translation id="8730621377337864115">गरियो</translation>
+<translation id="9019902583201351841">तपाईँको अविभावक द्वारा व्यवस्थित</translation>
 </translationbundle>

@@ -1695,6 +1695,7 @@
 <translation id="3264544094376351444">सान्स-सेरिफ फन्ट</translation>
 <translation id="3264582393905923483">सन्दर्भ</translation>
 <translation id="3265459715026181080">सन्झ्याल बन्द गर्नुहोस्</translation>
+<translation id="3266274118485960573">सुरक्षा जाँच गरिँदै छ।</translation>
 <translation id="3267726687589094446">धेरै फाइलहरूको स्वत: डाउनलोडलाई अनुमति दिन जारी राख्नुहोस्</translation>
 <translation id="3268451620468152448">ट्याबहरू खोल्नुहोस्</translation>
 <translation id="3269069891205016797">तपाईं साइन आउट हुनुभएपछि यो यन्त्रमा भएको तपाईंको जानकारी हटाइने छ।</translation>
@@ -1800,6 +1801,7 @@
 <translation id="3412265149091626468">छनौटमा जानुहोस्</translation>
 <translation id="3413122095806433232">CA जारीकर्ता: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">आकार:</translation>
+<translation id="3416468988018290825">सँधै पूरा URL हरू देखाइयोस्</translation>
 <translation id="3420501302812554910">आन्तरिक सुरक्षा साँचो रिसेट गर्नु आवश्यक छ</translation>
 <translation id="3421387094817716717">अण्डाकार कर्भको सार्वजनिक कुञ्जी</translation>
 <translation id="3422291238483866753">कुनै साइटले तपाईं वरपरको ठाउँको 3D नक्सा बनाउन वा क्यामेराको अवस्था पत्ता लगाउन खोज्दा मलाई सोधियोस् (सिफारिस गरिएको)</translation>
@@ -4153,6 +4155,7 @@
 <translation id="6586451623538375658">प्राथमिक माउस बटन बदल्नुहोस्</translation>
 <translation id="6586604979641883411">Linux को स्तरवृद्धि गर्न डिस्कमा कम्तीमा पनि <ph name="REQUIRED_SPACE" /> बराबरको ठाउँ खाली हुनु पर्छ। कृपया आफ्नो फोनको केही ठाउँ खाली गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="6588043302623806746">सुरक्षित DNS प्रयोग गर्नुहोस्</translation>
+<translation id="659005207229852190">सुरक्षा जाँच सम्पन्न भएको छ।</translation>
 <translation id="6590458744723262880">फोल्डरको पुनः नामकरण गर्नुहोस्</translation>
 <translation id="6592267180249644460">WebRTC लगले <ph name="WEBRTC_LOG_CAPTURE_TIME" /> क्याप्चर गर्‍यो</translation>
 <translation id="6592808042417736307">तपाईंको फिंगरप्रिन्ट थपियो</translation>
@@ -5411,6 +5414,7 @@
 <translation id="8249672078237421304">तपाईंले पढ्नुहुने भाषामा नरहेका पृष्ठहरूलाई अनुवाद गर्न प्रस्ताव गर्नुहोस्</translation>
 <translation id="8251441930213048644">अब पुनः ताजा गर्नुहोस्</translation>
 <translation id="8251578425305135684">थम्बनेल हटाइयो।</translation>
+<translation id="825238165904109940">सँधै पूरा URL हरू देखाइयोस्</translation>
 <translation id="8252569384384439529">अपलोड गर्दै...</translation>
 <translation id="8253198102038551905">नेटवर्क गुणहरू प्राप्त गर्न '+' क्लिक गर्नुहोस्</translation>
 <translation id="8254954272268479918">Linux बन्द गर्नुहोस् (बिटा)</translation>

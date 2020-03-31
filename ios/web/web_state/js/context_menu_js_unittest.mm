@@ -89,6 +89,9 @@ NSString* const kImageSource =
      "CjxyZWN0IHdpZHRoPSI"
      "2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMDA2NmZmIi8+Cjwvc3ZnPg==";
 
+// Alt text on image element for accessibility.
+NSString* const kImageAlt = @"Some alt text for an image";
+
 // Style used to size the image returned by |GetHtmlForImage()|.
 NSString* const kImageSizeStyle = @"width:100%;height:25%;";
 
@@ -152,25 +155,29 @@ NSString* GetHtmlForShadowDomLink(NSString* href, NSString* text) {
 // Returns html for an image styled to fill the width and top 25% of its
 // container. |source| must be provided, but specifying an image |title| and
 // inline |style| are optional.
-NSString* GetHtmlForImage(NSString* source, NSString* title, NSString* style) {
+NSString* GetHtmlForImage(NSString* source,
+                          NSString* alt_text,
+                          NSString* title,
+                          NSString* style) {
   NSString* additional_css = style ? style : @"";
   NSString* image_title =
       title ? [NSString stringWithFormat:@"title='%@' ", title] : @"";
   return [NSString
-      stringWithFormat:@"<img id='image' %@style='%@%@' src='%@'/>",
-                       image_title, kImageSizeStyle, additional_css, source];
+      stringWithFormat:@"<img id='image' %@style='%@%@' src='%@' alt='%@'/>",
+                       image_title, kImageSizeStyle, additional_css, source,
+                       alt_text];
 }
 
 // Returns html for an image styled to fill the width and top 25% of its
 // container.
 NSString* GetHtmlForImage() {
-  return GetHtmlForImage(kImageSource, /*title=*/nil, /*style=*/nil);
+  return GetHtmlForImage(kImageSource, kImageAlt, /*title=*/nil, /*style=*/nil);
 }
 
 // Returns html for an image styled to fill the width and top 25% of its
 // container.
 NSString* ImageHtmlWithSource(NSString* source) {
-  return GetHtmlForImage(source, /*title=*/nil, /*style=*/nil);
+  return GetHtmlForImage(source, kImageAlt, /*title=*/nil, /*style=*/nil);
 }
 
 }  // namespace
@@ -248,6 +255,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, FLAKY_FindImageElementAtPoint) {
   NSDictionary* expected_value = @{
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource : kImageSource,
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
   };
 
@@ -260,7 +268,8 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
        FLAKY_FindImageElementWithTitleAtPoint) {
   NSString* const image_title = @"Hello world!";
   NSString* html = GetHtmlForPage(
-      /*head=*/nil, GetHtmlForImage(kImageSource, image_title, /*style=*/nil));
+      /*head=*/nil,
+      GetHtmlForImage(kImageSource, kImageAlt, image_title, /*style=*/nil));
 
   ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
@@ -268,6 +277,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
   NSDictionary* expected_value = @{
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource : kImageSource,
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
     kContextMenuElementTitle : image_title,
   };
@@ -319,6 +329,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
   NSDictionary* expected_value = @{
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource : kImageSource,
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
     kContextMenuElementHyperlink : image_link,
   };
@@ -375,6 +386,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource :
         [NSString stringWithFormat:@"%s%@", kTestUrl, relative_image_path],
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
     kContextMenuElementHyperlink : image_link,
   };
@@ -398,6 +410,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, FindImageLinkedToJavaScript) {
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource :
         [NSString stringWithFormat:@"%s%@", kTestUrl, relative_image_path],
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
     kContextMenuElementHyperlink : image_link,
   };
@@ -421,6 +434,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource :
         [NSString stringWithFormat:@"%s%@", kTestUrl, relative_image_path],
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
   };
   // Make sure the returned JSON does not have an 'href' key.
@@ -443,6 +457,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource :
         [NSString stringWithFormat:@"%s%@", kTestUrl, relative_image_path],
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
   };
   // Make sure the returned JSON does not have an 'href' key.
@@ -462,6 +477,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
   NSDictionary* expected_result = @{
     kContextMenuElementRequestId : kRequestId,
     kContextMenuElementSource : kImageSource,
+    kContextMenuElementAlt : kImageAlt,
     kContextMenuElementReferrerPolicy : @"default",
   };
   // Make sure the returned JSON does not have an 'href' key.
@@ -473,7 +489,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
 // TODO(crbug.com/1046580): this test is flaky.
 TEST_F(ContextMenuJsFindElementAtPointTest, FLAKY_LinkOfImageWithCalloutNone) {
   NSString* const image_link = @"http://destination/";
-  NSString* image_html = GetHtmlForImage(kImageSource, /*title=*/nil,
+  NSString* image_html = GetHtmlForImage(kImageSource, kImageAlt, /*title=*/nil,
                                          @"-webkit-touch-callout:none;");
   NSString* html =
       GetHtmlForPage(/*head=*/nil, GetHtmlForLink(image_link, image_html));

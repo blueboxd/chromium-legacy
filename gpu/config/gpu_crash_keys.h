@@ -39,6 +39,8 @@ extern GPU_EXPORT crash_reporter::CrashKeyString<4>
     gpu_watchdog_kill_after_power_resume;
 extern GPU_EXPORT crash_reporter::CrashKeyString<4>
     gpu_watchdog_crashed_in_gpu_init;
+extern GPU_EXPORT crash_reporter::CrashKeyString<16> num_of_processors;
+
 }  // namespace crash_keys
 }  // namespace gpu
 

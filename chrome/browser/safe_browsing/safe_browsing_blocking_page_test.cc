@@ -1893,6 +1893,12 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
       content::IsolateAllSitesForTesting(command_line);
   }
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
@@ -1922,10 +1928,26 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     return WaitForReady(browser);
   }
 
+  void NavigateAndAssertNoInterstitial() {
+    const GURL url = embedded_test_server()->GetURL("/empty.html");
+    SetURLThreatType(url, SB_THREAT_TYPE_URL_PHISHING);
+    ui_test_utils::NavigateToURL(browser(), url);
+    AssertNoInterstitial(browser(), true);
+  }
+
  protected:
   TestThreatDetailsFactory details_factory_;
 
  private:
+  void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
+    TestSafeBrowsingService* service = factory_.test_safe_browsing_service();
+    ASSERT_TRUE(service);
+
+    static_cast<FakeSafeBrowsingDatabaseManager*>(
+        service->database_manager().get())
+        ->SetURLThreatType(url, threat_type);
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   TestSafeBrowsingServiceFactory factory_;
   TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
@@ -1936,11 +1958,7 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                        DelayedWarningShown) {
   base::HistogramTester histograms;
-  // Navigate to a phishing site.
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(kChromeUISafeBrowsingMatchPhishingUrl));
-  WaitForReady(browser());
-  AssertNoInterstitial(browser(), true);
+  NavigateAndAssertNoInterstitial();
 
   // Type something. An interstitial should be shown.
   EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
@@ -1960,11 +1978,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                        DelayedWarningNotShown) {
   base::HistogramTester histograms;
-  // Navigate to a phishing site.
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(kChromeUISafeBrowsingMatchPhishingUrl));
-  WaitForReady(browser());
-  AssertNoInterstitial(browser(), true);
+  NavigateAndAssertNoInterstitial();
 
   // Navigate away without interacting with the page.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));

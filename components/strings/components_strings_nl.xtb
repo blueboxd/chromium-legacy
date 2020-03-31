@@ -539,7 +539,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="3366477098757335611">Passen bekijken</translation>
 <translation id="3369192424181595722">Klokfout</translation>
 <translation id="337363190475750230">Uitgeschreven</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> heeft Enterprise Service Hooks ingeschakeld in je browser. Deze hooks hebben toegang tot sommige van je gegevens.</translation>
 <translation id="3377144306166885718">De server gebruikte een verouderde versie van TLS.</translation>
 <translation id="3377188786107721145">Fout bij het parseren van beleid</translation>
 <translation id="3377736046129930310">Gebruik schermvergrendeling om kaarten sneller te bevestigen</translation>
@@ -973,7 +972,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="519422657042045905">Annotatie niet beschikbaar</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Een ingesloten pagina op deze pagina meldt het volgende</translation>
 <translation id="5205222826937269299">Naam vereist</translation>
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
@@ -1442,7 +1440,6 @@ Aanvullende informatie:
 <translation id="725866823122871198">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van de computer (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="7260504762447901703">Toegang intrekken</translation>
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
-<translation id="7288778322931489286">Je beheerder heeft Enterprise Service Hooks ingeschakeld in je browser. Deze hooks hebben toegang tot sommige van je gegevens.</translation>
 <translation id="7292031607255951991">Naam van ontvanger</translation>
 <translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="7300012071106347854">Kobaltblauw</translation>
@@ -1799,7 +1796,6 @@ Aanvullende informatie:
 <translation id="8866481888320382733">Fout bij het parseren van beleidsinstellingen</translation>
 <translation id="8866928039507595380">Vouwen</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Deel gegevens over door Enterprise Service Hooks gemarkeerde beveiligingsgebeurtenissen met je beheerder. Deze gegevens zijn bijvoorbeeld URL's van pagina's die je hebt bezocht, bestandsnamen of metadata en de gebruikersnaam die je gebruikt om in te loggen op je apparaat en bij Chrome.</translation>
 <translation id="8870413625673593573">Recent gesloten</translation>
 <translation id="8870494189203302833">Dezelfde volgorde met de bedrukte zijde omlaag</translation>
 <translation id="8874824191258364635">Geef een geldig kaartnummer op</translation>

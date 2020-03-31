@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_AURA_H_
 #define UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_AURA_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"

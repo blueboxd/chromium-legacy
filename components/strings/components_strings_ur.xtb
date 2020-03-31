@@ -549,7 +549,6 @@
 <translation id="3366477098757335611">کارڈز دیکھیں</translation>
 <translation id="3369192424181595722">گھڑی کی خرابی</translation>
 <translation id="337363190475750230">کالعدم کردہ</translation>
-<translation id="3376829916920036789">‏<ph name="ENROLLMENT_DOMAIN" /> نے آپ کے براؤزر پر Enterprise Service Hooks کو فعال کر دیا ہے۔ ان ہُکس کو آپ کے کچھ ڈیٹا تک رسائی حاصل ہے۔</translation>
 <translation id="3377144306166885718">‏سرور نے TLS کا متروک ورژن استعمال کیا۔</translation>
 <translation id="3377188786107721145">پالیسی پارس کرنے کی خرابی</translation>
 <translation id="3377736046129930310">تیزی سے کارڈز کی تصدیق کرنے کیلئے اسکرین لاک استعمال کریں</translation>
@@ -985,7 +984,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> میں نہیں ہے؟ اس خرابی کی اطلاع دیں</translation>
 <translation id="5190835502935405962">بُک مارکس بار</translation>
 <translation id="519422657042045905">تشریح دستیاب نہیں ہے</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">اس صفحے پر انضمام کردہ ایک صفحے کے مطابق</translation>
 <translation id="5205222826937269299">نام مطلوب ہے</translation>
 <translation id="5209518306177824490">‏SHA-1 فنگرپرنٹ</translation>
@@ -1460,7 +1458,6 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> سے ایک نجی کنکشن تشکیل نہیں دیا جا سکتا ہے کیونکہ آپ کے کمپیوٹر کی تاریخ اور وقت (<ph name="DATE_AND_TIME" />) غلط ہیں۔</translation>
 <translation id="7260504762447901703">رسائی کالعدم کریں</translation>
 <translation id="7275334191706090484">منظم کردہ بُک مارکس</translation>
-<translation id="7288778322931489286">‏آپ کے منتظم نے آپ کے براؤزر پر Enterprise Service Hooks کو فعال کر دیا ہے۔ ان ہُکس کو آپ کے کچھ ڈیٹا تک رسائی حاصل ہے۔</translation>
 <translation id="7292031607255951991">وصول کنندہ کا نام</translation>
 <translation id="7298195798382681320">تجویز کردہ</translation>
 <translation id="7300012071106347854">کوبالٹ نیلا</translation>
@@ -1817,7 +1814,6 @@
 <translation id="8866481888320382733">پالیسی کی ترتیبات کو پارس کرنے میں خرابی</translation>
 <translation id="8866928039507595380">فولڈ</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">‏ان سیکیورٹی ایونٹس کے بارے میں ڈیٹا کا اشتراک کریں جن کے بارے میں Enterprise Service Hooks نے آپ کے منتظم کو اطلاع دی ہے۔ اس میں آپ کے ذریعے ملاحظہ کیے جانے والے صفحات کے URLs، فائلوں کے نام یا میٹا ڈیٹا اور وہ صارف نام جس کا استعمال آپ اپنے آلہ اور Chrome میں سائن ان کرنے کے لیے استعمال کرتے ہیں، شامل ہو سکتے ہیں۔</translation>
 <translation id="8870413625673593573">حال ہی میں بند کردہ</translation>
 <translation id="8870494189203302833">اسی ترتیب میں، صفحات کا رُخ نیچے کی جانب</translation>
 <translation id="8874824191258364635">ایک درست کارڈ نمبر درج کریں</translation>

@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">‏يُنزِّل Chrome الآن الملفات بشكلٍ أسرع.</translation>
 <translation id="1883903952484604915">ملفاتي</translation>
 <translation id="1887786770086287077">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886">‏سيتم فتح <ph name="APP_NAME" /> في Chrome. بالمتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> في Chrome.</translation>
 <translation id="1919345977826869612">الإعلانات</translation>
 <translation id="1919950603503897840">اختيار جهات الاتصال</translation>
 <translation id="1922076542920281912">‏للسماح لمتصفِّح Chrome بالوصول إلى موقعك الجغرافي، يُرجى أيضًا تفعيل الموقع الجغرافي في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">صورة</translation>
 <translation id="257088987046510401">المظاهر</translation>
 <translation id="2570922361219980984">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز أيضًا. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">تم التوسيع - انقر للتصغير.</translation>
 <translation id="2581165646603367611">‏سيؤدي هذا إلى محو ملفات تعريف الارتباط وذاكرة التخزين المؤقت والبيانات الأخرى للمواقع التي لا يعتقد Chrome أنها مهمة.</translation>
 <translation id="2586657967955657006">الحافظة</translation>
 <translation id="2587052924345400782">يتوفر إصدار أحدث</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">تمت إزالة العنصر: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">فتح <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">استخدام كلمة المرور</translation>
-<translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4650364565596261010">الإعداد التلقائي للنظام</translation>
 <translation id="4660838440047236328">شكل غرفتك</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">فتح</translation>
 <translation id="488187801263602086">إعادة تسمية الملف</translation>
 <translation id="4882831918239250449">التحكُّم في كيفية استخدامنا لسِجل التصفُّح الخاص بك لتخصيص البحث والإعلانات والمزيد</translation>
-<translation id="4883854917563148705">يتعذّر إعادة ضبط الإعدادات التي تمت إدارتها</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
 <translation id="4887024562049524730">طلب الإذن قبل السماح للمواقع الإلكترونية باستخدام جهاز الواقع الافتراضي وبياناته (إعداد مقترَح)</translation>
 <translation id="4910889077668685004">تطبيقات الدفع</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">السماح لمواقع الويب بالوصول إلى مستشعرات الحركة (مُقترَح)</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
-<translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="510275257476243843">يتبقى ساعة واحدة</translation>
 <translation id="5123685120097942451">علامة تبويب "التصفُّح المتخفي"</translation>
 <translation id="5127805178023152808">المزامنة غير مفعّلة</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">تم تلقي علامة تبويب</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}zero{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}two{علامتا تبويب مفتوحتان<ph name="OPEN_TABS_MANY" />، يُرجى النقر لتبديل علامات التبويب}few{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}many{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}other{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 آخر)}zero{(+ # آخر)}two{(+ اثنين (#) آخرين)}few{(+ # أخرى)}many{(+ # آخر)}other{(+ # آخر)}}</translation>
-<translation id="5400569084694353794">باستخدام هذا التطبيق، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">الأسماء</translation>
 <translation id="5403644198645076998">السماح بمواقع ويب معيّنة فقط</translation>
 <translation id="5414836363063783498">جارٍ التحقق...</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7986741934819883144">اختيار جهة اتصال</translation>
-<translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
 <translation id="7993619969781047893">قد تتوقف الميزات عن العمل في بعض المواقع الإلكترونية.</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="7999064672810608036">هل أنت متأكّد أنك تريد محو كل البيانات المحلية، بما في ذلك ملفات تعريف الارتباط، وإعادة ضبط كافة الأذونات لهذا الموقع الإلكتروني؟</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923"><ph name="FILES" /> من الملفات المتبقية</translation>
 <translation id="8190358571722158785">يتبقى يوم واحد</translation>
 <translation id="8200772114523450471">استئناف</translation>
-<translation id="8206354486702514201">تم فرض هذا الإعداد بواسطة المشرف.</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
 <translation id="8218622182176210845">إدارة حسابك</translation>
 <translation id="8224471946457685718">‏تنزيل مقالات لك عند الاتصال بشبكة Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{مستوى قوة الإشارة: شريط واحد (#)}zero{مستوى قوة الإشارة: # شريط}two{مستوى قوة الإشارة: شريطان (#)}few{مستوى قوة الإشارة: # أشرطة}many{مستوى قوة الإشارة: # شريطًا}other{مستوى قوة الإشارة: # شريط}}</translation>
 <translation id="868929229000858085">البحث في جهات الاتصال</translation>
 <translation id="869891660844655955">تاريخ انتهاء الصلاحية</translation>
-<translation id="8728487861892616501">‏باستخدامك لهذا التطبيق، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة في Chrome<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> و<ph name="BEGIN_LINK3" />إشعار الخصوصية لحسابات Google المُدارة من خلال Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">المحتوى مخفي</translation>
 <translation id="8751914237388039244">اختيار صورة</translation>
 <translation id="8758557275681689734">الاطّلاع على جميع علامات التبويب المفتوحة</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">‏حظر JavaScript لموقع ويب مُعيَّن.</translation>
 <translation id="8812260976093120287">يمكنك على مواقع ويب معيّنة الدفع باستخدام تطبيقات الدفع المتوافقة أعلاه على جهازك.</translation>
 <translation id="8816026460808729765">يمكنك حظر مواقع الويب من الوصول إلى أجهزة الاستشعار.</translation>
-<translation id="8816439037877937734">‏سيتم فتح <ph name="APP_NAME" /> في Chrome. بالمتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> في Chrome، و<ph name="BEGIN_LINK3" />إشعار الخصوصية لحسابات Google المُدارة من خلال Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">الإشارات المرجعية</translation>
 <translation id="8833831881926404480">يشارك موقع ويب شاشتك</translation>
 <translation id="883806473910249246">حدث خطأ أثناء تنزيل المحتوى.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">استخدام الهاتف كمفتاح أمان</translation>
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>
 <translation id="8998729206196772491">‏يتم تسجيل دخولك باستخدام حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" /> ومنح مشرفه الحق في التحكم في بياناتك على Chrome. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chrome إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
-<translation id="9019902583201351841">يديره والداك</translation>
 <translation id="9028914725102941583">تفعيل المزامنة لمشاركة المحتوى مع جهاز آخر</translation>
 <translation id="9040142327097499898">الإشعارات مسموح بها. وتحديد الموقع الجغرافي متوقف لهذا الجهاز.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{فيديو واحد (#)}zero{# فيديو}two{فيديوهان (#)}few{# فيديوهات}many{# فيديو}other{# فيديو}}</translation>

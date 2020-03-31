@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,61 +21,41 @@ class WebContents;
 
 namespace protocol {
 
-namespace {
+const char kDevToolsDownloadManagerDelegateName[] =
+    "devtools_download_manager_delegate";
 
-DevToolsDownloadManagerDelegate* g_devtools_manager_delegate = nullptr;
-
-}  // namespace
-
-DevToolsDownloadManagerDelegate::DevToolsDownloadManagerDelegate()
-    : download_manager_(nullptr), proxy_download_delegate_(nullptr) {
-  g_devtools_manager_delegate = this;
+DevToolsDownloadManagerDelegate::DevToolsDownloadManagerDelegate(
+    content::BrowserContext* browser_context) {
+  download_manager_ =
+      content::BrowserContext::GetDownloadManager(browser_context);
+  DCHECK(download_manager_);
+  original_download_delegate_ = download_manager_->GetDelegate();
+  download_manager_->SetDelegate(this);
 }
 
 // static
 DevToolsDownloadManagerDelegate*
-DevToolsDownloadManagerDelegate::GetInstance() {
-  if (!g_devtools_manager_delegate)
-    new DevToolsDownloadManagerDelegate();
-
-  return g_devtools_manager_delegate;
-}
-
-DevToolsDownloadManagerDelegate::~DevToolsDownloadManagerDelegate() {
-  // Reset the proxy delegate.
-  DevToolsDownloadManagerDelegate* download_delegate = GetInstance();
-  download_delegate->download_manager_->SetDelegate(
-      download_delegate->proxy_download_delegate_);
-  download_delegate->download_manager_ = nullptr;
-
-  if (download_manager_) {
-    download_manager_->SetDelegate(proxy_download_delegate_);
-    download_manager_ = nullptr;
+DevToolsDownloadManagerDelegate::GetOrCreateInstance(BrowserContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!DevToolsDownloadManagerDelegate::GetInstance(context)) {
+    auto delegate_owned =
+        base::WrapUnique(new DevToolsDownloadManagerDelegate(context));
+    context->SetUserData(kDevToolsDownloadManagerDelegateName,
+                         std::move(delegate_owned));
   }
-  g_devtools_manager_delegate = nullptr;
+  return DevToolsDownloadManagerDelegate::GetInstance(context);
 }
 
-scoped_refptr<DevToolsDownloadManagerDelegate>
-DevToolsDownloadManagerDelegate::TakeOver(
-    content::DownloadManager* download_manager) {
-  CHECK(download_manager);
-  DevToolsDownloadManagerDelegate* download_delegate = GetInstance();
-  if (download_manager == download_delegate->download_manager_)
-    return download_delegate;
-  // Recover state of previously owned download manager.
-  if (download_delegate->download_manager_)
-    download_delegate->download_manager_->SetDelegate(
-        download_delegate->proxy_download_delegate_);
-  download_delegate->proxy_download_delegate_ = download_manager->GetDelegate();
-  // Take over delegate in download_manager.
-  download_delegate->download_manager_ = download_manager;
-  download_manager->SetDelegate(download_delegate);
-  return download_delegate;
+// static
+DevToolsDownloadManagerDelegate* DevToolsDownloadManagerDelegate::GetInstance(
+    BrowserContext* context) {
+  return static_cast<DevToolsDownloadManagerDelegate*>(
+      context->GetUserData(kDevToolsDownloadManagerDelegateName));
 }
 
 void DevToolsDownloadManagerDelegate::Shutdown() {
-  if (proxy_download_delegate_)
-    proxy_download_delegate_->Shutdown();
+  if (original_download_delegate_)
+    original_download_delegate_->Shutdown();
   // Revoke any pending callbacks. download_manager_ et. al. are no longer safe
   // to access after this point.
   download_manager_ = nullptr;
@@ -87,35 +66,36 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
     content::DownloadTargetCallback* callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DevToolsDownloadManagerHelper* download_helper =
-      DevToolsDownloadManagerHelper::FromWebContents(
-          DownloadItemUtils::GetWebContents(item));
-
   // Check if we should failback to delegate.
-  if (proxy_download_delegate_ && !download_helper)
-    return proxy_download_delegate_->DetermineDownloadTarget(item, callback);
+  if (original_download_delegate_ &&
+      download_behavior_ == DownloadBehavior::DEFAULT) {
+    return original_download_delegate_->DetermineDownloadTarget(item, callback);
+  }
 
   // In headless mode there's no no proxy delegate set, so if there's no
   // information associated to the download, we deny it by default.
-  if (!download_helper ||
-      download_helper->GetDownloadBehavior() !=
-          DevToolsDownloadManagerHelper::DownloadBehavior::ALLOW) {
+  if (download_behavior_ != DownloadBehavior::ALLOW &&
+      download_behavior_ != DownloadBehavior::ALLOW_AND_NAME) {
     base::FilePath empty_path = base::FilePath();
     std::move(*callback).Run(
         empty_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN, empty_path,
-        download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+        download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
     return true;
   }
 
-  base::FilePath download_path =
-      base::FilePath::FromUTF8Unsafe(download_helper->GetDownloadPath());
+  base::FilePath download_path = base::FilePath::FromUTF8Unsafe(download_path_);
+  if (download_behavior_ == DownloadBehavior::ALLOW_AND_NAME) {
+    base::FilePath suggested_path(download_path.AppendASCII(item->GetGuid()));
+    OnDownloadPathGenerated(item->GetId(), std::move(*callback),
+                            suggested_path);
+    return true;
+  }
 
   FilenameDeterminedCallback filename_determined_callback = base::BindOnce(
       &DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
       base::Unretained(this), item->GetId(), std::move(*callback));
-
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
@@ -130,18 +110,13 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
 bool DevToolsDownloadManagerDelegate::ShouldOpenDownload(
     download::DownloadItem* item,
     content::DownloadOpenDelayedCallback callback) {
-  DevToolsDownloadManagerHelper* download_helper =
-      DevToolsDownloadManagerHelper::FromWebContents(
-          DownloadItemUtils::GetWebContents(item));
-
-  if (download_helper)
-    return true;
-  if (proxy_download_delegate_)
-    return proxy_download_delegate_->ShouldOpenDownload(item,
-                                                        std::move(callback));
-  // TODO(qinmin): When this returns false it means this should run the callback
-  // at some point.
-  return false;
+  if (original_download_delegate_ &&
+      download_behavior_ == DownloadBehavior::DEFAULT) {
+    return original_download_delegate_->ShouldOpenDownload(item,
+                                                           std::move(callback));
+  }
+  // Immediately transition to the completed stage.
+  return true;
 }
 
 void DevToolsDownloadManagerDelegate::GetNextId(
@@ -149,8 +124,8 @@ void DevToolsDownloadManagerDelegate::GetNextId(
   static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
   // Be sure to follow the proxy delegate Ids to avoid compatibility problems
   // with the download manager.
-  if (proxy_download_delegate_) {
-    proxy_download_delegate_->GetNextId(std::move(callback));
+  if (original_download_delegate_) {
+    original_download_delegate_->GetNextId(std::move(callback));
     return;
   }
   std::move(callback).Run(next_id++);

@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Tęskite</translation>
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Užblokuotas 1 slapukas}one{Užblokuotas # slapukas}few{Užblokuoti # slapukai}many{Užblokuota # slapuko}other{Užblokuota # slapukų}}</translation>
+<translation id="257931822824936280">Išskleista – spustelėkite, kad sutrauktumėte</translation>
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="2968755619301702150">Sertifikato peržiūros priemonė</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kop. nuor.</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
 <translation id="4570913071927164677">Išsami informacija</translation>
+<translation id="4645575059429386691">Tvarko vienas iš jūsų tėvų</translation>
+<translation id="4883854917563148705">Tvarkomų nustatymų negalima nustatyti iš naujo</translation>
 <translation id="497421865427891073">Eiti pirmyn</translation>
+<translation id="5100237604440890931">Sutraukta – spustelėkite, kad išskleistumėte</translation>
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5301954838959518834">Gerai, supratau</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
+<translation id="8206354486702514201">Šį nustatymą vykdo jūsų administratorius.</translation>
 <translation id="8249310407154411074">Perkelti į viršų</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8609465669617005112">Perkelti į viršų</translation>
 <translation id="8676374126336081632">Išvalyti įvestą tekstą</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8730621377337864115">Atlikta</translation>
+<translation id="9019902583201351841">Tvarko jūsų tėvai</translation>
 </translationbundle>

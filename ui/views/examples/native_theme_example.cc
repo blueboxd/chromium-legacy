@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"

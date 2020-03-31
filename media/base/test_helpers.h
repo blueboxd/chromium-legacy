@@ -206,8 +206,8 @@ MATCHER_P(SameStatusCode, status, "") {
 }
 
 // Compares two an |arg| Status to a StatusCode provided
-MATCHER_P(HasStatusCode, statusCode, "") {
-  return arg.code() == statusCode;
+MATCHER_P(HasStatusCode, status_code, "") {
+  return arg.code() == status_code;
 }
 
 MATCHER(IsOkStatus, "") {

@@ -152,19 +152,28 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   // - 2 back-to-back BeginImplFrames
   // - 4 Simultaneous Reporters
 
+  viz::BeginFrameId current_id_1(1, 1);
+  viz::BeginFrameArgs args_1 = SimulateBeginFrameArgs(current_id_1);
+
+  viz::BeginFrameId current_id_2(1, 2);
+  viz::BeginFrameArgs args_2 = SimulateBeginFrameArgs(current_id_2);
+
+  viz::BeginFrameId current_id_3(1, 3);
+  viz::BeginFrameArgs args_3 = SimulateBeginFrameArgs(current_id_3);
+
   // BF
-  reporting_controller_.WillBeginImplFrame(args_);
+  reporting_controller_.WillBeginImplFrame(args_1);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BF
   // Should replace previous reporter.
-  reporting_controller_.WillBeginImplFrame(args_);
+  reporting_controller_.WillBeginImplFrame(args_2);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF
   // Should add new reporter.
-  reporting_controller_.WillBeginMainFrame(args_);
-  reporting_controller_.WillBeginImplFrame(args_);
+  reporting_controller_.WillBeginMainFrame(args_2);
+  reporting_controller_.WillBeginImplFrame(args_3);
   EXPECT_EQ(2, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF -> Commit
@@ -175,18 +184,25 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
 
   // BF -> BMF -> BF -> Commit -> BMF -> Activate -> Commit -> Activation
   // Having two reporters at Activate phase should delete the older one.
-  reporting_controller_.WillBeginMainFrame(args_);
+  reporting_controller_.WillBeginMainFrame(args_3);
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
-  last_activated_id_ = current_id_;
+
+  // There is a reporters tracking frame_3 in BeginMain state and one reporter
+  // for frame_2 in activate state.
+  EXPECT_EQ(2, reporting_controller_.ActiveReporters());
+
   reporting_controller_.WillCommit();
   reporting_controller_.DidCommit();
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
+  // Reporter in activate state for frame_2 is overwritten by the reporter for
+  // frame_3.
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
+  last_activated_id_ = current_id_3;
   reporting_controller_.DidSubmitCompositorFrame(
-      0, current_id_, last_activated_id_, std::vector<EventMetrics>());
+      0, current_id_3, last_activated_id_, std::vector<EventMetrics>());
   EXPECT_EQ(0, reporting_controller_.ActiveReporters());
 
   // 4 simultaneous reporters active.
@@ -410,6 +426,64 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
       3);
+}
+
+TEST_F(CompositorFrameReportingControllerTest, LongMainFrame) {
+  base::HistogramTester histogram_tester;
+  viz::BeginFrameId current_id_1(1, 1);
+  viz::BeginFrameArgs args_1 = SimulateBeginFrameArgs(current_id_1);
+
+  viz::BeginFrameId current_id_2(1, 2);
+  viz::BeginFrameArgs args_2 = SimulateBeginFrameArgs(current_id_2);
+
+  viz::FrameTimingDetails details = {};
+  reporting_controller_.WillBeginImplFrame(args_1);
+  reporting_controller_.OnFinishImplFrame(current_id_1);
+  reporting_controller_.WillBeginMainFrame(args_1);
+  reporting_controller_.WillCommit();
+  reporting_controller_.DidCommit();
+  reporting_controller_.WillActivate();
+  reporting_controller_.DidActivate();
+  reporting_controller_.DidSubmitCompositorFrame(1, current_id_1, current_id_1,
+                                                 std::vector<EventMetrics>());
+  reporting_controller_.DidPresentCompositorFrame(1, details);
+
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
+                                    1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.EndActivateToSubmitCompositorFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
+      1);
+
+  // Second frame will not have the main frame update ready and will only submit
+  // the Impl update
+  reporting_controller_.WillBeginImplFrame(args_2);
+  reporting_controller_.WillBeginMainFrame(args_2);
+  reporting_controller_.OnFinishImplFrame(current_id_2);
+  reporting_controller_.DidSubmitCompositorFrame(2, current_id_2, current_id_1,
+                                                 std::vector<EventMetrics>());
+  reporting_controller_.DidPresentCompositorFrame(2, details);
+
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 2);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
+                                    1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.EndActivateToSubmitCompositorFrame", 2);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
+      2);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {

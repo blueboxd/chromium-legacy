@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">عرض البطاقات</translation>
 <translation id="3369192424181595722">خطأ في الساعة</translation>
 <translation id="337363190475750230">تم إلغاء التوفير</translation>
-<translation id="3376829916920036789">‏لقد فعّل <ph name="ENROLLMENT_DOMAIN" /> Enterprise Service Hooks على متصفحك. لدى مواضع الإدراج هذه إذن بالوصول إلى بعض بياناتك.</translation>
 <translation id="3377144306166885718">‏يستخدم الخادم إصدارًا قديمًا لطبقة النقل الآمنة (TLS).</translation>
 <translation id="3377188786107721145">خطأ في تحليل السياسة</translation>
 <translation id="3377736046129930310">استخدام قفل الشاشة للتأكد من البطاقات بشكلٍ أسرع</translation>
@@ -985,7 +984,6 @@
 <translation id="5179510805599951267">هل الصفحة ليست باللغة <ph name="ORIGINAL_LANGUAGE" />؟ الإبلاغ عن هذا الخطأ</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="519422657042045905">التعليق التوضيحي غير متوفِّر</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">تعرض صفحة مضمّنة في هذه الصفحة</translation>
 <translation id="5205222826937269299">الاسم مطلوب</translation>
 <translation id="5209518306177824490">‏بصمة أصبع SHA-1</translation>
@@ -1459,7 +1457,6 @@
 <translation id="725866823122871198">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت لجهاز الكمبيوتر (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
 <translation id="7260504762447901703">إبطال حق الدخول</translation>
 <translation id="7275334191706090484">الإشارات المرجعية المُدارة</translation>
-<translation id="7288778322931489286">‏فعَّل المشرف Enterprise Service Hooks على متصفحك. لدى مواضع الإدراج هذه إذن بالوصول إلى بعض بياناتك.</translation>
 <translation id="7292031607255951991">اسم المستلم</translation>
 <translation id="7298195798382681320">موصى بها</translation>
 <translation id="7300012071106347854">أزرق كوبالت</translation>
@@ -1817,7 +1814,6 @@
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
 <translation id="8866928039507595380">الطي</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">‏يمكنك مشاركة البيانات حول الأحداث الأمنية التي تم وضع علامة عليها من خلال ميزة Enterprise Service Hooks مع المشرف. قد تتضمّن هذه البيانات عناوين URL لصفحات تزورها، وأسماء ملفات أو بيانات وصفية، واسم المستخدم الذي تستخدمه لتسجيل الدخول إلى جهازك ومتصفح Chrome.</translation>
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8870494189203302833">نفس الترتيب والوجه للأسفل</translation>
 <translation id="8874824191258364635">أدخِل رقم بطاقة صحيحًا</translation>

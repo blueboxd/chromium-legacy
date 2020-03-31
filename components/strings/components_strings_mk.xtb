@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">Прикажи ги картичките</translation>
 <translation id="3369192424181595722">Грешка на часовникот</translation>
 <translation id="337363190475750230">Со оневозможен пристап</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ја овозможи Enterprise Service Hooks на вашиот прелистувач. Овие елементи за привлекување имаат пристап до дел од вашите податоци.</translation>
 <translation id="3377144306166885718">Серверот користеше застарена верзија на TLS.</translation>
 <translation id="3377188786107721145">Грешка при анализа на правило</translation>
 <translation id="3377736046129930310">Користете заклучување екран за побрзо потврдување на картичките</translation>
@@ -985,7 +984,6 @@
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Пријави ја грешката.</translation>
 <translation id="5190835502935405962">Лента со обележувачи</translation>
 <translation id="519422657042045905">Прибелешката не е достапна</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Вметнатата страница во страницава вели</translation>
 <translation id="5205222826937269299">Потребно е име</translation>
 <translation id="5209518306177824490">SHA-1 отпечаток од прст</translation>
@@ -1459,7 +1457,6 @@
 <translation id="725866823122871198">Не може да се воспостави приватна врска до <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> бидејќи датумот и времето на вашиот компјутер (<ph name="DATE_AND_TIME" />) се погрешни.</translation>
 <translation id="7260504762447901703">Отповикај пристап</translation>
 <translation id="7275334191706090484">Управувани обележувачи</translation>
-<translation id="7288778322931489286">Администраторот ја овозможи Enterprise Service Hooks на вашиот прелистувач. Овие елементи за привлекување имаат пристап до дел од вашите податоци.</translation>
 <translation id="7292031607255951991">Име на примач</translation>
 <translation id="7298195798382681320">Препорачано</translation>
 <translation id="7300012071106347854">Сина како кобалт</translation>
@@ -1816,7 +1813,6 @@
 <translation id="8866481888320382733">Грешка при разложување поставки на политиката</translation>
 <translation id="8866928039507595380">Превиткување</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Споделувајте податоци со администраторот за безбедносните настани што ги пријавила Enterprise Service Hooks. Тука спаѓаат URL-адресите на страниците што ги посетувате, имињата или метаподатоците на датотеките и корисничкото име што го користите за најавување на вашиот уред и Chrome.</translation>
 <translation id="8870413625673593573">Неодамна затворено</translation>
 <translation id="8870494189203302833">Ист редослед со лицето надолу</translation>
 <translation id="8874824191258364635">Внесете важечки број на картичка</translation>

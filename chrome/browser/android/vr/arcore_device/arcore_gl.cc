@@ -115,6 +115,11 @@ ArCoreGl::~ArCoreGl() {
   DCHECK(IsOnGlThread());
   ar_image_transport_->DestroySharedBuffers(webxr_.get());
   ar_image_transport_.reset();
+
+  // Make sure mojo bindings are closed before proceeding with member
+  // destruction. Specifically, destroying pending_getframedata_
+  // must happen after closing bindings, see RunNextGetFrameData()
+  // comments.
   CloseBindingsIfOpen();
 }
 
@@ -510,9 +515,18 @@ void ArCoreGl::CopyCameraImageToFramebuffer() {
     }
     TRACE_COUNTER1("gpu", "ARCore update schedule (ms)",
                    delay.InMilliseconds());
+    // RunNextGetFrameData is needed since we must retain ownership of the mojo
+    // callback inside the pending_getframedata_ closure.
     gl_thread_task_runner_->PostDelayedTask(
-        FROM_HERE, std::move(pending_getframedata_), delay);
+        FROM_HERE, base::BindOnce(&ArCoreGl::RunNextGetFrameData, GetWeakPtr()),
+        delay);
   }
+}
+
+void ArCoreGl::RunNextGetFrameData() {
+  DVLOG(3) << __func__;
+  DCHECK(pending_getframedata_);
+  std::move(pending_getframedata_).Run();
 }
 
 void ArCoreGl::FinishFrame(int16_t frame_index) {

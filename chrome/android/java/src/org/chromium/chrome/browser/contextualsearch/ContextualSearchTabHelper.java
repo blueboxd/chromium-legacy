@@ -11,10 +11,7 @@ import android.view.ContextMenu;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -22,9 +19,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -66,15 +60,6 @@ public class ContextualSearchTabHelper
     /** The pointer to our native C++ implementation. */
     private long mNativeHelper;
 
-    /** {@code true} while observing other overlay panel via {@link OverlayPanelManagerObserver} */
-    private boolean mIsObservingPanel;
-
-    /**
-     * A Tab that has had Contextual Search unhooked from itself because another overlay is
-     * showing on it, or {@code null}.
-     */
-    private Tab mUnhookedTab;
-
     /** Whether the current default search engine is Google.  Is {@code null} if not inited. */
     private Boolean mIsDefaultSearchEngineGoogle;
 
@@ -103,70 +88,6 @@ public class ContextualSearchTabHelper
         mPxToDp = scaleFactor;
     }
 
-    /**
-     * Used to disable contextual search (remove contextual search hooks) when other overlay
-     * panel comes into action.
-     */
-    private OverlayPanelManagerObserver mPanelObserver = new OverlayPanelManagerObserver() {
-        @Override
-        public void onOverlayPanelShown() {
-            // This leaves the handling of the hooks to the responsibility of the activity tab.
-            // Restoring them will be then done by the tab that was the activity tab when
-            // the panel was shown.
-            Tab activityTab = ((TabImpl) mTab).getActivity().getActivityTabProvider().get();
-            if (activityTab != mTab) return;
-
-            // Removes the hooks if the panel other than contextual search panel just got shown.
-            ContextualSearchManager manager = getContextualSearchManager(mTab);
-            if (manager != null && !manager.isSearchPanelActive()) {
-                mUnhookedTab = activityTab;
-                updateContextualSearchHooks(mUnhookedTab.getWebContents());
-            }
-        }
-
-        @Override
-        public void onOverlayPanelHidden() {
-            if (mUnhookedTab != null) {
-                WebContents webContents = mUnhookedTab.getWebContents();
-                mUnhookedTab = null;
-                updateContextualSearchHooks(webContents);
-            }
-        }
-    };
-
-    /**
-     * Starts observing other panel using {@link OverlayPanelManagerObserver} if we're not
-     * already doing it.
-     * @param tab {@link Tab} to get the overlay panel manager to add the observer to.
-     */
-    private void addPanelObserver(Tab tab) {
-        if (mIsObservingPanel || tab.isNativePage()) return;
-        LayoutManager manager = getLayoutManager(tab);
-        if (manager != null) {
-            manager.getOverlayPanelManager().addObserver(mPanelObserver);
-            mIsObservingPanel = true;
-        }
-    }
-
-    /**
-     * Stops observing other panel if we haven't stopped it already.
-     * @param tab {@link Tab} to get the overlay panel manager to remove the observer from.
-     */
-    private void removePanelObserver(Tab tab) {
-        if (!mIsObservingPanel || tab.isNativePage()) return;
-        LayoutManager manager = getLayoutManager(tab);
-        if (manager != null) {
-            manager.getOverlayPanelManager().removeObserver(mPanelObserver);
-            mIsObservingPanel = false;
-        }
-    }
-
-    private static LayoutManager getLayoutManager(Tab tab) {
-        if (((TabImpl) tab).getActivity() == null) return null;
-        CompositorViewHolder cvh = ((TabImpl) tab).getActivity().getCompositorViewHolder();
-        return cvh != null ? cvh.getLayoutManager() : null;
-    }
-
     // ============================================================================================
     // EmptyTabObserver overrides.
     // ============================================================================================
@@ -176,23 +97,6 @@ public class ContextualSearchTabHelper
         updateHooksForTab(tab);
         ContextualSearchManager manager = getContextualSearchManager(tab);
         if (manager != null) manager.onBasePageLoadStarted();
-    }
-
-    @Override
-    public void onPageLoadFinished(Tab tab, String url) {
-        // Makes sure the observer is added. Doing this in |onShown| doesn't cover all
-        // situations as it can be invoked before OverlayPanelManager is ready.
-        addPanelObserver(tab);
-    }
-
-    @Override
-    public void onShown(Tab tab, @TabSelectionType int type) {
-        addPanelObserver(tab);
-    }
-
-    @Override
-    public void onHidden(Tab tab, @TabHidingType int type) {
-        removePanelObserver(tab);
     }
 
     @Override
@@ -239,7 +143,6 @@ public class ContextualSearchTabHelper
         if (NetworkChangeNotifier.isInitialized()) {
             NetworkChangeNotifier.removeConnectionTypeObserver(this);
         }
-        removePanelObserver(tab);
         removeContextualSearchHooks(mWebContents);
         mWebContents = null;
         mContextualSearchManager = null;
@@ -251,10 +154,8 @@ public class ContextualSearchTabHelper
     public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
         if (isAttached) {
             updateHooksForTab(tab);
-            addPanelObserver(tab);
         } else {
             removeContextualSearchHooks(mWebContents);
-            removePanelObserver(tab);
             mContextualSearchManager = null;
         }
     }
@@ -375,8 +276,8 @@ public class ContextualSearchTabHelper
                 // Talkback has poor interaction with Contextual Search (see http://crbug.com/399708
                 // and http://crbug.com/396934).
                 && !manager.isRunningInCompatibilityMode()
-                && !(mTab.isShowingErrorPage() || ((TabImpl) mTab).isShowingInterstitialPage())
-                && isDeviceOnline(manager) && mUnhookedTab == null;
+                && !(mTab.isShowingErrorPage() || webContents.isShowingInterstitialPage())
+                && isDeviceOnline(manager);
     }
 
     /** @return Whether the device is online, or we have disabled online-detection. */

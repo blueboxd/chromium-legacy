@@ -34,6 +34,7 @@ crash_reporter::CrashKeyString<4> gpu_watchdog_kill_after_power_resume(
     "gpu-watchdog-kill-after-power-resume");
 crash_reporter::CrashKeyString<4> gpu_watchdog_crashed_in_gpu_init(
     "gpu-watchdog-crashed-in-gpu-init");
+crash_reporter::CrashKeyString<16> num_of_processors("num-of-processors");
 
 }  // namespace crash_keys
 }  // namespace gpu

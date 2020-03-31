@@ -548,7 +548,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="3366477098757335611">Xem thẻ</translation>
 <translation id="3369192424181595722">Lỗi đồng hồ</translation>
 <translation id="337363190475750230">Đã hủy cấp phép</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> đã bật Enterprise Service Hooks trên trình duyệt của bạn. Các hook này có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="3377144306166885718">Máy chủ sử dụng phiên bản TLS lỗi thời.</translation>
 <translation id="3377188786107721145">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="3377736046129930310">Dùng phương thức khóa màn hình để xác nhận các thẻ nhanh hơn</translation>
@@ -985,7 +984,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE" />? Báo cáo lỗi này</translation>
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="519422657042045905">Không có chú thích</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Một trang được nhúng trên trang này cho biết</translation>
 <translation id="5205222826937269299">Cần có tên</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
@@ -1459,7 +1457,6 @@ Thông tin chi tiết bổ sung:
 <translation id="725866823122871198">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên máy tính của bạn không đúng.</translation>
 <translation id="7260504762447901703">Thu hồi quyền truy cập</translation>
 <translation id="7275334191706090484">Dấu trang được quản lý</translation>
-<translation id="7288778322931489286">Quản trị viên đã bật Enterprise Service Hooks trên trình duyệt của bạn. Các hook này có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="7292031607255951991">Tên người nhận</translation>
 <translation id="7298195798382681320">Được đề xuất</translation>
 <translation id="7300012071106347854">Xanh thẩm</translation>
@@ -1817,7 +1814,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8866481888320382733">Lỗi phân tích cú pháp cài đặt chính sách</translation>
 <translation id="8866928039507595380">Gấp</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Chia sẻ dữ liệu về các sự kiện bảo mật đã bị Enterprise Service Hooks gắn cờ với quản trị viên của bạn. Các dữ liệu này có thể bao gồm URL của các trang bạn truy cập, tên tệp hoặc siêu dữ liệu, cũng như tên người dùng mà bạn sử dụng để đăng nhập vào thiết bị của bạn và Chrome.</translation>
 <translation id="8870413625673593573">Các tab đã Đóng gần đây</translation>
 <translation id="8870494189203302833">Cùng thứ tự hướng xuống</translation>
 <translation id="8874824191258364635">Nhập số thẻ hợp lệ</translation>

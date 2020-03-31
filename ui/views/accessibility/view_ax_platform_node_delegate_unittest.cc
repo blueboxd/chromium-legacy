@@ -4,6 +4,10 @@
 
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"

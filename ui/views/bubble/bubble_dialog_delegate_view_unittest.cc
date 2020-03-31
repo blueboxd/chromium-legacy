@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <utility>
+
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"

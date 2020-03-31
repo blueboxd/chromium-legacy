@@ -541,7 +541,6 @@
 <translation id="3366477098757335611">Список карт</translation>
 <translation id="3369192424181595722">Ошибка часов</translation>
 <translation id="337363190475750230">Отключен</translation>
-<translation id="3376829916920036789">Администратор домена <ph name="ENROLLMENT_DOMAIN" /> включил в браузере перехватчики событий Enterprise. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="3377144306166885718">Этот сервер использует устаревшую версию протокола TLS.</translation>
 <translation id="3377188786107721145">Не удалось выполнить анализ политики</translation>
 <translation id="3377736046129930310">Использовать блокировку экрана для быстрого подтверждения карт</translation>
@@ -977,7 +976,6 @@
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="519422657042045905">В этот PDF-файл нельзя добавлять заметки</translation>
-<translation id="5196187217592847346">Перехватчики событий Enterprise</translation>
 <translation id="5201306358585911203">Подтвердите действие</translation>
 <translation id="5205222826937269299">Введите имя или название</translation>
 <translation id="5209518306177824490">Отпечаток SHA-1</translation>
@@ -1447,7 +1445,6 @@
 <translation id="725866823122871198">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Запретить доступ</translation>
 <translation id="7275334191706090484">Управляемые закладки</translation>
-<translation id="7288778322931489286">Администратор включил в браузере перехватчики событий Enterprise. У них есть доступ к некоторым вашим данным.</translation>
 <translation id="7292031607255951991">Имя получателя</translation>
 <translation id="7298195798382681320">Рекомендованные</translation>
 <translation id="7300012071106347854">Синий (кобальт)</translation>
@@ -1804,7 +1801,6 @@
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
 <translation id="8866928039507595380">Фальцовка</translation>
 <translation id="886872106311861689">В3</translation>
-<translation id="8869862664961249123">Отправлять администратору данные о событиях безопасности, которые были помечены перехватчиками событий Enterprise как потенциально опасные. Такими данными могут быть URL страниц, которые вы посещаете, названия файлов и метаданные, а также ваше имя пользователя для входа в систему на устройстве и в браузер Chrome.</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8870494189203302833">В том же порядке лицевой стороной вниз</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>

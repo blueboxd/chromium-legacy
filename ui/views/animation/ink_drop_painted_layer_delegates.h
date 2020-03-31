@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_PAINTED_LAYER_DELEGATES_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_PAINTED_LAYER_DELEGATES_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_delegate.h"

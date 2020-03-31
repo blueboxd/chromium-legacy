@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{۱ کوکی مسدود شده است}one{# کوکی مسدود شده است}other{# کوکی مسدود شده است}}</translation>
+<translation id="257931822824936280">بزرگ‌شده - برای کوچک کردن کلیک کنید.</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2968755619301702150">بیننده گواهی</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">کپی پیوند</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4570913071927164677">جزئیات</translation>
+<translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
+<translation id="4883854917563148705">تنظیمات مدیریت‌شده بازنشانی نشدند</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
+<translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5301954838959518834">بله، متوجه شدم</translation>
 <translation id="5317780077021120954">ذخیره</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="8131740175452115882">تأیید</translation>
+<translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="8249310407154411074">انتقال به بالا</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8609465669617005112">انتقال به بالا</translation>
 <translation id="8676374126336081632">پاک کردن ورودی</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
+<translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>
 </translationbundle>

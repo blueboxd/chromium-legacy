@@ -4,6 +4,10 @@
 
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"

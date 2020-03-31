@@ -4,10 +4,12 @@
 
 #include "ui/views/color_chooser/color_chooser_view.h"
 
-#include <memory>
-#include <utility>
-
 #include <stdint.h>
+
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"

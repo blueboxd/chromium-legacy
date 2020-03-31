@@ -154,24 +154,6 @@ static void RecordVideoCodecStats(container_names::MediaContainerName container,
     UMA_HISTOGRAM_ENUMERATION("Media.SRC.VideoCodec.WebM", video_config.codec(),
                               kVideoCodecMax + 1);
   }
-
-  // Drop UNKNOWN because U_H_E() uses one bucket for all values less than 1.
-  if (video_config.profile() >= 0) {
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoCodecProfile", video_config.profile(),
-                              VIDEO_CODEC_PROFILE_MAX + 1);
-  }
-  UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth",
-                             video_config.visible_rect().width());
-  UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio",
-                          video_config.visible_rect());
-
-  // TODO(hubbe): make better color space statistics
-
-  // Note the PRESUBMIT_IGNORE_UMA_MAX below, this silences the PRESUBMIT.py
-  // check for uma enum max usage, since we're abusing
-  // UMA_HISTOGRAM_ENUMERATION to report a discrete value.
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoColorRange", color_range,
-                            AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
 }
 
 static const char kCodecNone[] = "none";

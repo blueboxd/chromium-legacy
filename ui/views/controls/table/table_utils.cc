@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"

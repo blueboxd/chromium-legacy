@@ -97,6 +97,8 @@ class CC_EXPORT CompositorFrameReportingController {
   void AdvanceReporterStage(PipelineStage start, PipelineStage target);
   bool CanSubmitImplFrame(const viz::BeginFrameId& id) const;
   bool CanSubmitMainFrame(const viz::BeginFrameId& id) const;
+  std::unique_ptr<CompositorFrameReporter> RestoreReporterAtBeginImpl(
+      const viz::BeginFrameId& id);
 
   viz::BeginFrameId last_submitted_frame_id_;
 

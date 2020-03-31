@@ -185,8 +185,7 @@ void ManifestUpdateTask::OnAllIconsRead(
 
   DCHECK(web_application_info_.has_value());
   FilterAndResizeIconsGenerateMissing(&web_application_info_.value(),
-                                      &downloaded_icons_map,
-                                      /*is_for_sync=*/false);
+                                      &downloaded_icons_map);
 
   // TODO: compare in a BEST_EFFORT blocking PostTaskAndReply.
   if (IsUpdateNeededForIconContents(disk_icon_bitmaps)) {

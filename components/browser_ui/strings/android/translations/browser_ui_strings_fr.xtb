@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloqué}one{# cookies blocked}other{# cookies bloqués}}</translation>
+<translation id="257931822824936280">Développé – Cliquer pour réduire</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2704606927547763573">Copié</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Copier lien</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4570913071927164677">Détails</translation>
+<translation id="4645575059429386691">Géré par ton papa/ta maman</translation>
+<translation id="4883854917563148705">Impossible de réinitialiser les paramètres gérés</translation>
 <translation id="497421865427891073">Avancer</translation>
+<translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="8131740175452115882">Confirmer</translation>
+<translation id="8206354486702514201">Ce paramètre est appliqué par votre administrateur.</translation>
 <translation id="8249310407154411074">Déplacer vers le haut</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8609465669617005112">Monter</translation>
 <translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">OK</translation>
+<translation id="9019902583201351841">Géré par tes parents</translation>
 </translationbundle>

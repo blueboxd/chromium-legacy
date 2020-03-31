@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "content/browser/devtools/devtools_instrumentation.h"
 
+#include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
@@ -114,17 +116,18 @@ void OnNavigationRequestFailed(
                    protocol::Network::ResourceTypeEnum::Document, status);
 }
 
-void WillBeginDownload(int render_process_id,
-                       int render_frame_id,
-                       const GURL& url) {
+void WillBeginDownload(download::DownloadCreateInfo* info,
+                       download::DownloadItem* item) {
+  if (!item)
+    return;
   auto* rfh = static_cast<RenderFrameHostImpl*>(
-      RenderFrameHost::FromID(render_process_id, render_frame_id));
+      RenderFrameHost::FromID(info->render_process_id, info->render_frame_id));
   FrameTreeNode* ftn =
       rfh ? FrameTreeNode::GloballyFindByID(rfh->GetFrameTreeNodeId())
           : nullptr;
   if (!ftn)
     return;
-  DispatchToAgents(ftn, &protocol::PageHandler::DownloadWillBegin, ftn, url);
+  DispatchToAgents(ftn, &protocol::PageHandler::DownloadWillBegin, ftn, item);
 }
 
 void OnSignedExchangeReceived(

@@ -492,18 +492,18 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void SetUpEnvironment() {
     ImageTransportFactory::SetFactory(
         std::make_unique<TestImageTransportFactory>());
-    aura_test_helper_.reset(new aura::test::AuraTestHelper(
-        ImageTransportFactory::GetInstance()->GetContextFactory()));
+    aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>(
+        ImageTransportFactory::GetInstance()->GetContextFactory());
     aura_test_helper_->SetUp();
 
-    browser_context_.reset(new TestBrowserContext);
+    browser_context_ = std::make_unique<TestBrowserContext>();
     process_host_ = new MockRenderProcessHost(browser_context_.get());
     process_host_->Init();
 
     sink_ = &process_host_->sink();
 
     int32_t routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
+    delegates_.push_back(std::make_unique<MockRenderWidgetHostDelegate>());
     parent_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
                                                     process_host_, routing_id);
     delegates_.back()->set_widget_host(parent_host_);
@@ -4833,10 +4833,9 @@ TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
   // TODO (oshima): Test that overscroll occurs.
 
   view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
   aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
+  aura::client::ParentWindowWithContext(view_->GetNativeView(), root_window,
+                                        gfx::Rect());
 
   const gfx::Rect orig_view_bounds = gfx::Rect(0, 300, 400, 200);
   const gfx::Rect shifted_view_bounds = gfx::Rect(0, 200, 400, 200);

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <set>
 
 #include "base/compiler_specific.h"
 #include "ui/accessibility/ax_enums.mojom.h"

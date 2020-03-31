@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome now downloads files faster</translation>
 <translation id="1883903952484604915">My files</translation>
 <translation id="1887786770086287077">Location access is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">Ads</translation>
 <translation id="1919950603503897840">Select contacts</translation>
 <translation id="1922076542920281912">To let Chrome access your location, also turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Themes</translation>
 <translation id="2570922361219980984">Location access is also off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Expanded – click to collapse.</translation>
 <translation id="2581165646603367611">This will clear cookies, cache and other data of sites Chrome doesn't think is important.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587052924345400782">Newer version is available</translation>
@@ -491,7 +489,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4605958867780575332">Item removed: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Open <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Use password</translation>
-<translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4650364565596261010">System default</translation>
 <translation id="4660838440047236328">the layout of your room</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
@@ -530,7 +527,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4881695831933465202">Open</translation>
 <translation id="488187801263602086">Rename file</translation>
 <translation id="4882831918239250449">Control how your browsing history is used to personalise Search, ads and more</translation>
-<translation id="4883854917563148705">Managed settings cannot be reset</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
 <translation id="4887024562049524730">Ask before allowing sites to use your virtual reality device and data (recommended)</translation>
 <translation id="4910889077668685004">Payment apps</translation>
@@ -560,7 +556,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5048398596102334565">Allow sites to access motion sensors (recommended)</translation>
 <translation id="5063480226653192405">Usage</translation>
 <translation id="5087580092889165836">Add card</translation>
-<translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="510275257476243843">1 hour left</translation>
 <translation id="5123685120097942451">Incognito tab</translation>
 <translation id="5127805178023152808">Sync is off</translation>
@@ -597,7 +592,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5357811892247919462">Tab received</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> open tab, tap to switch tabs}other{<ph name="OPEN_TABS_MANY" /> open tabs, tap to switch tabs}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 more)}other{(+ # more)}}</translation>
-<translation id="5400569084694353794">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Names</translation>
 <translation id="5403644198645076998">Only allow certain sites</translation>
 <translation id="5414836363063783498">Verifying…</translation>
@@ -946,7 +940,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
 <translation id="79859296434321399">To view augmented reality content, install ARCore</translation>
 <translation id="7986741934819883144">Select a contact</translation>
-<translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="7993619969781047893">Features on some sites may break</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
@@ -983,7 +976,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8186512483418048923"><ph name="FILES" /> files left</translation>
 <translation id="8190358571722158785">1 day left</translation>
 <translation id="8200772114523450471">Resume</translation>
-<translation id="8206354486702514201">This setting is enforced by your administrator.</translation>
 <translation id="8209050860603202033">Open image</translation>
 <translation id="8218622182176210845">Manage your account</translation>
 <translation id="8224471946457685718">Download articles for you on Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal Strength Level: # bar}other{Signal Strength Level: # bars}}</translation>
 <translation id="868929229000858085">Search your contacts</translation>
 <translation id="869891660844655955">Expiry date</translation>
-<translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contents hidden</translation>
 <translation id="8751914237388039244">Select an image</translation>
 <translation id="8758557275681689734">See all your open tabs</translation>
@@ -1058,7 +1049,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8801436777607969138">Block JavaScript for a specific site.</translation>
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8816026460808729765">Block sites from accessing sensors</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome's <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8833831881926404480">A site is sharing your screen</translation>
 <translation id="883806473910249246">An error occurred while downloading the content.</translation>
@@ -1085,7 +1075,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8988028529677883095">Use phone as a security key</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
-<translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9028914725102941583">Turn on sync to share across devices</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Videos}}</translation>

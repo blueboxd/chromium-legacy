@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
 js_library("os_settings_search_box") {
   deps = [
     "..:metrics_recorder",
+    "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js_library_for_compile",
     "//third_party/polymer/v1_0/components-chromium/iron-dropdown:iron-dropdown-extracted",
     "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
     "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",

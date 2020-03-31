@@ -27,7 +27,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -92,10 +91,6 @@ class PaletteTrayTest : public AshTestBase {
     return Shell::Get()->session_controller()->GetActivePrefService();
   }
 
-  PrefService* local_state_pref_service() {
-    return ash_test_helper()->GetLocalStatePrefService();
-  }
-
   PaletteTray* palette_tray_ = nullptr;  // not owned
 
   std::unique_ptr<PaletteTrayTestApi> test_api_;
@@ -114,7 +109,7 @@ TEST_F(PaletteTrayTest, PaletteTrayIsInvisible) {
 // should become visible after seeing a stylus event.
 TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   ASSERT_FALSE(palette_tray_->GetVisible());
-  ASSERT_FALSE(local_state_pref_service()->GetBoolean(prefs::kHasSeenStylus));
+  ASSERT_FALSE(local_state()->GetBoolean(prefs::kHasSeenStylus));
 
   // Send a stylus event.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -130,7 +125,7 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
 // visible.
 TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
   ASSERT_FALSE(palette_tray_->GetVisible());
-  local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
+  local_state()->SetBoolean(prefs::kHasSeenStylus, true);
 
   EXPECT_TRUE(palette_tray_->GetVisible());
 }
@@ -200,7 +195,7 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
 }
 
 TEST_F(PaletteTrayTest, EnableStylusPref) {
-  local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
+  local_state()->SetBoolean(prefs::kHasSeenStylus, true);
 
   // kEnableStylusTools is true by default
   ASSERT_TRUE(

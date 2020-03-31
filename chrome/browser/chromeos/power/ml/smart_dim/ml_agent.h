@@ -11,7 +11,6 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/builtin_worker.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/download_worker.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim/model_impl.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/smart_dim_worker.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 
@@ -45,9 +44,7 @@ class SmartDimMlAgent {
   // is ready. If it's not, CUS then uses OnComponentReady to update the
   // download metainfo, preprocessor and model.
   bool IsDownloadWorkerReady();
-  void OnComponentReady(const std::string& metadata_json,
-                        const std::string& preprocessor_proto,
-                        const std::string& model_flatbuffer);
+  void OnComponentReady(const ComponentFileContents& contents);
 
   // Called by ml_agent_unittest.cc to reset the builtin and download worker.
   void ResetForTesting();

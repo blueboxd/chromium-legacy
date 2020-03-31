@@ -4745,6 +4745,16 @@ const CSSValue* Page::ParseSingleValue(CSSParserTokenRange& range,
   return css_property_parser_helpers::ConsumeCustomIdent(range, context);
 }
 
+const CSSValue* Page::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  if (style.Page().IsNull())
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
+  return MakeGarbageCollected<CSSCustomIdentValue>(style.Page());
+}
+
 const CSSValue* PaintOrder::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

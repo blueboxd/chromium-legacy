@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Bloqueouse 1 cookie}other{Bloqueáronse # cookies}}</translation>
+<translation id="257931822824936280">Vista ampliada (fai clic para contraela).</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2968755619301702150">Visor de certificados</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Copiar ligazón</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4570913071927164677">Detalles</translation>
+<translation id="4645575059429386691">Xestionado por teus pais</translation>
+<translation id="4883854917563148705">Non se pode restablecer a configuración xestionada</translation>
 <translation id="497421865427891073">Avanzar</translation>
+<translation id="5100237604440890931">Vista contraída (fai clic para ampliala).</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5317780077021120954">Gardar</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Non, grazas</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="8131740175452115882">Confirmar</translation>
+<translation id="8206354486702514201">O administrador aplica esta configuración.</translation>
 <translation id="8249310407154411074">Mover á parte superior</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8609465669617005112">Mover cara arriba</translation>
 <translation id="8676374126336081632">Borrar texto</translation>
 <translation id="8725066075913043281">Tentar de novo</translation>
 <translation id="8730621377337864115">Feito</translation>
+<translation id="9019902583201351841">Xestionado por teus pais</translation>
 </translationbundle>

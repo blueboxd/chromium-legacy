@@ -5,12 +5,10 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 
 import org.junit.Assert;
@@ -24,7 +22,6 @@ import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
 import org.chromium.base.test.params.SkipCommandLineParameterization;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -45,15 +42,12 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Tests of the Omnibox.
@@ -114,43 +108,6 @@ public class OmniboxTest {
                                 urlBar, KeyEvent.KEYCODE_ENTER);
                     }
                 }, 20L);
-    }
-
-    /**
-     * Test for checking whether soft input model switches with focus.
-     */
-    @Test
-    @DisableIf.
-    Build(sdk_is_greater_than = Build.VERSION_CODES.KITKAT, message = "crbug.com/1027549")
-    @MediumTest
-    @Feature({"Omnibox"})
-    @RetryOnFailure
-    public void testFocusChangingSoftInputMode() {
-        final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return mActivityTestRule.getActivity()
-                                .getWindow()
-                                .getAttributes()
-                                .softInputMode;
-                    }
-                }));
-
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return mActivityTestRule.getActivity()
-                                .getWindow()
-                                .getAttributes()
-                                .softInputMode;
-                    }
-                }));
     }
 
     // Sanity check that no text is displayed in the omnibox when on the NTP page and that the hint

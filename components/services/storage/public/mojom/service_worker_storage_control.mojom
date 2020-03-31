@@ -1,0 +1,40 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module storage.mojom;
+
+import "components/services/storage/public/mojom/service_worker_database.mojom";
+import "url/mojom/url.mojom";
+
+// Conveys a result of finding a registration. If a registration is found,
+// |status| will be kOk. |registration| and |resources| are null and empty
+// if there is no matching registration.
+//
+// The Storage Service (components/services/storage) supplies this
+// information and the //content consumes the information.
+struct ServiceWorkerFindRegistrationResult {
+  ServiceWorkerDatabaseStatus status;
+  ServiceWorkerRegistrationData? registration;
+  array<ServiceWorkerResourceRecord> resources;
+};
+
+// Controls the state of service worker storage within a partition. This is a
+// privileged interface and must not be brokered to untrusted clients.
+//
+// Currently this is consumed and implemented in the browser process, but the
+// implementation will eventually live in the Storage Service.
+//
+// TODO(crbug.com/1055677): Add more methods to cover all ServiceWorkerStorage
+// public methods.
+interface ServiceWorkerStorageControl {
+  // Reads a stored registration for |client_id|.
+  FindRegistrationForClientUrl(url.mojom.Url client_url) =>
+      (ServiceWorkerFindRegistrationResult result);
+  // Reads a stored registration for |scope|.
+  FindRegistrationForScope(url.mojom.Url scope) =>
+      (ServiceWorkerFindRegistrationResult result);
+  // Reads a stored registration for |registration_id|.
+  FindRegistrationForId(int64 registration_id, url.mojom.Url origin) =>
+      (ServiceWorkerFindRegistrationResult result);
+};

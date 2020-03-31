@@ -5,7 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_SUBMENU_VIEW_H_
 #define UI_VIEWS_CONTROLS_MENU_SUBMENU_VIEW_H_
 
+#include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"

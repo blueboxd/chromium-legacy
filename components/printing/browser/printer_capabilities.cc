@@ -29,7 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#endif
+#endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
 #include "base/feature_list.h"
@@ -41,7 +41,10 @@
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 #include "components/printing/browser/print_media_l10n.h"
-#endif
+#if defined(OS_MACOSX)
+#include "printing/printing_features.h"
+#endif  // defined(OS_MACOSX)
+#endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 
 namespace printing {
 
@@ -111,10 +114,21 @@ base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
   }
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
-  PopulateAllPaperDisplayNames(&info);
+  bool populate_paper_display_names = true;
+#if defined(OS_MACOSX)
+  // Paper display name localization requires standardized vendor ID names
+  // populated by CUPS IPP. If the CUPS IPP backend is not enabled, localization
+  // will not properly occur.
+  populate_paper_display_names =
+      base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend);
 #endif
+  if (populate_paper_display_names)
+    PopulateAllPaperDisplayNames(&info);
+#endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
+
   info.papers.insert(info.papers.end(), additional_papers.begin(),
                      additional_papers.end());
+
 #if defined(OS_CHROMEOS)
   if (!has_secure_protocol)
     info.pin_supported = false;

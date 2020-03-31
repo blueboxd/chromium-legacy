@@ -545,7 +545,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3366477098757335611">Kartları göster</translation>
 <translation id="3369192424181595722">Saat hatası</translation>
 <translation id="337363190475750230">Temel hazırlık iptal edildi</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" />, tarayıcınızda Enterprise Service Hooks özelliğini etkinleştirdi. Bu kancaların verilerinizin bir kısmına erişimi vardır.</translation>
 <translation id="3377144306166885718">Sunucu TLS'nin eski bir sürümünü kullandı.</translation>
 <translation id="3377188786107721145">Politika ayrıştırma hatası</translation>
 <translation id="3377736046129930310">Kartları daha hızlı onaylamak için ekran kilidini kullanın</translation>
@@ -982,7 +981,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> dilinde değil mi? Bu hatayı bildirin</translation>
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="519422657042045905">Ek açıklama kullanılamıyor</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Bu sayfadaki yerleşik bir sayfanın mesajı</translation>
 <translation id="5205222826937269299">Ad gerekli</translation>
 <translation id="5209518306177824490">SHA-1 Parmak İzi</translation>
@@ -1453,7 +1451,6 @@ Ek ayrıntılar:
 <translation id="725866823122871198">Bilgisayarınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
 <translation id="7260504762447901703">Erişimi iptal et</translation>
 <translation id="7275334191706090484">Yönetilen Yer İşaretleri</translation>
-<translation id="7288778322931489286">Yöneticiniz, tarayıcınızda Enterprise Service Hooks özelliğini etkinleştirdi. Bu kancaların verilerinizin bir kısmına erişimi vardır.</translation>
 <translation id="7292031607255951991">Alıcı adı</translation>
 <translation id="7298195798382681320">Önerilenler</translation>
 <translation id="7300012071106347854">Çini Mavisi</translation>
@@ -1811,7 +1808,6 @@ Ek ayrıntılar:
 <translation id="8866481888320382733">Politika ayarlarını ayrıştırma hatası</translation>
 <translation id="8866928039507595380">Kat</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks tarafından işaretlenen güvenlik işlemleri hakkında yöneticiniz ile veri paylaşın. Bu veriler ziyaret ettiğiniz sayfaların URL'leri, dosya adları veya meta verilerinin yanı sıra cihazınızda ve Chrome'da oturum açmak için kullandığınız kullanıcı adını içerebilir.</translation>
 <translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8870494189203302833">Aynı sırada ön yüz aşağı bakacak şekilde</translation>
 <translation id="8874824191258364635">Geçerli bir kart numarası girin</translation>

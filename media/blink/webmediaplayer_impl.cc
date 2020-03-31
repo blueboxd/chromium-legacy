@@ -1622,18 +1622,6 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
     // has been told about the ReadyState change.
     OnBufferingStateChangeInternal(BUFFERING_HAVE_ENOUGH,
                                    BUFFERING_CHANGE_REASON_UNKNOWN, true);
-
-    // If |skip_metrics_due_to_startup_suspend_| is unset by a resume started by
-    // the OnBufferingStateChangeInternal() call, record a histogram of it here.
-    //
-    // If the value is unset, that means we should not have suspended and we've
-    // likely incurred some cost to TimeToFirstFrame and TimeToPlayReady which
-    // will be reflected in those statistics.
-    base::UmaHistogramBoolean(
-        std::string("Media.PreloadMetadataSuspendWasIdeal.") +
-            ((HasVideo() && HasAudio()) ? "AudioVideo"
-                                        : (HasVideo() ? "Video" : "Audio")),
-        skip_metrics_due_to_startup_suspend_);
   }
 
   attempting_suspended_start_ = false;

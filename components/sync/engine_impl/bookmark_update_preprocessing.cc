@@ -94,7 +94,7 @@ std::string InferGuidForLegacyBookmark(
 
   const std::string unique_tag =
       base::StrCat({originator_cache_guid, originator_client_item_id});
-  const std::array<uint8_t, base::kSHA1Length> hash =
+  const base::SHA1Digest hash =
       base::SHA1HashSpan(base::as_bytes(base::make_span(unique_tag)));
 
   static_assert(base::kSHA1Length >= 16, "16 bytes needed to infer GUID");

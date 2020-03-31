@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_HEADER_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_HEADER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/table/table_view.h"

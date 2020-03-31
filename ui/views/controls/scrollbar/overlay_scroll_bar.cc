@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"

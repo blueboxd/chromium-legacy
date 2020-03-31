@@ -541,7 +541,6 @@
 <translation id="3366477098757335611">कार्डहरू हेर्नुहोस्</translation>
 <translation id="3369192424181595722">घडी त्रुटि</translation>
 <translation id="337363190475750230">प्रबन्ध हटाइएको</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको ब्राउजरमा Enterprise Service Hooks सक्षम पारेको छ। यी हुकहरूले तपाईंका केही डेटाहरूमाथि पहुँच राख्न सक्छन्।</translation>
 <translation id="3377144306166885718">सर्भरले TLS को प्रचलनमा नरहेको संस्करण प्रयोग गर्‍यो।</translation>
 <translation id="3377188786107721145">नीति पार्स त्रुटि</translation>
 <translation id="3377736046129930310">कार्डहरू अझ छिटो पुष्टि गर्न स्क्रिन लक सुविधा प्रयोग गर्नुहोस्</translation>
@@ -977,7 +976,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> मा छैन? यो त्रुटि रिपोर्ट गर्नुहोस्</translation>
 <translation id="5190835502935405962">पृष्ठमञ्जूषा पट्टी</translation>
 <translation id="519422657042045905">एनोटेसन उपलब्ध छैन</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">यो पृष्ठमा इम्बेड गरिएको पृष्ठले यसो भन्छ</translation>
 <translation id="5205222826937269299">नाम आवश्यक छ</translation>
 <translation id="5209518306177824490">SHA-1 फिङ्गरप्रिन्ट</translation>
@@ -1447,7 +1445,6 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />मा एक निजी जडान स्थापना गर्न सक्दैन किनकि तपाईँको कम्प्युटरको मिति र समय (<ph name="DATE_AND_TIME" />) गलत छन्।</translation>
 <translation id="7260504762447901703">पहुँच रद्द गर्नुहोस्</translation>
 <translation id="7275334191706090484">व्यवस्थित पृष्ठमञ्जूषाहरू</translation>
-<translation id="7288778322931489286">तपाईंका प्रशासकले तपाईंको ब्राउजरमा Enterprise Service Hooks सक्षम पारेको छ। यी हुकहरूले तपाईंका केही डेटाहरूमाथि पहुँच राख्न सक्छन्।</translation>
 <translation id="7292031607255951991">प्रापकको नाम</translation>
 <translation id="7298195798382681320">सिफारिस गरिएको</translation>
 <translation id="7300012071106347854">कोबाल्ट निलो</translation>
@@ -1804,7 +1801,6 @@
 <translation id="8866481888320382733">नीति सेटिङहरू पार्स गर्नमा त्रुटि</translation>
 <translation id="8866928039507595380">फोल्ड</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks ले फ्ल्याग गरेर तपाईंका़ प्रशासकलाई पठाएका सुरक्षासम्बन्धी घटनाका डेटा आदान प्रदान गर्नुहोस्। यसमा तपाईंले हेर्ने पृष्ठका URL, फाइलका नाम वा मेटाडेटा र तपाईंले आफ्नो यन्त्र र Chrome मा साइन इन गर्न प्रयोग गर्ने प्रयोगकर्ताको नाम समावेश हुन सक्छन्।</translation>
 <translation id="8870413625673593573">हालै बन्द गरिएको</translation>
 <translation id="8870494189203302833">उही क्रम तर तलतिर फर्काएर</translation>
 <translation id="8874824191258364635">मान्य कार्ड नम्बर प्रविष्टि गर्नुहोस्</translation>

@@ -132,8 +132,7 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 }
 
 void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
-                                         const IconsMap* icons_map,
-                                         bool is_for_sync) {
+                                         const IconsMap* icons_map) {
   // Ensure that all icons that are in web_app_info are present, by generating
   // icons for any sizes which have failed to download. This ensures that the
   // created manifest for the web app does not contain links to icons
@@ -141,18 +140,7 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   std::vector<SkBitmap> square_icons;
   if (icons_map)
     FilterSquareIconsFromMap(*icons_map, &square_icons);
-  if (!is_for_sync)
-    FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps, &square_icons);
-
-  std::set<SquareSizePx> sizes_to_generate = SizesToGenerate();
-  if (is_for_sync) {
-    // Ensure that all icon widths in the web app info icon array are present in
-    // the sizes to generate set. This ensures that we will have all of the
-    // icon sizes from when the app was originally added, even if icon URLs are
-    // no longer accessible.
-    for (const auto& icon : web_app_info->icon_infos)
-      sizes_to_generate.insert(icon.square_size_px);
-  }
+  FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps, &square_icons);
 
   base::char16 icon_letter =
       web_app_info->title.empty()
@@ -162,7 +150,7 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   // TODO(https://crbug.com/1029223): Don't resize before writing to disk, it's
   // not necessary and would simplify this code path to remove.
   std::map<SquareSizePx, SkBitmap> size_to_icon = ResizeIconsAndGenerateMissing(
-      square_icons, sizes_to_generate, icon_letter,
+      square_icons, SizesToGenerate(), icon_letter,
       &web_app_info->generated_icon_color);
 
   for (std::pair<const SquareSizePx, SkBitmap>& item : size_to_icon) {

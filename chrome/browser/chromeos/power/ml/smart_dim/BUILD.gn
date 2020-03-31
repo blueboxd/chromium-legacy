@@ -14,6 +14,8 @@ source_set("smart_dim") {
     "builtin_worker.h",
     "download_worker.cc",
     "download_worker.h",
+    "metrics.cc",
+    "metrics.h",
     "ml_agent.cc",
     "ml_agent.h",
     "ml_agent_util.cc",

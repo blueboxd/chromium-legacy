@@ -272,7 +272,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
      * @param intent intent to dispatch
      * @return {@link LaunchIntentDispatcher.Action} to take
      */
-    protected @LaunchIntentDispatcher.Action int maybeDispatchLaunchIntent(Intent intent) {
+    protected @LaunchIntentDispatcher.Action int maybeDispatchLaunchIntent(
+            Intent intent, Bundle savedInstanceState) {
         return LaunchIntentDispatcher.Action.CONTINUE;
     }
 
@@ -281,7 +282,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         setIntent(validateIntent(getIntent()));
 
         @LaunchIntentDispatcher.Action
-        int dispatchAction = maybeDispatchLaunchIntent(getIntent());
+        int dispatchAction = maybeDispatchLaunchIntent(getIntent(), savedInstanceState);
         if (dispatchAction != LaunchIntentDispatcher.Action.CONTINUE) {
             abortLaunch(dispatchAction);
             return;

@@ -33,8 +33,6 @@ TestInterfaces::TestInterfaces()
   blink::SetWebTestMode(true);
   // NOTE: please don't put feature specific enable flags here,
   // instead add them to runtime_enabled_features.json5
-
-  ResetAll();
 }
 
 TestInterfaces::~TestInterfaces() {

@@ -5,6 +5,7 @@
 #include "ui/views/examples/label_example.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"

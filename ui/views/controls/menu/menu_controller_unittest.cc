@@ -28,7 +28,6 @@
 #include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_host.h"
@@ -37,7 +36,6 @@
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/menu_test_utils.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_utils.h"
@@ -226,31 +224,6 @@ bool TestDragDropClient::IsDragDropInProgress() {
 
 #endif  // defined(USE_AURA)
 
-// Test implementation of TestViewsDelegate which overrides ReleaseRef in order
-// to test destruction order. This simulates Chrome shutting down upon the
-// release of the ref. Associated tests should not crash.
-class DestructingTestViewsDelegate : public TestViewsDelegate {
- public:
-  DestructingTestViewsDelegate() = default;
-  ~DestructingTestViewsDelegate() override = default;
-
-  void set_release_ref_callback(base::RepeatingClosure release_ref_callback) {
-    release_ref_callback_ = std::move(release_ref_callback);
-  }
-
-  // TestViewsDelegate:
-  void ReleaseRef() override;
-
- private:
-  base::RepeatingClosure release_ref_callback_;
-  DISALLOW_COPY_AND_ASSIGN(DestructingTestViewsDelegate);
-};
-
-void DestructingTestViewsDelegate::ReleaseRef() {
-  if (!release_ref_callback_.is_null())
-    release_ref_callback_.Run();
-}
-
 // View which cancels the menu it belongs to on mouse press.
 class CancelMenuOnMousePressView : public View {
  public:
@@ -352,11 +325,10 @@ class MenuControllerTest : public ViewsTestBase,
         base::i18n::SetRTLForTesting(true);
     }
 
-    std::unique_ptr<DestructingTestViewsDelegate> views_delegate(
-        new DestructingTestViewsDelegate());
-    test_views_delegate_ = views_delegate.get();
+    auto test_views_delegate = std::make_unique<ReleaseRefTestViewsDelegate>();
+    test_views_delegate_ = test_views_delegate.get();
     // ViewsTestBase takes ownership, destroying during Teardown.
-    set_views_delegate(std::move(views_delegate));
+    set_views_delegate(std::move(test_views_delegate));
     ViewsTestBase::SetUp();
     Init();
     ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
@@ -874,7 +846,7 @@ class MenuControllerTest : public ViewsTestBase,
   }
 
   // Not owned.
-  DestructingTestViewsDelegate* test_views_delegate_;
+  ReleaseRefTestViewsDelegate* test_views_delegate_ = nullptr;
 
   std::unique_ptr<GestureTestWidget> owner_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;

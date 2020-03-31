@@ -41,6 +41,7 @@ class ManagedAmberRepo(AmberRepo):
 
   def __init__(self, target):
     AmberRepo.__init__(self, target)
+    self._with_count = 0
 
     self._amber_root = tempfile.mkdtemp()
     pm_tool = common.GetHostToolPathFromPlatform('pm')
@@ -71,18 +72,23 @@ class ManagedAmberRepo(AmberRepo):
     self._RegisterAmberRepository(self._amber_root, remote_port)
 
   def __enter__(self):
+    self._with_count += 1
     return self
 
   def __exit__(self, type, value, tb):
     """Allows the repository to delete itself when it leaves the scope of a
     'with' block."""
-    if self._amber_root:
-      logging.info('Cleaning up Amber root: ' + self._amber_root)
-      shutil.rmtree(self._amber_root)
+    self._with_count -= 1
+    if self._with_count > 0:
+      return
+
+    logging.info('Cleaning up Amber root: ' + self._amber_root)
+    shutil.rmtree(self._amber_root)
+    self._amber_root = None
 
     self._UnregisterAmberRepository()
-    if self._pm_serve_task:
-      self._pm_serve_task.kill()
+    self._pm_serve_task.kill()
+    self._pm_serve_task = None
 
   def GetPath(self):
     return self._amber_root
@@ -94,7 +100,7 @@ class ManagedAmberRepo(AmberRepo):
     |remote_port|: The reverse-forwarded port used to connect to instance of
                    `pm serve` that is serving the contents of |tuf_repo|."""
 
-# Extract the public signing key for inclusion in the config file.
+    # Extract the public signing key for inclusion in the config file.
     root_keys = []
     root_json_path = os.path.join(tuf_repo, 'repository', 'root.json')
     root_json = json.load(open(root_json_path, 'r'))
@@ -153,7 +159,8 @@ class ExternalAmberRepo(AmberRepo):
     self._amber_root = amber_root
     logging.info('Using existing Amber root: {}'.format(amber_root))
 
-#TODO(kmarshall) : Find a way to programatically check if "fx serve" is running.
+    # TODO(kmarshall): Find a way to programmatically check if "fx serve" is
+    # running.
     logging.info('Ensure that "fx serve" is running.')
 
   def GetPath(self):

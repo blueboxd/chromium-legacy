@@ -150,17 +150,17 @@ void PopupTracker::DidGetUserInteraction(
 // safe browsing callbacks. See the comment above for the mitigation.
 void PopupTracker::OnSafeBrowsingChecksComplete(
     content::NavigationHandle* navigation_handle,
-    const SafeBrowsingCheckResults& results) {
+    const subresource_filter::SubresourceFilterSafeBrowsingClient::CheckResult&
+        result) {
   DCHECK(navigation_handle->IsInMainFrame());
   safe_browsing_status_ = PopupSafeBrowsingStatus::kSafe;
-  for (const auto& result : results) {
-    if (result.threat_type ==
-            safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING ||
-        result.threat_type == safe_browsing::SBThreatType::
-                                  SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
-        result.threat_type ==
-            safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER)
-      safe_browsing_status_ = PopupSafeBrowsingStatus::kUnsafe;
+  if (result.threat_type ==
+          safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING ||
+      result.threat_type == safe_browsing::SBThreatType::
+                                SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+      result.threat_type ==
+          safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
+    safe_browsing_status_ = PopupSafeBrowsingStatus::kUnsafe;
   }
 }
 

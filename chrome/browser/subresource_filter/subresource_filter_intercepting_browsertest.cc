@@ -176,52 +176,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterInterceptingBrowserTest,
   EXPECT_GE(timer.Elapsed(), delay);
 }
 
-class SubresourceFilterInterceptingBrowserTestConsiderRedirects
-    : public SubresourceFilterInterceptingBrowserTest {
- public:
-  SubresourceFilterInterceptingBrowserTestConsiderRedirects() {
-    feature_list_.InitAndEnableFeature(
-        kSafeBrowsingSubresourceFilterConsiderRedirects);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Verify that the correct safebrowsing result is reported when there is a
-// redirect chain. With kSafeBrowsingSubresourceFilterConsiderRedirects, the
-// result with the highest priority should be returned.
-IN_PROC_BROWSER_TEST_F(
-    SubresourceFilterInterceptingBrowserTestConsiderRedirects,
-    SafeBrowsingNotificationsCheckBest) {
-  ASSERT_NO_FATAL_FAILURE(
-      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-  GURL redirect_url(embedded_test_server()->GetURL(
-      "b.com", "/subresource_filter/frame_with_included_script.html"));
-  GURL url = InitializeSafeBrowsingForOutOfOrderResponses(
-      "a.com", redirect_url, base::TimeDelta::FromSeconds(0));
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-}
-
-class SubresourceFilterInterceptingBrowserTestDontConsiderRedirects
-    : public SubresourceFilterInterceptingBrowserTest {
- public:
-  SubresourceFilterInterceptingBrowserTestDontConsiderRedirects() {
-    feature_list_.InitAndDisableFeature(
-        kSafeBrowsingSubresourceFilterConsiderRedirects);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Verify that the correct safebrowsing result is reported when there is a
-// redirect chain. Without kSafeBrowsingSubresourceFilterConsiderRedirects, the
+// redirect chain. The
 // last result should be used.
-IN_PROC_BROWSER_TEST_F(
-    SubresourceFilterInterceptingBrowserTestDontConsiderRedirects,
-    SafeBrowsingNotificationsCheckLastResult) {
+IN_PROC_BROWSER_TEST_F(SubresourceFilterInterceptingBrowserTest,
+                       SafeBrowsingNotificationsCheckLastResult) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   GURL redirect_url(embedded_test_server()->GetURL(

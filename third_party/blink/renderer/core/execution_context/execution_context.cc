@@ -29,8 +29,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -438,9 +438,9 @@ bool ExecutionContext::IsFeatureEnabled(
   }
 
   if (should_report && report_on_failure == ReportOptions::kReportOnFailure) {
-    mojom::blink::FeaturePolicyDisposition disposition =
-        enabled ? mojom::blink::FeaturePolicyDisposition::kReport
-                : mojom::blink::FeaturePolicyDisposition::kEnforce;
+    mojom::blink::PolicyDisposition disposition =
+        enabled ? mojom::blink::PolicyDisposition::kReport
+                : mojom::blink::PolicyDisposition::kEnforce;
     ReportFeaturePolicyViolation(feature, disposition, message, source_file);
   }
   return enabled;
@@ -474,11 +474,11 @@ bool ExecutionContext::IsFeatureEnabled(
       report_option == ReportOptions::kReportOnFailure) {
     // If both |enabled| and |should_report| are true, the usage must have
     // violated the report-only policy, i.e. |disposition| ==
-    // mojom::blink::FeaturePolicyDisposition::kReport.
+    // mojom::blink::PolicyDisposition::kReport.
     ReportDocumentPolicyViolation(
         feature,
-        status.enabled ? mojom::blink::FeaturePolicyDisposition::kReport
-                       : mojom::blink::FeaturePolicyDisposition::kEnforce,
+        status.enabled ? mojom::blink::PolicyDisposition::kReport
+                       : mojom::blink::PolicyDisposition::kEnforce,
         message, source_file);
   }
   return status.enabled;

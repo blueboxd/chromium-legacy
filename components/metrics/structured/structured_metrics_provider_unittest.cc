@@ -58,6 +58,8 @@ constexpr char kKeyData[] = R"({
 constexpr uint64_t kEventOneHash = UINT64_C(15619026293081468407);
 // The name hash of "TestEventTwo".
 constexpr uint64_t kEventTwoHash = UINT64_C(15791833939776536363);
+// The name hash of "TestEventThree".
+constexpr uint64_t kEventThreeHash = UINT64_C(16464330721839207086);
 
 // The name hash of "TestMetricOne".
 constexpr uint64_t kMetricOneHash = UINT64_C(637929385654885975);
@@ -282,6 +284,36 @@ TEST_F(StructuredMetricsProviderTest, EventsReportedCorrectly) {
                 "86F0169868588DC7");
     }
   }
+
+  histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.InternalError", 0);
+  histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.PrefReadError", 0);
+}
+
+TEST_F(StructuredMetricsProviderTest, EventsWithinProjectReportedWithSameID) {
+  WriteTestingKeys();
+  Init();
+
+  events::TestEventOne().Record();
+  events::TestEventTwo().Record();
+  events::TestEventThree().Record();
+
+  const auto uma = GetProvidedEvents();
+  ASSERT_EQ(uma.structured_event_size(), 3);
+
+  const auto& event_one = uma.structured_event(0);
+  const auto& event_two = uma.structured_event(1);
+  const auto& event_three = uma.structured_event(2);
+
+  // Check events are in the right order.
+  EXPECT_EQ(event_one.event_name_hash(), kEventOneHash);
+  EXPECT_EQ(event_two.event_name_hash(), kEventTwoHash);
+  EXPECT_EQ(event_three.event_name_hash(), kEventThreeHash);
+
+  // Events two and three share a project, so should have the same ID. Event
+  // one should have its own ID.
+  EXPECT_EQ(HashToHex(event_one.profile_event_id()), kKeyOneId);
+  EXPECT_EQ(HashToHex(event_two.profile_event_id()), kKeyTwoId);
+  EXPECT_EQ(HashToHex(event_three.profile_event_id()), kKeyTwoId);
 
   histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.InternalError", 0);
   histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.PrefReadError", 0);

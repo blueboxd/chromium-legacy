@@ -12,9 +12,9 @@
 
 namespace base {
 
-std::array<uint8_t, kSHA1Length> SHA1HashSpan(span<const uint8_t> data) {
+SHA1Digest SHA1HashSpan(span<const uint8_t> data) {
   CRYPTO_library_init();
-  std::array<uint8_t, kSHA1Length> digest;
+  SHA1Digest digest;
   SHA1(data.data(), data.size(), digest.data());
   return digest;
 }

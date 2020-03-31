@@ -4,6 +4,8 @@
 
 #include "ui/views/examples/throbber_example.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/fill_layout.h"

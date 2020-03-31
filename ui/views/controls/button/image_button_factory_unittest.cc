@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/button/image_button_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"

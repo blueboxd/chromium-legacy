@@ -54,6 +54,7 @@ class StreamModel {
     StoreUpdate& operator=(const StoreUpdate&);
     StoreUpdate& operator=(StoreUpdate&&);
 
+    int32_t sequence_number = 0;
     std::vector<feedstore::DataOperation> operations;
   };
 
@@ -108,6 +109,9 @@ class StreamModel {
   // Rejects a change. Returns false if the change does not exist.
   bool RejectEphemeralChange(EphemeralChangeId id);
 
+  // Outputs a string representing the model state for debugging or testing.
+  std::string DumpStateForTesting();
+
  private:
   struct SharedState {
     // Whether the data has been changed since the last call to |OnUiUpdate()|.
@@ -137,6 +141,7 @@ class StreamModel {
   std::string consistency_token_;  // TODO(harringtond): use this value.
   base::Time last_added_time_;     // TODO(harringtond): use this value.
   base::flat_map<std::string, SharedState> shared_states_;
+  int32_t next_structure_sequence_number_ = 0;
 
   // Current state of the flattened tree.
   // Updated after each tree change.

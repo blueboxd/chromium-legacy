@@ -542,7 +542,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3366477098757335611">Ver cartões</translation>
 <translation id="3369192424181595722">Erro do relógio</translation>
 <translation id="337363190475750230">Desprovisionado</translation>
-<translation id="3376829916920036789">O <ph name="ENROLLMENT_DOMAIN" /> ativou o Serviço de integração entre serviços do Chrome Enterprise no seu navegador. Essas integrações têm acesso a alguns dos seus dados.</translation>
 <translation id="3377144306166885718">Versão obsoleta do TLS usada no servidor.</translation>
 <translation id="3377188786107721145">Erro de análise da política</translation>
 <translation id="3377736046129930310">Use o bloqueio de tela para confirmar seus cartões mais rapidamente</translation>
@@ -978,7 +977,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE" />? Informe este erro</translation>
 <translation id="5190835502935405962">Barra de favoritos</translation>
 <translation id="519422657042045905">Anotação indisponível</translation>
-<translation id="5196187217592847346">Serviço de integração entre serviços do Chrome Enterprise</translation>
 <translation id="5201306358585911203">Uma página incorporada nesta página diz</translation>
 <translation id="5205222826937269299">Nome obrigatório</translation>
 <translation id="5209518306177824490">Assinatura digital SHA-1</translation>
@@ -1448,7 +1446,6 @@ Mais detalhes:
 <translation id="725866823122871198">Não é possível estabelecer uma conexão privada com <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu computador (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="7260504762447901703">Revogar acesso</translation>
 <translation id="7275334191706090484">Favoritos gerenciados</translation>
-<translation id="7288778322931489286">O administrador ativou o Serviço de integração entre serviços do Chrome Enterprise no seu navegador. Essas integrações têm acesso a alguns dos seus dados.</translation>
 <translation id="7292031607255951991">Nome do destinatário</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7300012071106347854">Azul-cobalto</translation>
@@ -1806,7 +1803,6 @@ Mais detalhes:
 <translation id="8866481888320382733">Configurações da política de análise de erros</translation>
 <translation id="8866928039507595380">Dobrar</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Compartilhar os dados sobre ocorrências de segurança sinalizadas pelo Serviço de integração entre serviços do Chrome Enterprise com o administrador. Isso pode incluir URLs das páginas visitadas, metadados ou nomes de arquivos e o nome de usuário usado para fazer login no dispositivo e no Chrome.</translation>
 <translation id="8870413625673593573">Recentemente fechadas</translation>
 <translation id="8870494189203302833">Mesma ordem virada para baixo</translation>
 <translation id="8874824191258364635">Informe um número de cartão válido</translation>

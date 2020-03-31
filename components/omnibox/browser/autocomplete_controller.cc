@@ -59,35 +59,38 @@ namespace {
 // Converts the given match to a type (and possibly subtype) based on the AQS
 // specification. For more details, see
 // http://goto.google.com/binary-clients-logging.
-void AutocompleteMatchToAssistedQuery(
-    const AutocompleteMatch::Type& match,
-    const AutocompleteProvider* provider,
-    size_t* type,
-    size_t* subtype) {
+void AutocompleteMatchToAssistedQuery(const AutocompleteMatch& match,
+                                      size_t* type,
+                                      size_t* subtype) {
   // This type indicates a native chrome suggestion.
   *type = 69;
   // Default value, indicating no subtype.
   *subtype = base::string16::npos;
 
+  // If set, start with the AutocompletMatch::subtype_identifier field.
+  if (match.subtype_identifier != 0)
+    *subtype = match.subtype_identifier;
+
   // If provider is TYPE_ZERO_SUGGEST or TYPE_ON_DEVICE_HEAD, set the subtype
   // accordingly. Type will be set in the switch statement below where we'll
   // enter one of SEARCH_SUGGEST or NAVSUGGEST.
-  if (provider) {
-    if (provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST &&
-        (match == AutocompleteMatchType::SEARCH_SUGGEST ||
-         match == AutocompleteMatchType::NAVSUGGEST)) {
+  if (match.provider) {
+    if (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST &&
+        (match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
+         match.type == AutocompleteMatchType::NAVSUGGEST)) {
       // We abuse this subtype and use it to for zero-suggest suggestions that
       // aren't personalized by the server. That is, it indicates either
       // client-side most-likely URL suggestions or server-side suggestions
       // that depend only on the URL as context.
       *subtype = 66;
-    } else if (provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
+    } else if (match.provider->type() ==
+               AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
       // This subtype indicates a match from an on-device head provider.
       *subtype = 271;
     }
   }
 
-  switch (match) {
+  switch (match.type) {
     case AutocompleteMatchType::SEARCH_SUGGEST: {
       // Do not set subtype here; subtype may have been set above.
       *type = 0;
@@ -828,8 +831,7 @@ void AutocompleteController::UpdateAssistedQueryStats(
   for (auto match(result->begin()); match != result->end(); ++match) {
     size_t type = base::string16::npos;
     size_t subtype = base::string16::npos;
-    AutocompleteMatchToAssistedQuery(
-        match->type, match->provider, &type, &subtype);
+    AutocompleteMatchToAssistedQuery(*match, &type, &subtype);
     if (last_type != base::string16::npos &&
         (type != last_type || subtype != last_subtype)) {
       AppendAvailableAutocompletion(

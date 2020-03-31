@@ -222,7 +222,7 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // TODO(tmathmeyer) write the dav1d error into the data for the media error.
   if (dav1d_open(&dav1d_decoder_, &s) < 0) {
-    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 

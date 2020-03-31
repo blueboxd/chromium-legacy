@@ -78,7 +78,8 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (only_discovery_)
     return true;
 
-  session->AddHandler(std::make_unique<protocol::BrowserHandler>());
+  session->AddHandler(std::make_unique<protocol::BrowserHandler>(
+      session->GetClient()->MayWriteLocalFiles()));
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::FetchHandler>(
       GetIOContext(),

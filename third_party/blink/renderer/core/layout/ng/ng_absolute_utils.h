@@ -19,7 +19,7 @@ class LayoutObject;
 class NGConstraintSpace;
 struct NGLogicalStaticPosition;
 
-struct CORE_EXPORT NGLogicalOutOfFlowPosition {
+struct CORE_EXPORT NGLogicalOutOfFlowDimensions {
   NGBoxStrut inset;
   LogicalSize size;
   NGBoxStrut margins;
@@ -36,31 +36,30 @@ CORE_EXPORT base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
 // The following routines implement the absolute size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
 //
-// The size is computed as |NGLogicalOutOfFlowPosition|.
+// The size is computed as |NGLogicalOutOfFlowDimensions|.
 // It needs to be computed in 4 stages:
 // 1. If |AbsoluteNeedsChildInlineSize| is true, compute estimated inline_size
 //    using |NGBlockNode::ComputeMinMaxSize|.
-// 2. Compute part of the |NGLogicalOutOfFlowPosition| which depends on the
-//    child inline-size with |ComputePartialAbsoluteWithChildInlineSize|.
+// 2. Compute part of the |NGLogicalOutOfFlowDimensions| which depends on the
+//    child inline-size with |ComputeOutOfFlowInlineDimensions|.
 // 3. If |AbsoluteNeedsChildBlockSize| is true, compute estimated block_size by
 //    performing layout with the inline_size calculated from (2).
-// 4. Compute the full |NGLogicalOutOfFlowPosition| with
-//    |ComputeFullAbsoluteWithChildBlockSize|.
+// 4. Compute the full |NGLogicalOutOfFlowDimensions| with
+//    |ComputeOutOfFlowBlockDimensions|.
 
-// Returns true if |ComputePartialAbsoluteWithChildInlineSize| will need an
-// estimated inline-size.
+// Returns true if |ComputeOutOfFlowInlineDimensions| will need an estimated
+// inline-size.
 CORE_EXPORT bool AbsoluteNeedsChildInlineSize(const ComputedStyle&);
 
-// Returns true if |ComputeFullAbsoluteWithChildBlockSize| will need an
-// estimated block-size.
+// Returns true if |ComputeOutOfFlowBlockDimensions| will need an estimated
+// block-size.
 CORE_EXPORT bool AbsoluteNeedsChildBlockSize(const ComputedStyle&);
 
 // Computes part of the absolute position which depends on the child's
 // inline-size.
 // |replaced_size| should be set if and only if element is replaced element.
 // Returns the partially filled position.
-CORE_EXPORT NGLogicalOutOfFlowPosition
-ComputePartialAbsoluteWithChildInlineSize(
+CORE_EXPORT void ComputeOutOfFlowInlineDimensions(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
@@ -68,11 +67,12 @@ ComputePartialAbsoluteWithChildInlineSize(
     const base::Optional<MinMaxSizes>& child_minmax,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
-    const TextDirection container_direction);
+    const TextDirection container_direction,
+    NGLogicalOutOfFlowDimensions* dimensions);
 
 // Computes the rest of the absolute position which depends on child's
 // block-size.
-CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
+CORE_EXPORT void ComputeOutOfFlowBlockDimensions(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
@@ -81,7 +81,7 @@ CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction,
-    NGLogicalOutOfFlowPosition* position);
+    NGLogicalOutOfFlowDimensions* dimensions);
 
 }  // namespace blink
 

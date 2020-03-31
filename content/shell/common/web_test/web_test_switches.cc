@@ -4,6 +4,9 @@
 
 #include "content/shell/common/web_test/web_test_switches.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_split.h"
+
 namespace switches {
 
 // Allow access to external pages during web tests.
@@ -46,5 +49,24 @@ const char kStableReleaseMode[] = "stable-release-mode";
 // to use the hardware GPU for rendering. This is only followed when
 // kRunWebTests is set.
 const char kDisableHeadlessMode[] = "disable-headless-mode";
+
+#if defined(OS_WIN)
+// Registers additional font files on Windows (for fonts outside the usual
+// %WINDIR%\Fonts location). Multiple files can be used by separating them
+// with a semicolon (;).
+const char kRegisterFontFiles[] = "register-font-files";
+
+std::vector<std::string> GetSideloadFontFiles() {
+  std::vector<std::string> files;
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRegisterFontFiles)) {
+    files = base::SplitString(
+        command_line.GetSwitchValueASCII(switches::kRegisterFontFiles), ";",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  return files;
+}
+#endif
 
 }  // namespace switches

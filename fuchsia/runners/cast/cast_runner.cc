@@ -16,7 +16,6 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "fuchsia/base/agent_manager.h"
-#include "fuchsia/runners/cast/audio_capturer_redirect.h"
 #include "url/gurl.h"
 
 namespace {
@@ -281,11 +280,15 @@ void CastRunner::InitializeServiceDirectory() {
     service_directory_->AddService(name);
   }
 
-  // Create AudioCapturerRedirect to intercept CreateAudioCapturer() requests.
-  audio_capturer_redirect_ = std::make_unique<AudioCapturerRedirect>(
-      service_directory_->outgoing_directory(),
-      base::BindRepeating(&CastRunner::CreateAudioCapturer,
-                          base::Unretained(this)));
+  // Handle fuchsia.media.Audio requests so we can redirect to the agent if
+  // necessary.
+  service_directory_->outgoing_directory()->AddPublicService(
+      std::make_unique<vfs::Service>([this](zx::channel channel,
+                                            async_dispatcher_t* dispatcher) {
+        this->ConnectAudioProtocol(
+            fidl::InterfaceRequest<fuchsia::media::Audio>(std::move(channel)));
+      }),
+      fuchsia::media::Audio::Name_);
 
   fidl::InterfaceHandle<fuchsia::io::Directory> client_handle;
   service_directory_->ConnectClient(client_handle.NewRequest());
@@ -390,14 +393,18 @@ size_t CastRunner::GetChildCastRunnerCountForTest() {
   return isolated_runners_.size();
 }
 
-void CastRunner::CreateAudioCapturer(
-    fidl::InterfaceRequest<fuchsia::media::AudioCapturer> request) {
-  if (!audio_capturer_component_)
+void CastRunner::ConnectAudioProtocol(
+    fidl::InterfaceRequest<fuchsia::media::Audio> request) {
+  // If we have a component that allows AudioCapturer access then redirect the
+  // fuchsia.media.Audio requests to the corresponding agent.
+  if (audio_capturer_component_) {
+    audio_capturer_component_->agent_manager()->ConnectToAgentService(
+        audio_capturer_component_->application_config().agent_url(),
+        std::move(request));
     return;
+  }
 
-  auto audio =
-      audio_capturer_component_->agent_manager()
-          ->ConnectToAgentService<fuchsia::media::Audio>(
-              audio_capturer_component_->application_config().agent_url());
-  audio->CreateAudioCapturer(std::move(request), /*loopback=*/false);
+  // Otherwise use the default fuchsia.media.Audio implementation.
+  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
+      std::move(request));
 }

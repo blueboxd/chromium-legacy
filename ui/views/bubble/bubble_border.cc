@@ -5,6 +5,9 @@
 #include "ui/views/bubble/bubble_border.h"
 
 #include <algorithm>
+#include <map>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"

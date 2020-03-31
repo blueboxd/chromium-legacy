@@ -544,7 +544,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3366477098757335611">Tingnan ang mga card</translation>
 <translation id="3369192424181595722">Error sa orasan</translation>
 <translation id="337363190475750230">Naalis sa pagkakaprobisyon</translation>
-<translation id="3376829916920036789">Na-enable ng <ph name="ENROLLMENT_DOMAIN" /> ang Enterprise Service Hooks sa iyong browser. May access ang mga hook na ito sa ilan sa iyong data.</translation>
 <translation id="3377144306166885718">Gumamit ang server ng lumang bersyon ng TLS.</translation>
 <translation id="3377188786107721145">Error sa pag-parse ng patakaran</translation>
 <translation id="3377736046129930310">Gumamit ng lock ng screen para kumpirmahin nang mas mabilis ang mga card</translation>
@@ -980,7 +979,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5179510805599951267">Wala sa <ph name="ORIGINAL_LANGUAGE" />? Iulat ang error na ito</translation>
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="519422657042045905">Hindi available ang anotasyon</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Isinasaad ng naka-embed na page sa page na ito na</translation>
 <translation id="5205222826937269299">Kailangan ng pangalan</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
@@ -1454,7 +1452,6 @@ Mga karagdagang detalye:
 <translation id="725866823122871198">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong computer (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Bawiin ang access</translation>
 <translation id="7275334191706090484">Mga Pinamamahalaang Bookmark</translation>
-<translation id="7288778322931489286">Na-enable ng iyong administrator ang Enterprise Service Hooks sa browser mo. May access ang mga hook na ito sa ilan sa iyong data.</translation>
 <translation id="7292031607255951991">Pangalan ng tatanggap</translation>
 <translation id="7298195798382681320">Inirerekomenda</translation>
 <translation id="7300012071106347854">Cobalt Blue</translation>
@@ -1811,7 +1808,6 @@ Mga karagdagang detalye:
 <translation id="8866481888320382733">Error sa pag-parse ng mga setting ng patakaran</translation>
 <translation id="8866928039507595380">Fold</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Magbahagi ng data tungkol sa mga pangyayari sa seguridad na na-flag ng Enterprise Service Hooks sa iyong administrator. Posibleng kabilang dito ang mga URL ng mga page na binibisita mo, mga pangalan ng file o metadata, at ang username na iyong ginagamit para mag-sign sa device mo at sa Chrome.</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8870494189203302833">Parehong pagkakasunod-sunod nang nakataob</translation>
 <translation id="8874824191258364635">Maglagay ng wastong numero ng card</translation>

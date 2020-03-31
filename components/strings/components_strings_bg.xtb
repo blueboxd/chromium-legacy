@@ -546,7 +546,6 @@
 <translation id="3366477098757335611">Преглед на картите</translation>
 <translation id="3369192424181595722">Грешка в часовника</translation>
 <translation id="337363190475750230">Обезпечаването е отменено</translation>
-<translation id="3376829916920036789">Домейнът <ph name="ENROLLMENT_DOMAIN" /> е активирал Enterprise Service Hooks в браузъра ви. Функцията има достъп до някои от данните ви.</translation>
 <translation id="3377144306166885718">Сървърът използва остаряла версия на TLS.</translation>
 <translation id="3377188786107721145">Грешка при синтактичния анализ на правилото</translation>
 <translation id="3377736046129930310">Използване на опцията за заключване на екрана за по-бързо потвърждаване на картите</translation>
@@ -983,7 +982,6 @@
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Подайте сигнал за тази грешка</translation>
 <translation id="5190835502935405962">Лента на отметките</translation>
 <translation id="519422657042045905">Няма достъп до режима за пояснения</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Страница, вградена в тази страница, изпраща съобщение</translation>
 <translation id="5205222826937269299">Името е задължително</translation>
 <translation id="5209518306177824490">Пръстов отпечатък SHA-1</translation>
@@ -1455,7 +1453,6 @@
 <translation id="725866823122871198">Не може да се установи частна връзка с/ъс <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, тъй като датата и часът на компютъра ви (<ph name="DATE_AND_TIME" />) са неправилни.</translation>
 <translation id="7260504762447901703">Отмяна на достъпа</translation>
 <translation id="7275334191706090484">Управлявани отметки</translation>
-<translation id="7288778322931489286">Администраторът ви е активирал Enterprise Service Hooks в браузъра ви. Функцията има достъп до някои от данните ви.</translation>
 <translation id="7292031607255951991">Име на получателя</translation>
 <translation id="7298195798382681320">Препоръчително</translation>
 <translation id="7300012071106347854">кобалтовосиньо</translation>
@@ -1812,7 +1809,6 @@
 <translation id="8866481888320382733">Грешка при синтактичния анализ на настройките за правилото</translation>
 <translation id="8866928039507595380">Сгъване</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Споделяне с администратора ви на събития, свързани със сигурността, за които е сигнализирано от Enterprise Service Hooks. Данните могат да включват URL адресите на посещаваните от вас страници, имената или метаданните на файлове и потребителското име, с което влизате в профила си на устройството си и в Chrome.</translation>
 <translation id="8870413625673593573">Наскоро затворени</translation>
 <translation id="8870494189203302833">В същия ред с отпечатаната страна надолу</translation>
 <translation id="8874824191258364635">Въведете валиден номер на карта</translation>

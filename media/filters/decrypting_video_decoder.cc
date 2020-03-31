@@ -73,7 +73,7 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (state_ == kUninitialized) {
     if (!cdm_context->GetDecryptor()) {
       DVLOG(1) << __func__ << ": no decryptor";
-      std::move(init_cb_).Run(StatusCode::kDecoderFailedConfigure);
+      std::move(init_cb_).Run(StatusCode::kDecoderFailedInitialization);
       return;
     }
 

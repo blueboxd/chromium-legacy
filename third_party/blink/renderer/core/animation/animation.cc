@@ -839,6 +839,10 @@ void Animation::setEffect(AnimationEffect* new_effect) {
   // Notify of a potential state change.
   NotifyProbe();
 
+  // The effect is no longer associated with CSS properties.
+  if (new_effect)
+    new_effect->SetIgnoreCssTimingProperties();
+
   // The remaining steps are for handling CSS animation and transition events.
   // Both use an event delegate to dispatch events, which must be reattached to
   // the new effect.

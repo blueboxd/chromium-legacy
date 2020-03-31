@@ -40,21 +40,18 @@ IncognitoMenuView::IncognitoMenuView(views::Button* anchor_button,
 IncognitoMenuView::~IncognitoMenuView() = default;
 
 void IncognitoMenuView::BuildMenu() {
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   int incognito_window_count =
       BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
-  // The icon color is set to match the menu text, which guarantees sufficient
-  // contrast and a consistent visual appearance.
-  const SkColor icon_color = provider->GetTypographyProvider().GetColor(
-      *this, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
 
   SetIdentityInfo(
-      ColoredImageForMenu(kIncognitoProfileIcon, icon_color),
+      gfx::ImageSkia(),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
       incognito_window_count > 1
           ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
                                              incognito_window_count)
-          : base::string16());
+          : base::string16(),
+      kIncognitoProfileIcon, ui::NativeTheme::kColorId_BubbleForeground);
+
   AddFeatureButton(
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON),
       base::BindRepeating(&IncognitoMenuView::OnExitButtonClicked,

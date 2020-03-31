@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gtk/gtk_event_loop_x11.h"
 
 namespace ui {
 
@@ -18,6 +19,11 @@ GtkUiDelegateX11::GtkUiDelegateX11(XDisplay* display) : xdisplay_(display) {
 }
 
 GtkUiDelegateX11::~GtkUiDelegateX11() = default;
+
+void GtkUiDelegateX11::OnInitialized() {
+  // Ensure the singleton instance of GtkEventLoopX11 is created and started.
+  GtkEventLoopX11::EnsureInstance();
+}
 
 GdkKeymap* GtkUiDelegateX11::GetGdkKeymap() {
   return gdk_keymap_get_for_display(GetGdkDisplay());

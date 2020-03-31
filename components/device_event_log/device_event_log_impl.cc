@@ -22,10 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
-#include "third_party/icu/source/i18n/unicode/timezone.h"
-#endif
-
 namespace device_event_log {
 
 namespace {
@@ -116,20 +112,28 @@ std::string TimeWithMillieconds(const base::Time& time) {
 
 #if defined(OS_POSIX)
 std::string UnixTime(const base::Time& time) {
-  base::Time::Exploded exploded;
+  base::Time::Exploded utc_exploded, exploded;
+  time.UTCExplode(&utc_exploded);
   time.LocalExplode(&exploded);
+  // Note: |timezone_hours| is only used to display the correct timezone UTC
+  // offset (which alas is not conveniently provided in Time::Exploded).
+  // Thus, we don't have to account for any date shift, it is already considered
+  // in |exploded| (i.e. exploded.day may not match utc_exploded.day).
+  int timezone_hours = exploded.hour - utc_exploded.hour;
+  if (timezone_hours >= 12)
+    timezone_hours = 24 - timezone_hours;
+  else if (timezone_hours <= -12)
+    timezone_hours = 24 + timezone_hours;
+  char sign = timezone_hours > 0 ? '+' : '-';
   // See note in DateAndTimeWithMicroseconds.
   int usecs = static_cast<int>(fmod(time.ToDoubleT() * 1000000, 1000000));
-  std::unique_ptr<icu::TimeZone> tz(icu::TimeZone::createDefault());
-  int32_t offset_ms = tz->getRawOffset();
-  char sign = offset_ms > 0 ? '+' : '-';
-  int timezone_hours = std::abs(offset_ms) / (60 * 60 * 1000);
   // This format is consistent with the date/time format in /var/log/messages
   // and /var/log/net.log, e.g: 2020-01-23T01:23:45.678901-07:00.
+  // Note: %+02d does not respect the '0', resulting in e.g. +7:00.
   return base::StringPrintf(
       "%04d-%02d-%02dT%02d:%02d:%02d.%06d%c%02d:00", exploded.year,
       exploded.month, exploded.day_of_month, exploded.hour, exploded.minute,
-      exploded.second, usecs, sign, timezone_hours);
+      exploded.second, usecs, sign, std::abs(timezone_hours));
 }
 #endif
 

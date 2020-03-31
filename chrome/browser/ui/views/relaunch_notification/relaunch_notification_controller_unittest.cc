@@ -744,9 +744,7 @@ class RelaunchNotificationControllerPlatformImplTest : public ::testing::Test {
   RelaunchNotificationControllerPlatformImplTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
-  ~RelaunchNotificationControllerPlatformImplTest() override {
-    ash_test_helper_.TearDown();
-  }
+  ~RelaunchNotificationControllerPlatformImplTest() override = default;
 
   void SetUp() override {
     ash::AshTestHelper::InitParams init_params;

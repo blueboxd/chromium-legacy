@@ -26,15 +26,13 @@ bool DNRManifestData::HasRuleset(const Extension& extension) {
 }
 
 // static
-const DNRManifestData::RulesetInfo& DNRManifestData::GetRuleset(
+const std::vector<DNRManifestData::RulesetInfo>& DNRManifestData::GetRulesets(
     const Extension& extension) {
   Extension::ManifestData* data =
       extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
   DCHECK(data);
 
-  // TODO(crbug.com/754526): Change this to return |rulesets|. Currently we only
-  // index the first ruleset specified by the extension in its manifest.
-  return static_cast<DNRManifestData*>(data)->rulesets[0];
+  return static_cast<DNRManifestData*>(data)->rulesets;
 }
 
 }  // namespace declarative_net_request

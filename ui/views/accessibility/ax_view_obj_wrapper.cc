@@ -4,6 +4,8 @@
 
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
 
+#include <vector>
+
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"

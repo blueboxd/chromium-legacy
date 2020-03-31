@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,10 +29,10 @@ const char kDidAcknowledgeExistingNtpExtensions[] =
     "ack_existing_ntp_extensions";
 
 // Whether to acknowledge existing extensions overriding the NTP for the active
-// profile. Active on ChromeOS to rollout the NTP bubble without prompting for
+// profile. Active on MacOS to rollout the NTP bubble without prompting for
 // previously-installed extensions.
 bool g_acknowledge_existing_extensions =
-#if defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
     true;
 #else
     false;

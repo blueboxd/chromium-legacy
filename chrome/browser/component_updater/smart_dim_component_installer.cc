@@ -17,12 +17,20 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/download_worker.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
+
+using ::chromeos::power::ml::ComponentFileContents;
+using ::chromeos::power::ml::ComponentVersionType;
+using ::chromeos::power::ml::LoadComponentEvent;
+using ::chromeos::power::ml::LogComponentVersionType;
+using ::chromeos::power::ml::LogLoadComponentEvent;
 
 const base::FilePath::CharType kSmartDimFeaturePreprocessorConfigFileName[] =
     FILE_PATH_LITERAL("example_preprocessor_config.pb");
@@ -31,9 +39,11 @@ const base::FilePath::CharType kSmartDimModelFileName[] =
 const base::FilePath::CharType kSmartDimMetaJsonFileName[] =
     FILE_PATH_LITERAL("smart_dim_meta.json");
 
+const char kDefaultVersion[] = "2019.11.12.0";
+
 constexpr base::FeatureParam<std::string> kVersion{
     &chromeos::features::kSmartDimExperimentalComponent,
-    "smart_dim_experimental_version", "2019.11.12.0"};
+    "smart_dim_experimental_version", kDefaultVersion};
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
 // The extension id is: ghiclnejioiofblmbphpgbhaojnkempa
@@ -44,13 +54,10 @@ const uint8_t kSmartDimPublicKeySHA256[32] = {
 
 const char kMLSmartDimManifestName[] = "Smart Dim";
 
-// The contents of metadata JSON, preprocessor proto and model flatbuffer.
-using ComponentFileContents =
-    base::Optional<std::tuple<std::string, std::string, std::string>>;
 
 // Read files from the component to strings, should be called from a blocking
 // task runner.
-ComponentFileContents ReadComponentFiles(
+base::Optional<ComponentFileContents> ReadComponentFiles(
     const base::FilePath& meta_json_path,
     const base::FilePath& preprocessor_pb_path,
     const base::FilePath& model_path) {
@@ -67,15 +74,15 @@ ComponentFileContents ReadComponentFiles(
                          std::move(model_flatbuffer));
 }
 
-void UpdateSmartDimMlAgent(ComponentFileContents result) {
-  if (result == base::nullopt)
+void UpdateSmartDimMlAgent(
+    const base::Optional<ComponentFileContents>& result) {
+  if (result == base::nullopt) {
+    LogLoadComponentEvent(LoadComponentEvent::kReadComponentFilesError);
     return;
+  }
 
-  std::string metadata_json, preprocessor_proto, model_flatbuffer;
-  std::tie(metadata_json, preprocessor_proto, model_flatbuffer) =
-      result.value();
   chromeos::power::ml::SmartDimMlAgent::GetInstance()->OnComponentReady(
-      metadata_json, preprocessor_proto, model_flatbuffer);
+      result.value());
 }
 
 }  // namespace
@@ -193,9 +200,15 @@ void RegisterSmartDimComponent(ComponentUpdateService* cus) {
   const std::string expected_version = kVersion.Get();
 
   if (expected_version.empty()) {
+    LogComponentVersionType(ComponentVersionType::kEmpty);
     DLOG(ERROR) << "expected_version is empty.";
     return;
   }
+
+  if (expected_version == kDefaultVersion)
+    LogComponentVersionType(ComponentVersionType::kDefault);
+  else
+    LogComponentVersionType(ComponentVersionType::kExperimental);
 
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<SmartDimComponentInstallerPolicy>(expected_version));

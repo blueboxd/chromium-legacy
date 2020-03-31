@@ -219,7 +219,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (!ConfigureDecoder(config, low_delay)) {
-    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 

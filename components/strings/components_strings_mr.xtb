@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">कार्डे पाहा</translation>
 <translation id="3369192424181595722">घड्याळ एरर</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ने तुमच्या ब्राउझरवर एंटरप्राइझ सेवा हूक सुरू केले आहेत. या हूकना तुमच्या काही डेटाचा अ‍ॅक्सेस आहे.</translation>
 <translation id="3377144306166885718">सर्व्हरने TLS ची ऑब्सोलीट आवृत्ती वापरली.</translation>
 <translation id="3377188786107721145">धोरण पार्स एरर</translation>
 <translation id="3377736046129930310">कार्डांची जलद खात्री करण्यासाठी स्क्रीन लॉक वापरा</translation>
@@ -984,7 +983,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> मध्ये नाही? या एररचा अहवाल नोंदवा</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="519422657042045905">भाष्य उपलब्ध नाही</translation>
-<translation id="5196187217592847346">एंटरप्राइझ सेवा हूक</translation>
 <translation id="5201306358585911203">या पेजवरील एंबेड केलेल्‍या पेजचे म्हणणे हे आहे की</translation>
 <translation id="5205222826937269299">नाव आवश्यक आहे</translation>
 <translation id="5209518306177824490">SHA-1 बोटाचा ठसा</translation>
@@ -1459,7 +1457,6 @@
 <translation id="725866823122871198">तुमच्या कॉंप्युटरची तारीख आणि वेळ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> चुकीची असल्यामुळे (<ph name="DATE_AND_TIME" />)सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकत नाही.</translation>
 <translation id="7260504762447901703">ॲक्सेस रद्द करा</translation>
 <translation id="7275334191706090484">व्यवस्थापित केलेले बुकमार्क</translation>
-<translation id="7288778322931489286">तुमच्या अ‍ॅडमिनिस्ट्रेटरने तुमच्या ब्राउझरवर एंटरप्राइझ सेवा हूक सुरू केले आहेत. या हूकना तुमच्या काही डेटाचा अ‍ॅक्सेस आहे.</translation>
 <translation id="7292031607255951991">मिळवणाऱ्याचे नाव</translation>
 <translation id="7298195798382681320">शिफारस केलेले</translation>
 <translation id="7300012071106347854">गडद निळा</translation>
@@ -1816,7 +1813,6 @@
 <translation id="8866481888320382733">धोरण सेटिंग्ज पार्स करताना एरर</translation>
 <translation id="8866928039507595380">फोल्ड</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">तुमच्या अ‍ॅडमिनिस्ट्रेटरसह एंटरप्राइझ सेवा हूक ने फ्लॅग केलेल्या सुरक्षितता इव्‍हेंटसंबंधित डेटा शेअर करा. यामध्ये तुम्ही भेट देता त्या पेजच्या URL, फाइलची नावे किंवा मेटाडेटा आणि तुम्ही तुमच्या डिव्हाइस आणि Chrome वर साइन इन करण्यासाठी वापरता त्या वापरकर्ता नावांचा समावेश असू शकतो.</translation>
 <translation id="8870413625673593573">अलीकडे बंद</translation>
 <translation id="8870494189203302833">तोच क्रम ठेवून फेस डाउन</translation>
 <translation id="8874824191258364635">वैध कार्ड नंबर एंटर करा</translation>

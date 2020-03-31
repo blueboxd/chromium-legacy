@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -27,40 +28,11 @@
 #include "ui/views/controls/menu/test_menu_item_view.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/test_views.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_utils.h"
-
-namespace {
-
-// Accepts a MenuRunnerImpl to release when this is. Simulates shutdown
-// occurring immediately during the release of ViewsDelegate.
-class DeletingTestViewsDelegate : public views::TestViewsDelegate {
- public:
-  DeletingTestViewsDelegate() = default;
-  ~DeletingTestViewsDelegate() override = default;
-
-  void set_menu_runner(views::internal::MenuRunnerImpl* menu_runner) {
-    menu_runner_ = menu_runner;
-  }
-
-  // views::ViewsDelegate:
-  void ReleaseRef() override {
-    if (menu_runner_)
-      menu_runner_->Release();
-  }
-
- private:
-  // Not owned, deletes itself.
-  views::internal::MenuRunnerImpl* menu_runner_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DeletingTestViewsDelegate);
-};
-
-}  // namespace
 
 namespace views {
 namespace test {
@@ -565,7 +537,9 @@ class MenuRunnerDestructionTest : public MenuRunnerTest {
   MenuRunnerDestructionTest() = default;
   ~MenuRunnerDestructionTest() override = default;
 
-  DeletingTestViewsDelegate* views_delegate() { return views_delegate_; }
+  ReleaseRefTestViewsDelegate* test_views_delegate() {
+    return test_views_delegate_;
+  }
 
   base::WeakPtr<internal::MenuRunnerImpl> MenuRunnerAsWeakPtr(
       internal::MenuRunnerImpl* menu_runner);
@@ -575,7 +549,7 @@ class MenuRunnerDestructionTest : public MenuRunnerTest {
 
  private:
   // Not owned
-  DeletingTestViewsDelegate* views_delegate_;
+  ReleaseRefTestViewsDelegate* test_views_delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerDestructionTest);
 };
@@ -587,10 +561,9 @@ MenuRunnerDestructionTest::MenuRunnerAsWeakPtr(
 }
 
 void MenuRunnerDestructionTest::SetUp() {
-  std::unique_ptr<DeletingTestViewsDelegate> views_delegate(
-      new DeletingTestViewsDelegate);
-  views_delegate_ = views_delegate.get();
-  set_views_delegate(std::move(views_delegate));
+  auto test_views_delegate = std::make_unique<ReleaseRefTestViewsDelegate>();
+  test_views_delegate_ = test_views_delegate.get();
+  set_views_delegate(std::move(test_views_delegate));
   MenuRunnerTest::SetUp();
   InitMenuViews();
 }
@@ -603,7 +576,9 @@ TEST_F(MenuRunnerDestructionTest, MenuRunnerDestroyedDuringReleaseRef) {
   menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
                          MenuAnchorPosition::kTopLeft, 0);
 
-  views_delegate()->set_menu_runner(menu_runner);
+  test_views_delegate()->set_release_ref_callback(base::BindRepeating(
+      [](internal::MenuRunnerImpl* menu_runner) { menu_runner->Release(); },
+      base::Unretained(menu_runner)));
 
   base::WeakPtr<internal::MenuRunnerImpl> ref(MenuRunnerAsWeakPtr(menu_runner));
   MenuControllerTestApi menu_controller;

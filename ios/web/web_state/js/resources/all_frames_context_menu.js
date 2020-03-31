@@ -52,6 +52,10 @@ var getResponseForImageElement = function(element) {
   if (element.title) {
     result.title = element.title;
   }
+  // Copy the alt text attribute, if any.
+  if (element.alt) {
+    result.alt = element.alt;
+  }
   // Check if the image is also a link.
   while (parent) {
     if (parent.tagName && parent.tagName.toLowerCase() === 'a' &&

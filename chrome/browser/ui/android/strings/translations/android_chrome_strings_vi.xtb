@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Giờ đây, Chrome tải tệp xuống còn nhanh hơn nữa</translation>
 <translation id="1883903952484604915">Tệp của tôi</translation>
 <translation id="1887786770086287077">Đã tắt quyền truy cập vị trí đối với thiết bị này. Hãy bật trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="1919345977826869612">Quảng cáo</translation>
 <translation id="1919950603503897840">Chọn mục liên hệ</translation>
 <translation id="1922076542920281912">Để cho phép Chrome truy cập vào vị trí của bạn, hãy bật cả vị trí trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2567385386134582609">HÌNH ẢNH</translation>
 <translation id="257088987046510401">Chủ đề</translation>
 <translation id="2570922361219980984">Quyền truy cập vị trí cũng đã bị tắt đối với thiết bị này. Hãy bật trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Đã mở rộng - nhấp để thu gọn.</translation>
 <translation id="2581165646603367611">Thao tác này sẽ xóa cookie, bộ nhớ đệm và các dữ liệu khác của các trang web mà Chrome cho rằng không quan trọng.</translation>
 <translation id="2586657967955657006">Khay nhớ tạm</translation>
 <translation id="2587052924345400782">Đã có phiên bản mới hơn</translation>
@@ -491,7 +489,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4605958867780575332">Đã xóa mục: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Mở <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Sử dụng mật khẩu</translation>
-<translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
 <translation id="4650364565596261010">Tùy chọn mặc định của hệ thống</translation>
 <translation id="4660838440047236328">cách bài trí phòng của bạn</translation>
 <translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS" /> dấu trang</translation>
@@ -530,7 +527,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4881695831933465202">Mở</translation>
 <translation id="488187801263602086">Đổi tên tệp</translation>
 <translation id="4882831918239250449">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm, quảng cáo và các dịch vụ khác</translation>
-<translation id="4883854917563148705">Bạn không thể đặt lại các tùy chọn cài đặt được quản lý</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
 <translation id="4887024562049524730">Hỏi ý bạn trước khi cho phép các trang web sử dụng dữ liệu và thiết bị thực tế ảo của bạn (khuyên dùng)</translation>
 <translation id="4910889077668685004">Ứng dụng thanh toán</translation>
@@ -560,7 +556,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5048398596102334565">Cho phép trang web sử dụng cảm biến chuyển động (nên dùng)</translation>
 <translation id="5063480226653192405">Mức sử dụng</translation>
 <translation id="5087580092889165836">Thêm thẻ</translation>
-<translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="510275257476243843">Còn 1 giờ</translation>
 <translation id="5123685120097942451">Tab ẩn danh</translation>
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>
@@ -597,7 +592,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5357811892247919462">Đã nhận tab</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab đang mở, nhấn để chuyển tab}other{<ph name="OPEN_TABS_MANY" /> tab đang mở, nhấn để chuyển tab}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 lựa chọn khác)}other{(+ # lựa chọn khác)}}</translation>
-<translation id="5400569084694353794">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo quyền riêng tư<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="5403592356182871684">Tên</translation>
 <translation id="5403644198645076998">Chỉ cho phép một số trang web</translation>
 <translation id="5414836363063783498">Đang xác minh...</translation>
@@ -946,7 +940,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
 <translation id="79859296434321399">Để xem nội dung thực tế tăng cường, hãy cài đặt bộ công cụ ARCore</translation>
 <translation id="7986741934819883144">Chọn một người liên hệ</translation>
-<translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
 <translation id="7993619969781047893">Các tính năng trên một số trang web có thể hoạt động không đúng cách</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
 <translation id="7999064672810608036">Bạn có chắc chắn muốn xóa tất cả dữ liệu cục bộ, bao gồm cookie và đặt lại tất cả các quyền cho trang web này không?</translation>
@@ -983,7 +976,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8186512483418048923">Còn lại <ph name="FILES" /> tệp</translation>
 <translation id="8190358571722158785">Còn 1 ngày</translation>
 <translation id="8200772114523450471">Tiếp tục</translation>
-<translation id="8206354486702514201">Cài đặt này được quản trị viên của bạn thực thi.</translation>
 <translation id="8209050860603202033">Mở ảnh</translation>
 <translation id="8218622182176210845">Quản lý tài khoản của bạn</translation>
 <translation id="8224471946457685718">Tải tin bài cho bạn xuống qua Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8687353297350450808">{N_BARS,plural, =1{Mức cường độ tín hiệu: # vạch}other{Mức cường độ tín hiệu: # vạch}}</translation>
 <translation id="868929229000858085">Tìm kiếm trong danh bạ</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
-<translation id="8728487861892616501">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo quyền riêng tư<ph name="END_LINK2" /> của Chrome cũng như <ph name="BEGIN_LINK3" />Thông báo quyền riêng tư cho Tài khoản Google được quản lý bằng Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Nội dung bị ẩn</translation>
 <translation id="8751914237388039244">Chọn hình ảnh</translation>
 <translation id="8758557275681689734">Xem tất cả các tab bạn đang mở</translation>
@@ -1058,7 +1049,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8801436777607969138">Chặn JavaScript cho một trang web cụ thể.</translation>
 <translation id="8812260976093120287">Trên một số trang web, bạn có thể thanh toán bằng các ứng dụng thanh toán được hỗ trợ bên trên trên thiết bị của bạn.</translation>
 <translation id="8816026460808729765">Chặn không cho các trang web sử dụng cảm biến</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome, cũng như <ph name="BEGIN_LINK3" />Thông báo bảo mật cho Tài khoản Google được quản lý bằng Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="8833831881926404480">Một trang web đang chia sẻ màn hình của bạn</translation>
 <translation id="883806473910249246">Đã xảy ra lỗi khi tải nội dung xuống.</translation>
@@ -1085,7 +1075,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8988028529677883095">Dùng điện thoại làm khóa bảo mật</translation>
 <translation id="8993760627012879038">Mở tab mới trong chế độ Ẩn danh</translation>
 <translation id="8998729206196772491">Bạn đang đăng nhập bằng tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
-<translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>
 <translation id="9028914725102941583">Bật tính năng đồng bộ hóa để chia sẻ giữa các thiết bị</translation>
 <translation id="9040142327097499898">Cho phép thông báo. Đã tắt vị trí đối với thiết bị này.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video}}</translation>

@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2501278716633472235">ফিরে যান</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{১টি কুকি ব্লক করা হয়েছে}one{#টি কুকি ব্লক করা হয়েছে}other{#টি কুকি ব্লক করা হয়েছে}}</translation>
+<translation id="257931822824936280">প্রসারিত - সঙ্কুচিত করতে ক্লিক করুন৷</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
 <translation id="2704606927547763573">প্রতিলিপি করা হয়েছে</translation>
 <translation id="2968755619301702150">সার্টিফিকেট প্রদর্শনকারী</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">লিঙ্ক কপি করুন</translation>
 <translation id="4002066346123236978">শিরোনাম</translation>
 <translation id="4570913071927164677">বিবরণ</translation>
+<translation id="4645575059429386691">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
+<translation id="4883854917563148705">ম্যানেজ করা সেটিংস রিসেট করা যায় না</translation>
 <translation id="497421865427891073">অগ্রবর্তী করুন</translation>
+<translation id="5100237604440890931">সঙ্কুচিত - প্রসারিত করতে ক্লিক করুন৷</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুঝেছি</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
+<translation id="8206354486702514201">এই সেটিংটি আপনার প্রশাসক দ্বারা কার্যকরী করা হয়েছে৷</translation>
 <translation id="8249310407154411074">শীর্ষে সরান</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8609465669617005112">উপরে যান</translation>
 <translation id="8676374126336081632">ইনপুট সাফ করুন</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8730621377337864115">হয়ে গেছে</translation>
+<translation id="9019902583201351841">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
 </translationbundle>

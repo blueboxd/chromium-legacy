@@ -233,9 +233,6 @@ base::LazyInstance<scoped_refptr<ConfigurationList>>::Leaky
 const base::Feature kSafeBrowsingSubresourceFilter{
     "SubresourceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSafeBrowsingSubresourceFilterConsiderRedirects{
-    "SubresourceFilterConsiderRedirects", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kFilterAdsOnAbusiveSites{"FilterAdsOnAbusiveSites",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -546,7 +546,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3366477098757335611">Ver tarxetas</translation>
 <translation id="3369192424181595722">Erro do reloxo</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> activou os hooks de servizo de Chrome Enterprise no navegador. Estes hooks teñen acceso a algúns dos teus datos.</translation>
 <translation id="3377144306166885718">O servidor utilizou unha versión obsoleta de TLS.</translation>
 <translation id="3377188786107721145">Erro de análise da política</translation>
 <translation id="3377736046129930310">Usar o bloqueo de pantalla para confirmar as tarxetas máis rápido</translation>
@@ -983,7 +982,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5179510805599951267">Non está en <ph name="ORIGINAL_LANGUAGE" />? Informar deste erro</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="519422657042045905">O modo de anotación non está dispoñible</translation>
-<translation id="5196187217592847346">Hooks de servizo de Chrome Enterprise</translation>
 <translation id="5201306358585911203">Unha páxina inserida nesta páxina di</translation>
 <translation id="5205222826937269299">É obrigatorio introducir o nome</translation>
 <translation id="5209518306177824490">Impresión dixital SHA-1</translation>
@@ -1453,7 +1451,6 @@ Detalles adicionais:
 <translation id="725866823122871198">Non se pode establecer unha conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque a data e a hora do ordenador (<ph name="DATE_AND_TIME" />) non son correctas.</translation>
 <translation id="7260504762447901703">Revogar acceso</translation>
 <translation id="7275334191706090484">Marcadores xestionados</translation>
-<translation id="7288778322931489286">O teu administrador activou os hooks de servizo de Chrome Enterprise no navegador. Estes hooks teñen acceso a algúns dos teus datos.</translation>
 <translation id="7292031607255951991">Nome do destinatario</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7300012071106347854">Azul cobalto</translation>
@@ -1810,7 +1807,6 @@ Detalles adicionais:
 <translation id="8866481888320382733">Erro ao analizar a configuración da política</translation>
 <translation id="8866928039507595380">Dobrez</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Compartir co teu administrador datos sobre os eventos de seguranza detectados polos hooks de servizo de Chrome Enterprise. Pódense incluír URL de páxinas que visitas, nomes de ficheiros ou metadatos e o nome de usuario que utilizas para iniciar sesión no teu dispositivo e en Chrome.</translation>
 <translation id="8870413625673593573">Pechados recentemente</translation>
 <translation id="8870494189203302833">A mesma orde cara abaixo</translation>
 <translation id="8874824191258364635">Introduce un número de tarxeta válido</translation>

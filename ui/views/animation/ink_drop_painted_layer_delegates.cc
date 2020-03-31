@@ -4,6 +4,8 @@
 
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 
+#include <vector>
+
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"

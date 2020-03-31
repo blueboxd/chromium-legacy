@@ -136,7 +136,7 @@ OptionsPage = class {
     });
 
     $('openDeveloperLog').addEventListener('click', function(evt) {
-      const logPage = {url: 'background/logging/log.html'};
+      const logPage = {url: 'chromevox/background/logging/log.html'};
       chrome.tabs.create(logPage);
     });
 

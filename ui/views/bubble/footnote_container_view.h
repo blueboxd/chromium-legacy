@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_BUBBLE_FOOTNOTE_CONTAINER_VIEW_H_
 #define UI_VIEWS_BUBBLE_FOOTNOTE_CONTAINER_VIEW_H_
 
+#include <memory>
+
 #include "ui/views/view.h"
 
 namespace views {

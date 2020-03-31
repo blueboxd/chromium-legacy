@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.ViewCompat;
@@ -386,5 +387,19 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
             ViewCompat.setPaddingRelative(view, paddingStart, view.getPaddingTop(), mBasePadding,
                     view.getPaddingBottom());
         }
+    }
+
+    @VisibleForTesting
+    int getFolderPositionForTesting(BookmarkId bookmarkId) {
+        for (int i = 0; i < mBookmarkIdsAdapter.mEntryList.size(); i++) {
+            FolderListEntry entry = mBookmarkIdsAdapter.mEntryList.get(i);
+            if (bookmarkId.equals(entry.mId)) return i;
+        }
+        return -1;
+    }
+
+    @VisibleForTesting
+    void performClickForTesting(int adapterPosition) {
+        onItemClick(mBookmarkIdsList, null, adapterPosition, adapterPosition);
     }
 }

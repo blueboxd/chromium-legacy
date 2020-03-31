@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/textfield/textfield.h"
 
+#include <algorithm>
+#include <set>
 #include <string>
 #include <utility>
 

@@ -35,11 +35,10 @@ BluetoothPowerController::BluetoothPowerController(PrefService* local_state)
   if (local_state_) {
     StartWatchingLocalStatePrefsChanges();
 
-    if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted()) {
-      // Apply the local state pref only if no user has logged in (still in
-      // login screen).
-      ApplyBluetoothLocalStatePref();
-    }
+    DCHECK(!Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+    // Apply the local state pref since no user has logged in (still in login
+    // screen).
+    ApplyBluetoothLocalStatePref();
   }
 }
 

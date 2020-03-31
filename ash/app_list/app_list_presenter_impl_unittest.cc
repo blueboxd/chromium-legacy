@@ -18,8 +18,8 @@
 #include "base/run_loop.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/wm/core/window_util.h"
@@ -90,7 +90,9 @@ class AppListPresenterImplTest : public aura::test::AuraTestBase {
 
   AppListPresenterImpl* presenter() { return presenter_.get(); }
   aura::Window* container() { return container_.get(); }
-  int64_t GetDisplayId() { return test_screen()->GetPrimaryDisplay().id(); }
+  int64_t GetDisplayId() const {
+    return display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  }
   AppListPresenterDelegateTest* delegate() { return presenter_delegate_; }
 
   // aura::test::AuraTestBase:

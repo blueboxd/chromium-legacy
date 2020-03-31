@@ -8,26 +8,26 @@
 cr.define('settings', function() {
   /**
    * Fake implementation of chromeos.settings.mojom.SettingsSearchHandlerRemote.
+   *
+   * @implements {chromeos.settings.mojom.SearchHandlerInterface}
    */
   class FakeSettingsSearchHandler {
     constructor() {
-      /** @private {!Array<string>} */
+      /** @private {!Array<chromeos.settings.mojom.SearchResult>} */
       this.fakeResults_ = [];
     }
 
     /**
-     * @param {!Array<string>} results fake results that will be returned
-     * when Search() is called.
+     * @param {!Array<chromeos.settings.mojom.SearchResult>} results Fake
+     *     results that will be returned when Search() is called.
      */
     setFakeResults(results) {
       this.fakeResults_ = results;
     }
 
-    /**
-     * @param {string} query fake query used to compile search results.
-     */
+    /** override */
     async search(query) {
-      return this.fakeResults_;
+      return {results: this.fakeResults_};
     }
   }
 

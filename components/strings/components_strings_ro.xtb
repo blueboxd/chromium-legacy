@@ -546,7 +546,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="3366477098757335611">Vezi cardurile</translation>
 <translation id="3369192424181595722">Eroare de ceas</translation>
 <translation id="337363190475750230">Scos din uz</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> a activat în browser Enterprise Service Hooks. Acest cod de interceptare are acces la o parte din datele tale.</translation>
 <translation id="3377144306166885718">Serverul a folosit o versiune TLS învechită.</translation>
 <translation id="3377188786107721145">Eroare la analizarea politicii</translation>
 <translation id="3377736046129930310">Folosește blocarea ecranului pentru a confirma mai repede cardurile</translation>
@@ -983,7 +982,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5179510805599951267">Nu este în <ph name="ORIGINAL_LANGUAGE" />? Semnalează această eroare.</translation>
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="519422657042045905">Adnotarea nu este disponibilă</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">O pagină încorporată de pe această pagină afișează mesajul</translation>
 <translation id="5205222826937269299">Numele este obligatoriu</translation>
 <translation id="5209518306177824490">Amprentă digitală SHA-1</translation>
@@ -1457,7 +1455,6 @@ Detalii suplimentare:
 <translation id="725866823122871198">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora computerului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
 <translation id="7260504762447901703">Revocă accesul</translation>
 <translation id="7275334191706090484">Marcaje gestionate</translation>
-<translation id="7288778322931489286">Administratorul a activat în browser Enterprise Service Hooks. Acest cod de interceptare are acces la o parte din datele tale.</translation>
 <translation id="7292031607255951991">Numele destinatarului</translation>
 <translation id="7298195798382681320">Recomandate</translation>
 <translation id="7300012071106347854">Albastru cobalt</translation>
@@ -1815,7 +1812,6 @@ Detalii suplimentare:
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
 <translation id="8866928039507595380">Îndoire</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Permite-i administratorului accesul la datele despre evenimentele de securitate semnalate de Enterprise Service Hooks. Acestea pot include adresele URL ale paginilor pe care le accesezi, nume de fișiere sau metadate și numele de utilizator cu care te conectezi pe dispozitiv și la Chrome.</translation>
 <translation id="8870413625673593573">Închise recent</translation>
 <translation id="8870494189203302833">În aceeași ordine, cu fața în jos</translation>
 <translation id="8874824191258364635">Introdu un număr de card valid</translation>

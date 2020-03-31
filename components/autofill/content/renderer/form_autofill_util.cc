@@ -33,6 +33,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -1749,6 +1750,14 @@ void WebFormControlElementToFormField(
                                 &field->option_values,
                                 &field->option_contents);
   }
+  if (extract_mask & EXTRACT_BOUNDS) {
+    if (auto* local_frame = element.GetDocument().GetFrame()) {
+      if (auto* render_frame =
+              content::RenderFrame::FromWebFrame(local_frame)) {
+        field->bounds = render_frame->ElementBoundsInWindow(element);
+      }
+    }
+  }
 
   if (!(extract_mask & EXTRACT_VALUE))
     return;
@@ -1986,6 +1995,7 @@ bool UnownedPasswordFormElementsAndFieldSetsToFormData(
 bool FindFormAndFieldForFormControlElement(
     const WebFormControlElement& element,
     const FieldDataManager* field_data_manager,
+    ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
   DCHECK(!element.IsNull());
@@ -1993,8 +2003,8 @@ bool FindFormAndFieldForFormControlElement(
   if (!IsAutofillableElement(element))
     return false;
 
-  ExtractMask extract_mask =
-      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
+  extract_mask =
+      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS | extract_mask);
   const WebFormElement form_element = element.Form();
   if (form_element.IsNull()) {
     // No associated form, try the synthetic form for unowned form elements.
@@ -2009,6 +2019,15 @@ bool FindFormAndFieldForFormControlElement(
 
   return WebFormElementToFormData(form_element, element, field_data_manager,
                                   extract_mask, form, field);
+}
+
+bool FindFormAndFieldForFormControlElement(
+    const WebFormControlElement& element,
+    const FieldDataManager* field_data_manager,
+    FormData* form,
+    FormFieldData* field) {
+  return FindFormAndFieldForFormControlElement(
+      element, field_data_manager, form_util::EXTRACT_NONE, form, field);
 }
 
 void FillForm(const FormData& form, const WebFormControlElement& element) {

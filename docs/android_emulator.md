@@ -62,6 +62,11 @@ Refer to: https://developer.android.com/studio/run/emulator-commandline.html.
 Ctrl-C will gracefully close an emulator.
 ***
 
+*** promo
+**Tip:** zsh users can add https://github.com/zsh-users/zsh-completions to
+provide tab completion for the `emulator` command line tool.
+***
+
 ### Basic Command Line Use
 ```shell
 $ # List virtual devices that you've created:

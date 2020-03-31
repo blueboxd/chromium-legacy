@@ -180,7 +180,7 @@ void ContentsView::ResetForShow() {
   // Otherwise the contents animate from 0 to 1 so set the initial opacity to 0.
   if (app_list_view_->is_side_shelf() || app_list_view_->is_tablet_mode()) {
     AnimateToViewState(AppListViewState::kFullscreenAllApps, base::TimeDelta());
-  } else if (last_target_view_state_.has_value() &&
+  } else if (!last_target_view_state_.has_value() ||
              *last_target_view_state_ != AppListViewState::kClosed) {
     AnimateToViewState(AppListViewState::kClosed, base::TimeDelta());
   }

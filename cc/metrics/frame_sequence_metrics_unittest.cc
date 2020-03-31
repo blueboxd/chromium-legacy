@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -165,6 +166,45 @@ TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
       "Graphics.Smoothness.PercentDroppedFrames.MainThread.RAF", 1u);
   histograms.ExpectTotalCount(
       "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.RAF", 0u);
+}
+
+TEST(FrameSequenceMetricsTest, ScrollingThreadMetricsReportedForInteractions) {
+  auto setup = []() {
+    auto metrics = std::make_unique<FrameSequenceMetrics>(
+        FrameSequenceTrackerType::kTouchScroll, nullptr);
+    metrics->impl_throughput().frames_expected = 100;
+    metrics->impl_throughput().frames_produced = 80;
+    metrics->main_throughput().frames_expected = 100;
+    metrics->main_throughput().frames_produced = 60;
+    return metrics;
+  };
+
+  const char metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.AllInteractions";
+  {
+    // The main-thread metric should be reported in AllInteractions when
+    // main-thread is the scrolling-thread.
+    base::HistogramTester histograms;
+    auto metrics = setup();
+    EXPECT_TRUE(metrics->HasEnoughDataForReporting());
+    metrics->SetScrollingThread(FrameSequenceMetrics::ThreadType::kMain);
+    metrics->ReportMetrics();
+    histograms.ExpectTotalCount(metric, 1u);
+    EXPECT_THAT(histograms.GetAllSamples(metric),
+                testing::ElementsAre(base::Bucket(40, 1)));
+  }
+  {
+    // The compositor-thread metric should be reported in AllInteractions when
+    // compositor-thread is the scrolling-thread.
+    base::HistogramTester histograms;
+    auto metrics = setup();
+    EXPECT_TRUE(metrics->HasEnoughDataForReporting());
+    metrics->SetScrollingThread(FrameSequenceMetrics::ThreadType::kCompositor);
+    metrics->ReportMetrics();
+    histograms.ExpectTotalCount(metric, 1u);
+    EXPECT_THAT(histograms.GetAllSamples(metric),
+                testing::ElementsAre(base::Bucket(20, 1)));
+  }
 }
 
 }  // namespace cc

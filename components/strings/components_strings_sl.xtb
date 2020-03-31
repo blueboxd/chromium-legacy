@@ -548,7 +548,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="3366477098757335611">Ogled kartic</translation>
 <translation id="3369192424181595722">Napaka ure</translation>
 <translation id="337363190475750230">Nepripravljen</translation>
-<translation id="3376829916920036789">Domena <ph name="ENROLLMENT_DOMAIN" /> je v brskalniku omogočila kavlje za storitve za podjetja. Ti kavlji imajo dostop do nekaterih vaših podatkov.</translation>
 <translation id="3377144306166885718">Strežnik je uporabljal zastarelo različico standarda TLS.</translation>
 <translation id="3377188786107721145">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="3377736046129930310">Uporabite zaklepanje zaslona za hitrejše potrjevanje kartic</translation>
@@ -985,7 +984,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5179510805599951267">Ni v <ph name="ORIGINAL_LANGUAGE" />? Obvestite nas o tej napaki</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
 <translation id="519422657042045905">Pripisi niso na voljo</translation>
-<translation id="5196187217592847346">Kavlji za storitve za podjetja</translation>
 <translation id="5201306358585911203">Vdelana stran na tej spletni strani sporoča:</translation>
 <translation id="5205222826937269299">Ime je obvezno</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
@@ -1459,7 +1457,6 @@ Dodatne podrobnosti:
 <translation id="725866823122871198">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v računalniku nepravilna.</translation>
 <translation id="7260504762447901703">Ukinitev dostopa</translation>
 <translation id="7275334191706090484">Upravljani zaznamki</translation>
-<translation id="7288778322931489286">Skrbnik je v brskalniku omogočil kavlje za storitve za podjetja. Ti kavlji imajo dostop do nekaterih vaših podatkov.</translation>
 <translation id="7292031607255951991">Ime prejemnika</translation>
 <translation id="7298195798382681320">Priporočeni</translation>
 <translation id="7300012071106347854">Kobaltovo modra</translation>
@@ -1816,7 +1813,6 @@ Dodatne podrobnosti:
 <translation id="8866481888320382733">Napaka pri razčlenjevanju nastavitev pravilnika</translation>
 <translation id="8866928039507595380">Prepogibanje</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Skrbniku posredujte podatke o varnostnih dogodkih, ki so jih označili kavlji za storitve za podjetja. To morda vključuje URL-je strani, ki jih obiščete, imena ali metapodatke datotek in uporabniško ime, s katerim se prijavite v napravo in Chrome.</translation>
 <translation id="8870413625673593573">Nedavno zaprto</translation>
 <translation id="8870494189203302833">V istem vrstnem redu s tiskom na spodnji strani</translation>
 <translation id="8874824191258364635">Vnesite veljavno številko kartice</translation>

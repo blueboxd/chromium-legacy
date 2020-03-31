@@ -92,11 +92,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       content::PosixFileDescriptorInfo* mappings) override;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if defined(OS_WIN)
-  bool PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                        RendererSpawnFlags flags) override;
-#endif
-
   mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       BrowserContext* context,
       bool in_memory,

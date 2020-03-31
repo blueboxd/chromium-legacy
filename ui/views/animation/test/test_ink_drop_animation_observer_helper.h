@@ -5,6 +5,7 @@
 #define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_HELPER_H_
 
 #include <algorithm>
+#include <vector>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"

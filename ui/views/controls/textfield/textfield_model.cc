@@ -5,6 +5,7 @@
 #include "ui/views/controls/textfield/textfield_model.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -429,6 +430,10 @@ bool TextfieldModel::MoveCursorTo(const gfx::SelectionModel& cursor) {
         gfx::SelectionModel(cursor.caret_pos(), cursor.caret_affinity()));
   }
   return render_text_->SetSelection(cursor);
+}
+
+bool TextfieldModel::MoveCursorTo(size_t pos) {
+  return MoveCursorTo(gfx::SelectionModel(pos, gfx::CURSOR_FORWARD));
 }
 
 bool TextfieldModel::MoveCursorTo(const gfx::Point& point, bool select) {

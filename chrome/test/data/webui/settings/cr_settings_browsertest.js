@@ -1037,26 +1037,22 @@ CrSettingsPrivacyPageTest.prototype = {
 };
 
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
-  settings_privacy_page.registerPrivacyPageTests();
-  mocha.run();
+  runMochaSuite('PrivacyPage');
 });
 
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageRedesignTests', function() {
-  settings_privacy_page.registerPrivacyPageRedesignTests();
-  mocha.run();
+  runMochaSuite('PrivacyPageRedesignEnabled');
 });
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
 TEST_F(
     'CrSettingsPrivacyPageTest', 'DISABLED_PrivacyPageSoundTests', function() {
-      settings_privacy_page.registerPrivacyPageSoundTests();
-      mocha.run();
+      runMochaSuite('PrivacyPageSound');
     });
 
 // TODO(sauski): Privacy page UMA changing, tests need updating/removal.
 TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_UMALoggingTests', function() {
-  settings_privacy_page.registerUMALoggingTests();
-  mocha.run();
+  runMochaSuite('PrivacyPageUMACheck');
 });
 
 GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
@@ -1064,8 +1060,7 @@ GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
 TEST_F(
     'CrSettingsPrivacyPageTest', 'DISABLED_CertificateManagerTests',
     function() {
-      settings_privacy_page.registerNativeCertificateManagerTests();
-      mocha.run();
+      runMochaSuite('NativeCertificateManager');
     });
 GEN('#endif');
 
@@ -1098,8 +1093,7 @@ CrSettingsPrivacyPageRedesignTest.prototype = {
 TEST_F(
     'CrSettingsPrivacyPageRedesignTest', 'HappinessTrackingSurveysTests',
     function() {
-      settings_privacy_page.registerHappinessTrackingSurveysTests();
-      mocha.run();
+      runMochaSuite('HappinessTrackingSurveys');
     });
 
 /**

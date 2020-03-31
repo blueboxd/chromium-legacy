@@ -144,14 +144,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
       mojom::blink::FeaturePolicyFeature) const final;
   void ReportFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature,
-      mojom::blink::FeaturePolicyDisposition,
+      mojom::blink::PolicyDisposition,
       const String& message = g_empty_string,
       // If source_file is set to empty string,
       // current JS file would be used as source_file instead.
       const String& source_file = g_empty_string) const final;
   void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
-      mojom::blink::FeaturePolicyDisposition,
+      mojom::blink::PolicyDisposition,
       const String& message = g_empty_string,
       // If source_file is set to empty string,
       // current JS file would be used as source_file instead.

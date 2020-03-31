@@ -22,7 +22,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
-#include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
@@ -46,12 +45,6 @@
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #include "content/browser/sandbox_parameters_mac.h"
 #include "net/test/test_data_directory.h"
-#elif defined(OS_WIN)
-#include "content/child/font_warmup_win.h"
-#include "third_party/blink/public/web/win/web_font_rendering.h"
-#include "third_party/skia/include/core/SkFontMgr.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/ports/SkTypeface_win.h"
 #endif
 
 using blink::WebRect;
@@ -106,17 +99,6 @@ RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
   return render_frame_proxy;
 }
 
-#if defined(OS_WIN)
-// DirectWrite only has access to %WINDIR%\Fonts by default. For developer
-// side-loading, support kRegisterFontFiles to allow access to additional fonts.
-void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
-  for (const auto& file : switches::GetSideloadFontFiles()) {
-    blink::WebFontRendering::AddSideloadedFontForTesting(
-        fontmgr->makeFromFile(file.c_str()));
-  }
-}
-#endif  // OS_WIN
-
 }  // namespace
 
 test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
@@ -150,10 +132,6 @@ void EnableRendererWebTestMode() {
   RenderThreadImpl::current()->enable_web_test_mode();
 
   UniqueNameHelper::PreserveStableUniqueNameForTesting();
-
-#if defined(OS_WIN)
-  RegisterSideloadedTypefaces(SkFontMgr_New_DirectWrite().get());
-#endif
 }
 
 void EnableBrowserWebTestMode() {

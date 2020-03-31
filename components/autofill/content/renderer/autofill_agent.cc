@@ -223,9 +223,9 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
   FormData form;
   FormFieldData field;
   if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
-                                            &form, &field)) {
-    GetAutofillDriver()->TextFieldDidScroll(
-        form, field, render_frame()->ElementBoundsInWindow(element_));
+                                            form_util::EXTRACT_BOUNDS, &form,
+                                            &field)) {
+    GetAutofillDriver()->TextFieldDidScroll(form, field, field.bounds);
   }
 
   // Ignore subsequent scroll offset changes.
@@ -272,9 +272,9 @@ void AutofillAgent::FocusedElementChanged(const WebElement& element) {
   FormData form;
   FormFieldData field;
   if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
-                                            &form, &field)) {
-    GetAutofillDriver()->FocusOnFormField(
-        form, field, render_frame()->ElementBoundsInWindow(element_));
+                                            form_util::EXTRACT_BOUNDS, &form,
+                                            &field)) {
+    GetAutofillDriver()->FocusOnFormField(form, field, field.bounds);
   }
 }
 
@@ -353,10 +353,10 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
   FormData form;
   FormFieldData field;
   if (FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
-                                            &form, &field)) {
-    GetAutofillDriver()->TextFieldDidChange(
-        form, field, render_frame()->ElementBoundsInWindow(element),
-        AutofillTickClock::NowTicks());
+                                            form_util::EXTRACT_BOUNDS, &form,
+                                            &field)) {
+    GetAutofillDriver()->TextFieldDidChange(form, field, field.bounds,
+                                            AutofillTickClock::NowTicks());
   }
 }
 
@@ -773,11 +773,15 @@ void AutofillAgent::QueryAutofillSuggestions(
   FormData form;
   FormFieldData field;
   if (!FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
-                                             &form, &field)) {
+                                             form_util::EXTRACT_BOUNDS, &form,
+                                             &field)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
-    WebFormControlElementToFormField(element, nullptr, form_util::EXTRACT_VALUE,
-                                     &field);
+    WebFormControlElementToFormField(
+        element, nullptr,
+        static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
+                                            form_util::EXTRACT_BOUNDS),
+        &field);
   }
 
   if (is_secure_context_required_ &&
@@ -801,10 +805,9 @@ void AutofillAgent::QueryAutofillSuggestions(
   is_popup_possibly_visible_ = true;
 
   GetAutofillDriver()->SetDataList(data_list_values, data_list_labels);
-  GetAutofillDriver()->QueryFormFieldAutofill(
-      autofill_query_id_, form, field,
-      render_frame()->ElementBoundsInWindow(element_),
-      autoselect_first_suggestion);
+  GetAutofillDriver()->QueryFormFieldAutofill(autofill_query_id_, form, field,
+                                              field.bounds,
+                                              autoselect_first_suggestion);
 }
 
 void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
@@ -1025,9 +1028,9 @@ void AutofillAgent::OnProvisionallySaveForm(
       FormData form;
       FormFieldData field;
       if (FindFormAndFieldForFormControlElement(
-              element, field_data_manager_.get(), &form, &field)) {
-        GetAutofillDriver()->SelectControlDidChange(
-            form, field, render_frame()->ElementBoundsInWindow(element));
+              element, field_data_manager_.get(), form_util::EXTRACT_BOUNDS,
+              &form, &field)) {
+        GetAutofillDriver()->SelectControlDidChange(form, field, field.bounds);
       }
     }
   }

@@ -5,7 +5,9 @@
 #include "ui/views/examples/button_sticker_sheet.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"

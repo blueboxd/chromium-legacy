@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_AX_TREE_SOURCE_VIEWS_H_
 #define UI_VIEWS_ACCESSIBILITY_AX_TREE_SOURCE_VIEWS_H_
 
+#include <string>
+#include <vector>
+
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_source.h"
 #include "ui/views/views_export.h"

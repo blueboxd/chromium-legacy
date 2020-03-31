@@ -676,5 +676,6 @@ public class BookmarkTest {
                                             -> ApplicationStatus.getLastTrackedFocusedActivity()
                                                        instanceof BookmarkEditActivity,
                 "Timed out waiting for BookmarkEditActivity");
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 }

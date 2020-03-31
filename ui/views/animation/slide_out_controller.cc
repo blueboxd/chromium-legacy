@@ -4,6 +4,8 @@
 
 #include "ui/views/animation/slide_out_controller.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/layer.h"

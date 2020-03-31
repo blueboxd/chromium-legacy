@@ -659,45 +659,150 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 // Test that resources in frames with an aborted initial load due to a doc.write
-// are still tagged as ads.
+// are still disallowed.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       FrameWithDocWriteAbortedLoad_StillTaggedAsAd) {
+                       FrameWithDocWriteAbortedLoad_ResourceStillDisallowed) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
-  // Block ad resources.
+
+  // Block disallowed resources.
   Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                        subresource_filter::ActivationScope::ALL_SITES);
   ResetConfiguration(std::move(config));
 
+  // Watches for title set by onload and onerror callbacks of tested resource
   content::TitleWatcher title_watcher(web_contents(),
                                       base::ASCIIToUTF16("failed"));
   title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
 
   ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(
-                     "/subresource_filter/docwrite_loads_ad_resource.html"));
+      browser(),
+      embedded_test_server()->GetURL(
+          "/subresource_filter/docwrite_loads_disallowed_resource.html"));
+
   // Check the load was blocked.
   EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
 }
 
 // Test that resources in frames with an aborted initial load due to a
-// window.stop are still tagged as ads.
+// window.stop are still disallowed.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       FrameWithWindowStopAbortedLoad_StillTaggedAsAd) {
+                       FrameWithWindowStopAbortedLoad_ResourceStillDisallowed) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
-  // Block ad resources.
+
+  // Block disallowed resources.
   Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                        subresource_filter::ActivationScope::ALL_SITES);
   ResetConfiguration(std::move(config));
 
+  // Watches for title set by onload and onerror callbacks of tested resource
   content::TitleWatcher title_watcher(web_contents(),
                                       base::ASCIIToUTF16("failed"));
   title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
 
   ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/subresource_filter/window_stop_loads_disallowed_resource.html"));
+
+  // Check the load was blocked.
+  EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
+}
+
+// Test that a frame with an aborted initial load due to a frame deletion does
+// not cause a crash.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       FrameDeletedDuringLoad_DoesNotCrash) {
+  // Watches for title set by end of frame deletion script.
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("done"));
+  ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/subresource_filter/window_stop_loads_ad_resource.html"));
+                     "/subresource_filter/delete_loading_frame.html"));
+
+  // Wait for the script to complete.
+  EXPECT_EQ(base::ASCIIToUTF16("done"), title_watcher.WaitAndGetTitle());
+}
+
+// Test that an allowed resource in the child of a frame with its initial load
+// aborted due to a doc.write is not blocked.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceFilterBrowserTest,
+    ChildOfFrameWithAbortedLoadLoadsAllowedResource_ResourceLoaded) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
+
+  // Block disallowed resources.
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
+                       subresource_filter::ActivationScope::ALL_SITES);
+  ResetConfiguration(std::move(config));
+
+  // Watches for title set by onload and onerror callbacks of tested resource.
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("failed"));
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/subresource_filter/"
+                                     "docwrite_creates_subframe.html"));
+
+  content::RenderFrameHost* frame = FindFrameByName("grandchild");
+
+  EXPECT_TRUE(ExecJs(frame, R"SCRIPT(
+      let image = document.createElement('img');
+      image.src = 'pixel.png';
+      image.onload = function() {
+        top.document.title='loaded';
+      };
+      image.onerror = function() {
+        top.document.title='failed';
+      };
+      document.body.appendChild(image);
+  )SCRIPT"));
+
+  // Check the load wasn't blocked.
+  EXPECT_EQ(base::ASCIIToUTF16("loaded"), title_watcher.WaitAndGetTitle());
+}
+
+// Test that a disallowed resource in the child of a frame with its initial load
+// aborted due to a doc.write is blocked.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceFilterBrowserTest,
+    ChildOfFrameWithAbortedLoadLoadsDisallowedResource_ResourceBlocked) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
+
+  // Block disallowed resources.
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
+                       subresource_filter::ActivationScope::ALL_SITES);
+  ResetConfiguration(std::move(config));
+
+  // Watches for title set by onload and onerror callbacks of tested resource.
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("failed"));
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/subresource_filter/"
+                                     "docwrite_creates_subframe.html"));
+
+  content::RenderFrameHost* frame = FindFrameByName("grandchild");
+
+  EXPECT_TRUE(ExecJs(frame, R"SCRIPT(
+      let image = document.createElement('img');
+      image.src = 'pixel.png?ad=true';
+      image.onload = function() {
+        top.document.title='loaded';
+      };
+      image.onerror = function() {
+        top.document.title='failed';
+      };
+      document.body.appendChild(image);
+  )SCRIPT"));
+
   // Check the load was blocked.
   EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
 }

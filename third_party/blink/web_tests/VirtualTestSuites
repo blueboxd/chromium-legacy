@@ -68,14 +68,14 @@
   {
     "prefix": "gpu-rasterization",
     "bases": ["images"],
-    "args": ["--force-gpu-rasterization",
+    "args": ["--enable-gpu-rasterization",
              "--enable-features=DecodeLossyWebPImagesToYUV",
              "--enable-features=DecodeJpeg420ImagesToYUV"]
   },
   {
     "prefix": "gpu-rasterization-disable-yuv",
     "bases": ["images/yuv-decode-eligible"],
-    "args": ["--force-gpu-rasterization",
+    "args": ["--enable-gpu-rasterization",
              "--disable-features=DecodeLossyWebPImagesToYUV",
              "--disable-features=DecodeJpeg420ImagesToYUV"]
   },

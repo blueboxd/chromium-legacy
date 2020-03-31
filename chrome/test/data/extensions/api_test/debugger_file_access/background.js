@@ -114,7 +114,7 @@ chrome.test.getConfig((config) => {
     // https://crbug.com/866426
     function setDownloadBehavior() {
       // We never allow to write local files.
-      runNotAllowedTest('Page.setDownloadBehavior', {behavior: 'allow'},
+      runNotAllowedTest('Browser.setDownloadBehavior', {behavior: 'allow'},
           false);
     },
 

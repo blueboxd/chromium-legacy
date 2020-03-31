@@ -548,7 +548,6 @@ brukere av denne nettleseren.</translation>
 <translation id="3366477098757335611">Vis kort</translation>
 <translation id="3369192424181595722">Klokkefeil</translation>
 <translation id="337363190475750230">Godkjenningen er opphevet</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> har slått på Enterprise Service Hooks i nettleseren din. Disse hookene har tilgang til noen av dataene dine.</translation>
 <translation id="3377144306166885718">Tjeneren brukte en foreldet versjon av TLS.</translation>
 <translation id="3377188786107721145">Feil under analysen av enhetsinnstillinger</translation>
 <translation id="3377736046129930310">Bruk skjermlås til å bekrefte kort raskere</translation>
@@ -985,7 +984,6 @@ brukere av denne nettleseren.</translation>
 <translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE" />? Rapportér denne feilen</translation>
 <translation id="5190835502935405962">Bokmerkerad</translation>
 <translation id="519422657042045905">Annotering er ikke tilgjengelig</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">På en innebygd side på denne siden står det</translation>
 <translation id="5205222826937269299">Navn er obligatorisk</translation>
 <translation id="5209518306177824490">SHA-1-fingeravtrykk</translation>
@@ -1459,7 +1457,6 @@ effektuere
 <translation id="725866823122871198">En privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan ikke opprettes fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) på datamaskinen er feil.</translation>
 <translation id="7260504762447901703">Opphev tilgangen</translation>
 <translation id="7275334191706090484">Administrerte bokmerker</translation>
-<translation id="7288778322931489286">Administratoren har slått på Enterprise Service Hooks i nettleseren din. Disse hookene har tilgang til noen av dataene dine.</translation>
 <translation id="7292031607255951991">Mottakerens navn</translation>
 <translation id="7298195798382681320">Anbefalt</translation>
 <translation id="7300012071106347854">Koboltblå</translation>
@@ -1816,7 +1813,6 @@ Mer informasjon:
 <translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
 <translation id="8866928039507595380">Fals</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Del data om sikkerhetshendelser som er rapportert av Enterprise Service Hooks, med administratoren din. Dette kan omfatte nettadressene til sider du besøker, filnavn, metadata og brukernavnet du bruker når du logger på enheten din og Chrome.</translation>
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8870494189203302833">Samme rekkefølge – forsiden ned</translation>
 <translation id="8874824191258364635">Angi et gyldig kortnummer</translation>

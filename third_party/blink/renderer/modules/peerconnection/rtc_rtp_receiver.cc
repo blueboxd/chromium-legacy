@@ -397,12 +397,11 @@ void RTCRtpReceiver::InitializeEncodedVideoStreams(ScriptState* script_state) {
 }
 
 void RTCRtpReceiver::OnFrameFromDepacketizer(
-    std::unique_ptr<webrtc::video_coding::EncodedFrame> encoded_video_frame,
-    std::vector<uint8_t> additional_data,
-    uint32_t ssrc) {
+    std::unique_ptr<webrtc::TransformableVideoFrameInterface>
+        encoded_video_frame) {
   if (video_from_depacketizer_underlying_source_) {
     video_from_depacketizer_underlying_source_->OnFrameFromSource(
-        std::move(encoded_video_frame), std::move(additional_data), ssrc);
+        std::move(encoded_video_frame));
   }
 }
 

@@ -188,7 +188,7 @@ bool ColorInputType::TypeMismatchFor(const String& value) const {
 }
 
 void ColorInputType::WarnIfValueIsInvalid(const String& value) const {
-  if (!DeprecatedEqualIgnoringCase(value, GetElement().SanitizeValue(value)))
+  if (!EqualIgnoringASCIICase(value, GetElement().SanitizeValue(value)))
     AddWarningToConsole(
         "The specified value %s does not conform to the required format.  The "
         "format is \"#rrggbb\" where rr, gg, bb are two-digit hexadecimal "

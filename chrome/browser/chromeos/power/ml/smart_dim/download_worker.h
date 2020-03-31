@@ -13,6 +13,9 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
+// The contents of metadata JSON, preprocessor proto and model flatbuffer.
+using ComponentFileContents = std::tuple<std::string, std::string, std::string>;
+
 // SmartDimWorker that loads meta info, preprocessor config and ML service model
 // files from smart dim components.
 class DownloadWorker : public SmartDimWorker {
@@ -34,9 +37,7 @@ class DownloadWorker : public SmartDimWorker {
   // Called by component updater when it gets a verified smart dim component and
   // DownloadWorker is not ready.
   // If IsReady(), this function won't be called again.
-  void InitializeFromComponent(const std::string& metadata_json,
-                               const std::string& preprocessor_proto,
-                               const std::string& model_flatbuffer);
+  void InitializeFromComponent(const ComponentFileContents& contents);
 
  private:
   base::flat_map<std::string, int> inputs_;

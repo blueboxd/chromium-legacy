@@ -5,6 +5,8 @@
 #include "ui/views/controls/native/native_view_host_aura.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/aura/client/aura_constants.h"

@@ -4,6 +4,7 @@
 
 #include "ui/views/accessibility/ax_tree_source_views.h"
 
+#include <string>
 #include <vector>
 
 #include "ui/accessibility/ax_action_data.h"

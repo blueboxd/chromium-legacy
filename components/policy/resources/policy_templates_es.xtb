@@ -409,6 +409,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Si asignas un valor a esta política, los usuarios no podrán cambiarla ni anularla.</translation>
 <translation id="1617235075406854669">Habilitar eliminación de historial de navegación y de descargas</translation>
+<translation id="1620510694547887537">Cámara</translation>
 <translation id="163200210584085447">Los patrones de esta lista se compararán con el origen de seguridad
       de la URL solicitante. Si se encuentra alguna coincidencia, se concederá acceso a dispositivos de captura de vídeo
       en páginas de inicio de sesión con SAML. De lo contrario, el acceso se denegará automáticamente. Los patrones comodín no están
@@ -700,6 +701,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="203096360153626918">Esta política no influye en las aplicaciones para Android. Aunque se le asigne el valor <ph name="FALSE" />, las aplicaciones podrán acceder al modo de pantalla completa.</translation>
+<translation id="2042881179131103248">Configurar la inhabilitación de la cámara y de las funciones</translation>
 <translation id="2043749682619281558">Habilita el resaltado del cursor en la pantalla de inicio de sesión</translation>
 <translation id="2043770014371753404">Impresoras de empresa inhabilitadas</translation>
 <translation id="2050629715135525072">Controla la capacidad de los usuarios conectados a un host de acceso remoto de transferir archivos entre el cliente y el host. No se aplica a las conexiones de asistencia remota, ya que no admiten la transferencia de archivos.
@@ -1537,6 +1539,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si no se establece, es posible que se le pida al usuario que haga la importación o que la página de inicio se importe automáticamente.</translation>
 <translation id="3219421230122020860">Modo de incógnito disponible</translation>
 <translation id="3220624000494482595">Si la aplicación de kiosco es una aplicación para Android, no tendrá control sobre la versión de <ph name="PRODUCT_OS_NAME" />, incluso si se asigna el valor <ph name="TRUE" /> a esta política.</translation>
+<translation id="322359555555487980">Determinar la disponibilidad de variaciones en <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se puede instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="3240609035816615922">Política de acceso a la configuración de impresoras.</translation>
 <translation id="3240655340884151271">Dirección NIC MAC integrada en la base</translation>
@@ -2929,6 +2932,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se establece esta política en las versiones hasta la M76 (incluida), <ph name="PRODUCT_NAME" /> no puede recoger ni subir esos registros de forma predeterminada. A partir de la versión M77, <ph name="PRODUCT_NAME" /> puede recoger y enviar esos registros de forma predeterminada de la mayoría de los perfiles afectados por políticas de empresa a nivel de usuario basadas en la nube. Desde la versión M77 hasta la M80 (incluida), <ph name="PRODUCT_NAME" /> también puede recoger y enviar esos registros de forma predeterminada de los perfiles afectados por la gestión on-premise de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">La política relativa a la nube de <ph name="PRODUCT_NAME" /> anula la política de la plataforma.</translation>
+<translation id="53381168777357359">Función de configuración</translation>
 <translation id="5362531528507578966">Anula el modo de impresión de gráficos de fondo predeterminado.</translation>
 <translation id="5365476955714838841">Parámetros de línea de comandos correspondientes al navegador alternativo.</translation>
 <translation id="5365946944967967336">Mostrar botón de página principal en la barra de herramientas</translation>
@@ -4591,6 +4595,11 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="8044493735196713914">Notificar modo de inicio de dispositivo</translation>
 <translation id="8050080920415773384">Impresión nativa</translation>
 <translation id="8053580360728293758">Anula el modo predeterminado de impresión en color. Si el modo no está disponible, se ignora la política.</translation>
+<translation id="8057841287222359526">Te permite establecer una lista con funciones de <ph name="PRODUCT_OS_NAME" /> para inhabilitarlas.
+
+      Si se inhabilita cualquiera de estas funciones, el usuario no podrá acceder a ella desde la interfaz y verá el mensaje "Inhabilitado por el administrador".
+
+      Si no se establece esta política, todas las funciones de <ph name="PRODUCT_OS_NAME" /> estarán habilitadas de forma predeterminada y el usuario podrá utilizar cualquiera de ellas.</translation>
 <translation id="8059164285174960932">URL en la que los clientes de acceso remoto deben obtener su token de autenticación</translation>
 <translation id="806523868782250975">Permite configurar una lista de marcadores administrados.
 
@@ -5257,15 +5266,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
           Si no se le asigna ningún valor y el dispositivo admite esta política, se aplicará el modo estándar de carga de la batería y el usuario no podrá cambiarlo.
 
           Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la anterior.</translation>
-<translation id="9054012305936267950">Esta política controla el comportamiento del navegador cuando se inicia sesión. Permite definir si los usuarios pueden iniciar sesión en <ph name="PRODUCT_NAME" /> con su cuenta y usar los servicios asociados a esta, como la función Sincronización de Chrome.
-
-      Si se asigna el valor "Inhabilitar inicio de sesión en el navegador" a esta política, el usuario no podrá iniciar sesión en el navegador ni usar los servicios asociados a la cuenta. Además, las funciones del navegador, como Sincronización de Chrome, no se podrán usar ni estarán disponibles. Si el usuario había iniciado sesión y se establece el valor "Inhabilitar inicio de sesión en el navegador" para esta política, la próxima vez que ejecute Chrome se cerrará la sesión, pero se conservarán los datos de su perfil local, como los marcadores o las contraseñas. No obstante, podrá iniciar sesión y usar servicios web de Google como Gmail.
-
-      Si se asigna el valor "Habilitar inicio de sesión en el navegador" a esta política, el usuario podrá iniciar sesión en el navegador. Si inicia sesión en servicios web de Google, como Gmail, también lo hará en el navegador automáticamente. Con la sesión iniciada, el navegador conservará la información de la cuenta, pero Sincronización de Chrome no se activará de forma predeterminada; el usuario deberá activar esta función por separado. Al habilitar esta política, se impedirá que el usuario desactive la opción que permite iniciar sesión en el navegador. Para controlar la disponibilidad de Sincronización de Chrome, usa la política "SyncDisabled".
-
-      Si se asigna el valor "Forzar a los usuarios a iniciar sesión para usar el navegador" a esta política, se mostrará un cuadro de diálogo de selección de cuenta al usuario para que elija una e inicie sesión en el navegador. De este modo, se garantiza que, en el caso de las cuentas gestionadas, se apliquen y se cumplan las políticas asociadas a la cuenta. Además, se activará de forma predeterminada la función Sincronización de Chrome de la cuenta, excepto si el administrador del dominio la ha inhabilitado o si la política "SyncDisabled" está activada. El valor predeterminado que se asignará a BrowserGuestModeEnabled es "Falso". Ten en cuenta que, después de habilitar esta política, los perfiles con los que no se haya iniciado sesión se bloquearán y no se podrá acceder a ellos. Para obtener más información, consulta este artículo del Centro de Ayuda: https://support.google.com/chrome/a/answer/7572556. Esta opción no es compatible con Linux y, si se habilita, se definirá el valor "Habilitar inicio de sesión en el navegador".
-
-     Si no se asigna ningún valor a esta política, el usuario podrá decidir si quiere habilitar la opción para iniciar sesión en el navegador y usarla cuando lo crea oportuno.</translation>
 <translation id="9072600218500597787">Permite configurar los nombres de dominio del host obligatorios que se aplicarán a los hosts de acceso remoto e impide que los usuarios los modifiquen.
 
           Si se habilita esta opción, los hosts solo se podrán compartir con cuentas registradas en uno de los nombres de dominio especificados.

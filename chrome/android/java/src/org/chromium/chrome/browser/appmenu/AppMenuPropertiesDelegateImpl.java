@@ -17,6 +17,7 @@ import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.drawable.DrawableCompat;
 
@@ -65,6 +66,8 @@ import java.util.List;
  * items based on activity state.
  */
 public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate {
+    private static Boolean sItemBookmarkedForTesting;
+
     protected MenuItem mReloadMenuItem;
 
     protected final Context mContext;
@@ -490,7 +493,10 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
         }
 
-        if (BookmarkBridge.hasBookmarkIdForTab(currentTab)) {
+        boolean isBookmarked = sItemBookmarkedForTesting != null
+                ? sItemBookmarkedForTesting
+                : BookmarkBridge.hasBookmarkIdForTab(currentTab);
+        if (isBookmarked) {
             bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
             bookmarkMenuItem.setChecked(true);
             bookmarkMenuItem.setTitleCondensed(mContext.getString(R.string.edit_bookmark));
@@ -535,5 +541,10 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         requestMenuLabel.setTitleCondensed(isRds
                         ? mContext.getString(R.string.menu_request_desktop_site_on)
                         : mContext.getString(R.string.menu_request_desktop_site_off));
+    }
+
+    @VisibleForTesting
+    static void setPageBookmarkedForTesting(Boolean bookmarked) {
+        sItemBookmarkedForTesting = bookmarked;
     }
 }

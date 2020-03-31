@@ -6,6 +6,7 @@
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/strings/stringprintf.h"

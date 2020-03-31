@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome ले अब फाइलहरू अझ छिटो डाउनलोड गर्छ</translation>
 <translation id="1883903952484604915">मेरा फाइलहरू</translation>
 <translation id="1887786770086287077">यो यन्त्रको स्थानमाथिको पहुँच निष्क्रिय छ। <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome मा खुल्नेछ। जारी राखेर तपाईं Chrome का <ph name="BEGIN_LINK1" />सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />गोपनीयता सूचना<ph name="END_LINK2" /> मा सहमत हुनुहुन्छ।</translation>
 <translation id="1919345977826869612">विज्ञापनहरू</translation>
 <translation id="1919950603503897840">सम्पर्कहरू चयन गर्नुहोस्</translation>
 <translation id="1922076542920281912">Chrome लाई तपाईंको स्थानमाथि पहुँच राख्न दिन <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई स्थानसम्बन्धी सेवा सक्रिय गर्नुहोस्।</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">छवि</translation>
 <translation id="257088987046510401">थिमहरू</translation>
 <translation id="2570922361219980984">यो यन्त्रको स्थानमाथिको पहुँच पनि निष्क्रिय छ। <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
-<translation id="257931822824936280">विस्तृत गरिएको - संक्षिप्त पार्न क्लिक गर्नुहोस्</translation>
 <translation id="2581165646603367611">यसले कुकी, क्यास र साइटहरूको Chrome लाई महत्वपूर्ण नलाग्ने अन्य डाटा खाली गर्ने छ।</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
 <translation id="2587052924345400782">नयाँ संस्करण उपलब्ध छ</translation>
@@ -490,7 +488,6 @@
 <translation id="4605958867780575332">हटाइएको वस्तु: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> खोल्नुहोस्</translation>
 <translation id="4634124774493850572">पासवर्ड प्रयोग गर्नुहोस्</translation>
-<translation id="4645575059429386691">तपाईँको अविभावक द्वारा प्रबन्ध गरिएको</translation>
 <translation id="4650364565596261010">प्रणालीको पूर्वनिर्धारित सेटिङ</translation>
 <translation id="4660838440047236328">तपाईंको कोठाको लेआउट</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> पुस्तक चिन्हहरू मेटाइयो</translation>
@@ -529,7 +526,6 @@
 <translation id="4881695831933465202">खोल्नुहोस्</translation>
 <translation id="488187801263602086">फाइलको पुनः नामकरण गर्नुहोस्</translation>
 <translation id="4882831918239250449">खोज, विज्ञापन र थप कुराहरू वैयक्तीकृत गर्ने प्रयोजनका लागि तपाईंको ब्राउजिङ इतिहासको प्रयोग गरिने तरिका नियन्त्रण गर्नुहोस्</translation>
-<translation id="4883854917563148705">व्यवस्थित सेटिङ रिसेट गर्न सकिँदैन</translation>
 <translation id="4885273946141277891">असमर्थित संख्याका Chrome दृष्टान्तहरू।</translation>
 <translation id="4887024562049524730">साइटहरूलाई भर्चुअल रियालिटी चल्ने तपाईंको यन्त्र र त्यसमा भएको डेटा प्रयोग गर्न अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="4910889077668685004">भुक्तानी सम्बन्धी अनुप्रयोगहरू</translation>
@@ -559,7 +555,6 @@
 <translation id="5048398596102334565">साइटहरूलाई चालसम्बन्धी सेन्सरहरूमाथि पहुँच राख्ने अनुमति दिनुहोस्‌ (सिफारिस गरिएको)</translation>
 <translation id="5063480226653192405">उपयोग</translation>
 <translation id="5087580092889165836">कार्ड थप्नुहोस्</translation>
-<translation id="5100237604440890931">संक्षिप्त भयो - विस्तृत गर्न क्लिक गर्नुहोस्</translation>
 <translation id="510275257476243843">१ घन्टा बाँकी छ</translation>
 <translation id="5123685120097942451">इन्कोग्निटो ट्याब</translation>
 <translation id="5127805178023152808">सिंक बन्द छ</translation>
@@ -596,7 +591,6 @@
 <translation id="5357811892247919462">ट्याब प्राप्त भयो</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ट्याब खोल्नुहोस्, एउटा ट्याबबाट अर्को ट्याबमा जान ट्याप गर्नुहोस्}other{<ph name="OPEN_TABS_MANY" /> ट्याबहरू खोल्नुहोस्, एउटा ट्याबबाट अर्को ट्याबमा जान ट्याप गर्नुहोस्}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ १ थप)}other{(+ # थप)}}</translation>
-<translation id="5400569084694353794">यो अनुप्रयोग प्रयोग गरेर, तपाईँले Chrome को <ph name="BEGIN_LINK1" />सेवाका सर्त<ph name="END_LINK1" /> तथा <ph name="BEGIN_LINK2" /> गोपनीयता सूचना<ph name="END_LINK2" /> मा सहमति जनाउनु हुन्छ।</translation>
 <translation id="5403592356182871684">नामहरू</translation>
 <translation id="5403644198645076998">निश्चित साइटहरूलाई मात्र अनुमति दिनुहोस्</translation>
 <translation id="5414836363063783498">प्रमाणीकरण गर्दै...</translation>
@@ -945,7 +939,6 @@
 <translation id="7981313251711023384">ब्राउजिङ र खोजी कार्यलाई अझ छिटो बनाउन पृष्ठहरू पूर्वलोड गर्नुहोस्</translation>
 <translation id="79859296434321399">अग्मेन्टेड रियालिटी सामग्री हेर्न ARCore स्थापना गर्नुहोस्</translation>
 <translation id="7986741934819883144">कुनै सम्पर्क ठेगाना चयन गर्नुहोस्</translation>
-<translation id="7987073022710626672">Chrome का सेवाका सर्तहरू</translation>
 <translation id="7993619969781047893">कयौँ साइटका सुविधाहरूले काम नगर्न सक्छन्</translation>
 <translation id="7998918019931843664">बन्द ट्याब पुन: खोल्नुहोस्</translation>
 <translation id="7999064672810608036">के तपाईं कुकीहरू सहित सबै स्थानीय डेटा खाली गर्न चाहनुहुन्छ, र यो वेबसाइटको लागि सबै अनुमतिहरू रिसेट गर्न चाहनुहुन्छ?</translation>
@@ -982,7 +975,6 @@
 <translation id="8186512483418048923"><ph name="FILES" /> फाइलहरू बाँकी छन्</translation>
 <translation id="8190358571722158785">१ दिन बाँकी छ</translation>
 <translation id="8200772114523450471">रिजुमी</translation>
-<translation id="8206354486702514201">यो सेटिङ तपाईंको प्रशासकद्वारा जोड दिएको छ।</translation>
 <translation id="8209050860603202033">छवि खोल्नुहोस्</translation>
 <translation id="8218622182176210845">आफ्नो खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="8224471946457685718">Wi-Fi को प्रयोग गरी आफ्ना लागि लेखहरू डाउनलोड गर्नुहोस्</translation>
@@ -1048,7 +1040,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{सङ्केतको क्षमता स्तर: # बार}other{सङ्केतको क्षमता स्तर: # बारहरू}}</translation>
 <translation id="868929229000858085">आफ्ना सम्पर्कहरू खोज्नुहोस्</translation>
 <translation id="869891660844655955">समाप्ति मिति</translation>
-<translation id="8728487861892616501">यो अनुप्रयोगको प्रयोग गरेर, तपाईं Chrome को <ph name="BEGIN_LINK1" />सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />गोपनीयतासम्बन्धी सूचना<ph name="END_LINK2" /> तथा <ph name="BEGIN_LINK3" />Family Link बाट व्यवस्थापन गरिएको Google खाताका गोपनीयतासम्बन्धी सूचना<ph name="END_LINK3" /> मा सहमति जनाउनुहुन्छ।</translation>
 <translation id="8748850008226585750">सामग्रीहरू लुकाइएका छन्</translation>
 <translation id="8751914237388039244">कुनै छवि छनौट गर्नुहोस्‌</translation>
 <translation id="8758557275681689734">आफ्ना सबै खुला ट्याबहरू हेर्नुहोस्</translation>
@@ -1057,7 +1048,6 @@
 <translation id="8801436777607969138">कुनै खास साइटमा JavaScript लाई रोक लगाउनुहोस्।</translation>
 <translation id="8812260976093120287">केही वेबसाइटहरूमा तपाईंले माथि समर्थन गरिएका भुक्तानी सम्बन्धी अनुप्रयोगहरूमार्फत आफ्नो यन्त्रमा भुक्तानी गर्न सक्नुहुन्छ।</translation>
 <translation id="8816026460808729765">साइटहरूलाई सेन्सरहरूमाथि पहुँच राख्न नदिनुहोस्</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome मा खुल्नेछ। जारी राखेर तपाईं Chrome का <ph name="BEGIN_LINK1" />सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />गोपनीयता सूचना<ph name="END_LINK2" /> तथा <ph name="BEGIN_LINK3" />Family Link मार्फत व्यवस्थित Google खाताहरूको गोपनीयता सूचना<ph name="END_LINK3" /> मा सहमत हुनुहुन्छ।</translation>
 <translation id="8820817407110198400">बुकमार्कहरू</translation>
 <translation id="8833831881926404480">कुनै साइटले तपाईंको स्क्रिन आदान प्रदान गर्दै छ</translation>
 <translation id="883806473910249246">उक्त सामग्री डाउलोड गर्ने क्रममा एउटा त्रुटि भयो।</translation>
@@ -1084,7 +1074,6 @@
 <translation id="8988028529677883095">फोनलाई सुरक्षा साँचोका रूपमा प्रयोग गर्नुहोस्</translation>
 <translation id="8993760627012879038">इनकोग्निटो मोडमा एउटा नयाँ ट्याब खोल्नुहोस्</translation>
 <translation id="8998729206196772491">तपाईं <ph name="MANAGED_DOMAIN" /> द्वारा व्यवस्थापन गरिएको खाता मार्फत साइन इन गर्दै हुनुहुन्छ र त्यसको प्रशासकलाई तपाईंको Chrome को डेटालाई नियन्त्रण गर्न दिँदै हुनुहुन्छ। तपाईंको डेटा सदाका लागि यस खातामा बाँधिनेछ। Chrome बाट साइन आउट गर्नाले तपाईंको डेटा यस यन्त्रबाट मेटिनेछ तर यो तपाईंको Google खातामा भण्डारण गरिएको अवस्थामा रहनेछ।</translation>
-<translation id="9019902583201351841">तपाईँको अविभावक द्वारा व्यवस्थित</translation>
 <translation id="9028914725102941583">यन्त्रहरूभरि आदान प्रदान गर्न सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="9040142327097499898">सूचनाहरूलाई अनुमति दिइएको छ। यो यन्त्रमा स्थानसम्बन्धी सुविधा निष्क्रिय पारिएको छ।</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# भिडियो}other{# भिडियोहरू}}</translation>

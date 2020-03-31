@@ -546,7 +546,6 @@
 <translation id="3366477098757335611">কার্ড চাওক</translation>
 <translation id="3369192424181595722">ঘড়ীৰ আসোঁৱাহ</translation>
 <translation id="337363190475750230">প্রৱন্ধন বন্ধ কৰা হৈছে</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" />এ আপোনাৰ ব্ৰাউজাৰত Enterprise Service Hooks সক্ষম কৰিছে। এই হুকবোৰে আপোনাৰ কিছুমান ডেটা এক্সেছ কৰিব পাৰে।</translation>
 <translation id="3377144306166885718">ছার্ভাৰটোৱে TLSৰ এটা অপ্ৰচলিত সংস্কৰণ ব্যৱহাৰ কৰিছে।</translation>
 <translation id="3377188786107721145">নীতি পার্ছৰ আসোঁৱাহ</translation>
 <translation id="3377736046129930310">কাৰ্ডসমূহ খৰতকীয়াকৈ নিশ্চিত কৰিবলৈ স্ক্ৰীন লক ব্যৱহাৰ কৰক</translation>
@@ -980,7 +979,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />ত নাই নেকি? এই আসোঁৱাহটোৰ অভিযোগ দিয়ক</translation>
 <translation id="5190835502935405962">বুকমাৰ্কৰ বাৰ</translation>
 <translation id="519422657042045905">এন'টেশ্বন উপলব্ধ নহয়</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">এই পৃষ্ঠাটোত অন্তর্ভুক্ত অন্য এটা পৃষ্ঠায়ে এয়া জনায়</translation>
 <translation id="5205222826937269299">নামৰ আৱশ্যক</translation>
 <translation id="5209518306177824490">SHA-1 ফিংগাৰপ্ৰিণ্ট</translation>
@@ -1450,7 +1448,6 @@
 <translation id="725866823122871198">আপোনাৰ কম্পিউটাৰৰ তাৰিখ আৰু সময় (<ph name="DATE_AND_TIME" />) ভুল হৈ থকাৰ বাবে <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ৰ সৈতে ব্যক্তিগত সংযোগ স্থাপন কৰিব নোৱাৰি।</translation>
 <translation id="7260504762447901703">এক্সেছ প্ৰত্যাহাৰ কৰক</translation>
 <translation id="7275334191706090484">পৰিচালিত বুকমাৰ্ক</translation>
-<translation id="7288778322931489286">আপোনাৰ প্ৰশাসকে আপোনাৰ ব্ৰাউজাৰত Enterprise Service Hooks সক্ষম কৰিছে। এই হুকবোৰে আপোনাৰ কিছুমান ডেটা এক্সেছ কৰিব পাৰে।</translation>
 <translation id="7292031607255951991">প্ৰাপকৰ নাম</translation>
 <translation id="7298195798382681320">চুপাৰিছ কৰা</translation>
 <translation id="7300012071106347854">ক’বাল্ট ব্লু</translation>
@@ -1806,7 +1803,6 @@
 <translation id="8866481888320382733">নীতিৰ ছেটিংসমূহ পাৰ্ছ কৰোঁতে আসোঁৱাহ হৈছে</translation>
 <translation id="8866928039507595380">ফ'ল্ড কৰক</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooksএ ফ্লেগ কৰা সুৰক্ষা সম্পৰ্কীয় ঘটনাৰ ডেটা আপোনাৰ প্ৰশাসকৰ সৈতে শ্বেয়াৰ কৰক। ইয়াত আপুনি চোৱা পৃষ্ঠাসমূহৰ URL, ফাইলৰ নাম অথবা মেটাডেটা আৰু আপুনি নিজৰ ডিভাইচ আৰু Chromeত ছাইন ইন কৰিবলৈ ব্যৱহাৰ কৰা ব্যৱহাৰকাৰীৰ নামটো থাকিব পাৰে।</translation>
 <translation id="8870413625673593573">শেহতীয়াকৈ বন্ধ কৰা</translation>
 <translation id="8870494189203302833">তলমুখীয়াকৈ একেই ক্ৰম</translation>
 <translation id="8874824191258364635">কোনো মান্য কার্ড নম্বৰ দিয়ক</translation>

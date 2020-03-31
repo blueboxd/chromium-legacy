@@ -227,23 +227,27 @@ class ProfileManagementIconView : public views::ImageView {
 class AvatarImageView : public views::ImageView {
  public:
   AvatarImageView(gfx::ImageSkia avatar_image,
-                  const ProfileMenuViewBase* root_view)
-      : avatar_image_(avatar_image), root_view_(root_view) {
+                  const ProfileMenuViewBase* root_view,
+                  const gfx::VectorIcon& icon,
+                  ui::NativeTheme::ColorId color_id)
+      : avatar_image_(avatar_image),
+        root_view_(root_view),
+        icon_(icon),
+        color_id_(color_id) {
     SetBorder(views::CreateEmptyBorder(0, 0, kDefaultVerticalMargin, 0));
   }
 
   // views::ImageVIew:
   void OnThemeChanged() override {
     ImageView::OnThemeChanged();
-    // Fall back on |kUserAccountAvatarIcon| if |image| is empty. This can
-    // happen in tests and when the account image hasn't been fetched yet.
+    // Fall back to |icon_| if |avatar_image_| is empty. This can happen if
+    // the account image hasn't been fetched yet, if there is no image (e.g. for
+    // incognito), or in tests.
     constexpr int kBadgePadding = 1;
-    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_DefaultIconColor);
+    const SkColor icon_color = GetNativeTheme()->GetSystemColor(color_id_);
     gfx::ImageSkia sized_avatar_image =
         avatar_image_.isNull()
-            ? gfx::CreateVectorIcon(kUserAccountAvatarIcon, kIdentityImageSize,
-                                    icon_color)
+            ? gfx::CreateVectorIcon(icon_, kIdentityImageSize, icon_color)
             : CropCircle(SizeImage(avatar_image_, kIdentityImageSize));
 
     const SkColor background_color = GetNativeTheme()->GetSystemColor(
@@ -264,6 +268,8 @@ class AvatarImageView : public views::ImageView {
  private:
   gfx::ImageSkia avatar_image_;
   const ProfileMenuViewBase* root_view_;
+  const gfx::VectorIcon& icon_;
+  ui::NativeTheme::ColorId color_id_;
 };
 
 class SyncButton : public HoverButton {
@@ -397,7 +403,9 @@ void ProfileMenuViewBase::SetHeading(const base::string16& heading,
 
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                           const base::string16& title,
-                                          const base::string16& subtitle) {
+                                          const base::string16& subtitle,
+                                          const gfx::VectorIcon& icon,
+                                          ui::NativeTheme::ColorId color_id) {
   constexpr int kTopMargin = kMenuEdgeMargin;
   constexpr int kBottomMargin = kDefaultVerticalMargin;
   constexpr int kHorizontalMargin = kMenuEdgeMargin;
@@ -410,7 +418,7 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                   kHorizontalMargin)));
 
   identity_info_container_->AddChildView(
-      std::make_unique<AvatarImageView>(image, this));
+      std::make_unique<AvatarImageView>(image, this, icon, color_id));
 
   if (!title.empty()) {
     identity_info_container_->AddChildView(std::make_unique<views::Label>(

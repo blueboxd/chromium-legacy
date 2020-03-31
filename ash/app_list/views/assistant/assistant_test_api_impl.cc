@@ -92,6 +92,10 @@ views::View* AssistantTestApiImpl::keyboard_input_toggle() {
   return page_view()->GetViewByID(AssistantViewID::kKeyboardInputToggle);
 }
 
+views::View* AssistantTestApiImpl::suggestion_chip_container() {
+  return page_view()->GetViewByID(AssistantViewID::kSuggestionContainer);
+}
+
 views::View* AssistantTestApiImpl::opt_in_view() {
   return page_view()->GetViewByID(AssistantViewID::kOptInView);
 }

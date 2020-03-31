@@ -543,7 +543,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3366477098757335611">Karten ansehen</translation>
 <translation id="3369192424181595722">Fehler bei der Uhrzeit</translation>
 <translation id="337363190475750230">Bereitstellung aufgehoben</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> hat Enterprise Service Hooks für Ihren Browser aktiviert. Diese Service Hooks haben Zugriff auf einige Ihrer Daten.</translation>
 <translation id="3377144306166885718">Der Server hat eine veraltete TLS-Version verwendet.</translation>
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
 <translation id="3377736046129930310">Bildschirmsperre verwenden, um Karten schneller zu bestätigen</translation>
@@ -978,7 +977,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="519422657042045905">Anmerkungsmodus nicht verfügbar</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Auf einer in dieser Seite eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="5205222826937269299">Name erforderlich</translation>
 <translation id="5209518306177824490">SHA-1-Fingerabdruck</translation>
@@ -1448,7 +1446,6 @@ Weitere Details:
 <translation id="725866823122871198">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Computers falsch sind (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Zugriff entziehen</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
-<translation id="7288778322931489286">Ihr Administrator hat Enterprise Service Hooks für Ihren Browser aktiviert. Diese Service Hooks haben Zugriff auf einige Ihrer Daten.</translation>
 <translation id="7292031607255951991">Name des Empfängers</translation>
 <translation id="7298195798382681320">Empfohlen</translation>
 <translation id="7300012071106347854">Kobaltblau</translation>
@@ -1806,7 +1803,6 @@ Weitere Details:
 <translation id="8866481888320382733">Fehler beim Parsen der Richtlinieneinstellungen</translation>
 <translation id="8866928039507595380">Falten</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Sicherheitshinweise, die von Enterprise Service Hooks gemeldet wurden, mit Ihrem Administrator teilen. Dazu gehören z. B. URLs der von Ihnen besuchten Seiten, Dateinamen oder Metadaten sowie der Nutzername, den Sie zum Anmelden auf Ihrem Gerät und in Chrome verwenden.</translation>
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="8870494189203302833">Gleiche Reihenfolge Vorderseite nach unten</translation>
 <translation id="8874824191258364635">Geben Sie eine gültige Kartennummer ein</translation>

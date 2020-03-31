@@ -546,7 +546,6 @@ Lokhu uma kungenjalo kuzovinjelwa izilungiselelo zakho zobumfihlo. Lokhu kuzovum
 <translation id="3366477098757335611">Buka amakhadi</translation>
 <translation id="3369192424181595722">Iphutha lewashi</translation>
 <translation id="337363190475750230">Iyekiswe ukunikezwa</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> inike amandla i-Enterprise Service Hooks kusiphequluli sakho. Lama hhuku akwazi ukufinyelela kwenye idatha yakho.</translation>
 <translation id="3377144306166885718">Iseva isebenzise inguqulo ye-TLS ephelelwe isikhathi.</translation>
 <translation id="3377188786107721145">Iphutha lokuncozula inqubomgomo</translation>
 <translation id="3377736046129930310">Sebenzisa ukukhiya kwesikrini ukuze uqinisekise amakhadi ngokushesha</translation>
@@ -982,7 +981,6 @@ Lokhu uma kungenjalo kuzovinjelwa izilungiselelo zakho zobumfihlo. Lokhu kuzovum
 <translation id="5179510805599951267">Akukho ngesi-<ph name="ORIGINAL_LANGUAGE" />? Bika leli phutha</translation>
 <translation id="5190835502935405962">Ibha yamabhukhimakhi</translation>
 <translation id="519422657042045905">Isichasiselo asitholakali</translation>
-<translation id="5196187217592847346">I-Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Ikhasi elishumekiwe kuleli khasi lewebhu lithi</translation>
 <translation id="5205222826937269299">Igama liyadingeka</translation>
 <translation id="5209518306177824490">SHA-1 Izingxivizo zeminwe</translation>
@@ -1456,7 +1454,6 @@ Imininingwane engeziwe:
 <translation id="725866823122871198">Uxhumano oluyimfihlo oluya ku-<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alukwazi ukusungulwa ngoba idethi nesikhathi sekhompyutha yakho (<ph name="DATE_AND_TIME" />) azilungile.</translation>
 <translation id="7260504762447901703">Hoxisa ukufinyelela</translation>
 <translation id="7275334191706090484">Phatha amabhukhimakhi</translation>
-<translation id="7288778322931489286">Umlawuli wakho unike amandla i-Enterprise Service Hooks kusiphequluli sakho. Lama hhuku akwazi ukufinyelela kwenye idatha yakho.</translation>
 <translation id="7292031607255951991">Igama lomamukeli</translation>
 <translation id="7298195798382681320">Kunconyiwe</translation>
 <translation id="7300012071106347854">I-Cobalt Blue</translation>
@@ -1813,7 +1810,6 @@ Imininingwane engeziwe:
 <translation id="8866481888320382733">Iphutha lokudlulisa izilungiselelo zenqubomgomo</translation>
 <translation id="8866928039507595380">Goqa</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Yabelana ngedatha emayelana nemicimbi yokuphepha emakwe i-Enterprise Service Hooks nomlawuli wakho. Lokhu kungafaka ama-URL amakhasi owavakashele, amagama amafayela noma ethemathada, kanye negama lomsebenzisi olisebenzisela ukungena ngemvume kudivayisi yakho naku-Chrome.</translation>
 <translation id="8870413625673593573">Okuvalwe kamuva</translation>
 <translation id="8870494189203302833">I-oda elifanayo libheke phansi</translation>
 <translation id="8874824191258364635">Faka inombolo yekhadi evumelekile</translation>

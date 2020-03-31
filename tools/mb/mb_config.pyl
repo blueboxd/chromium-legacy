@@ -1493,7 +1493,7 @@
     ],
 
     'clang_code_coverage_ios': [
-      'use_clang_coverage', 'debug_static_bot', 'x64', 'ios'
+      'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_use_goma_rbe',
     ],
 
     'clang_tot_asan_lsan_static_release': [

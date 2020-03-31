@@ -2333,48 +2333,55 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
   chromeos::SpeechMonitor speech_monitor;
 
   // Enable ChromeVox.
-  {
     ASSERT_FALSE(
         chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
     chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
-    EXPECT_TRUE(speech_monitor.SkipChromeVoxEnabledMessage());
 
+  ash::RootWindowController* controller =
+      ash::Shell::GetRootWindowControllerWithDisplayId(
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  views::View* home_button = ash::ShelfTestApi().GetHomeButton();
+  ui::test::EventGenerator event_generator(controller->GetRootWindow());
+  auto* generator_ptr = &event_generator;
+
+  // Wait for ChromeVox to start reading anything.
+  speech_monitor.ExpectSpeechPattern("*");
+  speech_monitor.Call([this]() {
     // Disable earcons (https://crbug.com/396507).
     const std::string script("ChromeVox.earcons.playEarcon = function() {};");
     extensions::ExtensionHost* host =
         extensions::ProcessManager::Get(browser()->profile())
             ->GetBackgroundHostForExtension(
                 extension_misc::kChromeVoxExtensionId);
-    ASSERT_TRUE(content::ExecuteScript(host->host_contents(), script));
-  }
+    content::ExecuteScriptAsync(host->host_contents(), script);
+  });
+  speech_monitor.Call([generator_ptr, home_button]() {
+    // Gesture tap at the home button.
+    generator_ptr->GestureTapAt(home_button->GetBoundsInScreen().CenterPoint());
+  });
+  speech_monitor.ExpectSpeech("Launcher");
+  speech_monitor.ExpectSpeech("Button");
+  speech_monitor.ExpectSpeech("Shelf");
+  speech_monitor.ExpectSpeech("Tool bar");
+  speech_monitor.ExpectSpeech(", window");
 
-  ash::RootWindowController* controller =
-      ash::Shell::GetRootWindowControllerWithDisplayId(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  speech_monitor.Call([controller]() {
+    // Hotseat is expected to be extended if spoken feedback is enabled.
+    ASSERT_EQ(ash::HotseatState::kExtended,
+              controller->shelf()->shelf_layout_manager()->hotseat_state());
+  });
 
-  // Gesture tap at the home button.
-  views::View* home_button = ash::ShelfTestApi().GetHomeButton();
-  ui::test::EventGenerator event_generator(controller->GetRootWindow());
-  event_generator.GestureTapAt(home_button->GetBoundsInScreen().CenterPoint());
-
-  ASSERT_EQ("Launcher", speech_monitor.GetNextUtterance());
-  ASSERT_EQ("Button", speech_monitor.GetNextUtterance());
-  ASSERT_EQ("Shelf", speech_monitor.GetNextUtterance());
-  ASSERT_EQ("Tool bar", speech_monitor.GetNextUtterance());
-  ASSERT_EQ(", window", speech_monitor.GetNextUtterance());
-
-  // Hotseat is expected to be extended if spoken feedback is enabled.
-  ASSERT_EQ(ash::HotseatState::kExtended,
-            controller->shelf()->shelf_layout_manager()->hotseat_state());
-
-  // Press the search + right. Expects that the browser icon receives the
-  // accessibility focus and the hotseat remains in kExtended state.
-  event_generator.PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
+  speech_monitor.Call([generator_ptr]() {
+    // Press the search + right. Expects that the browser icon receives the
+    // accessibility focus and the hotseat remains in kExtended state.
+    generator_ptr->PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
+  });
   const int browser_index =
       ash::ShelfModel::Get()->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
-  EXPECT_EQ(
-      base::UTF16ToASCII(ash::ShelfModel::Get()->items()[browser_index].title),
-      speech_monitor.GetNextUtterance());
+  speech_monitor.ExpectSpeech(
+      base::UTF16ToASCII(ash::ShelfModel::Get()->items()[browser_index].title));
+  speech_monitor.Replay();
+
   EXPECT_EQ(ash::HotseatState::kExtended,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 

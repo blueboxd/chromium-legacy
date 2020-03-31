@@ -916,9 +916,9 @@ void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
       GetOptimizationGuideDecisionFromOptimizationTypeDecision(type_decision);
   // It's possible that a hint that applies to |navigation_url| will come in
   // later, so only run the callback if we are sure we can apply the decision.
-  // Also return early if the decision came from an optimization filter.
   if (decision == optimization_guide::OptimizationGuideDecision::kTrue ||
-      HasLoadedOptimizationFilter(optimization_type)) {
+      HasAllInformationForDecisionAvailable(navigation_url,
+                                            optimization_type)) {
     base::UmaHistogramEnumeration(
         "OptimizationGuide.ApplyDecisionAsync." +
             optimization_guide::GetStringNameForOptimizationType(
@@ -1218,6 +1218,45 @@ void OptimizationGuideHintsManager::OnNavigationFinish(
 
     PrepareToInvokeRegisteredCallbacks(url);
   }
+}
+
+bool OptimizationGuideHintsManager::HasAllInformationForDecisionAvailable(
+    const GURL& navigation_url,
+    optimization_guide::proto::OptimizationType optimization_type) {
+  if (HasLoadedOptimizationFilter(optimization_type)) {
+    // If we have an optimization filter for the optimization type, it is
+    // consulted instead of any hints that may be available.
+    return true;
+  }
+
+  bool has_host_keyed_hint = hint_cache_->HasHint(navigation_url.host());
+  const auto* host_keyed_hint =
+      hint_cache_->GetHostKeyedHintIfLoaded(navigation_url.host());
+  if (has_host_keyed_hint && host_keyed_hint == nullptr) {
+    // If we have a host-keyed hint in the cache and it is not loaded, we do not
+    // have all information available, regardless of whether we can fetch hints
+    // or not.
+    return false;
+  }
+
+  if (!IsAllowedToFetchNavigationHints(navigation_url)) {
+    // If we are not allowed to fetch hints for the navigation, we have all
+    // information available if the host-keyed hint we have has been loaded
+    // already or we don't have a hint available.
+    return host_keyed_hint != nullptr || !has_host_keyed_hint;
+  }
+
+  if (IsHintBeingFetchedForNavigation(navigation_url)) {
+    // If a hint is being fetched for the navigation, then we do not have all
+    // information available yet.
+    return false;
+  }
+
+  // If we are allowed to fetch hints for the navigation, we only have all
+  // information available for certain if we have attempted to get the URL-keyed
+  // hint and if the host-keyed hint is loaded.
+  return hint_cache_->HasURLKeyedEntryForURL(navigation_url) &&
+         host_keyed_hint != nullptr;
 }
 
 void OptimizationGuideHintsManager::ClearFetchedHints() {

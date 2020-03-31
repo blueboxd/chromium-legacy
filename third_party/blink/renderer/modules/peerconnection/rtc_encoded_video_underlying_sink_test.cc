@@ -32,7 +32,7 @@ class MockWebRtcTransformedFrameCallback
     : public webrtc::TransformedFrameCallback {
  public:
   MOCK_METHOD1(OnTransformedFrame,
-               void(std::unique_ptr<webrtc::video_coding::EncodedFrame>));
+               void(std::unique_ptr<webrtc::TransformableFrameInterface>));
 };
 
 }  // namespace

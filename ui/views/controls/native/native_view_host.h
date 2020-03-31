@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_H_
 #define UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"

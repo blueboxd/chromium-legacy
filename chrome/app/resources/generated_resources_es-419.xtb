@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Redes visibles:</translation>
 <translation id="1094607894174825014">Se solicitó una operación de lectura o escritura con un intervalo no válido en: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Antes de acceder, ingresa como Invitado para activar la red <ph name="NETWORK_ID" />.</translation>
+<translation id="1099962274138857708">Imagen copiada de <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Siempre traducir <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">No pudimos detectar tu tarjeta SIM</translation>
 <translation id="1108600514891325577">&amp;Interrumpir</translation>
@@ -558,6 +559,7 @@
 <translation id="1744108098763830590">página en segundo plano</translation>
 <translation id="1745520510852184940">Realizar siempre esta acción</translation>
 <translation id="1750172676754093297">Tu llave de seguridad no puede almacenar huellas digitales</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> podrá editar los archivos de <ph name="FOLDERNAME" /> hasta que cierres todas las pestañas de este sitio</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
 <translation id="1753067873202720523">Es posible que tu Chromebook no se cargue mientras esté encendida.</translation>
 <translation id="1753905327828125965">Más visitados</translation>
@@ -624,6 +626,7 @@
 <translation id="1822140782238030981">¿Ya eres usuario de Chrome? Acceder</translation>
 <translation id="18245044880483936">Los datos de la copia de seguridad no inciden en la cuota de almacenamiento en Drive de tu hijo.</translation>
 <translation id="1826516787628120939">Comprobando</translation>
+<translation id="1827738518074806965">Galería de arte</translation>
 <translation id="1828378091493947763">Este complemento no es compatible con este dispositivo</translation>
 <translation id="1828901632669367785">Imprimir utilizando el diálogo del sistema…</translation>
 <translation id="1829129547161959350">Pingüino</translation>
@@ -1025,6 +1028,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="236117173274098341">Optimizar</translation>
 <translation id="236141728043665931">Bloquear siempre el acceso al micrófono</translation>
+<translation id="2364498172489649528">Aprobado</translation>
 <translation id="2365507699358342471">Este sitio puede ver el texto y las imágenes que se copiaron en el portapapeles.</translation>
 <translation id="2366260648632264559">Mostrar el texto del sistema en este idioma</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
@@ -1339,6 +1343,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2762441749940182211">Cámara bloqueada</translation>
 <translation id="2765217105034171413">Pequeño</translation>
 <translation id="2766161002040448006">Preguntarles a tus padres</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres todas las pestañas de este sitio</translation>
 <translation id="276969039800130567">Se accedió como <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
 <translation id="2770690685823456775">Exporta tus contraseñas a otra carpeta</translation>
@@ -1663,6 +1668,18 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3202173864863109533">El audio de esta pestaña está silenciado.</translation>
 <translation id="3208321278970793882">App</translation>
 <translation id="3208584281581115441">Verificar ahora</translation>
+<translation id="3208640652501208439">Es posible que los recursos para las tareas escolares no estén disponibles o no se carguen de forma automática
+    Es posible que tu hijo no tenga acceso a lo siguiente:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Las apps y extensiones que instaló la institución educativa
+      <ph name="LIST_ITEM" />Los favoritos de una Chromebook de la institución educativa
+      <ph name="LIST_ITEM" />La función Autocompletar contraseñas en sitios educativos
+    <ph name="END_LIST" />
+    Para obtener la experiencia completa de la institución educativa en este dispositivo, tu hijo debe hacer lo siguiente:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Salir de la cuenta administrada por Family Link
+      <ph name="OLIST_ITEM" />Acceder con su cuenta de G Suite for Education en la pantalla de acceso Sin embargo, hay que tener en cuenta que las políticas de la institución educativa, incluidas las opciones de configuración de acceso a las apps y sitios web, tendrán precedencia sobre las funciones de supervisión de Family Link (p. ej., los administradores de la institución educativa permitirán el acceso a YouTube si es necesario para realizar una tarea o se eliminarán las limitaciones del tiempo de uso).
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Sin confirmar</translation>
 <translation id="32101887417650595">No es posible establecer conexión con la impresora</translation>
 <translation id="321084946921799184">Amarillo y blanco</translation>
@@ -1741,6 +1758,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3312424061798279731">Idiomas habilitados</translation>
 <translation id="3313622045786997898">Valor de firma del certificado</translation>
 <translation id="3315158641124845231">Ocultar <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Información para padres o madres sobre las cuentas de instituciones educativas</translation>
 <translation id="3317459757438853210">Doble cara</translation>
 <translation id="3317678681329786349">Cámara y micrófono bloqueados</translation>
 <translation id="3319048459796106952">Nueva ventana de &amp;incógnito</translation>
@@ -1927,6 +1945,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3574210789297084292">acceder</translation>
 <translation id="3574917942258583917">¿Deseas salir del modo de navegación incógnito de todas formas?</translation>
 <translation id="3575121482199441727">Permitir para este sitio</translation>
+<translation id="3575919114596668130">Se seguirá aplicando tu configuración parental de Family Link. Si antes habías bloqueado una app o un sitio, no tendrás que volver a hacerlo.</translation>
 <translation id="3576324189521867626">Se instaló correctamente</translation>
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo del cual eres propietario: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán usar esa impresora para imprimir.</translation>
@@ -2767,6 +2786,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4689235506267737042">Elegir las preferencias de la demostración</translation>
 <translation id="4689421377817139245">Sincronizar este favorito con tu iPhone</translation>
 <translation id="4690091457710545971">&lt;El firmware de Wi-Fi de Intel generó cuatro archivos: csr.lst, fh_regs.lst, radio_reg.lst y monitor.lst.sysmon. Intel utiliza los primeros tres, archivos binarios con volcados de registros, para incluir información que no identifique personas ni dispositivos. El último archivo es un rastro de ejecución del firmware de Intel del cual se eliminan los datos de identificación personal o de dispositivo; sin embargo, es demasiado grande para mostrarlo aquí. Se generaron estos archivos en respuesta a los recientes problemas de conectividad Wi-Fi en tu dispositivo y se compartirán con Intel para solucionarlos.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> podrá ver <ph name="FILENAME" /> hasta que cierres todas las pestañas de este sitio</translation>
 <translation id="4692623383562244444">Motores de búsqueda</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">El administrador controla la configuración de la impresora.</translation>
@@ -3122,6 +3142,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5204967432542742771">Ingresar contraseña</translation>
 <translation id="5206215183583316675">¿Deseas borrar el certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Error en la importación de certificado</translation>
+<translation id="5209307736170827035">Se protegerán los datos de tu hijo en Classroom. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">No se encontraron dispositivos.</translation>
 <translation id="5210990770352357081">No se pudo desinstalar Plugin VM</translation>
 <translation id="5213481667492808996">Ya puedes usar tu servicio de datos de "<ph name="NAME" />"</translation>
@@ -3233,6 +3254,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5341980496415249280">Realizando el empaquetamiento…</translation>
 <translation id="5342091991439452114">El PIN debe tener al menos <ph name="MINIMUM" /> dígitos</translation>
 <translation id="5344036115151554031">Restaurando Linux</translation>
+<translation id="535123479159372765">Texto copiado de otro dispositivo</translation>
 <translation id="5352033265844765294">Impresión de fecha</translation>
 <translation id="5353252989841766347">Exportar contraseñas desde Chrome</translation>
 <translation id="5355099869024327351">Permite que el Asistente te muestre notificaciones</translation>
@@ -3355,6 +3377,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5511379779384092781">Extrapequeño</translation>
 <translation id="5511823366942919280">¿Confirmas que quieres configurar este dispositivo como "Shark"?</translation>
 <translation id="5512653252560939721">El certificado de usuario debe estar respaldado por el hardware.</translation>
+<translation id="5515923816438946203">Elegir lo que visualizas en la pantalla</translation>
 <translation id="5517304475148761050">Esta app necesita acceso a Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" />: <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Se está agregando la impresora a la cuenta. Esta acción puede tardar unos minutos…</translation>
@@ -3805,6 +3828,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6097480669505687979">Si no liberas espacio, es posible que se quiten usuarios y datos de forma automática.</translation>
 <translation id="6097600385983390082">Se cerró la búsqueda por voz</translation>
 <translation id="6098793583803863900">Se está analizando un archivo desconocido para determinar si incluye contenido peligroso.</translation>
+<translation id="609942571968311933">Texto copiado de <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Menú Inicio</translation>
 <translation id="6101226222197207147">Se agregó una aplicación nueva (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="6102043788063419338">La "Protección avanzada" bloqueó este archivo.</translation>
@@ -4175,6 +4199,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6615455863669487791">Mostrarme</translation>
 <translation id="6618097958368085618">Conservar de todos modos</translation>
+<translation id="6618744767048954150">En ejecución</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">El sitio puede hacer un seguimiento de tu ubicación</translation>
 <translation id="6619801788773578757">Agregar aplicación de kiosco</translation>
@@ -4560,6 +4585,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7131040479572660648">Leer los datos en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Agregar pá&amp;gina...</translation>
 <translation id="7133578150266914903">El administrador está restableciendo este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">Se revisaron <ph name="DONE" />/<ph name="TOTAL" /> contraseñas…</translation>
 <translation id="7134098520442464001">Reducir el tamaño del texto</translation>
 <translation id="7135729336746831607">¿Quieres activar la conexión Bluetooth?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> requiere que actualices tu <ph name="DEVICE_TYPE" /> de inmediato.</translation>
@@ -4908,6 +4934,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="761530003705945209">Crea una copia de seguridad en Google Drive. Restaura tus datos o cambia de dispositivo en cualquier momento con facilidad. Se incluyen datos de apps. Se suben las copias de seguridad a Google y se encriptan con la contraseña de tu Cuenta de Google.</translation>
 <translation id="7616214729753637086">Registrando dispositivo…</translation>
 <translation id="7617366389578322136">Conectando a "<ph name="DEVICE_NAME" />"</translation>
+<translation id="761763866592998929">Modo ambiente</translation>
 <translation id="762068974690945752">En esta página puedes agregar una cuenta para instituciones educativas o administrar las cuentas para niños. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">El sistema no pudo guardar la configuración del dispositivo.</translation>
 <translation id="7622114377921274169">Cargando</translation>
@@ -5019,6 +5046,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7766838926148951335">Aceptar permisos</translation>
 <translation id="7768770796815395237">Cambiar</translation>
 <translation id="7769672763586021400">ID del modelo</translation>
+<translation id="7770612696274572992">Imagen copiada de otro dispositivo</translation>
 <translation id="7770651108375708429">Desconectar Wi-Fi</translation>
 <translation id="7771452384635174008">Diseño</translation>
 <translation id="7772032839648071052">Confirmar frase de contraseña</translation>
@@ -5026,6 +5054,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7772773261844472235">Comprueba el estado de tu Chromebook</translation>
 <translation id="7773726648746946405">Almacenamiento de sesión</translation>
 <translation id="7774365994322694683">Pájaro</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> verá los archivos de <ph name="FOLDERNAME" /> hasta que cierres todas las pestañas de este sitio</translation>
 <translation id="7776701556330691704">No se encontraron voces</translation>
 <translation id="7780252971640011240">Hay problemas de conexión. Para solicitar asistencia, comunícate con tu proveedor.</translation>
 <translation id="7781335840981796660">Se eliminarán todas las cuentas de usuario y todos los datos locales.</translation>
@@ -6045,6 +6074,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9055636786322918818">Aplica la encriptación RC4. Esta opción es riesgosa, ya que los cifrados RC4 son inseguros.</translation>
 <translation id="9056810968620647706">No se encontraron coincidencias.</translation>
 <translation id="9057354806206861646">Cronograma de actualizaciones</translation>
+<translation id="9058976525724291037">Tu hijo quiere agregar otra Cuenta de Google a este dispositivo. Solo se pueden agregar cuentas de G Suite for Education a los dispositivos administrados con Family Link.</translation>
 <translation id="9062065967472365419">Sorpréndeme</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Se produjo un error de la línea <ph name="ERROR_LINE_START" /> a la <ph name="ERROR_LINE_END" /></translation>

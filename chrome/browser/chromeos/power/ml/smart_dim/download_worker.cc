@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent_util.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/assist_ranker/proto/example_preprocessor.pb.h"
@@ -43,25 +44,27 @@ bool DownloadWorker::IsReady() {
 }
 
 void DownloadWorker::InitializeFromComponent(
-    const std::string& metadata_json,
-    const std::string& preprocessor_proto,
-    const std::string& model_flatbuffer) {
+    const ComponentFileContents& contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Meta data contains necessary info to construct FlatBufferModelSpec, and
-  // other optional info.
-  // TODO(crbug.com/1049888) add new UMA metrics to log the json errors.
-  data_decoder::DataDecoder::ParseJsonIsolated(
-      std::move(metadata_json),
-      base::BindOnce(&DownloadWorker::OnJsonParsed, base::Unretained(this),
-                     std::move(model_flatbuffer)));
+
+  std::string metadata_json, preprocessor_proto, model_flatbuffer;
+  std::tie(metadata_json, preprocessor_proto, model_flatbuffer) = contents;
 
   preprocessor_config_ =
       std::make_unique<assist_ranker::ExamplePreprocessorConfig>();
   if (!preprocessor_config_->ParseFromString(preprocessor_proto)) {
+    LogLoadComponentEvent(LoadComponentEvent::kLoadPreprocessorError);
     DVLOG(1) << "Failed to load preprocessor_config.";
     preprocessor_config_.reset();
     return;
   }
+
+  // Meta data contains necessary info to construct FlatBufferModelSpec, and
+  // other optional info.
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      std::move(metadata_json),
+      base::BindOnce(&DownloadWorker::OnJsonParsed, base::Unretained(this),
+                     std::move(model_flatbuffer)));
 }
 
 void DownloadWorker::OnJsonParsed(
@@ -72,6 +75,7 @@ void DownloadWorker::OnJsonParsed(
       !ParseMetaInfoFromJsonObject(result.value.value(), &metrics_model_name_,
                                    &dim_threshold_, &expected_feature_size_,
                                    &inputs_, &outputs_)) {
+    LogLoadComponentEvent(LoadComponentEvent::kLoadMetadataError);
     DVLOG(1) << "Failed to parse meta info from metadata_json.";
     return;
   }
@@ -96,6 +100,7 @@ void DownloadWorker::LoadModelAndCreateGraphExecutor(
                               base::BindOnce(&CreateGraphExecutorCallback));
   executor_.set_disconnect_handler(base::BindOnce(
       &DownloadWorker::OnConnectionError, base::Unretained(this)));
+  LogLoadComponentEvent(LoadComponentEvent::kSuccess);
 }
 
 }  // namespace ml

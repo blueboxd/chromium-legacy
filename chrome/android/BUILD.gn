@@ -844,6 +844,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/settings:java",
+    "//chrome/browser/settings:javatests",
     "//chrome/browser/thumbnail:java",
     "//chrome/browser/thumbnail:javatests",
     "//chrome/browser/ui/android/appmenu:java",

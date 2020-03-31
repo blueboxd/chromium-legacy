@@ -256,7 +256,6 @@ paddingInlineStart
 paddingLeft
 paddingRight
 paddingTop
-page
 pageBreakAfter
 pageBreakBefore
 pageBreakInside

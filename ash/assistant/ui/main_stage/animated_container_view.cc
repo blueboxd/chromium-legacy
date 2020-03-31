@@ -238,8 +238,8 @@ void AnimatedContainerView::AddElementAnimatorAndAnimateInView(
   DCHECK_EQ(animator->view()->parent(), content_view());
   animators_.push_back(std::move(animator));
 
-  // We don't allow processing of events while animating.
-  set_can_process_events_within_subtree(false);
+  // We don't allow interactions while animating.
+  DisableInteractions();
 
   auto* animation_observer = new ui::CallbackLayerAnimationObserver(
       /*animation_ended_callback=*/base::BindRepeating(
@@ -260,9 +260,9 @@ void AnimatedContainerView::FadeOutViews() {
 
   fade_out_in_progress_ = true;
 
-  // We don't allow processing of events while waiting for the next query
-  // response. The contents will be faded out, so it should not be interactive.
-  set_can_process_events_within_subtree(false);
+  // We don't allow interactions while waiting for the next query response. The
+  // contents will be faded out, so it should not be interactive.
+  DisableInteractions();
 
   auto* animation_observer = new ui::CallbackLayerAnimationObserver(
       /*animation_ended_callback=*/base::BindRepeating(
@@ -274,6 +274,11 @@ void AnimatedContainerView::FadeOutViews() {
 
   // Set the observer to active so that we receive callback events.
   animation_observer->SetActive();
+}
+
+void AnimatedContainerView::SetInteractionsEnabled(bool enabled) {
+  for (const auto& animator : animators_)
+    animator->view()->SetEnabled(enabled);
 }
 
 bool AnimatedContainerView::AnimateInObserverCallback(
@@ -295,7 +300,7 @@ bool AnimatedContainerView::AnimateInObserverCallback(
   // off prior to this animation finishing. Once all animations have completed
   // interactivity will be restored and derivate classes notified.
   if (!weak_ptr->IsAnimatingViews()) {
-    weak_ptr->set_can_process_events_within_subtree(true);
+    weak_ptr->EnableInteractions();
     weak_ptr->OnAllViewsAnimatedIn();
   }
 

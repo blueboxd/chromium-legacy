@@ -57,6 +57,56 @@ void SetValue(base::DictionaryValue* dict,
   dict->Set(key, ToValue(*value));
 }
 
+// Helper to build an extension manifest which uses the
+// kDeclarativeNetRequestKey manifest key. |hosts| specifies the host
+// permissions to grant. |flags| is a bitmask of ConfigFlag to configure the
+// extension. |ruleset_info| specifies the static rulesets for the extension.
+std::unique_ptr<base::DictionaryValue> CreateManifest(
+    const std::vector<TestRulesetInfo>& ruleset_info,
+    const std::vector<std::string>& hosts,
+    unsigned flags) {
+  std::vector<std::string> permissions = hosts;
+  permissions.push_back(kAPIPermission);
+
+  // These permissions are needed for some tests. TODO(karandeepb): Add a
+  // ConfigFlag for these.
+  permissions.push_back("webRequest");
+  permissions.push_back("webRequestBlocking");
+
+  if (flags & kConfig_HasFeedbackPermission)
+    permissions.push_back(kFeedbackAPIPermission);
+
+  if (flags & kConfig_HasActiveTab)
+    permissions.push_back("activeTab");
+
+  std::vector<std::string> background_scripts;
+  if (flags & kConfig_HasBackgroundScript)
+    background_scripts.push_back("background.js");
+
+  ListBuilder rule_resources_builder;
+  for (const TestRulesetInfo& info : ruleset_info) {
+    dnr_api::Ruleset ruleset;
+    ruleset.path = info.relative_file_path;
+    rule_resources_builder.Append(ruleset.ToValue());
+  }
+
+  return DictionaryBuilder()
+      .Set(keys::kName, "Test extension")
+      .Set(keys::kDeclarativeNetRequestKey,
+           DictionaryBuilder()
+               .Set(keys::kDeclarativeRuleResourcesKey,
+                    rule_resources_builder.Build())
+               .Build())
+      .Set(keys::kPermissions, ToListValue(permissions))
+      .Set(keys::kVersion, "1.0")
+      .Set(keys::kManifestVersion, 2)
+      .Set("background", DictionaryBuilder()
+                             .Set("scripts", ToListValue(background_scripts))
+                             .Build())
+      .Set(keys::kBrowserAction, DictionaryBuilder().Build())
+      .Build();
+}
+
 }  // namespace
 
 TestRuleCondition::TestRuleCondition() = default;
@@ -187,42 +237,9 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
     const std::string& json_rules_filename,
     const std::vector<std::string>& hosts,
     unsigned flags) {
-  std::vector<std::string> permissions = hosts;
-  permissions.push_back(kAPIPermission);
-  permissions.push_back("webRequest");
-  permissions.push_back("webRequestBlocking");
-
-  if (flags & kConfig_HasFeedbackPermission)
-    permissions.push_back(kFeedbackAPIPermission);
-
-  if (flags & kConfig_HasActiveTab)
-    permissions.push_back("activeTab");
-
-  std::vector<std::string> background_scripts;
-  if (flags & kConfig_HasBackgroundScript)
-    background_scripts.push_back("background.js");
-
-  dnr_api::Ruleset ruleset;
-  ruleset.path = json_rules_filename;
-
-  std::unique_ptr<base::ListValue> rule_resources =
-      ListBuilder().Append(ruleset.ToValue()).Build();
-
-  return DictionaryBuilder()
-      .Set(keys::kName, "Test extension")
-      .Set(keys::kDeclarativeNetRequestKey,
-           DictionaryBuilder()
-               .Set(keys::kDeclarativeRuleResourcesKey,
-                    std::move(rule_resources))
-               .Build())
-      .Set(keys::kPermissions, ToListValue(permissions))
-      .Set(keys::kVersion, "1.0")
-      .Set(keys::kManifestVersion, 2)
-      .Set("background", DictionaryBuilder()
-                             .Set("scripts", ToListValue(background_scripts))
-                             .Build())
-      .Set(keys::kBrowserAction, DictionaryBuilder().Build())
-      .Build();
+  std::vector<TestRulesetInfo> rulesets;
+  rulesets.push_back({json_rules_filename, base::ListValue()});
+  return CreateManifest(rulesets, hosts, flags);
 }
 
 std::unique_ptr<base::ListValue> ToListValue(
@@ -240,13 +257,15 @@ std::unique_ptr<base::ListValue> ToListValue(const std::vector<TestRule>& vec) {
   return builder.Build();
 }
 
-void WriteManifestAndRuleset(const base::FilePath& extension_dir,
-                             const TestRulesetInfo& info,
-                             const std::vector<std::string>& hosts,
-                             unsigned flags) {
-  // Persist JSON rules file.
-  JSONFileValueSerializer(extension_dir.AppendASCII(info.relative_file_path))
-      .Serialize(info.rules_value);
+void WriteManifestAndRulesets(const base::FilePath& extension_dir,
+                              const std::vector<TestRulesetInfo>& ruleset_info,
+                              const std::vector<std::string>& hosts,
+                              unsigned flags) {
+  // Persist JSON rules files.
+  for (const TestRulesetInfo& info : ruleset_info) {
+    JSONFileValueSerializer(extension_dir.AppendASCII(info.relative_file_path))
+        .Serialize(info.rules_value);
+  }
 
   // Persists a background script if needed.
   if (flags & ConfigFlag::kConfig_HasBackgroundScript) {
@@ -258,7 +277,16 @@ void WriteManifestAndRuleset(const base::FilePath& extension_dir,
 
   // Persist manifest file.
   JSONFileValueSerializer(extension_dir.Append(kManifestFilename))
-      .Serialize(*CreateManifest(info.relative_file_path, hosts, flags));
+      .Serialize(*CreateManifest(ruleset_info, hosts, flags));
+}
+
+void WriteManifestAndRuleset(const base::FilePath& extension_dir,
+                             const TestRulesetInfo& info,
+                             const std::vector<std::string>& hosts,
+                             unsigned flags) {
+  std::vector<TestRulesetInfo> rulesets;
+  rulesets.push_back({info.relative_file_path, info.rules_value.Clone()});
+  WriteManifestAndRulesets(extension_dir, rulesets, hosts, flags);
 }
 
 }  // namespace declarative_net_request

@@ -279,6 +279,8 @@ class StyleBuilderConverter {
   static bool ConvertInternalEmptyLineHeight(StyleResolverState& state,
                                              const CSSValue& value);
 
+  static AtomicString ConvertPage(StyleResolverState&, const CSSValue&);
+
  private:
   static const CSSToLengthConversionData& CssToLengthConversionData(
       StyleResolverState&);

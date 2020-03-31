@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">కొనసాగించు</translation>
 <translation id="2501278716633472235">వెనుకకు వెళ్ళు</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 కుక్కీ బ్లాక్ చేయబడింది}other{# కుక్కీలు బ్లాక్ చేయబడ్డాయి}}</translation>
+<translation id="257931822824936280">విస్తరింపబడింది - కుదించడానికి క్లిక్ చేయండి.</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2704606927547763573">కాపీ చేయబడింది</translation>
 <translation id="2968755619301702150">ప్రమాణపత్రం వ్యూయర్</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">లింక్‌ను కాపీ చేయి</translation>
 <translation id="4002066346123236978">శీర్షిక</translation>
 <translation id="4570913071927164677">వివరాలు</translation>
+<translation id="4645575059429386691">మీ తల్లి/తండ్రి ద్వారా నిర్వహించబడుతోంది</translation>
+<translation id="4883854917563148705">నిర్వహిత సెట్టింగ్‌లు రీసెట్ చేయబడవు</translation>
 <translation id="497421865427891073">ముందుకు వెళ్ళు</translation>
+<translation id="5100237604440890931">కుదించబడింది - విస్తరింపజేయడానికి క్లిక్ చేయండి.</translation>
 <translation id="5300589172476337783">చూపించు</translation>
 <translation id="5301954838959518834">సరే, అర్థమైంది</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
 <translation id="7846076177841592234">ఎంపికను రద్దు చేయి</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
+<translation id="8206354486702514201">ఈ సెట్టింగ్ మీ నిర్వాహకుడి ద్వారా అమలు చేయబడింది.</translation>
 <translation id="8249310407154411074">ఎగువకు తరలించు</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8609465669617005112">పైకి తరలించు</translation>
 <translation id="8676374126336081632">ఇన్‌పుట్‌ను తీసివేయండి</translation>
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>
+<translation id="9019902583201351841">మీ తల్లిదండ్రుల ద్వారా నిర్వహించబడుతోంది</translation>
 </translationbundle>

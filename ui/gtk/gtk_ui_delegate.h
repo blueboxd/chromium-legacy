@@ -33,6 +33,9 @@ class COMPONENT_EXPORT(UI_GTK) GtkUiDelegate {
   // Returns the current active instance.
   static GtkUiDelegate* instance();
 
+  // Called when the GtkUi instance initialization process finished.
+  virtual void OnInitialized() = 0;
+
   // Gets the GdkKeymap instance, which is used to translate KeyEvents into
   // GdkEvents before filtering them through GtkIM API.
   virtual GdkKeymap* GetGdkKeymap() = 0;

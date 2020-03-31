@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">Прагляд картак</translation>
 <translation id="3369192424181595722">Памылка гадзінніка</translation>
 <translation id="337363190475750230">Ініцыялізацыя скасавана</translation>
-<translation id="3376829916920036789">Наступны дамен уключыў перахватчыкі падзей Enterprise у вашым браўзеры: <ph name="ENROLLMENT_DOMAIN" />. У перахватчыкаў падзей ёсць доступ да некаторых вашых даных.</translation>
 <translation id="3377144306166885718">Сервер выкарыстоўвае ўстарэлую версію пратакола TLS.</translation>
 <translation id="3377188786107721145">Памылка аналізу палітыкі</translation>
 <translation id="3377736046129930310">Выкарыстоўваць блакіроўку экрана для хутчэйшага пацвярджэння картак</translation>
@@ -984,7 +983,6 @@
 <translation id="5179510805599951267">Мова старонкі – не <ph name="ORIGINAL_LANGUAGE" />? Паведаміце пра памылку</translation>
 <translation id="5190835502935405962">Панэль закладак</translation>
 <translation id="519422657042045905">Анатацыя недаступная</translation>
-<translation id="5196187217592847346">Перахватчыкі падзей Enterprise</translation>
 <translation id="5201306358585911203">Убудаваная старонка на гэтай старонцы паведамляе</translation>
 <translation id="5205222826937269299">Увядзіце імя</translation>
 <translation id="5209518306177824490">Лічбавы адбітак SHA-1:</translation>
@@ -1458,7 +1456,6 @@
 <translation id="725866823122871198">Памылка прыватнага падключэння да дамена <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />: дата і час на вашым камп'ютары (<ph name="DATE_AND_TIME" />) няправільныя.</translation>
 <translation id="7260504762447901703">Адклікаць дазвол на доступ</translation>
 <translation id="7275334191706090484">Кіруемыя закладкі</translation>
-<translation id="7288778322931489286">Адміністратар уключыў перахватчыкі падзей Enterprise. У перахватчыкаў падзей ёсць доступ да некаторых вашых даных.</translation>
 <translation id="7292031607255951991">Імя атрымальніка</translation>
 <translation id="7298195798382681320">Рэкамендавана</translation>
 <translation id="7300012071106347854">Кобальтавы</translation>
@@ -1816,7 +1813,6 @@
 <translation id="8866481888320382733">Не ўдалося прааналізаваць налады палітыкі</translation>
 <translation id="8866928039507595380">Згіб</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Абагульванне даных пра падзеі бяспекі, адзначаныя адміністратарам з выкарыстаннем перахватчыкаў падзей Enterprise. Сярод даных могуць быць URL-адрасы старонак, якія вы наведваеце, назвы файлаў або метаданыя, а таксама імя карыстальніка, якое вы выкарыстоўваеце для ўваходу на сваю прыладу або ў Chrome.</translation>
 <translation id="8870413625673593573">Нядаўна закрытыя</translation>
 <translation id="8870494189203302833">У тым жа парадку, рабочым бокам уніз</translation>
 <translation id="8874824191258364635">Увядзіце сапраўдны нумар карткі</translation>

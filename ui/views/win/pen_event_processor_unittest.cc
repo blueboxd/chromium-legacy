@@ -4,8 +4,7 @@
 
 #include "ui/views/win/pen_event_processor.h"
 
-#include <gtest/gtest.h>
-
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/sequential_id_generator.h"
 
 namespace views {

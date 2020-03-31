@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">ເບິ່ງບັດ</translation>
 <translation id="3369192424181595722">ໂມງ​ຜິດ​ພາດ</translation>
 <translation id="337363190475750230">ຖອນການຈັດໃຫ້ແລ້ວ</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ໄດ້ເປີດການນຳໃຊ້ Enterprise Service Hooks ໃນໂປຣແກຣມທ່ອງເວັບຂອງທ່ານແລ້ວ. Hook ເຫຼົ່ານີ້ມີສິດເຂົ້າເຖິງບາງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
 <translation id="3377144306166885718">ເຊີບເວີໃຊ້ TLS ເວີຊັນເກົ່າ.</translation>
 <translation id="3377188786107721145">ຄວາມ​ຜິດ​ພາດກະຈາຍນະ​ໂຍ​ບາຍ</translation>
 <translation id="3377736046129930310">ໃຊ້ລັອກໜ້າຈໍເພື່ອຢືນຢັນບັດໄດ້ໄວຂຶ້ນ</translation>
@@ -985,7 +984,6 @@
 <translation id="5179510805599951267">ບໍ່ເປັນ <ph name="ORIGINAL_LANGUAGE" /> ບໍ? ລາຍງານຄວາມຜິດພາດນີ້</translation>
 <translation id="5190835502935405962">ແຖບບຸກມາກສ໌</translation>
 <translation id="519422657042045905">ຄຳອະທິບາຍປະກອບບໍ່ສາມາດໃຊ້ໄດ້</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">ໜ້າຝັງຕິດໃນໜ້ານີ້ບອກວ່າ</translation>
 <translation id="5205222826937269299">ຈຳເປັນຕ້ອງມີຊື່</translation>
 <translation id="5209518306177824490">ລາາຍນີ້ວມື SHA-1</translation>
@@ -1459,7 +1457,6 @@
 <translation id="725866823122871198">ບໍ່​ສາ​ມາດ​ຕັ້ງ​ການ​ເຊື່ອມ​ຕໍ່​ສ່ວນ​ຕົວ​ກັບ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ໄດ້ ເພາະ​ວ່າ​ວັນ​ທີ ແລະ​ເວ​ລາ​ຄອມ​ພິວ​ເຕີ​ຂອງ​ທ່ານ (<ph name="DATE_AND_TIME" />) ບໍ່​ຖືກ​ຕ້ອງ.</translation>
 <translation id="7260504762447901703">ຖອດຖອນການເຂົ້າເຖິງ</translation>
 <translation id="7275334191706090484">ບຸກມາກສ໌ທີ່ຄຸ້ມຄອງ:</translation>
-<translation id="7288778322931489286">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ເປີດການນຳໃຊ້ Enterprise Service Hooks ໃນໂປຣແກຣມທ່ອງເວັບຂອງທ່ານແລ້ວ. Hook ເຫຼົ່ານີ້ມີສິດເຂົ້າເຖິງບາງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
 <translation id="7292031607255951991">ຊື່ຜູ້ຮັບ</translation>
 <translation id="7298195798382681320">ແນະ​ນໍາ​ໃຫ້</translation>
 <translation id="7300012071106347854">ສີ​ຟ້າ​ໂກ​ບາ​ລ​ທ໌</translation>
@@ -1816,7 +1813,6 @@
 <translation id="8866481888320382733">ການຕັ້ງຄ່ານະໂຍບາຍການກະຈາຍຜິດພາດ</translation>
 <translation id="8866928039507595380">ພັບ</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">ແບ່ງປັນຂໍ້ມູນກ່ຽວກັບເຫດການຄວາມປອດໄພທີ່ຖືກຕິດທຸງໄວ້ໂດຍ Enterprise Service Hooks ກັບຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ. ນີ້ອາດຮວມມີ URL ຂອງໜ້າທີ່ທ່ານເຂົ້າເບິ່ງ, ຊື່ ຫຼື ເມຕາເດຕາຂອງໄຟລ໌ ແລະ ຊື່ຜູ້ໃຊ້ທີ່ທ່ານໃຊ້ເພື່ອເຂົ້າສູ່ລະບົບອຸປະກອນ ແລະ Chrome ຂອງທ່ານ.</translation>
 <translation id="8870413625673593573">ປິດ​ບໍ່​ດົນ​ມາ​ນີ້</translation>
 <translation id="8870494189203302833">ລຳດັບດຽວກັນຂວ້າມໜ້າລົງ</translation>
 <translation id="8874824191258364635">ປ້ອນເລກບັດທີ່ຖືກຕ້ອງ</translation>

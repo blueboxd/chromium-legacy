@@ -301,16 +301,21 @@ ReadJSONRulesResult& ReadJSONRulesResult::operator=(ReadJSONRulesResult&&) =
     default;
 
 // static
-RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
-  const DNRManifestData::RulesetInfo& info =
-      declarative_net_request::DNRManifestData::GetRuleset(extension);
+std::vector<RulesetSource> RulesetSource::CreateStatic(
+    const Extension& extension) {
+  const std::vector<DNRManifestData::RulesetInfo>& rulesets =
+      declarative_net_request::DNRManifestData::GetRulesets(extension);
 
-  DCHECK_GE(info.id, kMinValidStaticRulesetID);
-  return RulesetSource(extension.path().Append(info.relative_path),
-                       extension.path().Append(
-                           file_util::GetIndexedRulesetRelativePath(info.id)),
-                       info.id, dnr_api::SOURCE_TYPE_MANIFEST,
-                       dnr_api::MAX_NUMBER_OF_RULES, extension.id());
+  std::vector<RulesetSource> sources;
+  for (const auto& info : rulesets) {
+    sources.push_back(
+        RulesetSource(extension.path().Append(info.relative_path),
+                      extension.path().Append(
+                          file_util::GetIndexedRulesetRelativePath(info.id)),
+                      info.id, dnr_api::SOURCE_TYPE_MANIFEST,
+                      dnr_api::MAX_NUMBER_OF_RULES, extension.id()));
+  }
+  return sources;
 }
 
 // static

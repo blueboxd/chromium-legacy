@@ -11,8 +11,8 @@
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
@@ -38,12 +38,6 @@ namespace power {
 namespace ml {
 
 namespace {
-
-// TODO(crbug.com/893425): This should exist in only one location, so it should
-// be merged with its duplicate in model_impl.cc to a common location.
-void LogPowerMLSmartDimModelResult(SmartDimModelResult result) {
-  UMA_HISTOGRAM_ENUMERATION("PowerML.SmartDimModel.Result", result);
-}
 
 // Real impl of MlServiceClient.
 class MlServiceClientImpl : public MlServiceClient {

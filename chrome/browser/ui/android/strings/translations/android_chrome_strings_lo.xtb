@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">ດຽວນີ້ Chrome ດາວໂຫຼດໄຟລ໌ໄດ້ໄວກວ່າເກົ່າ</translation>
 <translation id="1883903952484604915">ໄຟລ໌ຂອງຂ້ອຍ</translation>
 <translation id="1887786770086287077">ການເຂົ້າເຖິງສະຖານທີ່ປິດຢູ່ສຳລັບອຸປະກອນນີ້. ກະລຸນາເປີດມັນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> ຈະເປີດໃນ Chrome. ໂດຍການສືບຕໍ່, ແມ່ນຖືວ່າທ່ານເຫັນດີນຳ <ph name="BEGIN_LINK1" />ຂໍ້ກຳນົດການບໍລິການ<ph name="END_LINK1" /> ແລະ <ph name="BEGIN_LINK2" />ແຈ້ງການຄວາມເປັນສ່ວນຕົວ<ph name="END_LINK2" /> ຂອງ Chrome.</translation>
 <translation id="1919345977826869612">ໂຄສະນາ</translation>
 <translation id="1919950603503897840">ເລືອກລາຍຊື່ຜູ້ຕິດຕໍ່</translation>
 <translation id="1922076542920281912">ເພື່ອອະນຸຍາດໃຫ້ Chrome ເຂົ້າເຖິງສະຖານທີ່ຂອງທ່ານ, ກະລຸນາເປີດສະຖານທີ່ໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">ຮູບ</translation>
 <translation id="257088987046510401">ເທມ</translation>
 <translation id="2570922361219980984">ການເຂົ້າເຖິງສະຖານທີ່ປິດຢູ່ສຳລັບອຸປະກອນນີ້ນຳອີກ. ກະລຸນາເປີດມັນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">ຂະ​ຫຍາຍແລ້ວ - ຄລິກ​ເພື່ອຫຍໍ້ລົງ.</translation>
 <translation id="2581165646603367611">ນີ້ຈະລຶບລ້າງຄຸກກີ້, ແຄສ ແລະ ຂໍ້ມູນອື່ນຂອງເວັບໄຊທີ່ Chrome ຄິດວ່າບໍ່ສຳຄັນ.</translation>
 <translation id="2586657967955657006">ຄລິບບອດ</translation>
 <translation id="2587052924345400782">ມີເວີຊັນທີ່ໃໝ່ກວ່າ</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">ລຶບລາຍການແລ້ວ: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">ເປີດ <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">ໃຊ້ລະຫັດຜ່ານ</translation>
-<translation id="4645575059429386691">ຈັດ​ການ​ໂດຍ​ຜູ້​ປົກ​ຄອງ​ຂອງ​ທ່ານ</translation>
 <translation id="4650364565596261010">ຄ່າເລີ່ມຕົ້ນຂອງລະບົບ</translation>
 <translation id="4660838440047236328">ແຜນຜັງຫ້ອງຂອງທ່ານ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ບຸກ​ມາກ​ຖືກ​ລຶບ​ໄປ​ແລ້ວ</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">ເປີດ</translation>
 <translation id="488187801263602086">ປ່ຽນຊື່ໄຟລ໌</translation>
 <translation id="4882831918239250449">ຄວບຄຸມວ່າຈະໃຫ້ໃຊ້ປະຫວັດການທ່ອງເວັບຂອງທ່ານແນວໃດເພື່ອປັບແຕ່ງການຊອກຫາ, ໂຄສະນາ ແລະ ອື່ນໆອີກໃຫ້ເປັນແບບສ່ວນຕົວ</translation>
-<translation id="4883854917563148705">ບໍ່ສາມາດຣີເຊັດການຕັ້ງຄ່າທີ່ມີການຈັດການໄດ້</translation>
 <translation id="4885273946141277891">ຈໍາ​ນວນຂອງຕົວຢ່າງ Chrome ທີ່ບໍ່ຮອງຮັບ​.</translation>
 <translation id="4887024562049524730">ຖາມກ່ອນທີ່ຈະອະນຸຍາດໃຫ້ເວັບໄຊໃຊ້ອຸປະກອນ ແລະ ຂໍ້ມູນ ເວີຊົວ ຣິອາລິຕີຂອງທ່ານ (ແນະນຳ)</translation>
 <translation id="4910889077668685004">ແອັບຈ່າຍເງິນ</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">ອະນຸຍາດໃຫ້ເວັບໄຊເຂົ້າເຖິງເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ (ແນະນຳ)</translation>
 <translation id="5063480226653192405">ການນໍາໃຊ້</translation>
 <translation id="5087580092889165836">ເພີ່ມບັດ</translation>
-<translation id="5100237604440890931">ຫຍໍ້ລົງແລ້ວ - ຄລິກ​ເພື່ອ​ຂະ​ຫຍາຍ.</translation>
 <translation id="510275257476243843">ຍັງເຫຼືອ 1 ຊົ່ວໂມງ</translation>
 <translation id="5123685120097942451">ແຖບທີ່ບໍ່ເຜີຍຕົວຕົນ</translation>
 <translation id="5127805178023152808">ຊິງ​ຄ໌​ປິດ</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">ແຖບທີ່ໄດ້ຮັບ</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ແຖບທີ່ເປີດຢູ່, ແຕະເພື່ອປ່ຽນແຖບ}other{<ph name="OPEN_TABS_MANY" /> ແຖບທີ່ເປີດຢູ່, ແຕະເພື່ອປ່ຽນແຖບ}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(ອີກ 1 ລາຍການ)}other{(ອີກ # ລາຍການ)}}</translation>
-<translation id="5400569084694353794">​ໂດຍ​ການ​ໃຊ້​ແອັບ​ພລິ​ເຄຊັນ​ນີ້, ແມ່ນຖືວ່າທ່ານ​ຍອມຮັບ <ph name="BEGIN_LINK1" />ເງື່ອນໄຂການໃຫ້ບໍລິການ<ph name="END_LINK1" /> ​ແລະ <ph name="BEGIN_LINK2" />​ປະກາດຄວາມເປັນສ່ວນໂຕ<ph name="END_LINK2" /> ຂອງ Chrome.</translation>
 <translation id="5403592356182871684">ຊື່</translation>
 <translation id="5403644198645076998">ອະນຸຍາດແຕ່ບາງເວັບໄຊສະເພາະເທົ່ານັ້ນ</translation>
 <translation id="5414836363063783498">ກໍາລັງຢືນ​ຢັນ...</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">ໂຫຼດໜ້າກ່ອນສຳລັບການທ່ອງເວັບ ແລະ ການຊອກຫາທີ່ໄວກວ່າ</translation>
 <translation id="79859296434321399">ເພື່ອເບິ່ງເນື້ອຫາອາກິວເມັນ ຣີອາລິຕີ, ກະລຸນາຕິດຕັ້ງ ARCore ກ່ອນ</translation>
 <translation id="7986741934819883144">ເລືອກລາຍຊື່ຜູ້ຕິດຕໍ່</translation>
-<translation id="7987073022710626672">ຂໍ້​ກຳ​ນົດ​ການ​ບໍ​ລິ​ການ​ຂອງ Chrome</translation>
 <translation id="7993619969781047893">ຄຸນສົມບັດໃນບາງເວັບໄຊອາດຈະໃຊ້ບໍ່ໄດ້</translation>
 <translation id="7998918019931843664">ເປີດ​ແຖບ​ປິດຄືນໃໝ່</translation>
 <translation id="7999064672810608036">ທ່ານ​ແນ່​ໃຈ​ບໍ​ວ່າ ທ່ານ​ຕ້ອງ​ການ​ລຶບ​ຂໍ້​ມູນໃນ​ເຄື່ອງ​ທັງ​ໝົດ, ລວມ​ທັງ​ຄຸກ​ກີ້, ແລະ​ຕັ້ງ​ຄ່າ​ການ​ອະ​ນຸ​ຍາດ​ທັງ​ໝົດສຳ​ລັບ​ເວັບ​ໄຊ​ທ໌​ນີ້?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">ຍັງເຫຼືອ <ph name="FILES" /> ໄຟລ໌</translation>
 <translation id="8190358571722158785">ຍັງ​ເຫຼືອ 1 ມື້</translation>
 <translation id="8200772114523450471">ເລີ່ມຕົ້ນປິດເປີດໃໝ່</translation>
-<translation id="8206354486702514201">ການຕັ້ງຄ່ານີ້ຖືກບັງຄັບໂດຍຜູ້ຄວບຄຸມຂອງທ່ານ.</translation>
 <translation id="8209050860603202033">ເປີດຮູບ</translation>
 <translation id="8218622182176210845">ຈັດການບັນຊີຂອງທ່ານ</translation>
 <translation id="8224471946457685718">ດາວໂຫຼດບົດຄວາມສຳລັບທ່ານເມື່ອໃຊ້ Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ລະດັບຄວາມແຮງສັນຍານ: # ຂີດ}other{ລະດັບຄວາມແຮງສັນຍານ: # ຂີດ}}</translation>
 <translation id="868929229000858085">ຊອກຫາລາຍຊື່ຜູ້ຕິດຕໍ່ຂອງທ່ານ</translation>
 <translation id="869891660844655955">ວັນ​ຫມົດ​ອາ​ຍຸ</translation>
-<translation id="8728487861892616501">ໂດຍການໃຊ້ແອັບພລິເຄຊັນນີ້, ແມ່ນຖືວ່າທ່ານຍອມຮັບ <ph name="BEGIN_LINK1" />ຂໍ້ກຳນົດການບໍລິການ<ph name="END_LINK1" /> ແລະ <ph name="BEGIN_LINK2" />ແຈ້ງການຄວາມເປັນສ່ວນຕົວ<ph name="END_LINK2" /> ຂອງ Chrome ແລະ <ph name="BEGIN_LINK3" />ແຈ້ງການຄວາມເປັນສ່ວນຕົວສຳລັບບັນຊີ Google ທີ່ຈັດການດ້ວຍ Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">ເນື້ອຫາຖືກເຊື່ອງໄວ້</translation>
 <translation id="8751914237388039244">ເລືອກຮູບ</translation>
 <translation id="8758557275681689734">ເບິ່ງແຖບທີ່ເປີດຢູ່ຂອງທ່ານທັງໝົດ</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">ບລັອກ JavaScript ສຳລັບເວັບໄຊສະເພາະ.</translation>
 <translation id="8812260976093120287">ໃນບາງເວັບໄຊ, ທ່ານສາມາດຈ່າຍດ້ວຍແອັບການຈ່າຍເງິນທີ່ຮອງຮັບຢູ່ຂ້າງເທິງໃນອຸປະກອນຂອງທ່ານໄດ້.</translation>
 <translation id="8816026460808729765">ບລັອກເວັບໄຊບໍ່ໃຫ້ເຂົາເຖິງເຊັນເຊີ</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> ຈະເປີດໃນ Chrome. ໂດຍການສືບຕໍ່, ແມ່ນຖືວ່າທ່ານເຫັນດີນຳ <ph name="BEGIN_LINK1" />ຂໍ້ກຳນົດການບໍລິການ<ph name="END_LINK1" /> ແລະ <ph name="BEGIN_LINK2" />ແຈ້ງການຄວາມເປັນສ່ວນຕົວ<ph name="END_LINK2" /> ຂອງ Chrome ແລະ <ph name="BEGIN_LINK3" />ແຈ້ງການຄວາມເປັນສ່ວນຕົວສຳລັບບັນຊີ Google ທີ່ຈັດການດ້ວຍ Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">ບຸກມາກສ໌</translation>
 <translation id="8833831881926404480">ເວັບໄຊກຳລັງແບ່ງປັນໜ້າຈໍຂອງທ່ານ</translation>
 <translation id="883806473910249246">ເກີດຄວາມຜິດພາດຂຶ້ນ ໃນຂະນະທີ່ດາວໂຫຼດເນື້ອຫາ.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">ໃຊ້ໂທລະສັບເປັນກະແຈຄວາມປອດໄພ</translation>
 <translation id="8993760627012879038">ເປີດແຖບໃໝ່ໃນໂໝດ Incognito</translation>
 <translation id="8998729206196772491">ທ່ານກຳລັງເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີທີ່ຖືກຈັດການໂດຍ <ph name="MANAGED_DOMAIN" /> ແລະ ໃຫ້ການຄວບຄຸມຂໍ້ມູນ Chrome ຂອງທ່ານແກ່ຜູ້ເບິ່ງແຍງລະບົບຂອງມັນ. ຂໍ້ມູນຂອງທ່ານຈະຖືກເຊື່ອມໂຍງຢ່າງຖາວອນກັບບັນຊີນີ້. ການອອກຈາກລະບົບ Chrome ຈະລຶບຂໍ້ມູນຂອງທ່ານອອກຈາກອຸປະກອນນີ້, ແຕ່ຂໍ້ມູນຈະຍັງຄົງຖືກຮັກສາໄວ້ຢູ່ໃນບັນຊີ Google ຂອງທ່ານ.</translation>
-<translation id="9019902583201351841">ຈັດ​ການ​ໂດຍ​ຜູ້​ປົກ​ຄອງ​ຂອງ​ທ່ານ</translation>
 <translation id="9028914725102941583">ເປີດການຊິ້ງຂໍ້ມູນເພື່ອແບ່ງປັນໃນທົ່ວອຸປະກອນ</translation>
 <translation id="9040142327097499898">ອະນຸຍາດການແຈ້ງເຕືອນ. ສະຖານທີ່ປິດຢູ່ສຳລັບອຸປະກອນນີ້.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ວິດີໂອ}other{# ວິດີໂອ}}</translation>

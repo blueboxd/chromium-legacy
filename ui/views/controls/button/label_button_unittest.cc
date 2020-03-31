@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/button/label_button.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

@@ -31,6 +31,11 @@ class X509Certificate;
 struct CookieWithStatus;
 }  // namespace net
 
+namespace download {
+struct DownloadCreateInfo;
+class DownloadItem;
+}  // namespace download
+
 namespace content {
 class SignedExchangeEnvelope;
 class FrameTreeNode;
@@ -77,9 +82,8 @@ void OnNavigationRequestFailed(
     const NavigationRequest& nav_request,
     const network::URLLoaderCompletionStatus& status);
 
-void WillBeginDownload(int render_process_id,
-                       int render_frame_id,
-                       const GURL& url);
+void WillBeginDownload(download::DownloadCreateInfo* info,
+                       download::DownloadItem* item);
 
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,

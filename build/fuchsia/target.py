@@ -236,8 +236,12 @@ class Target(object):
       return 'x86_64'
     raise Exception('Unknown target_cpu %s:' % self._target_cpu)
 
-  def _GetAmberRepo(self):
-    """Returns an AmberRepo instance which serves packages for this Target."""
+  def GetAmberRepo(self):
+    """Returns an AmberRepo instance which serves packages for this Target.
+    Callers should typically call GetAmberRepo() in a |with| statement, and
+    install and execute commands inside the |with| block, so that the returned
+    AmberRepo can teardown correctly, if necessary.
+    """
     pass
 
   def InstallPackage(self, package_paths):
@@ -246,7 +250,7 @@ class Target(object):
 
     package_paths: Paths to the .far files to install."""
 
-    with self._GetAmberRepo() as amber_repo:
+    with self.GetAmberRepo() as amber_repo:
       # Publish all packages to the serving TUF repository under |tuf_root|.
       for next_package_path in package_paths:
         amber_repo.PublishPackage(next_package_path)

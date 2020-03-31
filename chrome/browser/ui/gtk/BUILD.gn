@@ -83,15 +83,7 @@ jumbo_component("gtk") {
   public_deps = [ "//chrome/browser:theme_properties" ]
 
   if (use_x11 || ozone_platform_x11) {
-    sources += [
-      "gtk_event_loop_x11.cc",
-      "gtk_event_loop_x11.h",
-    ]
-
     configs += [ "//build/config/linux:x11" ]
-
-    defines += [ "USE_GTK_EVENT_LOOP_X11" ]
-
     deps += [
       "//ui/events/platform/x11",
       "//ui/gfx/x",

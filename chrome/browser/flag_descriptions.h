@@ -778,9 +778,6 @@ extern const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription[];
 extern const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefName[];
 extern const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[];
 
-extern const char kOmniboxUIOneClickUnelideName[];
-extern const char kOmniboxUIOneClickUnelideDescription[];
-
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
@@ -1266,6 +1263,9 @@ extern const char kEnableVulkanDescription[];
 
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
+
+extern const char kAndroidPartnerCustomizationPhenotypeName[];
+extern const char kAndroidPartnerCustomizationPhenotypeDescription[];
 
 extern const char kAppNotificationStatusMessagingName[];
 extern const char kAppNotificationStatusMessagingDescription[];

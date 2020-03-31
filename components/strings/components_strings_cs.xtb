@@ -539,7 +539,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3366477098757335611">Zobrazit karty</translation>
 <translation id="3369192424181595722">Chyba hodin</translation>
 <translation id="337363190475750230">Vyřazeno</translation>
-<translation id="3376829916920036789">Doména <ph name="ENROLLMENT_DOMAIN" /> ve vašem prohlížeči zapnula funkci Enterprise Service Hooks. Tyto háky mají přístup k některým vašim datům.</translation>
 <translation id="3377144306166885718">Server použil zastaralou verzi protokolu TLS.</translation>
 <translation id="3377188786107721145">Chyba analýzy zásady</translation>
 <translation id="3377736046129930310">Potvrzovat karty rychleji pomocí zámku obrazovky</translation>
@@ -974,7 +973,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="5179510805599951267">Nejedná se o jazyk <ph name="ORIGINAL_LANGUAGE" />? Nahlaste tuto chybu.</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>
 <translation id="519422657042045905">Poznámky nejsou k dispozici</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Stránka vložená na této stránce říká</translation>
 <translation id="5205222826937269299">Je nutné zadat jméno</translation>
 <translation id="5209518306177824490">Digitální otisk SHA-1</translation>
@@ -1442,7 +1440,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="725866823122871198">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v počítači nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Zrušit přístup</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
-<translation id="7288778322931489286">Administrátor ve vašem prohlížeči zapnul funkci Enterprise Service Hooks. Tyto háky mají přístup k některým vašim datům.</translation>
 <translation id="7292031607255951991">Jméno příjemce</translation>
 <translation id="7298195798382681320">Doporučeno</translation>
 <translation id="7300012071106347854">Sytě modrá</translation>
@@ -1800,7 +1797,6 @@ Další podrobnosti:
 <translation id="8866481888320382733">Při analýze nastavení zásady došlo k chybě</translation>
 <translation id="8866928039507595380">Přeložení</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Sdílejte s administrátorem údaje o událostech týkajících se zabezpečení nahlášených funkcí Enterprise Service Hooks. Mohou být zahrnuty adresy URL stránek, které navštěvujete, názvy souborů metadat a uživatelské jméno, pomocí něhož se přihlašujete do svého zařízení a do Chromu.</translation>
 <translation id="8870413625673593573">Nedávno zavřené</translation>
 <translation id="8870494189203302833">Stejné pořadí lícem dolů</translation>
 <translation id="8874824191258364635">Zadejte platné číslo karty</translation>

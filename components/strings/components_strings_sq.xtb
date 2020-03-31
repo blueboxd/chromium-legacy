@@ -542,7 +542,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="3366477098757335611">Shiko kartat</translation>
 <translation id="3369192424181595722">Gabim i orës</translation>
 <translation id="337363190475750230">Qasja u çaktivizua</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ka aktivizuar Enterprise Service Hooks në shfletuesin tënd. Këta grepa kanë qasje te disa nga të dhënat e tua.</translation>
 <translation id="3377144306166885718">Serveri ka përdorur një version të vjetruar të protokollit TLS.</translation>
 <translation id="3377188786107721145">Gabim i analizimit të politikës</translation>
 <translation id="3377736046129930310">Përdor kyçjen e ekranit për të konfirmuar kartat më shpejt</translation>
@@ -978,7 +977,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5179510805599951267">Jo në <ph name="ORIGINAL_LANGUAGE" />? Raportoje këtë gabim</translation>
 <translation id="5190835502935405962">Shiriti i faqeshënuesve</translation>
 <translation id="519422657042045905">Shënimi nuk ofrohet</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Një faqe e integruar në këtë faqe thotë</translation>
 <translation id="5205222826937269299">Emri është i detyrueshëm</translation>
 <translation id="5209518306177824490">Gjurma e gishtit SHA-1</translation>
@@ -1450,7 +1448,6 @@ Detaje shtesë:
 <translation id="725866823122871198">Nuk mund të vendoset një lidhje private me <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sepse data dhe ora (<ph name="DATE_AND_TIME" />) e kompjuterit tënd nuk janë të sakta.</translation>
 <translation id="7260504762447901703">Revoko qasjen</translation>
 <translation id="7275334191706090484">Faqeshënuesit e menaxhuar</translation>
-<translation id="7288778322931489286">Administratori yt ka aktivizuar Enterprise Service Hooks në shfletuesin tënd. Këta grepa kanë qasje te disa nga të dhënat e tua.</translation>
 <translation id="7292031607255951991">Emri i marrësit</translation>
 <translation id="7298195798382681320">I rekomanduar</translation>
 <translation id="7300012071106347854">Blu kobalti</translation>
@@ -1807,7 +1804,6 @@ Detaje shtesë:
 <translation id="8866481888320382733">Gabim gjatë analizimit të cilësimeve të politikës</translation>
 <translation id="8866928039507595380">Palosje</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Ndaj me administratorin tënd të dhëna për ngjarjet e sigurisë që janë raportuar nga Enterprise Service Hooks. Kjo mund të përfshijë URL-të e faqeve që viziton ti, emrat e skedarëve ose të dhënat meta dhe emrin e përdoruesit që përdor për t'u identifikuar në pajisjen tënde dhe në Chrome.</translation>
 <translation id="8870413625673593573">Të mbyllura së fundi</translation>
 <translation id="8870494189203302833">E njëjta renditje e kthyer poshtë</translation>
 <translation id="8874824191258364635">Fut një numër të vlefshëm karte</translation>

@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">‏Chrome اب فائلز کو مزید تیزی سے ڈاؤن لوڈ کرتا ہے</translation>
 <translation id="1883903952484604915">میری فائلز</translation>
 <translation id="1887786770086287077">‏مقام کی رسائی اس آلہ کے لیے آف ہے۔ <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" />.میں اسے آن کریں۔</translation>
-<translation id="1891331835972267886">‏<ph name="APP_NAME" /> Chrome میں کھلے گی۔ جاری رکھ کر، آپ Chrome کی <ph name="BEGIN_LINK1" />سروس کی شرائط<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />رازداری کا نوٹس<ph name="END_LINK2" /> سے اتفاق کرتے ہیں۔</translation>
 <translation id="1919345977826869612">اشتہارات</translation>
 <translation id="1919950603503897840">رابطے منتخب کریں</translation>
 <translation id="1922076542920281912">‏Chrome کو اپنے مقام تک رسائی دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مقام آن کریں۔</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">تصویر</translation>
 <translation id="257088987046510401">تھیمز</translation>
 <translation id="2570922361219980984">‏مقام کی رسائی بھی اس آلہ کے لیے آف ہے۔ <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" />.میں اسے آن کریں۔</translation>
-<translation id="257931822824936280">پھیلایا ہوا - سکیڑنے کیلئے کلک کریں۔</translation>
 <translation id="2581165646603367611">‏یہ سائٹس کی کوکیز، کیش اور اس دیگر ڈیٹا کو صاف کر دے گی جسے Chrome اہم نہیں خیال کرتا ہے۔</translation>
 <translation id="2586657967955657006">کلپ بورڈ</translation>
 <translation id="2587052924345400782">جدید تر ورژن دستیاب ہے</translation>
@@ -490,7 +488,6 @@
 <translation id="4605958867780575332">آئٹم ہٹا دیا گیا: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> کو کھولیں</translation>
 <translation id="4634124774493850572">پاس ورڈ استعمال کریں</translation>
-<translation id="4645575059429386691">آپ کے والدین کے زیر انتظام</translation>
 <translation id="4650364565596261010">سسٹم ڈیفالٹ</translation>
 <translation id="4660838440047236328">آپ کے کمرے کا لے آؤٹ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> بُک مارکس حذف کر دیے گئے</translation>
@@ -529,7 +526,6 @@
 <translation id="4881695831933465202">کھولیں</translation>
 <translation id="488187801263602086">فائل کا نام تبدیل کریں</translation>
 <translation id="4882831918239250449">تلاش، اشتہارات وغیرہ کو ذاتی نوعیت کا بنانے کیلئے آپ کی براؤزنگ کی سرگزشت جس طریقے سے استعمال کی جاتی ہے اس کو کنٹرول کریں</translation>
-<translation id="4883854917563148705">نظم کردہ ترتیبات کو دوبارہ سیٹ نہیں کیا جا سکتا</translation>
 <translation id="4885273946141277891">‏Chrome وقوعات کی غیر تعاون یافتہ تعداد۔</translation>
 <translation id="4887024562049524730">سائٹس کو اپنا ورچوئل ریئلٹی آلہ اور ڈیٹا استعمال کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="4910889077668685004">ادائیگی ایپس</translation>
@@ -559,7 +555,6 @@
 <translation id="5048398596102334565">سائٹس کو موشن سینسرز تک رسائی حاصل کرنے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="5063480226653192405">استعمال</translation>
 <translation id="5087580092889165836">کارڈ شامل کریں</translation>
-<translation id="5100237604440890931">سکیڑ دیا گیا - پھیلانے کیلئے کلک کریں۔</translation>
 <translation id="510275257476243843">1 گھنٹہ باقی</translation>
 <translation id="5123685120097942451">پوشیدگی ٹیب</translation>
 <translation id="5127805178023152808">‏Sync آف ہے</translation>
@@ -596,7 +591,6 @@
 <translation id="5357811892247919462">ٹیب موصول ہوا</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> کھلا ہوا ٹیب، ٹیبز پر سوئچ کرنے کے لیے تھپتھپائيں}other{<ph name="OPEN_TABS_MANY" /> کھلے ہوئے ٹیبز، ٹیبز پر سوئچ کرنے کے لیے تھپتھپائيں}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{‏(‎+1 مزید)}other{(# + مزید)}}</translation>
-<translation id="5400569084694353794">‏یہ ایپلیکیشن استعمال کر کے، آپ Chrome کی <ph name="BEGIN_LINK1" />سروس کی شرائط<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />رازداری کے نوٹس<ph name="END_LINK2" /> سے اتفاق کرتے ہیں۔</translation>
 <translation id="5403592356182871684">نام</translation>
 <translation id="5403644198645076998">صرف کچھ سائٹس کو اجازت دیں</translation>
 <translation id="5414836363063783498">توثیق ہو رہی ہے…</translation>
@@ -945,7 +939,6 @@
 <translation id="7981313251711023384">زیادہ تیز براؤزنگ اور تلاش کرنے کے لیے صفحات پہلے سے لوڈ کر لیں</translation>
 <translation id="79859296434321399">‏افزودہ حقیقت کا مواد دیکھنے کیلئے، ARCore کو انسٹال کریں</translation>
 <translation id="7986741934819883144">رابطہ منتخب کریں</translation>
-<translation id="7987073022710626672">‏Chrome کی سروس کی شرائط</translation>
 <translation id="7993619969781047893">کچھ سائٹس پر خصوصیات میں خلل ہو سکتا ہے۔</translation>
 <translation id="7998918019931843664">بند ٹیب دوبارہ کھولیں</translation>
 <translation id="7999064672810608036">کیا آپ واقعی کوکیز سمیت سبھی مقامی ڈيٹا صاف کرنا اور اس ویب سائٹ کیلئے سبھی اجازتیں دوبارہ ترتیب دینا چاہتے ہیں؟</translation>
@@ -982,7 +975,6 @@
 <translation id="8186512483418048923"><ph name="FILES" /> فائلیں باقی ہیں</translation>
 <translation id="8190358571722158785">1 دن باقی</translation>
 <translation id="8200772114523450471">دوبارہ شروع کریں</translation>
-<translation id="8206354486702514201">اس ترتیب کو آپ کے منتظم نے نافذ کیا ہے۔</translation>
 <translation id="8209050860603202033">تصویر کھولیں</translation>
 <translation id="8218622182176210845">اپنے اکاؤنٹ کا نظم کریں</translation>
 <translation id="8224471946457685718">‏Wi-Fi پر اپنے لئے مضامین ڈاؤن لوڈ کریں</translation>
@@ -1048,7 +1040,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{سگنل کی مضبوطی کی سطح: # بار}other{سگنل کی مضبوطی کی سطح: # بارز}}</translation>
 <translation id="868929229000858085">اپنے رابطوں کو تلاش کریں</translation>
 <translation id="869891660844655955">میعاد ختم ہونے کی تاریخ</translation>
-<translation id="8728487861892616501">‏اس ایپلیکیشن کا استعمال کر کے آپ Chrome کی <ph name="BEGIN_LINK1" />سروس کی شرائط<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />رازداری کے نوٹس<ph name="END_LINK2" />، اور <ph name="BEGIN_LINK3" />Family Link سے نظم کردہ Google اکاؤنٹس کیلئے رازداری کے نوٹس<ph name="END_LINK3" /> سے اتفاق کرتے ہیں۔</translation>
 <translation id="8748850008226585750">مواد مخفی ہیں</translation>
 <translation id="8751914237388039244">ایک تصویر منتخب کریں</translation>
 <translation id="8758557275681689734">اپنے سبھی کھلے ہوئے ٹیبز دیکھیں</translation>
@@ -1057,7 +1048,6 @@
 <translation id="8801436777607969138">‏کسی مخصوص سائٹ کیلئے JavaScript کو مسدود کریں۔</translation>
 <translation id="8812260976093120287">کچھ ویب سائٹس پر، آپ اپنے آلہ پر اوپر موجود تعاون یافتہ ادائیگی ایپس کے ساتھ ادائیگی کر سکتے ہیں۔</translation>
 <translation id="8816026460808729765">سینسرز تک رسائی حاصل کرنے سے سائٹس کو مسدود کریں</translation>
-<translation id="8816439037877937734">‏<ph name="APP_NAME" /> Chrome میں کھلے گی۔ جاری رکھ کر، آپ Chrome کی <ph name="BEGIN_LINK1" />سروس کی شرائط<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />رازداری کا نوٹس<ph name="END_LINK2" /> اور <ph name="BEGIN_LINK3" />Family Link سے نظم کردہ Google اکاؤنٹس کا رازداری کا نوٹس<ph name="END_LINK3" /> سے اتفاق کرتے ہیں۔</translation>
 <translation id="8820817407110198400">بُک مارکس</translation>
 <translation id="8833831881926404480">ایک سائٹ آپ کی اسکرین کا اشتراک کر رہی ہے</translation>
 <translation id="883806473910249246">مواد ڈاؤن لوڈ کرتے وقت ایک خرابی پیش آ گئی۔</translation>
@@ -1084,7 +1074,6 @@
 <translation id="8988028529677883095">فون کو سیکورٹی کلید کے طور پر استعمال کریں</translation>
 <translation id="8993760627012879038">پوشیدگی وضع میں ایک نیا ٹیب کھولیں</translation>
 <translation id="8998729206196772491">‏آپ <ph name="MANAGED_DOMAIN" /> کے زیر انتظام اکاؤنٹ کے ساتھ سائن ان کر رہے ہیں اور اس کے منتظم کو اپنے Chrome ڈیٹا پر کنٹرول دے رہے ہیں۔ آپ کا ڈیٹا اس اکاؤنٹ سے مستقل طور پر مربوط ہو جائے گا۔ Chrome سے سائن آؤٹ کرنے سے آپ کا ڈیٹا اس آلہ سے حذف ہو جائے گا، لیکن یہ آپ کے Google اکاؤنٹ میں اسٹور رہے گا۔</translation>
-<translation id="9019902583201351841">آپ کے والدین کے زیر انتظام</translation>
 <translation id="9028914725102941583">سبھی آلات پر اشتراک کرنے کے لیے مطابقت پذیری کو آن کریں</translation>
 <translation id="9040142327097499898">اطلاعات کی اجازت ہے۔ مقام اس آلہ کے لیے آف ہے۔</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ویڈیو}other{# ویڈیوز}}</translation>

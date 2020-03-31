@@ -179,7 +179,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())),
       debugger_(new DebuggerTracker(client_.get())) {
   // Downloading in headless mode requires the setting of
-  // Page.setDownloadBehavior. This is handled by the
+  // Browser.setDownloadBehavior. This is handled by the
   // DownloadDirectoryOverrideManager, which is only instantiated
   // in headless chrome.
   if (browser_info->is_headless)

@@ -31,7 +31,6 @@
 #include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
-#include "fuchsia/runners/cast/audio_capturer_redirect.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
 #include "fuchsia/runners/cast/test_api_bindings.h"
@@ -711,20 +710,19 @@ TEST_F(CastRunnerIntegrationTest, MicRedirect) {
   app_config_manager_.AddAppConfig(std::move(app_config));
 
   base::RunLoop run_loop;
-  std::unique_ptr<AudioCapturerRedirect> redirect;
 
   init_component_state_callback_ = base::BindOnce(
-      [](std::unique_ptr<AudioCapturerRedirect>* redirect,
-         base::OnceClosure quit_closure, FakeComponentState* component_state) {
-        *redirect = std::make_unique<AudioCapturerRedirect>(
-            component_state->outgoing_directory(),
-            base::BindRepeating(
-                [](base::OnceClosure quit_closure,
-                   fidl::InterfaceRequest<fuchsia::media::AudioCapturer>
-                       request) { std::move(quit_closure).Run(); },
-                base::Passed(std::move(quit_closure))));
+      [](base::OnceClosure quit_closure, FakeComponentState* component_state) {
+        component_state->outgoing_directory()->AddPublicService(
+            std::make_unique<vfs::Service>(
+                [quit_closure = std::move(quit_closure)](
+                    zx::channel channel,
+                    async_dispatcher_t* dispatcher) mutable {
+                  std::move(quit_closure).Run();
+                }),
+            fuchsia::media::Audio::Name_);
       },
-      &redirect, base::Passed(run_loop.QuitClosure()));
+      base::Passed(run_loop.QuitClosure()));
 
   CreateComponentContextAndStartComponent();
 

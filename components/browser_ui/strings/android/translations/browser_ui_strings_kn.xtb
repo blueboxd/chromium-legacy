@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
 <translation id="2501278716633472235">ಹಿಂದಿರುಗಿ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 ಕುಕೀಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ}one{# ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ}other{# ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ}}</translation>
+<translation id="257931822824936280">ವಿಸ್ತರಿಸಲಾಗಿದೆ - ಕುಗ್ಗಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
 <translation id="2704606927547763573">ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="2968755619301702150">ಪ್ರಮಾಣಪತ್ರ ವೀಕ್ಷಕ</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">ಲಿಂಕ್ ನಕಲಿಸಿ</translation>
 <translation id="4002066346123236978">ಶೀರ್ಷಿಕೆ</translation>
 <translation id="4570913071927164677">ವಿವರಗಳು</translation>
+<translation id="4645575059429386691">ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ</translation>
+<translation id="4883854917563148705">ನಿರ್ವಹಿಸಲಾಗುವ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="497421865427891073">ಮುಂದಕ್ಕೆ ಹೋಗು</translation>
+<translation id="5100237604440890931">ಕುಗ್ಗಿಸಲಾಗಿದೆ - ವಿಸ್ತರಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="5300589172476337783">ಪ್ರದರ್ಶಿಸಿ</translation>
 <translation id="5301954838959518834">ಸರಿ, ಅರ್ಥವಾಯಿತು</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">ಬೇಡ, ಧನ್ಯವಾದಗಳು</translation>
 <translation id="7846076177841592234">ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ</translation>
 <translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
+<translation id="8206354486702514201">ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಜಾರಿಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="8249310407154411074">ಮೇಲಕ್ಕೆ ಸರಿಸಿ</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8609465669617005112">ಮೇಲೆ ಸರಿಸು</translation>
 <translation id="8676374126336081632">ಇನ್‌ಪುಟ್‌‌ ತೆರವುಗೊಳಿಸು</translation>
 <translation id="8725066075913043281">ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="8730621377337864115">ಮುಗಿದಿದೆ</translation>
+<translation id="9019902583201351841">ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ</translation>
 </translationbundle>

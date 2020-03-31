@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"

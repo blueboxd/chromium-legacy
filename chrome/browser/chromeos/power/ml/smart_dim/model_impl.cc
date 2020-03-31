@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -216,13 +215,6 @@ int ScoreToProbability(float score) {
   return prob;
 }
 
-void LogPowerMLSmartDimModelResult(SmartDimModelResult result) {
-  UMA_HISTOGRAM_ENUMERATION("PowerML.SmartDimModel.Result", result);
-}
-
-void LogPowerMLSmartDimParameterResult(SmartDimParameterResult result) {
-  UMA_HISTOGRAM_ENUMERATION("PowerML.SmartDimParameter.Result", result);
-}
 
 // Returns "dim_threshold" from experiment parameter. Also logs status to UMA.
 float GetDimThreshold() {

@@ -117,6 +117,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   void AddElementAnimatorAndAnimateInView(std::unique_ptr<ElementAnimator>);
   void FadeOutViews();
 
+  void EnableInteractions() { SetInteractionsEnabled(true); }
+  void DisableInteractions() { SetInteractionsEnabled(false); }
+  void SetInteractionsEnabled(bool enabled);
+
   static bool AnimateInObserverCallback(
       const base::WeakPtr<AnimatedContainerView>& weak_ptr,
       const ui::CallbackLayerAnimationObserver& observer);

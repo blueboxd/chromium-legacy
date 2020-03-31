@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Jarraitu</translation>
 <translation id="2501278716633472235">Egin atzera</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie blokeatuta}other{# cookie blokeatuta}}</translation>
+<translation id="257931822824936280">Zabalduta; egin klik tolesteko.</translation>
 <translation id="2653659639078652383">Bidali</translation>
 <translation id="2704606927547763573">Kopiatuta</translation>
 <translation id="2968755619301702150">Ziurtagiri-ikustailea</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopiatu esteka</translation>
 <translation id="4002066346123236978">Izena</translation>
 <translation id="4570913071927164677">Xehetasunak</translation>
+<translation id="4645575059429386691">Gurasoek kudeatuta</translation>
+<translation id="4883854917563148705">Kudeatutako ezarpenak ezin dira berrezarri</translation>
 <translation id="497421865427891073">Aurrera</translation>
+<translation id="5100237604440890931">Tolestuta; egin klik zabaltzeko.</translation>
 <translation id="5300589172476337783">Erakutsi</translation>
 <translation id="5301954838959518834">Ados, ulertu dut</translation>
 <translation id="5317780077021120954">Gorde</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ez, eskerrik asko</translation>
 <translation id="7846076177841592234">Utzi hautapena bertan behera</translation>
 <translation id="8131740175452115882">Berretsi</translation>
+<translation id="8206354486702514201">Administratzaileak betearazten du ezarpena.</translation>
 <translation id="8249310407154411074">Eraman goraino</translation>
 <translation id="8261506727792406068">Ezabatu</translation>
 <translation id="8609465669617005112">Eraman gora</translation>
 <translation id="8676374126336081632">Garbitu idatzitakoa</translation>
 <translation id="8725066075913043281">Saiatu berriro</translation>
 <translation id="8730621377337864115">Eginda</translation>
+<translation id="9019902583201351841">Gurasoek kudeatuta</translation>
 </translationbundle>

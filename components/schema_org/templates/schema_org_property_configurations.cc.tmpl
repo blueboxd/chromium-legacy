@@ -20,6 +20,7 @@ PropertyConfiguration GetPropertyConfiguration(const std::string& name) {
       /* .date_time = */ {{'true' if property.has_date_time else 'false'}},
       /* .number = */ {{'true' if property.has_number else 'false'}},
       /* .url = */ {{'true' if property.has_url else 'false'}},
+      /* .boolean = */ {{'true' if property.has_boolean else 'false'}},
       /* .thing_types = */ {
         {% for thing_type in property.thing_types %}
         "{{thing_type}}",

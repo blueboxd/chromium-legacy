@@ -251,13 +251,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, Error) {
   EXPECT_EQ("--connect-id=test-connect-id", connect_id);
 }
 
-// TODO(crbug/1065344): Flaky on Win dbg.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_InvalidConnectId DISABLED_InvalidConnectId
-#else
-#define MAYBE_InvalidConnectId InvalidConnectId
-#endif
-IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, MAYBE_InvalidConnectId) {
+IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, InvalidConnectId) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(

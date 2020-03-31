@@ -75,7 +75,7 @@ class EmuTarget(target.Target):
                      open(temporary_system_log_file.name, 'r').read())
       raise
 
-  def _GetAmberRepo(self):
+  def GetAmberRepo(self):
     if not self._amber_repo:
       self._amber_repo = amber_repo.ManagedAmberRepo(self)
 

@@ -544,7 +544,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3366477098757335611">View cards</translation>
 <translation id="3369192424181595722">Clock error</translation>
 <translation id="337363190475750230">Deprovisioned</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> has enabled enterprise service hooks on your browser. These hooks have access to some of your data.</translation>
 <translation id="3377144306166885718">The server used an obsolete version of TLS.</translation>
 <translation id="3377188786107721145">Policy parse error</translation>
 <translation id="3377736046129930310">Use screen lock to confirm cards faster</translation>
@@ -980,7 +979,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5179510805599951267">Not in <ph name="ORIGINAL_LANGUAGE" />? Report this error</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
 <translation id="519422657042045905">Annotation not available</translation>
-<translation id="5196187217592847346">Enterprise service hooks</translation>
 <translation id="5201306358585911203">An embedded page on this page says</translation>
 <translation id="5205222826937269299">Name required</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
@@ -1453,7 +1451,6 @@ Additional details:
 <translation id="725866823122871198">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your computer's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
 <translation id="7260504762447901703">Revoke access</translation>
 <translation id="7275334191706090484">Managed Bookmarks</translation>
-<translation id="7288778322931489286">Your administrator has enabled enterprise service hooks on your browser. These hooks have access to some of your data.</translation>
 <translation id="7292031607255951991">Recipient name</translation>
 <translation id="7298195798382681320">Recommended</translation>
 <translation id="7300012071106347854">Cobalt blue</translation>
@@ -1810,7 +1807,6 @@ Additional details:
 <translation id="8866481888320382733">Error parsing policy settings</translation>
 <translation id="8866928039507595380">Fold</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Share data about security events that have been flagged by enterprise service hooks with your administrator. This may include URLs of pages that you visit, file names or metadata, and the username that you use to sign in to your device and Chrome.</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8870494189203302833">Same order face down</translation>
 <translation id="8874824191258364635">Enter a valid card number</translation>

@@ -56,7 +56,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
@@ -128,8 +128,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::TriggeringEventInfo,
                           blink::TriggeringEventInfo::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::UserActivationUpdateType,
                           blink::mojom::UserActivationUpdateType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
-                          blink::mojom::FeaturePolicyDisposition::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PolicyDisposition,
+                          blink::mojom::PolicyDisposition::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
                           blink::mojom::FrameVisibility::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,

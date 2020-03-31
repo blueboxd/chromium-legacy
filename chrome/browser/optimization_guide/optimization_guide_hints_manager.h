@@ -329,6 +329,12 @@ class OptimizationGuideHintsManager
   // Invokes the registered callbacks for |navigation_url|, if applicable.
   void OnReadyToInvokeRegisteredCallbacks(const GURL& navigation_url);
 
+  // Whether all information was available to make a decision for
+  // |navigation_url| and |optimization type}.
+  bool HasAllInformationForDecisionAvailable(
+      const GURL& navigation_url,
+      optimization_guide::proto::OptimizationType optimization_type);
+
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* const
       optimization_guide_service_;

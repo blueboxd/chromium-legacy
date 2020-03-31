@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/i18n/rtl.h"

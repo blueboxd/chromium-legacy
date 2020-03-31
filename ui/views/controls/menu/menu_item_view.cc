@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <numeric>
 
 #include "base/containers/adapters.h"

@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Շարունակել</translation>
 <translation id="2501278716633472235">Վերադառնալ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Արգելափակվել է 1 քուքի ֆայլ}one{Արգելափակվել է # քուքի ֆայլ}other{Արգելափակվել է # քուքի ֆայլ}}</translation>
+<translation id="257931822824936280">Ընդարձակված - կոծկելու համար սեղմեք:</translation>
 <translation id="2653659639078652383">Ուղարկել</translation>
 <translation id="2704606927547763573">Պատճենվեց</translation>
 <translation id="2968755619301702150">Վկայագրերի դիտում</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Պատճենել հղումը</translation>
 <translation id="4002066346123236978">Վերնագիր</translation>
 <translation id="4570913071927164677">Մանրամասներ</translation>
+<translation id="4645575059429386691">Կառավարվում է ձեր ծնողի կողմից</translation>
+<translation id="4883854917563148705">Կառավարվող կարգավորումները հնարավոր չէ վերակայել</translation>
 <translation id="497421865427891073">Առաջ գնալ</translation>
+<translation id="5100237604440890931">Կոծկված - ընդլայնելու համար սեղմեք</translation>
 <translation id="5300589172476337783">Ցույց տալ</translation>
 <translation id="5301954838959518834">Պարզ է</translation>
 <translation id="5317780077021120954">Պահել</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ոչ</translation>
 <translation id="7846076177841592234">Չեղարկել ընտրվածքը</translation>
 <translation id="8131740175452115882">Հաստատել</translation>
+<translation id="8206354486702514201">Այս կարգավորումը պարտադրված է ձեր ադմինիստրատորի կողմից:</translation>
 <translation id="8249310407154411074">Տեղափոխել ցանկի սկիզբ</translation>
 <translation id="8261506727792406068">Ջնջել</translation>
 <translation id="8609465669617005112">Տեղափոխել վեր</translation>
 <translation id="8676374126336081632">Մաքրել ներածումը</translation>
 <translation id="8725066075913043281">Փորձել կրկին</translation>
 <translation id="8730621377337864115">Պատրաստ է</translation>
+<translation id="9019902583201351841">Կառավարվում է ձեր ծնողների կողմից</translation>
 </translationbundle>

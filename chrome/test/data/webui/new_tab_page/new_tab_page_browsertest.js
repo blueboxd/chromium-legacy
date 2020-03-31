@@ -155,6 +155,7 @@ var NewTabPageLogoTest = class extends NewTabPageBrowserTest {
   }
 };
 
-TEST_F('NewTabPageLogoTest', 'DISABLE_All', function() {
+// Disabled for flakiness, see https://crbug.com/1065812
+TEST_F('NewTabPageLogoTest', 'DISABLED_All', function() {
   mocha.run();
 });

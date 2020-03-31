@@ -1313,10 +1313,6 @@ const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
     "In the omnibox, hide the scheme from steady state displayed URLs. It is "
     "restored during editing.";
 
-const char kOmniboxUIOneClickUnelideName[] = "Omnibox UI One Click Unelide";
-const char kOmniboxUIOneClickUnelideDescription[] =
-    "In the omnibox, undo all unelisions with a single click or focus action.";
-
 const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName[] =
     "Omnibox UI Hide Steady-State URL Trivial Subdomains";
 const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription[] =
@@ -2498,6 +2494,12 @@ const char kOffliningRecentPagesName[] =
 const char kOffliningRecentPagesDescription[] =
     "Enable storing recently visited pages locally for offline use. Requires "
     "Offline Pages to be enabled.";
+
+const char kAndroidPartnerCustomizationPhenotypeName[] =
+    "Use homepage and bookmarks from partner customization";
+const char kAndroidPartnerCustomizationPhenotypeDescription[] =
+    "This flag loads a new configuration source of the default homepage and "
+    "bookmarks.";
 
 const char kPasswordManagerOnboardingAndroidName[] =
     "Password manager onboarding experience";

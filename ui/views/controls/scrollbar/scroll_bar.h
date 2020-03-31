@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_SCROLL_BAR_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_SCROLL_BAR_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"

@@ -539,7 +539,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="3366477098757335611">Zobraziť karty</translation>
 <translation id="3369192424181595722">Chyba hodín</translation>
 <translation id="337363190475750230">Odstránené</translation>
-<translation id="3376829916920036789">Doména <ph name="ENROLLMENT_DOMAIN" /> povolila vo vašom prehliadači prvky Enterprise Service Hook. Tieto prvky hook majú prístup k niektorým vašim údajom.</translation>
 <translation id="3377144306166885718">Daný server používa zastaranú verziu protokolu TLS.</translation>
 <translation id="3377188786107721145">Chyba analýzy pravidla</translation>
 <translation id="3377736046129930310">Potvrdzujte karty rýchlejšie pomocou zámky obrazovky</translation>
@@ -974,7 +973,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5179510805599951267">Text sa nezobrazil v jazyku <ph name="ORIGINAL_LANGUAGE" />? Nahláste túto chybu</translation>
 <translation id="5190835502935405962">Panel so záložkami</translation>
 <translation id="519422657042045905">Anotácia nie je k dispozícii</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Vložená stránka na tejto stránke hovorí</translation>
 <translation id="5205222826937269299">Meno je povinný údaj</translation>
 <translation id="5209518306177824490">Odtlačok SHA-1</translation>
@@ -1443,7 +1441,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="725866823122871198">Súkromné pripojenie k doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa nedá nadviazať, pretože dátum a čas (<ph name="DATE_AND_TIME" />) vášho počítača sú nesprávne.</translation>
 <translation id="7260504762447901703">Odvolať prístup</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
-<translation id="7288778322931489286">Správca povolil vo vašom prehliadači prvky Enterprise Service Hook. Tieto prvky hook majú prístup k niektorým vašim údajom.</translation>
 <translation id="7292031607255951991">Meno príjemcu</translation>
 <translation id="7298195798382681320">Odporúčané</translation>
 <translation id="7300012071106347854">Kobaltová modrá</translation>
@@ -1801,7 +1798,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8866481888320382733">Pri analýze nastavení pravidla sa vyskytla chyba</translation>
 <translation id="8866928039507595380">Zahnúť</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Zdieľajte so svojím správcom údaje o bezpečnostných udalostiach nahlásených prvkami Enterprise Service Hook. Môžu zahŕňať webové adresy navštívených stránok, názvy súborov alebo metadáta a používateľské meno, pomocou ktorého sa prihlasujete do zariadenia aj Chromu.</translation>
 <translation id="8870413625673593573">Nedávno zatvorené</translation>
 <translation id="8870494189203302833">V rovnakom poradí lícom nadol</translation>
 <translation id="8874824191258364635">Zadajte platné číslo karty</translation>

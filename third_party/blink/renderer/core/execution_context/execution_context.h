@@ -38,6 +38,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -330,12 +331,12 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // to call |frame_->Console().AddMessage()| directly.
   virtual void ReportFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature,
-      mojom::blink::FeaturePolicyDisposition,
+      mojom::blink::PolicyDisposition,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const {}
   virtual void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
-      mojom::blink::FeaturePolicyDisposition,
+      mojom::blink::PolicyDisposition,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const {}
 

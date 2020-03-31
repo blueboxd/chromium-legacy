@@ -546,7 +546,6 @@
 <translation id="3366477098757335611">Kartlara baxın</translation>
 <translation id="3369192424181595722">Saat xətası</translation>
 <translation id="337363190475750230">Nəzərdə tutulmayıb</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> brauzerinizdə Enterprise Service Hooks'u aktivləşdirib. Bu komponentlərin bəzi məlumatlarınıza giriş imkanı var.</translation>
 <translation id="3377144306166885718">Server köhnə TLS versiyasından istifadə etdi.</translation>
 <translation id="3377188786107721145">Siyasət təhlili xətası</translation>
 <translation id="3377736046129930310">Kartları daha sürətli təsdiqləmək üçün ekran kilidi istifadə edin</translation>
@@ -981,7 +980,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> deyil? Bu xətanı xəbər verin</translation>
 <translation id="5190835502935405962">Əlfəcinlər Paneli</translation>
 <translation id="519422657042045905">Annotasiya əlçatan deyil</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Bu səhifə daxilində yerləşdirilmiş səhifə deyir:</translation>
 <translation id="5205222826937269299">Ad tələb olunur</translation>
 <translation id="5209518306177824490">SHA-1 Barmaqizi</translation>
@@ -1455,7 +1453,6 @@
 <translation id="725866823122871198">Kompüterinizin tarixi və vaxtı (<ph name="DATE_AND_TIME" />) yanlış olduğu üçün <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeninə bağlantı alınmır.</translation>
 <translation id="7260504762447901703">Girişi ləğv edin</translation>
 <translation id="7275334191706090484">İdarə olunan əlfəcinlər</translation>
-<translation id="7288778322931489286">İnzibatçınız brauzerinizdə Enterprise Service Hooks'u aktivləşdirib. Bu komponentlərin bəzi məlumatlarınıza giriş imkanı var.</translation>
 <translation id="7292031607255951991">Alıcının adı</translation>
 <translation id="7298195798382681320">Tövsiyə olunur</translation>
 <translation id="7300012071106347854">Kobalt Mavisi</translation>
@@ -1812,7 +1809,6 @@
 <translation id="8866481888320382733">Siyasət ayarlarını təhlil xətası</translation>
 <translation id="8866928039507595380">Qatlayın</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks tərəfindən işarələnən təhlükəsizlik tədbirləri haqqında datanı inzibatçınız ilə paylaşın. Buraya daxil olduğunuz səhifələrin URL'ləri, fayl adları və ya metadata, cihaz və Chrome'a daxil olmaq üçün istifadə etdiyiniz istifadəçi adı daxil ola bilər.</translation>
 <translation id="8870413625673593573">Son Qapadılan</translation>
 <translation id="8870494189203302833">Eyni sıra ilə üzü aşağı</translation>
 <translation id="8874824191258364635">Düzgün kart nömrəsi daxil edin</translation>

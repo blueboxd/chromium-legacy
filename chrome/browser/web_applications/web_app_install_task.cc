@@ -194,8 +194,7 @@ void WebAppInstallTask::InstallWebAppFromInfo(
   CheckInstallPreconditions();
 
   FilterAndResizeIconsGenerateMissing(web_application_info.get(),
-                                      /*icons_map*/ nullptr,
-                                      /*is_for_sync*/ false);
+                                      /*icons_map*/ nullptr);
 
   install_source_ = install_source;
   background_installation_ = true;
@@ -627,9 +626,7 @@ void WebAppInstallTask::OnIconsRetrieved(
   DCHECK(web_app_info);
 
   // Installing from sync should not change icon links.
-  FilterAndResizeIconsGenerateMissing(
-      web_app_info.get(), &icons_map,
-      /*is_for_sync=*/install_source_ == WebappInstallSource::SYNC);
+  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
 
   InstallFinalizer::FinalizeOptions options;
   options.install_source = install_source_;
@@ -653,8 +650,7 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
   // The old BookmarkApp Sync System uses |WebAppInstallTask::OnIconsRetrieved|.
   // The new WebApp USS System has no sync wars and it doesn't need to preserve
   // icons. |is_for_sync| is always false for USS.
-  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
-                                      /*is_for_sync=*/false);
+  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
 
   if (background_installation_) {
     DCHECK(!dialog_callback_);
@@ -679,8 +675,7 @@ void WebAppInstallTask::OnIconsRetrievedFinalizeUpdate(
   DCHECK(web_app_info);
 
   // TODO(crbug.com/926083): Abort update if icons fail to download.
-  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
-                                      /*is_for_sync=*/false);
+  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
 
   install_finalizer_->FinalizeUpdate(
       *web_app_info, base::BindOnce(&WebAppInstallTask::OnInstallFinalized,

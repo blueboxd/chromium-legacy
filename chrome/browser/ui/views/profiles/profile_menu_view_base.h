@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
@@ -99,9 +100,13 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void SetHeading(const base::string16& heading,
                   const base::string16& tooltip_text,
                   base::RepeatingClosure action);
+  // If |image| is empty |icon| will be used instead.
   void SetIdentityInfo(const gfx::ImageSkia& image,
                        const base::string16& title,
-                       const base::string16& subtitle = base::string16());
+                       const base::string16& subtitle = base::string16(),
+                       const gfx::VectorIcon& icon = kUserAccountAvatarIcon,
+                       ui::NativeTheme::ColorId color_id =
+                           ui::NativeTheme::kColorId_DefaultIconColor);
   void SetSyncInfo(const base::string16& description,
                    const base::string16& clickable_text,
                    SyncInfoContainerBackgroundState background_state,

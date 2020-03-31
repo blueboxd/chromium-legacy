@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie diblokir}other{# cookie diblokir}}</translation>
+<translation id="257931822824936280">Diperluas - klik untuk menciutkan</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2704606927547763573">Disalin</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Salin link</translation>
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4570913071927164677">Detail</translation>
+<translation id="4645575059429386691">Dikelola oleh orang tua Anda</translation>
+<translation id="4883854917563148705">Setelan yang dikelola tidak dapat disetel ulang</translation>
 <translation id="497421865427891073">Maju</translation>
+<translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5301954838959518834">Oke, mengerti</translation>
 <translation id="5317780077021120954">Simpan</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
+<translation id="8206354486702514201">Setelan ini diberlakukan oleh administrator Anda.</translation>
 <translation id="8249310407154411074">Pindahkan ke atas</translation>
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="8609465669617005112">Berpindah ke atas</translation>
 <translation id="8676374126336081632">Hapus masukan</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8730621377337864115">Selesai</translation>
+<translation id="9019902583201351841">Dikelola oleh orang tua Anda</translation>
 </translationbundle>

@@ -121,19 +121,39 @@ if (enable_vulkan) {
       "//ui/gfx",
       "//ui/gfx:native_widget_types",
     ]
-    if (use_x11) {
-      sources += [ "tests/native_window_x11.cc" ]
-      deps += [ "//ui/gfx/x" ]
-      configs += [ "//build/config/linux:x11" ]
+
+    if (use_x11 && !use_ozone) {
+      sources += [ "tests/native_window.cc" ]
+      deps += [
+        "//ui/platform_window",
+        "//ui/platform_window/x11",
+      ]
     }
+
     if (is_win) {
       sources += [ "tests/native_window_win.cc" ]
+    }
+
+    if (use_ozone) {
+      sources += [ "tests/native_window.cc" ]
+      deps += [
+        "//ui/ozone",
+        "//ui/platform_window",
+      ]
+    }
+
+    if (is_android) {
+      sources += [ "tests/native_window_android.cc" ]
+      deps += [
+        "//ui/android:ui_java",
+        "//ui/gl",
+      ]
     }
   }
 
   # TODO(penghuang): support more platforms
   # https://crbug.com/1065499
-  if (is_android || use_x11 || is_win) {
+  if (is_android || use_x11 || is_win || use_ozone) {
     test("vulkan_tests") {
       sources = [
         "tests/basic_vulkan_test.cc",
@@ -161,11 +181,8 @@ if (enable_vulkan) {
         deps += [ "//ui/events/platform/x11" ]
       }
 
-      if (is_android) {
-        deps += [
-          "//ui/android:ui_java",
-          "//ui/gl",
-        ]
+      if (use_ozone) {
+        deps += [ "//ui/ozone" ]
       }
     }
   }

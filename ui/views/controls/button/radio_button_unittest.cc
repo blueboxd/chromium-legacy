@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/button/radio_button.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"

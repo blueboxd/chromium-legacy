@@ -25,12 +25,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 
+  static constexpr char kClassName[] = "SuggestionChipView";
+
   SuggestionChipView(AssistantViewDelegate* delegate,
                      const AssistantSuggestion* suggestion,
                      views::ButtonListener* listener);
   ~SuggestionChipView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildVisibilityChanged(views::View* child) override;

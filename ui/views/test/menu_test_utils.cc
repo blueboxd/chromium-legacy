@@ -90,5 +90,16 @@ void WaitForMenuClosureAnimation() {
 #endif
 }
 
+// ReleaseRefTestViewsDelegate ------------------------------------------------
+
+ReleaseRefTestViewsDelegate::ReleaseRefTestViewsDelegate() = default;
+
+ReleaseRefTestViewsDelegate::~ReleaseRefTestViewsDelegate() = default;
+
+void ReleaseRefTestViewsDelegate::ReleaseRef() {
+  if (!release_ref_callback_.is_null())
+    release_ref_callback_.Run();
+}
+
 }  // namespace test
 }  // namespace views

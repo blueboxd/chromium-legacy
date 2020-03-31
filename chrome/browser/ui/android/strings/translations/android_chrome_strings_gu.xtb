@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome હવે ફાઇલોને વધુ ઝડપથી ડાઉનલોડ કરે છે</translation>
 <translation id="1883903952484604915">મારી ફાઇલો</translation>
 <translation id="1887786770086287077">આ ઉપકરણ માટે સ્થાન ઍક્સેસ બંધ છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> Chromeમાં ખૂલશે. ચાલુ રાખીને, તમે Chromeની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> સાથે સંમત થાઓ છો.</translation>
 <translation id="1919345977826869612">જાહેરાતો</translation>
 <translation id="1919950603503897840">સંપર્કો પસંદ કરો</translation>
 <translation id="1922076542920281912">Chrome તમારું સ્થાન ઍક્સેસ કરી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ સ્થાન ચાલુ કરો.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">છબી</translation>
 <translation id="257088987046510401">થીમ્સ</translation>
 <translation id="2570922361219980984">આ ઉપકરણ માટે સ્થાન ઍક્સેસ પણ બંધ છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
-<translation id="257931822824936280">વિસ્તૃત - સંકુચિત કરવા માટે ક્લિક કરો.</translation>
 <translation id="2581165646603367611">આ કુકી, કૅશ અને Chromeને લાગતું હોય કે આ મહત્વનું નથી એવા સાઇટના બીજા ડેટાને સાફ કરશે.</translation>
 <translation id="2586657967955657006">ક્લિપબોર્ડ</translation>
 <translation id="2587052924345400782">નવું વર્ઝન ઉપલબ્ધ છે</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">આઇટમ દૂર કરી: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> ખોલો</translation>
 <translation id="4634124774493850572">પાસવર્ડનો ઉપયોગ કરો</translation>
-<translation id="4645575059429386691">તમારા માતાપિતા દ્વારા સંચાલિત</translation>
 <translation id="4650364565596261010">સિસ્ટમ ડિફૉલ્ટ</translation>
 <translation id="4660838440047236328">તમારા રૂમનો લેઆઉટ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> બુકમાર્ક્સ કાઢી નાખ્યાં</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">ખોલો</translation>
 <translation id="488187801263602086">ફાઇલનું નામ બદલો</translation>
 <translation id="4882831918239250449">તમારા બ્રાઉઝિંગ ઇતિહાસને શોધ, જાહેરાતો અને વધુ સુવિધાને વ્યક્તિગત કરવા માટે કેવી રીતે ઉપયોગમાં લેવાય તેને નિયંત્રિત કરો</translation>
-<translation id="4883854917563148705">મેનેજ કરવામાં આવેલા સેટિંગને રીસેટ કરી શકાતા નથી</translation>
 <translation id="4885273946141277891">અસમર્થિત સંખ્યામાં Chrome આવૃત્તિઓ.</translation>
 <translation id="4887024562049524730">કોઈ સાઇટને તમારું વર્ચ્યુઅલ રિયાલિટી ડિવાઇસ અને ડેટાનો ઉપયોગ કરવાની મંજૂરી આપતા પહેલાં પૂછો (સુઝાવ આપેલો છે)</translation>
 <translation id="4910889077668685004">ચુકવણી ઍપ્લિકેશનો</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">સાઇટને મોશન સેન્સરના ઍક્સેસની મંજૂરી આપો (સુઝાવ આપેલ)</translation>
 <translation id="5063480226653192405">ઉપયોગ</translation>
 <translation id="5087580092889165836">કાર્ડ ઉમેરો</translation>
-<translation id="5100237604440890931">સંકુચિત - વિસ્તૃત કરવા માટે ક્લિક કરો.</translation>
 <translation id="510275257476243843">1 કલાક બાકી</translation>
 <translation id="5123685120097942451">છૂપા મોડમાંની ટૅબ</translation>
 <translation id="5127805178023152808">સમન્વયન બંધ છે</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">ટૅબ પ્રાપ્ત થયું</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}one{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}other{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ વધુ 1)}one{(+ વધુ #)}other{(+ વધુ #)}}</translation>
-<translation id="5400569084694353794">આ એપ્લિકેશનનો ઉપયોગ કરીને, તમે Chrome ની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> સાથે સંમત છો.</translation>
 <translation id="5403592356182871684">નામ</translation>
 <translation id="5403644198645076998">ફક્ત અમુક સાઇટની મંજૂરી આપો</translation>
 <translation id="5414836363063783498">ચકાસી રહ્યું છે...</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">ઝડપી બ્રાઉઝિંગ અને શોધ માટે પેજને પહેલેથી લોડ કરો</translation>
 <translation id="79859296434321399">ઑગ્મેન્ટેડ રિયાલિટી કન્ટેન્ટ જોવા માટે, ARCore ઇન્સ્ટૉલ કરો</translation>
 <translation id="7986741934819883144">સંપર્ક પસંદ કરો</translation>
-<translation id="7987073022710626672">Chrome સેવાની શરતો</translation>
 <translation id="7993619969781047893">અમુક સાઇટ પરની સુવિધાઓને કદાચ બંધ કરવામાં આવી શકે</translation>
 <translation id="7998918019931843664">બંધ કરેલ ટેબ ફરીથી ખોલો</translation>
 <translation id="7999064672810608036">શું તમે ખરેખર કૂકીઝ સહિત આ વેબસાઇટ માટેનો બધો ડેટા સાફ કરી અને આ વેબસાઇટ માટેની બધી પરવાનગીઓ ફરીથી સેટ કરવા માગો છો?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923"><ph name="FILES" /> ફાઇલ બાકી છે</translation>
 <translation id="8190358571722158785">1 દિવસ બાકી</translation>
 <translation id="8200772114523450471">રિઝ્યુમે</translation>
-<translation id="8206354486702514201">આ સેટિંગ તમારા વહીવટકર્તા દ્વારા લાગુ કરેલી છે.</translation>
 <translation id="8209050860603202033">છબી ખોલો</translation>
 <translation id="8218622182176210845">તમારું એકાઉન્ટ મેનેજ કરો</translation>
 <translation id="8224471946457685718">વાઇ-ફાઇ પર તમારા માટે લેખ ડાઉનલોડ કરો</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}one{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}other{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}}</translation>
 <translation id="868929229000858085">તમારા સંપર્કો શોધો</translation>
 <translation id="869891660844655955">સમાપ્તિ તારીખ</translation>
-<translation id="8728487861892616501">આ ઍપ્લિકેશનનો ઉપયોગ કરીને તમે Chromeની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> અને <ph name="BEGIN_LINK3" />Family Link દ્વારા મેનેજ થતા Google એકાઉન્ટ્સ માટેની ગોપનીયતા સૂચના<ph name="END_LINK3" /> સાથે સંમત થાઓ છો.</translation>
 <translation id="8748850008226585750">સામગ્રીઓ છુપાવેલ છે</translation>
 <translation id="8751914237388039244">છબી પસંદ કરો</translation>
 <translation id="8758557275681689734">તમારા બધા ખુલ્લા ટૅબ જુઓ</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">કોઈ ચોક્કસ સાઇટ માટે JavaScriptને બ્લૉક કરો.</translation>
 <translation id="8812260976093120287">કેટલીક વેબસાઇટ પર, તમે સમર્થિત ચુકવણી ઍપ્લિકેશનો વડે ચુકવણી કરી શકો છો.</translation>
 <translation id="8816026460808729765">સાઇટને સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> Chromeમાં ખૂલશે. ચાલુ રાખીને, તમે Chromeની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> અને <ph name="BEGIN_LINK3" />Family Link દ્વારા મેનેજ થતા Google એકાઉન્ટ માટેની ગોપનીયતા સૂચના<ph name="END_LINK3" /> સાથે સંમત થાઓ છો.</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="8833831881926404480">સાઇટ તમારી સ્ક્રીન શેર કરી રહી છે</translation>
 <translation id="883806473910249246">કન્ટેન્ટ ડાઉનલોડ કરતી વખતે એક ભૂલ આવી.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">સિક્યુરિટી કી તરીકે ફોનનો ઉપયોગ કરો</translation>
 <translation id="8993760627012879038">છુપા મોડમાં એક નવું ટૅબ ખોલો</translation>
 <translation id="8998729206196772491">તમે <ph name="MANAGED_DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાં સાઇન ઇન કરી રહ્યાં છો અને તમારા Chrome ડેટા પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો ડેટા આ એકાઉન્ટ સાથે કાયમીરૂપે જોડાયેલું રહેશે. Chromeમાંથી સાઇન આઉટ કરવું આ ડિવાઇસ પરથી તમારો ડેટા ડિલીટ કરશે, પરંતુ એ તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
-<translation id="9019902583201351841">તમારા માતાપિતા દ્વારા સંચાલિત</translation>
 <translation id="9028914725102941583">બધા ડિવાઇસ પર શેર કરવા માટે 'સિંક કરો'ની સુવિધા ચાલુ કરો</translation>
 <translation id="9040142327097499898">નોટિફિકેશનની મંજૂરી છે. આ ઉપકરણ માટે સ્થાન ઍક્સેસ બંધ છે.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# વીડિયો}one{# વીડિયો}other{# વીડિયો}}</translation>

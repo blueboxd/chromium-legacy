@@ -71,11 +71,6 @@
 #include "content/public/common/content_descriptors.h"
 #endif
 
-#if defined(OS_WIN)
-#include "sandbox/win/src/sandbox.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
-#endif
-
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
@@ -180,14 +175,25 @@ bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposeInternalsForTesting)) {
-    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
-  }
+  static const char* kForwardSwitches[] = {
+#if defined(OS_MACOSX)
+    // Needed since on Mac, content_browsertests doesn't use
+    // content_test_launcher.cc and instead uses shell_main.cc. So give a signal
+    // to shell_main.cc that it's a browser test.
+    switches::kBrowserTest,
+#endif
+    switches::kCrashDumpsDir,
+    switches::kEnableCrashReporter,
+    switches::kExposeInternalsForTesting,
+  };
+
+  command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                                 kForwardSwitches,
+                                 base::size(kForwardSwitches));
+
+#if defined(OS_LINUX)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
-    command_line->AppendSwitch(switches::kEnableCrashReporter);
-#if defined(OS_LINUX)
     int fd;
     pid_t pid;
     if (crash_reporter::GetHandlerSocket(&fd, &pid)) {
@@ -195,32 +201,8 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
           crash_reporter::switches::kCrashpadHandlerPid,
           base::NumberToString(pid));
     }
+  }
 #endif  // OS_LINUX
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCrashDumpsDir)) {
-    command_line->AppendSwitchPath(
-        switches::kCrashDumpsDir,
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kCrashDumpsDir));
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRegisterFontFiles)) {
-    command_line->AppendSwitchASCII(
-        switches::kRegisterFontFiles,
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kRegisterFontFiles));
-  }
-
-#if defined(OS_MACOSX)
-  // Needed since on Mac, content_browsertests doesn't use
-  // content_test_launcher.cc and instead uses shell_main.cc. So give a signal
-  // to shell_main.cc that it's a browser test.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBrowserTest)) {
-    command_line->AppendSwitch(switches::kBrowserTest);
-  }
-#endif
 }
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
@@ -365,23 +347,6 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   }
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-bool ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                                 RendererSpawnFlags flags) {
-  // Add sideloaded font files for testing. See also DIR_WINDOWS_FONTS
-  // addition in |StartSandboxedProcess|.
-  std::vector<std::string> font_files = switches::GetSideloadFontFiles();
-  for (std::vector<std::string>::const_iterator i(font_files.begin());
-      i != font_files.end();
-      ++i) {
-    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-        sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-        base::UTF8ToWide(*i).c_str());
-  }
-  return true;
-}
-#endif  // OS_WIN
 
 mojo::Remote<network::mojom::NetworkContext>
 ShellContentBrowserClient::CreateNetworkContext(

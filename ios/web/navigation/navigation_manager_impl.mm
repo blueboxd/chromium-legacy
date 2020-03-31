@@ -337,7 +337,12 @@ void NavigationManagerImpl::Reload(ReloadType reload_type,
     return;
   }
 
-  if (!GetTransientItem() && !GetPendingItem() && !GetLastCommittedItem())
+  // Use GetLastCommittedItemInCurrentOrRestoredSession() instead of
+  // GetLastCommittedItem() so restore session URL's aren't suppressed.
+  // Otherwise a cancelled/stopped navigation during the first post-restore
+  // navigation will always return early from Reload.
+  if (!GetTransientItem() && !GetPendingItem() &&
+      !GetLastCommittedItemInCurrentOrRestoredSession())
     return;
 
   delegate_->ClearDialogs();
@@ -357,7 +362,7 @@ void NavigationManagerImpl::Reload(ReloadType reload_type,
     else if (GetPendingItem())
       reload_item = GetPendingItem();
     else
-      reload_item = GetLastCommittedItem();
+      reload_item = GetLastCommittedItemInCurrentOrRestoredSession();
     DCHECK(reload_item);
 
     reload_item->SetURL(reload_item->GetOriginalRequestURL());

@@ -25,5 +25,6 @@
       android:layout_height="113dp"
       android:minHeight="@dimen/min_touch_target_size"
       android:orientation="horizontal"
+      android:paddingEnd="16dp"
       android:id="@+id/share_sheet_other_apps" />
 </LinearLayout>

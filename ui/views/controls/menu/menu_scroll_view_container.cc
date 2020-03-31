@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"

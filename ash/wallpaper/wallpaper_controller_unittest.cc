@@ -2630,24 +2630,18 @@ namespace {
 
 class WallpaperControllerPrefTest : public AshTestBase {
  public:
-  WallpaperControllerPrefTest() = default;
-  ~WallpaperControllerPrefTest() override = default;
+  WallpaperControllerPrefTest() {
+    auto property = std::make_unique<base::DictionaryValue>();
+    property->SetInteger("rotation",
+                         static_cast<int>(display::Display::ROTATE_90));
+    property->SetInteger("width", 800);
+    property->SetInteger("height", 600);
 
-  void SetUp() override {
-    {
-      DictionaryPrefUpdate update(local_state(), prefs::kDisplayProperties);
-
-      base::DictionaryValue* pref_data = update.Get();
-
-      auto property = std::make_unique<base::DictionaryValue>();
-      property->SetInteger("rotation",
-                           static_cast<int>(display::Display::ROTATE_90));
-      property->SetInteger("width", 800);
-      property->SetInteger("height", 600);
-      pref_data->Set("2200000000", std::move(property));
-    }
-    AshTestBase::SetUp();
+    DictionaryPrefUpdate update(local_state(), prefs::kDisplayProperties);
+    update.Get()->Set("2200000000", std::move(property));
   }
+
+  ~WallpaperControllerPrefTest() override = default;
 };
 
 }  // namespace

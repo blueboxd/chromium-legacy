@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">ဆက်လုပ်ရန်</translation>
 <translation id="2501278716633472235">နောက်သို့ ပြန်ရန်</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{ကွတ်ကီး ၁ ခု ကို ပိတ်ထားသည်}other{ကွတ်ကီး # ခု ကို ပိတ်ထားသည်}}</translation>
+<translation id="257931822824936280">ချဲ့ထား၏ - ခေါက်သိမ်းရန် ကလစ်နှိပ်ပါ</translation>
 <translation id="2653659639078652383">ပေးပို့ရန်</translation>
 <translation id="2704606927547763573">ကူးယူပြီးပါပြီ</translation>
 <translation id="2968755619301702150">လက်မှတ်ကို ကြည့်ရှုသူ</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">လင့်ခ်ကူးယူမည်</translation>
 <translation id="4002066346123236978">ခေါင်းစဉ်</translation>
 <translation id="4570913071927164677">အသေးစိတ်</translation>
+<translation id="4645575059429386691">သင့်မိဘမှ စီမံသည်</translation>
+<translation id="4883854917563148705">စီမံထားသော ဆက်တင်များကို ပြင်ဆင်သတ်မှတ်၍ မရပါ</translation>
 <translation id="497421865427891073">ရှေ့သို့သွား</translation>
+<translation id="5100237604440890931">ချုံ့ထား၏ - ချဲ့ရန် ကလစ်နှိပ်ပါ။</translation>
 <translation id="5300589172476337783">ပြရန်</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">မလို ကျေးဇူးပဲ</translation>
 <translation id="7846076177841592234">ရွေးချယ်ထားသောဖိုင်များကို ပြန်ဖျက်ပါ</translation>
 <translation id="8131740175452115882">အတည်ပြုရန်</translation>
+<translation id="8206354486702514201">ဤဆက်တင်အား သင့်ကြီးကြပ်သူမှ တွန်းအားပေးထားခြင်း ဖြစ်သည်။</translation>
 <translation id="8249310407154411074">အပေါ်ဆုံးသို့ ရွှေ့ပါ</translation>
 <translation id="8261506727792406068">ဖျက်ရန်</translation>
 <translation id="8609465669617005112">အပေါ်ရွှေ့ပါ</translation>
 <translation id="8676374126336081632">ထည့်သွင်းမှု ရှင်းရန်</translation>
 <translation id="8725066075913043281">ထပ် စမ်းကြည့်ရန်</translation>
 <translation id="8730621377337864115">ပြီးပါပြီ</translation>
+<translation id="9019902583201351841">သင့်မိဘများမှ စီမံသည်</translation>
 </translationbundle>

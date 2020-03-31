@@ -31,10 +31,9 @@ namespace {
 
 // TODO(crbug/960012): Disabled on chromeos for now due to performance
 // regressions that need to be investigated.
-// TODO(crbug/960012): Disabled on fuchsia for test failures.
 const base::Feature kCacheStorageSequenceFeature{
   "CacheStorageSequence",
-#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if defined(OS_CHROMEOS)
       base::FEATURE_DISABLED_BY_DEFAULT
 };
 #else
@@ -54,8 +53,7 @@ scoped_refptr<base::SequencedTaskRunner> CreateSchedulerTaskRunner() {
 CacheStorageContextImpl::CacheStorageContextImpl(
     BrowserContext* browser_context)
     : task_runner_(CreateSchedulerTaskRunner()),
-      observers_(base::MakeRefCounted<ObserverList>()),
-      shutdown_(false) {
+      observers_(base::MakeRefCounted<ObserverList>()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -99,11 +97,13 @@ void CacheStorageContextImpl::Init(
 
 void CacheStorageContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!shutdown_);
+
+  base::AutoLock lock(shutdown_lock_);
 
   // Set an atomic flag indicating shutdown has been entered.  This allows us to
   // avoid creating CrossSequenceCacheStorageManager objects when there will
   // no longer be an underlying manager.
+  DCHECK(!shutdown_);
   shutdown_ = true;
 
   task_runner_->PostTask(
@@ -130,12 +130,6 @@ void CacheStorageContextImpl::AddReceiver(
 }
 
 scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {
-  // Always return nullptr once shutdown has begun regardless of which
-  // sequence we are called on.  This check is necessary to avoid creating
-  // CrossSequenceCacheStorageManager wrappers when there will no longer be an
-  // underlying manager.
-  if (shutdown_)
-    return nullptr;
   // If we're already on the target sequence, then just return the real manager.
   //
   // Note, we can't check for nullptr cache_manager_ here because it is not
@@ -145,6 +139,13 @@ scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {
   // manager is set.  See the comment in Init().
   if (task_runner_->RunsTasksInCurrentSequence())
     return cache_manager_;
+  // Always return nullptr once shutdown has begun if we are on a different
+  // sequence.  This check is necessary to avoid creating
+  // CrossSequenceCacheStorageManager wrappers when there will no longer be an
+  // underlying manager.
+  base::AutoLock lock(shutdown_lock_);
+  if (shutdown_)
+    return nullptr;
   // Otherwise we have to create a cross-sequence wrapper to provide safe
   // access.
   return base::MakeRefCounted<CrossSequenceCacheStorageManager>(task_runner_,

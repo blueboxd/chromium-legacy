@@ -129,6 +129,9 @@ class VIEWS_EXPORT TextfieldModel {
   // will be confirmed, which may alter the specified selection range start.
   bool MoveCursorTo(const gfx::SelectionModel& cursor);
 
+  // Sugar for MoveCursorTo({0, CURSOR_FORWARD}).
+  bool MoveCursorTo(size_t pos);
+
   // Calls the corresponding function on the associated RenderText instance. Any
   // composition text will be confirmed.
   bool MoveCursorTo(const gfx::Point& point, bool select);

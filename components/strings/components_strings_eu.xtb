@@ -542,7 +542,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3366477098757335611">Ikusi txartelak</translation>
 <translation id="3369192424181595722">Erlojuaren errorea</translation>
 <translation id="337363190475750230">Hornitu gabe</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> domeinuak Enterprise Service Hooks izeneko amuak gaitu dizkizu arakatzailean. Amu horiek zure datu batzuetarako sarbidea dute.</translation>
 <translation id="3377144306166885718">Zerbitzariak TLSren bertsio zaharkitu bat erabili du.</translation>
 <translation id="3377188786107721145">Errore bat gertatu da errorea analizatzean</translation>
 <translation id="3377736046129930310">Erabili pantailaren blokeoa txartelak bizkorrago berresteko</translation>
@@ -978,7 +977,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5179510805599951267">Hizkuntza ez al da <ph name="ORIGINAL_LANGUAGE" />? Eman errorearen berri</translation>
 <translation id="5190835502935405962">Laster-marken barra</translation>
 <translation id="519422657042045905">Oharpena ez dago erabilgarri</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Orriko orri kapsulatu batek hau dio:</translation>
 <translation id="5205222826937269299">Nahitaez zehaztu behar duzu izena</translation>
 <translation id="5209518306177824490">SHA-1 erreferentzia-gako digitala</translation>
@@ -1447,7 +1445,6 @@ Xehetasun gehiago:
 <translation id="725866823122871198">Ezin izan da ezarri <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeinurako konexio pribatua ordenagailuaren data eta ordua (<ph name="DATE_AND_TIME" />) okerrak direlako.</translation>
 <translation id="7260504762447901703">Kendu sarbidea</translation>
 <translation id="7275334191706090484">Kudeatutako laster-markak</translation>
-<translation id="7288778322931489286">Administratzaileak Enterprise Service Hooks izeneko amuak gaitu dizkizu arakatzailean. Amu horiek zure datu batzuetarako sarbidea dute.</translation>
 <translation id="7292031607255951991">Hartzailearen izena</translation>
 <translation id="7298195798382681320">Gomendatuak</translation>
 <translation id="7300012071106347854">Kobaltoa</translation>
@@ -1804,7 +1801,6 @@ Xehetasun gehiago:
 <translation id="8866481888320382733">Errore bat gertatu da gidalerro-ezarpenak analizatzean</translation>
 <translation id="8866928039507595380">Tolestu</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Partekatu administratzailearekin Enterprise Service Hooks zerbitzuak markatutako segurtasun-gertaerei buruzko datuak. Datu horien artean baliteke hauek agertzea: bisitatzen dituzun orrien URLak, fitxategien izenak edo metadatuak, eta gailuan nahiz Chrome-n saioa hasteko erabiltzen duzun erabiltzaile-izena.</translation>
 <translation id="8870413625673593573">Itxitako azkenak</translation>
 <translation id="8870494189203302833">Ordena berean, ahuspez</translation>
 <translation id="8874824191258364635">Idatzi balio duen txartel-zenbaki bat</translation>

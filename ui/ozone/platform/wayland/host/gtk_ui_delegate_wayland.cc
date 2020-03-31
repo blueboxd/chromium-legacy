@@ -21,6 +21,10 @@ GtkUiDelegateWayland::GtkUiDelegateWayland(WaylandConnection* connection)
 
 GtkUiDelegateWayland::~GtkUiDelegateWayland() = default;
 
+void GtkUiDelegateWayland::OnInitialized() {
+  // Nothing to do upon initialization for Wayland.
+}
+
 GdkKeymap* GtkUiDelegateWayland::GetGdkKeymap() {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;

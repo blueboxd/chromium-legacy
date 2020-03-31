@@ -25,17 +25,39 @@ class DownloadManager;
 namespace protocol {
 
 class CONTENT_EXPORT DevToolsDownloadManagerDelegate
-    : public content::DownloadManagerDelegate,
-      public base::RefCounted<DevToolsDownloadManagerDelegate> {
+    : public base::SupportsUserData::Data,
+      public content::DownloadManagerDelegate {
  public:
-  // Takes over a |download_manager|. If the |download_manager| owns a
-  // |DownloadManagerDelegate| it will be stored as a proxy delegate.
-  // When the proxy is set, this delegate will use the proxy's |GetNextId|
-  // function to ensure compatibility. It will also call its |Shutdown| method
-  // when sutting down and it will fallback to the proxy if it cannot find any
-  // DevToolsDownloadManagerHelper associated with the download.
-  static scoped_refptr<DevToolsDownloadManagerDelegate> TakeOver(
-      content::DownloadManager* download_manager);
+  enum class DownloadBehavior {
+    // All downloads are denied.
+    DENY,
+
+    // All downloads are accepted.
+    ALLOW,
+
+    // All downloads are accepted and named using Guids.
+    ALLOW_AND_NAME,
+
+    // Use default download behavior if available, otherwise deny.
+    DEFAULT
+  };
+
+  // Takes over the |browser_Context|'s download manager.
+  // When existing delegate is set, this proxy will use the original's
+  // |GetNextId| function to ensure compatibility. It will also call its
+  // |Shutdown| method when sutting down and it will fallback to the original
+  // delegate if it cannot find any DevToolsDownloadManagerHelper associated
+  // with the download.
+  static DevToolsDownloadManagerDelegate* GetOrCreateInstance(
+      content::BrowserContext* browser_Context);
+  static DevToolsDownloadManagerDelegate* GetInstance(
+      content::BrowserContext* browser_Context);
+  ~DevToolsDownloadManagerDelegate() override = default;
+
+  void set_download_behavior(DownloadBehavior behavior) {
+    download_behavior_ = behavior;
+  }
+  void set_download_path(const std::string& path) { download_path_ = path; }
 
   // DownloadManagerDelegate overrides.
   void Shutdown() override;
@@ -50,9 +72,7 @@ class CONTENT_EXPORT DevToolsDownloadManagerDelegate
  private:
   friend class base::RefCounted<DevToolsDownloadManagerDelegate>;
 
-  DevToolsDownloadManagerDelegate();
-  static DevToolsDownloadManagerDelegate* GetInstance();
-  ~DevToolsDownloadManagerDelegate() override;
+  explicit DevToolsDownloadManagerDelegate(BrowserContext* browser_context);
 
   using FilenameDeterminedCallback =
       base::OnceCallback<void(const base::FilePath&)>;
@@ -69,7 +89,9 @@ class CONTENT_EXPORT DevToolsDownloadManagerDelegate
                                const base::FilePath& suggested_path);
 
   content::DownloadManager* download_manager_;
-  content::DownloadManagerDelegate* proxy_download_delegate_;
+  content::DownloadManagerDelegate* original_download_delegate_;
+  DownloadBehavior download_behavior_ = DownloadBehavior::DEFAULT;
+  std::string download_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsDownloadManagerDelegate);
 };

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_FOCUS_RING_H_
 #define UI_VIEWS_CONTROLS_FOCUS_RING_H_
 
+#include <memory>
+
 #include "base/scoped_observer.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/focusable_border.h"

@@ -93,7 +93,8 @@ class SafeBrowsingTriggeredPopupBlocker
   // subresource_filter::SubresourceFilterObserver:
   void OnSafeBrowsingChecksComplete(
       content::NavigationHandle* navigation_handle,
-      const SafeBrowsingCheckResults& results) override;
+      const subresource_filter::SubresourceFilterSafeBrowsingClient::
+          CheckResult& result) override;
   void OnSubresourceFilterGoingAway() override;
 
   // Enabled state is governed by both a feature flag and a pref (which can be

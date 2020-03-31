@@ -264,7 +264,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (status != kLibgav1StatusOk) {
     MEDIA_LOG(ERROR, media_log_) << "libgav1::Decoder::Init() failed, "
                                  << "status=" << status;
-    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 

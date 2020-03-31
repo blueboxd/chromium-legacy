@@ -545,7 +545,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="3366477098757335611">Kartalarni ko‘rish</translation>
 <translation id="3369192424181595722">Soat xatoligi</translation>
 <translation id="337363190475750230">O‘chirib qo‘yilgan</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> brauzeringizda Enterprise Service Hooks xizmatini yoqdi. U ayrim axborotlaringizdan foydalana oladi.</translation>
 <translation id="3377144306166885718">Server eskirgan TLS versiyasidan foydalanadi.</translation>
 <translation id="3377188786107721145">Siyosatni tekshirib chiqish vaqtida xatolik yuz berdi</translation>
 <translation id="3377736046129930310">Kartalarni tezda tasdiqlash uchun ekran qulfidan foydalaning</translation>
@@ -980,7 +979,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5179510805599951267">Bu <ph name="ORIGINAL_LANGUAGE" /> tili emasmi? Xatolik haqida xabar yuboring</translation>
 <translation id="5190835502935405962">Xatcho‘plar paneli</translation>
 <translation id="519422657042045905">Annotatsiya qilish imkonsiz.</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Amalni tasdiqlang</translation>
 <translation id="5205222826937269299">Nom kiriting</translation>
 <translation id="5209518306177824490">SHA-1 Barmoq izi</translation>
@@ -1453,7 +1451,6 @@ Batafsil axborot:
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeni bilan tizimdagi sana va vaqt sozlamalari (<ph name="DATE_AND_TIME" />) noto‘g‘ri bo‘lganligi uchun havfsiz aloqa o‘rnatib bo'lmadi.</translation>
 <translation id="7260504762447901703">Kirishni taqiqlash</translation>
 <translation id="7275334191706090484">Boshqariladigan xatcho‘plar</translation>
-<translation id="7288778322931489286">Brauzeringizda administrator tomonidan Enterprise Service Hooks faollashtirildi. U ayrim axborotlaringizdan foydalana oladi.</translation>
 <translation id="7292031607255951991">Oluvchining ismi</translation>
 <translation id="7298195798382681320">Tavsiya etiladi</translation>
 <translation id="7300012071106347854">Koʻk kobalt</translation>
@@ -1810,7 +1807,6 @@ Batafsil axborot:
 <translation id="8866481888320382733">Siyosat sozlamalarini tahlil qilib bo‘lmadi</translation>
 <translation id="8866928039507595380">Taxlash</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Administratoringizga Enterprise Service Hooks tomonidan belgilangan xavfsizlik hodisalari haqidagi axborotlarni ulashing. Bu ochilgan sahifalarning URL manzillari, fayl nomlari yoki meta axborotlar, qurilma va Chrome foydalanuvchilari nomlaridan iborat boʻlishi mumkin.</translation>
 <translation id="8870413625673593573">Yaqinda yopilganlar</translation>
 <translation id="8870494189203302833">Bir xil tartibda orqa tomonida</translation>
 <translation id="8874824191258364635">Karta raqamini xatosiz kiriting</translation>

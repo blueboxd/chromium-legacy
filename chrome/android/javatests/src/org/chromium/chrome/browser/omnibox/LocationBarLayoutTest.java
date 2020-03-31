@@ -14,8 +14,10 @@ import static android.view.View.VISIBLE;
 
 import static org.hamcrest.Matchers.not;
 
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -39,6 +41,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -501,6 +504,29 @@ public class LocationBarLayoutTest {
         Assert.assertFalse(locationBar.didFocusUrlFromFakebox());
         Assert.assertEquals(
                 2, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+    }
+
+    /**
+     * Test for checking whether soft input model switches with focus.
+     */
+    @Test
+    @MediumTest
+    @Feature("Omnibox")
+    public void testFocusChangingSoftInputMode() {
+        final UrlBar urlBar = getUrlBar();
+
+        Callable<Integer> softInputModeCallable = () -> {
+            return mActivityTestRule.getActivity().getWindow().getAttributes().softInputMode;
+        };
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        CriteriaHelper.pollUiThread(Criteria.equals(true, urlBar::hasFocus));
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, softInputModeCallable));
+
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
+        CriteriaHelper.pollUiThread(Criteria.equals(false, urlBar::hasFocus));
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, softInputModeCallable));
     }
 
     private void loadUrlInNewTabAndUpdateModels(String url, boolean incognito) {

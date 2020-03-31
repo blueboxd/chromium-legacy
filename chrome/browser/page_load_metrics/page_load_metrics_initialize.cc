@@ -19,6 +19,7 @@
 #include "chrome/browser/page_load_metrics/observers/foreground_duration_ukm_observer.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/isolated_prerender_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/live_tab_count_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h"
@@ -37,7 +38,6 @@
 #include "chrome/browser/page_load_metrics/observers/security_state_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/subresource_loading_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
@@ -107,6 +107,8 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     tracker->AddObserver(
         std::make_unique<DocumentWritePageLoadMetricsObserver>());
     tracker->AddObserver(
+        std::make_unique<IsolatedPrerenderPageLoadMetricsObserver>());
+    tracker->AddObserver(
         std::make_unique<LiveTabCountPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<MediaPageLoadMetricsObserver>());
     tracker->AddObserver(
@@ -116,8 +118,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
             previews::OfflinePagePreviewsPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<OptimizationGuidePageLoadMetricsObserver>());
-    tracker->AddObserver(
-        std::make_unique<SubresourceLoadingPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<PreviewsLitePageRedirectMetricsObserver>());
     tracker->AddObserver(

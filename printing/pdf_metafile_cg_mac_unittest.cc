@@ -166,8 +166,7 @@ TEST(PdfMetafileCgTest, RenderPageBasic) {
   Metafile::MacRenderPageParams params;
   params.autorotate = true;
   ASSERT_TRUE(pdf_cg.RenderPage(1, context, bounds.ToCGRect(), params));
-  std::array<uint8_t, base::kSHA1Length> rendered_hash =
-      base::SHA1HashSpan(rendered_bitmap);
+  base::SHA1Digest rendered_hash = base::SHA1HashSpan(rendered_bitmap);
 
   // Decode expected PNG and calculate the output hash.
   std::vector<uint8_t> expected_png_bitmap;
@@ -179,8 +178,7 @@ TEST(PdfMetafileCgTest, RenderPageBasic) {
       &expected_png_bitmap, &png_width, &png_height));
   ASSERT_EQ(kExpectedWidth, png_width);
   ASSERT_EQ(kExpectedHeight, png_height);
-  std::array<uint8_t, base::kSHA1Length> expected_hash =
-      base::SHA1HashSpan(expected_png_bitmap);
+  base::SHA1Digest expected_hash = base::SHA1HashSpan(expected_png_bitmap);
 
   // Make sure the hashes match.
   EXPECT_EQ(expected_hash, rendered_hash);

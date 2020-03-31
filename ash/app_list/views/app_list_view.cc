@@ -724,14 +724,14 @@ void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {
   GetWidget()->GetLayer()->SetOpacity(1.0f);
   is_side_shelf_ = is_side_shelf;
 
-  app_list_main_view_->contents_view()->ResetForShow();
-  if (!is_tablet_mode)
-    SelectInitialAppsPage();
-
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
 
   UpdateWidget();
+
+  app_list_main_view_->contents_view()->ResetForShow();
+  if (!is_tablet_mode)
+    SelectInitialAppsPage();
 
   // The initial state is kPeeking. If tablet mode is enabled, a fullscreen
   // state will be set later.

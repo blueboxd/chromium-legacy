@@ -1204,5 +1204,10 @@ luci.console_view(
             category = 'ios|week1c|ios13',
             short_name = 'dev',
         ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-code-coverage',
+            category = 'ios|week1d',
+            short_name = 'code',
+        ),
     ],
 )

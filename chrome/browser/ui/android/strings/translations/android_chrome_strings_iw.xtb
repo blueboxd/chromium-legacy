@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">‏הורדת קבצים ב-Chrome מתבצעת עכשיו מהר יותר</translation>
 <translation id="1883903952484604915">הקבצים שלי</translation>
 <translation id="1887786770086287077">‏הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="1919345977826869612">מודעות</translation>
 <translation id="1919950603503897840">בחירת אנשי קשר</translation>
 <translation id="1922076542920281912">‏כדי לאפשר ל-Chrome לגשת אל המיקום, צריך להפעיל את האפשרות הזו גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">תמונה</translation>
 <translation id="257088987046510401">ערכות נושא</translation>
 <translation id="2570922361219980984">‏גם הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">מורחב - לחץ כדי לכווץ.</translation>
 <translation id="2581165646603367611">‏פעולה זו תמחק את קובצי ה-Cookie, את המטמון ונתונים אחרים של אתרים ש-Chrome לא מחשיב כחשובים.</translation>
 <translation id="2586657967955657006">לוח</translation>
 <translation id="2587052924345400782">יש גרסה חדשה יותר</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">פריטים שהוסרו: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">פתיחה של <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">שימוש בסיסמה</translation>
-<translation id="4645575059429386691">מנוהל על-ידי ההורה שלך</translation>
 <translation id="4650364565596261010">ברירת מחדל של המערכת</translation>
 <translation id="4660838440047236328">מבנה החדר שלך.</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> סימניות נמחקו</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">פתיחה</translation>
 <translation id="488187801263602086">שינוי שם של קובץ</translation>
 <translation id="4882831918239250449">הגדרת השימוש בהיסטוריית הגלישה לצורך התאמה אישית של החיפוש, המודעות ועוד</translation>
-<translation id="4883854917563148705">לא ניתן לאפס הגדרות מנוהלות</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
 <translation id="4887024562049524730">תוצג שאלה לפני מתן הרשאה לאתרים להשתמש במכשיר המציאות המדומה ובנתוני המציאות המדומה שלך (מומלץ)</translation>
 <translation id="4910889077668685004">אפליקציות תשלום</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
 <translation id="5063480226653192405">שימוש</translation>
 <translation id="5087580092889165836">הוסף כרטיס</translation>
-<translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5123685120097942451">כרטיסיית גלישה בסתר</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">התקבלה כרטיסייה</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת (<ph name="OPEN_TABS_ONE" />), יש להקיש כדי להחליף כרטיסיות}two{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}many{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}other{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(ועוד 1)}two{(ועוד #)}many{(ועוד #)}other{(ועוד #)}}</translation>
-<translation id="5400569084694353794">‏השימוש באפליקציה זו מהוות את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="5403592356182871684">שמות</translation>
 <translation id="5403644198645076998">גישה רק לאתרים ספציפיים</translation>
 <translation id="5414836363063783498">מאמת…</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">טעינה מראש של דפים כדי לאפשר גלישה וחיפוש מהירים יותר</translation>
 <translation id="79859296434321399">‏כדי להציג תוכן של מציאות רבודה, צריך להתקין את ARCore</translation>
 <translation id="7986741934819883144">בחירת איש קשר</translation>
-<translation id="7987073022710626672">‏התנאים וההגבלות של Chrome</translation>
 <translation id="7993619969781047893">ייתכן שהתכונות של חלק מהאתרים לא יפעלו כראוי</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="7999064672810608036">‏האם אתה בטוח שברצונך לנקות את כל הנתונים המקומיים, כולל קובצי Cookie, ולאפס את כל ההרשאות של האתר הזה?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">נותרו עוד <ph name="FILES" /> קבצים</translation>
 <translation id="8190358571722158785">נותר יום אחד</translation>
 <translation id="8200772114523450471">חדש</translation>
-<translation id="8206354486702514201">הגדרה זו נאכפת על ידי מנהל המערכת שלך.</translation>
 <translation id="8209050860603202033">פתח את התמונה</translation>
 <translation id="8218622182176210845">ניהול החשבון</translation>
 <translation id="8224471946457685718">‏הורדת מאמרים עבורך ב-Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{רמת עוצמת אות: עמודה אחת}two{רמת עוצמת אות: שתי עמודות}many{רמת עוצמת אות: # עמודות}other{רמת עוצמת אות: # עמודות}}</translation>
 <translation id="868929229000858085">חיפוש באנשי הקשר</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
-<translation id="8728487861892616501">‏השימוש שלך באפליקציה הזו מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />מדיניות הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">התוכן מוסתר</translation>
 <translation id="8751914237388039244">בחירת תמונה</translation>
 <translation id="8758557275681689734">צפייה בכל הכרטיסיות הפתוחות</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">‏חסימת JavaScript באתר ספציפי.</translation>
 <translation id="8812260976093120287">באתרים מסוימים ניתן לשלם דרך המכשיר באמצעות אפליקציות התשלום הנתמכות שמופיעות למעלה.</translation>
 <translation id="8816026460808729765">חסימת הגישה של אתרים אל חיישנים</translation>
-<translation id="8816439037877937734">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8833831881926404480">אתר משתף את המסך שלך</translation>
 <translation id="883806473910249246">אירעה שגיאה בזמן הורדת התוכן.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">שימוש בטלפון כמפתח אבטחה</translation>
 <translation id="8993760627012879038">פתח חלון חדש במצב גלישה בסתר</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
-<translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
 <translation id="9028914725102941583">כדי לבצע שיתוף בין מכשירים יש להפעיל את הסנכרון</translation>
 <translation id="9040142327097499898">יש הרשאה להצגת הודעות. המיקום כבוי בשביל המכשיר הזה.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{סרטון אחד (#)}two{# סרטונים}many{# סרטונים}other{# סרטונים}}</translation>

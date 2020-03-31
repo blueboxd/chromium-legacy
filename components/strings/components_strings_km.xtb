@@ -551,7 +551,6 @@
 <translation id="3366477098757335611">មើលកាត</translation>
 <translation id="3369192424181595722">កំហុសម៉ោង</translation>
 <translation id="337363190475750230">បានផ្តាច់ការផ្តល់ជូន</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> បានបើក Enterprise Service Hooks នៅលើកម្មវិធី​រុករកតាមអ៊ីនធឺណិតរបស់អ្នក។ ទំពក់ទាំងនេះមានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួនរបស់អ្នក។</translation>
 <translation id="3377144306166885718">ម៉ាស៊ីនមេបានប្រើ​កំណែ TLS ដែលលែងប្រើ។</translation>
 <translation id="3377188786107721145">កំហុសឆ្គងការវិភាគគោលការណ៍</translation>
 <translation id="3377736046129930310">ប្រើ​ការចាក់​សោ​អេក្រង់ ដើម្បី​បញ្ជាក់​បណ្ណ​ឱ្យ​បានរហ័ស​ជាងមុន</translation>
@@ -989,7 +988,6 @@
 <translation id="5179510805599951267">មិនមែនជា <ph name="ORIGINAL_LANGUAGE" /> ទេ? រាយការណ៍កំហុសឆ្គងនេះ</translation>
 <translation id="5190835502935405962">របាចំណាំ</translation>
 <translation id="519422657042045905">មិនមាន​ចំណារទេ</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">ទំព័របង្កប់​នៅលើ​ទំព័រ​នេះ​និយាយ​ថា</translation>
 <translation id="5205222826937269299">តម្រូវឲ្យមានឈ្មោះ</translation>
 <translation id="5209518306177824490">ស្នាមម្រាមដៃ SHA-1</translation>
@@ -1463,7 +1461,6 @@
 <translation id="725866823122871198">ការភ្ជាប់ឯកជនទៅ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> មិនអាចធ្វើឡើងទេ ពីព្រោះកាលបរិច្ឆេទ និងម៉ោងកុំព្យូទ័ររបស់អ្នក (<ph name="DATE_AND_TIME" />)មិនត្រឹមត្រូវ។</translation>
 <translation id="7260504762447901703">ដកលទ្ធភាពចូលប្រើ</translation>
 <translation id="7275334191706090484">ចំណាំដែលត្រូវបានគ្រប់គ្រង</translation>
-<translation id="7288778322931489286">អ្នកគ្រប់គ្រងរបស់អ្នក​បានបើក Enterprise Service Hooks នៅលើកម្មវិធីរុករកតាមអ៊ីនធឺណិតរបស់អ្នក។ ទំពក់ទាំងនេះមានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួនរបស់អ្នក។</translation>
 <translation id="7292031607255951991">ឈ្មោះ​អ្នក​ទទួល</translation>
 <translation id="7298195798382681320">បានណែនាំ</translation>
 <translation id="7300012071106347854">ខៀវថ្លា</translation>
@@ -1821,7 +1818,6 @@
 <translation id="8866481888320382733">កំហុសឆ្គងការកំណត់គោលការណ៍ការវិភាគ</translation>
 <translation id="8866928039507595380">បត់</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">ចែករំលែក​ទិន្នន័យ​អំពី​ព្រឹត្តិការណ៍​ទាក់ទងនឹង​សុវត្ថិភាព​ដែល Enterprise Service Hooks បាន​រាយការណ៍ទៅ​អ្នកគ្រប់គ្រង​របស់អ្នក​។ នេះអាចរួមបញ្ចូល URL នៃទំព័រដែលអ្នកចូលមើល ឈ្មោះឯកសារ ឬទិន្នន័យ​មេតា និងឈ្មោះអ្នកប្រើប្រាស់ ដែលអ្នកប្រើ​ ដើម្បីចូលឧបករណ៍របស់អ្នក និង Chrome។</translation>
 <translation id="8870413625673593573">បានបិទកន្លងទៅថ្មីៗ</translation>
 <translation id="8870494189203302833">ផ្កាប់ចុះតាមលំដាប់លំដោយ​ដូចគ្នា</translation>
 <translation id="8874824191258364635">បញ្ចូលលេខបណ្ណដែលត្រឹមត្រូវ</translation>

@@ -549,7 +549,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="3366477098757335611">Skoða kort</translation>
 <translation id="3369192424181595722">Klukkuvilla</translation>
 <translation id="337363190475750230">Úthlutun dregin til baka</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> hefur kveikt á Enterprise Service krækjum í vafranum. Þessar krækjur hafa aðgang að sumum af gögnunum þínum.</translation>
 <translation id="3377144306166885718">Þjónninn notaði úrelta útgáfu af TLS.</translation>
 <translation id="3377188786107721145">Villa við að þátta reglu</translation>
 <translation id="3377736046129930310">Notaðu skjálás til að staðfesta kort hraðar</translation>
@@ -986,7 +985,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5179510805599951267">Ekki <ph name="ORIGINAL_LANGUAGE" />? Tilkynna þessa villu</translation>
 <translation id="5190835502935405962">Bókamerkjastika</translation>
 <translation id="519422657042045905">Athugasemdir eru ekki tiltækar</translation>
-<translation id="5196187217592847346">Enterprise Service krækjur</translation>
 <translation id="5201306358585911203">Innfelld síða á þessari síðu segir</translation>
 <translation id="5205222826937269299">Heiti er nauðsynlegt</translation>
 <translation id="5209518306177824490">SHA-1 fingrafar</translation>
@@ -1460,7 +1458,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="725866823122871198">Ekki er hægt að koma á lokaðri tengingu við <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vegna þess að dag- og tímasetning tölvunnar (<ph name="DATE_AND_TIME" />) er röng.</translation>
 <translation id="7260504762447901703">Afturkalla aðgang</translation>
 <translation id="7275334191706090484">Stýrð bókamerki</translation>
-<translation id="7288778322931489286">Kerfisstjórinn hefur kveikt á Enterprise Service krækjum í vafranum. Þessar krækjur hafa aðgang að sumum af gögnunum þínum.</translation>
 <translation id="7292031607255951991">Nafn viðtakanda</translation>
 <translation id="7298195798382681320">Ráðlagt</translation>
 <translation id="7300012071106347854">Kóbaltblár</translation>
@@ -1817,7 +1814,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8866481888320382733">Villa við að þátta reglustillingar</translation>
 <translation id="8866928039507595380">Brot</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Deila gögnum um öryggisatvik sem Enterprise Service krækjur hafa tilkynnt með kerfisstjóra. Gögnin gætu falið í sér vefslóðir síðna sem þú opnar, skráarheiti eða lýsigögn og notandanafnið sem þú notar til að skrá þig inn á tækið og í Chrome.</translation>
 <translation id="8870413625673593573">Nýlega lokað</translation>
 <translation id="8870494189203302833">Sama röð, snýr niður</translation>
 <translation id="8874824191258364635">Færðu inn gilt kortanúmer</translation>

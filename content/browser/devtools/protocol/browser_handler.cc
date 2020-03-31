@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -30,12 +31,14 @@
 namespace content {
 namespace protocol {
 
-BrowserHandler::BrowserHandler()
-    : DevToolsDomainHandler(Browser::Metainfo::domainName) {}
+BrowserHandler::BrowserHandler(bool allow_set_download_behavior)
+    : DevToolsDomainHandler(Browser::Metainfo::domainName),
+      allow_set_download_behavior_(allow_set_download_behavior) {}
 
 BrowserHandler::~BrowserHandler() {}
 
 Response BrowserHandler::Disable() {
+  // TODO: this leaks context ids for all contexts with overridden permissions.
   for (auto& browser_context_id : contexts_with_overridden_permissions_) {
     content::BrowserContext* browser_context = nullptr;
     std::string error;
@@ -50,6 +53,26 @@ Response BrowserHandler::Disable() {
     }
   }
   contexts_with_overridden_permissions_.clear();
+
+  // TODO: this leaks context ids for all contexts with overridden downloads.
+  for (auto& browser_context_id : contexts_with_overridden_downloads_) {
+    content::BrowserContext* browser_context = nullptr;
+    std::string error;
+    Maybe<std::string> context_id =
+        browser_context_id == "" ? Maybe<std::string>()
+                                 : Maybe<std::string>(browser_context_id);
+    FindBrowserContext(context_id, &browser_context);
+    if (browser_context) {
+      auto* delegate =
+          DevToolsDownloadManagerDelegate::GetInstance(browser_context);
+      if (delegate) {
+        delegate->set_download_behavior(
+            DevToolsDownloadManagerDelegate::DownloadBehavior::DEFAULT);
+      }
+    }
+  }
+  contexts_with_overridden_downloads_.clear();
+
   return Response::Success();
 }
 
@@ -401,6 +424,61 @@ Response BrowserHandler::ResetPermissions(
       PermissionControllerImpl::FromBrowserContext(browser_context);
   permission_controller->ResetOverridesForDevTools();
   contexts_with_overridden_permissions_.erase(browser_context_id.fromMaybe(""));
+  return Response::Success();
+}
+
+Response BrowserHandler::SetDownloadBehavior(
+    const std::string& behavior,
+    Maybe<std::string> browser_context_id,
+    Maybe<std::string> download_path) {
+  BrowserContext* browser_context = nullptr;
+  Response response = FindBrowserContext(browser_context_id, &browser_context);
+  if (!response.IsSuccess())
+    return response;
+  return DoSetDownloadBehavior(behavior, browser_context,
+                               std::move(download_path));
+}
+
+Response BrowserHandler::DoSetDownloadBehavior(
+    const std::string& behavior,
+    BrowserContext* browser_context,
+    Maybe<std::string> download_path) {
+  if (!allow_set_download_behavior_)
+    return Response::ServerError("Not allowed");
+  if (behavior == Browser::SetDownloadBehavior::BehaviorEnum::Allow &&
+      !download_path.isJust()) {
+    return Response::InvalidParams("downloadPath not provided");
+  }
+  DevToolsManagerDelegate* manager_delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!manager_delegate) {
+    return Response::ServerError(
+        "Browser context management is not supported.");
+  }
+
+  auto* delegate =
+      DevToolsDownloadManagerDelegate::GetOrCreateInstance(browser_context);
+  if (behavior == Browser::SetDownloadBehavior::BehaviorEnum::Allow) {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::ALLOW);
+    delegate->set_download_path(download_path.fromJust());
+  } else if (behavior ==
+             Browser::SetDownloadBehavior::BehaviorEnum::AllowAndName) {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::ALLOW_AND_NAME);
+    delegate->set_download_path(download_path.fromJust());
+  } else if (behavior == Browser::SetDownloadBehavior::BehaviorEnum::Deny) {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::DENY);
+  } else {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::DEFAULT);
+  }
+  contexts_with_overridden_downloads_.insert(
+      manager_delegate->GetDefaultBrowserContext() == browser_context
+          ? ""
+          : browser_context->UniqueId());
+
   return Response::Success();
 }
 

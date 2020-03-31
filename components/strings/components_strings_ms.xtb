@@ -548,7 +548,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="3366477098757335611">Lihat kad</translation>
 <translation id="3369192424181595722">Ralat Jam</translation>
 <translation id="337363190475750230">Nyahperuntukkan</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> telah mendayakan Enterprise Service Hooks pada penyemak imbas anda. Cangkuk ini boleh mengakses sesetengah data anda.</translation>
 <translation id="3377144306166885718">Pelayan menggunakan versi TLS yang sudah lapuk.</translation>
 <translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
 <translation id="3377736046129930310">Gunakan kunci skrin untuk mengesahkan kad dengan lebih cepat</translation>
@@ -986,7 +985,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="5179510805599951267">Bukan dalam <ph name="ORIGINAL_LANGUAGE" />? Laporkan ralat ini</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="519422657042045905">Anotasi tidak tersedia</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Halaman terbenam pada halaman ini menyatakan</translation>
 <translation id="5205222826937269299">Nama diperlukan</translation>
 <translation id="5209518306177824490">Cap jari SHA-1</translation>
@@ -1460,7 +1458,6 @@ Butiran tambahan:
 <translation id="725866823122871198">Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa komputer anda (<ph name="DATE_AND_TIME" />) tidak betul.</translation>
 <translation id="7260504762447901703">Batalkan akses</translation>
 <translation id="7275334191706090484">Penanda Halaman Terurus</translation>
-<translation id="7288778322931489286">Pentadbir anda telah mendayakan Enterprise Service Hooks pada penyemak imbas anda. Cangkuk ini boleh mengakses sesetengah data anda.</translation>
 <translation id="7292031607255951991">Nama penerima</translation>
 <translation id="7298195798382681320">Disyorkan</translation>
 <translation id="7300012071106347854">Biru Kobalt</translation>
@@ -1818,7 +1815,6 @@ Butiran tambahan:
 <translation id="8866481888320382733">Ralat semasa menghuraikan tetapan dasar</translation>
 <translation id="8866928039507595380">Lipatan</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Kongsi data tentang acara keselamatan yang telah dibenderakan oleh Enterprise Service Hooks dengan Pentadbir anda. Data ini boleh termasuk URL halaman yang anda lawati, nama fail atau metadata dan nama pengguna yang anda gunakan untuk mengelog masuk ke peranti serta Chrome anda.</translation>
 <translation id="8870413625673593573">Ditutup Baru-baru Ini</translation>
 <translation id="8870494189203302833">Susunan sama menghadap ke bawah</translation>
 <translation id="8874824191258364635">Masukkan nombor kad yang sah</translation>

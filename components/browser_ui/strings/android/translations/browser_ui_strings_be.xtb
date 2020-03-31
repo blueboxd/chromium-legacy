@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 файл cookie заблакіраваны}one{# файл cookie заблакіраваны}few{# файлы cookie заблакіраваны}many{# файлаў cookie заблакіраваны}other{# файла cookie заблакіраваны}}</translation>
+<translation id="257931822824936280">Разгорнута. Націсніце, каб згарнуць.</translation>
 <translation id="2653659639078652383">Адправіць</translation>
 <translation id="2704606927547763573">Скапіравана</translation>
 <translation id="2968755619301702150">Звесткі пра сертыфікат</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Скапіраваць спасылку</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4570913071927164677">Падрабязныя звесткі</translation>
+<translation id="4645575059429386691">Пад кіраваннем вашых бацькоў</translation>
+<translation id="4883854917563148705">Налады, якія знаходзяцца пад кіраваннем, скінуць нельга</translation>
 <translation id="497421865427891073">Наперад</translation>
+<translation id="5100237604440890931">Згорнута – каб разгарнуць, націсніце тут.</translation>
 <translation id="5300589172476337783">Паказаць</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">Захаваць</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7846076177841592234">Скасаваць выбар</translation>
 <translation id="8131740175452115882">Пацвердзіць</translation>
+<translation id="8206354486702514201">Гэтай наладай кіруе адміністратар.</translation>
 <translation id="8249310407154411074">Перамясціць уверх</translation>
 <translation id="8261506727792406068">Выдаліць</translation>
 <translation id="8609465669617005112">Перамясціць уверх</translation>
 <translation id="8676374126336081632">Ачысціць поле ўводу</translation>
 <translation id="8725066075913043281">Паўтарыць спробу</translation>
 <translation id="8730621377337864115">Гатова</translation>
+<translation id="9019902583201351841">Пад кіраваннем вашых бацькоў</translation>
 </translationbundle>

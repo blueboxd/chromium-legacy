@@ -4049,7 +4049,6 @@ jumbo_static_library("ui") {
       "//chrome/browser/extensions",
     ]
     sources += [
-      "extensions/accelerator_priority.cc",
       "extensions/accelerator_priority.h",
       "extensions/app_launch_params.cc",
       "extensions/app_launch_params.h",

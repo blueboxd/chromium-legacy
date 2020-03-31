@@ -27922,6 +27922,9 @@ Called by update_feature_policy_enum.py.-->
 </enum>
 
 <enum name="FFmpegColorRanges">
+  <obsolete>
+    Removed 03/2020 in https://crbug.com/1053030.
+  </obsolete>
   <int value="0" label="UNSPECIFIED"/>
   <int value="1" label="MPEG"/>
   <int value="2" label="JPEG"/>
@@ -37843,6 +37846,8 @@ from previous Chrome versions.
   <int value="-1613583483" label="UseNewAcceptLanguageHeader:enabled"/>
   <int value="-1611758030" label="AndroidWebContentsDarkMode:disabled"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
+  <int value="-1607953813"
+      label="AndroidPartnerCustomizationPhenotype:enabled"/>
   <int value="-1607691647" label="MojoVideoEncodeAccelerator:disabled"/>
   <int value="-1607297082" label="ash-enable-persistent-window-bounds"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
@@ -39533,6 +39538,7 @@ from previous Chrome versions.
   <int value="372460068" label="QuickUnlockFingerprint:disabled"/>
   <int value="373177941" label="DockedMagnifier:enabled"/>
   <int value="373193557" label="LongPressBackNewDesign:enabled"/>
+  <int value="373275338" label="AndroidPartnerCustomizationPhenotype:disabled"/>
   <int value="375485858" label="EnableZeroStateMixedTypesRanker:disabled"/>
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="375934458" label="PortalsCrossOrigin:enabled"/>
@@ -52551,6 +52557,44 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="ErrorIdleStartMissing">
     Previous event was not logged successfully because previous idle event had
     no event start time.
+  </int>
+</enum>
+
+<enum name="PowerMLSmartDimComponentLoadComponentEvent">
+  <int value="0" label="Success">
+    Smart dim component is loaded successfully.
+  </int>
+  <int value="1" label="ReadComponentFilesError">
+    Failed to read component files to strings.
+  </int>
+  <int value="2" label="LoadPreprocessorError">
+    Failed to load preprocessor from proto.
+  </int>
+  <int value="3" label="LoadMetadataError">
+    Failed to load meta data from JSON.
+  </int>
+</enum>
+
+<enum name="PowerMLSmartDimComponentVersionType">
+  <int value="0" label="Default">
+    Use default component version, or experimental component version (specified
+    in Finch config) that is equal to the default.
+  </int>
+  <int value="1" label="Experimental">
+    Use experimental component version specified in Finch config.
+  </int>
+  <int value="2" label="Empty">
+    Expected version is empty. This should never happen.
+  </int>
+</enum>
+
+<enum name="PowerMLSmartDimComponentWorkerType">
+  <int value="0" label="BuiltinWorker">
+    Use built-in worker (initialized from built-in model and preprocessor config
+    files).
+  </int>
+  <int value="1" label="DownloadWorker">
+    Use downloaded worker (initialized from downloaded smart dim component).
   </int>
 </enum>
 
@@ -67352,6 +67396,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VideoFrameColorSpaceUMA">
+  <obsolete>
+    Removed 03/2020 in https://crbug.com/1053032.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="UnknownRGB"/>
   <int value="2" label="UnknownHDR"/>

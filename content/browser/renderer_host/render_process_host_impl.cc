@@ -3325,10 +3325,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kUseFakeCodecForPeerConnection,
     switches::kUseFakeUIForMediaStream,
     switches::kUseLegacyFormControls,
-    // This flag needs to be propagated to the renderer process for
-    // --in-process-webgl.
-    switches::kUseGL,
-    switches::kUseGpuInTests,
     switches::kUseMobileUserAgent,
     switches::kV,
     switches::kVideoCaptureUseGpuMemoryBuffer,

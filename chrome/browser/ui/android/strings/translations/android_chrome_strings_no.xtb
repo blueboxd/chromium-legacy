@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome laster ned filer raskere nå</translation>
 <translation id="1883903952484604915">Mine filer</translation>
 <translation id="1887786770086287077">Posisjonstilgang er slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1919950603503897840">Velg kontakter</translation>
 <translation id="1922076542920281912">For å gi Chrome tilgang til posisjonen din må du også slå på posisjon i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="2567385386134582609">BILDE</translation>
 <translation id="257088987046510401">Temaer</translation>
 <translation id="2570922361219980984">Posisjonstilgang er også slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Utvidet – klikk for å minimere.</translation>
 <translation id="2581165646603367611">Dette sletter informasjonskapsler, buffere og annen data fra nettsteder Chrome ikke tror er viktige.</translation>
 <translation id="2586657967955657006">Utklippstavle</translation>
 <translation id="2587052924345400782">En nyere versjon er tilgjengelig</translation>
@@ -491,7 +489,6 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4605958867780575332">Elementet er fjernet: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Åpne <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Bruk passord</translation>
-<translation id="4645575059429386691">Administreres av foreldrene dine</translation>
 <translation id="4650364565596261010">Systemstandard</translation>
 <translation id="4660838440047236328">hvordan rommet ditt ser ut</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmerker ble slettet</translation>
@@ -530,7 +527,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="488187801263602086">Endre navnet på filen</translation>
 <translation id="4882831918239250449">Kontrollér hvordan nettleserloggen din brukes til personlig tilpasning av søk, annonser med mer</translation>
-<translation id="4883854917563148705">Administrerte innstillinger kan ikke tilbakestilles</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
 <translation id="4887024562049524730">Spør før nettsteder får bruke virtuell virkelighet-enheten din eller -dataene dine (anbefales)</translation>
 <translation id="4910889077668685004">Betalingsapper</translation>
@@ -560,7 +556,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5048398596102334565">Gi nettsteder tilgang til bevegelsessensorer (anbefalt)</translation>
 <translation id="5063480226653192405">Bruk</translation>
 <translation id="5087580092889165836">Legg til et kort</translation>
-<translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="510275257476243843">1 time igjen</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
@@ -597,7 +592,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5357811892247919462">Fane er mottatt</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> åpen fane – trykk for å bytte fane}other{<ph name="OPEN_TABS_MANY" /> åpne faner – trykk for å bytte fane}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 til)}other{(+ # til)}}</translation>
-<translation id="5400569084694353794">Ved å bruke dette programmet samtykker du i Chromes <ph name="BEGIN_LINK1" />vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />merknad om personvern<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Navn</translation>
 <translation id="5403644198645076998">Tillat bare visse nettsteder</translation>
 <translation id="5414836363063783498">Bekrefter …</translation>
@@ -946,7 +940,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7981313251711023384">Last inn sider på forhånd for raskere nettlesing og søk</translation>
 <translation id="79859296434321399">Du må installere ARCore for å se innhold med utvidet virkelighet</translation>
 <translation id="7986741934819883144">Velg en kontakt</translation>
-<translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
 <translation id="7993619969781047893">Det kan hende at funksjoner på enkelte nettsteder slutter å fungere</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
 <translation id="7999064672810608036">Er du sikker på at du vil slette alle lokale data, deriblant informasjonskapsler, og tilbakestille alle tillatelser for dette nettstedet?</translation>
@@ -983,7 +976,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8186512483418048923"><ph name="FILES" /> filer gjenstår</translation>
 <translation id="8190358571722158785">1 dag igjen</translation>
 <translation id="8200772114523450471">Fortsett</translation>
-<translation id="8206354486702514201">Denne innstillingen håndheves av administratoren din.</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
 <translation id="8218622182176210845">Administrer kontoen din</translation>
 <translation id="8224471946457685718">Last ned artikler for deg via Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkenivå: # stolpe}other{Signalstyrkenivå: # stolper}}</translation>
 <translation id="868929229000858085">Søk i kontaktene dine</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
-<translation id="8728487861892616501">Når du bruker denne appen, godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome, <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Innholdet er skjult</translation>
 <translation id="8751914237388039244">Velg et bilde</translation>
 <translation id="8758557275681689734">Se alle åpne faner</translation>
@@ -1058,7 +1049,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8801436777607969138">Blokkér JavaScript for et bestemt nettsted.</translation>
 <translation id="8812260976093120287">På noen nettsteder kan du betale med de støttede betalingsappene ovenfor på enheten din.</translation>
 <translation id="8816026460808729765">Blokkér nettsteder fra å få tilgang til sensorer</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="8833831881926404480">Et nettsted deler skjermen din</translation>
 <translation id="883806473910249246">Det oppsto en feil under nedlastingen av innholdet.</translation>
@@ -1085,7 +1075,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8988028529677883095">Bruk telefonen som sikkerhetsnøkkel</translation>
 <translation id="8993760627012879038">Åpne en ny fane i inkognitomodus</translation>
 <translation id="8998729206196772491">Du logger på med en konto som administreres av <ph name="MANAGED_DOMAIN" />, og du gir administratoren for dette domenet kontroll over Chrome-dataene dine. Dataene dine blir permanent knyttet til denne kontoen. Når du logger av Chrome, slettes dataene dine fra denne enheten, men de fortsetter å være lagret i Google-kontoen din.</translation>
-<translation id="9019902583201351841">Administrert av foreldrene dine</translation>
 <translation id="9028914725102941583">Slå på synkronisering for å dele på tvers av enheter</translation>
 <translation id="9040142327097499898">Varsler er tillatt. Posisjon er slått av for denne enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videoer}}</translation>

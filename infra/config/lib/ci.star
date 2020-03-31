@@ -171,14 +171,12 @@ def fyi_coverage_builder(
     cores=32,
     ssd=True,
     execution_timeout=20 * time.hour,
-    goma_backend=builders.goma.backend.RBE_PROD,
     **kwargs):
   return fyi_builder(
       name = name,
       cores = cores,
       ssd=ssd,
       execution_timeout = execution_timeout,
-      goma_backend = goma_backend,
       **kwargs
   )
 

@@ -468,7 +468,16 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    protected @LaunchIntentDispatcher.Action int maybeDispatchLaunchIntent(Intent intent) {
+    protected @LaunchIntentDispatcher.Action int maybeDispatchLaunchIntent(
+            Intent intent, Bundle savedInstanceState) {
+        // Detect if incoming intent is a result of Chrome recreating itself. For now, restrict this
+        // path to reparenting to ensure the launching logic isn't disrupted.
+        // TODO(crbug.com/1065491): Unlock this codepath for all incoming intents once it's
+        // confirmed working and stable.
+        if (savedInstanceState != null && AsyncTabParamsManager.hasParamsWithTabToReparent()) {
+            return LaunchIntentDispatcher.Action.CONTINUE;
+        }
+
         if (getClass().equals(ChromeTabbedActivity.class)
                 && Intent.ACTION_MAIN.equals(intent.getAction())) {
 
@@ -484,7 +493,7 @@ public class ChromeTabbedActivity
         if (action != LaunchIntentDispatcher.Action.CONTINUE) {
             return action;
         }
-        return super.maybeDispatchLaunchIntent(intent);
+        return super.maybeDispatchLaunchIntent(intent, savedInstanceState);
     }
 
     // We know of at least one app that explicitly specifies .Main activity in custom tab

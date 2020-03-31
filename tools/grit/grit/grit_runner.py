@@ -249,9 +249,13 @@ def _GetToolInfo(tool):
     return matches[0][1]
 
 
-def Main(args):
+def Main(args=None):
   """Parses arguments and does the appropriate thing."""
   util.ChangeStdoutEncoding()
+
+  # Support for setuptools console wrappers.
+  if args is None:
+    args = sys.argv[1:]
 
   options = Options()
   try:

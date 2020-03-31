@@ -12,6 +12,8 @@ source_set("trust_tokens") {
     "//services/network:tests",
   ]
 
+  defines = [ "IS_NETWORK_SERVICE_IMPL" ]
+
   sources = [
     "has_trust_tokens_answerer.cc",
     "has_trust_tokens_answerer.h",
@@ -63,6 +65,8 @@ source_set("trust_tokens") {
 source_set("test_support") {
   testonly = true
 
+  defines = [ "IS_NETWORK_SERVICE_IMPL" ]
+
   sources = [
     "test/trust_token_test_util.cc",
     "test/trust_token_test_util.h",
@@ -83,6 +87,8 @@ source_set("test_support") {
 
 source_set("tests") {
   testonly = true
+
+  defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   sources = [
     "has_trust_tokens_answerer_unittest.cc",

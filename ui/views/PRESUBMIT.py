@@ -19,7 +19,7 @@ def CheckChangeLintsClean(input_api, output_api):
     x, white_list=INCLUDE_CPP_FILES_ONLY,
     black_list=input_api.DEFAULT_BLACK_LIST)
   return input_api.canned_checks.CheckChangeLintsClean(
-      input_api, output_api, sources)
+      input_api, output_api, sources, lint_filters=[], verbose_level=1)
 
 
 def CheckChange(input_api, output_api):

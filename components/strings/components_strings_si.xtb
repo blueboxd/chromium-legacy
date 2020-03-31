@@ -543,7 +543,6 @@
 <translation id="3366477098757335611">කාඩ්පත් බලන්න</translation>
 <translation id="3369192424181595722">ඔරලෝසු දෝෂය</translation>
 <translation id="337363190475750230">ප්‍රතිවිධාන කර ඇත</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ඔබේ බ්‍රවුසරය මත ව්‍යවසාය සේවා ආකර්ෂණ සබල කර ඇත. මෙම ආකර්ෂණවලට ඔබේ දත්ත සමහරක් වෙත ප්‍රවේශය තිබේ.</translation>
 <translation id="3377144306166885718">සේවාදායකය TLS හි යල් පැන ගිය අනුවාදයක් භාවිත කළා.</translation>
 <translation id="3377188786107721145">ප්‍රතිපත්ති විග්‍රහ දෝෂය</translation>
 <translation id="3377736046129930310">කාඩ්පත් වඩා වේගයෙන් තහවුරු කිරීමට තිර අගුල භාවිත කරන්න</translation>
@@ -980,7 +979,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> තුළ නැතිද? මෙම දෝෂය වාර්තා කරන්න</translation>
 <translation id="5190835502935405962">පොත්සලකුණු තීරුව</translation>
 <translation id="519422657042045905">අනුසටහන නොලැබේ</translation>
-<translation id="5196187217592847346">ව්‍යවසාය සේවා ආකර්ෂණ</translation>
 <translation id="5201306358585911203">මෙම පිටුවෙහි කාවැද්දූ පිටුවක් කියයි</translation>
 <translation id="5205222826937269299">නම අවශ්‍යයි</translation>
 <translation id="5209518306177824490">SHA-1 ඇඟිලි සලකුණු</translation>
@@ -1454,7 +1452,6 @@
 <translation id="725866823122871198">ඔබගේ පරිගණකයේ දිනය සහ වේලාව (<ph name="DATE_AND_TIME" />) වැරදි නිසා <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> වෙත පුද්ගලික සම්බන්ධතාවය ස්ථාපනය කළ නොහැක.</translation>
 <translation id="7260504762447901703">ප්‍රවේශය අහෝසි කරන්න</translation>
 <translation id="7275334191706090484">පාලිත පොත්සලකුණු</translation>
-<translation id="7288778322931489286">ඔබේ පරිපාලකයා ඔබේ බ්‍රවුසරය සඳහා ව්‍යවසාය සේවා ආකර්ෂණ සබල කර ඇත. මෙම ආකර්ෂණවලට ඔබේ දත්ත සමහරක් වෙත ප්‍රවේශය තිබේ.</translation>
 <translation id="7292031607255951991">ලබන්නාගේ නම</translation>
 <translation id="7298195798382681320">නිර්දේශිතයි</translation>
 <translation id="7300012071106347854">කෝබොල්ට් නිල්</translation>
@@ -1811,7 +1808,6 @@
 <translation id="8866481888320382733">ප්‍රතිපත්ති සැකසුම් විග්‍රහ කිරීමේ දෝශය</translation>
 <translation id="8866928039507595380">නවන්න</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">ව්‍යවසාය සේවා ආකර්ෂණය මඟින් ලකුණු කරනු ලැබූ ආරක්‍ෂක සිදුවීම් ගැන දත්ත ඔබේ පරිපාලක සමඟ බෙදා ගන්න. මෙයට ඔබ පැමිණෙන පිටුවල URL, ගොනු නම් හෝ පාරදත්ත, සහ ඔබ ඔබේ උපාංගයටත් Chrome වෙතත් පුරන්නට භාවිත කරන පරිශීලක නාමය ඇතුළු විය හැක.</translation>
 <translation id="8870413625673593573">මෑතකදී වසන ලද</translation>
 <translation id="8870494189203302833">එකම පිළිවෙළ මුහුණු පහළට</translation>
 <translation id="8874824191258364635">වලංගු කාඩ්පත් අංකයක් ඇතුළු කරන්න</translation>

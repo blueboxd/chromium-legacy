@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_list.h"

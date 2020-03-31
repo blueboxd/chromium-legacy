@@ -5,6 +5,7 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"

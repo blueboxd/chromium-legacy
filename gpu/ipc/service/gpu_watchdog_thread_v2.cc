@@ -18,6 +18,7 @@
 #include "base/native_library.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -37,6 +38,8 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(
       is_test_mode_(is_test_mode),
       watched_gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
+  num_of_processors_ = base::SysInfo::NumberOfProcessors();
+
 #if defined(OS_WIN)
   // GetCurrentThread returns a pseudo-handle that cannot be used by one thread
   // to identify another. DuplicateHandle creates a "real" handle that can be
@@ -623,6 +626,8 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
 
   crash_keys::gpu_watchdog_kill_after_power_resume.Set(
       WithinOneMinFromPowerResumed() ? "1" : "0");
+
+  crash_keys::num_of_processors.Set(base::NumberToString(num_of_processors_));
 
   // Check the arm_disarm_counter value one more time.
   base::subtle::Atomic32 last_arm_disarm_counter =

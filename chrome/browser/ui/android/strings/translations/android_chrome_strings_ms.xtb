@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome kini memuat turun fail dengan lebih pantas</translation>
 <translation id="1883903952484604915">Fail Saya</translation>
 <translation id="1887786770086287077">Akses lokasi dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> akan dibuka dalam Chrome. Dengan meneruskan penggunaan, anda bersetuju menerima <ph name="BEGIN_LINK1" />Terma Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919950603503897840">Pilih kenalan</translation>
 <translation id="1922076542920281912">Untuk membenarkan Chrome mengakses lokasi anda, hidupkan lokasi dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
@@ -225,7 +224,6 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="2567385386134582609">IMEJ</translation>
 <translation id="257088987046510401">Tema</translation>
 <translation id="2570922361219980984">Akses lokasi turut dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Dikembangkan - klik untuk meruntuhkan.</translation>
 <translation id="2581165646603367611">Tindakan ini akan menghapuskan kuki, cache dan data tapak yang lain yang Chrome anggap tidak penting.</translation>
 <translation id="2586657967955657006">Papan Keratan</translation>
 <translation id="2587052924345400782">Versi lebih baharu tersedia</translation>
@@ -491,7 +489,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4605958867780575332">Item dialih keluar: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Buka <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Gunakan kata laluan</translation>
-<translation id="4645575059429386691">Diurus oleh ibu bapa anda</translation>
 <translation id="4650364565596261010">Lalai sistem</translation>
 <translation id="4660838440047236328">reka letak bilik anda</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> penanda halaman dipadamkan</translation>
@@ -530,7 +527,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4881695831933465202">Buka</translation>
 <translation id="488187801263602086">Namakan semula fail</translation>
 <translation id="4882831918239250449">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian, iklan dan pelbagai lagi</translation>
-<translation id="4883854917563148705">Tetapan yang diurus tidak dapat ditetapkan semula</translation>
 <translation id="4885273946141277891">Bilangan kejadian Chrome tidak disokong.</translation>
 <translation id="4887024562049524730">Tanya sebelum membenarkan tapak menggunakan peranti dan data realiti maya anda (disyorkan)</translation>
 <translation id="4910889077668685004">Apl pembayaran</translation>
@@ -560,7 +556,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5048398596102334565">Benarkan tapak mengakses penderia gerakan (disyorkan)</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
 <translation id="5087580092889165836">Tambah kad</translation>
-<translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
 <translation id="5127805178023152808">Penyegerakan dimatikan</translation>
@@ -597,7 +592,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5357811892247919462">Tab diterima</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab terbuka, ketik untuk beralih antara tab}other{<ph name="OPEN_TABS_MANY" /> tab terbuka, ketik untuk beralih antara tab}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 lagi)}other{(+ # lagi)}}</translation>
-<translation id="5400569084694353794">Dengan menggunakan aplikasi ini, anda bersetuju menerima <ph name="BEGIN_LINK1" />Syarat Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403592356182871684">Nama</translation>
 <translation id="5403644198645076998">Benarkan tapak tertentu sahaja</translation>
 <translation id="5414836363063783498">Mengesahkan…</translation>
@@ -946,7 +940,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7981313251711023384">Pramuat halaman untuk penyemakan imbas dan pencarian yang lebih cepat</translation>
 <translation id="79859296434321399">Untuk melihat kandungan realiti tambahan, pasang ARCore</translation>
 <translation id="7986741934819883144">Pilih kenalan</translation>
-<translation id="7987073022710626672">Syarat Perkhidmatan Chrome</translation>
 <translation id="7993619969781047893">Ciri pada sesetengah tapak mungkin rosak</translation>
 <translation id="7998918019931843664">Buka semula tab yang ditutup</translation>
 <translation id="7999064672810608036">Anda pasti ingin mengosongkan semua data setempat, termasuk kuki dan menetapkan semula semua kebenaran untuk tapak web ini?</translation>
@@ -983,7 +976,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8186512483418048923"><ph name="FILES" /> fail lagi</translation>
 <translation id="8190358571722158785">1 hari lagi</translation>
 <translation id="8200772114523450471">Sambung semula</translation>
-<translation id="8206354486702514201">Tetapan ini dikuatkuasakan oleh pentadbir anda.</translation>
 <translation id="8209050860603202033">Buka imej</translation>
 <translation id="8218622182176210845">Urus akaun anda</translation>
 <translation id="8224471946457685718">Muat turun artikel untuk anda apabila menggunakan Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8687353297350450808">{N_BARS,plural, =1{Tahap Kekuatan Isyarat: # bar}other{Tahap Kekuatan Isyarat: # bar}}</translation>
 <translation id="868929229000858085">Cari dalam kenalan anda</translation>
 <translation id="869891660844655955">Tarikh tamat tempoh</translation>
-<translation id="8728487861892616501">Apabila menggunakan aplikasi ini, anda bersetuju menerima <ph name="BEGIN_LINK1" />Syarat Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome serta <ph name="BEGIN_LINK3" />Notis Privasi untuk Akaun Google yang Diurus dengan Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Kandungan tersembunyi</translation>
 <translation id="8751914237388039244">Pilih imej</translation>
 <translation id="8758557275681689734">Lihat semua tab terbuka anda</translation>
@@ -1058,7 +1049,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8801436777607969138">Sekat JavaScript untuk tapak tertentu.</translation>
 <translation id="8812260976093120287">Pada sesetengah tapak web, anda boleh membayar menggunakan apl pembayaran yang disokong di atas pada peranti anda.</translation>
 <translation id="8816026460808729765">Sekat tapak daripada mengakses penderia</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> akan dibuka dalam Chrome. Dengan meneruskan penggunaan, anda bersetuju menerima <ph name="BEGIN_LINK1" />Syarat Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome serta <ph name="BEGIN_LINK3" />Notis Privasi untuk Akaun Google yang Diurus menggunakan Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Penanda buku</translation>
 <translation id="8833831881926404480">Satu tapak sedang berkongsi skrin anda</translation>
 <translation id="883806473910249246">Ralat berlaku semasa memuat turun kandungan.</translation>
@@ -1085,7 +1075,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8988028529677883095">Gunakan telefon sebagai kunci keselamatan</translation>
 <translation id="8993760627012879038">Buka tetingkap baharu dalam mod Inkognito</translation>
 <translation id="8998729206196772491">Anda log masuk dengan akaun yang diurus oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kawalan terhadap data Chrome anda kepada pentadbirnya. Data anda akan terikat secara kekal kepada akaun ini. Tindakan log keluar daripada Chrome akan memadamkan data anda daripada peranti ini, tetapi data itu akan kekal disimpan dalam Akaun Google anda.</translation>
-<translation id="9019902583201351841">Diurus oleh ibu bapa anda</translation>
 <translation id="9028914725102941583">Hidupkan penyegerakan untuk berkongsi merentas peranti</translation>
 <translation id="9040142327097499898">Pemberitahuan dibenarkan. Lokasi dimatikan untuk peranti ini.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Video}}</translation>

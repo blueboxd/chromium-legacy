@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2501278716633472235">Rudi nyuma</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Kidakuzi kimoja kimezuiwa}other{Vidakuzi # vimezuiwa}}</translation>
+<translation id="257931822824936280">Imepanuliwa - bofya ili ukunje.</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2704606927547763573">Imenakiliwa</translation>
 <translation id="2968755619301702150">Kitazamaji vyeti</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Nakili kiungo</translation>
 <translation id="4002066346123236978">Kichwa</translation>
 <translation id="4570913071927164677">Maelezo</translation>
+<translation id="4645575059429386691">Inadhibitiwa na wazazi wako</translation>
+<translation id="4883854917563148705">Huwezi kubadilisha mipangilio inayodhibitiwa</translation>
 <translation id="497421865427891073">Nenda mbele</translation>
+<translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="5300589172476337783">Onyesha</translation>
 <translation id="5301954838959518834">Sawa, nimeelewa</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Hapana</translation>
 <translation id="7846076177841592234">Ghairi uchaguzi</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
+<translation id="8206354486702514201">Mpangilio huu umetekelezwa na msimamizi wako.</translation>
 <translation id="8249310407154411074">Sogeza juu</translation>
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8609465669617005112">Songa juu</translation>
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
+<translation id="9019902583201351841">Inadhibitiwa na wazazi wako</translation>
 </translationbundle>

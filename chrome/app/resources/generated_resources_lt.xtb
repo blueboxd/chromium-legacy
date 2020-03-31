@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Matomi tinklai:</translation>
 <translation id="1094607894174825014">Buvo pateikta skaitymo arba rašymo operacijos užklausa su netinkamu poslinkiu įrenginyje „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="1097658378307015415">Prieš prisijungdami įeikite kaip svečias, kad suaktyvintumėte tinklą <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">Vaizdas nukopijuotas iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="1103523840287552314">Visada versti <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Nepavyko aptikti SIM kortelės</translation>
 <translation id="1108600514891325577">&amp;Sustabdyti</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">foninis puslapis</translation>
 <translation id="1745520510852184940">Visada tai daryti</translation>
 <translation id="1750172676754093297">Jūsų saugos rakte negalima išsaugoti kontrolinių kodų</translation>
+<translation id="1751262127955453661"><ph name="ORIGIN" /> galės redaguoti failus aplanke „<ph name="FOLDERNAME" />“, kol uždarysite visus šios svetainės skirtukus</translation>
 <translation id="175196451752279553">I&amp;š naujo atidaryti uždarytą skirtuką</translation>
 <translation id="1753067873202720523">„Chromebook“ gali būti neįkraunamas, kai jis įjungtas.</translation>
 <translation id="1753905327828125965">Dažniausiai lankomi</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">Jau naudojate „Chrome“? Prisijunkite</translation>
 <translation id="18245044880483936">Atsarginės kopijos duomenys nebus įtraukti skaičiuojant vaiko Disko saugyklos kvotą.</translation>
 <translation id="1826516787628120939">Tikrinama</translation>
+<translation id="1827738518074806965">Meno galerija</translation>
 <translation id="1828378091493947763">Šis papildinys šiame įrenginyje nepalaikomas</translation>
 <translation id="1828901632669367785">Spausdinti naudojant sistemos dialogo langą...</translation>
 <translation id="1829129547161959350">Pingvinas</translation>
@@ -1028,6 +1031,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2359808026110333948">Tęskite</translation>
 <translation id="236117173274098341">Optimizuoti</translation>
 <translation id="236141728043665931">Visada blokuoti prieigą prie mikrofono</translation>
+<translation id="2364498172489649528">Pavyko</translation>
 <translation id="2365507699358342471">Ši svetainė gali peržiūrėti tekstą ir vaizdus, nukopijuotus į iškarpinę.</translation>
 <translation id="2366260648632264559">Rodyti sistemos tekstą šia kalba</translation>
 <translation id="2367972762794486313">Rodyti programas</translation>
@@ -1342,6 +1346,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2762441749940182211">Fotoaparatas užblokuotas</translation>
 <translation id="2765217105034171413">Mažas</translation>
 <translation id="2766161002040448006">Paprašyti vieno iš tėvų</translation>
+<translation id="2767127727915954024"><ph name="ORIGIN" /> galės redaguoti failą „<ph name="FILENAME" />“, kol uždarysite visus šios svetainės skirtukus</translation>
 <translation id="276969039800130567">Prisijungta kaip <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Pašalinti iš sąrašo</translation>
 <translation id="2770690685823456775">Eksportuokite slaptažodžius į kitą aplanką</translation>
@@ -1666,6 +1671,18 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3202173864863109533">Šio skirtuko garsas nutildytas.</translation>
 <translation id="3208321278970793882">Programa</translation>
 <translation id="3208584281581115441">Tikrinti dabar</translation>
+<translation id="3208640652501208439">Mokyklos darbų ištekliai gali būti nepasiekiami arba neįkeliami automatiškai
+    Gali būti, kad vaikas negalės pasiekti:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />mokyklos įdiegtų programų ir plėtinių;
+      <ph name="LIST_ITEM" />žymių iš mokyklos „Chromebook“;
+      <ph name="LIST_ITEM" />švietimo svetainių automatinio pildymo slaptažodžių.
+    <ph name="END_LIST" />
+    Jei norite naudoti visas mokyklos funkcijas šiame įrenginyje, vaikas turi atlikti nurodytus veiksmus.
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Atsijungti nuo paskyros, kuri valdoma naudojant „Family Link“.
+      <ph name="OLIST_ITEM" />Prisijungti naudodamas savo „G Suite for Education“ paskyrą prisijungimo ekrane. Tačiau atminkite, kad bus taikoma mokyklos politika, įskaitant programų ir svetainių prieigos nustatymus, jūsų „Family Link“ priežiūros funkcijoms (pvz., mokyklų administratoriai gali leisti „YouTube“, jei to reikia norint atlikti namų darbus, nebus taikomas įrenginio naudojimo laikas ir pan.).
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Nepatvirtinta</translation>
 <translation id="32101887417650595">Nepavyko prisijungti prie spausdintuvo</translation>
 <translation id="321084946921799184">Geltona ir balta</translation>
@@ -1744,6 +1761,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3312424061798279731">Įgalintos kalbos</translation>
 <translation id="3313622045786997898">Sertifikato parašo vertė</translation>
 <translation id="3315158641124845231">Slėpti „<ph name="PRODUCT_NAME" />“</translation>
+<translation id="3317284582048881482">Tėvams skirta mokyklos paskyros informacija</translation>
 <translation id="3317459757438853210">Dvipusis</translation>
 <translation id="3317678681329786349">Fotoaparatas ir mikrofonas užblokuoti</translation>
 <translation id="3319048459796106952">Naujas &amp;nežinomas langas</translation>
@@ -1930,6 +1948,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3574210789297084292">prisijungti</translation>
 <translation id="3574917942258583917">Vis tiek išeiti iš inkognito režimo?</translation>
 <translation id="3575121482199441727">Leisti šioje svetainėje</translation>
+<translation id="3575919114596668130">„Family Link“ tėvų nustatymai vis tiek bus taikomi. Jei anksčiau buvote užblokavę programą arba svetainę, dar kartą to daryti nereikės.</translation>
 <translation id="3576324189521867626">Sėkmingai įdiegta</translation>
 <translation id="3578594933904494462">Šio skirtuko lapo turinys bendrinamas.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; nori bendrinti spausdintuvą &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; su jums priklausančia grupe &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jei sutiksite, visi grupės nariai galės spausdinti naudodami šį spausdintuvą.</translation>
@@ -2770,6 +2789,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4689235506267737042">Demonstracinės versijos nuostatų pasirinkimas</translation>
 <translation id="4689421377817139245">Sinchronizuokite šią žymę „iPhone“ įrenginyje</translation>
 <translation id="4690091457710545971">&lt;Keturi „Intel“ „Wi-Fi“ programinės aparatinės įrangos sugeneruoti failai: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Pirmieji trys yra dvejetainiai failai, kuriuose yra registro išklotinės ir kuriuos „Intel“ įvertino, kad nustatytų, ar nėra asmens ar įrenginį identifikuojančios informacijos. Paskutinis failas yra vykdymo pėdsakas iš „Intel“ programinės aparatinės įrangos. Jame išvalyta visa asmens ar įrenginį identifikuojanti informacija, bet jis per didelis, kad būtų galima čia pateikti. Šie failai sugeneruoti reaguojant į pastarąsias „Wi-Fi“ problemas, susijusias su įrenginiu, ir bus bendrinami su „Intel“, siekiant padėti pašalinti šias triktis.&gt;</translation>
+<translation id="4691791363716065510"><ph name="ORIGIN" /> galės peržiūrėti failą „<ph name="FILENAME" />“, kol uždarysite visus šios svetainės skirtukus</translation>
 <translation id="4692623383562244444">Paieškos varikliai</translation>
 <translation id="4693155481716051732">Sušis</translation>
 <translation id="4694024090038830733">Spausdintuvą konfigūruoja administratorius.</translation>
@@ -3125,6 +3145,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5204967432542742771">Įveskite slaptažodį</translation>
 <translation id="5206215183583316675">Ištrinti „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="520621735928254154">Sertifikato importavimo klaida</translation>
+<translation id="5209307736170827035">Jūsų vaiko duomenys sistemoje „Classroom“ bus apsaugoti. <ph name="LINK_BEGIN" />Sužinokite daugiau<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Įrenginių nerasta</translation>
 <translation id="5210990770352357081">Nepavyko pašalinti „Plugin VM“</translation>
 <translation id="5213481667492808996">„<ph name="NAME" />“ duomenų paslauga paruošta naudoti</translation>
@@ -3236,6 +3257,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5341980496415249280">Palaukite, pakuojama...</translation>
 <translation id="5342091991439452114">PIN kodą turi sudaryti bent <ph name="MINIMUM" /> skaitm.</translation>
 <translation id="5344036115151554031">Atkuriama „Linux“</translation>
+<translation id="535123479159372765">Tekstas nukopijuotas iš kito įrenginio</translation>
 <translation id="5352033265844765294">Laiko žymėjimas</translation>
 <translation id="5353252989841766347">Slaptažodžių eksportavimas iš „Chrome“</translation>
 <translation id="5355099869024327351">Padėjėjui leidžiama rodyti pranešimus</translation>
@@ -3358,6 +3380,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5511379779384092781">Labai mažas</translation>
 <translation id="5511823366942919280">Ar tikrai norite nustatyti šį įrenginį kaip „Shark“?</translation>
 <translation id="5512653252560939721">Naudotojo sertifikatas turėtų būti palaikomas aparatinės įrangos.</translation>
+<translation id="5515923816438946203">Pasirinkti, kas turi būti rodoma ekrane</translation>
 <translation id="5517304475148761050">Šiai programai būtina prieiga prie „Play“ parduotuvės</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – „<ph name="NETWORK_DISPLAY_NAME" />“</translation>
 <translation id="551752069230578406">Prie jūsų paskyros pridedamas spausdintuvas – tai gali šiek tiek užtrukti...</translation>
@@ -3809,6 +3832,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6097480669505687979">Jei neatlaisvinsite vietos, naudotojai ir duomenys gali būti automatiškai pašalinti.</translation>
 <translation id="6097600385983390082">Paieška balsu uždaryta</translation>
 <translation id="6098793583803863900">Nuskaitoma, ar nežinomame faile nėra pavojingo turinio.</translation>
+<translation id="609942571968311933">Tekstas nukopijuotas iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="6100736666660498114">Pradžios meniu</translation>
 <translation id="6101226222197207147">Pridėta nauja programa (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Šį failą užblokavo Papildoma apsauga.</translation>
@@ -4179,6 +4203,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="6615455863669487791">Rodyti</translation>
 <translation id="6618097958368085618">Vis tiek palikti</translation>
+<translation id="6618744767048954150">Vykdoma</translation>
 <translation id="6619058681307408113">Eilutinio spausdintuvo paslaugų teikimo sistema (LPD)</translation>
 <translation id="661907246513853610">Svetainė gali stebėti jūsų vietą</translation>
 <translation id="6619801788773578757">Pridėkite viešojo terminalo programą</translation>
@@ -4564,6 +4589,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7131040479572660648">Skaityti duomenis svetainėse <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ir <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Pridėti pu&amp;slapį...</translation>
 <translation id="7133578150266914903">Administratorius atkuria šį įrenginį (<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">Patikrinta slaptažodžių: <ph name="DONE" /> iš <ph name="TOTAL" />...</translation>
 <translation id="7134098520442464001">Sumažinti tekstą</translation>
 <translation id="7135729336746831607">Įjungti „Bluetooth“?</translation>
 <translation id="7136639886842764730">Domenui <ph name="DOMAIN" /> reikia, kad nedelsdami atnaujintumėte „<ph name="DEVICE_TYPE" />“.</translation>
@@ -4912,6 +4938,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="761530003705945209">Sukurkite atsarginę kopiją „Google“ diske. Lengvai atkurkite duomenis arba perjunkite įrenginį bet kuriuo metu. Į atsarginę kopiją įtraukiami programų duomenys. Atsarginės kopijos įkeliamos į sistemą „Google“ ir šifruojamos naudojant „Google“ paskyros slaptažodį.</translation>
 <translation id="7616214729753637086">Registruojamas įrenginys...</translation>
 <translation id="7617366389578322136">Prisijungiama prie „<ph name="DEVICE_NAME" />“</translation>
+<translation id="761763866592998929">Adaptyvusis režimas</translation>
 <translation id="762068974690945752">Čia pridėkite mokyklos paskyrą arba tvarkykite vaikų paskyras. <ph name="LINK_BEGIN" />Sužinokite daugiau<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Sistemai nepavyko išsaugoti įrenginio konfigūracijos.</translation>
 <translation id="7622114377921274169">Įkraunama.</translation>
@@ -5023,6 +5050,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7766838926148951335">Priimti leidimus</translation>
 <translation id="7768770796815395237">Keisti</translation>
 <translation id="7769672763586021400">Modelio ID</translation>
+<translation id="7770612696274572992">Vaizdas nukopijuotas iš kito įrenginio</translation>
 <translation id="7770651108375708429">Atsijungti nuo „Wi-Fi“</translation>
 <translation id="7771452384635174008">Išdėstymas</translation>
 <translation id="7772032839648071052">Patvirtinti slaptafrazę</translation>
@@ -5030,6 +5058,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7772773261844472235">„Chromebook“ įrenginio būsenos tikrinimas</translation>
 <translation id="7773726648746946405">Sesijų atmintinė</translation>
 <translation id="7774365994322694683">Paukštis</translation>
+<translation id="7776156998370251340"><ph name="ORIGIN" /> galės peržiūrėti failus aplanke „<ph name="FOLDERNAME" />“, kol uždarysite visus šios svetainės skirtukus</translation>
 <translation id="7776701556330691704">Balsų nerasta</translation>
 <translation id="7780252971640011240">Nepavyko prisijungti. Susisiekite su operatoriumi, kad gautumėte pagalbos.</translation>
 <translation id="7781335840981796660">Bus pašalintos visos naudotojo paskyros ir vietiniai duomenys.</translation>
@@ -6049,6 +6078,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9055636786322918818">Taikyti RC4 šifruotę. Naudojant šią parinktį padidėja rizika, nes RC4 šifrai nesaugūs.</translation>
 <translation id="9056810968620647706">Nerasta jokių atitikčių.</translation>
 <translation id="9057354806206861646">Tvarkaraščio atnaujinimas</translation>
+<translation id="9058976525724291037">Jūsų vaikas nori pridėti kitą „Google“ paskyrą šiame įrenginyje. Įrenginiuose, kurie tvarkomi naudojant „Family Link“, galima pridėti tik „G Suite for Education“ paskyrų.</translation>
 <translation id="9062065967472365419">Nustebinti mane</translation>
 <translation id="9062468308252555888">14 k.</translation>
 <translation id="9063208415146866933">Klaida eilutėse nuo <ph name="ERROR_LINE_START" /> iki <ph name="ERROR_LINE_END" /></translation>

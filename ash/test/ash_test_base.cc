@@ -135,9 +135,8 @@ void AshTestBase::SetUp() {
 }
 
 void AshTestBase::SetUp(std::unique_ptr<TestShellDelegate> delegate) {
-  // At this point, the task APIs should already be provided either by
-  // |task_environment_| or by the subclass in the
-  // SubclassManagesTaskEnvironment mode.
+  // At this point, the task APIs should already be provided by
+  // |task_environment_|.
   CHECK(base::ThreadTaskRunnerHandle::IsSet());
   CHECK(base::ThreadPoolInstance::Get());
 

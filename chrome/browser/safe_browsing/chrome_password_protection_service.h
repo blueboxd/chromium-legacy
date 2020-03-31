@@ -346,10 +346,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                                   ReusedPasswordAccountType password_type,
                                   WarningAction action);
 
-  void HandleUserActionOnSettings(content::WebContents* web_contents,
-                                  ReusedPasswordAccountType password_type,
-                                  WarningAction action);
-
   void HandleResetPasswordOnInterstitial(content::WebContents* web_contents,
                                          WarningAction action);
 

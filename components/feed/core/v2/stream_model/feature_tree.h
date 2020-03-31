@@ -6,7 +6,10 @@
 #define COMPONENTS_FEED_CORE_V2_STREAM_MODEL_FEATURE_TREE_H_
 
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
 #include "base/util/type_safety/id_type.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/proto_util.h"
@@ -101,6 +104,8 @@ class FeatureTree {
 
   // Returns the list of content that should be visible.
   std::vector<ContentRevision> GetVisibleContent();
+
+  std::string DumpStateForTesting();
 
  private:
   StreamNode* GetOrMakeNode(ContentTag id);

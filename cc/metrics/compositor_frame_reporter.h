@@ -131,6 +131,8 @@ class CC_EXPORT CompositorFrameReporter {
   CompositorFrameReporter& operator=(const CompositorFrameReporter& reporter) =
       delete;
 
+  std::unique_ptr<CompositorFrameReporter> CopyReporterAtBeginImplStage() const;
+
   const viz::BeginFrameId frame_id_;
 
   // Note that the started stage may be reported to UMA. If the histogram is

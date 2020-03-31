@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome télécharge maintenant les fichiers plus rapidement</translation>
 <translation id="1883903952484604915">Mes fichiers</translation>
 <translation id="1887786770086287077">L'accès à la localisation est désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> s'ouvrira dans Chrome. En continuant, vous acceptez les <ph name="BEGIN_LINK1" />conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="1919345977826869612">Annonces</translation>
 <translation id="1919950603503897840">Sélectionner des contacts</translation>
 <translation id="1922076542920281912">Pour autoriser Chrome à accéder à votre position, activez aussi la localisation dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Thèmes</translation>
 <translation id="2570922361219980984">L'accès à la localisation est également désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Développé : cliquer pour réduire</translation>
 <translation id="2581165646603367611">Cette action entraînera la suppression de tous les témoins, caches et autres données provenant de sites que Chrome estime ne pas être importants.</translation>
 <translation id="2586657967955657006">Presse-papiers</translation>
 <translation id="2587052924345400782">Version plus récente dispo</translation>
@@ -491,7 +489,6 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4605958867780575332">Élément supprimé : <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Ouvrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Utiliser le mot de passe</translation>
-<translation id="4645575059429386691">Géré par l’un de tes parents</translation>
 <translation id="4650364565596261010">Paramètres par défaut</translation>
 <translation id="4660838440047236328">la disposition de votre pièce.</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris supprimés</translation>
@@ -530,7 +527,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="488187801263602086">Renommer le fichier</translation>
 <translation id="4882831918239250449">Gérez la façon dont votre historique de navigation est utilisé pour personnaliser la recherche, les annonces et plus encore</translation>
-<translation id="4883854917563148705">Les paramètres gérés ne peuvent pas être réinitialisés</translation>
 <translation id="4885273946141277891">Trop d'exécutions simultanées de Google Chrome.</translation>
 <translation id="4887024562049524730">Demander avant d'autoriser les sites à utiliser votre appareil et vos données de réalité virtuelle (recommandé)</translation>
 <translation id="4910889077668685004">Applications de paiement</translation>
@@ -560,7 +556,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvements (recommandé)</translation>
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5087580092889165836">Ajouter une carte</translation>
-<translation id="5100237604440890931">Réduit : cliquer pour développer</translation>
 <translation id="510275257476243843">Il reste 1 heure</translation>
 <translation id="5123685120097942451">Onglet de navigation privée</translation>
 <translation id="5127805178023152808">La synchronisation est désactivée</translation>
@@ -597,7 +592,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5357811892247919462">Onglet reçu</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> onglet ouvert, touchez pour basculer vers un autre onglet}one{<ph name="OPEN_TABS_MANY" /> onglet ouvert, touchez pour basculer vers un autre onglet}other{<ph name="OPEN_TABS_MANY" /> onglets ouverts, touchez pour basculer vers un autre onglet}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 autre)}one{(+ # autre)}other{(+ # autres)}}</translation>
-<translation id="5400569084694353794">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />conditions d'utilisation<ph name="END_LINK1" /> et <ph name="BEGIN_LINK2" />l'avis de confidentialité<ph name="END_LINK2" /> de Google Chrome.</translation>
 <translation id="5403592356182871684">Noms</translation>
 <translation id="5403644198645076998">Autoriser uniquement certains sites</translation>
 <translation id="5414836363063783498">Vérification...</translation>
@@ -946,7 +940,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7981313251711023384">Précharger les pages pour une navigation et une recherche plus rapides</translation>
 <translation id="79859296434321399">Pour regarder du contenu de réalité augmentée, installez ARCore</translation>
 <translation id="7986741934819883144">Sélectionner un contact</translation>
-<translation id="7987073022710626672">Conditions d’utilisation Chrome</translation>
 <translation id="7993619969781047893">Des fonctionnalités sur certains sites risquent de ne pas fonctionner</translation>
 <translation id="7998918019931843664">Rouvrir l'onglet fermé</translation>
 <translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales de ce site Web, y compris les témoins, et réinitialiser toutes les autorisations pour ce site Web?</translation>
@@ -983,7 +976,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8186512483418048923"><ph name="FILES" /> fichiers restants</translation>
 <translation id="8190358571722158785">Il reste 1 jour</translation>
 <translation id="8200772114523450471">Reprendre</translation>
-<translation id="8206354486702514201">Votre administrateur impose la valeur associée à ce paramètre.</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8218622182176210845">Gérer votre compte</translation>
 <translation id="8224471946457685718">Télécharger des articles pour vous par connexion Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Niveau du signal : # barre}one{Niveau du signal : # barre}other{Niveau du signal : # barres}}</translation>
 <translation id="868929229000858085">Effectuez une recherche dans vos contacts</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
-<translation id="8728487861892616501">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />avis de confidentialité<ph name="END_LINK2" /> de Chrome ainsi que l'<ph name="BEGIN_LINK3" />avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contenus masqués</translation>
 <translation id="8751914237388039244">Sélectionner une image</translation>
 <translation id="8758557275681689734">Afficher tous vos onglets ouverts</translation>
@@ -1058,7 +1049,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8801436777607969138">Bloquez JavaScript sur un site en particulier.</translation>
 <translation id="8812260976093120287">Sur certains sites Web, vous pouvez payer avec les applications de paiement prises en charge indiquées ci-dessus sur votre appareil.</translation>
 <translation id="8816026460808729765">Empêcher les sites d'accéder aux capteurs</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> s'ouvrira dans Chrome. En continuant, vous acceptez les <ph name="BEGIN_LINK1" />conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />avis de confidentialité<ph name="END_LINK2" /> de Chrome, ainsi que l'<ph name="BEGIN_LINK3" />avis de confidentialité pour les comptes Google gérés par Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="8833831881926404480">Un site partage votre écran</translation>
 <translation id="883806473910249246">Une erreur s'est produite lors du téléchargement du contenu.</translation>
@@ -1085,7 +1075,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8988028529677883095">Utiliser le téléphone comme clé de sécurité</translation>
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode de nav. privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, et son administrateur pourra contrôler vos données Google Chrome. Celles-ci seront définitivement liées à votre compte. En vous déconnectant de Chrome, vous supprimerez vos données sur cet appareil, mais celles-ci resteront stockées dans votre compte Google.</translation>
-<translation id="9019902583201351841">Géré par tes parents</translation>
 <translation id="9028914725102941583">Activez la synchronisation pour partager des éléments entre des appareils</translation>
 <translation id="9040142327097499898">Les notifications sont autorisées. La localisation est désactivée pour cet appareil.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vidéo}one{# vidéo}other{# vidéos}}</translation>

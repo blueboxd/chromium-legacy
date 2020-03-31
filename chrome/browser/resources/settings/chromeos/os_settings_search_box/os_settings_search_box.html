@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
+<link rel="import" href="chrome://resources/mojo/mojo/public/mojom/base/string16.mojom.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="os_search_result_row.html">
@@ -57,14 +58,14 @@
             iron-dropdown's open() is called on the JS side. -->
       <iron-list id="searchResultList" slot="dropdown-content"
           selection-enabled items="[[searchResults_]]"
-          selected-item="{{selectedItem}}">
+          selected-item="{{selectedItem_}}">
         <!-- TODO(crbug/1056909): Use template dom-if if searchResults_ is
              empty, show 'No Results' UI -->
         <template>
-          <os-search-result-row actionable search-result-text="[[item]]"
-              selected="[[isItemSelected_(item, selectedItem)]]"
-              tabindex$="[[getRowTabIndex_(item, selectedItem)]]"
-              iron-list-tab-index$="[[getRowTabIndex_(item, selectedItem)]]"
+          <os-search-result-row actionable search-result="[[item]]"
+              selected="[[isItemSelected_(item, selectedItem_)]]"
+              tabindex$="[[getRowTabIndex_(item, selectedItem_)]]"
+              iron-list-tab-index$="[[getRowTabIndex_(item, selectedItem_)]]"
               last-focused="{{lastFocused_}}"
               list-blurred="{{listBlurred_}}"
               focus-row-index="[[index]]"
@@ -74,5 +75,7 @@
       </iron-list>
     </iron-dropdown>
   </template>
+  <script src="chrome://os-settings/search/search_result_icon.mojom-lite.js"></script>
+  <script src="chrome://os-settings/search/search.mojom-lite.js"></script>
   <script src="os_settings_search_box.js"></script>
 </dom-module>

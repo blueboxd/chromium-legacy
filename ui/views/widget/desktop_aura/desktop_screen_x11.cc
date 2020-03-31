@@ -49,7 +49,9 @@ gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
     point = event_source->GetRootCursorLocationFromCurrentEvent();
   return gfx::ConvertPointToDIP(
       GetXDisplayScaleFactor(),
-      point.value_or(x11_display_manager_->GetCursorLocation()));
+      // NB: Do NOT call value_or() here, since that would defeat the purpose of
+      // caching |point|.
+      point ? point.value() : x11_display_manager_->GetCursorLocation());
 }
 
 bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_SLIDER_H_
 #define UI_VIEWS_CONTROLS_SLIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"

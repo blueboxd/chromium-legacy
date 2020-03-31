@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">Προβολή καρτών</translation>
 <translation id="3369192424181595722">Σφάλμα ρολογιού</translation>
 <translation id="337363190475750230">Κατάργηση παροχής</translation>
-<translation id="3376829916920036789">Ο τομέας <ph name="ENROLLMENT_DOMAIN" /> έχει ενεργοποιήσει το Enterprise Service Hooks στο πρόγραμμα περιήγησής σας. Αυτά τα άγκιστρα έχουν πρόσβαση σε ορισμένα από τα δεδομένα σας.</translation>
 <translation id="3377144306166885718">Ο διακομιστής έχει παρωχημένη έκδοση TLS.</translation>
 <translation id="3377188786107721145">Σφάλμα ανάλυσης πολιτικής</translation>
 <translation id="3377736046129930310">Χρησιμοποιήστε το κλείδωμα οθόνης για πιο γρήγορη επιβεβαίωση καρτών</translation>
@@ -986,7 +985,6 @@
 <translation id="5179510805599951267">Δεν είναι στα <ph name="ORIGINAL_LANGUAGE" />; Αναφέρετε αυτό το σφάλμα</translation>
 <translation id="5190835502935405962">Γραμμή σελιδοδεικτών</translation>
 <translation id="519422657042045905">Ο σχολιασμός δεν διατίθεται</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Μια ενσωματωμένη σελίδα σε αυτήν τη σελίδα λέει</translation>
 <translation id="5205222826937269299">Απαιτείται όνομα</translation>
 <translation id="5209518306177824490">Αποτύπωμα SHA-1</translation>
@@ -1460,7 +1458,6 @@
 <translation id="725866823122871198">Δεν είναι δυνατή η επίτευξη ιδιωτικής σύνδεσης με τον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> επειδή η ημερομηνία και η ώρα (<ph name="DATE_AND_TIME" />) του υπολογιστή σας είναι λανθασμένες.</translation>
 <translation id="7260504762447901703">Ανάκληση πρόσβασης</translation>
 <translation id="7275334191706090484">Διαχειριζόμενοι σελιδοδείκτες</translation>
-<translation id="7288778322931489286">Ο διαχειριστής ενεργοποίησε το Enterprise Service Hooks στο πρόγραμμα περιήγησής σας. Αυτά τα άγκιστρα έχουν πρόσβαση σε ορισμένα από τα δεδομένα σας.</translation>
 <translation id="7292031607255951991">Όνομα παραλήπτη</translation>
 <translation id="7298195798382681320">Προτεινόμενες</translation>
 <translation id="7300012071106347854">Βαθύ μπλε</translation>
@@ -1818,7 +1815,6 @@
 <translation id="8866481888320382733">Σφάλμα ανάλυσης ρυθμίσεων πολιτικής</translation>
 <translation id="8866928039507595380">Δίπλωση</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Κοινοποιήστε στον διαχειριστή σας δεδομένα σχετικά με συμβάντα ασφαλείας που έχουν επισημανθεί από το Enterprise Service Hooks. Σε αυτά τα δεδομένα περιλαμβάνονται URL σελίδων που επισκέπτεστε, ονόματα αρχείων ή μεταδεδομένα και το όνομα χρήστη που χρησιμοποιείτε για να συνδεθείτε στη συσκευή σας και το Chrome.</translation>
 <translation id="8870413625673593573">Έκλεισαν πρόσφατα</translation>
 <translation id="8870494189203302833">Ίδια σειρά με την πρόσοψη προς τα κάτω</translation>
 <translation id="8874824191258364635">Εισαγάγετε έναν έγκυρο αριθμό κάρτας</translation>

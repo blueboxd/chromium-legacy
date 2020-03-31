@@ -541,7 +541,6 @@
 <translation id="3366477098757335611">查看付款卡</translation>
 <translation id="3369192424181595722">時鐘錯誤</translation>
 <translation id="337363190475750230">已取消佈建</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> 已在您的瀏覽器上啟用 Enterprise Service Hooks，這些 Hooks 可存取您部分資料。</translation>
 <translation id="3377144306166885718">伺服器的 TLS 版本已過時。</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="3377736046129930310">使用螢幕鎖定即可加快確認付款卡</translation>
@@ -976,7 +975,6 @@
 <translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE" />嗎？請報告此錯誤</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="519422657042045905">無法使用註解模式</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">此網頁上的嵌入式頁面顯示</translation>
 <translation id="5205222826937269299">需要提供名稱</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
@@ -1446,7 +1444,6 @@
 <translation id="725866823122871198">您電腦的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法建立私人連線至 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />。</translation>
 <translation id="7260504762447901703">撤銷存取權</translation>
 <translation id="7275334191706090484">受管理書籤</translation>
-<translation id="7288778322931489286">管理員已在您的瀏覽器上啟用了 Enterprise Service Hooks 功能。這些 Hooks 可存取您部分資料。</translation>
 <translation id="7292031607255951991">收件者名稱</translation>
 <translation id="7298195798382681320">建議</translation>
 <translation id="7300012071106347854">鈷藍色</translation>
@@ -1803,7 +1800,6 @@
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
 <translation id="8866928039507595380">對摺</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">與管理員分享 Enterprise Service Hooks 所標記的安全性事件相關資料。這些資料可能包括您瀏覽的網址、檔案名稱或元數據，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
 <translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8870494189203302833">相同順序 (正面朝下)</translation>
 <translation id="8874824191258364635">請輸入有效的信用卡號碼</translation>

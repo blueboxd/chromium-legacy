@@ -460,7 +460,7 @@ goma_mac_builder(
     name = 'Chromium iOS Goma RBE ToT',
     caches = [xcode_cache.x11c29],
     goma_backend = goma.backend.RBE_TOT,
-    os = os.MAC_ANY,
+    os = os.MAC_10_14,
     properties = {
       'xcode_build_version': "11c29",
     }

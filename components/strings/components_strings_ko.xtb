@@ -546,7 +546,6 @@
 <translation id="3366477098757335611">카드 보기</translation>
 <translation id="3369192424181595722">시계 오류</translation>
 <translation id="337363190475750230">사용 중단됨</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" />에서 브라우저의 Enterprise Service Hooks를 사용 설정했습니다. 이러한 후크는 내 데이터 중 일부에 액세스할 수 있습니다.</translation>
 <translation id="3377144306166885718">서버에서 지원 중단된 TLS 버전을 사용했습니다.</translation>
 <translation id="3377188786107721145">정책 파싱 오류</translation>
 <translation id="3377736046129930310">화면 잠금을 사용하여 빠르게 카드 확인</translation>
@@ -983,7 +982,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />가 아닙니까? 오류 신고</translation>
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="519422657042045905">주석을 사용할 수 없음</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">이 페이지에 삽입된 페이지 내용:</translation>
 <translation id="5205222826937269299">이름은 필수입니다.</translation>
 <translation id="5209518306177824490">SHA-1 지문</translation>
@@ -1457,7 +1455,6 @@
 <translation id="725866823122871198">컴퓨터의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="7260504762447901703">액세스 취소</translation>
 <translation id="7275334191706090484">관리 북마크</translation>
-<translation id="7288778322931489286">관리자가 브라우저에 Enterprise Service Hooks를 사용 설정했습니다. 이러한 후크는 내 데이터 중 일부에 액세스할 수 있습니다.</translation>
 <translation id="7292031607255951991">수취인 이름</translation>
 <translation id="7298195798382681320">권장</translation>
 <translation id="7300012071106347854">코발트 녹색</translation>
@@ -1813,7 +1810,6 @@
 <translation id="8866481888320382733">정책 설정을 파싱하는 중 오류 발생</translation>
 <translation id="8866928039507595380">폴드</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks에서 신고한 보안 이벤트에 관한 데이터를 관리자와 공유합니다. 여기에는 방문한 페이지 URL, 파일 이름 또는 메타데이터 및 기기와 Chrome 로그인에 사용한 사용자 이름이 포함될 수 있습니다.</translation>
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8870494189203302833">같은 순서로 인쇄면이 아래를 향하게</translation>
 <translation id="8874824191258364635">올바른 카드 번호를 입력하세요.</translation>

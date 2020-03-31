@@ -7,6 +7,8 @@
 #include <oleacc.h>
 #include <wrl/client.h>
 
+#include <utility>
+
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"

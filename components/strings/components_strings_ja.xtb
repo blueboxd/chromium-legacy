@@ -542,7 +542,6 @@
 <translation id="3366477098757335611">カードを表示</translation>
 <translation id="3369192424181595722">時計のエラー</translation>
 <translation id="337363190475750230">プロビジョニングが解除されました</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> により、お使いのブラウザで Enterprise Service Hook が有効化されています。これらのフックには、一部のユーザーデータへのアクセスが許可されます。</translation>
 <translation id="3377144306166885718">このサーバーは TLS の廃止されたバージョンを使用しています。</translation>
 <translation id="3377188786107721145">ポリシー解析エラーです</translation>
 <translation id="3377736046129930310">画面ロックを使用してカードをすばやく確認する</translation>
@@ -978,7 +977,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="519422657042045905">注釈は使用できません</translation>
-<translation id="5196187217592847346">Enterprise Service Hook</translation>
 <translation id="5201306358585911203">このページに埋め込まれているページの内容</translation>
 <translation id="5205222826937269299">名前は必須です</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
@@ -1448,7 +1446,6 @@
 <translation id="725866823122871198">パソコンの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="7260504762447901703">アクセス権を取り消します</translation>
 <translation id="7275334191706090484">管理対象のブックマーク</translation>
-<translation id="7288778322931489286">管理者により、お使いのブラウザで Enterprize Service Hook が有効化されています。これらのフックには、一部のユーザーデータへのアクセスが許可されます。</translation>
 <translation id="7292031607255951991">受取人の氏名</translation>
 <translation id="7298195798382681320">推奨</translation>
 <translation id="7300012071106347854">コバルトブルー</translation>
@@ -1806,7 +1803,6 @@
 <translation id="8866481888320382733">ポリシー設定の解析中にエラーが発生しました</translation>
 <translation id="8866928039507595380">折りたたみ</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hook によって報告されたセキュリティ イベントに関するデータを管理者と共有します。共有されるデータには、アクセスしたページの URL、ファイルの名前やメタデータ、デバイスと Chrome へのログインに使用したユーザー名が含まれることがあります。</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8870494189203302833">同じ順序（下向き）</translation>
 <translation id="8874824191258364635">有効なクレジット カード番号を入力してください</translation>

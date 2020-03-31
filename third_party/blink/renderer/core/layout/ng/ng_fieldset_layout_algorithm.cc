@@ -243,6 +243,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
 
   LogicalOffset legend_offset;
   scoped_refptr<const NGLayoutResult> result;
+  scoped_refptr<const NGLayoutResult> previous_result;
   LayoutUnit block_offset = legend_margins.block_start;
   do {
     auto legend_space = CreateConstraintSpaceForLegend(
@@ -269,22 +270,37 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
 
     // We have already adjusted the legend block offset, no need to adjust
     // again.
-    if (block_offset != legend_margins.block_start)
+    if (block_offset != legend_margins.block_start) {
+      // If adjusting the block_offset caused the legend to break, revert back
+      // to the previous result.
+      if (legend_broke_) {
+        result = std::move(previous_result);
+        block_offset = legend_margins.block_start;
+      }
       break;
+    }
 
     LayoutUnit legend_margin_box_block_size =
         NGFragment(writing_mode_, physical_fragment).BlockSize() +
         legend_margins.BlockSum();
     LayoutUnit space_left = borders_.block_start - legend_margin_box_block_size;
     if (space_left > LayoutUnit()) {
+      // Don't adjust the block_offset if the legend broke.
+      if (legend_break_token || legend_broke_)
+        break;
+
       // If the border is the larger one, though, it will stay put at the
       // border-box block-start edge of the fieldset. Then it's the legend
       // that needs to be pushed. We'll center the margin box in this case, to
       // make sure that both margins remain within the area occupied by the
       // border also after adjustment.
       block_offset += space_left / 2;
-      if (ConstraintSpace().HasBlockFragmentation())
+      if (ConstraintSpace().HasBlockFragmentation()) {
+        // Save the previous result in case adjusting the block_offset causes
+        // the legend to break.
+        previous_result = std::move(result);
         continue;
+      }
     } else {
       // If the legend is larger than the width of the fieldset block-start
       // border, the actual padding edge of the fieldset will be moved

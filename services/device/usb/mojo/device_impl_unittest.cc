@@ -153,6 +153,8 @@ class MockUsbDeviceClient : public mojom::UsbDeviceClient {
     return receiver_.BindNewPipeAndPassRemote();
   }
 
+  void FlushForTesting() { receiver_.FlushForTesting(); }
+
   MOCK_METHOD0(OnDeviceOpened, void());
   MOCK_METHOD0(OnDeviceClosed, void());
 
@@ -448,12 +450,31 @@ class USBDeviceImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(USBDeviceImplTest, Disconnect) {
-  mojo::Remote<mojom::UsbDevice> device = GetMockDeviceProxy();
+  MockUsbDeviceClient device_client;
+  mojo::Remote<mojom::UsbDevice> device =
+      GetMockDeviceProxy(device_client.CreateInterfacePtrAndBind());
+
+  EXPECT_FALSE(is_device_open());
+
+  EXPECT_CALL(mock_device(), OpenInternal(_));
+  EXPECT_CALL(device_client, OnDeviceOpened());
+
+  {
+    base::RunLoop loop;
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
+    loop.Run();
+  }
+
+  EXPECT_CALL(mock_handle(), Close());
+  EXPECT_CALL(device_client, OnDeviceClosed());
 
   base::RunLoop loop;
   device.set_disconnect_handler(loop.QuitClosure());
   mock_device().NotifyDeviceRemoved();
   loop.Run();
+
+  device_client.FlushForTesting();
 }
 
 TEST_F(USBDeviceImplTest, Open) {
@@ -529,11 +550,14 @@ TEST_F(USBDeviceImplTest, OpenDelayedFailure) {
 }
 
 TEST_F(USBDeviceImplTest, Close) {
-  mojo::Remote<mojom::UsbDevice> device = GetMockDeviceProxy();
+  MockUsbDeviceClient device_client;
+  mojo::Remote<mojom::UsbDevice> device =
+      GetMockDeviceProxy(device_client.CreateInterfacePtrAndBind());
 
   EXPECT_FALSE(is_device_open());
 
   EXPECT_CALL(mock_device(), OpenInternal(_));
+  EXPECT_CALL(device_client, OnDeviceOpened());
 
   {
     base::RunLoop loop;
@@ -543,6 +567,7 @@ TEST_F(USBDeviceImplTest, Close) {
   }
 
   EXPECT_CALL(mock_handle(), Close());
+  EXPECT_CALL(device_client, OnDeviceClosed());
 
   {
     base::RunLoop loop;

@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Изтеглянето на файлове в Chrome вече е по-бързо</translation>
 <translation id="1883903952484604915">Моите файлове</translation>
 <translation id="1887786770086287077">Достъпът до местоположението е изключен за това устройство. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на браузъра.</translation>
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1919950603503897840">Избор на контакти</translation>
 <translation id="1922076542920281912">За да разрешите на Chrome да осъществява достъп до местоположението ви, то трябва да бъде включено и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">ИЗОБРАЖЕНИЕ</translation>
 <translation id="257088987046510401">Теми</translation>
 <translation id="2570922361219980984">Достъпът до местоположението е изключен и за това устройство. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Разгънато – кликнете за свиване.</translation>
 <translation id="2581165646603367611">Така ще се изчистят „бисквитките“, кешът и другата информация от сайтове, която не е важна за Chrome.</translation>
 <translation id="2586657967955657006">Буферна памет</translation>
 <translation id="2587052924345400782">Налице е по-нова версия</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">Елементът бе премахнат: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Отваряне на <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Използване на паролата</translation>
-<translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4650364565596261010">Стандартно за системата</translation>
 <translation id="4660838440047236328">плана на стаята ви.</translation>
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="488187801263602086">Преименуване на файла</translation>
 <translation id="4882831918239250449">Контролирайте начина, по който историята ви на сърфиране се използва за персонализиране на търсенето, рекламите и др.</translation>
-<translation id="4883854917563148705">Управляваните настройки не могат да се зададат отново</translation>
 <translation id="4885273946141277891">Неподдържан брой екземпляри на Chrome.</translation>
 <translation id="4887024562049524730">Извеждане на запитване, преди да се разреши на сайтовете да използват устройството и данните ви за виртуална реалност (препоръчително)</translation>
 <translation id="4910889077668685004">Приложения за плащане</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">Разрешаване на достъпа на сайтовете до сензорите за движение (препоръчително)</translation>
 <translation id="5063480226653192405">Употреба</translation>
 <translation id="5087580092889165836">Добавяне на карта</translation>
-<translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
 <translation id="510275257476243843">Остава 1 час</translation>
 <translation id="5123685120097942451">Раздел в режим „инкогнито“</translation>
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">Получихте раздел</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворен раздел. Докоснете за превключване между разделите}other{<ph name="OPEN_TABS_MANY" /> отворени раздела. Докоснете за превключване между тях}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и още 1)}other{(и още #)}}</translation>
-<translation id="5400569084694353794">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="5403592356182871684">Имена</translation>
 <translation id="5403644198645076998">Разрешаване само на конкретни сайтове</translation>
 <translation id="5414836363063783498">Потвърждава се…</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">Предварително зареждане на страниците с цел по-бързо сърфиране и търсене</translation>
 <translation id="79859296434321399">За да гледате съдържание с обогатена реалност, инсталирайте ARCore</translation>
 <translation id="7986741934819883144">Изберете контакт</translation>
-<translation id="7987073022710626672">Общи условия на Chrome</translation>
 <translation id="7993619969781047893">Функциите в някои сайтове може да не работят правилно</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
 <translation id="7999064672810608036">Наистина ли искате да изчистите всички локални данни, включително „бисквитките“, и да нулирате всички разрешения за този уебсайт?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">Остават <ph name="FILES" /> файла</translation>
 <translation id="8190358571722158785">Остава 1 ден</translation>
 <translation id="8200772114523450471">Възобновяване</translation>
-<translation id="8206354486702514201">Тази настройка е наложена от администратора ви.</translation>
 <translation id="8209050860603202033">Отваряне на изображението</translation>
 <translation id="8218622182176210845">Управление на профила ви</translation>
 <translation id="8224471946457685718">Изтегляне на статиите за вас през Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="868929229000858085">Търсене в контактите ви</translation>
 <translation id="869891660844655955">Дата на валидност</translation>
-<translation id="8728487861892616501">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Съдържанието е скрито</translation>
 <translation id="8751914237388039244">Изберете изображение</translation>
 <translation id="8758557275681689734">Преглед на всички отворени раздели</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">Блокиране на JavaScript за конкретен сайт.</translation>
 <translation id="8812260976093120287">На някои уебсайтове можете да извършвате плащания чрез посочените по-горе поддържани приложения за плащане на устройството ви.</translation>
 <translation id="8816026460808729765">Блокиране на достъпа на сайтовете до сензорите</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на браузъра, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="8833831881926404480">Сайт споделя екрана ви</translation>
 <translation id="883806473910249246">При изтеглянето на съдържанието възникна грешка.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">Използване на телефон като ключ за сигурност</translation>
 <translation id="8993760627012879038">Отваряне на нов раздел в режим „инкогнито“</translation>
 <translation id="8998729206196772491">Влизате с профил, управляван от <ph name="MANAGED_DOMAIN" />, и предоставяте на администратора му контрол върху данните си в Chrome. Те ще се свържат за постоянно с този профил. При излизане от профила в браузъра информацията ви ще се изтрие от устройството, но ще продължи да се съхранява в профила ви в Google.</translation>
-<translation id="9019902583201351841">Управлява се от родителите ви</translation>
 <translation id="9028914725102941583">Включете синхронизирането, за да споделяте на всички устройства</translation>
 <translation id="9040142327097499898">Известията са разрешени. Местоположението е изключено за това устройство.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеоклип}other{# видеоклипа}}</translation>

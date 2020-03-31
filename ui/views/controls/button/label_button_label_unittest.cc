@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/button/label_button_label.h"
 
+#include <map>
 #include <memory>
 
 #include "third_party/skia/include/core/SkColor.h"

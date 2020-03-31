@@ -545,7 +545,6 @@
 <translation id="3366477098757335611">कार्ड देखें</translation>
 <translation id="3369192424181595722">घड़ी गड़बड़ी</translation>
 <translation id="337363190475750230">प्रावधान रद्द</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ने आपके ब्राउज़र पर एंटरप्राइज़ सर्विस हुक चालू कर दिए हैं. ये हुक आपके कुछ डेटा को ऐक्सेस कर सकते हैं.</translation>
 <translation id="3377144306166885718">सर्वर, TLS के पुराने वर्शन का इस्तेमाल कर रहा है.</translation>
 <translation id="3377188786107721145">नीति पार्स गड़बड़ी</translation>
 <translation id="3377736046129930310">कार्ड की जल्दी पुष्टि करने के लिए स्क्रीन लॉक का इस्तेमाल करें</translation>
@@ -982,7 +981,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> में नहीं है? इस गड़बड़ी की रिपोर्ट करें</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="519422657042045905">व्याख्या की सुविधा उपलब्ध नहीं है</translation>
-<translation id="5196187217592847346">एंटरप्राइज़ सर्विस हुक</translation>
 <translation id="5201306358585911203">इस पेज पर एम्बेड किए गए पेज का कहना है कि</translation>
 <translation id="5205222826937269299">नाम ज़रूरी है</translation>
 <translation id="5209518306177824490">SHA-1 फ़िंगरप्रिंट</translation>
@@ -1452,7 +1450,6 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके कंप्‍यूटर का तारीख और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
 <translation id="7260504762447901703">एक्सेस रद्द करें</translation>
 <translation id="7275334191706090484">प्रबंधित बुकमार्क</translation>
-<translation id="7288778322931489286">आपके एडमिन ने ब्राउज़र पर एंटरप्राइज़ सर्विस हुक चालू कर दिए हैं. ये हुक आपके कुछ डेटा को ऐक्सेस कर सकते हैं.</translation>
 <translation id="7292031607255951991">पाने वाले का नाम</translation>
 <translation id="7298195798382681320">सुझाए गए</translation>
 <translation id="7300012071106347854">कोबाल्ट नीला</translation>
@@ -1810,7 +1807,6 @@
 <translation id="8866481888320382733">नीति सेटिंग पार्स करने में गड़बड़ी</translation>
 <translation id="8866928039507595380">फ़ोल्ड</translation>
 <translation id="886872106311861689">बी3</translation>
-<translation id="8869862664961249123">सुरक्षा से जुड़ी उन गतिविधियों के बारे में डेटा शेयर करें जिन्हें एंटरप्राइज़ सर्विस हुक ने आपके एडमिन को फ़्लैग किया है. इसमें, आप जिन पेजों पर जाते हैं उनके यूआरएल और फ़ाइल के नाम या मेटाडेटा शामिल हो सकते हैं. साथ ही, वह उपयोगकर्ता नाम भी शामिल हो सकता है जिसका इस्तेमाल आप अपने डिवाइस और Chrome में साइन इन के लिए करते हैं.</translation>
 <translation id="8870413625673593573">हाल ही में बंद किए गए</translation>
 <translation id="8870494189203302833">इसी तरह उलटा करके रखें</translation>
 <translation id="8874824191258364635">मान्य कार्ड संख्या डालें</translation>

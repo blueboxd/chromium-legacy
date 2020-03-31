@@ -884,10 +884,8 @@ class MetaBuildWrapper(object):
       l = l.split('#', 2)[0].strip()
       if not l:
         continue
-      fields = l.split(' ')
-      name = fields[0]
-      val = ' '.join(fields[2:])
-      gn_args.append('%s=%s' % (name, val))
+      (name, value) = l.split('=', 1)
+      gn_args.append('%s=%s' % (name.strip(), value.strip()))
 
     return ' '.join(gn_args)
 

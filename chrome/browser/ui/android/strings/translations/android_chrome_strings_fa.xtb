@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">‏اکنون Chrome فایل‌ها را سریع‌تر بارگیری می‌کند</translation>
 <translation id="1883903952484604915">فایل‌های من</translation>
 <translation id="1887786770086287077">‏دسترسی به مکان برای این دستگاه خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
-<translation id="1891331835972267886">‏<ph name="APP_NAME" /> در Chrome باز می‌شود. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome موافقت می‌کنید.</translation>
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1919950603503897840">انتخاب مخاطبین</translation>
 <translation id="1922076542920281912">‏برای اینکه به Chrome امکان دهید به مکانتان دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم مکان را روشن کنید.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">تصویر</translation>
 <translation id="257088987046510401">طرح‌‌های قسمت</translation>
 <translation id="2570922361219980984">‏دسترسی به مکان برای این دستگاه نیز خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
-<translation id="257931822824936280">بزرگ‌شده - برای کوچک کردن کلیک کنید.</translation>
 <translation id="2581165646603367611">‏این کار کوکی‌ها، حافظه پنهان و داده‌های دیگر سایت‌ها را که از نظر Chrome مهم نیست پاک می‌کند.</translation>
 <translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2587052924345400782">نسخه جدیدتری در دسترس است</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">مورد حذف شد: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">باز کردن <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">استفاده از گذرواژه</translation>
-<translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
 <translation id="4650364565596261010">پیش‌فرض سیستم</translation>
 <translation id="4660838440047236328">چیدمان اتاق شما</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> نشانک حذف شد</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="488187801263602086">تغییر نام فایل</translation>
 <translation id="4882831918239250449">کنترل نحوه استفاده از سابقه مرور برای شخصی‌سازی «جستجو»، آگهی‌ها و موارد دیگر</translation>
-<translation id="4883854917563148705">تنظیمات مدیریت‌شده بازنشانی نشدند</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
 <translation id="4887024562049524730">قبل از اینکه به سایت‌ها اجازه داده شود به دستگاه و داده‌های واقعیت مجازی دسترسی یابند سؤال شود (توصیه می‌شود)</translation>
 <translation id="4910889077668685004">برنامه‌های پرداخت</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">مجاز بودن دسترسی سایت‌ها به حسگرهای حرکتی (توصیه می‌شود)</translation>
 <translation id="5063480226653192405">کاربر </translation>
 <translation id="5087580092889165836">افزودن کارت</translation>
-<translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
 <translation id="510275257476243843">۱ ساعت باقی‌مانده است</translation>
 <translation id="5123685120097942451">برگه ناشناس</translation>
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">برگه دریافت شد</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> برگه باز، برای جستجوی برگه ضربه بزنید}one{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}other{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ۱ مورد دیگر)}one{(+ # مورد دیگر)}other{(+ # مورد دیگر)}}</translation>
-<translation id="5400569084694353794">‏استفاده از این برنامه به معنای اعلام موافقت شما با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلامیه حریم خصوصی<ph name="END_LINK2" /> Chrome است.</translation>
 <translation id="5403592356182871684">نام‌ها</translation>
 <translation id="5403644198645076998">فقط بعضی از سایت‌ها مجاز هستند</translation>
 <translation id="5414836363063783498">در حال تأیید...</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">پیش‌بارگیری صفحه‌ها برای مرور و جستجوی سریع‌تر</translation>
 <translation id="79859296434321399">‏برای مشاهده محتوای واقعیت افزوده، ARCore را نصب کنید</translation>
 <translation id="7986741934819883144">مخاطبی انتخاب کنید</translation>
-<translation id="7987073022710626672">‏شرایط خدمات Chrome</translation>
 <translation id="7993619969781047893">ویژگی‌های بعضی از سایت‌ها ممکن است درست کار نکنند</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
 <translation id="7999064672810608036">مطمئنید که می‌خواهید تمام داده‌های محلی، شامل کوکی‌ها را حذف کنید و تمام مجوزهای این وب‌سایت را بازنشانی کنید؟</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923"><ph name="FILES" /> فایل باقی مانده است</translation>
 <translation id="8190358571722158785">۱ روز باقی‌مانده است</translation>
 <translation id="8200772114523450471">ازسرگیری</translation>
-<translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="8209050860603202033">باز کردن تصویر</translation>
 <translation id="8218622182176210845">مدیریت حساب</translation>
 <translation id="8224471946457685718">‏بارگیری مقالات برای شما با Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{سطح قدرت سیگنال: # نوار}one{سطح قدرت سیگنال: # نوار}other{سطح قدرت سیگنال: # نوار}}</translation>
 <translation id="868929229000858085">جستجوی مخاطبین</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>
-<translation id="8728487861892616501">‏درصورت استفاده از این برنامه، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> و <ph name="BEGIN_LINK3" />اعلان حریم خصوصی برای حساب‌های Google مدیریت‌شده با Family Link<ph name="END_LINK3" /> مربوط به Chrome موافقت می‌کنید.</translation>
 <translation id="8748850008226585750">محتوا پنهان است</translation>
 <translation id="8751914237388039244">تصویری انتخاب کنید</translation>
 <translation id="8758557275681689734">دیدن همه برگه‌های باز</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">مسدود کردن جاوااسکریپت برای سایتی خاص.</translation>
 <translation id="8812260976093120287">در بعضی از وب‌سایت‌ها، می‌توانید با برنامه‌های پرداخت پشتیبانی‌شده بالا در دستگاهتان پرداخت کنید.</translation>
 <translation id="8816026460808729765">سایت‌ها نمی‌توانند به حسگرها دسترسی داشته باشند</translation>
-<translation id="8816439037877937734">‏<ph name="APP_NAME" /> در Chrome باز خواهد شد. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome و <ph name="BEGIN_LINK3" />اعلان حریم خصوصی برای حساب‌های Google مدیریت‌شده با Family<ph name="END_LINK3" /> موافقت می‌کنید.</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8833831881926404480">سایتی درحال به‌اشتراک گذاشتن صفحه‌تان است</translation>
 <translation id="883806473910249246">هنگام بارگیری محتوا خطایی روی داد.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">استفاده از تلفن به‌عنوان کلید امنیتی</translation>
 <translation id="8993760627012879038">باز کردن برگه جدیدی در حالت ناشناس</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
-<translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>
 <translation id="9028914725102941583">برای اشتراک‌گذاری بین دستگاه‌ها، «همگام‌سازی» را روشن کنید</translation>
 <translation id="9040142327097499898">اعلان‌ها مجاز هستند. مکان برای این دستگاه خاموش است.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ویدیو}one{# ویدیو}other{# ویدیو}}</translation>

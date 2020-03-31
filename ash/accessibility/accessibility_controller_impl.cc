@@ -31,6 +31,7 @@
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
@@ -1642,6 +1643,20 @@ void AccessibilityControllerImpl::
       1 /* min */, 10000 /* max */, 100 /* buckets */);
 }
 
+void AccessibilityControllerImpl::SwitchAccessDisableDialogClosed(
+    bool disable_dialog_accepted) {
+  if (disable_dialog_accepted) {
+    // The pref was already disabled, but we left switch access on until they
+    // accepted the dialog.
+    switch_access_event_handler_.reset();
+    NotifyAccessibilityStatusChanged();
+  } else {
+    // Reset the preference (which was already set to false) to match the
+    // behavior of keeping Switch Access enabled.
+    switch_access().SetEnabled(true);
+  }
+}
+
 void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
   // Construct the handler as needed when Switch Access is enabled and the
   // delegate is set. Otherwise, destroy the handler when Switch Access is
@@ -1781,10 +1796,25 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
       Shell::Get()->sticky_keys_controller()->Enable(enabled);
       break;
     case FeatureType::kSwitchAccess:
-      if (enabled)
+      // Show a dialog before disabling Switch Access.
+      if (!enabled) {
+        if (no_switch_access_disable_confirmation_dialog_for_testing_) {
+          switch_access_event_handler_.reset();
+        } else {
+          new AccessibilityFeatureDisableDialog(
+              IDS_ASH_SWITCH_ACCESS_DISABLE_CONFIRMATION_TITLE,
+              IDS_ASH_SWITCH_ACCESS_DISABLE_CONFIRMATION_BODY,
+              base::BindOnce(
+                  &AccessibilityControllerImpl::SwitchAccessDisableDialogClosed,
+                  weak_ptr_factory_.GetWeakPtr(), true),
+              base::BindOnce(
+                  &AccessibilityControllerImpl::SwitchAccessDisableDialogClosed,
+                  weak_ptr_factory_.GetWeakPtr(), false));
+          return;
+        }
+      } else {
         MaybeCreateSwitchAccessEventHandler();
-      else
-        switch_access_event_handler_.reset();
+      }
       break;
     case FeatureType::kVirtualKeyboard:
       keyboard::SetAccessibilityKeyboardEnabled(enabled);

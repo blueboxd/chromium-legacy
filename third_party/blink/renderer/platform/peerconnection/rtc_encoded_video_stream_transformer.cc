@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_scoped_refptr_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -53,14 +54,15 @@ class RTCEncodedVideoStreamTransformerDelegate
                             transformer_));
   }
 
-  void TransformFrame(std::unique_ptr<webrtc::video_coding::EncodedFrame> frame,
-                      std::vector<uint8_t> generic_descriptor,
-                      uint32_t ssrc) override {
+  void Transform(
+      std::unique_ptr<webrtc::TransformableFrameInterface> frame) override {
+    auto video_frame =
+        base::WrapUnique(static_cast<webrtc::TransformableVideoFrameInterface*>(
+            frame.release()));
     PostCrossThreadTask(
         *main_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&RTCEncodedVideoStreamTransformer::TransformFrame,
-                            transformer_, std::move(frame),
-                            std::move(generic_descriptor), ssrc));
+                            transformer_, std::move(video_frame)));
   }
 
  private:
@@ -90,19 +92,17 @@ void RTCEncodedVideoStreamTransformer::UnregisterTransformedFrameCallback() {
 }
 
 void RTCEncodedVideoStreamTransformer::TransformFrame(
-    std::unique_ptr<webrtc::video_coding::EncodedFrame> frame,
-    std::vector<uint8_t> additional_data,
-    uint32_t ssrc) {
+    std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // If no transformer callback has been set, drop the frame.
   if (!transformer_callback_)
     return;
 
-  transformer_callback_.Run(std::move(frame), std::move(additional_data), ssrc);
+  transformer_callback_.Run(std::move(frame));
 }
 
 void RTCEncodedVideoStreamTransformer::SendFrameToSink(
-    std::unique_ptr<webrtc::video_coding::EncodedFrame> frame) {
+    std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (send_frame_to_sink_cb_)
     send_frame_to_sink_cb_->OnTransformedFrame(std::move(frame));

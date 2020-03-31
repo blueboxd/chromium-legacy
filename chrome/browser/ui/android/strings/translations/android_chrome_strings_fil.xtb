@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Mas mabilis nang mag-download ng mga file ang Chrome</translation>
 <translation id="1883903952484604915">Aking Mga File</translation>
 <translation id="1887786770086287077">Naka-off ang access sa lokasyon para sa device na ito. I-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886">Bubukas ang <ph name="APP_NAME" /> sa Chrome. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
 <translation id="1919345977826869612">Mga Ad</translation>
 <translation id="1919950603503897840">Pumili ng mga contact</translation>
 <translation id="1922076542920281912">Para payagan ang Chrome na i-access ang iyong lokasyon, i-on din ang lokasyon sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="2567385386134582609">LARAWAN</translation>
 <translation id="257088987046510401">Mga tema</translation>
 <translation id="2570922361219980984">Naka-off din ang access sa lokasyon para sa device na ito. I-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Pinalawak - i-click upang i-collapse.</translation>
 <translation id="2581165646603367611">Iki-clear nito ang cookies, cache at iba pang data ng mga site na sa tingin ng Chrome ay hindi mahalaga.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587052924345400782">May available na mas bagong bersyon</translation>
@@ -491,7 +489,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4605958867780575332">Naalis na item: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Buksan ang <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Gamitin ang password</translation>
-<translation id="4645575059429386691">Pinamamahalaan ng iyong magulang</translation>
 <translation id="4650364565596261010">Default ng system</translation>
 <translation id="4660838440047236328">ang layout ng iyong kwarto</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> (na) bookmark ang na-delete</translation>
@@ -530,7 +527,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="488187801263602086">Palitan ang pangalan ng file</translation>
 <translation id="4882831918239250449">Kontrolin kung paano ginagamit ang iyong history ng pag-browse para i-personalize ang Paghahanap, mga ad, at iba pa</translation>
-<translation id="4883854917563148705">Hindi puwedeng i-reset ang mga pinapamahalaang setting</translation>
 <translation id="4885273946141277891">Hindi sinusuportahang bilang ng mga instance ng Chrome.</translation>
 <translation id="4887024562049524730">Magtanong bago payagan ang mga site na gamitin ang iyong virtual reality device at data (inirerekomenda)</translation>
 <translation id="4910889077668685004">Mga app sa pagbabayad</translation>
@@ -560,7 +556,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5048398596102334565">Payagan ang mga site na i-access ang mga sensor ng paggalaw (inirerekomenda)</translation>
 <translation id="5063480226653192405">Paggamit</translation>
 <translation id="5087580092889165836">Magdagdag ng card</translation>
-<translation id="5100237604440890931">Naka-collapse - i-click upang palawakin</translation>
 <translation id="510275257476243843">1 oras na lang ang natitira</translation>
 <translation id="5123685120097942451">Tab na incognito</translation>
 <translation id="5127805178023152808">Naka-off ang pag-sync</translation>
@@ -597,7 +592,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5357811892247919462">Natanggap ang tab</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> nakabukas na tab, i-tap para lumipat ng tab}one{<ph name="OPEN_TABS_MANY" /> nakabukas na tab, i-tap para lumipat ng tab}other{<ph name="OPEN_TABS_MANY" /> na nakabukas na tab, i-tap para lumipat ng tab}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 pa)}one{(+ # pa)}other{(+ # pa)}}</translation>
-<translation id="5400569084694353794">Kapag ginamit mo ang application na ito, ang ibig sabihin, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Patakaran sa Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
 <translation id="5403592356182871684">Mga Pangalan</translation>
 <translation id="5403644198645076998">Ilang partikular na site lang ang payagan</translation>
 <translation id="5414836363063783498">Vine-verify…</translation>
@@ -946,7 +940,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7981313251711023384">I-preload ang mga page para sa mas mabilis na pag-browse at paghahanap</translation>
 <translation id="79859296434321399">Para matingnan ang augmented reality na content, i-install ang ARCore</translation>
 <translation id="7986741934819883144">Pumili ng contact</translation>
-<translation id="7987073022710626672">Mga Tuntunin ng Serbisyo ng Chrome</translation>
 <translation id="7993619969781047893">Posibleng masira ang mga feature sa ilang site</translation>
 <translation id="7998918019931843664">Muling buksan ang isinarang tab</translation>
 <translation id="7999064672810608036">Sigurado ka bang gusto mong i-clear ang lahat ng lokal na data, kasama ang cookies, at i-reset ang lahat ng pahintulot para sa website na ito?</translation>
@@ -983,7 +976,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8186512483418048923"><ph name="FILES" /> (na) file ang natitira</translation>
 <translation id="8190358571722158785">1 araw na lang ang natitira</translation>
 <translation id="8200772114523450471">Resume</translation>
-<translation id="8206354486702514201">Ipinapatupad ng iyong administrator ang setting na ito.</translation>
 <translation id="8209050860603202033">Buksan ang larawan</translation>
 <translation id="8218622182176210845">Pamahalaan ang iyong account</translation>
 <translation id="8224471946457685718">Mag-download ng mga artikulo para sa iyo sa Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8687353297350450808">{N_BARS,plural, =1{Antas ng Lakas ng Signal: # bar}one{Antas ng Lakas ng Signal: # bar}other{Antas ng Lakas ng Signal: # na bar}}</translation>
 <translation id="868929229000858085">Maghanap sa iyong mga contact</translation>
 <translation id="869891660844655955">Expiration date</translation>
-<translation id="8728487861892616501">Kapag ginamit ang application na ito, nangangahulugan ito na sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo <ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome, at sa <ph name="BEGIN_LINK3" />Notification ng Privacy para sa Mga Google Account na Pinamamahalaan gamit ang Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Nakatago ang mga content</translation>
 <translation id="8751914237388039244">Pumili ng larawan</translation>
 <translation id="8758557275681689734">Tingnan ang lahat ng iyong nakabukas na tab</translation>
@@ -1058,7 +1049,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8801436777607969138">I-block ang JavaScript para sa isang partikular na site.</translation>
 <translation id="8812260976093120287">Sa ilang website, maaari kang magbayad sa iyong device gamit ang mga sinusuportahang app sa pagbabayad sa itaas.</translation>
 <translation id="8816026460808729765">I-block ang mga site sa pag-access sa mga sensor</translation>
-<translation id="8816439037877937734">Bubukas ang <ph name="APP_NAME" /> sa Chrome. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome, at sa <ph name="BEGIN_LINK3" />Notification ng Privacy para sa Mga Google Account na Pinamamahalaan gamit ang Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="8833831881926404480">Ibinabahagi ng isang site ang iyong screen</translation>
 <translation id="883806473910249246">Nagka-error habang dina-download ang content.</translation>
@@ -1085,7 +1075,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8988028529677883095">Gamitin ang telepono bilang security key</translation>
 <translation id="8993760627012879038">Magbukas ng bagong tab sa Incognito mode</translation>
 <translation id="8998729206196772491">Nagsa-sign in ka gamit ang isang account na pinamamahalaan ng <ph name="MANAGED_DOMAIN" /> at binibigyan mo ang administrator nito ng kontrol sa iyong data sa Chrome. Permanenteng mauugnay ang iyong data sa account na ito. Made-delete ang data mo sa device na ito kapag nag-sign out ka sa Chrome, ngunit mananatili itong naka-store sa iyong Google Account.</translation>
-<translation id="9019902583201351841">Pinamamahalaan ng iyong mga magulang</translation>
 <translation id="9028914725102941583">I-on ang pag-sync para makapagbahagi sa mga device</translation>
 <translation id="9040142327097499898">Pinapayagan ang mga notification. Naka-off ang lokasyon para sa device na ito.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}one{# Video}other{# na Video}}</translation>

@@ -254,9 +254,16 @@ class BlockChildrenLayoutInfo {
   bool IsAtFirstInFlowChild() const { return is_at_first_in_flow_child_; }
   void ClearIsAtFirstInFlowChild() { is_at_first_in_flow_child_ = false; }
 
+  // The page name of the previous sibling. Consecutive siblings with the same
+  // name are allowed on the same page, but if they differ, we need a page
+  // break.
+  const AtomicString& ChildPageName() const { return child_page_name_; }
+  void SetChildPageName(const AtomicString& name) { child_page_name_ = name; }
+
  private:
   MultiColumnLayoutState multi_column_layout_state_;
   MarginInfo margin_info_;
+  AtomicString child_page_name_;
   LayoutUnit previous_float_logical_bottom_;
   EBreakBetween previous_break_after_value_;
   bool is_at_first_in_flow_child_;
@@ -845,6 +852,24 @@ void LayoutBlockFlow::InsertForcedBreakBeforeChildIfNeeded(
   // those preceding the break.
   EBreakBetween class_a_break_point_value =
       child.ClassABreakPointValue(layout_info.PreviousBreakAfterValue());
+
+  bool is_named_page_break;
+  if (layout_info.ChildPageName()) {
+    // Adjacent siblings with the same page name may be put on the same
+    // page. Otherwise, we need a break.
+    is_named_page_break =
+        layout_info.ChildPageName() != child.StyleRef().Page();
+  } else {
+    // If the previous sibling (if any) didn't specify a page name, see if one
+    // is specified on an ancestor. If the child specifies a page name, and it
+    // doesn't match what's specified further up (if anything), we need a break.
+    is_named_page_break =
+        child.StyleRef().Page() &&
+        child.StyleRef().Page() != View()->GetLayoutState()->PageName();
+  }
+  if (is_named_page_break)
+    class_a_break_point_value = EBreakBetween::kPage;
+
   if (IsForcedFragmentainerBreakValue(class_a_break_point_value)) {
     layout_info.GetMarginInfo().ClearMargin();
     LayoutUnit old_logical_top = LogicalHeight();
@@ -853,6 +878,10 @@ void LayoutBlockFlow::InsertForcedBreakBeforeChildIfNeeded(
     SetLogicalHeight(new_logical_top);
     LayoutUnit pagination_strut = new_logical_top - old_logical_top;
     child.SetPaginationStrut(pagination_strut);
+    if (is_named_page_break) {
+      // This was a forced break because of named pages.
+      layout_info.SetChildPageName(child.StyleRef().Page());
+    }
   }
 }
 

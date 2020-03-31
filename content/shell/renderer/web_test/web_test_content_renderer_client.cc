@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "build/build_config.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -41,6 +42,15 @@
 #include "ui/gfx/icc_profile.h"
 #include "v8/include/v8.h"
 
+#if defined(OS_WIN)
+#include "third_party/blink/public/web/win/web_font_rendering.h"
+#include "third_party/skia/include/ports/SkTypeface_win.h"
+#endif
+
+#if defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#include "skia/ext/test_fonts.h"
+#endif
+
 using blink::WebAudioDevice;
 using blink::WebFrame;
 using blink::WebLocalFrame;
@@ -55,11 +65,30 @@ WebTestContentRendererClient::WebTestContentRendererClient() {
   SetWorkerRewriteURLFunction(RewriteWebTestsURL);
 }
 
-WebTestContentRendererClient::~WebTestContentRendererClient() {}
+WebTestContentRendererClient::~WebTestContentRendererClient() = default;
 
 void WebTestContentRendererClient::RenderThreadStarted() {
   ShellContentRendererClient::RenderThreadStarted();
-  shell_observer_.reset(new WebTestRenderThreadObserver());
+  shell_observer_ = std::make_unique<WebTestRenderThreadObserver>();
+
+#if defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)
+  // On these platforms, fonts are set up in the renderer process. Other
+  // platforms set up fonts as part of WebTestBrowserMainRunner in the
+  // browser process, via WebTestBrowserPlatformInitialize().
+  skia::ConfigureTestFont();
+#elif defined(OS_WIN)
+  // DirectWrite only has access to %WINDIR%\Fonts by default. For developer
+  // side-loading, support kRegisterFontFiles to allow access to additional
+  // fonts. The browser process sets these files and punches a hole in the
+  // sandbox for the renderer to load them here.
+  {
+    sk_sp<SkFontMgr> fontmgr = SkFontMgr_New_DirectWrite();
+    for (const auto& file : switches::GetSideloadFontFiles()) {
+      sk_sp<SkTypeface> typeface = fontmgr->makeFromFile(file.c_str());
+      blink::WebFontRendering::AddSideloadedFontForTesting(std::move(typeface));
+    }
+  }
+#endif
 }
 
 void WebTestContentRendererClient::RenderFrameCreated(

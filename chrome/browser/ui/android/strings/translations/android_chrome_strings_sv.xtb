@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Nu laddas filer ned snabbare i Chrome</translation>
 <translation id="1883903952484604915">Mina filer</translation>
 <translation id="1887786770086287077">Platsåtkomst har inaktiverats på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1919950603503897840">Välj kontakter</translation>
 <translation id="1922076542920281912">Om du vill ge Chrome åtkomst till din plats måste du även aktivera plats i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2567385386134582609">BILD</translation>
 <translation id="257088987046510401">Teman</translation>
 <translation id="2570922361219980984">Platsåtkomst har inaktiverats på enheten också. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Vyn har expanderats. Komprimera den genom att klicka.</translation>
 <translation id="2581165646603367611">Det här alternativet rensar cookies, cacheminnet och annan data från webbplatser som bedöms vara oviktiga.</translation>
 <translation id="2586657967955657006">Urklipp</translation>
 <translation id="2587052924345400782">Det finns en nyare version</translation>
@@ -491,7 +489,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4605958867780575332">Borttaget objekt: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Öppna <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Använd lösenordet</translation>
-<translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4650364565596261010">Systemets standardinställning</translation>
 <translation id="4660838440047236328">hur ditt rum ser ut</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
@@ -530,7 +527,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="488187801263602086">Byt namn på fil</translation>
 <translation id="4882831918239250449">Styr hur Sök, annonser och annat ska anpassas utifrån webbhistoriken</translation>
-<translation id="4883854917563148705">Hanterade inställningar kan inte återställas</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
 <translation id="4887024562049524730">Fråga innan webbplatser tillåts att använda VR-enheter och VR-data (rekommenderas)</translation>
 <translation id="4910889077668685004">Betalningsappar</translation>
@@ -560,7 +556,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5048398596102334565">Tillåt webbplatser att använda enhetens rörelsesensorer (rekommenderas)</translation>
 <translation id="5063480226653192405">Användning</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
-<translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="510275257476243843">1 timme kvar</translation>
 <translation id="5123685120097942451">Inkognitoflik</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
@@ -597,7 +592,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5357811892247919462">En flik har tagits emot</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> flik öppen, tryck här om du vill byta flik}other{<ph name="OPEN_TABS_MANY" /> flikar öppna, tryck här om du vill byta flik}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 till)}other{(+ # till)}}</translation>
-<translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Namn</translation>
 <translation id="5403644198645076998">Tillåt endast vissa webbplatser</translation>
 <translation id="5414836363063783498">Verifierar ...</translation>
@@ -946,7 +940,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>
 <translation id="79859296434321399">Installera ARCore om du vill visa innehåll med förstärkt verklighet</translation>
 <translation id="7986741934819883144">Välj en kontakt</translation>
-<translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="7993619969781047893">Funktioner kan sluta att fungera på vissa webbplatser</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
@@ -983,7 +976,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8186512483418048923"><ph name="FILES" /> filer återstår</translation>
 <translation id="8190358571722158785">1 dag kvar</translation>
 <translation id="8200772114523450471">Återuppta</translation>
-<translation id="8206354486702514201">Administratören har gjort den här inställningen obligatorisk.</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
 <translation id="8218622182176210845">Hantera kontot</translation>
 <translation id="8224471946457685718">Ladda ned artiklar för dig via Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrka: # streck}other{Signalstyrka: # streck}}</translation>
 <translation id="868929229000858085">Sök bland kontakterna</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>
-<translation id="8728487861892616501">Genom att fortsätta att använda programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" /> och <ph name="BEGIN_LINK3" />sekretessmeddelandet för Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Innehållet har dolts</translation>
 <translation id="8751914237388039244">Välj en bild</translation>
 <translation id="8758557275681689734">Visa alla öppnade flikar</translation>
@@ -1058,7 +1049,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8801436777607969138">Blockera JavaScript på en enskild webbplats.</translation>
 <translation id="8812260976093120287">På vissa webbplatser kan du betala med ovanstående betalningsappar som stöds på enheten.</translation>
 <translation id="8816026460808729765">Blockera webbplatser från att använda enhetens sensorer</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />sekretessmeddelandet för  Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="8833831881926404480">En webbplats delar din skärm</translation>
 <translation id="883806473910249246">Ett fel uppstod när innehållet skulle laddas ned.</translation>
@@ -1085,7 +1075,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8988028529677883095">Använd telefonen som säkerhetsnyckel</translation>
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
-<translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
 <translation id="9028914725102941583">Aktivera synkronisering om du vill dela mellan enheter</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>

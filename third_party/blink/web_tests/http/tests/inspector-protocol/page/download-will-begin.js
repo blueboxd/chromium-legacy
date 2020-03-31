@@ -1,10 +1,24 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startBlank('Tests we properly emit Page.downloadWillBegin.');
 
+  dp.Page.onDownloadWillBegin(event => {
+    testRunner.log(event);
+  });
+
   async function waitForDownloadAndDump() {
-    const params = (await dp.Page.onceDownloadWillBegin()).params;
-    testRunner.log(params);
+    const visitedStates = new Set();
+    await new Promise(resolve => {
+      dp.Page.onDownloadProgress(event => {
+        if (visitedStates.has(event.params.state))
+          return;
+        visitedStates.add(event.params.state);
+        testRunner.log(event);
+        if (event.params.state === 'completed')
+          resolve();
+      });
+    });
   }
+
   await dp.Page.enable();
   testRunner.log('Downloading via a navigation: ');
   session.evaluate('location.href = "/devtools/network/resources/resource.php?download=1"');

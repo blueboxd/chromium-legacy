@@ -67,6 +67,8 @@ source_set("core") {
     "constants.h",
     "flat_ruleset_indexer.cc",
     "flat_ruleset_indexer.h",
+    "index_helper.cc",
+    "index_helper.h",
     "indexed_rule.cc",
     "indexed_rule.h",
     "parse_info.cc",

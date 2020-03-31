@@ -78,7 +78,7 @@ class VIZ_COMMON_EXPORT RenderPassDrawQuad : public DrawQuad {
   // If the quad has backdrop filters, this flag indicates if the cached
   // backdrop filtered result can be used instead of having to recompute the
   // filter operation.
-  bool can_use_backdrop_filter_cache;
+  mutable bool can_use_backdrop_filter_cache;
 
   ResourceId mask_resource_id() const {
     return resources.ids[kMaskResourceIdIndex];

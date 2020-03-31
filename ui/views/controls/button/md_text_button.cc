@@ -4,6 +4,10 @@
 
 #include "ui/views/controls/button/md_text_button.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"

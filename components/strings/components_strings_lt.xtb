@@ -549,7 +549,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="3366477098757335611">Peržiūrėti korteles</translation>
 <translation id="3369192424181595722">Laikrodžio klaida</translation>
 <translation id="337363190475750230">Teikimas nutrauktas</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> įgalino „Enterprise Service Hooks“ jūsų naršyklėje. Šios tinkinto programavimo sąsajos gali pasiekti tam tikrus jūsų duomenis.</translation>
 <translation id="3377144306166885718">Serveryje naudojama pasenusios versijos TLS.</translation>
 <translation id="3377188786107721145">Politikos analizės klaida</translation>
 <translation id="3377736046129930310">Naudodami ekrano užraktą korteles patvirtinsite greičiau</translation>
@@ -986,7 +985,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="5179510805599951267">Ne <ph name="ORIGINAL_LANGUAGE" /> k.? Pranešti apie šią klaidą</translation>
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="519422657042045905">Komentaras nepasiekiamas</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Šiame puslapyje įterptame puslapyje nurodyta:</translation>
 <translation id="5205222826937269299">Būtina nurodyti pavadinimą</translation>
 <translation id="5209518306177824490">SHA-1 piršto atspaudas</translation>
@@ -1460,7 +1458,6 @@ Papildoma išsami informacija:
 <translation id="725866823122871198">Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes kompiuterio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.</translation>
 <translation id="7260504762447901703">Anuliuoti prieigą</translation>
 <translation id="7275334191706090484">Tvarkomos žymės</translation>
-<translation id="7288778322931489286">Administratorius įgalino „Enterprise Service Hooks“ jūsų naršyklėje. Šios tinkinto programavimo sąsajos gali pasiekti tam tikrus jūsų duomenis.</translation>
 <translation id="7292031607255951991">Gavėjo vardas</translation>
 <translation id="7298195798382681320">Rekomenduojama</translation>
 <translation id="7300012071106347854">Kobalto mėlyna</translation>
@@ -1818,7 +1815,6 @@ Papildoma išsami informacija:
 <translation id="8866481888320382733">Analizuojant politikos nustatymus įvyko klaida</translation>
 <translation id="8866928039507595380">Perlenkimas</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Bendrinkite su administratoriumi duomenis apie „Enterprise Service Hooks“ pažymėtus saugos įvykius. Tai gali būti lankomų puslapių URL, failų pavadinimai ar metaduomenys ir naudotojo vardas, kurį naudodami prisijungiate prie įrenginio ir „Chrome“.</translation>
 <translation id="8870413625673593573">Neseniai uždaryta</translation>
 <translation id="8870494189203302833">Ta pačia tvarka, gerąja puse į apačią</translation>
 <translation id="8874824191258364635">Įveskite tinkamą kortelės numerį</translation>

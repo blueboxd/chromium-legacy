@@ -217,7 +217,7 @@ class DeviceTarget(target.Target):
       assert self._host
 
 
-  def _GetAmberRepo(self):
+  def GetAmberRepo(self):
     if not self._amber_repo:
       if self._fuchsia_out_dir:
         # Deploy to an already-booted device running a local Fuchsia build.

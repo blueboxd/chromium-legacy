@@ -3619,6 +3619,10 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "colorful_mic": "false",
+                        "min_agsa_version": "10.98"
+                    },
                     "enable_features": [
                         "OmniboxAssistantVoiceSearch"
                     ]
@@ -4129,6 +4133,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PhysicalWeb"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PlayStoreAppSearch": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "PlayStoreAppSearch",
+                    "enable_features": [
+                        "EnablePlayStoreAppSearch"
                     ]
                 }
             ]

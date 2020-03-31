@@ -210,6 +210,24 @@ CompositorFrameReporter::CompositorFrameReporter(
       latency_ukm_reporter_(latency_ukm_reporter),
       frame_deadline_(frame_deadline) {}
 
+std::unique_ptr<CompositorFrameReporter>
+CompositorFrameReporter::CopyReporterAtBeginImplStage() const {
+  if (stage_history_.empty() ||
+      stage_history_.front().stage_type !=
+          StageType::kBeginImplFrameToSendBeginMainFrame ||
+      !did_finish_impl_frame())
+    return nullptr;
+  auto new_reporter = std::make_unique<CompositorFrameReporter>(
+      active_trackers_, frame_id_, frame_deadline_, latency_ukm_reporter_,
+      is_single_threaded_);
+  new_reporter->did_finish_impl_frame_ = did_finish_impl_frame_;
+  new_reporter->impl_frame_finish_time_ = impl_frame_finish_time_;
+  new_reporter->current_stage_.stage_type =
+      StageType::kBeginImplFrameToSendBeginMainFrame;
+  new_reporter->current_stage_.start_time = stage_history_.front().start_time;
+  return new_reporter;
+}
+
 CompositorFrameReporter::~CompositorFrameReporter() {
   TerminateReporter();
 }

@@ -18,7 +18,7 @@ namespace protocol {
 
 class BrowserHandler : public DevToolsDomainHandler, public Browser::Backend {
  public:
-  BrowserHandler();
+  explicit BrowserHandler(bool allow_set_download_behavior);
   ~BrowserHandler() override;
 
   static Response FindBrowserContext(
@@ -63,11 +63,20 @@ class BrowserHandler : public DevToolsDomainHandler, public Browser::Backend {
 
   Response ResetPermissions(Maybe<std::string> browser_context_id) override;
 
+  Response SetDownloadBehavior(const std::string& behavior,
+                               Maybe<std::string> browser_context_id,
+                               Maybe<std::string> download_path) override;
+  Response DoSetDownloadBehavior(const std::string& behavior,
+                                 BrowserContext* browser_context,
+                                 Maybe<std::string> download_path);
+
   Response Crash() override;
   Response CrashGpuProcess() override;
 
  private:
   base::flat_set<std::string> contexts_with_overridden_permissions_;
+  base::flat_set<std::string> contexts_with_overridden_downloads_;
+  const bool allow_set_download_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserHandler);
 };

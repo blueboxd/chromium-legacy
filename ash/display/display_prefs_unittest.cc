@@ -111,9 +111,8 @@ bool ComparePortAssociations(
 
 class DisplayPrefsTest : public AshTestBase {
  protected:
-  DisplayPrefsTest() {}
-
-  ~DisplayPrefsTest() override {}
+  DisplayPrefsTest() = default;
+  ~DisplayPrefsTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

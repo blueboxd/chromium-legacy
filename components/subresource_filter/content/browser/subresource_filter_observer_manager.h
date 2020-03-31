@@ -41,7 +41,7 @@ class SubresourceFilterObserverManager
   // threat types.
   virtual void NotifySafeBrowsingChecksComplete(
       content::NavigationHandle* navigation_handle,
-      const SubresourceFilterObserver::SafeBrowsingCheckResults& results);
+      const SubresourceFilterSafeBrowsingClient::CheckResult& result);
 
   // Will be called at the latest in the WillProcessResponse stage from a
   // NavigationThrottle that was registered before the throttle manager's

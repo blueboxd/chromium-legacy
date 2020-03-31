@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome ਹੁਣ ਫ਼ਾਈਲਾਂ ਵਧੇਰੇ ਤੇਜ਼ੀ ਨਾਲ ਡਾਊਨਲੋਡ ਕਰਦਾ ਹੈ</translation>
 <translation id="1883903952484604915">ਮੇਰੀਆਂ ਫ਼ਾਈਲਾਂ</translation>
 <translation id="1887786770086287077">ਇਸ ਡੀਵਾਈਸ ਲਈ ਟਿਕਾਣਾ ਪਹੁੰਚ ਬੰਦ ਹੈ। ਇਸਨੂੰ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਚਾਲੂ ਕਰੋ।</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> ਨੂੰ Chrome ਵਿੱਚ ਖੋਲ੍ਹਿਆ ਜਾਵੇਗਾ। ਜਾਰੀ ਰੱਖ ਕੇ, ਤੁਸੀਂ Chrome ਦੇ <ph name="BEGIN_LINK1" />ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK1" /> ਅਤੇ <ph name="BEGIN_LINK2" />ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="END_LINK2" /> ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</translation>
 <translation id="1919345977826869612">ਵਿਗਿਆਪਨ</translation>
 <translation id="1919950603503897840">ਸੰਪਰਕ ਚੁਣੋ</translation>
 <translation id="1922076542920281912">Chrome ਨੂੰ ਆਪਣੇ ਟਿਕਾਣੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣ ਲਈ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਟਿਕਾਣਾ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">ਇਮੇਜ</translation>
 <translation id="257088987046510401">ਵਿਸ਼ੇ</translation>
 <translation id="2570922361219980984">ਇਸ ਡੀਵਾਈਸ ਲਈ ਟਿਕਾਣਾ ਪਹੁੰਚ ਵੀ ਬੰਦ ਹੈ। ਇਸਨੂੰ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਚਾਲੂ ਕਰੋ।</translation>
-<translation id="257931822824936280">ਵਿਸਤ੍ਰਿਤ - ਸਮੇਟਣ ਲਈ ਕਲਿੱਕ ਕਰੋ।</translation>
 <translation id="2581165646603367611">ਇਹ ਉਹਨਾਂ ਸਾਈਟਾਂ ਦੀਆਂ ਕੁਕੀਜ਼, ਕੈਸ਼ੇ, ਅਤੇ ਹੋਰ ਡਾਟੇ ਨੂੰ ਮਿਟਾ ਦੇਵੇਗਾ ਜੋ Chrome ਅਨੁਸਾਰ ਮਹੱਤਵਪੂਰਨ ਨਹੀਂ ਹਨ।</translation>
 <translation id="2586657967955657006">ਕਲਿੱਪਬੋਰਡ</translation>
 <translation id="2587052924345400782">ਨਵਾਂ ਵਰਜਨ ਉਪਲਬਧ ਹੈ</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">ਆਈਟਮਾਂ ਹਟਾਈਆਂ ਗਈਆਂ: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> ਖੋਲ੍ਹੋ</translation>
 <translation id="4634124774493850572">ਪਾਸਵਰਡ ਵਰਤੋ</translation>
-<translation id="4645575059429386691">ਤੁਹਾਡੇ ਮਾਤਾ ਜਾਂ ਪਿਤਾ ਵੱਲੋਂ ਵਿਵਸਥਿਤ</translation>
 <translation id="4650364565596261010">ਸਿਸਟਮ ਪੂਰਵ-ਨਿਰਧਾਰਤ</translation>
 <translation id="4660838440047236328">ਤੁਹਾਡੇ ਕਮਰੇ ਦਾ ਖਾਕਾ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ਬੁੁੱਕਮਾਰਕ ਮਿਟਾਏ ਗਏ</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">ਖੋਲ੍ਹੋ</translation>
 <translation id="488187801263602086">ਫ਼ਾਈਲ ਦਾ ਨਾਮ ਬਦਲੋ</translation>
 <translation id="4882831918239250449">'ਖੋਜ', ਵਿਗਿਆਪਨਾਂ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਦੇ ਵਰਤੇ ਜਾਣ ਦੇ ਤਰੀਕੇ ਨੂੰ ਕੰਟਰੋਲ ਕਰੋ</translation>
-<translation id="4883854917563148705">ਪ੍ਰਬੰਧਿਤ ਕੀਤੀਆਂ ਸੈਟਿੰਗਾਂ ਨੂੰ ਰੀਸੈੱਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="4885273946141277891">Chrome ਦੇ ਕਈ ਅਸਮਰਥਿਤ ਵਰਜਨ</translation>
 <translation id="4887024562049524730">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਵਰਤਣ ਦੇਣ ਤੋਂ ਪਹਿਲਾਂ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="4910889077668685004">ਭੁਗਤਾਨ ਐਪਾਂ</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">ਸਾਈਟਾਂ ਨੂੰ ਗਤੀਸ਼ੀਲਤਾ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="5063480226653192405">ਵਰਤੋਂ</translation>
 <translation id="5087580092889165836">ਕਾਰਡ ਸ਼ਾਮਲ ਕਰੋ</translation>
-<translation id="5100237604440890931">ਸਮੇਟਿਆ ਗਿਆ - ਵਿਸਤਾਰ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ।</translation>
 <translation id="510275257476243843">1 ਘੰਟਾ ਬਾਕੀ</translation>
 <translation id="5123685120097942451">ਇਨਕੋਗਨਿਟੋ ਟੈਬ</translation>
 <translation id="5127805178023152808">ਸਿੰਕ ਬੰਦ ਹੈ</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">ਟੈਬ ਪ੍ਰਾਪਤ ਹੋਈ</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ਖੁੱਲ੍ਹੀ ਟੈਬ, ਟੈਬਾਂ ਬਦਲਣ ਲਈ ਟੈਪ ਕਰੋ}one{<ph name="OPEN_TABS_MANY" /> ਖੁੱਲ੍ਹੀ ਟੈਬ, ਟੈਬਾਂ ਬਦਲਣ ਲਈ ਟੈਪ ਕਰੋ}other{<ph name="OPEN_TABS_MANY" /> ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ, ਟੈਬਾਂ ਬਦਲਣ ਲਈ ਟੈਪ ਕਰੋ}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ਹੋਰ)}one{(+ # ਹੋਰ)}other{(+ # ਹੋਰ)}}</translation>
-<translation id="5400569084694353794">ਇਸ ਐਪਲੀਕੇਸ਼ਨ ਦੀ ਵਰਤੋਂ ਕਰਕੇ, ਤੁਸੀਂ Chrome ਦੇ <ph name="BEGIN_LINK1" />ਸੇਵਾ ਦੇ ਨਿਯਮ<ph name="END_LINK1" /> ਅਤੇ <ph name="BEGIN_LINK2" />ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="END_LINK2" /> ਲਈ ਸਹਿਮਤੀ ਦਿੰਦੇ ਹੋ।</translation>
 <translation id="5403592356182871684">ਨਾਮ</translation>
 <translation id="5403644198645076998">ਸਿਰਫ਼ ਕੁਝ ਸਾਈਟਾਂ ਦੀ ਮਨਜ਼ੂਰੀ ਦਿਓ</translation>
 <translation id="5414836363063783498">ਪ੍ਰਮਾਣਿਤ ਕਰ ਰਿਹਾ ਹੈ...</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">ਵਧੇਰੇ ਤੇਜ਼ੀ ਨਾਲ ਬ੍ਰਾਊਜ਼ਿੰਗ ਅਤੇ ਖੋਜ ਕਰਨ ਲਈ ਪੰਨੇ ਪਹਿਲਾਂ ਤੋਂ ਲੋਡ ਕਰੋ</translation>
 <translation id="79859296434321399">ਸੰਵਰਧਿਤ ਵਾਸਤਵਿਕਤਾ ਵਾਲੀ ਸਮੱਗਰੀ ਦੇਖਣ ਲਈ, ARCore ਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="7986741934819883144">ਇੱਕ ਸੰਪਰਕ ਚੁਣੋ</translation>
-<translation id="7987073022710626672">Chrome ਸੇਵਾ ਦੇ ਨਿਯਮ</translation>
 <translation id="7993619969781047893">ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ</translation>
 <translation id="7998918019931843664">ਬੰਦ ਕੀਤੀ ਟੈਬ ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ</translation>
 <translation id="7999064672810608036">ਕੀ ਤੁਸੀਂ ਪੱਕਾ ਕੁਕੀਜ਼ ਸਮੇਤ ਸਾਰਾ ਸਥਾਨਕ ਡਾਟਾ ਮਿਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ ਅਤੇ ਇਸ ਵੈੱਬਸਾਈਟ ਲਈ ਸਾਰੀਆਂ ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923"><ph name="FILES" /> ਫ਼ਾਈਲਾਂ ਬਾਕੀ</translation>
 <translation id="8190358571722158785">1 ਦਿਨ ਬਾਕੀ</translation>
 <translation id="8200772114523450471">ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰੋ</translation>
-<translation id="8206354486702514201">ਇਹ ਸੈਟਿੰਗ ਤੁਹਾਡੇ ਪ੍ਰਬੰਧਕ ਵੱਲੋਂ ਲਾਗੂ ਕੀਤੀ ਗਈ ਹੈ।</translation>
 <translation id="8209050860603202033">ਚਿੱਤਰ ਖੋਲ੍ਹੋ</translation>
 <translation id="8218622182176210845">ਆਪਣੇ ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="8224471946457685718">ਵਾਈ-ਫਾਈ ਵਰਤਣ ਵੇਲੇ ਆਪਣੇ ਲਈ ਲੇਖ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ਸਿਗਨਲ ਮਜ਼ਬੂਤੀ ਦਾ ਪੱਧਰ: # ਡੰਡੀ}one{ਸਿਗਨਲ ਮਜ਼ਬੂਤੀ ਦਾ ਪੱਧਰ: # ਡੰਡੀ}other{ਸਿਗਨਲ ਮਜ਼ਬੂਤੀ ਦਾ ਪੱਧਰ: # ਡੰਡੀਆਂ}}</translation>
 <translation id="868929229000858085">ਆਪਣੇ ਸੰਪਰਕ ਖੋਜੋ</translation>
 <translation id="869891660844655955">ਮਿਆਦ ਪੁੱਗਣ ਦੀ ਤਾਰੀਖ</translation>
-<translation id="8728487861892616501">ਇਸ ਐਪਲੀਕੇਸ਼ਨ ਦੀ ਵਰਤੋਂ ਕਰਕੇ, ਤੁਸੀਂ Chrome ਦੀਆਂ <ph name="BEGIN_LINK1" />ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK1" /> ਅਤੇ <ph name="BEGIN_LINK2" />ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="END_LINK2" />, ਅਤੇ <ph name="BEGIN_LINK3" />ਪਰਿਵਾਰ ਲਿੰਕ ਨਾਲ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਗਏ Google ਖਾਤਿਆਂ ਲਈ ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="END_LINK3" /> ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</translation>
 <translation id="8748850008226585750">ਸਮੱਗਰੀਆਂ ਲੁਕੀਆਂ ਹੋਈਆਂ ਹਨ</translation>
 <translation id="8751914237388039244">ਇੱਕ ਚਿੱਤਰ ਚੁਣੋ</translation>
 <translation id="8758557275681689734">ਆਪਣੀਆਂ ਸਾਰੀਆਂ ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਦੇਖੋ</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਲਈ JavaScript ਨੂੰ ਬਲਾਕ ਕਰੋ।</translation>
 <translation id="8812260976093120287">ਕੁਝ ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ, ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ 'ਤੇ ਉਪਰੋਕਤ ਸਮਰਥਿਤ ਭੁਗਤਾਨ ਐਪਾਂ ਨਾਲ ਭੁਗਤਾਨ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="8816026460808729765">ਸਾਈਟਾਂ ਨੂੰ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> ਨੂੰ Chrome ਵਿੱਚ ਖੋਲ੍ਹਿਆ ਜਾਵੇਗਾ। ਜਾਰੀ ਰੱਖ ਕੇ, ਤੁਸੀਂ Chrome ਦੇ <ph name="BEGIN_LINK1" />ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK1" /> ਅਤੇ <ph name="BEGIN_LINK2" />ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="END_LINK2" />, ਅਤੇ <ph name="BEGIN_LINK3" />Family Link ਨਾਲ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ Google ਖਾਤਿਆਂ ਦੇ ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="END_LINK3" /> ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</translation>
 <translation id="8820817407110198400">ਬੁੱਕਮਾਰਕਸ</translation>
 <translation id="8833831881926404480">ਕੋਈ ਸਾਈਟ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਸਾਂਝਾ ਕਰ ਰਹੀ ਹੈ</translation>
 <translation id="883806473910249246">ਸਮੱਗਰੀ ਡਾਊਨਲੋਡ ਕਰਨ ਸਮੇਂ ਕੋਈ ਗੜਬੜ ਹੋਈ।</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">ਫ਼ੋਨ ਨੂੰ ਇੱਕ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤੋ</translation>
 <translation id="8993760627012879038">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਵਿੱਚ ਇੱਕ ਨਵੀਂ ਟੈਬ ਖੋਲ੍ਹੋ</translation>
 <translation id="8998729206196772491">ਤੁਸੀਂ <ph name="MANAGED_DOMAIN" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਕਰ ਰਹੇ ਹੋ ਅਤੇ ਉਸਦੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਆਪਣੇ Chrome ਡਾਟੇ ਦਾ ਕੰਟਰੋਲ ਦੇ ਰਹੇ ਹੋ। ਤੁਹਾਡਾ ਡਾਟਾ ਸਥਾਈ ਤੌਰ 'ਤੇ ਇਸ ਖਾਤੇ ਨਾਲ ਜੋੜ ਦਿੱਤਾ ਜਾਵੇਗਾ। Chrome ਤੋਂ ਸਾਈਨ-ਆਊਟ ਹੋਣ ਨਾਲ ਤੁਹਾਡਾ ਡਾਟਾ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ, ਪਰ ਇਹ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਸਟੋਰ ਰਹੇਗਾ।</translation>
-<translation id="9019902583201351841">ਤੁਹਾਡੇ ਮਾਪਿਆਂ ਵੱਲੋਂ ਵਿਵਸਥਿਤ</translation>
 <translation id="9028914725102941583">ਡੀਵਾਈਸਾਂ ਵਿਚਾਲੇ ਸਾਂਝਾ ਕਰਨ ਲਈ ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="9040142327097499898">ਸੂਚਨਾਵਾਂ ਦਿਖਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਇਸ ਡੀਵਾਈਸ ਲਈ ਟਿਕਾਣਾ ਸੇਵਾ ਬੰਦ ਹੈ।</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ਵੀਡੀਓ}one{# ਵੀਡੀਓ}other{# ਵੀਡੀਓ}}</translation>

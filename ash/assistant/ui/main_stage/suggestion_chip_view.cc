@@ -39,6 +39,9 @@ constexpr int kPreferredHeightDip = 32;
 
 // SuggestionChipView ----------------------------------------------------------
 
+// static
+constexpr char SuggestionChipView::kClassName[];
+
 SuggestionChipView::SuggestionChipView(AssistantViewDelegate* delegate,
                                        const AssistantSuggestion* suggestion,
                                        views::ButtonListener* listener)
@@ -47,6 +50,10 @@ SuggestionChipView::SuggestionChipView(AssistantViewDelegate* delegate,
 }
 
 SuggestionChipView::~SuggestionChipView() = default;
+
+const char* SuggestionChipView::GetClassName() const {
+  return kClassName;
+}
 
 gfx::Size SuggestionChipView::CalculatePreferredSize() const {
   const int preferred_width = views::View::CalculatePreferredSize().width();

@@ -547,7 +547,6 @@
 <translation id="3366477098757335611">કાર્ડ જુઓ</translation>
 <translation id="3369192424181595722">ઘડિયાળ ભૂલ</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા તમારા બ્રાઉઝર પર Enterprise Service Hooks વિભાગ ચાલુ કરવામાં આવ્યો છે. આ હુકને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="3377144306166885718">સર્વર TLSના જૂના વર્ઝનનો ઉપયોગ કરે છે.</translation>
 <translation id="3377188786107721145">નીતિ વિશ્લેષણ ભૂલ</translation>
 <translation id="3377736046129930310">કાર્ડને વધુ ઝડપથી કન્ફર્મ કરવા માટે સ્ક્રીન લૉકનો ઉપયોગ કરો</translation>
@@ -983,7 +982,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> માં નથી? આ ભૂલની જાણ કરો </translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="519422657042045905">ટીકાટિપ્પણી ઉપલબ્ધ નથી</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">આ પેજ પરનું શામેલ કરેલ પેજ કહે છે કે</translation>
 <translation id="5205222826937269299">નામ આવશ્યક છે</translation>
 <translation id="5209518306177824490">SHA-1 ફિંગરપ્રિંટ</translation>
@@ -1457,7 +1455,6 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.</translation>
 <translation id="7260504762447901703">ઍક્સેસ રદબાતલ કરો</translation>
 <translation id="7275334191706090484">સંચાલિત બુકમાર્ક્સ</translation>
-<translation id="7288778322931489286">તમારા વ્યવસ્થાપક દ્વારા તમારા બ્રાઉઝર પર Enterprise Service Hooks વિભાગ ચાલુ કરવામાં આવ્યો છે. આ હુકને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="7292031607255951991">પ્રાપ્તકર્તાનું નામ</translation>
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
 <translation id="7300012071106347854">ઘેરો વાદળી</translation>
@@ -1814,7 +1811,6 @@
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
 <translation id="8866928039507595380">ફોલ્ડ</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks દ્વારા ચિહ્નિત કરવામાં આવેલી સુરક્ષા ઇવેન્ટ વિશેનો ડેટા તમારા વ્યવસ્થાપક સાથે શેર કરો. આમાં તમે મુલાકાત લીધી હોય તે પેજના URLs, ફાઇલના નામ અથવા મેટાડેટાનો અને તમે તમારા ડિવાઇસ અને Chromeમાં સાઇન ઇન કરવા માટે ઉપયોગ કરો છો તે વપરાશકર્તાના નામનો સમાવેશ હોઈ શકે છે.</translation>
 <translation id="8870413625673593573">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8870494189203302833">નીચે તરફ તે જ ક્રમમાં</translation>
 <translation id="8874824191258364635">એક માન્ય કાર્ડ નંબર દાખલ કરો</translation>

@@ -19,9 +19,11 @@ namespace base {
 
 enum { kSHA1Length = 20 };  // Length in bytes of a SHA-1 hash.
 
+// The output of a SHA-1 operation.
+using SHA1Digest = std::array<uint8_t, kSHA1Length>;
+
 // Computes the SHA-1 hash of the input |data| and returns the full hash.
-BASE_EXPORT std::array<uint8_t, kSHA1Length> SHA1HashSpan(
-    span<const uint8_t> data);
+BASE_EXPORT SHA1Digest SHA1HashSpan(span<const uint8_t> data);
 
 // Computes the SHA-1 hash of the input string |str| and returns the full
 // hash.

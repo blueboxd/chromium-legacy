@@ -31,7 +31,6 @@ struct SyncCompositorDemandDrawHwParams {
   ~SyncCompositorDemandDrawHwParams();
 
   gfx::Size viewport_size;
-  gfx::Rect clip;
   gfx::Rect viewport_rect_for_tile_priority;
   gfx::Transform transform_for_tile_priority;
 };

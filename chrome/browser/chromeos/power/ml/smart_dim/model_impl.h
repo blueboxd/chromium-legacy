@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_service_client.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 
@@ -21,28 +22,6 @@ class ExamplePreprocessorConfig;
 namespace chromeos {
 namespace power {
 namespace ml {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SmartDimModelResult {
-  kSuccess = 0,
-  kPreprocessorInitializationFailed = 1,
-  kPreprocessorOtherError = 2,
-  kOtherError = 3,
-  kMismatchedFeatureSizeError = 4,
-  kMlServiceInitializationFailedError = 5,
-  kMaxValue = kMlServiceInitializationFailedError
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SmartDimParameterResult {
-  kSuccess = 0,
-  kUndefinedError = 1,
-  kParsingError = 2,
-  kUseDefaultValue = 3,
-  kMaxValue = kUseDefaultValue
-};
 
 // Real implementation of SmartDimModel that predicts whether an upcoming screen
 // dim should go ahead based on user activity/inactivity following dim.

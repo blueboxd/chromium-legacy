@@ -35,7 +35,6 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/network/network_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

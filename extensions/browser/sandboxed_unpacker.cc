@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/index_helper.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -652,7 +653,7 @@ void SandboxedUnpacker::MessageCatalogsSanitized(
     const std::string& error_msg) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   if (status == JsonFileSanitizer::Status::kSuccess) {
-    IndexAndPersistJSONRulesetIfNeeded();
+    IndexAndPersistJSONRulesetsIfNeeded();
     return;
   }
 
@@ -687,7 +688,7 @@ void SandboxedUnpacker::MessageCatalogsSanitized(
   ReportFailure(failure_reason, error);
 }
 
-void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded() {
+void SandboxedUnpacker::IndexAndPersistJSONRulesetsIfNeeded() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(extension_);
 
@@ -697,32 +698,43 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded() {
     return;
   }
 
-  auto ruleset_source =
-      declarative_net_request::RulesetSource::CreateStatic(*extension_);
-  ruleset_source.IndexAndPersistJSONRuleset(
-      &data_decoder_,
-      base::BindOnce(&SandboxedUnpacker::OnJSONRulesetIndexed, this));
+  declarative_net_request::IndexHelper::Start(
+      declarative_net_request::RulesetSource::CreateStatic(*extension_),
+      base::BindOnce(&SandboxedUnpacker::OnJSONRulesetsIndexed, this));
 }
 
-void SandboxedUnpacker::OnJSONRulesetIndexed(
-    declarative_net_request::IndexAndPersistJSONRulesetResult result) {
-  if (result.success) {
+void SandboxedUnpacker::OnJSONRulesetsIndexed(
+    std::vector<declarative_net_request::IndexAndPersistJSONRulesetResult>
+        results) {
+  base::TimeDelta total_index_and_persist_time;
+  size_t total_rules_count = 0;
+
+  // TODO(crbug.com/754526): Impose a limit on the total number of rules across
+  // all the rulesets for an extension. Also, limit the number of install
+  // warnings across all rulesets.
+  for (auto& result : results) {
+    if (!result.success) {
+      ReportFailure(
+          SandboxedUnpackerFailureReason::ERROR_INDEXING_DNR_RULESET,
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
+                                     base::UTF8ToUTF16(result.error)));
+      return;
+    }
+
     if (!result.warnings.empty())
       extension_->AddInstallWarnings(std::move(result.warnings));
-    UMA_HISTOGRAM_COUNTS_100000(
-        declarative_net_request::kManifestRulesCountHistogram,
-        result.rules_count);
-    UMA_HISTOGRAM_TIMES(
-        declarative_net_request::kIndexAndPersistRulesTimeHistogram,
-        result.index_and_persist_time);
+
+    total_index_and_persist_time += result.index_and_persist_time;
+    total_rules_count += result.rules_count;
     ruleset_checksums_.emplace_back(result.ruleset_id, result.ruleset_checksum);
-    CheckComputeHashes();
-    return;
   }
 
-  ReportFailure(SandboxedUnpackerFailureReason::ERROR_INDEXING_DNR_RULESET,
-                l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
-                                           base::UTF8ToUTF16(result.error)));
+  UMA_HISTOGRAM_TIMES(
+      declarative_net_request::kIndexAndPersistRulesTimeHistogram,
+      total_index_and_persist_time);
+  UMA_HISTOGRAM_COUNTS_100000(
+      declarative_net_request::kManifestRulesCountHistogram, total_rules_count);
+  CheckComputeHashes();
 }
 
 void SandboxedUnpacker::CheckComputeHashes() {

@@ -1392,3 +1392,119 @@ TEST_F(CorePageLoadMetricsObserverTest, UnfinishedBytesRecorded) {
   tester()->histogram_tester().ExpectUniqueSample(
       internal::kHistogramPageLoadUnfinishedBytes, 10, 1);
 }
+
+// PageLoad.Clients.FontPreload.* shouldn't be recorded when the behavior is not
+// observed.
+TEST_F(CorePageLoadMetricsObserverTest, FontPreloadHistogramsNotObserved) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
+  timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(100);
+  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(150);
+  timing.paint_timing->first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(200);
+  timing.paint_timing->largest_text_paint =
+      base::TimeDelta::FromMilliseconds(250);
+  timing.paint_timing->largest_text_paint_size = 100u;
+  timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(250);
+  timing.paint_timing->largest_image_paint_size = 100u;
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL("https://www.google.com/"));
+  tester()->SimulateTimingUpdate(timing);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadFirstPaint, 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadFirstContentfulPaint, 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestContentfulPaint, 0);
+}
+
+// PageLoad.Clients.FontPreload.* should be recorded when the behavior is
+// observed.
+TEST_F(CorePageLoadMetricsObserverTest, FontPreloadHistogramsObserved) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
+  timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(100);
+  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(150);
+  timing.paint_timing->first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(200);
+  timing.paint_timing->largest_text_paint =
+      base::TimeDelta::FromMilliseconds(250);
+  timing.paint_timing->largest_text_paint_size = 100u;
+  timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(250);
+  timing.paint_timing->largest_image_paint_size = 100u;
+  PopulateRequiredTimingFields(&timing);
+
+  // Note: PageLoadMetrics internally processes loading behavior before timing
+  // metrics if they come in the same IPC update.
+  page_load_metrics::mojom::FrameMetadata metadata;
+  metadata.behavior_flags |= blink::LoadingBehaviorFlag::
+      kLoadingBehaviorRenderDelayedForWebFontPreloading;
+  NavigateAndCommit(GURL("https://www.google.com/"));
+  tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
+
+  // Similate closing the tab.
+  DeleteContents();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadFirstPaint, 1);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadFirstContentfulPaint, 1);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestContentfulPaint, 1);
+}
+
+// PageLoad.Clients.FontPreload.* depends on the order that, we need to first
+// observe the load behavior and then observe the paint timings. This should
+// have been guaranteed by the renderer. However, If the ordering is wrong, we
+// can't observe the histograms correctly.
+TEST_F(CorePageLoadMetricsObserverTest,
+       FontPreloadHistogramsNotObservedOnWrongDispatchOrder) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
+  timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(100);
+  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(150);
+  timing.paint_timing->first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(200);
+  timing.paint_timing->largest_text_paint =
+      base::TimeDelta::FromMilliseconds(250);
+  timing.paint_timing->largest_text_paint_size = 100u;
+  timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(250);
+  timing.paint_timing->largest_image_paint_size = 100u;
+  PopulateRequiredTimingFields(&timing);
+
+  // Note: PageLoadMetrics internally processes loading behavior before timing
+  // metrics if they come in the same IPC update.
+  page_load_metrics::mojom::FrameMetadata metadata;
+  metadata.behavior_flags |= blink::LoadingBehaviorFlag::
+      kLoadingBehaviorRenderDelayedForWebFontPreloading;
+
+  NavigateAndCommit(GURL("https://www.google.com/"));
+  tester()->SimulateTimingUpdate(timing);
+  tester()->SimulateMetadataUpdate(metadata, main_rfh());
+
+  // Similate closing the tab.
+  DeleteContents();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadFirstPaint, 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadFirstContentfulPaint, 0);
+
+  // LCP is recorded on page complete/closing, so it can still be observed.
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestContentfulPaint, 1);
+}

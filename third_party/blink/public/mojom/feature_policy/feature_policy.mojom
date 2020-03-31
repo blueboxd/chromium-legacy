@@ -40,13 +40,6 @@ enum WebSandboxFlags {
   kAll                                   =    -1, // Masks all bits set to 1.
 };
 
-// This enum is used to distinguish between report-only directives and enforcing
-// directives.
-enum FeaturePolicyDisposition {
-  kEnforce,
-  kReport,
-};
-
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form a ParsedFeaturePolicy.

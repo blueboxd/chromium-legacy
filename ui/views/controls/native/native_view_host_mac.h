@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_MAC_H_
 #define UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_MAC_H_
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "ui/base/cocoa/views_hostable.h"

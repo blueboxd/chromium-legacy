@@ -548,7 +548,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="3366477098757335611">Kuva kaardid</translation>
 <translation id="3369192424181595722">Kella viga</translation>
 <translation id="337363190475750230">Eraldatud</translation>
-<translation id="3376829916920036789">Domeen <ph name="ENROLLMENT_DOMAIN" /> lubas teie brauseris funktsiooni Enterprise Service Hooks. Nendel haakidel on juurdepääs osadele teie andmetele.</translation>
 <translation id="3377144306166885718">Server kasutas TLS-i aegunud versiooni.</translation>
 <translation id="3377188786107721145">Viga reegli sõelumisel</translation>
 <translation id="3377736046129930310">Kasutage kaartide kiiremaks kinnitamiseks ekraanilukku</translation>
@@ -985,7 +984,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="5179510805599951267">Tegu ei ole <ph name="ORIGINAL_LANGUAGE" /> keelega? Andke veast teada</translation>
 <translation id="5190835502935405962">Järjehoidjariba</translation>
 <translation id="519422657042045905">Märkuste lisamise funktsioon ei ole saadaval</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Selle lehe manustatud leht ütleb</translation>
 <translation id="5205222826937269299">Nimi on nõutav</translation>
 <translation id="5209518306177824490">SHA-1 sõrmejälg</translation>
@@ -1458,7 +1456,6 @@ Lisateave:
 <translation id="725866823122871198">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna arvuti kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
 <translation id="7260504762447901703">Juurdepääsu tühistamine</translation>
 <translation id="7275334191706090484">Hallatud järjehoidjad</translation>
-<translation id="7288778322931489286">Administraator lubas teie brauseris funktsiooni Enterprise Service Hooks. Nendel haakidel on juurdepääs osadele teie andmetele.</translation>
 <translation id="7292031607255951991">Adressaadi nimi</translation>
 <translation id="7298195798382681320">Soovitatud</translation>
 <translation id="7300012071106347854">Koobaltsinine</translation>
@@ -1815,7 +1812,6 @@ Lisateave:
 <translation id="8866481888320382733">Reegli seadete sõelumisel ilmnes viga</translation>
 <translation id="8866928039507595380">Kokkuvolditud</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Administraatoriga jagatakse andmeid turvasündmuste kohta, mille funktsioon Enterprise Service Hooks on esile tõstnud. See võib hõlmata mõne külastatava lehe URL-i, failinimesid või metaandmeid ja kasutajanime, mida kasutate oma seadmesse ja Chrome'i sisselogimiseks.</translation>
 <translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="8870494189203302833">Sama järjestus, esikülg allapoole</translation>
 <translation id="8874824191258364635">Sisestaeg kehtiv kaardinumber</translation>

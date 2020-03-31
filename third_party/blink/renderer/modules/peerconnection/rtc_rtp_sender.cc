@@ -753,12 +753,9 @@ void RTCRtpSender::InitializeEncodedVideoStreams(ScriptState* script_state) {
 }
 
 void RTCRtpSender::OnFrameFromEncoder(
-    std::unique_ptr<webrtc::video_coding::EncodedFrame> frame,
-    std::vector<uint8_t> additional_data,
-    uint32_t ssrc) {
+    std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame) {
   if (video_from_encoder_underlying_source_) {
-    video_from_encoder_underlying_source_->OnFrameFromSource(
-        std::move(frame), std::move(additional_data), ssrc);
+    video_from_encoder_underlying_source_->OnFrameFromSource(std::move(frame));
   }
 }
 

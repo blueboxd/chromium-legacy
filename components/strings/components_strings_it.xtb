@@ -545,7 +545,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3366477098757335611">Visualizza le carte</translation>
 <translation id="3369192424181595722">Errore dell'orologio</translation>
 <translation id="337363190475750230">Deprovisioning effettuato</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ha attivato Enterprise Service Hooks sul tuo browser. Questi hook hanno accesso ad alcuni dei tuoi dati.</translation>
 <translation id="3377144306166885718">Il server usava una versione obsoleta di TLS.</translation>
 <translation id="3377188786107721145">Errore di analisi del criterio</translation>
 <translation id="3377736046129930310">Usa il blocco schermo per verificare più velocemente le carte</translation>
@@ -982,7 +981,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5179510805599951267">Non in <ph name="ORIGINAL_LANGUAGE" />? Segnala questo errore</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="519422657042045905">Annotazione non disponibile</translation>
-<translation id="5196187217592847346">Hook del servizio Chrome Enterprise</translation>
 <translation id="5201306358585911203">Una pagina incorporata in questa pagina dice</translation>
 <translation id="5205222826937269299">Nome obbligatorio</translation>
 <translation id="5209518306177824490">Impronta digitale SHA-1</translation>
@@ -1455,7 +1453,6 @@ Ulteriori dettagli:
 <translation id="725866823122871198">Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perché data e ora del computer (<ph name="DATE_AND_TIME" />) sono sbagliate.</translation>
 <translation id="7260504762447901703">Revoca accesso</translation>
 <translation id="7275334191706090484">Preferiti gestiti</translation>
-<translation id="7288778322931489286">L'amministratore ha attivato Enterprise Service Hooks sul tuo browser. Questi hook hanno accesso ad alcuni dei tuoi dati.</translation>
 <translation id="7292031607255951991">Nome destinatario</translation>
 <translation id="7298195798382681320">Consigliate</translation>
 <translation id="7300012071106347854">Blu cobalto</translation>
@@ -1812,7 +1809,6 @@ Ulteriori dettagli:
 <translation id="8866481888320382733">Errore durante l'analisi delle impostazioni criterio</translation>
 <translation id="8866928039507595380">Piegatura</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Consente di condividere con l'amministratore i dati relativi agli eventi di sicurezza segnalati da Enterprise Service Hooks. Tali dati potrebbero includere URL delle pagine visitate, metadati o nomi dei file e il nome utente che usi per accedere al tuo dispositivo e a Chrome.</translation>
 <translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8870494189203302833">Stesso ordine a faccia in giù</translation>
 <translation id="8874824191258364635">Inserisci un numero di carta di credito valido</translation>

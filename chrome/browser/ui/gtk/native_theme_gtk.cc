@@ -79,6 +79,7 @@ base::Optional<SkColor> SkColorFromColorId(
     case ui::NativeTheme::kColorId_BubbleBackground:
       return GetBgColor("");
     case ui::NativeTheme::kColorId_DialogForeground:
+    case ui::NativeTheme::kColorId_BubbleForeground:
       return GetFgColor("GtkLabel");
     case ui::NativeTheme::kColorId_BubbleFooterBackground:
       return GetBgColor("#statusbar");

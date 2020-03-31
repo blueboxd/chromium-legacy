@@ -218,12 +218,13 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   void Cleanup();
 
   // If a Declarative Net Request JSON ruleset is present, parses the JSON
-  // ruleset for the Declarative Net Request API and persists the indexed
-  // ruleset.
-  void IndexAndPersistJSONRulesetIfNeeded();
+  // rulesets for the Declarative Net Request API and persists the indexed
+  // rulesets.
+  void IndexAndPersistJSONRulesetsIfNeeded();
 
-  void OnJSONRulesetIndexed(
-      declarative_net_request::IndexAndPersistJSONRulesetResult result);
+  void OnJSONRulesetsIndexed(
+      std::vector<declarative_net_request::IndexAndPersistJSONRulesetResult>
+          results);
 
   // Computed hashes: if requested (via ShouldComputeHashes callback in
   // SandbloxedUnpackerClient), calculate hashes of all extensions' resources

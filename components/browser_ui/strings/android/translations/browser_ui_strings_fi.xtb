@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 eväste estetty}other{# evästettä estetty}}</translation>
+<translation id="257931822824936280">Laajennettu – tiivistä klikkaamalla.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2968755619301702150">Varmennetiedot</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopioi linkki</translation>
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4570913071927164677">Tiedot</translation>
+<translation id="4645575059429386691">Vanhempasi hallinnoima</translation>
+<translation id="4883854917563148705">Ylläpidettyjä asetuksia ei voi nollata</translation>
 <translation id="497421865427891073">Siirry eteenpäin</translation>
+<translation id="5100237604440890931">Tiivistetty – laajenna klikkaamalla.</translation>
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5301954838959518834">Selvä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7846076177841592234">Peruuta valinta</translation>
 <translation id="8131740175452115882">Vahvista</translation>
+<translation id="8206354486702514201">Järjestelmänvalvojasi hallinnoi tätä asetusta.</translation>
 <translation id="8249310407154411074">Siirrä ylimmäksi</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8609465669617005112">Siirrä ylös</translation>
 <translation id="8676374126336081632">Tyhjennä teksti</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8730621377337864115">Valmis</translation>
+<translation id="9019902583201351841">Vanhempiesi hallinnoima</translation>
 </translationbundle>

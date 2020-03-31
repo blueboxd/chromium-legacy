@@ -157,6 +157,20 @@ TEST_F(SchemaOrgExtractorTest, BooleanValue) {
   EXPECT_EQ(expected, extracted);
 }
 
+TEST_F(SchemaOrgExtractorTest, BooleanValueAsString) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\", \"requiresSubscription\": "
+      "\"https://schema.org/True\" }");
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(
+      CreateBooleanProperty("requiresSubscription", true));
+
+  EXPECT_EQ(expected, extracted);
+}
+
 TEST_F(SchemaOrgExtractorTest, LongValue) {
   EntityPtr extracted =
       Extract("{\"@type\": \"VideoObject\", \"position\": 111 }");

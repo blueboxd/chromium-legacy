@@ -5,21 +5,34 @@
 #ifndef COMPONENTS_FEED_CORE_V2_TASKS_LOAD_STREAM_TASK_H_
 #define COMPONENTS_FEED_CORE_V2_TASKS_LOAD_STREAM_TASK_H_
 
-#include "components/offline_pages/task/task.h"
+#include <memory>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
+#include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
+#include "components/offline_pages/task/task.h"
 
 namespace feed {
 class FeedStream;
 
 // Loads the stream model from storage or network.
-// TODO(harringtond): This is ultra-simplified so that we have something in
-// in place temporarily. Right now, we just always fetch from network.
+// If successful, this directly forces a model load in |FeedStream()|
+// before completing the task.
+// TODO(harringtond): If we read data from the network, it needs to be
+// persisted.
 class LoadStreamTask : public offline_pages::Task {
  public:
-  explicit LoadStreamTask(FeedStream* stream, base::OnceClosure done_callback);
+  struct Result {
+    // Final status of loading the stream.
+    LoadStreamStatus final_status = LoadStreamStatus::kNoStatus;
+    // Status of just loading the stream from the persistent store, if that
+    // was attempted.
+    LoadStreamStatus load_from_store_status = LoadStreamStatus::kNoStatus;
+  };
+  explicit LoadStreamTask(FeedStream* stream,
+                          base::OnceCallback<void(Result)> done_callback);
   ~LoadStreamTask() override;
   LoadStreamTask(const LoadStreamTask&) = delete;
   LoadStreamTask& operator=(const LoadStreamTask&) = delete;
@@ -30,12 +43,15 @@ class LoadStreamTask : public offline_pages::Task {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  void LoadFromStoreComplete(LoadStreamFromStoreTask::Result result);
   void QueryRequestComplete(FeedNetwork::QueryRequestResult result);
-  void Done();
+  void Done(LoadStreamStatus status);
 
   FeedStream* stream_;  // Unowned.
+  std::unique_ptr<LoadStreamFromStoreTask> load_from_store_task_;
+  LoadStreamStatus load_from_store_status_ = LoadStreamStatus::kNoStatus;
   base::TimeTicks fetch_start_time_;
-  base::OnceClosure done_callback_;
+  base::OnceCallback<void(Result)> done_callback_;
   base::WeakPtrFactory<LoadStreamTask> weak_ptr_factory_{this};
 };
 }  // namespace feed

@@ -41,7 +41,7 @@ class SubresourceFilterObserver {
   // threat types.
   virtual void OnSafeBrowsingChecksComplete(
       content::NavigationHandle* navigation_handle,
-      const SafeBrowsingCheckResults& results) {}
+      const SubresourceFilterSafeBrowsingClient::CheckResult& result) {}
 
   // Called at most once per navigation when page activation is computed. This
   // will be called before ReadyToCommitNavigation.

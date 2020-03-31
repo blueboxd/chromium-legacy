@@ -2304,7 +2304,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, SingleDownload) {
   download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(), embedded_test_server()->GetURL("/download/download-test.lib"));
   ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download->GetState());
-
   WaitForCompletion(download);
   ASSERT_EQ(download::DownloadItem::COMPLETE, download->GetState());
 }
@@ -2374,7 +2373,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownload) {
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
 
-// Check that defaulting downloads works as expected when there's no proxy
+// Check that defaulting downloads cancels when there's no proxy
 // download delegate.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
   base::ThreadRestrictions::SetIOAllowed(true);
@@ -2390,28 +2389,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
   DownloadTestFlushObserver flush_observer(DownloadManagerForShell(shell()));
   flush_observer.WaitForFlush();
   EXPECT_TRUE(EnsureNoPendingDownloads());
-  // The download manager will intercept the download navigation and drop it
-  // since we have set the delegate to null.
-  EXPECT_EQ(nullptr, download);
-}
-
-// Check that download logic is reset when creating a new target.
-IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, ResetDownloadState) {
-  base::ThreadRestrictions::SetIOAllowed(true);
-  SetupEnsureNoPendingDownloads();
-  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
-  Attach();
-
-  SetDownloadBehavior("deny");
-
-  Shell* new_window = CreateBrowser();
-  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
-  // Create a download, wait and confirm it wasn't cancelled.
-  download::DownloadItem* download = StartDownloadAndReturnItem(
-      new_window,
-      embedded_test_server()->GetURL("/download/download-test.lib"));
-  WaitForCompletion(download);
-  ASSERT_EQ(download::DownloadItem::COMPLETE, download->GetState());
+  ASSERT_EQ(download::DownloadItem::CANCELLED, download->GetState());
 }
 
 // Flakly on ChromeOS https://crbug.com/860312

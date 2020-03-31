@@ -68,10 +68,6 @@
 #include "chrome/browser/ui/gtk/settings_provider_gsettings.h"
 #endif
 
-#if defined(USE_GTK_EVENT_LOOP_X11)
-#include "chrome/browser/ui/gtk/gtk_event_loop_x11.h"
-#endif
-
 #if defined(USE_OZONE)
 #include "ui/base/ime/input_method.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -312,19 +308,6 @@ views::LinuxUI::WindowFrameAction GetDefaultMiddleClickAction() {
   }
 }
 
-#if defined(USE_GTK_EVENT_LOOP_X11)
-bool ShouldCreateGtkEventLoopX11() {
-#if defined(USE_OZONE)
-  // TODO(crbug.com/1002674): This is a temporary layering violation, supported
-  // during X11 migration to Ozone.
-  std::string ozone_platform{ui::OzonePlatform::GetPlatformName()};
-  return ozone_platform == "x11";
-#else
-  return true;
-#endif
-}
-#endif  // defined(USE_GTK_EVENT_LOOP_X11)
-
 const SkBitmap GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
   // TODO(erg): What do we do in the case where the pixbuf fails these dchecks?
   // I would prefer to use our gtk based canvas, but that would require
@@ -465,11 +448,7 @@ void GtkUi::Initialize() {
 
   indicators_count = 0;
 
-#if defined(USE_GTK_EVENT_LOOP_X11)
-  if (ShouldCreateGtkEventLoopX11())
-    // Instantiate the singleton instance of GtkEventLoopX11.
-    GtkEventLoopX11::GetInstance();
-#endif
+  GetDelegate()->OnInitialized();
 }
 
 bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {

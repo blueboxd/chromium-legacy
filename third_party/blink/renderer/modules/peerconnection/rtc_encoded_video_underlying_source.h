@@ -10,9 +10,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace webrtc {
-namespace video_coding {
-class EncodedFrame;
-}
+class TransformableVideoFrameInterface;
 }  // namespace webrtc
 
 namespace blink {
@@ -28,9 +26,8 @@ class MODULES_EXPORT RTCEncodedVideoUnderlyingSource
   ScriptPromise pull(ScriptState*) override;
   ScriptPromise Cancel(ScriptState*, ScriptValue reason) override;
 
-  void OnFrameFromSource(std::unique_ptr<webrtc::video_coding::EncodedFrame>,
-                         std::vector<uint8_t> additional_data,
-                         uint32_t ssrc);
+  void OnFrameFromSource(
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface>);
   void Close();
 
   void Trace(Visitor*) override;

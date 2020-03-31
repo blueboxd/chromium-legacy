@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">شبكات مرئية:</translation>
 <translation id="1094607894174825014">تم طلب عملية القراءة أو الكتابة باستخدام إزاحة غير صالحة على: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">قبل تسجيل الدخول، يُرجى الدخول كضيف لتفعيل الشبكة <ph name="NETWORK_ID" /></translation>
+<translation id="1099962274138857708">تم نسخ الصورة من <ph name="DEVICE_NAME" />.</translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
 <translation id="1104038495841596279">‏تعذّر علينا رصد شريحة SIM.</translation>
 <translation id="1108600514891325577">إي&amp;قاف</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">صفحة الخلفية</translation>
 <translation id="1745520510852184940">أجرِ ذلك دائمًا</translation>
 <translation id="1750172676754093297">يتعذّر على مفتاح الأمان تخزين بصمات الإصبع.</translation>
+<translation id="1751262127955453661">سيتمكّن <ph name="ORIGIN" /> من تعديل الملفات في <ph name="FOLDERNAME" /> إلى أن يتم إغلاق جميع علامات تبويب هذا الموقع الإلكتروني.</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
 <translation id="1753067873202720523">‏قد يتعذر شحن جهاز Chromebook أثناء تشغيله.</translation>
 <translation id="1753905327828125965">الأكثر زيارة</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">‏هل تستخدم Chrome بالفعل؟ يُرجى تسجيل الدخول</translation>
 <translation id="18245044880483936">‏لن يتم احتساب البيانات التي تتضمنها النسخة الاحتياطية ضمنَ حصة التخزين في Drive داخل حسابك الفرعي.</translation>
 <translation id="1826516787628120939">حساب شيكات</translation>
+<translation id="1827738518074806965">معرض الفنون</translation>
 <translation id="1828378091493947763">هذا المكوِّن الإضافي غير مدعوم على هذا الجهاز</translation>
 <translation id="1828901632669367785">مربع حوار الطباعة باستخدام النظام…</translation>
 <translation id="1829129547161959350">بطريق</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2359808026110333948">متابعة</translation>
 <translation id="236117173274098341">تحسين</translation>
 <translation id="236141728043665931">حظر الدخول إلى الميكروفون دومًا</translation>
+<translation id="2364498172489649528">تم الاجتياز.</translation>
 <translation id="2365507699358342471">يمكن لهذا الموقع الاطلاع على النصوص والصور التي تم نسخها إلى الحافظة.</translation>
 <translation id="2366260648632264559">عرض نص النظام بهذه اللغة</translation>
 <translation id="2367972762794486313">إظهار التطبيقات</translation>
@@ -1342,6 +1346,7 @@
 <translation id="2762441749940182211">تم حظر استخدام الكاميرا</translation>
 <translation id="2765217105034171413">صغير</translation>
 <translation id="2766161002040448006">طلب الإذن من أحد الوالدَين</translation>
+<translation id="2767127727915954024">سيتمكّن <ph name="ORIGIN" /> من تعديل <ph name="FILENAME" /> إلى أن يتم إغلاق جميع علامات تبويب هذا الموقع الإلكتروني.</translation>
 <translation id="276969039800130567">تم تسجيل الدخول بحساب <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
 <translation id="2770690685823456775">تصدير كلمات المرور إلى مجلد آخر</translation>
@@ -1666,6 +1671,18 @@
 <translation id="3202173864863109533">تم كتم صوت علامة التبويب.</translation>
 <translation id="3208321278970793882">التطبيق</translation>
 <translation id="3208584281581115441">التحقّق الآن</translation>
+<translation id="3208640652501208439">‏قد يتعذّر تحميل مصادر للأعمال المدرسية تلقائيًا أو توفّرها.
+وقد لا يتمكن طفلك من الوصول إلى ما يلي:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />التطبيقات والإضافات التي ثبّتتها المدرسة
+<ph name="LIST_ITEM" />الإشارات المرجعية من جهاز Chromebook الخاص بالمدرسة
+<ph name="LIST_ITEM" />الملء التلقائي لكلمات المرور في المواقع الإلكترونية التعليمية
+<ph name="END_LIST" />
+للاستفادة من التجربة المدرسية الكاملة على هذا الجهاز، يجب على طفلك إجراء ما يلي:
+<ph name="BEGIN_OLIST" />
+<ph name="OLIST_ITEM" />تسجيل الخروج من حسابه المُدار من خلال Family Link
+<ph name="OLIST_ITEM" />تسجيل الدخول باستخدام حساب "G Suite للتعليم" على شاشة تسجيل الدخول. ومع ذلك، يُرجى ملاحظة أن هذا يعني أن سياسات المدرسة بما في ذلك إعدادات الوصول للموقع الإلكتروني والتطبيق ستكون لها الأولوية على ميزات إشراف Family Link (على سبيل المثال قد يسمح مشرفو المدرسة بالوصول إلى YouTube إذا كان ضروريًا للواجب المنزلي، وعدم تحديد وقت للشاشة، وغيرها).
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">لم يتم تأكيده</translation>
 <translation id="32101887417650595">يتعذّر الاتصال بالطباعة</translation>
 <translation id="321084946921799184">أصفر وأبيض</translation>
@@ -1744,6 +1761,7 @@
 <translation id="3312424061798279731">اللغات التي تم تفعيلها</translation>
 <translation id="3313622045786997898">قيمة توقيع الشهادة</translation>
 <translation id="3315158641124845231">إخفاء <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">معلومات حساب المدرسة للوالدَين</translation>
 <translation id="3317459757438853210">طباعة على الجانبين</translation>
 <translation id="3317678681329786349">تم حظر استخدام الكاميرا والميكروفون</translation>
 <translation id="3319048459796106952">نافذة &amp; جديدة للتصفح المتخفي</translation>
@@ -1930,6 +1948,7 @@
 <translation id="3574210789297084292">تسجيل الدخول</translation>
 <translation id="3574917942258583917">هل تريد الخروج من وضع التصفح المتخفي على أي حال؟</translation>
 <translation id="3575121482199441727">سماح لهذا الموقع الإلكتروني</translation>
+<translation id="3575919114596668130">‏سيستمر تطبيق إعدادات الوالدَين في Family Link. وفي حال سبق لك حظر تطبيق أو موقع إلكتروني، لن تحتاج إلى حظره مرة أخرى.</translation>
 <translation id="3576324189521867626">تم التثبيت بنجاح</translation>
 <translation id="3578594933904494462">تجري مشاركة محتوى علامة التبويب هذه.</translation>
 <translation id="357886715122934472">‏يريد &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; مشاركة طابعة &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; مع مجموعة تمتلكها: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. في حال موافقتك، سيتمكن جميع أعضاء المجموعة من الطباعة بهذه الطابعة.</translation>
@@ -2767,6 +2786,7 @@
 <translation id="4689235506267737042">اختيار إعدادات العرض التوضيحي المفضَّلة</translation>
 <translation id="4689421377817139245">‏مزامنة هذه الإشارة المرجعة على جهاز iPhone</translation>
 <translation id="4690091457710545971">‏&lt;تم إنشاء أربعة ملفات من خلال برامج Intel Wi-Fi الثابتة وهي كما يلي: csr.lst وfh_regs.lst وradio_reg.lst وmonitor.lst.sysmon. والملفات الثلاثة الأولى هي ملفات ثنائية تحتوي على عمليات تفريغ للسجلّات وهي لا تحتوي على أي معلومات شخصية أو معلومات تحديد هوية الجهاز، حسب تقييم Intel.وأما الملف الأخير فهو عبارة عن تتبُّع تنفيذ من البرامج الثابتة Intel، وتم تنقيحه للتأكّد من خلوه من أي معلومات شخصية أو معلومات تحديد هوية الجهاز، ولكنه لم يُعرض هنا لكبر حجمه. وتم إنشاء هذه الملفات استجابةً لمشاكل Wi-Fi الأخيرة في جهازك، وستتم مشاركتها مع Intel للمساعدة في تحرّي هذه المشاكل وإصلاحها.&gt;</translation>
+<translation id="4691791363716065510">سيتمكّن <ph name="ORIGIN" /> من قراءة <ph name="FILENAME" /> إلى أن يتم إغلاق جميع علامات تبويب هذا الموقع الإلكتروني.</translation>
 <translation id="4692623383562244444">محرّكات البحث</translation>
 <translation id="4693155481716051732">سوشي</translation>
 <translation id="4694024090038830733">يُسمح للمشرف فقط بتهيئة الطابعة.</translation>
@@ -3122,6 +3142,7 @@
 <translation id="5204967432542742771">إدخال كلمة المرور</translation>
 <translation id="5206215183583316675">هل تريد حذف "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="520621735928254154">خطأ في استيراد الشهادة</translation>
+<translation id="5209307736170827035">‏ستتم حماية بيانات طفلك في Classroom. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">لم يتم العثور على أي أجهزة</translation>
 <translation id="5210990770352357081">‏تعذّر إلغاء تثبيت Plugin VM.</translation>
 <translation id="5213481667492808996">خدمة بيانات "<ph name="NAME" />" جاهزة للاستخدام</translation>
@@ -3233,6 +3254,7 @@
 <translation id="5341980496415249280">يُرجى الانتظار، جارٍ التعبئة...</translation>
 <translation id="5342091991439452114">يجب أن يتكوَّن رقم التعريف الشخصي من <ph name="MINIMUM" /> من الأرقام على الأقل</translation>
 <translation id="5344036115151554031">‏استعادة نظام التشغيل Linux</translation>
+<translation id="535123479159372765">تم نسخ نص من جهاز آخر.</translation>
 <translation id="5352033265844765294">الطابع الزمني</translation>
 <translation id="5353252989841766347">‏تصدير كلمات المرور من Chrome</translation>
 <translation id="5355099869024327351">‏السماح "لمساعد Google" بعرض الإشعارات</translation>
@@ -3356,6 +3378,7 @@
 <translation id="5511379779384092781">صغير جدًا</translation>
 <translation id="5511823366942919280">‏هل أنت متأكد من أنك تريد إعداد هذا الجهاز كـ "Shark"؟</translation>
 <translation id="5512653252560939721">يجب أن تكون شهادة المستخدم مستندة إلى الأجهزة.</translation>
+<translation id="5515923816438946203">اختيار ما تريده أن يظهر على شاشتك</translation>
 <translation id="5517304475148761050">‏يتطلّب هذا التطبيق الوصول إلى "متجر Play"</translation>
 <translation id="5517412723934627386">نوع الشبكة <ph name="NETWORK_TYPE" /> - الاسم المعروض للشبكة <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">إضافة الطابعة إلى حسابك - قد يستغرق ذلك القليل من الوقت...</translation>
@@ -3806,6 +3829,7 @@
 <translation id="6097480669505687979">إذا لم تفرّغ مساحة، فقد تتم إزالة المستخدمين والبيانات تلقائيا.</translation>
 <translation id="6097600385983390082">ميزة البحث الصوتي مغلقة</translation>
 <translation id="6098793583803863900">يجري فحص ملف غير معروف بحثًا عن محتوى خطير.</translation>
+<translation id="609942571968311933">تم نسخ النص من <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">قائمة بدء التشغيل</translation>
 <translation id="6101226222197207147">تمت إضافة تطبيق جديد (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">تم حظر الملف من خلال برنامج "الحماية المتقدمة".</translation>
@@ -4177,6 +4201,7 @@
 <translation id="6612358246767739896">المحتوى المحمي</translation>
 <translation id="6615455863669487791">عرضه</translation>
 <translation id="6618097958368085618">الاحتفاظ به على أيّ حال</translation>
+<translation id="6618744767048954150">قيد التشغيل</translation>
 <translation id="6619058681307408113">‏بروتوكول تلقّي الملفات للطباعة (LPD)</translation>
 <translation id="661907246513853610">يمكن لموقع الويب تتبّع موقعك الجغرافي.</translation>
 <translation id="6619801788773578757">إضافة تطبيق الكشك</translation>
@@ -4562,6 +4587,7 @@
 <translation id="7131040479572660648">قراءة بياناتك على <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> و<ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">إضافة &amp;صفحة...</translation>
 <translation id="7133578150266914903">‏يعمل المشرف على إعادة النسخة السابقة من نظام التشغيل Chrome إلى هذا الجهاز(<ph name="PROGRESS_PERCENT" />)</translation>
+<translation id="7133728868075973271">تم التحقّق من <ph name="DONE" />/<ph name="TOTAL" /> كلمة مرور...</translation>
 <translation id="7134098520442464001">لتصغير النص</translation>
 <translation id="7135729336746831607">هل تريد تفعيل البلوتوث؟</translation>
 <translation id="7136639886842764730">يتطلّب <ph name="DOMAIN" /> تحديث جهاز <ph name="DEVICE_TYPE" /> فورًا.</translation>
@@ -4910,6 +4936,7 @@
 <translation id="761530003705945209">‏يمكنك الاحتفاظ بنسخة احتياطية في Google Drive. ويمكنك استعادة بياناتك أو تبديل جهازك بسهولة وفي أي وقت. تتضمّن نسختك الاحتياطية بيانات التطبيق، حيث يتمّ تحميل النُسخ الاحتياطية إلى Google ويتم ترميزها باستخدام كلمة مرور حسابك على Google.</translation>
 <translation id="7616214729753637086">جارٍ تسجيل الجهاز...</translation>
 <translation id="7617366389578322136">جارٍ الاتصال بـ "<ph name="DEVICE_NAME" />"</translation>
+<translation id="761763866592998929">وضع الاستراحة</translation>
 <translation id="762068974690945752">يمكنك في هذه الصفحة إضافة حساب مدرسة أو إدارة حسابات طفل. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">تعذّر على النظام حفظ ضبط الجهاز.</translation>
 <translation id="7622114377921274169">جارٍ الشحن.</translation>
@@ -5021,6 +5048,7 @@
 <translation id="7766838926148951335">قبول الأذونات</translation>
 <translation id="7768770796815395237">تغيير</translation>
 <translation id="7769672763586021400">رقم تعريف النموذج</translation>
+<translation id="7770612696274572992">تم نسخ الصورة من جهاز آخر.</translation>
 <translation id="7770651108375708429">‏قطع الاتصال بشبكة Wi-Fi</translation>
 <translation id="7771452384635174008">تخطيط</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
@@ -5028,6 +5056,7 @@
 <translation id="7772773261844472235">‏التحقق من حالة جهاز Chromebook</translation>
 <translation id="7773726648746946405">مساحة تخزين الجلسة</translation>
 <translation id="7774365994322694683">طائر</translation>
+<translation id="7776156998370251340">سيتمكّن <ph name="ORIGIN" /> من الاطّلاع على الملفات في <ph name="FOLDERNAME" /> إلى أن يتم إغلاق جميع علامات تبويب هذا الموقع الإلكتروني.</translation>
 <translation id="7776701556330691704">لم يتم العثور على الإعدادات الصوتية في ميزة "تحويل النص إلى كلام"</translation>
 <translation id="7780252971640011240">حدثت مشكلة أثناء الاتصال. يُرجى الاتصال بمشغّل شبكة الجوّال للحصول على المساعدة.</translation>
 <translation id="7781335840981796660">ستتم إزالة جميع حسابات المستخدمين والبيانات المحلية.</translation>
@@ -6047,6 +6076,7 @@
 <translation id="9055636786322918818">‏فرض ترميز RC4: يؤدي استخدام هذا الخيار إلى زيادة المخاطر، لأن رموز RC4 غير آمنة.</translation>
 <translation id="9056810968620647706">لم يتم العثور على نتائج مطابقة.</translation>
 <translation id="9057354806206861646">تعديل الجدول الزمني</translation>
+<translation id="9058976525724291037">‏يريد طفلك إضافة "حساب Google" آخر إلى هذا الجهاز. وغير مسموح بإضافة حسابات سوى حسابات "G Suite للتعليم" إلى الأجهزة التي تُدار من خلال Family Link.</translation>
 <translation id="9062065967472365419">مفاجأة</translation>
 <translation id="9062468308252555888">14 ضعفًا</translation>
 <translation id="9063208415146866933">خطأ من السطر رقم <ph name="ERROR_LINE_START" /> إلى <ph name="ERROR_LINE_END" /></translation>

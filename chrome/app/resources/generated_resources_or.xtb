@@ -1693,6 +1693,7 @@
 <translation id="3264544094376351444">Sans-Serif ଫଣ୍ଟ</translation>
 <translation id="3264582393905923483">ପ୍ରସଙ୍ଗ</translation>
 <translation id="3265459715026181080">ୱିଣ୍ଡୋ ବନ୍ଦ କରନ୍ତୁ</translation>
+<translation id="3266274118485960573">ସୁରକ୍ଷା ଯାଞ୍ଚ ଚାଲିଛି।</translation>
 <translation id="3267726687589094446">ଏକାଧିକ ଫାଇଲ୍‍କୁ ସ୍ୱଚାଳିତ ଡାଉନ୍‌ଲୋଡ୍‌ର ଅନୁମତି ଦେବା ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="3268451620468152448">ଖୋଲାଥିବା ଟାବ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="3269069891205016797">ଆପଣ ଯେତେବେଳେ ସାଇନ୍ ଆଉଟ୍ କରିବେ ସେତେବେଳେ ଆପଣଙ୍କର ସୂଚନା ଡିଭାଇସ୍‌ରୁ କାଢ଼ି ଦିଆଯିବ।</translation>
@@ -1798,6 +1799,7 @@
 <translation id="3412265149091626468">ଚୟନକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="3413122095806433232">CA ପ୍ରଦାନକାରୀ: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">ଆକାର:</translation>
+<translation id="3416468988018290825">ସର୍ବଦା ପୂର୍ଣ୍ଣ URLଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="3420501302812554910">ଇଣ୍ଟର୍ନଲ୍ ସୁରକ୍ଷା କୀ ରିସେଟ୍ ଆବଶ୍ୟକ କରୁଛି</translation>
 <translation id="3421387094817716717">ଏଲିପ୍‌ଟିକ୍ କର୍ଭ ପବ୍ଲିକ୍ କୀ</translation>
 <translation id="3422291238483866753">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ ଚାହିଁଲେ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
@@ -4153,6 +4155,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="6586451623538375658">ପ୍ରାଥମିକ ମାଉସ୍‌ ବଟନ୍‌ ସ୍ୱାପ୍‌ କରନ୍ତୁ</translation>
 <translation id="6586604979641883411">Linuxକୁ ଅପଗ୍ରେଡ୍ କରିବା ପାଇଁ ଅତି କମରେ <ph name="REQUIRED_SPACE" /> ଖାଲି ଡିସ୍କ ସ୍ଥାନ ଆବଶ୍ୟକ। ଦୟାକରି ଆପଣଙ୍କର ଡିଭାଇସରେ କିଛି ସ୍ଥାନ ଖାଲି କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6588043302623806746">ସୁରକ୍ଷିତ DNS ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="659005207229852190">ସୁରକ୍ଷା ଯାଞ୍ଚ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଯାଇଛି।</translation>
 <translation id="6590458744723262880">ଫୋଲ୍ଡର୍‌ ରିନେମ୍‌ କରନ୍ତୁ</translation>
 <translation id="6592267180249644460"><ph name="WEBRTC_LOG_CAPTURE_TIME" />ରେ WebRTC ଲଗ୍ କ୍ୟାପଚର୍ କରାଯାଇଛି</translation>
 <translation id="6592808042417736307">ଆପଣଙ୍କର ଟିପଚିହ୍ନ କ୍ୟାପଚର୍ କରାଯାଇଥିଲା</translation>
@@ -5410,6 +5413,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8249672078237421304">ସେହି ପୃଷ୍ଠାଗୁଡ଼ିକୁ ଅନୁବାଦ କରିବାକୁ ଅଫର୍ କରନ୍ତୁ ଯାହା ଆପଣ ପଢ଼ୁଥିବା ଭାଷାରେ ନାହିଁ</translation>
 <translation id="8251441930213048644">ବର୍ତ୍ତମାନ ରିଫ୍ରେସ୍ କରନ୍ତୁ</translation>
 <translation id="8251578425305135684">ଥମ୍ବନେଲ୍ କାଢ଼ି ଦିଆଯାଇଛି।</translation>
+<translation id="825238165904109940">ସର୍ବଦା ପୂର୍ଣ୍ଣ URLଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="8252569384384439529">ଅପ୍‌ଲୋଡ୍ ହେଉଛି...</translation>
 <translation id="8253198102038551905">ନେଟୱର୍କ ପ୍ରପର୍ଟିସ୍ ପାଇବା ପାଇଁ '+' କ୍ଲିକ୍ କରନ୍ତୁ</translation>
 <translation id="8254954272268479918">Linux (ବିଟା) ବନ୍ଦ କରନ୍ତୁ</translation>

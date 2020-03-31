@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2501278716633472235">Visszalépés</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie letiltva}other{# cookie letiltva}}</translation>
+<translation id="257931822824936280">Kibontva – kattintson az összecsukáshoz.</translation>
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Link másolása</translation>
 <translation id="4002066346123236978">Cím</translation>
 <translation id="4570913071927164677">Részletek</translation>
+<translation id="4645575059429386691">A szülő kezeli</translation>
+<translation id="4883854917563148705">A kezelt beállításokat nem lehet visszaállítani</translation>
 <translation id="497421865427891073">Előrelépés</translation>
+<translation id="5100237604440890931">Összecsukva – kattintson a kibontáshoz.</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5301954838959518834">Rendben, értem</translation>
 <translation id="5317780077021120954">Mentés</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7846076177841592234">Kijelölés törlése</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
+<translation id="8206354486702514201">Ezt a beállítást rendszergazdája lépteti életbe.</translation>
 <translation id="8249310407154411074">Mozgatás az elejére</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8609465669617005112">Mozgatás felfelé</translation>
 <translation id="8676374126336081632">Beírt szöveg törlése</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8730621377337864115">Kész</translation>
+<translation id="9019902583201351841">Szülők által kezelt</translation>
 </translationbundle>

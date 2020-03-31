@@ -548,7 +548,6 @@
 <translation id="3366477098757335611">Դիտել քարտերը</translation>
 <translation id="3369192424181595722">Ժամացույցի սխալ</translation>
 <translation id="337363190475750230">Անջատված է</translation>
-<translation id="3376829916920036789">Enterprise Service Hooks-ը միացվել է ձեր դիտարկիչում <ph name="ENROLLMENT_DOMAIN" /> կայքի կողմից։ Այս hook-երին հասանելի են ձեզ պատկանող որոշ տվյալներ։</translation>
 <translation id="3377144306166885718">Սերվերն օգտագործում է TLS-ի հնացած տարբերակ։</translation>
 <translation id="3377188786107721145">Կանոնի վերլուծման սխալ</translation>
 <translation id="3377736046129930310">Օգտագործել էկրանի կողպումը՝ քարտերն ավելի արագ հաստատելու համար</translation>
@@ -985,7 +984,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> չէ՞: Հաղորդեք սխալի մասին</translation>
 <translation id="5190835502935405962">Էջանիշների գոտի</translation>
 <translation id="519422657042045905">Ծանոթագրությունը հասանելի չէ</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Հաղորդագրություն այս կայքում ներկառուցված էջից</translation>
 <translation id="5205222826937269299">Անունը պարտադիր է</translation>
 <translation id="5209518306177824490">SHA-1 մատնահետք</translation>
@@ -1459,7 +1457,6 @@
 <translation id="725866823122871198">Չհաջողվեց մասնավոր կապակցում հաստատել <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> տիրույթի հետ, քանի որ ձեր համակարգչի ամսաթիվը և ժամը (<ph name="DATE_AND_TIME" />) սխալ են:</translation>
 <translation id="7260504762447901703">Արգելել սարքի օգտագործումը</translation>
 <translation id="7275334191706090484">Կառավարվող էջանիշներ</translation>
-<translation id="7288778322931489286">Ձեր ադմինիստրատորը միացրել է Enterprise Service Hooks-ը ձեր դիտարկիչում։ Այս hook-երին հասանելի են ձեզ պատկանող որոշ տվյալներ։</translation>
 <translation id="7292031607255951991">Ստացողի անունը</translation>
 <translation id="7298195798382681320">Հանձնարարելի</translation>
 <translation id="7300012071106347854">Կոբալտե կապույտ</translation>
@@ -1816,7 +1813,6 @@
 <translation id="8866481888320382733">Կանոնի կարգավորումները վերլուծելիս սխալ առաջացավ</translation>
 <translation id="8866928039507595380">Ծալում</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Ուղարկեք ձեր ադմինիստրատորին անվտանգությանը սպառնացող գործողությունների մասին տվյալները, որոնք նշվել են Enterprise Service Hooks-ի կողմից որպես վտանգավոր։ Սա կարող է ներառել ձեր այցելած էջերի հասցեները, ֆայլերի անուններ կամ մետատվյալներ, ինչպես նաև օգտանուններ, որոնք օգտագործում եք ձեր սարքում կամ Chrome-ում հաշիվ մտնելու համար։</translation>
 <translation id="8870413625673593573">Վերջին փակվածները</translation>
 <translation id="8870494189203302833">Նույն հերթականությամբ՝ երեսի կողմով ներքև</translation>
 <translation id="8874824191258364635">Մուտքագրեք քարտի վավեր համար</translation>

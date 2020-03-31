@@ -549,7 +549,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="3366477098757335611">Näytä kortit</translation>
 <translation id="3369192424181595722">Väärä kellonaika</translation>
 <translation id="337363190475750230">Poistettu käytöstä</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> on ottanut Enterprise Service Hooksin käyttöön selaimellesi. Näillä koukuilla on pääsy osaan datastasi.</translation>
 <translation id="3377144306166885718">Palvelin käytti vanhentunutta TLS:n versiota.</translation>
 <translation id="3377188786107721145">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="3377736046129930310">Vahvista kortteja nopeammin näytön lukituksella</translation>
@@ -986,7 +985,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
 <translation id="519422657042045905">Merkintää ei saatavilla</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Viesti tälle sivulle upotetulta sivulta</translation>
 <translation id="5205222826937269299">Nimi vaaditaan</translation>
 <translation id="5209518306177824490">SHA-1-tunnistetiedosto</translation>
@@ -1460,7 +1458,6 @@ Lisätietoja:
 <translation id="725866823122871198">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska tietokoneesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
 <translation id="7260504762447901703">Peruuta käyttöoikeus</translation>
 <translation id="7275334191706090484">Hallinnoidut kirjanmerkit</translation>
-<translation id="7288778322931489286">Järjestelmänvalvoja on ottanut Enterprise Service Hooksin käyttöön selaimellesi. Näillä koukuilla on pääsy osaan datastasi.</translation>
 <translation id="7292031607255951991">Vastaanottajan nimi</translation>
 <translation id="7298195798382681320">Suositus</translation>
 <translation id="7300012071106347854">Koboltinsininen</translation>
@@ -1818,7 +1815,6 @@ Lisätietoja:
 <translation id="8866481888320382733">Virhe jäsennettäessä käytännön asetuksia</translation>
 <translation id="8866928039507595380">Taite</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Jaa järjestelmänvalvojalle dataa Enterprise Service Hooksin merkitsemistä tietoturvatapahtumista. Tämä voi sisältää avaamiesi sivujen URL-osoitteita, tiedostonimiä tai sisällönkuvaustietoja ja käyttäjänimen, jolla kirjaudut sisään laitteellesi ja Chromeen.</translation>
 <translation id="8870413625673593573">Hiljattain suljetut</translation>
 <translation id="8870494189203302833">Sama järjestys tulostuspuoli alaspäin</translation>
 <translation id="8874824191258364635">Anna kelvollinen kortin numero.</translation>

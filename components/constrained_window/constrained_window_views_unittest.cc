@@ -28,8 +28,8 @@ namespace {
 
 class DialogContents : public views::DialogDelegateView {
  public:
-  DialogContents() {}
-  ~DialogContents() override {}
+  DialogContents() = default;
+  ~DialogContents() override = default;
 
   void set_modal_type(ui::ModalType modal_type) { modal_type_ = modal_type; }
 
@@ -50,7 +50,7 @@ class DialogContents : public views::DialogDelegateView {
 class TestConstrainedWindowViewsClient
     : public constrained_window::ConstrainedWindowViewsClient {
  public:
-  TestConstrainedWindowViewsClient() {}
+  TestConstrainedWindowViewsClient() = default;
 
   // ConstrainedWindowViewsClient:
   web_modal::ModalDialogHost* GetModalDialogHost(
@@ -70,7 +70,7 @@ class TestConstrainedWindowViewsClient
 // pass a null |context| argument to DialogDelegate::CreateDialogWidget().
 class TestViewsDelegateWithContext : public views::TestViewsDelegate {
  public:
-  TestViewsDelegateWithContext() {}
+  TestViewsDelegateWithContext() = default;
 
   void set_context(gfx::NativeWindow context) { context_ = context; }
 
@@ -91,12 +91,11 @@ class TestViewsDelegateWithContext : public views::TestViewsDelegate {
 
 class ConstrainedWindowViewsTest : public views::ViewsTestBase {
  public:
-  ConstrainedWindowViewsTest() : contents_(nullptr), dialog_(nullptr) {}
-  ~ConstrainedWindowViewsTest() override {}
+  ConstrainedWindowViewsTest() = default;
+  ~ConstrainedWindowViewsTest() override = default;
 
   void SetUp() override {
-    std::unique_ptr<TestViewsDelegateWithContext> views_delegate(
-        new TestViewsDelegateWithContext);
+    auto views_delegate = std::make_unique<TestViewsDelegateWithContext>();
 
     // set_views_delegate() must be called before SetUp(), and GetContext() is
     // null before that, so take a reference.
@@ -137,9 +136,9 @@ class ConstrainedWindowViewsTest : public views::ViewsTestBase {
   Widget* dialog() { return dialog_; }
 
  private:
-  DialogContents* contents_;
+  DialogContents* contents_ = nullptr;
   std::unique_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
-  Widget* dialog_;
+  Widget* dialog_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViewsTest);
 };

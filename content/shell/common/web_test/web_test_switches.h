@@ -26,6 +26,14 @@ extern const char kRunWebTests[];
 extern const char kStableReleaseMode[];
 extern const char kDisableHeadlessMode[];
 
+#if defined(OS_WIN)
+extern const char kRegisterFontFiles[];
+
+// Returns list of extra font files to be made accessible to the renderer, that
+// are specified via kRegisterFontFiles.
+std::vector<std::string> GetSideloadFontFiles();
+#endif
+
 }  // namespace switches
 
 #endif  // CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_

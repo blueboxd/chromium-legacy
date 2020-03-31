@@ -4,6 +4,9 @@
 
 #include "ui/views/bubble/footnote_container_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "cc/paint/paint_flags.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"

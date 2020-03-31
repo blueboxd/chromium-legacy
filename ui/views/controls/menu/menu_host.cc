@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_host.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"

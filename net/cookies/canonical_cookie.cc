@@ -148,6 +148,29 @@ void ApplySameSiteCookieWarningToStatus(
   status->MaybeClearSameSiteWarning();
 }
 
+// This function is used to indicate if the same-site context of a cookie should
+// recorded for the histograms SameSiteDifferentSchemeRequest and
+// SameSiteDifferentSchemeResponse. It returns true if the context is
+// cross-scheme but not cross-site and there is an effective same-site. It
+// should be removed when the histrograms are removed.
+// TODO(https://crbug.com/1066231)
+bool ShouldLogCrossSchemeForHistograms(
+    const CookieOptions::SameSiteCookieContext& context,
+    const CookieEffectiveSameSite effective_same_site) {
+  bool correct_context =
+      context.cross_schemeness !=
+          CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE &&
+      context.context !=
+          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE;
+
+  bool correct_effective_same_site =
+      effective_same_site == CookieEffectiveSameSite::LAX_MODE ||
+      effective_same_site == CookieEffectiveSameSite::STRICT_MODE ||
+      effective_same_site == CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE;
+
+  return correct_context && correct_effective_same_site;
+}
+
 }  // namespace
 
 // Keep defaults here in sync with content/public/common/cookie_manager.mojom.
@@ -553,11 +576,9 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
                               effective_same_site,
                               CookieEffectiveSameSite::COUNT);
 
-    if (options.same_site_cookie_context().IsDifferentScheme() &&
-        ((effective_same_site == CookieEffectiveSameSite::LAX_MODE) ||
-         (effective_same_site == CookieEffectiveSameSite::STRICT_MODE) ||
-         (effective_same_site ==
-          CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE))) {
+    if (ShouldLogCrossSchemeForHistograms(options.same_site_cookie_context(),
+                                          effective_same_site)) {
+      // TODO(https://crbug.com/1066231)
       UMA_HISTOGRAM_ENUMERATION(
           "Cookie.SameSiteDifferentSchemeRequest",
           options.same_site_cookie_context().ConvertToMetricsValue(),
@@ -653,13 +674,11 @@ void CanonicalCookie::IsSetPermittedInContext(
                               effective_same_site,
                               CookieEffectiveSameSite::COUNT);
 
-    if (options.same_site_cookie_context().IsDifferentScheme() &&
-        ((effective_same_site == CookieEffectiveSameSite::LAX_MODE) ||
-         (effective_same_site == CookieEffectiveSameSite::STRICT_MODE) ||
-         (effective_same_site ==
-          CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE))) {
+    if (ShouldLogCrossSchemeForHistograms(options.same_site_cookie_context(),
+                                          effective_same_site)) {
       // TODO(crbug.com/1034014): Change enum to one with less confusing
       // phrasing.
+      // TODO(https://crbug.com/1066231)
       UMA_HISTOGRAM_ENUMERATION(
           "Cookie.SameSiteDifferentSchemeResponse",
           options.same_site_cookie_context().ConvertToMetricsValue(),

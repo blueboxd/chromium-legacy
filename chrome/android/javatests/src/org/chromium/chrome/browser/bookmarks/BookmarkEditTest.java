@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
@@ -45,6 +46,7 @@ public class BookmarkEditTest {
     private static final String TITLE_B = "b";
     private static final String URL_A = "http://a.com/";
     private static final String URL_B = "http://b.com/";
+    private static final String FOLDER_A = "FolderA";
 
     @Rule
     public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
@@ -219,6 +221,29 @@ public class BookmarkEditTest {
                 mBookmarkEditActivity.isFinishing() || mBookmarkEditActivity.isDestroyed());
     }
 
+    @Test
+    @MediumTest
+    @Feature({"Bookmark"})
+    public void testEditFolderLocation() throws ExecutionException, TimeoutException {
+        BookmarkId testFolder = addFolder(mMobileNode, 0, FOLDER_A);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkEditActivity.getFolderTextView().performClick());
+        waitForMoveFolderActivity();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BookmarkFolderSelectActivity folderSelectActivity =
+                    (BookmarkFolderSelectActivity)
+                            ApplicationStatus.getLastTrackedFocusedActivity();
+            int pos = folderSelectActivity.getFolderPositionForTesting(testFolder);
+            Assert.assertNotEquals("Didn't find position for test folder.", -1, pos);
+            folderSelectActivity.performClickForTesting(pos);
+        });
+
+        waitForEditActivity();
+        Assert.assertEquals("Folder should change after folder activity finishes.", FOLDER_A,
+                mBookmarkEditActivity.getFolderTextView().getText());
+    }
+
     private BookmarkItem getBookmarkItem(BookmarkId bookmarkId) throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.getBookmarkById(bookmarkId));
@@ -231,5 +256,32 @@ public class BookmarkEditTest {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mBookmarkEditActivity = (BookmarkEditActivity) InstrumentationRegistry.getInstrumentation()
                                         .startActivitySync(intent);
+    }
+
+    private BookmarkId addFolder(BookmarkId parent, int index, String title)
+            throws ExecutionException {
+        return TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkModel.addFolder(parent, index, title));
+    }
+
+    private void waitForMoveFolderActivity() {
+        // clang-format off
+        CriteriaHelper.pollUiThread(()->
+                ApplicationStatus.getLastTrackedFocusedActivity()
+                    instanceof BookmarkFolderSelectActivity,
+                "Timed out waiting for BookmarkFolderSelectActivity");
+        // clang-format on
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    private void waitForEditActivity() {
+        // clang-format off
+        CriteriaHelper.pollUiThread(()->
+                ApplicationStatus.getLastTrackedFocusedActivity() instanceof BookmarkEditActivity,
+                "Timed out waiting for BookmarkEditActivity");
+        // clang-format on
+        mBookmarkEditActivity =
+                (BookmarkEditActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 }

@@ -201,7 +201,11 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
         // sent after. From logging, it seems like ET_GESTURE_SCROLL_END
         // is sometimes also sent after this. It will be ignored here
         // since |drag_in_progress_| is set to false.
-        DCHECK(drag_in_progress_);
+        if (!drag_in_progress_) {
+          // If a swipe happens quickly enough, scroll events might not
+          // have been sent. Tell the container a drag began.
+          container_->UpdateHeightForDragToOpen(0.0f);
+        }
         container_->EndDragToOpen(event->details().swipe_down());
         event->SetHandled();
         drag_in_progress_ = false;

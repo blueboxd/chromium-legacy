@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Тепер Chrome завантажує файли швидше</translation>
 <translation id="1883903952484604915">Мої файли</translation>
 <translation id="1887786770086287077">На цьому пристрої вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="1919345977826869612">Оголошення</translation>
 <translation id="1919950603503897840">Виберіть контакти</translation>
 <translation id="1922076542920281912">Щоб надати Chrome доступ до геоданих, також увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">ЗОБРАЖЕННЯ</translation>
 <translation id="257088987046510401">Теми</translation>
 <translation id="2570922361219980984">На цьому пристрої також вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Розгорнуто – натисніть, щоб згорнути.</translation>
 <translation id="2581165646603367611">Буде видалено файли cookie, кеш та інші дані сайтів, які Chrome визначив як неважливі.</translation>
 <translation id="2586657967955657006">Буфер обміну</translation>
 <translation id="2587052924345400782">Доступна новіша версія</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">Елемент "<ph name="ITEM_TITLE" />" вилучено</translation>
 <translation id="4616150815774728855">Відкрити файл <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Прийняти пароль</translation>
-<translation id="4645575059429386691">Керується одним із батьків</translation>
 <translation id="4650364565596261010">За умовчанням у системі</translation>
 <translation id="4660838440047236328">вигляд вашої кімнати.</translation>
 <translation id="4663756553811254707">Видалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="488187801263602086">Перейменувати файл</translation>
 <translation id="4882831918239250449">Указуйте, як використовувати історію веб-перегляду для персоналізації Пошуку, оголошень тощо</translation>
-<translation id="4883854917563148705">Налаштування, якими керує адміністратор, не можна скинути</translation>
 <translation id="4885273946141277891">Забагато копій Chrome.</translation>
 <translation id="4887024562049524730">Запитувати, перш ніж давати сайтам доступ до даних і пристрою віртуальної реальності (рекомендовано)</translation>
 <translation id="4910889077668685004">Додатки для платежів</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">Надати сайтам доступ до датчиків руху (рекомендовано)</translation>
 <translation id="5063480226653192405">Використання</translation>
 <translation id="5087580092889165836">Додати картку</translation>
-<translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
 <translation id="510275257476243843">Залишилась 1 година</translation>
 <translation id="5123685120097942451">Анонімна вкладка</translation>
 <translation id="5127805178023152808">Синхронізацію вимкнено</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">Вкладку отримано</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> відкрита вкладка: натисніть, щоб перейти на іншу вкладку}one{<ph name="OPEN_TABS_MANY" /> відкрита вкладка: натисніть, щоб перейти на іншу вкладку}few{<ph name="OPEN_TABS_MANY" /> відкриті вкладки: натисніть, щоб перейти на іншу вкладку}many{<ph name="OPEN_TABS_MANY" /> відкритих вкладок: натисніть, щоб перейти на іншу вкладку}other{<ph name="OPEN_TABS_MANY" /> відкритої вкладки: натисніть, щоб перейти на іншу вкладку}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ще 1)}one{(+ ще #)}few{(+ ще #)}many{(+ ще #)}other{(+ ще #)}}</translation>
-<translation id="5400569084694353794">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403592356182871684">Імена</translation>
 <translation id="5403644198645076998">Дозволити лише певні сайти</translation>
 <translation id="5414836363063783498">Підтвердження…</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">Попередньо завантажувати сторінки, щоб швидше переглядати та шукати</translation>
 <translation id="79859296434321399">Щоб переглядати вміст у режимі доповненої реальності, установіть ARCore</translation>
 <translation id="7986741934819883144">Виберіть контакт</translation>
-<translation id="7987073022710626672">Умови використання Google Chrome</translation>
 <translation id="7993619969781047893">Функції на деяких сайтах можуть не працювати</translation>
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="7999064672810608036">Видалити всі локальні дані, зокрема файли cookie, і скинути всі дозволи для цього веб-сайту?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">Залишилося файлів: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Залишився 1 день</translation>
 <translation id="8200772114523450471">Поновити</translation>
-<translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
 <translation id="8218622182176210845">Керувати обліковим записом</translation>
 <translation id="8224471946457685718">Завантажувати статті через Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{Рівень сигналу: # поділка}one{Рівень сигналу: # поділка}few{Рівень сигналу: # поділки}many{Рівень сигналу: # поділок}other{Рівень сигналу: # поділки}}</translation>
 <translation id="868929229000858085">Пошук у контактах</translation>
 <translation id="869891660844655955">Діє до</translation>
-<translation id="8728487861892616501">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Вміст сховано</translation>
 <translation id="8751914237388039244">Виберіть зображення</translation>
 <translation id="8758557275681689734">Як переглянути всі відкриті вкладки</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">Блокувати JavaScript на певному сайті.</translation>
 <translation id="8812260976093120287">На деяких веб-сайтах ви можна оплачувати за допомогою перелічених вище підтримуваних додатків для платежів на вашому пристрої.</translation>
 <translation id="8816026460808729765">Заборонити сайтам доступ до датчиків</translation>
-<translation id="8816439037877937734">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8833831881926404480">Сайт показує ваш екран</translation>
 <translation id="883806473910249246">Не вдалося завантажити вміст.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">Використовувати телефон як ключ безпеки</translation>
 <translation id="8993760627012879038">Відкрити нове вікно в режимі анонімного перегляду</translation>
 <translation id="8998729206196772491">Ви входите в обліковий запис, зареєстрований у домені <ph name="MANAGED_DOMAIN" />, і надаєте його адміністратору доступ до своїх даних Chrome. Ваші дані буде назавжди зв’язано з цим обліковим записом. Якщо ви вийдете з облікового запису в Chrome, дані буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
-<translation id="9019902583201351841">Керується батьками</translation>
 <translation id="9028914725102941583">Увімкніть синхронізацію, щоб файли були доступними на всіх ваших пристроях</translation>
 <translation id="9040142327097499898">На цьому пристрої вимкнено геодані. Сповіщення дозволено.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# відео}one{# відео}few{# відео}many{# відео}other{# відео}}</translation>

@@ -57,8 +57,6 @@ source_set("cast_runner_core") {
     "cast/api_bindings_client.h",
     "cast/application_controller_impl.cc",
     "cast/application_controller_impl.h",
-    "cast/audio_capturer_redirect.cc",
-    "cast/audio_capturer_redirect.h",
     "cast/cast_component.cc",
     "cast/cast_component.h",
     "cast/cast_runner.cc",

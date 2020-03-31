@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Ein Cookie blockiert}other{# Cookies blockiert}}</translation>
+<translation id="257931822824936280">Maximiert – zum Minimieren klicken</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Link kopieren</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4570913071927164677">Details</translation>
+<translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
+<translation id="4883854917563148705">Verwaltete Einstellungen können nicht zurückgesetzt werden</translation>
 <translation id="497421865427891073">Weiter</translation>
+<translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5317780077021120954">Speichern</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
+<translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="8249310407154411074">Ganz nach oben</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8609465669617005112">Nach oben</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
+<translation id="9019902583201351841">Von deinen Eltern verwaltet</translation>
 </translationbundle>

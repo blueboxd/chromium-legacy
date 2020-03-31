@@ -546,7 +546,6 @@
 <translation id="3366477098757335611">مشاهده کارت‌ها</translation>
 <translation id="3369192424181595722">خطای ساعت</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> «قلاب‌های سرویس سازمانی» را در مرورگرتان فعال کرده است. این قلاب‌ها به برخی از داده‌هایتان دسترسی دارند.</translation>
 <translation id="3377144306166885718">سرور از نسخه منسوخ «امنیت لایه انتقال» استفاده می‌کرد.</translation>
 <translation id="3377188786107721145">خطای تجزیه خط‌مشی</translation>
 <translation id="3377736046129930310">برای به‌تأیید رساندن سریع‌تر کارت‌ها، از قفل صفحه استفاده شود</translation>
@@ -983,7 +982,6 @@
 <translation id="5179510805599951267">به زبان <ph name="ORIGINAL_LANGUAGE" /> نیست؟ گزارش این خطا</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="519422657042045905">حاشیه‌نویسی دردسترس نیست</translation>
-<translation id="5196187217592847346">قلاب‌های سرویس سازمانی</translation>
 <translation id="5201306358585911203">صفحه جاسازی‌شده‌ای در این صفحه می‌گوید</translation>
 <translation id="5205222826937269299">نام ضروری است</translation>
 <translation id="5209518306177824490">‏اثر انگشت SHA-1</translation>
@@ -1457,7 +1455,6 @@
 <translation id="725866823122871198">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نمی‌شود زیرا تاریخ و زمان رایانه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
 <translation id="7260504762447901703">لغو دسترسی</translation>
 <translation id="7275334191706090484">نشانک‌های مدیریت شده</translation>
-<translation id="7288778322931489286">سرپرستتان «قلاب‌های سرویس سازمانی» را در مرورگرتان فعال کرده است. این قلاب‌ها به برخی از داده‌هایتان دسترسی دارند.</translation>
 <translation id="7292031607255951991">نام گیرنده</translation>
 <translation id="7298195798382681320">توصیه می‌شود</translation>
 <translation id="7300012071106347854">آبی پررنگ</translation>
@@ -1814,7 +1811,6 @@
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
 <translation id="8866928039507595380">تاخوردگی</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">‏داده‌های مرتبط با رویدادهای امنیتی را که «قلاب‌های سرویس سازمانی» پرچم‌گذاری کرده‌اند، با سرپرستتان هم‌رسانی کنید. ممکن است شامل این موارد شود: نشانی‌های وب صفحاتی که بازدید می‌کنید، نام فایل‌ها یا فراداده‌ها، و نام کاربری‌ای که برای ورود به سیستم دستگاهتان و Chrome استفاده می‌کنید.</translation>
 <translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8870494189203302833">ترتیب یکسان، روبه‌پایین</translation>
 <translation id="8874824191258364635">شماره کارت معتبری وارد کنید</translation>

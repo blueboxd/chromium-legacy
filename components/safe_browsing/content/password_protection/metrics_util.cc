@@ -94,8 +94,6 @@ const char kSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.SyncPasswordEntry";
 const char kNonSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.NonSyncPasswordEntry";
-const char kSyncPasswordChromeSettingsHistogram[] =
-    "PasswordProtection.ChromeSettingsAction.SyncPasswordEntry";
 const char kSyncPasswordInterstitialHistogram[] =
     "PasswordProtection.InterstitialAction.SyncPasswordEntry";
 const char kSyncPasswordPageInfoHistogram[] =
@@ -349,10 +347,6 @@ void LogWarningAction(WarningUIType ui_type,
                                     action);
         }
       }
-      break;
-    case WarningUIType::CHROME_SETTINGS:
-      DCHECK(is_primary_account_password);
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordChromeSettingsHistogram, action);
       break;
     case WarningUIType::INTERSTITIAL:
       if (is_primary_account_password) {

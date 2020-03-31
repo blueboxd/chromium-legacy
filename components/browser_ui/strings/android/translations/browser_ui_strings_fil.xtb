@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2501278716633472235">Bumalik</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie ang na-block}one{# cookies ang na-block}other{# na cookies ang na-block}}</translation>
+<translation id="257931822824936280">Pinalawak - i-click upang i-collapse.</translation>
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2704606927547763573">Kinopya</translation>
 <translation id="2968755619301702150">Viewer ng certificate</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopyahin ang link</translation>
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="4570913071927164677">Mga Detalye</translation>
+<translation id="4645575059429386691">Pinamamahalaan ng iyong magulang</translation>
+<translation id="4883854917563148705">Hindi puwedeng i-reset ang mga pinapamahalaang setting</translation>
 <translation id="497421865427891073">Sumulong</translation>
+<translation id="5100237604440890931">Naka-collapse - i-click upang palawakin</translation>
 <translation id="5300589172476337783">Ipakita</translation>
 <translation id="5301954838959518834">OK, nakuha ko</translation>
 <translation id="5317780077021120954">I-save</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
+<translation id="8206354486702514201">Ipinapatupad ng iyong administrator ang setting na ito.</translation>
 <translation id="8249310407154411074">Ilipat sa itaas</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8609465669617005112">Lumipat</translation>
 <translation id="8676374126336081632">I-clear ang input</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8730621377337864115">Tapos na</translation>
+<translation id="9019902583201351841">Pinamamahalaan ng iyong mga magulang</translation>
 </translationbundle>

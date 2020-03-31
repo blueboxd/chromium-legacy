@@ -5,6 +5,8 @@
 #include "ui/views/examples/progress_bar_example.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
 #include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"

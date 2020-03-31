@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"

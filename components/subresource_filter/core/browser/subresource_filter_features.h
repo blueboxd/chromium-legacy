@@ -183,9 +183,6 @@ scoped_refptr<ConfigurationList> GetAndSetActivateConfigurations(
 // The master toggle to enable/disable the Safe Browsing Subresource Filter.
 extern const base::Feature kSafeBrowsingSubresourceFilter;
 
-// Safe Browsing Activation Throttle considers all checks in a redirect chain.
-extern const base::Feature kSafeBrowsingSubresourceFilterConsiderRedirects;
-
 // Enables the blocking of ads on sites that are abusive.
 extern const base::Feature kFilterAdsOnAbusiveSites;
 

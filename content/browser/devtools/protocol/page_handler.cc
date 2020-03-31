@@ -25,8 +25,7 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
-#include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
+#include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/devtools_mhtml_helper.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -181,7 +180,7 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
 }  // namespace
 
 PageHandler::PageHandler(EmulationHandler* emulation_handler,
-                         bool allow_set_download_behavior,
+                         BrowserHandler* browser_handler,
                          bool allow_file_access)
     : DevToolsDomainHandler(Page::Metainfo::domainName),
       enabled_(false),
@@ -198,7 +197,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       last_surface_size_(gfx::Size()),
       host_(nullptr),
       emulation_handler_(emulation_handler),
-      allow_set_download_behavior_(allow_set_download_behavior) {
+      browser_handler_(browser_handler) {
   bool create_video_consumer = true;
 #ifdef OS_ANDROID
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.
@@ -362,7 +361,8 @@ Response PageHandler::Disable() {
     pending_dialog_.Reset();
   }
 
-  download_manager_delegate_ = nullptr;
+  for (auto* item : pending_downloads_)
+    item->RemoveObserver(this);
   navigate_callbacks_.clear();
   return Response::FallThrough();
 }
@@ -544,11 +544,34 @@ void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
   navigate_callbacks_.erase(navigate_callback);
 }
 
-void PageHandler::DownloadWillBegin(FrameTreeNode* ftn, const GURL& url) {
+void PageHandler::DownloadWillBegin(FrameTreeNode* ftn,
+                                    download::DownloadItem* item) {
   if (!enabled_)
     return;
   frontend_->DownloadWillBegin(ftn->devtools_frame_token().ToString(),
-                               url.spec());
+                               item->GetGuid(), item->GetURL().spec());
+  item->AddObserver(this);
+  pending_downloads_.insert(item);
+}
+
+void PageHandler::OnDownloadDestroyed(download::DownloadItem* item) {
+  pending_downloads_.erase(item);
+}
+
+void PageHandler::OnDownloadUpdated(download::DownloadItem* item) {
+  if (!enabled_)
+    return;
+  std::string state = Page::DownloadProgress::StateEnum::InProgress;
+  if (item->GetState() == download::DownloadItem::COMPLETE)
+    state = Page::DownloadProgress::StateEnum::Completed;
+  else if (item->GetState() == download::DownloadItem::CANCELLED)
+    state = Page::DownloadProgress::StateEnum::Canceled;
+  frontend_->DownloadProgress(item->GetGuid(), item->GetTotalBytes(),
+                              item->GetReceivedBytes(), state);
+  if (state != Page::DownloadProgress::StateEnum::InProgress) {
+    item->RemoveObserver(this);
+    pending_downloads_.erase(item);
+  }
 }
 
 static const char* TransitionTypeName(ui::PageTransition type) {
@@ -914,46 +937,12 @@ Response PageHandler::BringToFront() {
 
 Response PageHandler::SetDownloadBehavior(const std::string& behavior,
                                           Maybe<std::string> download_path) {
-  if (!allow_set_download_behavior_)
-    return Response::ServerError("Not allowed");
-
-  WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
-
-  if (behavior == Page::SetDownloadBehavior::BehaviorEnum::Allow &&
-      !download_path.isJust())
-    return Response::ServerError("downloadPath not provided");
-
-  if (behavior == Page::SetDownloadBehavior::BehaviorEnum::Default) {
-    DevToolsDownloadManagerHelper::RemoveFromWebContents(web_contents);
-    download_manager_delegate_ = nullptr;
-    return Response::Success();
-  }
-
-  // Override download manager delegate.
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  DCHECK(browser_context);
-  content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser_context);
-  download_manager_delegate_ =
-      DevToolsDownloadManagerDelegate::TakeOver(download_manager);
-
-  // Ensure that there is one helper attached. If there's already one, we reuse
-  // it.
-  DevToolsDownloadManagerHelper::CreateForWebContents(web_contents);
-  DevToolsDownloadManagerHelper* download_helper =
-      DevToolsDownloadManagerHelper::FromWebContents(web_contents);
-
-  download_helper->SetDownloadBehavior(
-      DevToolsDownloadManagerHelper::DownloadBehavior::DENY);
-  if (behavior == Page::SetDownloadBehavior::BehaviorEnum::Allow) {
-    download_helper->SetDownloadBehavior(
-        DevToolsDownloadManagerHelper::DownloadBehavior::ALLOW);
-    download_helper->SetDownloadPath(download_path.fromJust());
-  }
-
-  return Response::Success();
+  BrowserContext* browser_context =
+      host_ ? host_->GetProcess()->GetBrowserContext() : nullptr;
+  if (!browser_context)
+    return Response::ServerError("Could not fetch browser context");
+  return browser_handler_->DoSetDownloadBehavior(behavior, browser_context,
+                                                 std::move(download_path));
 }
 
 void PageHandler::GetAppManifest(

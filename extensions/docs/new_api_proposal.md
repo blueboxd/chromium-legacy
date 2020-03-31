@@ -21,7 +21,7 @@ __Default: Public__
 Extension and App APIs can either be public (available for any extension or app
 to potentially use, though frequently there are other constraints like
 requiring a permission) or private (only available to extensions or apps with a
-specific whitelisted ID).  In general, private APIs should only be used for
+specific allowlisted ID).  In general, private APIs should only be used for
 pieces of functionality internal to Chromium/Chrome itself (e.g., the
 translation utility, printing, etc).  Public APIs should always be the default,
 in order to foster openness and innovation.
@@ -41,7 +41,7 @@ is too powerful to expose to any third-party extension or app.__  Generally, if
 an API is too powerful to expose to a third-party extension, we don’t want to
 expose it to any kind of (non-component) extension, as it increases Chrome’s
 attack surface.  Typically, these security concerns can be addressed by finding
-alternative or tweaking the API surface.
+alternatives or tweaking the API surface.
 
 * __This is just a quick-and-dirty API and we don’t want to go through a long
 process.__  Quick-and-dirty hacks have a nasty habit of staying around for
@@ -58,6 +58,11 @@ Extensions and Apps teams do not own every API, nor would it be possible for
 those teams to maintain them all.  This means that your team will be
 responsible for maintaining the API going forward.
 
+### A Note on Chrome App APIs
+
+Platform apps have been [deprecated on all platforms](https://blog.chromium.org/2020/01/moving-forward-from-chrome-apps.html).
+We are not actively expanding the Chrome Apps platform.
+
 ### Platforms
 
 __Extensions Default: All Desktop Platforms__
@@ -67,12 +72,8 @@ platforms, but this can be configured to only be exposed on a subset.  However,
 an API should only be restricted if there is strong reason to do so; otherwise,
 platforms should have parity.
 
-__Platform Apps: ChromeOS Only__
-Platform apps are deprecated on all platforms except ChromeOS.
-
-### A Note on Chrome App APIs
-
-Platform apps have been [deprecated on all platforms](https://blog.chromium.org/2016/08/from-chrome-apps-to-web.html) except ChromeOS.  We are not actively expanding the Chrome Apps platform significantly.
+__Platform Apps: N/A__
+Platform apps are deprecated on all platforms.
 
 ## Proposal Process
 
@@ -106,16 +107,17 @@ __Design Doc(s):__ Any additional design docs.  Depending on the complexity of
 the API, this might not be necessary with the API Overview doc above.
 
 __Supplementary Resources (optional):__ Any additional resources related to
-this API.  For instance, if this API is part of a larger feature, any PRDs,
-docs, mocks, etc for that feature can be linked here (or through an associated
-crbug.com issue).
+this API.  For instance, if this API is part of a larger feature, any launch
+bug, PRDs, docs, mocks, etc for that feature can be linked here (or through an
+associated crbug.com issue).
 
-__Note:__ This process does not eliminate the need for a larger design review,
-if one would otherwise be required.  See go/chrome-dd-review-process for
-guidance (sorry, internal only.  If this is a large feature, we recommend
-finding a member of the chrome team to help you drive it and own it).  However,
-it should be possible to get feedback from many of the required parties during
-that review process, which would expedite the additional approvals needed.
+__Note:__ This process does not eliminate the need for a larger design review
+or launch bug, if one would otherwise be required.  See
+go/chrome-dd-review-process for guidance (sorry, internal only.  If this is a
+large feature, we recommend finding a member of the chrome team to help you
+drive it and own it).  However, it should be possible to get feedback from many
+of the required parties during that review process, which would expedite the
+additional approvals needed.
 
 Please email a link to the bug and proposal to
 extension-api-reviews@chromium.org for increased visibility and any additional
@@ -172,6 +174,15 @@ regards to what data we can collect.
 * The API should be a private API. There are multiple alternatives, including a
 public API, a web API, implementing code directly in C++, and others. Private
 APIs are not always the appropriate choice.
+
+__Does this replace a launch bug?__ No, the API proposal process is orthogonal
+to a launch bug. Launch bugs are required for all major features in
+Chrome/Chromium. If the API is part of a larger feature, a launch bug may still
+be required. Additionally, a launch bug does not replace the need for an API
+review, since the API review evaluates API-specific aspects (such as best
+practices, API "fit", etc) that are not covered in the launch bug's
+cross-functional reviews. However, if there __is__ a separate launch bug, some
+cross-functional reviews (like security and privacy) may directly carry over.
 
 ## Bug Templates
 __Note:__ All these templates default to public visibility.

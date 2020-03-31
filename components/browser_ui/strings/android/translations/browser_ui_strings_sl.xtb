@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Naprej</translation>
 <translation id="2501278716633472235">Nazaj</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Blokiran je en piškotek}one{Blokiran je # piškotek}two{Blokirana sta # piškotka}few{Blokirani so # piškotki}other{Blokiranih je # piškotkov}}</translation>
+<translation id="257931822824936280">Razširjeno – kliknite, če želite strniti.</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2968755619301702150">Pregledovalnik potrdil</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopiranje povezave</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
+<translation id="4645575059429386691">Upravlja starš</translation>
+<translation id="4883854917563148705">Upravljanih nastavitev ni mogoče ponastaviti</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
+<translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5301954838959518834">V redu, razumem</translation>
 <translation id="5317780077021120954">Shrani</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>
 <translation id="8131740175452115882">Potrdi</translation>
+<translation id="8206354486702514201">To nastavitev je uveljavil skrbnik.</translation>
 <translation id="8249310407154411074">Na vrh</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8609465669617005112">Premakni navzgor</translation>
 <translation id="8676374126336081632">Izbriši vnos</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8730621377337864115">Končano</translation>
+<translation id="9019902583201351841">Upravljajo starši</translation>
 </translationbundle>

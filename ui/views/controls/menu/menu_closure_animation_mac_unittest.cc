@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_closure_animation_mac.h"
 
+#include <memory>
+
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"

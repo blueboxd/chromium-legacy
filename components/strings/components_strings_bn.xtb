@@ -549,7 +549,6 @@
 <translation id="3366477098757335611">কার্ড দেখুন</translation>
 <translation id="3369192424181595722">ঘড়ির ত্রুটি</translation>
 <translation id="337363190475750230">প্রদান করবে না</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> আপনার ব্রাউজারে Enterprise Service Hooks চালু করেছেন। এই হুকগুলি আপনার কিছু ডেটা অ্যাক্সেস করতে পারে।</translation>
 <translation id="3377144306166885718">সার্ভার TLS-এর এমন একটি ভার্সন ব্যবহার করছে যা এখন আর ব্যবহারে নেই।</translation>
 <translation id="3377188786107721145">নীতি বিশ্লেষণ ত্রুটি</translation>
 <translation id="3377736046129930310">কার্ড আরও দ্রুত কনফার্ম করতে স্ক্রিন লক ব্যবহার করুন</translation>
@@ -986,7 +985,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="5190835502935405962">বুকমার্ক বার</translation>
 <translation id="519422657042045905">ব্যাখ্যা নেই</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">এই পৃষ্ঠার এম্বেডেড করা একটি পৃষ্ঠায় এটি দেখানো হচ্ছে</translation>
 <translation id="5205222826937269299">নাম প্রয়োজন</translation>
 <translation id="5209518306177824490">SHA-1 আঙুলের ছাপ</translation>
@@ -1459,7 +1457,6 @@
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার কম্পিউটারের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷</translation>
 <translation id="7260504762447901703">অ্যাক্সেস প্রত্যাহার করুন</translation>
 <translation id="7275334191706090484">পরিচালিত বুকমার্কগুলি</translation>
-<translation id="7288778322931489286">আপনার অ্যাডমিনিস্ট্রেটর ব্রাউজারে Enterprise Service Hooks চালু করেছেন। এই হুকগুলি আপনার কিছু ডেটা অ্যাক্সেস করতে পারে।</translation>
 <translation id="7292031607255951991">প্রাপকের নাম</translation>
 <translation id="7298195798382681320">প্রস্তাবিত</translation>
 <translation id="7300012071106347854">কোবাল্ট নীল</translation>
@@ -1816,7 +1813,6 @@
 <translation id="8866481888320382733">নীতি সেটিংস বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="8866928039507595380">ফোল্ড</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks-এর চিহ্নিত করা সুরক্ষা ইভেন্ট সম্পর্কিত ডেটা আপনার অ্যাডমিনিস্ট্রেটরের সাথে শেয়ার করুন। ডিভাইসে এবং Chrome-এ সাইন-ইন করার সময় আপনার দেখা পৃষ্ঠাগুলির ইউআরএল, ফাইলের নাম অথবা মেটাডেটা এবং আপনি যে ইউজারনেম ব্যবহার করেন সেগুলিও এতে অন্তর্ভুক্ত থাকতে পারে।</translation>
 <translation id="8870413625673593573">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="8870494189203302833">একই অর্ডার, সামনের দিক নীচে</translation>
 <translation id="8874824191258364635">একটি সঠিক কার্ড নম্বর লিখুন</translation>

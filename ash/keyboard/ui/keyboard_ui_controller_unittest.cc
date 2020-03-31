@@ -158,8 +158,8 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
   }
 
   void TearDown() override {
-    SetTouchKeyboardEnabled(false);
     controller_.RemoveObserver(this);
+    SetTouchKeyboardEnabled(false);
     focus_controller_.reset();
     aura::test::AuraTestBase::TearDown();
   }

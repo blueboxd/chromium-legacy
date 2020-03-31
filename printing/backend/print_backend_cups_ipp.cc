@@ -75,6 +75,13 @@ bool PrintBackendCupsIpp::GetPrinterBasicInfo(const std::string& printer_name,
   return printer->ToPrinterInfo(printer_info);
 }
 
+bool PrintBackendCupsIpp::GetPrinterCapsAndDefaults(
+    const std::string& printer_name,
+    PrinterCapsAndDefaults* printer_info) {
+  NOTREACHED();
+  return false;
+}
+
 bool PrintBackendCupsIpp::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {

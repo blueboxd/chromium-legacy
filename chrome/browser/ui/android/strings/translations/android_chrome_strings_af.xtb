@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome laai lêers nou vinniger af</translation>
 <translation id="1883903952484604915">My lêers</translation>
 <translation id="1887786770086287077">Liggingtoegang is af vir hierdie toestel. Skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> sal in Chrome oopmaak. Deur voort te gaan, stem jy in tot Chrome se <ph name="BEGIN_LINK1" />diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />privaatheidskennisgewing<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">Advertensies</translation>
 <translation id="1919950603503897840">Kies kontakte</translation>
 <translation id="1922076542920281912">Vir Chrome om toegang tot jou ligging te kry, moet jy ligging ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
@@ -225,7 +224,6 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="2567385386134582609">PRENT</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">Liggingtoegang is ook af vir hierdie toestel. Skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
-<translation id="257931822824936280">Uitgevou – klik om in te vou.</translation>
 <translation id="2581165646603367611">Dit sal koekies, kas en ander data uitvee van werwe wat Chrome nie dink belangrik is nie.</translation>
 <translation id="2586657967955657006">Knipbord</translation>
 <translation id="2587052924345400782">Nuwer weergawe is beskikbaar</translation>
@@ -491,7 +489,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4605958867780575332">Item is verwyder: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Maak <ph name="WEBAPK_NAME" /> oop</translation>
 <translation id="4634124774493850572">Gebruik wagwoord</translation>
-<translation id="4645575059429386691">Deur jou ouer bestuur</translation>
 <translation id="4650364565596261010">Stelsel se verstek</translation>
 <translation id="4660838440047236328">die uitleg van jou vertrek</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> boekmerke is uitgevee</translation>
@@ -530,7 +527,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4881695831933465202">Maak oop</translation>
 <translation id="488187801263602086">Hernoem lêer</translation>
 <translation id="4882831918239250449">Beheer hoe jou blaaigeskiedenis gebruik word om Search, advertensies en meer te personaliseer</translation>
-<translation id="4883854917563148705">Bestuurde instellings kan nie teruggestel word nie</translation>
 <translation id="4885273946141277891">Ongesteunde aantal Chrome-gevalle.</translation>
 <translation id="4887024562049524730">Vra voordat werwe toegelaat word om jou virtuelerealiteittoestel en -data te gebruik (aanbeveel)</translation>
 <translation id="4910889077668685004">Betalingprogramme</translation>
@@ -560,7 +556,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5048398596102334565">Laat werwe toegang tot bewegingsensors toe (aanbeveel)</translation>
 <translation id="5063480226653192405">Gebruik</translation>
 <translation id="5087580092889165836">Voeg kaart by</translation>
-<translation id="5100237604440890931">Ingevou – klik om uit te vou.</translation>
 <translation id="510275257476243843">1 uur oor</translation>
 <translation id="5123685120097942451">Incognito-oortjie</translation>
 <translation id="5127805178023152808">Sinkronisering is af</translation>
@@ -597,7 +592,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5357811892247919462">Oortjie is ontvang</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> oop oortjie, tik om oortjies te wissel}other{<ph name="OPEN_TABS_MANY" /> oop oortjies, tik om oortjies te wissel}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ nog 1)}other{(+ nog #)}}</translation>
-<translation id="5400569084694353794">Deur hierdie program te gebruik, stem jy in tot Chrome se <ph name="BEGIN_LINK1" />diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />privaatheidkennisgewing<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Name</translation>
 <translation id="5403644198645076998">Laat net sekere werwe toe</translation>
 <translation id="5414836363063783498">Verifieer tans …</translation>
@@ -946,7 +940,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7981313251711023384">Laai bladsye vooraf om vinniger te blaai en te soek</translation>
 <translation id="79859296434321399">Installeer ARCore om verhoogderealiteitinhoud te bekyk</translation>
 <translation id="7986741934819883144">Kies 'n kontak</translation>
-<translation id="7987073022710626672">Chrome se diensbepalings</translation>
 <translation id="7993619969781047893">Kenmerke op sommige werwe kan breek</translation>
 <translation id="7998918019931843664">Heropen toegemaakte oortjie</translation>
 <translation id="7999064672810608036">Is jy seker dat jy alle plaaslike data, insluitend webkoekies, wil uitvee en alle toestemmings vir hierdie webwerf wil terugstel?</translation>
@@ -983,7 +976,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8186512483418048923"><ph name="FILES" /> lêers oor</translation>
 <translation id="8190358571722158785">1 dag oor</translation>
 <translation id="8200772114523450471">Hervat</translation>
-<translation id="8206354486702514201">Hierdie instelling word deur jou administrateur afgedwing.</translation>
 <translation id="8209050860603202033">Maak prent oop</translation>
 <translation id="8218622182176210845">Bestuur jou rekening</translation>
 <translation id="8224471946457685718">Laai vir jou artikels op Wi-Fi af</translation>
@@ -1049,7 +1041,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8687353297350450808">{N_BARS,plural, =1{Seinsterktevlak: # stafie}other{Seinsterktevlak: # stafies}}</translation>
 <translation id="868929229000858085">Deursoek jou kontakte</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
-<translation id="8728487861892616501">Deur hierdie program te gebruik, stem jy in tot Chrome se <ph name="BEGIN_LINK1" />diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />privaatheidkennisgewing<ph name="END_LINK2" />, en die <ph name="BEGIN_LINK3" />privaatheidkennisgewing vir Google-rekeninge wat met Family Link bestuur word<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Inhoud word versteek</translation>
 <translation id="8751914237388039244">Kies 'n prent</translation>
 <translation id="8758557275681689734">Sien al jou oop oortjies</translation>
@@ -1058,7 +1049,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8801436777607969138">Blokkeer JavaScript vir 'n spesifieke werf.</translation>
 <translation id="8812260976093120287">Op sommige webwerwe kan jy met gesteunde betalingprogramme op jou toestel betaal.</translation>
 <translation id="8816026460808729765">Blokkeer werwe om toegang tot sensors kry</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> sal in Chrome oopmaak. Deur voort te gaan, stem jy in tot Chrome se <ph name="BEGIN_LINK1" />diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />privaatheidskennisgewing<ph name="END_LINK2" />, en die <ph name="BEGIN_LINK3" />privaatheidskennisgewing vir Google-rekeninge wat met Family Link bestuur word<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Boekmerke</translation>
 <translation id="8833831881926404480">'n Werf deel tans jou skerm</translation>
 <translation id="883806473910249246">Kon nie die inhoud aflaai nie.</translation>
@@ -1085,7 +1075,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8988028529677883095">Gebruik foon as 'n sekuriteitsleutel</translation>
 <translation id="8993760627012879038">Maak 'n nuwe oortjie in incognitomodus oop</translation>
 <translation id="8998729206196772491">Jy meld tans aan met 'n rekening wat deur <ph name="MANAGED_DOMAIN" /> bestuur word en gee sy administrateur beheer oor jou Chrome-data. Jou data sal permanent met hierdie rekening verbind word. As jy by Chrome afmeld, sal jou data van hierdie toestel af uitgevee word, maar dit sal steeds in jou Google-rekening geberg word.</translation>
-<translation id="9019902583201351841">Deur jou ouers bestuur</translation>
 <translation id="9028914725102941583">Skakel sinkronisering aan om tussen toestelle te deel</translation>
 <translation id="9040142327097499898">Kennisgewings word toegelaat. Ligging is af vir hierdie toestel.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video's}}</translation>

@@ -382,7 +382,7 @@ base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
   return top;
 }
 
-NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
+void ComputeOutOfFlowInlineDimensions(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
@@ -390,8 +390,9 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
     const base::Optional<MinMaxSizes>& min_max_sizes,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
-    const TextDirection container_direction) {
-  NGLogicalOutOfFlowPosition position;
+    const TextDirection container_direction,
+    NGLogicalOutOfFlowDimensions* dimensions) {
+  DCHECK(dimensions);
 
   base::Optional<LayoutUnit> inline_size;
   if (!IsLogicalWidthTreatedAsAuto(style)) {
@@ -434,14 +435,13 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
       style.LogicalInlineStart(), style.LogicalInlineEnd(), min_inline_size,
       max_inline_size, static_position.offset.inline_offset,
       GetStaticPositionEdge(static_position.inline_edge), is_start_dominant,
-      false /* is_block_direction */, inline_size, &position.size.inline_size,
-      &position.inset.inline_start, &position.inset.inline_end,
-      &position.margins.inline_start, &position.margins.inline_end);
-
-  return position;
+      false /* is_block_direction */, inline_size,
+      &dimensions->size.inline_size, &dimensions->inset.inline_start,
+      &dimensions->inset.inline_end, &dimensions->margins.inline_start,
+      &dimensions->margins.inline_end);
 }
 
-void ComputeFullAbsoluteWithChildBlockSize(
+void ComputeOutOfFlowBlockDimensions(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
@@ -450,7 +450,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction,
-    NGLogicalOutOfFlowPosition* position) {
+    NGLogicalOutOfFlowDimensions* dimensions) {
   // After partial size has been computed, child block size is either unknown,
   // or fully computed, there is no minmax. To express this, a 'fixed' minmax
   // is created where min and max are the same.
@@ -496,9 +496,9 @@ void ComputeFullAbsoluteWithChildBlockSize(
       style.MarginAfter(), style.LogicalTop(), style.LogicalBottom(),
       min_block_size, max_block_size, static_position.offset.block_offset,
       GetStaticPositionEdge(static_position.block_edge), is_start_dominant,
-      true /* is_block_direction */, block_size, &position->size.block_size,
-      &position->inset.block_start, &position->inset.block_end,
-      &position->margins.block_start, &position->margins.block_end);
+      true /* is_block_direction */, block_size, &dimensions->size.block_size,
+      &dimensions->inset.block_start, &dimensions->inset.block_end,
+      &dimensions->margins.block_start, &dimensions->margins.block_end);
 }
 
 }  // namespace blink

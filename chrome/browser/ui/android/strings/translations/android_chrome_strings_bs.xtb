@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome sada brže preuzima fajlove</translation>
 <translation id="1883903952484604915">Moji fajlovi</translation>
 <translation id="1887786770086287077">Pristup lokaciji je isključen za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886">Aplikacija <ph name="APP_NAME" /> će se otvoriti u Chromeu. Ako nastavite, prihvatate <ph name="BEGIN_LINK1" />Uslove korištenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Obavještenje o privatnosti<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">Oglasi</translation>
 <translation id="1919950603503897840">Odaberite kontakte</translation>
 <translation id="1922076542920281912">Da dozvolite da Chrome pristupa vašoj lokaciji, uključite lokaciju i u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="2567385386134582609">SLIKA</translation>
 <translation id="257088987046510401">Teme</translation>
 <translation id="2570922361219980984">Pristup lokaciji je također isključen za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Prošireno – kliknite da suzite.</translation>
 <translation id="2581165646603367611">Na ovaj način će se obrisati kolačići, keš memorija i drugi podaci s web lokacija za koje Chrome smatra da su nebitne.</translation>
 <translation id="2586657967955657006">Međumemorija</translation>
 <translation id="2587052924345400782">Dostupna je nova verzija</translation>
@@ -491,7 +489,6 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4605958867780575332">Uklonjena je stavka: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Otvori <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Koristi lozinku</translation>
-<translation id="4645575059429386691">Upravlja roditelj</translation>
 <translation id="4650364565596261010">Zadana postavka sustava</translation>
 <translation id="4660838440047236328">raspored stvari u vašoj sobi</translation>
 <translation id="4663756553811254707">Broj izbrisanih oznaka: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
@@ -530,7 +527,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="488187801263602086">Promjena naziva fajla</translation>
 <translation id="4882831918239250449">Kontrolirajte kako se koristi vaša historija pregledanja za personalizaciju Pretraživanja i još mnogo toga</translation>
-<translation id="4883854917563148705">Upravljane postavke se ne mogu poništiti</translation>
 <translation id="4885273946141277891">Nepodržani broj Chrome instanci.</translation>
 <translation id="4887024562049524730">Web lokacije moraju tražiti dozvolu za korištenje uređaja i podataka virtuelne realnosti (preporučeno)</translation>
 <translation id="4910889077668685004">Aplikacije za plaćanje</translation>
@@ -560,7 +556,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5048398596102334565">Dozvoli web lokacijama pristup senzorima pokreta (preporučeno)</translation>
 <translation id="5063480226653192405">Korištenje</translation>
 <translation id="5087580092889165836">Dodaj karticu</translation>
-<translation id="5100237604440890931">Suženo – kliknite da proširite.</translation>
 <translation id="510275257476243843">Još 1 sat</translation>
 <translation id="5123685120097942451">Anonimna kartica</translation>
 <translation id="5127805178023152808">Sinkronizacija je isključena</translation>
@@ -597,7 +592,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5357811892247919462">Kartica je primljena</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Otvorena je <ph name="OPEN_TABS_ONE" /> kartica. Dodirnite da pređete na drugu karticu}one{Otvorena je <ph name="OPEN_TABS_MANY" /> kartica. Dodirnite da pređete na drugu karticu}few{Otvorene su <ph name="OPEN_TABS_MANY" /> kartice. Dodirnite da pređete na drugu karticu}other{Otvoreno je <ph name="OPEN_TABS_MANY" /> kartica. Dodirnite da pređete na drugu karticu}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(i još 1)}one{(i još #)}few{(i još #)}other{(i još #)}}</translation>
-<translation id="5400569084694353794">Korištenjem ove aplikacije, prihvatate Chromeove <ph name="BEGIN_LINK1" />Uslove korištenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Obavještenje o privatnosti<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Imena</translation>
 <translation id="5403644198645076998">Dopusti samo određene web lokacije</translation>
 <translation id="5414836363063783498">Potvrđivanje…</translation>
@@ -946,7 +940,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="7981313251711023384">Prethodno učitaj stranice za brže pregledavanje i pretraživanje</translation>
 <translation id="79859296434321399">Instalirajte ARCore da vidite sadržaj proširene realnosti</translation>
 <translation id="7986741934819883144">Odaberite kontakt</translation>
-<translation id="7987073022710626672">Uslovi korištenja usluge Chrome</translation>
 <translation id="7993619969781047893">Moguće je da će funkcije na nekim web lokacijama prestati s radom</translation>
 <translation id="7998918019931843664">Ponovono otvaranje zatvorenih kartica</translation>
 <translation id="7999064672810608036">Jeste li sigurni da želite obrisati sve lokalne podatke, uključujući kolačiće i poništiti sva odobrenja za ovu web lokaciju?</translation>
@@ -983,7 +976,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8186512483418048923">Broj preostalih fajlova: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Preostao je još jedan dan</translation>
 <translation id="8200772114523450471">Nastavi</translation>
-<translation id="8206354486702514201">Ovu postavku je nametnuo vaš administrator.</translation>
 <translation id="8209050860603202033">Otvori sliku</translation>
 <translation id="8218622182176210845">Upravljajte svojim računom</translation>
 <translation id="8224471946457685718">Preuzmite članke putem WiFi mreže</translation>
@@ -1049,7 +1041,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivo jačine signala: # stubac}one{Nivo jačine signala: # stubac}few{Nivo jačine signala: # stupca}other{Nivo jačine signala: # stubaca}}</translation>
 <translation id="868929229000858085">Pretražite kontakte</translation>
 <translation id="869891660844655955">Datum isteka</translation>
-<translation id="8728487861892616501">Korištenjem ove aplikacije pristajete na Chromeove <ph name="BEGIN_LINK1" />Uslove korištenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Obavještenje o privatnosti<ph name="END_LINK2" />, kao i na <ph name="BEGIN_LINK3" />Obavještenje o privatnosti za Google račune kojima se upravlja preko Family Linka<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Sadržaj je sakriven</translation>
 <translation id="8751914237388039244">Odaberite sliku</translation>
 <translation id="8758557275681689734">Prikaz svih otvorenih kartica</translation>
@@ -1058,7 +1049,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8801436777607969138">Blokiranje JavaScripta za određenu web lokaciju.</translation>
 <translation id="8812260976093120287">Na nekim web lokacijama možete platiti gore navedenim aplikacijama za plaćanje na vašem uređaju.</translation>
 <translation id="8816026460808729765">Blokiranje web lokacijama pristup senzorima</translation>
-<translation id="8816439037877937734">Aplikacija <ph name="APP_NAME" /> će se otvoriti u Chromeu. Ako nastavite, pristajete na Chromeove <ph name="BEGIN_LINK1" />Uslove korištenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Obavještenje o privatnosti<ph name="END_LINK2" />, kao i <ph name="BEGIN_LINK3" />Obavještenje o privatnosti za Google račune kojima se upravlja Family Linkom<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Oznake</translation>
 <translation id="8833831881926404480">Web lokacija dijeli vaš ekran</translation>
 <translation id="883806473910249246">Došlo je do greške prilikom preuzimanja sadržaja.</translation>
@@ -1085,7 +1075,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8988028529677883095">Koristite telefon kao sigurnosni ključ</translation>
 <translation id="8993760627012879038">Otvori novu karticu u anonimnom načinu rada</translation>
 <translation id="8998729206196772491">Prijavljujete se pomoću računa kojim upravlja domena <ph name="MANAGED_DOMAIN" /> te njenom administratoru dajete kontrolu nad svojim Chrome podacima. Vaši podaci će se trajno povezati s ovim računom. Odjavljivanjem iz Chromea ćete izbrisati podatke s ovog uređaja, ali će oni ostati pohranjeni na vašem Google računu.</translation>
-<translation id="9019902583201351841">Upravljaju tvoji roditelji</translation>
 <translation id="9028914725102941583">Uključite sinhronizaciju da dijelite sadržaj na više uređaja</translation>
 <translation id="9040142327097499898">Obavještenja su dozvoljena. Lokacija je isključena na ovom uređaju.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videozapis}one{# videozapis}few{# videozapisa}other{# videozapisa}}</translation>

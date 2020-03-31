@@ -3914,6 +3914,18 @@
           'sync_integration_tests'
         ]
       },
+      'Linux Ozone Tester (Headless)': {
+        'args': [
+          '--no-xvfb',
+          '--ozone-platform=headless'
+        ],
+        'mixins': [
+          'linux-xenial',
+         ],
+        'test_suites': {
+         'gtest_tests': 'ozone_linux_gtests_headless',
+        },
+      },
       'Linux Ozone Tester (Wayland)': {
         'args': [
           '--no-xvfb',
@@ -3992,9 +4004,6 @@
         'additional_compile_targets': [
           'chrome',
         ],
-        'test_suites': {
-          'gtest_tests': 'ozone_linux_gtests_headless',
-        },
       },
       'linux-trusty-rel': {
         'mixins': [

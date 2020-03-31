@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/prefix_selector.h"
 
+#include <algorithm>
+
 #if defined(OS_WIN)
 #include <vector>
 #endif

@@ -164,6 +164,11 @@ luci.console_view(
             short_name = 'lk',
         ),
         luci.console_view_entry(
+            builder = 'ci/Linux Ozone Tester (Headless)',
+            category = 'linux',
+            short_name = 'loh',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Linux Ozone Tester (Wayland)',
             category = 'linux',
             short_name = 'low',

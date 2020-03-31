@@ -1872,4 +1872,14 @@ bool StyleBuilderConverter::ConvertInternalEmptyLineHeight(
          identifier_value->GetValueID() == CSSValueID::kFabricated;
 }
 
+AtomicString StyleBuilderConverter::ConvertPage(StyleResolverState& state,
+                                                const CSSValue& value) {
+  if (auto* custom_ident_value = DynamicTo<CSSCustomIdentValue>(value))
+    return AtomicString(custom_ident_value->Value());
+  DCHECK(DynamicTo<CSSIdentifierValue>(value));
+  DCHECK_EQ(DynamicTo<CSSIdentifierValue>(value)->GetValueID(),
+            CSSValueID::kAuto);
+  return AtomicString();
+}
+
 }  // namespace blink

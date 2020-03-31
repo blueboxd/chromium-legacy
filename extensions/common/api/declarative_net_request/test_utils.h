@@ -152,10 +152,19 @@ enum ConfigFlag {
   kConfig_HasActiveTab = 1 << 2,
 };
 
+// Describes a single extension ruleset.
+struct TestRulesetInfo {
+  // File path relative to the extension directory.
+  std::string relative_file_path;
+
+  // The base::Value corresponding to the rules in the ruleset.
+  base::Value rules_value;
+};
+
 // Helper to build an extension manifest which uses the
 // kDeclarativeNetRequestKey manifest key. |hosts| specifies the host
 // permissions to grant. |flags| is a bitmask of ConfigFlag to configure the
-// extension.
+// extension. Should be used when the extension has a single static ruleset.
 std::unique_ptr<base::DictionaryValue> CreateManifest(
     const std::string& json_rules_filename,
     const std::vector<std::string>& hosts = {},
@@ -169,16 +178,17 @@ std::unique_ptr<base::ListValue> ToListValue(
 std::unique_ptr<base::ListValue> ToListValue(
     const std::vector<TestRule>& rules);
 
-// Describes a single extension ruleset.
-struct TestRulesetInfo {
-  std::string relative_file_path;
-  base::Value rules_value;
-};
+// Writes the rulesets specified in |ruleset_info| in the given |extension_dir|
+// together with the manifest file. |hosts| specifies the host permissions, the
+// extensions should have. |flags| is a bitmask of ConfigFlag to configure the
+// extension.
+void WriteManifestAndRulesets(const base::FilePath& extension_dir,
+                              const std::vector<TestRulesetInfo>& ruleset_info,
+                              const std::vector<std::string>& hosts,
+                              unsigned flags = ConfigFlag::kConfig_None);
 
-// Writes the declarative rules specified in |ruleset_info| in the given
-// |extension_dir| together with the manifest file. |hosts| specifies the host
-// permissions, the extensions should have. |flags| is a bitmask of ConfigFlag
-// to configure the extension.
+// Specialization of WriteManifestAndRulesets above for an extension with a
+// single static ruleset.
 void WriteManifestAndRuleset(const base::FilePath& extension_dir,
                              const TestRulesetInfo& ruleset_info,
                              const std::vector<std::string>& hosts,

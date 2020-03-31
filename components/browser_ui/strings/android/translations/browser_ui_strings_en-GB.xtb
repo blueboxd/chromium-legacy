@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2501278716633472235">Go back</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie blocked}other{# cookies blocked}}</translation>
+<translation id="257931822824936280">Expanded – click to collapse.</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Copy link</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4570913071927164677">Details</translation>
+<translation id="4645575059429386691">Managed by your parent</translation>
+<translation id="4883854917563148705">Managed settings cannot be reset</translation>
 <translation id="497421865427891073">go forward</translation>
+<translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5301954838959518834">OK, got it</translation>
 <translation id="5317780077021120954">Save</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="8131740175452115882">Confirm</translation>
+<translation id="8206354486702514201">This setting is enforced by your administrator.</translation>
 <translation id="8249310407154411074">Move to top</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8609465669617005112">Move up</translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Done</translation>
+<translation id="9019902583201351841">Managed by your parents</translation>
 </translationbundle>

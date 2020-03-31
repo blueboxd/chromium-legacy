@@ -4,7 +4,7 @@
 
 #include "chrome/test/views/chrome_views_test_base.h"
 
-#include "chrome/test/views/chrome_test_views_delegate.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "content/public/test/browser_task_environment.h"
 
 ChromeViewsTestBase::ChromeViewsTestBase()
@@ -16,6 +16,12 @@ ChromeViewsTestBase::ChromeViewsTestBase()
 ChromeViewsTestBase::~ChromeViewsTestBase() = default;
 
 void ChromeViewsTestBase::SetUp() {
-  set_views_delegate(std::make_unique<ChromeTestViewsDelegate<>>());
   views::ViewsTestBase::SetUp();
+
+  // This is similar to calling set_test_views_delegate() with a
+  // ChromeTestViewsDelegate before the superclass SetUp(); however, this allows
+  // the framework to provide whatever TestViewsDelegate subclass it likes as a
+  // base.
+  test_views_delegate()->set_layout_provider(
+      ChromeLayoutProvider::CreateLayoutProvider());
 }

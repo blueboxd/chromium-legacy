@@ -166,20 +166,6 @@ void OpenUrl(content::WebContents* current_web_contents,
   current_web_contents->OpenURL(params);
 }
 
-int64_t GetFirstNavIdOrZero(PrefService* prefs) {
-  const base::DictionaryValue* unhandled_gaia_password_reuses =
-      prefs->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
-  if (!unhandled_gaia_password_reuses ||
-      unhandled_gaia_password_reuses->empty()) {
-    return 0;
-  }
-  base::DictionaryValue::Iterator itr(*unhandled_gaia_password_reuses);
-  int64_t navigation_id;
-  return base::StringToInt64(itr.value().GetString(), &navigation_id)
-             ? navigation_id
-             : 0;
-}
-
 int64_t GetNavigationIDFromPrefsByOrigin(PrefService* prefs,
                                          const Origin& origin) {
   const base::DictionaryValue* unhandled_sync_password_reuses =
@@ -518,9 +504,6 @@ void ChromePasswordProtectionService::OnUserAction(
     case WarningUIType::MODAL_DIALOG:
       HandleUserActionOnModalWarning(web_contents, password_type, outcome,
                                      verdict_type, verdict_token, action);
-      break;
-    case WarningUIType::CHROME_SETTINGS:
-      HandleUserActionOnSettings(web_contents, password_type, action);
       break;
     case WarningUIType::INTERSTITIAL:
       DCHECK_EQ(WarningAction::CHANGE_PASSWORD, action);
@@ -1020,29 +1003,6 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
   }
 
   NOTREACHED();
-}
-
-void ChromePasswordProtectionService::HandleUserActionOnSettings(
-    content::WebContents* web_contents,
-    ReusedPasswordAccountType password_type,
-    WarningAction action) {
-  DCHECK_EQ(WarningAction::CHANGE_PASSWORD, action);
-
-  if (password_type.is_account_syncing()) {
-    // Gets the first navigation_id from
-    // |kSafeBrowsingUnhandledGaiaPasswordReuses|. If there's only one
-    // unhandled reuse, getting the first is correct. If there are more than
-    // one, we have no way to figure out which event the user is responding
-    // to, so just pick the first one.
-    MaybeLogPasswordReuseDialogInteraction(
-        GetFirstNavIdOrZero(profile_->GetPrefs()),
-        PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN_ON_SETTINGS);
-  }
-  // Opens change password page in a new tab for user to change password.
-  OpenUrl(web_contents, GetDefaultChangePasswordURL(),
-          content::Referrer(web_contents->GetLastCommittedURL(),
-                            network::mojom::ReferrerPolicy::kDefault),
-          /*in_new_tab=*/true);
 }
 
 void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(

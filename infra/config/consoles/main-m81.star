@@ -14,6 +14,11 @@ luci.console_view(
             short_name = 'bld',
         ),
         luci.console_view_entry(
+            builder = 'ci-m81/Linux Ozone Tester (Headless)',
+            category = 'linux',
+            short_name = 'loh',
+        ),
+        luci.console_view_entry(
             builder = 'ci-m81/Linux Ozone Tester (Wayland)',
             category = 'linux',
             short_name = 'low',

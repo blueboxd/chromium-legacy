@@ -41,6 +41,12 @@ MockedAssistantInteraction& MockedAssistantInteraction::WithTextResponse(
   return *this;
 }
 
+MockedAssistantInteraction& MockedAssistantInteraction::WithSuggestionChip(
+    const std::string& text) {
+  response_->AddSuggestionChip(text);
+  return *this;
+}
+
 MockedAssistantInteraction& MockedAssistantInteraction::WithResolution(
     Resolution resolution) {
   resolution_ = resolution;

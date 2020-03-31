@@ -542,7 +542,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3366477098757335611">Mostra les targetes</translation>
 <translation id="3369192424181595722">Error de rellotge</translation>
 <translation id="337363190475750230">No administrat</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> ha activat els hooks de servei d'Enterprise al navegador. Aquests hooks tenen accés a algunes de les teves dades.</translation>
 <translation id="3377144306166885718">El servidor ha utilitzat una versió obsoleta de TLS.</translation>
 <translation id="3377188786107721145">S'ha produït un error en analitzar la política</translation>
 <translation id="3377736046129930310">Fes servir el bloqueig de pantalla per confirmar les targetes més ràpidament</translation>
@@ -978,7 +977,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa d'aquest error</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="519422657042045905">L'anotació no està disponible</translation>
-<translation id="5196187217592847346">Hooks de servei d'Enterprise</translation>
 <translation id="5201306358585911203">Una pàgina inserida en aquesta pàgina diu</translation>
 <translation id="5205222826937269299">El nom és obligatori</translation>
 <translation id="5209518306177824490">Empremta SHA-1</translation>
@@ -1448,7 +1446,6 @@ Detalls addicionals:
 <translation id="725866823122871198">No s'ha pogut establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) de l'ordinador no són correctes.</translation>
 <translation id="7260504762447901703">Revoca l'accés</translation>
 <translation id="7275334191706090484">Adreces d'interès gestionades</translation>
-<translation id="7288778322931489286">L'administrador ha activat els hooks de servei d'Enterprise al navegador. Aquests hooks tenen accés a algunes de les teves dades.</translation>
 <translation id="7292031607255951991">Nom del destinatari</translation>
 <translation id="7298195798382681320">Recomanada</translation>
 <translation id="7300012071106347854">Blau de cobalt</translation>
@@ -1805,7 +1802,6 @@ Detalls addicionals:
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
 <translation id="8866928039507595380">Plegat</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Comparteix amb el teu administrador les dades sobre esdeveniments de seguretat que marquin els hooks de servei d'Enterprise. Per exemple, URL de pàgines que visites, noms o metadades de fitxers i el nom d'usuari que fas servir per iniciar la sessió al dispositiu i a Chrome.</translation>
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8870494189203302833">Ordre idèntic de cara avall</translation>
 <translation id="8874824191258364635">Introdueix un número de targeta vàlid</translation>

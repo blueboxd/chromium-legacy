@@ -4,6 +4,8 @@
 
 #include "ui/views/examples/table_example.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_util.h"

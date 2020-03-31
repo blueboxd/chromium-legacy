@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2501278716633472235">ወደ ኋላ ተመለስ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 ኩኪ ታግዷል}one{# ኩኪዎች ታግደዋል}other{# ኩኪዎች ታግደዋል}}</translation>
+<translation id="257931822824936280">ተዘርግቷል - ለመሰብሰብ ጠቅ ያድርጉ</translation>
 <translation id="2653659639078652383">አስገባ</translation>
 <translation id="2704606927547763573">ተቀድቷል</translation>
 <translation id="2968755619301702150">የእውቅና ማረጋገጫ መመልከቻ</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">አገናኝ ቅዳ</translation>
 <translation id="4002066346123236978">ርዕስ</translation>
 <translation id="4570913071927164677">ዝርዝሮች</translation>
+<translation id="4645575059429386691">በእርስዎ ወላጅ የሚቀናበር</translation>
+<translation id="4883854917563148705">የሚተዳደሩ ቅንብሮች ዳግም ሊጀመሩ አይችሉም</translation>
 <translation id="497421865427891073">ወደ ፊት ሂድ</translation>
+<translation id="5100237604440890931">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5301954838959518834">እሺ፣ ገባኝ</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
 <translation id="7846076177841592234">ምርጫ ሰርዝ</translation>
 <translation id="8131740175452115882">አረጋግጥ</translation>
+<translation id="8206354486702514201">ይህ ቅንብር በአስተዳዳሪዎ ነው በግዳጅ እንዲፈጸም የተደረገው።</translation>
 <translation id="8249310407154411074">ወደ ላይ ውሰድ</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8609465669617005112">ወደላይ አውጣ</translation>
 <translation id="8676374126336081632">ግቤቱን አጽዳ</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
+<translation id="9019902583201351841">በእርስዎ ወላጆች የሚቀናበር</translation>
 </translationbundle>

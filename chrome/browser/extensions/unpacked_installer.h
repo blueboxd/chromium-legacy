@@ -125,10 +125,10 @@ class UnpackedInstaller
                      int flags,
                      std::string* error);
 
-  // Reads the Declarative Net Request JSON ruleset for the extension, if it
-  // provided one, and persists the indexed ruleset. Returns false and populates
-  // |error| in case of an error. Should be called on a sequence where file IO
-  // is allowed.
+  // Reads the Declarative Net Request JSON rulesets for the extension, if it
+  // provided any, and persists the indexed rulesets. Returns false and
+  // populates |error| in case of an error. Should be called on a sequence where
+  // file IO is allowed.
   bool IndexAndPersistRulesIfNeeded(std::string* error);
 
   const Extension* extension() { return extension_.get(); }

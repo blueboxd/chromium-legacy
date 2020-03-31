@@ -105,6 +105,10 @@ class ASH_EXPORT AssistantTestApi {
   // Can only be used after the Assistant UI has been shown at least once.
   virtual views::View* opt_in_view() = 0;
 
+  // Returns the view containing the suggestion chips.
+  // Can only be used after the Assistant UI has been shown at least once.
+  virtual views::View* suggestion_chip_container() = 0;
+
   // Returns the window containing the Assistant UI.
   // Note that this window is shared for all components of the |AppList|.
   // Can only be used after the Assistant UI has been shown at least once.

@@ -12,6 +12,10 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 
+namespace ui {
+class PlatformEventSource;
+}  // namespace ui
+
 namespace viz {
 
 class VizTestSuite : public base::TestSuite {
@@ -26,6 +30,8 @@ class VizTestSuite : public base::TestSuite {
 
  private:
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  std::unique_ptr<ui::PlatformEventSource> platform_event_source_;
+
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(VizTestSuite);

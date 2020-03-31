@@ -1873,6 +1873,65 @@ TEST_F(OptimizationGuideHintsManagerFetchingDisabledTest,
   EXPECT_FALSE(batch_update_hints_fetcher());
 }
 
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationAsyncReturnsRightAwayIfNotAllowedToFetch) {
+  base::HistogramTester histogram_tester;
+
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->CanApplyOptimizationAsync(
+      url_without_hints(), optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
+      base::BindOnce(
+          [](optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+                      decision);
+          }));
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecisionAsync.CompressPublicImages",
+      optimization_guide::OptimizationTypeDecision::kNoHintAvailable, 1);
+}
+
+TEST_F(
+    OptimizationGuideHintsManagerTest,
+    CanApplyOptimizationAsyncReturnsRightAwayIfNotAllowedToFetchAndNotWhitelistedByAvailableHint) {
+  base::HistogramTester histogram_tester;
+
+  InitializeWithDefaultConfig("1.0.0.0");
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  // Wait for hint to be loaded.
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+
+  hints_manager()->CanApplyOptimizationAsync(
+      url_with_hints(), optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
+      base::BindOnce(
+          [](optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+                      decision);
+          }));
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecisionAsync.CompressPublicImages",
+      optimization_guide::OptimizationTypeDecision::kNotAllowedByHint, 1);
+}
+
 class OptimizationGuideHintsManagerFetchingTest
     : public OptimizationGuideHintsManagerTest {
  public:
@@ -3085,6 +3144,46 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecisionAsync.CompressPublicImages",
       optimization_guide::OptimizationTypeDecision::kAllowedByHint, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationAsyncInfoAlreadyInPriorToCallAndNotWhitelisted) {
+  base::HistogramTester histogram_tester;
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::PERFORMANCE_HINTS});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithURLHints}));
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_url_keyed_hint());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  hints_manager()->CanApplyOptimizationAsync(
+      url_with_url_keyed_hint(), optimization_guide::proto::PERFORMANCE_HINTS,
+      base::BindOnce(
+          [](optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+                      decision);
+          }));
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecisionAsync.PerformanceHints",
+      optimization_guide::OptimizationTypeDecision::kNotAllowedByHint, 1);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,

@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome pobiera pliki jeszcze szybciej</translation>
 <translation id="1883903952484604915">Moje pliki</translation>
 <translation id="1887786770086287077">Dostęp do lokalizacji jest wyłączony na tym urządzeniu. Włącz go w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> otworzy się w Chrome. Przechodząc dalej, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> Chrome i <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919950603503897840">Wybierz kontakty</translation>
 <translation id="1922076542920281912">Aby zezwolić Chrome na dostęp do lokalizacji, musisz ją też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2567385386134582609">OBRAZ</translation>
 <translation id="257088987046510401">Motywy</translation>
 <translation id="2570922361219980984">Dostęp do lokalizacji jest wyłączony też na tym urządzeniu. Włącz go w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Rozwinięty – kliknij, by zwinąć.</translation>
 <translation id="2581165646603367611">Spowoduje to skasowanie plików cookie, pamięci podręcznej i innych danych witryn, które Chrome uzna za nieistotne.</translation>
 <translation id="2586657967955657006">Schowek</translation>
 <translation id="2587052924345400782">Dostępna jest nowsza wersja</translation>
@@ -491,7 +489,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4605958867780575332">Usunięto element: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Otwórz <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Użyj hasła</translation>
-<translation id="4645575059429386691">Zarządzany przez Twojego rodzica</translation>
 <translation id="4650364565596261010">Ustawienie domyślne</translation>
 <translation id="4660838440047236328">układ Twojego pokoju.</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
@@ -530,7 +527,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="488187801263602086">Zmień nazwę pliku</translation>
 <translation id="4882831918239250449">Zarządzaj personalizacją wyszukiwarki, reklam i innych funkcji na podstawie historii przeglądania</translation>
-<translation id="4883854917563148705">Ustawień zarządzanych nie można zresetować</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
 <translation id="4887024562049524730">Pytaj, zanim zezwolisz stronom na korzystanie z urządzenia i danych rzeczywistości wirtualnej (zalecane)</translation>
 <translation id="4910889077668685004">Aplikacje do płatności</translation>
@@ -560,7 +556,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5048398596102334565">Zezwalaj stronom na dostęp do czujników ruchu (zalecane)</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
 <translation id="5087580092889165836">Dodaj kartę</translation>
-<translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="510275257476243843">Pozostała godzina</translation>
 <translation id="5123685120097942451">Karta incognito</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
@@ -597,7 +592,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5357811892247919462">Odebrano kartę</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otwarta karta. Kliknij, by przełączyć się między kartami}few{<ph name="OPEN_TABS_MANY" /> otwarte karty. Kliknij, by przełączyć się między kartami}many{<ph name="OPEN_TABS_MANY" /> otwartych kart. Kliknij, by przełączyć się między kartami}other{<ph name="OPEN_TABS_MANY" /> otwartej karty. Kliknij, by przełączyć się między kartami}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(i jeszcze 1)}few{(i jeszcze #)}many{(i jeszcze #)}other{(i jeszcze #)}}</translation>
-<translation id="5400569084694353794">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Nazwy</translation>
 <translation id="5403644198645076998">Pozwól na otwieranie tylko wybranych stron</translation>
 <translation id="5414836363063783498">Weryfikuję…</translation>
@@ -946,7 +940,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7981313251711023384">Ładuj wstępnie strony, by przyspieszyć przeglądanie i wyszukiwanie</translation>
 <translation id="79859296434321399">Aby oglądać treści rzeczywistości rozszerzonej, zainstaluj ARCore</translation>
 <translation id="7986741934819883144">Wybierz kontakt</translation>
-<translation id="7987073022710626672">Warunki korzystania z Chrome</translation>
 <translation id="7993619969781047893">Funkcje niektórych stron mogą nie działać prawidłowo</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="7999064672810608036">Na pewno chcesz usunąć wszystkie dane lokalne (w tym pliki cookie) i zresetować uprawnienia tej witryny?</translation>
@@ -983,7 +976,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8186512483418048923">Pozostałe pliki: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Pozostał dzień</translation>
 <translation id="8200772114523450471">Wznów</translation>
-<translation id="8206354486702514201">O tym ustawieniu decyduje administrator.</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
 <translation id="8218622182176210845">Zarządzaj kontem</translation>
 <translation id="8224471946457685718">Pobieranie artykułów dla Ciebie przez Wi-Fi</translation>
@@ -1049,7 +1041,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8687353297350450808">{N_BARS,plural, =1{Poziom siły sygnału: # słupek}few{Poziom siły sygnału: # słupki}many{Poziom siły sygnału: # słupków}other{Poziom siły sygnału: # słupka}}</translation>
 <translation id="868929229000858085">Wyszukaj w kontaktach</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
-<translation id="8728487861892616501">Używając tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Politykę prywatności<ph name="END_LINK2" /> Chrome oraz <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Treści ukryte</translation>
 <translation id="8751914237388039244">Wybierz obraz</translation>
 <translation id="8758557275681689734">Zobacz wszystkie otwarte karty</translation>
@@ -1058,7 +1049,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8801436777607969138">Zablokuj JavaScript w określonej witrynie.</translation>
 <translation id="8812260976093120287">Używając swojego urządzenia, na niektórych stronach możesz płacić za pomocą powyższych obsługiwanych aplikacji do płatności.</translation>
 <translation id="8816026460808729765">Blokuj stronom dostęp do czujników</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> otworzy się w Chrome. Przechodząc dalej, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> Chrome, <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności<ph name="END_LINK2" /> i <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="8833831881926404480">Strona udostępnia Twój ekran</translation>
 <translation id="883806473910249246">Podczas pobierania treści wystąpił błąd.</translation>
@@ -1085,7 +1075,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8988028529677883095">Używaj telefonu jako klucza bezpieczeństwa</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
-<translation id="9019902583201351841">Zarządzany przez Twoich rodziców</translation>
 <translation id="9028914725102941583">Aby udostępniać treści między urządzeniami, włącz synchronizację</translation>
 <translation id="9040142327097499898">Powiadomienia są włączone. Lokalizacja jest wyłączona na tym urządzeniu.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# film}few{# filmy}many{# filmów}other{# filmu}}</translation>

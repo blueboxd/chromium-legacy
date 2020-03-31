@@ -4,6 +4,9 @@
 
 #include "ui/views/examples/link_example.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/examples/examples_window.h"

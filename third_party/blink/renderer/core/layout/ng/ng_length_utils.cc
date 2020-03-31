@@ -1137,7 +1137,10 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
     const NGBoxStrut& border_padding,
     LayoutUnit parent_percentage_block_size) {
   // Anonymous block or spaces should pass the percent size straight through.
-  if (space.IsAnonymous() || node.IsAnonymousBlock())
+  // If this node is OOF-positioned, our size was pre-calculated and we should
+  // pass this through to our children.
+  if (space.IsAnonymous() || node.IsAnonymousBlock() ||
+      node.IsOutOfFlowPositioned())
     return parent_percentage_block_size;
 
   LayoutUnit block_size = ComputeBlockSizeForFragmentInternal(
@@ -1152,8 +1155,7 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
 
   // For OOF-positioned nodes, use the parent (containing-block) size.
   if (child_percentage_block_size == kIndefiniteSize &&
-      (node.UseParentPercentageResolutionBlockSizeForChildren() ||
-       node.IsOutOfFlowPositioned()))
+      node.UseParentPercentageResolutionBlockSizeForChildren())
     child_percentage_block_size = parent_percentage_block_size;
 
   return child_percentage_block_size;

@@ -31,6 +31,7 @@ class AssistantController;
 class AssistantInteractionController;
 class AssistantInteractionModel;
 class AssistantTestApi;
+class SuggestionChipView;
 class TestAssistantClient;
 class TestAssistantService;
 class TestAssistantSetup;
@@ -41,6 +42,7 @@ class AssistantAshTestBase : public AshTestBase {
  public:
   using AssistantEntryPoint = chromeos::assistant::mojom::AssistantEntryPoint;
   using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
+  using ConsentStatus = chromeos::assistant::prefs::ConsentStatus;
 
   AssistantAshTestBase();
   explicit AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
@@ -66,8 +68,8 @@ class AssistantAshTestBase : public AshTestBase {
 
   void SetTabletMode(bool enable);
 
-  // Changes the user preference controlling the status of user consent.
-  void SetConsentStatus(chromeos::assistant::prefs::ConsentStatus);
+  // Change the user preference controlling the status of user consent.
+  void SetConsentStatus(ConsentStatus);
 
   // Change the user setting controlling whether the user prefers voice or
   // keyboard.
@@ -111,7 +113,7 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Simulate the user tapping on the given view.
   // Waits for the event to be processed.
-  void TapOnAndWait(views::View* view);
+  void TapOnAndWait(const views::View* view);
 
   // Simulate the user tapping at the given position.
   // Waits for the event to be processed.
@@ -119,19 +121,20 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Simulate a mouse click on the given view.
   // Waits for the event to be processed.
-  void ClickOnAndWait(views::View* view);
+  void ClickOnAndWait(const views::View* view,
+                      bool check_if_view_can_process_events = true);
 
-  // Returns the current interaction. Returns |base::nullopt| if no interaction
+  // Return the current interaction. Returns |base::nullopt| if no interaction
   // is in progress.
   base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
   current_interaction();
 
-  // Creates a new App window, and activate it.
+  // Create a new App window, and activate it.
   // Returns a pointer to the newly created window.
   // The window will be destroyed when the test is finished.
   aura::Window* SwitchToNewAppWindow();
 
-  // Creates a new Widget, and activate it.
+  // Create a new Widget, and activate it.
   // Returns a pointer to the newly created widget.
   // The widget will be destroyed when the test is finished.
   views::Widget* SwitchToNewWidget();
@@ -155,8 +158,14 @@ class AssistantAshTestBase : public AshTestBase {
   // Return the button to enable text mode.
   views::View* keyboard_input_toggle();
 
-  // Returns the button to launch Assistant onboarding.
+  // Return the button to launch Assistant onboarding.
   views::View* opt_in_view();
+
+  // Return the container with all the suggestion chips.
+  views::View* suggestion_chip_container();
+
+  // Return the suggestion chips that are currently displayed.
+  std::vector<ash::SuggestionChipView*> GetSuggestionChips();
 
   // Show/Dismiss the on-screen keyboard.
   void ShowKeyboard();
@@ -172,9 +181,9 @@ class AssistantAshTestBase : public AshTestBase {
   AssistantInteractionController* interaction_controller();
   const AssistantInteractionModel* interaction_model();
 
- private:
   TestAssistantService* assistant_service();
 
+ private:
   std::unique_ptr<AssistantTestApi> test_api_;
   std::unique_ptr<TestAssistantSetup> test_setup_;
   std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;

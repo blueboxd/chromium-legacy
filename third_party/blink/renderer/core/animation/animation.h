@@ -297,6 +297,11 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   }
   bool ReplaceStateActive() const { return replace_state_ == kActive; }
 
+  // Overridden for CSS animations to force pending animation properties to be
+  // applied. This step is required before any web animation API calls that
+  // depends on computed values.
+  virtual void FlushPendingUpdates() const {}
+
   // TODO(yigu): This is a reverse dependency between AnimationTimeline and
   // Animation. We should move the update logic once snapshotting is
   // implemented. https://crbug.com/1060578.

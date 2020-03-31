@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2501278716633472235">Nazad</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Blokiran je 1 kolačić}one{Blokiran je # kolačić}few{Blokirana su # kolačića}other{Blokirano je # kolačića}}</translation>
+<translation id="257931822824936280">Prošireno – kliknite da suzite.</translation>
 <translation id="2653659639078652383">Pošalji</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2968755619301702150">Preglednik certifikata</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopiraj link</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4570913071927164677">Detalji</translation>
+<translation id="4645575059429386691">Upravlja roditelj</translation>
+<translation id="4883854917563148705">Upravljane postavke se ne mogu poništiti</translation>
 <translation id="497421865427891073">Idi naprijed</translation>
+<translation id="5100237604440890931">Suženo – kliknite da proširite.</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5301954838959518834">Uredu, razumijem</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7846076177841592234">Otkazivanje odabira</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
+<translation id="8206354486702514201">Ovu postavku je nametnuo vaš administrator.</translation>
 <translation id="8249310407154411074">Premjesti na vrh</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8609465669617005112">Pomjeri prema gore</translation>
 <translation id="8676374126336081632">Brisanje unosa</translation>
 <translation id="8725066075913043281">Pokušaj ponovo</translation>
 <translation id="8730621377337864115">Gotovo</translation>
+<translation id="9019902583201351841">Upravljaju tvoji roditelji</translation>
 </translationbundle>

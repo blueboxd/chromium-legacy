@@ -51,7 +51,7 @@ class SupervisedUserSiteList
     size_t hash() const;
 
    private:
-    std::array<uint8_t, base::kSHA1Length> bytes_;
+    base::SHA1Digest bytes_;
     // Copy and assign are allowed.
   };
 

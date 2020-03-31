@@ -4,7 +4,9 @@
 
 #include "ui/views/controls/combobox/combobox.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"

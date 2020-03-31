@@ -331,7 +331,8 @@ void FeaturePodLabelButton::OnEnabledChanged() {
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
   gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Size preferred_size = child->GetPreferredSize();
-  int child_width = preferred_size.width();
+  int child_width =
+      std::min(kUnifiedFeaturePodLabelWidth, preferred_size.width());
   child->SetBounds(
       contents_bounds.x() + (contents_bounds.width() - child_width) / 2, y,
       child_width, preferred_size.height());

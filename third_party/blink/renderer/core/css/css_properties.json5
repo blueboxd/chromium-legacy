@@ -2813,6 +2813,18 @@
       valid_for_first_letter: true,
     },
     {
+      name: "page",
+      field_group: "*",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      converter: "ConvertPage",
+      type_name: "AtomicString",
+      default_value: "AtomicString()",
+      field_template: "external",
+      keywords: ["auto"],
+      typedom_types: ["Keyword"],
+      runtime_flag: "NamedPages"
+    },
+    {
       name: "paint-order",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
@@ -4785,11 +4797,6 @@
     {
       name: "all",
       affected_by_all: false,
-      style_builder_template: "empty",
-    },
-    {
-      name: "page",
-      property_methods: ["ParseSingleValue"],
       style_builder_template: "empty",
     },
     {

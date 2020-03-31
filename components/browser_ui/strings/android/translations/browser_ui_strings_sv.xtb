@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie har blockerats}other{# cookies har blockerats}}</translation>
+<translation id="257931822824936280">Vyn har expanderats. Komprimera den genom att klicka.</translation>
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopiera länk</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4570913071927164677">Information</translation>
+<translation id="4645575059429386691">Hanteras av din förälder</translation>
+<translation id="4883854917563148705">Hanterade inställningar kan inte återställas</translation>
 <translation id="497421865427891073">Fortsätt</translation>
+<translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5301954838959518834">Ok, jag förstår</translation>
 <translation id="5317780077021120954">Spara</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
+<translation id="8206354486702514201">Administratören har gjort den här inställningen obligatorisk.</translation>
 <translation id="8249310407154411074">Flytta högst upp</translation>
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8609465669617005112">Flytta upp</translation>
 <translation id="8676374126336081632">Radera inmatning</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8730621377337864115">Klart</translation>
+<translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
 </translationbundle>

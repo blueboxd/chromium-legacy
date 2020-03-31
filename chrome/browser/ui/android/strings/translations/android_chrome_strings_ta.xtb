@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome இப்போது கோப்புகளை வேகமாகப் பதிவிறக்குகிறது</translation>
 <translation id="1883903952484604915">எனது கோப்புகள்</translation>
 <translation id="1887786770086287077">இந்தச் சாதனத்திற்கான இருப்பிட அணுகல் முடக்கப்பட்டுள்ளது. அதை <ph name="BEGIN_LINK" />Android அமைப்புகளில்<ph name="END_LINK" /> இயக்கவும்.</translation>
-<translation id="1891331835972267886">Chrome இல் <ph name="APP_NAME" /> திறக்கும். தொடர்வதன் மூலம், Chrome இன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" /> மற்றும் <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கையை<ph name="END_LINK2" /> ஏற்கிறீர்கள்.</translation>
 <translation id="1919345977826869612">விளம்பரங்கள்</translation>
 <translation id="1919950603503897840">தொடர்புகளைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="1922076542920281912">Chrome உங்கள் இருப்பிடத் தகவலை அணுக அனுமதிப்பதற்கு <ph name="BEGIN_LINK" />Android அமைப்புகளிலும்<ph name="END_LINK" /> இருப்பிடத்தை இயக்கவும்.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">படம்</translation>
 <translation id="257088987046510401">தீம்கள்</translation>
 <translation id="2570922361219980984">இந்தச் சாதனத்திற்கான இருப்பிட அணுகலும் முடக்கப்பட்டுள்ளது. அதை <ph name="BEGIN_LINK" />Android அமைப்புகளில்<ph name="END_LINK" /> இயக்கவும்.</translation>
-<translation id="257931822824936280">விரிவாக்கப்பட்டது - சுருக்க, கிளிக் செய்யவும்.</translation>
 <translation id="2581165646603367611">முக்கியமில்லை என்று Chrome கருதும் குக்கீகள், தற்காலிகச் சேமிப்பு, தளங்களின் பிற தரவு ஆகியவற்றை இது அழிக்கும்.</translation>
 <translation id="2586657967955657006">கிளிப்போர்டு</translation>
 <translation id="2587052924345400782">புதிய பதிப்பு உள்ளது</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">உருப்படி அகற்றப்பட்டது: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />ஐத் திற</translation>
 <translation id="4634124774493850572">கடவுச்சொல்லைப் பயன்படுத்து</translation>
-<translation id="4645575059429386691">உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="4650364565596261010">சிஸ்டத்தின் இயல்புநிலை</translation>
 <translation id="4660838440047236328">உங்கள் அறையின் வடிவமைப்பு</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> புக்மார்க்குகள் நீக்கப்பட்டன</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">திற</translation>
 <translation id="488187801263602086">கோப்பின் பெயரை மாற்றவும்</translation>
 <translation id="4882831918239250449">தேடல், விளம்பரங்கள் மற்றும் பலவற்றைத் தனிப்பயனாக்க உங்கள் உலாவல் வரலாறு எப்படிப் பயன்படுத்தப்படுகிறது என்பதைக் கட்டுப்படுத்துதல்</translation>
-<translation id="4883854917563148705">நிர்வகிக்கப்பட்ட அமைப்புகளை மீட்டமைக்க முடியாது</translation>
 <translation id="4885273946141277891">ஆதரிக்கப்படாத Chrome நிகழ்வுகளின் எண்ணிக்கை.</translation>
 <translation id="4887024562049524730">விர்ச்சுவல் ரியாலிட்டி சாதனத்தையும் தரவையும் தளங்கள் பயன்படுத்த அனுமதிப்பதற்கு முன்பாக அனுமதி கேள் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="4910889077668685004">கட்டணம் செலுத்துவதற்கான ஆப்ஸ்</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">மோஷன் சென்சார்களை அணுக தளங்களை அனுமதிக்கும் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="5063480226653192405">பயன்பாடு</translation>
 <translation id="5087580092889165836">கார்டைச் சேர்</translation>
-<translation id="5100237604440890931">சுருக்கப்பட்டது - விரிவாக்க, கிளிக் செய்யவும்.</translation>
 <translation id="510275257476243843">1 மணிநேரம் மீதமுள்ளது</translation>
 <translation id="5123685120097942451">மறைநிலைத் தாவல்</translation>
 <translation id="5127805178023152808">ஒத்திசைவு முடக்கத்தில்</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">பகிர்ந்த தாவல் பெறப்பட்டது</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> திறந்துள்ள தாவல், தாவல்களை மாற்ற, தட்டவும்}other{<ph name="OPEN_TABS_MANY" /> திறந்துள்ள தாவல்கள், தாவல்களை மாற்ற, தட்டவும்}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(மேலும் 1)}other{(மேலும் #)}}</translation>
-<translation id="5400569084694353794">இந்தப் பயன்பாட்டைப் பயன்படுத்துவதன் மூலம், Chrome இன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" /> மற்றும் <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கையை<ph name="END_LINK2" /> ஏற்கிறீர்கள்.</translation>
 <translation id="5403592356182871684">பெயர்கள்</translation>
 <translation id="5403644198645076998">குறிப்பிட்ட தளங்களை மட்டும் அனுமதி</translation>
 <translation id="5414836363063783498">சரிபார்க்கிறது...</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">மிக விரைவான உலாவலுக்காகவும் தேடலிற்காகவும் பக்கங்களை முன்னதாக ஏற்றும்</translation>
 <translation id="79859296434321399">ஆக்மென்ட்டட் ரியாலிட்டி உள்ளடக்கத்தைப் பார்க்க, ARCoreஐ நிறுவவும்</translation>
 <translation id="7986741934819883144">தொடர்பைத் தேர்ந்தெடுக்கவும்</translation>
-<translation id="7987073022710626672">Chrome சேவை விதிமுறைகள்</translation>
 <translation id="7993619969781047893">சில தளங்களிலுள்ள அம்சங்கள் செயல்படாமல் போகக்கூடும்</translation>
 <translation id="7998918019931843664">மூடப்பட்ட தாவலை மீண்டும் திற</translation>
 <translation id="7999064672810608036">இந்த இணையதளத்தின் குக்கீகள் உட்பட எல்லா அகத் தரவையும் அழித்து, அதன் எல்லா அனுமதிகளையும் மீட்டமைக்கவா?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923"><ph name="FILES" /> கோப்புகள் மீதமுள்ளன</translation>
 <translation id="8190358571722158785">1 நாள் மீதமுள்ளது</translation>
 <translation id="8200772114523450471">மீண்டும் தொடங்கு</translation>
-<translation id="8206354486702514201">இந்த அமைப்பு உங்கள் நிர்வாகியால் செயலாக்கப்பட்டுள்ளது.</translation>
 <translation id="8209050860603202033">படத்தைத் திற</translation>
 <translation id="8218622182176210845">உங்கள் கணக்கை நிர்வகியுங்கள்</translation>
 <translation id="8224471946457685718">வைஃபை இணைப்பில் உங்களுக்கான செய்திக் கட்டுரைகளைப் பதிவிறக்குக</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{சிக்னல் வலிமையின் அளவு: # கோடு}other{சிக்னல் வலிமையின் அளவு: # கோடுகள்}}</translation>
 <translation id="868929229000858085">உங்கள் தொடர்புகளில் தேடுக</translation>
 <translation id="869891660844655955">காலாவதியாகும் தேதி</translation>
-<translation id="8728487861892616501">இந்த ஆப்ஸைப் பயன்படுத்துவதன் மூலம், Chromeன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கை<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Family Link மூலம் நிர்வகிக்கும் Google கணக்குகளுக்கான தனியுரிமை அறிக்கை<ph name="END_LINK3" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="8748850008226585750">மறைந்துள்ள உள்ளடக்கம்</translation>
 <translation id="8751914237388039244">படத்தைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="8758557275681689734">திறந்துள்ள தாவல்கள் அனைத்தையும் பாருங்கள்</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">குறிப்பிட்ட தளத்திற்கு JavaScriptடைத் தடுக்கும்.</translation>
 <translation id="8812260976093120287">உங்கள் சாதனத்தில் ஆதரிக்கப்படும் கட்டணம் செலுத்துவதற்கான பயன்பாடுகளைப் (மேலே குறிப்பிட்டவை) பயன்படுத்தி, சில இணையதளங்களின் மூலம் பணம் செலுத்தலாம்.</translation>
 <translation id="8816026460808729765">தளங்கள் சென்சார்களை அணுகுவதைத் தடுக்கும்</translation>
-<translation id="8816439037877937734">Chromeல் <ph name="APP_NAME" /> திறக்கும். தொடர்வதன் மூலம், Chromeன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கை<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Family Link மூலம் நிர்வகிக்கப்படும் Google கணக்குகளுக்கான தனியுரிமை அறிக்கை<ph name="END_LINK3" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="8820817407110198400">புக்மார்க்குகள்</translation>
 <translation id="8833831881926404480">ஒரு தளம் உங்கள் திரையைப் பகிர்கிறது</translation>
 <translation id="883806473910249246">உள்ளடக்கத்தைப் பதிவிறக்கும் போது பிழை ஏற்பட்டது.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">பாதுகாப்பு விசையாக மொபைலைப் பயன்படுத்து</translation>
 <translation id="8993760627012879038">புதிய தாவலை மறைநிலையில் திறக்கும்</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> நிர்வகிக்கும் கணக்கில் உள்நுழைந்து, உங்கள் Chrome தரவு மீதான கட்டுப்பாட்டை அதன் நிர்வாகிக்கு வழங்குகிறீர்கள். இந்தக் கணக்குடன் தரவு நிரந்தரமாக இணைக்கப்படும். Chromeமிலிருந்து வெளியேறினால், இந்தச் சாதனத்திலிருந்து தரவு நீக்கப்படும், எனினும் உங்கள் Google கணக்கில் தரவு தொடர்ந்து இருக்கும்.</translation>
-<translation id="9019902583201351841">உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="9028914725102941583">பல சாதனங்களுக்கிடையில் பகிர ஒத்திசைவை ஆன் செய்யவும்</translation>
 <translation id="9040142327097499898">அறிவிப்புகள் அனுமதிக்கப்படுகின்றன. இந்தச் சாதனத்திற்கான இருப்பிடம் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# வீடியோ}other{# வீடியோக்கள்}}</translation>

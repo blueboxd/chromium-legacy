@@ -170,6 +170,11 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void CopyCameraImageToFramebuffer();
   void OnTransportFrameAvailable(const gfx::Transform& uv_transform);
 
+  // Use a helper method to avoid storing the mojo getframedata callback
+  // in a closure owned by the task runner, that would lead to inconsistent
+  // state on session shutdown. See https://crbug.com/1065572.
+  void RunNextGetFrameData();
+
   base::OnceClosure session_shutdown_callback_;
 
   scoped_refptr<gl::GLSurface> surface_;
@@ -249,6 +254,9 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
       this};
   mojo::Remote<device::mojom::XRPresentationClient> submit_client_;
 
+  // This closure saves arguments for the next GetFrameData call, including a
+  // mojo callback. Must remain owned by ArCoreGl, don't pass it off to the task
+  // runner directly. See RunNextGetFrameData() comments.
   base::OnceClosure pending_getframedata_;
 
   mojom::VRDisplayInfoPtr display_info_;

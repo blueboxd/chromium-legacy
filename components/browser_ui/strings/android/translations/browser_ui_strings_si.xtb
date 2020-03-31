@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">කරගෙන යන්න</translation>
 <translation id="2501278716633472235">ආපසු යන්න</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 කුකීයක් අවහිර කළා}one{කුකී # ක් අවහිර කළා}other{කුකී # ක් අවහිර කළා}}</translation>
+<translation id="257931822824936280">පුඵල් කරන ලදි - හැකිලීමට ක්ලික් කරන්න</translation>
 <translation id="2653659639078652383">ඉදිරිපත් කරන්න</translation>
 <translation id="2704606927547763573">පිටපත් කරන ලදි</translation>
 <translation id="2968755619301702150">සහතික දක්වනය</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">සබැඳිය පිටපත් කරන්න</translation>
 <translation id="4002066346123236978">සිරස්තලය</translation>
 <translation id="4570913071927164677">විස්තර</translation>
+<translation id="4645575059429386691">ඔබේ දෙමව්පියන් පාලනය කරයි</translation>
+<translation id="4883854917563148705">කළමනා කෙරෙන සැකසීම් යළි සැකසිය නොහැක</translation>
 <translation id="497421865427891073">ඉදිරියට යන්න</translation>
+<translation id="5100237604440890931">හකුළන ලදි - දිග හැරීමට ක්ලික් කරන්න</translation>
 <translation id="5300589172476337783">පෙන්වන්න</translation>
 <translation id="5301954838959518834">හරි, එය තේරුණා</translation>
 <translation id="5317780077021120954">සුරකින්න</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">එපා, ස්තූතියි</translation>
 <translation id="7846076177841592234">තේරීම අවලංගු කරන්න</translation>
 <translation id="8131740175452115882">තහවුරු කරන්න</translation>
+<translation id="8206354486702514201">මෙම සැකසුම පරිපාලකයා විසින් බලකර ඇත.</translation>
 <translation id="8249310407154411074">ඉහළට ගෙන යන්න</translation>
 <translation id="8261506727792406068">මකන්න</translation>
 <translation id="8609465669617005112">ඉහළට යන්න</translation>
 <translation id="8676374126336081632">ආදානය හිස් කරන්න</translation>
 <translation id="8725066075913043281">නැවත උත්සහ කරන්න</translation>
 <translation id="8730621377337864115">අවසන්</translation>
+<translation id="9019902583201351841">ඔබේ දෙමව්පියන් පාලනය කරයි</translation>
 </translationbundle>

@@ -151,41 +151,9 @@ struct RedirectSamplesAndResults {
   bool expect_strong_blocker;
 };
 
+// We always make our decision to trigger on the last entry in the chain.
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
-       MatchOnSafeBrowsingWithRedirectDetection) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      subresource_filter::kSafeBrowsingSubresourceFilterConsiderRedirects);
-
-  GURL enforce_url("https://example.enforce");
-  GURL warning_url("https://example.warning");
-  GURL regular_url("https://example.regular");
-  MarkUrlAsAbusiveEnforce(enforce_url);
-  MarkUrlAsAbusiveWarning(warning_url);
-
-  const RedirectSamplesAndResults kTestCases[] = {
-      {enforce_url, regular_url, true},  {regular_url, enforce_url, true},
-      {warning_url, enforce_url, true},  {enforce_url, warning_url, true},
-      {regular_url, warning_url, false}, {warning_url, regular_url, false}};
-
-  for (const auto& test_case : kTestCases) {
-    std::unique_ptr<content::NavigationSimulator> simulator =
-        content::NavigationSimulator::CreateRendererInitiated(
-            test_case.initial_url, web_contents()->GetMainFrame());
-    simulator->Start();
-    simulator->Redirect(test_case.redirect_url);
-    simulator->Commit();
-    EXPECT_EQ(test_case.expect_strong_blocker,
-              popup_blocker()->ShouldApplyAbusivePopupBlocker());
-  }
-}
-
-TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
-       MatchOnSafeBrowsingWithoutRedirectDetection) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      subresource_filter::kSafeBrowsingSubresourceFilterConsiderRedirects);
-
+       MatchOnSafeBrowsingWithRedirectChain) {
   GURL enforce_url("https://example.enforce");
   GURL warning_url("https://example.warning");
   GURL regular_url("https://example.regular");
@@ -463,8 +431,6 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, EnforcementRedirectPosition) {
   // Turn on the feature to perform safebrowsing on redirects.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      subresource_filter::kSafeBrowsingSubresourceFilterConsiderRedirects);
 
   const GURL enforce_url("https://enforce.test/");
   const GURL warn_url("https://warn.test/");

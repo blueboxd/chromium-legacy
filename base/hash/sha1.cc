@@ -187,8 +187,8 @@ void SecureHashAlgorithm::Process() {
   cursor = 0;
 }
 
-std::array<uint8_t, kSHA1Length> SHA1HashSpan(span<const uint8_t> data) {
-  std::array<uint8_t, kSHA1Length> hash;
+SHA1Digest SHA1HashSpan(span<const uint8_t> data) {
+  SHA1Digest hash;
   SHA1HashBytes(data.data(), data.size(), hash.data());
   return hash;
 }

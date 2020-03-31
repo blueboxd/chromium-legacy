@@ -44,26 +44,28 @@ class AuraTestHelper {
   // create one lest the caller wish to do so.
   explicit AuraTestHelper(ui::ContextFactory* context_factory = nullptr,
                           bool disable_animations = true);
-  ~AuraTestHelper();
+  virtual ~AuraTestHelper();
 
   // Returns the current AuraTestHelper, or nullptr if it's not alive.
   static AuraTestHelper* GetInstance();
 
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
-  void SetUp();
+  // This implementation does not create a task environment, but subclasses may
+  // choose to do so.
+  virtual void SetUp();
 
   // Destroys the window, Env, and most other objects.  This will be called
   // automatically on destruction if it is not called manually earlier.
-  void TearDown();
+  virtual void TearDown();
 
   // Flushes message loop.
   void RunAllPendingInMessageLoop();
 
-  Window* GetContext();
-  WindowTreeHost* GetHost();
-  TestScreen* GetTestScreen();
-  client::FocusClient* GetFocusClient();
-  client::CaptureClient* GetCaptureClient();
+  virtual Window* GetContext();
+  virtual WindowTreeHost* GetHost();
+  virtual TestScreen* GetTestScreen();
+  virtual client::FocusClient* GetFocusClient();
+  virtual client::CaptureClient* GetCaptureClient();
 
   Env* GetEnv();
 

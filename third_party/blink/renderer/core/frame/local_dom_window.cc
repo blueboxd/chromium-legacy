@@ -375,7 +375,7 @@ void LocalDOMWindow::CountPotentialFeaturePolicyViolation(
 
 void LocalDOMWindow::ReportFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature,
-    mojom::blink::FeaturePolicyDisposition disposition,
+    mojom::blink::PolicyDisposition disposition,
     const String& message,
     const String& source_file) const {
   document()->ReportFeaturePolicyViolation(feature, disposition, message,
@@ -384,7 +384,7 @@ void LocalDOMWindow::ReportFeaturePolicyViolation(
 
 void LocalDOMWindow::ReportDocumentPolicyViolation(
     mojom::blink::DocumentPolicyFeature feature,
-    mojom::blink::FeaturePolicyDisposition disposition,
+    mojom::blink::PolicyDisposition disposition,
     const String& message,
     const String& source_file) const {
   document()->ReportDocumentPolicyViolation(feature, disposition, message,

@@ -103,83 +103,10 @@ class FrameSequenceTrackerTest : public testing::Test {
     return collection_.frame_trackers_.contains(type);
   }
 
-  void TestNotifyFramePresented() {
-    collection_.StartSequence(FrameSequenceTrackerType::kCompositorAnimation);
-    collection_.StartSequence(FrameSequenceTrackerType::kMainThreadAnimation);
-    // The kTouchScroll tracker is created in the test constructor, and the
-    // kUniversal tracker is created in the FrameSequenceTrackerCollection
-    // constructor.
-    EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
-    collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
-    EXPECT_EQ(collection_.frame_trackers_.size(), 4u);
-
-    collection_.StopSequence(FrameSequenceTrackerType::kCompositorAnimation);
-    EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
-    EXPECT_TRUE(collection_.frame_trackers_.contains(
-        FrameSequenceTrackerType::kMainThreadAnimation));
-    EXPECT_TRUE(collection_.frame_trackers_.contains(
-        FrameSequenceTrackerType::kTouchScroll));
-    ASSERT_EQ(collection_.removal_trackers_.size(), 1u);
-    EXPECT_EQ(collection_.removal_trackers_[0]->type_,
-              FrameSequenceTrackerType::kCompositorAnimation);
-
-    gfx::PresentationFeedback feedback;
-    collection_.NotifyFramePresented(1u, feedback);
-    // NotifyFramePresented should call ReportFramePresented on all the
-    // |removal_trackers_|, which changes their termination_status_ to
-    // kReadyForTermination. So at this point, the |removal_trackers_| should be
-    // empty.
-    EXPECT_TRUE(collection_.removal_trackers_.empty());
-  }
-
-  void ReportMetricsTest() {
-    base::HistogramTester histogram_tester;
-
-    // Test that there is no main thread frames expected.
-    tracker_->impl_throughput().frames_expected = 100u;
-    tracker_->impl_throughput().frames_produced = 85u;
-    tracker_->ReportMetricsForTesting();
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
-        1u);
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 0u);
-
-    // Test that both are reported.
-    tracker_->impl_throughput().frames_expected = 100u;
-    tracker_->impl_throughput().frames_produced = 85u;
-    tracker_->main_throughput().frames_expected = 150u;
-    tracker_->main_throughput().frames_produced = 25u;
-    tracker_->ReportMetricsForTesting();
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
-        2u);
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
-
-    // Test that none is reported.
-    tracker_->main_throughput().frames_expected = 2u;
-    tracker_->main_throughput().frames_produced = 1u;
-    tracker_->impl_throughput().frames_expected = 2u;
-    tracker_->impl_throughput().frames_produced = 1u;
-    tracker_->ReportMetricsForTesting();
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
-        2u);
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
-
-    // Test the case where compositor and main thread have the same throughput.
-    tracker_->impl_throughput().frames_expected = 120u;
-    tracker_->impl_throughput().frames_produced = 118u;
-    tracker_->main_throughput().frames_expected = 120u;
-    tracker_->main_throughput().frames_produced = 118u;
-    tracker_->ReportMetricsForTesting();
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
-        3u);
-    histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 2u);
+  bool RemovalTrackerExists(unsigned index,
+                            FrameSequenceTrackerType type) const {
+    DCHECK_GT(collection_.removal_trackers_.size(), index);
+    return collection_.removal_trackers_[index]->type_ == type;
   }
 
   void GenerateSequence(const char* str) {
@@ -297,7 +224,7 @@ class FrameSequenceTrackerTest : public testing::Test {
     }
   }
 
-  void ReportMetrics() { tracker_->ReportMetricsForTesting(); }
+  void ReportMetrics() { tracker_->metrics_->ReportMetrics(); }
 
   base::TimeDelta TimeDeltaToReort() const {
     return tracker_->time_delta_to_report_;
@@ -305,6 +232,9 @@ class FrameSequenceTrackerTest : public testing::Test {
 
   unsigned NumberOfTrackers() const {
     return collection_.frame_trackers_.size();
+  }
+  unsigned NumberOfCustomTrackers() const {
+    return collection_.custom_frame_trackers_.size();
   }
   unsigned NumberOfRemovalTrackers() const {
     return collection_.removal_trackers_.size();
@@ -395,7 +325,30 @@ TEST_F(FrameSequenceTrackerTest, UniversalTrackerRestartableAfterClearAll) {
 }
 
 TEST_F(FrameSequenceTrackerTest, TestNotifyFramePresented) {
-  TestNotifyFramePresented();
+  collection_.StartSequence(FrameSequenceTrackerType::kCompositorAnimation);
+  collection_.StartSequence(FrameSequenceTrackerType::kMainThreadAnimation);
+  // The kTouchScroll tracker is created in the test constructor, and the
+  // kUniversal tracker is created in the FrameSequenceTrackerCollection
+  // constructor.
+  EXPECT_EQ(NumberOfTrackers(), 3u);
+  collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
+  EXPECT_EQ(NumberOfTrackers(), 4u);
+
+  collection_.StopSequence(FrameSequenceTrackerType::kCompositorAnimation);
+  EXPECT_EQ(NumberOfTrackers(), 3u);
+  EXPECT_TRUE(TrackerExists(FrameSequenceTrackerType::kMainThreadAnimation));
+  EXPECT_TRUE(TrackerExists(FrameSequenceTrackerType::kTouchScroll));
+  ASSERT_EQ(NumberOfRemovalTrackers(), 1u);
+  EXPECT_TRUE(
+      RemovalTrackerExists(0, FrameSequenceTrackerType::kCompositorAnimation));
+
+  gfx::PresentationFeedback feedback;
+  collection_.NotifyFramePresented(1u, feedback);
+  // NotifyFramePresented should call ReportFramePresented on all the
+  // |removal_trackers_|, which changes their termination_status_ to
+  // kReadyForTermination. So at this point, the |removal_trackers_| should be
+  // empty.
+  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
 // Base case for checkerboarding: present a single frame with checkerboarding,
@@ -499,7 +452,61 @@ TEST_F(FrameSequenceTrackerTest, MultipleCheckerboardingFrames) {
 }
 
 TEST_F(FrameSequenceTrackerTest, ReportMetrics) {
-  ReportMetricsTest();
+  base::HistogramTester histogram_tester;
+
+  // Test that there is no main thread frames expected.
+  ImplThroughput().frames_expected = 100u;
+  ImplThroughput().frames_produced = 85u;
+  ReportMetrics();
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+      1u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 0u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 1u);
+
+  // Test that both are reported.
+  ImplThroughput().frames_expected = 100u;
+  ImplThroughput().frames_produced = 85u;
+  MainThroughput().frames_expected = 150u;
+  MainThroughput().frames_produced = 25u;
+  ReportMetrics();
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+      2u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 2u);
+
+  // Test that none is reported.
+  MainThroughput().frames_expected = 2u;
+  MainThroughput().frames_produced = 1u;
+  ImplThroughput().frames_expected = 2u;
+  ImplThroughput().frames_produced = 1u;
+  ReportMetrics();
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+      2u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 2u);
+
+  // Test the case where compositor and main thread have the same throughput.
+  ImplThroughput().frames_expected = 120u;
+  ImplThroughput().frames_produced = 118u;
+  MainThroughput().frames_expected = 120u;
+  MainThroughput().frames_produced = 118u;
+  ReportMetrics();
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+      3u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 2u);
+  histogram_tester.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 3u);
 }
 
 TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
@@ -1217,6 +1224,56 @@ TEST_F(FrameSequenceTrackerTest, TrackerTypeEncoding) {
   ActiveFrameSequenceTrackers active_encoded =
       collection_.FrameSequenceTrackerActiveTypes();
   EXPECT_EQ(active_encoded, 16);  // 1 << 4
+}
+
+TEST_F(FrameSequenceTrackerTest, CustomTrackers) {
+  // Start custom tracker 1.
+  collection_.StartCustomSequence(1);
+  EXPECT_EQ(1u, NumberOfCustomTrackers());
+
+  // No reports.
+  uint32_t frame_token = 1u;
+  collection_.NotifyFramePresented(frame_token, {});
+  auto results = collection_.TakeCustomTrackerResults();
+  EXPECT_EQ(0u, results.size());
+
+  // Start custom tracker 2 and 3 in addition to 1.
+  collection_.StartCustomSequence(2);
+  collection_.StartCustomSequence(3);
+  EXPECT_EQ(3u, NumberOfCustomTrackers());
+
+  // All custom trackers are running. No reports.
+  collection_.NotifyFramePresented(frame_token, {});
+  results = collection_.TakeCustomTrackerResults();
+  EXPECT_EQ(0u, results.size());
+
+  // Tracker 2 is stopped and scheduled to terminate.
+  collection_.StopCustomSequence(2);
+  EXPECT_EQ(2u, NumberOfCustomTrackers());
+
+  // Tracker 2 should report with no data.
+  collection_.NotifyFramePresented(frame_token, {});
+  results = collection_.TakeCustomTrackerResults();
+  EXPECT_EQ(1u, results.size());
+  EXPECT_EQ(0u, results[2].frames_expected);
+
+  // Simple sequence of one frame.
+  const char sequence[] = "b(1)B(0,1)s(1)S(1)e(1,0)P(1)";
+  GenerateSequence(sequence);
+
+  // Stop all custom trackers.
+  collection_.StopCustomSequence(1);
+  collection_.StopCustomSequence(3);
+  EXPECT_EQ(0u, NumberOfCustomTrackers());
+
+  // Tracker 1 and 3 and should report.
+  collection_.NotifyFramePresented(frame_token, {});
+  results = collection_.TakeCustomTrackerResults();
+  EXPECT_EQ(2u, results.size());
+  EXPECT_EQ(1u, results[1].frames_produced);
+  EXPECT_EQ(1u, results[1].frames_expected);
+  EXPECT_EQ(1u, results[3].frames_produced);
+  EXPECT_EQ(1u, results[3].frames_expected);
 }
 
 }  // namespace cc

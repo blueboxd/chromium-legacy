@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Qhubeka</translation>
 <translation id="2501278716633472235">Iya emuva</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 ikhukhi elivinjelwe}one{# amakhukhi avinjelwe}other{# amakhukhi avinjelwe}}</translation>
+<translation id="257931822824936280">Inwetshiwe - chofoza ukuze ugoqe.</translation>
 <translation id="2653659639078652383">Hambisa</translation>
 <translation id="2704606927547763573">Kukopishiwe</translation>
 <translation id="2968755619301702150">Isibukeli sesitifiketi</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopisha isixhumanisi</translation>
 <translation id="4002066346123236978">Isihloko</translation>
 <translation id="4570913071927164677">Imininingwane</translation>
+<translation id="4645575059429386691">Kuphethwe umzali wakho</translation>
+<translation id="4883854917563148705">Izilungiselelo eziphethwe azikwazi ukusethwa kabusha</translation>
 <translation id="497421865427891073">Iya phambili</translation>
+<translation id="5100237604440890931">Igoqiwe - chofoza ukuze unwebe.</translation>
 <translation id="5300589172476337783">Bonisa</translation>
 <translation id="5301954838959518834">OK, ngiyezwa</translation>
 <translation id="5317780077021120954">Londoloza</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Cha ngiyabonga</translation>
 <translation id="7846076177841592234">Khansela ukukhetha</translation>
 <translation id="8131740175452115882">Qinisekisa</translation>
+<translation id="8206354486702514201">Lokhu kulungiselelwa kusetshenziswa umlawuli wakho.</translation>
 <translation id="8249310407154411074">Thumela phezulu</translation>
 <translation id="8261506727792406068">Susa</translation>
 <translation id="8609465669617005112">Hambisa phezulu</translation>
 <translation id="8676374126336081632">Sula okokufaka</translation>
 <translation id="8725066075913043281">Zama futhi</translation>
 <translation id="8730621377337864115">Kwenziwe</translation>
+<translation id="9019902583201351841">Kuphethwa abazali bakho</translation>
 </translationbundle>

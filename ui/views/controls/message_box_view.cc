@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <numeric>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"

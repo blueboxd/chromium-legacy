@@ -50,10 +50,6 @@ const base::Feature kHideSteadyStateUrlPathQueryAndRef {
 #endif
 };
 
-// Feature used to undo all omnibox elisions on a single click or focus action.
-const base::Feature kOneClickUnelide{"OmniboxOneClickUnelide",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to enable local entity suggestions. Similar to rich entities but
 // but location specific. E.g., typing 'starbucks near' could display the local
 // entity suggestion 'starbucks near disneyland \n starbucks * Anaheim, CA'.
@@ -313,11 +309,6 @@ const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows{
 // elements like keywords, tab-switch buttons, and Pedals.
 const base::Feature kOmniboxSuggestionButtonRow{
     "OmniboxSuggestionButtonRow", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, allows Tab and Shift+Tab to escape the focus out of the omnibox
-// popup. Otherwise, Tab infinitely loops between suggestions in the popup.
-const base::Feature kTabKeyCanEscapeOmniboxPopup{
-    "TabKeyCanEscapeOmniboxPopup", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, uses WebUI to render the omnibox suggestions popup, similar to
 // how the NTP "fakebox" is implemented.

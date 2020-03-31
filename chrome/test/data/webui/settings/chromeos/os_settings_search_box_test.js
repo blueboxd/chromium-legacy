@@ -35,6 +35,18 @@ suite('OSSettingsSearchBox', () => {
     Polymer.dom.flush();
   }
 
+  /**
+   * @param {string} resultText Exact string of the result to be displayed.
+   * @return {!chromeos.settings.mojom.SearchResult} A search result.
+   */
+  function fakeResult(resultText) {
+    return /** @type {!mojom.SearchResult} */ ({
+      resultText: {
+        data: Array.from(resultText, c => c.charCodeAt()),
+      },
+    });
+  }
+
   setup(function() {
     toolbar = document.querySelector('os-settings-ui').$$('os-toolbar');
     assertTrue(!!toolbar);
@@ -78,13 +90,13 @@ suite('OSSettingsSearchBox', () => {
     assertEquals(userActionRecorder.searchCount, 1);
 
     // Open dropdown if results are returned.
-    settingsSearchHandler.setFakeResults(['result']);
+    settingsSearchHandler.setFakeResults([fakeResult('result')]);
     await simulateSearch('query 2');
     assertTrue(dropDown.opened);
   });
 
   test('Restore previous existing search results', async () => {
-    settingsSearchHandler.setFakeResults(['result 1']);
+    settingsSearchHandler.setFakeResults([fakeResult('result 1')]);
     await simulateSearch('query');
     assertTrue(dropDown.opened);
     const resultRow = resultList.items[0];
@@ -121,7 +133,7 @@ suite('OSSettingsSearchBox', () => {
   });
 
   test('Search result rows are selected correctly', async () => {
-    settingsSearchHandler.setFakeResults(['result 1', 'result 2']);
+    settingsSearchHandler.setFakeResults([fakeResult('a'), fakeResult('b')]);
     await simulateSearch('query');
     assertTrue(dropDown.opened);
     assertEquals(resultList.items.length, 2);

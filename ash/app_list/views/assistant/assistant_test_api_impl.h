@@ -45,6 +45,7 @@ class AssistantTestApiImpl : public AssistantTestApi {
   views::View* greeting_label() override;
   views::View* voice_input_toggle() override;
   views::View* keyboard_input_toggle() override;
+  views::View* suggestion_chip_container() override;
   views::View* opt_in_view() override;
   aura::Window* window() override;
   views::View* app_list_view() override;

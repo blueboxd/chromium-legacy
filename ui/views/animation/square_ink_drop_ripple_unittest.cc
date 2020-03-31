@@ -5,6 +5,7 @@
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "base/time/time.h"

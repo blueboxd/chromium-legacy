@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">ສືບຕໍ່</translation>
 <translation id="2501278716633472235">ກັບ​ຄືນ​ໄປ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{ບລັອກຄຸກກີ້ 1 ລາຍການແລ້ວ}other{ບລັອກຄຸກກີ້ # ລາຍການ}}</translation>
+<translation id="257931822824936280">ຂະ​ຫຍາຍແລ້ວ - ຄລິກ​ເພື່ອຫຍໍ້ລົງ.</translation>
 <translation id="2653659639078652383">ສົ່ງ</translation>
 <translation id="2704606927547763573">ອັດ​ສຳ​ເນົາ​ແລ້ວ</translation>
 <translation id="2968755619301702150">ຕົວເບິ່ງໃບຢັ້ງຢືນ</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">ອັດ​ສຳ​ເນົາລິ້ງເຊື່ອມໂຍງ</translation>
 <translation id="4002066346123236978">ຫົວຂໍ້</translation>
 <translation id="4570913071927164677">ລາຍລະອຽດ</translation>
+<translation id="4645575059429386691">ຈັດ​ການ​ໂດຍ​ຜູ້​ປົກ​ຄອງ​ຂອງ​ທ່ານ</translation>
+<translation id="4883854917563148705">ບໍ່ສາມາດຣີເຊັດການຕັ້ງຄ່າທີ່ມີການຈັດການໄດ້</translation>
 <translation id="497421865427891073">ໄປຂ້າງ​ຫນ້າ</translation>
+<translation id="5100237604440890931">ຫຍໍ້ລົງແລ້ວ - ຄລິກ​ເພື່ອ​ຂະ​ຫຍາຍ.</translation>
 <translation id="5300589172476337783">ສະ​ແດງ​</translation>
 <translation id="5301954838959518834">ຕົກລົງ, ເຂົ້າໃຈແລ້ວ</translation>
 <translation id="5317780077021120954">ບັນທຶກ</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">ບໍ່​, ​ຂອບ​ໃຈ</translation>
 <translation id="7846076177841592234">ຍົກ​ເລີກ​ການ​ເລືອກ</translation>
 <translation id="8131740175452115882">ຢືນ​ຢັນ</translation>
+<translation id="8206354486702514201">ການຕັ້ງຄ່ານີ້ຖືກບັງຄັບໂດຍຜູ້ຄວບຄຸມຂອງທ່ານ.</translation>
 <translation id="8249310407154411074">ຍ້າຍໄປເທິງສຸດ</translation>
 <translation id="8261506727792406068">ລຶບ</translation>
 <translation id="8609465669617005112">ຍ້າຍຂຶ້ນ</translation>
 <translation id="8676374126336081632">ລຶບການປ້ອນເຂົ້າ</translation>
 <translation id="8725066075913043281">ລອງໃໝ່ອີກ</translation>
 <translation id="8730621377337864115">ສໍາເລັດ</translation>
+<translation id="9019902583201351841">ຈັດ​ການ​ໂດຍ​ຜູ້​ປົກ​ຄອງ​ຂອງ​ທ່ານ</translation>
 </translationbundle>

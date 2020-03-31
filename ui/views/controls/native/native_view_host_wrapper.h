@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
 #define UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
 
+#include <memory>
+
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 

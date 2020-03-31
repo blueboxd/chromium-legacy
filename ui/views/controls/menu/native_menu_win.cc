@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/native_menu_win.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "ui/base/accelerators/accelerator.h"

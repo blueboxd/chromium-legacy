@@ -100,10 +100,13 @@ crbug.com/591099 external/wpt/css/css-shapes/shape-outside/supported-shapes/poly
 crbug.com/591099 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-replaced-008.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-replaced-dynamic-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-replaced-dynamic-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-replaced-dynamic-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-replaced-dynamic-006.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-replaced-dynamic-007.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-replaced-dynamic-008.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/whitespace-and-break.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/ortho-writing-mode-001.html [ Failure ]
 

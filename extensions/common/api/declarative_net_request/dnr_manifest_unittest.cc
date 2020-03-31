@@ -21,6 +21,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -56,15 +57,24 @@ class DNRManifestTest : public testing::Test {
     EXPECT_EQ(expected_error, error);
   }
 
-  // Loads the extension and verifies that the JSON ruleset location is
-  // correctly set up. Returns the loaded extension.
-  scoped_refptr<Extension> LoadAndExpectSuccess() {
+  // Loads the extension and verifies that the manifest info is correctly set
+  // up.. Returns the loaded extension.
+  void LoadAndExpectSuccess(const std::vector<base::FilePath>& expected_paths) {
     std::string error;
     scoped_refptr<Extension> extension = file_util::LoadExtension(
         temp_dir_.GetPath(), Manifest::UNPACKED, Extension::NO_FLAGS, &error);
-    EXPECT_TRUE(extension) << error;
+    ASSERT_TRUE(extension) << error;
     EXPECT_TRUE(error.empty());
-    return extension;
+
+    ASSERT_TRUE(DNRManifestData::HasRuleset(*extension));
+
+    const std::vector<DNRManifestData::RulesetInfo>& rulesets =
+        DNRManifestData::GetRulesets(*extension);
+    ASSERT_EQ(expected_paths.size(), rulesets.size());
+    for (size_t i = 0; i < rulesets.size(); ++i) {
+      EXPECT_GE(rulesets[i].id, kMinValidStaticRulesetID);
+      EXPECT_EQ(rulesets[i].relative_path, expected_paths[i]);
+    }
   }
 
   void WriteManifestAndRuleset(
@@ -98,10 +108,7 @@ TEST_F(DNRManifestTest, EmptyRuleset) {
   base::FilePath ruleset_path = base::FilePath(kJSONRulesetFilepath);
   WriteManifestAndRuleset(*CreateManifest(kJSONRulesFilename), {ruleset_path});
 
-  scoped_refptr<Extension> extension = LoadAndExpectSuccess();
-  ASSERT_TRUE(DNRManifestData::HasRuleset(*extension));
-  EXPECT_EQ(ruleset_path,
-            DNRManifestData::GetRuleset(*extension).relative_path);
+  LoadAndExpectSuccess({ruleset_path});
 }
 
 TEST_F(DNRManifestTest, InvalidManifestKey) {
@@ -139,14 +146,16 @@ TEST_F(DNRManifestTest, MultipleRulesFileSuccess) {
   ruleset.path = path2.AsUTF8Unsafe();
   rule_resources.Append(ruleset.ToValue());
 
+  base::FilePath path3(FILE_PATH_LITERAL("file3.json"));
+  ruleset.path = path3.AsUTF8Unsafe();
+  rule_resources.Append(ruleset.ToValue());
+
   manifest->SetList(GetRuleResourcesKey(), rule_resources.Build());
 
-  WriteManifestAndRuleset(*manifest, {path1, path2});
+  std::vector<base::FilePath> paths = {path1, path2, path3};
+  WriteManifestAndRuleset(*manifest, paths);
 
-  scoped_refptr<Extension> extension = LoadAndExpectSuccess();
-
-  ASSERT_TRUE(DNRManifestData::HasRuleset(*extension));
-  EXPECT_EQ(path1, DNRManifestData::GetRuleset(*extension).relative_path);
+  LoadAndExpectSuccess(paths);
 }
 
 TEST_F(DNRManifestTest, MultipleRulesFileInvalidPath) {
@@ -244,10 +253,7 @@ TEST_F(DNRManifestTest, RulesFileInNestedDirectory) {
 
   WriteManifestAndRuleset(*manifest, {nested_path});
 
-  scoped_refptr<Extension> extension = LoadAndExpectSuccess();
-
-  ASSERT_TRUE(DNRManifestData::HasRuleset(*extension));
-  EXPECT_EQ(nested_path, DNRManifestData::GetRuleset(*extension).relative_path);
+  LoadAndExpectSuccess({nested_path});
 }
 
 }  // namespace

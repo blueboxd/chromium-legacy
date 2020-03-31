@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Vazhdo</translation>
 <translation id="2501278716633472235">Kthehu prapa</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 kuki është bllokuar}other{# kuki janë bllokuar}}</translation>
+<translation id="257931822824936280">I zgjeruar - kliko për ta palosur.</translation>
 <translation id="2653659639078652383">Dërgoje</translation>
 <translation id="2704606927547763573">Kopjuar</translation>
 <translation id="2968755619301702150">Shikuesi i certifikatave</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopjo lidhjen</translation>
 <translation id="4002066346123236978">Titulli</translation>
 <translation id="4570913071927164677">Detajet</translation>
+<translation id="4645575059429386691">Menaxhohet nga prindi yt</translation>
+<translation id="4883854917563148705">Cilësimet e menaxhuara nuk mund të rivendosen</translation>
 <translation id="497421865427891073">Vazhdo përpara</translation>
+<translation id="5100237604440890931">I palosur - kliko për ta zgjeruar</translation>
 <translation id="5300589172476337783">Shfaq</translation>
 <translation id="5301954838959518834">Në rregull, kuptova.</translation>
 <translation id="5317780077021120954">Ruaj</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7846076177841592234">Anulo zgjedhjen</translation>
 <translation id="8131740175452115882">Konfirmo</translation>
+<translation id="8206354486702514201">Ky cilësim zbatohet nga administratori yt.</translation>
 <translation id="8249310407154411074">Lëvize në krye</translation>
 <translation id="8261506727792406068">Fshi</translation>
 <translation id="8609465669617005112">Lëviz lart</translation>
 <translation id="8676374126336081632">Pastro hyrjen</translation>
 <translation id="8725066075913043281">Provo sërish</translation>
 <translation id="8730621377337864115">U krye</translation>
+<translation id="9019902583201351841">Menaxhuar nga prindërit e tu</translation>
 </translationbundle>

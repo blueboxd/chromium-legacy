@@ -3265,11 +3265,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlPathQueryAndRef)},
 
-    {"omnibox-ui-one-click-unelide",
-     flag_descriptions::kOmniboxUIOneClickUnelideName,
-     flag_descriptions::kOmniboxUIOneClickUnelideDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOneClickUnelide)},
-
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription,
@@ -5183,6 +5178,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"trust-tokens", flag_descriptions::kTrustTokensName,
      flag_descriptions::kTrustTokensDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kTrustTokens)},
+
+#if defined(OS_ANDROID)
+    {"android-partner-customization-phenotype",
+     flag_descriptions::kAndroidPartnerCustomizationPhenotypeName,
+     flag_descriptions::kAndroidPartnerCustomizationPhenotypeDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kAndroidPartnerCustomizationPhenotype)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

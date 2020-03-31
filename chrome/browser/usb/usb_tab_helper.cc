@@ -38,7 +38,6 @@ const char kFeaturePolicyViolation[] =
 struct FrameUsbServices {
   std::unique_ptr<WebUsbChooser> usb_chooser;
   std::unique_ptr<WebUsbServiceImpl> web_usb_service;
-  int device_connection_count_ = 0;
 };
 
 // static
@@ -52,7 +51,11 @@ UsbTabHelper* UsbTabHelper::GetOrCreateForWebContents(
   return tab_helper;
 }
 
-UsbTabHelper::~UsbTabHelper() {}
+UsbTabHelper::~UsbTabHelper() {
+  // All RenderFrameHosts should have been deleted before the WebContents.
+  DCHECK(frame_usb_services_.empty());
+  DCHECK_EQ(0, device_connection_count_);
+}
 
 void UsbTabHelper::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
@@ -70,33 +73,21 @@ void UsbTabHelper::CreateWebUsbService(
   frame_usb_services->web_usb_service->BindReceiver(std::move(receiver));
 }
 
-void UsbTabHelper::IncrementConnectionCount(
-    RenderFrameHost* render_frame_host) {
-  const bool was_device_connected = IsDeviceConnected();
-  auto it = frame_usb_services_.find(render_frame_host);
-  DCHECK(it != frame_usb_services_.end());
-  it->second->device_connection_count_++;
-  if (!was_device_connected)
+void UsbTabHelper::IncrementConnectionCount() {
+  device_connection_count_++;
+  if (device_connection_count_ == 1)
     NotifyIsDeviceConnectedChanged(/*is_device_connected=*/true);
 }
 
-void UsbTabHelper::DecrementConnectionCount(
-    RenderFrameHost* render_frame_host) {
-  DCHECK(IsDeviceConnected());
-  auto it = frame_usb_services_.find(render_frame_host);
-  DCHECK(it != frame_usb_services_.end());
-  DCHECK_GT(it->second->device_connection_count_, 0);
-  it->second->device_connection_count_--;
-  if (!IsDeviceConnected())
+void UsbTabHelper::DecrementConnectionCount() {
+  DCHECK_GT(device_connection_count_, 0);
+  device_connection_count_--;
+  if (device_connection_count_ == 0)
     NotifyIsDeviceConnectedChanged(/*is_device_connected=*/false);
 }
 
 bool UsbTabHelper::IsDeviceConnected() const {
-  for (const auto& map_entry : frame_usb_services_) {
-    if (map_entry.second->device_connection_count_ > 0)
-      return true;
-  }
-  return false;
+  return device_connection_count_ > 0;
 }
 
 UsbTabHelper::UsbTabHelper(WebContents* web_contents)
@@ -136,10 +127,7 @@ FrameUsbServices* UsbTabHelper::GetFrameUsbService(
 }
 
 void UsbTabHelper::DeleteFrameServices(RenderFrameHost* render_frame_host) {
-  const bool was_device_connected = IsDeviceConnected();
   frame_usb_services_.erase(render_frame_host);
-  if (was_device_connected && !IsDeviceConnected())
-    NotifyIsDeviceConnectedChanged(/*is_device_connected=*/false);
 }
 
 base::WeakPtr<WebUsbChooser> UsbTabHelper::GetUsbChooser(

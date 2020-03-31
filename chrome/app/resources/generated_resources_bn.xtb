@@ -1697,6 +1697,7 @@
 <translation id="3264544094376351444">Sans-Serif হরফ</translation>
 <translation id="3264582393905923483">প্রসঙ্গ</translation>
 <translation id="3265459715026181080">উইন্ডো বন্ধ করুন</translation>
+<translation id="3266274118485960573">নিরাপত্তা সংক্রান্ত পরীক্ষা চালানো হচ্ছে।</translation>
 <translation id="3267726687589094446">একাধিক ফাইলের অটোমেটিক ডাউনলোডের মঞ্জুরি দেওয়া জারি রাখুন</translation>
 <translation id="3268451620468152448">ওপেন ট্যাব</translation>
 <translation id="3269069891205016797">আপনি সাইন-আউট করলে ডিভাইসটি থেকে আপনার তথ্য সরানো হবে৷</translation>
@@ -1802,6 +1803,7 @@
 <translation id="3412265149091626468">নির্বাচনে যান</translation>
 <translation id="3413122095806433232">CA ইস্যুকারীগণ: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">মাপ:</translation>
+<translation id="3416468988018290825">সবসময় সম্পূর্ণ ইউআরএল দেখুন</translation>
 <translation id="3420501302812554910">ইন্টার্নাল নিরাপত্তা কী রিসেটের প্রয়োজন</translation>
 <translation id="3421387094817716717">এলিপ্টিক কার্ভ সর্বজনীন কী</translation>
 <translation id="3422291238483866753">কোনও সাইট আপনার আশেপাশের এলাকার একটি 3D ম্যাপ তৈরি করতে বা ক্যামেরার অবস্থান ট্র্যাক করতে চাইলে, একবার জিজ্ঞাসা করে নিন (সাজেস্ট করা হয়েছে)</translation>
@@ -4158,6 +4160,7 @@
 <translation id="6586451623538375658">প্রাথমিক মাউস বোতাম অদল-বদল করুন</translation>
 <translation id="6586604979641883411">Linux আপগ্রেড করতে কমপক্ষে <ph name="REQUIRED_SPACE" /> ফ্রি ডিস্ক স্পেস দরকার। আপনার ডিভাইসে কিছু ফ্রি স্পেস বের করুন এবং আবার চেষ্টা করুন।</translation>
 <translation id="6588043302623806746">নিরাপদ ডিএনএস ব্যবহার করুন</translation>
+<translation id="659005207229852190">নিরাপত্তা সংক্রান্ত পরীক্ষা সম্পূর্ণ হয়েছে।</translation>
 <translation id="6590458744723262880">ফোল্ডারটির নতুন নাম দিন</translation>
 <translation id="6592267180249644460"><ph name="WEBRTC_LOG_CAPTURE_TIME" /> এ WebRTC লগ ক্যাপচার করা হয়েছে</translation>
 <translation id="6592808042417736307">আপনার আঙ্গুলের ছাপ ক্যাপচার করা হয়েছে</translation>
@@ -5415,6 +5418,7 @@
 <translation id="8249672078237421304">আপনি যে ভাষাতে পড়েন সেই ভাষাতে না থাকা পৃষ্ঠাগুলি অনুবাদ করার প্রস্তাব দিন</translation>
 <translation id="8251441930213048644">এখনই রিফ্রেশ করুন</translation>
 <translation id="8251578425305135684">থাম্বনেল সরানো হয়েছে৷</translation>
+<translation id="825238165904109940">সবসময় সম্পূর্ণ ইউআরএল দেখুন</translation>
 <translation id="8252569384384439529">আপলোড হচ্ছে…</translation>
 <translation id="8253198102038551905">নেটওয়ার্কের প্রোপাটিজ পেতে '+'-এ ক্লিক করুন</translation>
 <translation id="8254954272268479918">Linux (বিটা) বন্ধ করুন</translation>

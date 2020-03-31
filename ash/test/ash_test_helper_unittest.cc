@@ -21,22 +21,16 @@ class AshTestHelperTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    ash_test_helper_ = std::make_unique<AshTestHelper>();
-    ash_test_helper_->SetUp();
+    ash_test_helper_.SetUp();
   }
 
-  void TearDown() override {
-    ash_test_helper_->TearDown();
-    testing::Test::TearDown();
-  }
-
-  AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
+  AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
 
  private:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
 
-  std::unique_ptr<AshTestHelper> ash_test_helper_;
+  AshTestHelper ash_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelperTest);
 };

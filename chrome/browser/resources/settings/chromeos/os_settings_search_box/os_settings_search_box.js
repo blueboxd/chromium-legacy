@@ -5,6 +5,8 @@
 (function() {
 'use strict';
 
+const mojom = chromeos.settings.mojom;
+
 /**
  * @fileoverview 'os-settings-search-box' is the container for the search input
  * and settings search results.
@@ -12,10 +14,9 @@
 
 /**
  * Fake function to simulate async SettingsSearchHandler Search().
- * TODO(crbug/1056909): Remove once Settings Search Handler mojo API is ready.
+ * TODO(crbug/1056909): Remove once Settings Search is complete.
  * @param {string} query The query used to fetch results.
- * @return {!Promise<!Array<string>>} A promise that will resolve with an array
- *     of search results.
+ * @return {Promise<!Array<mojom.SearchResult>>} A promise resolving results.
  */
 function fakeSettingsSearchHandlerSearch(query) {
   /**
@@ -29,10 +30,34 @@ function fakeSettingsSearchHandlerSearch(query) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+  /**
+   * @param {*} resultArr Result stored in arr like [text, path, icon].
+   * @return {!mojom.SearchResult} Search result entry.
+   */
+  function generateFakeResult(resultArr) {
+    return /** @type {!mojom.SearchResult} */ ({
+      resultText: {
+        data: Array.from(resultArr[0], c => c.charCodeAt()),
+      },
+      urlPathWithParameters: resultArr[1],
+      icon: resultArr[2],
+    });
+  }
+
+  const Icon = mojom.SearchResultIcon;
   const fakeRandomResults = [
-    'bluetooth', 'wifi', 'language', 'people', 'personalization', 'security',
-    'touchpad', 'keyboard', 'passcode'
-  ];
+    ['bluetooth devices', '/bluetoothDevices', Icon.kWifi],
+    ['wifi', '/networks?type=WiFi', Icon.kWifi],
+    ['languages', '/languages/details', Icon.kWifi],
+    ['people', '/people', Icon.kWifi],
+    ['security', '/privacy', Icon.kWifi],
+    ['personalization', '/personalization', Icon.kWifi],
+    ['keyboard', '/keyboard-overlay', Icon.kWifi],
+    ['touchpad', '/pointer-overlay', Icon.kWifi],
+    ['lock screen', '/lockScreen', Icon.kWifi],
+    ['time zone', '/dateTime/timeZone', Icon.kWifi],
+  ].map(result => generateFakeResult(result));
+
   fakeRandomResults.sort(() => Math.random() - 0.5);
   return new Promise(resolve => {
     setTimeout(() => {
@@ -65,23 +90,23 @@ Polymer({
     // the search field will show a processing spinner.
     spinnerActive: Boolean,
 
-    // The currently selected search result associated with a
-    // <os-search-result-row>. This property is bound to <iron-list>.
-    // Note that when a item is selected, it's associated <os-search-result-row>
-    // is not focused() at the same time unless it is explicitly clicked/tapped.
-    selectedItem: {
-      // TODO(crbug/1056909): Change the type from String to Mojo result type.
-      type: String,
-      notify: true,
+    /**
+     * The currently selected search result associated with an
+     * <os-search-result-row>. This property is bound to the <iron-list>. Note
+     * that when an item is selected, its associated <os-search-result-row>
+     * is not focus()ed at the same time unless it is explicitly clicked/tapped.
+     * @private {!mojom.SearchResult}
+     */
+    selectedItem_: {
+      type: Object,
     },
 
     /**
-     * Passed into <iron-list>, one of which is always the selectedItem.
-     * @private {!Array<string>}
+     * Passed into <iron-list>. Exactly one result is the selectedItem_.
+     * @private {!Array<!mojom.SearchResult>}
      */
     searchResults_: {
       type: Array,
-      notify: true,
       observer: 'selectFirstRow_',
     },
 
@@ -108,16 +133,19 @@ Polymer({
 
   /**
    * Mojo OS Settings Search handler used to fetch search results.
-   * TODO(crbug/1056909): Set in ready() when Mojo bindings are ready or
-   * eliminate altogether along with fake JS file.
-   * @private {*}
+   * @private {?mojom.SearchHandlerInterface}
    */
-  searchHandler_: undefined,
+  searchHandler_: null,
 
   listeners: {
     'blur': 'onBlur_',
     'keydown': 'onKeyDown_',
     'search-changed': 'fetchSearchResults_',
+  },
+
+  /* override */
+  created() {
+    this.searchHandler_ = mojom.SearchHandler.getRemote();
   },
 
   /** @private */
@@ -129,7 +157,7 @@ Polymer({
   },
 
   /**
-   * @param {*} searchHandler
+   * @param {?mojom.SearchHandlerInterface} searchHandler
    */
   setSearchHandlerForTesting(searchHandler) {
     this.searchHandler_ = searchHandler;
@@ -154,22 +182,26 @@ Polymer({
     this.spinnerActive = true;
 
     if (!this.searchHandler_) {
-      // TODO(crbug/1056909): Remove block when mojo interface is ready.
+      // TODO(crbug/1056909): Remove once Settings Search is complete.
       fakeSettingsSearchHandlerSearch(query).then(results => {
         this.onSearchResultsReceived_(query, results);
       });
       return;
     }
 
-    this.searchHandler_.search(query).then(results => {
-      this.onSearchResultsReceived_(query, results);
+    // The C++ layer uses base::string16, which use 16 bit characters. JS
+    // strings support either 8 or 16 bit characters, and must be converted to
+    // an array of 16 bit character codes that match base::string16.
+    const queryMojoString16 = {data: Array.from(query, c => c.charCodeAt())};
+    this.searchHandler_.search(queryMojoString16).then(response => {
+      this.onSearchResultsReceived_(query, response.results);
     });
   },
 
   /**
    * Updates search results UI when settings search results are fetched.
    * @param {string} query The string used to find search results.
-   * @param {!Array<string>} results Array of search results.
+   * @param {!Array<!mojom.SearchResult>} results Array of search results.
    * @private
    */
   onSearchResultsReceived_(query, results) {
@@ -205,20 +237,20 @@ Polymer({
   },
 
   /**
-   * @param {string} item The search result item.
+   * @param {!mojom.SearchResult} item The search result item in searchResults_.
    * @return {boolean} True if the item is selected.
    * @private
    */
   isItemSelected_(item) {
     return this.searchResults_.indexOf(item) ===
-        this.searchResults_.indexOf(this.selectedItem);
+        this.searchResults_.indexOf(this.selectedItem_);
   },
 
   /**
    * Returns the correct tab index since <iron-list>'s default tabIndex property
-   * does not automatically add selectedItem's <os-search-result-row> to the
+   * does not automatically add selectedItem_'s <os-search-result-row> to the
    * default navigation flow, unless the user explicitly clicks on the row.
-   * @param {string} item The search result item.
+   * @param {!mojom.SearchResult} item The search result item in searchResults_.
    * @return {number} A 0 if the row should be in the navigation flow, or a -1
    *     if the row should not be in the navigation flow.
    * @private
@@ -233,7 +265,7 @@ Polymer({
       return;
     }
 
-    this.selectedItem = this.searchResults_[0];
+    this.selectedItem_ = this.searchResults_[0];
   },
 
   /**
@@ -243,14 +275,14 @@ Polymer({
   selectRowViaKeys_(key) {
     assert(key === 'ArrowDown' || key === 'ArrowUp' || key === 'Tab');
 
-    assert(!!this.selectedItem, 'There should be a selected item already.');
+    assert(!!this.selectedItem_, 'There should be a selected item already.');
 
     // Select the new item.
-    const selectedRowIndex = this.searchResults_.indexOf(this.selectedItem);
+    const selectedRowIndex = this.searchResults_.indexOf(this.selectedItem_);
     const numRows = this.searchResults_.length;
     const delta = key === 'ArrowUp' ? -1 : 1;
     const indexOfNewRow = (numRows + selectedRowIndex + delta) % numRows;
-    this.selectedItem = this.searchResults_[indexOfNewRow];
+    this.selectedItem_ = this.searchResults_[indexOfNewRow];
 
     // If a row is focused, ensure it is the selectedResult's row.
     if (this.lastFocused_) {

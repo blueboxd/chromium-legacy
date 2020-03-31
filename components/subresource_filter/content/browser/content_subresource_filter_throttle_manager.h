@@ -159,10 +159,17 @@ class ContentSubresourceFilterThrottleManager
 
   // For each RenderFrameHost where the last committed load has subresource
   // filtering activated, owns the corresponding AsyncDocumentSubresourceFilter.
-  // It is possible for a frame to have a null filter.
+  // A null filter indicates that the filter should be inherited from its
+  // parent if the parent has one. This is possible if the last load was a
+  // special navigation (see MaybeActivateSubframeSpecialUrls) or if no
+  // navigations have committed.
   std::map<content::RenderFrameHost*,
            std::unique_ptr<AsyncDocumentSubresourceFilter>>
-      activated_frame_hosts_;
+      frame_host_filter_map_;
+
+  // Set of RenderFrameHosts that have had at least one committed or aborted
+  // navigation. Main frames with only aborted navigations are not included.
+  std::set<content::RenderFrameHost*> navigated_frames_;
 
   // For each ongoing navigation that requires activation state computation,
   // keeps track of the throttle that is carrying out that computation, so that

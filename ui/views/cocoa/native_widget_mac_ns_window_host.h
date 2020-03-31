@@ -5,7 +5,9 @@
 #ifndef UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
 #define UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"

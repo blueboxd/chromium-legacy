@@ -6681,3 +6681,5 @@ crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas-2x.html [ Pass Failure ]
 # Sheriff 2020-03-27
 crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas.html [ Pass Failure ]
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas.html [ Pass Failure ]
+# Sheriff 2020-03-31
+crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Pass Failure ]

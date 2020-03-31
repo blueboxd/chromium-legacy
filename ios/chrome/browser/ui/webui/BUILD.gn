@@ -108,7 +108,6 @@ source_set("webui_internal") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/webui/gcm",
-    "//ios/chrome/browser/ui/webui/interstitials",
     "//ios/chrome/browser/ui/webui/net_export",
     "//ios/chrome/browser/ui/webui/policy",
     "//ios/chrome/browser/ui/webui/translate_internals",

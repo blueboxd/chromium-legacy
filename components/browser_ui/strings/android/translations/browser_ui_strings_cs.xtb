@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2501278716633472235">Zpět</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Byl zablokován 1 soubor cookie}few{Byly zablokovány # soubory cookie}many{Bylo zablokováno # souboru cookie}other{Bylo zablokováno # souborů cookie}}</translation>
+<translation id="257931822824936280">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2704606927547763573">Zkopírováno</translation>
 <translation id="2968755619301702150">Prohlížeč certifikátů</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Kopírovat odkaz</translation>
 <translation id="4002066346123236978">Název</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
+<translation id="4645575059429386691">Spravováno vaším rodičem</translation>
+<translation id="4883854917563148705">Spravovaná nastavení nelze resetovat</translation>
 <translation id="497421865427891073">Vpřed</translation>
+<translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5301954838959518834">Dobře, rozumím</translation>
 <translation id="5317780077021120954">Uložit</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
+<translation id="8206354486702514201">Toto nastavení je vyžadováno administrátorem.</translation>
 <translation id="8249310407154411074">Přesunout na začátek</translation>
 <translation id="8261506727792406068">Smazat</translation>
 <translation id="8609465669617005112">Posunout nahoru</translation>
 <translation id="8676374126336081632">Vymazat vstup</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
+<translation id="9019902583201351841">Spravováno vašimi rodiči</translation>
 </translationbundle>

@@ -548,7 +548,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3366477098757335611">Lihat kartu</translation>
 <translation id="3369192424181595722">Kesalahan jam</translation>
 <translation id="337363190475750230">Dicabut aksesnya</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> telah mengaktifkan Penghubung Layanan Enterprise di browser Anda. Hook ini memiliki akses ke beberapa data Anda.</translation>
 <translation id="3377144306166885718">Server menggunakan versi TLS yang sudah tidak digunakan lagi.</translation>
 <translation id="3377188786107721145">Kesalahan penguraian kebijakan</translation>
 <translation id="3377736046129930310">Gunakan kunci layar untuk mengonfirmasi kartu dengan lebih cepat</translation>
@@ -984,7 +983,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5179510805599951267">Bukan <ph name="ORIGINAL_LANGUAGE" />? Laporkan kesalahan deteksi ini</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="519422657042045905">Anotasi tidak tersedia</translation>
-<translation id="5196187217592847346">Penghubung Layanan Enterprise</translation>
 <translation id="5201306358585911203">Halaman tersemat di halaman ini menyatakan</translation>
 <translation id="5205222826937269299">Nama wajib diisi</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
@@ -1456,7 +1454,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
 <translation id="7260504762447901703">Cabut akses</translation>
 <translation id="7275334191706090484">Bookmark yang Terkelola</translation>
-<translation id="7288778322931489286">Administrator Anda telah mengaktifkan Penghubung Layanan Enterprise di browser Anda. Hook ini memiliki akses ke beberapa data Anda.</translation>
 <translation id="7292031607255951991">Nama penerima</translation>
 <translation id="7298195798382681320">Direkomendasikan</translation>
 <translation id="7300012071106347854">Biru Kobalt</translation>
@@ -1811,7 +1808,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
 <translation id="8866928039507595380">Lipatan</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Bagikan data tentang peristiwa keamanan yang telah ditandai oleh Penghubung Layanan Enterprise kepada administrator Anda. Data ini dapat mencakup URL halaman yang Anda kunjungi, metadata atau nama file, dan nama pengguna yang Anda gunakan untuk login ke perangkat dan Chrome.</translation>
 <translation id="8870413625673593573">Baru Saja Ditutup</translation>
 <translation id="8870494189203302833">Urutan yang sama menghadap ke bawah</translation>
 <translation id="8874824191258364635">Masukkan nomor kartu yang valid</translation>

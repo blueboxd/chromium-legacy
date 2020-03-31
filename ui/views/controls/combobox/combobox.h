@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 #define UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"

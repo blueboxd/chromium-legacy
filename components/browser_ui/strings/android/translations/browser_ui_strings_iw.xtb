@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2501278716633472235">חזרה</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{‏נחסם קובץ cookie אחד}two{‏נחסמו # קובצי cookie}many{‏נחסמו # קובצי cookie}other{‏נחסמו # קובצי cookie}}</translation>
+<translation id="257931822824936280">מורחב - לחץ כדי לכווץ.</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2704606927547763573">הועתק</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">העתק קישור</translation>
 <translation id="4002066346123236978">כותרת</translation>
 <translation id="4570913071927164677">פרטים</translation>
+<translation id="4645575059429386691">מנוהל על-ידי ההורה שלך</translation>
+<translation id="4883854917563148705">לא ניתן לאפס הגדרות מנוהלות</translation>
 <translation id="497421865427891073">המשך קדימה</translation>
+<translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5301954838959518834">בסדר, הבנתי</translation>
 <translation id="5317780077021120954">שמור</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="8131740175452115882">אישור</translation>
+<translation id="8206354486702514201">הגדרה זו נאכפת על ידי מנהל המערכת שלך.</translation>
 <translation id="8249310407154411074">העברה לראש הרשימה</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8609465669617005112">הזז למעלה</translation>
 <translation id="8676374126336081632">ניקוי קלט</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
+<translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
 </translationbundle>

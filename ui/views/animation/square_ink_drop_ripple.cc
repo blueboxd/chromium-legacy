@@ -5,6 +5,7 @@
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "ui/compositor/layer.h"

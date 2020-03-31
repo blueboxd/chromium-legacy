@@ -273,20 +273,28 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
     return true;
   }
 
+  using RulesetSource = declarative_net_request::RulesetSource;
+
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
   // in the browser process.
-  auto ruleset_source =
-      declarative_net_request::RulesetSource::CreateStatic(*extension());
-  declarative_net_request::IndexAndPersistJSONRulesetResult result =
-      ruleset_source.IndexAndPersistJSONRulesetUnsafe();
-  if (!result.success) {
-    *error = std::move(result.error);
-    return false;
-  }
+  // TODO(crbug.com/754526): Impose a limit on the total number of rules across
+  // all the rulesets for an extension. Also, limit the number of install
+  // warnings across all rulesets.
+  std::vector<RulesetSource> sources =
+      RulesetSource::CreateStatic(*extension());
 
-  ruleset_checksums_.emplace_back(result.ruleset_id, result.ruleset_checksum);
-  if (!result.warnings.empty())
-    extension_->AddInstallWarnings(std::move(result.warnings));
+  for (const RulesetSource& source : sources) {
+    declarative_net_request::IndexAndPersistJSONRulesetResult result =
+        source.IndexAndPersistJSONRulesetUnsafe();
+    if (!result.success) {
+      *error = std::move(result.error);
+      return false;
+    }
+
+    ruleset_checksums_.emplace_back(result.ruleset_id, result.ruleset_checksum);
+    if (!result.warnings.empty())
+      extension_->AddInstallWarnings(std::move(result.warnings));
+  }
 
   return true;
 }

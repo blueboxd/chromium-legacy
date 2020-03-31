@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">ตอนนี้ Chrome ดาวน์โหลดไฟล์ได้เร็วขึ้นแล้ว</translation>
 <translation id="1883903952484604915">ไฟล์ของฉัน</translation>
 <translation id="1887786770086287077">ตอนนี้ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> จะเปิดขึ้นใน Chrome การดำเนินการต่อแสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="1919345977826869612">โฆษณา</translation>
 <translation id="1919950603503897840">เลือกรายชื่อติดต่อ</translation>
 <translation id="1922076542920281912">หากต้องการให้ Chrome เข้าถึงตำแหน่งของคุณ ให้เปิดตำแหน่งใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">รูปภาพ</translation>
 <translation id="257088987046510401">ธีม</translation>
 <translation id="2570922361219980984">การเข้าถึงตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดการเข้าถึงได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
-<translation id="257931822824936280">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="2581165646603367611">การดำเนินการนี้จะล้างคุกกี้ แคช และข้อมูลอื่นๆ ของเว็บไซต์ที่ Chrome คิดว่าไม่สำคัญ</translation>
 <translation id="2586657967955657006">คลิปบอร์ด</translation>
 <translation id="2587052924345400782">มีเวอร์ชันใหม่กว่าให้ใช้งาน</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">รายการที่นำออก: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">เปิด <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">ใช้รหัสผ่าน</translation>
-<translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4650364565596261010">ค่าเริ่มต้นของระบบ</translation>
 <translation id="4660838440047236328">เลย์เอาต์ของห้อง</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="488187801263602086">เปลี่ยนชื่อไฟล์</translation>
 <translation id="4882831918239250449">ควบคุมการใช้ประวัติการท่องเว็บเพื่อปรับเปลี่ยน Search, โฆษณา และบริการอื่นๆ ในแบบของคุณ</translation>
-<translation id="4883854917563148705">รีเซ็ตการตั้งค่าที่มีการจัดการไม่ได้</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4887024562049524730">ถามก่อนที่จะอนุญาตให้เว็บไซต์ใช้อุปกรณ์และข้อมูล Virtual Reality ของคุณ (แนะนำ)</translation>
 <translation id="4910889077668685004">แอปชำระเงิน</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">อนุญาตให้เว็บไซต์เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว (แนะนำ)</translation>
 <translation id="5063480226653192405">การใช้</translation>
 <translation id="5087580092889165836">เพิ่มบัตร</translation>
-<translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
 <translation id="510275257476243843">เหลือ 1 ชั่วโมง</translation>
 <translation id="5123685120097942451">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">ได้รับแท็บแล้ว</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{เปิดแท็บไว้ <ph name="OPEN_TABS_ONE" /> แท็บ แตะเพื่อเปลี่ยนแท็บ}other{เปิดแท็บไว้ <ph name="OPEN_TABS_MANY" /> แท็บ แตะเพื่อเปลี่ยนแท็บ}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(อีก 1 รายการ)}other{(อีก # รายการ)}}</translation>
-<translation id="5400569084694353794">การใช้แอปพลิเคชันนี้แสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="5403592356182871684">ชื่อ</translation>
 <translation id="5403644198645076998">อนุญาตเฉพาะบางไซต์</translation>
 <translation id="5414836363063783498">กำลังยืนยัน…</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">โหลดหน้าเว็บล่วงหน้าเพื่อให้เรียกดูและค้นหาได้เร็วขึ้น</translation>
 <translation id="79859296434321399">ติดตั้ง ARCore เพื่อดูเนื้อหา Augmented Reality</translation>
 <translation id="7986741934819883144">เลือกรายชื่อติดต่อ</translation>
-<translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
 <translation id="7993619969781047893">ฟีเจอร์ในบางเว็บไซต์อาจใช้งานไม่ได้</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="7999064672810608036">คุณแน่ใจไหมว่าต้องการล้างข้อมูลในเครื่องทั้งหมด รวมถึงคุกกี้ และรีเซ็ตสิทธิ์ทั้งหมดสำหรับเว็บไซต์นี้</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">เหลืออีก <ph name="FILES" /> ไฟล์</translation>
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
-<translation id="8206354486702514201">ผู้ดูแลระบบของคุณกำหนดให้ใช้การตั้งค่านี้</translation>
 <translation id="8209050860603202033">เปิดรูปภาพ</translation>
 <translation id="8218622182176210845">จัดการบัญชีของคุณ</translation>
 <translation id="8224471946457685718">ดาวน์โหลดบทความสำหรับคุณผ่าน Wi-Fi</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ระดับความแรงของสัญญาณ: # แถบ}other{ระดับความแรงของสัญญาณ: # แถบ}}</translation>
 <translation id="868929229000858085">ค้นหารายชื่อติดต่อ</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
-<translation id="8728487861892616501">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ <ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" /> ของ Chrome รวมถึง <ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>
 <translation id="8748850008226585750">เนื้อหาถูกซ่อนไว้</translation>
 <translation id="8751914237388039244">เลือกรูปภาพ</translation>
 <translation id="8758557275681689734">ดูแท็บที่เปิดอยู่ทั้งหมด</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">บล็อก JavaScript ในเว็บไซต์ที่ต้องการ</translation>
 <translation id="8812260976093120287">ในบางเว็บไซต์ คุณสามารถชำระเงินด้วยแอปชำระเงินที่รองรับด้านบนในอุปกรณ์ของคุณ</translation>
 <translation id="8816026460808729765">บล็อกไม่ให้เว็บไซต์เข้าถึงเซ็นเซอร์</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> จะเปิดขึ้นใน Chrome การดำเนินการต่อแสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome รวมถึง<ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="8833831881926404480">มีเว็บไซต์กำลังแชร์หน้าจอของคุณ</translation>
 <translation id="883806473910249246">เกิดข้อผิดพลาดขณะดาวน์โหลดเนื้อหา</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">ใช้โทรศัพท์เป็นคีย์ความปลอดภัย</translation>
 <translation id="8993760627012879038">เปิดแท็บใหม่ในโหมดไม่ระบุตัวตน</translation>
 <translation id="8998729206196772491">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการโดย <ph name="MANAGED_DOMAIN" /> และทำให้ผู้ดูแลระบบของโดเมนควบคุมข้อมูล Chrome ของคุณได้ ข้อมูลดังกล่าวจะโยงกับบัญชีนี้อย่างถาวร การออกจากระบบ Chrome จะลบข้อมูลของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังจัดเก็บอยู่ในบัญชี Google</translation>
-<translation id="9019902583201351841">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="9028914725102941583">เปิดการซิงค์เพื่อแชร์ข้ามอุปกรณ์</translation>
 <translation id="9040142327097499898">อนุญาตให้แสดงการแจ้งเตือน ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{วิดีโอ # รายการ}other{วิดีโอ # รายการ}}</translation>

@@ -11,7 +11,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/ash_test_views_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
@@ -139,8 +138,7 @@ void WaylandClientTestHelper::TearDownOnUIThread(base::WaitableEvent* event) {
   wm_helper_.reset();
 
   ash::Shell::Get()->session_controller()->NotifyChromeTerminating();
-  ash_test_helper_->TearDown();
-  ash_test_helper_ = nullptr;
+  ash_test_helper_.reset();
   xdg_temp_dir_ = nullptr;
   event->Signal();
 }

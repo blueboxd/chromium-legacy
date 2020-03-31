@@ -6,13 +6,12 @@
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/webrtc/api/video/encoded_frame.h"
-#include "third_party/webrtc/api/video/encoded_image.h"
+#include "third_party/webrtc/api/frame_transformer_interface.h"
 
 namespace blink {
 
 RTCEncodedVideoFrame::RTCEncodedVideoFrame(
-    std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate,
+    std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate,
     Vector<uint8_t> additional_data,
     uint32_t ssrc)
     : delegate_(std::move(delegate)),
@@ -23,17 +22,17 @@ String RTCEncodedVideoFrame::type() const {
   if (!delegate_)
     return "empty";
 
-  return delegate_->is_keyframe() ? "key" : "delta";
+  return delegate_->IsKeyFrame() ? "key" : "delta";
 }
 
 uint64_t RTCEncodedVideoFrame::timestamp() const {
-  return delegate_ ? delegate_->Timestamp() : 0;
+  return delegate_ ? delegate_->GetTimestamp() : 0;
 }
 
 DOMArrayBuffer* RTCEncodedVideoFrame::data() const {
   if (delegate_ && !frame_data_) {
-    frame_data_ = DOMArrayBuffer::Create(delegate_->EncodedImage().data(),
-                                         delegate_->EncodedImage().size());
+    frame_data_ = DOMArrayBuffer::Create(delegate_->GetData().data(),
+                                         delegate_->GetData().size());
   }
   return frame_data_;
 }
@@ -69,15 +68,13 @@ String RTCEncodedVideoFrame::toString() const {
   return sb.ToString();
 }
 
-std::unique_ptr<webrtc::video_coding::EncodedFrame>
+std::unique_ptr<webrtc::TransformableVideoFrameInterface>
 RTCEncodedVideoFrame::PassDelegate() {
   // Sync the delegate data with |frame_data_| if necessary.
   if (delegate_ && frame_data_) {
-    rtc::scoped_refptr<webrtc::EncodedImageBuffer> webrtc_image =
-        webrtc::EncodedImageBuffer::Create(
-            static_cast<const uint8_t*>(frame_data_->Data()),
-            frame_data_->ByteLengthAsSizeT());
-    delegate_->SetEncodedData(std::move(webrtc_image));
+    delegate_->SetData(rtc::ArrayView<const uint8_t>(
+        static_cast<const uint8_t*>(frame_data_->Data()),
+        frame_data_->ByteLengthAsSizeT()));
   }
   return std::move(delegate_);
 }

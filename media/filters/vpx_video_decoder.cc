@@ -132,7 +132,7 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (!ConfigureDecoder(config)) {
-    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 

@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Συνέχεια</translation>
 <translation id="2501278716633472235">Επιστροφή</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Αποκλείστηκε ένα cookie}other{Αποκλείστηκαν # cookie}}</translation>
+<translation id="257931822824936280">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2968755619301702150">Πρόγρ. προβολής πιστοποιητικού</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Αντ. συνδ.</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
 <translation id="4570913071927164677">Λεπτομέρειες</translation>
+<translation id="4645575059429386691">Διαχειρίζεται από τους γονείς σου</translation>
+<translation id="4883854917563148705">Δεν είναι δυνατή η επαναφορά των υπό διαχείριση ρυθμίσεων</translation>
 <translation id="497421865427891073">Μετάβαση προς τα εμπρός</translation>
+<translation id="5100237604440890931">Συμπτυγμένη - Κάντε κλικ για ανάπτυξη</translation>
 <translation id="5300589172476337783">Εμφάνιση</translation>
 <translation id="5301954838959518834">OK, το κατάλαβα</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
+<translation id="8206354486702514201">Η ρύθμιση αυτή επιβάλλεται από τον διαχειριστή σας.</translation>
 <translation id="8249310407154411074">Μετακίνηση επάνω</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8609465669617005112">Μετακίνηση προς τα επάνω</translation>
 <translation id="8676374126336081632">Διαγραφή καταχώρισης</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
+<translation id="9019902583201351841">Διαχειρίζεται από τους γονείς σου</translation>
 </translationbundle>

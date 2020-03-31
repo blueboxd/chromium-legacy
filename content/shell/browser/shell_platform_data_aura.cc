@@ -108,13 +108,14 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   host_->window()->Show();
   host_->window()->SetLayoutManager(new FillLayout(host_->window()));
 
-  focus_client_.reset(new aura::test::TestFocusClient(host_->window()));
+  focus_client_ =
+      std::make_unique<aura::test::TestFocusClient>(host_->window());
 
   new wm::DefaultActivationClient(host_->window());
-  capture_client_.reset(
-      new aura::client::DefaultCaptureClient(host_->window()));
-  window_parenting_client_.reset(
-      new aura::test::TestWindowParentingClient(host_->window()));
+  capture_client_ =
+      std::make_unique<aura::client::DefaultCaptureClient>(host_->window());
+  window_parenting_client_ =
+      std::make_unique<aura::test::TestWindowParentingClient>(host_->window());
 }
 
 ShellPlatformDataAura::~ShellPlatformDataAura() {

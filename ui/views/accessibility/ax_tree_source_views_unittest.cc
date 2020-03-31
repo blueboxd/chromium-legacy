@@ -4,6 +4,8 @@
 
 #include "ui/views/accessibility/ax_tree_source_views.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"

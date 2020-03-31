@@ -250,6 +250,7 @@ class AutocompleteProviderTest : public testing::Test {
   struct AssistedQueryStatsTestData {
     const AutocompleteMatch::Type match_type;
     const std::string expected_aqs;
+    int subtype_identifier = 0;
   };
 
   // Registers a test TemplateURL under the given keyword.
@@ -549,6 +550,7 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
     match.keyword = base::ASCIIToUTF16(kTestTemplateURLKeyword);
     match.search_terms_args.reset(
         new TemplateURLRef::SearchTermsArgs(base::string16()));
+    match.subtype_identifier = aqs_test_data[i].subtype_identifier;
     matches.push_back(match);
   }
   result_.Reset();
@@ -833,6 +835,13 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
     AssistedQueryStatsTestData test_data[] = {
         {AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "chrome..69i57"}};
     SCOPED_TRACE("One match");
+    RunAssistedQueryStatsTest(test_data, base::size(test_data));
+  }
+
+  {
+    AssistedQueryStatsTestData test_data[] = {
+        {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY, "chrome.0.46i131", 131}};
+    SCOPED_TRACE("One match with provider populated subtype_identifier");
     RunAssistedQueryStatsTest(test_data, base::size(test_data));
   }
 

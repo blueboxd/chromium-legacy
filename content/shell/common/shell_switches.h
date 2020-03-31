@@ -15,12 +15,8 @@ namespace switches {
 extern const char kContentShellDataPath[];
 extern const char kCrashDumpsDir[];
 extern const char kExposeInternalsForTesting[];
-extern const char kRegisterFontFiles[];
 extern const char kContentShellHostWindowSize[];
 extern const char kContentShellHideToolbar[];
-
-// Returns list of extra font files to be made accessible to the renderer.
-std::vector<std::string> GetSideloadFontFiles();
 
 // Tells if content shell is running web_tests.
 // TODO(lukasza): The function below somewhat violates the layering (by

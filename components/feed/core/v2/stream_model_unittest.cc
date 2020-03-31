@@ -5,6 +5,8 @@
 #include "components/feed/core/v2/stream_model.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/optional.h"
@@ -380,6 +382,31 @@ TEST(StreamModelTest, InitialLoad) {
   EXPECT_FALSE(store_observer.GetUpdate());
 }
 
+TEST(StreamModelTest, StoreObserverReceivesIncreasingSequenceNumbers) {
+  StreamModel model;
+  TestObserver observer(&model);
+  TestStoreObserver store_observer(&model);
+
+  // Initialize the model starting at sequence number 5.
+  {
+    std::unique_ptr<StreamModelUpdateRequest> initial_state =
+        MakeTypicalInitialModelState();
+    initial_state->max_structure_sequence_number = 5;
+    model.Update(std::move(initial_state));
+  }
+
+  model.ExecuteOperations({MakeOperation(MakeRemove(MakeContentContentId(0)))});
+
+  ASSERT_TRUE(store_observer.GetUpdate());
+  EXPECT_EQ(6, store_observer.GetUpdate()->sequence_number);
+
+  store_observer.Clear();
+  model.ExecuteOperations({MakeOperation(MakeRemove(MakeContentContentId(0)))});
+
+  ASSERT_TRUE(store_observer.GetUpdate());
+  EXPECT_EQ(7, store_observer.GetUpdate()->sequence_number);
+}
+
 TEST(StreamModelTest, SharedStateCanBeAddedOnlyOnce) {
   StreamModel model;
   TestObserver observer(&model);
@@ -391,10 +418,9 @@ TEST(StreamModelTest, SharedStateCanBeAddedOnlyOnce) {
   update_request.source =
       StreamModelUpdateRequest::Source::kInitialLoadFromStore;
   update_request.content.push_back(MakeContent(0));
-  *update_request.stream_data.add_structures() = MakeStream();
-  *update_request.stream_data.add_structures() = MakeCluster(0, MakeRootId());
-  *update_request.stream_data.add_structures() =
-      MakeContentNode(0, MakeClusterId(0));
+  update_request.stream_structures = {MakeStream(),
+                                      MakeCluster(0, MakeRootId()),
+                                      MakeContentNode(0, MakeClusterId(0))};
   update_request.shared_states.push_back(MakeSharedState(0));
 
   model.Update(std::make_unique<StreamModelUpdateRequest>(update_request));

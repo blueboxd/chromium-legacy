@@ -681,25 +681,22 @@ class RenderFrameHostImplBeforeUnloadBrowserTest
 // cross-site subframe is able to execute a beforeunload handler and put up a
 // dialog to cancel or allow the navigation. This matters especially in
 // --site-per-process mode; see https://crbug.com/853021.
-// Disabled, test is flaky on all platforms. crbug.com/1044599
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
-                       DISABLED_SubframeShowsDialogWhenMainFrameNavigates) {
+                       SubframeShowsDialogWhenMainFrameNavigates) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  // Install a beforeunload handler in the first iframe.
+  // Install a beforeunload handler in the b.com subframe.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   InstallBeforeUnloadHandler(root->child_at(0), SHOW_DIALOG);
 
   // Disable beforeunload timer to prevent flakiness.
   PrepContentsForBeforeUnloadTest(web_contents());
 
-  // Navigate cross-site and wait for the beforeunload dialog to be shown from
-  // the subframe.
+  // Navigate cross-site.
   GURL cross_site_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
   shell()->LoadURL(cross_site_url);
-  dialog_manager()->Wait();
 
   // Only the main frame should be marked as waiting for beforeunload completion
   // callback as the frame being navigated.
@@ -712,7 +709,26 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // ACK.
   EXPECT_EQ(main_frame, child->GetBeforeUnloadInitiator());
   EXPECT_EQ(main_frame, main_frame->GetBeforeUnloadInitiator());
-  EXPECT_EQ(1u, main_frame->beforeunload_pending_replies_.size());
+
+  // When in --site-per-process mode, LoadURL() should trigger two beforeunload
+  // IPCs for subframe and the main frame: the subframe has a beforeunload
+  // handler, and while the main frame does not, we always send the IPC to
+  // navigating frames, regardless of whether or not they have a handler.
+  //
+  // Without --site-per-process, only one beforeunload IPC should be sent to
+  // the main frame, which will handle both (same-process) frames.
+  EXPECT_EQ(AreAllSitesIsolatedForTesting() ? 2u : 1u,
+            main_frame->beforeunload_pending_replies_.size());
+
+  // Wait for the beforeunload dialog to be shown from the subframe.
+  dialog_manager()->Wait();
+
+  // The main frame should still be waiting for subframe's beforeunload
+  // completion callback.
+  EXPECT_EQ(main_frame, child->GetBeforeUnloadInitiator());
+  EXPECT_EQ(main_frame, main_frame->GetBeforeUnloadInitiator());
+  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_completion());
+  EXPECT_FALSE(child->is_waiting_for_beforeunload_completion());
 
   // In --site-per-process mode, the beforeunload completion callback should
   // happen on the child RFH.  Without --site-per-process, it will come from the

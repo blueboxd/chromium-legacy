@@ -166,31 +166,21 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   DCHECK(!check_results_.empty());
 
   // Determine which results to consider for safebrowsing/abusive enforcement.
-  CheckResults check_results_to_consider = {check_results_.back()};
-  if (check_results_.size() >= 2 &&
-      base::FeatureList::IsEnabled(
-          kSafeBrowsingSubresourceFilterConsiderRedirects)) {
-    check_results_to_consider = {check_results_[0], check_results_.back()};
-  }
+  // We only consider the final check result in a redirect chain.
+  SubresourceFilterSafeBrowsingClient::CheckResult check_result =
+      check_results_.back();
 
-  // Find the ConfigResult for each safe browsing check.
-  std::vector<ConfigResult> matched_configurations;
-  for (const auto& current_result : check_results_to_consider) {
-    matched_configurations.push_back(
-        GetHighestPriorityConfiguration(current_result));
-  }
+  // Find the ConfigResult for the safebrowsing check.
+  ConfigResult selection = GetHighestPriorityConfiguration(check_result);
 
   // Get the activation decision with the associated ConfigResult.
-  ConfigResult selection;
-  ActivationDecision activation_decision =
-      GetActivationDecision(matched_configurations, &selection);
+  ActivationDecision activation_decision = GetActivationDecision(selection);
   DCHECK_NE(activation_decision, ActivationDecision::UNKNOWN);
 
   // Notify the observers of the check results.
   SubresourceFilterObserverManager::FromWebContents(
       navigation_handle()->GetWebContents())
-      ->NotifySafeBrowsingChecksComplete(navigation_handle(),
-                                         check_results_to_consider);
+      ->NotifySafeBrowsingChecksComplete(navigation_handle(), check_result);
 
   // Compute the activation level.
   mojom::ActivationLevel activation_level =
@@ -303,38 +293,12 @@ SubresourceFilterSafeBrowsingActivationThrottle::
 
 ActivationDecision
 SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
-    const std::vector<ConfigResult>& configs,
-    ConfigResult* selected_config) {
-  size_t selected_index = 0;
-  for (size_t current_index = 0; current_index < configs.size();
-       current_index++) {
-    // Prefer later configs when there's a tie.
-    // Rank no matching config slightly below priority zero.
-    const int selected_priority =
-        configs[selected_index].matched_valid_configuration
-            ? configs[selected_index].config.activation_conditions.priority
-            : -1;
-    const int current_priority =
-        configs[current_index].matched_valid_configuration
-            ? configs[current_index].config.activation_conditions.priority
-            : -1;
-    if (current_priority >= selected_priority) {
-      selected_index = current_index;
-    }
-  }
-  // Ensure that the list was not empty, and assign the configuration.
-  DCHECK(selected_index != configs.size());
-  *selected_config = configs[selected_index];
-
-  if (!selected_config->matched_valid_configuration) {
+    const ConfigResult& config) {
+  if (!config.matched_valid_configuration) {
     return ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
   }
-
-  // Get the activation level for the matching configuration.
-  auto activation_level =
-      selected_config->config.activation_options.activation_level;
-  // Compute and return the activation decision.
-  return activation_level == mojom::ActivationLevel::kDisabled
+  return config.config.activation_options.activation_level ==
+                 mojom::ActivationLevel::kDisabled
              ? ActivationDecision::ACTIVATION_DISABLED
              : ActivationDecision::ACTIVATED;
 }

@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Ahora Chrome descarga los archivos más rápido</translation>
 <translation id="1883903952484604915">Mis archivos</translation>
 <translation id="1887786770086287077">El acceso a la ubicación está desactivado en este dispositivo. Actívalo en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> se abrirá en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919950603503897840">Seleccionar contactos</translation>
 <translation id="1922076542920281912">Para que Chrome tenga acceso a tu ubicación, activa la ubicación en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, selec
 <translation id="2567385386134582609">IMAGEN</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">El acceso a la ubicación también está desactivado en este dispositivo. Actívalo en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">Ampliado (hacer clic para contraer)</translation>
 <translation id="2581165646603367611">Se borrarán las cookies, la caché y otros datos de los sitios web que Chrome no considere importantes.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2587052924345400782">Hay una nueva versión disponible</translation>
@@ -491,7 +489,6 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4605958867780575332">Elemento retirado: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Utilizar contraseña</translation>
-<translation id="4645575059429386691">Administrado por uno de tus padres</translation>
 <translation id="4650364565596261010">Predeterminado del sistema</translation>
 <translation id="4660838440047236328">la distribución de tu habitación</translation>
 <translation id="4663756553811254707">Se han eliminado <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
@@ -530,7 +527,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="488187801263602086">Cambiar nombre de archivo</translation>
 <translation id="4882831918239250449">Controlar cómo se utiliza el historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
-<translation id="4883854917563148705">No se pueden restablecer los ajustes gestionados</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
 <translation id="4887024562049524730">Preguntar antes de permitir que los sitios web usen tu dispositivo y tus datos de realidad virtual (recomendado)</translation>
 <translation id="4910889077668685004">Aplicaciones para pagar</translation>
@@ -560,7 +556,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5048398596102334565">Permitir que los sitios web accedan a los sensores de movimiento (recomendado)</translation>
 <translation id="5063480226653192405">Uso</translation>
 <translation id="5087580092889165836">Añadir tarjeta</translation>
-<translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5123685120097942451">Pestaña de incógnito</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>
@@ -597,7 +592,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5357811892247919462">Pestaña recibida</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestaña abierta, toca para cambiar de una a otra}other{<ph name="OPEN_TABS_MANY" /> pestañas abiertas, toca para cambiar de una a otra}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(y 1 más)}other{(y # más)}}</translation>
-<translation id="5400569084694353794">Al utilizar esta aplicación, aceptas los <ph name="BEGIN_LINK1" />Términos del Servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de Privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403592356182871684">Nombres</translation>
 <translation id="5403644198645076998">Permitir solo determinados sitios web</translation>
 <translation id="5414836363063783498">Verificando…</translation>
@@ -946,7 +940,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7981313251711023384">Cargar previamente las páginas para que la navegación y las búsquedas sean más rápidas</translation>
 <translation id="79859296434321399">Instala ARCore para visualizar contenido de realidad aumentada</translation>
 <translation id="7986741934819883144">Selecciona un contacto</translation>
-<translation id="7987073022710626672">Condiciones del servicio de Chrome</translation>
 <translation id="7993619969781047893">Es posible que las funciones de algunos sitios web no funcionen correctamente</translation>
 <translation id="7998918019931843664">Volver a abrir pestaña cerrada</translation>
 <translation id="7999064672810608036">¿Seguro que quieres borrar todos los datos locales, incluidas las cookies, y restablecer todos los permisos de este sitio web?</translation>
@@ -983,7 +976,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8186512483418048923">Archivos restantes: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Queda 1 día</translation>
 <translation id="8200772114523450471">Reanudar</translation>
-<translation id="8206354486702514201">El administrador aplica esta opción.</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
 <translation id="8218622182176210845">Gestionar tu cuenta</translation>
 <translation id="8224471946457685718">Descargar artículos recomendados para ti con Wi‑Fi</translation>
@@ -1049,7 +1041,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidad de la señal: # barra}other{Nivel de intensidad de la señal: # barras}}</translation>
 <translation id="868929229000858085">Buscar en tus contactos</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
-<translation id="8728487861892616501">Si utilizas esta aplicación, aceptas las <ph name="BEGIN_LINK1" />condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />aviso de privacidad<ph name="END_LINK2" /> de Chrome, así como el <ph name="BEGIN_LINK3" />aviso de privacidad para cuentas de Google gestionadas con Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contenidos ocultos</translation>
 <translation id="8751914237388039244">Selecciona una imagen</translation>
 <translation id="8758557275681689734">Consulta todas las pestañas abiertas</translation>
@@ -1058,7 +1049,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8801436777607969138">Bloquear JavaScript en un sitio web específico.</translation>
 <translation id="8812260976093120287">En algunos sitios web, puedes realizar pagos en tu dispositivo con las aplicaciones compatibles mencionadas anteriormente.</translation>
 <translation id="8816026460808729765">No permite que los sitios web accedan a los sensores</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> se abrirá en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />aviso de privacidad<ph name="END_LINK2" /> de Chrome, así como el <ph name="BEGIN_LINK3" />aviso de privacidad para cuentas de Google gestionadas con Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="8833831881926404480">Un sitio web está compartiendo tu pantalla</translation>
 <translation id="883806473910249246">No se ha podido descargar el contenido.</translation>
@@ -1085,7 +1075,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8988028529677883095">Usar teléfono como llave de seguridad</translation>
 <translation id="8993760627012879038">Abre una nueva pestaña en modo de incógnito</translation>
 <translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
-<translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9028914725102941583">Activar la sincronización para compartir con otros dispositivos</translation>
 <translation id="9040142327097499898">Las notificaciones están permitidas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}other{# vídeos}}</translation>

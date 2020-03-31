@@ -133,6 +133,12 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
+    name = 'Linux Ozone Tester (Headless)',
+    goma_backend = None,
+    triggered_by = [builder_name('linux-ozone-rel')],
+)
+
+ci.linux_builder(
     name = 'Linux Ozone Tester (Wayland)',
     goma_backend = None,
     triggered_by = [builder_name('linux-ozone-rel')],

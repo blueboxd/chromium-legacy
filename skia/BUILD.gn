@@ -898,9 +898,6 @@ source_set("test_fonts") {
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }
-  if (is_linux) {
-    sources += [ "ext/test_fonts_linux.cc" ]
-  }
   if (is_mac) {
     sources += [ "ext/test_fonts_mac.mm" ]
   }

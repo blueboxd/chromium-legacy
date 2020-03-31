@@ -37,7 +37,8 @@ struct DNRManifestData : Extension::ManifestData {
 
   // Returns the RulesetInfo for the |extension|. This must be called only if
   // HasRuleset returns true for the |extension|.
-  static const RulesetInfo& GetRuleset(const Extension& extension);
+  static const std::vector<RulesetInfo>& GetRulesets(
+      const Extension& extension);
 
   std::vector<RulesetInfo> rulesets;
 

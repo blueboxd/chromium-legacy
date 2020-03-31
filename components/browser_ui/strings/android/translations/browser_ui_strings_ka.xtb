@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">გაგრძელება</translation>
 <translation id="2501278716633472235">უკან დაბრუნება</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 ქუქი-ჩანაწერი დაბლოკილია}other{# ქუქი-ჩანაწერი დაბლოკილია}}</translation>
+<translation id="257931822824936280">გაშლილია — დააწკაპუნეთ ჩასაკეცად.</translation>
 <translation id="2653659639078652383">გაგზავნა</translation>
 <translation id="2704606927547763573">დაკოპირდა</translation>
 <translation id="2968755619301702150">სერტიფიკატთა მაჩვენებელი</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">ბმულის კოპირება</translation>
 <translation id="4002066346123236978">სათაური</translation>
 <translation id="4570913071927164677">დეტალები</translation>
+<translation id="4645575059429386691">იმართება თქვენი მშობლის მიერ</translation>
+<translation id="4883854917563148705">მართული პარამეტრების გადაყენება ვერ მოხერხდება</translation>
 <translation id="497421865427891073">გადასვლა წინ</translation>
+<translation id="5100237604440890931">ჩაკეცილია — დააწკაპუნეთ გასაშლელად.</translation>
 <translation id="5300589172476337783">ჩვენება</translation>
 <translation id="5301954838959518834">კარგი, გასაგებია</translation>
 <translation id="5317780077021120954">შენახვა</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">არა, მადლობთ</translation>
 <translation id="7846076177841592234">შერჩევის გაუქმება</translation>
 <translation id="8131740175452115882">დაადასტურება</translation>
+<translation id="8206354486702514201">ეს პარამეტრი იძულებითაა დაყენებული თქვენი ადმინისტრატორის მიერ.</translation>
 <translation id="8249310407154411074">თავში გადატანა</translation>
 <translation id="8261506727792406068">წაშლა</translation>
 <translation id="8609465669617005112">გადაადგილება ზემოთ</translation>
 <translation id="8676374126336081632">შეყვანილი ტექსტის გასუფთავება</translation>
 <translation id="8725066075913043281">ხელახლა სცადეთ</translation>
 <translation id="8730621377337864115">მზადაა</translation>
+<translation id="9019902583201351841">იმართება თქვენი მშობლების მიერ</translation>
 </translationbundle>

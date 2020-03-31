@@ -62,7 +62,8 @@ class PopupTracker : public content::WebContentsObserver,
   // subresource_filter::SubresourceFilterObserver:
   void OnSafeBrowsingChecksComplete(
       content::NavigationHandle* navigation_handle,
-      const SafeBrowsingCheckResults& results) override;
+      const subresource_filter::SubresourceFilterSafeBrowsingClient::
+          CheckResult& result) override;
   void OnSubresourceFilterGoingAway() override;
 
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,

@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 файл cookie заблоковано}one{# файл cookie заблоковано}few{# файли cookie заблоковано}many{# файлів cookie заблоковано}other{# файлу cookie заблоковано}}</translation>
+<translation id="257931822824936280">Розгорнуто – натисніть, щоб згорнути.</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2968755619301702150">Перегляд сертифікатів</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Копіювати</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4570913071927164677">Деталі</translation>
+<translation id="4645575059429386691">Керується одним із батьків</translation>
+<translation id="4883854917563148705">Налаштування, якими керує адміністратор, не можна скинути</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
+<translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">Зберегти</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
+<translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>
 <translation id="8249310407154411074">На початок</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8609465669617005112">Угору</translation>
 <translation id="8676374126336081632">Видалити введений текст</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="9019902583201351841">Керується батьками</translation>
 </translationbundle>

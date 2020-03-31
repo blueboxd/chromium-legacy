@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"

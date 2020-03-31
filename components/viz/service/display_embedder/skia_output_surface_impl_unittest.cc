@@ -41,6 +41,7 @@ constexpr SkColor kOutputColor = SK_ColorRED;
 class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
  public:
   SkiaOutputSurfaceImplTest();
+  ~SkiaOutputSurfaceImplTest() override;
 
   bool CreateNativeWindow() const { return GetParam(); }
 
@@ -62,6 +63,7 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
   void UnblockMainThread();
 
  protected:
+  gfx::AcceleratedWidget accelerated_widget_ = gfx::kNullAcceleratedWidget;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<SkiaOutputSurface> output_surface_;
   cc::FakeOutputSurfaceClient output_surface_client_;
@@ -74,11 +76,24 @@ SkiaOutputSurfaceImplTest::SkiaOutputSurfaceImplTest()
   SetUpSkiaOutputSurfaceImpl();
 }
 
+SkiaOutputSurfaceImplTest::~SkiaOutputSurfaceImplTest() {
+  output_surface_.reset();
+  if (accelerated_widget_ != gfx::kNullAcceleratedWidget) {
+#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
+    gpu::DestroyNativeWindow(accelerated_widget_);
+#else
+    // TODO(backer): Support other platforms.
+    NOTREACHED();
+#endif
+  }
+}
+
 void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
-  gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
+  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   if (CreateNativeWindow()) {
 #if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
-    surface_handle_ = gpu::CreateNativeWindow(kSurfaceRect);
+    accelerated_widget_ = gpu::CreateNativeWindow(kSurfaceRect);
+    surface_handle = accelerated_widget_;
 #else
     // TODO(backer): Support other platforms.
     NOTREACHED();
@@ -89,7 +104,7 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   settings.use_skia_renderer = true;
   output_surface_ = SkiaOutputSurfaceImpl::Create(
       std::make_unique<SkiaOutputSurfaceDependencyImpl>(GetGpuService(),
-                                                        surface_handle_),
+                                                        surface_handle),
       settings);
   output_surface_->BindToClient(&output_surface_client_);
 }

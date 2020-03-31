@@ -359,11 +359,8 @@ void OmniboxViewViews::Update() {
 
     // Only select all when we have focus.  If we don't have focus, selecting
     // all is unnecessary since the selection will change on regaining focus.
-    if (model()->has_focus()) {
-      // Treat this select-all as resulting from a user gesture, since most
-      // URL updates result from a user gesture or navigation.
-      SelectAllForUserGesture();
-    }
+    if (model()->has_focus())
+      SelectAll(true);
   } else {
     // If the text is unchanged, we still need to re-emphasize the text, as the
     // security state may be different from before the Update.
@@ -680,24 +677,6 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
       return true;
   }
 
-  if (base::FeatureList::IsEnabled(omnibox::kTabKeyCanEscapeOmniboxPopup)) {
-    // Close the popup if tab traversal exits the list.
-    size_t selected_line = model()->popup_model()->selected_line();
-    bool close_popup = event.IsShiftDown()
-                           ? selected_line == 0
-                           : selected_line == (model()->result().size() - 1);
-    if (close_popup) {
-      CloseOmniboxPopup();
-
-      // When we close the popup, we also want to restore the user's text back
-      // to the state it was before the popup opened.
-      model()->RevertTemporaryTextAndPopup();
-
-      // Return false so the focus manager will go to the next element.
-      return false;
-    }
-  }
-
   // Translate tab and shift-tab into down and up respectively.
   model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
   // If we shift-tabbed (and actually moved) to a suggestion with a tab
@@ -924,17 +903,6 @@ void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
   // announced, so we need to explicitly announce the suggestion text.
   GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
 #endif
-}
-
-void OmniboxViewViews::SelectAllForUserGesture() {
-  if (base::FeatureList::IsEnabled(omnibox::kOneClickUnelide) &&
-      UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
-    TextChanged();
-  }
-
-  // Select all in the reverse direction so as not to scroll the caret
-  // into view and shift the contents jarringly.
-  SelectAll(true);
 }
 
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
@@ -1237,7 +1205,9 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // When the user has clicked and released to give us focus, select all.
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_) {
-    SelectAllForUserGesture();
+    // Select all in the reverse direction so as not to scroll the caret
+    // into view and shift the contents jarringly.
+    SelectAll(true);
   }
   select_all_on_mouse_release_ = false;
 
@@ -1268,7 +1238,9 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   views::Textfield::OnGestureEvent(event);
 
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP) {
-    SelectAllForUserGesture();
+    // Select all in the reverse direction so as not to scroll the caret
+    // into view and shift the contents jarringly.
+    SelectAll(true);
   }
 
   if (event->type() == ui::ET_GESTURE_TAP ||
@@ -1801,7 +1773,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     // begins to type without releasing the mouse button, the subsequent release
     // will delete any newly typed characters due to the SelectAll happening on
     // mouse-up. If we detect this state, do the select-all immediately.
-    SelectAllForUserGesture();
+    SelectAll(true);
     select_all_on_mouse_release_ = false;
   }
 

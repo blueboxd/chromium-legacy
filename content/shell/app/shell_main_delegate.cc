@@ -5,6 +5,7 @@
 #include "content/shell/app/shell_main_delegate.h"
 
 #include <iostream>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -16,19 +17,14 @@
 #include "base/path_service.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "components/crash/core/common/crash_key.h"
-#include "components/viz/common/switches.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/ppapi_test_utils.h"
-#include "content/public/test/web_test_support.h"
-#include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/browser/web_test/web_test_browser_main.h"
+#include "content/shell/browser/web_test/web_test_browser_main_runner.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
@@ -37,20 +33,10 @@
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/shell/utility/shell_content_utility_client.h"
-#include "gpu/config/gpu_switches.h"
 #include "ipc/ipc_buildflags.h"
-#include "media/base/media_switches.h"
 #include "net/cookies/cookie_monster.h"
-#include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/embedder/switches.h"
-#include "skia/ext/test_fonts.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
-#include "ui/base/ui_base_switches.h"
-#include "ui/display/display_switches.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_switches.h"
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
@@ -63,7 +49,6 @@
 #include "base/android/apk_assets.h"
 #include "base/posix/global_descriptors.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
@@ -93,12 +78,6 @@
 #endif  // OS_FUCHSIA
 
 namespace {
-
-#if defined(OS_ANDROID)
-std::unique_ptr<base::MessagePump> CreateMessagePumpForUI() {
-  return std::make_unique<content::NestedMessagePumpAndroid>();
-}
-#endif
 
 #if !defined(OS_FUCHSIA)
 base::LazyInstance<content::ShellCrashReporterClient>::Leaky
@@ -147,21 +126,30 @@ void InitLogging(const base::CommandLine& command_line) {
 
 namespace content {
 
-ShellMainDelegate::ShellMainDelegate(bool is_browsertest)
-    : is_browsertest_(is_browsertest) {}
+ShellMainDelegate::ShellMainDelegate(bool is_content_browsertests)
+    : is_content_browsertests_(is_content_browsertests) {}
 
 ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   int dummy;
   if (!exit_code)
     exit_code = &dummy;
 
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch("run-layout-test")) {
+    std::cerr << std::string(79, '*') << "\n"
+              << "* The flag --run-layout-test is obsolete. Please use --"
+              << switches::kRunWebTests << " instead. *\n"
+              << std::string(79, '*') << "\n";
+    command_line.AppendSwitch(switches::kRunWebTests);
+  }
+
 #if defined(OS_ANDROID)
   Compositor::Initialize();
 #endif
+
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kContentShellProviderName);
@@ -170,8 +158,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 
 #if defined(OS_MACOSX)
-  // Needs to happen before InitializeResourceBundle() and before
-  // BlinkTestPlatformInitialize() are called.
+  // Needs to happen before InitializeResourceBundle().
   OverrideFrameworkBundlePath();
   OverrideOuterBundlePath();
   OverrideChildProcessPath();
@@ -182,120 +169,13 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   InitLogging(command_line);
 
-  if (command_line.HasSwitch("run-layout-test")) {
-    std::cerr << std::string(79, '*') << "\n"
-              << "* The flag --run-layout-test is obsolete. Please use --"
-              << switches::kRunWebTests << " instead. *\n"
-              << std::string(79, '*') << "\n";
-    command_line.AppendSwitch(switches::kRunWebTests);
-  }
-
-  if (command_line.HasSwitch(switches::kRunWebTests)) {
-#if defined(OS_WIN)
-    // Run CheckLayoutSystemDeps() in the browser process and exit early if it
-    // fails.
-    if (!command_line.HasSwitch(switches::kProcessType) &&
-        !CheckLayoutSystemDeps()) {
-      *exit_code = 1;
-      return true;
+  if (switches::IsRunWebTestsSwitchPresent()) {
+    const bool browser_process =
+        command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+    if (browser_process) {
+      web_test_runner_ = std::make_unique<WebTestBrowserMainRunner>();
+      web_test_runner_->Initialize();
     }
-#endif
-
-    EnableBrowserWebTestMode();
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-    if (!ppapi::RegisterBlinkTestPlugin(&command_line)) {
-      *exit_code = 1;
-      return true;
-    }
-#endif
-    command_line.AppendSwitch(cc::switches::kEnableGpuBenchmarking);
-    command_line.AppendSwitch(switches::kEnableLogging);
-    command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
-    // only default to a software GL if the flag isn't already specified.
-    if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
-        !command_line.HasSwitch(switches::kUseGL)) {
-      command_line.AppendSwitchASCII(
-          switches::kUseGL,
-          gl::GetGLImplementationName(gl::GetSoftwareGLImplementation()));
-    }
-    command_line.AppendSwitchASCII(
-        switches::kTouchEventFeatureDetection,
-        switches::kTouchEventFeatureDetectionEnabled);
-    if (!command_line.HasSwitch(switches::kForceDeviceScaleFactor))
-      command_line.AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1.0");
-
-    if (!command_line.HasSwitch(switches::kAutoplayPolicy)) {
-      command_line.AppendSwitchASCII(
-          switches::kAutoplayPolicy,
-          switches::autoplay::kNoUserGestureRequiredPolicy);
-    }
-
-    if (!command_line.HasSwitch(switches::kStableReleaseMode)) {
-      command_line.AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-    }
-
-    if (!command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
-      command_line.AppendSwitch(switches::kDisableThreadedCompositing);
-      command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
-    }
-
-    // With display compositor pixel dumps, we ensure that we complete all
-    // stages of compositing before draw. We also can't have checker imaging,
-    // since it's imcompatible with single threaded compositor and display
-    // compositor pixel dumps.
-    //
-    // TODO(crbug.com/894613) Add kRunAllCompositorStagesBeforeDraw back here
-    // once you figure out why it causes so much web test flakiness.
-    // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
-    command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
-
-    command_line.AppendSwitch(switches::kMuteAudio);
-
-    command_line.AppendSwitch(switches::kEnablePreciseMemoryInfo);
-
-    command_line.AppendSwitchASCII(network::switches::kHostResolverRules,
-                                   "MAP nonexistent.*.test ~NOTFOUND,"
-                                   "MAP *.test. 127.0.0.1,"
-                                   "MAP *.test 127.0.0.1");
-
-    if (!command_line.HasSwitch(switches::kForceGpuRasterization) &&
-        !command_line.HasSwitch(switches::kEnableGpuRasterization)) {
-      command_line.AppendSwitch(switches::kDisableGpuRasterization);
-    }
-
-    // If the virtual test suite didn't specify a display color space, then
-    // force sRGB.
-    if (!command_line.HasSwitch(switches::kForceDisplayColorProfile)) {
-      command_line.AppendSwitchASCII(switches::kForceDisplayColorProfile,
-                                     "srgb");
-    }
-
-    // We want stable/baseline results when running web tests.
-    command_line.AppendSwitch(switches::kDisableSkiaRuntimeOpts);
-
-    command_line.AppendSwitch(switches::kDisallowNonExactResourceReuse);
-
-    // Always run with fake media devices.
-    command_line.AppendSwitch(switches::kUseFakeUIForMediaStream);
-    command_line.AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-
-    // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-    // collection to avoid interference. This GPU process is launched 120
-    // seconds after chrome starts.
-    command_line.AppendSwitch(
-        switches::kDisableGpuProcessForDX12VulkanInfoCollection);
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    BlinkTestPlatformInitialize();
-#endif
-
-#if !defined(OS_WIN)
-    // On Windows BlinkTestPlatformInitialize() is responsible for font
-    // initialization.
-    skia::ConfigureTestFont();
-#endif
   }
 
   return false;
@@ -345,10 +225,10 @@ int ShellMainDelegate::RunProcess(
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRunWebTests)) {
+  if (switches::IsRunWebTestsSwitchPresent()) {
     // Web tests implement their own BrowserMain() replacement.
-    WebTestBrowserMain(main_function_params);
+    web_test_runner_->RunBrowserMain(main_function_params);
+    web_test_runner_.reset();
     // Returning 0 to indicate that we have replaced BrowserMain() and the
     // caller should not call BrowserMain() itself. Web tests do not ever
     // return an error.
@@ -436,12 +316,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 }
 
 void ShellMainDelegate::PreCreateMainMessageLoop() {
-#if defined(OS_ANDROID)
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRunWebTests)) {
-    base::MessagePump::OverrideMessagePumpForUIFactory(&CreateMessagePumpForUI);
-  }
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   RegisterShellCrApp();
 #endif
 }
@@ -452,28 +327,29 @@ ContentClient* ShellMainDelegate::CreateContentClient() {
 }
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                            ? new WebTestContentBrowserClient
-                            : new ShellContentBrowserClient);
-
+  if (switches::IsRunWebTestsSwitchPresent())
+    browser_client_ = std::make_unique<WebTestContentBrowserClient>();
+  else
+    browser_client_ = std::make_unique<ShellContentBrowserClient>();
   return browser_client_.get();
 }
 
 ContentGpuClient* ShellMainDelegate::CreateContentGpuClient() {
-  gpu_client_.reset(new ShellContentGpuClient);
+  gpu_client_ = std::make_unique<ShellContentGpuClient>();
   return gpu_client_.get();
 }
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                             ? new WebTestContentRendererClient
-                             : new ShellContentRendererClient);
-
+  if (switches::IsRunWebTestsSwitchPresent())
+    renderer_client_ = std::make_unique<WebTestContentRendererClient>();
+  else
+    renderer_client_ = std::make_unique<ShellContentRendererClient>();
   return renderer_client_.get();
 }
 
 ContentUtilityClient* ShellMainDelegate::CreateContentUtilityClient() {
-  utility_client_.reset(new ShellContentUtilityClient(is_browsertest_));
+  utility_client_ =
+      std::make_unique<ShellContentUtilityClient>(is_content_browsertests_);
   return utility_client_.get();
 }
 

@@ -554,8 +554,6 @@ bool DownloadManagerImpl::InterceptDownload(
     DropDownload();
     return true;
   }
-  content::devtools_instrumentation::WillBeginDownload(
-      info.render_process_id, info.render_frame_id, info.url());
   return false;
 }
 
@@ -643,6 +641,7 @@ void DownloadManagerImpl::CreateNewDownloadItemToStart(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   download::DownloadItemImpl* download = CreateActiveItem(id, *info);
+  content::devtools_instrumentation::WillBeginDownload(info.get(), download);
   std::move(callback).Run(std::move(info), download,
                           should_persist_new_download_);
   if (download) {

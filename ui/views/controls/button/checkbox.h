@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
 #define UI_VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"

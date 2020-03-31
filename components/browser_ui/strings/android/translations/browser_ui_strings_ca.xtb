@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2501278716633472235">Torna</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 galeta bloquejada}other{# galetes bloquejades}}</translation>
+<translation id="257931822824936280">Vista desplegada (feu clic per replegar-la)</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2968755619301702150">Lector de certificats</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Copia l'enllaç</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="4570913071927164677">Detalls</translation>
+<translation id="4645575059429386691">Gestionat pels pares</translation>
+<translation id="4883854917563148705">Les opcions de configuració gestionades no es poden restablir</translation>
 <translation id="497421865427891073">Ves endavant</translation>
+<translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5301954838959518834">D'acord</translation>
 <translation id="5317780077021120954">Desa</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
 <translation id="8131740175452115882">Confirma</translation>
+<translation id="8206354486702514201">L'administrador aplica aquesta opció de configuració.</translation>
 <translation id="8249310407154411074">Mou a la part superior</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8609465669617005112">Desplaça cap amunt</translation>
 <translation id="8676374126336081632">Esborra l'entrada</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>
+<translation id="9019902583201351841">Gestionat pels pares</translation>
 </translationbundle>

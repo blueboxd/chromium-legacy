@@ -15,9 +15,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace webrtc {
-namespace video_coding {
-class EncodedFrame;
-}  // namespace video_coding
+class TransformableVideoFrameInterface;
 }  // namespace webrtc
 
 namespace blink {
@@ -29,7 +27,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
 
  public:
   explicit RTCEncodedVideoFrame(
-      std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate,
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate,
       Vector<uint8_t> generic_descriptor,
       uint32_t ssrc);
 
@@ -48,12 +46,12 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   // Returns and transfers ownership of the internal WebRTC frame
   // backing this RTCEncodedVideoFrame, leaving the RTCEncodedVideoFrame
   // without a delegate WebRTC frame.
-  std::unique_ptr<webrtc::video_coding::EncodedFrame> PassDelegate();
+  std::unique_ptr<webrtc::TransformableVideoFrameInterface> PassDelegate();
 
   void Trace(Visitor*) override;
 
  private:
-  std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate_;
+  std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate_;
   Vector<uint8_t> additional_data_vector_;
   const uint32_t ssrc_;
   // Exposes encoded frame data from |delegate_|.

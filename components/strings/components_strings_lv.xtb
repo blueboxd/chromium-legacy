@@ -546,7 +546,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3366477098757335611">Skatīt kartes</translation>
 <translation id="3369192424181595722">Pulksteņa kļūda</translation>
 <translation id="337363190475750230">Tika noņemta piekļuve</translation>
-<translation id="3376829916920036789">Domēns <ph name="ENROLLMENT_DOMAIN" /> iespējoja funkciju “Enterprise Service Hooks” jūsu pārlūkā. Šai funkcijai ir piekļuve daļai jūsu datu.</translation>
 <translation id="3377144306166885718">Serveris izmantoja novecojušu TLS versiju.</translation>
 <translation id="3377188786107721145">Radās politikas parsēšanas kļūda.</translation>
 <translation id="3377736046129930310">Izmantot ekrāna bloķēšanu, lai kartes apstiprinātu ātrāk</translation>
@@ -982,7 +981,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5179510805599951267">Vai nav valodā: <ph name="ORIGINAL_LANGUAGE" />? Ziņot par šo kļūdu</translation>
 <translation id="5190835502935405962">Grāmatzīmju josla</translation>
 <translation id="519422657042045905">Anotācija nav pieejama</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Šajā lapā iegultā lapā ir rakstīts</translation>
 <translation id="5205222826937269299">Jānorāda vārds vai nosaukums.</translation>
 <translation id="5209518306177824490">SHA-1 pirkstu nospiedums</translation>
@@ -1456,7 +1454,6 @@ Papildu informācija:
 <translation id="725866823122871198">Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu datora datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizs.</translation>
 <translation id="7260504762447901703">Atsaukt piekļuvi</translation>
 <translation id="7275334191706090484">Pārvaldītās grāmatzīmes</translation>
-<translation id="7288778322931489286">Administrators jūsu pārlūkā ir iespējojis funkciju “Enterprise Service Hooks”. Šai funkcijai ir piekļuve daļai jūsu datu.</translation>
 <translation id="7292031607255951991">Saņēmēja vārds</translation>
 <translation id="7298195798382681320">Ieteicams</translation>
 <translation id="7300012071106347854">Kobalta zila</translation>
@@ -1814,7 +1811,6 @@ Papildu informācija:
 <translation id="8866481888320382733">Parsējot politikas iestatījumus, radās kļūda.</translation>
 <translation id="8866928039507595380">Locījums</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Kopīgot ar jūsu administratoru datus par notikumiem, kas ir saistīti ar drošību un ir atzīmēti funkcijā “Enterprise Service Hooks”. Šajos datos var būt ietverti jūsu apmeklēto lapu vietrāži URL, failu nosaukumi vai metadati un lietotājvārds, ar kuru pierakstāties ierīcē un pārlūkā Chrome.</translation>
 <translation id="8870413625673593573">Nesen aizvērtas</translation>
 <translation id="8870494189203302833">Tāda pati secība, virspuse uz leju</translation>
 <translation id="8874824191258364635">Ievadiet derīgu kartes numuru</translation>

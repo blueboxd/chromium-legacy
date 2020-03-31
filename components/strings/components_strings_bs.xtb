@@ -548,7 +548,6 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="3366477098757335611">Prikaži kartice</translation>
 <translation id="3369192424181595722">Greška sa satom</translation>
 <translation id="337363190475750230">Poništeno dodjeljivanje</translation>
-<translation id="3376829916920036789">Domena <ph name="ENROLLMENT_DOMAIN" /> je omogućila Udice za usluge preduzeća na vašem pregledniku. Pomoću tih udica je moguće pristupiti nekim vašim podacima.</translation>
 <translation id="3377144306166885718">Server je koristio zastarjelu verziju TLS-a.</translation>
 <translation id="3377188786107721145">Greška prilikom raščlanjivanja pravila</translation>
 <translation id="3377736046129930310">Koristite zaključavanje ekrana da brže potvrdite kartice</translation>
@@ -985,7 +984,6 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="5179510805599951267">Jezik nije <ph name="ORIGINAL_LANGUAGE" />? Prijavite ovu grešku</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="519422657042045905">Bilješke nisu dostupne</translation>
-<translation id="5196187217592847346">Udice za usluge preduzeća</translation>
 <translation id="5201306358585911203">Stranica ugrađena u ovu stranicu kaže</translation>
 <translation id="5205222826937269299">Potrebno je ime</translation>
 <translation id="5209518306177824490">SHA-1 otisak prsta</translation>
@@ -1459,7 +1457,6 @@ Dodatni detalji:
 <translation id="725866823122871198">Nije moguće uspostaviti privatnu vezu s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> jer su datum i vrijeme (<ph name="DATE_AND_TIME" />) na vašem računaru netačni.</translation>
 <translation id="7260504762447901703">Opozovi pristup</translation>
 <translation id="7275334191706090484">Upravljane oznake</translation>
-<translation id="7288778322931489286">Administrator je na vašem pregledniku omogućio Udice za usluge preduzeća. Pomoću tih udica je moguće pristupiti nekim vašim podacima.</translation>
 <translation id="7292031607255951991">Ime primaoca</translation>
 <translation id="7298195798382681320">Preporučeno</translation>
 <translation id="7300012071106347854">Kobaltno plava</translation>
@@ -1816,7 +1813,6 @@ Dodatni detalji:
 <translation id="8866481888320382733">Greška prilikom raščlanjivanja postavki pravila</translation>
 <translation id="8866928039507595380">Presavijanje</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Dijeljenje podataka o sigurnosnim događajima koje su prijavile Udice za usluge preduzeća s administratorom. To može obuhvatati URL-ove stranica koje posjetite, nazive fajlova ili metapodatke te korisničko ime koje koristite za prijavu na uređaj i Chrome.</translation>
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8870494189203302833">Isti redoslijed s odštampanom stranom prema dolje</translation>
 <translation id="8874824191258364635">Unesite važeći broj kartice</translation>

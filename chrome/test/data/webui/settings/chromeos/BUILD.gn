@@ -19,5 +19,8 @@ js_library("fake_user_action_recorder") {
 }
 
 js_library("fake_settings_search_handler") {
-  deps = [ "//ui/webui/resources/js:cr" ]
+  deps = [
+    "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
+  ]
 }

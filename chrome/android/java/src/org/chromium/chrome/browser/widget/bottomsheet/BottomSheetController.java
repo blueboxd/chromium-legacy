@@ -411,7 +411,9 @@ public class BottomSheetController implements Destroyable {
      * @return {@code true} if the sheet or content handled the back press.
      */
     public boolean handleBackPress() {
-        if (mBottomSheet == null) return false;
+        // If suppressed (therefore invisible), users are likely to expect for Chrome
+        // browser, not the bottom sheet, to react. Do not consume the event.
+        if (mBottomSheet == null || mIsSuppressed) return false;
 
         // Give the sheet the opportunity to handle the back press itself before falling to the
         // default "close" behavior.

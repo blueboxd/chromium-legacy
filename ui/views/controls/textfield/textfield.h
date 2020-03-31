@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 
 #if defined(OS_WIN)

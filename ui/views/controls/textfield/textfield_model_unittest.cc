@@ -34,10 +34,6 @@ struct WordAndCursor {
   size_t cursor;
 };
 
-void MoveCursorTo(views::TextfieldModel& model, size_t pos) {
-  model.MoveCursorTo(gfx::SelectionModel(pos, gfx::CURSOR_FORWARD));
-}
-
 }  // namespace
 
 namespace views {
@@ -109,7 +105,7 @@ TEST_F(TextfieldModelTest, EditString) {
   EXPECT_TRUE(model.Backspace());
   EXPECT_STR_EQ("HELLORL", model.text());
 
-  MoveCursorTo(model, 5);
+  model.MoveCursorTo(5);
   model.ReplaceText(base::ASCIIToUTF16(" WOR"));
   EXPECT_STR_EQ("HELLO WORL", model.text());
 }
@@ -124,7 +120,7 @@ TEST_F(TextfieldModelTest, EditString_SimpleRTL) {
             model.text());
 
   // Insert "\x05f0".
-  MoveCursorTo(model, 1);
+  model.MoveCursorTo(1);
   model.InsertChar(0x05f0);
   EXPECT_EQ(base::WideToUTF16(L"\x05d0\x05f0\x05d1\x05d2\x05e0\x05e1\x05e2"),
             model.text());
@@ -156,10 +152,10 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
             model.text());
 
   // Ensure the cursor cannot be placed in the middle of a grapheme.
-  MoveCursorTo(model, 1);
+  model.MoveCursorTo(1);
   EXPECT_EQ(0U, model.GetCursorPosition());
 
-  MoveCursorTo(model, 2);
+  model.MoveCursorTo(2);
   EXPECT_EQ(2U, model.GetCursorPosition());
   model.InsertChar('a');
   EXPECT_EQ(
@@ -180,7 +176,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   EXPECT_EQ(4U, model.GetCursorPosition());
 
   // Delete should delete the whole grapheme.
-  MoveCursorTo(model, 0);
+  model.MoveCursorTo(0);
   // TODO(xji): temporarily disable in platform Win since the complex script
   // characters turned into empty square due to font regression. So, not able
   // to test 2 characters belong to the same grapheme.
@@ -188,7 +184,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   EXPECT_TRUE(model.Delete());
   EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x094d\x092e\x094d"),
             model.text());
-  MoveCursorTo(model, model.text().length());
+  model.MoveCursorTo(model.text().length());
   EXPECT_EQ(model.text().length(), model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
   EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x094d\x092e"), model.text());
@@ -196,18 +192,18 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
 
   // Test cursor position and deletion for Hindi Virama.
   model.SetText(base::WideToUTF16(L"\x0D38\x0D4D\x0D15\x0D16\x0D2E"));
-  MoveCursorTo(model, 0);
+  model.MoveCursorTo(0);
   EXPECT_EQ(0U, model.GetCursorPosition());
 
-  MoveCursorTo(model, 1);
+  model.MoveCursorTo(1);
   EXPECT_EQ(0U, model.GetCursorPosition());
-  MoveCursorTo(model, 3);
+  model.MoveCursorTo(3);
   EXPECT_EQ(3U, model.GetCursorPosition());
 
   // TODO(asvitkine): Temporarily disable the following check on Windows. It
   // seems Windows treats "\x0D38\x0D4D\x0D15" as a single grapheme.
 #if !defined(OS_WIN)
-  MoveCursorTo(model, 2);
+  model.MoveCursorTo(2);
   EXPECT_EQ(3U, model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
   EXPECT_EQ(base::WideToUTF16(L"\x0D38\x0D4D\x0D16\x0D2E"), model.text());
@@ -215,7 +211,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
 
   model.SetText(
       base::WideToUTF16(L"\x05d5\x05b7\x05D9\x05B0\x05D4\x05B4\x05D9"));
-  MoveCursorTo(model, 0);
+  model.MoveCursorTo(0);
   EXPECT_TRUE(model.Delete());
   EXPECT_TRUE(model.Delete());
   EXPECT_TRUE(model.Delete());
@@ -234,7 +230,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   // "HALFWIDTH KATAKANA LETTER TA" + "HALFWIDTH KATAKANA VOICED SOUND MARK"
   // ("ABC" prefix as sanity check that the entire string isn't deleted).
   model.SetText(base::WideToUTF16(L"ABC\xFF80\xFF9E"));
-  MoveCursorTo(model, model.text().length());
+  model.MoveCursorTo(model.text().length());
   model.Backspace();
 #if defined(OS_MACOSX)
   // On Mac, the entire cluster should be deleted to match
@@ -249,7 +245,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   // Emoji with Fitzpatrick modifier:
   // 'BOY' + 'EMOJI MODIFIER FITZPATRICK TYPE-5'
   model.SetText(base::WideToUTF16(L"\U0001F466\U0001F3FE"));
-  MoveCursorTo(model, model.text().length());
+  model.MoveCursorTo(model.text().length());
   model.Backspace();
 #if defined(OS_MACOSX)
   // On Mac, the entire emoji should be deleted to match NSTextField
@@ -385,7 +381,7 @@ TEST_F(TextfieldModelTest, Selection_BidiWithNonSpacingMarks) {
   model.SetText(
       base::WideToUTF16(L"a\x05E9"
                         L"b"));
-  MoveCursorTo(model, 0);
+  model.MoveCursorTo(0);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT,
                    gfx::SELECTION_RETAIN);
   EXPECT_EQ(base::WideToUTF16(L"a"), model.GetSelectedText());
@@ -690,24 +686,24 @@ TEST_F(TextfieldModelTest, SelectWordTest) {
   SelectWordTestVerifier(model, base::ASCIIToUTF16("  "), 2U);
 
   // Test when cursor is at the beginning of a word.
-  MoveCursorTo(model, 2);
+  model.MoveCursorTo(2);
   model.SelectWord();
   SelectWordTestVerifier(model, base::ASCIIToUTF16("HELLO"), 7U);
 
   // Test when cursor is at the end of a word.
-  MoveCursorTo(model, 15);
+  model.MoveCursorTo(15);
   model.SelectWord();
   SelectWordTestVerifier(model, base::ASCIIToUTF16("     "), 20U);
 
   // Test when cursor is somewhere in a non-alpha-numeric fragment.
   for (size_t cursor_pos = 8; cursor_pos < 13U; cursor_pos++) {
-    MoveCursorTo(model, cursor_pos);
+    model.MoveCursorTo(cursor_pos);
     model.SelectWord();
     SelectWordTestVerifier(model, base::ASCIIToUTF16("  !!  "), 13U);
   }
 
   // Test when cursor is somewhere in a whitespace fragment.
-  MoveCursorTo(model, 17);
+  model.MoveCursorTo(17);
   model.SelectWord();
   SelectWordTestVerifier(model, base::ASCIIToUTF16("     "), 20U);
 
@@ -1274,7 +1270,7 @@ TEST_F(TextfieldModelTest, UndoRedo_BasicTest) {
   // Delete ===============================
   model.SetText(base::ASCIIToUTF16("ABCDE"));
   model.ClearEditHistory();
-  MoveCursorTo(model, 2);
+  model.MoveCursorTo(2);
   EXPECT_TRUE(model.Delete());
   EXPECT_STR_EQ("ABDE", model.text());
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, gfx::SELECTION_NONE);
@@ -1586,7 +1582,7 @@ TEST_F(TextfieldModelTest, Undo_SelectionTest) {
   EXPECT_STR_EQ("abcdef", model.text());
   EXPECT_EQ(model.render_text()->selection(), gfx::Range(2, 2));
 
-  MoveCursorTo(model, model.text().length());
+  model.MoveCursorTo(model.text().length());
   EXPECT_TRUE(model.Backspace());
   model.SelectRange(gfx::Range(1, 3));
   model.SetText(base::ASCIIToUTF16("[set]"));

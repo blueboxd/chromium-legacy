@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/highlight_path_generator.h"
 
+#include <algorithm>
+
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/view.h"

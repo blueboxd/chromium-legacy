@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/button/button_controller.h"
 
+#include <memory>
+#include <utility>
+
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button_controller_delegate.h"

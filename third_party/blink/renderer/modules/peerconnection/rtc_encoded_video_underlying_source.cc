@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/webrtc/api/video/encoded_frame.h"
+#include "third_party/webrtc/api/frame_transformer_interface.h"
 
 namespace blink {
 
@@ -49,9 +49,7 @@ void RTCEncodedVideoUnderlyingSource::Trace(Visitor* visitor) {
 }
 
 void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
-    std::unique_ptr<webrtc::video_coding::EncodedFrame> webrtc_frame,
-    std::vector<uint8_t> additional_data,
-    uint32_t ssrc) {
+    std::unique_ptr<webrtc::TransformableVideoFrameInterface> webrtc_frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // If the source is canceled or there are too many queued frames,
   // drop the new frame.
@@ -60,6 +58,7 @@ void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
     return;
   }
 
+  auto additional_data = webrtc_frame->GetAdditionalData();
   Vector<uint8_t> wtf_additional_data;
   wtf_additional_data.ReserveInitialCapacity(
       static_cast<wtf_size_t>(additional_data.size()));
@@ -67,8 +66,9 @@ void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
                                   additional_data.end());
 
   RTCEncodedVideoFrame* encoded_frame =
-      MakeGarbageCollected<RTCEncodedVideoFrame>(
-          std::move(webrtc_frame), std::move(wtf_additional_data), ssrc);
+      MakeGarbageCollected<RTCEncodedVideoFrame>(std::move(webrtc_frame),
+                                                 std::move(wtf_additional_data),
+                                                 webrtc_frame->GetSsrc());
   Controller()->Enqueue(encoded_frame);
 }
 

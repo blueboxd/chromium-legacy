@@ -548,7 +548,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="3366477098757335611">Prikaži kartice</translation>
 <translation id="3369192424181595722">Pogreška sata</translation>
 <translation id="337363190475750230">Dodjela je uklonjena</translation>
-<translation id="3376829916920036789">Domena <ph name="ENROLLMENT_DOMAIN" /> omogućila je Enterprise Service Hooks na vašem pregledniku. Te kuke imaju pristup nekim vašim podacima.</translation>
 <translation id="3377144306166885718">Poslužitelj je koristio zastarjelu verziju TLS-a.</translation>
 <translation id="3377188786107721145">Pogreška pri analizi pravila</translation>
 <translation id="3377736046129930310">Za brže potvrđivanje kartica upotrijebite zaključavanje zaslona</translation>
@@ -984,7 +983,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="5179510805599951267">Nije <ph name="ORIGINAL_LANGUAGE" /> jezik? Prijavite tu pogrešku</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="519422657042045905">Napomena nije dostupna</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Na ugrađenoj stranici na ovoj stranici navodi se sljedeće</translation>
 <translation id="5205222826937269299">Ime je obavezno</translation>
 <translation id="5209518306177824490">SHA-1 otisak prsta</translation>
@@ -1458,7 +1456,6 @@ Dodatne pojedinosti:
 <translation id="725866823122871198">Sigurnu vezu s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nije moguće uspostaviti jer datum i vrijeme na računalu (<ph name="DATE_AND_TIME" />) nisu točni.</translation>
 <translation id="7260504762447901703">Opoziv pristupa</translation>
 <translation id="7275334191706090484">Upravljane oznake</translation>
-<translation id="7288778322931489286">Vaš je administrator omogućio Enterprise Service Hooks u vašem pregledniku. Te kuke imaju pristup nekim vašim podacima.</translation>
 <translation id="7292031607255951991">Ime primatelja</translation>
 <translation id="7298195798382681320">Preporučeno</translation>
 <translation id="7300012071106347854">Kobaltno plava</translation>
@@ -1816,7 +1813,6 @@ Dodatne pojedinosti:
 <translation id="8866481888320382733">Pogreška pri analizi postavki pravila</translation>
 <translation id="8866928039507595380">Presavijanje</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Podatke o sigurnosnim događajima koje je označio Enterprise Service Hooks podijelite s administratorom. To može uključivati URL-ove stranica koje posjetite, nazive ili metapodatke datoteka i korisničko ime koje koristite za prijavu na svoj uređaj i Chrome.</translation>
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8870494189203302833">Istim redoslijedom prema dolje</translation>
 <translation id="8874824191258364635">Unesite važeći broj kreditne kartice</translation>

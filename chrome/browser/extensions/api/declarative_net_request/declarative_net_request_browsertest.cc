@@ -390,7 +390,7 @@ class DeclarativeNetRequestBrowserTest
         "Extensions.DeclarativeNetRequest.LoadRulesetResult",
         RulesetMatcher::kLoadSuccess /*sample*/, 1 /*count*/);
 
-    EXPECT_TRUE(HasValidIndexedRuleset(*extension, profile()));
+    EXPECT_TRUE(AreAllIndexedStaticRulesetsValid(*extension, profile()));
 
     // Wait for the background page to load if needed.
     if (flags_ & kConfig_HasBackgroundScript)
@@ -1877,7 +1877,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   const Extension* extension = extension_registry()->GetExtensionById(
       extension_id, ExtensionRegistry::ENABLED);
-  RulesetSource static_source = RulesetSource::CreateStatic(*extension);
+  std::vector<RulesetSource> static_sources =
+      RulesetSource::CreateStatic(*extension);
+  ASSERT_EQ(1u, static_sources.size());
   RulesetSource dynamic_source =
       RulesetSource::CreateDynamic(profile(), *extension);
 
@@ -1921,7 +1923,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Test static ruleset re-indexing.
   {
     SCOPED_TRACE("Static ruleset corruption");
-    corrupt_file_for_checksum_mismatch(static_source.indexed_path());
+    corrupt_file_for_checksum_mismatch(static_sources[0].indexed_path());
 
     base::HistogramTester tester;
     test_extension_works_after_reload();
@@ -1968,7 +1970,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   {
     SCOPED_TRACE("Static and dynamic ruleset corruption");
     corrupt_file_for_checksum_mismatch(dynamic_source.indexed_path());
-    corrupt_file_for_checksum_mismatch(static_source.indexed_path());
+    corrupt_file_for_checksum_mismatch(static_sources[0].indexed_path());
 
     base::HistogramTester tester;
     test_extension_works_after_reload();
@@ -2005,12 +2007,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       last_loaded_extension_id(), ExtensionRegistry::ENABLED);
   ASSERT_TRUE(extension);
 
-  RulesetSource source = RulesetSource::CreateStatic(*extension);
+  std::vector<RulesetSource> sources = RulesetSource::CreateStatic(*extension);
+  ASSERT_EQ(1u, sources.size());
+
   // Mimic extension prefs corruption by overwriting the indexed ruleset
   // checksum.
   const int kInvalidRulesetChecksum = -1;
   ExtensionPrefs::Get(profile())->SetDNRStaticRulesetChecksum(
-      extension_id, source.id(), kInvalidRulesetChecksum);
+      extension_id, sources[0].id(), kInvalidRulesetChecksum);
 
   TestExtensionRegistryObserver registry_observer(
       ExtensionRegistry::Get(profile()), extension_id);

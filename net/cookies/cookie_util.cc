@@ -75,11 +75,8 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
 }
 
 CookieOptions::SameSiteCookieContext::CrossSchemeness ComputeSchemeChange(
-    CookieOptions::SameSiteCookieContext same_site_type,
     const GURL& url,
     const SiteForCookies& site_for_cookies) {
-  DCHECK(same_site_type.context >=
-         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX);
 
   CookieOptions::SameSiteCookieContext::CrossSchemeness cross_schemeness =
       CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE;
@@ -115,11 +112,8 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
       same_site_type.context =
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX;
     }
-
-    same_site_type.cross_schemeness =
-        ComputeSchemeChange(same_site_type, url, site_for_cookies);
   }
-
+  same_site_type.cross_schemeness = ComputeSchemeChange(url, site_for_cookies);
   return same_site_type;
 }
 
@@ -458,7 +452,7 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
     same_site_context.context =
         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT;
     same_site_context.cross_schemeness =
-        ComputeSchemeChange(same_site_context, url, site_for_cookies);
+        ComputeSchemeChange(url, site_for_cookies);
     return same_site_context;
   }
 
@@ -485,7 +479,7 @@ ComputeSameSiteContextForScriptGet(const GURL& url,
     CookieOptions::SameSiteCookieContext same_site_context(
         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT);
     same_site_context.cross_schemeness =
-        ComputeSchemeChange(same_site_context, url, site_for_cookies);
+        ComputeSchemeChange(url, site_for_cookies);
     return same_site_context;
   }
   return ComputeSameSiteContext(url, site_for_cookies, initiator);
@@ -502,14 +496,13 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
   if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
     same_site_context.context =
         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX;
-    same_site_context.cross_schemeness =
-        ComputeSchemeChange(same_site_context, url, site_for_cookies);
-    return same_site_context;
   } else {
     same_site_context.context =
         CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE;
-    return same_site_context;
   }
+  same_site_context.cross_schemeness =
+      ComputeSchemeChange(url, site_for_cookies);
+  return same_site_context;
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
@@ -520,14 +513,13 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
   if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
     same_site_context.context =
         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX;
-    same_site_context.cross_schemeness =
-        ComputeSchemeChange(same_site_context, url, site_for_cookies);
-    return same_site_context;
   } else {
     same_site_context.context =
         CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE;
-    return same_site_context;
   }
+  same_site_context.cross_schemeness =
+      ComputeSchemeChange(url, site_for_cookies);
+  return same_site_context;
 }
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
@@ -540,14 +532,13 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
   if (attach_same_site_cookies || site_for_cookies.IsFirstParty(url)) {
     same_site_context.context =
         CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT;
-    same_site_context.cross_schemeness =
-        ComputeSchemeChange(same_site_context, url, site_for_cookies);
-    return same_site_context;
   } else {
     same_site_context.context =
         CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE;
-    return same_site_context;
   }
+  same_site_context.cross_schemeness =
+      ComputeSchemeChange(url, site_for_cookies);
+  return same_site_context;
 }
 
 bool IsSameSiteByDefaultCookiesEnabled() {

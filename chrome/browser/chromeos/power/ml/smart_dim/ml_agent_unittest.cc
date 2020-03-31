@@ -71,8 +71,8 @@ void LoadDownloadableSmartDimComponent(const double& threshold) {
       GetTestDataPath("20181115_example_preprocessor_config.pb");
   CHECK(base::ReadFileToString(pb_path, &pb_string));
 
-  SmartDimMlAgent::GetInstance()->OnComponentReady(json_string, pb_string,
-                                                   model_string);
+  SmartDimMlAgent::GetInstance()->OnComponentReady(
+      std::make_tuple(json_string, pb_string, model_string));
 }
 
 UserActivityEvent::Features DefaultFeatures() {

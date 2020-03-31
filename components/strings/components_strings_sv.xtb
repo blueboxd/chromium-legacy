@@ -548,7 +548,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3366477098757335611">Visa kort</translation>
 <translation id="3369192424181595722">Fel på klockan</translation>
 <translation id="337363190475750230">Tagen ur bruk</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> har aktiverat Enterprise Service Hooks i webbläsaren. Dessa hook-funktioner har åtkomst till en del av din data.</translation>
 <translation id="3377144306166885718">En föråldrad version av TLS används på servern.</translation>
 <translation id="3377188786107721145">Fel vid analys av policyn</translation>
 <translation id="3377736046129930310">Verifiera kreditkort snabbare med skärmlås</translation>
@@ -985,7 +984,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5179510805599951267">Inte på <ph name="ORIGINAL_LANGUAGE" />? Rapportera felet</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="519422657042045905">Kommentering är inte tillgängligt</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">På en inbäddad sida på den här sidan står det</translation>
 <translation id="5205222826937269299">Namn måste anges</translation>
 <translation id="5209518306177824490">SHA-1-fingeravtryck</translation>
@@ -1459,7 +1457,6 @@ Mer information.
 <translation id="725866823122871198">Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom datorns datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.</translation>
 <translation id="7260504762447901703">Återkalla åtkomst</translation>
 <translation id="7275334191706090484">Hanterade bokmärken</translation>
-<translation id="7288778322931489286">Administratören har aktiverat Enterprise Service Hooks i webbläsaren. Dessa hook-funktioner har åtkomst till en del av din data.</translation>
 <translation id="7292031607255951991">Mottagarens namn</translation>
 <translation id="7298195798382681320">Rekommenderas</translation>
 <translation id="7300012071106347854">Koboltblå</translation>
@@ -1817,7 +1814,6 @@ Mer information:
 <translation id="8866481888320382733">Det uppstod ett fel när policyinställningarna analyserades</translation>
 <translation id="8866928039507595380">Vikning</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Dela data om säkerhetshändelser som flaggats av Enterprise Service Hooks med administratören. Det kan inkludera webbadresser till sidor du besöker, filnamn eller metadata och användarnamnet du loggar in på dina enheter och Chrome med.</translation>
 <translation id="8870413625673593573">Nyligen stängda</translation>
 <translation id="8870494189203302833">Samma ordning – framsidan nedåt</translation>
 <translation id="8874824191258364635">Ange ett giltigt kortnummer</translation>

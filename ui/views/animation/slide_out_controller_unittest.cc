@@ -4,6 +4,9 @@
 
 #include "ui/views/animation/slide_out_controller.h"
 
+#include <memory>
+#include <utility>
+
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"

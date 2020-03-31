@@ -27,6 +27,7 @@ const char kReferrerPolicy[] = "always";
 const char kLinkText[] = "link text";
 const char kJavaScriptLinkUrl[] = "javascript://src.url/";
 const char kDataUrl[] = "data://foo.bar/";
+const char kAlt[] = "alt text";
 const char kLinkToTruncate[] =
     "https://subdomain.domain.com/site?key=value&key=value&key=value\
   &key=value&key=value&key=value&key=value&key=value";
@@ -165,8 +166,22 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestTruncateTitle) {
     kContextMenuElementHyperlink : @(kLinkToTruncate),
   });
 
-  EXPECT_GT(strlen(kLinkToTruncate), kContextMenuMaxTitleLength);
+  ASSERT_GT(strlen(kLinkToTruncate), kContextMenuMaxTitleLength);
   EXPECT_EQ(params.menu_title.length, kContextMenuMaxTitleLength);
+}
+
+// Tests that the menu title prepends the element's alt text if it is an image
+// without a link.
+TEST_F(ContextMenuParamsUtilsTest,
+       DictionaryConstructorTestPrependAltForImage) {
+  web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
+    kContextMenuElementSource : @(kSrcUrl),
+    kContextMenuElementAlt : @(kAlt),
+  });
+
+  NSString* title = [NSString stringWithFormat:@"%@ – %@", @(kAlt), @(kSrcUrl)];
+
+  EXPECT_NSEQ(params.menu_title, title);
 }
 
 }  // namespace web

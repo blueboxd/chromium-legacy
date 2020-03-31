@@ -161,53 +161,56 @@ def RunPackage(output_dir, target, package_paths, package_name,
   system_logger = (
       _AttachKernelLogReader(target) if args.system_logging else None)
   try:
-    if system_logger:
-      # Spin up a thread to asynchronously dump the system log to stdout
-      # for easier diagnoses of early, pre-execution failures.
-      log_output_quit_event = multiprocessing.Event()
-      log_output_thread = threading.Thread(
-          target=lambda: _DrainStreamToStdout(system_logger.stdout,
-                                              log_output_quit_event))
-      log_output_thread.daemon = True
-      log_output_thread.start()
+    with target.GetAmberRepo():
+      if system_logger:
+        # Spin up a thread to asynchronously dump the system log to stdout
+        # for easier diagnoses of early, pre-execution failures.
+        log_output_quit_event = multiprocessing.Event()
+        log_output_thread = threading.Thread(
+            target=
+            lambda: _DrainStreamToStdout(system_logger.stdout, log_output_quit_event)
+        )
+        log_output_thread.daemon = True
+        log_output_thread.start()
 
-    target.InstallPackage(package_paths)
+      target.InstallPackage(package_paths)
 
-    if system_logger:
-      log_output_quit_event.set()
-      log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
+      if system_logger:
+        log_output_quit_event.set()
+        log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
 
-    logging.info('Running application.')
-    command = ['run', _GetComponentUri(package_name)] + package_args
-    process = target.RunCommandPiped(command,
-                                     stdin=open(os.devnull, 'r'),
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
+      logging.info('Running application.')
+      command = ['run', _GetComponentUri(package_name)] + package_args
+      process = target.RunCommandPiped(
+          command,
+          stdin=open(os.devnull, 'r'),
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT)
 
-    if system_logger:
-      output_stream = MergedInputStream([process.stdout,
-                                         system_logger.stdout]).Start()
-    else:
-      output_stream = process.stdout
+      if system_logger:
+        output_stream = MergedInputStream(
+            [process.stdout, system_logger.stdout]).Start()
+      else:
+        output_stream = process.stdout
 
-    # Run the log data through the symbolizer process.
-    build_ids_paths = map(
-        lambda package_path: os.path.join(
-            os.path.dirname(package_path), 'ids.txt'),
-        package_paths)
-    output_stream = SymbolizerFilter(output_stream, build_ids_paths)
+      # Run the log data through the symbolizer process.
+      build_ids_paths = map(
+          lambda package_path: os.path.join(
+              os.path.dirname(package_path), 'ids.txt'),
+          package_paths)
+      output_stream = SymbolizerFilter(output_stream, build_ids_paths)
 
-    for next_line in output_stream:
-      print(next_line.rstrip())
+      for next_line in output_stream:
+        print(next_line.rstrip())
 
-    process.wait()
-    if process.returncode == 0:
-      logging.info('Process exited normally with status code 0.')
-    else:
-      # The test runner returns an error status code if *any* tests fail,
-      # so we should proceed anyway.
-      logging.warning('Process exited with status code %d.' %
-                      process.returncode)
+      process.wait()
+      if process.returncode == 0:
+        logging.info('Process exited normally with status code 0.')
+      else:
+        # The test runner returns an error status code if *any* tests fail,
+        # so we should proceed anyway.
+        logging.warning(
+            'Process exited with status code %d.' % process.returncode)
 
   finally:
     if system_logger:

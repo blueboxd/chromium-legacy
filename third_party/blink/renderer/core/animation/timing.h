@@ -63,6 +63,21 @@ struct CORE_EXPORT Timing {
     kBackwards,
   };
 
+  // Timing properties set via AnimationEffect.updateTiming override their
+  // corresponding CSS properties.
+  enum AnimationTimingOverride {
+    kOverrideNode = 0,
+    kOverrideDirection = 1,
+    kOverrideDuration = 1 << 1,
+    kOverrideEndDelay = 1 << 2,
+    kOverideFillMode = 1 << 3,
+    kOverrideIterationCount = 1 << 4,
+    kOverrideIterationStart = 1 << 5,
+    kOverrideStartDelay = 1 << 6,
+    kOverrideTimingFunction = 1 << 7,
+    kOverrideAll = (1 << 8) - 1
+  };
+
   using FillMode = CompositorKeyframeModel::FillMode;
   using PlaybackDirection = CompositorKeyframeModel::Direction;
 
@@ -81,7 +96,8 @@ struct CORE_EXPORT Timing {
         iteration_count(1),
         iteration_duration(base::nullopt),
         direction(PlaybackDirection::NORMAL),
-        timing_function(LinearTimingFunction::Shared()) {}
+        timing_function(LinearTimingFunction::Shared()),
+        timing_overrides(kOverrideNode) {}
 
   void AssertValid() const {
     DCHECK(std::isfinite(start_delay));
@@ -116,6 +132,16 @@ struct CORE_EXPORT Timing {
 
   bool operator!=(const Timing& other) const { return !(*this == other); }
 
+  // Explicit changes to animation timing through the web animations API,
+  // override timing changes due to CSS style.
+  void SetTimingOverride(AnimationTimingOverride override) {
+    timing_overrides |= override;
+  }
+  bool HasTimingOverride(AnimationTimingOverride override) {
+    return timing_overrides & override;
+  }
+  bool HasTimingOverrides() { return timing_overrides != kOverrideNode; }
+
   double start_delay;
   double end_delay;
   FillMode fill_mode;
@@ -126,6 +152,10 @@ struct CORE_EXPORT Timing {
 
   PlaybackDirection direction;
   scoped_refptr<TimingFunction> timing_function;
+  // Mask of timing attributes that are set by calls to
+  // AnimationEffect.updateTiming. Once set, these attributes ignore changes
+  // based on the CSS style.
+  uint16_t timing_overrides;
 
   struct CalculatedTiming {
     DISALLOW_NEW();

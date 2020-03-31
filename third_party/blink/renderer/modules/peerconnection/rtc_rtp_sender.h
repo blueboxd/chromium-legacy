@@ -19,12 +19,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
-namespace webrtc {
-namespace video_coding {
-class EncodedFrame;
-}  // namespace video_coding
-}  // namespace webrtc
-
 namespace blink {
 
 class ExceptionState;
@@ -93,9 +87,7 @@ class RTCRtpSender final : public ScriptWrappable {
   void UnregisterEncodedVideoStreamCallback();
   void InitializeEncodedVideoStreams(ScriptState*);
   void OnFrameFromEncoder(
-      std::unique_ptr<webrtc::video_coding::EncodedFrame> frame,
-      std::vector<uint8_t> additional_data,
-      uint32_t ssrc);
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame);
 
   Member<RTCPeerConnection> pc_;
   std::unique_ptr<RTCRtpSenderPlatform> sender_;

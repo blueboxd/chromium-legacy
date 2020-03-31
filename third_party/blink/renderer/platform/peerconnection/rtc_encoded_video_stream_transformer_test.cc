@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/frame_transformer_interface.h"
-#include "third_party/webrtc/api/video/encoded_frame.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace blink {
@@ -31,15 +30,13 @@ class MockWebRtcTransformedFrameCallback
     : public webrtc::TransformedFrameCallback {
  public:
   MOCK_METHOD1(OnTransformedFrame,
-               void(std::unique_ptr<webrtc::video_coding::EncodedFrame>));
+               void(std::unique_ptr<webrtc::TransformableFrameInterface>));
 };
 
 class MockTransformerCallbackHolder {
  public:
-  MOCK_METHOD3(OnEncodedFrame,
-               void(std::unique_ptr<webrtc::video_coding::EncodedFrame>,
-                    std::vector<uint8_t>,
-                    uint32_t));
+  MOCK_METHOD1(OnEncodedFrame,
+               void(std::unique_ptr<webrtc::TransformableVideoFrameInterface>));
 };
 
 }  // namespace
@@ -93,9 +90,9 @@ TEST_F(RTCEncodedVideoStreamTransformerTest,
   // WebRTC thread.
   PostCrossThreadTask(
       *webrtc_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&webrtc::FrameTransformerInterface::TransformFrame,
-                          encoded_video_stream_transformer_.Delegate(), nullptr,
-                          std::vector<uint8_t>(), 0));
+      CrossThreadBindOnce(&webrtc::FrameTransformerInterface::Transform,
+                          encoded_video_stream_transformer_.Delegate(),
+                          nullptr));
   task_environment_.RunUntilIdle();
 }
 

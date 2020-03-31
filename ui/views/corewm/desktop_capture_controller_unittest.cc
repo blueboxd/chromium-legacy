@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/capture_controller.h"
-
 #include <memory>
 
 #include "base/logging.h"
@@ -21,6 +19,7 @@
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/capture_controller.h"
 
 // NOTE: these tests do native capture, so they have to be in
 // interactive_ui_tests.

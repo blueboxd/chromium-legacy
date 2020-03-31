@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">ต่อไป</translation>
 <translation id="2501278716633472235">ย้อนกลับ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{บล็อกคุกกี้ 1 รายการ}other{บล็อกคุกกี้ # รายการ}}</translation>
+<translation id="257931822824936280">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2704606927547763573">คัดลอกแล้ว</translation>
 <translation id="2968755619301702150">เครื่องมือดูใบรับรอง</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">คัดลอกลิงก์</translation>
 <translation id="4002066346123236978">ชื่อ</translation>
 <translation id="4570913071927164677">รายละเอียด</translation>
+<translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
+<translation id="4883854917563148705">รีเซ็ตการตั้งค่าที่มีการจัดการไม่ได้</translation>
 <translation id="497421865427891073">ไปข้างหน้า</translation>
+<translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
 <translation id="5317780077021120954">บันทึก</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
+<translation id="8206354486702514201">ผู้ดูแลระบบของคุณกำหนดให้ใช้การตั้งค่านี้</translation>
 <translation id="8249310407154411074">เลื่อนไปบนสุด</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8609465669617005112">เลื่อนขึ้น</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
+<translation id="9019902583201351841">มีการจัดการโดยผู้ปกครอง</translation>
 </translationbundle>

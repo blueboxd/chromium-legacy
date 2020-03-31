@@ -382,6 +382,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // Test helpers:
   SwitchAccessEventHandler* GetSwitchAccessEventHandlerForTest();
+  void no_switch_access_disable_confirmation_dialog_for_testing(
+      bool skip_dialog) {
+    no_switch_access_disable_confirmation_dialog_for_testing_ = skip_dialog;
+  }
 
  private:
   // Populate |features_| with the feature of the correct type.
@@ -416,6 +420,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateShortcutsEnabledFromPref();
   void UpdateTabletModeShelfNavigationButtonsFromPref();
 
+  void SwitchAccessDisableDialogClosed(bool disable_dialog_accepted);
   void MaybeCreateSelectToSpeakEventHandler();
   void MaybeCreateSwitchAccessEventHandler();
 
@@ -442,6 +447,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   std::unique_ptr<SwitchAccessEventHandler> switch_access_event_handler_;
   SwitchAccessEventHandlerDelegate* switch_access_event_handler_delegate_ =
       nullptr;
+  bool no_switch_access_disable_confirmation_dialog_for_testing_ = false;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

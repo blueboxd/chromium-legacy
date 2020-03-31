@@ -122,10 +122,10 @@ struct ReadJSONRulesResult {
 // Holds paths for an extension ruleset.
 class RulesetSource {
  public:
-  // Creates RulesetSource corresponding to the static ruleset in the extension
-  // package. This must only be called for extensions which specified a
-  // declarative ruleset.
-  static RulesetSource CreateStatic(const Extension& extension);
+  // Creates RulesetSources corresponding to the static rulesets in the
+  // extension package. This must only be called for extensions which specified
+  // a declarative ruleset.
+  static std::vector<RulesetSource> CreateStatic(const Extension& extension);
 
   // Creates RulesetSource corresponding to the dynamic rules added by the
   // extension. This must only be called for extensions which specified a

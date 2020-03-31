@@ -41,6 +41,8 @@ class InteractionResponse {
 
   // A simple textual response.
   InteractionResponse* AddTextResponse(const std::string& text);
+  // A suggestion chip response.
+  InteractionResponse* AddSuggestionChip(const std::string& text);
   // If used this will cause us to finish the interaction by passing the given
   // |resolution| to |AssistantInteractionSubscriber::OnInteractionFinished|.
   InteractionResponse* AddResolution(Resolution resolution);

@@ -968,6 +968,55 @@ TEST_P(AppListAnimationTest, AppListShowPeekingWhileClosing) {
   EXPECT_EQ(PeekingHeightTop(), GetAppListTargetTop());
 }
 
+// Tests that how search box opacity is animated when the app list is shown and
+// closed.
+TEST_P(AppListAnimationTest, SearchBoxOpacityDuringShowAndClose) {
+  // Set a transition duration that prevents the app list view from snapping to
+  // the final position.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  ShowAppListNow();
+
+  SearchBoxView* const search_box = GetSearchBoxView();
+
+  // The search box opacity should start  at 0, and animate to 1.
+  EXPECT_EQ(0.0f, search_box->layer()->opacity());
+  EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
+
+  // If the app list is closed while the animation is still in progress, the
+  // search box opacity should animate from the current opacity.
+  DismissAppListNow();
+
+  EXPECT_EQ(0.0f, search_box->layer()->opacity());
+  EXPECT_EQ(0.0f, search_box->layer()->GetTargetOpacity());
+
+  search_box->layer()->GetAnimator()->StopAnimating();
+
+  // When show again, verify the app list animates from 0 opacity again.
+  ShowAppListNow();
+
+  EXPECT_EQ(0.0f, search_box->layer()->opacity());
+  EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
+
+  search_box->layer()->GetAnimator()->StopAnimating();
+  EXPECT_EQ(1.0f, search_box->layer()->opacity());
+
+  // Search box opacity animates from the current (full opacity) when closed
+  // from shown state.
+  DismissAppListNow();
+
+  EXPECT_EQ(1.0f, search_box->layer()->opacity());
+  EXPECT_EQ(0.0f, search_box->layer()->GetTargetOpacity());
+
+  // If the app list is show again during close animation, the search box
+  // opacity should animate from the current value.
+  ShowAppListNow();
+
+  EXPECT_EQ(1.0f, search_box->layer()->opacity());
+  EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
+}
+
 class AppListControllerImplMetricsTest : public AshTestBase {
  public:
   AppListControllerImplMetricsTest() = default;

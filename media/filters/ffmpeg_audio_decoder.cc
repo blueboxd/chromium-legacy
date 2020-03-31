@@ -95,7 +95,7 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   if (!ConfigureDecoder(config)) {
     av_sample_format_ = 0;
-    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 

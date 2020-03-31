@@ -14,6 +14,7 @@
   OP(kColorId_DialogBackground),                                               \
   OP(kColorId_DialogForeground),                                               \
   OP(kColorId_BubbleBackground),                                               \
+  OP(kColorId_BubbleForeground),                                               \
   OP(kColorId_BubbleFooterBackground),                                         \
   /* FocusableBorder */                                                        \
   OP(kColorId_FocusedBorderColor),                                             \

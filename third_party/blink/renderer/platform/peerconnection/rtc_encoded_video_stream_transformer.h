@@ -23,10 +23,7 @@ class SingleThreadTaskRunner;
 namespace webrtc {
 class FrameTransformerInterface;
 class TransformedFrameCallback;
-
-namespace video_coding {
-class EncodedFrame;
-}  // namespace video_coding
+class TransformableVideoFrameInterface;
 }  // namespace webrtc
 
 namespace blink {
@@ -34,10 +31,8 @@ namespace blink {
 class PLATFORM_EXPORT RTCEncodedVideoStreamTransformer {
  public:
   using TransformerCallback = base::RepeatingCallback<void(
-      std::unique_ptr<webrtc::video_coding::EncodedFrame>,
-      std::vector<uint8_t>,
-      uint32_t)>;
-  RTCEncodedVideoStreamTransformer(
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface>)>;
+  explicit RTCEncodedVideoStreamTransformer(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
   // Called by WebRTC to let us know about a callback object to send transformed
@@ -53,13 +48,13 @@ class PLATFORM_EXPORT RTCEncodedVideoStreamTransformer {
 
   // Called by WebRTC to notify of new untransformed frames from the WebRTC
   // stack. Runs on an internal WebRTC thread.
-  void TransformFrame(std::unique_ptr<webrtc::video_coding::EncodedFrame>,
-                      std::vector<uint8_t> additional_data,
-                      uint32_t ssrc);
+  void TransformFrame(
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface>);
 
   // Send a transformed frame to the WebRTC sink. Must run on the main
   // thread.
-  void SendFrameToSink(std::unique_ptr<webrtc::video_coding::EncodedFrame>);
+  void SendFrameToSink(
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame);
 
   // Set a callback to be invoked on every untransformed frame. Must run on the
   // main thread.

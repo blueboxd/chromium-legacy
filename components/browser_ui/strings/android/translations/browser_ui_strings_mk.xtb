@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Продолжи</translation>
 <translation id="2501278716633472235">Врати се</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 колаче е блокирано}one{# колаче е блокирано}other{# колачиња се блокирани}}</translation>
+<translation id="257931822824936280">Проширено - кликни да се сокрие.</translation>
 <translation id="2653659639078652383">Поднеси</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2968755619301702150">Прикажувач на сертификат</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Копирај линк</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4570913071927164677">Детали</translation>
+<translation id="4645575059429386691">Управувано од вашиот родител</translation>
+<translation id="4883854917563148705">Управуваните поставки не може да се ресетираат</translation>
 <translation id="497421865427891073">Оди напред</translation>
+<translation id="5100237604440890931">Проширено - кликни да се прошири.</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5301954838959518834">Добро, сфатив</translation>
 <translation id="5317780077021120954">Зачувај</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7846076177841592234">Откажи избор</translation>
 <translation id="8131740175452115882">Потврди</translation>
+<translation id="8206354486702514201">Поставката ја наметнува администраторот.</translation>
 <translation id="8249310407154411074">Премести најгоре</translation>
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8676374126336081632">Јасно внесување</translation>
 <translation id="8725066075913043281">Обидете се повторно</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="9019902583201351841">Управувано од вашите родители</translation>
 </translationbundle>

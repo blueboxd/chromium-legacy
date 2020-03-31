@@ -546,7 +546,6 @@
 <translation id="3366477098757335611">הצגת כרטיסים</translation>
 <translation id="3369192424181595722">שגיאת שעון</translation>
 <translation id="337363190475750230">ניהול התצורה בוטל</translation>
-<translation id="3376829916920036789">‏הדומיין <ph name="ENROLLMENT_DOMAIN" /> הפעיל את Enterprise Service Hooks בדפדפן שלך. להוקים (hooks) האלה יש גישה לחלק מהנתונים שלך.</translation>
 <translation id="3377144306166885718">‏בשרת נעשה שימוש בגרסה מיושנת של TLS.</translation>
 <translation id="3377188786107721145">שגיאה בניתוח המדיניות</translation>
 <translation id="3377736046129930310">נעילת המסך מאפשרת לך לאשר כרטיסים מהר יותר</translation>
@@ -987,7 +986,6 @@ Del</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דיווח על שגיאה זו</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
 <translation id="519422657042045905">ההערה לא זמינה</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">דף מוטמע בדף הזה אומר</translation>
 <translation id="5205222826937269299">שם (חובה)</translation>
 <translation id="5209518306177824490">‏טביעת אצבע SHA-1</translation>
@@ -1462,7 +1460,6 @@ Del</translation>
 <translation id="725866823122871198">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במחשב שלך שגויים.</translation>
 <translation id="7260504762447901703">בטל גישה</translation>
 <translation id="7275334191706090484">סימניות מנוהלות</translation>
-<translation id="7288778322931489286">‏מנהל המערכת הפעיל את Enterprise Service Hooks בדפדפן שלך. להוקים (hooks) האלה יש גישה לחלק מהנתונים שלך.</translation>
 <translation id="7292031607255951991">שם הנמען</translation>
 <translation id="7298195798382681320">מומלצים</translation>
 <translation id="7300012071106347854">כחול קובלט</translation>
@@ -1820,7 +1817,6 @@ Del</translation>
 <translation id="8866481888320382733">שגיאה בניתוח הגדרות המדיניות</translation>
 <translation id="8866928039507595380">קיפול</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">‏שיתוף נתונים לגבי אירועי אבטחה שסומנו על ידי Enterprise Service Hooks עם מנהל המערכת שלך. נתונים אלה עשויים לכלול כתובות URL של דפים שביקרת בהם, שמות של קבצים או מטא-נתונים, ואת שם המשתמש שנכנסת באמצעותו אל המכשיר ואל Chrome.</translation>
 <translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8870494189203302833">באותו סדר עם הפנים כלפי מטה</translation>
 <translation id="8874824191258364635">עליך להזין מספר כרטיס חוקי</translation>

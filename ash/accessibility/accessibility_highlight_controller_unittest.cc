@@ -4,12 +4,15 @@
 
 #include "ash/accessibility/accessibility_highlight_controller.h"
 
+#include <stdint.h>
+
 #include <cmath>
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_cursor_ring_layer.h"
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -59,30 +62,21 @@ class AccessibilityHighlightControllerTest : public AshTestBase {
   }
 
   void CaptureBeforeImage(const gfx::Rect& bounds) {
-    Capture(bounds);
-    if (before_bmp_.tryAllocPixels(image_.AsBitmap().info())) {
-      image_.AsBitmap().readPixels(before_bmp_.info(), before_bmp_.getPixels(),
-                                   before_bmp_.rowBytes(), 0, 0);
-    }
+    Capture(bounds, &before_);
   }
 
-  void CaptureAfterImage(const gfx::Rect& bounds) {
-    Capture(bounds);
-    if (after_bmp_.tryAllocPixels(image_.AsBitmap().info())) {
-      image_.AsBitmap().readPixels(after_bmp_.info(), after_bmp_.getPixels(),
-                                   after_bmp_.rowBytes(), 0, 0);
-    }
-  }
+  void CaptureAfterImage(const gfx::Rect& bounds) { Capture(bounds, &after_); }
 
   void ComputeImageStats() {
-    diff_count_ = 0;
     double accum[4] = {0, 0, 0, 0};
-    for (int x = 0; x < before_bmp_.width(); ++x) {
-      for (int y = 0; y < before_bmp_.height(); ++y) {
-        SkColor before_color = before_bmp_.getColor(x, y);
-        SkColor after_color = after_bmp_.getColor(x, y);
+    SkBitmap before = before_.AsBitmap();
+    SkBitmap after = after_.AsBitmap();
+    for (int x = 0; x < before.width(); ++x) {
+      for (int y = 0; y < before.height(); ++y) {
+        SkColor before_color = before.getColor(x, y);
+        SkColor after_color = after.getColor(x, y);
         if (before_color != after_color) {
-          diff_count_++;
+          ++diff_count_;
           accum[0] += SkColorGetB(after_color);
           accum[1] += SkColorGetG(after_color);
           accum[2] += SkColorGetR(after_color);
@@ -90,40 +84,37 @@ class AccessibilityHighlightControllerTest : public AshTestBase {
         }
       }
     }
-    average_diff_color_ =
-        SkColorSetARGB(static_cast<unsigned char>(accum[3] / diff_count_),
-                       static_cast<unsigned char>(accum[2] / diff_count_),
-                       static_cast<unsigned char>(accum[1] / diff_count_),
-                       static_cast<unsigned char>(accum[0] / diff_count_));
+    if (diff_count_ > 0) {
+      average_diff_color_ =
+          SkColorSetARGB(static_cast<uint8_t>(accum[3] / diff_count_),
+                         static_cast<uint8_t>(accum[2] / diff_count_),
+                         static_cast<uint8_t>(accum[1] / diff_count_),
+                         static_cast<uint8_t>(accum[0] / diff_count_));
+    }
   }
 
   int diff_count() const { return diff_count_; }
   SkColor average_diff_color() const { return average_diff_color_; }
 
-  void Capture(const gfx::Rect& bounds) {
+  void Capture(const gfx::Rect& bounds, gfx::Image* image) {
     // Occasionally we don't get any pixels the first try.
-    // Keep trying until we get the correct size butmap and
-    // the first pixel is not transparent.
     while (true) {
       aura::Window* window = Shell::GetPrimaryRootWindow();
+      const auto on_got_snapshot = [](base::RunLoop* run_loop,
+                                      gfx::Image* image, gfx::Image got_image) {
+        *image = got_image;
+        run_loop->Quit();
+      };
       base::RunLoop run_loop;
-      ui::GrabWindowSnapshotAndScaleAsync(
-          window, bounds, bounds.size(),
-          base::BindOnce(
-              [](base::RunLoop* run_loop, gfx::Image* image,
-                 gfx::Image got_image) {
-                run_loop->Quit();
-                *image = got_image;
-              },
-              &run_loop, &image_));
+      ui::GrabWindowSnapshotAsync(
+          window, bounds, base::BindOnce(on_got_snapshot, &run_loop, image));
       run_loop.Run();
-      SkBitmap bitmap = image_.AsBitmap();
-      if (bitmap.width() != bounds.width() ||
-          bitmap.height() != bounds.height()) {
+      if (image->Size() != bounds.size()) {
         LOG(INFO) << "Bitmap not correct size, trying to capture again";
         continue;
-      } else if (255 != SkColorGetA(bitmap.getColor(0, 0))) {
-        LOG(INFO) << "Bitmap is transparent, trying to capture again";
+      }
+      if (SkColorGetA(image->AsBitmap().getColor(0, 0)) != SK_AlphaOPAQUE) {
+        LOG(INFO) << "Bitmap not opaque, trying to capture again";
         continue;
       }
       break;
@@ -131,18 +122,17 @@ class AccessibilityHighlightControllerTest : public AshTestBase {
   }
 
  private:
-  gfx::Image image_;
-  SkBitmap before_bmp_;
-  SkBitmap after_bmp_;
+  gfx::Image before_;
+  gfx::Image after_;
   int diff_count_ = 0;
-  SkColor average_diff_color_ = 0;
+  SkColor average_diff_color_ = SK_ColorTRANSPARENT;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityHighlightControllerTest);
 };
 
 TEST_F(AccessibilityHighlightControllerTest, TestCaretRingDrawsBluePixels) {
   // Create a white background window for captured image color smoke test.
-  CreateTestWindowInShell(SK_ColorWHITE, -1,
+  CreateTestWindowInShell(SK_ColorWHITE, kShellWindowId_Invalid,
                           Shell::GetPrimaryRootWindow()->bounds());
 
   gfx::Rect capture_bounds(200, 300, 100, 100);
@@ -170,7 +160,7 @@ TEST_F(AccessibilityHighlightControllerTest, TestCaretRingDrawsBluePixels) {
 
 TEST_F(AccessibilityHighlightControllerTest, TestFocusRingDrawsPixels) {
   // Create a white background window for captured image color smoke test.
-  CreateTestWindowInShell(SK_ColorWHITE, -1,
+  CreateTestWindowInShell(SK_ColorWHITE, kShellWindowId_Invalid,
                           Shell::GetPrimaryRootWindow()->bounds());
 
   gfx::Rect capture_bounds(200, 300, 100, 100);

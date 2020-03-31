@@ -56,6 +56,8 @@ enum ExtractMask {
                                  // human readable value is captured.
   EXTRACT_OPTIONS     = 1 << 2,  // Extract options from
                                  // WebFormControlElement.
+  EXTRACT_BOUNDS      = 1 << 3,  // Extract bounds from WebFormControlElement,
+                                 // could trigger layout if needed.
 };
 
 // The maximum number of form fields we are willing to parse, due to
@@ -214,7 +216,17 @@ bool UnownedPasswordFormElementsAndFieldSetsToFormData(
 
 // Finds the form that contains |element| and returns it in |form|.  If |field|
 // is non-NULL, fill it with the FormField representation for |element|.
-// Returns false if the form is not found or cannot be serialized.
+// |additional_extract_mask| control what to extract beside the default mask
+// which is EXTRACT_VALUE | EXTRACT_OPTIONS. Returns false if the form is not
+// found or cannot be serialized.
+bool FindFormAndFieldForFormControlElement(
+    const blink::WebFormControlElement& element,
+    const FieldDataManager* field_data_manager,
+    ExtractMask additional_extract_mask,
+    FormData* form,
+    FormFieldData* field);
+
+// Same as above but with default ExtractMask.
 bool FindFormAndFieldForFormControlElement(
     const blink::WebFormControlElement& element,
     const FieldDataManager* field_data_manager,

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_CLOSURE_ANIMATION_MAC_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_CLOSURE_ANIMATION_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"

@@ -27,6 +27,7 @@ class COMPONENT_EXPORT(UI_GTK_X) GtkUiDelegateX11 : public GtkUiDelegate {
   ~GtkUiDelegateX11() override;
 
   // GtkUiDelegate:
+  void OnInitialized() override;
   GdkKeymap* GetGdkKeymap() override;
   GdkWindow* GetGdkWindow(gfx::AcceleratedWidget window_id) override;
   bool SetGdkWindowTransientFor(GdkWindow* window,

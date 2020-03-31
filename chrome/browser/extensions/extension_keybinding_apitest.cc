@@ -516,36 +516,6 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
   EXPECT_FALSE(ctrl_f_listener.was_satisfied());
 }
 
-// This test validates that an extension override of the Chrome bookmark
-// shortcut does not supersede the same keybinding by web pages.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest,
-                       OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  // This functionality requires a feature flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui", "1");
-
-  ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
-      << message_;
-
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(
-                     "/extensions/test_file_with_ctrl-d_keybinding.html"));
-
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(tab);
-
-  // Activate the shortcut (Ctrl+D) which should be handled by the page and send
-  // a test message.
-  DomMessageListener listener(tab);
-  ASSERT_TRUE(SendBookmarkKeyPressSync(browser()));
-  listener.Wait();
-  EXPECT_EQ(std::string("\"web page received\""), listener.message());
-}
-
 // This test validates that user-set override of the Chrome bookmark shortcut in
 // an extension that does not request it does supersede the same keybinding by
 // web pages.

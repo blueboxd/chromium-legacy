@@ -4,6 +4,8 @@
 
 #include "ui/views/examples/bubble_example.h"
 
+#include <memory>
+
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/insets.h"

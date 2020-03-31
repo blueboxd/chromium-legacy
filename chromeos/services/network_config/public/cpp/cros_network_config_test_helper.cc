@@ -12,14 +12,8 @@
 namespace chromeos {
 namespace network_config {
 
-CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper() {
-  network_state_helper_ = std::make_unique<NetworkStateTestHelper>(
-      false /* use_default_devices_and_services */);
-  network_device_handler_ =
-      chromeos::NetworkDeviceHandler::InitializeForTesting(
-          network_state_helper_->network_state_handler());
-  Initialize(/*network_configuration_handler=*/nullptr);
-}
+CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper()
+    : CrosNetworkConfigTestHelper(true) {}
 
 CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper(bool initialize) {
   network_state_helper_ = std::make_unique<NetworkStateTestHelper>(

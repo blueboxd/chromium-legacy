@@ -543,7 +543,6 @@
 <translation id="3366477098757335611">ካርዶችን ይመልከቱ</translation>
 <translation id="3369192424181595722">የሰዓት ስህተት</translation>
 <translation id="337363190475750230">አቅርቦት ተቋርጧል</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> በአሳሽዎ ላይ Enterprise Service Hooksን አንቅቷል። እነዚህን መንጠቆዎች የአንዳንድ ውሂብዎ መዳረሻ አላቸው።</translation>
 <translation id="3377144306166885718">አገልጋዩ ጊዜ ያለፈበት የTLS ስሪት ተጠቅመዋል።</translation>
 <translation id="3377188786107721145">የመምሪያ ትንተና ስህተት</translation>
 <translation id="3377736046129930310">ካርዶችን በበለጠ ፍጥነት ለማረጋገጥ የማያ ገጽ መቆለፊያን ይጠቀሙ</translation>
@@ -980,7 +979,6 @@
 <translation id="5179510805599951267">በ<ph name="ORIGINAL_LANGUAGE" /> አይደለም? ይህን ስህተት ሪፖርት ያድርጉ</translation>
 <translation id="5190835502935405962">የዕልባቶች አሞሌ</translation>
 <translation id="519422657042045905">ማብራሪያ አይገኝም</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">በዚህ ድረ-ገጽ ላይ ያለ የተካተተ ገጽ እንዲህ ይላል፦</translation>
 <translation id="5205222826937269299">ስም ያስፈልጋል</translation>
 <translation id="5209518306177824490">SHA-1 የጣት አሻራ</translation>
@@ -1450,7 +1448,6 @@
 <translation id="725866823122871198">የእርስዎ የኮምፒዩተር ቀን እና ሰዓት (<ph name="DATE_AND_TIME" />) ልክ ስላልሆኑ የግል ግንኙነት ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ሊመሰረት አይችልም።</translation>
 <translation id="7260504762447901703">መዳረሻን ሻር</translation>
 <translation id="7275334191706090484">የተዳደሩ እልባቶች</translation>
-<translation id="7288778322931489286">አስተዳዳሪዎ በአሳሽዎ ላይ Enterprise Service Hooksን አንቅተዋል። እነዚህን መንጠቆዎች የአንዳንድ ውሂብዎ መዳረሻ አላቸው።</translation>
 <translation id="7292031607255951991">የተቀባይ ስም</translation>
 <translation id="7298195798382681320">የተመከሩ</translation>
 <translation id="7300012071106347854">በራ ያለ ውሃ ሰማያዊ</translation>
@@ -1808,7 +1805,6 @@
 <translation id="8866481888320382733">የመምሪያ ቅንብሮችን መተንተን ላይ ስህተት</translation>
 <translation id="8866928039507595380">እጠፍ</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">በአስተዳዳሪዎ በEnterprise Service Hooks የተጠቆሙ የደህንነት ክስተቶች ውሂብን ማጋራት። ይህ እርስዎ የጎበኟቸው የገጾች ዩአርኤሎች፣ የፋይል ስሞች ወይም ዲበ ውሂብ፣ እና ወደ የእርስዎ መሣሪያ እና Chrome ለመግባት የተጠቀሙበት የተጠቃሚ ስም ሊያካትት ይችላል።</translation>
 <translation id="8870413625673593573">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="8870494189203302833">ተመሳሳይ ቅደም-ተከተል ፊቱ ወደ ታች</translation>
 <translation id="8874824191258364635">የሚሰራ የካርድ ቁጥር ያስገቡ</translation>

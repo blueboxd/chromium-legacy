@@ -126,6 +126,9 @@ class BackButtonVisibilityWithAccessibilityFeaturesTest
       case TestAccessibilityFeature::kSwitchAccess:
         Shell::Get()->accessibility_controller()->SetSwitchAccessEnabled(
             enabled);
+        Shell::Get()
+            ->accessibility_controller()
+            ->no_switch_access_disable_confirmation_dialog_for_testing(true);
         break;
     }
   }

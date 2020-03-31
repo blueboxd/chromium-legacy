@@ -128,9 +128,9 @@ class IsolatedPrerenderBrowserTest
     origin_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     origin_server_->ServeFilesFromSourceDirectory("chrome/test/data");
-    origin_server_->RegisterRequestMonitor(base::BindRepeating(
-        &IsolatedPrerenderBrowserTest::MonitorOriginResourceRequest,
-        base::Unretained(this)));
+    origin_server_->RegisterRequestHandler(
+        base::BindRepeating(&IsolatedPrerenderBrowserTest::HandleOriginRequest,
+                            base::Unretained(this)));
     EXPECT_TRUE(origin_server_->Start());
 
     proxy_server_ = std::make_unique<net::EmbeddedTestServer>(
@@ -150,13 +150,19 @@ class IsolatedPrerenderBrowserTest
   }
 
   void SetUp() override {
+    SetFeatures();
+    InProcessBrowserTest::SetUp();
+  }
+
+  // This browsertest uses a separate method to handle enabling/disabling
+  // features since order is tricky when doing different feature lists between
+  // base and derived classes.
+  virtual void SetFeatures() {
     scoped_feature_list_.InitWithFeatures(
         {features::kIsolatePrerenders,
          data_reduction_proxy::features::kDataReductionProxyHoldback,
          data_reduction_proxy::features::kFetchClientConfig},
         {});
-
-    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -166,6 +172,7 @@ class IsolatedPrerenderBrowserTest
     IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
 
     host_resolver()->AddRule("testorigin.com", "127.0.0.1");
+    host_resolver()->AddRule("badprobe.testorigin.com", "127.0.0.1");
     host_resolver()->AddRule("proxy.com", "127.0.0.1");
   }
 
@@ -223,6 +230,22 @@ class IsolatedPrerenderBrowserTest
     return std::move(config_client.config_);
   }
 
+  void AddSuccessfulPrefetch(const GURL& url) const {
+    IsolatedPrerenderTabHelper* tab_helper =
+        IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+    network::mojom::URLResponseHeadPtr head =
+        network::CreateURLResponseHead(net::HTTP_OK);
+    head->was_fetched_via_cache = false;
+    head->mime_type = "text/html";
+
+    tab_helper->CallHandlePrefetchResponseForTesting(
+        url, net::NetworkIsolationKey::CreateOpaqueAndNonTransient(),
+        std::move(head),
+        std::make_unique<std::string>(
+            "<html><head><title>Successful prefetch</title></head></html>"));
+  }
+
   void VerifyProxyConfig(network::mojom::CustomProxyConfigPtr config,
                          bool want_empty = false) {
     ASSERT_TRUE(config);
@@ -247,26 +270,31 @@ class IsolatedPrerenderBrowserTest
     return origin_server_->GetURL("testorigin.com", path);
   }
 
+  GURL GetOriginServerURLWithBadProbe(const std::string& path) const {
+    return origin_server_->GetURL("badprobe.testorigin.com", path);
+  }
+
  protected:
   base::OnceClosure on_proxy_request_closure_;
 
  private:
-  void MonitorOriginResourceRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleOriginRequest(
       const net::test_server::HttpRequest& request) {
-    // This method is called on embedded test server thread. Post the
-    // information on UI thread.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&IsolatedPrerenderBrowserTest::
-                                      MonitorOriginResourceRequestOnUIThread,
-                                  base::Unretained(this), request));
-  }
-
-  void MonitorOriginResourceRequestOnUIThread(
-      const net::test_server::HttpRequest& request) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // Don't care about favicons.
     if (request.GetURL().spec().find("favicon") != std::string::npos)
-      return;
+      return nullptr;
+
+    // If the badprobe origin is being requested, (which has to be checked using
+    // the Host header since the request URL is always 127.0.0.1), check if this
+    // is a probe request. The probe only requests "/" whereas the navigation
+    // will request the HTML file, i.e.: "/simple.html".
+    if (request.headers.find("Host")->second.find("badprobe.testorigin.com") !=
+            std::string::npos &&
+        request.relative_url == "/") {
+      // This is an invalid response to the net stack and will cause a NetError.
+      return std::make_unique<net::test_server::RawHttpResponse>("", "");
+    }
+
+    return nullptr;
   }
 
   void MonitorProxyResourceRequest(
@@ -392,63 +420,31 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   run_loop.Run();
 }
 
-class ProbingIsolatedPrerenderBrowserTest
+class ProbingEnabledIsolatedPrerenderBrowserTest
     : public IsolatedPrerenderBrowserTest {
  public:
-  ProbingIsolatedPrerenderBrowserTest()
-      : origin_server_for_probing_url_(GURL("https://bad.probe.com")) {}
-
-  void SetUp() override {
-    IsolatedPrerenderBrowserTest::SetUp();
-    scoped_feature_list_.InitWithFeatureState(
-        features::kIsolatePrerendersMustProbeOrigin, EnableProbe());
-
-    origin_server_for_probing_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTPS);
-    if (EnableProbe()) {
-      ASSERT_TRUE(origin_server_for_probing_->Start());
-      origin_server_for_probing_url_ = origin_server_for_probing_->base_url();
-    }
-  }
-
-  virtual bool EnableProbe() const = 0;
-
-  GURL origin_server_for_probing_url() const {
-    return origin_server_for_probing_url_;
-  }
-
-  void AddSuccessfulPrefetch(const GURL& url) const {
-    IsolatedPrerenderTabHelper* tab_helper =
-        IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
-
-    network::mojom::URLResponseHeadPtr head =
-        network::CreateURLResponseHead(net::HTTP_OK);
-    head->was_fetched_via_cache = false;
-    head->mime_type = "text/html";
-
-    tab_helper->CallHandlePrefetchResponseForTesting(
-        url, net::NetworkIsolationKey::CreateOpaqueAndNonTransient(),
-        std::move(head),
-        std::make_unique<std::string>(
-            "<html><head><title>Successful prefetch</title></head></html>"));
+  void SetFeatures() override {
+    IsolatedPrerenderBrowserTest::SetFeatures();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kIsolatePrerendersMustProbeOrigin,
+        {{"probe_timeout_ms", "100"}});
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<net::EmbeddedTestServer> origin_server_for_probing_;
-  GURL origin_server_for_probing_url_;
-};
-
-class ProbingEnabledIsolatedPrerenderBrowserTest
-    : public ProbingIsolatedPrerenderBrowserTest {
- public:
-  bool EnableProbe() const override { return true; }
 };
 
 class ProbingDisabledIsolatedPrerenderBrowserTest
-    : public ProbingIsolatedPrerenderBrowserTest {
+    : public IsolatedPrerenderBrowserTest {
  public:
-  bool EnableProbe() const override { return false; }
+  void SetFeatures() override {
+    IsolatedPrerenderBrowserTest::SetFeatures();
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kIsolatePrerendersMustProbeOrigin);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // These tests use a separate embedded test server from |origin_server_| because
@@ -457,38 +453,49 @@ class ProbingDisabledIsolatedPrerenderBrowserTest
 // |origin_server_for_probing_| is only started when probing is enabled.
 
 IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeGood) {
-  AddSuccessfulPrefetch(origin_server_for_probing_url());
+  GURL url = GetOriginServerURL("/simple.html");
 
-  ui_test_utils::NavigateToURL(browser(), origin_server_for_probing_url());
+  AddSuccessfulPrefetch(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
 
   content::NavigationEntry* entry =
       GetWebContents()->GetController().GetVisibleEntry();
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
 
+  // If served from the origin test server, the title would be "OK", but the
+  // title in the prefetched is "Successful prefetch".
   EXPECT_EQ(base::UTF8ToUTF16("Successful prefetch"),
             GetWebContents()->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeBad) {
-  AddSuccessfulPrefetch(GURL("http://does-not-exist.host"));
+  GURL url = GetOriginServerURLWithBadProbe("/simple.html");
 
-  ui_test_utils::NavigateToURL(browser(), origin_server_for_probing_url());
+  AddSuccessfulPrefetch(url);
 
-  // The navigation won't be intercepted so an error page will be displayed.
-  content::NavigationEntry* entry =
-      GetWebContents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // The navigation won't be intercepted so it will be served from the test
+  // server directly. If served from the origin test server, the title would be
+  // "OK", but the title in the prefetched is "Successful prefetch".
+  EXPECT_EQ(base::UTF8ToUTF16("OK"), GetWebContents()->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest, NoProbe) {
-  AddSuccessfulPrefetch(origin_server_for_probing_url());
+  // Use the bad probe url to ensure the probe is not being used.
+  GURL url = GetOriginServerURLWithBadProbe("/simple.html");
 
-  ui_test_utils::NavigateToURL(browser(), origin_server_for_probing_url());
+  AddSuccessfulPrefetch(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
 
   content::NavigationEntry* entry =
       GetWebContents()->GetController().GetVisibleEntry();
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
 
+  // If served from the origin test server, the title would be "OK", but the
+  // title in the prefetched is "Successful prefetch".
   EXPECT_EQ(base::UTF8ToUTF16("Successful prefetch"),
             GetWebContents()->GetTitle());
 }

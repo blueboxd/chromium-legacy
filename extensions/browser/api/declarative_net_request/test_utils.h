@@ -54,10 +54,10 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result);
 std::ostream& operator<<(std::ostream& output,
                          const base::Optional<RequestAction>& action);
 
-// Returns true if the given extension has a valid indexed ruleset. Should be
-// called on a sequence where file IO is allowed.
-bool HasValidIndexedRuleset(const Extension& extension,
-                            content::BrowserContext* browser_context);
+// Returns true if the given extension's indexed static rulesets are all valid.
+// Should be called on a sequence where file IO is allowed.
+bool AreAllIndexedStaticRulesetsValid(const Extension& extension,
+                                      content::BrowserContext* browser_context);
 
 // Helper to create a verified ruleset matcher. Populates |matcher| and
 // |expected_checksum|. Returns true on success.

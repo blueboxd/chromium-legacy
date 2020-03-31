@@ -5,6 +5,7 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"

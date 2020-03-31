@@ -18,7 +18,16 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    // String to be displayed as a result in the UI.
-    searchResultText: String,
+    /** @type {!chromeos.settings.mojom.SearchResult} */
+    searchResult: Object,
+  },
+
+  /**
+   * @return {string} Exact string of the result to be displayed.
+   */
+  getResultText_() {
+    // The C++ layer stores the text result as an array of 16 bit char codes,
+    // so it must be converted to a JS String.
+    return String.fromCharCode.apply(null, this.searchResult.resultText.data);
   },
 });

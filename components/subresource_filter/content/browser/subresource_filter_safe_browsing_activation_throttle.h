@@ -94,9 +94,7 @@ class SubresourceFilterSafeBrowsingActivationThrottle
       const SubresourceFilterSafeBrowsingClient::CheckResult& result);
   // Gets the ActivationDecision for the given Configuration.
   // Returns it, or ACTIVATION_CONDITIONS_NOT_MET if no Configuration.
-  ActivationDecision GetActivationDecision(
-      const std::vector<ConfigResult>& configs,
-      ConfigResult* selected_config);
+  ActivationDecision GetActivationDecision(const ConfigResult& configs);
 
   // Returns whether a main-frame navigation satisfies the activation
   // |conditions| of a given configuration, except for |priority|.

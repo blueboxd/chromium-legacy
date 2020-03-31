@@ -27,6 +27,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -35,6 +36,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -42,6 +44,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -53,6 +56,8 @@ import java.util.concurrent.TimeoutException;
 public class TabbedAppMenuTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    @Rule
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
 
@@ -221,6 +226,35 @@ public class TabbedAppMenuTest {
         Assert.assertFalse("Overview shouldn't be showing.",
                 mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
         Assert.assertFalse("App menu shouldn't be showing.", mAppMenuHandler.isAppMenuShowing());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Browser", "Main", "Bookmark", "RenderTest"})
+    public void testBookmarkMenuItem() throws IOException {
+        MenuItem bookmarkStar =
+                AppMenuTestSupport.getMenu(mActivityTestRule.getAppMenuCoordinator())
+                        .findItem(R.id.bookmark_this_page_id);
+        Assert.assertFalse("Bookmark item should not be checked.", bookmarkStar.isChecked());
+        Assert.assertEquals("Incorrect content description.",
+                mActivityTestRule.getActivity().getString(R.string.menu_bookmark),
+                bookmarkStar.getTitleCondensed());
+        mRenderTestRule.render(getListView().getChildAt(0), "icon_row");
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.hideAppMenu());
+        AppMenuPropertiesDelegateImpl.setPageBookmarkedForTesting(true);
+        showAppMenuAndAssertMenuShown();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        bookmarkStar = AppMenuTestSupport.getMenu(mActivityTestRule.getAppMenuCoordinator())
+                               .findItem(R.id.bookmark_this_page_id);
+        Assert.assertTrue("Bookmark item should be checked.", bookmarkStar.isChecked());
+        Assert.assertEquals("Incorrect content description for bookmarked page.",
+                mActivityTestRule.getActivity().getString(R.string.edit_bookmark),
+                bookmarkStar.getTitleCondensed());
+        mRenderTestRule.render(getListView().getChildAt(0), "icon_row_page_bookmarked");
+
+        AppMenuPropertiesDelegateImpl.setPageBookmarkedForTesting(null);
     }
 
     private void showAppMenuAndAssertMenuShown() {

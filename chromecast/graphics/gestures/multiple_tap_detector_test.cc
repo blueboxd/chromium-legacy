@@ -101,7 +101,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
 // Verify that a simple correct triple tap triggers the delegate.
 TEST_F(MultipleTapDetectorTest, TripleTap) {
   EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation))).Times(1);
-  ;
   EXPECT_CALL(delegate(), OnDoubleTap(Eq(kTestTapLocation))).Times(0);
 
   detector().set_enabled(true);

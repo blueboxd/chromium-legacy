@@ -207,8 +207,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, InvalidRoutineEnumInCommandPayload) {
   EXPECT_EQ(RemoteCommandJob::INVALID, job->status());
 }
 
+// Test that not specifying a routine causes the job initialization to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingRoutine) {
-  // Test that not specifying a routine causes the job initialization to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
@@ -224,9 +224,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingRoutine) {
   EXPECT_EQ(RemoteCommandJob::INVALID, job->status());
 }
 
+// Test that not including a parameters dictionary causes the routine
+// initialization to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, CommandPayloadMissingParamDict) {
-  // Test that not including a parameters dictionary causes the routine
-  // initialization to fail.
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
   EXPECT_FALSE(job->Init(
@@ -272,8 +272,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the lowMah parameter causes the battery capacity
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineMissingLowMah) {
-  // Test that leaving out the lowMah parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
   std::unique_ptr<RemoteCommandJob> job =
@@ -297,9 +298,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineMissingLowMah) {
   run_loop.Run();
 }
 
+// Test that leaving out the highMah parameter causes the battery capacity
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryCapacityRoutineMissingHighMah) {
-  // Test that leaving out the highMah parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
   std::unique_ptr<RemoteCommandJob> job =
@@ -323,8 +325,9 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that a negative lowMah parameter causes the battery capacity routine to
+// fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineInvalidLowMah) {
-  // Test that a negative lowMah parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/-1);
   params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/986909);
@@ -349,9 +352,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryCapacityRoutineInvalidLowMah) {
   run_loop.Run();
 }
 
+// Test that a negative highMah parameter causes the battery capacity routine to
+// fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryCapacityRoutineInvalidHighMah) {
-  // Test that a negative highMah parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLowMahFieldName, /*low_mah=*/90812);
   params_dict.SetIntKey(kHighMahFieldName, /*high_mah=*/-1);
@@ -407,10 +411,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunBatteryHealthRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the maximumCycleCount parameter causes the battery
+// health routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineMissingMaximumCycleCount) {
-  // Test that leaving out the maximumCycleCount parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kPercentBatteryWearAllowedFieldName,
                         /*percent_battery_wear_allowed=*/78);
@@ -435,10 +439,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that leaving out the percentBatteryWearAllowed parameter causes the
+// battery health routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineMissingPercentBatteryWearAllowed) {
-  // Test that leaving out the percentBatteryWearAllowed parameter causes the
-  // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kMaximumCycleCountFieldName,
                         /*maximum_cycle_count=*/12);
@@ -463,10 +467,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that a negative maximumCycleCount parameter causes the battery health
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineInvalidMaximumCycleCount) {
-  // Test that a negative maximumCycleCount parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kMaximumCycleCountFieldName,
                         /*maximum_cycle_count=*/-1);
@@ -493,10 +497,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that a negative percentBatteryWearAllowed parameter causes the battery
+// health routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunBatteryHealthRoutineInvalidPercentBatteryWearAllowed) {
-  // Test that a negative percentBatteryWearAllowed parameter causes the routine
-  // to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kMaximumCycleCountFieldName,
                         /*maximum_cycle_count=*/12);
@@ -552,9 +556,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the lengthSeconds parameter causes the urandom routine
+// to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineMissingLengthSeconds) {
-  // Test that leaving out the lengthSeconds parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
@@ -577,8 +581,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineMissingLengthSeconds) {
   run_loop.Run();
 }
 
+// Test that a negative lengthSeconds parameter causes the urandom routine to
+// fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunUrandomRoutineInvalidLengthSeconds) {
-  // Test that a negative lengthSeconds parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
@@ -632,8 +637,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunSmartctlCheckRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that the AC power routine succeeds with all parameters specified.
 TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineSuccess) {
-  // Test that the routine succeeds with all parameters specified.
   auto run_routine_response =
       chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
@@ -666,10 +671,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that the AC power routine succeeds without the optional parameter
+// expectedPowerType specified.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunAcPowerRoutineNoOptionalExpectedPowerType) {
-  // Test that the routine succeeds without the optional parameter
-  // expectedPowerType specified.
   auto run_routine_response =
       chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
@@ -700,9 +705,9 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that leaving out the expectedStatus parameter causes the AC power
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineMissingExpectedStatus) {
-  // Test that leaving out the expectedStatus parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetStringKey(kExpectedPowerTypeFieldName,
                            /*expected_power_type=*/"power_type");
@@ -727,9 +732,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineMissingExpectedStatus) {
   run_loop.Run();
 }
 
+// Test that an invalid value for the expectedStatus parameter causes the AC
+// power routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunAcPowerRoutineInvalidExpectedStatus) {
-  // Test that an invalid value for the expectedStatus parameter causes the
-  // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   auto expected_status =
       static_cast<chromeos::cros_healthd::mojom::AcPowerStatusEnum>(
@@ -789,9 +794,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the lengthSeconds parameter causes the CPU cache
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineMissingLengthSeconds) {
-  // Test that leaving out the lengthSeconds parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
@@ -814,8 +819,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineMissingLengthSeconds) {
   run_loop.Run();
 }
 
+// Test that a negative lengthSeconds parameter causes the CPU cache routine to
+// fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunCpuCacheRoutineInvalidLengthSeconds) {
-  // Test that a negative lengthSeconds parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
@@ -869,10 +875,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunCpuStressRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the lengthSeconds parameter causes the CPU stress
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunCpuStressRoutineMissingLengthSeconds) {
-  // Test that leaving out the lengthSeconds parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
@@ -895,9 +901,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that a negative lengthSeconds parameter causes the CPU stress routine to
+// fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunCpuStressRoutineInvalidLengthSeconds) {
-  // Test that a negative lengthSeconds parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
@@ -952,10 +959,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunFloatingPointAccuracyRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the lengthSeconds parameter causes the floating point
+// accuracy routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunFloatingPointAccuracyRoutineMissingLengthSeconds) {
-  // Test that leaving out the lengthSeconds parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
@@ -979,9 +986,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that a negative lengthSeconds parameter causes the floating point
+// accuracy routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunFloatingPointAccuracyRoutineInvalidLengthSeconds) {
-  // Test that a negative lengthSeconds parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
@@ -1036,10 +1044,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeWearLevelRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the wearLevelThreshold parameter causes the NVMe wear
+// level routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeWearLevelRoutineMissingWearLevelThreshold) {
-  // Test that leaving out the wearLevelThreshold parameter causes the routine
-  // to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
@@ -1062,10 +1070,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that a negative wearLevelThreshold parameter causes the NVMe wear level
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeWearLevelRoutineInvalidWearLevelThreshold) {
-  // Test that a negative wearLevelThreshold parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kWearLevelThresholdFieldName,
                         /*wear_level_threshold=*/-1);
@@ -1121,10 +1129,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunNvmeSelfTestRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the nvmeSelfTestType parameter causes the NVMe self
+// test routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeSelfTestRoutineMissingSelfTestType) {
-  // Test that leaving out the nvmeSelfTestType parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandRunRoutineJob>();
@@ -1147,10 +1155,10 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that an invalid value for the nvmeSelfTestType parameter causes the NVMe
+// self test routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunNvmeSelfTestRoutineInvalidSelfTestType) {
-  // Test that an invalid value for the nvmeSelfTestType parameter causes the
-  // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   auto nvme_self_test_type = std::numeric_limits<std::underlying_type<
       chromeos::cros_healthd::mojom::NvmeSelfTestTypeEnum>::type>::max();
@@ -1177,8 +1185,8 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that the disk read routine succeeds with all parameters specified.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineSuccess) {
-  // Test that the routine succeeds with all parameters specified.
   auto run_routine_response =
       chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
@@ -1213,8 +1221,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the type parameter causes the disk read routine to
+// fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingType) {
-  // Test that leaving out the type parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
@@ -1241,9 +1250,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingType) {
   run_loop.Run();
 }
 
+// Test that leaving out the lengthSeconds parameter causes the disk read
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingLengthSeconds) {
-  // Test that leaving out the length_seconds parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(
       kTypeFieldName,
@@ -1272,9 +1281,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingLengthSeconds) {
   run_loop.Run();
 }
 
+// Test that leaving out the fileSizeMb parameter causes the disk read routine
+// to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingFileSizeMb) {
-  // Test that leaving out the file_size_mb parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(
       kTypeFieldName,
@@ -1303,9 +1312,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineMissingFileSizeMb) {
   run_loop.Run();
 }
 
+// Test that an invalid value for the type parameter causes the disk read
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidType) {
-  // Test that an invalid value for the type parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   auto type =
       static_cast<chromeos::cros_healthd::mojom::DiskReadRoutineTypeEnum>(
@@ -1338,9 +1347,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidType) {
   run_loop.Run();
 }
 
+// Test that an invalid value for the lengthSeconds parameter causes the disk
+// read routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidLengthSeconds) {
-  // Test that an invalid value for the length_seconds parameter causes the
-  // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(
       kTypeFieldName,
@@ -1371,9 +1380,9 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidLengthSeconds) {
   run_loop.Run();
 }
 
+// Test that an invalid value for the fileSizeMb parameter causes the disk read
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidFileSizeMb) {
-  // Test that an invalid value for the file_size_mb parameter causes the
-  // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(
       kTypeFieldName,
@@ -1404,8 +1413,8 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunDiskReadRoutineInvalidFileSizeMb) {
   run_loop.Run();
 }
 
+// Test that the prime search routine succeeds with all parameters specified.
 TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineSuccess) {
-  // Test that the routine succeeds with all parameters specified.
   auto run_routine_response =
       chromeos::cros_healthd::mojom::RunRoutineResponse::New(kId, kStatus);
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
@@ -1436,10 +1445,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineSuccess) {
   run_loop.Run();
 }
 
+// Test that leaving out the lengthSeconds parameter causes the prime search
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunPrimeSearchRoutineMissingLengthSeconds) {
-  // Test that leaving out the length_seconds parameter causes the routine to
-  // fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kMaxNumFieldName,
                         /*max_num=*/100000);
@@ -1464,8 +1473,9 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that leaving out the maxNum parameter causes the prime search routine to
+// fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineMissingMaxNum) {
-  // Test that leaving out the max_num parameter causes the routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);
@@ -1490,10 +1500,10 @@ TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineMissingMaxNum) {
   run_loop.Run();
 }
 
+// Test that an invalid value for the lengthSeconds parameter causes the prime
+// search routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest,
        RunPrimeSearchRoutineInvalidLengthSeconds) {
-  // Test that an invalid value for the length_seconds parameter causes the
-  // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/-1);
@@ -1520,9 +1530,9 @@ TEST_F(DeviceCommandRunRoutineJobTest,
   run_loop.Run();
 }
 
+// Test that an invalid value for the maxNum parameter causes the prime search
+// routine to fail.
 TEST_F(DeviceCommandRunRoutineJobTest, RunPrimeSearchRoutineInvalidMaxNum) {
-  // Test that an invalid value for the max_num parameter causes the
-  // routine to fail.
   base::Value params_dict(base::Value::Type::DICTIONARY);
   params_dict.SetIntKey(kLengthSecondsFieldName,
                         /*length_seconds=*/2342);

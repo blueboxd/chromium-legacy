@@ -53,7 +53,7 @@
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
@@ -8364,7 +8364,7 @@ void Document::CountPotentialFeaturePolicyViolation(
 }
 void Document::ReportFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature,
-    mojom::blink::FeaturePolicyDisposition disposition,
+    mojom::blink::PolicyDisposition disposition,
     const String& message,
     const String& source_file) const {
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
@@ -8376,9 +8376,8 @@ void Document::ReportFeaturePolicyViolation(
   // Construct the feature policy violation report.
   const String& feature_name = GetNameForFeature(feature);
   const String& disp_str =
-      (disposition == mojom::blink::FeaturePolicyDisposition::kReport
-           ? "report"
-           : "enforce");
+      (disposition == mojom::blink::PolicyDisposition::kReport ? "report"
+                                                               : "enforce");
 
   FeaturePolicyViolationReportBody* body =
       source_file.IsEmpty()
@@ -8396,7 +8395,7 @@ void Document::ReportFeaturePolicyViolation(
   reporting_context->QueueReport(report);
 
   // TODO(iclelland): Report something different in report-only mode
-  if (disposition == mojom::FeaturePolicyDisposition::kEnforce) {
+  if (disposition == mojom::blink::PolicyDisposition::kEnforce) {
     frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kViolation,
         mojom::ConsoleMessageLevel::kError,
@@ -8408,7 +8407,7 @@ void Document::ReportFeaturePolicyViolation(
 
 void Document::ReportDocumentPolicyViolation(
     mojom::blink::DocumentPolicyFeature feature,
-    mojom::blink::FeaturePolicyDisposition disposition,
+    mojom::blink::PolicyDisposition disposition,
     const String& message,
     const String& source_file) const {
   LocalFrame* frame = GetFrame();
@@ -8418,8 +8417,7 @@ void Document::ReportDocumentPolicyViolation(
   // Construct the document policy violation report.
   const String& feature_name =
       GetDocumentPolicyFeatureInfoMap().at(feature).feature_name.c_str();
-  bool is_report_only =
-      disposition == mojom::blink::FeaturePolicyDisposition::kReport;
+  bool is_report_only = disposition == mojom::blink::PolicyDisposition::kReport;
   const String& disp_str = is_report_only ? "report" : "enforce";
   const DocumentPolicy* relevant_document_policy =
       is_report_only ? GetSecurityContext().GetReportOnlyDocumentPolicy()

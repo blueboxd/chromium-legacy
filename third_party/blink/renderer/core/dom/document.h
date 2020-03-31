@@ -325,14 +325,14 @@ class CORE_EXPORT Document : public ContainerNode,
       mojom::blink::FeaturePolicyFeature) const;
   void ReportFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature,
-      mojom::blink::FeaturePolicyDisposition,
+      mojom::blink::PolicyDisposition,
       const String& message = g_empty_string,
       // If source_file is set to empty string,
       // current JS file would be used as source_file instead.
       const String& source_file = g_empty_string) const;
   void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
-      mojom::blink::FeaturePolicyDisposition disposition,
+      mojom::blink::PolicyDisposition disposition,
       const String& message = g_empty_string,
       // If source_file is set to empty string,
       // current JS file would be used as source_file instead.

@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{已封鎖 1 個 Cookie}other{已封鎖 # 個 Cookie}}</translation>
+<translation id="257931822824936280">已展開 - 按一下即可收合。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">複製連結</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4570913071927164677">詳細資料</translation>
+<translation id="4645575059429386691">你的家長已停用這項功能</translation>
+<translation id="4883854917563148705">無法重設受管理的設定</translation>
 <translation id="497421865427891073">往前</translation>
+<translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5301954838959518834">好，我知道了</translation>
 <translation id="5317780077021120954">儲存</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="8131740175452115882">確認</translation>
+<translation id="8206354486702514201">這項設定由管理員執行。</translation>
 <translation id="8249310407154411074">移至頂端</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="9019902583201351841">你的家長已停用這項功能</translation>
 </translationbundle>

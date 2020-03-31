@@ -12,6 +12,7 @@
 #include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_setup.h"
 #include "ash/assistant/test/test_assistant_web_view_factory.h"
+#include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
@@ -58,6 +59,37 @@ void PressHomeButton() {
       AppListShowSource::kShelfButton, base::TimeTicks::Now());
 }
 
+// Collects all child views of the given templated type.
+// This includes direct and indirect children.
+// For this class to work, _ChildView must:
+//      * Inherit from |views::View|.
+//      * Have a static variable called |kClassName|.
+//      * Return |_ChildView::kClassName| from its GetClassName() method.
+template <class _ChildView>
+class ChildViewCollector {
+ public:
+  using Views = std::vector<_ChildView*>;
+
+  explicit ChildViewCollector(const views::View* parent) : parent_(parent) {}
+
+  Views Get() {
+    Views result;
+    for (views::View* child : parent_->children())
+      Get(child, &result);
+    return result;
+  }
+
+ private:
+  void Get(views::View* view, Views* result) {
+    if (view->GetClassName() == _ChildView::kClassName)
+      result->push_back(static_cast<_ChildView*>(view));
+    for (views::View* child : view->children())
+      Get(child, result);
+  }
+
+  const views::View* parent_;
+};
+
 }  // namespace
 
 AssistantAshTestBase::AssistantAshTestBase()
@@ -89,6 +121,9 @@ void AssistantAshTestBase::SetUp() {
   // Set AssistantAllowedState to ALLOWED.
   test_api_->GetAssistantState()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
+
+  // Set user consent so the suggestion chips are displayed.
+  SetConsentStatus(ConsentStatus::kActivityControlAccepted);
 
   // Cache controller.
   controller_ = Shell::Get()->assistant_controller();
@@ -140,8 +175,7 @@ void AssistantAshTestBase::SetTabletMode(bool enable) {
   test_api_->SetTabletMode(enable);
 }
 
-void AssistantAshTestBase::SetConsentStatus(
-    chromeos::assistant::prefs::ConsentStatus consent_status) {
+void AssistantAshTestBase::SetConsentStatus(ConsentStatus consent_status) {
   test_api_->SetConsentStatus(consent_status);
 }
 
@@ -184,7 +218,7 @@ void AssistantAshTestBase::SendQueryThroughTextField(const std::string& query) {
   test_api_->SendTextQuery(query);
 }
 
-void AssistantAshTestBase::TapOnAndWait(views::View* view) {
+void AssistantAshTestBase::TapOnAndWait(const views::View* view) {
   CheckCanProcessEvents(view);
   TapAndWait(GetPointInside(view));
 }
@@ -195,8 +229,11 @@ void AssistantAshTestBase::TapAndWait(gfx::Point position) {
   base::RunLoop().RunUntilIdle();
 }
 
-void AssistantAshTestBase::ClickOnAndWait(views::View* view) {
-  CheckCanProcessEvents(view);
+void AssistantAshTestBase::ClickOnAndWait(
+    const views::View* view,
+    bool check_if_view_can_process_events) {
+  if (check_if_view_can_process_events)
+    CheckCanProcessEvents(view);
   GetEventGenerator()->MoveMouseTo(GetPointInside(view));
   GetEventGenerator()->ClickLeftButton();
 
@@ -252,6 +289,16 @@ views::View* AssistantAshTestBase::keyboard_input_toggle() {
 
 views::View* AssistantAshTestBase::opt_in_view() {
   return test_api_->opt_in_view();
+}
+
+views::View* AssistantAshTestBase::suggestion_chip_container() {
+  return test_api_->suggestion_chip_container();
+}
+
+std::vector<ash::SuggestionChipView*>
+AssistantAshTestBase::GetSuggestionChips() {
+  const views::View* container = suggestion_chip_container();
+  return ChildViewCollector<ash::SuggestionChipView>{container}.Get();
 }
 
 void AssistantAshTestBase::ShowKeyboard() {

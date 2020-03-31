@@ -8,7 +8,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -356,12 +355,12 @@ TEST_F(BluetoothPowerControllerIntegrationTest, Basics) {
   device::BluetoothAdapter* adapter = GetBluetoothAdapter();
 
   // Verify toggling bluetooth before login.
-  PrefService* local_state = ash_test_helper()->GetLocalStatePrefService();
   GetController()->SetBluetoothEnabled(true);
-  EXPECT_TRUE(local_state->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
+  EXPECT_TRUE(local_state()->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
   EXPECT_TRUE(adapter->IsPowered());
   GetController()->SetBluetoothEnabled(false);
-  EXPECT_FALSE(local_state->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
+  EXPECT_FALSE(
+      local_state()->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
   EXPECT_FALSE(adapter->IsPowered());
 
   // Verify toggling bluetooth after login.

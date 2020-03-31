@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_underlying_source.h"
+#include <memory>
 
 #include "base/test/mock_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -12,9 +13,28 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/webrtc/api/video/encoded_frame.h"
+#include "third_party/webrtc/api/frame_transformer_interface.h"
 
 namespace blink {
+
+namespace {
+class FakeTransformableFrame : public webrtc::TransformableVideoFrameInterface {
+ public:
+  FakeTransformableFrame() = default;
+  ~FakeTransformableFrame() override = default;
+
+  rtc::ArrayView<const uint8_t> GetData() const override { return nullptr; }
+
+  void SetData(rtc::ArrayView<const uint8_t> data) override {}
+
+  uint32_t GetTimestamp() const override { return 0; }
+  uint32_t GetSsrc() const override { return 0; }
+  bool IsKeyFrame() const override { return false; }
+  std::vector<uint8_t> GetAdditionalData() const override {
+    return std::vector<uint8_t>();
+  }
+};
+}  // namespace
 
 class RTCEncodedVideoUnderlyingSourceTest : public testing::Test {
  public:
@@ -41,7 +61,7 @@ TEST_F(RTCEncodedVideoUnderlyingSourceTest,
   ScriptPromiseTester read_tester(script_state,
                                   reader->read(script_state, exception_state));
   EXPECT_FALSE(read_tester.IsFulfilled());
-  source->OnFrameFromSource(nullptr, std::vector<uint8_t>(), 0);
+  source->OnFrameFromSource(std::make_unique<FakeTransformableFrame>());
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsFulfilled());
 
@@ -70,12 +90,12 @@ TEST_F(RTCEncodedVideoUnderlyingSourceTest, QueuedFramesAreDroppedWhenOverflow) 
   for (int i = 0; i > RTCEncodedVideoUnderlyingSource::kMinQueueDesiredSize;
        --i) {
     EXPECT_EQ(source->Controller()->DesiredSize(), i);
-    source->OnFrameFromSource(nullptr, std::vector<uint8_t>(), 0);
+    source->OnFrameFromSource(std::make_unique<FakeTransformableFrame>());
   }
   EXPECT_EQ(source->Controller()->DesiredSize(),
             RTCEncodedVideoUnderlyingSource::kMinQueueDesiredSize);
 
-  source->OnFrameFromSource(nullptr, std::vector<uint8_t>(), 0);
+  source->OnFrameFromSource(std::make_unique<FakeTransformableFrame>());
   EXPECT_EQ(source->Controller()->DesiredSize(),
             RTCEncodedVideoUnderlyingSource::kMinQueueDesiredSize);
 

@@ -4,8 +4,8 @@
 
 #include "ui/views/controls/webview/web_dialog_view.h"
 
-#include <gtest/gtest.h>
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -16,6 +16,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_web_contents.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/window/dialog_delegate.h"

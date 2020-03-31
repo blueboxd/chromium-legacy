@@ -5,6 +5,7 @@
 #include "ui/views/controls/resize_area.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "build/build_config.h"

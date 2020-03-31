@@ -48,10 +48,6 @@ class NET_EXPORT CookieOptions {
         CrossSchemeness cross_schemeness = CrossSchemeness::NONE)
         : context(same_site_context), cross_schemeness(cross_schemeness) {}
 
-    bool IsDifferentScheme() const {
-      return cross_schemeness != SameSiteCookieContext::CrossSchemeness::NONE;
-    }
-
     // Convenience method which returns a SameSiteCookieContext with the most
     // inclusive context. This allows access to all SameSite cookies.
     static SameSiteCookieContext MakeInclusive();

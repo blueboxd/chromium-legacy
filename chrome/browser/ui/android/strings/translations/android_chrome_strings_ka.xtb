@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome ახლა უფრო სწრაფად ჩამოტვირთავს ფაილებს</translation>
 <translation id="1883903952484604915">ჩემი ფაილები</translation>
 <translation id="1887786770086287077">მდებარეობაზე წვდომა გამორთულია ამ მოწყობილობისთვის. ჩართეთ ის <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> გაიხსნება Chrome-ში. გაგრძელებით თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK1" />მომსახურების პირობებსა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />შეტყობინებას კონფიდენციალურობის შესახებ<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">რეკლამა</translation>
 <translation id="1919950603503897840">კონტაქტების არჩევა</translation>
 <translation id="1922076542920281912">Chrome-ისთვის თქვენს მდებარეობაზე წვდომის დასაშვებად ჩართეთ მდებარეობაზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
@@ -225,7 +224,6 @@
 <translation id="2567385386134582609">სურათი</translation>
 <translation id="257088987046510401">თემები</translation>
 <translation id="2570922361219980984">მდებარეობაზე წვდომა გამორთულია ამ მოწყობილობისთვისაც. ჩართეთ ის <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
-<translation id="257931822824936280">გაშლილია — დააწკაპუნეთ ჩასაკეცად.</translation>
 <translation id="2581165646603367611">ეს მოქმედება გაასუფთავებს ქუქი-ჩანაწერებს, ქეშს და საიტების სხვა მონაცემებს, რომლებსაც Chrome უმნიშვნელოდ თვლის.</translation>
 <translation id="2586657967955657006">გაცვლის ბუფერი</translation>
 <translation id="2587052924345400782">ხელმისაწვდომია ახალი ვერსია</translation>
@@ -491,7 +489,6 @@
 <translation id="4605958867780575332">ერთეული „<ph name="ITEM_TITLE" />“ ამოიშალა</translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />-ის გახსნა</translation>
 <translation id="4634124774493850572">პაროლის გამოყენება</translation>
-<translation id="4645575059429386691">იმართება თქვენი მშობლის მიერ</translation>
 <translation id="4650364565596261010">სისტემის ნაგულისხმევი</translation>
 <translation id="4660838440047236328">თქვენი ოთახის განლაგება</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> სანიშნე წაიშალა</translation>
@@ -530,7 +527,6 @@
 <translation id="4881695831933465202">გახსნა</translation>
 <translation id="488187801263602086">ფაილის გადარქმევა</translation>
 <translation id="4882831918239250449">მართეთ თქვენი დათვალიერების ისტორიის გამოყენების სპეციფიკა Search-ის, სარეკლამო კონტენტის და სხვა სერვისების პერსონალიზებისთვის</translation>
-<translation id="4883854917563148705">მართული პარამეტრების გადაყენება ვერ მოხერხდება</translation>
 <translation id="4885273946141277891">Chrome-ის ეგზემპლარების მხარდაუჭერელი რაოდენობა.</translation>
 <translation id="4887024562049524730">საიტების მიერ თქვენი ვირტუალური რეალობის მოწყობილობების/მონაცემების გამოყენების მოთხოვნა (რეკომენდებული)</translation>
 <translation id="4910889077668685004">გადახდის აპები</translation>
@@ -560,7 +556,6 @@
 <translation id="5048398596102334565">საიტებისთვის მოძრაობის სენსორებზე წვდომის დაშვება (რეკომენდებული)</translation>
 <translation id="5063480226653192405">გამოყენება</translation>
 <translation id="5087580092889165836">ბარათის დამატება</translation>
-<translation id="5100237604440890931">ჩაკეცილია — დააწკაპუნეთ გასაშლელად.</translation>
 <translation id="510275257476243843">დარჩენილია 1 საათი</translation>
 <translation id="5123685120097942451">ინკოგნიტო ჩანართი</translation>
 <translation id="5127805178023152808">სინქრონიზაცია გამორთულია</translation>
@@ -597,7 +592,6 @@
 <translation id="5357811892247919462">ჩანართი მიღებულია</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{გახსნილია <ph name="OPEN_TABS_ONE" /> ჩანართი, შეეხეთ ჩანართებს შორის გადასართველად}other{გახსნილია <ph name="OPEN_TABS_MANY" /> ჩანართი, შეეხეთ ჩანართებს შორის გადასართველად}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 სხვა)}other{(+ # სხვა)}}</translation>
-<translation id="5400569084694353794">ამ აპლიკაციის გამოყენებით, თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK1" />მომსახურების პირობებსა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />კონფიდენციალურობის დებულებას<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">სახელები</translation>
 <translation id="5403644198645076998">მხოლოდ კონკრეტული საიტების დაშვება</translation>
 <translation id="5414836363063783498">დადასტურება…</translation>
@@ -946,7 +940,6 @@
 <translation id="7981313251711023384">გვერდების წინასწარ ჩატვირთვა დათვალიერებისა და ძიების პროცესების დასაჩქარებლად</translation>
 <translation id="79859296434321399">აუგმენტური რეალობის კონტენტის სანახავად დააინსტალირეთ ARCore</translation>
 <translation id="7986741934819883144">აირჩიეთ კონტაქტი</translation>
-<translation id="7987073022710626672">Chrome-ის მომსახურების პირობები</translation>
 <translation id="7993619969781047893">ზოგიერთი საიტის ფუნქციებმა შეიძლება არასათანადოდ იმუშაოს</translation>
 <translation id="7998918019931843664">დახურული ჩანართის ხელახლა გახსნა</translation>
 <translation id="7999064672810608036">დარწმუნებული ხართ, რომ გსურთ ყველა ადგილობრივი მონაცემების წაშლა, მათ შორის ქუქი ფაილების, და ამ გვერდისათვის ყველა ნებართვების აღდგენა?</translation>
@@ -983,7 +976,6 @@
 <translation id="8186512483418048923">დარჩენილია <ph name="FILES" /> ფაილი</translation>
 <translation id="8190358571722158785">დარჩენილია 1 დღე</translation>
 <translation id="8200772114523450471">გაგრძელება</translation>
-<translation id="8206354486702514201">ეს პარამეტრი იძულებითაა დაყენებული თქვენი ადმინისტრატორის მიერ.</translation>
 <translation id="8209050860603202033">გამოსახულების გახსნა</translation>
 <translation id="8218622182176210845">თქვენი ანგარიშის სამართავად</translation>
 <translation id="8224471946457685718">სტატიების ჩამოტვირთვა Wi-Fi კავშირის მეშვეობით</translation>
@@ -1049,7 +1041,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{სიგნალის სიძლიერის დონე: # ხაზი}other{სიგნალის სიძლიერის დონე: # ხაზი}}</translation>
 <translation id="868929229000858085">თქვენს კონტაქტებში ძიება</translation>
 <translation id="869891660844655955">ვადის გასვლის თარიღი</translation>
-<translation id="8728487861892616501">ამ აპლიკაციის გამოყენებით თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK1" />მომსახურების პირობებსა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />შეტყობინებას კონფიდენციალურობის შესახებ<ph name="END_LINK2" />, ასევე <ph name="BEGIN_LINK3" />შეტყობინებას მონაცემთა კონფიდენციალურობის წესების თაობაზე Family Link-ში მართული Google ანგარიშებისთვის<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">შიგთავსი დამალულია</translation>
 <translation id="8751914237388039244">აირჩიეთ სურათი</translation>
 <translation id="8758557275681689734">ყველა გახსნილი ჩანართის ნახვა</translation>
@@ -1058,7 +1049,6 @@
 <translation id="8801436777607969138">კონკრეტულ საიტზე JavaScript-ის დაბლოკვა.</translation>
 <translation id="8812260976093120287">ზოგიერთ ვებსაიტზე თქვენი მოწყობილობით გადახდა შესაძლებელია ზემოჩამოთვლილი აპების მეშვეობით.</translation>
 <translation id="8816026460808729765">საიტებისთვის სენსორებზე წვდომის აკრძალვა</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> გაიხსნება Chrome-ში. გაგრძელებით თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK1" />მომსახურების პირობებსა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />შეტყობინებას კონფიდენციალურობის შესახებ<ph name="END_LINK2" />, ასევე <ph name="BEGIN_LINK3" />შეტყობინებას მონაცემთა კონფიდენციალურობის წესების თაობაზე Family Link-ში მართული Google ანგარიშებისთვის<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">სანიშნეები</translation>
 <translation id="8833831881926404480">საიტი აზიარებს თქვენს ეკრანს</translation>
 <translation id="883806473910249246">კონტენტის ჩამოტვირთვისას შეცდომა მოხდა.</translation>
@@ -1085,7 +1075,6 @@
 <translation id="8988028529677883095">ტელეფონის გამოყენება უსაფრთხოების გასაღების სახით</translation>
 <translation id="8993760627012879038">ახალი ჩანართის ინკოგნიტო რეჟიმში გახსნა</translation>
 <translation id="8998729206196772491">თქვენ შედიხართ ანგარიშით, რომელსაც მართავს <ph name="MANAGED_DOMAIN" /> და მის ადმინისტრატორს თქვენი Chrome მონაცემების მართვის საშუალებას აძლევთ. Chrome-იდან გასვლის შემთხვევაში, თქვენი მონაცემები წაიშლება ამ მოწყობილობიდან, თუმცა ისინი თქვენს Google ანგარიშში შენარჩუნდება.</translation>
-<translation id="9019902583201351841">იმართება თქვენი მშობლების მიერ</translation>
 <translation id="9028914725102941583">მოწყობილობებს შორის კონტენტის გასაზიარებლად ჩართეთ სინქრონიზაცია</translation>
 <translation id="9040142327097499898">შეტყობინებები დაშვებულია. მდებარეობა გამორთულია ამ მოწყობილობისთვის.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ვიდეო}other{# ვიდეო}}</translation>

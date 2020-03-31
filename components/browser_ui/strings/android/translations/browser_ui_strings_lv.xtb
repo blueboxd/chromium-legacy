@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Bloķēts 1 sīkfails.}zero{Bloķēti # sīkfaili.}one{Bloķēts # sīkfails.}other{Bloķēti # sīkfaili.}}</translation>
+<translation id="257931822824936280">Izvērsts — noklikšķiniet, lai sakļautu.</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2704606927547763573">Nokopēts</translation>
 <translation id="2968755619301702150">Sertifikātu skatītājs</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Saites kopēšana</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4570913071927164677">Detalizēta informācija</translation>
+<translation id="4645575059429386691">Pārvalda viens no jūsu vecākiem</translation>
+<translation id="4883854917563148705">Pārvaldītos iestatījumus nevar atiestatīt</translation>
 <translation id="497421865427891073">Doties uz priekšu</translation>
+<translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5301954838959518834">Labi, sapratu</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">Nē, paldies</translation>
 <translation id="7846076177841592234">Atcelt atlasi</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
+<translation id="8206354486702514201">Šo iestatījumu ievieš jūsu administrators.</translation>
 <translation id="8249310407154411074">Pārvietot uz augšdaļu</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8609465669617005112">Virziet uz augšu</translation>
 <translation id="8676374126336081632">Notīrīt ievadi</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8730621377337864115">Gatavs</translation>
+<translation id="9019902583201351841">Pārvalda jūsu vecāki</translation>
 </translationbundle>

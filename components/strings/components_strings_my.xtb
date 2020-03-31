@@ -549,7 +549,6 @@
 <translation id="3366477098757335611">ကတ်များကို ကြည့်ရန်</translation>
 <translation id="3369192424181595722">နာရီ အမှား</translation>
 <translation id="337363190475750230">စီမံဆောင်ရွက်မှု မရှိတော့သော</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> က သင့်ဘရောင်ဇာတွင် Enterprise Service Hooks ကို ဖွင့်လိုက်သည်။ ဤချိတ်ဆက်များက သင့်ဒေတာအချို့ကို ဝင်သုံးခွင့်ရှိပါသည်။</translation>
 <translation id="3377144306166885718">ဆာဗာက TLS ဗာရှင်းအဟောင်းကို သုံးထားသည်။</translation>
 <translation id="3377188786107721145">မူဝါဒ ဆန်းစစ်မှု အမှား</translation>
 <translation id="3377736046129930310">ကတ်များကို ပိုမိုမြန်ဆန်စွာ အတည်ပြုရန် မျက်နှာပြင်လော့ခ်ကို အသုံးပြုပါ</translation>
@@ -985,7 +984,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />တွင် မရှိဘူးလား? ဤမှားယွင်းချက်ကို အစီရင်ခံမည်။</translation>
 <translation id="5190835502935405962">စာညှပ် ဘား</translation>
 <translation id="519422657042045905">မှတ်ချက် မရနိုင်ပါ</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">ဤစာမျက်နှာပေါ်တွင် ထည့်ထားသည့် စာမျက်နှာက ဆိုထားသည်မှာ</translation>
 <translation id="5205222826937269299">အမည် လိုအပ်သည်</translation>
 <translation id="5209518306177824490">SHA-1 လက်ဗွေ</translation>
@@ -1459,7 +1457,6 @@
 ထူထောင်မရနိုင်ပါ။</translation>
 <translation id="7260504762447901703">အသုံးပြုခွင့် ရုပ်သိမ်းပါ</translation>
 <translation id="7275334191706090484">စီမံကွပ်ကဲထားသည့် စာညှပ်များ</translation>
-<translation id="7288778322931489286">သင်၏စီမံခန့်ခွဲသူက သင့်ဘရောင်ဇာတွင် Enterprise Service Hooks ကို ဖွင့်လိုက်သည်။ ဤချိတ်ဆက်များက သင့်ဒေတာအချို့ကို ဝင်သုံးခွင့်ရှိပါသည်။</translation>
 <translation id="7292031607255951991">လက်ခံရရှိသူ အမည်</translation>
 <translation id="7298195798382681320">အကြံပြုထား</translation>
 <translation id="7300012071106347854">ကိုဗော့အပြာ</translation>
@@ -1816,7 +1813,6 @@
 <translation id="8866481888320382733">မူဝါဒ ဆက်တင်များ ဆန်းစစ်မှု အမှား</translation>
 <translation id="8866928039507595380">စာရွက်ခေါက်ရန်</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Enterprise Service Hooks က သင်၏စီမံခန့်ခွဲသူအား အကြောင်းကြားထားသော လုံခြုံရေးဆိုင်ရာ ဖြစ်ရပ်များအကြောင်း ဒေတာကို မျှဝေနိုင်သည်။ ၎င်းတွင် သင်ဝင်ကြည့်သော စာမျက်နှာများ၏ URL များ၊ ဖိုင်အမည်များ သို့မဟုတ် မက်တာဒေတာ၊ သင့်စက်နှင့် Chrome သို့ လက်မှတ်ထိုးဝင်သည့် အသုံးပြုသူအမည်တို့ ပါဝင်နိုင်သည်။</translation>
 <translation id="8870413625673593573">မကြာမီက ပိတ်ခဲ့</translation>
 <translation id="8870494189203302833">တူညီသောအစဉ်ဖြင့် မှောက်ထားရန်</translation>
 <translation id="8874824191258364635">မှန်ကန်သည့် ကဒ်နံပါတ်ကို ထည့်ပါ</translation>

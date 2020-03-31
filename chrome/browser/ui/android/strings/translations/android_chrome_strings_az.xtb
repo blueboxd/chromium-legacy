@@ -113,7 +113,6 @@
 <translation id="1868024384445905608">Chrome artıq faylları sürətlə endirir</translation>
 <translation id="1883903952484604915">Fayllarım</translation>
 <translation id="1887786770086287077">Bu cihazda məkan girişi də deaktivdir. <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> girişi aktiv edin.</translation>
-<translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome'da açılacaq. Davam etməklə Chrome <ph name="BEGIN_LINK1" />Xidmət Şərtləri<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />Məxfilik Bildirişi<ph name="END_LINK2" /> ilə razılaşırsınız.</translation>
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1919950603503897840">Kontaktları seçin</translation>
 <translation id="1922076542920281912">Həmçinin, Chrome'un məkana daxil olmasına icazə vermək üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> məkanı aktiv edin.</translation>
@@ -225,7 +224,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2567385386134582609">ŞƏKİL</translation>
 <translation id="257088987046510401">Temalar</translation>
 <translation id="2570922361219980984">Bu cihazda məkan girişi də deaktivdir. <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> girişi aktiv edin.</translation>
-<translation id="257931822824936280">Geniş - Qısaltmaq üçün klikləyin</translation>
 <translation id="2581165646603367611">Bu, Chrome'un vacib hesab etmədiyi kukilər, keş və digər sayt datalarını siləcək.</translation>
 <translation id="2586657967955657006">Mübadilə buferi</translation>
 <translation id="2587052924345400782">Ən yeni versiya əlçatandır</translation>
@@ -491,7 +489,6 @@ Kamerada görünəni ancaq siz görə bilərsiniz. Sayt kameranızdakı şəkill
 <translation id="4605958867780575332">Element silindi: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Açın: <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Parol istifadə edin</translation>
-<translation id="4645575059429386691">Valideyniniz tərəfindən idarə olunur</translation>
 <translation id="4650364565596261010">Sistem defoltu</translation>
 <translation id="4660838440047236328">otağınızın tərtibatı</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> əlfəcin silindi</translation>
@@ -530,7 +527,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4881695831933465202">Açın</translation>
 <translation id="488187801263602086">Faylın adını dəyişin</translation>
 <translation id="4882831918239250449">Axtarış tarixçəsinin Axtarış, reklam və sairəni necə fərdiləşdirdiyinə nəzarət edin</translation>
-<translation id="4883854917563148705">İdarə edilən ayarlar sıfırlana bilməz</translation>
 <translation id="4885273946141277891">Dəstəklənməyən Chrome nümunələrinin sayı.</translation>
 <translation id="4887024562049524730">Saytlar virtual reallıq cihazınız və datanızı istifadə etməzdən əvvəl icazə istəsin (tövsiyə edilir)</translation>
 <translation id="4910889077668685004">Ödəniş tətbiqləri</translation>
@@ -560,7 +556,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5048398596102334565">Saytların hərəkət sensorlarınıza daxil olmasına icazə verin (tövsiyə edilir)</translation>
 <translation id="5063480226653192405">Istifadə</translation>
 <translation id="5087580092889165836">Kart əlavə edin</translation>
-<translation id="5100237604440890931">Yığcamlaşdırıldı - genişləndirmək üçün klikləyin.</translation>
 <translation id="510275257476243843">1 saat qaldı</translation>
 <translation id="5123685120097942451">Aanonim tab</translation>
 <translation id="5127805178023152808">Sinx deaktivdir</translation>
@@ -597,7 +592,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5357811892247919462">Tab qəbul edildi</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> açıq tab, tabları dəyişmək üçün klikləyin}other{<ph name="OPEN_TABS_MANY" /> açıq tab, tabları dəyişmək üçün klikləyin}}</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+1)}other{(+ #)}}</translation>
-<translation id="5400569084694353794">Bu tətbiqi istifadə etməklə Chrome'un <ph name="BEGIN_LINK1" />Xidmət Şərtləri<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />Məxfilik Bildirişi<ph name="END_LINK2" /> ilə razılaşırsınız.</translation>
 <translation id="5403592356182871684">Adlar</translation>
 <translation id="5403644198645076998">Yalnız müəyyən saytlara icazə verin</translation>
 <translation id="5414836363063783498">Doğrulanır...</translation>
@@ -944,7 +938,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7981313251711023384">Sürətli axtarış üçün səhifələri əvvəlcədən yükləyin</translation>
 <translation id="79859296434321399">Təkmilləşdirilmiş virtual reallıq kontentinə baxmaq üçün ARCore'u quraşdırın</translation>
 <translation id="7986741934819883144">Kontakt seçin</translation>
-<translation id="7987073022710626672">Chrome xidmət şərtləri</translation>
 <translation id="7993619969781047893">Bəzi saytlardakı xüsusiyyətlər işləməyə bilər</translation>
 <translation id="7998918019931843664">Qapalı nişanı yenidən</translation>
 <translation id="7999064672810608036">Bütün lokal datanı silmək və bu sayt üçün bütün icazələri sıfırlamaq istəyirsiniz?</translation>
@@ -981,7 +974,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8186512483418048923"><ph name="FILES" /> fayl qalır</translation>
 <translation id="8190358571722158785">1 gün qaldı</translation>
 <translation id="8200772114523450471">Davam edin</translation>
-<translation id="8206354486702514201">Bu ayar administratorunuz tərəfindən icra olunur.</translation>
 <translation id="8209050860603202033">Şəkli açın</translation>
 <translation id="8218622182176210845">Hesabınızı idarə edin</translation>
 <translation id="8224471946457685718">Wi-Fi ilə məqalələr endirin</translation>
@@ -1047,7 +1039,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8687353297350450808">{N_BARS,plural, =1{Siqnal Gücü Səviyyəsi: # panel}other{Siqnal Gücü Səviyyəsi: # panel}}</translation>
 <translation id="868929229000858085">Kontaktlarda axtarın</translation>
 <translation id="869891660844655955">Bitmə tarixi</translation>
-<translation id="8728487861892616501">Bu tətbiqi istifadə etməklə Chrome <ph name="BEGIN_LINK1" />Xidmət Şərtləri<ph name="END_LINK1" />,<ph name="BEGIN_LINK2" />Məxfilik Bildirişi<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Ailə Linkində Yaradılmış Google Hesabları üçün Məxfilik Bildirişi<ph name="END_LINK3" /> ilə razılaşırsınız.</translation>
 <translation id="8748850008226585750">Məzmun gizlidir</translation>
 <translation id="8751914237388039244">Şəkil seçin</translation>
 <translation id="8758557275681689734">Bütün açıq tabellərinizə baxın</translation>
@@ -1056,7 +1047,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8801436777607969138">JavaScript'i bəzi saytlarda blok edin.</translation>
 <translation id="8812260976093120287">Bəzi veb saytlarda cihazda dəstəklənən ödəniş tətbiqləri ilə ödəyə bilərsiniz</translation>
 <translation id="8816026460808729765">Saytların sensorlara girişini blok edin</translation>
-<translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome'da açılacaq. Davam etməklə Chrome <ph name="BEGIN_LINK1" />Xidmət Şərtləri<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Məxfilik Bildirişi<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Ailə Linki ilə idarə edilən Google Hesablarının Məxfilik Bildirişi<ph name="END_LINK3" /> ilə razılaşırsınız.</translation>
 <translation id="8820817407110198400">Əlfəcinlər</translation>
 <translation id="8833831881926404480">Sayt ekranınızı paylaşır</translation>
 <translation id="883806473910249246">Kontent endirilən zaman xəta baş verdi.</translation>
@@ -1083,7 +1073,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8988028529677883095">Təhlükəsizlik açarı kimi telefondan istifadə edin</translation>
 <translation id="8993760627012879038">Incognito rejimində yeni panel açın</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> tərəfindən idarə olunan hesab ilə daxil olursunuz və onun administratoruna Chrome datanız üzərində nəzarəti verirsiniz. Datanız həmişəlik bu hesab ilə əlaqələndiriləcək. Chrome'dan çıxmaq datanızı bu cihazdan siləcək, lakin data Google Hesabında qalacaq.</translation>
-<translation id="9019902583201351841">Valideynləriniz tərəfindən idarə olunur</translation>
 <translation id="9028914725102941583">Cihazlar arasında paylaşım etmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="9040142327097499898">Bildirişlərə icazə verilib. Bu cihazın məkanı deaktivdir.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Video}}</translation>

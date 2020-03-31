@@ -364,6 +364,11 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
+    name = 'Linux Ozone Tester (Headless)',
+    triggered_by = [builder_name('linux-ozone-rel')],
+)
+
+ci.linux_builder(
     name = 'Linux Ozone Tester (Wayland)',
     triggered_by = [builder_name('linux-ozone-rel')],
 )

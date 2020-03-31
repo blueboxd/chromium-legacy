@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_BUTTON_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_BUTTON_BUTTON_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/button.h"

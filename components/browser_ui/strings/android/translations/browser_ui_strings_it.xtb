@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloccato}other{# cookie bloccati}}</translation>
+<translation id="257931822824936280">Espanso. Fai clic per comprimere.</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2704606927547763573">Copiata</translation>
 <translation id="2968755619301702150">Visualizzatore certificati</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">Copia link</translation>
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4570913071927164677">Dettagli</translation>
+<translation id="4645575059429386691">Gestito da un genitore</translation>
+<translation id="4883854917563148705">Le impostazioni gestite non possono essere reimpostate</translation>
 <translation id="497421865427891073">Avanti</translation>
+<translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">Salva</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="8131740175452115882">Conferma</translation>
+<translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>
 <translation id="8249310407154411074">Sposta in alto</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8609465669617005112">Sposta su</translation>
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8730621377337864115">Fine</translation>
+<translation id="9019902583201351841">Gestito dai genitori</translation>
 </translationbundle>

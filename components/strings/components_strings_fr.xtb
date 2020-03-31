@@ -542,7 +542,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3366477098757335611">Afficher les cartes</translation>
 <translation id="3369192424181595722">Erreur de l'horloge</translation>
 <translation id="337363190475750230">Révoqué</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> a activé Enterprise Service Hooks dans votre navigateur. Ce service a accès à certaines de vos données.</translation>
 <translation id="3377144306166885718">Le serveur utilisait une version obsolète de TLS.</translation>
 <translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
 <translation id="3377736046129930310">Utiliser le verrouillage de l'écran pour confirmer les cartes plus rapidement</translation>
@@ -978,7 +977,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE" /> ? Signaler l'erreur</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="519422657042045905">Annotation indisponible</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">Une page intégrée à cette page Web indique</translation>
 <translation id="5205222826937269299">Veuillez saisir un nom</translation>
 <translation id="5209518306177824490">Empreinte SHA-1</translation>
@@ -1448,7 +1446,6 @@ Informations supplémentaires :
 <translation id="725866823122871198">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre ordinateur (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
 <translation id="7260504762447901703">Révoquer l'accès</translation>
 <translation id="7275334191706090484">Favoris gérés</translation>
-<translation id="7288778322931489286">Votre administrateur a activé Enterprise Service Hooks dans votre navigateur. Ce service a accès à certaines de vos données.</translation>
 <translation id="7292031607255951991">Nom du destinataire</translation>
 <translation id="7298195798382681320">Recommandé</translation>
 <translation id="7300012071106347854">Bleu cobalt</translation>
@@ -1805,7 +1802,6 @@ Informations supplémentaires :
 <translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
 <translation id="8866928039507595380">Pli</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Transmettre à votre administrateur les données sur les événements liés à la sécurité signalés par Enterprise Service Hooks. Ces données peuvent inclure les URL de pages que vous consultez, les noms ou les métadonnées de fichiers, ainsi que le nom d'utilisateur avec lequel vous vous connectez à votre appareil et à Chrome.</translation>
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8870494189203302833">Même ordre, face vers le bas</translation>
 <translation id="8874824191258364635">Saisissez un numéro de carte valide</translation>

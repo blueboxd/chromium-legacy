@@ -23,17 +23,15 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<v8_inspector::V8StackTrace> CaptureStackTrace(
-    v8::Isolate* isolate,
-    bool full) {
+std::unique_ptr<v8_inspector::V8StackTrace> CaptureStackTrace(bool full) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
   if (!debugger || !isolate->InContext())
     return nullptr;
   ScriptForbiddenScope::AllowUserAgentScript allow_scripting;
   return debugger->GetV8Inspector()->captureStackTrace(full);
 }
-
-}  // namespace
+}
 
 // static
 std::unique_ptr<SourceLocation> SourceLocation::Capture(
@@ -41,7 +39,7 @@ std::unique_ptr<SourceLocation> SourceLocation::Capture(
     unsigned line_number,
     unsigned column_number) {
   std::unique_ptr<v8_inspector::V8StackTrace> stack_trace =
-      CaptureStackTrace(v8::Isolate::GetCurrent(), false);
+      CaptureStackTrace(false);
   if (stack_trace && !stack_trace->isEmpty())
     return SourceLocation::CreateFromNonEmptyV8StackTrace(
         std::move(stack_trace), 0);
@@ -52,14 +50,8 @@ std::unique_ptr<SourceLocation> SourceLocation::Capture(
 // static
 std::unique_ptr<SourceLocation> SourceLocation::Capture(
     ExecutionContext* execution_context) {
-  // v8::Isolate::GetCurrent is slow so get it from the ExecutionContext when
-  // available.
-  // TODO(jkarlin): Force all callers of all Capture() methods to call with a
-  // valid ExecutionContext.
-  v8::Isolate* isolate = execution_context ? execution_context->GetIsolate()
-                                           : v8::Isolate::GetCurrent();
   std::unique_ptr<v8_inspector::V8StackTrace> stack_trace =
-      CaptureStackTrace(isolate, false);
+      CaptureStackTrace(false);
   if (stack_trace && !stack_trace->isEmpty())
     return SourceLocation::CreateFromNonEmptyV8StackTrace(
         std::move(stack_trace), 0);
@@ -145,7 +137,7 @@ std::unique_ptr<SourceLocation> SourceLocation::FromFunction(
 // static
 std::unique_ptr<SourceLocation> SourceLocation::CaptureWithFullStackTrace() {
   std::unique_ptr<v8_inspector::V8StackTrace> stack_trace =
-      CaptureStackTrace(v8::Isolate::GetCurrent(), true);
+      CaptureStackTrace(true);
   if (stack_trace && !stack_trace->isEmpty())
     return SourceLocation::CreateFromNonEmptyV8StackTrace(
         std::move(stack_trace), 0);

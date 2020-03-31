@@ -21,7 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_device.mojom-forward.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "url/origin.h"
 
@@ -38,8 +38,7 @@ class UsbChooserContext;
 class WebUsbServiceImpl
     : public blink::mojom::WebUsbService,
       public permissions::ChooserContextBase::PermissionObserver,
-      public UsbChooserContext::DeviceObserver,
-      public device::mojom::UsbDeviceClient {
+      public UsbChooserContext::DeviceObserver {
  public:
   WebUsbServiceImpl(content::RenderFrameHost* render_frame_host,
                     base::WeakPtr<WebUsbChooser> usb_chooser);
@@ -49,6 +48,8 @@ class WebUsbServiceImpl
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
  private:
+  class UsbDeviceClient;
+
   bool HasDevicePermission(
       const device::mojom::UsbDeviceInfo& device_info) const;
 
@@ -78,9 +79,9 @@ class WebUsbServiceImpl
       const device::mojom::UsbDeviceInfo& device_info) override;
   void OnDeviceManagerConnectionError() override;
 
-  // device::mojom::UsbDeviceClient implementation:
-  void OnDeviceOpened() override;
-  void OnDeviceClosed() override;
+  void IncrementConnectionCount();
+  void DecrementConnectionCount();
+  void RemoveDeviceClient(const UsbDeviceClient* client);
 
   void OnConnectionError();
 
@@ -94,10 +95,8 @@ class WebUsbServiceImpl
   mojo::ReceiverSet<blink::mojom::WebUsbService> receivers_;
   mojo::AssociatedRemoteSet<device::mojom::UsbDeviceManagerClient> clients_;
 
-  // Tracks DeviceClient receivers for each device (by GUID).
-  std::unordered_map<std::string,
-                     mojo::ReceiverSet<device::mojom::UsbDeviceClient>>
-      device_client_receivers_;
+  // A UsbDeviceClient tracks a UsbDevice pipe that has been passed to Blink.
+  std::vector<std::unique_ptr<UsbDeviceClient>> device_clients_;
 
   ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
       device_observer_;

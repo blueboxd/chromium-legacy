@@ -49,6 +49,7 @@ mojom("mojom_platform") {
     "feature_policy/document_policy_feature.mojom",
     "feature_policy/feature_policy.mojom",
     "feature_policy/feature_policy_feature.mojom",
+    "feature_policy/policy_disposition.mojom",
     "feature_policy/policy_value.mojom",
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",

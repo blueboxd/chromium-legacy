@@ -58,8 +58,7 @@ using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 // other devices and could potentially create a never ending sync cycle. If
 // |is_for_sync| is true then icon links won't be changed.
 void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
-                                         const IconsMap* icons_map,
-                                         bool is_for_sync);
+                                         const IconsMap* icons_map);
 
 // Record an app banner added to homescreen event to ensure banners are not
 // shown for this app.

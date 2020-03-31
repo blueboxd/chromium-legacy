@@ -6,6 +6,9 @@
 
 #include <map>
 #include <memory>
+#include <set>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"

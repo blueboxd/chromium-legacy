@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
+#include "cc/base/switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,6 +45,7 @@
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/test/data/mojo_web_test_helper_test.mojom.h"
+#include "content/test/mock_badge_service.h"
 #include "content/test/mock_clipboard_host.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
@@ -56,7 +58,14 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "ui/base/ui_base_switches.h"
 #include "url/origin.h"
+
+#if defined(OS_WIN)
+#include "base/strings/utf_string_conversions.h"
+#include "sandbox/win/src/sandbox.h"
+#include "services/service_manager/sandbox/win/sandbox_win.h"
+#endif
 
 namespace content {
 namespace {
@@ -246,28 +255,26 @@ void WebTestContentBrowserClient::OverrideWebkitPrefs(
 void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  command_line->AppendSwitch(switches::kRunWebTests);
   ShellContentBrowserClient::AppendExtraCommandLineSwitches(command_line,
                                                             child_process_id);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAlwaysUseComplexText)) {
-    command_line->AppendSwitch(switches::kAlwaysUseComplexText);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFontAntialiasing)) {
-    command_line->AppendSwitch(switches::kEnableFontAntialiasing);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStableReleaseMode)) {
-    command_line->AppendSwitch(switches::kStableReleaseMode);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLeakDetection)) {
-    command_line->AppendSwitchASCII(
-        switches::kEnableLeakDetection,
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kEnableLeakDetection));
-  }
+
+  static const char* kForwardSwitches[] = {
+    // Indicates we're running web tests. Would be present in order to get
+    // here.
+    switches::kRunWebTests,
+    // Switches from web_test_switches.h that are used in the renderer.
+    switches::kEnableAccelerated2DCanvas,
+    switches::kEnableFontAntialiasing,
+    switches::kAlwaysUseComplexText,
+    switches::kStableReleaseMode,
+#if defined(OS_WIN)
+    switches::kRegisterFontFiles,
+#endif
+  };
+
+  command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                                 kForwardSwitches,
+                                 base::size(kForwardSwitches));
 }
 
 std::unique_ptr<BrowserMainParts>
@@ -376,6 +383,8 @@ void WebTestContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
   map->Add<mojom::MojoWebTestHelper>(base::BindRepeating(&BindWebTestHelper));
   map->Add<blink::mojom::ClipboardHost>(base::BindRepeating(
       &WebTestContentBrowserClient::BindClipboardHost, base::Unretained(this)));
+  map->Add<blink::mojom::BadgeService>(base::BindRepeating(
+      &WebTestContentBrowserClient::BindBadgeService, base::Unretained(this)));
 }
 
 bool WebTestContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
@@ -412,6 +421,14 @@ void WebTestContentBrowserClient::BindClipboardHost(
   if (!mock_clipboard_host_)
     mock_clipboard_host_ = std::make_unique<MockClipboardHost>();
   mock_clipboard_host_->Bind(std::move(receiver));
+}
+
+void WebTestContentBrowserClient::BindBadgeService(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
+  if (!mock_badge_service_)
+    mock_badge_service_ = std::make_unique<MockBadgeService>();
+  mock_badge_service_->Bind(std::move(receiver));
 }
 
 std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
@@ -468,5 +485,22 @@ void WebTestContentBrowserClient::BindWebTestController(
   WebTestClientImpl::Create(render_process_id, quota_manager, database_tracker,
                             network_context, std::move(receiver));
 }
+
+#if defined(OS_WIN)
+bool WebTestContentBrowserClient::PreSpawnRenderer(
+    sandbox::TargetPolicy* policy,
+    RendererSpawnFlags flags) {
+  // Add sideloaded font files for testing. See also DIR_WINDOWS_FONTS
+  // addition in |StartSandboxedProcess|.
+  std::vector<std::string> font_files = switches::GetSideloadFontFiles();
+  for (std::vector<std::string>::const_iterator i(font_files.begin());
+       i != font_files.end(); ++i) {
+    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                    base::UTF8ToWide(*i).c_str());
+  }
+  return true;
+}
+#endif  // OS_WIN
 
 }  // namespace content

@@ -110,6 +110,16 @@ bool ParseStringValue(const std::string& property_type,
       return true;
     }
   }
+  if (prop_config.boolean) {
+    if (value == "https://schema.org/True" || value == "true") {
+      values->bool_values.push_back(true);
+      return true;
+    }
+    if (value == "https://schema.org/False" || value == "false") {
+      values->bool_values.push_back(false);
+      return true;
+    }
+  }
   return false;
 }
 
@@ -180,6 +190,7 @@ void ExtractEntity(const base::DictionaryValue& val,
     type = "Thing";
   }
   entity->type = type;
+
   for (const auto& entry : val.DictItems()) {
     if (entity->properties.size() >= kMaxNumFields) {
       break;

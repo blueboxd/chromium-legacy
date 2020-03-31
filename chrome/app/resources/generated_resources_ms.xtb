@@ -1681,7 +1681,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
     Untuk mendapatkan pengalaman penuh sekolah pada peranti ini, anak anda harus:
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />Log keluar daripada akaun terurus Family Link mereka
-      <ph name="OLIST_ITEM" />Log masuk dengan akaun G Suite for Education mereka pada skrin log masuk. Walau bagaimanapun, sila ambil perhatian bahawa, perkara ini bermakna dasar sekolah, termasuk tetapan akses apl dan tapak web akan berkuat kuasa dan mengatasi ciri pengawasan Family Link anda (contohnya, pentadbir sekolah mungkin membenarkan YouTube jika diperlukan untuk kerja rumah, masa skrin tidak dikuatkuasakan, dsb.)
+      <ph name="OLIST_ITEM" />Log masuk dengan akaun G Suite for Education mereka pada skrin log masuk. Walau bagaimanapun, sila ambil perhatian bahawa perkara ini bermakna dasar sekolah, termasuk tetapan akses apl dan tapak web akan berkuat kuasa dan mengatasi ciri pengawasan Family Link anda (contohnya, pentadbir sekolah mungkin membenarkan YouTube jika diperlukan untuk kerja rumah, masa skrin tidak dikuatkuasakan dll.)
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Tidak disahkan</translation>
 <translation id="32101887417650595">Tidak dapat menyambungkan ke pencetak</translation>
@@ -4202,7 +4202,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6612358246767739896">Kandungan yang dilindungi</translation>
 <translation id="6615455863669487791">Tunjukkan kepada saya</translation>
 <translation id="6618097958368085618">Simpan Juga</translation>
-<translation id="6618744767048954150">Berlari</translation>
+<translation id="6618744767048954150">Berjalan</translation>
 <translation id="6619058681307408113">Daemon Pencetak Talian (LPD)</translation>
 <translation id="661907246513853610">Tapak boleh menjejak lokasi anda</translation>
 <translation id="6619801788773578757">Tambahkan aplikasi kios</translation>

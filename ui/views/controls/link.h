@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_LINK_H_
 
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"

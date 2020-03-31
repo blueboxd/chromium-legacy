@@ -28,9 +28,9 @@ void SubresourceFilterObserverManager::RemoveObserver(
 
 void SubresourceFilterObserverManager::NotifySafeBrowsingChecksComplete(
     content::NavigationHandle* navigation_handle,
-    const SubresourceFilterObserver::SafeBrowsingCheckResults& results) {
+    const SubresourceFilterSafeBrowsingClient::CheckResult& result) {
   for (auto& observer : observers_) {
-    observer.OnSafeBrowsingChecksComplete(navigation_handle, results);
+    observer.OnSafeBrowsingChecksComplete(navigation_handle, result);
   }
 }
 

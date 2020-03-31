@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/separator.h"
 
+#include <algorithm>
+
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"

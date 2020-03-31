@@ -89,7 +89,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   if (state_ == STATE_ERROR) {
     DVLOG(1) << "Decoder is in error state.";
     BindToCurrentLoop(std::move(init_cb))
-        .Run(StatusCode::kDecoderFailedConfigure);
+        .Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 
@@ -135,7 +135,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   if (!CreateMediaCodecLoop()) {
     BindToCurrentLoop(std::move(init_cb))
-        .Run(StatusCode::kDecoderFailedConfigure);
+        .Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 
@@ -288,7 +288,7 @@ void MediaCodecAudioDecoder::OnMediaCryptoReady(
   // After receiving |media_crypto_| we can configure MediaCodec.
   if (!CreateMediaCodecLoop()) {
     SetState(STATE_UNINITIALIZED);
-    std::move(init_cb).Run(StatusCode::kDecoderFailedConfigure);
+    std::move(init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 

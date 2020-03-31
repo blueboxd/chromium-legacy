@@ -548,7 +548,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="3366477098757335611">Se kort</translation>
 <translation id="3369192424181595722">Urfejl</translation>
 <translation id="337363190475750230">Deprovisioneret</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> har aktiveret Enterprise Service Hooks i din browser. Disse hooks har adgang til nogle af dine data.</translation>
 <translation id="3377144306166885718">Serveren benyttede en forældet version af TSL.</translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
 <translation id="3377736046129930310">Brug skærmlåsen til at bekræfte kort hurtigere</translation>
@@ -985,7 +984,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5179510805599951267">Ikke på <ph name="ORIGINAL_LANGUAGE" />? Rapporter denne fejl</translation>
 <translation id="5190835502935405962">Bogmærkelinje</translation>
 <translation id="519422657042045905">Annotering er ikke tilgængelig</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">En integreret side på denne side siger</translation>
 <translation id="5205222826937269299">Navn påkrævet</translation>
 <translation id="5209518306177824490">SHA-1-fingeraftryk</translation>
@@ -1459,7 +1457,6 @@ Yderligere oplysninger:
 <translation id="725866823122871198">Der kunne ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da dato og tid (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
 <translation id="7260504762447901703">Tilbagekald adgangstilladelsen</translation>
 <translation id="7275334191706090484">Administrerede bogmærker</translation>
-<translation id="7288778322931489286">Din administrator har aktiveret Enterprise Service Hooks i din browser. Disse hooks har adgang til nogle af dine data.</translation>
 <translation id="7292031607255951991">Modtagernavn</translation>
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="7300012071106347854">Koboltblå</translation>
@@ -1817,7 +1814,6 @@ Yderligere oplysninger:
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
 <translation id="8866928039507595380">Fals</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Del data om sikkerhedshændelser, der rapporteres af Enterprise Service Hooks, med din administrator. Dette kan omfatte webadresserne til de sider, du besøger, filnavne eller metadata samt det brugernavn, du brugte, da du loggede ind på din enhed og i Chrome.</translation>
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8870494189203302833">Samme rækkefølge med forside nedad</translation>
 <translation id="8874824191258364635">Angiv et gyldigt kortnummer</translation>

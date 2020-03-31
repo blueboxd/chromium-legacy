@@ -57,6 +57,11 @@ class CORE_EXPORT CSSAnimation : public Animation {
     visitor->Trace(owning_element_);
   }
 
+  // Force pending animation properties to be applied, as these may alter the
+  // animation. This step is required before any web animation API calls that
+  // depends on computed values.
+  void FlushPendingUpdates() const override { FlushStyles(); }
+
  protected:
   AnimationEffect::EventDelegate* CreateEventDelegate(
       Element* target,

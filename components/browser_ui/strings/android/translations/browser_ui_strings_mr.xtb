@@ -10,6 +10,7 @@
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2501278716633472235">परत जा</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{एक कुकी ब्लॉक केली}other{# कुकी ब्लॉक केल्या}}</translation>
+<translation id="257931822824936280">विस्‍तृत केले - संकुचित करण्‍यासाठी क्‍लिक करा.</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
@@ -20,7 +21,10 @@
 <translation id="3987993985790029246">लिंक कॉपी करा</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4570913071927164677">तपशील</translation>
+<translation id="4645575059429386691">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
+<translation id="4883854917563148705">व्यवस्थापित केलेल्या सेटिंग्ज रीसेट करता येत नाहीत</translation>
 <translation id="497421865427891073">पुढे जा</translation>
+<translation id="5100237604440890931">संकुचित केले - विस्तृत करण्यासाठी क्लिक करा.</translation>
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5301954838959518834">ठीक आहे, समजले</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
@@ -52,10 +56,12 @@
 <translation id="780301667611848630">नाही, नको</translation>
 <translation id="7846076177841592234">निवड रद्द करा</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
+<translation id="8206354486702514201">या सेटिंगची अंमलबजावणी तुमच्या ॲडमिनिस्ट्रेटरकडून होते.</translation>
 <translation id="8249310407154411074">वर न्या</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8609465669617005112">वर हलवा</translation>
 <translation id="8676374126336081632">इनपुट साफ करा</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
+<translation id="9019902583201351841">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
 </translationbundle>

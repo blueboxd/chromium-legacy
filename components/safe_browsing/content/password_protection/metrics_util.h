@@ -145,10 +145,8 @@ enum class WarningUIType {
   PAGE_INFO = 1,
   // Modal warning dialog.
   MODAL_DIALOG = 2,
-  // chrome://settings page.
-  CHROME_SETTINGS = 3,
   // chrome://reset-password interstitial.
-  INTERSTITIAL = 4
+  INTERSTITIAL = 3,
 };
 
 // Logs the |outcome| to several UMA metrics, depending on the value

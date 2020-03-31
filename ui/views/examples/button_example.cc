@@ -4,6 +4,9 @@
 
 #include "ui/views/examples/button_example.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"

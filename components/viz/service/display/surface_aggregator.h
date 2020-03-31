@@ -198,6 +198,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   //    surfaces found in the process.
   //  - |pixel_moving_backdrop_filters_rect| is another output that is union of
   //    bounds of render passes that have a pixel moving backdrop filter.
+  //  - |has_backdrop_cache_flags_to_update| indicates if any
+  //    RenderPassDrawQuad(s) contained in the surface have
+  //    |can_use_backdrop_filter_cache| flag set to true and having to be
+  //    updated. This is used to avoid iterating through all the render passes
+  //    in the surface frame when not needed (i.e. no flag needs to be
+  //    updated).
   // TODO(mohsen): Consider refactoring this backtracking algorithm into a
   // self-contained class.
   void FindChildSurfaces(
@@ -206,7 +212,24 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       RenderPassMapEntry* current_pass_entry,
       const gfx::Transform& transform_to_root_target,
       base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
-      std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects);
+      std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects,
+      bool* has_backdrop_cache_flags_to_update);
+
+  // Recursively updates the |can_use_backdrop_filter_cache| flag on all
+  // RenderPassDrawQuads(RPDQ) in the specified render pass. The function
+  // recursively traverses any render pass referenced by a RPDQ but doesn't
+  // traverse any render passes in the frame of any embedded surfaces. The
+  // function returns the damage rect of the render pass in its own content
+  // space.
+  // - |id| specifies the render pass whose quads are to be updated
+  // - |result| is the result of a prewalk of a root surface that contains the
+  //   render pass
+  // - |render_pass_map| is a map that contains all render passes and their
+  // entry data
+  gfx::Rect UpdateRPDQCanUseBackdropFilterCacheWithSurfaceDamage(
+      RenderPassId id,
+      PrewalkResult* result,
+      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map);
 
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,

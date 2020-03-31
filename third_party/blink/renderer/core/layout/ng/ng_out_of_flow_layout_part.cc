@@ -580,16 +580,32 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   // words, in that case, we may have to lay out, calculate the offset, and
   // then lay out again at the correct block-offset.
 
+  NGLogicalOutOfFlowDimensions node_dimensions;
+  bool has_computed_block_dimensions = false;
   bool is_replaced = node.IsReplaced();
   bool should_be_considered_as_replaced = node.ShouldBeConsideredAsReplaced();
+  bool absolute_needs_child_block_size =
+      AbsoluteNeedsChildBlockSize(candidate_style);
 
   if (AbsoluteNeedsChildInlineSize(candidate_style) ||
       NeedMinMaxSize(candidate_style) || should_be_considered_as_replaced) {
-    min_max_sizes = node.ComputeMinMaxSizes(
-        candidate_writing_mode,
-        MinMaxSizesInput(
-            container_content_size_in_candidate_writing_mode.block_size),
-        &candidate_constraint_space);
+    MinMaxSizesInput input(kIndefiniteSize);
+    if (is_replaced) {
+      input.percentage_resolution_block_size =
+          container_content_size_in_candidate_writing_mode.block_size;
+    } else if (!absolute_needs_child_block_size) {
+      // If we can determine our block-size ahead of time (it doesn't depend on
+      // our content), we use this for our %-block-size.
+      ComputeOutOfFlowBlockDimensions(
+          candidate_constraint_space, candidate_style, border_padding,
+          candidate_static_position, base::nullopt, base::nullopt,
+          writing_mode_, container_direction, &node_dimensions);
+      has_computed_block_dimensions = true;
+      input.percentage_resolution_block_size = node_dimensions.size.block_size;
+    }
+
+    min_max_sizes = node.ComputeMinMaxSizes(candidate_writing_mode, input,
+                                            &candidate_constraint_space);
   }
 
   base::Optional<LogicalSize> replaced_size;
@@ -614,11 +630,11 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
                         candidate_constraint_space.AvailableSize().inline_size),
                     kIndefiniteSize};
   }
-  NGLogicalOutOfFlowPosition node_position =
-      ComputePartialAbsoluteWithChildInlineSize(
-          candidate_constraint_space, candidate_style, border_padding,
-          candidate_static_position, min_max_sizes, replaced_size,
-          writing_mode_, container_direction);
+
+  ComputeOutOfFlowInlineDimensions(candidate_constraint_space, candidate_style,
+                                   border_padding, candidate_static_position,
+                                   min_max_sizes, replaced_size, writing_mode_,
+                                   container_direction, &node_dimensions);
 
   // |should_be_considered_as_replaced| sets the inline-size.
   // It does not set the block-size. This is a compatibility quirk.
@@ -630,16 +646,17 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   // https://www.w3.org/TR/css-sizing-3/#intrinsic-sizes
   if (is_replaced_with_only_aspect_ratio) {
     replaced_size = LogicalSize(
-        node_position.size.inline_size,
+        node_dimensions.size.inline_size,
         (replaced_aspect_ratio->block_size *
-         ((node_position.size.inline_size - border_padding.InlineSum()) /
+         ((node_dimensions.size.inline_size - border_padding.InlineSum()) /
           replaced_aspect_ratio->inline_size)) +
             border_padding.BlockSum());
   }
-  if (AbsoluteNeedsChildBlockSize(candidate_style)) {
+  if (absolute_needs_child_block_size) {
+    DCHECK(!has_computed_block_dimensions);
     layout_result =
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
-                         block_estimate, node_position);
+                         block_estimate, node_dimensions);
 
     // TODO(layout-dev): Handle abortions caused by block fragmentation.
     DCHECK(layout_result->Status() != NGLayoutResult::kOutOfFragmentainerSpace);
@@ -650,15 +667,18 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     block_estimate = fragment.BlockSize();
   }
 
+  // We may have already pre-computed our block-dimensions when determining our
+  // |min_max_sizes|, only run if needed.
+  if (!has_computed_block_dimensions) {
+    ComputeOutOfFlowBlockDimensions(
+        candidate_constraint_space, candidate_style, border_padding,
+        candidate_static_position, block_estimate, replaced_size, writing_mode_,
+        container_direction, &node_dimensions);
+  }
+
   // Calculate the offsets.
-
-  ComputeFullAbsoluteWithChildBlockSize(
-      candidate_constraint_space, candidate_style, border_padding,
-      candidate_static_position, block_estimate, replaced_size, writing_mode_,
-      container_direction, &node_position);
-
   NGBoxStrut inset =
-      node_position.inset
+      node_dimensions.inset
           .ConvertToPhysical(candidate_writing_mode, candidate_direction)
           .ConvertToLogical(writing_mode_, default_direction);
 
@@ -725,10 +745,10 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
 
   // Skip this step if we produced a fragment when estimating the block-size.
   if (!layout_result) {
-    block_estimate = node_position.size.block_size;
+    block_estimate = node_dimensions.size.block_size;
     layout_result =
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
-                         block_estimate, node_position);
+                         block_estimate, node_dimensions);
   }
 
   // TODO(layout-dev): Handle abortions caused by block fragmentation.
@@ -745,7 +765,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   if (!container_builder_->GetLayoutObject()
            ->Style()
            ->IsDisplayFlexibleOrGridBox()) {
-    node.GetLayoutBox()->SetMargin(node_position.margins.ConvertToPhysical(
+    node.GetLayoutBox()->SetMargin(node_dimensions.margins.ConvertToPhysical(
         candidate_writing_mode, candidate_direction));
   }
 
@@ -794,12 +814,12 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     NGBlockNode node,
     const LogicalSize& container_content_size_in_candidate_writing_mode,
     const base::Optional<LayoutUnit>& block_estimate,
-    const NGLogicalOutOfFlowPosition& node_position) {
+    const NGLogicalOutOfFlowDimensions& node_dimensions) {
   // As the |block_estimate| is always in the node's writing mode, we build the
   // constraint space in the node's writing mode.
   WritingMode writing_mode = node.Style().GetWritingMode();
 
-  LayoutUnit inline_size = node_position.size.inline_size;
+  LayoutUnit inline_size = node_dimensions.size.inline_size;
   LayoutUnit block_size = block_estimate.value_or(
       container_content_size_in_candidate_writing_mode.block_size);
 

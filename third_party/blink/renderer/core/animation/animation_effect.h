@@ -104,6 +104,8 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
 
   const Timing& SpecifiedTiming() const { return timing_; }
   void UpdateSpecifiedTiming(const Timing&);
+  void SetIgnoreCssTimingProperties();
+
   EventDelegate* GetEventDelegate() { return event_delegate_; }
   void SetEventDelegate(EventDelegate* delegate) { event_delegate_ = delegate; }
 

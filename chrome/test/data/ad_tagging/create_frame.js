@@ -44,7 +44,14 @@ function createFrameWithDocWriteAbortedLoad(name) {
   frame.src = '/slow?100';
   document.body.appendChild(frame);
   frame.contentDocument.open();
-  frame.contentDocument.write('<html><head></head><body></body></html>');
+  // We load the scripts in frame_factory.html to allow subframe creation,
+  // setting the title so we know when all scripts have loaded.
+  frame.contentDocument.write(
+      '<html><head>' +
+      '<script src="create_frame.js"></script>' +
+      '<script src="ad_script.js"></script>' +
+      '<script onload="top.document.title = window.name" ' +
+      'src="ad_script_2.js"></script></head><body></body></html>');
   frame.contentDocument.close();
 }
 
@@ -57,4 +64,21 @@ function createFrameWithWindowStopAbortedLoad(name) {
   frame.src = '/slow?100';
   document.body.appendChild(frame);
   frame.contentWindow.stop();
+
+  // We load the scripts in frame_factory.html to allow subframe creation.
+  let script1 = document.createElement('script');
+  script1.src = 'create_frame.js';
+  frame.contentDocument.head.appendChild(script1);
+
+  let script2 = document.createElement('script');
+  script2.src = 'ad_script.js';
+  frame.contentDocument.head.appendChild(script2);
+
+  let script3 = document.createElement('script');
+  script3.src = 'ad_script_2.js';
+  // Set title so we know when all scripts have loaded.
+  script3.onload = function() {
+    top.document.title = name;
+  };
+  frame.contentDocument.head.appendChild(script3);
 }

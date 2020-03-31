@@ -4,6 +4,9 @@
 
 #include "ui/views/examples/tabbed_pane_example.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"

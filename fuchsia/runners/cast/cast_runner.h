@@ -26,8 +26,6 @@ class FilteredServiceDirectory;
 }  // namespace fuchsia
 }  // namespace base
 
-class AudioCapturerRedirect;
-
 // sys::Runner which instantiates Cast activities specified via cast/casts URIs.
 class CastRunner : public WebContentRunner {
  public:
@@ -93,9 +91,9 @@ class CastRunner : public WebContentRunner {
   CastRunner* CreateChildRunnerForIsolatedComponent(
       CastComponent::CastComponentParams* params);
 
-  // Callback for |audio_capturer_redirect_|.
-  void CreateAudioCapturer(
-      fidl::InterfaceRequest<fuchsia::media::AudioCapturer> request);
+  // Handler for fuchsia.media.Audio requests in |service_directory_|.
+  void ConnectAudioProtocol(
+      fidl::InterfaceRequest<fuchsia::media::Audio> request);
 
   // Holds StartComponent() requests while the ApplicationConfig is being
   // fetched from the ApplicationConfigManager.
@@ -115,7 +113,6 @@ class CastRunner : public WebContentRunner {
       isolated_runners_;
 
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;
-  std::unique_ptr<AudioCapturerRedirect> audio_capturer_redirect_;
 
   // Last component that was created with permission to access MICROPHONE.
   CastComponent* audio_capturer_component_ = nullptr;

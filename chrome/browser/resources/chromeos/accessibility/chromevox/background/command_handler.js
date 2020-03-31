@@ -120,7 +120,7 @@ CommandHandler.onCommand = function(command) {
       chrome.windows.create(explorerPage);
       break;
     case 'showLogPage':
-      const logPage = {url: 'background/logging/log.html'};
+      const logPage = {url: 'chromevox/background/logging/log.html'};
       chrome.tabs.create(logPage);
       break;
     case 'enableLogging': {

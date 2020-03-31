@@ -289,7 +289,10 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   protocol::EmulationHandler* emulation_handler_ptr = emulation_handler.get();
 
   session->AddHandler(std::make_unique<protocol::BackgroundServiceHandler>());
-  session->AddHandler(std::make_unique<protocol::BrowserHandler>());
+  auto browser_handler = std::make_unique<protocol::BrowserHandler>(
+      session->GetClient()->MayWriteLocalFiles());
+  auto* browser_handler_ptr = browser_handler.get();
+  session->AddHandler(std::move(browser_handler));
   session->AddHandler(std::make_unique<protocol::DOMHandler>(
       session->GetClient()->MayReadLocalFiles()));
   session->AddHandler(std::move(emulation_handler));
@@ -328,7 +331,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
       GetId(), GetRendererChannel(), session->GetRootSession()));
   session->AddHandler(std::make_unique<protocol::PageHandler>(
-      emulation_handler_ptr, session->GetClient()->MayWriteLocalFiles(),
+      emulation_handler_ptr, browser_handler_ptr,
       session->GetClient()->MayReadLocalFiles()));
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {

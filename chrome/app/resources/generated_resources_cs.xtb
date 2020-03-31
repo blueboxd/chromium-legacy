@@ -73,6 +73,7 @@
 <translation id="1093457606523402488">Viditelné sítě:</translation>
 <translation id="1094607894174825014">Na zařízení <ph name="DEVICE_NAME" /> byla požadována operace čtení nebo zápisu s neplatným odstupem.</translation>
 <translation id="1097658378307015415">Chcete-li aktivovat síť <ph name="NETWORK_ID" />, vstupte prosím před přihlášením jako host</translation>
+<translation id="1099962274138857708">Obrázek zkopírovaný ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
 <translation id="1104038495841596279">Nepodařilo se nám rozpoznat vaši SIM kartu</translation>
 <translation id="1108600514891325577">&amp;Zastavit</translation>
@@ -561,6 +562,7 @@
 <translation id="1744108098763830590">stránka na pozadí</translation>
 <translation id="1745520510852184940">Vždy provádět tuto akci</translation>
 <translation id="1750172676754093297">Váš bezpečnostní klíč neumí ukládat otisky</translation>
+<translation id="1751262127955453661">Dokud nezavřete všechny karty webu <ph name="ORIGIN" />, bude moci upravovat soubory ve složce <ph name="FOLDERNAME" /></translation>
 <translation id="175196451752279553">Znovu ot&amp;evřít zavřenou kartu</translation>
 <translation id="1753067873202720523">Když bude Chromebook zapnutý, možná se nebude nabíjet.</translation>
 <translation id="1753905327828125965">Nejnavštěvovanější</translation>
@@ -627,6 +629,7 @@
 <translation id="1822140782238030981">Už uživatelský profil Chromu máte? Přihlaste se</translation>
 <translation id="18245044880483936">Zálohovaná data se nezapočítávají do kvóty úložiště na Disku dítěte.</translation>
 <translation id="1826516787628120939">Probíhá kontrola</translation>
+<translation id="1827738518074806965">Galerie umění</translation>
 <translation id="1828378091493947763">Tento plugin v tomto zařízení není podporován</translation>
 <translation id="1828901632669367785">Vytisknout prostřednictvím dialogového okna systému...</translation>
 <translation id="1829129547161959350">Tučňák</translation>
@@ -1028,6 +1031,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="236117173274098341">Optimalizovat</translation>
 <translation id="236141728043665931">Vždy blokovat přístup k mikrofonu</translation>
+<translation id="2364498172489649528">V pořádku</translation>
 <translation id="2365507699358342471">Tato stránka má přístup k textu a obrázkům zkopírovaným do schránky.</translation>
 <translation id="2366260648632264559">Text systému zobrazit v tomto jazyce</translation>
 <translation id="2367972762794486313">Zobrazit aplikace</translation>
@@ -1341,6 +1345,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2762441749940182211">Kamera je blokována</translation>
 <translation id="2765217105034171413">Malé</translation>
 <translation id="2766161002040448006">Požádat rodiče</translation>
+<translation id="2767127727915954024">Dokud nezavřete všechny karty webu <ph name="ORIGIN" />, bude moci upravovat soubor <ph name="FILENAME" /></translation>
 <translation id="276969039800130567">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Odstranit ze seznamu</translation>
 <translation id="2770690685823456775">Exportujte hesla do jiné složky</translation>
@@ -1665,6 +1670,18 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3202173864863109533">Zvuk této karty je vypnut.</translation>
 <translation id="3208321278970793882">Aplikace</translation>
 <translation id="3208584281581115441">Zkontrolovat</translation>
+<translation id="3208640652501208439">Zdroje pro práci do školy nemusí být k dispozici nebo se nemusí načíst automaticky
+    Je možné, že dítě nebude mít k dispozici:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />aplikace a rozšíření, které nainstalovala škola,
+      <ph name="LIST_ITEM" />záložky ze školního Chromebooku,
+      <ph name="LIST_ITEM" />automatické vyplňování hesel na vzdělávacích webech.
+    <ph name="END_LIST" />
+    K zajištění plně funkčního školního prostředí na tomto zařízení musí dítě provést tyto kroky:
+    <ph name="BEGIN_OLIST" />
+      <ph name="OLIST_ITEM" />Odhlásit se z účtu spravovaného pomocí služby Family Link.
+      <ph name="OLIST_ITEM" />Přihlásit se na přihlašovací obrazovce pomocí účtu G Suite pro vzdělávání. Upozorňujeme však, že po provedení těchto kroků budou mít před dozorovacími funkcemi Family Link přednost školní zásady, včetně nastavení přístupu k aplikacím a webům (školní administrátoři například mohou povolit přístup k YouTube, pokud je potřeba k vypracování domácího úkolu, nemusí být omezena maximální doba používání zařízení apod.).
+    <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Nepotvrzeno</translation>
 <translation id="32101887417650595">K tiskárně se nelze připojit</translation>
 <translation id="321084946921799184">Žlutá a bílá</translation>
@@ -1743,6 +1760,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3312424061798279731">Povolené jazyky</translation>
 <translation id="3313622045786997898">Hodnota podpisu certifikátu</translation>
 <translation id="3315158641124845231">Skrýt <ph name="PRODUCT_NAME" /></translation>
+<translation id="3317284582048881482">Informace o školním účtu pro rodiče</translation>
 <translation id="3317459757438853210">Oboustranně</translation>
 <translation id="3317678681329786349">Kamera a mikrofon jsou blokovány</translation>
 <translation id="3319048459796106952">Nové &amp;anonymní okno</translation>
@@ -1929,6 +1947,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3574210789297084292">Přihlaste se</translation>
 <translation id="3574917942258583917">Přesto anonymní režim ukončit?</translation>
 <translation id="3575121482199441727">Povolit pro tento web</translation>
+<translation id="3575919114596668130">Na zařízení se stále budou vztahovat vaše rodičovská nastavení služby Family Link. Pokud jste dříve nějakou aplikaci nebo web blokovali, nebudete to muset dělat znovu.</translation>
 <translation id="3576324189521867626">Úspěšně nainstalováno</translation>
 <translation id="3578594933904494462">Obsah této karty je sdílen.</translation>
 <translation id="357886715122934472">Uživatel &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce sdílet tiskárnu &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; se skupinou, kterou vlastníte: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Pokud tuto akci přijmete, pomocí této tiskárny budou moci tisknout všichni členové skupiny.</translation>
@@ -2768,6 +2787,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4689235506267737042">Zvolte předvolby ukázkového režimu</translation>
 <translation id="4689421377817139245">Synchronizujte tuto záložku do svého iPhonu</translation>
 <translation id="4690091457710545971">&lt;Čtyři soubory vygenerované firmwarem Wi-Fi od společnosti Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. První tři jsou binární soubory s výpisy z registru a společnost Intel o nich prohlašuje, že neobsahují žádné informace umožňující identifikaci osob ani zařízení. Poslední soubor obsahuje trasovací informace z firmwaru Intel. Byly z něj odstraněny všechny informace umožňující identifikaci osob nebo zařízení, ale je příliš velký na to, aby jej zde bylo možné zobrazit. Tyto soubory byly vygenerovány v reakci na nedávné problémy se sítí Wi-Fi ve vašem zařízení a budou poskytnuty společnosti Intel, aby tyto problémy mohla odstranit.&gt;</translation>
+<translation id="4691791363716065510">Dokud nezavřete všechny karty webu <ph name="ORIGIN" />, bude moci číst soubor <ph name="FILENAME" /></translation>
 <translation id="4692623383562244444">Vyhledávače</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694024090038830733">Konfiguraci tiskáren spravuje administrátor.</translation>
@@ -3123,6 +3143,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5204967432542742771">Zadejte heslo</translation>
 <translation id="5206215183583316675">Smazat certifikát <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Chyba při importu certifikátu</translation>
+<translation id="5209307736170827035">Data dítěte v Učebně budou chráněna. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Nebyla nalezena žádná zařízení</translation>
 <translation id="5210990770352357081">Plugin VM nebylo možné odinstalovat</translation>
 <translation id="5213481667492808996">Datová služba <ph name="NAME" /> je připravena k použití</translation>
@@ -3234,6 +3255,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5341980496415249280">Čekejte prosím, probíhá balení...</translation>
 <translation id="5342091991439452114">Minimální počet číslic v kódu PIN: <ph name="MINIMUM" /></translation>
 <translation id="5344036115151554031">Obnovení Linuxu</translation>
+<translation id="535123479159372765">Text zkopírovaný z jiného zařízení</translation>
 <translation id="5352033265844765294">Časové razítko</translation>
 <translation id="5353252989841766347">Export hesel z Chromu</translation>
 <translation id="5355099869024327351">Povolit Asistentovi zobrazovat vám oznámení</translation>
@@ -3356,6 +3378,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5511379779384092781">Velmi malý</translation>
 <translation id="5511823366942919280">Opravdu toto zařízení chcete nastavit jako zařízení Shark?</translation>
 <translation id="5512653252560939721">Certifikát uživatele musí být hardwarový.</translation>
+<translation id="5515923816438946203">Vyberte si, co chcete vidět na obrazovce</translation>
 <translation id="5517304475148761050">Tato aplikace vyžaduje přístup do Obchodu Play</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Přidávání tiskárny do účtu – může to chvíli trvat...</translation>
@@ -3806,6 +3829,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6097480669505687979">Pokud neuvolníte místo, může dojít k automatickému odebrání uživatelů a dat.</translation>
 <translation id="6097600385983390082">Hlasové vyhledávání bylo zavřeno</translation>
 <translation id="6098793583803863900">Probíhá vyhledávání nebezpečného obsahu v neznámém souboru.</translation>
+<translation id="609942571968311933">Text zkopírovaný ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="6100736666660498114">Nabídka Start</translation>
 <translation id="6101226222197207147">Byla přidána nová aplikace (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6102043788063419338">Tento soubor byla zablokován pokročilou ochranou.</translation>
@@ -4176,6 +4200,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6612358246767739896">Chráněný obsah</translation>
 <translation id="6615455863669487791">Ukázat</translation>
 <translation id="6618097958368085618">Přesto ponechat</translation>
+<translation id="6618744767048954150">Probíhá</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Web může sledovat vaši polohu</translation>
 <translation id="6619801788773578757">Přidat aplikaci pro režim veřejného terminálu</translation>
@@ -4561,6 +4586,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7131040479572660648">Čtení vašich dat na webech <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Přidat strá&amp;nku...</translation>
 <translation id="7133578150266914903">Administrátor v tomto zařízení obnovuje předchozí verzi systému (<ph name="PROGRESS_PERCENT" />).</translation>
+<translation id="7133728868075973271">Zkontrolovaná hesla: <ph name="DONE" />/<ph name="TOTAL" />...</translation>
 <translation id="7134098520442464001">Zmenšit text</translation>
 <translation id="7135729336746831607">Zapnout Bluetooth?</translation>
 <translation id="7136639886842764730">Doména <ph name="DOMAIN" /> vyžaduje, abyste okamžitě aktualizovali zařízení <ph name="DEVICE_TYPE" />.</translation>
@@ -4909,6 +4935,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="761530003705945209">Zálohování na Disk Google. Snadno obnovte svá data nebo kdykoliv přejděte na jiné zařízení. Záloha zahrnuje data aplikací. Zálohy se nahrávají do Googlu a šifrují pomocí hesla účtu Google.</translation>
 <translation id="7616214729753637086">Registrace zařízení...</translation>
 <translation id="7617366389578322136">Připojování k zařízení <ph name="DEVICE_NAME" /></translation>
+<translation id="761763866592998929">Ambientní režim</translation>
 <translation id="762068974690945752">Zde můžete přidat školní účet a spravovat účty dětí. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Systému se nepodařilo uložit konfiguraci zařízení.</translation>
 <translation id="7622114377921274169">Nabíjení.</translation>
@@ -5020,6 +5047,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7766838926148951335">Přijmout oprávnění</translation>
 <translation id="7768770796815395237">Změnit</translation>
 <translation id="7769672763586021400">ID modelu</translation>
+<translation id="7770612696274572992">Obrázek zkopírovaný z jiného zařízení</translation>
 <translation id="7770651108375708429">Odpojit od Wi-Fi</translation>
 <translation id="7771452384635174008">Rozložení</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>
@@ -5027,6 +5055,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7772773261844472235">Zkontrolujte stav Chromebooku</translation>
 <translation id="7773726648746946405">Úložiště návštěvy</translation>
 <translation id="7774365994322694683">Pták</translation>
+<translation id="7776156998370251340">Dokud nezavřete všechny karty webu <ph name="ORIGIN" />, bude moci číst soubory ve složce <ph name="FOLDERNAME" /></translation>
 <translation id="7776701556330691704">Nebyly nalezeny žádné hlasy</translation>
 <translation id="7780252971640011240">Došlo k potížím s připojením. O pomoc požádejte operátora.</translation>
 <translation id="7781335840981796660">Veškeré uživatelské účty a místní data budou odebrána.</translation>
@@ -6045,6 +6074,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9055636786322918818">Vynutit šifrování RC4. Použití této možnosti zvyšuje riziko, protože šifry RC4 nejsou bezpečné.</translation>
 <translation id="9056810968620647706">Nebyly nalezeny žádné shody.</translation>
 <translation id="9057354806206861646">Plán aktualizací</translation>
+<translation id="9058976525724291037">Vaše dítě chce na toto zařízení přidat další účet Google. Na zařízení spravovaná prostřednictvím služby Family Link lze přidávat pouze účty G Suite pro vzdělávání.</translation>
 <translation id="9062065967472365419">Překvapte mě</translation>
 <translation id="9062468308252555888">14×</translation>
 <translation id="9063208415146866933">Chyba na řádku <ph name="ERROR_LINE_START" /> až <ph name="ERROR_LINE_END" /></translation>

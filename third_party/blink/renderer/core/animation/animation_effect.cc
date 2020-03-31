@@ -51,12 +51,45 @@ AnimationEffect::AnimationEffect(const Timing& timing,
 }
 
 void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
-  // FIXME: Test whether the timing is actually different?
-  timing_ = timing;
+  if (!timing_.HasTimingOverrides()) {
+    timing_ = timing;
+  } else {
+    // Style changes that are overridden due to an explicit call to
+    // AnimationEffect.updateTiming are not applied.
+    if (!timing_.HasTimingOverride(Timing::kOverrideStartDelay))
+      timing_.start_delay = timing.start_delay;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideDirection))
+      timing_.direction = timing.direction;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideDuration))
+      timing_.iteration_duration = timing.iteration_duration;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideEndDelay))
+      timing_.end_delay = timing.end_delay;
+
+    if (!timing_.HasTimingOverride(Timing::kOverideFillMode))
+      timing_.fill_mode = timing.fill_mode;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideIterationCount))
+      timing_.iteration_count = timing.iteration_count;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideIterationStart))
+      timing_.iteration_start = timing.iteration_start;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideTimingFunction))
+      timing_.timing_function = timing.timing_function;
+  }
   InvalidateAndNotifyOwner();
 }
 
+void AnimationEffect::SetIgnoreCssTimingProperties() {
+  timing_.SetTimingOverride(Timing::kOverrideAll);
+}
+
 EffectTiming* AnimationEffect::getTiming() const {
+  if (const Animation* animation = GetAnimation())
+    animation->FlushPendingUpdates();
   return SpecifiedTiming().ConvertToEffectTiming();
 }
 

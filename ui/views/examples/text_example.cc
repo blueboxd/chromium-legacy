@@ -5,6 +5,7 @@
 #include "ui/views/examples/text_example.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

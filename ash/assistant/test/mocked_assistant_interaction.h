@@ -29,6 +29,7 @@ class MockedAssistantInteraction {
   MockedAssistantInteraction& WithQuery(const std::string& text_query);
   MockedAssistantInteraction& WithTextResponse(
       const std::string& text_response);
+  MockedAssistantInteraction& WithSuggestionChip(const std::string& text);
   MockedAssistantInteraction& WithResolution(Resolution);
 
  private:

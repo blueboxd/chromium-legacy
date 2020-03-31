@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_FACTORY_H_
 #define UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_FACTORY_H_
 
+#include <memory>
+
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/views_export.h"

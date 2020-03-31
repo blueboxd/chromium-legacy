@@ -36,7 +36,7 @@ enum class StatusCode : StatusCodeType {
   kEncryptedContentUnsupported = 0x00000106,
   kClearContentUnsupported = 0x00000107,
   kDecoderMissingCdmForEncryptedContent = 0x00000108,
-  kDecoderFailedConfigure = 0x00000109,
+  kDecoderFailedInitialization = 0x00000109,
   kDecoderCantChangeCodec = 0x0000010A,
   kDecoderFailedCreation = 0x0000010B,
   kInitializationUnspecifiedFailure = 0x0000010C,

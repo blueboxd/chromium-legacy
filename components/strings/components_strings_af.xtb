@@ -548,7 +548,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="3366477098757335611">Bekyk kaarte</translation>
 <translation id="3369192424181595722">Horlosiefout</translation>
 <translation id="337363190475750230">Onvoorsien</translation>
-<translation id="3376829916920036789"><ph name="ENROLLMENT_DOMAIN" /> het Enterprise Service Hooks in jou blaaier geaktiveer. Hierdie hoeke het toegang tot van jou data.</translation>
 <translation id="3377144306166885718">Die bediener gebruik 'n verouderde weergawe van TLS.</translation>
 <translation id="3377188786107721145">Beleidontleedfout</translation>
 <translation id="3377736046129930310">Gebruik skermslot om kaarte vinniger te bevestig</translation>
@@ -985,7 +984,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5179510805599951267">Nie in <ph name="ORIGINAL_LANGUAGE" /> nie? Meld hierdie fout aan</translation>
 <translation id="5190835502935405962">Boekmerkebalk</translation>
 <translation id="519422657042045905">Annotasie is nie beskikbaar nie</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
 <translation id="5201306358585911203">'n Ingebedde bladsy op hierdie bladsy sê</translation>
 <translation id="5205222826937269299">Naam word vereis</translation>
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
@@ -1459,7 +1457,6 @@ Bykomende besonderhede:
 <translation id="725866823122871198">'n Private verbinding aan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan nie gevestig word nie omdat jou rekenaar se datum en tyd (<ph name="DATE_AND_TIME" />) verkeerd is.</translation>
 <translation id="7260504762447901703">Herroep toegang</translation>
 <translation id="7275334191706090484">Bestuurde boekmerke</translation>
-<translation id="7288778322931489286">Jou administrateur het Enterprise Service Hooks in jou blaaier geaktiveer. Hierdie hoeke het toegang tot van jou data.</translation>
 <translation id="7292031607255951991">Ontvanger se naam</translation>
 <translation id="7298195798382681320">Aanbevole</translation>
 <translation id="7300012071106347854">Kobaltblou</translation>
@@ -1816,7 +1813,6 @@ Bykomende besonderhede:
 <translation id="8866481888320382733">Kon nie beleidinstellings ontleed nie</translation>
 <translation id="8866928039507595380">Vou</translation>
 <translation id="886872106311861689">B3</translation>
-<translation id="8869862664961249123">Deel data oor sekuriteitgeleenthede wat deur Enterprise Service Hooks gevlag is met jou administrateur. Dit kan insluit: URL'e van bladsye wat jy besoek, lêername of metadata en die gebruikernaam wat jy gebruik om op jou toestel en by Chrome aan te meld.</translation>
 <translation id="8870413625673593573">Onlangs toegemaak</translation>
 <translation id="8870494189203302833">Dieselfde volgorde, voorkant na onder</translation>
 <translation id="8874824191258364635">Voer 'n geldige kaartnommer in</translation>

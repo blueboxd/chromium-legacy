@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/webview/webview.h"
 
+#include <string>
 #include <utility>
 
 #include "base/no_destructor.h"

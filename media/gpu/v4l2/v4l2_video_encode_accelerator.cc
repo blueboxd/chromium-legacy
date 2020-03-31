@@ -301,10 +301,22 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
     }
 
     // ImageProcessor for a pixel format conversion.
-    if (!CreateImageProcessor(*input_layout, *device_input_layout_,
+    if (!CreateImageProcessor(*input_layout, device_input_layout_->format(),
+                              device_input_layout_->coded_size(),
                               encoder_input_visible_rect_,
                               encoder_input_visible_rect_)) {
       VLOGF(1) << "Failed to create image processor";
+      return;
+    }
+
+    const gfx::Size ip_output_buffer_size(
+        image_processor_->output_config().planes[0].stride,
+        image_processor_->output_config().size.height());
+    if (!NegotiateInputFormat(device_input_layout_->format(),
+                              ip_output_buffer_size)) {
+      VLOGF(1) << "Failed to reconfigure v4l2 encoder driver with the "
+               << "ImageProcessor output buffer: "
+               << ip_output_buffer_size.ToString();
       return;
     }
   }
@@ -354,29 +366,60 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
 
 bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
     const VideoFrameLayout& input_layout,
-    const VideoFrameLayout& output_layout,
+    const VideoPixelFormat output_format,
+    const gfx::Size& output_size,
     const gfx::Rect& input_visible_rect,
     const gfx::Rect& output_visible_rect) {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-  DCHECK_NE(input_layout.format(), output_layout.format());
+  DCHECK_NE(input_layout.format(), output_format);
 
-  auto ip_input_layout = AsMultiPlanarLayout(std::move(input_layout));
-  if (!ip_input_layout)
+  auto ip_input_layout = AsMultiPlanarLayout(input_layout);
+  if (!ip_input_layout) {
+    VLOGF(1) << "Failed to get multi-planar input layout, input_layout="
+             << input_layout;
     return false;
+  }
 
   VideoFrame::StorageType input_storage_type =
       native_input_mode_ ? VideoFrame::STORAGE_GPU_MEMORY_BUFFER
                          : VideoFrame::STORAGE_MOJO_SHARED_BUFFER;
   auto input_config = VideoFrameLayoutToPortConfig(
       *ip_input_layout, input_visible_rect, {input_storage_type});
-  if (!input_config)
+  if (!input_config) {
+    VLOGF(1) << "Failed to create ImageProcessor input config";
     return false;
+  }
+
+  if (!image_processor_gmb_factory_) {
+    image_processor_gmb_factory_ =
+        gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
+    if (!image_processor_gmb_factory_) {
+      VLOGF(1) << "Failed to create GpuMemoryBufferFactory";
+      return false;
+    }
+  }
+
+  auto platform_layout = GetPlatformVideoFrameLayout(
+      image_processor_gmb_factory_.get(), output_format, output_size,
+      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+  if (!platform_layout) {
+    VLOGF(1) << "Failed to get Platform VideoFrameLayout";
+    return false;
+  }
+  auto output_layout = AsMultiPlanarLayout(platform_layout.value());
+  if (!output_layout) {
+    VLOGF(1) << "Failed to get multi-planar platform layout, platform_layout="
+             << *platform_layout;
+    return false;
+  }
   auto output_config =
-      VideoFrameLayoutToPortConfig(output_layout, output_visible_rect,
+      VideoFrameLayoutToPortConfig(*output_layout, output_visible_rect,
                                    {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
-  if (!output_config)
+  if (!output_config) {
+    VLOGF(1) << "Failed to create ImageProcessor output config";
     return false;
+  }
 
   image_processor_ = ImageProcessorFactory::Create(
       *input_config, *output_config, {ImageProcessor::OutputMode::IMPORT},
@@ -394,11 +437,11 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   // input coded height of encoder. For example, suppose input size of encoder
   // is 320x193. It is OK if the output of processor is 320x208.
   const auto& ip_output_size = image_processor_->output_config().size;
-  if (ip_output_size.width() != output_layout.coded_size().width() ||
-      ip_output_size.height() < output_layout.coded_size().height()) {
+  if (ip_output_size.width() != output_layout->coded_size().width() ||
+      ip_output_size.height() < output_layout->coded_size().height()) {
     VLOGF(1) << "Invalid image processor output coded size "
              << ip_output_size.ToString() << ", expected output coded size is "
-             << output_layout.coded_size().ToString();
+             << output_layout->coded_size().ToString();
     return false;
   }
 
@@ -412,18 +455,10 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
 bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
     size_t count) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+  DCHECK(image_processor_gmb_factory_);
   DCHECK(image_processor_);
   DCHECK_EQ(image_processor_->output_mode(),
             ImageProcessor::OutputMode::IMPORT);
-  if (!image_processor_gmb_factory_) {
-    image_processor_gmb_factory_ =
-        gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
-    if (!image_processor_gmb_factory_) {
-      VLOGF(1) << "Failed to create GpuMemoryBufferFactory";
-      return false;
-    }
-  }
-
   image_processor_output_buffers_.resize(count);
   const ImageProcessor::PortConfig& output_config =
       image_processor_->output_config();
@@ -741,7 +776,8 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
           device_input_layout_->coded_size().height() == buffer_size.height()) {
         return true;
       }
-      return NegotiateInputFormat(device_input_layout_->format(), buffer_size);
+      return NegotiateInputFormat(device_input_layout_->format(), buffer_size)
+          .has_value();
     }
 
     if (image_processor_->input_config().size.height() ==
@@ -757,7 +793,8 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
   // scaling. Update |input_frame_size_| to check if succeeding frames'
   // dimensions are not different from one of the first frame.
   input_frame_size_ = frame.coded_size();
-  return CreateImageProcessor(frame.layout(), *device_input_layout_,
+  return CreateImageProcessor(frame.layout(), device_input_layout_->format(),
+                              device_input_layout_->coded_size(),
                               frame.visible_rect(),
                               encoder_input_visible_rect_);
 }
@@ -1349,9 +1386,9 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
   return true;
 }
 
-bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
-    VideoPixelFormat input_format,
-    const gfx::Size& size) {
+base::Optional<struct v4l2_format>
+V4L2VideoEncodeAccelerator::NegotiateInputFormat(VideoPixelFormat input_format,
+                                                 const gfx::Size& size) {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK(!input_queue_->IsStreaming());
@@ -1363,7 +1400,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   if (!input_fourcc) {
     DVLOGF(2) << "Invalid input format "
               << VideoPixelFormatToString(input_format);
-    return false;
+    return base::nullopt;
   }
   pix_fmt_candidates.push_back(input_fourcc->ToV4L2PixFmt());
   // Second try preferred input formats for both single-planar and
@@ -1385,7 +1422,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     device_input_layout_ = V4L2Device::V4L2FormatToVideoFrameLayout(*format);
     if (!device_input_layout_) {
       VLOGF(1) << "Invalid device_input_layout_";
-      return false;
+      return base::nullopt;
     }
     DVLOG(3) << "Negotiated device_input_layout_: " << *device_input_layout_;
     if (!gfx::Rect(device_input_layout_->coded_size())
@@ -1393,22 +1430,17 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
       VLOGF(1) << "Input size " << size.ToString()
                << " exceeds encoder capability. Size encoder can handle: "
                << device_input_layout_->coded_size().ToString();
-      return false;
+      return base::nullopt;
     }
     // Make sure that the crop is preserved as we have changed the input
     // resolution.
     if (!ApplyCrop()) {
-      return false;
+      return base::nullopt;
     }
-    if (native_input_mode_) {
-      input_frame_size_ = VideoFrame::DetermineAlignedSize(
-          input_format, encoder_input_visible_rect_.size());
-    } else {
-      input_frame_size_ = V4L2Device::AllocatedSizeFromV4L2Format(*format);
-    }
-    return true;
+
+    return format;
   }
-  return false;
+  return base::nullopt;
 }
 
 bool V4L2VideoEncodeAccelerator::ApplyCrop() {
@@ -1464,9 +1496,17 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
   if (!SetOutputFormat(output_profile))
     return false;
 
-  if (!NegotiateInputFormat(input_format, encoder_input_visible_rect_.size()))
+  auto v4l2_format =
+      NegotiateInputFormat(input_format, encoder_input_visible_rect_.size());
+  if (!v4l2_format)
     return false;
 
+  if (native_input_mode_) {
+    input_frame_size_ = VideoFrame::DetermineAlignedSize(
+        input_format, encoder_input_visible_rect_.size());
+  } else {
+    input_frame_size_ = V4L2Device::AllocatedSizeFromV4L2Format(*v4l2_format);
+  }
   return true;
 }
 

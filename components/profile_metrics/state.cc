@@ -16,6 +16,8 @@ std::string GetStateSuffix(StateSuffix suffix) {
       return "_All";
     case StateSuffix::kActiveMultiProfile:
       return "_ActiveMultiProfile";
+    case StateSuffix::kLatentMultiProfile:
+      return "_LatentMultiProfile";
     case StateSuffix::kLatentMultiProfileActive:
       return "_LatentMultiProfileActive";
     case StateSuffix::kLatentMultiProfileOthers:

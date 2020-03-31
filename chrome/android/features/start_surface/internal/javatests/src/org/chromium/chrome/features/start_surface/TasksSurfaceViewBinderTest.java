@@ -7,6 +7,7 @@ package org.chromium.chrome.features.start_surface;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
@@ -34,6 +35,7 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
     private ViewGroup mParentView;
     private View mTasksSurfaceView;
     private PropertyModel mPropertyModel;
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private PropertyModelChangeProcessor mPropertyModelChangeProcessor;
 
     @Override
@@ -59,7 +61,7 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     public void testSetShowAndHideOverview() {
         assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
-        assertEquals(mTasksSurfaceView.getParent(), null);
+        assertNull(mTasksSurfaceView.getParent());
 
         mPropertyModel.set(BOTTOM_BAR_HEIGHT, 10);
         mPropertyModel.set(TOP_BAR_HEIGHT, 20);

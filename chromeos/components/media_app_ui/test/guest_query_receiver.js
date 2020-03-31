@@ -141,7 +141,7 @@ function installTestHandlers() {
   const realLoadFiles = loadFiles;
   loadFiles = async (/** !ReceivedFileList */ fileList) => {
     lastReceivedFileList = fileList;
-    realLoadFiles(fileList);
+    return realLoadFiles(fileList);
   };
   signalTestHandlersReady();
 }

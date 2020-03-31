@@ -518,6 +518,34 @@ void VdaVideoDecoder::ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                      textures_per_buffer, dimensions, texture_target));
 }
 
+void VdaVideoDecoder::ProvidePictureBuffersWithVisibleRect(
+    uint32_t requested_num_of_buffers,
+    VideoPixelFormat format,
+    uint32_t textures_per_buffer,
+    const gfx::Size& dimensions,
+    const gfx::Rect& visible_rect,
+    uint32_t texture_target) {
+  // In ALLOCATE mode, |vda_| is responsible for allocating storage for the
+  // result of the decode. However, we are responsible for creating the GL
+  // texture to which we'll attach the decoded image. The decoder needs the
+  // buffer to be of size = coded size, but for the purposes of working with a
+  // graphics API (e.g., GL), the client does not need to know about the
+  // non-visible area. For example, for a 360p H.264 video with a visible
+  // rectangle of 0,0,640x360, the coded size is 640x368, but the GL texture
+  // that the client uses should be only 640x360. Therefore, we pass
+  // |visible_rect|.size() here as the requested size of the picture buffers.
+  //
+  // TODO(andrescj): this is not correct in the case that the visible rectangle
+  // does not start at (0, 0). This can happen for some exotic H.264 videos. For
+  // example, if the coded size is 640x368 and the visible rectangle is
+  // 2,2,640x360, the size of the picture buffers we pass here should be
+  // 642x362. That's because the compositor is responsible for calculating the
+  // UV coordinates in such a way that the non-visible area to the left and on
+  // the top of the visible rectangle are not displayed.
+  ProvidePictureBuffers(requested_num_of_buffers, format, textures_per_buffer,
+                        visible_rect.size(), texture_target);
+}
+
 void VdaVideoDecoder::ProvidePictureBuffersAsync(uint32_t count,
                                                  VideoPixelFormat pixel_format,
                                                  uint32_t planes,

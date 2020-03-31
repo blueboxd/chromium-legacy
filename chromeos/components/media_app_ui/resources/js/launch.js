@@ -91,14 +91,17 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   return {deleteResult: DeleteResult.SUCCESS};
 });
 
-guestMessagePipe.registerHandler(Message.NAVIGATE, (message) => {
+guestMessagePipe.registerHandler(Message.NAVIGATE, async (message) => {
   const navigate = /** @type {NavigateMessage} */ (message);
 
-  advance(navigate.direction);
+  await advance(navigate.direction);
 });
 
-/** Loads the current file list into the guest. */
-function sendFilesToGuest() {
+/**
+ * Loads the current file list into the guest.
+ * @return {!Promise<undefined>}
+ */
+async function sendFilesToGuest() {
   // Before sending to guest ensure writableFileIndex is set to be writable,
   // also clear the old token.
   if (currentlyWritableFile) {
@@ -113,7 +116,7 @@ function sendFilesToGuest() {
     // Handle can't be passed through a message pipe.
     files: currentFiles.map(fd => ({token: fd.token, file: fd.file}))
   };
-  guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
+  await guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
 }
 
 /**
@@ -185,7 +188,7 @@ async function advance(direction) {
     entryIndex += currentFiles.length;
   }
 
-  sendFilesToGuest();
+  await sendFilesToGuest();
 }
 
 document.querySelector('#prev-container')

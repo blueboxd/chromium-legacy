@@ -56,7 +56,9 @@ TEST_F(ObjectPaintInvalidatorTest,
     style='position: relative'></div>
         <div
     id='non-stacked-layered-child-of-composited-non-stacking-context'
-    style='overflow: scroll'></div>
+    style='overflow: scroll'>
+          <div style="height:40px"></div>
+        </div>
       </div>
     </div>
   )HTML");

@@ -128,6 +128,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 // clang-format off
 /** Tests for the {@link StartSurfaceLayout} */
+@SuppressWarnings("ConstantConditions")
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "force-fieldtrials=Study/Group"})
@@ -155,6 +156,8 @@ public class StartSurfaceLayoutTest {
     @Rule
     public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
+    @SuppressWarnings("FieldCanBeLocal")
+    private EmbeddedTestServer mTestServer;
     private StartSurfaceLayout mStartSurfaceLayout;
     private String mUrl;
     private int mRepeat;
@@ -166,15 +169,14 @@ public class StartSurfaceLayoutTest {
     @Before
     public void setUp() {
         AccessibilityChecks.enable();
-        EmbeddedTestServer testServer =
-                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         // After setUp, Chrome is launched and has one NTP.
         mActivityTestRule.startMainActivityFromLauncher();
 
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
         mStartSurfaceLayout = (StartSurfaceLayout) layout;
-        mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
+        mUrl = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 1;
 
         mTabListDelegate = mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
@@ -1016,7 +1018,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
-    public void testThumbnailAspectRatio_default() throws Exception {
+    public void testThumbnailAspectRatio_default() {
         prepareTabs(2, 0, mUrl);
         enterTabSwitcher(mActivityTestRule.getActivity());
         onView(withId(R.id.tab_list_view))
@@ -1026,7 +1028,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
-    public void testThumbnailAspectRatio_point75() throws Exception {
+    public void testThumbnailAspectRatio_point75() {
         prepareTabs(2, 0, mUrl);
         enterTabSwitcher(mActivityTestRule.getActivity());
         onView(withId(R.id.tab_list_view))
@@ -1269,7 +1271,7 @@ public class StartSurfaceLayoutTest {
     @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
             ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
     @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab/NewTabVariation"})
-    public void testNewTabVariation() throws InterruptedException {
+    public void testNewTabVariation() {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(2, 0, null);
@@ -1345,7 +1347,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    public void testSwipeToDismiss_GTS() throws Exception {
+    public void testSwipeToDismiss_GTS() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Create 3 tabs and merge the first two tabs into one group.
         createTabs(cta, false, 3);
@@ -1564,7 +1566,7 @@ public class StartSurfaceLayoutTest {
         Drawable googleDrawable = iconImageView.getDrawable();
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { TemplateUrlServiceFactory.get().setSearchEngine("yahoo.com"); });
+                () -> TemplateUrlServiceFactory.get().setSearchEngine("yahoo.com"));
 
         assertNotEquals(googleDrawable, iconImageView.getDrawable());
     }
@@ -1710,7 +1712,6 @@ public class StartSurfaceLayoutTest {
                 new FileOutputStream(TabContentManager.getTabThumbnailFileJpeg(tab.getId()));
         bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
         outputStream.close();
-        Bitmap decodedBitmap = TabContentManager.getJpegForTab(tab.getId());
     }
 
     private void verifyAllThumbnailHasAspectRatio(double ratio) {

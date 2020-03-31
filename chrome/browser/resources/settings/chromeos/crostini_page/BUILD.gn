@@ -94,6 +94,7 @@ js_library("crostini_subpage") {
     "..:os_route",
     "..:route_origin_behavior",
     "../..:router",
+    "../../controls:settings_toggle_button",
     "../../prefs:prefs_behavior",
   ]
 }

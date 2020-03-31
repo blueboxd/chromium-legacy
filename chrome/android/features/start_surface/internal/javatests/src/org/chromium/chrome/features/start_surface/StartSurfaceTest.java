@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
@@ -209,7 +210,7 @@ public class StartSurfaceTest {
                                        .findViewById(org.chromium.chrome.tab_ui.R.id.more_tabs)
                                        .performClick());
         } catch (ExecutionException e) {
-            assertTrue(false);
+            fail();
         }
         onView(isRoot()).check((r, e) -> {
             waitForView((ViewGroup) r,
@@ -269,7 +270,7 @@ public class StartSurfaceTest {
                                        .findViewById(org.chromium.chrome.tab_ui.R.id.more_tabs)
                                        .performClick());
         } catch (ExecutionException e) {
-            assertTrue(false);
+            fail();
         }
         onView(isRoot()).check((r, e) -> {
             waitForView((ViewGroup) r,
@@ -374,7 +375,7 @@ public class StartSurfaceTest {
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
                 equalTo(1));
 
-        ViewGroup mvTilesContainer = (ViewGroup) mActivityTestRule.getActivity().findViewById(
+        ViewGroup mvTilesContainer = mActivityTestRule.getActivity().findViewById(
                 org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
         assertTrue(mvTilesContainer.getChildCount() > 0);
 
@@ -386,7 +387,7 @@ public class StartSurfaceTest {
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> mvTilesContainer.getChildAt(0).performClick());
         } catch (ExecutionException e) {
-            assertTrue(false);
+            fail();
         }
         hideWatcher.waitForBehavior();
         assertThat(

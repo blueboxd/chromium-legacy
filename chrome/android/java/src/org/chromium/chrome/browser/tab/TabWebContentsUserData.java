@@ -37,6 +37,10 @@ public abstract class TabWebContentsUserData implements UserData {
         destroyInternal();
     }
 
+    protected WebContents getWebContents() {
+        return mWebContents;
+    }
+
     /**
      * Performs additional tasks upon destruction.
      */

@@ -196,6 +196,7 @@ function loadFile(file, handle) {
 /**
  * Helper to send multiple file to the guest.
  * @param {!Array<{file: !File, handle: !FileSystemFileHandle}>} files
+ * @return {!Promise<undefined>}
  */
 function loadMultipleFiles(files) {
   currentFiles.length = 0;
@@ -203,5 +204,5 @@ function loadMultipleFiles(files) {
     currentFiles.push({token: -1, file: f.file, handle: f.handle});
   }
   entryIndex = 0;
-  sendFilesToGuest();
+  return sendFilesToGuest();
 }

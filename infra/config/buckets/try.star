@@ -446,6 +446,10 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = 'linux-autofill-assistant',
+)
+
+try_.chromium_linux_builder(
     name = 'linux-layout-tests-fragment-item',
 )
 

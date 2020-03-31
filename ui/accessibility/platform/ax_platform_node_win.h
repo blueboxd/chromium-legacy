@@ -340,6 +340,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IAccessibleTable,
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
+                        public IAccessibleValue,
                         public IExpandCollapseProvider,
                         public IGridItemProvider,
                         public IGridProvider,
@@ -379,6 +380,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessibleTable)
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
+    COM_INTERFACE_ENTRY(IAccessibleValue)
     COM_INTERFACE_ENTRY(IExpandCollapseProvider)
     COM_INTERFACE_ENTRY(IGridItemProvider)
     COM_INTERFACE_ENTRY(IGridProvider)
@@ -967,6 +969,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                         enum IA2CoordinateType coordinate_type,
                                         LONG x,
                                         LONG y) override;
+
+  //
+  // IAccessibleValue methods.
+  //
+
+  IFACEMETHODIMP get_currentValue(VARIANT* value) override;
+
+  IFACEMETHODIMP get_minimumValue(VARIANT* value) override;
+
+  IFACEMETHODIMP get_maximumValue(VARIANT* value) override;
+
+  IFACEMETHODIMP setCurrentValue(VARIANT new_value) override;
 
   //
   // IRawElementProviderFragment methods.

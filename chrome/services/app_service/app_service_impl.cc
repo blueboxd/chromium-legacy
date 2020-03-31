@@ -11,7 +11,6 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 
 namespace {
 
@@ -206,12 +205,10 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
                                      bool from_publisher) {
   DCHECK(preferred_apps_.IsInitialized());
 
-  preferred_apps_.AddPreferredApp(app_id, intent_filter);
-
-  DictionaryPrefUpdate update(pref_service_, kAppServicePreferredApps);
-  DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
   apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences =
-      PreferredApps::AddPreferredApp(app_id, intent_filter, update.Get());
+      preferred_apps_.AddPreferredApp(app_id, intent_filter);
+
+  // TODO(crbug.com/853604): Write the data to the disk.
 
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
@@ -240,9 +237,7 @@ void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,
 
   preferred_apps_.DeleteAppId(app_id);
 
-  DictionaryPrefUpdate update(pref_service_, kAppServicePreferredApps);
-  DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
-  PreferredApps::DeleteAppId(app_id, update.Get());
+  // TODO(crbug.com/853604): Write the data to the disk.
 }
 
 void AppServiceImpl::RemovePreferredAppForFilter(
@@ -253,16 +248,14 @@ void AppServiceImpl::RemovePreferredAppForFilter(
 
   preferred_apps_.DeletePreferredApp(app_id, intent_filter);
 
-  DictionaryPrefUpdate update(pref_service_, kAppServicePreferredApps);
-  DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
-  PreferredApps::DeletePreferredApp(app_id, intent_filter, update.Get());
+  // TODO(crbug.com/853604): Write the data to the disk.
 
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppRemoved(app_id, intent_filter->Clone());
   }
 }
 
-PreferredApps& AppServiceImpl::GetPreferredAppsForTesting() {
+PreferredAppsList& AppServiceImpl::GetPreferredAppsForTesting() {
   return preferred_apps_;
 }
 
@@ -271,9 +264,8 @@ void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
 }
 
 void AppServiceImpl::InitializePreferredApps() {
-  DCHECK(pref_service_);
-  preferred_apps_.Init(
-      pref_service_->GetDictionary(kAppServicePreferredApps)->CreateDeepCopy());
+  // TODO(crbug.com/853604): Read the data from the disk.
+  preferred_apps_.Init();
   for (auto& subscriber : subscribers_) {
     subscriber->InitializePreferredApps(preferred_apps_.GetValue());
   }

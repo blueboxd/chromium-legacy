@@ -11,12 +11,8 @@
 
 :root {
   --google-blue-700: 25, 103, 210;
-  --google-blue-300: 138, 180, 248;
   --google-brown-900: 62, 39, 35;
-  --google-grey-50: 248, 249, 250;
-  --google-grey-900: 32, 33, 36;
   --google-purple-700: 132, 48, 206;
-  --google-purple-300: 197, 138, 249;
   --google-yellow-50: 254, 247, 224;
   --google-yellow-100: 254, 239, 195;
 }
@@ -115,13 +111,13 @@ body {
  * and with CSS class constants in viewer.cc */
 
 .light {
-  background-color: #FFF;
-  color: rgb(var(--google-grey-900));
+  background-color: #FAFAFA;
+  color: #424242;
 }
 
 .dark {
-  background-color: rgb(var(--google-grey-900));
-  color: #FFF;
+  background-color: #212121;
+  color: #E0E0E0;
 }
 
 .sepia {
@@ -130,7 +126,7 @@ body {
 }
 
 .light a:link {
-  color: rgb(var(--google-blue-600));
+  color: rgb(85, 85, 255);
 }
 
 .sepia a:link {
@@ -138,11 +134,11 @@ body {
 }
 
 .dark a:link {
-  color: rgb(var(--google-blue-300));
+  color: rgb(136, 136, 255);
 }
 
 .light a:visited {
-  color: rgb(var(--google-purple-700));
+  color: rgb(144, 34, 144);
 }
 
 .sepia a:visited {
@@ -150,13 +146,13 @@ body {
 }
 
 .dark a:visited {
-  color: rgb(var(--google-purple-300));
+  color: rgb(216, 114, 216);
 }
 
 .light code,
 .light pre {
-  background-color: rgb(var(--google-grey-50));
-  border-color: rgb(var(--google-grey-900));
+  background-color: #EEE;
+  border-color: #AAA;
 }
 
 .sepia code,
@@ -167,8 +163,8 @@ body {
 
 .dark code,
 .dark pre {
-  background-color: #000;
-  border-color: rgba(255, 255, 255, 0.5);
+  background-color: #333;
+  border-color: #555;
 }
 
 .light tbody tr:nth-child(odd) {

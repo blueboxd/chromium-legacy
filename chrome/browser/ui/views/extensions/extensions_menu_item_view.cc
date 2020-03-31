@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -91,6 +93,8 @@ ExtensionsMenuItemView::~ExtensionsMenuItemView() = default;
 void ExtensionsMenuItemView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (sender->GetID() == EXTENSION_PINNING) {
+    base::RecordAction(
+        base::UserMetricsAction("Extensions.Toolbar.PinButtonPressed"));
     model_->SetActionVisibility(controller_->GetId(), !IsPinned());
     return;
   } else if (sender->GetID() == EXTENSION_CONTEXT_MENU) {

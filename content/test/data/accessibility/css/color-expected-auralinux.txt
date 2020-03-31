@@ -7,4 +7,3 @@
 ++++[static] name='Blue background.' offset=0 bg-color=0,0,255
 ++++[static] name=' ' offset=0
 ++++[static] name='Green text.' offset=0 fg-color=0,255,0
-

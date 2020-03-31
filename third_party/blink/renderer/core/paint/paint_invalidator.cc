@@ -14,7 +14,10 @@
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_child_iterator.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -131,22 +134,43 @@ PaintInvalidatorContext::ParentContextAccessor::ParentContext() const {
 
 IntRect PaintInvalidator::ComputeVisualRect(
     const LayoutObject& object,
+    const NGPrePaintInfo* pre_paint_info,
     const PaintInvalidatorContext& context) {
   if (object.IsSVGChild()) {
     return context.MapLocalRectToVisualRectForSVGChild(
         object, SVGLayoutSupport::LocalVisualRect(object));
   }
 
-  return context.MapLocalRectToVisualRect(object, object.LocalVisualRect());
+  PhysicalRect rect;
+  if (pre_paint_info) {
+    const NGFragmentChildIterator& iterator = pre_paint_info->iterator;
+    DCHECK(iterator->BoxFragment() || iterator->FragmentItem());
+    if (object.StyleRef().Visibility() == EVisibility::kVisible) {
+      if (const auto* box_fragment = iterator->BoxFragment())
+        rect = box_fragment->InkOverflow();
+      else
+        rect = iterator->FragmentItem()->InkOverflow();
+      // The paint offset of text and non-atomic inlines are special; they are
+      // set to the paint offset of their container. Add the offset to the
+      // fragment now, to set the correct visual rectangle.
+      if (!object.IsBox())
+        rect.Move(iterator->Link().offset);
+    }
+  } else {
+    rect = object.LocalVisualRect();
+  }
+  return context.MapLocalRectToVisualRect(object, rect);
 }
 
 void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
-                                           PaintInvalidatorContext& context) {
+                                           PaintInvalidatorContext& context,
+                                           bool is_ng_painting) {
   if (object.HasLayer() &&
       ToLayoutBoxModelObject(object).HasSelfPaintingLayer()) {
     context.painting_layer = ToLayoutBoxModelObject(object).Layer();
-  } else if (object.IsColumnSpanAll() ||
-             object.IsFloatingWithNonContainingBlockParent()) {
+  } else if (!is_ng_painting &&
+             (object.IsColumnSpanAll() ||
+              object.IsFloatingWithNonContainingBlockParent())) {
     // See |LayoutObject::PaintingLayer| for the special-cases of floating under
     // inline and multicolumn.
     // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
@@ -171,7 +195,8 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
 
 void PaintInvalidator::UpdatePaintInvalidationContainer(
     const LayoutObject& object,
-    PaintInvalidatorContext& context) {
+    PaintInvalidatorContext& context,
+    bool is_ng_painting) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
@@ -189,8 +214,9 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     context.paint_invalidation_container_for_stacked_contents =
         context.paint_invalidation_container =
             &object.ContainerForPaintInvalidation();
-  } else if (object.IsColumnSpanAll() ||
-             object.IsFloatingWithNonContainingBlockParent()) {
+  } else if (!is_ng_painting &&
+             (object.IsColumnSpanAll() ||
+              object.IsFloatingWithNonContainingBlockParent())) {
     // In these cases, the object may belong to an ancestor of the current
     // paint invalidation container, in paint order.
     // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
@@ -241,16 +267,27 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
 }
 
 void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
+                                        const NGPrePaintInfo* pre_paint_info,
                                         FragmentData& fragment_data,
                                         PaintInvalidatorContext& context) {
   if (!context.NeedsVisualRectUpdate(object))
     return;
 
   DCHECK(context.tree_builder_context_);
-  DCHECK(context.tree_builder_context_->current.paint_offset ==
-         fragment_data.PaintOffset());
+  DCHECK(!pre_paint_info || &fragment_data == &pre_paint_info->fragment_data);
 
-  fragment_data.SetVisualRect(ComputeVisualRect(object, context));
+  IntRect visual_rect = ComputeVisualRect(object, pre_paint_info, context);
+  if (pre_paint_info && !object.IsBox()) {
+    DCHECK(object.IsInline());
+    // Text and non-atomic inlines share the same FragmentData object per block
+    // fragment, and their FragmentData objects are reset when visiting their
+    // first fragment. So just add to the visual rectangle.
+    visual_rect.Unite(fragment_data.VisualRect());
+  } else {
+    DCHECK_EQ(context.tree_builder_context_->current.paint_offset,
+              fragment_data.PaintOffset());
+  }
+  fragment_data.SetVisualRect(visual_rect);
 
   object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
       object,
@@ -291,6 +328,7 @@ void PaintInvalidator::UpdateEmptyVisualRectFlag(
 
 bool PaintInvalidator::InvalidatePaint(
     const LayoutObject& object,
+    const NGPrePaintInfo* pre_paint_info,
     const PaintPropertyTreeBuilderContext* tree_builder_context,
     PaintInvalidatorContext& context) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
@@ -305,8 +343,9 @@ bool PaintInvalidator::InvalidatePaint(
 
   object.GetMutableForPainting().EnsureIsReadyForPaintInvalidation();
 
-  UpdatePaintingLayer(object, context);
-  UpdatePaintInvalidationContainer(object, context);
+  UpdatePaintingLayer(object, context, /* is_ng_painting */ !!pre_paint_info);
+  UpdatePaintInvalidationContainer(object, context,
+                                   /* is_ng_painting */ !!pre_paint_info);
   UpdateEmptyVisualRectFlag(object, context);
 
   if (!object.ShouldCheckForPaintInvalidation() && !context.NeedsSubtreeWalk())
@@ -322,38 +361,72 @@ bool PaintInvalidator::InvalidatePaint(
     object.GetFrameView()->SetForeignLayerListNeedsUpdate();
   }
 
-  unsigned tree_builder_index = 0;
+  if (pre_paint_info) {
+    FragmentData& fragment_data = pre_paint_info->fragment_data;
+    if (!object.IsBox()) {
+      // Text and non-atomic inlines may generate multiple physical fragments,
+      // and we're updating the VisualRect in the FragmentData as we visit each
+      // of them. As such, the current VisualRect in FragmentData is possibly
+      // incomplete, so letting anyone use it for comparisons is meaningless.
+      // TODO(crbug.com/1043787): Fix this. The way we use FragmentData for
+      // non-atomic inlines is not ideal for how LayoutNG works.
+      context.old_visual_rect = IntRect();
+    } else {
+      context.old_visual_rect = fragment_data.VisualRect();
+    }
+    context.fragment_data = &fragment_data;
 
-  for (auto* fragment_data = &object.GetMutableForPainting().FirstFragment();
-       fragment_data;
-       fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
-    context.old_visual_rect = fragment_data->VisualRect();
-    context.fragment_data = fragment_data;
-
-    DCHECK(!tree_builder_context ||
-           tree_builder_index < tree_builder_context->fragments.size());
-
-    {
 #if DCHECK_IS_ON()
-      context.tree_builder_context_actually_needed_ =
-          tree_builder_context && tree_builder_context->is_actually_needed;
-      FindObjectVisualRectNeedingUpdateScope finder(object, *fragment_data,
-                                                    context);
+    context.tree_builder_context_actually_needed_ =
+        tree_builder_context && tree_builder_context->is_actually_needed;
 #endif
-      if (tree_builder_context) {
-        context.tree_builder_context_ =
-            &tree_builder_context->fragments[tree_builder_index];
-        context.old_paint_offset =
-            context.tree_builder_context_->old_paint_offset;
-      } else {
-        context.tree_builder_context_ = nullptr;
-        context.old_paint_offset = fragment_data->PaintOffset();
-      }
-
-      UpdateVisualRect(object, *fragment_data, context);
+    if (tree_builder_context) {
+      DCHECK_EQ(tree_builder_context->fragments.size(), 1u);
+      context.tree_builder_context_ = &tree_builder_context->fragments[0];
+      context.old_paint_offset =
+          context.tree_builder_context_->old_paint_offset;
+    } else {
+      context.tree_builder_context_ = nullptr;
+      context.old_paint_offset = fragment_data.PaintOffset();
     }
 
+    UpdateVisualRect(object, pre_paint_info, fragment_data, context);
     object.InvalidatePaint(context);
+  } else {
+    unsigned tree_builder_index = 0;
+
+    for (auto* fragment_data = &object.GetMutableForPainting().FirstFragment();
+         fragment_data;
+         fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
+      context.old_visual_rect = fragment_data->VisualRect();
+      context.fragment_data = fragment_data;
+
+      DCHECK(!tree_builder_context ||
+             tree_builder_index < tree_builder_context->fragments.size());
+
+      {
+#if DCHECK_IS_ON()
+        context.tree_builder_context_actually_needed_ =
+            tree_builder_context && tree_builder_context->is_actually_needed;
+        FindObjectVisualRectNeedingUpdateScope finder(object, *fragment_data,
+                                                      context);
+#endif
+        if (tree_builder_context) {
+          context.tree_builder_context_ =
+              &tree_builder_context->fragments[tree_builder_index];
+          context.old_paint_offset =
+              context.tree_builder_context_->old_paint_offset;
+        } else {
+          context.tree_builder_context_ = nullptr;
+          context.old_paint_offset = fragment_data->PaintOffset();
+        }
+
+        UpdateVisualRect(object, /* pre_paint_info */ nullptr, *fragment_data,
+                         context);
+      }
+
+      object.InvalidatePaint(context);
+    }
   }
 
   auto reason = static_cast<const DisplayItemClient&>(object)

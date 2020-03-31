@@ -104,7 +104,11 @@ class ReceivedFileList {
    * @return {!Promise<undefined>}
    */
   async loadNext() {
-    parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: 1});
+    // Awaiting this message send allows callers to wait for the full effects of
+    // the navigation to complete. This may include a call to load a new set of
+    // files, and the initial decode, which replaces this AbstractFileList and
+    // alters other app state.
+    await parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: 1});
   }
 
   /**
@@ -112,13 +116,13 @@ class ReceivedFileList {
    * @return {!Promise<undefined>}
    */
   async loadPrev() {
-    parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: -1});
+    await parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: -1});
   }
 }
 
-parentMessagePipe.registerHandler(Message.LOAD_FILES, (message) => {
+parentMessagePipe.registerHandler(Message.LOAD_FILES, async (message) => {
   const filesMessage = /** @type{!LoadFilesMessage} */ (message);
-  loadFiles(new ReceivedFileList(filesMessage));
+  await loadFiles(new ReceivedFileList(filesMessage));
 });
 
 /**
@@ -147,12 +151,14 @@ function getApp() {
 /**
  * Loads a file list into the media app.
  * @param {!ReceivedFileList} fileList
+ * @return {!Promise<undefined>}
  */
 async function loadFiles(fileList) {
   const app = getApp();
   if (app) {
     await app.loadFiles(fileList);
   } else {
+    // Note we don't await in this case, which may affect b/152729704.
     window.customLaunchData = {files: fileList};
   }
 }

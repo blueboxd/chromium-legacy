@@ -21,13 +21,13 @@ import android.widget.FrameLayout;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Integration tests for TabGridMessageCardProvider component.
  */
+@Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 public class MessageCardProviderTest extends DummyUiActivityTestCase {
     private static final int SUGGESTED_TAB_COUNT = 2;
 
@@ -98,7 +99,6 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
-        TabUiFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(false);
         // TODO(meiliang): Replace with TabSwitcher instead when ready to integrate with
         // TabSwitcher.
         ViewGroup view = new FrameLayout(getActivity());
@@ -135,11 +135,6 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
         mCoordinator = new MessageCardProviderCoordinator(getActivity(), mUiDismissActionProvider);
         mCoordinator.subscribeMessageService(mTestingService);
         mCoordinator.subscribeMessageService(mSuggestionService);
-    }
-
-    @After
-    public void tearDown() {
-        TabUiFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
     }
 
     @Test

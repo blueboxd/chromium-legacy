@@ -16,6 +16,9 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_child_iterator.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -27,6 +30,42 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+
+namespace {
+
+// Locate or/and set up the current FragmentData object. This may involve
+// creating it, or resetting an existing one. If |allow_reset| is set, we're
+// allowed to clear old FragmentData objects.
+NGPrePaintInfo SetupFragmentData(const NGFragmentChildIterator& iterator,
+                                 bool allow_reset) {
+  DCHECK(iterator->GetLayoutObject());
+  const LayoutObject& object = *iterator->GetLayoutObject();
+  FragmentData* fragment_data = &object.GetMutableForPainting().FirstFragment();
+  // TODO(crbug.com/1043787): Add support for block fragmentation. Furthermore,
+  // what's here is mostly gross, and we need to come up with something
+  // better. The way FragmentData works (and is stored) vs. the way
+  // NGPhysicalFragment works is less than ideal.
+  fragment_data->ClearNextFragment();
+  if (const NGFragmentItem* fragment_item = iterator->FragmentItem()) {
+    // We're in an inline formatting context.
+    if (fragment_item->IsFirstForNode()) {
+      // This is the first fragment generated for the node (i.e. we're on the
+      // first line and first fragmentainer (column) that this node occurs
+      // in). Now is our chance to reset everything (the number or size of
+      // fragments may have changed since last time). All the other fragments
+      // will be visited in due course.
+      if (allow_reset && !object.IsBox()) {
+        // For text and non-atomic inlines we now reset the visual rect. The
+        // visual rect will be set and expanded, as we visit each individual
+        // fragment.
+        fragment_data->SetVisualRect(IntRect());
+      }
+    }
+  }
+  return NGPrePaintInfo(iterator, *fragment_data);
+}
+
+}  // anonymous namespace
 
 void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   if (root_frame_view.ShouldThrottleRendering()) {
@@ -135,7 +174,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
     }
 #endif
 
-    Walk(*view);
+    Walk(*view, /* iterator */ nullptr);
 #if DCHECK_IS_ON()
     view->AssertSubtreeClearedPaintInvalidationFlags();
 #endif
@@ -312,9 +351,22 @@ void PrePaintTreeWalk::CheckTreeBuilderContextState(
 }
 
 void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
+                                    const NGFragmentChildIterator* iterator,
                                     PrePaintTreeWalkContext& context) {
   PaintInvalidatorContext& paint_invalidator_context =
       context.paint_invalidator_context;
+
+  base::Optional<NGPrePaintInfo> pre_paint_info_storage;
+  NGPrePaintInfo* pre_paint_info = nullptr;
+  if (iterator) {
+    bool allow_reset = context.tree_builder_context.has_value()
+#if DCHECK_IS_ON()
+                       && context.tree_builder_context->is_actually_needed
+#endif
+        ;
+    pre_paint_info_storage.emplace(SetupFragmentData(*iterator, allow_reset));
+    pre_paint_info = &pre_paint_info_storage.value();
+  }
 
   // This must happen before updatePropertiesForSelf, because the latter reads
   // some of the state computed here.
@@ -324,7 +376,9 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   PaintPropertyChangeType property_changed =
       PaintPropertyChangeType::kUnchanged;
   if (context.tree_builder_context) {
-    property_tree_builder.emplace(object, *context.tree_builder_context);
+    property_tree_builder.emplace(object, pre_paint_info,
+                                  *context.tree_builder_context);
+
     property_changed =
         std::max(property_changed, property_tree_builder->UpdateForSelf());
 
@@ -341,7 +395,8 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   UpdateEffectiveAllowedTouchAction(object, context);
 
   if (paint_invalidator_.InvalidatePaint(
-          object, base::OptionalOrNullptr(context.tree_builder_context),
+          object, pre_paint_info,
+          base::OptionalOrNullptr(context.tree_builder_context),
           paint_invalidator_context))
     needs_invalidate_chrome_client_ = true;
 
@@ -389,6 +444,8 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   if (context.clip_changed && object.HasLayer())
     ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
 
+  // TODO(crbug.com/1058792): Allow multiple fragments for composited elements
+  // (passing |iterator| here is probably part of the solution).
   CompositingLayerPropertyUpdater::Update(object);
 }
 
@@ -403,7 +460,140 @@ LocalFrameView* FindWebViewPluginContentFrameView(
   return nullptr;
 }
 
-void PrePaintTreeWalk::Walk(const LayoutObject& object) {
+void PrePaintTreeWalk::WalkNGChildren(const LayoutObject* parent,
+                                      NGFragmentChildIterator* iterator) {
+  for (; !iterator->IsAtEnd(); iterator->Advance()) {
+    const LayoutObject* object = (*iterator)->GetLayoutObject();
+    if (const auto* fragment_item = (*iterator)->FragmentItem()) {
+      // Line boxes are not interesting. They have no paint effects. Descend
+      // directly into children.
+      bool descend_directly = fragment_item->Type() == NGFragmentItem::kLine;
+      if (!descend_directly && fragment_item->IsInlineBox() &&
+          !fragment_item->BoxFragment()) {
+        // Likewise for culled inlines.
+        descend_directly = true;
+        object->GetMutableForPainting().ClearPaintFlags();
+      }
+      if (descend_directly) {
+        WalkChildren(/* parent */ nullptr, iterator);
+        continue;
+      }
+    }
+    DCHECK(object);
+    Walk(*object, iterator);
+  }
+}
+
+void PrePaintTreeWalk::WalkLegacyChildren(const LayoutObject& object) {
+  if (const LayoutBox* layout_box = ToLayoutBoxOrNull(&object)) {
+    if (layout_box->CanTraversePhysicalFragments()) {
+      // Enter NG child fragment traversal. We'll stay in this mode for all
+      // descendants that support fragment traversal. We'll re-enter
+      // LayoutObject traversal for descendants that don't support it. This only
+      // works correctly if we're not block-fragmented, though, so DCHECK for
+      // that.
+      DCHECK_EQ(layout_box->PhysicalFragmentCount(), 1u);
+      const NGPhysicalBoxFragment& fragment =
+          To<NGPhysicalBoxFragment>(*layout_box->GetPhysicalFragment(0));
+      NGFragmentChildIterator child_iterator(fragment);
+      WalkNGChildren(&object, &child_iterator);
+      return;
+    }
+  }
+
+  for (const LayoutObject* child = object.SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (child->IsLayoutMultiColumnSpannerPlaceholder()) {
+      child->GetMutableForPainting().ClearPaintFlags();
+      continue;
+    }
+    Walk(*child, /* iterator */ nullptr);
+  }
+
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled())
+    return;
+
+  const LayoutBlock* block = DynamicTo<LayoutBlock>(&object);
+  if (!block)
+    return;
+  const auto* positioned_objects = block->PositionedObjects();
+  if (!positioned_objects)
+    return;
+
+  // If we have performed NG fragment traversal in any part of the subtree, we
+  // may have missed certain out-of-flow positioned objects. LayoutNG fragments
+  // are always children of their containing block, while the structure of the
+  // LayoutObject tree corresponds more closely to that of the DOM tree.
+  //
+  // Example: if we assume that flexbox isn't natively supported in LayoutNG:
+  //
+  // <div id="flex" style="display:flex; position:relative;">
+  //   <div id="flexitem">
+  //     <div id="abs" style="position:absolute;"></div>
+  //     <div id="regular"></div>
+  //
+  // If we let |object| be #flex, it will be handled by legacy LayoutObject
+  // traversal, while #flexitem, on the other hand, can traverse its NG child
+  // fragments. However, #regular will be the only child fragment of #flexitem,
+  // since the containing block for #abs is #flex. So we'd miss it, unless we
+  // walk it now.
+  for (const LayoutBox* box : *positioned_objects) {
+    // It's important that objects that have already been walked be left alone.
+    // Otherwise, we might calculate the wrong offsets (and overwrite the
+    // correct ones) in case of out-of-flow positioned objects whose containing
+    // block is a relatively positioned non-atomic inline (such objects will
+    // already have been properly walked, since we don't switch engines within
+    // an inline formatting context). Put differently, the code here will only
+    // do the right thing if |object| is truly the containing block of the
+    // positioned objects in its list (which isn't the case if the containing
+    // block is a non-atomic inline).
+    if (!ObjectRequiresPrePaint(*box) &&
+        !ObjectRequiresTreeBuilderContext(*box))
+      continue;
+    DCHECK_EQ(box->Container(), &object);
+    Walk(*box, /* iterator */ nullptr);
+  }
+}
+
+void PrePaintTreeWalk::WalkChildren(const LayoutObject* object,
+                                    const NGFragmentChildIterator* iterator) {
+  DCHECK(iterator || object);
+
+  if (!iterator) {
+    // We're not doing LayoutNG fragment traversal of this object.
+    WalkLegacyChildren(*object);
+    return;
+  }
+
+  // If we are performing LayoutNG fragment traversal, but this object doesn't
+  // support that, we need to switch back to legacy LayoutObject traversal for
+  // its children. We're then also assuming that we're either not
+  // block-fragmenting, or that this is monolithic content. We may re-enter
+  // LayoutNG fragment traversal if we get to a descendant that supports that.
+  if (object && !object->CanTraversePhysicalFragments()) {
+    DCHECK(
+        !object->FlowThreadContainingBlock() ||
+        (object->IsBox() && ToLayoutBox(object)->GetPaginationBreakability() ==
+                                LayoutBox::kForbidBreaks));
+    WalkLegacyChildren(*object);
+    return;
+  }
+
+  // Traverse child NG fragments.
+  NGFragmentChildIterator child_iterator(iterator->Descend());
+  WalkNGChildren(object, &child_iterator);
+}
+
+void PrePaintTreeWalk::Walk(const LayoutObject& object,
+                            const NGFragmentChildIterator* iterator) {
+  const NGPhysicalBoxFragment* physical_fragment = nullptr;
+  bool is_last_fragment = true;
+  if (iterator) {
+    physical_fragment = (*iterator)->BoxFragment();
+    if (const auto* fragment_item = (*iterator)->FragmentItem())
+      is_last_fragment = fragment_item->IsLastForNode();
+  }
+
   // We need to be careful not to have a reference to the parent context, since
   // this reference will be to the context_storage_ memory which may be
   // reallocated during this function call.
@@ -447,8 +637,10 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
       context().tree_builder_context->clip_changed = false;
   }
 
-  WalkInternal(object, context());
-  object.NotifyDisplayLockDidPrePaint(DisplayLockLifecycleTarget::kSelf);
+  WalkInternal(object, iterator, context());
+
+  if (is_last_fragment)
+    object.NotifyDisplayLockDidPrePaint(DisplayLockLifecycleTarget::kSelf);
 
   bool child_walk_blocked = object.PrePaintBlockedByDisplayLock(
       DisplayLockLifecycleTarget::kChildren);
@@ -469,14 +661,7 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
   }
 
   if (!child_walk_blocked) {
-    for (const LayoutObject* child = object.SlowFirstChild(); child;
-         child = child->NextSibling()) {
-      if (child->IsLayoutMultiColumnSpannerPlaceholder()) {
-        child->GetMutableForPainting().ClearPaintFlags();
-        continue;
-      }
-      Walk(*child);
-    }
+    WalkChildren(&object, iterator);
 
     if (object.IsLayoutEmbeddedContent()) {
       const LayoutEmbeddedContent& layout_embedded_content =
@@ -505,8 +690,8 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
 
     object.NotifyDisplayLockDidPrePaint(DisplayLockLifecycleTarget::kChildren);
   }
-
-  object.GetMutableForPainting().ClearPaintFlags();
+  if (is_last_fragment)
+    object.GetMutableForPainting().ClearPaintFlags();
   context_storage_.pop_back();
 }
 

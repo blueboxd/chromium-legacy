@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.complex_tasks.TaskTabHelper;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
@@ -15,9 +14,6 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
 import org.chromium.chrome.browser.tasks.TaskRecognizer;
-import org.chromium.content_public.browser.SelectionPopupController;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsAccessibility;
 
 /**
  * Helper class that initializes various tab UserData objects.
@@ -65,15 +61,5 @@ public final class TabHelpers {
         TabFavicon.from(tab);
         TrustedCdn.from(tab);
         TabAssociatedApp.from(tab);
-
-        WebContents webContents = tab.getWebContents();
-
-        // Initializes WebContents objects.
-        SelectionPopupController.fromWebContents(webContents)
-                .setActionModeCallback(new ChromeActionModeCallback(tab, webContents));
-
-        // For browser tabs, we want to set accessibility focus to the page when it loads. This
-        // is not the default behavior for embedded web views.
-        WebContentsAccessibility.fromWebContents(webContents).setShouldFocusOnPageLoad(true);
     }
 }

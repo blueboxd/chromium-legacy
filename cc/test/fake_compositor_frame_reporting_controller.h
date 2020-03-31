@@ -21,8 +21,7 @@ namespace cc {
 class FakeCompositorFrameReportingController
     : public CompositorFrameReportingController {
  public:
-  explicit FakeCompositorFrameReportingController(
-      bool is_single_threaded = false);
+  FakeCompositorFrameReportingController();
 
   FakeCompositorFrameReportingController(
       const FakeCompositorFrameReportingController& controller) = delete;

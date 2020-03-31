@@ -1,183 +1,185 @@
 rootWebArea
-++genericContainer
-++++inputTime inputType='time' value='13:50:02.922'
-++++++genericContainer
+++genericContainer ignored
+++++genericContainer
+++++++inputTime inputType='time' value='13:50:02.922'
 ++++++++genericContainer
-++++++++++spinButton name='Hours' value='01' valueForRange=1.00 minValueForRange=1.00 maxValueForRange=12.00
-++++++++++++staticText name='01'
-++++++++++++++inlineTextBox name='01'
-++++++++++staticText name=':'
-++++++++++++inlineTextBox name=':'
-++++++++++spinButton name='Minutes' value='50' valueForRange=50.00 minValueForRange=0.00 maxValueForRange=59.00
-++++++++++++staticText name='50'
-++++++++++++++inlineTextBox name='50'
-++++++++++staticText name=':'
-++++++++++++inlineTextBox name=':'
-++++++++++spinButton name='Seconds' value='02' valueForRange=2.00 minValueForRange=0.00 maxValueForRange=59.00
-++++++++++++staticText name='02'
-++++++++++++++inlineTextBox name='02'
-++++++++++staticText name='.'
-++++++++++++inlineTextBox name='.'
-++++++++++spinButton name='Milliseconds' value='922' valueForRange=922.00 minValueForRange=0.00 maxValueForRange=999.00
-++++++++++++staticText name='922'
-++++++++++++++inlineTextBox name='922'
-++++++++++staticText name=' '
-++++++++++++inlineTextBox name=' '
-++++++++++spinButton name='AM/PM' value='PM' valueForRange=2.00 minValueForRange=1.00 maxValueForRange=2.00
-++++++++++++staticText name='PM'
-++++++++++++++inlineTextBox name='PM'
-++++++popUpButton name='Show time picker'
-++++++rootWebArea
-++++++++genericContainer ignored
 ++++++++++genericContainer
-++++++++++++genericContainer
-++++++++++++++genericContainer ignored
-++++++++++++++++listBox name='Hours' activedescendantId=listBoxOption
-++++++++++++++++++listBoxOption name='01' selected=true
-++++++++++++++++++listBoxOption name='02' selected=false
-++++++++++++++++++listBoxOption name='03' selected=false
-++++++++++++++++++listBoxOption name='04' selected=false
-++++++++++++++++++listBoxOption name='05' selected=false
-++++++++++++++++++listBoxOption name='06' selected=false
-++++++++++++++++++listBoxOption name='07' selected=false
-++++++++++++++++++listBoxOption name='08' selected=false
-++++++++++++++++++listBoxOption name='09' selected=false
-++++++++++++++++++listBoxOption name='10' selected=false
-++++++++++++++++++listBoxOption name='11' selected=false
-++++++++++++++++++listBoxOption name='12' selected=false
-++++++++++++++++listBox name='Minutes' activedescendantId=listBoxOption
-++++++++++++++++++listBoxOption name='01' selected=false
-++++++++++++++++++listBoxOption name='02' selected=false
-++++++++++++++++++listBoxOption name='03' selected=false
-++++++++++++++++++listBoxOption name='04' selected=false
-++++++++++++++++++listBoxOption name='05' selected=false
-++++++++++++++++++listBoxOption name='06' selected=false
-++++++++++++++++++listBoxOption name='07' selected=false
-++++++++++++++++++listBoxOption name='08' selected=false
-++++++++++++++++++listBoxOption name='09' selected=false
-++++++++++++++++++listBoxOption name='10' selected=false
-++++++++++++++++++listBoxOption name='11' selected=false
-++++++++++++++++++listBoxOption name='12' selected=false
-++++++++++++++++++listBoxOption name='13' selected=false
-++++++++++++++++++listBoxOption name='14' selected=false
-++++++++++++++++++listBoxOption name='15' selected=false
-++++++++++++++++++listBoxOption name='16' selected=false
-++++++++++++++++++listBoxOption name='17' selected=false
-++++++++++++++++++listBoxOption name='18' selected=false
-++++++++++++++++++listBoxOption name='19' selected=false
-++++++++++++++++++listBoxOption name='20' selected=false
-++++++++++++++++++listBoxOption name='21' selected=false
-++++++++++++++++++listBoxOption name='22' selected=false
-++++++++++++++++++listBoxOption name='23' selected=false
-++++++++++++++++++listBoxOption name='24' selected=false
-++++++++++++++++++listBoxOption name='25' selected=false
-++++++++++++++++++listBoxOption name='26' selected=false
-++++++++++++++++++listBoxOption name='27' selected=false
-++++++++++++++++++listBoxOption name='28' selected=false
-++++++++++++++++++listBoxOption name='29' selected=false
-++++++++++++++++++listBoxOption name='30' selected=false
-++++++++++++++++++listBoxOption name='31' selected=false
-++++++++++++++++++listBoxOption name='32' selected=false
-++++++++++++++++++listBoxOption name='33' selected=false
-++++++++++++++++++listBoxOption name='34' selected=false
-++++++++++++++++++listBoxOption name='35' selected=false
-++++++++++++++++++listBoxOption name='36' selected=false
-++++++++++++++++++listBoxOption name='37' selected=false
-++++++++++++++++++listBoxOption name='38' selected=false
-++++++++++++++++++listBoxOption name='39' selected=false
-++++++++++++++++++listBoxOption name='40' selected=false
-++++++++++++++++++listBoxOption name='41' selected=false
-++++++++++++++++++listBoxOption name='42' selected=false
-++++++++++++++++++listBoxOption name='43' selected=false
-++++++++++++++++++listBoxOption name='44' selected=false
-++++++++++++++++++listBoxOption name='45' selected=false
-++++++++++++++++++listBoxOption name='46' selected=false
-++++++++++++++++++listBoxOption name='47' selected=false
-++++++++++++++++++listBoxOption name='48' selected=false
-++++++++++++++++++listBoxOption name='49' selected=false
-++++++++++++++++++listBoxOption name='50' selected=true
-++++++++++++++++++listBoxOption name='51' selected=false
-++++++++++++++++++listBoxOption name='52' selected=false
-++++++++++++++++++listBoxOption name='53' selected=false
-++++++++++++++++++listBoxOption name='54' selected=false
-++++++++++++++++++listBoxOption name='55' selected=false
-++++++++++++++++++listBoxOption name='56' selected=false
-++++++++++++++++++listBoxOption name='57' selected=false
-++++++++++++++++++listBoxOption name='58' selected=false
-++++++++++++++++++listBoxOption name='59' selected=false
-++++++++++++++++++listBoxOption name='00' selected=false
-++++++++++++++++listBox name='Seconds' activedescendantId=listBoxOption
-++++++++++++++++++listBoxOption name='01' selected=false
-++++++++++++++++++listBoxOption name='02' selected=true
-++++++++++++++++++listBoxOption name='03' selected=false
-++++++++++++++++++listBoxOption name='04' selected=false
-++++++++++++++++++listBoxOption name='05' selected=false
-++++++++++++++++++listBoxOption name='06' selected=false
-++++++++++++++++++listBoxOption name='07' selected=false
-++++++++++++++++++listBoxOption name='08' selected=false
-++++++++++++++++++listBoxOption name='09' selected=false
-++++++++++++++++++listBoxOption name='10' selected=false
-++++++++++++++++++listBoxOption name='11' selected=false
-++++++++++++++++++listBoxOption name='12' selected=false
-++++++++++++++++++listBoxOption name='13' selected=false
-++++++++++++++++++listBoxOption name='14' selected=false
-++++++++++++++++++listBoxOption name='15' selected=false
-++++++++++++++++++listBoxOption name='16' selected=false
-++++++++++++++++++listBoxOption name='17' selected=false
-++++++++++++++++++listBoxOption name='18' selected=false
-++++++++++++++++++listBoxOption name='19' selected=false
-++++++++++++++++++listBoxOption name='20' selected=false
-++++++++++++++++++listBoxOption name='21' selected=false
-++++++++++++++++++listBoxOption name='22' selected=false
-++++++++++++++++++listBoxOption name='23' selected=false
-++++++++++++++++++listBoxOption name='24' selected=false
-++++++++++++++++++listBoxOption name='25' selected=false
-++++++++++++++++++listBoxOption name='26' selected=false
-++++++++++++++++++listBoxOption name='27' selected=false
-++++++++++++++++++listBoxOption name='28' selected=false
-++++++++++++++++++listBoxOption name='29' selected=false
-++++++++++++++++++listBoxOption name='30' selected=false
-++++++++++++++++++listBoxOption name='31' selected=false
-++++++++++++++++++listBoxOption name='32' selected=false
-++++++++++++++++++listBoxOption name='33' selected=false
-++++++++++++++++++listBoxOption name='34' selected=false
-++++++++++++++++++listBoxOption name='35' selected=false
-++++++++++++++++++listBoxOption name='36' selected=false
-++++++++++++++++++listBoxOption name='37' selected=false
-++++++++++++++++++listBoxOption name='38' selected=false
-++++++++++++++++++listBoxOption name='39' selected=false
-++++++++++++++++++listBoxOption name='40' selected=false
-++++++++++++++++++listBoxOption name='41' selected=false
-++++++++++++++++++listBoxOption name='42' selected=false
-++++++++++++++++++listBoxOption name='43' selected=false
-++++++++++++++++++listBoxOption name='44' selected=false
-++++++++++++++++++listBoxOption name='45' selected=false
-++++++++++++++++++listBoxOption name='46' selected=false
-++++++++++++++++++listBoxOption name='47' selected=false
-++++++++++++++++++listBoxOption name='48' selected=false
-++++++++++++++++++listBoxOption name='49' selected=false
-++++++++++++++++++listBoxOption name='50' selected=false
-++++++++++++++++++listBoxOption name='51' selected=false
-++++++++++++++++++listBoxOption name='52' selected=false
-++++++++++++++++++listBoxOption name='53' selected=false
-++++++++++++++++++listBoxOption name='54' selected=false
-++++++++++++++++++listBoxOption name='55' selected=false
-++++++++++++++++++listBoxOption name='56' selected=false
-++++++++++++++++++listBoxOption name='57' selected=false
-++++++++++++++++++listBoxOption name='58' selected=false
-++++++++++++++++++listBoxOption name='59' selected=false
-++++++++++++++++++listBoxOption name='00' selected=false
-++++++++++++++++listBox name='Milliseconds' activedescendantId=listBoxOption
-++++++++++++++++++listBoxOption name='100' selected=false
-++++++++++++++++++listBoxOption name='200' selected=false
-++++++++++++++++++listBoxOption name='300' selected=false
-++++++++++++++++++listBoxOption name='400' selected=false
-++++++++++++++++++listBoxOption name='500' selected=false
-++++++++++++++++++listBoxOption name='600' selected=false
-++++++++++++++++++listBoxOption name='700' selected=false
-++++++++++++++++++listBoxOption name='800' selected=false
-++++++++++++++++++listBoxOption name='922' selected=true
-++++++++++++++++++listBoxOption name='000' selected=false
-++++++++++++++++listBox name='AM/PM' activedescendantId=listBoxOption
-++++++++++++++++++listBoxOption name='PM' selected=true
-++++++++++++++++++listBoxOption name='AM' selected=false
+++++++++++++spinButton name='Hours' value='01' valueForRange=1.00 minValueForRange=1.00 maxValueForRange=12.00
+++++++++++++++staticText name='01'
+++++++++++++++++inlineTextBox name='01'
+++++++++++++staticText name=':'
+++++++++++++++inlineTextBox name=':'
+++++++++++++spinButton name='Minutes' value='50' valueForRange=50.00 minValueForRange=0.00 maxValueForRange=59.00
+++++++++++++++staticText name='50'
+++++++++++++++++inlineTextBox name='50'
+++++++++++++staticText name=':'
+++++++++++++++inlineTextBox name=':'
+++++++++++++spinButton name='Seconds' value='02' valueForRange=2.00 minValueForRange=0.00 maxValueForRange=59.00
+++++++++++++++staticText name='02'
+++++++++++++++++inlineTextBox name='02'
+++++++++++++staticText name='.'
+++++++++++++++inlineTextBox name='.'
+++++++++++++spinButton name='Milliseconds' value='922' valueForRange=922.00 minValueForRange=0.00 maxValueForRange=999.00
+++++++++++++++staticText name='922'
+++++++++++++++++inlineTextBox name='922'
+++++++++++++staticText name=' '
+++++++++++++++inlineTextBox name=' '
+++++++++++++spinButton name='AM/PM' value='PM' valueForRange=2.00 minValueForRange=1.00 maxValueForRange=2.00
+++++++++++++++staticText name='PM'
+++++++++++++++++inlineTextBox name='PM'
+++++++++popUpButton name='Show time picker'
+++++++++rootWebArea
+++++++++++genericContainer ignored
+++++++++++++genericContainer ignored
+++++++++++++++genericContainer
+++++++++++++++++genericContainer
+++++++++++++++++++genericContainer ignored
+++++++++++++++++++++listBox name='Hours' activedescendantId=listBoxOption
+++++++++++++++++++++++listBoxOption name='01' selected=true
+++++++++++++++++++++++listBoxOption name='02' selected=false
+++++++++++++++++++++++listBoxOption name='03' selected=false
+++++++++++++++++++++++listBoxOption name='04' selected=false
+++++++++++++++++++++++listBoxOption name='05' selected=false
+++++++++++++++++++++++listBoxOption name='06' selected=false
+++++++++++++++++++++++listBoxOption name='07' selected=false
+++++++++++++++++++++++listBoxOption name='08' selected=false
+++++++++++++++++++++++listBoxOption name='09' selected=false
+++++++++++++++++++++++listBoxOption name='10' selected=false
+++++++++++++++++++++++listBoxOption name='11' selected=false
+++++++++++++++++++++++listBoxOption name='12' selected=false
+++++++++++++++++++++listBox name='Minutes' activedescendantId=listBoxOption
+++++++++++++++++++++++listBoxOption name='01' selected=false
+++++++++++++++++++++++listBoxOption name='02' selected=false
+++++++++++++++++++++++listBoxOption name='03' selected=false
+++++++++++++++++++++++listBoxOption name='04' selected=false
+++++++++++++++++++++++listBoxOption name='05' selected=false
+++++++++++++++++++++++listBoxOption name='06' selected=false
+++++++++++++++++++++++listBoxOption name='07' selected=false
+++++++++++++++++++++++listBoxOption name='08' selected=false
+++++++++++++++++++++++listBoxOption name='09' selected=false
+++++++++++++++++++++++listBoxOption name='10' selected=false
+++++++++++++++++++++++listBoxOption name='11' selected=false
+++++++++++++++++++++++listBoxOption name='12' selected=false
+++++++++++++++++++++++listBoxOption name='13' selected=false
+++++++++++++++++++++++listBoxOption name='14' selected=false
+++++++++++++++++++++++listBoxOption name='15' selected=false
+++++++++++++++++++++++listBoxOption name='16' selected=false
+++++++++++++++++++++++listBoxOption name='17' selected=false
+++++++++++++++++++++++listBoxOption name='18' selected=false
+++++++++++++++++++++++listBoxOption name='19' selected=false
+++++++++++++++++++++++listBoxOption name='20' selected=false
+++++++++++++++++++++++listBoxOption name='21' selected=false
+++++++++++++++++++++++listBoxOption name='22' selected=false
+++++++++++++++++++++++listBoxOption name='23' selected=false
+++++++++++++++++++++++listBoxOption name='24' selected=false
+++++++++++++++++++++++listBoxOption name='25' selected=false
+++++++++++++++++++++++listBoxOption name='26' selected=false
+++++++++++++++++++++++listBoxOption name='27' selected=false
+++++++++++++++++++++++listBoxOption name='28' selected=false
+++++++++++++++++++++++listBoxOption name='29' selected=false
+++++++++++++++++++++++listBoxOption name='30' selected=false
+++++++++++++++++++++++listBoxOption name='31' selected=false
+++++++++++++++++++++++listBoxOption name='32' selected=false
+++++++++++++++++++++++listBoxOption name='33' selected=false
+++++++++++++++++++++++listBoxOption name='34' selected=false
+++++++++++++++++++++++listBoxOption name='35' selected=false
+++++++++++++++++++++++listBoxOption name='36' selected=false
+++++++++++++++++++++++listBoxOption name='37' selected=false
+++++++++++++++++++++++listBoxOption name='38' selected=false
+++++++++++++++++++++++listBoxOption name='39' selected=false
+++++++++++++++++++++++listBoxOption name='40' selected=false
+++++++++++++++++++++++listBoxOption name='41' selected=false
+++++++++++++++++++++++listBoxOption name='42' selected=false
+++++++++++++++++++++++listBoxOption name='43' selected=false
+++++++++++++++++++++++listBoxOption name='44' selected=false
+++++++++++++++++++++++listBoxOption name='45' selected=false
+++++++++++++++++++++++listBoxOption name='46' selected=false
+++++++++++++++++++++++listBoxOption name='47' selected=false
+++++++++++++++++++++++listBoxOption name='48' selected=false
+++++++++++++++++++++++listBoxOption name='49' selected=false
+++++++++++++++++++++++listBoxOption name='50' selected=true
+++++++++++++++++++++++listBoxOption name='51' selected=false
+++++++++++++++++++++++listBoxOption name='52' selected=false
+++++++++++++++++++++++listBoxOption name='53' selected=false
+++++++++++++++++++++++listBoxOption name='54' selected=false
+++++++++++++++++++++++listBoxOption name='55' selected=false
+++++++++++++++++++++++listBoxOption name='56' selected=false
+++++++++++++++++++++++listBoxOption name='57' selected=false
+++++++++++++++++++++++listBoxOption name='58' selected=false
+++++++++++++++++++++++listBoxOption name='59' selected=false
+++++++++++++++++++++++listBoxOption name='00' selected=false
+++++++++++++++++++++listBox name='Seconds' activedescendantId=listBoxOption
+++++++++++++++++++++++listBoxOption name='01' selected=false
+++++++++++++++++++++++listBoxOption name='02' selected=true
+++++++++++++++++++++++listBoxOption name='03' selected=false
+++++++++++++++++++++++listBoxOption name='04' selected=false
+++++++++++++++++++++++listBoxOption name='05' selected=false
+++++++++++++++++++++++listBoxOption name='06' selected=false
+++++++++++++++++++++++listBoxOption name='07' selected=false
+++++++++++++++++++++++listBoxOption name='08' selected=false
+++++++++++++++++++++++listBoxOption name='09' selected=false
+++++++++++++++++++++++listBoxOption name='10' selected=false
+++++++++++++++++++++++listBoxOption name='11' selected=false
+++++++++++++++++++++++listBoxOption name='12' selected=false
+++++++++++++++++++++++listBoxOption name='13' selected=false
+++++++++++++++++++++++listBoxOption name='14' selected=false
+++++++++++++++++++++++listBoxOption name='15' selected=false
+++++++++++++++++++++++listBoxOption name='16' selected=false
+++++++++++++++++++++++listBoxOption name='17' selected=false
+++++++++++++++++++++++listBoxOption name='18' selected=false
+++++++++++++++++++++++listBoxOption name='19' selected=false
+++++++++++++++++++++++listBoxOption name='20' selected=false
+++++++++++++++++++++++listBoxOption name='21' selected=false
+++++++++++++++++++++++listBoxOption name='22' selected=false
+++++++++++++++++++++++listBoxOption name='23' selected=false
+++++++++++++++++++++++listBoxOption name='24' selected=false
+++++++++++++++++++++++listBoxOption name='25' selected=false
+++++++++++++++++++++++listBoxOption name='26' selected=false
+++++++++++++++++++++++listBoxOption name='27' selected=false
+++++++++++++++++++++++listBoxOption name='28' selected=false
+++++++++++++++++++++++listBoxOption name='29' selected=false
+++++++++++++++++++++++listBoxOption name='30' selected=false
+++++++++++++++++++++++listBoxOption name='31' selected=false
+++++++++++++++++++++++listBoxOption name='32' selected=false
+++++++++++++++++++++++listBoxOption name='33' selected=false
+++++++++++++++++++++++listBoxOption name='34' selected=false
+++++++++++++++++++++++listBoxOption name='35' selected=false
+++++++++++++++++++++++listBoxOption name='36' selected=false
+++++++++++++++++++++++listBoxOption name='37' selected=false
+++++++++++++++++++++++listBoxOption name='38' selected=false
+++++++++++++++++++++++listBoxOption name='39' selected=false
+++++++++++++++++++++++listBoxOption name='40' selected=false
+++++++++++++++++++++++listBoxOption name='41' selected=false
+++++++++++++++++++++++listBoxOption name='42' selected=false
+++++++++++++++++++++++listBoxOption name='43' selected=false
+++++++++++++++++++++++listBoxOption name='44' selected=false
+++++++++++++++++++++++listBoxOption name='45' selected=false
+++++++++++++++++++++++listBoxOption name='46' selected=false
+++++++++++++++++++++++listBoxOption name='47' selected=false
+++++++++++++++++++++++listBoxOption name='48' selected=false
+++++++++++++++++++++++listBoxOption name='49' selected=false
+++++++++++++++++++++++listBoxOption name='50' selected=false
+++++++++++++++++++++++listBoxOption name='51' selected=false
+++++++++++++++++++++++listBoxOption name='52' selected=false
+++++++++++++++++++++++listBoxOption name='53' selected=false
+++++++++++++++++++++++listBoxOption name='54' selected=false
+++++++++++++++++++++++listBoxOption name='55' selected=false
+++++++++++++++++++++++listBoxOption name='56' selected=false
+++++++++++++++++++++++listBoxOption name='57' selected=false
+++++++++++++++++++++++listBoxOption name='58' selected=false
+++++++++++++++++++++++listBoxOption name='59' selected=false
+++++++++++++++++++++++listBoxOption name='00' selected=false
+++++++++++++++++++++listBox name='Milliseconds' activedescendantId=listBoxOption
+++++++++++++++++++++++listBoxOption name='100' selected=false
+++++++++++++++++++++++listBoxOption name='200' selected=false
+++++++++++++++++++++++listBoxOption name='300' selected=false
+++++++++++++++++++++++listBoxOption name='400' selected=false
+++++++++++++++++++++++listBoxOption name='500' selected=false
+++++++++++++++++++++++listBoxOption name='600' selected=false
+++++++++++++++++++++++listBoxOption name='700' selected=false
+++++++++++++++++++++++listBoxOption name='800' selected=false
+++++++++++++++++++++++listBoxOption name='922' selected=true
+++++++++++++++++++++++listBoxOption name='000' selected=false
+++++++++++++++++++++listBox name='AM/PM' activedescendantId=listBoxOption
+++++++++++++++++++++++listBoxOption name='PM' selected=true
+++++++++++++++++++++++listBoxOption name='AM' selected=false

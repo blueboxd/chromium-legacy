@@ -425,9 +425,8 @@ class ProbingEnabledIsolatedPrerenderBrowserTest
  public:
   void SetFeatures() override {
     IsolatedPrerenderBrowserTest::SetFeatures();
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kIsolatePrerendersMustProbeOrigin,
-        {{"probe_timeout_ms", "100"}});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kIsolatePrerendersMustProbeOrigin);
   }
 
  private:
@@ -452,7 +451,8 @@ class ProbingDisabledIsolatedPrerenderBrowserTest
 // that no probe occurs and the prefetched page can still be used. Therefore,
 // |origin_server_for_probing_| is only started when probing is enabled.
 
-IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeGood) {
+IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood)) {
   GURL url = GetOriginServerURL("/simple.html");
 
   AddSuccessfulPrefetch(url);
@@ -469,7 +469,8 @@ IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeGood) {
             GetWebContents()->GetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeBad) {
+IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad)) {
   GURL url = GetOriginServerURLWithBadProbe("/simple.html");
 
   AddSuccessfulPrefetch(url);
@@ -482,7 +483,8 @@ IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest, ProbeBad) {
   EXPECT_EQ(base::UTF8ToUTF16("OK"), GetWebContents()->GetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest, NoProbe) {
+IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(NoProbe)) {
   // Use the bad probe url to ensure the probe is not being used.
   GURL url = GetOriginServerURLWithBadProbe("/simple.html");
 

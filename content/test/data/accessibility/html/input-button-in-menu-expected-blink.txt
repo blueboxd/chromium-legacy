@@ -1,6 +1,7 @@
 rootWebArea
 ++genericContainer ignored
-++++genericContainer
-++++++menuItem inputType='button' name='Button in menu element'
-++++menu
-++++++menuItem inputType='button' name='Button in element with menu role'
+++++genericContainer ignored
+++++++genericContainer
+++++++++menuItem inputType='button' name='Button in menu element'
+++++++menu
+++++++++menuItem inputType='button' name='Button in element with menu role'

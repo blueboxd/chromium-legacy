@@ -15,7 +15,7 @@
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
-#include "chrome/services/app_service/public/cpp/preferred_apps.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps_list.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -149,7 +149,7 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     return ss.str();
   }
 
-  PreferredApps& PreferredApps() { return preferred_apps_; }
+  PreferredAppsList& PreferredApps() { return preferred_apps_; }
 
  private:
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override {
@@ -176,14 +176,14 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     preferred_apps_.DeletePreferredApp(app_id, intent_filter);
   }
 
-  void InitializePreferredApps(base::Value preferred_apps) override {
-    preferred_apps_.Init(
-        std::make_unique<base::Value>(std::move(preferred_apps)));
+  void InitializePreferredApps(
+      PreferredAppsList::PreferredApps preferred_apps) override {
+    preferred_apps_.Init(preferred_apps);
   }
 
   mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
   std::set<std::string> app_ids_seen_;
-  apps::PreferredApps preferred_apps_;
+  apps::PreferredAppsList preferred_apps_;
 };
 
 class AppServiceImplTest : public testing::Test {
@@ -289,10 +289,8 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   // Test Initialize.
   AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
   AppServiceImpl impl(&pref_service_);
-  impl.GetPreferredAppsForTesting().Init(nullptr);
-
+  impl.GetPreferredAppsForTesting().Init();
   // TODO(crbug.com/853604): Update this test after reading from disk done.
-  EXPECT_TRUE(impl.GetPreferredAppsForTesting().GetValue().DictEmpty());
 
   const char kAppId1[] = "abcdefg";
   const char kAppId2[] = "aaaaaaa";

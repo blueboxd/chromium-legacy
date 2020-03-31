@@ -68,8 +68,18 @@ class PreferredAppsList {
   // Delete all settings for an |app_id|.
   void DeleteAppId(const std::string& app_id);
 
+  // Initialize the preferred app with empty list or existing |preferred_apps|;
+  void Init();
+  void Init(PreferredApps& preferred_apps);
+
+  // Get a copy of the preferred apps.
+  PreferredApps GetValue();
+
+  bool IsInitialized();
+
  private:
   PreferredApps preferred_apps_;
+  bool initialized_ = false;
 };
 
 }  // namespace apps

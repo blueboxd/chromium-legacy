@@ -19,6 +19,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/modules/mediarecorder/fake_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
@@ -107,7 +108,8 @@ class MockMediaRecorder : public MediaRecorder {
   MOCK_METHOD1(OnError, void(const String& message));
 };
 
-class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams> {
+class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
+                                 public ScopedMockOverlayScrollbars {
  public:
   MediaRecorderHandlerTest()
       : media_recorder_handler_(MakeGarbageCollected<MediaRecorderHandler>(
@@ -561,7 +563,8 @@ static const MediaRecorderPassthroughTestParams
 };
 
 class MediaRecorderHandlerPassthroughTest
-    : public TestWithParam<MediaRecorderPassthroughTestParams> {
+    : public TestWithParam<MediaRecorderPassthroughTestParams>,
+      public ScopedMockOverlayScrollbars {
  public:
   MediaRecorderHandlerPassthroughTest() {
     registry_.Init();

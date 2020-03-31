@@ -853,6 +853,8 @@ TEST_F(ProfileAttributesStorageTest, ProfilesState_ActiveMultiProfile) {
 
   // Other user segments get 0 records.
   histogram_tester.ExpectTotalCount("Profile.State.Avatar_SingleProfile", 0);
+  histogram_tester.ExpectTotalCount("Profile.State.Avatar_LatentMultiProfile",
+                                    0);
   histogram_tester.ExpectTotalCount(
       "Profile.State.Avatar_LatentMultiProfileActive", 0);
   histogram_tester.ExpectTotalCount(
@@ -877,6 +879,7 @@ TEST_F(ProfileAttributesStorageTest, ProfilesState_LatentMultiProfile) {
 
   // There are 5 profiles all together.
   histogram_tester.ExpectTotalCount("Profile.State.Name_All", 5);
+  histogram_tester.ExpectTotalCount("Profile.State.Name_LatentMultiProfile", 5);
   histogram_tester.ExpectTotalCount(
       "Profile.State.Name_LatentMultiProfileActive", 1);
   histogram_tester.ExpectTotalCount(
@@ -902,6 +905,8 @@ TEST_F(ProfileAttributesStorageTest, ProfilesState_SingleProfile) {
 
   // Other user segments get 0 records.
   histogram_tester.ExpectTotalCount("Profile.State.LastUsed_ActiveMultiProfile",
+                                    0);
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_LatentMultiProfile",
                                     0);
   histogram_tester.ExpectTotalCount(
       "Profile.State.LastUsed_LatentMultiProfileActive", 0);

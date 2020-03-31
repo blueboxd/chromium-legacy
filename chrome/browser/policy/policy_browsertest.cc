@@ -3719,6 +3719,10 @@ class CorsPolicyTest
                  features::kHideCorsMitigationListPolicySupport});
         break;
       case CorsPolicyTestMode::kDisabled:
+        scoped_feature_list_.InitWithFeatures(
+            {features::kHideCorsLegacyModeEnabledPolicySupport,
+             features::kHideCorsMitigationListPolicySupport},
+            {});
         break;
     }
   }

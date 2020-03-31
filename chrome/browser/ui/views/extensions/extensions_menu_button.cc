@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
@@ -47,6 +49,8 @@ SkColor ExtensionsMenuButton::GetInkDropBaseColor() const {
 
 void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
+  base::RecordAction(
+      base::UserMetricsAction("Extensions.Toolbar.ExtensionActivatedFromMenu"));
   controller_->ExecuteAction(true);
 }
 

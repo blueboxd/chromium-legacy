@@ -1094,7 +1094,15 @@ void CrostiniManager::OnInstallTerminaComponent(
   if (!is_successful) {
     if (error ==
         component_updater::CrOSComponentManager::Error::UPDATE_IN_PROGRESS) {
-      result = CrostiniResult::LOAD_COMPONENT_UPDATE_IN_PROGRESS;
+      // Something else triggered an update that we have to wait on. We don't
+      // know what, or when they will be finished, so just retry every 5 seconds
+      // until we get a different result.
+      base::PostDelayedTask(
+          FROM_HERE, {content::BrowserThread::UI},
+          base::BindOnce(&CrostiniManager::InstallTerminaComponent,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+          base::TimeDelta::FromSeconds(5));
+      return;
     } else {
       result = CrostiniResult::LOAD_COMPONENT_FAILED;
     }
@@ -1266,9 +1274,12 @@ void CrostiniManager::StartTerminaVm(std::string name,
   request.set_owner_id(owner_id_);
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniGpuSupport))
     request.set_enable_gpu(true);
-  if (IsMicSharingEnabled(profile_)) {
+  bool is_mic_sharing_enabled = IsMicSharingEnabled(profile_);
+  if (is_mic_sharing_enabled) {
     request.set_enable_audio_capture(true);
   }
+  profile_->GetPrefs()->SetBoolean(
+      crostini::prefs::kCrostiniMicSharingAtLastLaunch, is_mic_sharing_enabled);
   const int32_t cpus = base::SysInfo::NumberOfProcessors() - num_cores_disabled;
   DCHECK_LT(0, cpus);
   request.set_cpus(cpus);

@@ -6110,6 +6110,43 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.Toolbar.ExtensionActivatedFromMenu">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated an extension from the Extensions Menu in the toolbar.
+    This is recorded for both keyboard and mouse activation.
+  </description>
+</action>
+
+<action name="Extensions.Toolbar.ExtensionActivatedFromToolbar">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated an extension from the toolbar. This is recorded for both
+    keyboard and mouse activation.
+  </description>
+</action>
+
+<action name="Extensions.Toolbar.MenuOpened">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user opened the Extensions Menu in the toolbar. This is recorded for
+    both keyboard and mouse activation.
+  </description>
+</action>
+
+<action name="Extensions.Toolbar.PinButtonPressed">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user changed the pin state for an extension by activating the pin button
+    in the Extensions Menu. This is recorded for both keyboard and mouse
+    activation.
+  </description>
+</action>
+
 <action name="Extensions.UninstallDialogCancelClick">
   <owner>archanasimha@chromium.org</owner>
   <description>

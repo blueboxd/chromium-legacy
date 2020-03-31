@@ -66,7 +66,8 @@ class CORE_EXPORT NGInlineItem {
   NGInlineItem(NGInlineItemType type,
                unsigned start,
                unsigned end,
-               LayoutObject* layout_object = nullptr);
+               LayoutObject* layout_object,
+               bool is_first_for_node);
   ~NGInlineItem();
 
   // Copy constructor adjusting start/end and shape results.
@@ -199,6 +200,11 @@ class CORE_EXPORT NGInlineItem {
 
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
 
+  // Return true if this is the first item created for the node. A node may be
+  // split into multiple inline items due e.g. hard line breaks or bidi
+  // segments.
+  bool IsFirstForNode() const { return is_first_for_node_; }
+
   // RunSegmenter properties.
   unsigned SegmentData() const { return segment_data_; }
   static void SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
@@ -253,6 +259,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned is_end_collapsible_newline_ : 1;
   unsigned is_symbol_marker_ : 1;
   unsigned is_generated_for_line_break_ : 1;
+  unsigned is_first_for_node_ : 1;
   friend class NGInlineNode;
   friend class NGInlineNodeDataEditor;
 };

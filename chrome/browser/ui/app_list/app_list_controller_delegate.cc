@@ -22,6 +22,8 @@
 #include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -90,19 +92,21 @@ bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
   return CanPlatformShowAppInfoDialog();
 }
 
-void AppListControllerDelegate::DoShowAppInfoFlow(
-    Profile* profile,
-    const std::string& extension_id) {
+void AppListControllerDelegate::DoShowAppInfoFlow(Profile* profile,
+                                                  const std::string& app_id) {
   DCHECK(CanDoShowAppInfoFlow());
 
-  // TODO(crbug.com/1029221): Make DoShowAppInfoFlow extensions-agnostic.
-  const extensions::Extension* extension = GetExtension(profile, extension_id);
-  DCHECK(extension);
-
   if (base::FeatureList::IsEnabled(features::kAppManagement)) {
-    chrome::ShowAppManagementPage(profile, extension_id);
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    DCHECK(proxy && proxy->AppRegistryCache().GetAppType(app_id) !=
+                        apps::mojom::AppType::kUnknown);
 
-    if (extension->is_hosted_app() && extension->from_bookmark()) {
+    chrome::ShowAppManagementPage(profile, app_id);
+
+    web_app::AppRegistrar& registrar =
+        web_app::WebAppProvider::Get(profile)->registrar();
+    if (registrar.IsInstalled(app_id)) {
       base::UmaHistogramEnumeration(
           kAppManagementEntryPointsHistogramName,
           AppManagementEntryPoint::kAppListContextMenuAppInfoWebApp);
@@ -113,6 +117,10 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
     }
     return;
   }
+
+  // TODO(crbug.com/1065766): Remove below code.
+  const extensions::Extension* extension = GetExtension(profile, app_id);
+  DCHECK(extension);
 
   if (extension->is_hosted_app() && extension->from_bookmark()) {
     chrome::ShowSiteSettings(
@@ -135,7 +143,7 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
         ShowAppInfoInAppList(self->GetAppListWindow(), bounds, profile,
                              extension);
       },
-      weak_ptr_factory_.GetWeakPtr(), profile, extension_id));
+      weak_ptr_factory_.GetWeakPtr(), profile, app_id));
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,

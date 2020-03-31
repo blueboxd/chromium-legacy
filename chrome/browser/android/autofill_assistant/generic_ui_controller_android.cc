@@ -261,7 +261,9 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
         proto.layout_params().margin_start(),
         proto.layout_params().margin_top(), proto.layout_params().margin_end(),
         proto.layout_params().margin_bottom(),
-        proto.layout_params().layout_gravity());
+        proto.layout_params().layout_gravity(),
+        proto.layout_params().minimum_width(),
+        proto.layout_params().minimum_height());
   }
 
   if (proto.view_case() == ViewProto::kViewContainer) {

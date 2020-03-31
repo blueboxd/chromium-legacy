@@ -10,7 +10,6 @@ if (is_android) {
 
 source_set("feed_core_v2") {
   sources = [
-    "enums.cc",
     "enums.h",
     "feed_network.cc",
     "feed_network.h",
@@ -40,12 +39,8 @@ source_set("feed_core_v2") {
     "stream_model/feature_tree.h",
     "stream_model_update_request.cc",
     "stream_model_update_request.h",
-    "tasks/load_stream_from_store_task.cc",
-    "tasks/load_stream_from_store_task.h",
     "tasks/load_stream_task.cc",
     "tasks/load_stream_task.h",
-    "tasks/wait_for_store_initialize_task.cc",
-    "tasks/wait_for_store_initialize_task.h",
   ]
   deps = [
     "//components/feed/core:feed_core",
@@ -77,10 +72,6 @@ source_set("core_unit_tests") {
     "feed_stream_unittest.cc",
     "stream_model_unittest.cc",
     "stream_model_update_request_unittest.cc",
-    "test/callback_receiver.h",
-    "test/callback_receiver.h",
-    "test/proto_printer.cc",
-    "test/proto_printer.h",
     "test/stream_builder.cc",
     "test/stream_builder.h",
   ]

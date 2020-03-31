@@ -658,6 +658,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // supported today.
   box.SetBorderEdges({true, has_line_right_edge, true, has_line_left_edge});
 
+  box.SetIsFirstForNode(has_line_left_edge);
+
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
     if (child.out_of_flow_positioned_box) {

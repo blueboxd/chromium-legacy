@@ -132,6 +132,12 @@ func main() {
 		v := m[k]
 		format(k, v, file)
 	}
+	file.Close()
+
+	gnCmd := exec.Command("gn", "format", gniFile)
+	if gnCmd.Run() != nil {
+		panic(fmt.Sprintf("failed to execute gn format command: %v", err))
+	}
 
 	updateReadme()
 }

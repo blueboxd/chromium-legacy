@@ -53,14 +53,12 @@
 #include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -108,15 +106,10 @@ class BrowserActionApiTest : public ExtensionApiTest {
   BrowserActionApiTest() {}
   ~BrowserActionApiTest() override {}
 
-  void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
   void TearDownOnMainThread() override {
     // Clean up the test util first, so that any created UI properly removes
     // itself before profile destruction.
-    browser_action_test_util_ = nullptr;
+    browser_action_test_util_.reset();
     ExtensionApiTest::TearDownOnMainThread();
   }
 
@@ -125,23 +118,6 @@ class BrowserActionApiTest : public ExtensionApiTest {
     if (!browser_action_test_util_)
       browser_action_test_util_ = ExtensionActionTestHelper::Create(browser());
     return browser_action_test_util_.get();
-  }
-
-  WebContents* OpenPopup(int index) {
-    ResultCatcher catcher;
-    content::WindowedNotificationObserver popup_observer(
-        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-        content::NotificationService::AllSources());
-    GetBrowserActionsBar()->Press(index);
-    popup_observer.Wait();
-    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-    if (!GetBrowserActionsBar()->HasPopup())
-      return nullptr;
-
-    const auto& source = static_cast<const content::Source<WebContents>&>(
-        popup_observer.source());
-    return source.ptr();
   }
 
   ExtensionAction* GetBrowserAction(Browser* browser,
@@ -207,28 +183,6 @@ class BrowserActionApiLazyTest : public BrowserActionApiTest,
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
       current_channel_;
-};
-
-// Watches a frame is swapped with a new frame by e.g., navigation.
-class RenderFrameChangedWatcher : public content::WebContentsObserver {
- public:
-  explicit RenderFrameChangedWatcher(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override {
-    created_frame_ = new_host;
-    run_loop_.Quit();
-  }
-
-  content::RenderFrameHost* WaitAndReturnNewFrame() {
-    run_loop_.Run();
-    return created_frame_;
-  }
-
- private:
-  base::RunLoop run_loop_;
-  content::RenderFrameHost* created_frame_;
 };
 
 IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Basic) {
@@ -595,41 +549,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   // Reload that tab, default title should come back.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   EXPECT_EQ("hi!", GetBrowserActionsBar()->GetTooltip(0));
-}
-
-// http://code.google.com/p/chromium/issues/detail?id=70829
-// Mac used to be ok, but then mac 10.5 started failing too. =(
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
-  ASSERT_TRUE(
-      LoadExtension(test_data_dir_.AppendASCII("browser_action/popup")));
-  ExtensionActionTestHelper* actions_bar = GetBrowserActionsBar();
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension) << message_;
-
-  // The extension's popup's size grows by |growFactor| each click.
-  const int growFactor = 500;
-  gfx::Size minSize = actions_bar->GetMinPopupSize();
-  gfx::Size middleSize = gfx::Size(growFactor, growFactor);
-  gfx::Size maxSize = actions_bar->GetMaxPopupSize();
-
-  // Ensure that two clicks will exceed the maximum allowed size.
-  ASSERT_GT(minSize.height() + growFactor * 2, maxSize.height());
-  ASSERT_GT(minSize.width() + growFactor * 2, maxSize.width());
-
-  // Simulate a click on the browser action and verify the size of the resulting
-  // popup.  The first one tries to be 0x0, so it should be the min values.
-  ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(minSize, actions_bar->GetPopupSize());
-  EXPECT_TRUE(actions_bar->HidePopup());
-
-  ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(middleSize, actions_bar->GetPopupSize());
-  EXPECT_TRUE(actions_bar->HidePopup());
-
-  // One more time, but this time it should be constrained by the max values.
-  ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(maxSize, actions_bar->GetPopupSize());
-  EXPECT_TRUE(actions_bar->HidePopup());
 }
 
 // Test that calling chrome.browserAction.setPopup() can enable and change
@@ -1019,58 +938,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
   EXPECT_EQ(result, "red");
 }
 
-// Test that a browser action popup with a web iframe works correctly. The
-// iframe is expected to run in a separate process.
-// See https://crbug.com/546267.
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("browser_action/popup_with_iframe")));
-  ExtensionActionTestHelper* actions_bar = GetBrowserActionsBar();
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension) << message_;
-
-  // Simulate a click on the browser action to open the popup.
-  ASSERT_TRUE(OpenPopup(0));
-
-  // Find the RenderFrameHost associated with the iframe in the popup.
-  content::RenderFrameHost* frame_host = nullptr;
-  extensions::ProcessManager* manager =
-      extensions::ProcessManager::Get(browser()->profile());
-  std::set<content::RenderFrameHost*> frame_hosts =
-      manager->GetRenderFrameHostsForExtension(extension->id());
-  for (auto* host : frame_hosts) {
-    if (host->GetFrameName() == "child_frame") {
-      frame_host = host;
-      break;
-    }
-  }
-
-  ASSERT_TRUE(frame_host);
-  EXPECT_EQ(extension->GetResourceURL("frame.html"),
-            frame_host->GetLastCommittedURL());
-  EXPECT_TRUE(frame_host->GetParent());
-
-  // Navigate the popup's iframe to a (cross-site) web page, and wait for that
-  // page to send a message, which will ensure that the page has loaded.
-  RenderFrameChangedWatcher watcher(
-      WebContents::FromRenderFrameHost(frame_host));
-  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/popup_iframe.html"));
-  std::string script = "location.href = '" + foo_url.spec() + "'";
-  EXPECT_TRUE(ExecuteScript(frame_host, script));
-
-  frame_host = watcher.WaitAndReturnNewFrame();
-
-  // Confirm that the new page (popup_iframe.html) is actually loaded.
-  content::DOMMessageQueue dom_message_queue(frame_host);
-  std::string json;
-  EXPECT_TRUE(dom_message_queue.WaitForMessage(&json));
-  EXPECT_EQ("\"DONE\"", json);
-
-  EXPECT_TRUE(actions_bar->HidePopup());
-}
-
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionWithRectangularIcon) {
   ExtensionTestMessageListener ready_listener("ready", true);
 
@@ -1132,270 +999,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionOpenPopupOnPopup) {
   ResultCatcher catcher;
   listener.Reply(std::string());
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
-}
-
-// Test that a browser action popup can download data URLs. See
-// https://crbug.com/821219
-// Fails consistently on Win7. https://crbug.com/827160
-#if defined(OS_WIN)
-#define MAYBE_BrowserActionPopupDownload DISABLED_BrowserActionPopupDownload
-#else
-#define MAYBE_BrowserActionPopupDownload BrowserActionPopupDownload
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_BrowserActionPopupDownload) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("browser_action/popup_download")));
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension) << message_;
-
-  content::DownloadTestObserverTerminal downloads_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-
-  // Simulate a click on the browser action to open the popup.
-  content::WebContents* popup = OpenPopup(0);
-  ASSERT_TRUE(popup);
-  content::ExecuteScriptAsync(popup, "run_tests()");
-
-  // Wait for the download that this should have triggered to finish.
-  downloads_observer.WaitForFinished();
-
-  EXPECT_EQ(1u, downloads_observer.NumDownloadsSeenInState(
-                    download::DownloadItem::COMPLETE));
-  EXPECT_TRUE(GetBrowserActionsBar()->HidePopup());
-}
-
-class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
- public:
-  const Extension& popup_extension() { return *popup_extension_; }
-  const Extension& other_extension() { return *other_extension_; }
-
-  void SetUpOnMainThread() override {
-    BrowserActionApiTest::SetUpOnMainThread();
-
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    // Load an extension with a pop-up.
-    ASSERT_TRUE(popup_extension_ = LoadExtension(test_data_dir_.AppendASCII(
-                    "browser_action/popup_with_form")));
-
-    // Load another extension (that we can try navigating to).
-    ASSERT_TRUE(other_extension_ = LoadExtension(test_data_dir_.AppendASCII(
-                    "browser_action/popup_with_iframe")));
-  }
-
-  enum ExpectedNavigationStatus {
-    EXPECTING_NAVIGATION_SUCCESS,
-    EXPECTING_NAVIGATION_FAILURE,
-  };
-
-  void TestPopupNavigationViaGet(
-      const GURL& target_url,
-      ExpectedNavigationStatus expected_navigation_status) {
-    std::string navigation_starting_script =
-        "window.location = '" + target_url.spec() + "';\n";
-    TestPopupNavigation(target_url, expected_navigation_status,
-                        navigation_starting_script);
-  }
-
-  void TestPopupNavigationViaPost(
-      const GURL& target_url,
-      ExpectedNavigationStatus expected_navigation_status) {
-    std::string navigation_starting_script =
-        "var form = document.getElementById('form');\n"
-        "form.action = '" + target_url.spec() + "';\n"
-        "form.submit();\n";
-    TestPopupNavigation(target_url, expected_navigation_status,
-                        navigation_starting_script);
-  }
-
- private:
-  void TestPopupNavigation(const GURL& target_url,
-                           ExpectedNavigationStatus expected_navigation_status,
-                           std::string navigation_starting_script) {
-    // Were there any failures so far (e.g. in SetUpOnMainThread)?
-    ASSERT_FALSE(HasFailure());
-
-    // Simulate a click on the browser action to open the popup.
-    WebContents* popup = OpenPopup(0);
-    ASSERT_TRUE(popup);
-    GURL popup_url = popup_extension().GetResourceURL("popup.html");
-    EXPECT_EQ(popup_url, popup->GetLastCommittedURL());
-
-    // Note that the |setTimeout| call below is needed to make sure
-    // ExecuteScriptAndExtractBool returns *after* a scheduled navigation has
-    // already started.
-    std::string script_to_execute =
-        navigation_starting_script +
-        "setTimeout(\n"
-        "    function() { window.domAutomationController.send(true); },\n"
-        "    0);\n";
-
-    // Try to navigate the pop-up.
-    bool ignored_script_result = false;
-    content::WebContentsDestroyedWatcher popup_destruction_watcher(popup);
-    content::TestNavigationObserver popup_navigation_observer(popup);
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(popup, script_to_execute,
-                                            &ignored_script_result));
-    popup = popup_destruction_watcher.web_contents();
-
-    // Verify if the popup navigation succeeded or failed as expected.
-    if (!popup) {
-      // If navigation ends up in a tab, then the tab will be focused and
-      // therefore the popup will be closed, destroying associated WebContents -
-      // don't do any verification in this case.
-      ADD_FAILURE() << "Navigation should not close extension pop-up";
-    } else {
-      // If the extension popup is still opened, then wait until there is no
-      // load in progress, and verify whether the navigation succeeded or not.
-      popup_navigation_observer.Wait();
-
-      // The popup should still be alive.
-      ASSERT_TRUE(popup_destruction_watcher.web_contents());
-
-      if (expected_navigation_status == EXPECTING_NAVIGATION_SUCCESS) {
-        EXPECT_EQ(target_url, popup->GetLastCommittedURL())
-            << "Navigation to " << target_url
-            << " should succeed in an extension pop-up";
-      } else {
-        EXPECT_NE(target_url, popup->GetLastCommittedURL())
-            << "Navigation to " << target_url
-            << " should fail in an extension pop-up";
-        EXPECT_THAT(
-            popup->GetLastCommittedURL(),
-            ::testing::AnyOf(::testing::Eq(popup_url),
-                             ::testing::Eq(GURL("chrome-extension://invalid")),
-                             ::testing::Eq(GURL("about:blank"))));
-      }
-
-      // Close the pop-up.
-      EXPECT_TRUE(GetBrowserActionsBar()->HidePopup());
-      popup_destruction_watcher.Wait();
-    }
-
-    // Make sure that the web navigation did not succeed somewhere outside of
-    // the extension popup (as it might if ExtensionViewHost::OpenURLFromTab
-    // forwards the navigation to Browser::OpenURL [which doesn't specify a
-    // source WebContents]).
-    TabStripModel* tabs = browser()->tab_strip_model();
-    for (int i = 0; i < tabs->count(); i++) {
-      WebContents* tab_contents = tabs->GetWebContentsAt(i);
-      WaitForLoadStop(tab_contents);
-      EXPECT_NE(target_url, tab_contents->GetLastCommittedURL())
-          << "Navigating an extension pop-up should not affect tabs.";
-    }
-  }
-
-  const Extension* popup_extension_;
-  const Extension* other_extension_;
-};
-
-// Flaky - crbug.com/1021172
-#if defined(OS_LINUX)
-#define MAYBE_Webpage DISABLED_Webpage
-#else
-#define MAYBE_Webpage Webpage
-#endif
-// Tests that an extension pop-up cannot be navigated to a web page.
-IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, MAYBE_Webpage) {
-  GURL web_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
-  TestPopupNavigationViaGet(web_url, EXPECTING_NAVIGATION_FAILURE);
-  TestPopupNavigationViaPost(web_url, EXPECTING_NAVIGATION_FAILURE);
-}
-
-// Tests that an extension pop-up can be navigated to another page
-// in the same extension.
-// Times out on all platforms: https://crbug.com/882200
-IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
-                       DISABLED_PageInSameExtension) {
-  GURL other_page_in_same_extension =
-      popup_extension().GetResourceURL("other_page.html");
-  TestPopupNavigationViaGet(other_page_in_same_extension,
-                            EXPECTING_NAVIGATION_SUCCESS);
-  TestPopupNavigationViaPost(other_page_in_same_extension,
-                             EXPECTING_NAVIGATION_SUCCESS);
-}
-
-// Tests that an extension pop-up cannot be navigated to a page
-// in another extension.
-IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
-                       PageInOtherExtension) {
-  GURL other_extension_url = other_extension().GetResourceURL("other.html");
-  TestPopupNavigationViaGet(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
-  TestPopupNavigationViaPost(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
-}
-
-// Tests that navigating an extension pop-up to a http URI that returns
-// Content-Disposition: attachment; filename=...
-// works: No navigation, but download shelf visible + download goes through.
-IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
-  // Setup monitoring of the downloads.
-  content::DownloadTestObserverTerminal downloads_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      1,  // == wait_count (only waiting for "download-test3.gif").
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-
-  // Navigate to a URL that replies with
-  // Content-Disposition: attachment; filename=...
-  // header.
-  GURL download_url(
-      embedded_test_server()->GetURL("foo.com", "/download-test3.gif"));
-  TestPopupNavigationViaPost(download_url, EXPECTING_NAVIGATION_FAILURE);
-
-  // Verify that "download-test3.gif got downloaded.
-  downloads_observer.WaitForFinished();
-  EXPECT_EQ(0u, downloads_observer.NumDangerousDownloadsSeen());
-  EXPECT_EQ(1u, downloads_observer.NumDownloadsSeenInState(
-                    download::DownloadItem::COMPLETE));
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath downloads_directory =
-      DownloadPrefs(browser()->profile()).DownloadPath();
-  EXPECT_TRUE(base::PathExists(
-      downloads_directory.AppendASCII("download-test3-attachment.gif")));
-
-  // The test verification below is applicable only to scenarios where the
-  // download shelf is supported - on ChromeOS, instead of the download shelf,
-  // there is a download notification in the right-bottom corner of the screen.
-#if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-#endif
-}
-
-IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaGet) {
-  // Setup monitoring of the downloads.
-  content::DownloadTestObserverTerminal downloads_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      1,  // == wait_count (only waiting for "download-test3.gif").
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-
-  // Navigate to a URL that replies with
-  // Content-Disposition: attachment; filename=...
-  // header.
-  GURL download_url(
-      embedded_test_server()->GetURL("foo.com", "/download-test3.gif"));
-  TestPopupNavigationViaGet(download_url, EXPECTING_NAVIGATION_FAILURE);
-
-  // Verify that "download-test3.gif got downloaded.
-  downloads_observer.WaitForFinished();
-  EXPECT_EQ(0u, downloads_observer.NumDangerousDownloadsSeen());
-  EXPECT_EQ(1u, downloads_observer.NumDownloadsSeenInState(
-                    download::DownloadItem::COMPLETE));
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath downloads_directory =
-      DownloadPrefs(browser()->profile()).DownloadPath();
-  EXPECT_TRUE(base::PathExists(
-      downloads_directory.AppendASCII("download-test3-attachment.gif")));
-
-  // The test verification below is applicable only to scenarios where the
-  // download shelf is supported - on ChromeOS, instead of the download shelf,
-  // there is a download notification in the right-bottom corner of the screen.
-#if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-#endif
 }
 
 // Verify video can enter and exit Picture-in_Picture when browser action icon

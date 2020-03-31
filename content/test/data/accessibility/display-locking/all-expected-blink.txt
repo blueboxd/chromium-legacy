@@ -20,4 +20,3 @@ rootWebArea
 ++++++genericContainer offscreen
 ++++++staticText offscreen name='normal text 3'
 ++++++++inlineTextBox offscreen name='normal text 3'
-

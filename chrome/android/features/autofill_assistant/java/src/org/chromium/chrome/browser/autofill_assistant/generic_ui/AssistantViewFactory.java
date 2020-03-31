@@ -64,7 +64,7 @@ public class AssistantViewFactory {
     @CalledByNative
     public static void setViewLayoutParams(View view, Context context, int width, int height,
             float weight, int marginStart, int marginTop, int marginEnd, int marginBottom,
-            int layoutGravity) {
+            int layoutGravity, int minimumWidth, int minimumHeight) {
         if (width > 0) {
             width = AssistantDimension.getPixelSizeDp(context, width);
         }
@@ -80,6 +80,8 @@ public class AssistantViewFactory {
         layoutParams.bottomMargin = AssistantDimension.getPixelSizeDp(context, marginBottom);
         layoutParams.gravity = layoutGravity;
         view.setLayoutParams(layoutParams);
+        view.setMinimumWidth(AssistantDimension.getPixelSizeDp(context, minimumWidth));
+        view.setMinimumHeight(AssistantDimension.getPixelSizeDp(context, minimumHeight));
     }
 
     /** Creates a {@code android.widget.LinearLayout} widget. */

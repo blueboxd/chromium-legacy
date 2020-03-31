@@ -133,10 +133,16 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessorBackend
   bool EnqueueOutputRecord(JobRecord* job_record, V4L2WritableBufferRef buffer);
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
+  // Specify |visible_rect| to v4l2 |type| queue.
+  bool ApplyCrop(const gfx::Rect& visible_rect, enum v4l2_buf_type type);
+  // Reconfigure |size| and |visible_rect| to v4l2 |type| queue.
+  bool ReconfigureV4L2Format(const gfx::Size& size,
+                             const gfx::Rect& visible_rect,
+                             enum v4l2_buf_type type);
 
-  // Callback of VideoFrame destruction. Since VideoFrame destruction callback
-  // might be executed on any sequence, we use a thunk to post the task to
-  // |device_task_runner_|.
+  // Callback of VideoFrame destruction. Since VideoFrame destruction
+  // callback might be executed on any sequence, we use a thunk to post the
+  // task to |device_task_runner_|.
   static void V4L2VFRecycleThunk(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::Optional<base::WeakPtr<V4L2ImageProcessorBackend>> image_processor,

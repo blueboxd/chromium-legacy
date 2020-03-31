@@ -49,7 +49,8 @@ class NGInlineNodeForTest : public NGInlineNode {
     unsigned start = data->text_content.length();
     data->text_content = data->text_content + text;
     data->items.push_back(NGInlineItem(NGInlineItem::kText, start,
-                                       start + text.length(), layout_object));
+                                       start + text.length(), layout_object,
+                                       /* is_first_for_node */ true));
     data->is_empty_inline_ = false;
   }
 
@@ -57,8 +58,9 @@ class NGInlineNodeForTest : public NGInlineNode {
     NGInlineNodeData* data = MutableData();
     data->text_content = data->text_content + character;
     unsigned end = data->text_content.length();
-    data->items.push_back(
-        NGInlineItem(NGInlineItem::kBidiControl, end - 1, end, nullptr));
+    data->items.push_back(NGInlineItem(NGInlineItem::kBidiControl, end - 1, end,
+                                       nullptr,
+                                       /* is_first_for_node */ true));
     data->is_bidi_enabled_ = true;
     data->is_empty_inline_ = false;
   }

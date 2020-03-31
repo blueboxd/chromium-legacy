@@ -61,7 +61,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
                                  public IAccessibleApplication,
                                  public IAccessibleHyperlink,
                                  public IAccessibleImage,
-                                 public IAccessibleValue,
                                  public ISimpleDOMDocument,
                                  public ISimpleDOMNode,
                                  public ISimpleDOMText {
@@ -71,7 +70,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   COM_INTERFACE_ENTRY(IAccessibleApplication)
   COM_INTERFACE_ENTRY(IAccessibleHyperlink)
   COM_INTERFACE_ENTRY(IAccessibleImage)
-  COM_INTERFACE_ENTRY(IAccessibleValue)
   COM_INTERFACE_ENTRY(ISimpleDOMDocument)
   COM_INTERFACE_ENTRY(ISimpleDOMNode)
   COM_INTERFACE_ENTRY(ISimpleDOMText)
@@ -211,18 +209,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
                                          BSTR* name) override;
   CONTENT_EXPORT IFACEMETHODIMP
   get_localizedName(LONG action_index, BSTR* localized_name) override;
-
-  //
-  // IAccessibleValue methods.
-  //
-
-  CONTENT_EXPORT IFACEMETHODIMP get_currentValue(VARIANT* value) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP get_minimumValue(VARIANT* value) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP get_maximumValue(VARIANT* value) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP setCurrentValue(VARIANT new_value) override;
 
   //
   // ISimpleDOMDocument methods.

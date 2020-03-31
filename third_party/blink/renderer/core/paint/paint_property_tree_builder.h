@@ -20,6 +20,7 @@ class FragmentData;
 class LayoutObject;
 class LayoutNGTableSectionInterface;
 class LocalFrameView;
+class NGFragmentChildIterator;
 class PaintLayer;
 class VisualViewport;
 
@@ -194,6 +195,18 @@ class VisualViewportPaintPropertyTreeBuilder {
                                         PaintPropertyTreeBuilderContext&);
 };
 
+struct NGPrePaintInfo {
+  STACK_ALLOCATED();
+
+ public:
+  NGPrePaintInfo(const NGFragmentChildIterator& iterator,
+                 FragmentData& fragment_data)
+      : iterator(iterator), fragment_data(fragment_data) {}
+
+  const NGFragmentChildIterator& iterator;
+  FragmentData& fragment_data;
+};
+
 // Creates paint property tree nodes for non-local effects in the layout tree.
 // Non-local effects include but are not limited to: overflow clip, transform,
 // fixed-pos, animation, mask, filters, etc. It expects to be invoked for each
@@ -206,8 +219,9 @@ class PaintPropertyTreeBuilder {
                                    PaintPropertyTreeBuilderContext&);
 
   PaintPropertyTreeBuilder(const LayoutObject& object,
+                           NGPrePaintInfo* pre_paint_info,
                            PaintPropertyTreeBuilderContext& context)
-      : object_(object), context_(context) {}
+      : object_(object), pre_paint_info_(pre_paint_info), context_(context) {}
 
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date. Also
@@ -221,11 +235,15 @@ class PaintPropertyTreeBuilder {
   PaintPropertyChangeType UpdateForChildren();
 
  private:
-  ALWAYS_INLINE void InitFragmentPaintProperties(
+  ALWAYS_INLINE void InitFragmentPaintProperties(FragmentData&,
+                                                 bool needs_paint_properties);
+  ALWAYS_INLINE void InitFragmentPaintPropertiesForLegacy(
       FragmentData&,
       bool needs_paint_properties,
       const PhysicalOffset& pagination_offset = PhysicalOffset(),
       LayoutUnit logical_top_in_flow_thread = LayoutUnit());
+  ALWAYS_INLINE void InitFragmentPaintPropertiesForNG(
+      bool needs_paint_properties);
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
   ALWAYS_INLINE bool ObjectTypeMightNeedMultipleFragmentData() const;
   ALWAYS_INLINE bool ObjectTypeMightNeedPaintProperties() const;
@@ -249,7 +267,11 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateRepeatingTableHeaderPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableFooterPaintOffsetAdjustment();
 
+  bool IsInNGFragmentTraversal() const { return pre_paint_info_; }
+
   const LayoutObject& object_;
+  NGPrePaintInfo* pre_paint_info_;
+
   PaintPropertyTreeBuilderContext& context_;
 };
 

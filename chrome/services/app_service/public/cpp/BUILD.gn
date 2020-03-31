@@ -72,8 +72,6 @@ source_set("intents") {
 
 source_set("preferred_apps") {
   sources = [
-    "preferred_apps.cc",
-    "preferred_apps.h",
     "preferred_apps_list.cc",
     "preferred_apps_list.h",
   ]
@@ -98,7 +96,6 @@ source_set("unit_tests") {
     "intent_test_util.h",
     "intent_util_unittest.cc",
     "preferred_apps_list_unittest.cc",
-    "preferred_apps_unittest.cc",
   ]
 
   deps = [

@@ -78,19 +78,6 @@ bool IsGeminiLakeOrLater() {
   return is_geminilake_or_later;
 }
 
-// Returns the size of a rectangle whose upper left corner is at the origin (0,
-// 0) and whose bottom right corner is the same as that of |rect|. This is
-// useful to get the size of a buffer that contains the visible rectangle plus
-// the non-visible area above and to the left of the visible rectangle.
-//
-// An example to illustrate: suppose the visible rectangle of a decoded frame is
-// 10,10,100,100. The size of this rectangle is 90x90. However, we need to
-// create a texture of size 100x100 because the client will want to sample from
-// the texture starting with uv coordinates corresponding to 10,10.
-gfx::Size GetRectSizeFromOrigin(const gfx::Rect& rect) {
-  return gfx::Size(rect.bottom_right().x(), rect.bottom_right().y());
-}
-
 }  // namespace
 
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
@@ -608,41 +595,20 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   }
   pictures_.clear();
 
-  // In ALLOCATE mode, we are responsible for allocating storage for the result
-  // of the decode. However, the client is responsible for creating the GL
-  // texture to which we'll attach the decoded image. The decoder needs the
-  // buffer to be of size = |requested_pic_size_|, but for the purposes of
-  // working with a graphics API (e.g., GL), the client does not need to know
-  // about the non-visible area on the bottom or the right of the frame. For
-  // example, for a 360p H.264 video with a visible rectangle of 0,0,640x360,
-  // the coded size is 640x368, but the GL texture that the client uses should
-  // be only 640x360.
-  //
-  // In IMPORT mode, the client is responsible for allocating storage for the
-  // decoder to work with, so in that case, we must request the full coded size
-  // and the client is responsible for importing the decoded image into a
-  // graphics API correctly.
-  const gfx::Size pic_size_to_request_from_client =
-      (output_mode_ == Config::OutputMode::ALLOCATE)
-          ? GetRectSizeFromOrigin(requested_visible_rect_)
-          : requested_pic_size_;
-  DCHECK(gfx::Rect(requested_pic_size_)
-             .Contains(gfx::Rect(pic_size_to_request_from_client)));
-
   // And ask for a new set as requested.
-  VLOGF(2) << "Requesting " << requested_num_pics_ << " pictures of size: "
-           << pic_size_to_request_from_client.ToString();
+  VLOGF(2) << "Requesting " << requested_num_pics_
+           << " pictures of size: " << requested_pic_size_.ToString()
+           << " and visible rectangle = " << requested_visible_rect_.ToString();
 
   const base::Optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(
           vaapi_picture_factory_->GetBufferFormat());
   CHECK(format);
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect, client_,
-                     requested_num_pics_, *format, 1,
-                     pic_size_to_request_from_client, requested_visible_rect_,
-                     vaapi_picture_factory_->GetGLTextureTarget()));
+      FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect,
+                                client_, requested_num_pics_, *format, 1,
+                                requested_pic_size_, requested_visible_rect_,
+                                vaapi_picture_factory_->GetGLTextureTarget()));
   // |client_| may respond via AssignPictureBuffers().
 }
 
@@ -723,7 +689,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     // Note that the |size_to_bind| is not relevant in IMPORT mode.
     const gfx::Size size_to_bind =
         (output_mode_ == Config::OutputMode::ALLOCATE)
-            ? GetRectSizeFromOrigin(requested_visible_rect_)
+            ? requested_visible_rect_.size()
             : gfx::Size();
 
     std::unique_ptr<VaapiPicture> picture = vaapi_picture_factory_->Create(

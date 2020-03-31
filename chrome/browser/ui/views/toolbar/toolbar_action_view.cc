@@ -8,6 +8,8 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -188,6 +190,8 @@ void ToolbarActionView::ButtonPressed(views::Button* sender,
     context_menu_controller()->ShowContextMenuForView(this, GetMenuPosition(),
                                                       ui::MENU_SOURCE_NONE);
   } else {
+    base::RecordAction(base::UserMetricsAction(
+        "Extensions.Toolbar.ExtensionActivatedFromToolbar"));
     view_controller_->ExecuteAction(true);
   }
 }

@@ -109,6 +109,8 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleResizeCrostiniDisk(const base::ListValue* args);
   void ResolveResizeCrostiniDiskCallback(const std::string& callback_id,
                                          bool succeeded);
+  // Checks if a restart is required to update mic sharing settings.
+  void HandleCheckCrostiniMicSharingStatus(const base::ListValue* args);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

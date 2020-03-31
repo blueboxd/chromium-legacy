@@ -1,5 +1,6 @@
 rootWebArea
-++genericContainer
-++++button inputType='button' name='Button'
-++++++staticText name='Button'
-++++++++inlineTextBox name='Button'
+++genericContainer ignored
+++++genericContainer
+++++++button inputType='button' name='Button'
+++++++++staticText name='Button'
+++++++++++inlineTextBox name='Button'

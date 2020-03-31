@@ -152,6 +152,7 @@ class PaintInvalidator {
  public:
   // Returns true if the object is invalidated.
   bool InvalidatePaint(const LayoutObject&,
+                       const NGPrePaintInfo*,
                        const PaintPropertyTreeBuilderContext*,
                        PaintInvalidatorContext&);
 
@@ -164,14 +165,18 @@ class PaintInvalidator {
   friend class PrePaintTreeWalk;
 
   ALWAYS_INLINE IntRect ComputeVisualRect(const LayoutObject&,
+                                          const NGPrePaintInfo*,
                                           const PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdatePaintingLayer(const LayoutObject&,
-                                         PaintInvalidatorContext&);
+                                         PaintInvalidatorContext&,
+                                         bool is_ng_painting);
   ALWAYS_INLINE void UpdatePaintInvalidationContainer(const LayoutObject&,
-                                                      PaintInvalidatorContext&);
+                                                      PaintInvalidatorContext&,
+                                                      bool is_ng_painting);
   ALWAYS_INLINE void UpdateEmptyVisualRectFlag(const LayoutObject&,
                                                PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdateVisualRect(const LayoutObject&,
+                                      const NGPrePaintInfo*,
                                       FragmentData&,
                                       PaintInvalidatorContext&);
 

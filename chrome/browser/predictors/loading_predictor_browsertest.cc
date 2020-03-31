@@ -1651,7 +1651,7 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-// crbug.com/1060966
+// TODO(crbug.com/1060966): Tests are flakey.
 IN_PROC_BROWSER_TEST_P(
     LoadingPredictorBrowserTestWithOptimizationGuide,
     DISABLED_NavigationWithBothLocalPredictionAndOptimizationHint) {
@@ -1816,10 +1816,10 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+// TODO(crbug.com/1060966): Tests are flakey.
 IN_PROC_BROWSER_TEST_P(
     LoadingPredictorBrowserTestWithOptimizationGuide,
-    DISABLE_ON_WIN_MAC_CHROMEOS(
-        OptimizationGuidePredictionsNotAppliedForAlreadyCommittedNavigation)) {
+    DISABLED_OptimizationGuidePredictionsNotAppliedForAlreadyCommittedNavigation) {
   base::HistogramTester histogram_tester;
 
   GURL url = embedded_test_server()->GetURL("hints.com", "/simple.html");

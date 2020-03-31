@@ -79,9 +79,6 @@ public class EmptyTabObserver implements TabObserver {
     public void onContextMenuShown(Tab tab, ContextMenu menu) { }
 
     @Override
-    public void onContextualActionBarVisibilityChanged(Tab tab, boolean visible) { }
-
-    @Override
     public void onCloseContents(Tab tab) {}
 
     @Override

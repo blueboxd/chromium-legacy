@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENTATION_UTILS_H_
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -43,6 +45,14 @@ bool IsAvoidBreakValue(const NGConstraintSpace&, Property);
 // Return true if we're resuming layout after a previous break.
 inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();
+}
+
+// Return true if the fragment to be generated for the specified item is going
+// to be the first fragment for the node.
+inline bool IsFirstForNode(const NGInlineItem& item,
+                           const NGInlineBreakToken* token) {
+  return item.IsFirstForNode() &&
+         (!token || item.StartOffset() >= token->TextOffset());
 }
 
 // Calculate the final "break-between" value at a class A or C breakpoint. This

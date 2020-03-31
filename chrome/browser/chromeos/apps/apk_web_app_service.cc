@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/mojom/app.mojom.h"
@@ -67,14 +68,17 @@ void ApkWebAppService::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kWebAppToApkDictPref);
 }
 
-ApkWebAppService::ApkWebAppService(Profile* profile)
-    : profile_(profile),
-      arc_app_list_prefs_(ArcAppListPrefs::Get(profile)),
-      provider_(web_app::WebAppProvider::Get(profile)) {
+ApkWebAppService::ApkWebAppService(Profile* profile) : profile_(profile) {
+  // Do not set up observers if web apps aren't enabled in this profile.
+  if (!web_app::AreWebAppsEnabled(profile))
+    return;
+
   // Can be null in tests.
+  arc_app_list_prefs_ = ArcAppListPrefs::Get(profile);
   if (arc_app_list_prefs_)
     arc_app_list_prefs_->AddObserver(this);
 
+  provider_ = web_app::WebAppProvider::Get(profile);
   DCHECK(provider_);
   registrar_observer_.Add(&provider_->registrar());
 }
@@ -108,6 +112,7 @@ void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
     return;
   }
 
+  DCHECK(provider_);
   provider_->install_finalizer().UninstallExternalWebApp(
       web_app_id, web_app::ExternalInstallSource::kArc, base::DoNothing());
 }
@@ -125,6 +130,7 @@ void ApkWebAppService::UpdateShelfPin(
     // package there is no way to determine which app is more suitable to
     // replace the previous web app shortcut. For simplicity we will just use
     // the first one.
+    DCHECK(arc_app_list_prefs_);
     std::unordered_set<std::string> apps =
         arc_app_list_prefs_->GetAppsForPackage(package_info->package_name);
     if (!apps.empty())

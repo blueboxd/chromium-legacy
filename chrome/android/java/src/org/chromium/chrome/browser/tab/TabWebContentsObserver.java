@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Consumer;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList.RewindableIterator;
@@ -26,10 +27,13 @@ import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.policy.PolicyAuditorJni;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * WebContentsObserver used by Tab.
@@ -69,13 +73,16 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
     }
 
     private final TabImpl mTab;
+    private final List<Consumer<WebContents>> mInitObservers = new ArrayList<>();
     private WebContentsObserver mObserver;
 
-    public static void from(Tab tab) {
+    public static TabWebContentsObserver from(Tab tab) {
         TabWebContentsObserver observer = get(tab);
         if (observer == null) {
-            tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabWebContentsObserver(tab));
+            observer = new TabWebContentsObserver(tab);
+            tab.getUserDataHost().setUserData(USER_DATA_KEY, observer);
         }
+        return observer;
     }
 
     @VisibleForTesting
@@ -88,9 +95,34 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         mTab = (TabImpl) tab;
     }
 
+    /**
+     * Adds an observer triggered when |initWebContents| is invoked.
+     */
+    public void addInitWebContentsObserver(Consumer<WebContents> initObserver) {
+        mInitObservers.add(initObserver);
+    }
+
+    /**
+     * Remove the InitWebContents observer from the list.
+     */
+    public void removeInitWebContentsObserver(Consumer<WebContents> initObserver) {
+        mInitObservers.remove(initObserver);
+    }
+
+    @Override
+    public void destroyInternal() {
+        mInitObservers.clear();
+    }
+
     @Override
     public void initWebContents(WebContents webContents) {
         mObserver = new Observer(webContents);
+
+        // For browser tabs, we want to set accessibility focus to the page when it loads. This
+        // is not the default behavior for embedded web views.
+        WebContentsAccessibility.fromWebContents(webContents).setShouldFocusOnPageLoad(true);
+
+        for (Consumer<WebContents> consumer : mInitObservers) consumer.accept(webContents);
     }
 
     @Override

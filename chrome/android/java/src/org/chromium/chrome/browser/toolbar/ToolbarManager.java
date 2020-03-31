@@ -526,20 +526,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void onContextualActionBarVisibilityChanged(Tab tab, boolean visible) {
-                if (visible) RecordUserAction.record("MobileActionBarShown");
-                ActionBar actionBar = mActionBarDelegate.getSupportActionBar();
-                if (!visible && actionBar != null) actionBar.hide();
-                if (mActivity.isTablet()) {
-                    if (visible) {
-                        mActionModeController.startShowAnimation();
-                    } else {
-                        mActionModeController.startHideAnimation();
-                    }
-                }
-            }
-
-            @Override
             public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
                 if (!navigation.isInMainFrame()) return;
                 // Update URL as soon as it becomes available when it's a new tab.
@@ -782,6 +768,24 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         setMenuDelegatePhone(menuDelegate);
         setAppMenuHandler(appMenuHandler);
         mAppMenuPropertiesDelegate = appMenuCoordinator.getAppMenuPropertiesDelegate();
+    }
+
+    /**
+     * Called when the contextual action bar's visibility has changed (i.e. the widget shown
+     * when you can copy/paste text after long press).
+     * @param visible Whether the contextual action bar is now visible.
+     */
+    public void onActionBarVisibilityChanged(boolean visible) {
+        if (visible) RecordUserAction.record("MobileActionBarShown");
+        ActionBar actionBar = mActionBarDelegate.getSupportActionBar();
+        if (!visible && actionBar != null) actionBar.hide();
+        if (mActivity.isTablet()) {
+            if (visible) {
+                mActionModeController.startShowAnimation();
+            } else {
+                mActionModeController.startHideAnimation();
+            }
+        }
     }
 
     /**

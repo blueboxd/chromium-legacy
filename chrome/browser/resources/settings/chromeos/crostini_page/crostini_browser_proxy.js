@@ -141,6 +141,15 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>} Whether resizing succeeded(true) or failed.
      */
     resizeCrostiniDisk(vmName, newSizeBytes) {}
+
+    /**
+     * Checks if a proposed change to mic sharing requires Crostini to be
+     * restarted for it to take effect.
+     * @param {boolean} proposedValue Reflects what mic sharing is being set
+     *     to.
+     * @return {!Promise<boolean>} Whether Crostini requires a restart or not.
+     */
+    checkCrostiniMicSharingStatus(proposedValue) {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -241,6 +250,11 @@ cr.define('settings', function() {
     /** @override */
     resizeCrostiniDisk(vmName, newSizeBytes) {
       return cr.sendWithPromise('resizeCrostiniDisk', vmName, newSizeBytes);
+    }
+
+    /** @override */
+    checkCrostiniMicSharingStatus(proposedValue) {
+      return cr.sendWithPromise('checkCrostiniMicSharingStatus', proposedValue);
     }
   }
 

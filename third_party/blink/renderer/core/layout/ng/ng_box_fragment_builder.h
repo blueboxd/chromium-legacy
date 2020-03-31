@@ -125,9 +125,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     sequence_number_ = sequence_number;
   }
 
-  // Return whether this will be the first fragment generated for the node.
-  bool IsFirstForNode() const { return sequence_number_ == 0; }
-
   // Specify that we broke.
   //
   // This will result in a fragment which has an unfinished break token.

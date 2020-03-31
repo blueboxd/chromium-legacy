@@ -21,6 +21,7 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeActionModeHandler;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabThemeColorProvider;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -112,6 +113,7 @@ public class RootUiCoordinator
     private DirectActionInitializer mDirectActionInitializer;
     private List<ButtonDataProvider> mButtonDataProviders;
     private IdentityDiscController mIdentityDiscController;
+    private ChromeActionModeHandler mChromeActionModeHandler;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -241,7 +243,8 @@ public class RootUiCoordinator
             };
             mActivity.getModalDialogManager().addObserver(mModalDialogManagerObserver);
         }
-
+        mChromeActionModeHandler = new ChromeActionModeHandler(
+                mActivity.getActivityTabProvider(), mToolbarManager::onActionBarVisibilityChanged);
         mVrModeObserver = new VrModeObserver() {
             @Override
             public void onEnterVr() {

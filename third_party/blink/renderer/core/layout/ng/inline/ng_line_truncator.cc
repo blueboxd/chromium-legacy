@@ -61,13 +61,17 @@ LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
       IsLtr(line_direction_)
           ? ellipsized_child->InlineOffset() + ellipsized_child->inline_size
           : ellipsized_child->InlineOffset() - ellipsis_width_;
-  FontBaseline baseline_type = line_style_->GetFontBaseline();
-  NGLineHeightMetrics ellipsis_metrics(ellipsis_font_data_->GetFontMetrics(),
-                                       baseline_type);
-  line_box->AddChild(
-      builder.ToTextFragment(),
-      LogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
-      ellipsis_width_, 0);
+  LayoutUnit ellpisis_ascent;
+  DCHECK(ellipsis_font_data_);
+  if (ellipsis_font_data_) {
+    FontBaseline baseline_type = line_style_->GetFontBaseline();
+    NGLineHeightMetrics ellipsis_metrics(ellipsis_font_data_->GetFontMetrics(),
+                                         baseline_type);
+    ellpisis_ascent = ellipsis_metrics.ascent;
+  }
+  line_box->AddChild(builder.ToTextFragment(),
+                     LogicalOffset{ellipsis_inline_offset, -ellpisis_ascent},
+                     ellipsis_width_, 0);
   return ellipsis_inline_offset;
 }
 

@@ -31,13 +31,9 @@ feedstore::StreamSharedState MakeSharedState(int id_number);
 feedstore::StreamStructure MakeRemove(ContentId id);
 feedstore::StreamStructure MakeClearAll();
 feedstore::Content MakeContent(int id_number);
+feedstore::StreamSharedState MakeSharedState(int id_number);
 feedstore::DataOperation MakeOperation(feedstore::StreamStructure structure);
 feedstore::DataOperation MakeOperation(feedstore::Content content);
-feedstore::Record MakeRecord(feedstore::Content content);
-feedstore::Record MakeRecord(
-    feedstore::StreamStructureSet stream_structure_set);
-feedstore::Record MakeRecord(feedstore::StreamSharedState shared_state);
-feedstore::Record MakeRecord(feedstore::StreamData stream_data);
 
 // Returns data operations to create a typical stream:
 // Root

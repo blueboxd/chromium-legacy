@@ -397,12 +397,13 @@ const base::Feature kHappinessTrackingSurveysForDesktopSettingsPrivacy{
 // Hide CorsLegacyModeEnabled enterprise policy support. This feature and
 // the enterprise policy supporting code will be removed soon around m83.
 const base::Feature kHideCorsLegacyModeEnabledPolicySupport{
-    "HideCorsLegacyModeEnabledPolicySupport", base::FEATURE_ENABLED_BY_DEFAULT};
+    "HideCorsLegacyModeEnabledPolicySupport",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Hide CorsMitigationList enterprise policy support. This feature and
 // the enterprise policy supporting code will be removed soon around m83.
 const base::Feature kHideCorsMitigationListPolicySupport{
-    "HideCorsMitigationListPolicySupport", base::FEATURE_ENABLED_BY_DEFAULT};
+    "HideCorsMitigationListPolicySupport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with

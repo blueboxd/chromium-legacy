@@ -819,6 +819,7 @@
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
       'linux-annotator-rel': 'release_trybot',
+      'linux-autofill-assistant': 'autofill_assistant_release_trybot',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux-bfcache-rel': 'release_bot',
@@ -1366,6 +1367,10 @@
 
     'asan_lsan_release_trybot': [
       'asan', 'lsan', 'release_trybot',
+    ],
+
+    'autofill_assistant_release_trybot': [
+      'autofill_assistant_api', 'release_trybot',
     ],
 
     # Cast Linux takes very long in linking, possibly due to being on GCE
@@ -2238,6 +2243,10 @@
 
     'asan': {
       'gn_args': 'is_asan=true',
+    },
+
+    'autofill_assistant_api': {
+      'gn_args': 'enable_autofill_assistant_api=true',
     },
 
     'betty': {

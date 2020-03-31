@@ -5,7 +5,6 @@
 module apps.mojom;
 
 import "chrome/services/app_service/public/mojom/types.mojom";
-import "mojo/public/mojom/base/values.mojom";
 
 // An intermediary between M app consumers (e.g. app launcher UI, intent
 // pickers) and N app providers (also known as app platforms, e.g. Android
@@ -199,7 +198,8 @@ interface Subscriber {
   // the change to all subscribers.
   OnPreferredAppRemoved(string app_id, IntentFilter intent_filter);
 
-  InitializePreferredApps(mojo_base.mojom.Value preferred_apps);
+  // Initialize the |preferred_apps| in the subscribers from the app service.
+  InitializePreferredApps(array<PreferredApp> preferred_apps);
 };
 
 struct ConnectOptions {

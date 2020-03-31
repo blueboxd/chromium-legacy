@@ -567,9 +567,10 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
   EXPECT_EQ(E_INVALIDARG, root_obj->get_accDescription(bad_id, d2.Receive()));
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleAccValue) {
   AXNodeData root;
   root.id = 1;
+  root.role = ax::mojom::Role::kTextField;
   root.AddStringAttribute(ax::mojom::StringAttribute::kValue, "Value");
   Init(root);
 
@@ -6198,6 +6199,29 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_GetValue) {
           ->get_Value(bstr_value.Receive()));
   EXPECT_STREQ(L"test", bstr_value.Get());
   bstr_value.Reset();
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData child;
+  child.id = 2;
+  child.role = ax::mojom::Role::kSlider;
+  child.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 3.0f);
+  child.AddFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange, 1.0f);
+  child.AddFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange, 9.0f);
+  root.child_ids.push_back(child.id);
+
+  Init(root, child);
+
+  ScopedVariant value;
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IAccessibleValue>(GetRootAsAXNode()->children()[0])
+          ->get_currentValue(value.Receive()));
+  ASSERT_EQ(VT_R8, value.type());
+  EXPECT_DOUBLE_EQ(3.0, V_R8(value.ptr()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIValueProvider_SetValue) {

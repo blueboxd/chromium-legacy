@@ -198,6 +198,7 @@ void FinishFragmentation(const NGConstraintSpace& space,
   if (previous_break_token && !previous_break_token->IsBreakBefore()) {
     previously_consumed_block_size = previous_break_token->ConsumedBlockSize();
     sequence_number = previous_break_token->SequenceNumber() + 1;
+    builder->SetIsFirstForNode(false);
   }
   builder->SetSequenceNumber(sequence_number);
 

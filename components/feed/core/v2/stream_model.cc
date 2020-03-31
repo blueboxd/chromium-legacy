@@ -16,8 +16,8 @@
 
 namespace feed {
 namespace {
-bool HasClearAll(const std::vector<feedstore::StreamStructure>& structures) {
-  for (const feedstore::StreamStructure& data : structures) {
+bool HasClearAll(const feedstore::StreamData& stream_data) {
+  for (const feedstore::StreamStructure& data : stream_data.structures()) {
     if (data.operation() == feedstore::StreamStructure::CLEAR_ALL)
       return true;
   }
@@ -76,14 +76,12 @@ std::vector<std::string> StreamModel::GetSharedStateIds() const {
 void StreamModel::Update(
     std::unique_ptr<StreamModelUpdateRequest> update_request) {
   feedstore::StreamData& stream_data = update_request->stream_data;
-  std::vector<feedstore::StreamStructure>& stream_structures =
-      update_request->stream_structures;
-  if (HasClearAll(stream_structures)) {
+  if (HasClearAll(stream_data)) {
     shared_states_.clear();
   }
 
   // Update the feature tree.
-  for (const feedstore::StreamStructure& structure : stream_structures) {
+  for (const feedstore::StreamStructure& structure : stream_data.structures()) {
     base_feature_tree_.ApplyStreamStructure(structure);
   }
   for (feedstore::Content& content : update_request->content) {
@@ -106,18 +104,15 @@ void StreamModel::Update(
     }
   }
 
-  // Set next_structure_sequence_number_ when doing the initial load.
-  if (update_request->source ==
-      StreamModelUpdateRequest::Source::kInitialLoadFromStore) {
-    next_structure_sequence_number_ =
-        update_request->max_structure_sequence_number + 1;
-  }
-
   // TODO(harringtond): Some StreamData fields not yet used.
   //    next_action_id - do we need to load the model before uploading
   //         actions? If not, we probably will want to move this out of
   //         StreamData.
   //    content_id - probably just ignore for now
+
+  // TODO(harringtond): Figure out how to forward network updates to storage.
+  // We can either update through |observer_|, or as part of the load stream
+  // task.
 
   UpdateFlattenedTree();
 }
@@ -146,7 +141,6 @@ void StreamModel::ExecuteOperations(
   if (store_observer_) {
     StoreUpdate store_update;
     store_update.operations = std::move(operations);
-    store_update.sequence_number = next_structure_sequence_number_++;
     store_observer_->OnStoreChange(std::move(store_update));
   }
 
@@ -210,19 +204,6 @@ stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() {
 }
 const stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() const {
   return const_cast<StreamModel*>(this)->GetFinalFeatureTree();
-}
-
-std::string StreamModel::DumpStateForTesting() {
-  std::stringstream ss;
-  ss << "StreamModel{\n";
-  ss << "next_page_token='" << next_page_token_ << "'\n";
-  ss << "consistency_token='" << consistency_token_ << "'\n";
-  for (auto& entry : shared_states_) {
-    ss << "shared_state[" << entry.first << "]='" << entry.second.data << "'\n";
-  }
-  ss << GetFinalFeatureTree()->DumpStateForTesting();
-  ss << "}StreamModel\n";
-  return ss.str();
 }
 
 }  // namespace feed

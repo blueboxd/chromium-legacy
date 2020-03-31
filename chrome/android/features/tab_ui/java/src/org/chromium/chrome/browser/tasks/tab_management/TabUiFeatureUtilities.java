@@ -8,7 +8,6 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -72,7 +71,6 @@ public class TabUiFeatureUtilities {
                     ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_MEMORY_MB_PARAM, 2048);
 
     private static Boolean sTabManagementModuleSupportedForTesting;
-    private static Boolean sIsTabToGtsAnimationEnabled;
 
     /**
      * Set whether the tab management module is supported for testing.
@@ -159,22 +157,9 @@ public class TabUiFeatureUtilities {
     }
 
     /**
-     * Toggles whether the Tab-to-GTS animation is enabled for testing. Should be reset back to
-     * null after the test has finished.
-     */
-    @VisibleForTesting
-    public static void setIsTabToGtsAnimationEnabledForTesting(@Nullable Boolean enabled) {
-        sIsTabToGtsAnimationEnabled = enabled;
-    }
-
-    /**
      * @return Whether the Tab-to-Grid (and Grid-to-Tab) transition animation is enabled.
      */
     public static boolean isTabToGtsAnimationEnabled() {
-        if (sIsTabToGtsAnimationEnabled != null) {
-            Log.d(TAG, "IsTabToGtsAnimationEnabled forced to " + sIsTabToGtsAnimationEnabled);
-            return sIsTabToGtsAnimationEnabled;
-        }
         Log.d(TAG, "GTS.MinSdkVersion = " + ZOOMING_MIN_SDK.getValue());
         Log.d(TAG, "GTS.MinMemoryMB = " + ZOOMING_MIN_MEMORY.getValue());
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)

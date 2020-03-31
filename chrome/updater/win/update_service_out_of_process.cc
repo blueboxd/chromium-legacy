@@ -21,8 +21,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_bstr.h"
 #include "chrome/updater/server/win/updater_idl.h"
 
@@ -36,6 +38,16 @@ static constexpr base::TaskTraits kComClientTraits = {
 
 namespace updater {
 
+UpdaterObserverImpl::UpdaterObserverImpl(
+    Microsoft::WRL::ComPtr<IUpdater> updater,
+    UpdateService::Callback callback)
+    : com_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      updater_(updater),
+      callback_(std::move(callback)) {}
+
+UpdaterObserverImpl::~UpdaterObserverImpl() = default;
+
+// Called on the STA thread by the COM RPC runtime.
 HRESULT UpdaterObserverImpl::OnComplete(ICompleteStatus* status) {
   DCHECK(status);
 
@@ -46,6 +58,11 @@ HRESULT UpdaterObserverImpl::OnComplete(ICompleteStatus* status) {
 
   VLOG(2) << "UpdaterObserverImpl::OnComplete(" << code << ", " << message.Get()
           << ")";
+
+  com_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_),
+                                static_cast<UpdateService::Result>(code)));
+  updater_ = nullptr;
   return S_OK;
 }
 
@@ -55,21 +72,16 @@ UpdateServiceOutOfProcess::UpdateServiceOutOfProcess() {
   com_task_runner_ = base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits);
 }
 
-UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() = default;
 
 void UpdateServiceOutOfProcess::ModuleStop() {
-  VLOG(2) << "UpdateServiceOutOfProcess::ModuleStop";
+  VLOG(2) << __func__ << ": COM client is shutting down.";
 }
 
 void UpdateServiceOutOfProcess::RegisterApp(
     const RegistrationRequest& request,
     base::OnceCallback<void(const RegistrationResponse&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(sorin) the updater must be run with "--single-process" until
-  // crbug.com/1053729 is resolved.
   NOTREACHED();
 }
 
@@ -77,12 +89,19 @@ void UpdateServiceOutOfProcess::UpdateAll(StateChangeCallback state_update,
                                           Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(sorin) the updater must be run with "--single-process" until
-  // crbug.com/1053729 is resolved.
+  // Reposts the call to the COM task runner. Adapts |callback| so that
+  // the callback runs on the main sequence.
   com_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&UpdateServiceOutOfProcess::UpdateAllOnSTA,
-                                base::Unretained(this), state_update,
-                                std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(
+          &UpdateServiceOutOfProcess::UpdateAllOnSTA, this, state_update,
+          base::BindOnce(
+              [](scoped_refptr<base::SequencedTaskRunner> taskrunner,
+                 Callback callback, Result result) {
+                taskrunner->PostTask(
+                    FROM_HERE, base::BindOnce(std::move(callback), result));
+              },
+              base::SequencedTaskRunnerHandle::Get(), std::move(callback))));
 }
 
 void UpdateServiceOutOfProcess::Update(const std::string& app_id,
@@ -90,9 +109,6 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
                                        StateChangeCallback state_update,
                                        Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(sorin) the updater must be run with "--single-process" until
-  // crbug.com/1053729 is resolved.
   NOTREACHED();
 }
 
@@ -121,15 +137,21 @@ void UpdateServiceOutOfProcess::UpdateAllOnSTA(StateChangeCallback state_update,
     return;
   }
 
-  auto observer = Microsoft::WRL::Make<UpdaterObserverImpl>();
+  // The COM RPC takes ownership of the |observer| and owns a reference to
+  // the updater object as well. As long as the |observer| retains this
+  // reference to the updater object, then the object is going to stay alive.
+  // The |observer| can drop its reference to the updater object after handling
+  // the last server callback, then the object model is torn down, and finally,
+  // the execution flow returns back into the App object once the completion
+  // callback is posted.
+  auto observer =
+      Microsoft::WRL::Make<UpdaterObserverImpl>(updater, std::move(callback));
   hr = updater->UpdateAll(observer.Get());
   if (FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::UpdateAll" << std::hex << hr;
     std::move(callback).Run(static_cast<Result>(hr));
     return;
   }
-
-  std::move(callback).Run(static_cast<Result>(S_OK));
 }
 
 }  // namespace updater

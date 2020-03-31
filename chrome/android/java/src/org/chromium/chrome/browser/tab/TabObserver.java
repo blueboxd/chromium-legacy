@@ -165,14 +165,6 @@ public interface TabObserver {
      */
     void onContextMenuShown(Tab tab, ContextMenu menu);
 
-    /**
-     * Called when the contextual action bar's visibility has changed (i.e. the widget shown
-     * when you can copy/paste text after long press).
-     * @param tab The notifying {@link Tab}.
-     * @param visible Whether the contextual action bar is now visible.
-     */
-    void onContextualActionBarVisibilityChanged(Tab tab, boolean visible);
-
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
     /**

@@ -399,6 +399,8 @@ void ProfileAttributesStorage::RecordProfilesState() {
                            profile_metrics::StateSuffix::kActiveMultiProfile);
         break;
       case MultiProfileUserType::kLatentMultiProfile: {
+        RecordProfileState(entry,
+                           profile_metrics::StateSuffix::kLatentMultiProfile);
         if (ProfileMetrics::IsProfileActive(entry)) {
           RecordProfileState(
               entry, profile_metrics::StateSuffix::kLatentMultiProfileActive);

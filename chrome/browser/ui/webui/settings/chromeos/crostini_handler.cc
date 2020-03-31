@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -135,6 +136,10 @@ void CrostiniHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "resizeCrostiniDisk",
       base::BindRepeating(&CrostiniHandler::HandleResizeCrostiniDisk,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "checkCrostiniMicSharingStatus",
+      base::BindRepeating(&CrostiniHandler::HandleCheckCrostiniMicSharingStatus,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -526,6 +531,20 @@ void CrostiniHandler::ResolveResizeCrostiniDiskCallback(
     bool succeeded) {
   ResolveJavascriptCallback(base::Value(std::move(callback_id)),
                             base::Value(succeeded));
+}
+
+void CrostiniHandler::HandleCheckCrostiniMicSharingStatus(
+    const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  bool proposed_value = args->GetList()[1].GetBool();
+  bool requiresRestart =
+      crostini::IsCrostiniRunning(profile_) &&
+      profile_->GetPrefs()->GetBoolean(
+          crostini::prefs::kCrostiniMicSharingAtLastLaunch) != proposed_value;
+
+  ResolveJavascriptCallback(base::Value(std::move(callback_id)),
+                            base::Value(requiresRestart));
 }
 
 }  // namespace settings

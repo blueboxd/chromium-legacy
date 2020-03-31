@@ -791,16 +791,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     /**
-     * Called when the contextual ActionBar is shown or hidden.
-     * @param show {@code true} when the ActionBar is shown; {@code false} otherwise.
-     */
-    public void notifyContextualActionBarVisibilityChanged(boolean show) {
-        for (TabObserver observer : mObservers) {
-            observer.onContextualActionBarVisibilityChanged(this, show);
-        }
-    }
-
-    /**
      * Initializes {@link Tab} with {@code webContents}.  If {@code webContents} is {@code null}
      * a new {@link WebContents} will be created for this {@link Tab}.
      * @param parent The tab that caused this tab to be opened.

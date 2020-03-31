@@ -44,6 +44,17 @@ namespace media {
 
 namespace {
 
+enum v4l2_buf_type ToSingleV4L2Planar(enum v4l2_buf_type type) {
+  switch (type) {
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
+      return V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
+      return V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    default:
+      return type;
+  }
+}
+
 base::Optional<gfx::GpuMemoryBufferHandle> CreateHandle(
     const VideoFrame* frame) {
   gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBufferHandle(frame);
@@ -82,15 +93,6 @@ void FillV4L2BufferByGpuMemoryBufferHandle(
       buffer->SetPlaneBytesUsed(i, planes[i].size);
     }
   }
-}
-
-struct v4l2_rect ToV4L2Rect(const gfx::Rect& visible_rect) {
-  struct v4l2_rect rect;
-  rect.left = base::checked_cast<__u32>(visible_rect.x());
-  rect.top = base::checked_cast<__u32>(visible_rect.y());
-  rect.width = base::checked_cast<__u32>(visible_rect.width());
-  rect.height = base::checked_cast<__u32>(visible_rect.height());
-  return rect;
 }
 
 bool AllocateV4L2Buffers(V4L2Queue* queue,
@@ -572,6 +574,33 @@ void V4L2ImageProcessorBackend::ProcessJobsTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
   while (!input_job_queue_.empty()) {
+    if (!input_queue_->IsStreaming()) {
+      const VideoFrame& input_frame =
+          *(input_job_queue_.front()->input_frame.get());
+      const gfx::Size input_buffer_size(input_frame.stride(0),
+                                        input_frame.coded_size().height());
+      if (!ReconfigureV4L2Format(input_buffer_size, input_frame.visible_rect(),
+                                 V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE)) {
+        NotifyError();
+        return;
+      }
+    }
+
+    if (input_job_queue_.front()
+            ->output_frame &&  // output_frame is nullptr in ALLOCATE mode.
+        !output_queue_->IsStreaming()) {
+      const VideoFrame& output_frame =
+          *(input_job_queue_.front()->output_frame.get());
+      const gfx::Size output_buffer_size(output_frame.stride(0),
+                                         output_frame.coded_size().height());
+      if (!ReconfigureV4L2Format(output_buffer_size,
+                                 output_frame.visible_rect(),
+                                 V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)) {
+        NotifyError();
+        return;
+      }
+    }
+
     // We need one input and one output buffer to schedule the job
     auto input_buffer = input_queue_->GetFreeBuffer();
     auto output_buffer = output_queue_->GetFreeBuffer();
@@ -592,6 +621,85 @@ void V4L2ImageProcessorBackend::Reset() {
 
   input_job_queue_ = {};
   running_jobs_ = {};
+}
+
+bool V4L2ImageProcessorBackend::ApplyCrop(const gfx::Rect& visible_rect,
+                                          enum v4l2_buf_type type) {
+  DCHECK(V4L2_TYPE_IS_MULTIPLANAR(type));
+  struct v4l2_rect rect {};
+  rect.left = visible_rect.x();
+  rect.top = visible_rect.y();
+  rect.width = visible_rect.width();
+  rect.height = visible_rect.height();
+
+  struct v4l2_selection selection_arg {};
+  // Multiplanar buffer types are messed up in S_SELECTION API, so all drivers
+  // don't necessarily work with MPLANE types. This issue is resolved with
+  // kernel 4.13. As we use kernel < 4.13 today, we use single planar buffer
+  // types. See
+  // https://linuxtv.org/downloads/v4l-dvb-apis/uapi/v4l/vidioc-g-selection.html.
+  selection_arg.type = ToSingleV4L2Planar(type);
+  selection_arg.target =
+      V4L2_TYPE_IS_OUTPUT(type) ? V4L2_SEL_TGT_CROP : V4L2_SEL_TGT_COMPOSE;
+
+  selection_arg.r = rect;
+  if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) == 0) {
+    DVLOGF(2) << "VIDIOC_S_SELECTION is supported";
+    rect = selection_arg.r;
+  } else {
+    DVLOGF(2) << "Fallback to VIDIOC_S/G_CROP";
+    struct v4l2_crop crop {};
+    crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    crop.c = rect;
+    if (device_->Ioctl(VIDIOC_S_CROP, &crop) != 0) {
+      VPLOGF(1) << "VIDIOC_S_CROP failed: ";
+      return false;
+    }
+    rect = crop.c;
+  }
+
+  const gfx::Rect adjusted_visible_rect(rect.left, rect.top, rect.width,
+                                        rect.height);
+  if (visible_rect != adjusted_visible_rect) {
+    VLOGF(1) << "Unsupported visible rectangle: " << visible_rect.ToString()
+             << ", the rectangle adjusted by the driver: "
+             << adjusted_visible_rect.ToString();
+    return false;
+  }
+  return true;
+}
+
+bool V4L2ImageProcessorBackend::ReconfigureV4L2Format(
+    const gfx::Size& size,
+    const gfx::Rect& visible_rect,
+    enum v4l2_buf_type type) {
+  v4l2_format format{};
+  format.type = type;
+  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_G_FMT";
+    return false;
+  }
+
+  if (static_cast<int>(format.fmt.pix_mp.width) == size.width() &&
+      static_cast<int>(format.fmt.pix_mp.height) == size.height()) {
+    return true;
+  }
+  format.fmt.pix_mp.width = size.width();
+  format.fmt.pix_mp.height = size.height();
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_S_FMT";
+    return false;
+  }
+  if (!ApplyCrop(visible_rect, type)) {
+    return false;
+  }
+
+  auto queue = device_->GetQueue(type);
+  const size_t num_buffers = queue->AllocatedBuffersCount();
+  const v4l2_memory memory_type = queue->GetMemoryType();
+  DCHECK_GT(num_buffers, 0u);
+  return queue->DeallocateBuffers() &&
+         AllocateV4L2Buffers(queue.get(), num_buffers, memory_type);
 }
 
 bool V4L2ImageProcessorBackend::CreateInputBuffers() {
@@ -621,20 +729,9 @@ bool V4L2ImageProcessorBackend::CreateInputBuffers() {
   if (device_->Ioctl(VIDIOC_S_CTRL, &control) != 0)
     DVLOGF(4) << "V4L2_CID_ALPHA_COMPONENT is not supported";
 
-  struct v4l2_rect visible_rect = ToV4L2Rect(input_config_.visible_rect);
-
-  struct v4l2_selection selection_arg;
-  memset(&selection_arg, 0, sizeof(selection_arg));
-  selection_arg.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
-  selection_arg.target = V4L2_SEL_TGT_CROP;
-  selection_arg.r = visible_rect;
-  if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) != 0) {
-    VLOGF(2) << "Fallback to VIDIOC_S_CROP for input buffers.";
-    struct v4l2_crop crop;
-    memset(&crop, 0, sizeof(crop));
-    crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    crop.c = visible_rect;
-    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+  if (!ApplyCrop(input_config_.visible_rect, V4L2_BUF_TYPE_VIDEO_OUTPUT)) {
+    VLOGF(2) << "Failed to apply crop to input queue";
+    return false;
   }
 
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
@@ -647,19 +744,8 @@ bool V4L2ImageProcessorBackend::CreateOutputBuffers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
   DCHECK_EQ(output_queue_, nullptr);
 
-  struct v4l2_rect visible_rect = ToV4L2Rect(output_config_.visible_rect);
-  struct v4l2_selection selection_arg;
-  memset(&selection_arg, 0, sizeof(selection_arg));
-  selection_arg.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  selection_arg.target = V4L2_SEL_TGT_COMPOSE;
-  selection_arg.r = visible_rect;
-  if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) != 0) {
-    VLOGF(2) << "Fallback to VIDIOC_S_CROP for output buffers.";
-    struct v4l2_crop crop;
-    memset(&crop, 0, sizeof(crop));
-    crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    crop.c = visible_rect;
-    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+  if (!ApplyCrop(output_config_.visible_rect, V4L2_BUF_TYPE_VIDEO_CAPTURE)) {
+    return false;
   }
 
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);

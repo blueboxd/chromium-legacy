@@ -33,6 +33,7 @@ extern const char kCrostiniLastLaunchTimeWindowStart[];
 extern const char kCrostiniLastDiskSize[];
 extern const char kCrostiniPortForwarding[];
 extern const char kCrostiniMicSharing[];
+extern const char kCrostiniMicSharingAtLastLaunch[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

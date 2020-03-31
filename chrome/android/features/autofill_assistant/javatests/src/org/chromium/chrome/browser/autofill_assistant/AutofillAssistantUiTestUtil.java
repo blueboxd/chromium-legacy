@@ -112,7 +112,7 @@ class AutofillAssistantUiTestUtil {
     }
 
     /** Checks that a text view has a specific maximum number of lines to display. */
-    public static TypeSafeMatcher<View> isTextMaxLines(int maxLines) {
+    static TypeSafeMatcher<View> isTextMaxLines(int maxLines) {
         return new TypeSafeMatcher<View>() {
             @Override
             protected boolean matchesSafely(View item) {
@@ -134,7 +134,7 @@ class AutofillAssistantUiTestUtil {
      * explicitly set the text style, *NOT* for text spans! @see {@link #hasTypefaceSpan(int, int,
      * int)}
      */
-    public static TypeSafeMatcher<View> hasTypefaceStyle(/*@Typeface.Style*/ int style) {
+    static TypeSafeMatcher<View> hasTypefaceStyle(/*@Typeface.Style*/ int style) {
         return new TypeSafeMatcher<View>() {
             @Override
             protected boolean matchesSafely(View item) {
@@ -162,7 +162,7 @@ class AutofillAssistantUiTestUtil {
      * @param style The style to check for
      * @return A matcher that returns true if the view satisfies the condition.
      */
-    public static TypeSafeMatcher<View> hasTypefaceSpan(
+    static TypeSafeMatcher<View> hasTypefaceSpan(
             int start, int end, /*@Typeface.Style*/ int style) {
         return new TypeSafeMatcher<View>() {
             @Override
@@ -195,7 +195,7 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static Matcher<View> isImportantForAccessibility(int mode) {
+    static Matcher<View> isImportantForAccessibility(int mode) {
         return new TypeSafeMatcher<View>() {
             @Override
             protected boolean matchesSafely(View item) {
@@ -209,7 +209,7 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static Matcher<View> hasTintColor(final int colorResId) {
+    static Matcher<View> hasTintColor(final int colorResId) {
         return new BoundedMatcher<View, ImageView>(ImageView.class) {
             private Context mContext;
 
@@ -242,7 +242,7 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static Matcher<View> isNextAfterSibling(final Matcher<View> siblingMatcher) {
+    static Matcher<View> isNextAfterSibling(final Matcher<View> siblingMatcher) {
         Preconditions.checkNotNull(siblingMatcher);
         return new TypeSafeMatcher<View>() {
             @Override
@@ -271,7 +271,7 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static Matcher<View> withParentIndex(int parentIndex) {
+    static Matcher<View> withParentIndex(int parentIndex) {
         return new TypeSafeMatcher<View>() {
             @Override
             public void describeTo(Description description) {
@@ -291,7 +291,24 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static ViewAction openTextLink(String textLink) {
+    static Matcher<View> withMinimumSize(int minWidthInPixels, int minHeightInPixels) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                return view.getWidth() >= minWidthInPixels && view.getHeight() >= minHeightInPixels
+                        && view.getMinimumWidth() == minWidthInPixels
+                        && view.getMinimumHeight() == minHeightInPixels;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(
+                        "Width >= " + minWidthInPixels + " and height >= " + minHeightInPixels);
+            }
+        };
+    }
+
+    static ViewAction openTextLink(String textLink) {
         return new ViewAction() {
             @Override
             public Matcher<View> getConstraints() {

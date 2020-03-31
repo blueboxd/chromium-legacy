@@ -18,4 +18,3 @@ rootWebArea
 ++++++genericContainer offscreen
 ++++++++staticText offscreen name='doneActivating'
 ++++++++++inlineTextBox offscreen name='doneActivating'
-

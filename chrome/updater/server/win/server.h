@@ -14,6 +14,11 @@
 
 namespace updater {
 
+// TODO(crbug.com/1065712): these Impl classes don't have to be
+// visible in the updater namespace. Additionally, there is some code
+// duplication for the registration and unregistration code in both server and
+// service_main compilation units.
+//
 // This class implements the ICompleteStatus interface and exposes it as a COM
 // object.
 class CompleteStatusImpl

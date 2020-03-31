@@ -196,18 +196,21 @@ class NGInlineItemsBuilderTemplate {
   // LayoutObject.
   void Append(NGInlineItem::NGInlineItemType,
               UChar,
-              LayoutObject*);
+              LayoutObject*,
+              bool is_first_for_node);
 
   void AppendCollapseWhitespace(const StringView,
                                 const ComputedStyle*,
-                                LayoutText*);
+                                LayoutText*,
+                                bool is_first_for_node = true);
   void AppendPreserveWhitespace(const String&,
                                 const ComputedStyle*,
                                 LayoutText*);
   void AppendPreserveNewline(const String&, const ComputedStyle*, LayoutText*);
 
-  void AppendForcedBreakCollapseWhitespace(LayoutObject*);
-  void AppendForcedBreak(LayoutObject*);
+  void AppendForcedBreakCollapseWhitespace(LayoutObject*,
+                                           bool is_first_for_node);
+  void AppendForcedBreak(LayoutObject*, bool is_first_for_node);
 
   void RemoveTrailingCollapsibleSpaceIfExists();
   void RemoveTrailingCollapsibleSpace(NGInlineItem*);
@@ -216,10 +219,12 @@ class NGInlineItemsBuilderTemplate {
   void RestoreTrailingCollapsibleSpace(NGInlineItem*);
 
   void AppendTextItem(const StringView,
-                      LayoutText* layout_object);
+                      LayoutText* layout_object,
+                      bool is_first_for_node);
   void AppendTextItem(NGInlineItem::NGInlineItemType type,
                       const StringView,
-                      LayoutText* layout_object);
+                      LayoutText* layout_object,
+                      bool is_first_for_node);
   void AppendEmptyTextItem(LayoutText* layout_object);
 
   void AppendGeneratedBreakOpportunity(LayoutObject*);

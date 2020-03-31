@@ -742,16 +742,23 @@ void AppInstall::FirstTaskRun() {
           splash_screen_.get(), base::BindOnce(&AppInstall::SetupDone, this)));
 }
 
+// Updates the prefs if the setup is successful, then continue installing
+// the application if --appid is specified on the command line.
 void AppInstall::SetupDone(int result) {
-  const auto app_id =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kAppIdSwitch);
-  if (result != 0 || app_id.empty()) {
+  if (result != 0) {
     Shutdown(result);
     return;
   }
 
   base::MakeRefCounted<PersistedData>(config_->GetPrefService())
       ->SetProductVersion(kUpdaterAppId, base::Version(UPDATER_VERSION_STRING));
+
+  const auto app_id =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kAppIdSwitch);
+  if (app_id.empty()) {
+    Shutdown(result);
+    return;
+  }
 
   app_install_controller_ = base::MakeRefCounted<InstallAppController>(config_);
   app_install_controller_->InstallApp(

@@ -213,6 +213,13 @@ Page::Page(PageClients& page_clients)
       web_text_autosizer_page_info_({0, 0, 1.f}) {
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
+
+  // Try to dereference the scrollbar theme. This is here to ensure tests are
+  // correctly setting up their platform theme or mocking scrollbars. On
+  // Android, unit tests run without a ThemeEngine and thus must set a mock
+  // ScrollbarTheme, if they don't this call will crash. To set a mock theme,
+  // see ScopedMockOverlayScrollbars or WebScopedMockScrollbars.
+  DCHECK(&GetScrollbarTheme());
 }
 
 Page::~Page() {

@@ -34,8 +34,10 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Tests for {@link BottomBarViewBinder}. */
+@SuppressWarnings("ConstantConditions")
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class BottomBarViewBinderTest extends DummyUiActivityTestCase {
+    @SuppressWarnings("unused")
     private BottomBarCoordinator mBottomBarCoordinator;
     private TabLayout mTabLayout;
     private ViewGroup mParentView;
@@ -54,8 +56,8 @@ public class BottomBarViewBinderTest extends DummyUiActivityTestCase {
                     new BottomBarCoordinator(getActivity(), mParentView, mPropertyModel);
         });
 
-        mBottomBarView = (BottomBarView) mParentView.findViewById(R.id.ss_bottom_bar);
-        mTabLayout = (TabLayout) mBottomBarView.findViewById(R.id.bottom_tab_layout);
+        mBottomBarView = mParentView.findViewById(R.id.ss_bottom_bar);
+        mTabLayout = mBottomBarView.findViewById(R.id.bottom_tab_layout);
     }
 
     @Test

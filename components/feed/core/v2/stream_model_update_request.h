@@ -5,9 +5,7 @@
 #ifndef COMPONENTS_FEED_CORE_V2_STREAM_MODEL_UPDATE_REQUEST_H_
 #define COMPONENTS_FEED_CORE_V2_STREAM_MODEL_UPDATE_REQUEST_H_
 
-#include <memory>
 #include <vector>
-
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
@@ -46,19 +44,15 @@ struct StreamModelUpdateRequest {
   // they were received.
   std::vector<feedstore::StreamSharedState> shared_states;
 
-  std::vector<feedstore::StreamStructure> stream_structures;
-
   // If this data originates from the network, this is the server-reported time
   // at which the request was fulfilled.
   // TODO(harringtond): Use this or remove it.
-  int64_t server_response_time = 0;
+  int64_t server_response_time;
 
   // If this data originates from the network, this is the time taken by the
   // server to produce the response.
   // TODO(harringtond): Use this or remove it.
   base::TimeDelta response_time;
-
-  int32_t max_structure_sequence_number = 0;
 };
 
 base::Optional<feedstore::DataOperation> TranslateDataOperation(

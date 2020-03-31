@@ -294,6 +294,11 @@
           'shards': 1,
         },
       },
+      'linux-autofill-assistant': {
+        'args': [
+          '--release',
+        ],
+      },
       'linux-bfcache-rel': {
         'args': [
           '--additional-driver-flag=--enable-features=BackForwardCache',

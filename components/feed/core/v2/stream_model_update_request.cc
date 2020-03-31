@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/stream_model_update_request.h"
-
-#include <utility>
-
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/data_operation.pb.h"
@@ -225,8 +222,8 @@ std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
       continue;
 
     if (operation->has_stream_structure) {
-      result->stream_structures.push_back(
-          std::move(operation->stream_structure));
+      *result->stream_data.add_structures() =
+          std::move(operation->stream_structure);
     }
 
     if (operation->has_content)
@@ -234,13 +231,6 @@ std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
 
     if (operation->has_shared_state)
       result->shared_states.push_back(std::move(operation->shared_state));
-  }
-
-  // TODO(harringtond): If there's more than one shared state, record some
-  // sort of error.
-  if (!result->shared_states.empty()) {
-    *result->stream_data.mutable_shared_state_id() =
-        result->shared_states.front().content_id();
   }
 
   result->server_response_time =

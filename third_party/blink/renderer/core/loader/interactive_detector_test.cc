@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
@@ -40,7 +41,8 @@ int NetworkActivityCheckerForTest::GetActiveConnections() {
   return active_connections_;
 }
 
-class InteractiveDetectorTest : public testing::Test {
+class InteractiveDetectorTest : public testing::Test,
+                                public ScopedMockOverlayScrollbars {
  public:
   InteractiveDetectorTest() {
     platform_->AdvanceClockSeconds(1);

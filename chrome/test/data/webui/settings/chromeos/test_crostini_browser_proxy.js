@@ -6,20 +6,15 @@
 class TestCrostiniBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'requestCrostiniInstallerView',
-      'requestRemoveCrostini',
-      'getCrostiniSharedPathsDisplayText',
-      'getCrostiniSharedUsbDevices',
-      'setCrostiniUsbDeviceShared',
-      'removeCrostiniSharedPath',
-      'exportCrostiniContainer',
-      'importCrostiniContainer',
+      'requestCrostiniInstallerView', 'requestRemoveCrostini',
+      'getCrostiniSharedPathsDisplayText', 'getCrostiniSharedUsbDevices',
+      'setCrostiniUsbDeviceShared', 'removeCrostiniSharedPath',
+      'exportCrostiniContainer', 'importCrostiniContainer',
       'requestCrostiniContainerUpgradeView',
       'requestCrostiniUpgraderDialogStatus',
-      'requestCrostiniContainerUpgradeAvailable',
-      'addCrostiniPortForward',
-      'getCrostiniDiskInfo',
-      'resizeCrostiniDisk',
+      'requestCrostiniContainerUpgradeAvailable', 'addCrostiniPortForward',
+      'getCrostiniDiskInfo', 'resizeCrostiniDisk',
+      'checkCrostiniMicSharingStatus'
     ]);
     this.sharedUsbDevices = [];
     this.removeSharedPathResult = true;
@@ -129,5 +124,11 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   resizeCrostiniDisk(vmName, newSizeBytes) {
     this.methodCalled('resizeCrostiniDisk', vmName, newSizeBytes);
     return this.getNewPromiseFor('resizeCrostiniDisk');
+  }
+
+  /** @override */
+  checkCrostiniMicSharingStatus(proposedValue) {
+    this.methodCalled('checkCrostiniMicSharingStatus', proposedValue);
+    return Promise.resolve(!proposedValue);
   }
 }

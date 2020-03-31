@@ -44,11 +44,11 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Unit tests for the {@link ChromeActionModeCallback}.
+ * Unit tests for the {@link ChromeActionModeHandler}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class ChromeActionModeCallbackTest {
+public class ChromeActionModeHandlerTest {
     @Mock
     private TabImpl mTab;
     @Mock
@@ -58,9 +58,9 @@ public class ChromeActionModeCallbackTest {
     @Mock
     private Menu mMenu;
 
-    private class TestChromeActionModeCallback extends ChromeActionModeCallback {
+    private class TestChromeActionModeCallback extends ChromeActionModeHandler.ActionModeCallback {
         public TestChromeActionModeCallback(Tab tab, ActionModeCallbackHelper helper) {
-            super(tab, null);
+            super(tab, null, visible -> {});
         }
 
         @Override

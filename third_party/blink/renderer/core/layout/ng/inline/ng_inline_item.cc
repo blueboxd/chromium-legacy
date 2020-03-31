@@ -60,7 +60,8 @@ bool IsInlineBoxEndEmpty(const ComputedStyle& style,
 NGInlineItem::NGInlineItem(NGInlineItemType type,
                            unsigned start,
                            unsigned end,
-                           LayoutObject* layout_object)
+                           LayoutObject* layout_object,
+                           bool is_first_for_node)
     : start_offset_(start),
       end_offset_(end),
       layout_object_(layout_object),
@@ -74,7 +75,8 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       end_collapse_type_(kNotCollapsible),
       is_end_collapsible_newline_(false),
       is_symbol_marker_(false),
-      is_generated_for_line_break_(false) {
+      is_generated_for_line_break_(false),
+      is_first_for_node_(is_first_for_node) {
   DCHECK_GE(end, start);
   ComputeBoxProperties();
 }
@@ -97,7 +99,8 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
       end_collapse_type_(other.end_collapse_type_),
       is_end_collapsible_newline_(other.is_end_collapsible_newline_),
       is_symbol_marker_(other.is_symbol_marker_),
-      is_generated_for_line_break_(other.is_generated_for_line_break_) {
+      is_generated_for_line_break_(other.is_generated_for_line_break_),
+      is_first_for_node_(other.is_first_for_node_) {
   DCHECK_GE(end, start);
 }
 
@@ -197,6 +200,7 @@ void NGInlineItem::Split(Vector<NGInlineItem>& items,
   items.insert(index + 1, items[index]);
   items[index].end_offset_ = offset;
   items[index + 1].start_offset_ = offset;
+  items[index + 1].is_first_for_node_ = false;
 }
 
 }  // namespace blink

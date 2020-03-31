@@ -55,6 +55,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
   is_generated_text_or_math_fraction_ =
       source.is_generated_text_or_math_fraction_;
   ink_overflow_computed_ = false;
+  is_first_for_node_ = source.is_first_for_node_;
 }
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
@@ -67,6 +68,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
       static_cast<unsigned>(builder->ResolvedDirection());
   is_generated_text_or_math_fraction_ = builder->IsGeneratedText();
   ink_overflow_computed_ = false;
+  is_first_for_node_ = builder->is_first_for_node_;
 }
 
 LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(

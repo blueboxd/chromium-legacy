@@ -99,6 +99,7 @@ luci.list_view(
         'try/gpu-try-mac-amd-retina-dbg',
         'try/gpu-try-mac-intel-dbg',
         'try/linux-angle-rel',
+        'try/linux-autofill-assistant',
         'try/linux-blink-heap-concurrent-marking-tsan-rel',
         'try/linux-blink-heap-verification-try',
         'try/linux-chromeos-rel',

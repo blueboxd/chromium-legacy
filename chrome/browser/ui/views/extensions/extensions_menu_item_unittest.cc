@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
@@ -84,7 +85,11 @@ TEST_F(ExtensionsMenuItemViewTest, UpdatesToDisplayCorrectActionTitle) {
 }
 
 TEST_F(ExtensionsMenuItemViewTest, NotifyClickExecutesAction) {
+  base::UserActionTester user_action_tester;
+  constexpr char kActivatedUserAction[] =
+      "Extensions.Toolbar.ExtensionActivatedFromMenu";
   EXPECT_EQ(0, controller_->execute_action_count());
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kActivatedUserAction));
 
   primary_button()->SetBounds(0, 0, 100, 100);
   ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED,
@@ -94,6 +99,7 @@ TEST_F(ExtensionsMenuItemViewTest, NotifyClickExecutesAction) {
   primary_button()->button_controller()->OnMouseReleased(click_event);
 
   EXPECT_EQ(1, controller_->execute_action_count());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kActivatedUserAction));
 }
 
 TEST_F(ExtensionsMenuItemViewTest, UpdatesToDisplayTooltip) {

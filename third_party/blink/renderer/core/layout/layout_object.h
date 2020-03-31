@@ -445,13 +445,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
   }
 
-  void AssertClearedPaintInvalidationFlags() const {
-    if (PaintInvalidationStateIsDirty() &&
-        !PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
-      ShowLayoutTreeForThis();
-      NOTREACHED();
-    }
-  }
+  void AssertClearedPaintInvalidationFlags() const;
 
   void AssertSubtreeClearedPaintInvalidationFlags() const {
     for (const LayoutObject* layout_object = this; layout_object;

@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/updater/server/win/updater_idl.h"
@@ -25,14 +25,24 @@ enum class Error;
 
 namespace updater {
 
+// There are two threads running the code in this module. The main sequence is
+// bound to one thread, all the COM calls, inbound and outbound occur on the
+// second thread which serializes the tasks and the invocations originating
+// in the COM RPC runtime, which arrive sequentially but they are not sequenced
+// through the task runner.
+//
 // This class implements the IUpdaterObserver interface and exposes it as a COM
-// object.
+// object. The class has thread-affinity for the STA thread. However, its
+// functions are invoked directly by COM RPC, and they are not sequenced through
+// the thread task runner. This means that the usual mechanisms that check for
+// the correct sequence are not going to work for this class.
 class UpdaterObserverImpl
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
           IUpdaterObserver> {
  public:
-  UpdaterObserverImpl() = default;
+  UpdaterObserverImpl(Microsoft::WRL::ComPtr<IUpdater> updater,
+                      UpdateService::Callback callback);
   UpdaterObserverImpl(const UpdaterObserverImpl&) = delete;
   UpdaterObserverImpl& operator=(const UpdaterObserverImpl&) = delete;
 
@@ -40,10 +50,20 @@ class UpdaterObserverImpl
   IFACEMETHODIMP OnComplete(ICompleteStatus* status) override;
 
  private:
-  ~UpdaterObserverImpl() override = default;
+  ~UpdaterObserverImpl() override;
+
+  // Bound to the STA thread.
+  scoped_refptr<base::SequencedTaskRunner> com_task_runner_;
+
+  // Keeps a reference of the updater object alive, while this object is
+  // owned by the COM RPC runtime.
+  Microsoft::WRL::ComPtr<IUpdater> updater_;
+
+  // Called by IUpdaterObserver::OnComplete when the COM RPC call is done.
+  UpdateService::Callback callback_;
 };
 
-// All functions and callbacks must be called on the same sequence.
+// All public functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
   UpdateServiceOutOfProcess();
@@ -62,12 +82,16 @@ class UpdateServiceOutOfProcess : public UpdateService {
  private:
   ~UpdateServiceOutOfProcess() override;
 
+  // Runs on the |com_task_runner_|.
   void UpdateAllOnSTA(StateChangeCallback state_update, Callback callback);
 
   static void ModuleStop();
 
+  // Bound to the main sequence.
   SEQUENCE_CHECKER(sequence_checker_);
 
+  // Runs the tasks which involve outbound COM calls and inbound COM callbacks.
+  // This task runner is thread-affine with the COM STA.
   scoped_refptr<base::SingleThreadTaskRunner> com_task_runner_;
 };
 

@@ -47,6 +47,9 @@ class CORE_EXPORT NGFragmentBuilder {
 
   void SetIsHiddenForPaint(bool value) { is_hidden_for_paint_ = value; }
 
+  // Specify whether this will be the first fragment generated for the node.
+  void SetIsFirstForNode(bool is_first) { is_first_for_node_ = is_first; }
+
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
 
  protected:
@@ -80,6 +83,7 @@ class CORE_EXPORT NGFragmentBuilder {
   LayoutObject* layout_object_ = nullptr;
   scoped_refptr<NGBreakToken> break_token_;
   bool is_hidden_for_paint_ = false;
+  bool is_first_for_node_ = true;
 
   friend class NGPhysicalFragment;
 };

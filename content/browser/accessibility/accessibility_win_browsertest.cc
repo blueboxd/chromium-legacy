@@ -4551,4 +4551,56 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestOffsetsOfSelectionAll) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCurrentValue) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <input type="range" min=1 max=10 value=7>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the IAccessible interface for the document node.
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+
+  // The document should have one child, a slider.
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  ASSERT_EQ(1u, document_children.size());
+  Microsoft::WRL::ComPtr<IAccessible2> section;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      &section));
+  std::vector<base::win::ScopedVariant> section_children =
+      GetAllAccessibleChildren(section.Get());
+  Microsoft::WRL::ComPtr<IAccessible2> slider;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(section.Get(), section_children[0].AsInput())
+          .Get(),
+      &slider));
+  LONG slider_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(slider->role(&slider_role));
+  ASSERT_EQ(ROLE_SYSTEM_SLIDER, slider_role);
+  Microsoft::WRL::ComPtr<IAccessibleValue> slider_iavalue;
+  slider.As(&slider_iavalue);
+  base::win::ScopedVariant slider_value;
+  slider_iavalue->get_currentValue(slider_value.Receive());
+  EXPECT_EQ(VT_R8, slider_value.type());
+  EXPECT_DOUBLE_EQ(7.0, V_R8(slider_value.ptr()));
+
+  // Call setCurrentValue on the slider, wait for the value changed event.
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::VALUE_CHANGED);
+  base::win::ScopedVariant new_value(5.0);
+  ASSERT_HRESULT_SUCCEEDED(slider_iavalue->setCurrentValue(new_value));
+  waiter.WaitForNotification();
+
+  // The value should now be 5.
+  slider_iavalue->get_currentValue(slider_value.Receive());
+  EXPECT_EQ(VT_R8, slider_value.type());
+  EXPECT_DOUBLE_EQ(5.0, V_R8(slider_value.ptr()));
+}
+
 }  // namespace content

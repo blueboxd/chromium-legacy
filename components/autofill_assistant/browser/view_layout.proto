@@ -139,6 +139,12 @@ message ViewLayoutParamsProto {
 
   // A bit-wise OR of the desired |Gravity| values.
   optional int32 layout_gravity = 7;
+
+  // The minimum width of the view, in dp.
+  optional int32 minimum_width = 9;
+
+  // The minimum height of the view, in dp.
+  optional int32 minimum_height = 10;
 }
 
 message ViewContainerProto {

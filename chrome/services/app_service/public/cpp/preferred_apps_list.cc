@@ -11,6 +11,18 @@
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "url/gurl.h"
 
+namespace {
+
+void Clone(apps::PreferredAppsList::PreferredApps& source,
+           apps::PreferredAppsList::PreferredApps* destination) {
+  destination->clear();
+  for (auto& preferred_app : source) {
+    destination->push_back(preferred_app->Clone());
+  }
+}
+
+}  // namespace
+
 namespace apps {
 
 PreferredAppsList::PreferredAppsList() = default;
@@ -122,6 +134,25 @@ void PreferredAppsList::DeletePreferredApp(
 
 void PreferredAppsList::DeleteAppId(const std::string& app_id) {
   DeleteAppId(app_id, &preferred_apps_);
+}
+
+void PreferredAppsList::Init() {
+  initialized_ = true;
+}
+
+void PreferredAppsList::Init(PreferredApps& preferred_apps) {
+  Clone(preferred_apps, &preferred_apps_);
+  initialized_ = true;
+}
+
+PreferredAppsList::PreferredApps PreferredAppsList::GetValue() {
+  PreferredAppsList::PreferredApps preferred_apps_copy;
+  Clone(preferred_apps_, &preferred_apps_copy);
+  return preferred_apps_copy;
+}
+
+bool PreferredAppsList::IsInitialized() {
+  return initialized_;
 }
 
 }  // namespace apps

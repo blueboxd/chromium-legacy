@@ -123,8 +123,7 @@ class CC_EXPORT CompositorFrameReporter {
       const base::flat_set<FrameSequenceTrackerType>* active_trackers,
       const viz::BeginFrameId& id,
       const base::TimeTicks frame_deadline,
-      LatencyUkmReporter* latency_ukm_reporter,
-      bool is_single_threaded = false);
+      LatencyUkmReporter* latency_ukm_reporter);
   ~CompositorFrameReporter();
 
   CompositorFrameReporter(const CompositorFrameReporter& reporter) = delete;
@@ -196,6 +195,8 @@ class CC_EXPORT CompositorFrameReporter {
                                const base::TimeTicks start_time,
                                const base::TimeTicks end_time) const;
 
+  void ReportAllTraceEvents(const char* termination_status_str) const;
+
   StageData current_stage_;
   BeginMainFrameMetrics blink_breakdown_;
   viz::FrameTimingDetails viz_breakdown_;
@@ -211,7 +212,6 @@ class CC_EXPORT CompositorFrameReporter {
   // List of metrics for events affecting this frame.
   std::vector<EventMetrics> events_metrics_;
 
-  const bool is_single_threaded_;
   FrameReportType report_type_ = FrameReportType::kNonDroppedFrame;
   base::TimeTicks frame_termination_time_;
   base::TimeTicks begin_main_frame_start_;

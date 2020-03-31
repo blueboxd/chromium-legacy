@@ -99,3 +99,15 @@ cr-menu.files-menu > cr-menu-item > span {
 cr-menu.files-menu > cr-menu-item > paper-ripple {
   z-index: 0;
 }
+
+html.files-ng cr-menu-item > paper-ripple {
+  display: none;
+}
+
+html.files-ng cr-menu.files-menu > cr-menu-item:not([disabled])[selected] {
+  background-color: rgba(0, 0, 0, 4%);
+}
+
+html.files-ng cr-menu.files-menu > cr-menu-item:not([disabled]):active[selected] {
+  background-color: rgba(0, 0, 0, 12%);
+}

@@ -35,7 +35,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
-#include "cc/base/invalidation_region.h"
 #include "cc/layers/texture_layer_client.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -193,7 +192,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void EnsureCleared();
 
   bool ShouldAccelerate(AccelerationHint) const;
-  void CalculateDirtyRegion();
 
   sk_sp<SkImage> hibernation_image_;
   scoped_refptr<cc::TextureLayer> layer_;
@@ -249,7 +247,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   // This tracks whether the canvas has been cleared once after
   // this bridge was created.
   bool cleared_ = false;
-  cc::InvalidationRegion dirty_invalidate_region_;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_{this};
 

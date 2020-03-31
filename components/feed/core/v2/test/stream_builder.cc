@@ -106,31 +106,6 @@ feedstore::DataOperation MakeOperation(feedstore::Content content) {
   return operation;
 }
 
-feedstore::Record MakeRecord(feedstore::Content content) {
-  feedstore::Record record;
-  *record.mutable_content() = std::move(content);
-  return record;
-}
-
-feedstore::Record MakeRecord(
-    feedstore::StreamStructureSet stream_structure_set) {
-  feedstore::Record record;
-  *record.mutable_stream_structures() = std::move(stream_structure_set);
-  return record;
-}
-
-feedstore::Record MakeRecord(feedstore::StreamSharedState shared_state) {
-  feedstore::Record record;
-  *record.mutable_shared_state() = std::move(shared_state);
-  return record;
-}
-
-feedstore::Record MakeRecord(feedstore::StreamData stream_data) {
-  feedstore::Record record;
-  *record.mutable_stream_data() = std::move(stream_data);
-  return record;
-}
-
 std::vector<feedstore::DataOperation> MakeTypicalStreamOperations() {
   return {
       MakeOperation(MakeStream()),
@@ -149,16 +124,16 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState() {
       StreamModelUpdateRequest::Source::kInitialLoadFromStore;
   initial_update->content.push_back(MakeContent(0));
   initial_update->content.push_back(MakeContent(1));
-  initial_update->stream_structures = {MakeClearAll(),
-                                       MakeStream(),
-                                       MakeCluster(0, MakeRootId()),
-                                       MakeContentNode(0, MakeClusterId(0)),
-                                       MakeCluster(1, MakeRootId()),
-                                       MakeContentNode(1, MakeClusterId(1))};
+  *initial_update->stream_data.add_structures() = MakeClearAll();
+  *initial_update->stream_data.add_structures() = MakeStream();
+  *initial_update->stream_data.add_structures() = MakeCluster(0, MakeRootId());
+  *initial_update->stream_data.add_structures() =
+      MakeContentNode(0, MakeClusterId(0));
+  *initial_update->stream_data.add_structures() = MakeCluster(1, MakeRootId());
+  *initial_update->stream_data.add_structures() =
+      MakeContentNode(1, MakeClusterId(1));
 
   initial_update->shared_states.push_back(MakeSharedState(0));
-  *initial_update->stream_data.mutable_content_id() = MakeRootId();
-  *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(0);
   return initial_update;
 }
 

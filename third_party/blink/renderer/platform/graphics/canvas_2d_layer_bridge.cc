@@ -29,15 +29,12 @@
 #include <utility>
 
 #include "base/location.h"
-#include "base/numerics/checked_math.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/elapsed_timer.h"
-#include "cc/base/region.h"
 #include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/raster_interface.h"
-#include "ui/gfx/geometry/size.h"
 
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -57,52 +54,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
-
-namespace {
-// Canvas with an area less than 256 pixel by 256 pixel are considered too small
-// for partial repaint instead of full repaint.
-constexpr int kMinAreaForComputingDirtyRegion = 256 * 256;
-
-// Returns true if the area defined by |width| and |height| are dirty; false
-// otherwise.
-bool GatherDirtyRect(const cc::PaintOpBuffer* buffer,
-                     cc::InvalidationRegion* dirty_region,
-                     SkNoDrawCanvas* canvas,
-                     SkScalar width,
-                     SkScalar height) {
-  // Prevent PaintOpBuffers from having side effects back into the canvas.
-  SkAutoCanvasRestore save_restore(canvas, true);
-
-  cc::PlaybackParams params(nullptr, canvas->getTotalMatrix());
-  for (auto* op : cc::PaintOpBuffer::Iterator(buffer)) {
-    // Note that the dirty from SaveLayer will not computed until the next draw
-    // op. Since there is alawys a draw op between SaveLayer and Restore, this
-    // approach does the computation correctly.
-    if (!op->IsDrawOp()) {
-      op->Raster(canvas, params);
-      continue;
-    }
-    if (static_cast<cc::PaintOpType>(op->type) == cc::PaintOpType::DrawRecord) {
-      sk_sp<const PaintRecord> paint_record =
-          static_cast<cc::DrawRecordOp*>(op)->record;
-      if (GatherDirtyRect(paint_record.get(), dirty_region, canvas, width,
-                          height))
-        return true;
-    } else {
-      const SkRect& clip_rect = SkRect::Make(canvas->getDeviceClipBounds());
-      const SkMatrix& ctm = canvas->getTotalMatrix();
-      gfx::Rect rect = cc::PaintOp::ComputePaintRect(op, clip_rect, ctm);
-      dirty_region->Union(rect);
-      // If one draw op takes the entire canvas, stop compute for the dirty
-      // rect from the remaining draw ops.
-      if (rect.width() >= width && rect.height() >= height)
-        return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          AccelerationMode acceleration_mode,
@@ -496,48 +447,6 @@ void Canvas2DLayerBridge::EnsureCleared() {
   DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
 }
 
-void Canvas2DLayerBridge::CalculateDirtyRegion() {
-  // 1 pixel is added around the rect for anti-alias effect
-  // TODO(khushalsagar) : Remove the need for this 1 pixel addition.
-  int canvas_width = size_.Width() + 1;
-  int canvas_height = size_.Height() + 1;
-  base::CheckedNumeric<int> area(canvas_width);
-  area *= canvas_height;
-  if (!area.IsValid() || area.ValueOrDie() < kMinAreaForComputingDirtyRegion)
-    return;
-  SkNoDrawCanvas no_draw_canvas(canvas_width, canvas_height);
-  dirty_invalidate_region_.Clear();
-
-  // If GatherDirtyRect returns true, the entire canvas is dirty. Record the
-  // percentage of dirty area in the canvas to 100 and skip the calculation.
-  if (GatherDirtyRect(last_recording_.get(), &dirty_invalidate_region_,
-                      &no_draw_canvas, canvas_width, canvas_height)) {
-    UMA_HISTOGRAM_PERCENTAGE("Canvas.Repaint.Region.Percentage", 100);
-    UMA_HISTOGRAM_PERCENTAGE("Canvas.Repaint.Bounds.Percentage", 100);
-  } else {
-    int valid_area = area.ValueOrDie();
-    base::CheckedNumeric<int> used_total = 0;
-    cc::Region dirty_region;
-    dirty_invalidate_region_.Swap(&dirty_region);
-    gfx::Rect bounds;
-    for (const gfx::Rect& rect : dirty_region) {
-      bounds.Union(rect);
-      used_total += rect.size().GetCheckedArea();
-    }
-    int ratio_region =
-        (static_cast<float>(used_total.ValueOrDefault(valid_area)) /
-         valid_area) *
-        100;
-    int ratio_rect =
-        (static_cast<float>(
-             bounds.size().GetCheckedArea().ValueOrDefault(valid_area)) /
-         valid_area) *
-        100;
-    UMA_HISTOGRAM_PERCENTAGE("Canvas.Repaint.Region.Percentage", ratio_region);
-    UMA_HISTOGRAM_PERCENTAGE("Canvas.Repaint.Bounds.Percentage", ratio_rect);
-  }
-}
-
 void Canvas2DLayerBridge::ClearPendingRasterTimers() {
   gpu::raster::RasterInterface* raster_interface = nullptr;
   if (IsAccelerated() && SharedGpuContext::ContextProviderWrapper() &&
@@ -642,8 +551,6 @@ void Canvas2DLayerBridge::FlushRecording() {
   }
 
   last_recording_ = ResourceProvider()->FlushCanvas();
-  if (last_recording_ && will_measure)
-    CalculateDirtyRegion();
   last_record_tainted_by_write_pixels_ = false;
   if (!clear_frame_ || !resource_host_ || !resource_host_->IsPrinting()) {
     last_recording_ = nullptr;

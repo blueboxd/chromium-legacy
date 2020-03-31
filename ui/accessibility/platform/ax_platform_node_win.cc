@@ -3672,6 +3672,84 @@ IFACEMETHODIMP AXPlatformNodeWin::get_attributes(LONG offset,
 }
 
 //
+// IAccessibleValue methods.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::get_currentValue(VARIANT* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CURRENT_VALUE);
+  COM_OBJECT_VALIDATE_1_ARG(value);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  float float_val;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
+                        &float_val)) {
+    value->vt = VT_R8;
+    value->dblVal = float_val;
+    return S_OK;
+  }
+
+  value->vt = VT_EMPTY;
+  return S_FALSE;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_minimumValue(VARIANT* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MINIMUM_VALUE);
+  COM_OBJECT_VALIDATE_1_ARG(value);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  float float_val;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange,
+                        &float_val)) {
+    value->vt = VT_R8;
+    value->dblVal = float_val;
+    return S_OK;
+  }
+
+  value->vt = VT_EMPTY;
+  return S_FALSE;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_maximumValue(VARIANT* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MAXIMUM_VALUE);
+  COM_OBJECT_VALIDATE_1_ARG(value);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  float float_val;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange,
+                        &float_val)) {
+    value->vt = VT_R8;
+    value->dblVal = float_val;
+    return S_OK;
+  }
+
+  value->vt = VT_EMPTY;
+  return S_FALSE;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::setCurrentValue(VARIANT new_value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SET_CURRENT_VALUE);
+  COM_OBJECT_VALIDATE();
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  double double_value = 0.0;
+  if (V_VT(&new_value) == VT_R8)
+    double_value = V_R8(&new_value);
+  else if (V_VT(&new_value) == VT_R4)
+    double_value = V_R4(&new_value);
+  else if (V_VT(&new_value) == VT_I4)
+    double_value = V_I4(&new_value);
+  else
+    return E_INVALIDARG;
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kSetValue;
+  data.value = base::NumberToString(double_value);
+  if (GetDelegate()->AccessibilityPerformAction(data))
+    return S_OK;
+  return E_FAIL;
+}
+
+//
 // IRawElementProviderFragment implementation.
 //
 
@@ -4341,7 +4419,8 @@ IFACEMETHODIMP AXPlatformNodeWin::QueryService(REFGUID guidService,
       guidService == IID_IAccessibleTable ||
       guidService == IID_IAccessibleTable2 ||
       guidService == IID_IAccessibleTableCell ||
-      guidService == IID_IAccessibleText) {
+      guidService == IID_IAccessibleText ||
+      guidService == IID_IAccessibleValue) {
     return QueryInterface(riid, object);
   }
 
@@ -4377,6 +4456,10 @@ STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
       return E_NOINTERFACE;
   } else if (riid == IID_IAccessibleText || riid == IID_IAccessibleHypertext) {
     if (IsImageOrVideo(accessible->GetData().role)) {
+      return E_NOINTERFACE;
+    }
+  } else if (riid == IID_IAccessibleValue) {
+    if (!accessible->GetData().IsRangeValueSupported()) {
       return E_NOINTERFACE;
     }
   }

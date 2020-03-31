@@ -41,7 +41,7 @@ class CC_EXPORT CompositorFrameReportingController {
     kNumPipelineStages
   };
 
-  explicit CompositorFrameReportingController(bool is_single_threaded = false);
+  CompositorFrameReportingController();
   virtual ~CompositorFrameReportingController();
 
   CompositorFrameReportingController(
@@ -102,9 +102,6 @@ class CC_EXPORT CompositorFrameReportingController {
 
   viz::BeginFrameId last_submitted_frame_id_;
 
-  // Used by the managed reporters to differentiate the histogram names when
-  // reporting to UMA.
-  const bool is_single_threaded_;
   bool next_activate_has_invalidation_ = false;
 
   // The latency reporter passed to each CompositorFrameReporter. Owned here

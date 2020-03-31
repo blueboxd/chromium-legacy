@@ -26,4 +26,3 @@
 ++++[subscript] name='subscript' offset=0 text-position=sub
 ++++[static] name=' ' offset=0
 ++++[superscript] name='superscript' offset=0 text-position=super
-

@@ -17,13 +17,11 @@
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
-#include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
-#include "components/feed/core/v2/tasks/wait_for_store_initialize_task.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
@@ -142,7 +140,6 @@ FeedStream::FeedStream(
     Delegate* delegate,
     PrefService* profile_prefs,
     FeedNetwork* feed_network,
-    FeedStore* feed_store,
     const base::Clock* clock,
     const base::TickClock* tick_clock,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
@@ -151,7 +148,6 @@ FeedStream::FeedStream(
       delegate_(delegate),
       profile_prefs_(profile_prefs),
       feed_network_(feed_network),
-      store_(feed_store),
       clock_(clock),
       tick_clock_(tick_clock),
       background_task_runner_(background_task_runner),
@@ -162,10 +158,6 @@ FeedStream::FeedStream(
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
   (void)feed_network_;
-
-  // Inserting this task first ensures that |store_| is initialized before
-  // it is used.
-  task_queue_.AddTask(std::make_unique<WaitForStoreInitializeTask>(store_));
 }
 
 void FeedStream::InitializeScheduling() {
@@ -189,10 +181,7 @@ void FeedStream::TriggerStreamLoad() {
                            base::Unretained(this))));
 }
 
-void FeedStream::LoadStreamTaskComplete(LoadStreamTask::Result result) {
-  DVLOG(1) << "LoadStreamTaskComplete load_from_store_status="
-           << result.load_from_store_status
-           << " final_status=" << result.final_status;
+void FeedStream::LoadStreamTaskComplete() {
   model_loading_in_progress_ = false;
 }
 
@@ -267,19 +256,7 @@ offline_pages::TaskQueue* FeedStream::GetTaskQueueForTesting() {
   return &task_queue_;
 }
 
-void FeedStream::OnTaskQueueIsIdle() {
-  if (idle_callback_)
-    idle_callback_.Run();
-}
-
-void FeedStream::SetIdleCallbackForTesting(
-    base::RepeatingClosure idle_callback) {
-  idle_callback_ = idle_callback;
-}
-
-void FeedStream::OnStoreChange(const StreamModel::StoreUpdate& update) {
-  store_->WriteOperations(update.sequence_number, update.operations);
-}
+void FeedStream::OnTaskQueueIsIdle() {}
 
 // TODO(harringtond): Ensure this function gets test coverage when fetching
 // functionality is added.
@@ -384,7 +361,6 @@ void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
   model_ = std::move(model);
   model_monitor_ =
       std::make_unique<FeedStream::ModelMonitor>(model_.get(), &surfaces_);
-  model_->SetStoreObserver(this);
   for (SurfaceInterface& surface : surfaces_) {
     model_monitor_->SurfaceAdded(&surface);
   }

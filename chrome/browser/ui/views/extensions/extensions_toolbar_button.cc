@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
@@ -92,6 +94,7 @@ void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,
     return;
   }
   pressed_lock_ = menu_button_controller_->TakeLock();
+  base::RecordAction(base::UserMetricsAction("Extensions.Toolbar.MenuOpened"));
   ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_)
       ->AddObserver(this);
 }

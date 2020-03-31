@@ -17,7 +17,7 @@
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
-#include "chrome/services/app_service/public/cpp/preferred_apps.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -81,7 +81,7 @@ class AppServiceProxy : public KeyedService,
 
   BrowserAppLauncher& BrowserAppLauncher();
 
-  apps::PreferredApps& PreferredApps();
+  apps::PreferredAppsList& PreferredApps();
 
   // apps::IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
@@ -270,7 +270,8 @@ class AppServiceProxy : public KeyedService,
   void OnPreferredAppRemoved(
       const std::string& app_id,
       apps::mojom::IntentFilterPtr intent_filter) override;
-  void InitializePreferredApps(base::Value preferred_apps) override;
+  void InitializePreferredApps(
+      PreferredAppsList::PreferredApps preferred_apps) override;
 
   void UninstallImpl(const std::string& app_id,
                      gfx::NativeWindow parent_window,
@@ -343,7 +344,7 @@ class AppServiceProxy : public KeyedService,
   IconCoalescer icon_coalescer_;
   IconCache outer_icon_loader_;
 
-  apps::PreferredApps preferred_apps_;
+  apps::PreferredAppsList preferred_apps_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;

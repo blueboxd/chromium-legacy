@@ -66,6 +66,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
@@ -311,7 +312,9 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
       void(const viz::SurfaceId&, base::TimeTicks, media::VideoRotation, bool));
 };
 
-class WebMediaPlayerImplTest : public testing::Test {
+class WebMediaPlayerImplTest
+    : public testing::Test,
+      private blink::WebTestingSupport::WebScopedMockScrollbars {
  public:
   WebMediaPlayerImplTest()
       : media_thread_("MediaThreadForTest"),

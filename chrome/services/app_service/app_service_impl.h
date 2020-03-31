@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/services/app_service/public/cpp/preferred_apps.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps_list.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -91,7 +91,7 @@ class AppServiceImpl : public apps::mojom::AppService {
       apps::mojom::IntentFilterPtr intent_filter) override;
 
   // Retern the preferred_apps_ for testing.
-  PreferredApps& GetPreferredAppsForTesting();
+  PreferredAppsList& GetPreferredAppsForTesting();
 
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);
@@ -111,7 +111,7 @@ class AppServiceImpl : public apps::mojom::AppService {
 
   PrefService* const pref_service_;
 
-  PreferredApps preferred_apps_;
+  PreferredAppsList preferred_apps_;
 
   base::WeakPtrFactory<AppServiceImpl> weak_ptr_factory_{this};
 

@@ -18,7 +18,6 @@ option optimize_for = LITE_RUNTIME;
 // This is the 'value' in the key/value store.
 // Keys are defined as:
 // 'S/<stream-id>' -> stream_data
-// 'T/<stream-id>/<sequence-number>' -> stream_structures
 // 'c/<content-id>' -> content
 // 'a/<id>' -> action
 // 's/<content-id>' -> shared_state
@@ -26,12 +25,11 @@ option optimize_for = LITE_RUNTIME;
 message Record {
   oneof data {
     StreamData stream_data = 1;
-    StreamStructureSet stream_structures = 2;
-    Content content = 3;
-    StoredAction local_action = 4;
-    StreamSharedState shared_state = 5;
+    Content content = 2;
+    StoredAction local_action = 3;
+    StreamSharedState shared_state = 4;
     // The result of a background refresh, to be processed later.
-    StreamAndContentState next_stream_state = 6;
+    StreamAndContentState next_stream_state = 5;
   }
 }
 
@@ -45,17 +43,10 @@ message StreamData {
   bytes consistency_token = 3;
   // The unix timestamp in milliseconds that the most recent content was added.
   int64 last_added_time_millis = 4;
+  // List of operations to perform to create the stream.
+  repeated StreamStructure structures = 5;
   // Next sequential ID to be used for StoredAction.id.
-  int32 next_action_id = 5;
-  // The content ID of the shared state for this stream.
-  feedwire.ContentId shared_state_id = 6;
-}
-
-// A set of StreamStructures that should be applied to a stream.
-message StreamStructureSet {
-  string stream_id = 1;
-  int32 sequence_number = 2;
-  repeated StreamStructure structures = 3;
+  int32 next_action_id = 6;
 }
 
 // This is the structure of the stream.  It is defined through the parent/child

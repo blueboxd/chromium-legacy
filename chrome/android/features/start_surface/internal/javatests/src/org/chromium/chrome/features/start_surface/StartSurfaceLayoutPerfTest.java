@@ -85,6 +85,7 @@ public class StartSurfaceLayoutPerfTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
+    @SuppressWarnings("FieldCanBeLocal")
     private EmbeddedTestServer mTestServer;
     private StartSurfaceLayout mStartSurfaceLayout;
     private String mUrl;

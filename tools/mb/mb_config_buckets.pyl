@@ -1358,6 +1358,7 @@
       'leak_detection_linux': 'release_trybot',
       'linux-angle-rel': 'gpu_fyi_tests_release_trybot',
       'linux-annotator-rel': 'release_trybot',
+      'linux-autofill-assistant': 'autofill_assistant_release_trybot',
       'linux-bfcache-rel': 'release_bot',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
@@ -1988,6 +1989,10 @@
     'asan_lsan_release_trybot': [
       'asan',
       'lsan',
+      'release_trybot'
+    ],
+    'autofill_assistant_release_trybot': [
+      'autofill_assistant_api',
       'release_trybot'
     ],
     'cast_release_bot': [
@@ -2735,7 +2740,7 @@
       'chrome_with_codecs'
     ],
     'release_bot_minimal_symbols_no_nacl': [
-      'release_bot', 
+      'release_bot',
       'minimal_symbols',
       'disable_nacl',
     ],
@@ -2889,6 +2894,10 @@
 
     'asan': {
       'gn_args': 'is_asan=true'
+    },
+
+    'autofill_assistant_api': {
+      'gn_args': 'enable_autofill_assistant_api=true',
     },
 
     'cast': {

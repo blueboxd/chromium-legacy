@@ -17,10 +17,8 @@ using StageType = CompositorFrameReporter::StageType;
 using FrameTerminationStatus = CompositorFrameReporter::FrameTerminationStatus;
 }  // namespace
 
-CompositorFrameReportingController::CompositorFrameReportingController(
-    bool is_single_threaded)
-    : is_single_threaded_(is_single_threaded),
-      latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()) {}
+CompositorFrameReportingController::CompositorFrameReportingController()
+    : latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()) {}
 
 CompositorFrameReportingController::~CompositorFrameReportingController() {
   base::TimeTicks now = Now();
@@ -64,8 +62,7 @@ void CompositorFrameReportingController::WillBeginImplFrame(
   std::unique_ptr<CompositorFrameReporter> reporter =
       std::make_unique<CompositorFrameReporter>(
           &active_trackers_, args.frame_id,
-          args.frame_time + (args.interval * 1.5), latency_ukm_reporter_.get(),
-          is_single_threaded_);
+          args.frame_time + (args.interval * 1.5), latency_ukm_reporter_.get());
   reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                        begin_time);
   reporters_[PipelineStage::kBeginImplFrame] = std::move(reporter);
@@ -92,7 +89,7 @@ void CompositorFrameReportingController::WillBeginMainFrame(
         std::make_unique<CompositorFrameReporter>(
             &active_trackers_, args.frame_id,
             args.frame_time + (args.interval * 1.5),
-            latency_ukm_reporter_.get(), is_single_threaded_);
+            latency_ukm_reporter_.get());
     reporter->StartStage(StageType::kSendBeginMainFrameToCommit, Now());
     reporters_[PipelineStage::kBeginMainFrame] = std::move(reporter);
   }

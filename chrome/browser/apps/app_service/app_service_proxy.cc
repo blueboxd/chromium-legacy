@@ -180,7 +180,7 @@ BrowserAppLauncher& AppServiceProxy::BrowserAppLauncher() {
   return *browser_app_launcher_;
 }
 
-apps::PreferredApps& AppServiceProxy::PreferredApps() {
+apps::PreferredAppsList& AppServiceProxy::PreferredApps() {
   return preferred_apps_;
 }
 
@@ -484,9 +484,9 @@ void AppServiceProxy::OnPreferredAppRemoved(
   preferred_apps_.DeletePreferredApp(app_id, intent_filter);
 }
 
-void AppServiceProxy::InitializePreferredApps(base::Value preferred_apps) {
-  preferred_apps_.Init(
-      std::make_unique<base::Value>(std::move(preferred_apps)));
+void AppServiceProxy::InitializePreferredApps(
+    PreferredAppsList::PreferredApps preferred_apps) {
+  preferred_apps_.Init(preferred_apps);
 }
 
 void AppServiceProxy::UninstallImpl(const std::string& app_id,

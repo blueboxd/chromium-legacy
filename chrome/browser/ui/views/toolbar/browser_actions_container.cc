@@ -371,7 +371,6 @@ views::FlexRule BrowserActionsContainer::GetFlexRule() {
             static_cast<const BrowserActionsContainer*>(view);
         gfx::Size preferred_size = browser_actions->GetPreferredSize();
         if (maximum_size.width()) {
-          const int max_width = *maximum_size.width();
           int width;
           if (browser_actions->resizing() || browser_actions->animating()) {
             // When there are actions present, the floor on the size of the
@@ -379,14 +378,15 @@ views::FlexRule BrowserActionsContainer::GetFlexRule() {
             const int min_width = browser_actions->num_toolbar_actions() == 0
                                       ? 0
                                       : browser_actions->GetResizeAreaWidth();
-            // The ceiling on the value is the lesser of the preferred and
-            // available size.
+            // If the provided maximum width is too small even for |min_width|,
+            // |min_width| takes precedence.
+            const int max_width = std::max(min_width, *maximum_size.width());
             width = base::ClampToRange(preferred_size.width(), min_width,
                                        max_width);
           } else {
             // When not animating or resizing, the desired width should always
             // be based on the number of icons that can be displayed.
-            width = browser_actions->GetWidthForMaxWidth(max_width);
+            width = browser_actions->GetWidthForMaxWidth(*maximum_size.width());
           }
           preferred_size =
               gfx::Size(width, browser_actions->GetHeightForWidth(width));

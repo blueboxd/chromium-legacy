@@ -32,11 +32,26 @@
 
 namespace blink {
 
+class ScopedMockOverlayScrollbars;
+
 class WebTestingSupport {
  public:
   static void InjectInternalsObject(WebLocalFrame*);
   static void ResetInternalsObject(WebLocalFrame*);
   static void InjectInternalsObject(v8::Local<v8::Context>);
+
+  // Use this to install a mock scrollbar theme for tests. To use, simply
+  // inherit your test class from this or instantiate it manually. The
+  // constructor and destructor will enable and disable the mock theme. For
+  // tests within Blink, use ScopedMockOverlayScrollbars instead.
+  class WebScopedMockScrollbars {
+   public:
+    WebScopedMockScrollbars();
+    ~WebScopedMockScrollbars();
+
+   private:
+    std::unique_ptr<ScopedMockOverlayScrollbars> use_mock_scrollbars_;
+  };
 };
 }
 

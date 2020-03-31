@@ -54,6 +54,8 @@ enum class StateSuffix {
   kAll,                 // Recorded for all clients and all their profiles.
   kActiveMultiProfile,  // Recorded for multi-profile users with >=2 active
                         // profiles, for all their profiles.
+  kLatentMultiProfile,  // Recorded for multi-profile users with one active
+                        // profile, for all their profiles.
   kLatentMultiProfileActive,  // Recorded for multi-profile users with one
                               // active profile, only for the active profile.
   kLatentMultiProfileOthers,  // Recorded for multi-profile users with one

@@ -20,44 +20,19 @@
 namespace feed {
 
 LoadStreamTask::LoadStreamTask(FeedStream* stream,
-                               base::OnceCallback<void(Result)> done_callback)
+                               base::OnceClosure done_callback)
     : stream_(stream), done_callback_(std::move(done_callback)) {}
 
 LoadStreamTask::~LoadStreamTask() = default;
 
 void LoadStreamTask::Run() {
-  // Phase 1.
-  //  - Return early if the model is already loaded.
-  //  - Try to load from persistent storage.
-
+  // TODO(harringtond): This logic is all provisional and should be rewritten.
   // Don't load if the model is already loaded.
   if (stream_->GetModel()) {
-    Done(LoadStreamStatus::kModelAlreadyLoaded);
+    Done();
     return;
   }
 
-  load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
-      stream_->GetStore(),
-      base::BindOnce(&LoadStreamTask::LoadFromStoreComplete, GetWeakPtr()));
-  load_from_store_task_->Execute(base::DoNothing());
-}
-
-void LoadStreamTask::LoadFromStoreComplete(
-    LoadStreamFromStoreTask::Result result) {
-  load_from_store_status_ = result.status;
-  // Phase 2.
-  //  - If loading from store works, update the model.
-  //  - Otherwise, try to load from the network.
-
-  if (result.status == LoadStreamStatus::kLoadedFromStore) {
-    auto model = std::make_unique<StreamModel>();
-    model->Update(std::move(result.update_request));
-    stream_->LoadModel(std::move(model));
-    Done(LoadStreamStatus::kLoadedFromStore);
-    return;
-  }
-
-  // TODO(harringtond): Add throttling.
   // TODO(harringtond): Request parameters here are all placeholder values.
   feedwire::Request request;
   feedwire::ClientInfo& client_info =
@@ -77,7 +52,7 @@ void LoadStreamTask::QueryRequestComplete(
     FeedNetwork::QueryRequestResult result) {
   DCHECK(!stream_->GetModel());
   if (!result.response_body) {
-    Done(LoadStreamStatus::kNoResponseBody);
+    Done();
     return;
   }
 
@@ -85,7 +60,7 @@ void LoadStreamTask::QueryRequestComplete(
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
           *result.response_body, base::TimeTicks::Now() - fetch_start_time_);
   if (!update_request) {
-    Done(LoadStreamStatus::kProtoTranslationFailed);
+    Done();
     return;
   }
 
@@ -93,14 +68,11 @@ void LoadStreamTask::QueryRequestComplete(
   model->Update(std::move(update_request));
   stream_->LoadModel(std::move(model));
 
-  Done(LoadStreamStatus::kLoadedFromNetwork);
+  Done();
 }
 
-void LoadStreamTask::Done(LoadStreamStatus status) {
-  Result result;
-  result.load_from_store_status = load_from_store_status_;
-  result.final_status = status;
-  std::move(done_callback_).Run(result);
+void LoadStreamTask::Done() {
+  std::move(done_callback_).Run();
   TaskComplete();
 }
 

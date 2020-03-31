@@ -34,6 +34,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isImportantForAccessibility;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withMinimumSize;
 
 import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
@@ -49,6 +50,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantDimension;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BooleanAndProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BooleanList;
@@ -1089,6 +1091,9 @@ public class AutofillAssistantGenericUiTest {
                         .setRootView(
                                 ViewProto.newBuilder()
                                         .setIdentifier("text_view")
+                                        .setLayoutParams(
+                                                ViewLayoutParamsProto.newBuilder().setMinimumHeight(
+                                                        48))
                                         .setTextView(TextViewProto.newBuilder().setModelIdentifier(
                                                 "date_string")))
                         .setInteractions(
@@ -1115,6 +1120,10 @@ public class AutofillAssistantGenericUiTest {
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
         waitUntilViewMatchesCondition(withText("date not set"), isCompletelyDisplayed());
+        onView(withText("date not set"))
+                .check(matches(withMinimumSize(0,
+                        AssistantDimension.getPixelSizeDp(
+                                InstrumentationRegistry.getContext(), 48))));
 
         onView(withText("date not set")).perform(click());
         onView(withClassName(equalTo(DatePicker.class.getName())))

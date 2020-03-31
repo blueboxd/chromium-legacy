@@ -254,13 +254,20 @@ Polymer({
   },
 
   /**
-   * Shows a dialog when adjusting mic settings.
-   * TODO(danielng): We should only show the dialog if termina is running and
-   * the settings change to be different to the current state of termina.
+   * If a change to the mic settings requires Crostini to be restarted, a
+   * dialog is shown.
    * @private
    */
   onMicSharingChange_: function() {
-    this.showCrostiniMicSharingDialog_ = true;
+    const proposedValue = /** @type {!SettingsToggleButtonElement} */
+        (this.$$('#crostini-mic-sharing')).checked;
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .checkCrostiniMicSharingStatus(proposedValue)
+        .then(requiresRestart => {
+          if (requiresRestart) {
+            this.showCrostiniMicSharingDialog_ = true;
+          }
+        });
   },
 
   /** @private */

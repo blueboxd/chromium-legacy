@@ -12,16 +12,20 @@
 #include "chrome/updater/server/win/server.h"
 
 #include <windows.h>
-#include <wrl/implements.h>
-#include <wrl/module.h>
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/app/app.h"
@@ -30,12 +34,29 @@
 #include "chrome/updater/update_service_in_process.h"
 
 namespace updater {
+namespace {
 
+// The COM objects involved in this server are free threaded. Incoming COM calls
+// arrive on COM RPC threads. Outgoing COM calls originating in the server are
+// posted on blocking worker threads in the thread pool. Calls to the update
+// service and update_client calls occur in the main sequence on the main
+// thread.
+//
 // This class is responsible for the lifetime of the COM server, as well as
 // class factory registration.
 class ComServer : public App {
  public:
   ComServer();
+
+  // Returns the singleton instance of this ComServer.
+  static scoped_refptr<ComServer> Instance() {
+    return static_cast<ComServer*>(AppServerInstance().get());
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
+    return main_task_runner_;
+  }
+  scoped_refptr<UpdateService> service() { return service_; }
 
  private:
   ~ComServer() override = default;
@@ -67,51 +88,17 @@ class ComServer : public App {
   // While this object lives, COM can be used by all threads in the program.
   base::win::ScopedCOMInitializer com_initializer_;
 
-  // The UpdateService to use for handling COM requests.
+  // Task runner bound to the main sequence and the update service instance.
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
+
+  // The UpdateService to use for handling the incoming COM requests. This
+  // instance of the service runs the in-process update service code, which is
+  // delegating to the update_client component.
   scoped_refptr<UpdateService> service_;
 
   // The updater's Configurator.
   scoped_refptr<Configurator> config_;
 };
-
-STDMETHODIMP CompleteStatusImpl::get_statusCode(LONG* code) {
-  DCHECK(code);
-
-  *code = code_;
-  return S_OK;
-}
-
-STDMETHODIMP CompleteStatusImpl::get_statusMessage(BSTR* message) {
-  DCHECK(message);
-
-  *message = base::win::ScopedBstr(message_).Release();
-  return S_OK;
-}
-
-HRESULT UpdaterImpl::CheckForUpdate(const base::char16* app_id) {
-  return E_NOTIMPL;
-}
-
-HRESULT UpdaterImpl::Register(const base::char16* app_id,
-                              const base::char16* brand_code,
-                              const base::char16* tag,
-                              const base::char16* version,
-                              const base::char16* existence_checker_path) {
-  return E_NOTIMPL;
-}
-
-HRESULT UpdaterImpl::Update(const base::char16* app_id) {
-  return E_NOTIMPL;
-}
-
-HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
-  if (observer) {
-    auto status = Microsoft::WRL::Make<CompleteStatusImpl>(11, L"Test");
-    observer->OnComplete(status.Get());
-  }
-
-  return S_OK;
-}
 
 ComServer::ComServer()
     : com_initializer_(base::win::ScopedCOMInitializer::kMTA) {}
@@ -184,6 +171,7 @@ void ComServer::CreateWRLModule() {
 }
 
 void ComServer::Stop() {
+  VLOG(2) << __func__ << ": COM server is shutting down.";
   UnregisterClassObject();
   Shutdown(0);
 }
@@ -198,11 +186,87 @@ void ComServer::FirstTaskRun() {
     Shutdown(-1);
     return;
   }
+  main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   service_ = base::MakeRefCounted<UpdateServiceInProcess>(config_);
   CreateWRLModule();
   HRESULT hr = RegisterClassObject();
   if (FAILED(hr))
     Shutdown(hr);
+}
+
+}  // namespace
+
+STDMETHODIMP CompleteStatusImpl::get_statusCode(LONG* code) {
+  DCHECK(code);
+
+  *code = code_;
+  return S_OK;
+}
+
+STDMETHODIMP CompleteStatusImpl::get_statusMessage(BSTR* message) {
+  DCHECK(message);
+
+  *message = base::win::ScopedBstr(message_).Release();
+  return S_OK;
+}
+
+HRESULT UpdaterImpl::CheckForUpdate(const base::char16* app_id) {
+  return E_NOTIMPL;
+}
+
+HRESULT UpdaterImpl::Register(const base::char16* app_id,
+                              const base::char16* brand_code,
+                              const base::char16* tag,
+                              const base::char16* version,
+                              const base::char16* existence_checker_path) {
+  return E_NOTIMPL;
+}
+
+HRESULT UpdaterImpl::Update(const base::char16* app_id) {
+  return E_NOTIMPL;
+}
+
+// Called by the COM RPC runtime on one of its threads.
+HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
+  using IUpdaterObserverPtr = Microsoft::WRL::ComPtr<IUpdaterObserver>;
+  using ICompleteStatusPtr = Microsoft::WRL::ComPtr<ICompleteStatus>;
+
+  // Invoke the in-process |update_service| on the main sequence.
+  auto com_server = ComServer::Instance();
+  com_server->main_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<UpdateService> update_service,
+             IUpdaterObserverPtr observer) {
+            update_service->UpdateAll(
+                base::DoNothing(),
+                base::BindOnce(
+                    [](IUpdaterObserverPtr observer,
+                       UpdateService::Result result) {
+                      // The COM RPC outgoing call blocks and it must be posted
+                      // through the thread pool.
+                      // TODO(sorin) investigate if base::Bind can be fixed to
+                      // bind stdcall COM invocations on the x86 architecture.
+                      base::ThreadPool::PostTaskAndReplyWithResult(
+                          FROM_HERE, {base::MayBlock()},
+                          base::BindOnce(
+                              [](IUpdaterObserverPtr observer,
+                                 ICompleteStatusPtr status) {
+                                return observer->OnComplete(status.Get());
+                              },
+                              observer,
+                              Microsoft::WRL::Make<CompleteStatusImpl>(
+                                  static_cast<int>(result), L"Test")),
+                          base::BindOnce([](HRESULT hr) {
+                            VLOG(2) << "IUpdaterObserver::OnComplete returned "
+                                    << std::hex << hr;
+                          }));
+                    },
+                    observer));
+          },
+          com_server->service(), IUpdaterObserverPtr(observer)));
+
+  return S_OK;
 }
 
 scoped_refptr<App> AppServerInstance() {

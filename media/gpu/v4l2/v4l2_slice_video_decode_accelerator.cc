@@ -1264,19 +1264,37 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     return;
   }
 
-  // If a client allocate a different frame size, S_FMT should be called with
-  // the size.
-  if (!image_processor_device_ && coded_size_ != buffers[0].size()) {
-    const auto& new_frame_size = buffers[0].size();
+  const gfx::Size pic_size_received_from_client = buffers[0].size();
+  const gfx::Size pic_size_expected_from_client =
+      output_mode_ == Config::OutputMode::ALLOCATE
+          ? decoder_->GetVisibleRect().size()
+          : coded_size_;
+  if (output_mode_ == Config::OutputMode::ALLOCATE &&
+      pic_size_expected_from_client != pic_size_received_from_client) {
+    // In ALLOCATE mode, we don't allow the client to adjust the size. That's
+    // because the client is responsible only for creating the GL texture and
+    // its dimensions should match the dimensions we use to create the GL image
+    // here (eventually).
+    LOG(ERROR)
+        << "The client supplied a picture buffer with an unexpected size (Got "
+        << pic_size_received_from_client.ToString() << ", expected "
+        << pic_size_expected_from_client.ToString() << ")";
+    NOTIFY_ERROR(INVALID_ARGUMENT);
+    return;
+  } else if (output_mode_ == Config::OutputMode::IMPORT &&
+             !image_processor_device_ &&
+             pic_size_expected_from_client != pic_size_received_from_client) {
+    // If a client allocates a different frame size, S_FMT should be called with
+    // the size.
     v4l2_format format = {};
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    format.fmt.pix_mp.width = new_frame_size.width();
-    format.fmt.pix_mp.height = new_frame_size.height();
+    format.fmt.pix_mp.width = pic_size_received_from_client.width();
+    format.fmt.pix_mp.height = pic_size_received_from_client.height();
     format.fmt.pix_mp.pixelformat = output_format_fourcc_->ToV4L2PixFmt();
     format.fmt.pix_mp.num_planes = output_planes_count_;
     if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
       PLOG(ERROR) << "Failed with frame size adjusted by client"
-                  << new_frame_size.ToString();
+                  << pic_size_received_from_client.ToString();
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -1284,10 +1302,10 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     coded_size_.SetSize(format.fmt.pix_mp.width, format.fmt.pix_mp.height);
     // If size specified by ProvidePictureBuffers() is adjusted by the client,
     // the size must not be adjusted by a v4l2 driver again.
-    if (coded_size_ != new_frame_size) {
+    if (coded_size_ != pic_size_received_from_client) {
       LOG(ERROR) << "The size of PictureBuffer is invalid."
                  << " size adjusted by the client = "
-                 << new_frame_size.ToString()
+                 << pic_size_received_from_client.ToString()
                  << " size adjusted by a driver = " << coded_size_.ToString();
       NOTIFY_ERROR(INVALID_ARGUMENT);
       return;
@@ -1576,6 +1594,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   // (texture_id !=0). Moreover, if an image processor is in use, we will
   // create the GL image when its buffer becomes visible in FrameProcessed().
   if (iter->texture_id != 0 && !image_processor_) {
+    DCHECK_EQ(Config::OutputMode::ALLOCATE, output_mode_);
     DCHECK_GT(handle.planes.size(), 0u);
     size_t index = iter - output_buffer_map_.begin();
 

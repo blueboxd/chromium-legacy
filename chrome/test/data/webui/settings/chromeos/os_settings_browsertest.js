@@ -482,9 +482,29 @@ var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Disabled due to flakiness: https://crbug.com/1056268.
-TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_All', () => {
-  mocha.run();
+TEST_F('OSSettingsCrostiniPageTest', 'MainPage', function() {
+  mocha.grep('MainPage').run();
+});
+
+TEST_F('OSSettingsCrostiniPageTest', 'SubPageDefault', function() {
+  mocha.grep('SubPageDefault').run();
+});
+
+TEST_F(
+    'OSSettingsCrostiniPageTest', 'DISABLED_SubPagePortForwarding', function() {
+      mocha.grep('SubPagePortForwarding').run();
+    });
+
+TEST_F('OSSettingsCrostiniPageTest', 'DiskResize', function() {
+  mocha.grep('DiskResize').run();
+});
+
+TEST_F('OSSettingsCrostiniPageTest', 'SubPageSharedPaths', function() {
+  mocha.grep('SubPageSharedPaths').run();
+});
+
+TEST_F('OSSettingsCrostiniPageTest', 'SubPageSharedUsbDevices', function() {
+  mocha.grep('SubPageSharedUsbDevices').run();
 });
 
 // Test fixture for the Date and Time page.

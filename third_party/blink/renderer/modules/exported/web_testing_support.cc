@@ -27,10 +27,17 @@
 
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_internals_partial.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/core/testing/v8/web_core_test_support.h"
 #include "v8/include/v8.h"
 
 namespace blink {
+
+WebTestingSupport::WebScopedMockScrollbars::WebScopedMockScrollbars()
+    : use_mock_scrollbars_(new ScopedMockOverlayScrollbars) {}
+
+WebTestingSupport::WebScopedMockScrollbars::~WebScopedMockScrollbars() =
+    default;
 
 void WebTestingSupport::InjectInternalsObject(WebLocalFrame* frame) {
   V8InternalsPartial::Initialize();

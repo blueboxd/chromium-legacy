@@ -3,20 +3,12 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/feed_store.h"
-
-#include <map>
-#include <set>
-#include <utility>
-
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
-#include "components/feed/core/v2/test/callback_receiver.h"
-#include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,8 +20,6 @@ const char kNextPageToken[] = "next page token";
 const char kConsistencyToken[] = "consistency token";
 const int64_t kLastAddedTimeMs = 100;
 
-using LoadStreamResult = FeedStore::LoadStreamResult;
-
 feedstore::StreamData MakeStreamData() {
   feedstore::StreamData stream_data;
   *stream_data.mutable_content_id() = MakeRootId();
@@ -37,7 +27,20 @@ feedstore::StreamData MakeStreamData() {
   stream_data.set_consistency_token(kConsistencyToken);
   stream_data.set_last_added_time_millis(kLastAddedTimeMs);
 
+  std::vector<feedstore::DataOperation> operations =
+      MakeTypicalStreamOperations();
+  for (auto& operation : operations) {
+    *stream_data.add_structures() = std::move(operation.structure());
+  }
+
   return stream_data;
+}
+
+std::string ContentIdToString(const feedwire::ContentId& content_id) {
+  return base::StrCat(
+      {"{content_domain: \"", content_id.content_domain(),
+       "\", id: ", base::NumberToString(content_id.id()), ", type: \"",
+       feedwire::ContentId::Type_Name(content_id.type()), "\"}"});
 }
 
 std::string KeyForContentId(base::StringPiece prefix,
@@ -59,10 +62,12 @@ feedstore::Record RecordForSharedState(feedstore::StreamSharedState shared) {
   return record;
 }
 
+const char kRootKey[] = "S/0";
+
 }  // namespace
 
 class FeedStoreTest : public testing::Test {
- protected:
+ public:
   void MakeFeedStore(std::map<std::string, feedstore::Record> entries,
                      leveldb_proto::Enums::InitStatus init_status =
                          leveldb_proto::Enums::InitStatus::kOK) {
@@ -72,28 +77,12 @@ class FeedStoreTest : public testing::Test {
             &db_entries_);
     fake_db_ = fake_db.get();
     store_ = std::make_unique<FeedStore>(std::move(fake_db));
-    store_->Initialize(base::DoNothing());
     fake_db_->InitStatusCallback(init_status);
-  }
-
-  std::set<std::string> StoredKeys() {
-    std::set<std::string> result;
-    for (auto& entry : db_entries_) {
-      result.insert(entry.first);
-    }
-    return result;
-  }
-
-  std::string StoreToString() {
-    std::stringstream ss;
-    for (auto& entry : db_entries_) {
-      ss << "[" << entry.first << "] " << entry.second;
-    }
-    return ss.str();
   }
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::SYSTEM_TIME};
+
   std::unique_ptr<FeedStore> store_;
   std::map<std::string, feedstore::Record> db_entries_;
   leveldb_proto::test::FakeDB<feedstore::Record>* fake_db_;
@@ -110,237 +99,63 @@ TEST_F(FeedStoreTest, InitFailure) {
       std::make_unique<leveldb_proto::test::FakeDB<feedstore::Record>>(
           &entries);
   leveldb_proto::test::FakeDB<feedstore::Record>* fake_db_raw = fake_db.get();
-  auto store = std::make_unique<FeedStore>(std::move(fake_db));
 
-  store->Initialize(base::DoNothing());
+  auto store = std::make_unique<FeedStore>(std::move(fake_db));
   EXPECT_FALSE(store->IsInitializedForTesting());
 
   fake_db_raw->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
   EXPECT_FALSE(store->IsInitializedForTesting());
 }
 
-TEST_F(FeedStoreTest, SaveFullStream) {
-  MakeFeedStore({});
-  CallbackReceiver<bool> receiver;
-  store_->SaveFullStream(MakeTypicalInitialModelState(), receiver.Bind());
-  fake_db_->UpdateCallback(true);
+TEST_F(FeedStoreTest, ReadStreamData) {
+  feedstore::Record record;
+  *record.mutable_stream_data() = MakeStreamData();
+  MakeFeedStore({{kRootKey, record}});
 
-  ASSERT_TRUE(receiver.GetResult());
+  // Successful read
+  bool did_successful_read = false;
+  store_->ReadStreamData(base::BindLambdaForTesting(
+      [&](std::unique_ptr<feedstore::StreamData> stream_data) {
+        did_successful_read = true;
+        ASSERT_TRUE(stream_data);
+        EXPECT_EQ(ContentIdToString(stream_data->content_id()),
+                  ContentIdToString(record.stream_data().content_id()));
+        EXPECT_EQ(stream_data->structures_size(),
+                  record.stream_data().structures_size());
+        EXPECT_EQ(stream_data->next_page_token(),
+                  record.stream_data().next_page_token());
+        EXPECT_EQ(stream_data->consistency_token(),
+                  record.stream_data().consistency_token());
+        EXPECT_EQ(stream_data->last_added_time_millis(),
+                  record.stream_data().last_added_time_millis());
+        EXPECT_EQ(stream_data->next_action_id(),
+                  record.stream_data().next_action_id());
+      }));
+  fake_db_->GetCallback(true);
+  EXPECT_TRUE(did_successful_read);
 
-  EXPECT_EQ(StoreToString(), R"([S/0] {
-  stream_data {
-    content_id {
-      content_domain: "root"
-    }
-    shared_state_id {
-      content_domain: "render_data"
-    }
-  }
-}
-[T/0/0] {
-  stream_structures {
-    stream_id: "0"
-    structures {
-      operation: 1
-    }
-    structures {
-      operation: 2
-      content_id {
-        content_domain: "root"
-      }
-      type: 1
-    }
-    structures {
-      operation: 2
-      content_id {
-        content_domain: "content"
-        type: 3
-      }
-      parent_id {
-        content_domain: "root"
-      }
-      type: 4
-    }
-    structures {
-      operation: 2
-      content_id {
-        content_domain: "stories"
-        type: 4
-      }
-      parent_id {
-        content_domain: "content"
-        type: 3
-      }
-      type: 3
-    }
-    structures {
-      operation: 2
-      content_id {
-        content_domain: "content"
-        type: 3
-        id: 1
-      }
-      parent_id {
-        content_domain: "root"
-      }
-      type: 4
-    }
-    structures {
-      operation: 2
-      content_id {
-        content_domain: "stories"
-        type: 4
-        id: 1
-      }
-      parent_id {
-        content_domain: "content"
-        type: 3
-        id: 1
-      }
-      type: 3
-    }
-  }
-}
-[c/stories,4,0] {
-  content {
-    content_id {
-      content_domain: "stories"
-      type: 4
-    }
-    frame: "f:0"
-  }
-}
-[c/stories,4,1] {
-  content {
-    content_id {
-      content_domain: "stories"
-      type: 4
-      id: 1
-    }
-    frame: "f:1"
-  }
-}
-[s/render_data,0,0] {
-  shared_state {
-    content_id {
-      content_domain: "render_data"
-    }
-    shared_state_data: "ss:0"
-  }
-}
-)");
+  // Failed read
+  bool did_failed_read = false;
+  store_->ReadStreamData(base::BindLambdaForTesting(
+      [&](std::unique_ptr<feedstore::StreamData> stream_data) {
+        did_failed_read = true;
+        EXPECT_FALSE(stream_data);
+      }));
+  fake_db_->GetCallback(false);
+  EXPECT_TRUE(did_failed_read);
 }
 
-TEST_F(FeedStoreTest, SaveFullStreamOverwritesData) {
-  MakeFeedStore({});
-  // Insert some junk that should be removed.
-  db_entries_["S/0"].mutable_local_action()->set_id(6);
-  db_entries_["T/0/0"].mutable_local_action()->set_id(6);
-  db_entries_["T/0/73"].mutable_local_action()->set_id(6);
-  db_entries_["c/stories,4,0"].mutable_local_action()->set_id(6);
-  db_entries_["c/stories,4,1"].mutable_local_action()->set_id(6);
-  db_entries_["c/garbage"].mutable_local_action()->set_id(6);
-  db_entries_["s/render_data,0,0"].mutable_local_action()->set_id(6);
-  db_entries_["s/garbage,0,0"].mutable_local_action()->set_id(6);
-
-  CallbackReceiver<bool> receiver;
-  store_->SaveFullStream(MakeTypicalInitialModelState(), receiver.Bind());
-  fake_db_->UpdateCallback(true);
-
-  ASSERT_TRUE(receiver.GetResult());
-  ASSERT_EQ(std::set<std::string>({
-                "S/0",
-                "T/0/0",
-                "c/stories,4,0",
-                "c/stories,4,1",
-                "s/render_data,0,0",
-            }),
-            StoredKeys());
-
-  for (std::string key : StoredKeys()) {
-    EXPECT_FALSE(db_entries_[key].has_local_action())
-        << "Found local action at key " << key
-        << ", did SaveFullStream erase everything?";
-  }
-}
-
-TEST_F(FeedStoreTest, LoadStreamSuccess) {
-  MakeFeedStore({});
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
-  fake_db_->UpdateCallback(true);
-
-  CallbackReceiver<LoadStreamResult> receiver;
-  store_->LoadStream(receiver.Bind());
-  fake_db_->LoadCallback(true);
-
-  ASSERT_TRUE(receiver.GetResult());
-  EXPECT_FALSE(receiver.GetResult()->read_error);
-  EXPECT_EQ(ToTextProto(MakeRootId()),
-            ToTextProto(receiver.GetResult()->stream_data.content_id()));
-}
-
-TEST_F(FeedStoreTest, LoadStreamFail) {
-  MakeFeedStore({});
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
-  fake_db_->UpdateCallback(true);
-
-  CallbackReceiver<LoadStreamResult> receiver;
-  store_->LoadStream(receiver.Bind());
-  fake_db_->LoadCallback(false);
-
-  ASSERT_TRUE(receiver.GetResult());
-  EXPECT_TRUE(receiver.GetResult()->read_error);
-}
-
-TEST_F(FeedStoreTest, LoadStreamNoData) {
+TEST_F(FeedStoreTest, ReadNonexistentStreamData) {
   MakeFeedStore({});
 
-  CallbackReceiver<LoadStreamResult> receiver;
-  store_->LoadStream(receiver.Bind());
-  fake_db_->LoadCallback(true);
-
-  ASSERT_TRUE(receiver.GetResult());
-  EXPECT_FALSE(receiver.GetResult()->stream_data.has_content_id());
-}
-
-TEST_F(FeedStoreTest, WriteOperations) {
-  MakeFeedStore({});
-  CallbackReceiver<LoadStreamResult> receiver;
-  store_->WriteOperations(5, {MakeOperation(MakeCluster(2, MakeRootId())),
-                              MakeOperation(MakeCluster(6, MakeRootId()))});
-  fake_db_->UpdateCallback(true);
-
-  EXPECT_EQ(StoreToString(), R"([T/0/5] {
-  stream_structures {
-    stream_id: "0"
-    sequence_number: 5
-    structures {
-      operation: 2
-      content_id {
-        content_domain: "content"
-        type: 3
-        id: 2
-      }
-      parent_id {
-        content_domain: "root"
-      }
-      type: 4
-    }
-    structures {
-      operation: 2
-      content_id {
-        content_domain: "content"
-        type: 3
-        id: 6
-      }
-      parent_id {
-        content_domain: "root"
-      }
-      type: 4
-    }
-  }
-}
-)");
+  bool did_read = false;
+  store_->ReadStreamData(base::BindLambdaForTesting(
+      [&](std::unique_ptr<feedstore::StreamData> stream_data) {
+        did_read = true;
+        EXPECT_FALSE(stream_data);
+      }));
+  fake_db_->GetCallback(true);
+  EXPECT_TRUE(did_read);
 }
 
 TEST_F(FeedStoreTest, ReadNonexistentContentAndSharedStates) {
@@ -389,13 +204,13 @@ TEST_F(FeedStoreTest, ReadContentAndSharedStates) {
               std::vector<feedstore::StreamSharedState> shared_states) {
             did_successful_read = true;
             ASSERT_EQ(content.size(), 2ul);
-            EXPECT_EQ(ToTextProto(content[0].content_id()),
-                      ToTextProto(content1.content_id()));
+            EXPECT_EQ(ContentIdToString(content[0].content_id()),
+                      ContentIdToString(content1.content_id()));
             EXPECT_EQ(content[0].frame(), content1.frame());
 
             ASSERT_EQ(shared_states.size(), 2ul);
-            EXPECT_EQ(ToTextProto(shared_states[0].content_id()),
-                      ToTextProto(shared1.content_id()));
+            EXPECT_EQ(ContentIdToString(shared_states[0].content_id()),
+                      ContentIdToString(shared1.content_id()));
             EXPECT_EQ(shared_states[0].shared_state_data(),
                       shared1.shared_state_data());
           }));
@@ -449,6 +264,58 @@ TEST_F(FeedStoreTest, ReadNextStreamState) {
       }));
   fake_db_->GetCallback(false);
   EXPECT_TRUE(did_failed_read);
+}
+
+TEST_F(FeedStoreTest, WriteThenRead) {
+  MakeFeedStore({});
+
+  std::vector<feedstore::Record> records(4);
+  *records[0].mutable_stream_data() = MakeStreamData();
+  *records[1].mutable_content() = MakeContent(0);
+  *records[2].mutable_shared_state() = MakeSharedState(0);
+  *records[3].mutable_next_stream_state()->mutable_stream_data() =
+      MakeStreamData();
+
+  store_->Write(records, base::BindLambdaForTesting([](bool success) {}));
+  fake_db_->UpdateCallback(true);
+
+  bool did_read_stream_data = false;
+  store_->ReadStreamData(base::BindLambdaForTesting(
+      [&](std::unique_ptr<feedstore::StreamData> stream_data) {
+        did_read_stream_data = true;
+        ASSERT_TRUE(stream_data);
+        // Just make sure stream_data isn't a default empty StreamData.
+        EXPECT_TRUE(stream_data->has_content_id());
+      }));
+  fake_db_->GetCallback(true);
+  EXPECT_TRUE(did_read_stream_data);
+
+  bool did_read_content = false;
+  store_->ReadContent(
+      {records[1].content().content_id()},
+      {records[2].shared_state().content_id()},
+      base::BindLambdaForTesting(
+          [&](std::vector<feedstore::Content> content,
+              std::vector<feedstore::StreamSharedState> shared_states) {
+            did_read_content = true;
+            ASSERT_EQ(content.size(), 1ul);
+            EXPECT_TRUE(content[0].has_content_id());
+
+            ASSERT_EQ(shared_states.size(), 1ul);
+            EXPECT_TRUE(shared_states[0].has_content_id());
+          }));
+  fake_db_->LoadCallback(true);
+  EXPECT_TRUE(did_read_content);
+
+  bool did_read_next_stream_state = false;
+  store_->ReadNextStreamState(base::BindLambdaForTesting(
+      [&](std::unique_ptr<feedstore::StreamAndContentState> result) {
+        did_read_next_stream_state = true;
+        ASSERT_TRUE(result);
+        EXPECT_TRUE(result->has_stream_data());
+      }));
+  fake_db_->GetCallback(true);
+  EXPECT_TRUE(did_read_next_stream_state);
 }
 
 }  // namespace feed

@@ -1439,6 +1439,29 @@ TEST_F(CrostiniManagerRestartTest, RestartWhileShuttingDown) {
   // of shutting down chrome while a restart is running.
 }
 
+TEST_F(CrostiniManagerRestartTest, ComponentUpdateInProgress) {
+  crostini_manager()->set_component_manager_load_error_for_testing(
+      component_updater::CrOSComponentManager::Error::UPDATE_IN_PROGRESS);
+
+  crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &CrostiniManager::set_component_manager_load_error_for_testing,
+          base::Unretained(crostini_manager()),
+          component_updater::CrOSComponentManager::Error::NONE),
+      base::TimeDelta::FromSeconds(3));
+
+  run_loop()->Run();
+
+  ExpectRestarterUmaCount(1);
+  ExpectCrostiniRestartResult(CrostiniResult::SUCCESS);
+}
+
 class CrostiniManagerEnterpriseReportingTest
     : public CrostiniManagerRestartTest {
  public:

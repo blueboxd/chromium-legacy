@@ -82,6 +82,22 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
   bool IsListMarker() const;
 
+  // Return true if this is the first fragment generated from a node.
+  bool IsFirstForNode() const {
+    DCHECK(Type() != kLine);
+    DCHECK(!IsInlineBox() || BoxFragment());
+    return is_first_for_node_;
+  }
+
+  // Return true if this is the last fragment generated from a node.
+  bool IsLastForNode() const {
+    // TODO(layout-dev): This doesn't work if the LayoutObject continues in a
+    // next fragmentainer (we get a false negative here then).
+    DCHECK(Type() != kLine);
+    DCHECK(!IsInlineBox() || BoxFragment());
+    return !DeltaToNextForSameLayoutObject();
+  }
+
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
   }
@@ -355,6 +371,8 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   // Used only when |IsText()| to avoid re-computing ink overflow.
   unsigned ink_overflow_computed_ : 1;
+
+  unsigned is_first_for_node_ : 1;
 };
 
 }  // namespace blink

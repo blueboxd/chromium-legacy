@@ -86,7 +86,7 @@ void SigninErrorHandler::HandleInitializedWithSize(
     const base::ListValue* args) {
   AllowJavascript();
   if (duplicate_profile_path_.empty())
-    CallJavascriptFunction("signin.error.removeSwitchButton");
+    FireWebUIListener("switch-button-unavailable");
 
   signin::SetInitializedModalHeight(browser_, web_ui(), args);
 
@@ -95,7 +95,7 @@ void SigninErrorHandler::HandleInitializedWithSize(
   // TODO(anthonyvd): Figure out why this is needed on Mac and not other
   // platforms and if there's a way to start unfocused while avoiding this
   // workaround.
-  CallJavascriptFunction("signin.error.clearFocus");
+  FireWebUIListener("clear-focus");
 }
 
 void SigninErrorHandler::CloseDialog() {

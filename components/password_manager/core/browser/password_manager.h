@@ -303,7 +303,7 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.
-  PasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
+  PasswordFormManager* GetMatchedManager(PasswordManagerDriver* driver,
                                          const autofill::FormData& form);
 
   // Log a frame (main frame, iframe) of a submitted password form.

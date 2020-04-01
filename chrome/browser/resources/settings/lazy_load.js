@@ -92,6 +92,7 @@ export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
 export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.m.js';
 export {ContentSettingProvider,SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.m.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.m.js';
+export {SafeBrowsingBrowserProxyImpl} from './privacy_page/safe_browsing_browser_proxy.m.js';
 export {SecurityKeysResetBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysBioEnrollProxyImpl, SampleStatus, Ctap2Status} from './privacy_page/security_keys_browser_proxy.m.js';
 export {ResetDialogPage} from './privacy_page/security_keys_reset_dialog.m.js';
 export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.m.js';

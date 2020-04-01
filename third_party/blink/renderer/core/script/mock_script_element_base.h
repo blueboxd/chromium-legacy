@@ -54,6 +54,9 @@ class MockScriptElementBase : public GarbageCollected<MockScriptElementBase>,
                void(HTMLScriptElementOrSVGScriptElement&));
   MOCK_CONST_METHOD0(Loader, ScriptLoader*());
 
+  ScriptElementBase::Type GetScriptElementType() override {
+    return ScriptElementBase::Type::kHTMLScriptElement;
+  }
   void Trace(Visitor* visitor) override { ScriptElementBase::Trace(visitor); }
 };
 

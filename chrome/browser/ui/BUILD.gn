@@ -1384,6 +1384,8 @@ jumbo_static_library("ui") {
       "webui/settings/protocol_handlers_handler.h",
       "webui/settings/reset_settings_handler.cc",
       "webui/settings/reset_settings_handler.h",
+      "webui/settings/safe_browsing_handler.cc",
+      "webui/settings/safe_browsing_handler.h",
       "webui/settings/safety_check_handler.cc",
       "webui/settings/safety_check_handler.h",
       "webui/settings/search_engines_handler.cc",
@@ -4031,7 +4033,6 @@ jumbo_static_library("ui") {
   if (enable_extensions) {
     deps += [
       "//apps",
-      "//chrome/browser/apps",
       "//chrome/browser/apps/platform_apps",  # TODO(loyso): Remove this dep.
       "//chrome/browser/apps/platform_apps/api",
       "//chrome/browser/extensions",

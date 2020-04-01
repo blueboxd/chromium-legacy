@@ -66,12 +66,6 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
                                        multiplier);
   }
 
-  void SetWebContentsAudioMuted(bool muted) {
-    contents()->SetAudioMuted(muted);
-    // The following happens automatically in a running browser.
-    controller_->WebContentsMutedStateChanged(muted);
-  }
-
   void ResetHasSessionBit() { controller_->has_session_ = false; }
 
   template <typename T>
@@ -336,7 +330,7 @@ TEST_F(MediaSessionControllerTest, PictureInPictureAvailability) {
 }
 
 TEST_F(MediaSessionControllerTest, AddPlayerWhenUnmuted) {
-  SetWebContentsAudioMuted(true);
+  contents()->SetAudioMuted(true);
 
   ASSERT_TRUE(controller_->Initialize(
       /* has_audio = */ true, /* is_remote = */ false,
@@ -344,7 +338,8 @@ TEST_F(MediaSessionControllerTest, AddPlayerWhenUnmuted) {
       /* is_pip_available = */ true, /* has_video = */ false));
   ASSERT_FALSE(media_session()->IsActive());
 
-  SetWebContentsAudioMuted(false);
+  contents()->SetAudioMuted(false);
+  controller_->WebContentsMutedStateChanged(false);
   EXPECT_TRUE(media_session()->IsActive());
 }
 
@@ -355,12 +350,13 @@ TEST_F(MediaSessionControllerTest, RemovePlayerWhenMuted) {
       /* is_pip_available = */ true, /* has_video = */ false));
   ASSERT_TRUE(media_session()->IsActive());
 
-  SetWebContentsAudioMuted(true);
+  contents()->SetAudioMuted(true);
+  controller_->WebContentsMutedStateChanged(true);
   EXPECT_FALSE(media_session()->IsActive());
 }
 
 TEST_F(MediaSessionControllerTest, EnterLeavePictureInPictureMuted) {
-  SetWebContentsAudioMuted(true);
+  contents()->SetAudioMuted(true);
 
   ASSERT_TRUE(controller_->Initialize(
       /* has_audio = */ true, /* is_remote = */ false,
@@ -370,9 +366,11 @@ TEST_F(MediaSessionControllerTest, EnterLeavePictureInPictureMuted) {
 
   // Entering PictureInPicture means the user expects to control the media, so
   // this should activate the session.
+  contents()->SetHasPictureInPictureVideo(true);
   controller_->PictureInPictureStateChanged(true);
   EXPECT_TRUE(media_session()->IsActive());
 
+  contents()->SetHasPictureInPictureVideo(false);
   controller_->PictureInPictureStateChanged(false);
   EXPECT_FALSE(media_session()->IsActive());
 }
@@ -382,15 +380,17 @@ TEST_F(MediaSessionControllerTest, MuteWithPictureInPicture) {
       /* has_audio = */ true, /* is_remote = */ false,
       media::MediaContentType::Persistent, nullptr,
       /* is_pip_available = */ true, /* has_video = */ false));
+  contents()->SetHasPictureInPictureVideo(true);
   controller_->PictureInPictureStateChanged(true);
   ASSERT_TRUE(media_session()->IsActive());
 
-  SetWebContentsAudioMuted(true);
+  contents()->SetAudioMuted(true);
+  controller_->WebContentsMutedStateChanged(true);
   EXPECT_TRUE(media_session()->IsActive());
 }
 
 TEST_F(MediaSessionControllerTest, LeavePictureInPictureUnmuted) {
-  SetWebContentsAudioMuted(true);
+  contents()->SetAudioMuted(true);
 
   ASSERT_TRUE(controller_->Initialize(
       /* has_audio = */ true, /* is_remote = */ false,
@@ -398,11 +398,14 @@ TEST_F(MediaSessionControllerTest, LeavePictureInPictureUnmuted) {
       /* is_pip_available = */ true, /* has_video = */ false));
   ASSERT_FALSE(media_session()->IsActive());
 
+  contents()->SetAudioMuted(false);
+  controller_->WebContentsMutedStateChanged(false);
+  contents()->SetHasPictureInPictureVideo(true);
   controller_->PictureInPictureStateChanged(true);
-  SetWebContentsAudioMuted(false);
 
   // Media was unmuted, so we now have audio focus, which should keep the
   // session active.
+  contents()->SetHasPictureInPictureVideo(false);
   controller_->PictureInPictureStateChanged(false);
   EXPECT_TRUE(media_session()->IsActive());
 }
@@ -429,8 +432,25 @@ TEST_F(MediaSessionControllerTest,
       /* is_pip_available = */ true, /* has_video = */ false));
   ASSERT_FALSE(media_session()->IsActive());
 
+  contents()->SetHasPictureInPictureVideo(true);
   controller_->PictureInPictureStateChanged(true);
   EXPECT_TRUE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest,
+       AddPlayerInitiallyPictureInPictureWithNoAudio) {
+  contents()->SetHasPictureInPictureVideo(true);
+
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ false, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true, /* has_video = */ false));
+  EXPECT_TRUE(media_session()->IsActive());
+
+  contents()->SetHasPictureInPictureVideo(false);
+  controller_->PictureInPictureStateChanged(false);
+
+  EXPECT_FALSE(media_session()->IsActive());
 }
 
 TEST_F(MediaSessionControllerTest, HasVideo_True) {

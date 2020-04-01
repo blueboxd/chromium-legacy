@@ -534,7 +534,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DoNotRecordSessionIfNotActive) {
       GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1).empty());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, GetPlaybackSessions) {
+// Flaky failures: crbug.com/1066853
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DISABLED_GetPlaybackSessions) {
   auto* browser = CreateBrowserFromParam();
   auto expected_default_metadata = GetExpectedDefaultMetadata();
 

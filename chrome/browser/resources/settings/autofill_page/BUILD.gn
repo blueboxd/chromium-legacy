@@ -16,6 +16,7 @@ js_type_check("closure_compile") {
     ":credit_card_edit_dialog",
     ":credit_card_list_entry",
     ":password_check",
+    ":password_check_behavior",
     ":password_check_edit_dialog",
     ":password_check_list_item",
     ":password_edit_dialog",
@@ -33,6 +34,7 @@ js_type_check("closure_compile") {
 js_library("autofill_page") {
   deps = [
     ":autofill_section",
+    ":password_check_behavior",
     ":passwords_section",
     ":payments_section",
     "..:open_window_proxy",
@@ -52,6 +54,7 @@ js_library("autofill_page") {
 js_library("autofill_section") {
   deps = [
     ":address_edit_dialog",
+    ":password_check_behavior",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",
@@ -97,12 +100,21 @@ js_library("credit_card_list_entry") {
 
 js_library("password_check") {
   deps = [
+    ":password_check_behavior",
     ":password_manager_proxy",
     "..:plural_string_proxy",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]
+}
+
+js_library("password_check_behavior") {
+  deps = [
+    ":password_manager_proxy",
+    "..:plural_string_proxy",
+  ]
+  externs_list = [ "$externs_path/passwords_private.js" ]
 }
 
 js_library("password_check_edit_dialog") {
@@ -203,6 +215,7 @@ js_type_check("closure_compile_module") {
     ":credit_card_edit_dialog.m",
     ":credit_card_list_entry.m",
     ":password_check.m",
+    ":password_check_behavior.m",
     ":password_check_edit_dialog.m",
     ":password_check_list_item.m",
     ":password_edit_dialog.m",
@@ -234,6 +247,7 @@ js_library("address_edit_dialog.m") {
 js_library("autofill_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/autofill_page/autofill_page.m.js" ]
   deps = [
+    ":password_check_behavior.m",
     "..:open_window_proxy.m",
     "..:route.m",
     "..:router.m",
@@ -293,6 +307,7 @@ js_library("credit_card_list_entry.m") {
 js_library("password_check.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/autofill_page/password_check.m.js" ]
   deps = [
+    ":password_check_behavior.m",
     ":password_manager_proxy.m",
     "..:plural_string_proxy.m",
     "../prefs:prefs_behavior.m",
@@ -301,6 +316,16 @@ js_library("password_check.m") {
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":password_check_module" ]
+}
+
+js_library("password_check_behavior.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/autofill_page/password_check_behavior.m.js" ]
+  deps = [
+    ":password_manager_proxy.m",
+    "..:plural_string_proxy.m",
+  ]
+  externs_list = [ "$externs_path/passwords_private.js" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("password_check_edit_dialog.m") {
@@ -653,6 +678,7 @@ polymer_modulizer("upi_id_list_entry") {
 js_modulizer("modulize") {
   input_files = [
     "blocking_request_manager.js",
+    "password_check_behavior.js",
     "password_manager_proxy.js",
     "show_password_behavior.js",
   ]

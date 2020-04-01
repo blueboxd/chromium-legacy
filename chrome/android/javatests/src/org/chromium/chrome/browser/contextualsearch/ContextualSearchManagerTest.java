@@ -124,11 +124,6 @@ import java.util.concurrent.TimeoutException;
         "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION})
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @RetryOnFailure
-//
-// NOTE -- THIS WHOLE TEST CLASS IS TEMPORARILY DISABLED:
-//
-@DisabledTest(message = "See https://crbug.com/1058362")
-//
 public class ContextualSearchManagerTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -145,8 +140,6 @@ public class ContextualSearchManagerTest {
     private static final String LOW_PRIORITY_SEARCH_ENDPOINT = "/s?";
     private static final String LOW_PRIORITY_INVALID_SEARCH_ENDPOINT = "/s/invalid";
     private static final String CONTEXTUAL_SEARCH_PREFETCH_PARAM = "&pf=c";
-    // The number of ms to delay startup for all tests.
-    private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
 
     private ActivityMonitor mActivityMonitor;
     private ContextualSearchFakeServer mFakeServer;
@@ -214,10 +207,6 @@ public class ContextualSearchManagerTest {
         });
 
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
-        // There's a problem with immediate startup that causes flakes due to the page not being
-        // ready, so specify a startup-delay of 1000 for legacy behavior.  See crbug.com/635661.
-        // TODO(donnd): find a better way to wait for page-ready, or at least reduce the delay!
-        Thread.sleep(ACTIVITY_STARTUP_DELAY_MS);
         mManager = mActivityTestRule.getActivity().getContextualSearchManager();
 
         Assert.assertNotNull(mManager);

@@ -350,6 +350,9 @@
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_TOO_MANY_PASSWORDS" desc="Error message when the password check can't be completed since the user saved too many passwords.">
     Chrome can't check your passwords because there are too many.
   </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT_GOOGLE_ACCOUNT" desc="Error message when the password check can't be completed since the user hit the quota limit, but the user is able to check their passwords in their Google account.">
+    Chrome can't check your passwords. Try again tomorrow or <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>check passwords in your Google Account<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT" desc="Error message when the password check can't be completed since the user hit the quota limit.">
     Chrome can't check your passwords. Try again tomorrow.
   </message>
@@ -367,9 +370,6 @@
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN_AFTER_ERROR" desc="Button to start bulk password check manually in passwords check section after it already failed once.">
     Try again
-  </message>
-  <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN_IN_ACCOUNT" desc="Link suggesting to perform a bulk leak check in the Google Account page.">
-    Check in Google Account.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_PROGRESS" desc="Text for a label showing how many passwords were checked so far and how many passwords need to be checked in total.">
     Checking passwords (<ph name="CHECKED_PASSWORDS">$1<ex>6</ex></ph> of <ph name="TOTAL_PASSWORDS">$2<ex>31</ex></ph>)…

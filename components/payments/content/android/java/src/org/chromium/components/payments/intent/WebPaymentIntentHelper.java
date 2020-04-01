@@ -66,7 +66,7 @@ public class WebPaymentIntentHelper {
     /** Invoked to report error for {@link #parsePaymentResponse}. */
     public interface PaymentErrorCallback {
         /** @param errorString The string that explains the error. */
-        void onError(String errorString);
+        void onPaymentError(String errorString);
     }
 
     /** Invoked to receive parsed data for {@link #parsePaymentResponse}. */
@@ -75,7 +75,7 @@ public class WebPaymentIntentHelper {
          * @param methodName The method name parsed from the intent response.
          * @param details The instrument details parsed from the intent response.
          */
-        void onIsReadyToPayServiceResponse(String methodName, String details);
+        void onPaymentSuccess(String methodName, String details);
     }
 
     /**
@@ -88,13 +88,13 @@ public class WebPaymentIntentHelper {
     public static void parsePaymentResponse(int resultCode, Intent data,
             PaymentErrorCallback errorCallback, PaymentSuccessCallback successCallback) {
         if (data == null) {
-            errorCallback.onError(ErrorStrings.MISSING_INTENT_DATA);
+            errorCallback.onPaymentError(ErrorStrings.MISSING_INTENT_DATA);
         } else if (data.getExtras() == null) {
-            errorCallback.onError(ErrorStrings.MISSING_INTENT_EXTRAS);
+            errorCallback.onPaymentError(ErrorStrings.MISSING_INTENT_EXTRAS);
         } else if (resultCode == Activity.RESULT_CANCELED) {
-            errorCallback.onError(ErrorStrings.RESULT_CANCELED);
+            errorCallback.onPaymentError(ErrorStrings.RESULT_CANCELED);
         } else if (resultCode != Activity.RESULT_OK) {
-            errorCallback.onError(String.format(
+            errorCallback.onPaymentError(String.format(
                     Locale.US, ErrorStrings.UNRECOGNIZED_ACTIVITY_RESULT, resultCode));
         } else {
             String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
@@ -106,7 +106,7 @@ public class WebPaymentIntentHelper {
             if (methodName == null) methodName = "";
             // TODO(crbug.com/1026667): Support payer data delegation for native apps instead of
             // returning empty PayerData.
-            successCallback.onIsReadyToPayServiceResponse(
+            successCallback.onPaymentSuccess(
                     /*methodName=*/methodName, /*details=*/details);
         }
     }

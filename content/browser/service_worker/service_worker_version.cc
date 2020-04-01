@@ -376,9 +376,6 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   } else if (status == REDUNDANT) {
     embedded_worker_->OnWorkerVersionDoomed();
 
-    // TODO(crbug.com/1021718): Remove this check after we identified the cause.
-    CHECK(bfcached_controllee_map_.empty());
-
     // TODO(crbug.com/951571): Remove this once we figured out the cause of
     // invalid controller status.
     redundant_state_callstack_ = base::debug::StackTrace();
@@ -766,10 +763,6 @@ void ServiceWorkerVersion::AddControllee(
 
   // TODO(yuzus, crbug.com/951571): Remove these CHECKs once we figure out the
   // cause of crash.
-  if (status_ == REDUNDANT) {
-    DEBUG_ALIAS_FOR_CSTR(redundant_callstack_str,
-                         redundant_state_callstack_.ToString().c_str(), 1024);
-  }
   CHECK_NE(status_, NEW);
   CHECK_NE(status_, INSTALLING);
   CHECK_NE(status_, INSTALLED);
@@ -958,9 +951,7 @@ void ServiceWorkerVersion::Doom() {
     container_host->NotifyControllerLost();
   }
   // Any controllee this version had should have removed itself.
-  // TODO(crbug.com/951571): Change to DCHECK once we identified the cause of
-  // crash.
-  CHECK(!HasControllee());
+  DCHECK(!HasControllee());
 
   SetStatus(REDUNDANT);
   if (running_status() == EmbeddedWorkerStatus::STARTING ||

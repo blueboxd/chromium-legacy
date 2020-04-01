@@ -959,6 +959,7 @@ android_library("chrome_test_java") {
     "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
+    "//ui/android:ui_javatests",
     "//ui/base/mojom:mojom_java",
     "//url:gurl_java",
     "//url/mojom:url_mojom_gurl_java",
@@ -1302,6 +1303,7 @@ chrome_common_shared_library("libchromefortest") {
     "//components/sync/test/fake_server:fake_server_android",
     "//content/public/test/android:content_native_test_support",
     "//content/test:test_support",
+    "//ui/base/clipboard:clipboard_test_support",
   ]
   if (enable_vr) {
     deps += [ "//chrome/browser/android/vr:test_support" ]
@@ -1622,6 +1624,7 @@ java_group("chrome_public_base_module_java_for_test") {
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/paint_preview/player/android:player_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//ui/android:ui_javatests",
   ]
 }
 

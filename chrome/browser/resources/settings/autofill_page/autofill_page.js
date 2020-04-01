@@ -10,7 +10,10 @@
 Polymer({
   is: 'settings-autofill-page',
 
-  behaviors: [PrefsBehavior],
+  behaviors: [
+    PrefsBehavior,
+    PasswordCheckBehavior,
+  ],
 
   properties: {
     /** @private Filter applied to passwords and password exceptions. */
@@ -34,6 +37,12 @@ Polymer({
         return map;
       },
     },
+
+    /** @private */
+    passwordManagerSubLabel_: {
+      type: String,
+      computed: 'computePasswordManagerSubLabel_(compromisedPasswordsCount)',
+    }
   },
 
   /**
@@ -64,5 +73,19 @@ Polymer({
         settings.OpenWindowProxyImpl.getInstance().openURL(
             loadTimeData.getString('googlePasswordManagerUrl')) :
         settings.Router.getInstance().navigateTo(settings.routes.PASSWORDS);
+  },
+
+  /**
+   * @return {string} The sub-title message indicating the result of password
+   * check.
+   * @private
+   */
+  computePasswordManagerSubLabel_() {
+    if (!loadTimeData.getBoolean('enablePasswordCheck')) {
+      return '';
+    }
+
+    return this.leakedPasswords.length > 0 ? this.compromisedPasswordsCount :
+                                             '';
   },
 });

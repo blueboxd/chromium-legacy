@@ -44,10 +44,13 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
           base::Bind(&PopulatePolicyHandlerParameters),
           base::Bind(&policy::GetChromePolicyDetails));
 
-  for (size_t i = 0; i < base::size(kSimplePolicyMap); ++i) {
-    handlers->AddHandler(std::make_unique<SimplePolicyHandler>(
-        kSimplePolicyMap[i].policy_name, kSimplePolicyMap[i].preference_path,
-        kSimplePolicyMap[i].value_type));
+  // Check the feature flag before adding handlers to the list.
+  if (ShouldInstallEnterprisePolicyHandlers()) {
+    for (size_t i = 0; i < base::size(kSimplePolicyMap); ++i) {
+      handlers->AddHandler(std::make_unique<SimplePolicyHandler>(
+          kSimplePolicyMap[i].policy_name, kSimplePolicyMap[i].preference_path,
+          kSimplePolicyMap[i].value_type));
+    }
   }
 
   return handlers;

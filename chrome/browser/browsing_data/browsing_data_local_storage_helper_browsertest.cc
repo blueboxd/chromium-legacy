@@ -122,13 +122,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
 }
 
 // Disable due to flaky. https://crbug.com/1028676
-#if defined(NDEBUG)
-#define MAYBE_DeleteSingleFile DISABLED_DeleteSingleFile
-#else
-#define MAYBE_DeleteSingleFile DeleteSingleFile
-#endif
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
-                       MAYBE_DeleteSingleFile) {
+                       DISABLED_DeleteSingleFile) {
   scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper(
       new browsing_data::LocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();

@@ -59,6 +59,7 @@ from .idl_type import IdlType
 from .interface import IndexedAndNamedProperties
 from .interface import Interface
 from .interface import Iterable
+from .interface import LegacyWindowAlias
 from .interface import Maplike
 from .interface import Setlike
 from .interface import Stringifier

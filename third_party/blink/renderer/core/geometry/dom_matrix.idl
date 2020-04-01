@@ -6,6 +6,7 @@
 
 [
     Exposed=(Window,Worker),
+    LegacyWindowAlias=WebKitCSSMatrix,
     Serializable
 ] interface DOMMatrix : DOMMatrixReadOnly {
     [CallWith=ExecutionContext, RaisesException] constructor(optional (DOMString or sequence<unrestricted double>) init);

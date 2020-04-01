@@ -100,6 +100,8 @@ class SVGScriptElement final : public SVGElement,
   void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) override;
 
+  Type GetScriptElementType() override;
+
   Element& CloneWithoutAttributesAndChildren(Document&) const override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
     return false;

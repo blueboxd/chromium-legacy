@@ -28,7 +28,8 @@
 
 [
     Exposed=(Window,Worker),
-    ImplementedAs=DOMURL
+    ImplementedAs=DOMURL,
+    LegacyWindowAlias=webkitURL
 ] interface URL {
     [RaisesException] constructor(USVString url, optional USVString base);
     stringifier attribute USVString href;

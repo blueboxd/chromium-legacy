@@ -26,6 +26,13 @@ enum CredentialLeakFlags {
   kSyncingPasswordsNormally = 1 << 2,
 };
 
+enum class PasswordCheckupReferrer {
+  // Corresponds to the leak detection dialog shown on Desktop and Mobile.
+  kLeakDetectionDialog = 0,
+  // Corresponds to Chrome's password check page on Desktop.
+  kPasswordCheck = 1,
+};
+
 // Contains combination of CredentialLeakFlags values.
 using CredentialLeakType = std::underlying_type_t<CredentialLeakFlags>;
 
@@ -75,7 +82,8 @@ password_manager::metrics_util::LeakDialogType GetLeakDialogType(
     password_manager::CredentialLeakType leak_type);
 
 // Returns the URL used to launch the password checkup.
-GURL GetPasswordCheckupURL();
+GURL GetPasswordCheckupURL(PasswordCheckupReferrer referrer =
+                               PasswordCheckupReferrer::kLeakDetectionDialog);
 
 }  // namespace password_manager
 

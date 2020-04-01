@@ -1044,6 +1044,7 @@ String ScriptLoader::GetScriptText() const {
   if (child_text_content == script_text_internal_slot)
     return child_text_content;
   return GetStringForScriptExecution(child_text_content,
+                                     element_->GetScriptElementType(),
                                      element_->GetDocument().ContextDocument());
 }
 

@@ -694,7 +694,7 @@ def native_value_traits_type_name(idl_type,
 
 
 def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value,
-                          variable_name, isolate):
+                          variable_name, isolate, for_constructor_callback):
     if idl_type.name == 'void':
         return ''
 
@@ -726,8 +726,11 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value,
         arguments = v8_value
 
     if idl_type.has_string_context:
-        cpp_expression_format = 'NativeValueTraits<IDL%s>::NativeValue(%s, %s, exception_state, bindings::ExecutionContextFromV8Wrappable(impl))' % (
-            idl_type.name, isolate, v8_value)
+        execution_context = 'bindings::ExecutionContextFromV8Wrappable(impl)'
+        if for_constructor_callback:
+            execution_context = 'CurrentExecutionContext(info.GetIsolate())'
+        cpp_expression_format = 'NativeValueTraits<IDL%s>::NativeValue(%s, %s, exception_state, %s)' % (
+            idl_type.name, isolate, v8_value, execution_context)
     elif base_idl_type in V8_VALUE_TO_CPP_VALUE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
     elif idl_type.name == 'ArrayBuffer':
@@ -788,15 +791,21 @@ def v8_value_to_local_cpp_value(idl_type,
                                 isolate='info.GetIsolate()',
                                 bailout_return_value=None,
                                 use_exception_state=False,
-                                code_generation_target=None):
+                                code_generation_target=None,
+                                for_constructor_callback=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     this_cpp_type = idl_type.cpp_type_args(
         extended_attributes=extended_attributes, raw_type=True)
     idl_type = idl_type.preprocessed_type
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value,
-                                      variable_name, isolate)
+    cpp_value = v8_value_to_cpp_value(
+        idl_type,
+        extended_attributes,
+        v8_value,
+        variable_name,
+        isolate,
+        for_constructor_callback=for_constructor_callback)
 
     # Optional expression that returns a value to be assigned to the local variable.
     assign_expression = None

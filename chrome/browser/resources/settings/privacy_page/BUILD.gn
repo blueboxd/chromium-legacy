@@ -16,6 +16,7 @@ js_type_check("closure_compile") {
     ":personalization_options",
     ":privacy_page",
     ":privacy_page_browser_proxy",
+    ":safe_browsing_browser_proxy",
     ":secure_dns",
     ":secure_dns_input",
     ":security_keys_bio_enroll_dialog",
@@ -112,6 +113,14 @@ js_library("privacy_page") {
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
+js_library("safe_browsing_browser_proxy") {
+  deps = [
+    "../site_settings:site_settings_prefs_browser_proxy",
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
 js_library("secure_dns") {
   deps = [
     ":privacy_page_browser_proxy",
@@ -190,6 +199,7 @@ js_library("security_keys_bio_enroll_dialog") {
 js_library("security_page") {
   deps = [
     ":privacy_page_browser_proxy",
+    ":safe_browsing_browser_proxy",
     "..:metrics_browser_proxy",
     "..:route",
     "..:router",
@@ -212,6 +222,7 @@ js_type_check("closure_compile_module") {
     ":personalization_options.m",
     ":privacy_page.m",
     ":privacy_page_browser_proxy.m",
+    ":safe_browsing_browser_proxy.m",
     ":secure_dns.m",
     ":secure_dns_input.m",
     ":security_keys_bio_enroll_dialog.m",
@@ -343,6 +354,14 @@ js_library("privacy_page_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
+js_library("safe_browsing_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/safe_browsing_browser_proxy.m.js" ]
+  deps = [
+    "../site_settings:site_settings_prefs_browser_proxy.m",
+  "//ui/webui/resources/js:cr.m" ]
+  extra_deps = [ ":modulize" ]
+}
+
 js_library("security_keys_bio_enroll_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_keys_bio_enroll_dialog.m.js" ]
   deps = [
@@ -422,6 +441,7 @@ js_library("security_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/security_page.m.js" ]
   deps = [
     ":privacy_page_browser_proxy.m",
+    ":safe_browsing_browser_proxy.m",
     "..:i18n_setup.m",
     "..:metrics_browser_proxy.m",
     "..:route.m",
@@ -623,6 +643,7 @@ polymer_modulizer("security_page") {
                    "chrome/browser/resources/settings/route.html|routes",
                    "chrome/browser/resources/settings/metrics_browser_proxy.html|PrivacyElementInteractions,MetricsBrowserProxy,MetricsBrowserProxyImpl",
                    "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl",
+                   "chrome/browser/resources/settings/privacy_page/safe_browsing_browser_proxy.html|SafeBrowsingBrowserProxy,SafeBrowsingBrowserProxyImpl,SafeBrowsingRadioManagedState",
                    "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncStatus",
                  ]
 }
@@ -630,6 +651,7 @@ polymer_modulizer("security_page") {
 js_modulizer("modulize") {
   input_files = [
     "privacy_page_browser_proxy.js",
+    "safe_browsing_browser_proxy.js",
     "security_keys_browser_proxy.js",
   ]
 

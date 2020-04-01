@@ -109,6 +109,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) override;
 
+  Type GetScriptElementType() override;
+
   Element& CloneWithoutAttributesAndChildren(Document&) const override;
 
   // https://w3c.github.io/webappsec-trusted-types/dist/spec/#script-scripttext

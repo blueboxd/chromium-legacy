@@ -124,6 +124,9 @@ extern const char kCloudPrintCertificateErrorLearnMoreURL[];
 
 extern const char kContentSettingsExceptionsLearnMoreURL[];
 
+// "Learn more" URL for cookies.
+extern const char kCookiesSettingsHelpCenterURL[];
+
 // "Learn more" URL for "Aw snap" page when showing "Reload" button.
 extern const char kCrashReasonURL[];
 
@@ -202,6 +205,9 @@ extern const char kRemoveNonCWSExtensionURL[];
 
 // "Learn more" URL for resetting profile preferences.
 extern const char kResetProfileSettingsLearnMoreURL[];
+
+// "Learn more" URL for Safebrowsing
+extern const char kSafeBrowsingHelpCenterURL[];
 
 // "Learn more" URL for safety tip bubble.
 extern const char kSafetyTipHelpCenterURL[];

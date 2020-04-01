@@ -195,7 +195,7 @@ void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
       dict.FindBoolKey("chooseWhatToSync").value_or(false);
 
   base::Value edu_login_params;
-  if (args.GetList().size() > 0) {
+  if (args.GetList().size() > 1) {
     edu_login_params = args.GetList()[1].Clone();
   }
 

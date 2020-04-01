@@ -659,9 +659,6 @@ void ServiceWorkerRegisterJob::OnStoreRegistrationComplete(
     // TODO(falken): Move this further down. The spec says to set status to
     // 'redundant' after promoting the new version to .waiting attribute and
     // 'installed' status.
-    // TODO(crbug.com/951571): Remove this once we identified the cause of
-    // crash.
-    CHECK(!registration()->waiting_version()->HasControllee());
     registration()->waiting_version()->SetStatus(
         ServiceWorkerVersion::REDUNDANT);
   }

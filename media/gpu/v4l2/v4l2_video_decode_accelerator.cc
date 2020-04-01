@@ -260,7 +260,7 @@ void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
   if (!config_result)
     return;
 
-  if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
+  if (config.profile >= H264PROFILE_MIN && config.profile <= H264PROFILE_MAX) {
     decoder_h264_parser_.reset(new H264Parser());
   }
 
@@ -288,7 +288,7 @@ bool V4L2VideoDecodeAccelerator::CheckConfig(const Config& config) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   input_format_fourcc_ =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, false);
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(config.profile, false);
 
   if (!input_format_fourcc_ ||
       !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {

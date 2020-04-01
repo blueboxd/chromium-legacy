@@ -12,6 +12,7 @@
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="./password_check_behavior.html">
 <link rel="import" href="./password_manager_proxy.html">
 
 <dom-module id="settings-autofill-page">
@@ -20,8 +21,19 @@
       cr-link-row {
         --cr-icon-button-margin-start: 20px;
       }
+
       cr-link-row:not([hidden]) + cr-link-row {
         border-top: var(--cr-separator-line);
+      }
+
+      #passwordManagerSubLabel {
+        color: var(--google-red-600);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #passwordManagerSubLabel {
+          color: var(--google-red-refresh-300);
+        }
       }
     </style>
     <settings-animated-pages id="pages" section="autofill"
@@ -29,7 +41,10 @@
       <div route-path="default">
         <cr-link-row id="passwordManagerButton" start-icon="settings20:vpn-key"
             label="$i18n{passwords}" on-click="onPasswordsClick_"
-            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+            role-description="$i18n{subpageArrowRoleDescription}">
+          <span id="passwordManagerSubLabel" slot="sub-label">
+              [[passwordManagerSubLabel_]]</span>
+        </cr-link-row>
         <cr-link-row id="paymentManagerButton"
             start-icon="settings20:credit-card" label="$i18n{creditCards}"
             on-click="onPaymentsClick_"

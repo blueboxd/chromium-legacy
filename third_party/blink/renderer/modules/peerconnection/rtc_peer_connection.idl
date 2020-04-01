@@ -64,7 +64,9 @@ enum RTCPeerConnectionState {
 //  * any -> specific dictionary types like RTCConfiguration
 [
     ActiveScriptWrappable,
-    Exposed=Window
+    Exposed=Window,
+    LegacyWindowAlias=webkitRTCPeerConnection,
+    LegacyWindowAlias_Measure
 ] interface RTCPeerConnection : EventTarget {
     // TODO(guidou): There should only be one constructor argument.
     [CallWith=ExecutionContext, RaisesException] constructor(optional RTCConfiguration configuration = {}, optional any mediaConstraints);

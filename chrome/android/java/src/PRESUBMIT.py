@@ -98,6 +98,7 @@ def _CheckAlertDialogBuilder(input_api, output_api):
       BROWSER_ROOT + 'site_settings/ManageSpaceActivity.java',
       BROWSER_ROOT + 'site_settings/SingleCategorySettings.java',
       BROWSER_ROOT + 'site_settings/SingleWebsiteSettings.java',
+      BROWSER_ROOT + 'sync/settings/ManageSyncSettings.java',
       BROWSER_ROOT + 'sync/settings/SyncAndServicesSettings.java',
       BROWSER_ROOT + 'sync/ui/PassphraseCreationDialogFragment.java',
       BROWSER_ROOT + 'sync/ui/PassphraseDialogFragment.java',

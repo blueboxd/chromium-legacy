@@ -59,6 +59,9 @@ Polymer({
       computed: 'computeSelectSafeBrowsingRadio_(prefs.safeBrowsing.*)',
     },
 
+    /** @private {!settings.SafeBrowsingRadioManagedState} */
+    safeBrowsingRadioManagedState_: Object,
+
     /** @private */
     enableSecurityKeysSubpage_: {
       type: Boolean,
@@ -66,18 +69,6 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('enableSecurityKeysSubpage');
       }
-    },
-
-    /** @private {chrome.settingsPrivate.PrefObject} */
-    safeBrowsingReportingPref_: {
-      type: Object,
-      value() {
-        return /** @type {chrome.settingsPrivate.PrefObject} */ ({
-          key: '',
-          type: chrome.settingsPrivate.PrefType.BOOLEAN,
-          value: false,
-        });
-      },
     },
 
     /** @type {!Map<string, (string|Function)>} */
@@ -88,7 +79,7 @@ Polymer({
   },
 
   observers: [
-    'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
+    'onSafeBrowsingPrefChange_(prefs.safebrowsing.*)',
   ],
 
   /*
@@ -128,7 +119,6 @@ Polymer({
     return this.getPref('safebrowsing.enhanced').value ? SafeBrowsing.ENHANCED :
                                                          SafeBrowsing.STANDARD;
   },
-
 
   /** @private {settings.PrivacyPageBrowserProxy} */
   browserProxy_: null,
@@ -172,26 +162,11 @@ Polymer({
   },
 
   /** @private */
-  onSafeBrowsingReportingToggleChange_() {
-    this.setPrefValue(
-        'safebrowsing.scout_reporting_enabled',
-        this.$$('#safeBrowsingReportingToggle').checked);
-  },
-
-  /** @private */
-  onSafeBrowsingReportingPrefChange_() {
-    if (this.prefs === undefined) {
-      return;
-    }
-    const safeBrowsingScoutPref =
-        this.getPref('safebrowsing.scout_reporting_enabled');
-    this.safeBrowsingReportingPref_ = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: !!safeBrowsingScoutPref.value,
-      enforcement: safeBrowsingScoutPref.enforcement,
-      controlledBy: safeBrowsingScoutPref.controlledBy,
-    };
+  async onSafeBrowsingPrefChange_() {
+    // Retrieve and update safe browsing radio managed state.
+    this.safeBrowsingRadioManagedState_ =
+        await settings.SafeBrowsingBrowserProxyImpl.getInstance()
+            .getSafeBrowsingRadioManagedState();
   },
 
   /** @private */

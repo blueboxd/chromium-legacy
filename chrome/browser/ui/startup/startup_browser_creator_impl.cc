@@ -27,8 +27,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/apps_launch.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
+#include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -403,8 +403,8 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
     // If |app_id| is a disabled or terminated platform app we handle it
     // specially here, otherwise it will be handled below.
-    if (apps::OpenApplicationWithReenablePrompt(profile, app_id, command_line_,
-                                                cur_dir_)) {
+    if (apps::OpenExtensionApplicationWithReenablePrompt(
+            profile, app_id, command_line_, cur_dir_)) {
       return true;
     }
   }
@@ -583,7 +583,7 @@ bool StartupBrowserCreatorImpl::MaybeLaunchApplication(Profile* profile) {
     // Opens an empty browser window if the app_id is invalid.
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()
-        .LaunchAppWithCallback(app_id, cur_dir_,
+        .LaunchAppWithCallback(app_id, command_line_, cur_dir_,
                                base::BindOnce(&FinalizeWebAppLaunch));
     return true;
   }
@@ -603,7 +603,7 @@ bool StartupBrowserCreatorImpl::MaybeLaunchApplication(Profile* profile) {
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(url::kFileScheme)) {
       const content::WebContents* web_contents =
-          apps::OpenAppShortcutWindow(profile, url);
+          apps::OpenExtensionAppShortcutWindow(profile, url);
       if (web_contents) {
         FinalizeWebAppLaunch(
             chrome::FindBrowserWithWebContents(web_contents),

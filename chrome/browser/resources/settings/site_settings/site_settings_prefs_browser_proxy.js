@@ -46,7 +46,7 @@ let IsValid;
  * @typedef {{disabled: boolean,
  *            indicator: !CrPolicyIndicatorType}}
  */
-let ManagedState;
+/* #export */ let ManagedState;
 
 /**
  * Stores information about whether individual cookies controls are managed,

@@ -36,7 +36,7 @@
     // TODO(foolip): Exposed=(Window,Worker),
     RuntimeEnabled=SharedWorker
 ] interface SharedWorker : EventTarget {
-    [CallWith=ExecutionContext, RaisesException] constructor(DOMString scriptURL, optional (DOMString or WorkerOptions) options = {});
+    [CallWith=ExecutionContext, RaisesException] constructor(ScriptURLString scriptURL, optional (DOMString or WorkerOptions) options = {});
     readonly attribute MessagePort port;
 };
 

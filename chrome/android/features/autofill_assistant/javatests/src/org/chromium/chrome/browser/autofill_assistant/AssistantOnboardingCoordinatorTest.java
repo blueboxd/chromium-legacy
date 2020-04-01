@@ -182,7 +182,9 @@ public class AssistantOnboardingCoordinatorTest {
 
         TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
                 R.id.onboarding_subtitle);
-        assertEquals(View.GONE, termsView.getVisibility());
+        assertEquals(
+                mActivity.getResources().getText(R.string.autofill_assistant_init_message_short),
+                termsView.getText());
         TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
                 R.id.onboarding_try_assistant);
         assertEquals(
@@ -205,7 +207,9 @@ public class AssistantOnboardingCoordinatorTest {
 
         TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
                 R.id.onboarding_subtitle);
-        assertEquals(View.GONE, termsView.getVisibility());
+        assertEquals(
+                mActivity.getResources().getText(R.string.autofill_assistant_init_message_short),
+                termsView.getText());
         TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
                 R.id.onboarding_try_assistant);
         assertEquals(mActivity.getResources().getText(

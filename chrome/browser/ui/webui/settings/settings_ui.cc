@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
+#include "chrome/browser/ui/webui/settings/safe_browsing_handler.h"
 #include "chrome/browser/ui/webui/settings/safety_check_handler.h"
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
@@ -205,6 +206,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<PeopleHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProtocolHandlersHandler>());
+  AddSettingsPageUIHandler(std::make_unique<SafeBrowsingHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SecureDnsHandler>());
   AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(
@@ -324,8 +326,17 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // above.
   html_source->AddResourcePath("images/cookies_banner.svg",
                                IDR_SETTINGS_IMAGES_COOKIES_BANNER_SVG);
+  html_source->AddResourcePath("images/cookies_banner_dark.svg",
+                               IDR_SETTINGS_IMAGES_COOKIES_BANNER_DARK_SVG);
+  html_source->AddResourcePath("images/permissions_banner.svg",
+                               IDR_SETTINGS_IMAGES_PERMISSIONS_BANNER_SVG);
+  html_source->AddResourcePath("images/permissions_banner_dark.svg",
+                               IDR_SETTINGS_IMAGES_PERMISSIONS_BANNER_DARK_SVG);
   html_source->AddResourcePath("images/safe_browsing_banner.svg",
                                IDR_SETTINGS_IMAGES_SAFE_BROWSING_BANNER_SVG);
+  html_source->AddResourcePath(
+      "images/safe_browsing_banner_dark.svg",
+      IDR_SETTINGS_IMAGES_SAFE_BROWSING_BANNER_DARK_SVG);
   html_source->AddResourcePath("images/sync_banner.svg",
                                IDR_SETTINGS_IMAGES_SYNC_BANNER_SVG);
   html_source->AddResourcePath("images/sync_banner_dark.svg",

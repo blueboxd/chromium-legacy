@@ -37,6 +37,7 @@ Polymer({
     I18nBehavior,
     WebUIListenerBehavior,
     ListPropertyUpdateBehavior,
+    PasswordCheckBehavior,
     Polymer.IronA11yKeysBehavior,
     settings.GlobalScrollTargetBehavior,
     PrefsBehavior,
@@ -103,7 +104,7 @@ Polymer({
     /** @private */
     hasNeverCheckedPasswords_: {
       type: Boolean,
-      value: false,
+      computed: 'computeHasNeverCheckedPasswords_(status)',
     },
 
     /** @private */
@@ -122,14 +123,8 @@ Polymer({
     /** @private */
     hasLeakedCredentials_: {
       type: Boolean,
-      value: false,
+      computed: 'computeHasLeakedCredentials_(leakedPasswords)',
     },
-
-    /**
-     * The number of compromised passwords as a formatted string.
-     * @private
-     */
-    compromisedPasswordsCount_: String,
 
     /** @private */
     hidePasswordsLink_: {
@@ -216,10 +211,7 @@ Polymer({
    */
   activeDialogAnchorStack_: [],
 
-  /**
-   * @type {PasswordManagerProxy}
-   * @private
-   */
+  /** @private {?PasswordManagerProxy} */
   passwordManager_: null,
 
   /**
@@ -239,18 +231,6 @@ Polymer({
    * @private
    */
   setPasswordExceptionsListener_: null,
-
-  /**
-   * @type {?function(!PasswordManagerProxy.CompromisedCredentials):void}
-   * @private
-   */
-  setLeakedCredentialsListener_: null,
-
-  /**
-   * @type {?function(!PasswordManagerProxy.PasswordCheckStatus):void}
-   * @private
-   */
-  statusChangedListener_: null,
 
   /** @override */
   attached() {
@@ -272,29 +252,10 @@ Polymer({
       this.passwordExceptions = list;
     };
 
-    // TODO(https://crbug.com/1047726) Remove code duplication with
-    // password_check.js
-    const setLeakedCredentialsListener = credentials => {
-      this.hasLeakedCredentials_ = credentials.length > 0;
-      settings.PluralStringProxyImpl.getInstance()
-          .getPluralString('compromisedPasswords', credentials.length)
-          .then(compromisedPasswordCount => {
-            this.compromisedPasswordsCount_ = compromisedPasswordCount;
-          });
-    };
-
-    // TODO(https://crbug.com/1047726) Remove code duplication with
-    // password_check.js
-    const statusChangeListener = status => {
-      this.hasNeverCheckedPasswords_ = !status.elapsedTimeSinceLastCheck;
-    };
-
     this.setIsOptedInForAccountStorageListener_ =
         setIsOptedInForAccountStorageListener;
     this.setSavedPasswordsListener_ = setSavedPasswordsListener;
     this.setPasswordExceptionsListener_ = setPasswordExceptionsListener;
-    this.setLeakedCredentialsListener_ = setLeakedCredentialsListener;
-    this.statusChangedListener_ = statusChangeListener;
 
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
@@ -317,10 +278,6 @@ Polymer({
         setIsOptedInForAccountStorageListener);
     this.passwordManager_.getSavedPasswordList(setSavedPasswordsListener);
     this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
-    this.passwordManager_.getCompromisedCredentials().then(
-        this.setLeakedCredentialsListener_);
-    this.passwordManager_.getPasswordCheckStatus().then(
-        this.statusChangedListener_);
 
     // Listen for changes.
     this.passwordManager_.addAccountStorageOptInStateListener(
@@ -329,10 +286,6 @@ Polymer({
         setSavedPasswordsListener);
     this.passwordManager_.addExceptionListChangedListener(
         setPasswordExceptionsListener);
-    this.passwordManager_.addCompromisedCredentialsListener(
-        this.setLeakedCredentialsListener_);
-    this.passwordManager_.addPasswordCheckStatusListener(
-        this.statusChangedListener_);
 
     this.notifySplices('savedPasswords', []);
 
@@ -354,25 +307,11 @@ Polymer({
   /** @override */
   detached() {
     this.passwordManager_.removeSavedPasswordListChangedListener(
-        /**
-         * @type {function(!Array<PasswordManagerProxy.PasswordUiEntry>):void}
-         */
-        (this.setSavedPasswordsListener_));
+        assert(this.setSavedPasswordsListener_));
     this.passwordManager_.removeExceptionListChangedListener(
-        /**
-         * @type {function(!Array<PasswordManagerProxy.ExceptionEntry>):void}
-         */
-        (this.setPasswordExceptionsListener_));
+        assert(this.setPasswordExceptionsListener_));
     this.passwordManager_.removeAccountStorageOptInStateListener(
-        /**
-         * @type {function(boolean):void}
-         */
-        (this.setIsOptedInForAccountStorageListener_));
-
-    this.passwordManager_.removeCompromisedCredentialsListener(
-        assert(this.setLeakedCredentialsListener_));
-    this.passwordManager_.removePasswordCheckStatusListener(
-        assert(this.statusChangedListener_));
+        assert(this.setIsOptedInForAccountStorageListener_));
 
     if (cr.toastManager.getToastManager().isToastOpen) {
       cr.toastManager.getToastManager().hide();
@@ -657,6 +596,22 @@ Polymer({
   getStorageIcon_(item) {
     // TODO(crbug.com/1049141): Add the proper icons once we know them.
     return item.fromAccountStore ? 'cr:sync' : 'cr:computer';
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  computeHasLeakedCredentials_() {
+    return this.leakedPasswords.length > 0;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  computeHasNeverCheckedPasswords_() {
+    return !this.status.elapsedTimeSinceLastCheck;
   },
 });
 })();

@@ -29,13 +29,10 @@ BrowserAppLauncher::~BrowserAppLauncher() = default;
 
 void BrowserAppLauncher::LaunchAppWithCallback(
     const std::string& app_id,
+    const base::CommandLine& command_line,
     const base::FilePath& current_directory,
     base::OnceCallback<void(Browser* browser,
                             apps::mojom::LaunchContainer container)> callback) {
-  // TODO(crbug.com/1061843): Remove command_line from AppLaunchParams, and get
-  // command line from the current process in GetLaunchFilesFromCommandLine
-  auto& command_line = *base::CommandLine::ForCurrentProcess();
-
   // old-style app shortcuts
   if (app_id.empty()) {
     ::LaunchAppWithCallback(profile_, app_id, command_line, current_directory,

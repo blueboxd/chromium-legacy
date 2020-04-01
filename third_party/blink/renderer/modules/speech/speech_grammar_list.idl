@@ -26,6 +26,9 @@
 // https://w3c.github.io/speech-api/#speechgrammarlist
 
 [
+    LegacyWindowAlias=webkitSpeechGrammarList,
+    LegacyWindowAlias_Measure,
+    LegacyWindowAlias_RuntimeEnabled=ScriptedSpeechRecognition,
     NoInterfaceObject
 ] interface SpeechGrammarList {
     [Measure] constructor();

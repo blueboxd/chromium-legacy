@@ -239,6 +239,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
   DCHECK(timeslice_.is_zero());
   DCHECK(!webm_muxer_);
 
+  invalidated_ = false;
+
   timeslice_ = base::TimeDelta::FromMilliseconds(timeslice);
   slice_origin_timestamp_ = base::TimeTicks::Now();
 
@@ -335,8 +337,7 @@ void MediaRecorderHandler::Stop() {
   DCHECK(IsMainThread());
   // Don't check |recording_| since we can go directly from pause() to stop().
 
-  if (recording_)
-    Pause();
+  invalidated_ = true;
 
   recording_ = false;
   timeslice_ = base::TimeDelta::FromMilliseconds(0);
@@ -496,6 +497,10 @@ void MediaRecorderHandler::OnEncodedVideo(
     base::TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(IsMainThread());
+
+  if (invalidated_)
+    return;
+
   auto params_with_codec = params;
   params_with_codec.codec = MediaVideoCodecFromCodecId(video_codec_id_);
   HandleEncodedVideo(params_with_codec, std::move(encoded_data),
@@ -523,9 +528,6 @@ void MediaRecorderHandler::HandleEncodedVideo(
     base::TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(IsMainThread());
-
-  if (video_recorders_.IsEmpty())
-    return;
 
   if (UpdateTracksAndCheckIfChanged()) {
     recorder_->OnError("Amount of tracks in MediaStream has changed.");
@@ -557,7 +559,7 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
                                           base::TimeTicks timestamp) {
   DCHECK(IsMainThread());
 
-  if (audio_recorders_.IsEmpty())
+  if (invalidated_)
     return;
 
   if (UpdateTracksAndCheckIfChanged()) {
@@ -576,7 +578,7 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(IsMainThread());
 
-  if (!recording_)
+  if (invalidated_)
     return;
 
   const base::TimeTicks now = base::TimeTicks::Now();

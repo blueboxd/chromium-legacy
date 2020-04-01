@@ -129,7 +129,10 @@ def callback_function_name(cg_context,
         property_name = ""
         kind = "Constructor"
     elif cg_context.exposed_construct:
-        kind = "ExposedConstruct"
+        if cg_context.legacy_window_alias:
+            kind = "LegacyWindowAlias"
+        else:
+            kind = "ExposedConstruct"
     elif cg_context.operation_group:
         kind = "Operation"
     elif cg_context.stringifier:
@@ -1146,7 +1149,7 @@ def make_report_measure_as(cg_context):
         suffix = "_ConstructorGetter"
     elif cg_context.operation:
         suffix = "_Method"
-    name = ext_attrs.value_of("MeasureAs")
+    name = ext_attrs.value_of("MeasureAs") or ext_attrs.value_of("Measure")
     if name:
         name = "k{}".format(name)
     elif cg_context.constructor:
@@ -3228,10 +3231,19 @@ def _make_property_entries_and_callback_defs(
 
     def process_exposed_construct(exposed_construct, is_context_dependent,
                                   exposure_conditional, world):
-        cgc = cg_context.make_copy(
-            exposed_construct=exposed_construct,
-            for_world=world,
-            v8_callback_type=CodeGenContext.V8_ACCESSOR_NAME_GETTER_CALLBACK)
+        if isinstance(exposed_construct, web_idl.LegacyWindowAlias):
+            cgc = cg_context.make_copy(
+                exposed_construct=exposed_construct.original,
+                legacy_window_alias=exposed_construct,
+                for_world=world,
+                v8_callback_type=CodeGenContext.
+                V8_ACCESSOR_NAME_GETTER_CALLBACK)
+        else:
+            cgc = cg_context.make_copy(
+                exposed_construct=exposed_construct,
+                for_world=world,
+                v8_callback_type=CodeGenContext.
+                V8_ACCESSOR_NAME_GETTER_CALLBACK)
         prop_callback_name = callback_function_name(cgc)
         prop_callback_node = make_exposed_construct_callback_def(
             cgc, prop_callback_name)
@@ -3295,6 +3307,7 @@ def _make_property_entries_and_callback_defs(
     iterate(interface.constants, process_constant)
     iterate(interface.constructor_groups, process_constructor_group)
     iterate(interface.exposed_constructs, process_exposed_construct)
+    iterate(interface.legacy_window_aliases, process_exposed_construct)
     iterate(interface.operation_groups, process_operation_group)
     if interface.stringifier:
         iterate([interface.stringifier.operation], process_stringifier)
@@ -4242,6 +4255,9 @@ def _collect_include_headers(interface):
 
     for exposed_construct in interface.exposed_constructs:
         headers.add(PathManager(exposed_construct).api_path(ext="h"))
+    for legacy_window_alias in interface.legacy_window_aliases:
+        headers.add(
+            PathManager(legacy_window_alias.original).api_path(ext="h"))
 
     path_manager = PathManager(interface)
     headers.discard(path_manager.api_path(ext="h"))

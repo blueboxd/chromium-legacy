@@ -65,6 +65,9 @@ ImmutablePrototype
 ImplementedAs=*
 LegacyTreatAsPartialInterface
 LegacyUnenumerableNamedProperties
+LegacyWindowAlias=*
+LegacyWindowAlias_Measure=|*
+LegacyWindowAlias_RuntimeEnabled=*
 LenientSetter
 LenientThis
 LogActivity=|GetterOnly|SetterOnly

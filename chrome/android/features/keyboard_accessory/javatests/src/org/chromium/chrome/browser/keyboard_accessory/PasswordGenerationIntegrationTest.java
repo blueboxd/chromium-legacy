@@ -66,6 +66,7 @@ public class PasswordGenerationIntegrationTest {
     @Before
     public void setUp() throws InterruptedException {
         mSyncTestRule.setUpTestAccountAndSignIn();
+        ManualFillingTestHelper.disableServerPredictions();
         mHelper.loadTestPage(FORM_URL, false);
     }
 
@@ -109,7 +110,6 @@ public class PasswordGenerationIntegrationTest {
 
     @Test
     @IntegrationTest
-    @DisabledTest(message = "crbug.com/1010344")
     public void testAutomaticGenerationUsePassword() throws InterruptedException, TimeoutException {
         waitForGenerationLabel();
         focusField(PASSWORD_NODE_ID);
@@ -123,6 +123,8 @@ public class PasswordGenerationIntegrationTest {
         waitForGenerationDialog();
         String generatedPassword = getTextFromTextView(R.id.generated_password);
         onView(withId(R.id.positive_button)).perform(click());
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !mHelper.getFieldText(PASSWORD_NODE_ID).isEmpty());
         assertPasswordText(PASSWORD_NODE_ID, generatedPassword);
         clickNode(SUBMIT_NODE_ID);
         mHelper.waitForViewOnActivityRoot(withId(R.id.infobar_message))

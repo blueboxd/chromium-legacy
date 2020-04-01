@@ -181,7 +181,8 @@
           no-search="[[!privacySettingsRedesignEnabled_]]">
         <settings-subpage id="security" page-title="$i18n{securityPageTitle}"
             no-search$="[[!privacySettingsRedesignEnabled_]]"
-            associated-control="[[$$('#securityLinkRow')]]">
+            associated-control="[[$$('#securityLinkRow')]]"
+            learn-more-url="$i18n{safeBrowsingHelpCenterURL}">
           <settings-security-page prefs="{{prefs}}"
               focus-config="[[focusConfig_]]"
               sync-status="[[syncStatus]]">
@@ -250,6 +251,7 @@
       <template is="dom-if" route-path="/cookies"
           no-search="[[!privacySettingsRedesignEnabled_]]">
         <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
+            learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
             no-search$="[[!privacySettingsRedesignEnabled_]]"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}"

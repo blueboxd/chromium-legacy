@@ -139,6 +139,16 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     media_recorder_handler_->OnVideoFrameForTesting(std::move(frame),
                                                     base::TimeTicks::Now());
   }
+
+  void OnEncodedVideoForTesting(const media::WebmMuxer::VideoParameters& params,
+                                std::string encoded_data,
+                                std::string encoded_alpha,
+                                base::TimeTicks timestamp,
+                                bool is_key_frame) {
+    media_recorder_handler_->OnEncodedVideo(params, encoded_data, encoded_alpha,
+                                            timestamp, is_key_frame);
+  }
+
   void OnAudioBusForTesting(const media::AudioBus& audio_bus) {
     media_recorder_handler_->OnAudioBusForTesting(audio_bus,
                                                   base::TimeTicks::Now());
@@ -507,6 +517,69 @@ TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
   media_recorder_handler_ = nullptr;
 }
 
+TEST_P(MediaRecorderHandlerTest, PauseRecorderForVideo) {
+  // Video-only test: Audio would be very similar.
+  if (GetParam().has_audio)
+    return;
+
+  AddTracks();
+
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+
+  const String mime_type(GetParam().mime_type);
+  const String codecs(GetParam().codecs);
+
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      recorder, registry_.test_stream(), mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Start(0));
+
+  Mock::VerifyAndClearExpectations(recorder);
+  media_recorder_handler_->Pause();
+
+  EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
+  media::WebmMuxer::VideoParameters params(gfx::Size(), 1, media::kCodecVP9,
+                                           gfx::ColorSpace());
+  OnEncodedVideoForTesting(params, "vp9 frame", "", base::TimeTicks::Now(),
+                           true);
+
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
+  media_recorder_handler_ = nullptr;
+}
+
+TEST_P(MediaRecorderHandlerTest, StartStopStartRecorderForVideo) {
+  // Video-only test: Audio would be very similar.
+  if (GetParam().has_audio)
+    return;
+
+  AddTracks();
+
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+
+  const String mime_type(GetParam().mime_type);
+  const String codecs(GetParam().codecs);
+
+  EXPECT_TRUE(media_recorder_handler_->Initialize(
+      recorder, registry_.test_stream(), mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->Start(0));
+  media_recorder_handler_->Stop();
+
+  Mock::VerifyAndClearExpectations(recorder);
+  EXPECT_TRUE(media_recorder_handler_->Start(0));
+
+  EXPECT_CALL(*recorder, WriteData).Times(AtLeast(1));
+  media::WebmMuxer::VideoParameters params(gfx::Size(), 1, media::kCodecVP9,
+                                           gfx::ColorSpace());
+  OnEncodedVideoForTesting(params, "vp9 frame", "", base::TimeTicks::Now(),
+                           true);
+
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
+  media_recorder_handler_ = nullptr;
+}
+
 struct MediaRecorderPassthroughTestParams {
   const char* mime_type;
   media::VideoCodec codec;
@@ -624,8 +697,8 @@ TEST_F(MediaRecorderHandlerPassthroughTest, ErrorsOutOnCodecSwitch) {
   // transfer doesn't crash the media recorder.
   OnVideoFrameForTesting(FakeEncodedVideoFrame::Builder()
                              .WithKeyFrame(true)
-                             .WithCodec(media::kCodecVP9)
-                             .WithData(std::string("vp9 frame"))
+                             .WithCodec(media::kCodecVP8)
+                             .WithData(std::string("vp8 frame"))
                              .BuildRefPtr());
   platform_->RunUntilIdle();
 }

@@ -1070,9 +1070,15 @@ void PasswordManager::RecordProvisionalSaveFailure(
 // TODO(https://crbug.com/831123): Implement creating missing
 // PasswordFormManager when PasswordFormManager is gone.
 PasswordFormManager* PasswordManager::GetMatchedManager(
-    const PasswordManagerDriver* driver,
+    PasswordManagerDriver* driver,
     const FormData& form) {
   for (auto& form_manager : form_managers_) {
+// Until support of cross-origin iframes is implemented, there is only one
+// driver on iOS. It needs to be set in order for filling to work.
+#if defined(OS_IOS)
+    if (driver && !form_manager->GetDriver())
+      form_manager->SetDriver(driver->AsWeakPtr());
+#endif
     if (form_manager->DoesManage(form, driver))
       return form_manager.get();
   }

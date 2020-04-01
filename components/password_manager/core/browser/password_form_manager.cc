@@ -506,6 +506,11 @@ bool PasswordFormManager::UpdateStateOnUserInput(
     PresaveGeneratedPasswordInternal(observed_form_, generated_password);
   return true;
 }
+
+void PasswordFormManager::SetDriver(
+    const base::WeakPtr<PasswordManagerDriver>& driver) {
+  driver_ = driver;
+}
 #endif  // defined(OS_IOS)
 
 std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {

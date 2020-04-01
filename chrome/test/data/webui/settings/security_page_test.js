@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://settings/lazy_load.js';
+// #import {SafeBrowsingBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
 // #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
 // #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
 // #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
+// #import {TestSafeBrowsingBrowserProxy} from 'chrome://test/settings/test_safe_browsing_browser_proxy.m.js';
+// #import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 // #import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
@@ -22,6 +24,9 @@ suite('CrSettingsSecurityPageTest', function() {
   /** @type {settings.TestPrivacyPageBrowserProxy} */
   let testPrivacyBrowserProxy;
 
+  /** @type {settings.SafeBrowsingBrowserProxy} */
+  let testSafeBrowsingBrowserProxy;
+
   /** @type {SettingsSecurityPageElement} */
   let page;
 
@@ -32,6 +37,9 @@ suite('CrSettingsSecurityPageTest', function() {
     settings.PrivacyPageBrowserProxyImpl.instance_ = testPrivacyBrowserProxy;
     syncBrowserProxy = new TestSyncBrowserProxy();
     settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
+    settings.SafeBrowsingBrowserProxyImpl.instance_ =
+        testSafeBrowsingBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-security-page');
     page.prefs = {
@@ -166,5 +174,67 @@ suite('CrSettingsSecurityPageTest', function() {
 
     assertTrue(
         page.prefs.profile.password_manager_leak_detection.value == previous);
+  });
+
+  test('SafeBrowsingRadio_ManagedState', async function() {
+    const enhancedRadio = page.$$('#safeBrowsingEnhanced');
+    const standardRadio = page.$$('#safeBrowsingStandard');
+    const disabledRadio = page.$$('#safeBrowsingDisabled');
+
+    const managedRadioState = {
+      enhanced:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
+      standard:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
+      disabled:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
+    };
+
+    // Make sure the element has requested the managed state from its init.
+    await testSafeBrowsingBrowserProxy.whenCalled(
+        'getSafeBrowsingRadioManagedState');
+    testSafeBrowsingBrowserProxy.reset();
+
+    testSafeBrowsingBrowserProxy.setResultFor(
+        'getSafeBrowsingRadioManagedState', Promise.resolve(managedRadioState));
+    // Change an arbitrary Safe Browsing pref to trigger managed state update.
+    page.set('prefs.safebrowsing.enabled.value', false);
+    await testSafeBrowsingBrowserProxy.whenCalled(
+        'getSafeBrowsingRadioManagedState');
+    testSafeBrowsingBrowserProxy.reset();
+    Polymer.dom.flush();
+
+    assertTrue(enhancedRadio.disabled);
+    assertEquals(
+        enhancedRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
+    assertTrue(standardRadio.disabled);
+    assertEquals(
+        standardRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
+    assertTrue(disabledRadio.disabled);
+    assertEquals(
+        disabledRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
+
+    // Ensure reverting to an unmanaged state is correctly handled.
+    const unmanagedRadioState = {
+      enhanced: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
+      standard: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
+      disabled: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
+    };
+    testSafeBrowsingBrowserProxy.setResultFor(
+        'getSafeBrowsingRadioManagedState',
+        Promise.resolve(unmanagedRadioState));
+    // Change an arbitrary Safe Browsing pref to trigger managed state update.
+    page.set('prefs.safebrowsing.enabled.value', true);
+    await testSafeBrowsingBrowserProxy.whenCalled(
+        'getSafeBrowsingRadioManagedState');
+    testSafeBrowsingBrowserProxy.reset();
+    Polymer.dom.flush();
+
+    assertFalse(enhancedRadio.disabled);
+    assertEquals(enhancedRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
+    assertFalse(standardRadio.disabled);
+    assertEquals(standardRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
+    assertFalse(disabledRadio.disabled);
+    assertEquals(disabledRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
   });
 });

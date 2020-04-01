@@ -105,7 +105,6 @@ class CONTENT_EXPORT MediaSessionController
   bool has_video_ = false;
   bool is_remote_ = false;
   bool is_picture_in_picture_available_ = false;
-  bool is_picture_in_picture_active_ = false;
   media::MediaContentType media_content_type_ =
       media::MediaContentType::Persistent;
 

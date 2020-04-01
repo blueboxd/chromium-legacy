@@ -16,9 +16,12 @@ from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
 from .enumeration import Enumeration
+from .exposure import ExposureMutable
 from .extended_attribute import ExtendedAttribute
+from .extended_attribute import ExtendedAttributesMutable
 from .idl_type import IdlTypeFactory
 from .interface import Interface
+from .interface import LegacyWindowAlias
 from .ir_map import IRMap
 from .make_copy import make_copy
 from .namespace import Namespace
@@ -513,11 +516,39 @@ class IdlCompiler(object):
         old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
         old_namespaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.NAMESPACE)
 
+        def make_legacy_window_alias(ir):
+            ext_attrs = ir.extended_attributes
+            identifier = Identifier(ext_attrs.value_of('LegacyWindowAlias'))
+            original = self._ref_to_idl_def_factory.create(ir.identifier)
+            extended_attributes = ExtendedAttributesMutable()
+            exposure = ExposureMutable()
+            if 'LegacyWindowAlias_Measure' in ext_attrs:
+                extended_attributes.append(
+                    ExtendedAttribute(
+                        key='Measure',
+                        values=ext_attrs.value_of(
+                            'LegacyWindowAlias_Measure')))
+            if 'LegacyWindowAlias_RuntimeEnabled' in ext_attrs:
+                feature_name = ext_attrs.value_of(
+                    'LegacyWindowAlias_RuntimeEnabled')
+                extended_attributes.append(
+                    ExtendedAttribute(
+                        key='RuntimeEnabled', values=feature_name))
+                exposure.add_runtime_enabled_feature(feature_name)
+            return LegacyWindowAlias(
+                identifier=identifier,
+                original=original,
+                extended_attributes=extended_attributes,
+                exposure=exposure)
+
         exposed_map = {}  # global name: [construct's identifier...]
+        legacy_window_aliases = []
         for ir in itertools.chain(old_interfaces, old_namespaces):
             for pair in ir.exposure.global_names_and_features:
                 exposed_map.setdefault(pair.global_name,
                                        []).append(ir.identifier)
+            if 'LegacyWindowAlias' in ir.extended_attributes:
+                legacy_window_aliases.append(make_legacy_window_alias(ir))
 
         self._ir_map.move_to_new_phase()
 
@@ -534,6 +565,12 @@ class IdlCompiler(object):
                 constructs.update(exposed_map.get(global_name, []))
             new_ir.exposed_constructs = map(
                 self._ref_to_idl_def_factory.create, sorted(constructs))
+
+            assert not new_ir.legacy_window_aliases
+            if new_ir.identifier != 'Window':
+                continue
+            new_ir.legacy_window_aliases = sorted(
+                legacy_window_aliases, key=lambda x: x.identifier)
 
     def _sort_dictionary_members(self):
         """Sorts dictionary members in alphabetical order."""

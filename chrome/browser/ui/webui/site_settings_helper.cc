@@ -358,26 +358,6 @@ PolicyIndicatorType GetPolicyIndicatorFromSettingSource(
   }
 }
 
-PolicyIndicatorType GetPolicyIndicatorFromPref(
-    const PrefService::Preference* pref) {
-  if (!pref) {
-    return PolicyIndicatorType::kNone;
-  }
-  if (pref->IsExtensionControlled()) {
-    return PolicyIndicatorType::kExtension;
-  }
-  if (pref->IsManagedByCustodian()) {
-    return PolicyIndicatorType::kParent;
-  }
-  if (pref->IsManaged()) {
-    return PolicyIndicatorType::kDevicePolicy;
-  }
-  if (pref->GetRecommendedValue()) {
-    return PolicyIndicatorType::kRecommended;
-  }
-  return PolicyIndicatorType::kNone;
-}
-
 }  // namespace
 
 bool HasRegisteredGroupName(ContentSettingsType type) {
@@ -429,6 +409,15 @@ std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
 
 std::string SiteSettingSourceToString(const SiteSettingSource source) {
   return kSiteSettingSourceStringMapping[static_cast<int>(source)].source_str;
+}
+
+base::Value GetValueForManagedState(const site_settings::ManagedState& state) {
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetKey(site_settings::kDisabled, base::Value(state.disabled));
+  value.SetKey(
+      site_settings::kPolicyIndicator,
+      base::Value(site_settings::PolicyIndicatorTypeToString(state.indicator)));
+  return value;
 }
 
 // Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
@@ -990,6 +979,26 @@ CookieControlsManagedState GetCookieControlsManagedState(Profile* profile) {
 std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type) {
   return kPolicyIndicatorTypeStringMapping[static_cast<int>(type)]
       .indicator_str;
+}
+
+PolicyIndicatorType GetPolicyIndicatorFromPref(
+    const PrefService::Preference* pref) {
+  if (!pref) {
+    return PolicyIndicatorType::kNone;
+  }
+  if (pref->IsExtensionControlled()) {
+    return PolicyIndicatorType::kExtension;
+  }
+  if (pref->IsManagedByCustodian()) {
+    return PolicyIndicatorType::kParent;
+  }
+  if (pref->IsManaged()) {
+    return PolicyIndicatorType::kDevicePolicy;
+  }
+  if (pref->GetRecommendedValue()) {
+    return PolicyIndicatorType::kRecommended;
+  }
+  return PolicyIndicatorType::kNone;
 }
 
 }  // namespace site_settings

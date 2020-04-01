@@ -48,10 +48,7 @@
             android:textAppearance="@style/TextAppearance.Headline.Primary"
             android:gravity="center"
             android:text="@string/autofill_assistant_init_title" />
-        <!-- This balances the picture on the other side to make the text centered-->
       </LinearLayout>
-
-
 
         <!-- Subtitle (e.g., 'Google Assistant saves you time...')-->
         <LinearLayout
@@ -61,12 +58,12 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"/>
-            <!-- The subtitle takes 4/6 of the screen width. -->
+            <!-- The subtitle takes 3/4 of the screen width. -->
             <TextView
                 android:id="@+id/onboarding_subtitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="4"
+                android:layout_weight="6"
                 android:layout_marginTop="20dp"
                 android:textAppearance="@style/TextAppearance.AssistantBlackBody"
                 android:gravity="center_horizontal"

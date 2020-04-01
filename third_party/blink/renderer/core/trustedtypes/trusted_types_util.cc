@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
@@ -100,10 +101,21 @@ String GetSamplePrefix(const ExceptionState& exception_state) {
     sample_prefix.Append("eval");
   } else if (interface_name && property_name) {
     sample_prefix.Append(interface_name);
-    sample_prefix.Append(".");
+    sample_prefix.Append(" ");
     sample_prefix.Append(property_name);
   }
   return sample_prefix.ToString();
+}
+
+const char* GetElementName(const ScriptElementBase::Type type) {
+  switch (type) {
+    case ScriptElementBase::Type::kHTMLScriptElement:
+      return "HTMLScriptElement";
+    case ScriptElementBase::Type::kSVGScriptElement:
+      return "SVGScriptElement";
+  }
+  NOTREACHED();
+  return "";
 }
 
 // Handle failure of a Trusted Type assignment.
@@ -438,9 +450,11 @@ String TrustedTypesCheckFor(SpecificTrustedType type,
   return "";
 }
 
-String CORE_EXPORT GetStringForScriptExecution(const String& script,
-                                               Document* doc) {
-  return GetStringFromScriptHelper(script, doc, "script", "text",
+String CORE_EXPORT
+GetStringForScriptExecution(const String& script,
+                            const ScriptElementBase::Type type,
+                            Document* doc) {
+  return GetStringFromScriptHelper(script, doc, GetElementName(type), "text",
                                    kScriptExecution,
                                    kScriptExecutionAndDefaultPolicyFailed);
 }

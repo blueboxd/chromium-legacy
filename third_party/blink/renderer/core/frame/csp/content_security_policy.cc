@@ -1079,10 +1079,9 @@ static void GatherSecurityPolicyViolationEventData(
   if (!sample_prefix.IsEmpty()) {
     sample.Append(sample_prefix.StripWhiteSpace().Left(
         ContentSecurityPolicy::kMaxSampleLength));
+    sample.Append("|");
   }
   if (!script_source.IsEmpty()) {
-    if (!sample.IsEmpty())
-      sample.Append(" ");
     sample.Append(script_source.StripWhiteSpace().Left(
         ContentSecurityPolicy::kMaxSampleLength));
   }

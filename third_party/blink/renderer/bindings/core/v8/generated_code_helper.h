@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8.h"
@@ -21,12 +22,9 @@ namespace blink {
 class Document;
 class DOMParser;
 class ExecutionContext;
-class LocalDOMWindow;
-class Node;
 class Range;
 class QualifiedName;
 class ScriptState;
-class WorkerGlobalScope;
 
 CORE_EXPORT void V8ConstructorAttributeGetter(
     v8::Local<v8::Name> property_name,
@@ -142,17 +140,14 @@ CORE_EXPORT bool IsEsIterableObject(v8::Isolate* isolate,
 CORE_EXPORT Document* ToDocumentFromExecutionContext(
     ExecutionContext* execution_context);
 
-CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
-    const LocalDOMWindow* window);
-
-CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
-    const WorkerGlobalScope* scope);
-
-CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(const Node* node);
-
+// This function is mostly used for EventTargets, and so this version is
+// inlined. The less commonly used overloads are defined in the .cc file.
+CORE_EXPORT inline ExecutionContext* ExecutionContextFromV8Wrappable(
+    const EventTarget* event_target) {
+  return event_target->GetExecutionContext();
+}
 CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
     const Range* range);
-
 CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
     const DOMParser* parser);
 

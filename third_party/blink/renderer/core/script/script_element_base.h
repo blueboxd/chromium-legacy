@@ -38,6 +38,7 @@ ScriptLoader* ScriptLoaderFromElement(Element*);
 
 class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
  public:
+  enum class Type { kHTMLScriptElement, kSVGScriptElement };
   virtual bool AsyncAttributeValue() const = 0;
   virtual String CharsetAttributeValue() const = 0;
   virtual String CrossOriginAttributeValue() const = 0;
@@ -75,6 +76,8 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
 
   virtual void DispatchLoadEvent() = 0;
   virtual void DispatchErrorEvent() = 0;
+
+  virtual Type GetScriptElementType() = 0;
 
  protected:
   ScriptLoader* InitializeScriptLoader(bool parser_inserted,

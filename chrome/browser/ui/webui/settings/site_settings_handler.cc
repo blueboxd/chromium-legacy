@@ -347,15 +347,6 @@ int GetNumCookieExceptionsOfTypes(HostContentSettingsMap* map,
       });
 }
 
-base::Value GetValueForManagedState(const site_settings::ManagedState& state) {
-  base::Value value(base::Value::Type::DICTIONARY);
-  value.SetKey(site_settings::kDisabled, base::Value(state.disabled));
-  value.SetKey(
-      site_settings::kPolicyIndicator,
-      base::Value(site_settings::PolicyIndicatorTypeToString(state.indicator)));
-  return value;
-}
-
 std::string GetCookieSettingDescription(Profile* profile) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
@@ -835,17 +826,21 @@ void SiteSettingsHandler::HandleGetCookieControlsManagedState(
   auto managed_states = site_settings::GetCookieControlsManagedState(profile_);
 
   base::Value result(base::Value::Type::DICTIONARY);
-  result.SetKey(site_settings::kAllowAll,
-                GetValueForManagedState(managed_states.allow_all));
   result.SetKey(
-      site_settings::kBlockThirdPartyIncognito,
-      GetValueForManagedState(managed_states.block_third_party_incognito));
-  result.SetKey(site_settings::kBlockThirdParty,
-                GetValueForManagedState(managed_states.block_third_party));
-  result.SetKey(site_settings::kBlockAll,
-                GetValueForManagedState(managed_states.block_all));
-  result.SetKey(site_settings::kSessionOnly,
-                GetValueForManagedState(managed_states.session_only));
+      site_settings::kAllowAll,
+      site_settings::GetValueForManagedState(managed_states.allow_all));
+  result.SetKey(site_settings::kBlockThirdPartyIncognito,
+                site_settings::GetValueForManagedState(
+                    managed_states.block_third_party_incognito));
+  result.SetKey(
+      site_settings::kBlockThirdParty,
+      site_settings::GetValueForManagedState(managed_states.block_third_party));
+  result.SetKey(
+      site_settings::kBlockAll,
+      site_settings::GetValueForManagedState(managed_states.block_all));
+  result.SetKey(
+      site_settings::kSessionOnly,
+      site_settings::GetValueForManagedState(managed_states.session_only));
 
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }

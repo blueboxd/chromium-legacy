@@ -27,7 +27,11 @@
     <style include="settings-shared">
       #safetyCheckCollapse .list-item.selected {
          min-height: var(--settings-row-two-line-min-height);
-       }
+      }
+
+      .focus-invisible {
+        outline: none;
+      }
 
       iron-icon {
         display: flex;
@@ -55,8 +59,8 @@
         }
       }
     </style>
-    <div id="safetyCheckParent" class="settings-box first two-line"
-        tabindex="-1">
+    <div id="safetyCheckParent" tabindex="-1"
+        class="settings-box first two-line focus-invisible">
       <iron-icon icon="settings20:safety-check" aria-hidden="true">
       </iron-icon>
       <div class="start settings-box-text" no-search>

@@ -53,6 +53,10 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/notifications/notification_platform_bridge_win.h"
+#endif  // defined(OS_WIN)
+
 namespace {
 constexpr size_t kMaxImageDownloadSize = 5 * 1024 * 1024;
 
@@ -146,6 +150,17 @@ base::string16 GetProgressString(int64_t current, int64_t total) {
                                     total_string);
 }
 
+bool CanUpdateProgressNotification() {
+#if defined(OS_WIN)
+  // TODO(crbug.com/1064558): Windows native notifications don't support updates
+  // so only show the initial progress notification and replace it with the
+  // final image notification at the end.
+  if (NotificationPlatformBridgeWin::NativeNotificationEnabled())
+    return false;
+#endif  // defined(OS_WIN)
+  return true;
+}
+
 }  // namespace
 
 RemoteCopyMessageHandler::RemoteCopyMessageHandler(Profile* profile)
@@ -228,11 +243,14 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
 
   bool should_show_progress =
       base::FeatureList::IsEnabled(kRemoteCopyProgressNotification);
+  bool can_update_notification = CanUpdateProgressNotification();
 
   if (should_show_progress) {
     CancelProgressNotification();
     UpdateProgressNotification(l10n_util::GetStringUTF16(
-        IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD));
+        can_update_notification
+            ? IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD
+            : IDS_SHARING_REMOTE_COPY_NOTIFICATION_PROCESSING_IMAGE));
   }
 
   auto request = std::make_unique<network::ResourceRequest>();
@@ -246,7 +264,7 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
       network::SimpleURLLoader::Create(std::move(request), kTrafficAnnotation);
   timer_ = base::ElapsedTimer();
   // Unretained(this) is safe here because |this| owns |url_loader_|.
-  if (should_show_progress) {
+  if (should_show_progress && can_update_notification) {
     url_loader_->SetOnResponseStartedCallback(
         base::BindOnce(&RemoteCopyMessageHandler::OnImageResponseStarted,
                        base::Unretained(this)));
@@ -357,6 +375,9 @@ void RemoteCopyMessageHandler::UpdateProgressNotification(
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);
 
+  if (!CanUpdateProgressNotification())
+    return;
+
   // Unretained(this) is safe here because |this| owns
   // |image_download_update_progress_timer_|.
   image_download_update_progress_timer_.Start(
@@ -369,6 +390,7 @@ void RemoteCopyMessageHandler::CancelProgressNotification() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   image_content_length_ = -1;
   image_content_progress_ = 0;
+  progress_notification_closed_ = false;
 
   if (image_notification_id_.empty())
     return;
@@ -398,8 +420,7 @@ void RemoteCopyMessageHandler::OnProgressNotificationAction(
     SharingServiceFactory::GetForBrowserContext(profile_)
         ->SetNotificationActionHandler(image_notification_id_,
                                        base::NullCallback());
-    // The notification will be closed by the framework after this.
-    image_notification_id_.clear();
+    progress_notification_closed_ = true;
     return;
   }
 
@@ -412,12 +433,13 @@ void RemoteCopyMessageHandler::OnURLLoadComplete(
     std::unique_ptr<std::string> content) {
   TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::OnURLLoadComplete");
 
-  if (!image_notification_id_.empty()) {
+  if (!progress_notification_closed_ && CanUpdateProgressNotification()) {
     image_content_length_ = -1;
     UpdateProgressNotification(l10n_util::GetStringUTF16(
         IDS_SHARING_REMOTE_COPY_NOTIFICATION_PROCESSING_IMAGE));
-    image_download_update_progress_timer_.AbandonAndStop();
   }
+
+  image_download_update_progress_timer_.AbandonAndStop();
 
   int code;
   if (url_loader_->NetError() != net::OK) {
@@ -520,7 +542,8 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
   // On macOS we can't replace a persistent notification with a non-persistent
   // one because they are posted from different sources (app vs xpc). To avoid
   // having both notifications on screen, remove the progress one first.
-  CancelProgressNotification();
+  if (!progress_notification_closed_)
+    CancelProgressNotification();
 #endif  // defined(OS_MACOSX)
 
   std::string notification_id = image_notification_id_;
@@ -579,6 +602,15 @@ void RemoteCopyMessageHandler::ShowNotification(
       /*origin_url=*/GURL(), message_center::NotifierId(),
       rich_notification_data,
       /*delegate=*/nullptr);
+
+  if (!CanUpdateProgressNotification())
+    notification.set_renotify(true);
+
+  // Make the notification silent if we're replacing a progress notification.
+  bool should_show_progress =
+      base::FeatureList::IsEnabled(kRemoteCopyProgressNotification);
+  if (should_show_progress && !progress_notification_closed_)
+    notification.set_silent(true);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);

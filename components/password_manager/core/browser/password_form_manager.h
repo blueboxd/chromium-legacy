@@ -189,6 +189,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool UpdateStateOnUserInput(const base::string16& form_identifier,
                               const base::string16& field_identifier,
                               const base::string16& field_value);
+
+  void SetDriver(const base::WeakPtr<PasswordManagerDriver>& driver);
 #endif  // defined(OS_IOS)
 
   // Create a copy of |*this| which can be passed to the code handling

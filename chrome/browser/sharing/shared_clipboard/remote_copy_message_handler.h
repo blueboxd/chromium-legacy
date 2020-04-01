@@ -74,6 +74,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   int64_t image_content_length_ = -1;
   int64_t image_content_progress_ = 0;
   std::string image_notification_id_;
+  bool progress_notification_closed_ = false;
   base::OneShotTimer image_download_update_progress_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCopyMessageHandler);

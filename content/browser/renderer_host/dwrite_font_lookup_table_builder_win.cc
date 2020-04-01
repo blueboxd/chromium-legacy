@@ -211,7 +211,6 @@ std::string DWriteFontLookupTableBuilder::ComputePersistenceHash() {
   const wchar_t kFonts[] =
       L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
   base::win::RegistryValueIterator it(HKEY_LOCAL_MACHINE, kFonts);
-  DCHECK(it.ValueCount());
   for (; it.Valid(); ++it) {
     to_hash.append(base::WideToUTF8(it.Name()));
     to_hash.append(base::WideToUTF8(it.Value()));

@@ -15,6 +15,7 @@ class Browser;
 class Profile;
 
 namespace base {
+class CommandLine;
 class FilePath;
 }  // namespace base
 
@@ -45,6 +46,7 @@ class BrowserAppLauncher {
   // browser window was opened.
   void LaunchAppWithCallback(
       const std::string& app_id,
+      const base::CommandLine& command_line,
       const base::FilePath& current_directory,
       base::OnceCallback<void(Browser* browser,
                               apps::mojom::LaunchContainer container)>

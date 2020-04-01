@@ -8,13 +8,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/xml/dom_parser.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 
@@ -223,20 +221,6 @@ bool IsEsIterableObject(v8::Isolate* isolate,
 
 Document* ToDocumentFromExecutionContext(ExecutionContext* execution_context) {
   return execution_context->ExecutingWindow()->document();
-}
-
-ExecutionContext* ExecutionContextFromV8Wrappable(
-    const LocalDOMWindow* window) {
-  return window->GetExecutionContext();
-}
-
-ExecutionContext* ExecutionContextFromV8Wrappable(
-    const WorkerGlobalScope* scope) {
-  return scope->GetExecutionContext();
-}
-
-ExecutionContext* ExecutionContextFromV8Wrappable(const Node* node) {
-  return node->GetExecutionContext();
 }
 
 ExecutionContext* ExecutionContextFromV8Wrappable(const Range* range) {

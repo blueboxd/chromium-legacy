@@ -174,13 +174,16 @@
         Try Google Assistant \n in Chrome
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_RENT_CAR" desc="Onboarding message describing autofill assistant's capability for car rentals.">
-        Rent a car \n with Google Assistant \n in just a few taps.
+        Rent a car \n in just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_BUY_MOVIE_TICKETS" desc="Onboarding message describing autofill assistant's capability for movie tickets.">
-        Buy movie tickets \n with Google Assistant \n in just a few taps.
+        Buy movie tickets \n in just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
         Google Assistant saves you time by helping you complete actions on the web, like search and checkout.
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_SHORT" desc="Short onboarding message describing autofill assistant's capability.">
+        Google Assistant in Chrome can complete actions across websites for you
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Google Assistant in Chrome.">
         To help you complete tasks, Google will receive the URLs and contents of sites on which you use Assistant, as well as information you submit through Assistant. This information may be stored in your Google account. You can turn off Assistant in Chrome settings. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn&#xA0;more<ph name="END_LINK">&lt;/link&gt;</ph>

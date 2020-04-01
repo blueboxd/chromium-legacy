@@ -45,7 +45,9 @@ source_set("feature_flags") {
   ]
   deps = [
     "//base",
+    "//components/version_info",
     "//ios/chrome/browser:utils",
+    "//ios/chrome/common",
   ]
 }
 

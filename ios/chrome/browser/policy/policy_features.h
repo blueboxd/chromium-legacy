@@ -5,7 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_
 #define IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_
 
-// Returns true if enterprise policy support is enabled.
+// Returns true if the core enterprise policy infrastructure is enabled. Does
+// not control whether policy data is parsed and made user visible; that is
+// controlled by |ShouldInstallEnterprisePolicyHandlers()| below.
 bool IsEnterprisePolicyEnabled();
+
+// Returns true if enterprise policy handlers should be installed to parse
+// policy data and make it user visible.
+bool ShouldInstallEnterprisePolicyHandlers();
 
 #endif  // IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_

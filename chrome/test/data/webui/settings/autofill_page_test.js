@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, Router, routes} from 'chrome://settings/settings.js';
+// #import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
 // #import {AutofillManagerImpl, PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
 // #import {createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, AutofillManagerExpectations, PasswordManagerExpectations, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {makeCompromisedCredential} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
+// #import {TestPluralStringProxy} from 'chrome://test/settings/test_plural_string_proxy.m.js';
 // #import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.m.js';
 // clang-format on
 
@@ -282,33 +284,46 @@ suite('PasswordsAndForms', function() {
   });
 });
 
+function createAutofillPageSection() {
+  // Create a passwords-section to use for testing.
+  const autofillPage = document.createElement('settings-autofill-page');
+  autofillPage.prefs = {
+    profile: {
+      password_manager_leak_detection: {},
+    },
+  };
+  PolymerTest.clearBody();
+  document.body.appendChild(autofillPage);
+  Polymer.dom.flush();
+  return autofillPage;
+}
+
 suite('PasswordsUITest', function() {
   /** @type {SettingsAutofillPageElement} */
   let autofillPage = null;
   /** @type {settings.OpenWindowProxy} */
   let openWindowProxy = null;
+  let passwordManager;
+  let pluaralString;
 
   suiteSetup(function() {
     // Forces navigation to Google Password Manager to be off by default.
     loadTimeData.overrideValues({
       navigateToGooglePasswordManager: false,
+      enablePasswordCheck: true,
     });
   });
 
   setup(function() {
     openWindowProxy = new TestOpenWindowProxy();
     settings.OpenWindowProxyImpl.instance_ = openWindowProxy;
+    // Override the PasswordManagerImpl for testing.
+    passwordManager = new TestPasswordManagerProxy();
+    PasswordManagerImpl.instance_ = passwordManager;
+    pluaralString = new TestPluralStringProxy();
+    settings.PluralStringProxyImpl.instance_ = pluaralString;
 
-    PolymerTest.clearBody();
-    autofillPage = document.createElement('settings-autofill-page');
-    autofillPage.prefs = {
-      profile: {
-        password_manager_leak_detection: {},
-      },
-    };
-    document.body.appendChild(autofillPage);
-
-    Polymer.dom.flush();
+    autofillPage = createAutofillPageSection();
   });
 
   teardown(function() {
@@ -342,5 +357,30 @@ suite('PasswordsUITest', function() {
     return openWindowProxy.whenCalled('openURL').then(url => {
       assertEquals(googlePasswordManagerUrl, url);
     });
+  });
+
+  test('Compromised Credential', async function() {
+    // Check if sublabel is empty
+    assertEquals(
+        '',
+        autofillPage.$$('#passwordManagerSubLabel').innerText.trim());
+
+    // Simulate one compromised password
+    const leakedPasswords = [
+      autofill_test_util.makeCompromisedCredential(
+          'google.com', 'jdoerrie', 'LEAKED'),
+    ];
+    passwordManager.data.leakedCredentials = leakedPasswords;
+
+    // create autofill page with leaked credentials
+    autofillPage = createAutofillPageSection();
+
+    await passwordManager.whenCalled('getCompromisedCredentials');
+    await pluaralString.whenCalled('getPluralString');
+
+    // With compromised credentials sublabel should have text
+    assertNotEquals(
+        '',
+        autofillPage.$$('#passwordManagerSubLabel').innerText.trim());
   });
 });

@@ -27,6 +27,9 @@
 
 [
     ActiveScriptWrappable,
+    LegacyWindowAlias=webkitSpeechRecognition,
+    LegacyWindowAlias_Measure,
+    LegacyWindowAlias_RuntimeEnabled=ScriptedSpeechRecognition,
     NoInterfaceObject
 ] interface SpeechRecognition : EventTarget {
     [CallWith=ExecutionContext, Measure] constructor();

@@ -34,6 +34,10 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/message_center/public/cpp/notification.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/notifications/notification_platform_bridge_win.h"
+#endif  // defined(OS_WIN)
+
 namespace {
 
 const char kText[] = "clipboard text";
@@ -231,9 +235,17 @@ TEST_F(RemoteCopyMessageHandlerTest, ProgressNotificationWithProgressFlag) {
   base::string16 progress_status = notification.progress_status();
 #endif  // defined(OS_MACOSX)
 
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD),
-            progress_status);
+#if defined(OS_WIN)
+  base::string16 expected_status = l10n_util::GetStringUTF16(
+      NotificationPlatformBridgeWin::NativeNotificationEnabled()
+          ? IDS_SHARING_REMOTE_COPY_NOTIFICATION_PROCESSING_IMAGE
+          : IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD);
+#else
+  base::string16 expected_status = l10n_util::GetStringUTF16(
+      IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD);
+#endif  // defined(OS_WIN)
+
+  EXPECT_EQ(expected_status, progress_status);
   EXPECT_EQ(-1, notification.progress());
 
   // Calling GetDefaultStoragePartition creates tasks that need to run before

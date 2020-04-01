@@ -11,6 +11,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -20,19 +21,7 @@ namespace password_manager {
 using metrics_util::LeakDialogType;
 
 constexpr char kPasswordCheckupURL[] =
-#if defined(OS_ANDROID)
-    "https://passwords.google.com/checkup/"
-    "start?utm_source=chrome&utm_medium=android&utm_campaign=leak_dialog&"
-    "hideExplanation=true";
-#elif defined(OS_IOS)
-    "https://passwords.google.com/checkup/"
-    "start?utm_source=chrome&utm_medium=ios&utm_campaign=leak_dialog&"
-    "hideExplanation=true";
-#else
-    "https://passwords.google.com/checkup/"
-    "start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&"
-    "hideExplanation=true";
-#endif
+    "https://passwords.google.com/checkup/start?hideExplanation=true";
 
 CredentialLeakType CreateLeakType(IsSaved is_saved,
                                   IsReused is_reused,
@@ -121,8 +110,25 @@ LeakDialogType GetLeakDialogType(CredentialLeakType leak_type) {
              : LeakDialogType::kCheckupAndChange;
 }
 
-GURL GetPasswordCheckupURL() {
-  return GURL(kPasswordCheckupURL);
+GURL GetPasswordCheckupURL(PasswordCheckupReferrer referrer) {
+  GURL url(kPasswordCheckupURL);
+  url = net::AppendQueryParameter(url, "utm_source", "chrome");
+
+#if defined(OS_ANDROID)
+  const char* const medium = "android";
+#elif defined(OS_IOS)
+  const char* const medium = "ios";
+#else
+  const char* const medium = "desktop";
+#endif
+  url = net::AppendQueryParameter(url, "utm_medium", medium);
+
+  const char* const campaign =
+      referrer == PasswordCheckupReferrer::kLeakDetectionDialog
+          ? "leak_dialog"
+          : "password_settings";
+
+  return net::AppendQueryParameter(url, "utm_campaign", campaign);
 }
 
 }  // namespace password_manager

@@ -71,6 +71,7 @@ class CodeGenContext(object):
             "constructor_group": None,
             "dict_member": None,
             "exposed_construct": None,
+            "legacy_window_alias": None,
             "operation": None,
             "operation_group": None,
 
@@ -265,7 +266,8 @@ class CodeGenContext(object):
             return _StringifierProperty(self.stringifier)
 
         return (self.attribute or self.constant or self.constructor_group
-                or self.dict_member or self.exposed_construct
+                or self.dict_member
+                or (self.legacy_window_alias or self.exposed_construct)
                 or self.operation_group or self._indexed_or_named_property)
 
     @property

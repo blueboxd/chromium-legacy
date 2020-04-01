@@ -11,61 +11,21 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    PasswordCheckBehavior,
     PrefsBehavior,
     WebUIListenerBehavior,
   ],
 
   properties: {
-    /**
-     * This URL redirects to the passwords check for sync users.
-     * @type {!string}
-     * @private
-     */
-    passwordCheckUrl_: {
-      type: String,
-      value:
-          'https://passwords.google.com/checkup/start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&hideExplanation=true',
-    },
-
-    /**
-     * The number of compromised passwords as a formatted string.
-     * @private
-     */
-    compromisedPasswordsCount_: String,
-
     // <if expr="not chromeos">
     /** @private */
     storedAccounts_: Array,
     // </if>
 
-    /**
-     * An array of leaked passwords to display.
-     * @type {!Array<!PasswordManagerProxy.CompromisedCredential>}
-     */
-    leakedPasswords: {
-      type: Array,
-      // Initialized to the empty array on purpose because then array value is
-      // undefined and hasLeakedCredentials_ isn't called from html on page
-      // load.
-      value: () => [],
-    },
-
-    /**
-     * The status indicates progress and affects banner, title and icon.
-     * @type {!PasswordManagerProxy.PasswordCheckStatus}
-     * @private
-     */
-    status_: {
-      type: PasswordManagerProxy.PasswordCheckStatus,
-      value: () => {
-        return {state: CheckState.IDLE};
-      },
-    },
-
     /** @private */
-    suppressCheckupLink_: {
-      type: Boolean,
-      computed: 'suppressesCheckupLink_(status_, syncPrefs_, syncStatus_)',
+    title_: {
+      type: String,
+      computed: 'computeTitle_(status, canUsePasswordCheckup_)',
     },
 
     /** @private */
@@ -74,10 +34,15 @@ Polymer({
       computed: 'computeIsSignedOut_(syncStatus_, storedAccounts_)',
     },
 
+    canUsePasswordCheckup_: {
+      type: Boolean,
+      computed: 'computeCanUsePasswordCheckup_(syncPrefs_, syncStatus_)',
+    },
+
     /** @private */
     isButtonHidden_: {
       type: Boolean,
-      computed: 'computeIsButtonHidden_(status_, isSignedOut_)',
+      computed: 'computeIsButtonHidden_(status, isSignedOut_)',
     },
 
     /** @private {settings.SyncPrefs} */
@@ -101,8 +66,8 @@ Polymer({
     /** @private */
     showNoCompromisedPasswordsLabel_: {
       type: Boolean,
-      computed:
-          'computeShowNoCompromisedPasswordsLabel(syncStatus_, prefs.*, status_, leakedPasswords)',
+      computed: 'computeShowNoCompromisedPasswordsLabel(' +
+          'syncStatus_, prefs.*, status, leakedPasswords)',
     },
 
     /** @private */
@@ -111,23 +76,6 @@ Polymer({
       computed: 'computeShowHideMenuTitle(activePassword_)',
     }
   },
-
-  /**
-   * @type {?function(!PasswordManagerProxy.PasswordCheckStatus):void}
-   * @private
-   */
-  statusChangedListener_: null,
-
-  /**
-   * @type {?function(!PasswordManagerProxy.CompromisedCredentials):void}
-   * @private
-   */
-  leakedCredentialsListener_: null,
-
-  /**
-   * @private {PasswordManagerProxy}
-   */
-  passwordManager_: null,
 
   /**
    * The element to return focus to, when the currently active dialog is
@@ -145,38 +93,15 @@ Polymer({
   /** @override */
   attached() {
     // Set the manager. These can be overridden by tests.
-    this.passwordManager_ = PasswordManagerImpl.getInstance();
     const syncBrowserProxy = settings.SyncBrowserProxyImpl.getInstance();
 
-    const statusChangeListener = status => this.status_ = status;
-    const setLeakedCredentialsListener = compromisedCredentials => {
-      this.updateList_(compromisedCredentials);
-
-      settings.PluralStringProxyImpl.getInstance()
-          .getPluralString('compromisedPasswords', this.leakedPasswords.length)
-          .then(count => {
-            this.compromisedPasswordsCount_ = count;
-          });
-    };
-    // TODO(crbug.com/1047726): Deduplicate with updates in password_section.js.
     const syncStatusChanged = syncStatus => this.syncStatus_ = syncStatus;
     const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
 
-    this.statusChangedListener_ = statusChangeListener;
-    this.leakedCredentialsListener_ = setLeakedCredentialsListener;
-
     // Request initial data.
-    this.passwordManager_.getPasswordCheckStatus().then(
-        this.statusChangedListener_);
-    this.passwordManager_.getCompromisedCredentials().then(
-        this.leakedCredentialsListener_);
     syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
 
     // Listen for changes.
-    this.passwordManager_.addPasswordCheckStatusListener(
-        this.statusChangedListener_);
-    this.passwordManager_.addCompromisedCredentialsListener(
-        this.leakedCredentialsListener_);
     this.addWebUIListener('sync-status-changed', syncStatusChanged);
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
 
@@ -190,21 +115,11 @@ Polymer({
     // Start the check if instructed to do so.
     const router = settings.Router.getInstance();
     if (router.getQueryParameters().get('start') == 'true') {
-      this.passwordManager_.recordPasswordCheckInteraction(
+      this.passwordManager.recordPasswordCheckInteraction(
           PasswordManagerProxy.PasswordCheckInteraction
               .START_CHECK_AUTOMATICALLY);
-      this.passwordManager_.startBulkPasswordCheck();
+      this.passwordManager.startBulkPasswordCheck();
     }
-  },
-
-  /** @override */
-  detached() {
-    this.passwordManager_.removePasswordCheckStatusListener(
-        assert(this.statusChangedListener_));
-    this.statusChangedListener_ = null;
-    this.passwordManager_.removeCompromisedCredentialsListener(
-        assert(this.leakedCredentialsListener_));
-    this.leakedCredentialsListener_ = null;
   },
 
   /**
@@ -212,26 +127,26 @@ Polymer({
    * @private
    */
   onPasswordCheckButtonClick_() {
-    switch (this.status_.state) {
+    switch (this.status.state) {
       case CheckState.RUNNING:
-        this.passwordManager_.recordPasswordCheckInteraction(
+        this.passwordManager.recordPasswordCheckInteraction(
             PasswordManagerProxy.PasswordCheckInteraction.STOP_CHECK);
-        this.passwordManager_.stopBulkPasswordCheck();
+        this.passwordManager.stopBulkPasswordCheck();
         return;
       case CheckState.IDLE:
       case CheckState.CANCELED:
       case CheckState.OFFLINE:
       case CheckState.SIGNED_OUT:
       case CheckState.OTHER_ERROR:
-        this.passwordManager_.recordPasswordCheckInteraction(
+        this.passwordManager.recordPasswordCheckInteraction(
             PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY);
-        this.passwordManager_.startBulkPasswordCheck();
+        this.passwordManager.startBulkPasswordCheck();
         return;
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
     }
     assertNotReached(
-        'Can\'t trigger an action for state: ' + this.status_.state);
+        'Can\'t trigger an action for state: ' + this.status.state);
   },
 
   /**
@@ -266,7 +181,7 @@ Polymer({
 
   /** @private */
   onMenuEditPasswordClick_() {
-    this.passwordManager_
+    this.passwordManager
         .getPlaintextCompromisedPassword(
             assert(this.activePassword_),
             chrome.passwordsPrivate.PlaintextReason.EDIT)
@@ -344,8 +259,8 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTitle_() {
-    switch (this.status_.state) {
+  computeTitle_() {
+    switch (this.status.state) {
       case CheckState.IDLE:
         return this.waitsForFirstCheck_() ?
             this.i18n('checkPasswordsDescription') :
@@ -356,9 +271,9 @@ Polymer({
         // Returns the progress of a running check. Ensures that both numbers
         // are at least 1.
         return this.i18n(
-            'checkPasswordsProgress', (this.status_.alreadyProcessed || 0) + 1,
+            'checkPasswordsProgress', (this.status.alreadyProcessed || 0) + 1,
             Math.max(
-                this.status_.remainingInQueue + this.status_.alreadyProcessed,
+                this.status.remainingInQueue + this.status.alreadyProcessed,
                 1));
       case CheckState.OFFLINE:
         return this.i18n('checkPasswordsErrorOffline');
@@ -367,11 +282,16 @@ Polymer({
       case CheckState.NO_PASSWORDS:
         return this.i18n('checkPasswordsErrorNoPasswords');
       case CheckState.QUOTA_LIMIT:
-        return this.i18n('checkPasswordsErrorQuota');
+        // Note: For the checkup case we embed the link as HTML, thus we need to
+        // use i18nAdvanced() here as well as the `inner-h-t-m-l` attribute in
+        // the DOM.
+        return this.canUsePasswordCheckup_ ?
+            this.i18nAdvanced('checkPasswordsErrorQuotaGoogleAccount') :
+            this.i18n('checkPasswordsErrorQuota');
       case CheckState.OTHER_ERROR:
         return this.i18n('checkPasswordsErrorGeneric');
     }
-    assertNotReached('Can\'t find a title for state: ' + this.status_.state);
+    assertNotReached('Can\'t find a title for state: ' + this.status.state);
   },
 
   /**
@@ -380,7 +300,7 @@ Polymer({
    * @private
    */
   isCheckInProgress_() {
-    return this.status_.state == CheckState.RUNNING;
+    return this.status.state == CheckState.RUNNING;
   },
 
   /**
@@ -389,8 +309,8 @@ Polymer({
    * @private
    */
   showsTimestamp_() {
-    return this.status_.state == CheckState.IDLE &&
-        !!this.status_.elapsedTimeSinceLastCheck;
+    return this.status.state == CheckState.IDLE &&
+        !!this.status.elapsedTimeSinceLastCheck;
   },
 
   /**
@@ -399,7 +319,7 @@ Polymer({
    * @private
    */
   getButtonText_() {
-    switch (this.status_.state) {
+    switch (this.status.state) {
       case CheckState.IDLE:
         return this.waitsForFirstCheck_() ? this.i18n('checkPasswords') :
                                             this.i18n('checkPasswordsAgain');
@@ -416,7 +336,7 @@ Polymer({
         return '';  // Undefined behavior. Don't show any misleading text.
     }
     assertNotReached(
-        'Can\'t find a button text for state: ' + this.status_.state);
+        'Can\'t find a button text for state: ' + this.status.state);
   },
 
   /**
@@ -434,7 +354,7 @@ Polymer({
    * @private
    */
   computeIsButtonHidden_() {
-    switch (this.status_.state) {
+    switch (this.status.state) {
       case CheckState.IDLE:
       case CheckState.CANCELED:
       case CheckState.RUNNING:
@@ -448,7 +368,7 @@ Polymer({
         return true;
     }
     assertNotReached(
-        'Can\'t determine button visibility for state: ' + this.status_.state);
+        'Can\'t determine button visibility for state: ' + this.status.state);
   },
 
   /**
@@ -459,7 +379,7 @@ Polymer({
    */
   bannerImageSrc_(isDarkMode) {
     const type =
-        (this.status_.state == CheckState.IDLE && !this.waitsForFirstCheck_()) ?
+        (this.status.state == CheckState.IDLE && !this.waitsForFirstCheck_()) ?
         'positive' :
         'neutral';
     const suffix = isDarkMode ? '_dark' : '';
@@ -475,7 +395,7 @@ Polymer({
     if (this.hasLeakedCredentials_()) {
       return false;
     }
-    return this.status_.state == CheckState.CANCELED ||
+    return this.status.state == CheckState.CANCELED ||
         !this.hasLeaksOrErrors_();
   },
 
@@ -489,7 +409,7 @@ Polymer({
     if (this.hasLeakedCredentials_()) {
       return true;
     }
-    switch (this.status_.state) {
+    switch (this.status.state) {
       case CheckState.IDLE:
       case CheckState.RUNNING:
         return false;
@@ -502,7 +422,7 @@ Polymer({
         return true;
     }
     assertNotReached(
-        'Not specified whether to state is an error: ' + this.status_.state);
+        'Not specified whether to state is an error: ' + this.status.state);
   },
 
   /**
@@ -515,7 +435,7 @@ Polymer({
     if (this.hasLeakedCredentials_()) {
       return true;
     }
-    switch (this.status_.state) {
+    switch (this.status.state) {
       case CheckState.IDLE:
         return !this.waitsForFirstCheck_();
       case CheckState.CANCELED:
@@ -529,7 +449,7 @@ Polymer({
     }
     assertNotReached(
         'Not specified whether to show passwords for state: ' +
-        this.status_.state);
+        this.status.state);
   },
 
   /**
@@ -538,7 +458,7 @@ Polymer({
    * @private
    */
   waitsForFirstCheck_() {
-    return !this.status_.elapsedTimeSinceLastCheck;
+    return !this.status.elapsedTimeSinceLastCheck;
   },
 
   /**
@@ -554,56 +474,13 @@ Polymer({
   },
 
   /**
-   * Returns true iff the user cannot retry the password check in their account.
-   * Either because they are syncing or because they use a custom passphrase.
+   * Returns whether the user can use the online Password Checkup.
    * @return {boolean}
    * @private
    */
-  suppressesCheckupLink_() {
-    if (this.status_.state != CheckState.QUOTA_LIMIT) {
-      return true;  // Never show the retry link for other states.
-    }
-    if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
-      return true;  // Never show the retry link for signed-out users.
-    }
-    // Show the retry link only, if user data is unencrypted.
-    return !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData;
-  },
-
-  /**
-   * Function to update compromised credentials in a proper way. New entities
-   * should appear in the bottom.
-   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>} newList
-   * @private
-   */
-  updateList_(newList) {
-    const oldList = this.leakedPasswords.slice();
-    const map = new Map();
-    newList.forEach(item => map.set(item.id, item));
-
-    const resultList = [];
-
-    oldList.forEach((item, index) => {
-      // If element is present in newList
-      if (map.has(item.id)) {
-        // Replace old version with new
-        resultList.push(map.get(item.id));
-        resultList[resultList.length - 1].password = item.password;
-        map.delete(item.id);
-      }
-    });
-
-    const addedResults = Array.from(map.values());
-    addedResults.sort((lhs, rhs) => {
-      // Phished passwords are always shown above
-      if (lhs.compromiseType != rhs.compromiseType) {
-        return lhs.compromiseType ==
-                chrome.passwordsPrivate.CompromiseType.PHISHED ? -1 : 1;
-      }
-      return rhs.compromiseTime - lhs.compromiseTime;
-    });
-    addedResults.forEach(item => resultList.push(item));
-    this.leakedPasswords = resultList;
+  computeCanUsePasswordCheckup_() {
+    return !!this.syncStatus_ && !!this.syncStatus_.signedIn &&
+        (!this.syncPrefs_ || !this.syncPrefs_.encryptAllData);
   },
 
   /**

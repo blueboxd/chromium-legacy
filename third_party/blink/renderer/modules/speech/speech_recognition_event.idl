@@ -26,6 +26,9 @@
 // https://w3c.github.io/speech-api/#speechrecognitionevent
 
 [
+    LegacyWindowAlias=webkitSpeechRecognitionEvent,
+    LegacyWindowAlias_Measure,
+    LegacyWindowAlias_RuntimeEnabled=ScriptedSpeechRecognition,
     NoInterfaceObject
 ] interface SpeechRecognitionEvent : Event {
     constructor(DOMString type, optional SpeechRecognitionEventInit initDict = {});

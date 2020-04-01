@@ -9,6 +9,7 @@ from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
+from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .constant import Constant
 from .constructor import Constructor
@@ -106,6 +107,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.operations = list(operations)
             self.operation_groups = []
             self.exposed_constructs = []
+            self.legacy_window_aliases = []
             self.indexed_and_named_properties = indexed_and_named_properties
             self.stringifier = stringifier
             self.iterable = iterable
@@ -168,6 +170,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 owner=self) for operation_group_ir in ir.operation_groups
         ])
         self._exposed_constructs = tuple(ir.exposed_constructs)
+        self._legacy_window_aliases = tuple(ir.legacy_window_aliases)
         self._indexed_and_named_properties = None
         if ir.indexed_and_named_properties:
             operations = filter(
@@ -286,6 +289,11 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             map(lambda ref: ref.target_object, self._exposed_constructs))
 
     @property
+    def legacy_window_aliases(self):
+        """Returns a list of properties exposed as [LegacyWindowAlias]."""
+        return self._legacy_window_aliases
+
+    @property
     def indexed_and_named_properties(self):
         """Returns a IndexedAndNamedProperties or None."""
         return self._indexed_and_named_properties
@@ -314,6 +322,27 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     @property
     def is_interface(self):
         return True
+
+
+class LegacyWindowAlias(WithIdentifier, WithExtendedAttributes, WithExposure):
+    """
+    Represents a property exposed on a Window object as [LegacyWindowAlias].
+    """
+
+    def __init__(self, identifier, original, extended_attributes, exposure):
+        assert isinstance(original, RefById)
+
+        WithIdentifier.__init__(self, identifier)
+        WithExtendedAttributes.__init__(
+            self, extended_attributes, readonly=True)
+        WithExposure.__init__(self, exposure, readonly=True)
+
+        self._original = original
+
+    @property
+    def original(self):
+        """Returns the original object of this alias."""
+        return self._original.target_object
 
 
 class IndexedAndNamedProperties(WithOwner, WithDebugInfo):

@@ -121,6 +121,9 @@ const char kCloudPrintCertificateErrorLearnMoreURL[] =
 const char kContentSettingsExceptionsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_manage_exceptions";
 
+const char kCookiesSettingsHelpCenterURL[] =
+    "https://support.google.com/chrome?p=cpn_cookies";
+
 const char kCrashReasonURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=e_awsnap";
@@ -241,6 +244,9 @@ const char kRemoveNonCWSExtensionURL[] =
 
 const char kResetProfileSettingsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_reset_settings";
+
+const char kSafeBrowsingHelpCenterURL[] =
+    "https://support.google.com/chrome?p=cpn_safe_browsing";
 
 const char kSafetyTipHelpCenterURL[] =
     "https://support.google.com/chrome/?p=safety_tip";

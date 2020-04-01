@@ -23,8 +23,15 @@
     </template>
 
     <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
+      <picture>
+        <source
+            srcset="chrome://settings/images/permissions_banner_dark.svg"
+            media="(prefers-color-scheme: dark">
+        <img id="banner" alt=""
+            src="chrome://settings/images/permissions_banner.svg">
+      </picture>
       <div class="settings-box first line-only">
-        <h2 class="first">$i18n{siteSettingsRecentPermissionsSectionLabel}</h2>
+        <h2>$i18n{siteSettingsRecentPermissionsSectionLabel}</h2>
       </div>
       <settings-recent-site-permissions id="recentSitePermissions"
           no-recent-permissions="{{noRecentSitePermissions_}}"

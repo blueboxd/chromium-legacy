@@ -52,6 +52,7 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -748,8 +749,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"checkPasswordsAgainAfterError",
        IDS_SETTINGS_CHECK_PASSWORDS_AGAIN_AFTER_ERROR},
       {"checkPasswordsProgress", IDS_SETTINGS_CHECK_PASSWORDS_PROGRESS},
-      {"checkPasswordsAgainInAccount",
-       IDS_SETTINGS_CHECK_PASSWORDS_AGAIN_IN_ACCOUNT},
       {"checkPasswordsStop", IDS_SETTINGS_CHECK_PASSWORDS_STOP},
       {"compromisedPasswords", IDS_SETTINGS_COMPROMISED_PASSWORDS},
       {"compromisedPasswordsDescription",
@@ -880,6 +879,14 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS,
           base::UTF8ToUTF16(google_password_manager_url.spec())));
+  html_source->AddString(
+      "checkPasswordsErrorQuotaGoogleAccount",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT_GOOGLE_ACCOUNT,
+          base::UTF8ToUTF16(
+              password_manager::GetPasswordCheckupURL(
+                  password_manager::PasswordCheckupReferrer::kPasswordCheck)
+                  .spec())));
   html_source->AddString("googlePasswordManagerUrl",
                          google_password_manager_url.spec());
   html_source->AddString("passwordCheckLearnMoreURL",
@@ -1233,8 +1240,15 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
+  html_source->AddString("cookiesSettingsHelpCenterURL",
+                         chrome::kCookiesSettingsHelpCenterURL);
+
+  html_source->AddString("safeBrowsingHelpCenterURL",
+                         chrome::kSafeBrowsingHelpCenterURL);
+
   html_source->AddString("syncAndGoogleServicesLearnMoreURL",
                          chrome::kSyncAndGoogleServicesLearnMoreURL);
+
   html_source->AddString(
       "doNotTrackDialogMessage",
       l10n_util::GetStringFUTF16(

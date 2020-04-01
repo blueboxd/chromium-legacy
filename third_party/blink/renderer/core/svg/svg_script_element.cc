@@ -170,6 +170,10 @@ void SVGScriptElement::SetScriptElementForBinding(
     element.SetSVGScriptElement(this);
 }
 
+ScriptElementBase::Type SVGScriptElement::GetScriptElementType() {
+  return ScriptElementBase::Type::kSVGScriptElement;
+}
+
 #if DCHECK_IS_ON()
 bool SVGScriptElement::IsAnimatableAttribute(const QualifiedName& name) const {
   if (name == svg_names::kTypeAttr || name == svg_names::kHrefAttr ||

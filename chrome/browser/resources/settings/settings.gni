@@ -71,6 +71,8 @@ settings_namespace_rewrites = [
   "settings.ResolverOption|ResolverOption",
   "settings.Route|Route",
   "settings.routes|routes",
+  "settings.SafeBrowsingBrowserProxy|SafeBrowsingBrowserProxy",
+  "settings.SafeBrowsingRadioManagedState|SafeBrowsingRadioManagedState",
   "settings.SafetyCheckElementInteractions|SafetyCheckElementInteractions",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
   "settings.SearchRequest|SearchRequest",
@@ -119,6 +121,7 @@ settings_namespace_rewrites = [
 settings_auto_imports = [
   "chrome/browser/resources/settings/autofill_page/blocking_request_manager.html|BlockingRequestManager",
   "chrome/browser/resources/settings/autofill_page/credit_card_list_entry.html|CreditCardEntry",
+  "chrome/browser/resources/settings/autofill_page/password_check_behavior.html|PasswordCheckBehavior",
   "chrome/browser/resources/settings/autofill_page/show_password_behavior.html|ShowPasswordBehavior",
   "chrome/browser/resources/settings/controls/pref_control_behavior.html|PrefControlBehavior",
   "chrome/browser/resources/settings/controls/settings_boolean_control_behavior.html|SettingsBooleanControlBehavior",

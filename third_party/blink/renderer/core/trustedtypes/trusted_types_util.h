@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TRUSTEDTYPES_TRUSTED_TYPES_UTIL_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -65,7 +66,9 @@ CORE_EXPORT String TrustedTypesCheckForScriptURL(const String&,
 // but with setup & error handling suitable for the asynchronous execution
 // cases.
 String TrustedTypesCheckForJavascriptURLinNavigation(const String&, Document*);
-CORE_EXPORT String GetStringForScriptExecution(const String&, Document*);
+CORE_EXPORT String GetStringForScriptExecution(const String&,
+                                               ScriptElementBase::Type,
+                                               Document*);
 
 // Determine whether a Trusted Types check is needed in this execution context.
 //

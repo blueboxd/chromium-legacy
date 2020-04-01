@@ -8,7 +8,6 @@ import android.content.Context;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -207,13 +206,13 @@ class AssistantOnboardingCoordinator {
         TextView termsTextView = initView.findViewById(R.id.onboarding_subtitle);
         switch (mParameters.get(INTENT_IDENTFIER)) {
             case RENT_CAR_INTENT:
-                termsTextView.setVisibility(View.GONE);
+                termsTextView.setText(R.string.autofill_assistant_init_message_short);
                 titleTextView.setText(R.string.autofill_assistant_init_message_rent_car);
                 break;
             case BUY_MOVIE_TICKETS_INTENT:
                 if (Arrays.asList(mExperimentIds.split(","))
                                 .contains(BUY_MOVIE_TICKETS_EXPERIMENT_ID)) {
-                    termsTextView.setVisibility(View.GONE);
+                    termsTextView.setText(R.string.autofill_assistant_init_message_short);
                     titleTextView.setText(
                             R.string.autofill_assistant_init_message_buy_movie_tickets);
                 }

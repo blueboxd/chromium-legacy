@@ -175,6 +175,9 @@ TYPED_TEST(ClipboardTest, HTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
+#if !defined(OS_ANDROID)
+// TODO(crbug/1064968): This test fails with ClipboardAndroid, but passes with
+// the TestClipboard as RTF isn't implemented in ClipboardAndroid.
 TYPED_TEST(ClipboardTest, RTFTest) {
   std::string rtf =
       "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard\n"
@@ -194,6 +197,7 @@ TYPED_TEST(ClipboardTest, RTFTest) {
   this->clipboard().ReadRTF(ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(rtf, result);
 }
+#endif  // !defined(OS_ANDROID)
 
 // TODO(msisov, tonikitoo): Enable test once ClipboardOzone implements
 // selection support. https://crbug.com/911992
@@ -282,6 +286,10 @@ TYPED_TEST(ClipboardTest, UnicodeHTMLTest) {
   {
     ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteHTML(markup, url);
+#if defined(OS_ANDROID)
+    // Android requires HTML and plain text representations to be written.
+    clipboard_writer.WriteText(markup);
+#endif
   }
 
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
@@ -447,6 +455,10 @@ constexpr U8x4 kN32 =
 constexpr U8x4 kN32Opaque =
     (kN32_SkColorType == kRGBA_8888_SkColorType) ? kRGBAOpaque : kBGRAOpaque;
 
+#if !defined(OS_ANDROID)
+// TODO(https://crbug.com/1056650): Re-enable these tests after fixing the root
+// cause. This test only fails on Android.
+
 // Either RGBA_8888 or BGRA_8888 will be equivalent to N32, but the other
 // won't be.
 TYPED_TEST(ClipboardTest, Bitmap_RGBA_Premul) {
@@ -467,32 +479,25 @@ TYPED_TEST(ClipboardTest, Bitmap_RGBA_Opaque) {
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kOpaque_SkAlphaType),
       &kRGBAOpaque, &kN32Opaque);
 }
-#if !defined(OS_ANDROID)
-// TODO(https://crbug.com/1056650): Re-enable these tests after fixing the root
-// cause. This test only fails on Android.
+
 TYPED_TEST(ClipboardTest, Bitmap_BGRA_Premul) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kPremul_SkAlphaType),
       &kBGRAPremul, &kN32);
 }
-#endif  // !defined(OS_ANDROID)
 TYPED_TEST(ClipboardTest, Bitmap_BGRA_Unpremul) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType),
       &kBGRAUnpremul, &kN32);
 }
-#if !defined(OS_ANDROID)
-// TODO(https://crbug.com/1056650): Re-enable these tests after fixing the root
-// cause. This test only fails on Android.
 TYPED_TEST(ClipboardTest, Bitmap_BGRA_Opaque) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kOpaque_SkAlphaType),
       &kBGRAOpaque, &kN32Opaque);
 }
-#endif  // !defined(OS_ANDROID)
 
 // Used by HTMLCanvasElement.
 TYPED_TEST(ClipboardTest, Bitmap_F16_Premul) {
@@ -537,6 +542,7 @@ TYPED_TEST(ClipboardTest, Bitmap_N32_Premul_2x7) {
   };
   TestBitmapWrite(&this->clipboard(), SkImageInfo::MakeN32Premul(2, 7), b, b);
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 

@@ -266,9 +266,7 @@ void HTMLIFrameElement::ParseAttribute(
       UpdateRequiredPolicy();
     }
   } else if (name == html_names::kTrusttokenAttr) {
-    if (trust_token_ != value) {
-      trust_token_ = value;
-    }
+    trust_token_ = value;
   } else {
     // Websites picked up a Chromium article that used this non-specified
     // attribute which ended up changing shape after the specification process.

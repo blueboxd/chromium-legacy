@@ -158,7 +158,6 @@ void MediaSessionController::OnPlaybackPaused() {
 
 void MediaSessionController::PictureInPictureStateChanged(
     bool is_picture_in_picture) {
-  is_picture_in_picture_active_ = is_picture_in_picture;
   AddOrRemovePlayer();
 }
 
@@ -184,7 +183,9 @@ bool MediaSessionController::IsMediaSessionNeeded() const {
   const bool has_audio =
       has_audio_ &&
       !media_web_contents_observer_->web_contents()->IsAudioMuted();
-  return !is_remote_ && (has_audio || is_picture_in_picture_active_);
+  return !is_remote_ &&
+         (has_audio || media_web_contents_observer_->web_contents()
+                           ->HasPictureInPictureVideo());
 }
 
 void MediaSessionController::AddOrRemovePlayer() {

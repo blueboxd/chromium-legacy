@@ -6499,6 +6499,8 @@ crbug.com/1054577 [ Win ] virtual/storage-access-api/external/wpt/storage-access
 crbug.com/1054577 [ Mac ] external/wpt/media-source/mediasource-detach.html [ Pass Failure ]
 crbug.com/1054577 [ Mac ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
 crbug.com/1054577 [ Mac ] external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
+crbug.com/1066848 external/wpt/paint-timing/fcp-only/fcp-typographic-pseudo.html [ Pass Failure ]
+crbug.com/1066848 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-typographic-pseudo.html [ Pass Failure ]
 
 # Sheriff 2020-02-07
 

@@ -98,6 +98,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_BEHAVIOR_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check_behavior.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_EDIT_DIALOG_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check_edit_dialog.m.js"
            use_base_dir="false"
@@ -482,6 +486,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.m.js"
            use_base_dir="false"
            preprocess="true"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SAFE_BROWSING_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/safe_browsing_browser_proxy.m.js"
+           use_base_dir="false"
            type="BINDATA" />
   <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURE_DNS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/secure_dns.m.js"

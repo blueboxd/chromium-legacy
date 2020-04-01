@@ -17,6 +17,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/extension.h"
 
 class HostContentSettingsMap;
@@ -116,9 +117,6 @@ struct CookieControlsManagedState {
   ManagedState session_only;
 };
 
-// Concerts a PolicyIndicatorType to its string identifier.
-std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type);
-
 // Returns whether a group name has been registered for the given type.
 bool HasRegisteredGroupName(ContentSettingsType type);
 
@@ -132,6 +130,9 @@ std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
 
 // Converts a SiteSettingSource to its string identifier.
 std::string SiteSettingSourceToString(const SiteSettingSource source);
+
+// Converts a ManagedState to a base::Value suitable for sending to JavaScript.
+base::Value GetValueForManagedState(const ManagedState& state);
 
 // Helper function to construct a dictionary for an exception.
 std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
@@ -229,6 +230,13 @@ base::Value GetChooserExceptionListFromProfile(
 
 // Returns the cookie controls manage state for a given profile.
 CookieControlsManagedState GetCookieControlsManagedState(Profile* profile);
+
+// Concerts a PolicyIndicatorType to its string identifier.
+std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type);
+
+// Returns the appropriate indicator for the source of a preference.
+PolicyIndicatorType GetPolicyIndicatorFromPref(
+    const PrefService::Preference* pref);
 
 }  // namespace site_settings
 

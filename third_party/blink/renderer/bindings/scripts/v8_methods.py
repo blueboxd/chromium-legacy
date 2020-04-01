@@ -497,13 +497,17 @@ def v8_set_return_value(interface_name,
         is_static=method.is_static)
 
 
-def v8_value_to_local_cpp_variadic_value(argument, index):
+def v8_value_to_local_cpp_variadic_value(argument,
+                                         index,
+                                         for_constructor_callback=False):
     assert argument.is_variadic
     idl_type = v8_types.native_value_traits_type_name(
         argument.idl_type, argument.extended_attributes, True)
     execution_context_if_needed = ''
     if argument.idl_type.has_string_context:
         execution_context_if_needed = ', bindings::ExecutionContextFromV8Wrappable(impl)'
+        if for_constructor_callback:
+            execution_context_if_needed = ', CurrentExecutionContext(info.GetIsolate())'
     assign_expression = 'ToImplArguments<%s>(info, %s, exception_state%s)' % (
         idl_type, index, execution_context_if_needed)
     return {
@@ -519,15 +523,18 @@ def v8_value_to_local_cpp_value(interface_name, method, argument, index):
     idl_type = argument.idl_type
     name = NameStyleConverter(argument.name).to_snake_case()
     v8_value = 'info[{index}]'.format(index=index)
+    for_constructor_callback = method.name == 'Constructor'
 
     if argument.is_variadic:
-        return v8_value_to_local_cpp_variadic_value(argument, index)
+        return v8_value_to_local_cpp_variadic_value(
+            argument, index, for_constructor_callback=for_constructor_callback)
     return idl_type.v8_value_to_local_cpp_value(
         extended_attributes,
         v8_value,
         name,
         declare_variable=False,
-        use_exception_state=method.returns_promise)
+        use_exception_state=method.returns_promise,
+        for_constructor_callback=for_constructor_callback)
 
 
 ################################################################################

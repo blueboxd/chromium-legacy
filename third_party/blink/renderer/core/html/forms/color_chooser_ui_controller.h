@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -72,7 +73,9 @@ class CORE_EXPORT ColorChooserUIController
 
  private:
   mojo::Remote<mojom::blink::ColorChooserFactory> color_chooser_factory_;
-  HeapMojoReceiver<mojom::blink::ColorChooserClient> receiver_;
+  HeapMojoReceiver<mojom::blink::ColorChooserClient,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
 };
 
 }  // namespace blink

@@ -333,6 +333,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void InvalidateSubtreeLayoutForFontUpdates() override;
 
+  void DetachAbstractInlineTextBoxesIfNeeded();
+
  protected:
   void WillBeDestroyed() override;
 
@@ -441,7 +443,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
  private:
   ContentCaptureManager* GetContentCaptureManager();
-  void DetachAbstractInlineTextBoxesIfNeeded();
+  void DetachAbstractInlineTextBoxes();
 
   // Used for LayoutNG with accessibility. True if inline fragments are
   // associated to |NGAbstractInlineTextBox|.
@@ -518,6 +520,11 @@ inline float LayoutText::HyphenWidth(const Font& font,
   const ComputedStyle& style = StyleRef();
   return font.Width(ConstructTextRun(font, style.HyphenString().GetString(),
                                      style, direction));
+}
+
+inline void LayoutText::DetachAbstractInlineTextBoxesIfNeeded() {
+  if (UNLIKELY(has_abstract_inline_text_box_))
+    DetachAbstractInlineTextBoxes();
 }
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, IsText());

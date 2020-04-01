@@ -84,6 +84,9 @@
 // This exists for compatibility with UIScrollView (see -asUIScrollView).
 @property(nonatomic, weak) id<UIScrollViewDelegate> delegate;
 
+// YES while key-value observers are registered on the underlying UIScrollView.
+@property(nonatomic) BOOL observingScrollView;
+
 // Returns the key paths that need to be observed for UIScrollView.
 + (NSArray*)scrollViewObserverKeyPaths;
 
@@ -247,6 +250,22 @@
         initWithScrollViewProxy:self];
     _keyValueObserverForwarders = [[NSMutableDictionary alloc] init];
 
+    // Assign a placeholder UIScrollView until the actual underlying scroll view
+    // is set. This must be a real UIScrollView, not nil, so that:
+    //   - The proxy preserves the values of properties assigned before the
+    //     actual scroll view is set. These properties will then be inherited to
+    //     the actual scroll view in -setScrollView:.
+    //   - The proxy returns the actual default value of the property before the
+    //     actual scroll view is set, even when the default value is non-zero
+    //     e.g., scrollsToTop.
+    //   - The proxy uses the actual implementation of methods defined in
+    //     third-party categories of UIScrollView.
+    //
+    // Note that this proxy must support all methods/properties of UIScrollView,
+    // including those defined in third-party categories, because it provides
+    // -asUIScrollView method.
+    _underlyingScrollView = [[UIScrollView alloc] init];
+
     if (base::FeatureList::IsEnabled(
             web::features::kPreserveScrollViewProperties)) {
       _propertiesStore = [self.class propertiesStore];
@@ -271,6 +290,12 @@
   if (self.underlyingScrollView == scrollView)
     return;
 
+  // Use a placeholder UIScrollView instead when nil is given. See the comment
+  // in -init why this is necessary.
+  if (!scrollView) {
+    scrollView = [[UIScrollView alloc] init];
+  }
+
   // Clean up the delegate/observers of the old scroll view, and save its
   // properties for later restoration.
   [self.underlyingScrollView setDelegate:nil];
@@ -278,6 +303,8 @@
   if (base::FeatureList::IsEnabled(
           web::features::kPreserveScrollViewProperties) &&
       self.underlyingScrollView) {
+    // TODO(crbug.com/1023250): Simplify this by directly assigning the
+    // properties of the old scroll view to those in the new scroll view.
     [_propertiesStore savePropertiesFromObject:self.underlyingScrollView];
   }
 
@@ -289,6 +316,8 @@
   if (base::FeatureList::IsEnabled(
           web::features::kPreserveScrollViewProperties) &&
       scrollView) {
+    // TODO(crbug.com/1023250): Simplify this by directly assigning the
+    // properties of the old scroll view to those in the new scroll view.
     [_propertiesStore loadPropertiesToObject:scrollView];
     // Clear the stored values of the properties. This prevents from keeping
     // retaining old property values.
@@ -358,11 +387,16 @@
 - (void)startObservingScrollView:(UIScrollView*)scrollView {
   for (NSString* keyPath in [[self class] scrollViewObserverKeyPaths])
     [scrollView addObserver:self forKeyPath:keyPath options:0 context:nil];
+  self.observingScrollView = YES;
 }
 
 - (void)stopObservingScrollView:(UIScrollView*)scrollView {
+  if (!self.observingScrollView) {
+    return;
+  }
   for (NSString* keyPath in [[self class] scrollViewObserverKeyPaths])
     [scrollView removeObserver:self forKeyPath:keyPath];
+  self.observingScrollView = NO;
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath

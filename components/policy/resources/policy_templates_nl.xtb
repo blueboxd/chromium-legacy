@@ -2152,15 +2152,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4157003184375321727">Besturingssysteem- en firmwareversie rapporteren</translation>
 <translation id="4157594634940419685">Toegang verlenen aan systeemeigen CUPS-printers</translation>
 <translation id="4160962198980004898">Bron van MAC-adres van apparaat wanneer het is gedockt</translation>
-<translation id="4163705126749612234">Hiermee configureer je de vereiste client-domeinnamen die worden opgelegd aan clients voor externe toegang en voorkom je dat gebruikers deze wijzigen.
-
-          Als deze instelling is ingeschakeld, kunnen uitsluitend clients van een van de gespecificeerde domeinen verbinding maken met de host.
-
-          Als deze instelling is uitgeschakeld of niet is ingesteld, wordt het standaardbeleid voor het verbindingstype toegepast. In het geval van externe assistentie kunnen clients van elk domein verbinding maken met de host. In het geval van externe toegang op elk gewenst moment kan alleen de eigenaar van de host verbinding maken.
-
-          Deze instelling heeft voorrang op RemoteAccessHostClientDomain (indien aanwezig).
-
-          Zie ook RemoteAccessHostDomainList.</translation>
 <translation id="4164601239783385546">Hiermee kunnen de toegankelijkheidsfuncties voor de plaktoetsen worden ingeschakeld.
 
           Als dit beleid is ingesteld op True, worden de plaktoetsen altijd ingeschakeld.
@@ -5215,15 +5206,6 @@ Dit beleid wordt verwijderd in M75.</translation>
           Als het apparaat het beleid wel ondersteunt, maar het beleid niet wordt ingesteld, wordt de standaard batterijoplaadmodus toegepast en kan de gebruiker de modus niet wijzigen.
 
           Opmerking: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
-<translation id="9072600218500597787">Hiermee configureer je de vereiste domeinnamen die worden opgelegd aan hosts voor externe toegang en voorkom je dat gebruikers deze wijzigen.
-
-          Als deze instelling is ingeschakeld, kunnen hosts alleen worden gedeeld met accounts die zijn geregistreerd op een van de gespecificeerde domeinnamen.
-
-          Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen hosts worden gedeeld met elk account.
-
-          Deze instelling heeft voorrang op RemoteAccessHostDomain (indien aanwezig).
-
-          Zie ook RemoteAccessHostClientDomainList.</translation>
 <translation id="9077227880520270584">Timer voor automatisch inloggen op lokaal account op apparaat</translation>
 <translation id="9084985621503260744">Specificeer of videoactiviteit invloed heeft op stroombeheer</translation>
 <translation id="9088433379343318874">Contentprovider voor de gebruiker met beperkte rechten inschakelen</translation>

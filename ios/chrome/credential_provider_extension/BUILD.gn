@@ -80,7 +80,10 @@ ios_appex_bundle("credential_provider_extension") {
 }
 
 generate_localizable_strings("system_strings") {
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//ios/showcase:*",
+  ]
   _packed_resources_target = ":packed_resources"
   config_file = "credential_provider_extension_localize_strings_config.plist"
   datapack_dir = get_label_info(_packed_resources_target, "target_gen_dir")

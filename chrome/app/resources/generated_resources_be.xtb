@@ -1879,6 +1879,7 @@
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="3479685872808224578">Не ўдалося выявіць сервер друку. Праверце адрас і паўтарыце спробу.</translation>
 <translation id="3481268647794498892">Адкрыецца ў браўзеры <ph name="ALTERNATIVE_BROWSER_NAME" /> праз <ph name="COUNTDOWN_SECONDS" /> с</translation>
+<translation id="3482719661246593752">Сайт <ph name="ORIGIN" /> можа праглядаць наступныя файлы</translation>
 <translation id="3484273680291419129">Ідзе выдаленне шкоднага праграмнага забеспячэння...</translation>
 <translation id="3484869148456018791">Стварыць новы сертыфікат</translation>
 <translation id="3487007233252413104">ананімная функцыя</translation>
@@ -1941,6 +1942,7 @@
 <translation id="3564848315152754834">Ключ бяспекі USB</translation>
 <translation id="3566721612727112615">Сайты не дададзены</translation>
 <translation id="3569382839528428029">Дазволіць праграме <ph name="APP_NAME" /> абагуліць ваш экран?</translation>
+<translation id="3569682580018832495">Сайт <ph name="ORIGIN" /> можа праглядаць наступныя файлы і папкі</translation>
 <translation id="3571734092741541777">Наладзіць</translation>
 <translation id="3574210789297084292">увайсці</translation>
 <translation id="3574917942258583917">Усё роўна выйсці з рэжыму інкогніта?</translation>
@@ -1950,6 +1952,7 @@
 <translation id="3578594933904494462">Змесціва гэтай укладкі абагульваецца.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хоча абагуліць прынтар &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; з групай, якой вы валодаеце: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Калі вы згадзіцеся, усе ўдзельнікі групы змогуць друкаваць на прынтары.</translation>
 <translation id="357889014807611375">Wi-Fi з улікам трафіка</translation>
+<translation id="3582057310199111521">Уведзены на сайце, вядомым падманнымі паводзінамі, і раскрыты пры ўцечцы даных</translation>
 <translation id="3584169441612580296">Прагляд і змяненне з камп'ютара фота, музыкі і іншых файлаў мультымедыя</translation>
 <translation id="3586806079541226322">Не ўдалося адкрыць гэты файл</translation>
 <translation id="3586931643579894722">Схаваць падрабязнасці</translation>
@@ -3082,6 +3085,7 @@
 <translation id="5117930984404104619">Адсочваць паводзіны іншых пашырэнняў, у тым ліку наведаныя імі URL-адрасы</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Цвёрды дыск поўны.  Захавайце спампоўку ў іншае месца або вызваліце месца на цвёрдым дыску.</translation>
+<translation id="5122384452788334261">У сховішчы прылады мала месца. Для выкарыстання Plugin VM рэкамендуецца мець як мінімум <ph name="RECOMMENDED_SPACE" />. Каб вызваліць месца, выдаліце файлы са сховішча прылады.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5125751979347152379">Няправільны URL-адрас.</translation>
 <translation id="5126611267288187364">Прагляд змяненняў</translation>
@@ -3253,7 +3257,6 @@
 <translation id="5353252989841766347">Эспарт пароляў з Chrome</translation>
 <translation id="5355099869024327351">Дазволіць Памочніку паказваць вам апавяшчэнні</translation>
 <translation id="5355926466126177564">Пашырэнне "<ph name="EXTENSION_NAME" />" змяніла старонку, якая паказваецца, калі вы ажыццяўляеце пошук праз амнібокс.</translation>
-<translation id="535911077628776608">Файл "<ph name="FILE_NAME" />" можа быць небяспечным. Адправіць яго на праверку ў Палепшаную абарону Google? Каб перамяшчацца па панэлі спамповак, націскайце Shift + F6.</translation>
 <translation id="5359910752122114278">1 вынік</translation>
 <translation id="5360150013186312835">Паказаць на панэлі інструментаў</translation>
 <translation id="5362741141255528695">Выберыце файл закрытага ключа.</translation>
@@ -5178,6 +5181,7 @@
 <translation id="7915471803647590281">Перш чым адправіць водгук, паведаміце нам, што адбываецца.</translation>
 <translation id="7918257978052780342">Зарэгістраваць</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> с</translation>
+<translation id="7920363873148656176">Сайт <ph name="ORIGIN" /> можа праглядаць файл <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Памылка пераадрасацыі партоў</translation>
 <translation id="792514962475806987">Маштаб прыстыкаванай лупы:</translation>
 <translation id="7925247922861151263">Не ўдалося выканаць праверку AAA</translation>
@@ -5340,6 +5344,7 @@
 <translation id="8118488170956489476">Вашым <ph name="BEGIN_LINK" />браўзерам кіруе<ph name="END_LINK" /> арганізацыя</translation>
 <translation id="8118860139461251237">Кіраванне спампоўкамі</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> і іншае</translation>
+<translation id="8120715633374652536">У сховішчы прылады мала месца. Для выкарыстання Plugin VM неабходна мець як мінімум <ph name="MINIMUM_SPACE" /> (рэкамендаваны аб'ём – звыш <ph name="RECOMMENDED_SPACE" />). Каб вызваліць месца, выдаліце файлы са сховішча прылады.</translation>
 <translation id="8123590694679414600">Даныя зашыфраваны з дапамогай фразы-пароля сінхранізацыі
           <ph name="TIME" />. Шыфраванне не распаўсюджваецца на спосабы аплаты і адрасы з Google Pay.</translation>
 <translation id="81238879832906896">Жоўта-белая кветка</translation>
@@ -5686,7 +5691,6 @@
 <translation id="8608618451198398104">Дадаванне білета Kerberos</translation>
 <translation id="8609465669617005112">Перамясціць уверх</translation>
 <translation id="8610103157987623234">Няправільны фармат. Паўтарыце спробу</translation>
-<translation id="8612935480510351790">Файл "<ph name="FILE_NAME" />" можа быць небяспечным. Адправіць яго на праверку ў Палепшаную абарону Google?</translation>
 <translation id="8613164732773110792">Толькі малыя літары, лічбы, сімвалы падкрэслівання і злучкі</translation>
 <translation id="8615618338313291042">Праграма інкогніта: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">З ценем</translation>

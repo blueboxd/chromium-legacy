@@ -3251,7 +3251,6 @@
 <translation id="5353252989841766347">Chrome থেকে পাসওয়ার্ড রপ্তানি করুন</translation>
 <translation id="5355099869024327351">আপনাকে বিজ্ঞপ্তি দেখানোর জন্য অ্যাসিস্ট্যান্টকে অনুমতি দিন</translation>
 <translation id="5355926466126177564">আপনি ওমনিবক্স থেকে সার্চ করলে কোন পৃষ্ঠা দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশনটি পরিবর্তন করেছে।</translation>
-<translation id="535911077628776608"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে। স্ক্যান করার জন্য Google-এর উন্নত সুরক্ষা প্রোগ্রামে পাঠাবেন? 'Shift'+F6 প্রেস করে তাড়াতাড়ি 'ডাউনলোড বার' এরিয়াতে পৌঁছান।</translation>
 <translation id="5359910752122114278">১টি ফলাফল</translation>
 <translation id="5360150013186312835">টুলবারের মধ্যে দেখুন</translation>
 <translation id="5362741141255528695">ব্যক্তিগত কী ফাইল নির্বাচন করুন৷</translation>
@@ -5685,7 +5684,6 @@
 <translation id="8608618451198398104">একটি Kerberos টিকিট যোগ করুন</translation>
 <translation id="8609465669617005112">উপরে যান</translation>
 <translation id="8610103157987623234">ফর্ম্যাটটি ভুল হয়েছে, আবার চেষ্টা করুন</translation>
-<translation id="8612935480510351790"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে। স্ক্যান করার জন্য Google-এর উন্নত সুরক্ষা প্রোগ্রামে পাঠাবেন?</translation>
 <translation id="8613164732773110792">শুধুমাত্র ছোট হাতের অক্ষর, সংখ্যা, আন্ডারস্কোর বা ড্যাশ</translation>
 <translation id="8615618338313291042">ছদ্মবেশী অ্যাপ্লিকেশান: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">ড্রপ শ্যাডো</translation>
@@ -6061,7 +6059,7 @@
 <translation id="9055636786322918818">RC4 এনক্রিপশন চালু করুন। এই বিকল্পটির ব্যবহার ঝুঁকি বাড়ায় কারণ RC4 সাইফারটি নিরাপদ নয়।</translation>
 <translation id="9056810968620647706">কোন মিল খুঁজে পাওয়া যায় নি৷</translation>
 <translation id="9057354806206861646">সময়সূচি আপডেট করুন</translation>
-<translation id="9058976525724291037">আপনার সন্তান এই ডিভাইসে আর একটি Google অ্যাকাউন্ট যোগ করতে চান। Family Link-এর মাধ্যমে ম্যানেজ করা ডিভাইসে শুধুমাত্র G Suite for Education অ্যাকাউন্টই যোগ করা যেতে পারে।</translation>
+<translation id="9058976525724291037">আপনার সন্তান এই ডিভাইসে আর একটি Google অ্যাকাউন্ট যোগ করতে চায়। Family Link-এর মাধ্যমে ম্যানেজ করা ডিভাইসে শুধুমাত্র G Suite for Education অ্যাকাউন্টই যোগ করা যেতে পারে।</translation>
 <translation id="9062065967472365419">নতুন কিছু জানতে চাই</translation>
 <translation id="9062468308252555888">১৪x</translation>
 <translation id="9063208415146866933"><ph name="ERROR_LINE_START" /> থেকে <ph name="ERROR_LINE_END" /> নম্বর লাইনে কোনও ভুল আছে</translation>

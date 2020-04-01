@@ -191,11 +191,6 @@ async function advance(direction) {
   await sendFilesToGuest();
 }
 
-document.querySelector('#prev-container')
-    .addEventListener('click', () => advance(-1));
-document.querySelector('#next-container')
-    .addEventListener('click', () => advance(1));
-
 // Wait for 'load' (and not DOMContentLoaded) to ensure the subframe has been
 // loaded and is ready to respond to postMessage.
 window.addEventListener('load', () => {

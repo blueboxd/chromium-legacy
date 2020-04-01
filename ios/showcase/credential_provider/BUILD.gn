@@ -8,6 +8,7 @@ source_set("credential_provider") {
     "sc_credential_list_coordinator.mm",
   ]
   deps = [
+    "//ios/chrome/common/credential_provider:ui",
     "//ios/chrome/credential_provider_extension/ui",
     "//ios/showcase/common",
   ]

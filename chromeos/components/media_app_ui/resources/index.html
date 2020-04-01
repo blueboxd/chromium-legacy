@@ -21,44 +21,9 @@
     height: 100%;
     width: 100%;
   }
-  /*
-   * Container for the UI that overlays the sandboxed guest. Used for hosting UI
-   * components deemed to be privileged (e.g. to detect user gestures).
-   */
-  div#overlay {
-    display: grid;
-    grid-template-rows: auto 40px auto;
-    grid-template-columns: 40px auto 40px;
-    height: 100%;
-    justify-items: stretch;
-    left: 0;
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    width: 100%;
-  }
-  div.navigation-button {
-    pointer-events: auto;
-    grid-row: 2;
-    background-color: green;
-    opacity: 0;
-  }
-  div.navigation-button:hover {
-    opacity: 0.5;
-  }
-  div#prev-container {
-    grid-column: 1;
-  }
-  div#next-container {
-    grid-column: 3;
-  }
 </style>
 <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
 <script src="/media_app.mojom-lite.js"></script>
 <script src="/mojo_api_bootstrap.js"></script>
 <iframe src="chrome-untrusted://media-app/app.html" allow="fullscreen"></iframe>
-<div id="overlay">
-  <div id="prev-container" class="navigation-button"></div>
-  <div id="next-container" class="navigation-button"></div>
-</div>
 <script src="/media_app_index_scripts.js"></script>

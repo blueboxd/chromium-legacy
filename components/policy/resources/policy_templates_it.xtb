@@ -2100,15 +2100,6 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4157003184375321727">Indica versione sistema operativo e firmware</translation>
 <translation id="4157594634940419685">Consenti l'accesso a stampanti CUPS native</translation>
 <translation id="4160962198980004898">Origine dell'indirizzo MAC del dispositivo quando inserito nel dock</translation>
-<translation id="4163705126749612234">Consente di configurare i nomi di dominio client richiesti che verranno imposti ai client di accesso remoto e impedisce agli utenti di modificarli.
-
-          Se questa impostazione viene attivata, solo i client di uno dei domini specificati potranno connettersi all'host.
-
-          Se questa impostazione viene disattivata o non definita, sarà applicata la norma predefinita per il tipo di connessione. Per l'assistenza remota, l'impostazione consente ai client di qualsiasi dominio di connettersi all'host; per l'accesso remoto in qualsiasi momento, può connettersi solo il proprietario dell'host.
-
-          Questa impostazione sostituirà RemoteAccessHostClientDomain, se presente.
-
-          Vedi anche RemoteAccessHostDomainList.</translation>
 <translation id="4164601239783385546">Attiva la funzione di accessibilità dei tasti permanenti.
 
           Se questo criterio è impostato su true, i tasti permanenti saranno sempre attivi.
@@ -5090,15 +5081,6 @@ https://www.w3.org/TR/secure-contexts/
           Se questo criterio non viene impostato ed è supportato sul dispositivo, verrà applicata la modalità di ricarica standard della batteria e l'impostazione non potrà essere modificata dall'utente.
 
           Nota: se specificato, <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> sostituisce questo criterio.</translation>
-<translation id="9072600218500597787">Consente di configurare i nomi di dominio dell'host che verranno imposti sugli host di accesso remoto e impedisce agli utenti di modificarli.
-
-          Se questa impostazione è attiva, allora è possibile condividere gli host solo utilizzando gli account registrati su uno dei nomi di dominio specificati.
-
-          Se questa impostazione è disattivata o non configurata, allora è possibile condividere gli host utilizzando qualsiasi account.
-
-          Questa impostazione eseguirà l'override del RemoteAccessHostDomain, se presente.
-
-          Vedi anche RemoteAccessHostClientDomainList.</translation>
 <translation id="9077227880520270584">Timer accesso automatico all'account locale del dispositivo</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>

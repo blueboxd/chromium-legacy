@@ -3252,7 +3252,6 @@
 <translation id="5353252989841766347">პაროლების ექსპორტი Chrome-იდან</translation>
 <translation id="5355099869024327351">ასისტენტისთვის შეტყობინებების ჩვენების დაშვება</translation>
 <translation id="5355926466126177564">გაფართოებამ „<ph name="EXTENSION_NAME" />“ თქვენ მიერ Omnibox-ში ძიებისას ნაჩვენები გვერდი შეცვალა.</translation>
-<translation id="535911077628776608"><ph name="FILE_NAME" /> შეიძლება სახიფათო იყოს. გსურთ, სკანირებისთვის Google-ის დამატებით დაცვას გაუგზავნოთ? ჩამოტვირთვების ზოლის არეზე გადასასვლელად დააჭირეთ კლავიშთა შემდეგ კომბინაციას: Shift+F6.</translation>
 <translation id="5359910752122114278">1 შედეგი</translation>
 <translation id="5360150013186312835">ხელსაწყოთა ზოლში ჩვენება</translation>
 <translation id="5362741141255528695">აირჩიეთ პირადი გასაღების ფაილი.</translation>
@@ -5684,7 +5683,6 @@
 <translation id="8608618451198398104">Kerberos ბილეთის დამატება</translation>
 <translation id="8609465669617005112">გადაადგილება ზემოთ</translation>
 <translation id="8610103157987623234">ფორმატი არასწორია, ცადეთ ხელახლა</translation>
-<translation id="8612935480510351790"><ph name="FILE_NAME" /> შეიძლება სახიფათო იყოს. გსურთ, სკანირებისთვის Google-ის დამატებით დაცვას გაუგზავნოთ?</translation>
 <translation id="8613164732773110792">გამოიყენეთ მხოლოდ არამთავრული სიმბოლოები, ციფრები, ქვედახაზები ან დეფისები</translation>
 <translation id="8615618338313291042">ინკოგნიტო პროგრამა: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">დაშვებული ჩრდილი</translation>

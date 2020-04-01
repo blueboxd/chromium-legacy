@@ -228,8 +228,9 @@ class ScriptExecutor : public ActionDelegate,
   void RequireUI() override;
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
-          end_action_callback) override;
+      base::OnceCallback<void(bool,
+                              ProcessedActionStatusProto,
+                              const UserModel*)> end_action_callback) override;
   void ClearGenericUi() override;
 
  private:

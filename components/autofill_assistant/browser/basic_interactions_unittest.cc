@@ -237,20 +237,20 @@ TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
 
 TEST_F(BasicInteractionsTest, EndActionWithoutCallbackFails) {
   EndActionProto proto;
-  EXPECT_FALSE(basic_interactions_.EndAction(proto));
+  EXPECT_FALSE(basic_interactions_.EndAction(true, proto));
 }
 
 TEST_F(BasicInteractionsTest, EndActionWithCallbackSucceeds) {
-  base::MockCallback<
-      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>>
+  base::MockCallback<base::OnceCallback<void(bool, ProcessedActionStatusProto,
+                                             const UserModel*)>>
       callback;
   basic_interactions_.SetEndActionCallback(callback.Get());
 
   EndActionProto proto;
   proto.set_status(ACTION_APPLIED);
 
-  EXPECT_CALL(callback, Run(ACTION_APPLIED, &user_model_));
-  EXPECT_TRUE(basic_interactions_.EndAction(proto));
+  EXPECT_CALL(callback, Run(true, ACTION_APPLIED, &user_model_));
+  EXPECT_TRUE(basic_interactions_.EndAction(true, proto));
 }
 
 TEST_F(BasicInteractionsTest, ComputeValueCompare) {

@@ -56,7 +56,7 @@ class BackgroundHTMLParser {
    public:
     Configuration();
     HTMLParserOptions options;
-    base::WeakPtr<HTMLDocumentParser> parser;
+    WeakPersistent<HTMLDocumentParser> parser;
     std::unique_ptr<TextResourceDecoder> decoder;
   };
 
@@ -74,7 +74,7 @@ class BackgroundHTMLParser {
     USING_FAST_MALLOC(Checkpoint);
 
    public:
-    base::WeakPtr<HTMLDocumentParser> parser;
+    WeakPersistent<HTMLDocumentParser> parser;
     std::unique_ptr<HTMLToken> token;
     std::unique_ptr<HTMLTokenizer> tokenizer;
     HTMLTreeBuilderSimulator::State tree_builder_state;
@@ -92,6 +92,8 @@ class BackgroundHTMLParser {
   void Stop();
 
   void ForcePlaintextForTextDocument();
+
+  void ClearParser();
 
  private:
   BackgroundHTMLParser(std::unique_ptr<Configuration>,
@@ -111,7 +113,7 @@ class BackgroundHTMLParser {
   std::unique_ptr<HTMLTokenizer> tokenizer_;
   HTMLTreeBuilderSimulator tree_builder_simulator_;
   HTMLParserOptions options_;
-  base::WeakPtr<HTMLDocumentParser> parser_;
+  WeakPersistent<HTMLDocumentParser> parser_;
 
   CompactHTMLTokenStream pending_tokens_;
   PreloadRequestStream pending_preloads_;

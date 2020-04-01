@@ -1,4 +1,49 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr-Latn">
+<translation id="1195447618553298278">Nepoznata greška.</translation>
+<translation id="1468664791493211953">Ponude</translation>
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i može da prati vaše aktivnosti.</translation>
+<translation id="150962533380566081">Nevažeći PUK.</translation>
+<translation id="1510238584712386396">Pokretač</translation>
+<translation id="159973520823200404">Discover</translation>
+<translation id="1734367976349034509">Ovim uređajem upravlja preduzeće</translation>
+<translation id="1905710495812624430">Premašen je maksimalni broj pokušaja.</translation>
+<translation id="1930797645656624981">Usluga metoda unosa za Chrome OS</translation>
+<translation id="1979103255016296513">Rok za promenu lozinke je istekao</translation>
+<translation id="2049639323467105390">Ovim uređajem upravlja domen <ph name="DOMAIN" />.</translation>
+<translation id="2338501278241028356">Uključite Bluetooth da biste otkrili uređaje u blizini</translation>
+<translation id="2375079107209812402">Preostali pokušaji: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="2805756323405976993">Aplikacije</translation>
+<translation id="2872961005593481000">Isključi</translation>
+<translation id="3008341117444806826">OSVEŽI</translation>
+<translation id="3820172043799983114">Nevažeći PIN.</translation>
+<translation id="3838338534323494292">Nova lozinka</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i ima pristup svim aktivnostima korisnika, uključujući posećene veb-stranice, lozinke i imejlove.</translation>
+<translation id="4227825898293920515">Lozinka ističe za <ph name="TIME" /></translation>
+<translation id="4429881212383817840">Kerberos tiket uskoro ističe</translation>
+<translation id="445059817448385655">Stara lozinka</translation>
+<translation id="467510802200863975">Lozinke se ne podudaraju</translation>
+<translation id="4731797938093519117">Roditeljski pristup</translation>
+<translation id="4890353053343094602">Odmah odaberite novu</translation>
+<translation id="5212543919916444558">Ne mogu da pronađem na ekranu ništa oko čega mogu da pomognem.
+Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
+<translation id="5222676887888702881">Odjavi me</translation>
+<translation id="5317780077021120954">Sačuvaj</translation>
+<translation id="5332948983412042822">Odaberite novu</translation>
+<translation id="5457599981699367932">Pregledajte kao gost</translation>
+<translation id="54609108002486618">Upravljani</translation>
+<translation id="5832805196449965646">Dodaj osobu</translation>
+<translation id="5895138241574237353">Pokreni ponovo</translation>
+<translation id="6058625436358447366">Da biste završili, unesite staru i novu lozinku</translation>
+<translation id="6106186594183574873">Da biste završili, unesite staru lozinku</translation>
+<translation id="6146993107019042706">Da biste završili, unesite novu lozinku</translation>
+<translation id="7658239707568436148">Otkaži</translation>
+<translation id="7690294790491645610">Potvrdite novu lozinku</translation>
+<translation id="808894953321890993">Promeni lozinku</translation>
+<translation id="8208861521865154048">Pogodnosti</translation>
+<translation id="8747900814994928677">Potvrdite promenu</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Preostali pokušaji: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="910415269708673980">Osvežite tiket za <ph name="PRINCIPAL_NAME" /></translation>
+<translation id="9111102763498581341">Otključaj</translation>
 </translationbundle>

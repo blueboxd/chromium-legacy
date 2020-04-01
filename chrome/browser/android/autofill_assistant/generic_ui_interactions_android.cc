@@ -38,11 +38,12 @@ void SetUserActions(base::WeakPtr<BasicInteractions> basic_interactions,
 }
 
 void EndAction(base::WeakPtr<BasicInteractions> basic_interactions,
+               bool view_inflation_successful,
                const EndActionProto& proto) {
   if (!basic_interactions) {
     return;
   }
-  basic_interactions->EndAction(proto);
+  basic_interactions->EndAction(view_inflation_successful, proto);
 }
 
 void ToggleUserAction(base::WeakPtr<BasicInteractions> basic_interactions,

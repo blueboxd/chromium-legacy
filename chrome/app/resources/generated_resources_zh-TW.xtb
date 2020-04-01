@@ -3251,7 +3251,6 @@
 <translation id="5353252989841766347">從 Chrome 中匯出密碼</translation>
 <translation id="5355099869024327351">允許 Google 助理向你顯示通知</translation>
 <translation id="5355926466126177564">擴充功能「<ph name="EXTENSION_NAME" />」已變更您使用網址列搜尋時所顯示的網頁。</translation>
-<translation id="535911077628776608"><ph name="FILE_NAME" /> 可能含有危險內容。要傳送到 Google 進階保護進行掃描嗎？按下 Shift + F6 鍵即可返回下載內容列區域。</translation>
 <translation id="5359910752122114278">1 項搜尋結果</translation>
 <translation id="5360150013186312835">顯示在工具列中</translation>
 <translation id="5362741141255528695">選取秘密金鑰檔案。</translation>
@@ -5684,7 +5683,6 @@
 <translation id="8608618451198398104">新增 Kerberos 票證</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8610103157987623234">格式不正確，請再試一次</translation>
-<translation id="8612935480510351790"><ph name="FILE_NAME" /> 可能含有危險內容。要傳送到 Google 進階保護進行掃描嗎？</translation>
 <translation id="8613164732773110792">僅限小寫字元、數字、底線或破折號</translation>
 <translation id="8615618338313291042">無痕模式應用程式：<ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">投射陰影</translation>

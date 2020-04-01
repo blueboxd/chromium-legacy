@@ -2104,15 +2104,6 @@
 <translation id="4157003184375321727">回報作業系統和韌體版本</translation>
 <translation id="4157594634940419685">允許存取原生 CUPS 印表機</translation>
 <translation id="4160962198980004898">裝置插入座架時的 MAC 位址來源</translation>
-<translation id="4163705126749612234">這會設定必要的用戶端網域名稱並套用到遠端存取主機，同時防止使用者變更這些名稱。
-
-          如果啟用這項設定，只有任一指定網域中的用戶端才能連線到主機。
-
-          如果停用這項設定或不設定，則系統會套用連線類型的預設政策。如果啟用這項政策，當使用者執行遠端協助時，系統會允許任何網域中的用戶端連線到主機；使用者執行遠端存取時，則只有主機擁有者可以連線到主機。
-
-          這項設定會覆寫 RemoteAccessHostClientDomain 設定 (如已設定)。
-
-          另請參閱 RemoteAccessHostDomainList。</translation>
 <translation id="4164601239783385546">啟用相黏鍵無障礙功能。
 
           如果將這項政策設為 True，系統將一律啟用相黏鍵功能。
@@ -5083,15 +5074,6 @@
           如果裝置支援這項政策但你未設定政策，系統會套用標準充電模式，且使用者無法變更這個模式。
 
           注意：如果指定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />，這項政策會遭到覆寫。</translation>
-<translation id="9072600218500597787">這會設定必要的主機網域名稱並套用到遠端存取主機，同時防止使用者變更這些名稱。
-
-          如果啟用這項設定，主機只能透過在任一指定名稱的網域所註冊的帳戶進行共用。
-
-          如果停用這項設定或不做設定，則主機可透過任何帳戶進行共用。
-
-          這項設定會覆寫 RemoteAccessHostDomain 設定 (如有設定的話)。
-
-          另請參閱 RemoteAccessHostClientDomainList。</translation>
 <translation id="9077227880520270584">裝置本機帳戶自動登入計時器</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>

@@ -2159,15 +2159,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="4157003184375321727">İşletim sistemi ve donanım yazılımı sürümünü rapor et</translation>
 <translation id="4157594634940419685">Yerel CUPS yazıcılarına erişim izni ver</translation>
 <translation id="4160962198980004898">Yuvaya yerleştirildiğinde cihaz MAC adresi kaynağı</translation>
-<translation id="4163705126749612234">Uzaktan erişim istemcilerine uygulanacak gerekli istemci alan adlarını yapılandırır ve kullanıcıların bunu değiştirmesini önler.
-
-          Bu ayar etkinleştirilirse, belirtilen alan adlarından yalnızca birindeki istemciler ana makineye bağlanabilir.
-
-          Bu ayar devre dışı bırakılır veya ayarlanmazsa, bağlantı türüyle ilgili varsayılan politika uygulanır. Bu durum, uzaktan yardım açısından, herhangi bir alan adındaki istemcilerin ana makineye bağlanmasına olanak tanır; herhangi bir zamanda gerçekleştirilen uzaktan erişim için yalnızca ana makine sahibi bağlantı kurabilir.
-
-          Bu ayar yapılandırılırsa RemoteAccessHostClientDomain politikasını geçersiz kılar.
-
-          Ayrıca RemoteAccessHostDomainList politikasına bakın.</translation>
 <translation id="4164601239783385546">Yapışkan tuşlar erişilebilirlik özelliğini etkinleştirin.
 
           Bu politika true (doğru) değerine ayarlanırsa yapışkan tuşlar her zaman etkin olur.
@@ -5209,15 +5200,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
           Bu politika ayarlanmadan bırakılmış ve politika cihazda destekleniyorsa standart pil şarj modu uygulanır ve kullanıcı tarafından değiştirilemez.
 
           Not: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
-<translation id="9072600218500597787">Uzaktan erişim ana makinelerinde uygulanacak gerekli ana makine alan adlarını yapılandırır ve kullanıcıların bunu değiştirmesini önler.
-
-          Bu ayar etkinleştirilirse, ana makineler yalnızca belirtilen alan adlarından birinde kayıtlı hesaplar kullanılarak paylaşılabilir.
-
-          Bu ayar devre dışı bırakılır veya ayarlanmazsa, ana makineler herhangi bir hesap kullanılarak paylaşılabilir.
-
-          Bu ayar mevcut olması halinde RemoteAccessHostDomain politikasını geçersiz kılar.
-
-          RemoteAccessHostClientDomainList politikasına da bakın.</translation>
 <translation id="9077227880520270584">Cihaz yerel hesabına otomatik giriş zamanlayıcısı</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
 <translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>

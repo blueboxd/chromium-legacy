@@ -594,7 +594,7 @@ void ScriptExecutor::RequireUI() {
 
 void ScriptExecutor::SetGenericUi(
     std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-    base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+    base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
         end_action_callback) {
   delegate_->SetGenericUi(std::move(generic_ui),
                           std::move(end_action_callback));

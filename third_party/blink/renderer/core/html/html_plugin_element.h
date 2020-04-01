@@ -52,7 +52,7 @@ class PluginParameters {
   const Vector<String>& Values() const;
   void AppendAttribute(const Attribute&);
   void AppendNameWithValue(const String& name, const String& value);
-  int FindStringInNames(const String&);
+  void MapDataParamToSrc();
 
  private:
   Vector<String> names_;

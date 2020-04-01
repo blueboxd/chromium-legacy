@@ -31,6 +31,7 @@ void SetUserActions(base::WeakPtr<BasicInteractions> basic_interactions,
 
 // Ends the current ShowGenericUi action.
 void EndAction(base::WeakPtr<BasicInteractions> basic_interactions,
+               bool view_inflation_successful,
                const EndActionProto& proto);
 
 // Enables or disables a particular user action.

@@ -190,7 +190,7 @@ EventHandler* FakeScriptExecutorDelegate::GetEventHandler() {
 
 void FakeScriptExecutorDelegate::SetGenericUi(
     std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-    base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+    base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
         end_action_callback) {}
 
 void FakeScriptExecutorDelegate::ClearGenericUi() {}

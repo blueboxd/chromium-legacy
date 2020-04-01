@@ -278,12 +278,11 @@ void LayoutText::DeleteTextBoxes() {
   DetachAbstractInlineTextBoxesIfNeeded();
 }
 
-void LayoutText::DetachAbstractInlineTextBoxesIfNeeded() {
+void LayoutText::DetachAbstractInlineTextBoxes() {
   // TODO(layout-dev): Because We should call |WillDestroy()| once for
   // associated fragments, when you reuse fragments, you should construct
   // NGAbstractInlineTextBox for them.
-  if (!has_abstract_inline_text_box_)
-    return;
+  DCHECK(has_abstract_inline_text_box_);
   has_abstract_inline_text_box_ = false;
   if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     for (NGPaintFragment* fragment : NGPaintFragment::InlineFragmentsFor(this))

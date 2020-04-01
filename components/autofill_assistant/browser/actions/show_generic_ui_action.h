@@ -27,7 +27,8 @@ class ShowGenericUiAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void EndAction(ProcessedActionStatusProto status,
+  void EndAction(bool view_inflation_successful,
+                 ProcessedActionStatusProto status,
                  const UserModel* user_model);
 
   ProcessActionCallback callback_;

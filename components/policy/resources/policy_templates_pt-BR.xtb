@@ -2118,15 +2118,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4157003184375321727">Informar a versão do sistema operacional e do firmware</translation>
 <translation id="4157594634940419685">Permitir acesso a impressoras CUPS nativas</translation>
 <translation id="4160962198980004898">Fonte de endereço MAC do dispositivo quando encaixado na base</translation>
-<translation id="4163705126749612234">Configura os nomes de domínio de cliente necessários que serão impostos aos clientes de acesso remoto e impede os usuários de alterá-los.
-
-          Se esta configuração for ativada, apenas clientes de um dos domínios especificados poderão se conectar ao host.
-
-          Se esta configuração for desativada ou não for definida, a política padrão para o tipo de conexão será aplicada. Para assistência remota, isso permite que clientes de qualquer domínio se conectem ao host. Para acesso remoto a qualquer momento, apenas o dono do host pode se conectar.
-
-          Esta configuração substituirá RemoteAccessHostClientDomain, se ela estiver presente.
-
-          Veja também RemoteAccessHostDomainList.</translation>
 <translation id="4164601239783385546">Ativar o recurso de acessibilidade de teclas aderentes.
 
           Se esta política for definida como verdadeira, as teclas aderentes estarão sempre ativadas.
@@ -5126,15 +5117,6 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
           Se esta política não for definida e a política for compatível com o dispositivo, o modo padrão de carregamento da bateria será aplicado e não poderá ser alterado pelo usuário.
 
           Observação: se <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> for especificada, ela substituirá esta política.</translation>
-<translation id="9072600218500597787">Configura os nomes de domínio de host necessários que serão impostos em hosts de acesso remoto e impede que os usuários façam alterações.
-
-          Se esta configuração for ativada, os hosts poderão ser compartilhados apenas por meio de contas registradas em um dos nomes de domínio especificados.
-
-          Se esta configuração for desativada ou não for definida, os hosts poderão ser compartilhados por qualquer conta.
-
-          Esta configuração substituirá a política RemoteAccessHostDomain, se ela estiver presente.
-
-          Veja também RemoteAccessHostClientDomainList.</translation>
 <translation id="9077227880520270584">Timer do login automático da conta local do dispositivo</translation>
 <translation id="9084985621503260744">Especifica se a atividade de vídeo afeta o gerenciamento de energia</translation>
 <translation id="9088433379343318874">Ativar o provedor de conteúdo de usuário supervisionado</translation>

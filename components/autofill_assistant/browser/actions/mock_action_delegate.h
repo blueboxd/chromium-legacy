@@ -293,13 +293,15 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(
       OnSetGenericUi,
       void(std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-           base::OnceCallback<void(ProcessedActionStatusProto,
+           base::OnceCallback<void(bool,
+                                   ProcessedActionStatusProto,
                                    const UserModel*)>& end_action_callback));
 
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
-          end_action_callback) override {
+      base::OnceCallback<void(bool,
+                              ProcessedActionStatusProto,
+                              const UserModel*)> end_action_callback) override {
     OnSetGenericUi(std::move(generic_ui), end_action_callback);
   }
   MOCK_METHOD0(ClearGenericUi, void());

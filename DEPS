@@ -877,7 +877,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '43d002a2caf281a65ee2b92dc73e97219aac382e',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4f30cf0179653b3b84b50a13e741322e91190864',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -933,7 +933,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'fa1c3c4e673cf12ffa22b8fbe4a7c79314571f1b',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'e157435c1e777aa1052f446dafed162b4a722e03',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '1fff3623550471d20d2a4d0afeeb0bedf28edc54',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),

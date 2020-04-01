@@ -3253,7 +3253,6 @@
 <translation id="5353252989841766347">Експортувати паролі з Chrome</translation>
 <translation id="5355099869024327351">Дозволити Асистенту показувати сповіщення</translation>
 <translation id="5355926466126177564">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час пошуку в універсальному вікні пошуку.</translation>
-<translation id="535911077628776608">Файл <ph name="FILE_NAME" /> може бути небезпечним. Надіслати в Додатковий захист Google на перевірку? Натискайте Shift+F6, щоб перейти на панель завантажень.</translation>
 <translation id="5359910752122114278">1 результат</translation>
 <translation id="5360150013186312835">Показати на панелі інструментів</translation>
 <translation id="5362741141255528695">Виберіть файл секретного ключа.</translation>
@@ -5687,7 +5686,6 @@
 <translation id="8608618451198398104">Додати квиток Kerberos</translation>
 <translation id="8609465669617005112">Угору</translation>
 <translation id="8610103157987623234">Неправильний формат, повторіть спробу</translation>
-<translation id="8612935480510351790">Файл <ph name="FILE_NAME" /> може бути небезпечним. Надіслати в Додатковий захист Google на перевірку?</translation>
 <translation id="8613164732773110792">Лише малі літери, цифри, символи підкреслення або тире</translation>
 <translation id="8615618338313291042">Програма в режимі анонімного перегляду: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Додати тінь</translation>

@@ -2168,15 +2168,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4157003184375321727">OS 및 펌웨어 버전을 보고합니다.</translation>
 <translation id="4157594634940419685">자체 CUPS 프린터 액세스 허용</translation>
 <translation id="4160962198980004898">도킹 시 기기 MAC 주소의 소스입니다.</translation>
-<translation id="4163705126749612234">원격 액세스 클라이언트에 제공되는 필수 클라이언트 도메인 이름을 구성하여 사용자가 변경하지 못하도록 합니다.
-
-          이 설정을 사용하도록 설정하면 지정된 도메인의 클라이언트만 호스트에 연결할 수 있습니다.
-
-          이 설정을 사용 중지하거나 설정하지 않으면 연결 유형의 기본 정책이 적용됩니다. 원격 지원을 위해 이 정책은 어떤 도메인의 클라이언트든 호스트에 연결할 수 있도록 합니다. 언제든지 원격 액세스가 가능하려면 호스트 소유자만 연결할 수 있습니다.
-
-          이 설정은 RemoteAccessHostClientDomain이 있는 경우 재정의됩니다.
-
-          RemoteAccessHostDomainList도 참조하세요.</translation>
 <translation id="4164601239783385546">고정키 접근성 기능을 사용 설정합니다.
 
           이 정책이 True로 설정되면 고정키가 항상 사용 설정됩니다.
@@ -5277,15 +5268,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           이 정책이 기기에서 지원되지만 설정되지 않았다면 표준 배터리 충전 모드가 적용되며 사용자가 변경할 수 없습니다.
 
           참고: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
-<translation id="9072600218500597787">원격 액세스 호스트에 제공되는 필수 호스트 도메인 이름을 구성하여 사용자가 변경하지 못하게 합니다.
-
-          이 설정을 사용하는 경우, 지정된 도메인 이름에 등록된 계정을 사용할 때만 호스트를 공유할 수 있습니다.
-
-          이 설정을 사용 중지하거나 설정하지 않으면 모든 계정을 사용하여 호스트를 공유할 수 있습니다.
-
-          이 설정은 RemoteAccessHostDomain이 있는 경우 재정의됩니다.
-
-          RemoteAccessHostClientDomainList도 참조하세요.</translation>
 <translation id="9077227880520270584">기기 로컬 계정 자동 로그인 타이머</translation>
 <translation id="9084985621503260744">동영상 활동이 전원 관리에 영향을 미치는지 여부 지정</translation>
 <translation id="9088433379343318874">관리 대상 사용자 콘텐츠 제공업체 사용</translation>

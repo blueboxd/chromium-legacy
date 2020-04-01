@@ -2131,15 +2131,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4157594634940419685">Izinkan akses ke printer CUPS native</translation>
 <translation id="4160962198980004898">Sumber alamat MAC perangkat saat dipasang di dok</translation>
-<translation id="4163705126749612234">Mengonfigurasi nama domain klien wajib yang akan diberlakukan pada klien akses jarak jauh dan mencegah pengguna mengubahnya.
-
-          Jika setelan ini diaktifkan, maka hanya klien dari salah satu domain yang ditentukan yang dapat tersambung ke host.
-
-          Jika setelan ini dinonaktifkan atau tidak ditetapkan, maka kebijakan default untuk jenis sambungan ini akan diterapkan. Untuk bantuan jarak jauh, setelan ini memungkinkan klien dari domain mana pun tersambung ke host; untuk akses jarak jauh kapan saja, hanya pemilik host yang dapat tersambung.
-
-          Setelan ini akan menggantikan RemoteAccessHostClientDomain, jika tersedia.
-
-          Lihat juga RemoteAccessHostDomainList.</translation>
 <translation id="4164601239783385546">Aktifkan fitur aksesibilitas tombol sticky.
 
           Jika kebijakan ini disetel ke true, tombol sticky akan selalu diaktifkan.
@@ -5115,15 +5106,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           Jika kebijakan ini tidak ditetapkan dan kebijakan didukung di perangkat, mode pengisian daya baterai standar akan diterapkan dan tidak dapat diubah oleh pengguna.
 
           Catatan: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
-<translation id="9072600218500597787">Mengonfigurasi nama domain host wajib yang akan diberlakukan pada host akses jarak jauh dan mencegah pengguna mengubahnya.
-
-          Jika setelan ini diaktifkan, host hanya dapat dibagikan menggunakan akun yang terdaftar pada salah satu nama domain yang ditentukan.
-
-          Jika setelan ini dinonaktifkan atau tidak ditetapkan, host dapat dibagikan menggunakan akun apa pun.
-
-          Setelan ini akan mengganti RemoteAccessHostDomain, jika ada.
-
-          Lihat juga RemoteAccessHostClientDomainList.</translation>
 <translation id="9077227880520270584">Timer login otomatis akun lokal perangkat</translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>
 <translation id="9088433379343318874">Izinkan penyedia konten pengguna yang dilindungi</translation>

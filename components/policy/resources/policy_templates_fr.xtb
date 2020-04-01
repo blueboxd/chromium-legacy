@@ -2176,15 +2176,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4157003184375321727">Indiquer la version du système d'exploitation et du micrologiciel</translation>
 <translation id="4157594634940419685">Autoriser l'accès à des imprimantes CUPS en natif</translation>
 <translation id="4160962198980004898">Source de l'adresse MAC de l'appareil lorsqu'il est connecté à une station d'accueil</translation>
-<translation id="4163705126749612234">Configure les noms de domaines obligatoires du client qui sont imposés aux clients d'accès à distance et ne peuvent pas être modifiés par les utilisateurs.
-
-          Si ce paramètre est activé, seuls les clients de l'un des domaines indiqués peuvent se connecter à l'hôte.
-
-          Si ce paramètre est désactivé ou s'il n'est pas défini, la règle par défaut pour le type de connexion concerné est appliquée. Dans le cadre d'une assistance à distance, cela permet aux clients de n'importe quel domaine de se connecter à l'hôte. Concernant l'accès à distance à tout moment, seul le propriétaire de l'hôte peut se connecter.
-
-          Ce paramètre remplace RemoteAccessHostClientDomain, le cas échéant.
-
-          Voir aussi RemoteAccessHostDomainList.</translation>
 <translation id="4164601239783385546">Permet d'activer la fonctionnalité d'accessibilité aux touches persistantes.
 
           Si cette règle est définie sur "True", les touches persistantes sont toujours activées.
@@ -5255,15 +5246,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
           Si cette règle n'est pas définie et si elle est compatible avec l'appareil, le mode standard de recharge de la batterie est appliqué et ne peut pas être modifié par l'utilisateur.
 
           Remarque : Si elle est définie, la règle <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> remplace cette règle.</translation>
-<translation id="9072600218500597787">Configure les noms de domaines obligatoires de l'hôte qui seront imposés aux hôtes d'accès à distance et ne pourront pas être modifiés par les utilisateurs.
-
-          Si ce paramètre est activé, les hôtes ne peuvent être partagés qu'à l'aide des comptes enregistrés sur les noms de domaine spécifiés.
-
-          Si ce paramètre est désactivé ou s'il n'est pas défini, les hôtes peuvent être partagés à l'aide de n'importe quel compte.
-
-          Ce paramètre ignore la règle RemoteAccessHostDomain, le cas échéant.
-
-          Voir aussi la règle RemoteAccessHostClientDomainList.</translation>
 <translation id="9077227880520270584">Minuteur de connexion automatique au compte local de l'appareil</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
 <translation id="9088433379343318874">Activer le fournisseur de contenu de l'utilisateur supervisé</translation>

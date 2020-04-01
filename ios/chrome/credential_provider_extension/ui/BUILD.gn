@@ -21,6 +21,7 @@ source_set("ui") {
   ]
   deps = [
     "//ios/chrome/common/credential_provider",
+    "//ios/chrome/common/credential_provider:ui",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/confirmation_alert",
     "//ios/chrome/credential_provider_extension/ui/resources",

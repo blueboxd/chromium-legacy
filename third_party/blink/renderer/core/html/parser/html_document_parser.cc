@@ -494,7 +494,8 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
     std::unique_ptr<TokenizedChunk> last_chunk_before_script,
     std::unique_ptr<HTMLToken> token,
     std::unique_ptr<HTMLTokenizer> tokenizer) {
-  weak_factory_.InvalidateWeakPtrs();
+  // Clear back ref.
+  background_parser_->ClearParser();
 
   size_t discarded_token_count = 0;
   for (const auto& speculation : speculations_) {
@@ -508,7 +509,7 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
 
   std::unique_ptr<BackgroundHTMLParser::Checkpoint> checkpoint =
       std::make_unique<BackgroundHTMLParser::Checkpoint>();
-  checkpoint->parser = weak_factory_.GetWeakPtr();
+  checkpoint->parser = this;
   checkpoint->token = std::move(token);
   checkpoint->tokenizer = std::move(tokenizer);
   checkpoint->tree_builder_state =
@@ -823,7 +824,7 @@ void HTMLDocumentParser::StartBackgroundParser() {
   std::unique_ptr<BackgroundHTMLParser::Configuration> config =
       std::make_unique<BackgroundHTMLParser::Configuration>();
   config->options = options_;
-  config->parser = weak_factory_.GetWeakPtr();
+  config->parser = this;
   config->decoder = TakeDecoder();
 
   // The background parser is created on the main thread, but may otherwise
@@ -856,7 +857,6 @@ void HTMLDocumentParser::StopBackgroundParser() {
   // Make this sync, as lsan triggers on some unittests if the task runner is
   // used.
   background_parser_->Stop();
-  weak_factory_.InvalidateWeakPtrs();
 }
 
 void HTMLDocumentParser::Append(const String& input_source) {

@@ -3260,7 +3260,6 @@
 <translation id="5353252989841766347">Գաղտնաբառերի արտահանում Chrome-ից</translation>
 <translation id="5355099869024327351">Թույլ տվեք Օգնականին ցուցադրել ծանուցումներ</translation>
 <translation id="5355926466126177564">«<ph name="EXTENSION_NAME" />» ընդլայնումը փոխել է Omnibox-ում որոնման ժամանակ ցուցադրվող էջը:</translation>
-<translation id="535911077628776608"><ph name="FILE_NAME" /> ֆայլը կարող է վտանգավոր լինել: Ստուգե՞լ այն Google-ի լրացուցիչ պաշտպանության միջոցով։ Սեղմեք Shift+F6՝ ներբեռնումների գոտու տարածք անցնելու համար։</translation>
 <translation id="5359910752122114278">1 արդյունք</translation>
 <translation id="5360150013186312835">Ցույց տալ գործիքագոտիում</translation>
 <translation id="5362741141255528695">Ընտրեք մասնավոր բանալու ֆայլը:</translation>
@@ -5694,7 +5693,6 @@
 <translation id="8608618451198398104">Ավելացնել Kerberos տոմս</translation>
 <translation id="8609465669617005112">Տեղափոխել վեր</translation>
 <translation id="8610103157987623234">Ձևաչափը սխալ է։ Նորից փորձեք։</translation>
-<translation id="8612935480510351790"><ph name="FILE_NAME" /> ֆայլը կարող է վտանգավոր լինել: Ստուգե՞լ այն Google-ի լրացուցիչ պաշտպանության միջոցով։</translation>
 <translation id="8613164732773110792">Միայն փոքրատառեր, թվեր, ընդգծման նշաններ և գծիկներ</translation>
 <translation id="8615618338313291042">Ինկոգնիտո հավելված՝ <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Հեռացնել ստվերը</translation>

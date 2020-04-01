@@ -298,7 +298,7 @@ void Controller::RequireUI() {
 
 void Controller::SetGenericUi(
     std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-    base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+    base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
         end_action_callback) {
   generic_user_interface_ = std::move(generic_ui);
   basic_interactions_.SetEndActionCallback(std::move(end_action_callback));

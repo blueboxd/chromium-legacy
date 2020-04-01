@@ -3247,7 +3247,6 @@
 <translation id="5353252989841766347">Нууц үгийг Chrome-с экспортлох</translation>
 <translation id="5355099869024327351">Туслахад танд мэдэгдэл харуулахыг зөвшөөрөх</translation>
 <translation id="5355926466126177564">"<ph name="EXTENSION_NAME" />" өргөтгөл нь Omnibox-с хайлт хийхэд, хуудсын харуулж буй илэрцийг өөрчилсөн.</translation>
-<translation id="535911077628776608"><ph name="FILE_NAME" /> нь аюултай байж болзошгүй. Скан хийлгэхээр Google-н Дэвшилтэт хамгаалалт руу илгээх үү? Татаж авсан файл хадгалах эсвэл нээх хэсэгт гүйлгэхийн тулд Shift+F6-г дарна уу.</translation>
 <translation id="5359910752122114278">1 илэрц</translation>
 <translation id="5360150013186312835">Хэрэгслийн мөрд харуулах</translation>
 <translation id="5362741141255528695">Хувийн түлхүүр файлыг сонго</translation>
@@ -5677,7 +5676,6 @@
 <translation id="8608618451198398104">Kerberos тасалбар нэмэх</translation>
 <translation id="8609465669617005112">Дээш зөөх</translation>
 <translation id="8610103157987623234">Формат буруу байна. Дахин оролдоно уу</translation>
-<translation id="8612935480510351790"><ph name="FILE_NAME" /> нь аюултай байж болзошгүй. Скан хийлгэхээр Google-н Дэвшилтэт хамгаалалт руу илгээх үү?</translation>
 <translation id="8613164732773110792">Зөвхөн жижиг тэмдэгт, тоо, доогуур зураас эсвэл дундуур зураас</translation>
 <translation id="8615618338313291042">Incognito апп: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Сүүдэр буулгах</translation>

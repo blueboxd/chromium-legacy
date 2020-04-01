@@ -8,6 +8,7 @@
 #include "base/optional.h"
 
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
 namespace autofill_assistant {
@@ -31,7 +32,7 @@ void ShowGenericUiAction::InternalProcessAction(
       /* force_notifications = */ false);
   if (!temp_model.GetValues(proto_.show_generic_ui().output_model_identifiers())
            .has_value()) {
-    EndAction(INVALID_ACTION, nullptr);
+    EndAction(false, INVALID_ACTION, nullptr);
     return;
   }
 
@@ -44,12 +45,14 @@ void ShowGenericUiAction::InternalProcessAction(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ShowGenericUiAction::EndAction(ProcessedActionStatusProto status,
+void ShowGenericUiAction::EndAction(bool view_inflation_successful,
+                                    ProcessedActionStatusProto status,
                                     const UserModel* user_model) {
   delegate_->ClearGenericUi();
   delegate_->CleanUpAfterPrompt();
   UpdateProcessedAction(status);
-  if (user_model != nullptr) {
+  if (view_inflation_successful) {
+    DCHECK(user_model);
     const auto& output_model_identifiers =
         proto_.show_generic_ui().output_model_identifiers();
     auto values = user_model->GetValues(output_model_identifiers);

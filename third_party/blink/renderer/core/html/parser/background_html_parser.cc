@@ -163,6 +163,7 @@ void BackgroundHTMLParser::Finish() {
 }
 
 void BackgroundHTMLParser::Stop() {
+  ClearParser();
   delete this;
 }
 
@@ -172,6 +173,10 @@ void BackgroundHTMLParser::ForcePlaintextForTextDocument() {
   // <plaintext> tag. The TextDocumentParser uses a <pre> tag for historical /
   // compatibility reasons.
   tokenizer_->SetState(HTMLTokenizer::kPLAINTEXTState);
+}
+
+void BackgroundHTMLParser::ClearParser() {
+  parser_.Clear();
 }
 
 void BackgroundHTMLParser::MarkEndOfFile() {

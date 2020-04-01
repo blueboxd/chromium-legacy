@@ -29,7 +29,17 @@ function areFrameInfosEqual(frame1, frame2) {
          areArrayBuffersEqual(frame1.data, frame2.data);
 }
 
-promise_test(async t => {
+async function doInverseSignalingHandshake(pc1, pc2) {
+  const offer = await pc2.createOffer({offerToReceiveAudio: true, offerToReceiveVideo: true});
+  await pc1.setRemoteDescription(offer);
+  await pc2.setLocalDescription(offer);
+
+  const answer = await pc1.createAnswer();
+  await pc2.setRemoteDescription(answer);
+  await pc1.setLocalDescription(answer);
+}
+
+async function testVideoFlow(t, negotiationFunction) {
   const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
   t.add_cleanup(() => caller.close());
   const callee = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
@@ -87,7 +97,8 @@ promise_test(async t => {
   });
 
   exchangeIceCandidates(caller, callee);
-  await doSignalingHandshake(caller, callee);
+  await negotiationFunction(caller, callee);
+
   // Pass frames as they come from the encoder.
   for (let i = 0; i < numFramesPassthrough; i++) {
     const result = await senderReader.read()
@@ -117,7 +128,15 @@ promise_test(async t => {
     frameInfos.push({timestamp: result.value.timestamp, data: result.value.data});
     senderWriter.write(result.value);
   }
+}
+
+promise_test(async t => {
+  return testVideoFlow(t, doSignalingHandshake);
 }, 'Frames flow correctly using insertable streams');
+
+promise_test(async t => {
+  return testVideoFlow(t, doInverseSignalingHandshake);
+}, 'Frames flow correctly using insertable streams when receiver starts negotiation');
 
 promise_test(async t => {
   const caller = new RTCPeerConnection();

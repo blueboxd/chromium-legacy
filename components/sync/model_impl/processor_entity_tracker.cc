@@ -233,4 +233,13 @@ void ProcessorEntityTracker::UpdateOrOverrideStorageKey(
   storage_key_to_tag_hash_[storage_key] = client_tag_hash;
 }
 
+base::Optional<ClientTagHash> ProcessorEntityTracker::GetClientTagHash(
+    const std::string& storage_key) const {
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  if (iter != storage_key_to_tag_hash_.end()) {
+    return iter->second;
+  }
+  return base::nullopt;
+}
+
 }  // namespace syncer

@@ -126,18 +126,6 @@ void HTMLObjectElement::ParseAttribute(
   }
 }
 
-static void MapDataParamToSrc(PluginParameters& plugin_params) {
-  // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e.
-  // Real and WMP require "src" attribute).
-  int src_index = plugin_params.FindStringInNames("src");
-  int data_index = plugin_params.FindStringInNames("data");
-
-  if (src_index == -1 && data_index != -1) {
-    plugin_params.AppendNameWithValue("src",
-                                      plugin_params.Values()[data_index]);
-  }
-}
-
 // TODO(schenney): crbug.com/572908 This function should not deal with url or
 // serviceType!
 void HTMLObjectElement::ParametersForPlugin(PluginParameters& plugin_params) {
@@ -183,7 +171,9 @@ void HTMLObjectElement::ParametersForPlugin(PluginParameters& plugin_params) {
       plugin_params.AppendAttribute(attribute);
   }
 
-  MapDataParamToSrc(plugin_params);
+  // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e.
+  // Real and WMP require "src" attribute).
+  plugin_params.MapDataParamToSrc();
 }
 
 bool HTMLObjectElement::HasFallbackContent() const {

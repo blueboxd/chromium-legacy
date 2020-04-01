@@ -54,6 +54,9 @@
   OP(kColorId_HighlightedMenuItemForegroundColor),                             \
   OP(kColorId_MenuItemInitialAlertBackgroundColor),                            \
   OP(kColorId_MenuItemTargetAlertBackgroundColor),                             \
+  /* Custom frame view */                                                      \
+  OP(kColorId_CustomFrameActiveColor),                                         \
+  OP(kColorId_CustomFrameInactiveColor),                                       \
   /* Dropdown */                                                               \
   OP(kColorId_DropdownBackgroundColor),                                        \
   OP(kColorId_DropdownForegroundColor),                                        \

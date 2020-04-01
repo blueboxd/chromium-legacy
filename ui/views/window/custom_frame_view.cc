@@ -59,16 +59,6 @@ constexpr int kTitleIconOffsetX = 4;
 // The space between the title text and the caption buttons.
 constexpr int kTitleCaptionSpacing = 5;
 
-#if defined(OS_CHROMEOS)
-// Chrome OS uses a dark gray.
-constexpr SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
-constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
-#else
-// Windows and Linux use a blue.
-constexpr SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
-constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
-#endif
-
 void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
   button->SetVisible(true);
   button->SetImageVerticalAlignment(ImageButton::ALIGN_BOTTOM);
@@ -456,7 +446,9 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 }
 
 SkColor CustomFrameView::GetFrameColor() const {
-  return frame_->IsActive() ? kDefaultColorFrame : kDefaultColorFrameInactive;
+  return GetNativeTheme()->GetSystemColor(
+      frame_->IsActive() ? ui::NativeTheme::kColorId_CustomFrameActiveColor
+                         : ui::NativeTheme::kColorId_CustomFrameInactiveColor);
 }
 
 gfx::ImageSkia CustomFrameView::GetFrameImage() const {

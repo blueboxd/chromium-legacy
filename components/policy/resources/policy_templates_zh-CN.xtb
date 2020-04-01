@@ -2078,15 +2078,6 @@
 <translation id="4157003184375321727">报告操作系统和固件版本</translation>
 <translation id="4157594634940419685">允许访问本机 CUPS 打印机</translation>
 <translation id="4160962198980004898">插入基座后的设备 MAC 地址来源</translation>
-<translation id="4163705126749612234">配置强制远程访问客户端使用的必要客户端域名，并禁止用户进行更改。
-
-          如果启用了此设置，则只有来自指定网域之一的客户端才能连接到主机。
-
-          如果停用或未配置此设置，则应用适用于连接类型的默认政策。如果是远程协助，则会允许来自任何网域的客户端连接到主机；如果是没有时间限制的远程访问，则只有主机所有者可以连接到主机。
-
-          此设置将替换 RemoteAccessHostClientDomain（如果存在）。
-
-          另请参阅 RemoteAccessHostDomainList。</translation>
 <translation id="4164601239783385546">启用粘滞键无障碍功能。
 
           如果将此政策设为 true，则粘滞键将始终处于启用状态。
@@ -5042,15 +5033,6 @@
           如果未设置此政策，并且相应设备支持此政策，则会应用标准电池充电模式，而且无法由用户更改。
 
           注意：<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />（若已指定）会覆盖此政策。</translation>
-<translation id="9072600218500597787">配置强制远程访问主机使用的必要主机域名，并禁止用户进行更改。
-
-          启用这项设置后，必须使用在其中一个指定域名上注册的帐号才能共享主机。
-
-          如果停用或未配置此设置，则可以使用任何帐号共享主机。
-
-          此设置将替换 RemoteAccessHostDomain（如果存在）。
-
-          另请参阅 RemoteAccessHostClientDomainList。</translation>
 <translation id="9077227880520270584">设备本地帐号自动登录计时器</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>

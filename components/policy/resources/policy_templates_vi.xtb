@@ -2170,15 +2170,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4157003184375321727">Báo cáo phiên bản hệ điều hành và chương trình cơ sở</translation>
 <translation id="4157594634940419685">Cho phép truy cập vào các máy in gốc sử dụng hệ thống in Unix chung (CUPS)</translation>
 <translation id="4160962198980004898">Nguồn địa chỉ MAC của thiết bị khi được gắn vào đế sạc</translation>
-<translation id="4163705126749612234">Định cấu hình tên miền ứng dụng bắt buộc cho các ứng dụng truy cập từ xa và ngăn người dùng thay đổi tên miền này.
-
-          Nếu bạn bật tùy chọn cài đặt này, chỉ những ứng dụng từ miền đã chỉ định mới có thể kết nối với máy chủ.
-
-          Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, chính sách mặc định cho loại kết nối sẽ được áp dụng. Trong trường hợp trợ giúp từ xa, tùy chọn cài đặt này sẽ cho phép các ứng dụng từ miền bất kỳ có thể kết nối với máy chủ; còn đối với quyền truy cập từ xa mọi lúc, chỉ chủ sở hữu máy chủ mới có thể kết nối.
-
-          Tùy chọn cài đặt này sẽ ghi đè RemoteAccessHostClientDomain, nếu có.
-
-          Hãy xem thêm RemoteAccessHostDomainList.</translation>
 <translation id="4164601239783385546">Bật tính năng hỗ trợ tiếp cận đối với các phím cố định.
 
           Nếu bạn đặt chính sách này thành true, thì các phím cố định sẽ luôn bật.
@@ -5264,15 +5255,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu bạn không đặt chính sách này và chính sách được thiết bị hỗ trợ, thì chế độ sạc pin tiêu chuẩn sẽ được áp dụng và người dùng không thể thay đổi được.
 
           Lưu ý: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
-<translation id="9072600218500597787">Định cấu hình tên miền của máy chủ bắt buộc sẽ được áp dụng trên các máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền này.
-
-          Nếu bạn bật tùy chọn cài đặt này thì các máy chủ chỉ có thể được chia sẻ bằng các tài khoản đã đăng ký trên một trong những tên miền được chỉ định.
-
-          Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này thì các máy chủ có thể được chia sẻ bằng bất kỳ tài khoản nào.
-
-          Tùy chọn cài đặt này sẽ ghi đè RemoteAccessHostDomain, nếu có.
-
-          Hãy xem thêm RemoteAccessHostClientDomainList.</translation>
 <translation id="9077227880520270584">Hẹn giờ tự động đăng nhập vào tài khoản trên thiết bị</translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>

@@ -27,6 +27,18 @@
 
 @end
 
+@interface UIScrollView (TestingCategory)
+- (int)crw_categoryMethod;
+@end
+
+@implementation UIScrollView (TestingCategory)
+
+- (int)crw_categoryMethod {
+  return 1;
+}
+
+@end
+
 namespace {
 
 class CRWWebViewScrollViewProxyTest : public PlatformTest {
@@ -157,8 +169,8 @@ TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewPresent) {
   EXPECT_TRUE([web_view_scroll_view_proxy_ clipsToBounds]);
 }
 
-// Tests that CRWWebViewScrollViewProxy returns the correct property values when
-// there is no underlying UIScrollView.
+// Tests that CRWWebViewScrollViewProxy returns the default values of
+// UIScrollView's properties when there is no underlying UIScrollView.
 TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewAbsent) {
   [web_view_scroll_view_proxy_ setScrollView:nil];
 
@@ -175,11 +187,11 @@ TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewAbsent) {
   EXPECT_FALSE([web_view_scroll_view_proxy_ isDecelerating]);
   EXPECT_FALSE([web_view_scroll_view_proxy_ isDragging]);
   EXPECT_FALSE([web_view_scroll_view_proxy_ isTracking]);
-  EXPECT_FALSE([web_view_scroll_view_proxy_ scrollsToTop]);
+  EXPECT_TRUE([web_view_scroll_view_proxy_ scrollsToTop]);
   EXPECT_EQ((NSUInteger)0, [web_view_scroll_view_proxy_ subviews].count);
   EXPECT_EQ(UIScrollViewContentInsetAdjustmentAutomatic,
             [web_view_scroll_view_proxy_ contentInsetAdjustmentBehavior]);
-  EXPECT_FALSE([web_view_scroll_view_proxy_ clipsToBounds]);
+  EXPECT_TRUE([web_view_scroll_view_proxy_ clipsToBounds]);
 
   // Make sure setting the properties is fine too.
   // Arbitrary point.
@@ -340,15 +352,15 @@ TEST_F(CRWWebViewScrollViewProxyTest, AsUIScrollViewWithUnderlyingScrollView) {
 }
 
 // Verifies that method calls to -asUIScrollView are no-op if the underlying
-// scroll view is nil and the method is not implemented in
+// scroll view is not set and the method is not implemented in
 // CRWWebViewScrollViewProxy.
 TEST_F(CRWWebViewScrollViewProxyTest,
        AsUIScrollViewWithoutUnderlyingScrollView) {
   [web_view_scroll_view_proxy_ setScrollView:nil];
 
-  // Any methods should return nil when the underlying scroll view is nil.
-  EXPECT_EQ(nil,
-            [[web_view_scroll_view_proxy_ asUIScrollView] viewPrintFormatter]);
+  // Any methods should return nil when the underlying scroll view is not set.
+  EXPECT_EQ(nil, [[web_view_scroll_view_proxy_ asUIScrollView]
+                     restorationIdentifier]);
 
   // It is expected that nothing happens. Just verifies that it doesn't crash.
   CGRect rect = CGRectMake(0, 0, 1, 1);
@@ -575,8 +587,8 @@ TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserver) {
 }
 
 // Verifies that properties registered to |propertiesStore| are preserved if:
-//   - the setter is called when the underlying scroll view is nil
-//   - the getter is called after the underlying scroll view is still nil
+//   - the setter is called when the underlying scroll view is not set
+//   - the getter is called after the underlying scroll view is still not set
 TEST_F(CRWWebViewScrollViewProxyTest,
        PreservePropertiesWhileUnderlyingScrollViewIsNil) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -603,8 +615,8 @@ TEST_F(CRWWebViewScrollViewProxyTest,
 }
 
 // Verifies that properties registered to |propertiesStore| are preserved if:
-//   - the setter is called when the underlying scroll view is nil
-//   - the getter is called after the underlying scroll view is assigned
+//   - the setter is called when the underlying scroll view is not set
+//   - the getter is called after the underlying scroll view is set
 TEST_F(CRWWebViewScrollViewProxyTest,
        PreservePropertiesWhenUnderlyingScrollViewIsNewlyAssigned) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -636,7 +648,7 @@ TEST_F(CRWWebViewScrollViewProxyTest,
 }
 
 // Verifies that properties registered to |propertiesStore| are preserved if:
-//   - the setter is called when the underlying scroll view is non-nil
+//   - the setter is called when the underlying scroll view is set
 //   - the getter is called after the underlying scroll view is reassigned
 TEST_F(CRWWebViewScrollViewProxyTest,
        PreservePropertiesWhenUnderlyingScrollViewIsReassigned) {
@@ -667,6 +679,41 @@ TEST_F(CRWWebViewScrollViewProxyTest,
             [web_view_scroll_view_proxy_ asUIScrollView].tintColor);
 
   [web_view_scroll_view_proxy_ setScrollView:nil];
+}
+
+// Verifies that the proxy uses the real implementation of a method defined in a
+// category of UIScrollView while the underlying scroll view is not set.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       UIScrollViewCategoryWithoutUnderlyingScrollView) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kPreserveScrollViewProperties);
+
+  // Recreate CRWWebViewScrollViewProxy with the updated feature flags.
+  web_view_scroll_view_proxy_ = [[CRWWebViewScrollViewProxy alloc] init];
+
+  [web_view_scroll_view_proxy_ setScrollView:nil];
+
+  EXPECT_EQ(1,
+            [[web_view_scroll_view_proxy_ asUIScrollView] crw_categoryMethod]);
+}
+
+// Verifies that the proxy uses the real implementation of a method defined in a
+// category of UIScrollView while the underlying scroll view is set.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       UIScrollViewCategoryWithUnderlyingScrollView) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kPreserveScrollViewProperties);
+
+  // Recreate CRWWebViewScrollViewProxy with the updated feature flags.
+  web_view_scroll_view_proxy_ = [[CRWWebViewScrollViewProxy alloc] init];
+
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view];
+
+  EXPECT_EQ(1,
+            [[web_view_scroll_view_proxy_ asUIScrollView] crw_categoryMethod]);
 }
 
 }  // namespace

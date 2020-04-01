@@ -2128,15 +2128,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4157003184375321727">Betriebssystem- und Firmware-Version melden</translation>
 <translation id="4157594634940419685">Zugriff auf native CUPS-Drucker erlauben</translation>
 <translation id="4160962198980004898">Quelle für die Geräte-MAC-Adresse bei angedocktem Gerät</translation>
-<translation id="4163705126749612234">Konfiguriert die erforderlichen Domainnamen der Clients für den Remotezugriff und verhindert, dass diese von Nutzern geändert werden können.
-
-          Wenn diese Einstellung aktiviert ist, können nur Clients aus einer der angegebenen Domains eine Verbindung zum Host herstellen.
-
-          Ist diese Einstellung deaktiviert oder nicht konfiguriert, wird die Standardrichtlinie für den Verbindungstyp angewendet. Zu Zwecken der Remote-Unterstützung können Clients aus jeder beliebigen Domain eine Verbindung zum Host herstellen, bei einem stetigen Remotezugriff kann nur der Hosteigentümer eine Verbindung herstellen.
-
-          Mit dieser Einstellung wird "RemoteAccessHostClientDomain" falls vorhanden überschrieben.
-
-          Siehe auch "RemoteAccessHostDomainList".</translation>
 <translation id="4164601239783385546">Dadurch wird die Sticky Keys-Bedienungshilfe aktiviert.
 
           Bei Auswahl von "true" ist die Sticky Keys-Bedienungshilfe immer aktiviert.
@@ -5132,15 +5123,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Wird die Richtlinie nicht konfiguriert, obwohl sie auf dem Gerät unterstützt wird, dann wird der Standardmodus für die Akkuaufladung angewendet und kann vom Nutzer nicht geändert werden.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" diese Richtlinie.</translation>
-<translation id="9072600218500597787">Konfiguriert die erforderlichen Domainnamen der Hosts für den Remotezugriff und verhindert, dass diese von Nutzern geändert werden können.
-
-          Wenn diese Einstellung aktiviert ist, können Hosts nur über solche Konten gemeinsam genutzt werden, die unter einem der angegebenen Domainnamen registriert sind.
-
-          Ist diese Einstellung deaktiviert oder nicht festgelegt, können Hosts über alle Konten gemeinsam genutzt werden.
-
-          Mit dieser Einstellung wird "RemoteAccessHostDomain" falls vorhanden überschrieben.
-
-          Siehe auch "RemoteAccessHostClientDomainList".</translation>
 <translation id="9077227880520270584">Timer für automatische Anmeldung in lokalem Gerätekonto</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="9088433379343318874">Contentanbieter für betreute Nutzer aktivieren</translation>

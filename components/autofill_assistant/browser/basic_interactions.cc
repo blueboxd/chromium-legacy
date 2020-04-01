@@ -415,13 +415,15 @@ bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
   return true;
 }
 
-bool BasicInteractions::EndAction(const EndActionProto& proto) {
+bool BasicInteractions::EndAction(bool view_inflation_successful,
+                                  const EndActionProto& proto) {
   if (!end_action_callback_) {
     DVLOG(2) << "Failed to EndAction: no callback set";
     return false;
   }
   std::move(end_action_callback_)
-      .Run(proto.status(), delegate_->GetUserModel());
+      .Run(view_inflation_successful, proto.status(),
+           delegate_->GetUserModel());
   return true;
 }
 
@@ -430,7 +432,7 @@ void BasicInteractions::ClearEndActionCallback() {
 }
 
 void BasicInteractions::SetEndActionCallback(
-    base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+    base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
         end_action_callback) {
   end_action_callback_ = std::move(end_action_callback);
 }

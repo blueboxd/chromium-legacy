@@ -43,12 +43,13 @@ class BasicInteractions {
   bool ToggleUserAction(const ToggleUserActionProto& proto);
 
   // Ends the current action. Can only be called during a ShowGenericUiAction.
-  bool EndAction(const EndActionProto& proto);
+  bool EndAction(bool view_inflation_successful, const EndActionProto& proto);
 
   // Sets the callback to end the current ShowGenericUiAction.
   void SetEndActionCallback(
-      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
-          end_action_callback);
+      base::OnceCallback<void(bool,
+                              ProcessedActionStatusProto,
+                              const UserModel*)> end_action_callback);
 
   // Clears the |end_action_callback_|.
   void ClearEndActionCallback();
@@ -68,7 +69,7 @@ class BasicInteractions {
  private:
   ScriptExecutorDelegate* delegate_;
   // Only valid during a ShowGenericUiAction.
-  base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+  base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
       end_action_callback_;
   base::WeakPtrFactory<BasicInteractions> weak_ptr_factory_{this};
 };

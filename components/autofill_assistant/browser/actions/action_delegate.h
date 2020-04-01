@@ -358,8 +358,9 @@ class ActionDelegate {
   // specified in |generic_ui|, as otherwise it will never be called.
   virtual void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
-          end_action_callback) = 0;
+      base::OnceCallback<void(bool,
+                              ProcessedActionStatusProto,
+                              const UserModel*)> end_action_callback) = 0;
 
   // Clears the generic UI. This will remove all corresponding views from the
   // view hierarchy and remove all corresponding interactions. Note that

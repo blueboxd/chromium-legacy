@@ -1,4 +1,67 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr-Latn">
+<translation id="1124772482545689468">Korisnik</translation>
+<translation id="1181037720776840403">Ukloni</translation>
+<translation id="1201402288615127009">Dalje</translation>
+<translation id="1383876407941801731">Pretraži</translation>
+<translation id="2079545284768500474">Opozovi</translation>
+<translation id="2148716181193084225">Danas</translation>
+<translation id="2359808026110333948">Nastavite</translation>
+<translation id="2501278716633472235">Nazad</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 kolačić je blokiran}one{# kolačić je blokiran}few{# kolačića su blokirana}other{# kolačića je blokirano}}</translation>
+<translation id="257931822824936280">Prošireno je – Kliknite da biste skupili.</translation>
+<translation id="2653659639078652383">Pošalji</translation>
+<translation id="2704606927547763573">Kopirano</translation>
+<translation id="2968755619301702150">Prikazivač sertifikata</translation>
+<translation id="3115898365077584848">Prikaži informacije</translation>
+<translation id="3295602654194328831">Sakrij informacije</translation>
+<translation id="3479552764303398839">Ne sada</translation>
+<translation id="385051799172605136">Nazad</translation>
+<translation id="3987993985790029246">Kopiraj link</translation>
+<translation id="4002066346123236978">Naslov</translation>
+<translation id="4570913071927164677">Detalji</translation>
+<translation id="4645575059429386691">Ovim upravlja tvoj roditelj</translation>
+<translation id="4883854917563148705">Podešavanja kojima se upravlja ne mogu da se resetuju</translation>
+<translation id="497421865427891073">Kretanje unapred</translation>
+<translation id="5100237604440890931">Skupljeno je – Kliknite da biste proširili.</translation>
+<translation id="5300589172476337783">Prikaži</translation>
+<translation id="5301954838959518834">Važi</translation>
+<translation id="5317780077021120954">Sačuvaj</translation>
+<translation id="5391532827096253100">Veza sa ovim sajtom nije bezbedna. Informacije o sajtu</translation>
+<translation id="5556459405103347317">Učitaj ponovo</translation>
+<translation id="5596627076506792578">Još opcija</translation>
+<translation id="5860033963881614850">Isključeno</translation>
+<translation id="5916664084637901428">Uključeno</translation>
+<translation id="5939518447894949180">Resetuj</translation>
+<translation id="6040143037577758943">Zatvori</translation>
+<translation id="6042308850641462728">Još</translation>
+<translation id="6165508094623778733">Saznajte više</translation>
+<translation id="6206551242102657620">Veza je bezbedna. Informacije o sajtu</translation>
+<translation id="6216432067784365534">Opcije stavke <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="6527303717912515753">Deli</translation>
+<translation id="6746124502594467657">Premesti nadole</translation>
+<translation id="6818926723028410516">Izaberite stavke</translation>
+<translation id="6910211073230771657">Izbrisano</translation>
+<translation id="6945221475159498467">Izaberi</translation>
+<translation id="6963642900430330478">Ova stranica je opasna. Informacije o sajtu</translation>
+<translation id="6965382102122355670">Potvrdi</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Izabrano: 1}one{Izabrano: #}few{Izabrano: #}other{Izabrano: #}}</translation>
+<translation id="7087918508125750058">Izabrali ste <ph name="ITEM_COUNT" />. Opcije su dostupne pri vrhu ekrana</translation>
+<translation id="7250468141469952378">Izabrali ste <ph name="ITEM_COUNT" /></translation>
+<translation id="7649070708921625228">Pomoć</translation>
+<translation id="7658239707568436148">Otkaži</translation>
+<translation id="7781829728241885113">Juče</translation>
+<translation id="7791543448312431591">Dodaj</translation>
+<translation id="780301667611848630">Ne, hvala</translation>
+<translation id="7846076177841592234">Otkaži izbor</translation>
+<translation id="8131740175452115882">Potvrdi</translation>
+<translation id="8206354486702514201">Ovo podešavanje primenjuje administrator.</translation>
+<translation id="8249310407154411074">Premesti na vrh</translation>
+<translation id="8261506727792406068">Izbriši</translation>
+<translation id="8609465669617005112">Premesti nagore</translation>
+<translation id="8676374126336081632">Obriši unos</translation>
+<translation id="8725066075913043281">Probajte ponovo</translation>
+<translation id="8730621377337864115">Gotovo</translation>
+<translation id="9019902583201351841">Ovim upravljaju tvoji roditelji</translation>
 </translationbundle>

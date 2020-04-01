@@ -95,12 +95,22 @@ void PluginParameters::AppendNameWithValue(const String& name,
   values_.push_back(value);
 }
 
-int PluginParameters::FindStringInNames(const String& str) {
-  for (wtf_size_t i = 0; i < names_.size(); ++i) {
-    if (EqualIgnoringASCIICase(names_[i], str))
-      return i;
+void PluginParameters::MapDataParamToSrc() {
+  auto* src = std::find_if(names_.begin(), names_.end(), [](auto name) {
+    return EqualIgnoringASCIICase(name, "src");
+  });
+
+  if (src != names_.end()) {
+    return;
   }
-  return -1;
+
+  auto* data = std::find_if(names_.begin(), names_.end(), [](auto name) {
+    return EqualIgnoringASCIICase(name, "data");
+  });
+
+  if (data != names_.end()) {
+    AppendNameWithValue("src", values_[data - names_.begin()]);
+  }
 }
 
 HTMLPlugInElement::HTMLPlugInElement(

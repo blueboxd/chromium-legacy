@@ -1673,7 +1673,7 @@
       <ph name="LIST_ITEM" />學校用 Chromebook 的書籤
       <ph name="LIST_ITEM" />在教學網站上自動填入密碼的功能
     <ph name="END_LIST" />
-    您子女必須執行以下操作，才能在此裝置上享有完整的學校帳戶體驗：
+    您的子女必須執行以下操作，才能在此裝置上享有完整的學校帳戶體驗：
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />登出由 Family Link 管理的帳戶
       <ph name="OLIST_ITEM" />在登入畫面上使用「G Suite 教育版」帳戶登入。請注意，此操作會讓學校政策 (包括應用程式和網站存取設定) 優先於 Family Link 的監管功能 (例如，學校管理員可能允許存取 YouTube 做功課，或系統將不會強制執行裝置使用時間等等。)
@@ -3134,7 +3134,7 @@
 <translation id="5204967432542742771">輸入密碼</translation>
 <translation id="5206215183583316675">要刪除「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="520621735928254154">憑證匯入錯誤</translation>
-<translation id="5209307736170827035">您子女的 Classroom 資料將受到保護。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
+<translation id="5209307736170827035">我們將致力保護您子女的 Classroom 資料。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">找不到裝置</translation>
 <translation id="5210990770352357081">無法解除安裝 Plugin VM</translation>
 <translation id="5213481667492808996">「<ph name="NAME" />」的數據服務現可使用</translation>
@@ -3251,7 +3251,6 @@
 <translation id="5353252989841766347">從 Chrome 中匯出密碼</translation>
 <translation id="5355099869024327351">允許「Google 助理」顯示通知</translation>
 <translation id="5355926466126177564">擴充功能「<ph name="EXTENSION_NAME" />」已變更您使用網址列搜尋時所顯示的頁面。</translation>
-<translation id="535911077628776608"><ph name="FILE_NAME" /> 可能不安全。要傳送到「Google 進階保護功能」進行掃瞄嗎？按住 Shift+F6 鍵即可切換至下載內容列的位置。</translation>
 <translation id="5359910752122114278">1 項結果</translation>
 <translation id="5360150013186312835">在工具列上顯示</translation>
 <translation id="5362741141255528695">選取私密金鑰檔案。</translation>
@@ -5684,7 +5683,6 @@
 <translation id="8608618451198398104">新增 Kerberos 票證</translation>
 <translation id="8609465669617005112">上移</translation>
 <translation id="8610103157987623234">格式不正確，請再試一次</translation>
-<translation id="8612935480510351790"><ph name="FILE_NAME" /> 可能不安全。要傳送到「Google 進階保護功能」進行掃瞄嗎？</translation>
 <translation id="8613164732773110792">僅限小寫字元、數字、底線或破折號</translation>
 <translation id="8615618338313291042">無痕模式應用程式：<ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">投射陰影</translation>

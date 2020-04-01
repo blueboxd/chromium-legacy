@@ -60,6 +60,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   gfx::SurfaceOrigin GetOrigin() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
+                           GbmSurfacelessWaylandCheckOrderOfCallbacksTest);
+
   ~GbmSurfacelessWayland() override;
 
   // WaylandSurfaceGpu overrides:
@@ -99,6 +102,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
+  // Sets a flag that skips glFlush step in unittests.
+  void SetNoGLFlushForTests();
+
   WaylandBufferManagerGpu* const buffer_manager_;
   std::vector<PlaneData> planes_;
 
@@ -110,6 +116,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
   bool use_egl_fence_sync_ = true;
+
+  bool no_gl_flush_for_tests_ = false;
 
   base::WeakPtrFactory<GbmSurfacelessWayland> weak_factory_;
 

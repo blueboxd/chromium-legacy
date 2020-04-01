@@ -3685,7 +3685,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Questa impostazione consente di gestire la presentazione delle pagine di benvenuto che consentono agli utenti di accedere a <ph name="PRODUCT_NAME" /> o sceglierlo come browser predefinito oppure che danno agli utenti informazioni sulle funzionalità del prodotto.</translation>
 <translation id="6766216162565713893">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo Bluetooth nelle vicinanze.</translation>
 <translation id="6770454900105963262">Segnala informazioni sulle sessioni kiosk attive</translation>
-<translation id="6772045451150098845">Questo criterio consente di stabilire se gli utenti iscritti al programma di protezione avanzata ricevono o meno funzionalità extra. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti iscritti al programma riceveranno funzionalità extra. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità standard per i consumatori.</translation>
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6795485990775913659">Consenti la stampa solo senza PIN</translation>

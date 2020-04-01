@@ -24,6 +24,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -78,6 +79,7 @@ VibrationController::SanitizeVibrationPattern(
 VibrationController::VibrationController(LocalFrame& frame)
     : ExecutionContextLifecycleObserver(frame.GetDocument()),
       PageVisibilityObserver(frame.GetDocument()->GetPage()),
+      vibration_manager_(frame.DomWindow()),
       timer_do_vibrate_(
           frame.GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
@@ -86,7 +88,8 @@ VibrationController::VibrationController(LocalFrame& frame)
       is_calling_cancel_(false),
       is_calling_vibrate_(false) {
   frame.GetBrowserInterfaceBroker().GetInterface(
-      vibration_manager_.BindNewPipeAndPassReceiver());
+      vibration_manager_.BindNewPipeAndPassReceiver(
+          frame.GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 }
 
 VibrationController::~VibrationController() = default;
@@ -126,7 +129,7 @@ void VibrationController::DoVibrate(TimerBase* timer) {
       !GetExecutionContext() || !GetPage()->IsPageVisible())
     return;
 
-  if (vibration_manager_) {
+  if (vibration_manager_.is_bound()) {
     is_calling_vibrate_ = true;
     vibration_manager_->Vibrate(
         pattern_[0],
@@ -160,7 +163,7 @@ void VibrationController::Cancel() {
   pattern_.clear();
   timer_do_vibrate_.Stop();
 
-  if (is_running_ && !is_calling_cancel_ && vibration_manager_) {
+  if (is_running_ && !is_calling_cancel_ && vibration_manager_.is_bound()) {
     is_calling_cancel_ = true;
     vibration_manager_->Cancel(
         WTF::Bind(&VibrationController::DidCancel, WrapPersistent(this)));
@@ -180,9 +183,6 @@ void VibrationController::DidCancel() {
 
 void VibrationController::ContextDestroyed() {
   Cancel();
-
-  // If the document context was destroyed, never call the mojo service again.
-  vibration_manager_.reset();
 }
 
 void VibrationController::PageVisibilityChanged() {
@@ -193,6 +193,7 @@ void VibrationController::PageVisibilityChanged() {
 void VibrationController::Trace(Visitor* visitor) {
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
+  visitor->Trace(vibration_manager_);
 }
 
 }  // namespace blink

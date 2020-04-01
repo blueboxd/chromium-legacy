@@ -3,7 +3,6 @@
 <translationbundle lang="id">
 <translation id="102360288709523007">Bantu penyempurnaan Chromium dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
 <translation id="1185134272377778587">Tentang Chromium</translation>
-<translation id="1289966288285062467">Pemberitahuan Privasi Chromium</translation>
 <translation id="1472013873724362412">Akun Anda tidak berfungsi di Chromium. Harap hubungi administrator domain atau gunakan Akun Google biasa untuk masuk.</translation>
 <translation id="1507010443238049608">Bantu Sempurnakan Fitur dan Performa Chromium</translation>
 <translation id="1617663976202781617">Data dari sinkronisasi Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Keluar dari Chromium?</translation>
 <translation id="6424492062988593837">Chromium jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="6604711459180487467">Dapatkan pengalaman yang lebih baik di Chromium berdasarkan lokasi Anda.</translation>
-<translation id="6626296268883197964">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK_TOS" />Persyaratan Layanan<ph name="END_LINK_TOS" /> dan <ph name="BEGIN_LINK_PRIVACY" />Pemberitahuan Privasi<ph name="END_LINK_PRIVACY" /> Chromium.</translation>
 <translation id="7099326575020694068">Chromium tidak dapat menggunakan kamera dalam mode Layar Terpisah</translation>
 <translation id="7208566199746267865">Chromium menghemat waktu Anda dengan membawa akun ke web. Anda dapat menambahkan atau menghapus akun di Setelan.</translation>
 <translation id="7269362888766543920">Beberapa add-on telah menyebabkan Chromium berhenti bekerja. Harap coba uninstal.</translation>

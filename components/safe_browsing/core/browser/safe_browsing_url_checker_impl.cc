@@ -152,7 +152,6 @@ SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(const GURL& url,
   resource.is_subframe = resource_type_ == ResourceType::kSubFrame;
   resource.threat_type = threat_type;
   resource.threat_metadata = metadata;
-  resource.resource_type = resource_type_;
   resource.callback =
       base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
                           weak_factory_.GetWeakPtr());

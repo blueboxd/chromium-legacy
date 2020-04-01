@@ -535,15 +535,15 @@ void VdaVideoDecoder::ProvidePictureBuffersWithVisibleRect(
   // that the client uses should be only 640x360. Therefore, we pass
   // |visible_rect|.size() here as the requested size of the picture buffers.
   //
-  // TODO(andrescj): this is not correct in the case that the visible rectangle
-  // does not start at (0, 0). This can happen for some exotic H.264 videos. For
-  // example, if the coded size is 640x368 and the visible rectangle is
-  // 2,2,640x360, the size of the picture buffers we pass here should be
-  // 642x362. That's because the compositor is responsible for calculating the
-  // UV coordinates in such a way that the non-visible area to the left and on
-  // the top of the visible rectangle are not displayed.
+  // Note that we use GetRectSizeFromOrigin() to handle the unusual case in
+  // which the visible rectangle does not start at (0, 0). For example, for an
+  // H.264 video with a visible rectangle of 2,2,635x360, the coded size is
+  // 640x360, but the GL texture that the client uses should be 637x362. This is
+  // because we want the texture to include the non-visible area to the left and
+  // on the top of the visible rectangle so that the compositor can calculate
+  // the UV coordinates to omit the non-visible area.
   ProvidePictureBuffers(requested_num_of_buffers, format, textures_per_buffer,
-                        visible_rect.size(), texture_target);
+                        GetRectSizeFromOrigin(visible_rect), texture_target);
 }
 
 void VdaVideoDecoder::ProvidePictureBuffersAsync(uint32_t count,

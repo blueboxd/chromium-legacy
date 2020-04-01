@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">História</translation>
 <translation id="1645368109819982629">Nepodporovaný protokol</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome zjednodušil túto stránku, aby sa dala ľahšie prečítať. Chrome načítal pôvodnú stránku cez zabezpečené pripojenie.</translation>
 <translation id="1656489000284462475">Vyzdvihnutie</translation>
 <translation id="1662550410081243962">Ukladať a dopĺňať spôsoby platby</translation>
 <translation id="1663943134801823270">Karty a adresy pochádzajú z Chromu. Môžete ich spravovať v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>
@@ -558,6 +559,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="342781501876943858">Ak ste heslo použili aj na iných weboch, Chromium ho odporúča obnoviť.</translation>
 <translation id="3428151540071562330">Minimálne jeden identifikátor URI šablón servera DnsOverHttpsTemplates je neplatný a nebude použitý.</translation>
 <translation id="3431636764301398940">Uložiť túto kartu na zariadení</translation>
+<translation id="3432601291244612633">Zatvoriť stránku</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Vlastník tohto zariadenia vypol hru Dinosaur.</translation>
 <translation id="3447884698081792621">Zobraziť certifikát (od vydavateľa <ph name="ISSUER" />)</translation>
@@ -862,6 +864,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="4731967714531604179">Prc2 (obálka)</translation>
 <translation id="4733082559415072992">Web <ph name="URL" /> chce používať polohu vášho zariadenia</translation>
 <translation id="4736825316280949806">Reštartujte Chromium</translation>
+<translation id="4737121147659370456">Správca povolil vo vašom prehliadači konektory Chrome Enterprise. Tieto konektory majú prístup k niektorým vašim údajom.</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4738601419177586157">Návrh vyhľadávania <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Spravovať heslá…</translation>
@@ -1197,6 +1200,8 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="610911394827799129">Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6116338172782435947">Prístup k textu a obrázkom skopírovaným do schránky</translation>
 <translation id="6120179357481664955">Chcete uložiť svoj identifikátor UPI?</translation>
+<translation id="6124432979022149706">Konektory Chrome Enterprise</translation>
+<translation id="6135641591018127088">Vygenerujte si silné heslo pomocou účtu Google</translation>
 <translation id="6146055958333702838">Skontrolujte všetky káble a reštartujte všetky používané smerovače, modemy alebo iné sieťové zariadenia.</translation>
 <translation id="614940544461990577">Vyskúšajte:</translation>
 <translation id="6150036310511284407">Tri dierky vľavo</translation>
@@ -1241,6 +1246,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="6328639280570009161">Skúste zakázať predpovede siete</translation>
 <translation id="6328784461820205019">„Vaše pripojenie nie je súkromné“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ alebo „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ alebo „Chyba certifikátu SSL“.</translation>
 <translation id="6328786501058569169">Tento web je klamlivý</translation>
+<translation id="6333334544069706521">Použiť heslá uložené vo vašom účte Google</translation>
 <translation id="6337133576188860026">Uvoľní menej ako <ph name="SIZE" />. Niektoré weby sa môžu pri ďalšej návšteve načítať pomalšie.</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Žiadne}=1{Jedno heslo (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizované)}=2{Dve heslá (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizované)}few{# heslá (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizované)}many{# passwords (for <ph name="DOMAIN_LIST" />, synced)}other{# hesiel (pre zoznam domén <ph name="DOMAIN_LIST" />, synchronizovaných)}}</translation>
@@ -1286,6 +1292,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="6521745193039995384">Neaktívne</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
 <translation id="6534179046333460208">Návrhy Fyzického webu</translation>
+<translation id="6543609420755597723">Zdieľajte so svojím správcom údaje o bezpečnostných udalostiach nahlásených konektormi Chrome Enterprise. Môžu zahŕňať webové adresy navštívených stránok, názvy súborov alebo metadáta a používateľské meno, pomocou ktorého sa prihlasujete do zariadenia aj Chromu.</translation>
 <translation id="6545864417968258051">Vyhľadávanie zariadení Bluetooth</translation>
 <translation id="6547208576736763147">Dve dierky vľavo</translation>
 <translation id="6554795675067793129">Váš účet spravuje doména <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1351,6 +1358,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="6874604403660855544">&amp;Znova pridať</translation>
 <translation id="6884662655240309489">Veľkosť 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome zjednodušil túto stránku, aby sa dala ľahšie prečítať. Chrome načítal pôvodnú stránku cez nezabezpečené pripojenie.</translation>
 <translation id="6891596781022320156">Úroveň pravidla nie je podporovaná.</translation>
 <translation id="6895330447102777224">Vaša karta je overená</translation>
 <translation id="6897140037006041989">Používateľský agent</translation>
@@ -1579,6 +1587,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="777702478322588152">Prefektúra</translation>
 <translation id="7791196057686275387">Zviazať do balíka</translation>
 <translation id="7791543448312431591">Pridať</translation>
+<translation id="7798389633136518089">Ignorované, pretože toto pravidlo nebolo nastavené cloudovým zdrojom.</translation>
 <translation id="7800304661137206267">Pripojenie je šifrované pomocou štandardu <ph name="CIPHER" /> s algoritmom <ph name="MAC" /> pre overovanie správ a mechanizmom výmeny kľúčov <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Web je legitímny</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
@@ -1714,6 +1723,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8371889962595521444">Vlastné koreňové certifikáty</translation>
 <translation id="8380941800586852976">Nebezpečná</translation>
 <translation id="8381674639488873545">Tieto poplatky môžu byť jednorazové alebo opakované a nemusia byť predvídateľné. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837">Doména <ph name="ENROLLMENT_DOMAIN" /> povolila vo vašom prehliadači konektory Chrome Enterprise. Tieto konektory majú prístup k niektorým vašim údajom.</translation>
 <translation id="8412145213513410671">Zlyhania (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Rovnakú prístupovú frázu musíte zadať dvakrát.</translation>
 <translation id="8416694386774425977">Konfigurácia siete je neplatná a nepodarilo sa ju importovať.

@@ -3,7 +3,6 @@
 <translationbundle lang="en-GB">
 <translation id="102360288709523007">Help make Chromium better by sending usage statistics and crash reports to Google.</translation>
 <translation id="1185134272377778587">About Chromium</translation>
-<translation id="1289966288285062467">Chromium Privacy Notice</translation>
 <translation id="1472013873724362412">Your account does not work on Chromium. Please contact your domain administrator or use a regular Google Account to sign in.</translation>
 <translation id="1507010443238049608">Help improve Chromium's features and performance</translation>
 <translation id="1617663976202781617">Data from Chromium sync</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Sign out of Chromium?</translation>
 <translation id="6424492062988593837">Chromium just got better! A new version is available.</translation>
 <translation id="6604711459180487467">Get a better experience in Chromium based on your location.</translation>
-<translation id="6626296268883197964">By using this application, you agree to Chromium’s <ph name="BEGIN_LINK_TOS" />Terms of Service<ph name="END_LINK_TOS" /> and <ph name="BEGIN_LINK_PRIVACY" />Privacy Notice<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="7099326575020694068">Chromium can't use your camera in Split View mode</translation>
 <translation id="7208566199746267865">Chromium saves you time by bringing your accounts to the web. You can add or remove accounts in Settings.</translation>
 <translation id="7269362888766543920">Some add-ons cause Chromium to crash. Please try uninstalling them.</translation>

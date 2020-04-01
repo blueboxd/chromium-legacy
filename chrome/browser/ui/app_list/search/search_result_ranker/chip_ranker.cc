@@ -21,61 +21,59 @@
 namespace app_list {
 namespace {
 
-// Apps have a boost of 8.0 + app ranker score in range [0, 1],
-// hence the range of scores is [8.0, 9.0].
-constexpr double kScoreHi = 9.0;
-constexpr double kScoreLo = 8.0;
+constexpr int kNumChips = 5;
+constexpr char kApp[] = "app";
+constexpr char kFile[] = "file";
 
-// Returns whether the model should be trained on this type of data.
-bool ShouldTrain(RankingItemType type) {
-  switch (type) {
-    case RankingItemType::kApp:
-    case RankingItemType::kChip:
-    case RankingItemType::kZeroStateFile:
-    case RankingItemType::kDriveQuickAccess:
-      return true;
-    default:
-      return false;
-  }
+// A small number that we expect to be smaller than the difference between the
+// scores of any two results. This means it can be used to insert a result A
+// between results B and C by setting A's score to B's score + kScoreEpsilon.
+constexpr float kScoreEpsilon = 1e-5f;
+
+void SortHighToLow(std::vector<Mixer::SortData*>* results) {
+  std::sort(results->begin(), results->end(),
+            [](const Mixer::SortData* const a, const Mixer::SortData* const b) {
+              return a->score > b->score;
+            });
 }
 
-double FetchScore(const std::map<std::string, float> ranks,
-                  ChromeSearchResult* r) {
-  const auto it = ranks.find(NormalizeAppId(r->id()));
-  if (it != ranks.end())
-    return it->second;
-  return 0.0;
+float GetScore(const std::map<std::string, float>& scores,
+               const std::string& key) {
+  const auto it = scores.find(key);
+  // We expect to always find a score for |key| in |scores|, because the ranker
+  // is initialized with some default scores. However a state without scores is
+  // possible, eg. if the recurrence ranker file is corrupted. In this case,
+  // default a score to 1.
+  if (it == scores.end()) {
+    return 1.0f;
+  }
+  return it->second;
 }
 
-int GetNextMatchingIndex(
-    Mixer::SortedResults* results,
-    const base::RepeatingCallback<bool(const ChromeSearchResult*)>&
-        result_filter,
-    int from_index) {
-  int i = from_index + 1;
-  while (i < static_cast<int>(results->size())) {
-    if (result_filter.Run((*results)[i].result)) {
-      return i;
-    }
-    ++i;
-  }
-  return -1;
+void InitializeRanker(RecurrenceRanker* ranker) {
+  // This initialization puts two files and three apps in the chips.
+  ranker->Record(kFile);
+  ranker->Record(kFile);
+  ranker->Record(kApp);
+  ranker->Record(kApp);
+  ranker->Record(kApp);
 }
 
 }  // namespace
 
 ChipRanker::ChipRanker(Profile* profile) : profile_(profile) {
   DCHECK(profile);
+
   // Set up ranker model.
   RecurrenceRankerConfigProto config;
   config.set_min_seconds_between_saves(240u);
   config.set_condition_limit(1u);
-  config.set_condition_decay(0.6f);
-  config.set_target_limit(200);
-  config.set_target_decay(0.9f);
+  config.set_condition_decay(0.5f);
+  config.set_target_limit(5u);
+  config.set_target_decay(0.95f);
   config.mutable_predictor()->mutable_default_predictor();
 
-  ranker_ = std::make_unique<RecurrenceRanker>(
+  type_ranker_ = std::make_unique<RecurrenceRanker>(
       "", profile_->GetPath().AppendASCII("suggested_files_ranker.pb"), config,
       chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
 }
@@ -83,89 +81,73 @@ ChipRanker::ChipRanker(Profile* profile) : profile_(profile) {
 ChipRanker::~ChipRanker() = default;
 
 void ChipRanker::Train(const AppLaunchData& app_launch_data) {
-  // ID normalisation will ensure that a file launched from the zero-state
-  // result list is counted as the same item as the same file launched from
-  // the suggestion chips.
-  if (ShouldTrain(app_launch_data.ranking_item_type)) {
-    ranker_->Record(NormalizeAppId(app_launch_data.id));
+  const auto type = app_launch_data.ranking_item_type;
+  if (type == RankingItemType::kApp) {
+    type_ranker_->Record(kApp);
+  } else if (type == RankingItemType::kChip ||
+             type == RankingItemType::kZeroStateFile ||
+             type == RankingItemType::kDriveQuickAccess) {
+    type_ranker_->Record(kFile);
   }
 }
 
 void ChipRanker::Rank(Mixer::SortedResults* results) {
-  std::sort(results->begin(), results->end());
+  // Construct two lists of pointers, containing file chip and app results
+  // respectively, sorted in decreasing order of score.
+  std::vector<Mixer::SortData*> app_results;
+  std::vector<Mixer::SortData*> file_results;
+  for (auto& result : *results) {
+    if (RankingItemTypeFromSearchResult(*result.result) ==
+        RankingItemType::kApp) {
+      app_results.emplace_back(&result);
+    } else if (RankingItemTypeFromSearchResult(*result.result) ==
+               RankingItemType::kChip) {
+      file_results.emplace_back(&result);
+    }
+  }
+  SortHighToLow(&app_results);
+  SortHighToLow(&file_results);
 
-  const auto app_chip_filter =
-      base::BindRepeating([](const ChromeSearchResult* r) -> bool {
-        return (r->display_type() == ash::SearchResultDisplayType::kTile ||
-                r->display_type() == ash::SearchResultDisplayType::kChip) &&
-               r->is_recommendation();
-      });
-
-  const auto file_chip_filter =
-      base::BindRepeating([](const ChromeSearchResult* r) -> bool {
-        return r->result_type() == ash::AppListSearchResultType::kFileChip ||
-               r->result_type() ==
-                   ash::AppListSearchResultType::kDriveQuickAccessChip;
-      });
-
-  // Use filters to find first two app chips and first file chip
-  int app1 = GetNextMatchingIndex(results, app_chip_filter, -1);
-  int app2 = GetNextMatchingIndex(results, app_chip_filter, app1);
-  int file = GetNextMatchingIndex(results, file_chip_filter, -1);
-  int prev_file = -1;
-
-  // If we couldn't find any files or couldn't find two or more apps.
-  if (file < 0 || app1 < 0 || app2 < 0) {
+  // The chip ranker only has work to do if both apps and files are present.
+  if (app_results.empty() || file_results.empty())
     return;
+
+  // If this is the first initialization of the ranker, warm it up with some
+  // default scores for apps and files.
+  // TODO(crbug.com/921444): Getting the ranks here just to check if they're
+  // empty is inefficient. We should add a size() method to RecurrenceRanker and
+  // update this.
+  if (type_ranker_->Rank().empty()) {
+    InitializeRanker(type_ranker_.get());
   }
 
-  // Fetch rankings from |ranker_|.
-  std::map<std::string, float> ranks = ranker_->Rank();
+  // Get the two type scores from the ranker.
+  const auto ranks = type_ranker_->Rank();
+  float app_score = GetScore(ranks, kApp);
+  float file_score = GetScore(ranks, kFile);
+  const float score_delta = (file_score + app_score) / kNumChips;
 
-  // Refer to class comment.
-  double app1_rescore = FetchScore(ranks, (*results)[app1].result);
-  double app2_rescore = FetchScore(ranks, (*results)[app2].result);
-  double file_rescore = 0.0;
-  double prev_file_rescore = kScoreHi;
-  double hi = 0.0;
-  double lo = 0.0;
-
-  while (file >= 0 && app1 >= 0) {
-    file_rescore = FetchScore(ranks, (*results)[file].result);
-
-    // File should sit above lowest of two app scores.
-    if (file_rescore > app2_rescore) {
-      // Find upper and lower bounds on score.
-      hi = prev_file > 0 ? (*results)[prev_file].score : kScoreHi;
-      lo = app2 > 0 ? (*results)[app2].score : kScoreLo;
-
-      if (prev_file_rescore > app1_rescore) {
-        if (file_rescore < app1_rescore)
-          hi = (*results)[app1].score;
-        else if (file_rescore > app1_rescore)
-          lo = (*results)[app1].score;
-      }
-
-      // Place new score at midpoint between hi and lo.
-      (*results)[file].score = lo + ((hi - lo) / 2);
-
-      prev_file = file;
-      file = GetNextMatchingIndex(results, file_chip_filter, file);
-      prev_file_rescore = file_rescore;
-
-    } else {
-      // File should sit below both current app scores.
-      app1 = app2;
-      app1_rescore = app2_rescore;
-      app2 = GetNextMatchingIndex(results, app_chip_filter, app1);
-      app2_rescore =
-          app2 < 0 ? kScoreLo : FetchScore(ranks, (*results)[app2].result);
+  // Tweak file result scores to fit in with app scores. See header comment for
+  // ChipRanker::Rank for more details.
+  const int num_apps = static_cast<int>(app_results.size());
+  const int num_files = static_cast<int>(file_results.size());
+  int current_app = 0;
+  int current_file = 0;
+  for (int i = 0; i < kNumChips; ++i) {
+    if (app_score > file_score) {
+      app_score -= score_delta;
+      ++current_app;
+    } else if (current_file < num_files && current_app < num_apps) {
+      file_results[current_file]->score =
+          app_results[current_app]->score + kScoreEpsilon;
+      ++current_file;
+      file_score -= score_delta;
     }
   }
 }
 
-void ChipRanker::SetForTest(std::unique_ptr<RecurrenceRanker> ranker) {
-  ranker_ = std::move(ranker);
+RecurrenceRanker* ChipRanker::GetRankerForTest() {
+  return type_ranker_.get();
 }
 
 }  // namespace app_list

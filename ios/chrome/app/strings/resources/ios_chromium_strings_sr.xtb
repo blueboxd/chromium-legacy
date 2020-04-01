@@ -3,7 +3,6 @@
 <translationbundle lang="sr">
 <translation id="102360288709523007">Побољшајте Chromium слањем статистике коришћења и извештаја о отказивању Google-у.</translation>
 <translation id="1185134272377778587">О Chromium-у</translation>
-<translation id="1289966288285062467">Обавештење о приватности за Chromium</translation>
 <translation id="1472013873724362412">Налог не функционише на Chromium-у. Контактирајте администратора домена или се пријавите помоћу обичног Google налога.</translation>
 <translation id="1507010443238049608">Помозите нам да побољшамо Chromium-ове функције и учинак</translation>
 <translation id="1617663976202781617">Подаци из Chromium синхронизације</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Желите ли да се одјавите из Chromium-а?</translation>
 <translation id="6424492062988593837">Chromium је управо постао бољи! Доступна је нова верзија.</translation>
 <translation id="6604711459180487467">Побољшајте доживљај у Chromium-у на основу локације.</translation>
-<translation id="6626296268883197964">Ако користите ову апликацију, прихватате Chromium <ph name="BEGIN_LINK_TOS" />услове коришћења услуге<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Обавештење о приватности<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="7099326575020694068">Chromium не може да користи камеру у режиму подељеног приказа</translation>
 <translation id="7208566199746267865">Chromium вам штеди време тако што поставља налоге на веб. Можете да додајете или уклањате налоге у подешавањима.</translation>
 <translation id="7269362888766543920">Неки програмски додаци изазивају отказивање Chromium-а. Пробајте да их деинсталирате.</translation>

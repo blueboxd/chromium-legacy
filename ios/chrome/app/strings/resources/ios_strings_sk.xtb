@@ -66,6 +66,7 @@
 <translation id="1690731385917361335">Žiadne položky</translation>
 <translation id="1692118695553449118">Synchronizácia je zapnutá.</translation>
 <translation id="1700629756560807968">Počet vybraných záložiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="1727016672946926483">Zdieľať QR kód</translation>
 <translation id="1740468249224277719">Dvojitým klepnutím spustíte inštaláciu.</translation>
 <translation id="1746815479209538200">Ak chcete prehliadať internet, pridajte novú kartu.</translation>
 <translation id="1752547299766512813">Ukladať heslá</translation>
@@ -152,7 +153,6 @@
 <translation id="285960592395650245">Skúsiť stiahnuť znova</translation>
 <translation id="2870560284913253234">Web</translation>
 <translation id="2871695793448672541">Skryté, heslo</translation>
-<translation id="2876369937070532032">Pri ohrození zabezpečenia odosiela Googlu webové adresy niektorých navštívených stránok</translation>
 <translation id="288655811176831528">Zavrieť kartu</translation>
 <translation id="2898963176829412617">Nový priečinok…</translation>
 <translation id="2916171785467530738">Automatické dopĺňanie vyhľadávaní a webových adries</translation>
@@ -171,7 +171,6 @@
 <translation id="3157684681743766797">Označiť všetko…</translation>
 <translation id="3175081911749765310">Web. služ.</translation>
 <translation id="3178650076442119961">Aktívne dnes</translation>
-<translation id="3181954750937456830">Bezpečné prehliadanie (chráni vás aj zariadenie pred nebezpečnými webmi)</translation>
 <translation id="3207960819495026254">Pridané medzi záložky</translation>
 <translation id="3224641773458703735">Ak chcete exportovať heslá, najprv musíte v zariadení nastaviť vstupný kód.</translation>
 <translation id="3240426699337459095">Odkaz bol skopírovaný</translation>

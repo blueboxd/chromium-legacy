@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_GBM_DEVICE_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_MOCK_GBM_DEVICE_H_
+#ifndef UI_GFX_LINUX_TEST_MOCK_GBM_DEVICE_H_
+#define UI_GFX_LINUX_TEST_MOCK_GBM_DEVICE_H_
 
 #include "ui/gfx/linux/gbm_device.h"
 
@@ -40,4 +40,4 @@ class MockGbmDevice : public GbmDevice {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_MOCK_GBM_DEVICE_H_
+#endif  // UI_GFX_LINUX_TEST_MOCK_GBM_DEVICE_H_

@@ -24,7 +24,7 @@ class V4L2StatefulWorkaround {
   virtual ~V4L2StatefulWorkaround() = default;
 
   // Apply the workaround.
-  virtual Result Apply(const uint8_t* data, size_t size, size_t* endpos) = 0;
+  virtual Result Apply(const uint8_t* data, size_t size) = 0;
 
  protected:
   V4L2StatefulWorkaround() = default;

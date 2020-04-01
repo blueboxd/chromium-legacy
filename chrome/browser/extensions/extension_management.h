@@ -253,6 +253,7 @@ class ExtensionManagement : public KeyedService {
 
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   PrefChangeRegistrar pref_change_registrar_;
+  PrefChangeRegistrar local_state_pref_change_registrar_;
   std::vector<std::unique_ptr<ManagementPolicy::Provider>> providers_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagement);

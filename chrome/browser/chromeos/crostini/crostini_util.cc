@@ -495,7 +495,8 @@ void LaunchCrostiniApp(Profile* profile,
   }
 
   if (crostini_manager->ShouldPromptContainerUpgrade(
-          ContainerId(registration->VmName(), registration->ContainerName()))) {
+          ContainerId(registration->VmName(), registration->ContainerName())) ||
+      crostini_manager->GetCrostiniDialogStatus(DialogType::UPGRADER)) {
     chromeos::CrostiniUpgraderDialog::Show(
         base::BindOnce(&LaunchCrostiniAppImpl, profile, app_id, display_id,
                        files, std::move(registration), std::move(callback)));

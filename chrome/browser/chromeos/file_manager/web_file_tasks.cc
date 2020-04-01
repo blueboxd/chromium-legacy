@@ -10,7 +10,9 @@
 #include "base/feature_list.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -118,12 +120,19 @@ void ExecuteWebTask(Profile* profile,
     launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
   }
 
-  apps::AppLaunchParams params(
-      task.app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceFileHandler);
+  apps::mojom::FilePathsPtr launch_files = apps::mojom::FilePaths::New();
   for (const auto& file_system_url : file_system_urls)
-    params.launch_files.push_back(file_system_url.path());
-  apps::LaunchService::Get(profile)->OpenApplication(params);
+    launch_files->file_paths.push_back(file_system_url.path());
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->LaunchAppWithFiles(
+      task.app_id, launch_container,
+      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
+                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                          /* preferred_containner=*/false),
+      apps::mojom::LaunchSource::kFromFileManager, std::move(launch_files));
 
   std::move(done).Run(
       extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");

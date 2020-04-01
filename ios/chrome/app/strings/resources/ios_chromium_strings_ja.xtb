@@ -3,7 +3,6 @@
 <translationbundle lang="ja">
 <translation id="102360288709523007">使用統計情報と障害レポートを Google に送信して Chromium の機能向上に役立てる。</translation>
 <translation id="1185134272377778587">Chromium について</translation>
-<translation id="1289966288285062467">Chromium のプライバシーに関するお知らせ</translation>
 <translation id="1472013873724362412">このアカウントは Chromium では使用できません。ドメイン管理者に問い合わせるか、通常の Google アカウントでログインしてください。</translation>
 <translation id="1507010443238049608">Chromium の機能と動作の改善に協力する</translation>
 <translation id="1617663976202781617">Chromium 同期のデータ</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Chromium からログアウトしますか？</translation>
 <translation id="6424492062988593837">Chromium のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
 <translation id="6604711459180487467">ユーザーの場所に応じて Chromium を使いやすくします。</translation>
-<translation id="6626296268883197964">このアプリケーションを使用すると、Chromium の<ph name="BEGIN_LINK_TOS" />利用規約<ph name="END_LINK_TOS" />と<ph name="BEGIN_LINK_PRIVACY" />プライバシーに関するお知らせ<ph name="END_LINK_PRIVACY" />に同意したことになります。</translation>
 <translation id="7099326575020694068">Chromium では、分割表示モードでカメラを使用することはできません</translation>
 <translation id="7208566199746267865">Chromium ではアカウントがウェブで管理されるので、さまざまな手間を省くことができます。[設定] でアカウントの追加と削除を行うことができます。</translation>
 <translation id="7269362888766543920">アドオンが原因で Chromium がクラッシュしました。アドオンをアンインストールしてみてください。</translation>

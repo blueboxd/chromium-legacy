@@ -95,7 +95,8 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
 
   // TODO(dcastagna): remove glFlush since eglImageFlushExternalEXT called on
   // the image should be enough (https://crbug.com/720045).
-  glFlush();
+  if (!no_gl_flush_for_tests_)
+    glFlush();
   unsubmitted_frames_.back()->Flush();
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
@@ -235,6 +236,10 @@ EGLSyncKHR GbmSurfacelessWayland::InsertFence(bool implicit) {
 void GbmSurfacelessWayland::FenceRetired(PendingFrame* frame) {
   frame->ready = true;
   SubmitFrame();
+}
+
+void GbmSurfacelessWayland::SetNoGLFlushForTests() {
+  no_gl_flush_for_tests_ = true;
 }
 
 void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,

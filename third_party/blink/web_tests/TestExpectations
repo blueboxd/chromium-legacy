@@ -6652,6 +6652,9 @@ crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas.html [ Pass Failure ]
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas.html [ Pass Failure ]
 # Sheriff 2020-03-31
 crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Pass Failure ]
+# Sheriff 2020-04-01
+crbug.com/1066122 virtual/threaded-no-composited-antialiasing/animations/events/animation-iteration-event.html [ Pass Failure ]
+crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
 
 # TODO(danakj): Rebaseline for Mac 10.14
 crbug.com/1066392 [ Mac ] virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]

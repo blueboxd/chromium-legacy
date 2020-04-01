@@ -219,6 +219,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   void FireActiveDescendantEvents();
   void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
   bool ShouldFireLoadEvents(AXNode* node);
+  void PostprocessEvents();
   static void GetRestrictionStates(ax::mojom::Restriction restriction,
                                    bool* is_enabled,
                                    bool* is_readonly);

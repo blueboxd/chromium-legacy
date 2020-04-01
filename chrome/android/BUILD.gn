@@ -879,6 +879,7 @@ android_library("chrome_test_java") {
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
+    "//components/embedder_support/android:web_contents_delegate_javatests",
     "//components/external_intents/android:java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/gcm_driver/android:gcm_driver_java",

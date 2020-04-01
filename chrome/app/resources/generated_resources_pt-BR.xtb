@@ -1064,7 +1064,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2408955596600435184">Informe seu PIN</translation>
 <translation id="241082044617551207">Plug-in desconhecido</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
-<translation id="2413749388954403953">Alterar a interface de favoritos do usuário</translation>
 <translation id="2417206894320497232">O Plugin VM está pronto para uso.</translation>
 <translation id="241727068219398187">Dados foram criptografados com sua senha do Google a partir de
           <ph name="TIME" />. Isso não inclui formas de pagamento e endereços do Google Pay.</translation>
@@ -1158,7 +1157,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="252219247728877310">Componente não atualizado</translation>
 <translation id="2522791476825452208">Muito perto</translation>
 <translation id="2523184218357549926">Envia URLs das páginas que você visita para o Google</translation>
-<translation id="2525250408503682495">Kryptonita! Não foi possível montar o início criptografado (cryptohome) do aplicativo de quiosque.</translation>
 <translation id="2526277209479171883">Instalar e continuar</translation>
 <translation id="2526590354069164005">Área de trabalho</translation>
 <translation id="2526619973349913024">Verificar atualizações</translation>
@@ -1186,7 +1184,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> não pôde se conectar a <ph name="NETWORK_ID" />. Selecione outra rede ou tente novamente.</translation>
 <translation id="2553440850688409052">Ocultar este plug-in</translation>
 <translation id="2554553592469060349">O arquivo selecionado é muito grande (tamanho máximo: 3 MB).</translation>
-<translation id="2556092377360758201">Sem proteção (não recomendado)</translation>
 <translation id="2557378327156922632">Este arquivo apresenta conteúdo sensível.</translation>
 <translation id="255747371423522804">Adicionar a um grupo existente</translation>
 <translation id="2558896001721082624">Sempre mostrar as opções de acessibilidade no menu do sistema</translation>
@@ -2397,7 +2394,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4100853287411968461">Novo limite de tempo de uso</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="4107048419833779140">Identificar e ejetar dispositivos de armazenamento</translation>
-<translation id="4108998448622696017">Detecta e avisa você sobre eventos perigosos quando eles acontecerem.</translation>
 <translation id="4109135793348361820">Mover janela para <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download concluído: <ph name="FILE_NAME" />. Pressione Shift+F6 para voltar à área da barra de downloads.</translation>
 <translation id="4110895898888439383">Navegue na Web usando o modo de alto contraste</translation>
@@ -2418,7 +2414,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="413121957363593859">Componentes</translation>
 <translation id="4131410914670010031">Preto e branco</translation>
 <translation id="4133076602192971179">Abra o app para mudar sua senha</translation>
-<translation id="4133265950310064865">Proteção reforçada</translation>
 <translation id="4136203100490971508">O Modo noturno será desativado automaticamente ao amanhecer</translation>
 <translation id="41365691917097717">Se você continuar, a depuração do adb será ativada para a criação e o teste de apps para Android. Essa ação permite a instalação de apps para Android que não foram verificados pelo Google. Para desativar, será necessária uma redefinição para a configuração original.</translation>
 <translation id="4138267921960073861">Mostrar nomes de usuários e fotos na tela de login</translation>
@@ -2768,7 +2763,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4660540330091848931">Redimensionando</translation>
 <translation id="4660838440047236328">o layout do ambiente.</translation>
 <translation id="4661407454952063730">Os dados de apps podem ser quaisquer dados que um app tenha salvo (com base nas configurações do desenvolvedor), incluindo dados como contatos, mensagens e fotos.</translation>
-<translation id="4661931051827810091">Envia, de forma anônima, URLs de páginas que você visita, informações do sistema limitadas e parte do conteúdo das páginas para ajudar a descobrir e bloquear novas ameaças contra todos os usuários da Web.</translation>
 <translation id="4662788913887017617">Compartilhar esse favorito com seu iPhone</translation>
 <translation id="4663373278480897665">Câmera permitida</translation>
 <translation id="4664482161435122549">Erro de exportação do PKCS #12</translation>
@@ -2776,7 +2770,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4665446389743427678">Todos os dados armazenados pelo site <ph name="SITE" /> serão excluídos.</translation>
 <translation id="4668721319092543482">Clique para ativar o plug-in <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Realidade virtual</translation>
-<translation id="4672879467403304774">Protege você no Chrome e em outros apps do Google quando sua conta está conectada</translation>
 <translation id="46733273239502219">Os dados off-line em apps instalados também serão removidos</translation>
 <translation id="4673442866648850031">Abrir ferramentas da stylus quando a stylus for removida</translation>
 <translation id="4677772697204437347">Memória do GPU</translation>
@@ -2853,7 +2846,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4798236378408895261">Anexar <ph name="BEGIN_LINK" />registros de Bluetooth<ph name="END_LINK" /> (interno do Google)</translation>
 <translation id="4801448226354548035">Ocultar contas</translation>
 <translation id="4801512016965057443">Permitir roaming de dados móveis</translation>
-<translation id="480395942558135789">Os sites poderão usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras.</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Abacate</translation>
 <translation id="4805077164141082536">Recomendamos que você faça um backup do seu contêiner atual do Linux antes de fazer upgrade.</translation>
@@ -3097,7 +3089,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5127881134400491887">Gerenciar conexões de rede</translation>
 <translation id="512903556749061217">conectado</translation>
 <translation id="5133483819862530305">Do pôr ao nascer do sol</translation>
-<translation id="5134113140145104829">Para acessar a tela inicial a qualquer momento, deslize de baixo para cima.</translation>
 <translation id="5135085122826131075">Acessar seu Assistente sempre que você disser "Ok Google".</translation>
 <translation id="5135533361271311778">Não foi possível criar um item de favorito.</translation>
 <translation id="5137501176474113045">Excluir este item</translation>
@@ -3463,7 +3454,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5614190747811328134">Aviso para o usuário</translation>
 <translation id="5614553682702429503">Salvar senha?</translation>
 <translation id="561698261642843490">Fechar o Firefox</translation>
-<translation id="5618075537869101857">Puxa, não foi possível iniciar o aplicativo de quiosque.</translation>
 <translation id="5618333180342767515">Isso pode demorar alguns minutos</translation>
 <translation id="56197088284879152">A conexão está congestionada para o dispositivo remoto "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">Nenhuma senha salva</translation>
@@ -4027,7 +4017,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6362853299801475928">&amp;Informar um problema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Adicionar familiares e amigos</translation>
-<translation id="6366190659675876144">Proteção padrão</translation>
 <translation id="636850387210749493">Registro da empresa</translation>
 <translation id="6370021412472292592">Não foi possível carregar o manifesto.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Mudar senha}one{Mudar senha}other{Mudar senhas}}</translation>
@@ -4453,7 +4442,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Porta</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
-<translation id="6966201992886493384">Os sites podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras</translation>
 <translation id="696780070563539690">Os sites não podem usar cookies para ver sua atividade de navegação em diferentes páginas para, por exemplo, personalizar anúncios</translation>
 <translation id="6968288415730398122">Digite sua senha para configurar o bloqueio de tela</translation>
 <translation id="6970480684834282392">Tipo de inicialização</translation>
@@ -4869,7 +4857,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7507207699631365376">Consulte a <ph name="BEGIN_LINK" />política de privacidade<ph name="END_LINK" /> deste provedor</translation>
 <translation id="7507930499305566459">Certificado do respondente de status</translation>
 <translation id="7508054832109420082">Conceder acesso a impressoras</translation>
-<translation id="751120035300339">Os sites não podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras</translation>
 <translation id="7513029293694390567">Faça login automaticamente nos sites que usam credenciais armazenadas. Quando o recurso estiver desativado, será necessário fornecer uma confirmação todas as vezes que fizer login em um site.</translation>
 <translation id="7514239104543605883">Copiar para o dispositivo</translation>
 <translation id="7514365320538308">Fazer o download</translation>
@@ -5567,7 +5554,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="8417548266957501132">Senha do pai/mãe</translation>
-<translation id="8417573335434189196">Não protege você contra sites, downloads e extensões perigosos. O Chrome não recomenda essa configuração.</translation>
 <translation id="8418445294933751433">&amp;Mostrar como guia</translation>
 <translation id="8419098111404128271">Resultados de pesquisa para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">Bem-vindo ao <ph name="DEVICE_TYPE" />!</translation>

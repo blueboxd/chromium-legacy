@@ -14,10 +14,14 @@
 namespace blink {
 
 NavigationInitiatorImpl::NavigationInitiatorImpl(Document& document)
-    : document_(document) {}
+    : navigation_initiator_receivers_(document.GetExecutionContext()),
+      document_(document) {
+  DCHECK(document.GetExecutionContext());
+}
 
 void NavigationInitiatorImpl::Trace(Visitor* visitor) {
   visitor->Trace(document_);
+  visitor->Trace(navigation_initiator_receivers_);
 }
 
 void NavigationInitiatorImpl::SendViolationReport(
@@ -43,8 +47,11 @@ void NavigationInitiatorImpl::SendViolationReport(
       nullptr /* Element */);
 }
 
-void NavigationInitiatorImpl::Dispose() {
-  navigation_initiator_receivers_.Clear();
+void NavigationInitiatorImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {
+  navigation_initiator_receivers_.Add(
+      this, std::move(receiver),
+      document_->GetTaskRunner(TaskType::kNetworking));
 }
 
 }  // namespace blink

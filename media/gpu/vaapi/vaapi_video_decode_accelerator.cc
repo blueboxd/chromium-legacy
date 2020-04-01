@@ -28,6 +28,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/base/video_util.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/macros.h"
@@ -689,7 +690,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     // Note that the |size_to_bind| is not relevant in IMPORT mode.
     const gfx::Size size_to_bind =
         (output_mode_ == Config::OutputMode::ALLOCATE)
-            ? requested_visible_rect_.size()
+            ? GetRectSizeFromOrigin(requested_visible_rect_)
             : gfx::Size();
 
     std::unique_ptr<VaapiPicture> picture = vaapi_picture_factory_->Create(

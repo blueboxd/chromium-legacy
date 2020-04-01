@@ -3,7 +3,6 @@
 <translationbundle lang="de">
 <translation id="102360288709523007">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chromium an Google senden.</translation>
 <translation id="1185134272377778587">Über Chromium</translation>
-<translation id="1289966288285062467">Chromium-Datenschutzhinweise</translation>
 <translation id="1472013873724362412">Dieses Konto funktioniert in Chromium nicht. Wenden Sie sich an Ihren Domainadministrator oder melden Sie sich mit einem Google-Standardkonto an.</translation>
 <translation id="1507010443238049608">Ich möchte dabei helfen, die Funktionen und die Leistung von Chromium zu verbessern</translation>
 <translation id="1617663976202781617">Daten aus der Chromium-Synchronisierung</translation>
@@ -30,7 +29,6 @@
 <translation id="6268381023930128611">Von Chromium abmelden?</translation>
 <translation id="6424492062988593837">Chromium ist jetzt noch besser! Es ist eine neue Version verfügbar.</translation>
 <translation id="6604711459180487467">Profitieren Sie von einer besseren Nutzererfahrung in Chromium auf Grundlage Ihres Standorts.</translation>
-<translation id="6626296268883197964">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK_TOS" />Nutzungsbedingungen<ph name="END_LINK_TOS" /> und <ph name="BEGIN_LINK_PRIVACY" />Datenschutzhinweisen<ph name="END_LINK_PRIVACY" /> von Chromium zu.</translation>
 <translation id="7099326575020694068">Chromium kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
 <translation id="7208566199746267865">Mit Chromium sparen Sie Zeit, da Sie Ihre Konten im Web verwenden können. In den Einstellungen haben Sie die Möglichkeit, Konten hinzuzufügen oder zu entfernen.</translation>
 <translation id="7269362888766543920">Einige Add-ons führen zum Ausfall von Chromium. Bitte deinstallieren Sie diese Add-ons.</translation>

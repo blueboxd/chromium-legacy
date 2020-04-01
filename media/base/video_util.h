@@ -114,6 +114,17 @@ MEDIA_EXPORT gfx::Size ScaleSizeToFitWithinTarget(const gfx::Size& size,
 MEDIA_EXPORT gfx::Size ScaleSizeToEncompassTarget(const gfx::Size& size,
                                                   const gfx::Size& target);
 
+// Returns the size of a rectangle whose upper left corner is at the origin (0,
+// 0) and whose bottom right corner is the same as that of |rect|. This is
+// useful to get the size of a buffer that contains the visible rectangle plus
+// the non-visible area above and to the left of the visible rectangle.
+//
+// An example to illustrate: suppose the visible rectangle of a decoded frame is
+// 10,10,100,100. The size of this rectangle is 90x90. However, we need to
+// create a texture of size 100x100 because the client will want to sample from
+// the texture starting with uv coordinates corresponding to 10,10.
+MEDIA_EXPORT gfx::Size GetRectSizeFromOrigin(const gfx::Rect& rect);
+
 // Returns |size| with only one of its dimensions increased such that the result
 // matches the aspect ratio of |target|.  This is different from
 // ScaleSizeToEncompassTarget() in two ways: 1) The goal is to match the aspect

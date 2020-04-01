@@ -185,8 +185,6 @@ source_set("gbm_unittests") {
     "gpu/hardware_display_plane_manager_unittest.cc",
     "gpu/mock_drm_device.cc",
     "gpu/mock_drm_device.h",
-    "gpu/mock_gbm_device.cc",
-    "gpu/mock_gbm_device.h",
     "gpu/proxy_helpers_unittest.cc",
     "gpu/screen_manager_unittest.cc",
   ]
@@ -201,6 +199,7 @@ source_set("gbm_unittests") {
     "//ui/gfx",
     "//ui/gfx/linux:drm",
     "//ui/gfx/linux:gbm",
+    "//ui/gfx/linux:test_support",
     "//ui/ozone:platform",
     "//ui/ozone/common",
   ]

@@ -40,9 +40,6 @@
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
@@ -120,7 +117,6 @@
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -172,10 +168,6 @@ using chromeos::PrinterClass;
 
 constexpr char kCrostiniNotAvailableForCurrentUserError[] =
     "Crostini is not available for the current user";
-
-// Amount of time to give other processes to report their histograms.
-constexpr base::TimeDelta kHistogramsRefreshTimeout =
-    base::TimeDelta::FromSeconds(10);
 
 int AccessArray(const volatile int arr[], const volatile int* index) {
   return arr[*index];
@@ -1395,66 +1387,6 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
   } else {
     return RespondNow(Error("ARC is not available for the current user"));
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateGetHistogramFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateGetHistogramFunction::~AutotestPrivateGetHistogramFunction() =
-    default;
-
-ExtensionFunction::ResponseAction AutotestPrivateGetHistogramFunction::Run() {
-  std::unique_ptr<api::autotest_private::GetHistogram::Params> params(
-      api::autotest_private::GetHistogram::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  DVLOG(1) << "AutotestPrivateGetHistogramFunction " << params->name;
-
-  // Collect histogram data from other processes before responding. Otherwise,
-  // we'd report stale data for histograms that are e.g. recorded by renderers.
-  content::FetchHistogramsAsynchronously(
-      base::ThreadTaskRunnerHandle::Get(),
-      base::BindOnce(
-          &AutotestPrivateGetHistogramFunction::RespondOnHistogramsFetched,
-          this, params->name),
-      kHistogramsRefreshTimeout);
-  return RespondLater();
-}
-
-void AutotestPrivateGetHistogramFunction::RespondOnHistogramsFetched(
-    const std::string& name) {
-  // Incorporate the data collected by content::FetchHistogramsAsynchronously().
-  base::StatisticsRecorder::ImportProvidedHistograms();
-  Respond(GetHistogram(name));
-}
-
-ExtensionFunction::ResponseValue
-AutotestPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
-  const base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(name);
-  if (!histogram)
-    return Error(base::StrCat({"Histogram ", name, " not found"}));
-
-  std::unique_ptr<base::HistogramSamples> samples =
-      histogram->SnapshotSamples();
-  api::autotest_private::Histogram result;
-  result.sum = samples->sum();
-
-  for (std::unique_ptr<base::SampleCountIterator> it = samples->Iterator();
-       !it->Done(); it->Next()) {
-    base::HistogramBase::Sample min = 0;
-    int64_t max = 0;
-    base::HistogramBase::Count count = 0;
-    it->Get(&min, &max, &count);
-
-    api::autotest_private::HistogramBucket bucket;
-    bucket.min = min;
-    bucket.max = max;
-    bucket.count = count;
-    result.buckets.push_back(std::move(bucket));
-  }
-
-  return OneArgument(result.ToValue());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

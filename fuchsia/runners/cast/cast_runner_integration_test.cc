@@ -216,7 +216,9 @@ class CastRunnerIntegrationTest : public testing::Test {
 
  protected:
   explicit CastRunnerIntegrationTest(
-      fuchsia::web::ContextFeatureFlags feature_flags) {
+      fuchsia::web::ContextFeatureFlags feature_flags)
+      : app_config_manager_binding_(&component_services_,
+                                    &app_config_manager_) {
     EnsureFuchsiaDirSchemeInitialized();
 
     // Create the CastRunner, published into |outgoing_directory_|.
@@ -367,6 +369,8 @@ class CastRunnerIntegrationTest : public testing::Test {
 
   // Incoming service directory, ComponentContext and per-component state.
   sys::OutgoingDirectory component_services_;
+  base::fuchsia::ScopedServiceBinding<chromium::cast::ApplicationConfigManager>
+      app_config_manager_binding_;
   std::unique_ptr<cr_fuchsia::FakeComponentContext> component_context_;
   fuchsia::sys::ComponentControllerPtr component_controller_;
   std::unique_ptr<sys::ServiceDirectory> component_services_client_;

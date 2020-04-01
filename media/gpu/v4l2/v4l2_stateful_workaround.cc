@@ -34,7 +34,7 @@ class SupportResolutionChecker : public V4L2StatefulWorkaround {
       VideoCodecProfile profile);
   ~SupportResolutionChecker() override = default;
 
-  Result Apply(const uint8_t* data, size_t size, size_t* endpos) override;
+  Result Apply(const uint8_t* data, size_t size) override;
 
  private:
   using SupportedProfileMap = base::small_map<
@@ -94,8 +94,7 @@ SupportResolutionChecker::CreateIfNeeded(V4L2Device::Type device_type,
 
 V4L2StatefulWorkaround::Result SupportResolutionChecker::Apply(
     const uint8_t* data,
-    size_t size,
-    size_t* endpos) {
+    size_t size) {
   Vp8FrameHeader fhdr;
   vp8_parser_->ParseFrame(data, size, &fhdr);
   if (fhdr.IsKeyframe()) {

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.ImageView;
 
 import androidx.core.content.res.ResourcesCompat;
@@ -31,21 +32,41 @@ public class SelectableTabGridView extends SelectableItemView<Integer> {
 
         Drawable selectionListIcon = ResourcesCompat.getDrawable(
                 getResources(), R.drawable.tab_grid_selection_list_icon, getContext().getTheme());
-        InsetDrawable drawable = new InsetDrawable(selectionListIcon,
-                (int) getResources().getDimension(R.dimen.selection_tab_grid_toggle_button_inset));
         ImageView actionButton = (ImageView) fastFindViewById(R.id.action_button);
-        actionButton.setBackground(drawable);
+
+        if (actionButton != null) {
+            InsetDrawable drawable = new InsetDrawable(selectionListIcon,
+                    (int) getResources().getDimension(
+                            R.dimen.selection_tab_grid_toggle_button_inset));
+            actionButton.setBackground(drawable);
+            // Remove the original content from SelectableItemView since we are not using them.
+            removeView(mContentView);
+        } else {
+            actionButton = mEndButtonView;
+            actionButton.setVisibility(View.VISIBLE);
+            InsetDrawable drawable = new InsetDrawable(selectionListIcon,
+                    (int) getResources().getDimension(
+                            R.dimen.selection_tab_list_toggle_button_lateral_inset),
+                    (int) getResources().getDimension(
+                            R.dimen.selection_tab_list_toggle_button_vertical_inset),
+                    (int) getResources().getDimension(
+                            R.dimen.selection_tab_list_toggle_button_lateral_inset),
+                    (int) getResources().getDimension(
+                            R.dimen.selection_tab_list_toggle_button_vertical_inset));
+            actionButton.setBackground(drawable);
+            mStartIconView.setBackground(null);
+        }
         actionButton.getBackground().setLevel(
                 getResources().getInteger(R.integer.list_item_level_default));
         actionButton.setImageDrawable(AnimatedVectorDrawableCompat.create(
                 getContext(), R.drawable.ic_check_googblue_20dp_animated));
-
-        // Remove the original content from SelectableItemView since we are not using them.
-        removeView(mContentView);
     }
 
     @Override
     protected void onClick() {
         super.onClick(this);
     }
+
+    @Override
+    protected void updateView(boolean animate) {}
 }

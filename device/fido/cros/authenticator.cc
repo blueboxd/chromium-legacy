@@ -84,8 +84,12 @@ void ChromeOSAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
   }
 
   u2f::MakeCredentialRequest req;
-  // Requests with UserPresence get upgraded to UserVerification.
-  req.set_verification_type(u2f::VERIFICATION_USER_VERIFICATION);
+  // Requests with UserPresence get upgraded to UserVerification unless
+  // verification is explicitly discouraged.
+  req.set_verification_type(
+      (request.user_verification == UserVerificationRequirement::kDiscouraged)
+          ? u2f::VERIFICATION_USER_PRESENCE
+          : u2f::VERIFICATION_USER_VERIFICATION);
   req.set_rp_id(request.rp.id);
   req.set_user_entity(
       std::string(request.user.id.begin(), request.user.id.end()));
@@ -177,8 +181,12 @@ void ChromeOSAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   }
 
   u2f::GetAssertionRequest req;
-  // Requests with UserPresence get upgraded to UserVerification.
-  req.set_verification_type(u2f::VERIFICATION_USER_VERIFICATION);
+  // Requests with UserPresence get upgraded to UserVerification unless
+  // verification is explicitly discouraged.
+  req.set_verification_type(
+      (request.user_verification == UserVerificationRequirement::kDiscouraged)
+          ? u2f::VERIFICATION_USER_PRESENCE
+          : u2f::VERIFICATION_USER_VERIFICATION);
   req.set_rp_id(request.rp_id);
   req.set_client_data_hash(std::string(request.client_data_hash.begin(),
                                        request.client_data_hash.end()));

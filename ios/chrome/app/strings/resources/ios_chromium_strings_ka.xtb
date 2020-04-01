@@ -3,7 +3,6 @@
 <translationbundle lang="ka">
 <translation id="102360288709523007">დაგვეხმარეთ Chromium-ის გაუმჯობესებაში, გამოყენების სტატისტიკისა და შეცდომების შესახებ ანგარიშების Google-ში გაგზავნით.</translation>
 <translation id="1185134272377778587">Chromium-ის შესახებ</translation>
-<translation id="1289966288285062467">Chromium-ის კონფიდენციალურობის დებულება</translation>
 <translation id="1472013873724362412">თქვენი ანგარიში არ მუშაობს Chromium-ში. გთხოვთ, დაუკავშირდეთ თქვენი დომენის ადმინისტრატორს, ან სისტემაში შესასვლელად, ჩვეულებრივი Google ანგარიში გამოიყენოთ.</translation>
 <translation id="1507010443238049608">შეუწყვეთ ხელი Chromium-ის ფუნქციებისა და წარმადობის გაუმჯობესებას</translation>
 <translation id="1617663976202781617">მონაცემები Chromium-ის სინქრონიზაციიდან</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">გსურთ Chromium-იდან გამოსვლა?</translation>
 <translation id="6424492062988593837">Chromium გაუმჯობესდა! ხელმისაწვდომია ახალი ვერსია.</translation>
 <translation id="6604711459180487467">გააუმჯობესეთ Chromium-ის ფუნქციები თქვენი მდებარეობის საფუძველზე.</translation>
-<translation id="6626296268883197964">ამ აპლიკაციის გამოყენებით თქვენ ეთანხმებით Chromium-ის <ph name="BEGIN_LINK_TOS" />მომსახურების პირობებსა<ph name="END_LINK_TOS" /> და <ph name="BEGIN_LINK_PRIVACY" />კონფიდენციალურობის დებულებას<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="7099326575020694068">Chromium თქვენს კამერას გაყოფილი ხედის რეჟიმში ვერ გამოიყენებს</translation>
 <translation id="7208566199746267865">თქვენი ანგარიშების ვებში გამოყენებით, Chromium დროის დაზოგვაში დაგეხმარებათ. ანგარიშების დამატება ან ამოშლა პარამეტრებიდან შეგიძლიათ.</translation>
 <translation id="7269362888766543920">ზოგიერთი დანამატი Chromium-ის ავარიულად გათიშვას იწვევს. გთხოვთ, მოახდინოთ მათი დეინსტალაცია.</translation>

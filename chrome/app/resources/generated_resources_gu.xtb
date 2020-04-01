@@ -1060,7 +1060,6 @@
 <translation id="2408955596600435184">તમારો PIN દાખલ કરો</translation>
 <translation id="241082044617551207">અજ્ઞાત પ્લગિન</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
-<translation id="2413749388954403953">બુકમાર્ક્સ વપરાશકર્તા ઇન્ટરફેસ બદલો</translation>
 <translation id="2417206894320497232">Plugin VM ઉપયોગમાં લેવા માટે તૈયાર છે.</translation>
 <translation id="241727068219398187">ડેટા <ph name="TIME" />ના રોજ તમારા Google પાસવર્ડ સાથે એન્ક્રિપ્ટ કર્યો હતો.
           આમાં Google Payની ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ સામેલ હોતા નથી.</translation>
@@ -1154,7 +1153,6 @@
 <translation id="252219247728877310">ઘટકો અપડેટ થયેલાં નથી</translation>
 <translation id="2522791476825452208">એકદમ નજીક</translation>
 <translation id="2523184218357549926">તમે મુલાકાત લો તે પેજના URLs Googleને મોકલે છે</translation>
-<translation id="2525250408503682495">ક્રિપ્ટોનાઇટ! કિઓસ્ક ઍપ્લિકેશન માટે ક્રિપ્ટોહોમ માઉન્ટ કરી શકાયું નથી.</translation>
 <translation id="2526277209479171883">ઇન્સ્ટૉલ કરો અને ચાલુ રાખો</translation>
 <translation id="2526590354069164005">ડેસ્કટૉપ</translation>
 <translation id="2526619973349913024">અપડેટ માટે તપાસો</translation>
@@ -1182,7 +1180,6 @@
 <translation id="2553340429761841190"><ph name="NETWORK_ID" /> ને કનેક્ટ કરવામાં <ph name="PRODUCT_NAME" /> અક્ષમ હતું. કૃપા કરીને બીજું નેટવર્ક પસંદ કરો અથવા ફરી પ્રયાસ કરો.</translation>
 <translation id="2553440850688409052">આ પ્લગિન છુપાવો </translation>
 <translation id="2554553592469060349">પસંદ કરેલ ફાઇલ ખૂબ મોટી છે (મહત્તમ કદ: 3mb).</translation>
-<translation id="2556092377360758201">કોઈ સંરક્ષણ નથી (સુઝાવ આપતા નથી)</translation>
 <translation id="2557378327156922632">આ ફાઇલમાં સંવેદનશીલ કન્ટેન્ટ છે.</translation>
 <translation id="255747371423522804">હાલના ગ્રૂપમાં ઉમેરો</translation>
 <translation id="2558896001721082624">સિસ્ટમ મેનૂમાં હંમેશાં ઍક્સેસિબિલિટી વિકલ્પો બતાવો</translation>
@@ -2393,7 +2390,6 @@
 <translation id="4100853287411968461">સ્ક્રીન સમયની નવી મર્યાદા</translation>
 <translation id="4104163789986725820">નિ&amp;કાસ કરો...</translation>
 <translation id="4107048419833779140">સ્ટોરેજ ઉપકરણોને ઓળખો અને તેને બહાર કાઢો</translation>
-<translation id="4108998448622696017">જોખમકારક ઇવેન્ટ થતી હોય ત્યારે તે શોધીને તેના વિશે તમને ચેતવણી આપે છે.</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) પર વિંડો ખસેડો</translation>
 <translation id="4110490973560452005">ડાઉનલોડ પૂર્ણ થયું: <ph name="FILE_NAME" />. ડાઉનલોડ બાર ક્ષેત્રમાં પહોંચવા માટે Shift+F6 દબાવો.</translation>
 <translation id="4110895898888439383">ઉચ્ચ કોન્ટ્રાસ્ટ મોડમાં વેબ બ્રાઉઝ કરો</translation>
@@ -2414,7 +2410,6 @@
 <translation id="413121957363593859">ઘટકો</translation>
 <translation id="4131410914670010031">કાળો અને સફેદ</translation>
 <translation id="4133076602192971179">તમારો પાસવર્ડ બદલવા માટે ઍપ ખોલો</translation>
-<translation id="4133265950310064865">વધારેલું સંરક્ષણ</translation>
 <translation id="4136203100490971508">રાત્રિ પ્રકાશ સૂર્યોદય સમયે આપમેળે બંધ થઈ જશે</translation>
 <translation id="41365691917097717">ચાલુ રાખવાથી Android ઍપ બનાવવા અને તેનું પરીક્ષણ કરવા માટે ADB ડિબગીંગ ચાલુ થશે. ધ્યાનમાં રાખો કે આ ક્રિયા દ્વારા ચકાસણી થઈ ન હોય એવી Android ઍપના ઇન્સ્ટૉલેશનની મંજૂરી આપે છે અને ફેક્ટરી રીસેટ બંધ કરવું જરૂરી છે.</translation>
 <translation id="4138267921960073861">સાઇન-ઇન સ્ક્રીન પર વપરાશકર્તા નામ અને ફોટો બતાવો</translation>
@@ -2764,7 +2759,6 @@
 <translation id="4660540330091848931">કદ બદલી રહ્યાં છીએ</translation>
 <translation id="4660838440047236328">તમારા રૂમનો લેઆઉટ</translation>
 <translation id="4661407454952063730">ઍપનો ડેટા એ (ડેવલપર સેટિંગના આધારે) ઍપમાં સાચવેલો કોઈપણ ડેટા હોઈ શકે છે, જેમાં સંપર્કો, સંદેશા અને ફોટા જેવો સંભવિત રૂપે સંવેદનશીલ ડેટાનો સમાવેશ થાય છે.</translation>
-<translation id="4661931051827810091">વેબ પરના દરેક વપરાશકર્તાઓ સામેના નવા જોખમો શોધીને તેને બ્લૉક કરવામાં સહાય કરવા માટે, તમે મુલાકાત લો છો તે કેટલાક પેજના URLs, સિસ્ટમ વિશેની સીમિત માહિતી અને પેજનું કેટલુંક કન્ટેન્ટ મોકલે છે.</translation>
 <translation id="4662788913887017617">તમારા iPhone સાથે આ બુકમાર્ક શેર કરો</translation>
 <translation id="4663373278480897665">કૅમેરાને મંજૂરી</translation>
 <translation id="4664482161435122549">PKCS #12 નિકાસ ભૂલ</translation>
@@ -2772,7 +2766,6 @@
 <translation id="4665446389743427678"><ph name="SITE" />નો સ્ટોર કરેલો બધો ડેટા ડિલીટ કરવામાં આવશે.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />ને ચાલુ કરવા માટે ક્લિક કરો</translation>
 <translation id="4670064810192446073">વર્ચ્યુઅલ રિયાલિટી</translation>
-<translation id="4672879467403304774">તમે સાઇન ઇન કરેલું હોય ત્યારે Chrome અને Googleની અન્ય ઍપ પર તમને સલામત રાખે છે</translation>
 <translation id="46733273239502219">ઇન્સ્ટૉલ કરેલી ઍપમાંનો ઑફલાઇન ડેટા પણ સાફ થઈ જશે</translation>
 <translation id="4673442866648850031">જ્યારે સ્ટાઇલસ દૂર કરવામાં આવ્યું હોય ત્યારે સ્ટાઇલસનાં સાધનો ખોલો</translation>
 <translation id="4677772697204437347">GPU મેમરી</translation>
@@ -2849,7 +2842,6 @@
 <translation id="4798236378408895261">જોડો <ph name="BEGIN_LINK" />બ્લૂટૂથ લૉગ<ph name="END_LINK" /> (Google આંતરિક)</translation>
 <translation id="4801448226354548035">એકાઉન્ટ્સ છુપાવો</translation>
 <translation id="4801512016965057443">મોબાઇલ ડેટા રોમિંગને મંજૂરી આપો</translation>
-<translation id="480395942558135789">તમને વધુ સારો બ્રાઉઝિંગ અનુભવ આપવા માટે, ઉદાહરણ તરીકે, તમને સાઇન ઇન કરીને રાખવા અથવા તમારા શૉપિંગ કાર્ટની આઇટમ યાદ રાખવા માટે, સાઇટ કુકીનો ઉપયોગ કરી શકે છે.</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
 <translation id="4804827417948292437">એવોકેડો</translation>
 <translation id="4805077164141082536">અપગ્રેડ કરતા પહેલાં અમે તમને તમારા વર્તમાન Linux કન્ટેનરનું બૅકઅપ લેવાનો સુઝાવ આપીએ છીએ.</translation>
@@ -3093,7 +3085,6 @@
 <translation id="5127881134400491887">નેટવર્ક કનેક્શન્સનું સંચાલન કરો</translation>
 <translation id="512903556749061217">જોડાયેલું</translation>
 <translation id="5133483819862530305">સાંજથી સવાર સુધી</translation>
-<translation id="5134113140145104829">કોઈપણ સમયે હોમસ્ક્રીન મેળવવા માટે, નીચેથી ઉપરની તરફ સ્વાઇપ કરો.</translation>
 <translation id="5135085122826131075">તમે "ઓકે Google" બોલીને તમારા આસિસ્ટંટને ઍક્સેસ કરો.</translation>
 <translation id="5135533361271311778">બુકમાર્ક આઇટમ બનાવી શકાઈ નથી.</translation>
 <translation id="5137501176474113045">આ આઇટમ ડિલીટ કરો</translation>
@@ -3459,7 +3450,6 @@
 <translation id="5614190747811328134">વપરાશકર્તા સૂચના</translation>
 <translation id="5614553682702429503">પાસવર્ડ સાચવીએ?</translation>
 <translation id="561698261642843490">Firefox બંધ કરો</translation>
-<translation id="5618075537869101857">ડાર્ન, કિઓસ્ક ઍપ્લિકેશન લોંચ કરી શકાઇ નથી.</translation>
 <translation id="5618333180342767515">(આમાં થોડો સમય લાગી શકે છે)</translation>
 <translation id="56197088284879152">આ રિમોટ ઉપકરણ પર કનેક્શન મર્યાદિત છે: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">કોઈ સાચવેલો પાસવર્ડ નથી</translation>
@@ -4023,7 +4013,6 @@ USB ડિવાઇસ</translation>
 <translation id="6362853299801475928">&amp;સમસ્યાની જાણ કરો...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">કુટુંબીજનો અને મિત્રોને ઉમેરો</translation>
-<translation id="6366190659675876144">માનક સંરક્ષણ</translation>
 <translation id="636850387210749493">સંગઠન નોંધણી</translation>
 <translation id="6370021412472292592">મેનિફેસ્ટ લોડ કરી શકાયું નથી.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{પાસવર્ડ બદલો}one{પાસવર્ડ બદલો}other{પાસવર્ડ બદલો}}</translation>
@@ -4449,7 +4438,6 @@ USB ડિવાઇસ</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6965648386495488594">પોર્ટ</translation>
 <translation id="6965978654500191972">ઉપકરણ</translation>
-<translation id="6966201992886493384">સાઇટ તમને વધુ સારો બ્રાઉઝિંગ અનુભવ આપવા માટે કુકીનો ઉપયોગ કરી શકે છે. ઉદાહરણ તરીકે, તમને સાઇન ઇન કરીને રાખવા અથવા તમારા શૉપિંગ કાર્ટની આઇટમ યાદ રાખવા માટે</translation>
 <translation id="696780070563539690">સાઇટ વિવિધ સાઇટ પરની તમારી બ્રાઉઝિંગ પ્રવૃત્તિ જોવા માટે તમારી કુકીનો ઉપયોગ કરી શકશે નહીં. ઉદાહરણ તરીકે, મનગમતી જાહેરાતો બનાવવા માટે</translation>
 <translation id="6968288415730398122">સ્ક્રીન લૉક ગોઠવવા માટે તમારો પાસવર્ડ દાખલ કરો</translation>
 <translation id="6970480684834282392">સ્ટાર્ટઅપ પ્રકાર</translation>
@@ -4865,7 +4853,6 @@ USB ડિવાઇસ</translation>
 <translation id="7507207699631365376">આ પ્રદાતાની <ph name="BEGIN_LINK" />પ્રાઇવસી પૉલિસી<ph name="END_LINK" /> જુઓ</translation>
 <translation id="7507930499305566459">પ્રતિસાદકર્તાની સ્થિતિનું પ્રમાણપત્ર</translation>
 <translation id="7508054832109420082">પ્રિન્ટરનો ઍક્સેસ આપો</translation>
-<translation id="751120035300339">સાઇટ તમને વધુ સારો બ્રાઉઝિંગ અનુભવ આપવા માટે કુકીનો ઉપયોગ કરી શકતી નથી. ઉદાહરણ તરીકે, તમને સાઇન ઇન કરીને રાખવા અથવા તમારા શૉપિંગ કાર્ટની આઇટમ યાદ રાખવા માટે</translation>
 <translation id="7513029293694390567">સંગ્રહિત ઓળખપત્રનો ઉપયોગ કરીને વેબસાઇટ્સમાં આપમેળે સાઇન ઇન કરો. જો અક્ષમ કરેલ હોય, તો વેબસાઇટમાં સાઇન ઇન કરતાં પહેલાં દર વખતે તમને પુષ્ટિકરણ માટે કહેવામાં આવશે.</translation>
 <translation id="7514239104543605883">તમારા ડિવાઇસ પર કૉપિ કરો</translation>
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
@@ -5557,7 +5544,6 @@ USB ડિવાઇસ</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">પહેલા પૂછો (ભલામણ કરેલ)</translation>
 <translation id="8417548266957501132">માતાપિતાનો પાસવર્ડ</translation>
-<translation id="8417573335434189196">જોખમકારક વેબસાઇટ, ડાઉનલોડ અને એક્સ્ટેંશન સામે તમારું રક્ષણ કરતું નથી. Chrome આ સેટિંગનો ઉપયોગ કરવાનો સુઝાવ આપતું નથી.</translation>
 <translation id="8418445294933751433">ટૅબ તરીકે &amp;બતાવો</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' માટે શોધ પરિણામ</translation>
 <translation id="8419368276599091549">તમારા <ph name="DEVICE_TYPE" /> પર સ્વાગત છે!</translation>

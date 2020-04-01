@@ -168,36 +168,59 @@ def make_dict_member_set_def(cg_context):
 
     member = cg_context.dict_member
     blink_member_name = _blink_member_name(member)
+    real_type = member.idl_type.unwrap(typedef=True)
+    type_info = blink_type_info(real_type)
 
-    func_def = CxxFuncDefNode(
+    decls = ListNode()  # Includes inline definitions.
+    defs = ListNode()
+
+    template_func_def = CxxFuncDefNode(
         name=blink_member_name.set_api,
         arg_decls=["T&& value"],
         return_type="void",
         template_params=["typename T"])
-    func_def.set_base_template_vars(cg_context.template_bindings())
-    body = func_def.body
+    decls.append(template_func_def)
+
+    # This setter with the explicit type declaration makes it possible to set
+    # the dictionary member with uniform initialization (especially aggregate
+    # initialization), e.g. setIntVector({3, 1, 4, 1, 5}).
+    move_func_decl = CxxFuncDeclNode(
+        name=blink_member_name.set_api,
+        arg_decls=[_format("{}&&", type_info.member_t)],
+        return_type="void")
+    decls.append(move_func_decl)
+
+    move_func_def = CxxFuncDefNode(
+        name=blink_member_name.set_api,
+        arg_decls=[_format("{}&& value", type_info.member_t)],
+        return_type="void",
+        class_name=cg_context.class_name)
+    defs.append(move_func_def)
 
     _1 = blink_member_name.value_var
-    body.append(T(_format("{_1} = std::forward(value);", _1=_1)))
+    template_func_def.body.append(
+        T(_format("{_1} = std::forward<T>(value);", _1=_1)))
+    move_func_def.body.append(T(_format("{_1} = value;", _1=_1)))
 
     if _does_use_presence_flag(member):
-        _1 = blink_member_name.presence_var
-        body.append(T(_format("{_1} = true;", _1=_1)))
+        set_presense_expr = _format("{} = true;",
+                                    blink_member_name.presence_var)
+        template_func_def.body.append(T(set_presense_expr))
+        move_func_def.body.append(T(set_presense_expr))
 
     # Migration Adapter
-    real_type = member.idl_type.unwrap(typedef=True)
     if (real_type.is_nullable and
             blink_type_info(real_type).typename.startswith("base::Optional")):
-        func_to_null_def = CxxFuncDefNode(
+        to_null_func_def = CxxFuncDefNode(
             name=_format("{}ToNull", blink_member_name.set_api),
             arg_decls=[],
             return_type="void")
-        func_to_null_def.set_base_template_vars(cg_context.template_bindings())
-        func_to_null_def.body.append(
+        decls.append(to_null_func_def)
+        to_null_func_def.set_base_template_vars(cg_context.template_bindings())
+        to_null_func_def.body.append(
             T(_format("{}(base::nullopt);", blink_member_name.set_api)))
-        return ListNode([func_def, func_to_null_def])
 
-    return func_def
+    return decls, defs
 
 
 def make_dict_member_defs(cg_context):
@@ -207,7 +230,7 @@ def make_dict_member_defs(cg_context):
 
     get_def = make_dict_member_get_def(cg_context)
     has_def = make_dict_member_has_def(cg_context)
-    set_def = make_dict_member_set_def(cg_context)
+    set_decls, set_defs = make_dict_member_set_def(cg_context)
 
     default_value_initializer = ""
     if member.default_value:
@@ -228,7 +251,8 @@ def make_dict_member_defs(cg_context):
     else:
         presense_var_def = None
 
-    return (get_def, has_def, set_def, value_var_def, presense_var_def)
+    return (get_def, has_def, set_decls, set_defs, value_var_def,
+            presense_var_def)
 
 
 def make_get_v8_dict_member_names_func(cg_context):
@@ -679,18 +703,23 @@ def generate_dictionary(dictionary):
      get_v8_member_names_def) = make_get_v8_dict_member_names_func(cg_context)
     trace_decl, trace_def = make_dict_trace_func(cg_context)
 
+    member_accessor_decls = ListNode()
     member_accessor_defs = ListNode()
     member_value_var_defs = ListNode()
     member_presense_var_defs = ListNode()
     for member in cg_context.dictionary.own_members:
-        (member_get_def, member_has_def, member_set_def, member_value_var,
-         member_presense_var) = make_dict_member_defs(
+        (member_get_decls, member_has_decls, member_set_decls, member_set_defs,
+         member_value_var, member_presense_var) = make_dict_member_defs(
              cg_context.make_copy(dict_member=member))
+        member_accessor_decls.extend([
+            TextNode(""),
+            member_get_decls,
+            member_has_decls,
+            member_set_decls,
+        ])
         member_accessor_defs.extend([
             TextNode(""),
-            member_get_def,
-            member_has_def,
-            member_set_def,
+            member_set_defs,
         ])
         member_value_var_defs.append(member_value_var)
         member_presense_var_defs.append(member_presense_var)
@@ -758,7 +787,7 @@ def generate_dictionary(dictionary):
         TextNode(""),
         trace_decl,
         TextNode(""),
-        member_accessor_defs,
+        member_accessor_decls,
     ])
     class_def.protected_section.extend([
         fill_with_members_decl,
@@ -788,6 +817,8 @@ def generate_dictionary(dictionary):
         fill_members_def,
         TextNode(""),
         fill_members_internal_def,
+        TextNode(""),
+        member_accessor_defs,
         TextNode(""),
         trace_def,
     ])

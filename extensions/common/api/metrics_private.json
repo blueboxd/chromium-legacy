@@ -26,9 +26,52 @@
           "max": {"type": "integer", "description": "The maximum sample value to be recoded."},
           "buckets": {"type": "integer", "description": "The number of buckets to use when separating the recorded values."}
         }
+      },
+      {
+        "id": "HistogramBucket",
+        "type": "object",
+        "properties": {
+          "min": {"type": "integer", "description": "Minimum sample value that can be stored in this bucket (i.e. inclusive)."},
+          "max": {"type": "integer", "description": "Exclusive maximum value for samples stored this bucket."},
+          "count": {"type": "integer", "description": "Number of samples stored in this bucket."}
+        }
+      },
+      {
+        "id": "Histogram",
+        "type":  "object",
+        "properties": {
+          "sum": {"type": "number", "description": "Sum of the all entries."},
+          "buckets": {
+            "type": "array",
+            "description": "Buckets containing samples.",
+            "items": {
+              "$ref": "HistogramBucket"
+            }
+          }
+        }
       }
     ],
     "functions": [
+      {
+        "name": "getHistogram",
+        "description": "Get details about a histogram displayed at chrome://histogram.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Histogram name, e.g. 'Accessibility.CrosAutoclick'."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Invoked with details.",
+            "parameters": [
+              { "name": "histogram", "$ref": "Histogram" }
+            ]
+          }
+        ]
+      },
       {
         "name": "getIsCrashReportingEnabled",
         "description": "Returns true if the user opted in to sending crash reports.",

@@ -64,3 +64,21 @@ if (use_x11) {
     defines = [ "IS_GBM_SUPPORT_X11_IMPL" ]
   }
 }
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test/mock_gbm_device.cc",
+    "test/mock_gbm_device.h",
+  ]
+
+  deps = [
+    ":drm",
+    ":gbm",
+    "//base",
+    "//build/config/linux/libdrm",
+    "//skia",
+    "//testing/gtest",
+  ]
+}

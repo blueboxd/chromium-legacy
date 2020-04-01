@@ -3720,7 +3720,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Esta configuración controla la presentación de las páginas de bienvenida que permiten a los usuarios acceder a <ph name="PRODUCT_NAME" />, elegirlo como navegador predeterminado o recibir información sobre funciones de productos.</translation>
 <translation id="6766216162565713893">Permitir que los sitios soliciten permiso al usuario para acceder a un dispositivo Bluetooth cercano</translation>
 <translation id="6770454900105963262">Informar datos sobre las sesiones de kiosco activas</translation>
-<translation id="6772045451150098845">Esta política controla si los usuarios inscritos en el Programa de Protección Avanzada reciben funciones adicionales. Es posible que algunas de estas funciones contemplen el uso compartido de datos con Google (por ejemplo, los usuarios de la Protección avanzada podrán enviar sus descargas a Google para comprobar que no incluyan software malicioso). Si se establece como verdadera o no se establece, los usuarios inscritos recibirán funciones adicionales. Si se establece como falsa, los usuarios de la Protección avanzada solo recibirán las funciones estándar para el consumidor.</translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6795485990775913659">Permitir la impresión solo sin PIN</translation>

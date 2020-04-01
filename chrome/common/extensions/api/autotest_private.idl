@@ -202,22 +202,6 @@ namespace autotestPrivate {
   };
   callback PlayStoreStateCallback = void (PlayStoreState result);
 
-  dictionary HistogramBucket {
-    // Minimum sample value that can be stored in this bucket (i.e. inclusive).
-    long min;
-    // Exclusive maximum value for samples stored this bucket.
-    long max;
-    // Number of samples stored in this bucket.
-    long count;
-  };
-  dictionary Histogram {
-    // Sum of the all entries.
-    double sum;
-    // Buckets containing samples.
-    HistogramBucket[] buckets;
-  };
-  callback HistogramCallback = void (Histogram histogram);
-
   dictionary AssistantQueryResponse {
     // Text response returned from server.
     DOMString? text;
@@ -653,11 +637,6 @@ namespace autotestPrivate {
     // |enabled|: if set, enable the Play Store.
     // |callback|: Called when the operation has completed.
     static void setPlayStoreEnabled(boolean enabled, VoidCallback callback);
-
-    // Get details about a histogram displayed at chrome://histogram.
-    // |name|: Histogram name, e.g. "Accessibility.CrosAutoclick".
-    // |callback|: Invoked with details.
-    static void getHistogram(DOMString name, HistogramCallback callback);
 
     // Get text from ui::Clipboard.
     // |callback|: Called with result.

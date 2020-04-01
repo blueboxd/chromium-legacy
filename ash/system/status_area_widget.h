@@ -137,18 +137,13 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
     gfx::Rect bounds;
     CollapseState collapse_state = CollapseState::NOT_COLLAPSIBLE;
     float opacity = 0.0f;
-    // Children change visibility only one at a time, so keeping track of
-    // how many are visible (as opposed to the visibility state of each) is
-    // sufficient to make sure we don't miss necessary layout changes.
-    // TODO(manucornet): The assumption that children only change visibility
-    // one at a time may be too optimistic. One way to address this would be
-    // to have a child visibility change counter.
-    unsigned int number_of_visible_children = 0;
+    // Each bit keep track of one child's visibility.
+    long child_visibility_bitmask = 0;
 
     bool operator==(const LayoutInputs& other) const {
       return bounds == other.bounds && collapse_state == other.collapse_state &&
              opacity == other.opacity &&
-             number_of_visible_children == other.number_of_visible_children;
+             child_visibility_bitmask == other.child_visibility_bitmask;
     }
   };
 

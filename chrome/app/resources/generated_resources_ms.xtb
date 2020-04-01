@@ -1064,7 +1064,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2408955596600435184">Masukkan PIN anda</translation>
 <translation id="241082044617551207">Pemalam tidak diketahui</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
-<translation id="2413749388954403953">Ubah antara muka pengguna penanda halaman</translation>
 <translation id="2417206894320497232">Plugin VM sedia untuk digunakan.</translation>
 <translation id="241727068219398187">Data telah disulitkan dengan kata laluan Google anda bermula dari
           <ph name="TIME" />. Penyulitan ini tidak termasuk kaedah pembayaran dan alamat daripada Google Pay.</translation>
@@ -1158,7 +1157,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="252219247728877310">Komponen tidak dikemaskini</translation>
 <translation id="2522791476825452208">Terlalu rapat</translation>
 <translation id="2523184218357549926">Menghantar URL halaman yang anda lawati kepada Google</translation>
-<translation id="2525250408503682495">Alamak! Kriptohom untuk aplikasi kios tidak dapat dilekapkan.</translation>
 <translation id="2526277209479171883">Pasang &amp; teruskan</translation>
 <translation id="2526590354069164005">Desktop</translation>
 <translation id="2526619973349913024">Semak kemas kini</translation>
@@ -1186,7 +1184,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> tidak dapat menyambung ke <ph name="NETWORK_ID" />. Sila pilih rangkaian lain atau cuba semula.</translation>
 <translation id="2553440850688409052">Sembunyikan Pemalam Ini</translation>
 <translation id="2554553592469060349">Fail yang dipilih terlalu besar (saiz maks: 3mb).</translation>
-<translation id="2556092377360758201">Tiada Perlindungan (tidak disyorkan)</translation>
 <translation id="2557378327156922632">Fail ini mengandungi kandungan sensitif.</translation>
 <translation id="255747371423522804">Tambahkan tab pada kumpulan yang sedia ada</translation>
 <translation id="2558896001721082624">Sentiasa paparkan pilihan kebolehcapaian dalam menu sistem</translation>
@@ -2400,7 +2397,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4100853287411968461">Had masa skrin baharu</translation>
 <translation id="4104163789986725820">E&amp;ksport...</translation>
 <translation id="4107048419833779140">Kenal pasti dan keluarkan peranti storan</translation>
-<translation id="4108998448622696017">Mengesan dan memberikan amaran kepada anda tentang acara berbahaya apabila berlaku.</translation>
 <translation id="4109135793348361820">Alihkan tetingkap ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Muat turun selesai: <ph name="FILE_NAME" />. Tekan Shift+F6 untuk pergi ke kawasan bar muat turun.</translation>
 <translation id="4110895898888439383">Semak imbas web dalam mod kontras tinggi</translation>
@@ -2421,7 +2417,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="413121957363593859">Komponen</translation>
 <translation id="4131410914670010031">Hitam putih</translation>
 <translation id="4133076602192971179">Buka apl untuk menukar kata laluan anda</translation>
-<translation id="4133265950310064865">Perlindungan Dipertingkat</translation>
 <translation id="4136203100490971508">Cahaya Malam akan dimatikan secara automatik pada waktu matahari terbit</translation>
 <translation id="41365691917097717">Tindakan meneruskan persediaan akan mendayakan penyahpepijatan ADB yang membuat dan menguji apl Android. Harap maklum bahawa tindakan ini membolehkan pemasangan apl Android yang belum disahkan oleh Google dan memerlukan tetapan semula kilang untuk melumpuhkan ciri ini.</translation>
 <translation id="4138267921960073861">Paparkan nama pengguna dan foto pada skrin log masuk</translation>
@@ -2771,7 +2766,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4660540330091848931">Mengubah saiz</translation>
 <translation id="4660838440047236328">reka letak bilik anda</translation>
 <translation id="4661407454952063730">Data apl boleh jadi sebarang data yang telah disimpan oleh apl (berdasarkan tetapan pembangun), termasuk data seperti kenalan, mesej dan foto.</translation>
-<translation id="4661931051827810091">Menghantar URL awanama sesetengah halaman yang anda lawati, maklumat sistem yang terhad dan sebahagian kandungan halaman untuk menemukan serta menyekat ancaman baharu terhadap semua pengguna web.</translation>
 <translation id="4662788913887017617">Kongsi penanda halaman ini dengan iPhone anda</translation>
 <translation id="4663373278480897665">Kamera dibenarkan</translation>
 <translation id="4664482161435122549">PKCS #12 Eksport Ralat</translation>
@@ -2779,7 +2773,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4665446389743427678">Semua data yang disimpan oleh <ph name="SITE" /> akan dipadamkan.</translation>
 <translation id="4668721319092543482">Klik untuk mendayakan <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Realiti maya</translation>
-<translation id="4672879467403304774">Memastikan anda selamat pada Chrome dan apl Google lain apabila anda log masuk</translation>
 <translation id="46733273239502219">Data luar talian dalam apl yang dipasang juga akan dipadamkan</translation>
 <translation id="4673442866648850031">Buka alatan stilus apabila stilus dialih keluar</translation>
 <translation id="4677772697204437347">Memori GPU</translation>
@@ -2856,7 +2849,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4798236378408895261">Lampirkan <ph name="BEGIN_LINK" />Log Bluetooth<ph name="END_LINK" /> (dalaman Google)</translation>
 <translation id="4801448226354548035">Sembunyikan akaun</translation>
 <translation id="4801512016965057443">Membenarkan perayauan data mudah alih</translation>
-<translation id="480395942558135789">Tapak boleh menggunakan kuki untuk memperbaik pengalaman penyemakan imbas anda, contohnya, untuk mengekalkan log masuk anda atau mengingat item dalam troli beli-belah anda.</translation>
 <translation id="4804818685124855865">Putuskan sambungan</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Kami mengesyorkan anda menyandarkan bekas Linux semasa anda sebelum membuat peningkatan.</translation>
@@ -3101,7 +3093,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5127881134400491887">Urus sambungan rangkaian</translation>
 <translation id="512903556749061217">dipasang</translation>
 <translation id="5133483819862530305">Matahari Terbenam hingga Terbit</translation>
-<translation id="5134113140145104829">Untuk pergi ke Skrin Utama pada bila-bila masa, leret ke atas dari bawah.</translation>
 <translation id="5135085122826131075">Akses Assistant anda apabila anda menyebut "Ok Google".</translation>
 <translation id="5135533361271311778">Tidak dapat mencipta item penanda halaman.</translation>
 <translation id="5137501176474113045">Padam item ini</translation>
@@ -3467,7 +3458,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5614190747811328134">Notis Pengguna</translation>
 <translation id="5614553682702429503">Simpan kata laluan?</translation>
 <translation id="561698261642843490">Tutup Firefox</translation>
-<translation id="5618075537869101857">Alamak, aplikasi kios tidak dapat dilancarkan.</translation>
 <translation id="5618333180342767515">(ini mungkin mengambil masa beberapa minit)</translation>
 <translation id="56197088284879152">Sambungan sesak ke peranti jauh: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">Tiada kata laluan yang disimpan</translation>
@@ -4029,7 +4019,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6362853299801475928">&amp;Laporkan isu...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Tambahkan keluarga dan rakan</translation>
-<translation id="6366190659675876144">Perlindungan Standard</translation>
 <translation id="636850387210749493">Pendaftaran perusahaan</translation>
 <translation id="6370021412472292592">Tidak dapat memuatkan manifes.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Tukar kata laluan}other{Tukar kata laluan}}</translation>
@@ -4455,7 +4444,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Peranti</translation>
-<translation id="6966201992886493384">Tapak boleh menggunakan kuki untuk memperbaik pengalaman penyemakan imbas anda, contohnya, untuk mengekalkan log masuk anda atau mengingat item dalam troli beli-belah anda</translation>
 <translation id="696780070563539690">Tapak tidak boleh menggunakan kuki anda untuk melihat aktiviti penyemakan imbas anda pada pelbagai tapak yang berlainan, contohnya, untuk memperibadikan iklan</translation>
 <translation id="6968288415730398122">Masukkan kata laluan anda untuk mengkonfigurasi kunci skrin</translation>
 <translation id="6970480684834282392">Jenis pemula</translation>
@@ -4871,7 +4859,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="7507207699631365376">Lihat <ph name="BEGIN_LINK" />dasar privasi<ph name="END_LINK" /> penyedia ini</translation>
 <translation id="7507930499305566459">Status Pembalas Sijil</translation>
 <translation id="7508054832109420082">Berikan akses kepada pencetak</translation>
-<translation id="751120035300339">Tapak tidak boleh menggunakan kuki untuk memperbaik pengalaman penyemakan imbas anda, contohnya, untuk mengekalkan log masuk anda atau mengingat item dalam troli beli-belah anda</translation>
 <translation id="7513029293694390567">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Jika dilumpuhkan, anda akan diminta memberikan pengesahan setiap kali sebelum mengelog masuk ke tapak web.</translation>
 <translation id="7514239104543605883">Salin ke peranti anda</translation>
 <translation id="7514365320538308">Muat Turun</translation>
@@ -5572,7 +5559,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Tanya dahulu (disyorkan)</translation>
 <translation id="8417548266957501132">Kata laluan ibu bapa</translation>
-<translation id="8417573335434189196">Tidak melindungi anda daripada tapak web, muat turun dan sambungan yang berbahaya. Chrome tidak mengesyorkan tetapan ini.</translation>
 <translation id="8418445294933751433">&amp;Paparkan sebagai tab</translation>
 <translation id="8419098111404128271">Hasil carian untuk '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8419368276599091549">Selamat datang ke <ph name="DEVICE_TYPE" /> anda!</translation>

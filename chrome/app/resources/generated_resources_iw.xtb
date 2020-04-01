@@ -1061,7 +1061,6 @@
 <translation id="2408955596600435184">‏הזן את מספר ה-PIN</translation>
 <translation id="241082044617551207">פלאגין לא ידוע</translation>
 <translation id="2412593942846481727">יש עדכון זמין</translation>
-<translation id="2413749388954403953">שינוי ממשק המשתמש עבור סימניות</translation>
 <translation id="2417206894320497232">‏Plugin VM מוכן לשימוש</translation>
 <translation id="241727068219398187">‏נתונים הוצפנו עם סיסמת Google שלך החל מ-
           <ph name="TIME" />. ההצפנה לא כוללת אמצעי תשלום וכתובות מ-Google Pay.</translation>
@@ -1155,7 +1154,6 @@
 <translation id="252219247728877310">הרכיב לא עודכן</translation>
 <translation id="2522791476825452208">קרוב מאוד</translation>
 <translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
-<translation id="2525250408503682495">‏קריפטונייט! לא ניתן היה לטעון את ה-Cryptohome עבור יישום הקיוסק.</translation>
 <translation id="2526277209479171883">התקנה והמשך</translation>
 <translation id="2526590354069164005">שולחן עבודה</translation>
 <translation id="2526619973349913024">בדוק אם קיים עדכון</translation>
@@ -1183,7 +1181,6 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> לא הצליח להתחבר אל <ph name="NETWORK_ID" />. בחר רשת אחרת או נסה שוב.</translation>
 <translation id="2553440850688409052">הסתר פלאגין זה</translation>
 <translation id="2554553592469060349">‏הקובץ שנבחר גדול מדי (גודל מרבי: ‎3mb).</translation>
-<translation id="2556092377360758201">ללא הגנה (לא מומלץ)</translation>
 <translation id="2557378327156922632">הקובץ הזה מכיל תוכן רגיש.</translation>
 <translation id="255747371423522804">הוספה לקבוצה קיימת</translation>
 <translation id="2558896001721082624">אפשרויות נגישות מוצגות תמיד בתפריט המערכת</translation>
@@ -2398,7 +2395,6 @@
 <translation id="4100853287411968461">מגבלה חדשה לזמן מסך</translation>
 <translation id="4104163789986725820">יי&amp;צא...</translation>
 <translation id="4107048419833779140">לזהות ולהוציא התקני אחסון</translation>
-<translation id="4108998448622696017">המערכת מזהה אירועים מסוכנים כשהם מתרחשים ומזהירה אותך על כך.</translation>
 <translation id="4109135793348361820">העבר חלון אל <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">‏ההורדה הושלמה: <ph name="FILE_NAME" />. אפשר להקיש על Shift+F6 כדי לעבור לאזור סרגל ההורדות.</translation>
 <translation id="4110895898888439383">גלישה באינטרנט במצב ניגודיות גבוהה</translation>
@@ -2419,7 +2415,6 @@
 <translation id="413121957363593859">רכיבים</translation>
 <translation id="4131410914670010031">שחור ולבן</translation>
 <translation id="4133076602192971179">כדי לשנות את הסיסמה, יש לפתוח את האפליקציה</translation>
-<translation id="4133265950310064865">הגנה משופרת</translation>
 <translation id="4136203100490971508">תאורת הלילה תכבה באופן אוטומטי בשעת הזריחה</translation>
 <translation id="41365691917097717">‏בחירה להמשיך תגרום להפעלת ניפוי באגים באמצעות ADB במהלך היצירה והבדיקה של אפליקציות ל-Android. חשוב לשים לב שהפעולה הזו מאפשרת את ההתקנה של אפליקציות ל-Android שלא אומתו על ידי Google. כדי להשבית את התכונה, יש לאפס את המכשיר להגדרות המקוריות.</translation>
 <translation id="4138267921960073861">הצג שמות משתמשים ותמונות במסך הכניסה</translation>
@@ -2769,7 +2764,6 @@
 <translation id="4660540330091848931">שינוי הגודל מתבצע</translation>
 <translation id="4660838440047236328">מבנה החדר שלך.</translation>
 <translation id="4661407454952063730">נתוני אפליקציות הם כל הנתונים שנשמרים באפליקציות (בהתאם להגדרות של המפתחים), כולל נתונים כמו אנשי קשר, הודעות ותמונות.</translation>
-<translation id="4661931051827810091">‏שליחת כתובות URL אנונימיות של חלק מהדפים שביקרת בהם, חלקים מהתוכן של הדפים וכן מידע מוגבל על המערכת, כדי לזהות ולחסום איומים חדשים כנגד כל המשתמשים באינטרנט.</translation>
 <translation id="4662788913887017617">‏שיתוף הסימניה באמצעות ה-iPhone</translation>
 <translation id="4663373278480897665">ניתן להשתמש במצלמה בדף זה</translation>
 <translation id="4664482161435122549">‏שגיאת ייצוא של PKCS #12</translation>
@@ -2777,7 +2771,6 @@
 <translation id="4665446389743427678">כל הנתונים שמאוחסנים על ידי <ph name="SITE" /> יימחקו.</translation>
 <translation id="4668721319092543482">לחץ כדי להפעיל את <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">מציאות מדומה</translation>
-<translation id="4672879467403304774">‏המערכת מגינה עליך ב-Chrome ובחלק מהאפליקציות האחרות של Google. ההגנה הזו פעילה רק אם נכנסים לחשבון</translation>
 <translation id="46733273239502219">המערכת תמחק גם נתונים שנשמרו במצב אופליין באפליקציות מותקנות</translation>
 <translation id="4673442866648850031">פתח את כלי הסטיילוס לאחר שליפת הסטיילוס</translation>
 <translation id="4677772697204437347">‏זיכרון GPU</translation>
@@ -2854,7 +2847,6 @@
 <translation id="4798236378408895261">‏צירוף של <ph name="BEGIN_LINK" />יומני Bluetooth<ph name="END_LINK" /> (מידע פנימי של Google)</translation>
 <translation id="4801448226354548035">הסתר חשבונות</translation>
 <translation id="4801512016965057443">אפשר נדידה</translation>
-<translation id="480395942558135789">‏אתרים יכולים להשתמש בקובצי cookie על מנת לשפר את חוויית הגלישה שלך - למשל כדי להשאיר אותך בחשבון שלך או כדי לזכור את הפריטים שהוספת לעגלת הקניות</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4804827417948292437">אבוקדו</translation>
 <translation id="4805077164141082536">‏מומלץ לגבות את מאגר Linux הנוכחי לפני השדרוג.</translation>
@@ -3099,7 +3091,6 @@
 <translation id="5127881134400491887">ניהול חיבורי רשת</translation>
 <translation id="512903556749061217">מחובר</translation>
 <translation id="5133483819862530305">מהשקיעה ועד לזריחה</translation>
-<translation id="5134113140145104829">כדי לעבור למסך הראשי בכל שלב, מחליקים כלפי מעלה מתחתית המסך.</translation>
 <translation id="5135085122826131075">‏כשאומרים "Ok Google", מתבצעת גישה ל-Assistant.</translation>
 <translation id="5135533361271311778">לא ניתן ליצור פריט סימניה.</translation>
 <translation id="5137501176474113045">מחק את הפריט הזה</translation>
@@ -3465,7 +3456,6 @@
 <translation id="5614190747811328134">הודעת משתמש</translation>
 <translation id="5614553682702429503">לשמור את הסיסמה?</translation>
 <translation id="561698261642843490">‏סגירת Firefox</translation>
-<translation id="5618075537869101857">אוף! לא ניתן היה להפעיל את יישום הקיוסק.</translation>
 <translation id="5618333180342767515">(פעולה זו עשויה להימשך מספר דקות)</translation>
 <translation id="56197088284879152">יש צוואר בקבוק בחיבור למכשיר המרוחק: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">אין סיסמאות שמורות</translation>
@@ -4027,7 +4017,6 @@
 <translation id="6362853299801475928">&amp;דווח על בעיה...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">הוספת בני משפחה וחברים</translation>
-<translation id="6366190659675876144">הגנה רגילה</translation>
 <translation id="636850387210749493">‏הרשמה ל-Enterprise</translation>
 <translation id="6370021412472292592">לא ניתן היה לטעון את המניפסט.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{החלפת סיסמה}two{החלפת סיסמאות}many{החלפת סיסמאות}other{החלפת סיסמאות}}</translation>
@@ -4453,7 +4442,6 @@
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6965648386495488594">יציאה</translation>
 <translation id="6965978654500191972">התקן</translation>
-<translation id="6966201992886493384">‏אתרים יכולים להשתמש בקובצי cookie כדי לשפר את חוויית הגלישה שלך, למשל כדי לא להוציא אותך מהחשבון או כדי לזכור את הפריטים שהוספת לעגלת הקניות</translation>
 <translation id="696780070563539690">‏אתרים לא יכולים להשתמש בקובצי ה-cookie שלך כדי לראות את פעילות הגלישה באתרים שונים, למשל לצורך התאמה אישית של מודעות</translation>
 <translation id="6968288415730398122">הזן את הסיסמה כדי להגדיר את נעילת המסך</translation>
 <translation id="6970480684834282392">סוג הפעלה</translation>
@@ -4869,7 +4857,6 @@
 <translation id="7507207699631365376">הצגת <ph name="BEGIN_LINK" />מדיניות הפרטיות<ph name="END_LINK" /> של הספק הזה</translation>
 <translation id="7507930499305566459">אישור מגיב סטטוס</translation>
 <translation id="7508054832109420082">הענקת גישה למדפסות</translation>
-<translation id="751120035300339">‏אתרים לא יכולים להשתמש בקובצי cookie כדי לשפר את חוויית הגלישה שלך, למשל כדי לא להוציא אותך מהחשבון או כדי לזכור את הפריטים שהוספת לעגלת הקניות</translation>
 <translation id="7513029293694390567">היכנס באופן אוטומטי לאתרים באמצעות פרטי כניסה שמורים. כשהאפשרות הזו מושבתת, תתבקש לאשר לפני כל כניסה לאתר.</translation>
 <translation id="7514239104543605883">העתקה למכשיר שלך</translation>
 <translation id="7514365320538308">הורדה</translation>
@@ -5570,7 +5557,6 @@
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">שאל תחילה (מומלץ)</translation>
 <translation id="8417548266957501132">סיסמת הורה</translation>
-<translation id="8417573335434189196">‏במצב הזה המערכת לא מגינה עליך מפני אתרים, הורדות ותוספים מסוכנים. ההגדרה הזו לא מומלצת על-ידי Chrome.</translation>
 <translation id="8418445294933751433">&amp;הצג ככרטיסייה</translation>
 <translation id="8419098111404128271">תוצאות לחיפוש "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">ה-<ph name="DEVICE_TYPE" /> שלך מוכן להגדרה.</translation>

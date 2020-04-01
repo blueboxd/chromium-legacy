@@ -3,7 +3,6 @@
 <translationbundle lang="zh-TW">
 <translation id="102360288709523007">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
 <translation id="1185134272377778587">關於 Chromium</translation>
-<translation id="1289966288285062467">Chromium 隱私權聲明</translation>
 <translation id="1472013873724362412">無法使用您的帳戶登入 Chromium，請洽詢您的網域管理員或使用一般 Google 帳戶登入。</translation>
 <translation id="1507010443238049608">協助改善 Chromium 的功能與效能</translation>
 <translation id="1617663976202781617">來自 Chromium Sync 的資料</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">要登出 Chromium 嗎？</translation>
 <translation id="6424492062988593837">Chromium 現在變得更進步了！歡迎你升級使用新版本。</translation>
 <translation id="6604711459180487467">Chromium 可根據你的位置資訊提供更優質的體驗。</translation>
-<translation id="6626296268883197964">使用這個應用程式即表示您同意接受 Chromium 的《<ph name="BEGIN_LINK_TOS" />服務條款<ph name="END_LINK_TOS" />》和《<ph name="BEGIN_LINK_PRIVACY" />隱私權聲明<ph name="END_LINK_PRIVACY" />》。</translation>
 <translation id="7099326575020694068">Chromium 無法在分割模式中使用你的相機</translation>
 <translation id="7208566199746267865">Chromium 會將你的所有帳戶同步到網路上，為你節省時間。你可以在「設定」中新增或移除帳戶。</translation>
 <translation id="7269362888766543920">部分外掛程式造成 Chromium 當機，請解除安裝這些外掛程式。</translation>

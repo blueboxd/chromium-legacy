@@ -424,12 +424,14 @@ void StatusAreaWidget::AddTrayButton(TrayBackgroundView* tray_button) {
 }
 
 StatusAreaWidget::LayoutInputs StatusAreaWidget::GetLayoutInputs() const {
-  unsigned int number_of_visible_children = 0;
-  for (auto* child : tray_buttons_)
-    number_of_visible_children += child->GetVisible() ? 1 : 0;
+  long child_visibility_bitmask = 0;
+  DCHECK(tray_buttons_.size() <
+         std::numeric_limits<decltype(child_visibility_bitmask)>::digits);
+  for (unsigned int i = 0; i < tray_buttons_.size(); ++i)
+    child_visibility_bitmask |= (tray_buttons_[i]->GetVisible() ? 1 : 0) << i;
   return {target_bounds_, CalculateCollapseState(),
           shelf_->shelf_layout_manager()->GetOpacity(),
-          number_of_visible_children};
+          child_visibility_bitmask};
 }
 
 }  // namespace ash

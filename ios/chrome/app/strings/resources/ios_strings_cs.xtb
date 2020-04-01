@@ -66,6 +66,7 @@
 <translation id="1690731385917361335">Žádné položky</translation>
 <translation id="1692118695553449118">Synchronizace je zapnuta</translation>
 <translation id="1700629756560807968">Počet vybraných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="1727016672946926483">Sdílet jako QR kód</translation>
 <translation id="1740468249224277719">Dvojitým klepnutím spustíte instalaci.</translation>
 <translation id="1746815479209538200">Chcete-li procházet web, přidejte novou kartu.</translation>
 <translation id="1752547299766512813">Ukládání hesel</translation>
@@ -152,7 +153,6 @@
 <translation id="285960592395650245">Znovu stáhnout</translation>
 <translation id="2870560284913253234">Stránky</translation>
 <translation id="2871695793448672541">Skryté, heslo</translation>
-<translation id="2876369937070532032">Když je ohrožena vaše bezpečnost, odesílá adresy URL některých navštívených stránek do Googlu</translation>
 <translation id="288655811176831528">Zavřít kartu</translation>
 <translation id="2898963176829412617">Nová složka…</translation>
 <translation id="2916171785467530738">Automaticky doplňovat vyhledávací dotazy a adresy URL</translation>
@@ -171,7 +171,6 @@
 <translation id="3157684681743766797">Označit vše…</translation>
 <translation id="3175081911749765310">Webové služby</translation>
 <translation id="3178650076442119961">Aktivní dnes</translation>
-<translation id="3181954750937456830">Bezpečné prohlížení (chrání vás a vaše zařízení před nebezpečnými weby)</translation>
 <translation id="3207960819495026254">Přidáno do záložek</translation>
 <translation id="3224641773458703735">Chcete-li exportovat hesla, musíte nejdříve na zařízení nastavit heslo.</translation>
 <translation id="3240426699337459095">Odkaz byl zkopírován</translation>

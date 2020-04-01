@@ -3713,7 +3713,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
       Mit dieser Einstellung wird die Einblendung von Begrüßungsseiten konfiguriert, die Nutzern bei der Anmeldung in <ph name="PRODUCT_NAME" /> helfen, auf denen der Browser als Standardbrowser eingerichtet werden kann oder über die Nutzer über Produktfunktionen informiert werden.</translation>
 <translation id="6766216162565713893">Websites dürfen den Nutzer um Zugriff auf ein Bluetooth-Gerät in der Nähe bitten</translation>
 <translation id="6770454900105963262">Informationen zu aktiven Kiosksitzungen senden</translation>
-<translation id="6772045451150098845">Mit dieser Richtlinie wird festgelegt, ob Nutzer, die am erweiterten Sicherheitsprogramm teilnehmen, zusätzliche Funktionen verwenden können. Bei manchen dieser Funktionen werden Daten mit Google geteilt. Nutzer, die die erweiterte Sicherheit verwenden, können beispielsweise ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, können diese Nutzer zusätzliche Funktionen verwenden. Wird die Richtlinie auf "false" gesetzt, stehen ihnen nur die Standardfunktionen für Privatnutzer zur Verfügung.</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
 <translation id="6786967369487349613">Roaming-Profilverzeichnis festlegen</translation>
 <translation id="6795485990775913659">Drucken nur ohne PIN zulassen</translation>

@@ -150,7 +150,6 @@ android_library("web_contents_delegate_java") {
     "java/src/org/chromium/components/embedder_support/delegate/ColorPickerAdvanced.java",
     "java/src/org/chromium/components/embedder_support/delegate/ColorPickerAdvancedComponent.java",
     "java/src/org/chromium/components/embedder_support/delegate/ColorPickerDialog.java",
-    "java/src/org/chromium/components/embedder_support/delegate/ColorPickerMoreButton.java",
     "java/src/org/chromium/components/embedder_support/delegate/ColorPickerSimple.java",
     "java/src/org/chromium/components/embedder_support/delegate/ColorSuggestion.java",
     "java/src/org/chromium/components/embedder_support/delegate/ColorSuggestionListAdapter.java",
@@ -232,5 +231,25 @@ junit_binary("components_embedder_support_junit_tests") {
   deps = [
     ":util_java",
     "//base:base_junit_test_support",
+  ]
+}
+
+android_library("web_contents_delegate_javatests") {
+  testonly = true
+
+  sources = [ "java/src/org/chromium/components/embedder_support/delegate/ColorPickerDialogRenderTest.java" ]
+  deps = [
+    ":web_contents_delegate_java",
+    ":web_contents_delegate_java_resources",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:com_android_support_appcompat_v7_java",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
+    "//ui/android:ui_java",
+    "//ui/android:ui_java_test_support",
   ]
 }

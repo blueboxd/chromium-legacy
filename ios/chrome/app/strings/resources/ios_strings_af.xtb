@@ -66,6 +66,7 @@
 <translation id="1690731385917361335">Geen items nie</translation>
 <translation id="1692118695553449118">Sinkronisering is aan</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> gekies</translation>
+<translation id="1727016672946926483">Deel as QR-kode</translation>
 <translation id="1740468249224277719">Dubbeltik om te installeer.</translation>
 <translation id="1746815479209538200">Voeg 'n nuwe oortjie by om deur die web te blaai.</translation>
 <translation id="1752547299766512813">Stoor wagwoorde</translation>
@@ -152,7 +153,6 @@
 <translation id="285960592395650245">Herprobeer aflaai</translation>
 <translation id="2870560284913253234">Werf</translation>
 <translation id="2871695793448672541">Versteekte wagwoord</translation>
-<translation id="2876369937070532032">Stuur URL'e van sommige bladsye wat jy besoek aan Google wanneer jou sekuriteit bedreig word</translation>
 <translation id="288655811176831528">Maak oortjie toe</translation>
 <translation id="2898963176829412617">Nuwe vouer …</translation>
 <translation id="2916171785467530738">Outovoltooi soektogte en URL'e</translation>
@@ -171,7 +171,6 @@
 <translation id="3157684681743766797">Merk alles …</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3178650076442119961">Vandag aktief</translation>
-<translation id="3181954750937456830">Veiligblaai (beskerm jou en jou toestel teen gevaarlike werwe)</translation>
 <translation id="3207960819495026254">Geboekmerk</translation>
 <translation id="3224641773458703735">Om wagwoorde uit te voer, moet jy eers 'n wagkode op jou toestel stel.</translation>
 <translation id="3240426699337459095">Skakel gekopieer</translation>

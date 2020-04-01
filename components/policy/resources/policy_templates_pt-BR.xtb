@@ -3696,7 +3696,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Esta configuração controla a apresentação das páginas de boas-vindas que ajudam os usuários a fazer login no <ph name="PRODUCT_NAME" />, a escolhê-lo como navegador padrão ou informam sobre os recursos do produto.</translation>
 <translation id="6766216162565713893">Permitir que os sites peçam ao usuário para conceder acesso a um dispositivo Bluetooth próximo</translation>
 <translation id="6770454900105963262">Denunciar informações sobre sessões de quiosque ativas</translation>
-<translation id="6772045451150098845">Esta política controla se os usuários inscritos no Programa Proteção Avançada recebem recursos extras. Alguns desses recursos podem envolver o compartilhamento de dados com o Google. Por exemplo, usuários do Proteção Avançada poderão enviar os downloads ao Google para verificação de malware. Se a política for definida como verdadeira ou não for configurada, os usuários inscritos receberão recursos extras. Se for definida como falsa, os usuários do Proteção Avançada receberão apenas os recursos padrão do consumidor.</translation>
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
 <translation id="6795485990775913659">Permitir impressão apenas sem PIN</translation>

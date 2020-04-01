@@ -4,14 +4,6 @@
 
 library chromium.cast;
 
-// TODO(crbug.com/1028409): Remove this interface and use ApplicationContext.
-[Discoverable]
-protocol ApplicationControllerReceiver {
-  /// Used by the Agent to receive a controller from the Cast Runner.
-  /// Can only be called at most one time for the lifetime of the Component.
-  SetApplicationController(ApplicationController controller);
-};
-
 /// Allows clients to access and modify certain aspects of the Cast receiver
 /// application runtime.
 protocol ApplicationController {

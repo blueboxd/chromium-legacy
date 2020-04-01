@@ -7,6 +7,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/web_file_tasks.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
@@ -221,6 +223,10 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
 
   OpenOperationResult open_result =
       OpenPathWithPlatformUtil(profile(), folder.files()[0]);
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->FlushMojoCallsForTesting();
 
   // Window focus changes on ChromeOS are synchronous, so just get the newly
   // focused window.

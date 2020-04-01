@@ -1064,7 +1064,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2408955596600435184">Wpisz kod PIN</translation>
 <translation id="241082044617551207">Nieznana wtyczka</translation>
 <translation id="2412593942846481727">Dostępna aktualizacja</translation>
-<translation id="2413749388954403953">Zmiana interfejsu zakładek</translation>
 <translation id="2417206894320497232">Oprogramowanie Plugin VM jest gotowe do użycia.</translation>
 <translation id="241727068219398187">Dane zostały zaszyfrowane Twoim hasłem Google z <ph name="TIME" />.
           Nie obejmuje to form płatności ani adresów w Google Pay.</translation>
@@ -1158,7 +1157,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="252219247728877310">Składnik nie został zaktualizowany</translation>
 <translation id="2522791476825452208">Bardzo blisko</translation>
 <translation id="2523184218357549926">Adresy URL odwiedzanych stron będą wysyłane do Google</translation>
-<translation id="2525250408503682495">Niedobrze. Nie można podłączyć katalogu cryptohome aplikacji kiosku.</translation>
 <translation id="2526277209479171883">Zainstaluj i kontynuuj</translation>
 <translation id="2526590354069164005">Pulpit</translation>
 <translation id="2526619973349913024">Sprawdź dostępność aktualizacji</translation>
@@ -1186,7 +1184,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> nie może nawiązać połączenia z siecią <ph name="NETWORK_ID" />. Wybierz inną sieć lub spróbuj ponownie.</translation>
 <translation id="2553440850688409052">Ukryj wtyczkę</translation>
 <translation id="2554553592469060349">Wybrany plik jest za duży (maksymalny rozmiar: 3 MB).</translation>
-<translation id="2556092377360758201">Brak ochrony (niezalecane)</translation>
 <translation id="2557378327156922632">Ten plik zawiera treści o charakterze kontrowersyjnym.</translation>
 <translation id="255747371423522804">Dodaj do istniejącej grupy</translation>
 <translation id="2558896001721082624">Zawsze pokazuj opcje ułatwień dostępu w menu systemowym</translation>
@@ -2400,7 +2397,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4100853287411968461">Nowy limit czasu używania</translation>
 <translation id="4104163789986725820">E&amp;ksportuj</translation>
 <translation id="4107048419833779140">Rozpoznawanie i wysuwanie urządzeń pamięci</translation>
-<translation id="4108998448622696017">Wykrywa niebezpieczne zdarzenia i natychmiast Cię o nich ostrzega.</translation>
 <translation id="4109135793348361820">Przesuń okno do: <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Pobrano plik: <ph name="FILE_NAME" />. Naciśnij Shift+F6, by przejść do obszaru paska pobranych plików.</translation>
 <translation id="4110895898888439383">Przeglądaj strony w trybie dużego kontrastu</translation>
@@ -2421,7 +2417,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="413121957363593859">Komponenty</translation>
 <translation id="4131410914670010031">Czarno-biały</translation>
 <translation id="4133076602192971179">Otwórz aplikację, by zmienić hasło</translation>
-<translation id="4133265950310064865">Silniejsza ochrona</translation>
 <translation id="4136203100490971508">Podświetlenie nocne wyłączy się automatycznie o wschodzie słońca</translation>
 <translation id="41365691917097717">Jeśli będziesz kontynuować, włączone zostanie debugowanie ADB do tworzenia i testowania aplikacji na Androida. Pamiętaj, że to działanie wiąże się z zezwoleniem na instalowanie aplikacji na Androida, które nie zostały zweryfikowane przez Google, a do wyłączenia tej funkcji konieczne jest przywrócenie ustawień fabrycznych.</translation>
 <translation id="4138267921960073861">Pokaż nazwy użytkowników i zdjęcia na stronie logowania</translation>
@@ -2771,7 +2766,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4660540330091848931">Zmieniam rozmiar</translation>
 <translation id="4660838440047236328">układ Twojego pokoju.</translation>
 <translation id="4661407454952063730">Dane aplikacji mogą obejmować dowolne informacje zapisane przez aplikację (w zależności od ustawień określonych przez dewelopera) – w tym dane takie jak kontakty, wiadomości i zdjęcia.</translation>
-<translation id="4661931051827810091">Wysyła anonimowo adresy URL niektórych odwiedzanych przez Ciebie stron, niektóre informacje o systemie i niektóre treści ze stron, by pomóc w wykrywaniu i blokowaniu nowych zagrożeń dla wszystkich użytkowników internetu.</translation>
 <translation id="4662788913887017617">Udostępnij tę zakładkę na iPhonie</translation>
 <translation id="4663373278480897665">Zezwolono na dostęp do kamery</translation>
 <translation id="4664482161435122549">Błąd eksportowania PKCS #12</translation>
@@ -2779,7 +2773,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4665446389743427678">Wszystkie dane przechowywane przez stronę <ph name="SITE" /> zostaną usunięte.</translation>
 <translation id="4668721319092543482">Kliknij, by włączyć wtyczkę <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Rzeczywistość wirtualna</translation>
-<translation id="4672879467403304774">Dba o Twoje bezpieczeństwo w Chrome i innych aplikacjach Google, gdy się w nich zalogujesz</translation>
 <translation id="46733273239502219">Dane offline w zainstalowanych aplikacjach też zostaną wyczyszczone</translation>
 <translation id="4673442866648850031">Po wyjęciu rysika otwórz jego narzędzia</translation>
 <translation id="4677772697204437347">Pamięć GPU</translation>
@@ -2856,7 +2849,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4798236378408895261">Dołącz <ph name="BEGIN_LINK" />dzienniki Bluetooth<ph name="END_LINK" /> (na użytek wewnętrzny Google)</translation>
 <translation id="4801448226354548035">Ukryj konta</translation>
 <translation id="4801512016965057443">Zezwól na przesył danych w roamingu</translation>
-<translation id="480395942558135789">Strony mogą używać plików cookie dla Twojej wygody, by na przykład zapamiętać Twoje logowanie lub zawartość koszyka zakupów.</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4804827417948292437">Awokado</translation>
 <translation id="4805077164141082536">Zalecamy, by przed uaktualnieniem utworzyć kopię zapasową bieżącego kontenera Linuksa.</translation>
@@ -3101,7 +3093,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5127881134400491887">Zarządzanie połączeniami sieciowymi</translation>
 <translation id="512903556749061217">podłączone</translation>
 <translation id="5133483819862530305">Od zachodu do wschodu słońca</translation>
-<translation id="5134113140145104829">Aby w dowolnym momencie przejść do ekranu głównego, przesuń palcem w górę od dołu ekranu.</translation>
 <translation id="5135085122826131075">Uruchamiaj Asystenta, mówiąc „OK Google”.</translation>
 <translation id="5135533361271311778">Nie można utworzyć zakładki.</translation>
 <translation id="5137501176474113045">Usuń ten element</translation>
@@ -3467,7 +3458,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5614190747811328134">Informacje dla użytkownika</translation>
 <translation id="5614553682702429503">Zapisać hasło?</translation>
 <translation id="561698261642843490">Zamykanie Firefoksa</translation>
-<translation id="5618075537869101857">Nie można uruchomić aplikacji kiosku.</translation>
 <translation id="5618333180342767515">(może to potrwać kilka minut)</translation>
 <translation id="56197088284879152">Przeciążenie połączenia z urządzeniem zdalnym: „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="5620163320393916465">Brak zapisanych haseł</translation>
@@ -4029,7 +4019,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6362853299801475928">&amp;Zgłoś problem</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Dodaj rodzinę i znajomych</translation>
-<translation id="6366190659675876144">Standardowa ochrona</translation>
 <translation id="636850387210749493">Rejestracja w firmie</translation>
 <translation id="6370021412472292592">Nie można wczytać pliku manifestu.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Zmień hasło}few{Zmień hasła}many{Zmień hasła}other{Zmień hasła}}</translation>
@@ -4455,7 +4444,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Urządzenie</translation>
-<translation id="6966201992886493384">Strony mogą używać plików cookie dla Twojej wygody, by na przykład zapamiętać Twoje logowanie lub zawartość koszyka</translation>
 <translation id="696780070563539690">Strony nie mogą używać plików cookie do śledzenia Twojej aktywność związanej z przeglądaniem różnych stron, na przykład w celu personalizowania reklam</translation>
 <translation id="6968288415730398122">Wpisz hasło, by skonfigurować blokadę ekranu</translation>
 <translation id="6970480684834282392">Typ uruchamiania</translation>
@@ -4871,7 +4859,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7507207699631365376">Zapoznaj się z <ph name="BEGIN_LINK" />polityką prywatności<ph name="END_LINK" /> tego dostawcy</translation>
 <translation id="7507930499305566459">Certyfikat obiektu odpowiadającego w zakresie stanu</translation>
 <translation id="7508054832109420082">Przyznaj dostęp do drukarek</translation>
-<translation id="751120035300339">Strony nie mogą używać plików cookie dla Twojej wygody, by na przykład zapamiętać Twoje logowanie lub zawartość koszyka</translation>
 <translation id="7513029293694390567">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Jeśli ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o potwierdzenie.</translation>
 <translation id="7514239104543605883">Skopiuj na swoje urządzenie</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -5571,7 +5558,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Najpierw zapytaj (zalecane)</translation>
 <translation id="8417548266957501132">Hasło rodzica</translation>
-<translation id="8417573335434189196">Nie chroni przed niebezpiecznymi stronami, pobieranymi plikami ani rozszerzeniami. Chrome nie poleca tego ustawienia.</translation>
 <translation id="8418445294933751433">&amp;Pokaż jako kartę</translation>
 <translation id="8419098111404128271">Wyniki wyszukiwania dla „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="8419368276599091549">Oto Twój <ph name="DEVICE_TYPE" /></translation>

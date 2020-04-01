@@ -3773,7 +3773,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu ayar, kullanıcıların <ph name="PRODUCT_NAME" /> ürününde oturum açmalarına, bunu varsayılan tarayıcı olarak seçmelerine veya ürün özellikleriyle ilgili diğer bilgileri almalarına yardımcı olan karşılama sayfalarının sunulmasını kontrol eder.</translation>
 <translation id="6766216162565713893">Sitelerin, yakınlardaki bir Bluetooth cihazına erişmek için kullanıcıdan izin istemesine izin ver</translation>
 <translation id="6770454900105963262">Aktif kiosk oturumlarıyla ilgili bilgileri raporla</translation>
-<translation id="6772045451150098845">Bu politika, Gelişmiş Koruma programına kayıtlı kullanıcılara ekstra özellikler sunulup sunulmayacağını kontrol eder. Bu özelliklerin bazıları kapsamında Google ile veri paylaşılabilir (örneğin, Gelişmiş Koruma kullanıcıları indirdikleri dosyaları Google'a göndererek kötü amaçlı yazılıma karşı taranmasını sağlayabilir). Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı kullanıcılara ekstra özellikler sunulur. Bu politika False (Yanlış) değerine ayarlanırsa Gelişmiş Koruma kullanıcılarına yalnızca standart tüketici özellikleri sunulur.</translation>
 <translation id="6786747875388722282">Uzantılar</translation>
 <translation id="6786967369487349613">Dolaşım profili dizinini ayarlayın</translation>
 <translation id="6795485990775913659">Yalnızca PIN olmadan yazdırmaya izin ver</translation>

@@ -589,6 +589,7 @@ class CrostiniManager : public KeyedService,
   }
 
   void SetCrostiniDialogStatus(DialogType dialog_type, bool open);
+  // Returns true if the dialog is open.
   bool GetCrostiniDialogStatus(DialogType dialog_type) const;
   void AddCrostiniDialogStatusObserver(CrostiniDialogStatusObserver* observer);
   void RemoveCrostiniDialogStatusObserver(

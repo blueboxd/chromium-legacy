@@ -1064,7 +1064,6 @@
 <translation id="2408955596600435184">PIN 입력</translation>
 <translation id="241082044617551207">알 수 없는 플러그인</translation>
 <translation id="2412593942846481727">업데이트 가능</translation>
-<translation id="2413749388954403953">북마크 사용자 인터페이스 변경</translation>
 <translation id="2417206894320497232">Plugin VM을 사용할 수 있습니다.</translation>
 <translation id="241727068219398187"><ph name="TIME" />에 데이터가 Google 비밀번호로 암호화되었습니다.
           Google Pay의 결제 수단 및 주소는 암호화되지 않습니다.</translation>
@@ -1158,7 +1157,6 @@
 <translation id="252219247728877310">구성요소가 업데이트되지 않음</translation>
 <translation id="2522791476825452208">매우 가까움</translation>
 <translation id="2523184218357549926">방문한 페이지의 URL을 Google에 전송</translation>
-<translation id="2525250408503682495">키오스크 애플리케이션에 대한 cryptohome을 마운트할 수 없습니다.</translation>
 <translation id="2526277209479171883">설치하고 계속</translation>
 <translation id="2526590354069164005">데스크톱</translation>
 <translation id="2526619973349913024">업데이트 상태 확인</translation>
@@ -1186,7 +1184,6 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />에서 <ph name="NETWORK_ID" />에 연결할 수 없습니다. 다른 네트워크를 선택하거나 다시 시도하세요.</translation>
 <translation id="2553440850688409052">이 플러그인 숨기기</translation>
 <translation id="2554553592469060349">선택한 파일이 너무 큽니다(최대 크기: 3MB).</translation>
-<translation id="2556092377360758201">보호되지 않음(권장되지 않음)</translation>
 <translation id="2557378327156922632">이 파일에는 민감한 콘텐츠가 포함되어 있습니다.</translation>
 <translation id="255747371423522804">기존 그룹에 추가</translation>
 <translation id="2558896001721082624">시스템 메뉴에 접근성 옵션 항상 표시</translation>
@@ -2395,7 +2392,6 @@
 <translation id="4100853287411968461">기기 사용 시간 제한 업데이트</translation>
 <translation id="4104163789986725820">내보내기(&amp;X)...</translation>
 <translation id="4107048419833779140">외부 저장장치 식별 및 제거</translation>
-<translation id="4108998448622696017">위험한 이벤트가 발생하면 이를 감지하여 알립니다.</translation>
 <translation id="4109135793348361820">창을 <ph name="USER_NAME" />(<ph name="USER_EMAIL" />)님에게로 이동</translation>
 <translation id="4110490973560452005">다운로드 완료: <ph name="FILE_NAME" />. 다운로드바 영역으로 이동하려면 Shift+F6를 누르세요.</translation>
 <translation id="4110895898888439383">고대비 모드로 웹 탐색</translation>
@@ -2416,7 +2412,6 @@
 <translation id="413121957363593859">컴포넌트</translation>
 <translation id="4131410914670010031">흑백</translation>
 <translation id="4133076602192971179">비밀번호 변경을 위해 앱 열기</translation>
-<translation id="4133265950310064865">향상된 보호 모드</translation>
 <translation id="4136203100490971508">일출 시 야간 조명이 자동으로 꺼짐</translation>
 <translation id="41365691917097717">계속하면 Android 앱 생성과 테스트에 ADB 디버깅을 사용 설정합니다. 이렇게 하면 Google에서 확인하지 않은 Android 앱을 설치할 수 있게 되며, 사용 중지하려면 초기화가 필요합니다.</translation>
 <translation id="4138267921960073861">로그인 화면에 사용자 이름과 사진 표시</translation>
@@ -2766,7 +2761,6 @@
 <translation id="4660540330091848931">크기 조정 중</translation>
 <translation id="4660838440047236328">방의 구조</translation>
 <translation id="4661407454952063730">앱 데이터에는 연락처, 메시지, 사진을 비롯하여 앱에서 개발자 설정에 따라 저장한 모든 데이터가 포함될 수 있습니다.</translation>
-<translation id="4661931051827810091">모든 웹 사용자에게 영향을 주는 새로운 위협을 발견하고 차단하는 데 도움을 주기 위해 사용자가 방문한 일부 페이지의 익명 URL, 제한된 시스템 정보, 일부 페이지 콘텐츠를 전송합니다.</translation>
 <translation id="4662788913887017617">이 북마크를 내 iPhone과 공유</translation>
 <translation id="4663373278480897665">카메라 허용됨</translation>
 <translation id="4664482161435122549">PKCS #12 내보내기 오류</translation>
@@ -2774,7 +2768,6 @@
 <translation id="4665446389743427678"><ph name="SITE" />에서 저장한 모든 데이터가 삭제됩니다.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />을(를) 사용하려면 클릭하세요.</translation>
 <translation id="4670064810192446073">가상 현실</translation>
-<translation id="4672879467403304774">로그인 상태일 때 Chrome 및 기타 Google 앱에서 사용자를 보호합니다.</translation>
 <translation id="46733273239502219">설치된 앱 내 오프라인 데이터도 삭제됩니다.</translation>
 <translation id="4673442866648850031">스타일러스가 분리되면 스타일러스 도구가 열립니다.</translation>
 <translation id="4677772697204437347">GPU 메모리</translation>
@@ -2851,7 +2844,6 @@
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />블루투스 로그<ph name="END_LINK" /> 첨부(Google 사내용)</translation>
 <translation id="4801448226354548035">계정 숨기기</translation>
 <translation id="4801512016965057443">모바일 데이터 로밍 허용</translation>
-<translation id="480395942558135789">사이트에서 사용자의 로그인 상태를 유지하거나 장바구니의 항목을 기억하는 등 탐색 환경을 개선하기 위해 쿠키를 사용할 수 있습니다.</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4804827417948292437">아보카도</translation>
 <translation id="4805077164141082536">업그레이드하기 전에 현재 Linux 컨테이너를 백업하는 것이 좋습니다.</translation>
@@ -3095,7 +3087,6 @@
 <translation id="5127881134400491887">네트워크 연결 관리</translation>
 <translation id="512903556749061217">첨부됨</translation>
 <translation id="5133483819862530305">일몰에서 일출까지</translation>
-<translation id="5134113140145104829">언제든지 홈 화면으로 이동하려면 하단에서 위로 스와이프하세요.</translation>
 <translation id="5135085122826131075">"Ok Google"이라고 말하여 어시스턴트에 액세스합니다.</translation>
 <translation id="5135533361271311778">북마크 항목을 만들지 못했습니다.</translation>
 <translation id="5137501176474113045">이 항목 삭제</translation>
@@ -3461,7 +3452,6 @@
 <translation id="5614190747811328134">사용자 알림</translation>
 <translation id="5614553682702429503">비밀번호를 저장하시겠습니까?</translation>
 <translation id="561698261642843490">Firefox 닫기</translation>
-<translation id="5618075537869101857">키오스크 애플리케이션을 시작할 수 없습니다.</translation>
 <translation id="5618333180342767515">(몇 분이 걸릴 수 있음)</translation>
 <translation id="56197088284879152">원격 기기(<ph name="DEVICE_NAME" />)에 대한 연결이 혼잡합니다.</translation>
 <translation id="5620163320393916465">저장된 비밀번호 없음</translation>
@@ -4023,7 +4013,6 @@
 <translation id="6362853299801475928">문제 신고하기(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">친구 및 가족 추가</translation>
-<translation id="6366190659675876144">표준 보호 모드</translation>
 <translation id="636850387210749493">엔터프라이즈 등록</translation>
 <translation id="6370021412472292592">매니페스트를 로드할 수 없습니다.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{비밀번호 변경}other{비밀번호 변경}}</translation>
@@ -4449,7 +4438,6 @@
 <translation id="6965382102122355670">확인</translation>
 <translation id="6965648386495488594">포트</translation>
 <translation id="6965978654500191972">기기</translation>
-<translation id="6966201992886493384">사이트에서 사용자의 로그인 상태를 유지하거나 장바구니에 담긴 상품을 기억하는 등 탐색 환경을 개선하기 위해 쿠키를 사용할 수 있습니다.</translation>
 <translation id="696780070563539690">사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하기 위해 쿠키를 사용할 수 없습니다.</translation>
 <translation id="6968288415730398122">비밀번호를 입력하여 화면 잠금을 설정하세요.</translation>
 <translation id="6970480684834282392">시작 유형</translation>
@@ -4865,7 +4853,6 @@
 <translation id="7507207699631365376">제공업체의 <ph name="BEGIN_LINK" />개인정보처리방침<ph name="END_LINK" /> 보기</translation>
 <translation id="7507930499305566459">상태 응답자 인증서</translation>
 <translation id="7508054832109420082">프린터에 액세스 권한 부여</translation>
-<translation id="751120035300339">사이트에서 사용자의 로그인 상태를 유지하거나 장바구니에 담긴 상품을 기억하는 등 탐색 환경을 개선하기 위해 쿠키를 사용할 수 없습니다.</translation>
 <translation id="7513029293694390567">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 확인 요청 메시지가 표시됩니다.</translation>
 <translation id="7514239104543605883">기기로 복사</translation>
 <translation id="7514365320538308">다운로드</translation>
@@ -5563,7 +5550,6 @@
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">우선 확인(권장)</translation>
 <translation id="8417548266957501132">부모 비밀번호</translation>
-<translation id="8417573335434189196">위험한 웹사이트, 다운로드 항목 또는 확장 프로그램으로부터 사용자를 보호하지 않습니다. 이 설정은 사용하지 않는 것이 좋습니다.</translation>
 <translation id="8418445294933751433">탭으로 표시(&amp;S)</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />'에 대한 검색결과</translation>
 <translation id="8419368276599091549"><ph name="DEVICE_TYPE" /> 시작하기</translation>

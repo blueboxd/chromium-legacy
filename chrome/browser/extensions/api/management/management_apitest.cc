@@ -413,6 +413,55 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                                   "prohibited.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
+  // Load an extension that calls launchApp() on any app that gets
+  // installed.
+  ExtensionTestMessageListener launcher_loaded("launcher loaded", false);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/launch_on_install")));
+  ASSERT_TRUE(launcher_loaded.WaitUntilSatisfied());
+
+  // Load an app with app.launch.container = "panel".
+  std::string app_id;
+  LoadAndWaitForLaunch("management/launch_app_panel", &app_id);
+  ASSERT_FALSE(HasFatalFailure());  // Stop the test if any ASSERT failed.
+
+  // Find the app's browser.  Check that it is a popup.
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+  Browser* app_browser = FindOtherBrowser(browser());
+  ASSERT_TRUE(app_browser->is_type_app());
+
+  // Close the app panel.
+  CloseBrowserSynchronously(app_browser);
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  // Unload the extension.
+  UninstallExtension(app_id);
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  ASSERT_FALSE(registry->GetExtensionById(
+      app_id, extensions::ExtensionRegistry::EVERYTHING));
+
+  // Set a pref indicating that the user wants to launch in a regular tab.
+  // This should be ignored, because panel apps always load in a popup.
+  extensions::SetLaunchType(browser()->profile(), app_id,
+                            extensions::LAUNCH_TYPE_REGULAR);
+
+  // Load the extension again.
+  std::string app_id_new;
+  LoadAndWaitForLaunch("management/launch_app_panel", &app_id_new);
+  ASSERT_FALSE(HasFatalFailure());
+
+  // If the ID changed, then the pref will not apply to the app.
+  ASSERT_EQ(app_id, app_id_new);
+
+  // Find the app's browser.  Apps that should load in a panel ignore
+  // prefs, so we should still see the launch in a popup.
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+  app_browser = FindOtherBrowser(browser());
+  ASSERT_TRUE(app_browser->is_type_app());
+}
+
 // Disabled: crbug.com/230165, crbug.com/915339, crbug.com/979399
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

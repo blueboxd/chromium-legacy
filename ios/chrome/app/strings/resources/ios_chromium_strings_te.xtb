@@ -3,7 +3,6 @@
 <translationbundle lang="te">
 <translation id="102360288709523007">Googleకు వినియోగ గణాంకాలు, క్రాష్ నివేదికలు పంపి Chromiumను మెరుగుపరచడంలో సహాయపడండి.</translation>
 <translation id="1185134272377778587">Chromium గురించి</translation>
-<translation id="1289966288285062467">Chromium గోప్యతా ప్రకటన</translation>
 <translation id="1472013873724362412">మీ ఖాతా Chromiumలో పని చేయదు. దయచేసి మీ డొమైన్ నిర్వాహకుడిని సంప్రదించండి. లేదా సైన్ ఇన్ చేయడానికి సాధారణ Google ఖాతాను ఉపయోగించండి.</translation>
 <translation id="1507010443238049608">Chromium ఫీచర్‌లు మరియు పనితీరును మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="1617663976202781617">Chromium సింక్ నుండి పొందే డేటా</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Chromium నుండి సైన్ అవుట్ చేయాలా?</translation>
 <translation id="6424492062988593837">Chrome మెరుగుపరచబడింది! కొత్త వెర్షన్ అందుబాటులో ఉంది.</translation>
 <translation id="6604711459180487467">మీ స్థానం ఆధారంగా Chromiumలో మెరుగైన అనుభవాన్ని పొందండి.</translation>
-<translation id="6626296268883197964">ఈ యాప్‌ని ఉపయోగించడం ద్వారా, మీరు Chromium <ph name="BEGIN_LINK_TOS" />సేవా నిబంధనలు<ph name="END_LINK_TOS" /> మరియు <ph name="BEGIN_LINK_PRIVACY" />గోప్యతా ప్రకటన<ph name="END_LINK_PRIVACY" />ని అంగీకరిస్తున్నారు.</translation>
 <translation id="7099326575020694068">Chromium విభజన వీక్షణ మోడ్‌లో మీ కెమెరాను ఉపయోగించలేదు</translation>
 <translation id="7208566199746267865">మీ ఖాతాలను వెబ్‌లో అందించడం ద్వారా Chromium, మీ సమయాన్ని ఆదా చేస్తుంది. మీరు సెట్టింగ్‌ల్లో ఖాతాలను జోడించవచ్చు లేదా తీసివేయవచ్చు.</translation>
 <translation id="7269362888766543920">కొన్ని యాడ్-ఆన్‌లు Chromium క్రాష్ అయ్యేలా చేశాయి. దయచేసి వాటిని అన్‌ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించండి.</translation>

@@ -239,6 +239,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       "app-management/bitmap.mojom-lite.js",
       IDR_OS_SETTINGS_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS);
   html_source->AddResourcePath(
+      "app-management/file_path.mojom-lite.js",
+      IDR_OS_SETTINGS_APP_MANAGEMENT_FILE_PATH_MOJO_LITE_JS);
+  html_source->AddResourcePath(
       "app-management/image.mojom-lite.js",
       IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
   html_source->AddResourcePath(

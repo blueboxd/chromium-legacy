@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
+#include "ui/gfx/linux/test/mock_gbm_device.h"
 
 #include <drm_fourcc.h>
 #include <xf86drm.h>
 #include <memory>
 #include <utility>
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +19,16 @@
 
 namespace ui {
 namespace {
+
+base::ScopedFD MakeFD() {
+  base::FilePath temp_path;
+  if (!base::CreateTemporaryFile(&temp_path))
+    return {};
+  auto file =
+      base::File(temp_path, base::File::FLAG_READ | base::File::FLAG_WRITE |
+                                base::File::FLAG_CREATE_ALWAYS);
+  return base::ScopedFD(file.TakePlatformFile());
+}
 
 class MockGbmBuffer final : public ui::GbmBuffer {
  public:
@@ -43,11 +54,19 @@ class MockGbmBuffer final : public ui::GbmBuffer {
   gfx::BufferFormat GetBufferFormat() const override {
     return ui::GetBufferFormatFromFourCCFormat(format_);
   }
-  bool AreFdsValid() const override { return false; }
+  bool AreFdsValid() const override {
+    if (planes_.empty())
+      return false;
+
+    for (const auto& plane : planes_) {
+      if (!plane.fd.is_valid())
+        return false;
+    }
+    return true;
+  }
   size_t GetNumPlanes() const override { return planes_.size(); }
   int GetPlaneFd(size_t plane) const override {
-    NOTREACHED();
-    return -1;
+    return planes_[plane].fd.get();
   }
   uint32_t GetPlaneStride(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());
@@ -148,8 +167,8 @@ std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferWithModifiers(
   uint32_t plane_offset = 0;
 
   std::vector<gfx::NativePixmapPlane> planes;
-  planes.push_back(gfx::NativePixmapPlane(plane_stride, plane_offset,
-                                          plane_size, base::ScopedFD()));
+  planes.push_back(
+      gfx::NativePixmapPlane(plane_stride, plane_offset, plane_size, MakeFD()));
   std::vector<uint32_t> handles;
   handles.push_back(next_handle_++);
 

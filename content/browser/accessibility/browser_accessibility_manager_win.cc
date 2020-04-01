@@ -243,13 +243,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
           FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, node);
           FireUiaAccessibilityEvent(UIA_MenuClosedEventId, node);
         }
-      } else {
-        FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
-        FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
-        if (node->GetRole() == ax::mojom::Role::kMenu) {
-          FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPSTART, node);
-          FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
-        }
       }
       aria_properties_events_.insert(node);
       break;

@@ -3,7 +3,6 @@
 <translationbundle lang="sv">
 <translation id="102360288709523007">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
-<translation id="1289966288285062467">Sekretessmeddelande för Chromium</translation>
 <translation id="1472013873724362412">Kontot fungerar inte på Chromium. Kontakta domänadministratören eller logga in med ett vanligt Google-konto.</translation>
 <translation id="1507010443238049608">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
 <translation id="1617663976202781617">Data från Chromium-synkronisering</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Vill du logga ut från Chromium?</translation>
 <translation id="6424492062988593837">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
 <translation id="6604711459180487467">Ange din plats och få en bättre upplevelse när du använder Chromium.</translation>
-<translation id="6626296268883197964">Genom att använda det här programmet godkänner du Chromiums <ph name="BEGIN_LINK_TOS" />användarvillkor<ph name="END_LINK_TOS" /> och <ph name="BEGIN_LINK_PRIVACY" />sekretessmeddelande<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="7099326575020694068">Chromium kan inte använda kameran i delad vy</translation>
 <translation id="7208566199746267865">Med Chromium sparar du tid genom att dina konton blir tillgängliga på nätet. Du kan lägga till och ta bort konton i inställningarna.</translation>
 <translation id="7269362888766543920">Några tillägg har fått Chromium att krascha. Testa att avinstallera dem.</translation>

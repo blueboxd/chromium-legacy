@@ -248,24 +248,6 @@ class AutotestPrivateSetPlayStoreEnabledFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetHistogramFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getHistogram",
-                             AUTOTESTPRIVATE_GETHISTOGRAM)
-
- private:
-  ~AutotestPrivateGetHistogramFunction() override;
-  ResponseAction Run() override;
-
-  // Sends an asynchronous response containing data for the histogram named
-  // |name|. Passed to content::FetchHistogramsAsynchronously() to be run after
-  // new data from other processes has been collected.
-  void RespondOnHistogramsFetched(const std::string& name);
-
-  // Creates a response with current data for the histogram named |name|.
-  ResponseValue GetHistogram(const std::string& name);
-};
-
 class AutotestPrivateIsAppShownFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.isAppShown",

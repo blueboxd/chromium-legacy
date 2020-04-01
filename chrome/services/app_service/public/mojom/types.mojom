@@ -4,6 +4,7 @@
 
 module apps.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/image/mojom/image.mojom";
 
@@ -296,4 +297,8 @@ struct ReplacedAppPreferences {
 struct PreferredApp {
   IntentFilter intent_filter;
   string app_id;
+};
+
+struct FilePaths {
+  array<mojo_base.mojom.FilePath> file_paths;
 };

@@ -21,6 +21,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
 namespace apps {
@@ -117,6 +118,70 @@ Browser* CreateBrowserWithNewTabPage(Profile* profile) {
 
   browser->window()->Show();
   return browser;
+}
+
+apps::AppLaunchParams CreateAppLaunchParamsForIntent(
+    const std::string& app_id,
+    const apps::mojom::IntentPtr& intent) {
+  apps::AppLaunchParams params(
+      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      apps::mojom::AppLaunchSource::kSourceNone);
+
+  if (intent->scheme.has_value() && intent->host.has_value() &&
+      intent->path.has_value()) {
+    params.source = apps::mojom::AppLaunchSource::kSourceIntentUrl;
+    params.override_url =
+        GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
+             intent->host.value() + intent->path.value());
+    DCHECK(params.override_url.is_valid());
+  }
+
+  return params;
+}
+
+apps::mojom::AppLaunchSource GetAppLaunchSource(
+    apps::mojom::LaunchSource launch_source) {
+  switch (launch_source) {
+    case apps::mojom::LaunchSource::kUnknown:
+    case apps::mojom::LaunchSource::kFromAppListGrid:
+    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
+    case apps::mojom::LaunchSource::kFromAppListQuery:
+    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+    case apps::mojom::LaunchSource::kFromParentalControls:
+    case apps::mojom::LaunchSource::kFromShelf:
+    case apps::mojom::LaunchSource::kFromLink:
+    case apps::mojom::LaunchSource::kFromOmnibox:
+    case apps::mojom::LaunchSource::kFromKeyboard:
+    case apps::mojom::LaunchSource::kFromOtherApp:
+    case apps::mojom::LaunchSource::kFromMenu:
+      return apps::mojom::AppLaunchSource::kSourceAppLauncher;
+    case apps::mojom::LaunchSource::kFromFileManager:
+      return apps::mojom::AppLaunchSource::kSourceFileHandler;
+    case apps::mojom::LaunchSource::kFromChromeInternal:
+      return apps::mojom::AppLaunchSource::kSourceChromeInternal;
+  }
+}
+
+int GetEventFlags(apps::mojom::LaunchContainer container,
+                  WindowOpenDisposition disposition,
+                  bool prefer_container) {
+  if (prefer_container) {
+    return ui::EF_NONE;
+  }
+
+  switch (disposition) {
+    case WindowOpenDisposition::NEW_WINDOW:
+      return ui::EF_SHIFT_DOWN;
+    case WindowOpenDisposition::NEW_BACKGROUND_TAB:
+      return ui::EF_MIDDLE_MOUSE_BUTTON;
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
+      return ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_SHIFT_DOWN;
+    default:
+      NOTREACHED();
+      return ui::EF_NONE;
+  }
 }
 
 }  // namespace apps

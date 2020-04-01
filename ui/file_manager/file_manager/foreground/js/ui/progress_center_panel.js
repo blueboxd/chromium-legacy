@@ -436,18 +436,17 @@ class ProgressCenterPanel {
           'destination': item.destinationMessage,
           'count': item.itemCount,
         };
-        const primaryText =
-            this.generateSourceString_(item, panelItem.userData);
-        panelItem.primaryText = primaryText;
-        panelItem.setAttribute('data-progress-id', item.id);
-        if (item.destinationMessage) {
-          panelItem.secondaryText =
-              strf('TO_FOLDER_NAME', item.destinationMessage);
-        }
-        // On progress panels, make the cancel button aria-lable more useful.
-        const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
-        panelItem.closeButtonAriaLabel = cancelLabel;
       }
+      const primaryText = this.generateSourceString_(item, panelItem.userData);
+      panelItem.primaryText = primaryText;
+      panelItem.setAttribute('data-progress-id', item.id);
+      if (item.destinationMessage) {
+        panelItem.secondaryText =
+            strf('TO_FOLDER_NAME', item.destinationMessage);
+      }
+      // On progress panels, make the cancel button aria-lable more useful.
+      const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
+      panelItem.closeButtonAriaLabel = cancelLabel;
       panelItem.signalCallback = (signal) => {
         if (signal === 'cancel' && item.cancelCallback) {
           item.cancelCallback();

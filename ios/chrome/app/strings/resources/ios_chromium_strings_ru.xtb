@@ -3,7 +3,6 @@
 <translationbundle lang="ru">
 <translation id="102360288709523007">Отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="1185134272377778587">О Chromium</translation>
-<translation id="1289966288285062467">Примечание о конфиденциальности Chromium</translation>
 <translation id="1472013873724362412">Ваш аккаунт не поддерживается в Chromium. Обратитесь к администратору домена или войдите с помощью обычного аккаунта Google.</translation>
 <translation id="1507010443238049608">Помочь улучшить производительность и функции Chromium</translation>
 <translation id="1617663976202781617">Данные, сохраненные с помощью синхронизации Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Выйти из Chromium?</translation>
 <translation id="6424492062988593837">Chromium становится лучше! Доступна новая версия.</translation>
 <translation id="6604711459180487467">Откройте доступ к геоданным, чтобы использовать дополнительные возможности Chromium.</translation>
-<translation id="6626296268883197964">Работая с Chromium, вы принимаете <ph name="BEGIN_LINK_TOS" />Условия использования<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Примечание о конфиденциальности<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="7099326575020694068">Chromium не может использовать камеру в режиме Split View.</translation>
 <translation id="7208566199746267865">Чтобы сэкономить ваше время, Chromium будет использовать аккаунты, сохраненные на вашем устройстве. Добавить или удалить их можно в настройках.</translation>
 <translation id="7269362888766543920">Некоторые дополнения вызывают сбой Chromium. Попробуйте удалить их.</translation>

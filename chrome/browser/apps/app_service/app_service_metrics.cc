@@ -16,11 +16,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #endif  // OS_CHROMEOS
 
 namespace {
 
-// The default Essential app's histogram name. This is used for logging so do
+// The default app's histogram name. This is used for logging so do
 // not change the order of this enum.
 // https://docs.google.com/document/d/1WJ-BjlVOM87ygIsdDBCyXxdKw3iS5EtNGm1fWiWhfIs
 enum class DefaultAppName {
@@ -34,9 +35,28 @@ enum class DefaultAppName {
   kCamera = 17,
   kHelpApp = 18,
   kMediaApp = 19,
+  kChrome = 20,
+  kDocs = 21,
+  kDrive = 22,
+  kDuo = 23,
+  kFiles = 24,
+  kGmail = 25,
+  kKeep = 26,
+  kPhotos = 27,
+  kPlayBooks = 28,
+  kPlayGames = 29,
+  kPlayMovies = 30,
+  kPlayMusic = 31,
+  kPlayStore = 32,
+  kSettings = 33,
+  kSheets = 34,
+  kSlides = 35,
+  kWebStore = 36,
+  kYouTube = 37,
+
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kMediaApp,
+  kMaxValue = kYouTube,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -156,8 +176,53 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kHelpApp, launch_source);
   else if (app_id == chromeos::default_web_apps::kMediaAppId)
     RecordDefaultAppLaunch(DefaultAppName::kMediaApp, launch_source);
+  else if (app_id == extension_misc::kChromeAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kChrome, launch_source);
+  else if (app_id == extension_misc::kGoogleDocAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kDocs, launch_source);
+  else if (app_id == extension_misc::kDriveHostedAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kDrive, launch_source);
+#if defined(OS_CHROMEOS)
+  else if (app_id == arc::kGoogleDuoAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kDuo, launch_source);
+#endif  // OS_CHROMEOS
+  else if (app_id == extension_misc::kFilesManagerAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kFiles, launch_source);
+#if defined(OS_CHROMEOS)
+  else if (app_id == extension_misc::kGmailAppId || app_id == arc::kGmailAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kGmail, launch_source);
+#endif  // OS_CHROMEOS
+  else if (app_id == extension_misc::kGoogleKeepAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kKeep, launch_source);
+#if defined(OS_CHROMEOS)
+  else if (app_id == arc::kPlayBooksAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kPlayBooks, launch_source);
+  else if (app_id == arc::kPlayGamesAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kPlayGames, launch_source);
+  else if (app_id == arc::kPlayMoviesAppId ||
+           app_id == extension_misc::kGooglePlayMoviesAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kPlayMovies, launch_source);
+  else if (app_id == arc::kPlayMusicAppId ||
+           app_id == extension_misc::kGooglePlayMusicAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kPlayMusic, launch_source);
+  else if (app_id == arc::kPlayStoreAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kPlayStore, launch_source);
+#endif  // OS_CHROMEOS
+  else if (app_id == chromeos::default_web_apps::kOsSettingsAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kSettings, launch_source);
+  else if (app_id == extension_misc::kGoogleSheetsAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kSheets, launch_source);
+  else if (app_id == extension_misc::kGoogleSlidesAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kSlides, launch_source);
+  else if (app_id == extensions::kWebStoreAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kWebStore, launch_source);
+#if defined(OS_CHROMEOS)
+  else if (app_id == extension_misc::kYoutubeAppId ||
+           app_id == arc::kYoutubeAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kYouTube, launch_source);
+#endif  // OS_CHROMEOS
 
-  // Above are default Essential apps; below are built-in apps.
+  // Above are default apps; below are built-in apps.
 
   if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
     RecordBuiltInAppLaunch(BuiltInAppName::kKeyboardShortcutViewer,

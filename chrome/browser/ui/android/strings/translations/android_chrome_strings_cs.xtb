@@ -104,6 +104,7 @@
 <translation id="1782483593938241562">Datum ukončení: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Nainstalováno</translation>
 <translation id="1792959175193046959">Výchozí umístění pro stažené soubory můžete kdykoliv změnit.</translation>
+<translation id="1795251344124198516">Dodatečné smluvní podmínky prohlížeče Google Chrome a systému Chrome OS</translation>
 <translation id="1807246157184219062">Světlé</translation>
 <translation id="1810845389119482123">Počáteční nastavení synchronizace nebylo dokončeno</translation>
 <translation id="1821253160463689938">Používá soubory cookie k uložení vašeho nastavení i v případě, že stránky nenavštívíte</translation>
@@ -236,6 +237,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="2650751991977523696">Stáhnout soubor znovu?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# zvukový soubor}few{# zvukové soubory}many{# zvukového souboru}other{# zvukových souborů}}</translation>
 <translation id="2687403674020088961">Blokovat všechny soubory cookie (nedoporučujeme)</translation>
+<translation id="2689830683995595741">Používáním Chromu vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami společnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatečnými smluvními podmínkami prohlížeče Chrome a systému Chrome OS<ph name="END_LINK2" />. Platí také <ph name="BEGIN_LINK3" />upozornění ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Obnovit stránku</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="2717722538473713889">E‑mailové adresy</translation>
@@ -376,6 +378,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3749259744154402564">Nepodporováno</translation>
 <translation id="3771001275138982843">Aktualizaci nelze stáhnout</translation>
 <translation id="3771033907050503522">Anonymní karty</translation>
+<translation id="3771694256347217732">Smluvní podmínky společnosti Google</translation>
 <translation id="3773755127849930740">Chcete-li povolit párování, <ph name="BEGIN_LINK" />zapněte Bluetooth<ph name="END_LINK" />.</translation>
 <translation id="3775705724665058594">Odeslat na vaše zařízení</translation>
 <translation id="3778956594442850293">Přidáno na domovskou obrazovku</translation>
@@ -403,6 +406,7 @@ Pouze vy uvidíte, na co se kamera zaměřuje. Web snímky z kamery neuvidí.</
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome stránku načte, až bude připraven}few{Chrome stránky načte, až bude připraven}many{Chrome stránky načte, až bude připraven}other{Chrome stránky načte, až bude připraven}}</translation>
 <translation id="3963007978381181125">Šifrování pomocí heslové fráze se nevztahuje na platební metody a adresy ze služby Google Pay. Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslovou frázi. Heslová fráze se neodesílá do Googlu a není na Googlu uložena. Pokud ji zapomenete nebo toto nastavení budete chtít změnit, bude nutné synchronizaci resetovat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Stahování bylo dokončeno</translation>
+<translation id="3974987681202239636">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjádřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami společnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatečnými smluvními podmínkami prohlížeče Chrome a systému Chrome OS<ph name="END_LINK2" />. Platí také <ph name="BEGIN_LINK3" />upozornění ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family<ph name="END_LINK3" />.</translation>
 <translation id="397583555483684758">Synchronizace přestala fungovat</translation>
 <translation id="3976396876660209797">Odstraňte tuto zkratku a znovu ji vytvořte</translation>
 <translation id="3985215325736559418">Opravdu soubor <ph name="FILE_NAME" /> chcete stáhnout znovu?</translation>
@@ -713,6 +717,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6255999984061454636">Návrhy obsahu</translation>
 <translation id="6270391203985052864">Weby mohou žádat o oprávnění zasílat vám oznámení</translation>
 <translation id="6277522088822131679">Při tištění stránky došlo k problému. Zkuste to prosím znovu.</translation>
+<translation id="6292420053234093573">Používáním Chromu vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami společnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatečnými smluvními podmínkami prohlížeče Chrome a systému Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6295158916970320988">Všechny weby</translation>
 <translation id="629730747756840877">Účet</translation>
 <translation id="6297765934698848803">Organizace, která spravuje vaše zařízení, kameru vypnula.</translation>
@@ -727,6 +732,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6364438453358674297">Odstranit návrh z historie?</translation>
 <translation id="6369229450655021117">Odsud můžete vyhledávat na webu, sdílet obsah s přáteli a zobrazovat otevřené stránky.</translation>
 <translation id="6378173571450987352">Podrobnosti: Seřazeno podle množství využitých dat</translation>
+<translation id="6379829913050047669">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjádřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami společnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatečnými smluvními podmínkami prohlížeče Chrome a systému Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6381421346744604172">Ztmavit webové stránky</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
 <translation id="6395288395575013217">ODKAZ</translation>

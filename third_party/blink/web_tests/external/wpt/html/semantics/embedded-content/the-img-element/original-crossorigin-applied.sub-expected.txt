@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that when deferred image is loaded, it uses the crossorigin attribute specified at parse time. assert_unreached: The image load should not fail, trying to load with CORS headers set. Reached unreachable code
-Harness: the test ran to completion.
-

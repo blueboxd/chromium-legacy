@@ -3677,7 +3677,6 @@
       這項設定將決定歡迎頁面顯示與否，歡迎頁面可協助使用者登入 <ph name="PRODUCT_NAME" />，並將其設為預設瀏覽器，或是讓使用者瞭解產品功能。</translation>
 <translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
-<translation id="6772045451150098845">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的功能。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的功能。如果設為 False，進階保護計畫的使用者只能享有標準的消費者功能。</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6795485990775913659">只在 PIN 碼停用時允許列印</translation>

@@ -1064,7 +1064,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2408955596600435184">Introduce tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
-<translation id="2413749388954403953">Cambiar la interfaz de usuario de marcadores</translation>
 <translation id="2417206894320497232">Ya puedes usar Plugin VM.</translation>
 <translation id="241727068219398187">Se han cifrado los datos con tu contraseña de Google desde el
           <ph name="TIME" />. El cifrado no incluye los métodos de pago ni las direcciones de Google Pay.</translation>
@@ -1158,7 +1157,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="252219247728877310">Componente no actualizado</translation>
 <translation id="2522791476825452208">Muy cerca</translation>
 <translation id="2523184218357549926">Envía las URL de las páginas que visitas a Google</translation>
-<translation id="2525250408503682495">¡Kriptonita! No se ha podido montar la "criptocasa" de la aplicación del kiosco.</translation>
 <translation id="2526277209479171883">Instalar y continuar</translation>
 <translation id="2526590354069164005">Escritorio</translation>
 <translation id="2526619973349913024">Buscar actualizaciones</translation>
@@ -1186,7 +1184,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no ha podido establecer conexión con <ph name="NETWORK_ID" />. Selecciona otra red o vuelve a intentarlo.</translation>
 <translation id="2553440850688409052">Ocultar este complemento</translation>
 <translation id="2554553592469060349">El archivo seleccionado es demasiado grande (tamaño máximo: 3 MB).</translation>
-<translation id="2556092377360758201">Sin protección (no recomendado)</translation>
 <translation id="2557378327156922632">El archivo incluye contenido sensible.</translation>
 <translation id="255747371423522804">Añadir a un grupo existente</translation>
 <translation id="2558896001721082624">Mostrar siempre opciones de accesibilidad en el menú del sistema</translation>
@@ -2396,7 +2393,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4100853287411968461">Nuevo límite de tiempo de pantalla</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="4107048419833779140">Identificar y expulsar dispositivos de almacenamiento</translation>
-<translation id="4108998448622696017">Detecta y te advierte de los eventos peligrosos cuando suceden.</translation>
 <translation id="4109135793348361820">Mover ventana a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Descarga completa: <ph name="FILE_NAME" />. Pulsa Mayús+F6 para desplazarte al área de la barra de descargas.</translation>
 <translation id="4110895898888439383">Navega por la Web con el modo de contraste alto</translation>
@@ -2417,7 +2413,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="413121957363593859">Componentes</translation>
 <translation id="4131410914670010031">Blanco y negro</translation>
 <translation id="4133076602192971179">Abre la aplicación para cambiar la contraseña</translation>
-<translation id="4133265950310064865">Protección mejorada</translation>
 <translation id="4136203100490971508">La luz nocturna se desactivará automáticamente al amanecer</translation>
 <translation id="41365691917097717">Si continúas, se habilitará la depuración adb para crear y probar aplicaciones Android. Ten en cuenta que esta acción permitirá la instalación de aplicaciones Android que no hayan sido verificadas por Google y para inhabilitarlas es necesario restablecer la configuración de fábrica.</translation>
 <translation id="4138267921960073861">Mostrar nombres de usuario y fotos en la pantalla de inicio de sesión</translation>
@@ -2767,7 +2762,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4660540330091848931">Cambiando tamaño</translation>
 <translation id="4660838440047236328">la distribución de tu habitación</translation>
 <translation id="4661407454952063730">Los datos de aplicaciones abarcan cualquier tipo de información que guarden las aplicaciones (en función de la configuración de los desarrolladores), incluidos datos como contactos, mensajes y fotos.</translation>
-<translation id="4661931051827810091">Envía URL anónimas de páginas que visites, información limitada del sistema y contenido de las páginas para ayudar a descubrir nuevas amenazas y bloquearlas para todos los usuarios de la Web.</translation>
 <translation id="4662788913887017617">Compartir este marcador con tu iPhone</translation>
 <translation id="4663373278480897665">Cámara permitida</translation>
 <translation id="4664482161435122549">Error de exportación de archivos PKCS #12</translation>
@@ -2775,7 +2769,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4665446389743427678">Se eliminarán todos los datos guardados por <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Haz clic para habilitar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Realidad virtual</translation>
-<translation id="4672879467403304774">Te protege en Chrome y otras aplicaciones de Google cuando has iniciado sesión</translation>
 <translation id="46733273239502219">También se borrarán los datos offline de las aplicaciones instaladas</translation>
 <translation id="4673442866648850031">Abrir las herramientas del lápiz óptico al quitarlo</translation>
 <translation id="4677772697204437347">Memoria de la GPU</translation>
@@ -2852,7 +2845,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4798236378408895261">Adjuntar <ph name="BEGIN_LINK" />registros de Bluetooth<ph name="END_LINK" /> (opción interna de Google)</translation>
 <translation id="4801448226354548035">Ocultar cuentas</translation>
 <translation id="4801512016965057443">Permitir la itinerancia de datos móviles</translation>
-<translation id="480395942558135789">Los sitios web pueden usar cookies para mejorar tu experiencia de navegación, por ejemplo, manteniendo tu sesión iniciada o recordando los productos de tu carrito de la compra.</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Aguacate</translation>
 <translation id="4805077164141082536">Te recomendamos que hagas una copia de seguridad de tu contenedor de Linux antes de actualizar.</translation>
@@ -3096,7 +3088,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5127881134400491887">Administrar conexiones de red</translation>
 <translation id="512903556749061217">conectado</translation>
 <translation id="5133483819862530305">Del anochecer al amanecer</translation>
-<translation id="5134113140145104829">Puedes volver a la pantalla de inicio en cualquier momento deslizando el dedo hacia arriba.</translation>
 <translation id="5135085122826131075">Accede al Asistente cuando digas "Ok Google".</translation>
 <translation id="5135533361271311778">No se ha podido crear un elemento de marcador.</translation>
 <translation id="5137501176474113045">Eliminar este elemento</translation>
@@ -3462,7 +3453,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5614190747811328134">Aviso al usuario</translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="561698261642843490">Cerrar Firefox</translation>
-<translation id="5618075537869101857">No se ha podido iniciar la aplicación Darn del kiosco.</translation>
 <translation id="5618333180342767515">(este proceso puede tardar algunos minutos)</translation>
 <translation id="56197088284879152">La conexión con el dispositivo remoto "<ph name="DEVICE_NAME" />" está colapsada.</translation>
 <translation id="5620163320393916465">No hay ninguna contraseña guardada</translation>
@@ -4024,7 +4014,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6362853299801475928">&amp;Notificar un error...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Añadir familiares y amigos</translation>
-<translation id="6366190659675876144">Protección estándar</translation>
 <translation id="636850387210749493">Registro de empresa</translation>
 <translation id="6370021412472292592">No se ha podido cargar el archivo de manifiesto.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Cambiar contraseña}other{Cambiar contraseñas}}</translation>
@@ -4450,7 +4439,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6965648386495488594">Puerto</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
-<translation id="6966201992886493384">Los sitios web pueden usar cookies para mejorar tu experiencia de navegación, por ejemplo, para mantener tu sesión iniciada o recordar los productos de tu carrito de la compra</translation>
 <translation id="696780070563539690">Los sitios web no pueden usar cookies para ver tu actividad de navegación en otros sitios web, por ejemplo, para personalizar anuncios</translation>
 <translation id="6968288415730398122">Introduce tu contraseña para configurar el bloqueo de pantalla</translation>
 <translation id="6970480684834282392">Tipo de inicio</translation>
@@ -4866,7 +4854,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7507207699631365376">Consulta la <ph name="BEGIN_LINK" />política de privacidad<ph name="END_LINK" /> de este proveedor</translation>
 <translation id="7507930499305566459">Certificado de respuesta de estado</translation>
 <translation id="7508054832109420082">Conceder acceso a impresoras</translation>
-<translation id="751120035300339">Los sitios web no pueden usar cookies para mejorar tu experiencia de navegación, por ejemplo, para mantener tu sesión iniciada o recordar los productos de tu carrito de la compra</translation>
 <translation id="7513029293694390567">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está inhabilitada, se te solicitará la confirmación cada vez que intentes iniciar sesión en un sitio web.</translation>
 <translation id="7514239104543605883">Copiar en tu dispositivo</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -5564,7 +5551,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Preguntar antes (recomendado)</translation>
 <translation id="8417548266957501132">Contraseña parental</translation>
-<translation id="8417573335434189196">No te protege frente a descargas, extensiones ni sitios web peligrosos. Chrome no recomienda esta opción.</translation>
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
 <translation id="8419098111404128271">Resultados de búsqueda de "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">Te damos la bienvenida a tu <ph name="DEVICE_TYPE" /></translation>

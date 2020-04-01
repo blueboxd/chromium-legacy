@@ -107,6 +107,8 @@ extern const base::Feature kNewOsSettingsSearch;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kParentalControlsSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kPluginVmShowCameraSetting;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kPrintJobManagementApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kQuickAnswers;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kRar2Fs;

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,31 @@ chrome.metricsPrivate.MetricTypeType = {
  * }}
  */
 chrome.metricsPrivate.MetricType;
+
+/**
+ * @typedef {{
+ *   min: number,
+ *   max: number,
+ *   count: number
+ * }}
+ */
+chrome.metricsPrivate.HistogramBucket;
+
+/**
+ * @typedef {{
+ *   sum: number,
+ *   buckets: !Array<!chrome.metricsPrivate.HistogramBucket>
+ * }}
+ */
+chrome.metricsPrivate.Histogram;
+
+/**
+ * Get details about a histogram displayed at chrome://histogram.
+ * @param {string} name Histogram name, e.g. 'Accessibility.CrosAutoclick'.
+ * @param {function(!chrome.metricsPrivate.Histogram):void} callback Invoked
+ *     with details.
+ */
+chrome.metricsPrivate.getHistogram = function(name, callback) {};
 
 /**
  * Returns true if the user opted in to sending crash reports.

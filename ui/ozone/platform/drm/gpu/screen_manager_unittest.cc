@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/linux/gbm_buffer.h"
+#include "ui/gfx/linux/test/mock_gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -21,7 +22,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {

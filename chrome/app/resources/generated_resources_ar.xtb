@@ -1064,7 +1064,6 @@
 <translation id="2408955596600435184">إدخال رقم التعريف الشخصي</translation>
 <translation id="241082044617551207">مكوّن إضافي غير محدّد</translation>
 <translation id="2412593942846481727">هناك تحديث جديد</translation>
-<translation id="2413749388954403953">تغيير واجهة المستخدم للإشارات المرجعية</translation>
 <translation id="2417206894320497232">‏Plugin VM جاهز للاستخدام.</translation>
 <translation id="241727068219398187">‏تم ترميز البيانات باستخدام كلمة مرور Google اعتبارًا من
           <ph name="TIME" />. لا يتضمّن ذلك طرق الدفع والعناوين من Google Pay.</translation>
@@ -1158,7 +1157,6 @@
 <translation id="252219247728877310">لم يتم تحديث المُكوّن</translation>
 <translation id="2522791476825452208">قريب جدًا</translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
-<translation id="2525250408503682495">‏للأسف تعذر تثبيت cryptohome لتطبيق Kiosk.</translation>
 <translation id="2526277209479171883">التثبيت والمتابعة</translation>
 <translation id="2526590354069164005">سطح المكتب</translation>
 <translation id="2526619973349913024">التحقق من وجود تحديث</translation>
@@ -1186,7 +1184,6 @@
 <translation id="2553340429761841190">تعذر على <ph name="PRODUCT_NAME" /> الاتصال بـ <ph name="NETWORK_ID" />. يُرجى تحديد شبكة أخرى أو إعادة المحاولة.</translation>
 <translation id="2553440850688409052">إخفاء هذا المكون الإضافي</translation>
 <translation id="2554553592469060349">الملف المحدد كبير جدًا (الحد الأقصى للحجم: 3 ميغابايت).</translation>
-<translation id="2556092377360758201">بلا حماية (غير مُستحسَن)</translation>
 <translation id="2557378327156922632">يشتمل هذا الملف على محتوى حسّاس.</translation>
 <translation id="255747371423522804">الإضافة إلى مجموعة حالية</translation>
 <translation id="2558896001721082624">عرض خيارات إمكانية الوصول في قائمة النظام دائمًا</translation>
@@ -2394,7 +2391,6 @@
 <translation id="4100853287411968461">حد جديد لوقت النظر إلى الشاشة</translation>
 <translation id="4104163789986725820">ت&amp;صدير...</translation>
 <translation id="4107048419833779140">تحديد أجهزة التخزين وإخراجها</translation>
-<translation id="4108998448622696017">اكتشاف الأحداث الخطيرة عند حدوثها والتحذير منها</translation>
 <translation id="4109135793348361820">نقل النافذة إلى <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">‏اكتمل التنزيل: <ph name="FILE_NAME" />. يمكنك الضغط على Shift+F6 للانتقال إلى منطقة شريط عمليات التنزيل.</translation>
 <translation id="4110895898888439383">تصفُّح الويب في وضع التباين العالي</translation>
@@ -2415,7 +2411,6 @@
 <translation id="413121957363593859">المكونات</translation>
 <translation id="4131410914670010031">أبيض وأسود</translation>
 <translation id="4133076602192971179">فتح التطبيق لتغيير كلمة المرور</translation>
-<translation id="4133265950310064865">حماية مُحسّنة</translation>
 <translation id="4136203100490971508">سيتم إيقاف الإضاءة الليلية تلقائيًا عند شروق الشمس.</translation>
 <translation id="41365691917097717">‏ستؤدي المواصلة إلى تفعيل خيار "تصحيح الأخطاء عبر ADB" لإنشاء تطبيقات متوافقة مع Android واختبارها. ويُرجى ملاحظة أن هذا الإجراء يتيح تثبيت تطبيقات متوافقة مع Android لم تتحقَّق منها Google، ويتطلب أيضًا إعادة ضبط على الإعدادات الأصلية لإيقافه.</translation>
 <translation id="4138267921960073861">عرض أسماء المستخدمين والصور على شاشة تسجيل الدخول</translation>
@@ -2765,7 +2760,6 @@
 <translation id="4660540330091848931">جارٍ تغيير الحجم</translation>
 <translation id="4660838440047236328">شكل غرفتك</translation>
 <translation id="4661407454952063730">تشمل بيانات التطبيق أيّ بيانات حفظها هذا التطبيق (بناءً على إعدادات مطوّر البرامج)، بما في ذلك بيانات مثل جهات الاتصال والرسائل والصور.</translation>
-<translation id="4661931051827810091">‏يُرسل عناوين URL مجهولة لبعض الصفحات التي تزورها وعدد محدود من معلومات النظام وبعض أنواع محتوى الصفحات، وذلك للمساعدة على رصد وحظر التهديدات الجديدة الصادرة عن كافّة مستخدمي الإنترنت.</translation>
 <translation id="4662788913887017617">‏مشاركة هذه الإشارة المرجعة مع جهاز iPhone</translation>
 <translation id="4663373278480897665">تم السماح باستخدام الكاميرا</translation>
 <translation id="4664482161435122549">‏خطأ في تصدير PKCS #12</translation>
@@ -2773,7 +2767,6 @@
 <translation id="4665446389743427678">سيتم حذف جميع البيانات المُخزَّنة من خلال <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">انقر لتفعيل <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">الواقع الافتراضي</translation>
-<translation id="4672879467403304774">‏توفير الحماية لك في Chrome وتطبيقات Google الأخرى وأنت مُسجِّل الدخول</translation>
 <translation id="46733273239502219">سيتم أيضًا محو البيانات المتوفرة بلا اتصال بالإنترنت في التطبيقات المثبّتة.</translation>
 <translation id="4673442866648850031">فتح أدوات قلم الشاشة عندما تتم إزالة قلم الشاشة</translation>
 <translation id="4677772697204437347">ذاكرة وحدة معالج الرسومات</translation>
@@ -2850,7 +2843,6 @@
 <translation id="4798236378408895261">‏إرفاق <ph name="BEGIN_LINK" />سجلّات بلوتوث<ph name="END_LINK" /> (Google الداخلي)</translation>
 <translation id="4801448226354548035">إخفاء الحسابات</translation>
 <translation id="4801512016965057443">السماح بتجوال بيانات الجوال</translation>
-<translation id="480395942558135789">يسمح هذا الإجراء للمواقع الإلكترونية باستخدام ملفات تعريف الارتباط لتحسين تجربة التصفّح، مثل إبقائك مُسجِّلاً الدخول أو تذكُّر عناصر في سلة التسوق.</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="4804827417948292437">أفوكادو</translation>
 <translation id="4805077164141082536">‏نقترح عليك الاحتفاظ بنسخة احتياطية من حاوية نظام التشغيل Linux الحالية قبل الترقية.</translation>
@@ -3094,7 +3086,6 @@
 <translation id="5127881134400491887">إدارة اتصالات الشبكة</translation>
 <translation id="512903556749061217">متصل</translation>
 <translation id="5133483819862530305">من غروب الشمس إلى شروقها</translation>
-<translation id="5134113140145104829">للوصول إلى الشاشة الرئيسية في أي وقت، مرّر سريعًا من الأسفل إلى الأعلى.</translation>
 <translation id="5135085122826131075">‏الوصول إلى "مساعد Google" عند قول "Ok Google"</translation>
 <translation id="5135533361271311778">تعذر إنشاء عنصر إشارة.</translation>
 <translation id="5137501176474113045">حذف هذا العنصر</translation>
@@ -3461,7 +3452,6 @@
 <translation id="5614190747811328134">إشعار المستخدم</translation>
 <translation id="5614553682702429503">هل تريد حفظ كلمة المرور؟</translation>
 <translation id="561698261642843490">‏إغلاق Firefox</translation>
-<translation id="5618075537869101857">‏عذرًا، تعذر تشغيل تطبيق Kiosk.</translation>
 <translation id="5618333180342767515">(قد يستغرق ذلك بضع دقائق)</translation>
 <translation id="56197088284879152">الاتصال مزدحم بالنسبة للجهاز البعيد: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">ما مِن كلمات مرور محفوظة.</translation>
@@ -4024,7 +4014,6 @@
 <translation id="6362853299801475928">&amp;الإبلاغ عن مشكلة...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">إضافة العائلة والأصدقاء</translation>
-<translation id="6366190659675876144">الحماية العادية</translation>
 <translation id="636850387210749493">التسجيل في المؤسسة</translation>
 <translation id="6370021412472292592">تعذر تحميل البيان.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{تغيير كلمة المرور}zero{تغيير كلمات المرور}two{تغيير كلمتَيّ المرور}few{تغيير كلمات المرور}many{تغيير كلمات المرور}other{تغيير كلمات المرور}}</translation>
@@ -4450,7 +4439,6 @@
 <translation id="6965382102122355670">حسنًا</translation>
 <translation id="6965648386495488594">المنفذ</translation>
 <translation id="6965978654500191972">جهاز</translation>
-<translation id="6966201992886493384">يسمح هذا الإجراء للمواقع الإلكترونية باستخدام ملفات تعريف الارتباط لتحسين تجربة التصفّح، مثل إبقائك مُسجِّلاً الدخول أو تذكُّر عناصر في سلة التسوق.</translation>
 <translation id="696780070563539690">لن يسمح هذا الإجراء للمواقع الإلكترونية باستخدام ملفات تعريف الارتباط للاطّلاع على نشاط التصفُّح على المواقع الإلكترونية المختلفة، وذلك لتقديم إعلانات مخصَّصة لك مثلاً.</translation>
 <translation id="6968288415730398122">أدخل كلمة المرور لتهيئة قفل الشاشة</translation>
 <translation id="6970480684834282392">نوع التشغيل</translation>
@@ -4866,7 +4854,6 @@
 <translation id="7507207699631365376">الاطّلاع على <ph name="BEGIN_LINK" />سياسة خصوصية<ph name="END_LINK" /> مقدّم الخدمة</translation>
 <translation id="7507930499305566459">شهادة الاستجابة للحالة</translation>
 <translation id="7508054832109420082">منح الإذن للطابعات</translation>
-<translation id="751120035300339">لن يسمح هذا الإجراء للمواقع الإلكترونية باستخدام ملفات تعريف الارتباط لتحسين تجربة التصفُّح، مثل إبقائك مُسجلاً الدخول أو تذكُّر عناصر في سلة التسوق.</translation>
 <translation id="7513029293694390567">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
 <translation id="7514239104543605883">نسخ إلى جهازك</translation>
 <translation id="7514365320538308">تنزيل</translation>
@@ -5564,7 +5551,6 @@
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">السؤال أولاً (موصى به)</translation>
 <translation id="8417548266957501132">كلمة مرور الوالدَين</translation>
-<translation id="8417573335434189196">‏لا يوفّر التصفُّح الآمن حماية من الإضافات أو عمليات التنزيل أو المواقع الإلكترونية الضارة. ولا يُنصح باستخدام هذا الإعداد في Chrome.</translation>
 <translation id="8418445294933751433">&amp;العرض في علامة تبويب</translation>
 <translation id="8419098111404128271">نتائج البحث عن "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">مرحبًا بك في جهازك <ph name="DEVICE_TYPE" />.</translation>

@@ -1060,7 +1060,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2408955596600435184">PİN kodunuzu daxil edin</translation>
 <translation id="241082044617551207">Naməlum plaqin</translation>
 <translation id="2412593942846481727">Güncəlləmə əlçatandır</translation>
-<translation id="2413749388954403953">Əlfəcinlər istifadəçi interfeysi dəyişdirin</translation>
 <translation id="2417206894320497232">Plugin VM istifadə üçün hazırdır.</translation>
 <translation id="241727068219398187"><ph name="TIME" /> tarixindən başlayaraq data Google parolunuz ilə şifrələndi. Google Pay'dəki ödəniş metodları və ünvanlar bura daxil deyil.</translation>
 <translation id="2419706071571366386">Təhlükəsizliyiniz üçün kompüterdən istifadə etmədikdə çıxış edin.</translation>
@@ -1153,7 +1152,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="252219247728877310">Komponent güncəlləşməyib</translation>
 <translation id="2522791476825452208">Çox yaxın</translation>
 <translation id="2523184218357549926">Daxil olduğunuz səhifələrin linkləri Google'a göndərilir</translation>
-<translation id="2525250408503682495">Kryptonite! The cryptohome for the kiosk application could not be mounted.</translation>
 <translation id="2526277209479171883">Quraşdırın və davam edin</translation>
 <translation id="2526590354069164005">Masaüstü</translation>
 <translation id="2526619973349913024">Güncəlləşmə üçün yoxlayın</translation>
@@ -1181,7 +1179,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> <ph name="NETWORK_ID" /> şəbəkəsinə qoşula bilmədi. Lütfən, başqa şəbəkə seçin və ya yenidən cəhd edin</translation>
 <translation id="2553440850688409052">Bu Plaqini Gizlədin</translation>
 <translation id="2554553592469060349">Seçilmiş fayl çox böyükdür. (maks ölçü: 3mb).</translation>
-<translation id="2556092377360758201">Qoruma yoxdur (tövsiyə edilmir)</translation>
 <translation id="2557378327156922632">Bu fayl həssas məzmun ehtiva edir.</translation>
 <translation id="255747371423522804">Mövcud qrupa əlavə edin</translation>
 <translation id="2558896001721082624">Sistem menyusunda əlçatımlılıq seçimlərini göstərin</translation>
@@ -2390,7 +2387,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4100853287411968461">Yeni ekran vaxtı limiti</translation>
 <translation id="4104163789986725820">Eksport...</translation>
 <translation id="4107048419833779140">Yaddaş cihazları müəyyən edin və boşaldın</translation>
-<translation id="4108998448622696017">Təhlükəli hadisələr baş verdikdə onları aşkarlayır və sizə xəbərdarlıq edir.</translation>
 <translation id="4109135793348361820">Pəncərəni <ph name="USER_NAME" /> istifadəçisinə daşıyın (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Endirmə tamamlandı: <ph name="FILE_NAME" />. Endirmələr panelinə keçmək üçün Shift+F6 düymələrinə basın.</translation>
 <translation id="4110895898888439383">Yüksək kontrast rejimində vebdə axtarış edin</translation>
@@ -2411,7 +2407,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="413121957363593859">Komponentlər</translation>
 <translation id="4131410914670010031">Ağ və qara</translation>
 <translation id="4133076602192971179">Parolu dəyişmək üçün tətbiqi açın</translation>
-<translation id="4133265950310064865">Təkmil Qoruma</translation>
 <translation id="4136203100490971508">Gecə İşığı şəfəq vaxtı avtomatik deaktiv ediləcək</translation>
 <translation id="41365691917097717">Davam etsəniz, Android tətbiqlərini yaratmaq və sınaqdan keçirmək üçün ADB sazlaması aktiv ediləcək. Nəzərə alın ki, bu əməliyyat Google tərəfindən doğrulanmamış Android tətbiqlərinin quraşdırılmasına icazə verir və deaktiv etmək üçün zavod sıfırlaması tələb edir.</translation>
 <translation id="4138267921960073861">Hesaba giriş ekranında istifadəçi adları və fotoları göstərin</translation>
@@ -2761,7 +2756,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4660540330091848931">Ölçüsü dəyişilir</translation>
 <translation id="4660838440047236328">otağınızın tərtibatı</translation>
 <translation id="4661407454952063730">Tətbiq datası kontaktlar, mesajlar və fotolar daxil olmaqla, tətbiq tərəfindən yadda saxlanılan (developer ayarlarından asılı olaraq) istənilən data ola bilər.</translation>
-<translation id="4661931051827810091">Vebdəki bütün istifadəçilərə qarşı olan yeni təhlükələri aşkarlamaq və bloklamaq üçün daxil olduğunuz bəzi səhifələrin anonim URL'lərini, məhdud sistem məlumatlarını və bəzi səhifə məzmunlarını göndərir.</translation>
 <translation id="4662788913887017617">Bu əlfəcini iPhone ilə paylaşın</translation>
 <translation id="4663373278480897665">Kameraya icazə verildi</translation>
 <translation id="4664482161435122549">PKCS #12 Eksport Xətası</translation>
@@ -2769,7 +2763,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4665446389743427678"><ph name="SITE" /> tərəfindən saxlanılan bütün data silinəcək.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> aktiv etmək üçün klikləyin</translation>
 <translation id="4670064810192446073">Virtual reallıq</translation>
-<translation id="4672879467403304774">Daxil olduğunuzda Chrome'da və digər Google tətbiqlərində təhlükəsizliyinizi təmin edir</translation>
 <translation id="46733273239502219">Quraşdırılmış tətbiqlərdəki oflayn data da silinəcək</translation>
 <translation id="4673442866648850031">Fırça silinərkən fırça alətlərini açın</translation>
 <translation id="4677772697204437347">GPU yaddaş</translation>
@@ -2846,7 +2839,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth Girişləri<ph name="END_LINK" /> əlavə edin (Google daxili)</translation>
 <translation id="4801448226354548035">Hesabları gizlədin</translation>
 <translation id="4801512016965057443">Mobil data rominqə icazə verin</translation>
-<translation id="480395942558135789">Saytlar baxış təcrübənizi yaxşılaşdırmaq üçün, məsələn, sizi daxil olmuş vəziyyətdə saxlamaq və ya alış-veriş səbətinizdəki elementləri yadda saxlamaq üçün kukilərdən istifadə edə bilər.</translation>
 <translation id="4804818685124855865">Ayırın</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Güncəlləmədən öncə cari Linux konteynerinizi yedəkləməyinizi tövsiyə edirik.</translation>
@@ -3090,7 +3082,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5127881134400491887">Şəbəkə bağlantılarını idarə edin</translation>
 <translation id="512903556749061217">qoşuldu</translation>
 <translation id="5133483819862530305">Qürubdan Günəşin Çıxmasına qədər</translation>
-<translation id="5134113140145104829">İstənilən vaxt Əsas ekrana keçmək üçün aşağıdan yuxarı sürüşdürün.</translation>
 <translation id="5135085122826131075">"Ok Google" dedikdə Assistentinizə daxil olun.</translation>
 <translation id="5135533361271311778">Əlfəcin elementini yaratmaq alınmadı.</translation>
 <translation id="5137501176474113045">Bu elementi silin</translation>
@@ -3456,7 +3447,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5614190747811328134">İstifadəçi bildirişi</translation>
 <translation id="5614553682702429503">Parol yadda saxlanılsın?</translation>
 <translation id="561698261642843490">Firefox'u bağlayın</translation>
-<translation id="5618075537869101857">Lənətə gəlsin! Köşk tətbiqi işə salına bilmir.</translation>
 <translation id="5618333180342767515">(Bu bir neçə dəqiqə çəkə bilər)</translation>
 <translation id="56197088284879152">Bağlantı uzaqdan idarə olunan bu cihazda tıxanmaya səbəb oldu: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">Yadda saxlanmış parol yoxdur</translation>
@@ -4016,7 +4006,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6362853299801475928">Problemi xəbər verin...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Ailə və dostlarınızı əlavə edin</translation>
-<translation id="6366190659675876144">Standart Qoruma</translation>
 <translation id="636850387210749493">Sahibkarlıq qeydiyyatı</translation>
 <translation id="6370021412472292592">Manifesti endirmək alınmadı.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Parolu dəyişin}other{Parolları dəyişin}}</translation>
@@ -4442,7 +4431,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Cihaz</translation>
-<translation id="6966201992886493384">Saytlar baxış təcrübənizi yaxşılaşdırmaq üçün, məsələn, sizi daxil olmuş vəziyyətdə saxlamaq və ya alış-veriş səbətinizdəki elementləri yadda saxlamaq üçün kukilərdən istifadə edə bilər</translation>
 <translation id="696780070563539690">Saytlar müxtəlif saytlarda baxış fəaliyyətinizi (məsələn, reklamları fərdiləşdirmək üçün) görmək üçün kukilərinizdən istifadə edə bilmir</translation>
 <translation id="6968288415730398122">Ekran kilidini konfiqurasiya etmək üçün parolu daxil edin</translation>
 <translation id="6970480684834282392">Başlanğıc növü</translation>
@@ -4858,7 +4846,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7507207699631365376">Bu təminatçının <ph name="BEGIN_LINK" />məxfilik siyasətinə<ph name="END_LINK" /> baxın</translation>
 <translation id="7507930499305566459">Status Responder Certificate</translation>
 <translation id="7508054832109420082">Printerlərə giriş icazəsi verin</translation>
-<translation id="751120035300339">Saytlar baxış təcrübənizi yaxşılaşdırmaq üçün, məsələn, sizi daxil olmuş vəziyyətdə saxlamaq və ya alış-veriş səbətindəki elementləri yadda saxlamaq üçün kukilərdən istifadə edə bilmir</translation>
 <translation id="7513029293694390567">Yadda saxlanmış kredensialları istifadə edərək veb saytlara avtomatik qoşulun. Əgər funksiya deaktivdirsə, hər dəfə veb sayta daxil olmadan əvvəl təsdiqləmə tələb ediləcək.</translation>
 <translation id="7514239104543605883">Cihazınıza kopyalayın</translation>
 <translation id="7514365320538308">Endirmə</translation>
@@ -5554,7 +5541,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Öncə soruşun (tövsiyə olunur)</translation>
 <translation id="8417548266957501132">Valideyn parolu</translation>
-<translation id="8417573335434189196">Sizi təhlükəli veb sayt, endirmə və ya artırmalardan qorumur. Chrome bu ayarlamanı tövsiyə etmir.</translation>
 <translation id="8418445294933751433">Panel kimi göstərin</translation>
 <translation id="8419098111404128271">"<ph name="SEARCH_TEXT" />" üçün axtarış nəticələri</translation>
 <translation id="8419368276599091549"><ph name="DEVICE_TYPE" /> cihazına xoş gəlmisiniz!</translation>

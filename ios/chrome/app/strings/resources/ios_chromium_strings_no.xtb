@@ -3,7 +3,6 @@
 <translationbundle lang="no">
 <translation id="102360288709523007">Forbedre Chromium ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
-<translation id="1289966288285062467">Merknad om personvern for Chromium</translation>
 <translation id="1472013873724362412">Kontoen din fungerer ikke i Chromium. Kontakt domeneadministratoren din, eller logg på med en vanlig Google-konto.</translation>
 <translation id="1507010443238049608">Bidra til å gjøre Chromium bedre og raskere</translation>
 <translation id="1617663976202781617">Data fra Chromium-synkronisering</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Vil du logge av Chromium?</translation>
 <translation id="6424492062988593837">Chromium har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="6604711459180487467">Få en bedre Chromium-opplevelse basert på hvor du er.</translation>
-<translation id="6626296268883197964">Ved å bruke denne appen samtykker du i Chromiums <ph name="BEGIN_LINK_TOS" />vilkår for bruk<ph name="END_LINK_TOS" /> og <ph name="BEGIN_LINK_PRIVACY" />merknad om personvern<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="7099326575020694068">Chromium kan ikke bruke kameraet i modus for delt visning</translation>
 <translation id="7208566199746267865">Med Chromium kan du spare tid, siden du får tilgang til kontoene dine på nettet. Du kan legge til eller fjerne kontoer i Innstillinger.</translation>
 <translation id="7269362888766543920">Noen tillegg fører til at Chromium krasjer. Prøv å avinstallere dem.</translation>

@@ -9,6 +9,8 @@
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver_set.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -17,8 +19,6 @@ class Document;
 class NavigationInitiatorImpl
     : public GarbageCollected<NavigationInitiatorImpl>,
       public mojom::blink::NavigationInitiator {
-  USING_PRE_FINALIZER(NavigationInitiatorImpl, Dispose);
-
  public:
   explicit NavigationInitiatorImpl(Document& document);
   void Trace(Visitor* visitor);
@@ -28,17 +28,14 @@ class NavigationInitiatorImpl
       network::mojom::blink::CSPViolationPtr violation_params) override;
 
   void BindReceiver(
-      mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {
-    navigation_initiator_receivers_.Add(this, std::move(receiver));
-  }
+      mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver);
 
  private:
-  void Dispose();
-
   // A list of all the navigation_initiator receivers owned by the owner
   // document. Used to report CSP violations that result from CSP blocking
   // navigation requests that were initiated by the owner document.
-  mojo::ReceiverSet<mojom::blink::NavigationInitiator>
+  HeapMojoReceiverSet<mojom::blink::NavigationInitiator,
+                      HeapMojoWrapperMode::kWithoutContextObserver>
       navigation_initiator_receivers_;
 
   Member<Document> document_;

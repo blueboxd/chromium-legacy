@@ -28,6 +28,9 @@ namespace {
 
 using ResultType = ash::AppListSearchResultType;
 
+// Consistent with kScoreEpsilon in ChipRanker.
+// constexpr float kScoreEpsilon = 1e-5f;
+
 class TestSearchResult : public ChromeSearchResult {
  public:
   TestSearchResult(const std::string& id, ResultType type)
@@ -101,25 +104,9 @@ class ChipRankerTest : public testing::Test {
 
     ranker_ = std::make_unique<ChipRanker>(profile_.get());
     task_environment_.RunUntilIdle();
-    SetRankerModel();
   }
 
   ~ChipRankerTest() override = default;
-
-  void SetRankerModel() {
-    // Set up fake ranker model.
-    RecurrenceRankerConfigProto config;
-    config.set_min_seconds_between_saves(240u);
-    config.set_condition_limit(100u);
-    config.set_condition_decay(0.99f);
-    config.set_target_limit(500u);
-    config.set_target_decay(0.99f);
-    config.mutable_predictor()->mutable_fake_predictor();
-
-    ranker_->SetForTest(std::make_unique<RecurrenceRanker>(
-        "", profile_->GetPath().AppendASCII("test_chip_ranker.pb"), config,
-        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_.get())));
-  }
 
   Mixer::SortedResults MakeSearchResults(const std::vector<std::string>& ids,
                                          const std::vector<ResultType>& types,
@@ -132,29 +119,13 @@ class ChipRankerTest : public testing::Test {
     return results;
   }
 
-  void TrainRanker(const std::vector<std::string>& ids,
-                   const std::vector<RankingItemType>& types,
-                   const std::vector<int>& n,
-                   bool reset = true) {
-    // Reset ranker
-    if (reset) {
-      SetRankerModel();
-      task_environment_.RunUntilIdle();
-    }
+  void TrainRanker(const std::vector<std::string>& types) {
+    // Clear the ranker of existing scores.
+    auto* type_ranker = ranker_->GetRankerForTest();
+    type_ranker->GetTargetData()->clear();
 
-    std::list<AppLaunchData> data;
-    for (int i = 0; i < static_cast<int>(ids.size()); ++i) {
-      data.emplace_back();
-      data.back().id = ids[i];
-      data.back().ranking_item_type = types[i];
-    }
-
-    int i = 0;
-    for (const auto& d : data) {
-      for (int j = 0; j < n[i]; ++j) {
-        ranker_->Train(d);
-      }
-      ++i;
+    for (const std::string& type : types) {
+      type_ranker->Record(type);
     }
   }
 
@@ -176,23 +147,6 @@ TEST_F(ChipRankerTest, EmptyList) {
   EXPECT_EQ(results.size(), 0ul);
 }
 
-// Check that ranking only one app has no effect.
-TEST_F(ChipRankerTest, OneAppOnly) {
-  Mixer::SortedResults results = MakeSearchResults(
-      {"app1", "file1", "file2"},
-      {ResultType::kInstalledApp, ResultType::kFileChip, ResultType::kFileChip},
-      {8.9, 0.7, 0.4});
-
-  TrainRanker({"app1", "file1"},
-              {RankingItemType::kApp, RankingItemType::kChip}, {1, 3});
-
-  ranker_->Rank(&results);
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("file1"),
-                                              HasId("file2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(0.7),
-                                              HasScore(0.4))));
-}
-
 // Check that ranking only apps has no effect.
 TEST_F(ChipRankerTest, AppsOnly) {
   Mixer::SortedResults results =
@@ -201,8 +155,7 @@ TEST_F(ChipRankerTest, AppsOnly) {
                          ResultType::kInstalledApp},
                         {8.9, 8.8, 8.7});
 
-  TrainRanker({"app1", "app2"}, {RankingItemType::kApp, RankingItemType::kApp},
-              {1, 1});
+  TrainRanker({"app", "file"});
 
   ranker_->Rank(&results);
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
@@ -219,8 +172,7 @@ TEST_F(ChipRankerTest, FilesOnly) {
        ResultType::kFileChip},
       {0.9, 0.6, 0.4});
 
-  TrainRanker({"file1", "file2"},
-              {RankingItemType::kChip, RankingItemType::kChip}, {1, 1});
+  TrainRanker({"app", "file"});
 
   ranker_->Rank(&results);
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("file2"),
@@ -232,278 +184,19 @@ TEST_F(ChipRankerTest, FilesOnly) {
 // Check that ranking a non-chip result does not affect its score.
 TEST_F(ChipRankerTest, UnchangedItem) {
   Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "omni1", "file1"},
+      MakeSearchResults({"app1", "app2", "omni1", "omni2"},
                         {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kOmnibox, ResultType::kFileChip},
+                         ResultType::kOmnibox, ResultType::kOmnibox},
                         {8.9, 8.7, 0.8, 0.7});
 
-  TrainRanker({"app1", "app2", "omni1", "file1"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kOmniboxGeneric, RankingItemType::kChip},
-              {3, 1, 1, 2});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("file1"),
-                                              HasId("app2"), HasId("omni1"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.8),
-                                              HasScore(8.7), HasScore(0.8))));
-}
-
-// Check moving a file into first place.
-TEST_F(ChipRankerTest, FileFirst) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "file1"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kFileChip},
-                        {8.8, 8.7, 0.9});
-
-  TrainRanker(
-      {"app1", "app2", "file1"},
-      {RankingItemType::kApp, RankingItemType::kApp, RankingItemType::kChip},
-      {1, 1, 3});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("app1"),
-                                              HasId("app2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.8),
-                                              HasScore(8.7))));
-}
-
-// Check moving a file between two apps.
-TEST_F(ChipRankerTest, FileMid) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "file1"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kFileChip},
-                        {8.9, 8.6, 0.8});
-
-  TrainRanker(
-      {"app1", "app2", "file1"},
-      {RankingItemType::kApp, RankingItemType::kApp, RankingItemType::kChip},
-      {3, 1, 2});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("file1"),
-                                              HasId("app2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.75),
-                                              HasScore(8.6))));
-}
-
-// Check moving a file into last place.
-TEST_F(ChipRankerTest, FileLast) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "file1"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kFileChip},
-                        {8.9, 8.6, 0.4});
-
-  TrainRanker(
-      {"app1", "app2", "file1"},
-      {RankingItemType::kApp, RankingItemType::kApp, RankingItemType::kChip},
-      {2, 2, 1});
+  TrainRanker({"app", "file"});
 
   ranker_->Rank(&results);
 
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
-                                              HasId("file1"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.6),
-                                              HasScore(0.4))));
-}
-
-// Check alternating app and file results.
-TEST_F(ChipRankerTest, ChipAlternate) {
-  Mixer::SortedResults results = MakeSearchResults(
-      {"app1", "app2", "file1", "file2"},
-      {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kDriveQuickAccessChip, ResultType::kFileChip},
-      {8.9, 8.6, 0.8, 0.3});
-
-  TrainRanker({"app1", "app2", "file1", "file2"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {4, 2, 3, 1});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("file1"),
-                                              HasId("app2"), HasId("file2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.75),
-                                              HasScore(8.6), HasScore(0.3))));
-}
-
-// Check moving two files into first place.
-TEST_F(ChipRankerTest, TwoFilesFirst) {
-  Mixer::SortedResults results = MakeSearchResults(
-      {"app1", "app2", "file1", "file2"},
-      {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kDriveQuickAccessChip, ResultType::kFileChip},
-      {8.8, 8.6, 0.9, 0.8});
-
-  TrainRanker({"app1", "app2", "file1", "file2"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {1, 2, 4, 3});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("file2"),
-                                              HasId("app1"), HasId("app2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.85),
-                                              HasScore(8.8), HasScore(8.6))));
-}
-
-// Check ranking a file that the ranker hasn't seen.
-TEST_F(ChipRankerTest, UntrainedFile) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "file1"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kDriveQuickAccessChip},
-                        {8.8, 8.6, 0.9});
-
-  TrainRanker({"app1", "app2"}, {RankingItemType::kApp, RankingItemType::kApp},
-              {2, 1});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
-                                              HasId("file1"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.8), HasScore(8.6),
-                                              HasScore(0.9))));
-}
-
-// Check that input order of apps remains the same even where ranker
-// would swap them.
-TEST_F(ChipRankerTest, AppMaintainOrder) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "file1"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kDriveQuickAccessChip},
-                        {8.8, 8.6, 0.9});
-
-  TrainRanker(
-      {"app1", "app2", "file1"},
-      {RankingItemType::kApp, RankingItemType::kApp, RankingItemType::kChip},
-      {1, 2, 3});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("app1"),
-                                              HasId("app2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.8),
-                                              HasScore(8.6))));
-}
-
-// Check that file ordering remains the same even where ranker would
-// swap them, when files are placed ahead of first app.
-TEST_F(ChipRankerTest, FileMaintainOrderFirst) {
-  Mixer::SortedResults results = MakeSearchResults(
-      {"app1", "app2", "file1", "file2"},
-      {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kDriveQuickAccessChip, ResultType::kFileChip},
-      {8.8, 8.6, 0.9, 0.8});
-
-  TrainRanker({"app1", "app2", "file1", "file2"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {1, 2, 4, 3});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("file2"),
-                                              HasId("app1"), HasId("app2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.85),
-                                              HasScore(8.8), HasScore(8.6))));
-}
-
-// Check that file ordering remains the same even where ranker would
-// swap them, when files are placed ahead of first app.
-TEST_F(ChipRankerTest, FileMaintainOrderMid) {
-  Mixer::SortedResults results = MakeSearchResults(
-      {"app1", "app2", "file1", "file2"},
-      {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kDriveQuickAccessChip, ResultType::kFileChip},
-      {8.8, 8.6, 0.9, 0.8});
-
-  TrainRanker({"app1", "app2", "file1", "file2"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {4, 1, 2, 3});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("file1"),
-                                              HasId("file2"), HasId("app2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.8), HasScore(8.7),
-                                              HasScore(8.65), HasScore(8.6))));
-}
-
-// Check that rank works on a succession of training instances.
-TEST_F(ChipRankerTest, TrainMultiple) {
-  Mixer::SortedResults results = MakeSearchResults(
-      {"app1", "app2", "file1", "file2"},
-      {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kDriveQuickAccessChip, ResultType::kFileChip},
-      {8.8, 8.6, 0.9, 0.8});
-
-  TrainRanker({"app1", "app2", "file1", "file2"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {5, 2, 3, 1});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("file1"),
-                                              HasId("app2"), HasId("file2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.8), HasScore(8.7),
-                                              HasScore(8.6), HasScore(0.8))));
-
-  TrainRanker({"file1", "file2"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {3, 2}, /* reset = */ false);
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("app1"),
-                                              HasId("file2"), HasId("app2"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.8),
-                                              HasScore(8.7), HasScore(8.6))));
-}
-
-// Check ranker behaviour when multiple apps have equal scores.
-TEST_F(ChipRankerTest, EqualApps) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "app3", "file1"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kInstalledApp, ResultType::kFileChip},
-                        {8.7, 8.7, 8.7, 0.5});
-
-  TrainRanker({"app1", "app2", "app3", "file1"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {5, 2, 1, 3});
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
-                                              HasId("app3"), HasId("file1"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.7), HasScore(8.7),
-                                              HasScore(8.7), HasScore(8.7))));
-
-  TrainRanker({"file1"},
-              {RankingItemType::kApp, RankingItemType::kApp,
-               RankingItemType::kChip, RankingItemType::kChip},
-              {3}, /* reset = */ false);
-
-  ranker_->Rank(&results);
-
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("app1"),
-                                              HasId("app2"), HasId("app3"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.85), HasScore(8.7),
-                                              HasScore(8.7), HasScore(8.7))));
+                                              HasId("omni1"), HasId("omni2"))));
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(8.9), HasScore(8.7),
+                                              HasScore(0.8), HasScore(0.7))));
 }
 
 }  // namespace app_list

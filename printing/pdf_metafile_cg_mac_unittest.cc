@@ -7,6 +7,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,92 @@ base::FilePath GetPrintingTestData(const base::FilePath::StringType& filename) {
       .Append(filename);
 }
 
+std::unique_ptr<PdfMetafileCg> GetPdfMetafile(
+    const base::FilePath::StringType& pdf_filename) {
+  // Get test data.
+  base::FilePath pdf_file = GetPdfTestData(pdf_filename);
+  if (pdf_file.empty())
+    return nullptr;
+
+  std::string pdf_data;
+  if (!base::ReadFileToString(pdf_file, &pdf_data))
+    return nullptr;
+
+  // Initialize and check metafile.
+  auto pdf_cg = std::make_unique<PdfMetafileCg>();
+  if (!pdf_cg->InitFromData(base::as_bytes(base::make_span(pdf_data))))
+    return nullptr;
+  return pdf_cg;
+}
+
+void RenderedPdfSha1(const base::FilePath::StringType& pdf_filename,
+                     size_t page_number,
+                     const gfx::Rect& expected_page_bounds,
+                     const gfx::Size& dest_size,
+                     base::SHA1Digest* rendered_hash) {
+  // Initialize and verify the metafile.
+  std::unique_ptr<PdfMetafileCg> pdf_cg = GetPdfMetafile(pdf_filename);
+  ASSERT_TRUE(pdf_cg);
+  ASSERT_LE(page_number, pdf_cg->GetPageCount());
+  const gfx::Rect bounds = pdf_cg->GetPageBounds(page_number);
+  ASSERT_EQ(expected_page_bounds, bounds);
+
+  // Set up rendering context.
+  constexpr size_t kBitsPerComponent = 8;
+  constexpr size_t kBytesPerPixel = 4;
+  const size_t kStride = dest_size.width() * kBytesPerPixel;
+  std::vector<uint8_t> rendered_bitmap(dest_size.height() * kStride);
+  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+      CGColorSpaceCreateDeviceRGB());
+  base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
+      rendered_bitmap.data(), dest_size.width(), dest_size.height(),
+      kBitsPerComponent, kStride, color_space,
+      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little));
+
+  // Render using metafile and calculate the output hash.
+  Metafile::MacRenderPageParams params;
+  params.autorotate = true;
+  ASSERT_TRUE(pdf_cg->RenderPage(page_number, context,
+                                 gfx::Rect(dest_size).ToCGRect(), params));
+  *rendered_hash = base::SHA1HashSpan(rendered_bitmap);
+}
+
+void ExpectedPngSha1(const base::FilePath::StringType& expected_png_filename,
+                     const gfx::Size& expected_png_size,
+                     base::SHA1Digest* expected_hash) {
+  base::FilePath expected_png_file = GetPrintingTestData(expected_png_filename);
+  ASSERT_FALSE(expected_png_file.empty());
+  std::string expected_png_data;
+  ASSERT_TRUE(base::ReadFileToString(expected_png_file, &expected_png_data));
+
+  // Decode expected PNG and calculate the output hash.
+  std::vector<uint8_t> expected_png_bitmap;
+  int png_width;
+  int png_height;
+  ASSERT_TRUE(gfx::PNGCodec::Decode(
+      reinterpret_cast<const uint8_t*>(expected_png_data.data()),
+      expected_png_data.size(), gfx::PNGCodec::FORMAT_BGRA,
+      &expected_png_bitmap, &png_width, &png_height));
+  ASSERT_EQ(expected_png_size.width(), png_width);
+  ASSERT_EQ(expected_png_size.height(), png_height);
+  *expected_hash = base::SHA1HashSpan(expected_png_bitmap);
+}
+
+void TestRenderPage(const base::FilePath::StringType& pdf_filename,
+                    size_t page_number,
+                    const gfx::Rect& expected_page_bounds,
+                    const base::FilePath::StringType& expected_png_filename,
+                    const gfx::Size& dest_size) {
+  base::SHA1Digest rendered_hash;
+  RenderedPdfSha1(pdf_filename, page_number, expected_page_bounds, dest_size,
+                  &rendered_hash);
+  base::SHA1Digest expected_hash;
+  ExpectedPngSha1(expected_png_filename, dest_size, &expected_hash);
+
+  // Make sure the hashes match.
+  EXPECT_EQ(expected_hash, rendered_hash);
+}
+
 }  // namespace
 
 TEST(PdfMetafileCgTest, Pdf) {
@@ -48,21 +135,21 @@ TEST(PdfMetafileCgTest, Pdf) {
   EXPECT_TRUE(pdf.context());
 
   // Render page 1.
-  gfx::Rect rect_1(10, 10, 520, 700);
-  gfx::Size size_1(540, 720);
-  pdf.StartPage(size_1, rect_1, 1.25);
+  constexpr gfx::Rect kRect1(10, 10, 520, 700);
+  constexpr gfx::Size kSize1(540, 720);
+  pdf.StartPage(kSize1, kRect1, 1.25);
   pdf.FinishPage();
 
   // Render page 2.
-  gfx::Rect rect_2(10, 10, 520, 700);
-  gfx::Size size_2(720, 540);
-  pdf.StartPage(size_2, rect_2, 2.0);
+  constexpr gfx::Rect kRect2(10, 10, 520, 700);
+  constexpr gfx::Size kSize2(720, 540);
+  pdf.StartPage(kSize2, kRect2, 2.0);
   pdf.FinishPage();
 
   pdf.FinishDocument();
 
   // Check data size.
-  uint32_t size = pdf.GetDataSize();
+  const uint32_t size = pdf.GetDataSize();
   EXPECT_GT(size, 0U);
 
   // Get resulting data.
@@ -126,62 +213,10 @@ TEST(PdfMetafileCgTest, GetPageBounds) {
 }
 
 TEST(PdfMetafileCgTest, RenderPageBasic) {
-  // Get test data.
-  base::FilePath pdf_file = GetPdfTestData("rectangles.pdf");
-  ASSERT_FALSE(pdf_file.empty());
-  std::string pdf_data;
-  ASSERT_TRUE(base::ReadFileToString(pdf_file, &pdf_data));
-
-  base::FilePath expected_png_file =
-      GetPrintingTestData("rectangles_cg_expected.pdf.0.png");
-  ASSERT_FALSE(expected_png_file.empty());
-  std::string expected_png_data;
-  ASSERT_TRUE(base::ReadFileToString(expected_png_file, &expected_png_data));
-
-  // Initialize and check metafile.
-  constexpr int kExpectedWidth = 200;
-  constexpr int kExpectedHeight = 300;
-  PdfMetafileCg pdf_cg;
-  ASSERT_TRUE(pdf_cg.InitFromData(base::as_bytes(base::make_span(pdf_data))));
-  ASSERT_EQ(1u, pdf_cg.GetPageCount());
-  gfx::Rect bounds = pdf_cg.GetPageBounds(1);
-  ASSERT_EQ(0, bounds.x());
-  ASSERT_EQ(0, bounds.y());
-  ASSERT_EQ(kExpectedWidth, bounds.width());
-  ASSERT_EQ(kExpectedHeight, bounds.height());
-
-  // Set up rendering context.
-  constexpr size_t kBitsPerComponent = 8;
-  constexpr size_t kBytesPerPixel = 4;
-  constexpr size_t kStride = kExpectedWidth * kBytesPerPixel;
-  std::vector<uint8_t> rendered_bitmap(kStride * kExpectedHeight);
-  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-      CGColorSpaceCreateDeviceRGB());
-  base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
-      rendered_bitmap.data(), kExpectedWidth, kExpectedHeight,
-      kBitsPerComponent, kStride, color_space,
-      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little));
-
-  // Render using metafile and calculate the output hash.
-  Metafile::MacRenderPageParams params;
-  params.autorotate = true;
-  ASSERT_TRUE(pdf_cg.RenderPage(1, context, bounds.ToCGRect(), params));
-  base::SHA1Digest rendered_hash = base::SHA1HashSpan(rendered_bitmap);
-
-  // Decode expected PNG and calculate the output hash.
-  std::vector<uint8_t> expected_png_bitmap;
-  int png_width;
-  int png_height;
-  ASSERT_TRUE(gfx::PNGCodec::Decode(
-      reinterpret_cast<const uint8_t*>(expected_png_data.data()),
-      expected_png_data.size(), gfx::PNGCodec::FORMAT_BGRA,
-      &expected_png_bitmap, &png_width, &png_height));
-  ASSERT_EQ(kExpectedWidth, png_width);
-  ASSERT_EQ(kExpectedHeight, png_height);
-  base::SHA1Digest expected_hash = base::SHA1HashSpan(expected_png_bitmap);
-
-  // Make sure the hashes match.
-  EXPECT_EQ(expected_hash, rendered_hash);
+  constexpr gfx::Rect kPageBounds(200, 300);
+  constexpr gfx::Size kDestinationSize(200, 300);
+  TestRenderPage("rectangles.pdf", /*page_number=*/1, kPageBounds,
+                 "rectangles_cg_expected.pdf.0.png", kDestinationSize);
 }
 
 }  // namespace printing

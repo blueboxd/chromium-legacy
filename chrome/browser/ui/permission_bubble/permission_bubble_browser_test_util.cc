@@ -52,7 +52,8 @@ content::WebContents* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
   CHECK(extension);
 
   apps::AppLaunchParams params(
-      extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+      extension->id(),
+      apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated,
       WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::AppLaunchSource::kSourceTest);
 

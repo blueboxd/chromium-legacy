@@ -1061,7 +1061,6 @@
 <translation id="2408955596600435184">پین را وارد کنید</translation>
 <translation id="241082044617551207">افزایه ناشناس</translation>
 <translation id="2412593942846481727">به‌روزرسانی دردسترس است</translation>
-<translation id="2413749388954403953">تغییر رابط کاربر نشانک‌ها</translation>
 <translation id="2417206894320497232">‏Plungin VM آماده استفاده است.</translation>
 <translation id="241727068219398187">‏داده‌ها با گذرواژه Google شما از 
           <ph name="TIME" /> رمزگذاری شدند. این کار شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.</translation>
@@ -1155,7 +1154,6 @@
 <translation id="252219247728877310">مؤلفه به‌روز نشده است</translation>
 <translation id="2522791476825452208">خیلی نزدیک</translation>
 <translation id="2523184218357549926">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند</translation>
-<translation id="2525250408503682495">‏‫Kryptonite!‏ cryptohome برای برنامه کیوسک قابل نصب نیست.‏</translation>
 <translation id="2526277209479171883">نصب کردن و ادامه دادن</translation>
 <translation id="2526590354069164005">دسک تاپ</translation>
 <translation id="2526619973349913024">بررسی برای وجود به‌روزرسانی</translation>
@@ -1183,7 +1181,6 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> نتوانست به <ph name="NETWORK_ID" /> متصل شود. لطفاً یک شبکه دیگر را انتخاب کرده یا دوباره امتحان کنید.</translation>
 <translation id="2553440850688409052">پنهان کردن این افزایه</translation>
 <translation id="2554553592469060349">فایل انتخابی بیش از حد بزرگ است (حداکثر اندازه: ۳ مگابایت).</translation>
-<translation id="2556092377360758201">بدون محافظت (توصیه نمی‌شود)</translation>
 <translation id="2557378327156922632">این فایل حاوی محتوای حساس است.</translation>
 <translation id="255747371423522804">افزودن به گروه موجود</translation>
 <translation id="2558896001721082624">گزینه‌های دسترس‌پذیری در منوی سیستم همیشه نمایش داده شوند</translation>
@@ -2397,7 +2394,6 @@
 <translation id="4100853287411968461">محدودیت جدید مدت تماشای صفحه</translation>
 <translation id="4104163789986725820">&amp;صادر کردن...</translation>
 <translation id="4107048419833779140">شناسایی و خارج کردن دستگاه‌های ذخیره‌سازی</translation>
-<translation id="4108998448622696017">رویدادهای خطرناکی را که اتفاق می‌افتد شناسایی می‌کند و درباره آن‌ها به شما هشدار می‌دهد.</translation>
 <translation id="4109135793348361820">انتقال پنجره به <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">‏بارگیری کامل شد: <ph name="FILE_NAME" />. برای چرخش در قسمت نوار بارگیری‌ها، Shift+F6 را فشار دهید.</translation>
 <translation id="4110895898888439383">مرور وب در حالت کنتراست بالا</translation>
@@ -2418,7 +2414,6 @@
 <translation id="413121957363593859">مؤلفه‌ها</translation>
 <translation id="4131410914670010031">سیاه و سفید</translation>
 <translation id="4133076602192971179">برای تغییر دادن گذرواژه، برنامه را باز کنید</translation>
-<translation id="4133265950310064865">محافظت بهبودیافته</translation>
 <translation id="4136203100490971508">«نور شب» هنگام طلوع آفتاب به‌طور خودکار خاموش می‌شود</translation>
 <translation id="41365691917097717">‏با ادامه دادن، اشکال‌زدایی ADB (پل اشکال‌زدایی Android) برای ایجاد و آزمایش برنامه‌های Android فعال می‌شود. توجه داشته باشید که این کنش نصب برنامه‌های Android را که Google تأیید نکرده است مجاز می‌کند و برای غیرفعال شدن به بازنشانی کارخانه‌ای نیاز دارد.</translation>
 <translation id="4138267921960073861">نمایش نام‌های کاربری و عکس‌ها در صفحه ورود به سیستم</translation>
@@ -2768,7 +2763,6 @@
 <translation id="4660540330091848931">درحال تغییر اندازه</translation>
 <translation id="4660838440047236328">چیدمان اتاق شما</translation>
 <translation id="4661407454952063730">داده‌های برنامه می‌توانند هر داده‌ای باشند که برنامه (براساس تنظیمات برنامه‌نویس) ذخیره کرده است، ازجمله داده‌هایی مانند مخاطبین، پیام‌ها، و عکس‌ها.</translation>
-<translation id="4661931051827810091">نشانی‌های وب ناشناش بعضی از صفحه‌هایی که بازدید می‌کنید، اطلاعات محدودی از سیستم، و محتوای بعضی از صفحه‌ها را ارسال می‌کند تا به کشف و مسدود کردن تهدیدهای جدید علیه همه کاربران در وب کمک کند.</translation>
 <translation id="4662788913887017617">‏این نشانک را با iPhone خود به اشتراک بگذارید</translation>
 <translation id="4663373278480897665">دوربین مجاز است</translation>
 <translation id="4664482161435122549">‏خطای صادر کردن PKCS #12</translation>
@@ -2776,7 +2770,6 @@
 <translation id="4665446389743427678">همه داده‌های ذخیره‌شده توسط <ph name="SITE" /> حذف خواهد شد.</translation>
 <translation id="4668721319092543482">برای فعال کردن <ph name="PLUGIN_NAME" /> کلیک کنید</translation>
 <translation id="4670064810192446073">واقعیت مجازی</translation>
-<translation id="4672879467403304774">‏مادامی‌که به سیستم وارد شده‌اید، شما را در Chrome و دیگر برنامه‌های Google ایمن نگه می‌دارد</translation>
 <translation id="46733273239502219">داده‌های آفلاین برنامه‌های نصب‌شده هم حذف خواهد شد</translation>
 <translation id="4673442866648850031">وقتی قلم برداشته می‌شود، ابزار قلم باز می‌شود</translation>
 <translation id="4677772697204437347">‏حافظه GPU</translation>
@@ -2853,7 +2846,6 @@
 <translation id="4798236378408895261">‏پیوست <ph name="BEGIN_LINK" />گزارش‌های بلوتوث<ph name="END_LINK" /> (داخلی Google)</translation>
 <translation id="4801448226354548035">پنهان‌سازی حساب‌ها</translation>
 <translation id="4801512016965057443">اجازه دادن فراگردی داده تلفن همراه</translation>
-<translation id="480395942558135789">سایت‌ها می‌توانند از کوکی‌ها برای بهبود تجربه مرور شما استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند.</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4804827417948292437">آووکادو</translation>
 <translation id="4805077164141082536">‏توصیه می‌کنیم قبل از ارتقا دادن، از محتوی کنونی Linux خود پشتیبان‌گیری کنید.</translation>
@@ -3098,7 +3090,6 @@
 <translation id="5127881134400491887">مدیریت اتصالات شبکه</translation>
 <translation id="512903556749061217">متصل</translation>
 <translation id="5133483819862530305">غروب تا طلوع</translation>
-<translation id="5134113140145104829">هرزمان خواستید به «صفحه اصلی» بروید، از پایین صفحه تند به‌سمت بالا بکشید.</translation>
 <translation id="5135085122826131075">‏با گفتن «OK Google» به «دستیار» دسترسی پیدا کنید.</translation>
 <translation id="5135533361271311778">ایجاد مورد نشانک ممکن نیست.</translation>
 <translation id="5137501176474113045">حذف این مورد</translation>
@@ -3464,7 +3455,6 @@
 <translation id="5614190747811328134">اعلامیه کاربر</translation>
 <translation id="5614553682702429503">گذرواژه ذخیره شود؟</translation>
 <translation id="561698261642843490">‏بستن Firefox</translation>
-<translation id="5618075537869101857">وای، برنامه کاربردی کیوسک راه‌اندازی نشد.</translation>
 <translation id="5618333180342767515">(این مرحله ممکن است چند دقیقه طول بکشد)</translation>
 <translation id="56197088284879152">اتصال برای کنترل دستگاه راه دور «<ph name="DEVICE_NAME" />» مسدود شده است.</translation>
 <translation id="5620163320393916465">گذرواژه‌ای ذخیره نشده است</translation>
@@ -4026,7 +4016,6 @@
 <translation id="6362853299801475928">&amp;گزارش یک مشکل...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">افزودن خانواده و دوستان</translation>
-<translation id="6366190659675876144">محافظت استاندارد</translation>
 <translation id="636850387210749493">ثبت‌نام شرکت</translation>
 <translation id="6370021412472292592">مانیفیست بارگیری نشد.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{تغییر گذرواژه}one{تغییر گذرواژه‌ها}other{تغییر گذرواژه‌ها}}</translation>
@@ -4452,7 +4441,6 @@
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6965648386495488594">درگاه</translation>
 <translation id="6965978654500191972">دستگاه</translation>
-<translation id="6966201992886493384">سایت‌ها می‌توانند از کوکی‌ها برای بهبود تجربه مرورتان استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند</translation>
 <translation id="696780070563539690">سایت‌ها نمی‌توانند بااستفاده از کوکی‌ها فعالیت مرور شما را (مثلاً برای شخصی‌سازی آگهی‌ها) در سایت‌های مختلف ببینند</translation>
 <translation id="6968288415730398122">برای پیکربندی قفل صفحه، گذرواژه‌تان را وارد کنید</translation>
 <translation id="6970480684834282392">نوع راه‌اندازی</translation>
@@ -4868,7 +4856,6 @@
 <translation id="7507207699631365376">به <ph name="BEGIN_LINK" />خط‌مشی رازداری<ph name="END_LINK" /> این ارائه‌دهنده بروید</translation>
 <translation id="7507930499305566459">گواهی وضعیت پاسخگو</translation>
 <translation id="7508054832109420082">ارائه دسترسی به چاپگرها</translation>
-<translation id="751120035300339">سایت‌ها نمی‌توانند از کوکی‌ها برای بهبود تجربه مرورتان استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند</translation>
 <translation id="7513029293694390567">با استفاده از اعتبارنامه‌های ذخیره‌شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. اگر این قابلیت غیرفعال باشد، هر بار قبل از وارد شدن به وب‌سایت از شما برای تأیید اطلاعات درخواست می‌شود.</translation>
 <translation id="7514239104543605883">کپی در دستگاه</translation>
 <translation id="7514365320538308">بارگیری</translation>
@@ -5568,7 +5555,6 @@
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="8417548266957501132">گذرواژه ولی</translation>
-<translation id="8417573335434189196">‏دربرابر وب‌سایت‌ها، بارگیری‌ها، یا افزونه‌های خطرناک از شما محافظت نمی‌کند. Chrome این تنظیم را توصیه نمی‌کند.</translation>
 <translation id="8418445294933751433">&amp;نمایش به‌صورت برگه</translation>
 <translation id="8419098111404128271">نتایج جستجو برای «<ph name="SEARCH_TEXT" />»</translation>
 <translation id="8419368276599091549">به <ph name="DEVICE_TYPE" /> خوش آمدید!</translation>

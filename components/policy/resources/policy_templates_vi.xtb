@@ -3805,7 +3805,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Mục cài đặt này sẽ kiểm soát việc trình bày các trang chào mừng giúp người dùng đăng nhập vào <ph name="PRODUCT_NAME" />, chọn trang đó làm trình duyệt mặc định hoặc thông báo cho họ về các tính năng sản phẩm.</translation>
 <translation id="6766216162565713893">Cho phép trang web yêu cầu người dùng cấp quyền truy cập vào thiết bị Bluetooth lân cận</translation>
 <translation id="6770454900105963262">Báo cáo thông tin về các phiên kiosk hiện hoạt</translation>
-<translation id="6772045451150098845">Chính sách này kiểm soát việc người dùng đăng ký chương trình Bảo vệ nâng cao có nhận được các tính năng cao cấp hay không. Một số tính năng trong số này có thể chia sẻ dữ liệu với Google (ví dụ: người dùng chương trình Bảo vệ nâng cao có thể gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại). Nếu bạn không đặt hoặc đặt chính sách này thành True, thì người dùng đã đăng ký sẽ nhận được các tính năng cao cấp. Nếu bạn đặt chính sách này thành False, thì người dùng tính năng Bảo vệ nâng cao sẽ chỉ nhận được các tính năng dành cho người dùng thông thường.</translation>
 <translation id="6786747875388722282">Tiện ích</translation>
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6795485990775913659">Chỉ cho phép in khi không có mã PIN</translation>

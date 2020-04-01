@@ -41,12 +41,17 @@ namespace {
 template <typename Set>
 class ListOrLinkedHashSetTest : public testing::Test {};
 
-using SetTypes =
-    testing::Types<ListHashSet<int>, ListHashSet<int, 1>, LinkedHashSet<int>>;
+using SetTypes = testing::Types<ListHashSet<int>,
+                                ListHashSet<int, 1>,
+                                LinkedHashSet<int>,
+                                NewLinkedHashSet<int>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetTest, SetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   using Set = TypeParam;
+  // TODO(bartekn): Make the test work. Fails due to empty value.
+  if (std::is_same<Set, NewLinkedHashSet<int>>::value)
+    return;
   Set list;
   list.insert(-1);
   list.insert(0);
@@ -197,6 +202,9 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates) {
 
 TYPED_TEST(ListOrLinkedHashSetTest, Find) {
   using Set = TypeParam;
+  // TODO(bartekn): Make the test work. Fails due to empty value.
+  if (std::is_same<Set, NewLinkedHashSet<int>>::value)
+    return;
   Set set;
   set.insert(-1);
   set.insert(0);
@@ -228,6 +236,9 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
 
 TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   using Set = TypeParam;
+  // TODO(bartekn): Make the test work. Fails due to empty value.
+  if (std::is_same<Set, NewLinkedHashSet<int>>::value)
+    return;
   bool can_modify_while_iterating =
       !std::is_same<Set, LinkedHashSet<int>>::value;
   Set set;
@@ -361,11 +372,17 @@ class ListOrLinkedHashSetRefPtrTest : public testing::Test {};
 using RefPtrSetTypes =
     testing::Types<ListHashSet<scoped_refptr<DummyRefCounted>>,
                    ListHashSet<scoped_refptr<DummyRefCounted>, 1>,
-                   LinkedHashSet<scoped_refptr<DummyRefCounted>>>;
+                   LinkedHashSet<scoped_refptr<DummyRefCounted>>,
+                   NewLinkedHashSet<scoped_refptr<DummyRefCounted>>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetRefPtrTest, RefPtrSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   using Set = TypeParam;
+  int expected = 1;
+  // NewLinkedHashSet stores each object twice.
+  if (std::is_same<Set,
+                   NewLinkedHashSet<scoped_refptr<DummyRefCounted>>>::value)
+    expected = 2;
   bool is_deleted = false;
   DummyRefCounted::ref_invokes_count_ = 0;
   scoped_refptr<DummyRefCounted> ptr =
@@ -375,24 +392,24 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   Set set;
   set.insert(ptr);
   // Referenced only once (to store a copy in the container).
-  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
+  EXPECT_EQ(expected, DummyRefCounted::ref_invokes_count_);
   EXPECT_EQ(ptr, set.front());
-  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
+  EXPECT_EQ(expected, DummyRefCounted::ref_invokes_count_);
 
   DummyRefCounted* raw_ptr = ptr.get();
 
   EXPECT_TRUE(set.Contains(ptr));
   EXPECT_TRUE(set.Contains(raw_ptr));
-  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
+  EXPECT_EQ(expected, DummyRefCounted::ref_invokes_count_);
 
   ptr = nullptr;
   EXPECT_FALSE(is_deleted);
-  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
+  EXPECT_EQ(expected, DummyRefCounted::ref_invokes_count_);
 
   set.erase(raw_ptr);
   EXPECT_TRUE(is_deleted);
 
-  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
+  EXPECT_EQ(expected, DummyRefCounted::ref_invokes_count_);
 }
 
 TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
@@ -467,6 +484,7 @@ struct ComplexityTranslator {
 template <typename Set>
 class ListOrLinkedHashSetTranslatorTest : public testing::Test {};
 
+// TODO(bartekn): Add NewLinkedHashSet once it supports custom hash function.
 using TranslatorSetTypes =
     testing::Types<ListHashSet<Complicated, 256, ComplicatedHashFunctions>,
                    ListHashSet<Complicated, 1, ComplicatedHashFunctions>,
@@ -576,7 +594,8 @@ class ListOrLinkedHashSetCountCopyTest : public testing::Test {};
 
 using CountCopySetTypes = testing::Types<ListHashSet<CountCopy>,
                                          ListHashSet<CountCopy, 1>,
-                                         LinkedHashSet<CountCopy>>;
+                                         LinkedHashSet<CountCopy>,
+                                         NewLinkedHashSet<CountCopy>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetCountCopyTest, CountCopySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetCountCopyTest,
@@ -606,6 +625,7 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy) {
 template <typename Set>
 class ListOrLinkedHashSetMoveOnlyTest : public testing::Test {};
 
+// TODO(bartekn): Add NewLinkedHashSet once it supports move-only type.
 using MoveOnlySetTypes = testing::Types<ListHashSet<MoveOnlyHashValue>,
                                         ListHashSet<MoveOnlyHashValue, 1>,
                                         LinkedHashSet<MoveOnlyHashValue>>;
@@ -701,6 +721,7 @@ struct DefaultHash<InvalidZeroValue> {
 template <typename Set>
 class ListOrLinkedHashSetInvalidZeroTest : public testing::Test {};
 
+// TODO(bartekn): Add NewLinkedHashSet once it supports custom hash traits.
 using InvalidZeroValueSetTypes =
     testing::Types<ListHashSet<InvalidZeroValue>,
                    ListHashSet<InvalidZeroValue, 1>,

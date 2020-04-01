@@ -20,6 +20,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -32,6 +34,13 @@
 #include "extensions/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "extensions/common/constants.h"
+#endif
 
 namespace extensions {
 
@@ -113,8 +122,9 @@ class ExtensionManagementServiceTest : public testing::Test {
       sync_preferences::TestingPrefServiceSyncable>
       PrefUpdater;
 
-  ExtensionManagementServiceTest() {}
-  ~ExtensionManagementServiceTest() override {}
+  ExtensionManagementServiceTest()
+      : scoped_local_state_(TestingBrowserProcess::GetGlobal()) {}
+  ~ExtensionManagementServiceTest() override = default;
 
   // testing::Test:
   void SetUp() override { InitPrefService(); }
@@ -141,6 +151,10 @@ class ExtensionManagementServiceTest : public testing::Test {
       pref_service_->RemoveManagedPref(path);
     else
       pref_service_->RemoveUserPref(path);
+  }
+
+  void SetPrefLocalState(const char* path, base::Value value) {
+    scoped_local_state_.Get()->Set(path, std::move(value));
   }
 
   const internal::GlobalSettings* ReadGlobalSettings() {
@@ -267,7 +281,7 @@ class ExtensionManagementServiceTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-
+  ScopedTestingLocalState scoped_local_state_;
   std::unique_ptr<TestingProfile> profile_;
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
   std::unique_ptr<ExtensionManagement> extension_management_;
@@ -888,6 +902,21 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyBlocked) {
   EXPECT_FALSE(
       extension_management_->IsInstallationExplicitlyBlocked(not_specified));
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(ExtensionManagementServiceTest, SystemFeaturesDisableList) {
+  base::Value system_features_list = base::Value(base::Value::Type::LIST);
+  system_features_list.Append(policy::SystemFeature::CAMERA);
+  system_features_list.Append(policy::SystemFeature::SETTINGS);
+  SetPrefLocalState(policy::policy_prefs::kSystemFeaturesDisableList,
+                    std::move(system_features_list));
+  EXPECT_EQ(ExtensionManagement::INSTALLATION_BLOCKED,
+            GetInstallationModeById(extension_misc::kCameraAppId));
+  EXPECT_EQ(
+      ExtensionManagement::INSTALLATION_BLOCKED,
+      GetInstallationModeById(chromeos::default_web_apps::kOsSettingsAppId));
+}
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(ExtensionManagementServiceTest,
        ExtensionsAreBlockedByDefaultForExtensionRequest) {

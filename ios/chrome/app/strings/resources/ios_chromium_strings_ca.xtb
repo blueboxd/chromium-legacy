@@ -3,7 +3,6 @@
 <translationbundle lang="ca">
 <translation id="102360288709523007">Ajuda a millorar Chromium enviant estadístiques d'ús i informes d'error a Google.</translation>
 <translation id="1185134272377778587">Quant a Chromium</translation>
-<translation id="1289966288285062467">Avís de privadesa de Chromium</translation>
 <translation id="1472013873724362412">El vostre compte no funciona a Chromium. Contacteu amb l'administrador del domini o utilitzeu un compte de Google estàndard per iniciar la sessió.</translation>
 <translation id="1507010443238049608">Ajuda a millorar les funcions i el rendiment de Chromium</translation>
 <translation id="1617663976202781617">Dades de la sincronització de Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Voleu tancar la sessió de Chromium?</translation>
 <translation id="6424492062988593837">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
 <translation id="6604711459180487467">Comparteix la teva ubicació per gaudir dels avantatges de Chromium.</translation>
-<translation id="6626296268883197964">En fer servir aquesta aplicació, acceptes les <ph name="BEGIN_LINK_TOS" />condicions del servei<ph name="END_LINK_TOS" /> i l'<ph name="BEGIN_LINK_PRIVACY" />avís de privadesa<ph name="END_LINK_PRIVACY" /> de Chromium.</translation>
 <translation id="7099326575020694068">Chromium no pot utilitzar la càmera en mode de visualització dividida</translation>
 <translation id="7208566199746267865">Per ajudar-te a estalviar temps, Chromium connecta els teus comptes al web. Pots afegir o suprimir comptes a Configuració.</translation>
 <translation id="7269362888766543920">Alguns complements fan que Chromium es bloquegi. Prova de desinstal·lar-los.</translation>

@@ -1061,7 +1061,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2408955596600435184">PIN eingeben</translation>
 <translation id="241082044617551207">Unbekanntes Plug-in</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
-<translation id="2413749388954403953">Benutzeroberfläche für Lesezeichen ändern</translation>
 <translation id="2417206894320497232">Plugin VM kann jetzt verwendet werden.</translation>
 <translation id="241727068219398187">Ihre Daten wurden mit Ihrem Google-Passwort vom <ph name="TIME" /> verschlüsselt. Davon ausgenommen sind Zahlungsmethoden oder Adressen von Google Pay.</translation>
 <translation id="2419706071571366386">Melden Sie sich zur Sicherheit ab, wenn Ihr Computer nicht verwendet wird.</translation>
@@ -1154,7 +1153,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="252219247728877310">Komponente nicht aktualisiert</translation>
 <translation id="2522791476825452208">Sehr nah</translation>
 <translation id="2523184218357549926">URLs der von Ihnen besuchten Seiten werden an Google gesendet</translation>
-<translation id="2525250408503682495">Cryptohome für die Kioskanwendung konnte nicht bereitgestellt werden.</translation>
 <translation id="2526277209479171883">Installieren und fortfahren</translation>
 <translation id="2526590354069164005">Desktop</translation>
 <translation id="2526619973349913024">Nach Updates suchen</translation>
@@ -1182,7 +1180,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> konnte keine Verbindung zu <ph name="NETWORK_ID" /> herstellen. Wählen Sie ein anderes Netzwerk oder versuchen Sie es erneut.</translation>
 <translation id="2553440850688409052">Dieses Plug-in ausblenden</translation>
 <translation id="2554553592469060349">Die ausgewählte Datei ist zu groß. Maximale Größe: 3 MB</translation>
-<translation id="2556092377360758201">Kein Schutz (nicht empfohlen)</translation>
 <translation id="2557378327156922632">Diese Datei enthält vertrauliche Inhalte.</translation>
 <translation id="255747371423522804">Vorhandener Gruppe hinzufügen</translation>
 <translation id="2558896001721082624">Optionen für Bedienungshilfen im Systemmenü immer anzeigen</translation>
@@ -2393,7 +2390,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4100853287411968461">Neue Zeiten für Gerätenutzung</translation>
 <translation id="4104163789986725820">E&amp;xportieren...</translation>
 <translation id="4107048419833779140">Speichergeräte ermitteln und auswerfen</translation>
-<translation id="4108998448622696017">Erkennt schädliche Ereignisse, sobald diese passieren, und warnt Sie entsprechend.</translation>
 <translation id="4109135793348361820">Fenster zu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) verschieben</translation>
 <translation id="4110490973560452005">Download abgeschlossen: <ph name="FILE_NAME" />. Drücken Sie Umschalttaste + F6, um zum Bereich mit der Downloadleiste zu wechseln.</translation>
 <translation id="4110895898888439383">Das Web in Modus mit hohem Kontrast durchsuchen</translation>
@@ -2414,7 +2410,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="413121957363593859">Komponenten</translation>
 <translation id="4131410914670010031">Schwarz-Weiß</translation>
 <translation id="4133076602192971179">Sie können Ihr Passwort in der App ändern</translation>
-<translation id="4133265950310064865">Erweitertes Safe Browsing</translation>
 <translation id="4136203100490971508">Das Nachtlicht wird automatisch bei Sonnenaufgang deaktiviert</translation>
 <translation id="41365691917097717">Wenn Sie fortfahren, erlauben Sie der ADB-Fehlerbehebung, Android-Apps zu erstellen und zu testen. Durch diese Aktion können Android-Apps installiert werden, die nicht von Google geprüft wurden. Zum Deaktivieren ist das Zurücksetzen auf die Werkseinstellungen erforderlich.</translation>
 <translation id="4138267921960073861">Nutzernamen und Fotos auf der Anmeldeseite anzeigen</translation>
@@ -2764,7 +2759,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4660540330091848931">Größenanpassung läuft</translation>
 <translation id="4660838440047236328">der Grundriss Ihres Zimmers</translation>
 <translation id="4661407454952063730">App-Daten können alle Daten sein, die eine App aufgrund der Einstellungen des Entwicklers gespeichert hat, wie z. B. Kontakte, Nachrichten und Fotos.</translation>
-<translation id="4661931051827810091">Sendet URLs einiger von Ihnen besuchter Seiten, eingeschränkte Systemdaten und einige Seiteninhalte, um neue Bedrohungen für alle Nutzer im Internet erkennen und blockieren zu können.</translation>
 <translation id="4662788913887017617">Dieses Lesezeichen für mein iPhone freigeben</translation>
 <translation id="4663373278480897665">Kameranutzung zulässig</translation>
 <translation id="4664482161435122549">PKCS #12 - Fehler beim Export</translation>
@@ -2772,7 +2766,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4665446389743427678">Alle von <ph name="SITE" /> gespeicherten Daten werden gelöscht.</translation>
 <translation id="4668721319092543482">Zum Aktivieren von <ph name="PLUGIN_NAME" /> klicken</translation>
 <translation id="4670064810192446073">Virtual Reality</translation>
-<translation id="4672879467403304774">Schützt Sie in Chrome und anderen Google-Apps, wenn Sie angemeldet sind</translation>
 <translation id="46733273239502219">Offlinedaten in installierten Apps werden auch gelöscht</translation>
 <translation id="4673442866648850031">Eingabestift-Tools werden automatisch geöffnet, sobald der Eingabestift entfernt wird</translation>
 <translation id="4677772697204437347">GPU-Speicher</translation>
@@ -2849,7 +2842,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth-Protokolle<ph name="END_LINK" /> anhängen (Google-intern)</translation>
 <translation id="4801448226354548035">Konten ausblenden</translation>
 <translation id="4801512016965057443">Mobilfunk-Roaming zulassen</translation>
-<translation id="480395942558135789">Websites können Ihnen das Browsen erleichtern, indem sie Cookies verwenden. Diese sorgen zum Beispiel dafür, dass Sie angemeldet bleiben oder dass Artikel in Ihrem Einkaufswagen gespeichert bleiben.</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4805077164141082536">Wir empfehlen Ihnen, den aktuellen Linux-Container vor dem Upgrade zu sichern.</translation>
@@ -3093,7 +3085,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5127881134400491887">Netzwerkverbindungen verwalten</translation>
 <translation id="512903556749061217">angeschlossen</translation>
 <translation id="5133483819862530305">Sonnenuntergang bis -aufgang</translation>
-<translation id="5134113140145104829">Sie können jederzeit zum Startbildschirm gehen, indem Sie von unten nach oben wischen.</translation>
 <translation id="5135085122826131075">Mit "Ok Google" können Sie auf Ihren Assistant zugreifen.</translation>
 <translation id="5135533361271311778">Lesezeichenelement konnte nicht erstellt werden.</translation>
 <translation id="5137501176474113045">Diesen Eintrag löschen</translation>
@@ -3459,7 +3450,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5614190747811328134">Nutzerhinweis</translation>
 <translation id="5614553682702429503">Passwort speichern?</translation>
 <translation id="561698261642843490">Firefox schließen</translation>
-<translation id="5618075537869101857">Die Kioskanwendung konnte nicht gestartet werden.</translation>
 <translation id="5618333180342767515">(dies kann einige Minuten dauern)</translation>
 <translation id="56197088284879152">Die Verbindung mit folgendem Remote-Gerät ist überlastet: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">Keine gespeicherten Passwörter</translation>
@@ -4021,7 +4011,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6362853299801475928">P&amp;roblem melden...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Kontakte hinzufügen</translation>
-<translation id="6366190659675876144">Standardschutz</translation>
 <translation id="636850387210749493">Unternehmensanmeldung</translation>
 <translation id="6370021412472292592">Manifest konnte nicht geladen werden.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Passwort ändern}other{Passwörter ändern}}</translation>
@@ -4447,7 +4436,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6965382102122355670">Ok</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Gerät</translation>
-<translation id="6966201992886493384">Websites können Cookies verwenden, um Ihnen das Surfen zu erleichtern; zum Beispiel, damit Sie angemeldet oder Artikel in Ihrem Einkaufswagen gespeichert bleiben</translation>
 <translation id="696780070563539690">Websites können Ihre Cookies nicht dazu verwenden, Ihre Browseraktivitäten auf anderen Websites aufzuzeichnen und damit zum Beispiel Werbung zu personalisieren</translation>
 <translation id="6968288415730398122">Geben Sie Ihr Passwort ein, um die Displaysperre zu konfigurieren</translation>
 <translation id="6970480684834282392">Starttyp</translation>
@@ -4863,7 +4851,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7507207699631365376"><ph name="BEGIN_LINK" />Datenschutzerklärung<ph name="END_LINK" /> dieses Dienstanbieters ansehen</translation>
 <translation id="7507930499305566459">Zertifikat für Statusantwortdienst</translation>
 <translation id="7508054832109420082">Zugriff auf Drucker geben</translation>
-<translation id="751120035300339">Websites können keine Cookies verwenden, um Ihnen das Surfen zu erleichtern; zum Beispiel, damit Sie angemeldet oder Artikel in Ihrem Einkaufswagen gespeichert bleiben</translation>
 <translation id="7513029293694390567">Sie werden mithilfe gespeicherter Anmeldedaten automatisch auf Websites angemeldet. Wenn diese Funktion deaktiviert ist, werden Sie bei jeder Anmeldung auf einer Website nach einer Bestätigung gefragt.</translation>
 <translation id="7514239104543605883">Auf mein Gerät kopieren</translation>
 <translation id="7514365320538308">Herunterladen</translation>
@@ -5560,7 +5547,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Zuerst fragen (empfohlen)</translation>
 <translation id="8417548266957501132">Elternpasswort</translation>
-<translation id="8417573335434189196">Damit sind Sie nicht vor schädlichen Websites, Downloads oder Erweiterungen geschützt. Wir raten von dieser Einstellung ab.</translation>
 <translation id="8418445294933751433">Al&amp;s Tab anzeigen</translation>
 <translation id="8419098111404128271">Suchergebnisse für "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">Willkommen bei Ihrem <ph name="DEVICE_TYPE" />!</translation>

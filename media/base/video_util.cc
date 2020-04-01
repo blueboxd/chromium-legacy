@@ -382,6 +382,10 @@ gfx::Size ScaleSizeToEncompassTarget(const gfx::Size& size,
   return ScaleSizeToTarget(size, target, false);
 }
 
+gfx::Size GetRectSizeFromOrigin(const gfx::Rect& rect) {
+  return gfx::Size(rect.right(), rect.bottom());
+}
+
 gfx::Size PadToMatchAspectRatio(const gfx::Size& size,
                                 const gfx::Size& target) {
   if (target.IsEmpty())

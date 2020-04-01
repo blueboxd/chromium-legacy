@@ -1064,7 +1064,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2408955596600435184">Ange din pinkod</translation>
 <translation id="241082044617551207">Okänt pluginprogram</translation>
 <translation id="2412593942846481727">Det finns en uppdatering</translation>
-<translation id="2413749388954403953">Ändra användargränssnittet för bokmärken</translation>
 <translation id="2417206894320497232">Plugin VM är klart att använda.</translation>
 <translation id="241727068219398187">Data krypterades med Google-lösenordet den
           <ph name="TIME" />. Betalningsuppgifter och adresser från Google Pay omfattas inte.</translation>
@@ -1158,7 +1157,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="252219247728877310">Komponenten har inte uppdaterats</translation>
 <translation id="2522791476825452208">Mycket nära</translation>
 <translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
-<translation id="2525250408503682495">Cryptohome för kioskappen kunde inte monteras.</translation>
 <translation id="2526277209479171883">Installera och fortsätt</translation>
 <translation id="2526590354069164005">Skrivbord</translation>
 <translation id="2526619973349913024">Sök efter uppdatering</translation>
@@ -1186,7 +1184,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kunde inte ansluta till <ph name="NETWORK_ID" />. Välj ett annat nätverk eller försök igen.</translation>
 <translation id="2553440850688409052">Dölj det här plugin-programmet</translation>
 <translation id="2554553592469060349">Den valda filen är för stor (största storlek: 3 MB).</translation>
-<translation id="2556092377360758201">Inget skydd (rekommenderas inte)</translation>
 <translation id="2557378327156922632">Filen har känsligt innehåll.</translation>
 <translation id="255747371423522804">Lägg till i befintlig grupp</translation>
 <translation id="2558896001721082624">Visa alltid tillgänglighetsalternativ i systemmenyn</translation>
@@ -2400,7 +2397,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4100853287411968461">Ny gräns för skärmtid</translation>
 <translation id="4104163789986725820">E&amp;xportera...</translation>
 <translation id="4107048419833779140">Identifiera och mata ut lagringsenheter</translation>
-<translation id="4108998448622696017">Identifierar och varnar dig om farliga händelser som inträffar.</translation>
 <translation id="4109135793348361820">Flytta fönster till <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Nedladdningen är klar: <ph name="FILE_NAME" />. Stega till nedladdningsfältet med Skift+F6.</translation>
 <translation id="4110895898888439383">Surfa på webben i högkontrastläge</translation>
@@ -2421,7 +2417,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="413121957363593859">Komponenter</translation>
 <translation id="4131410914670010031">Svartvitt</translation>
 <translation id="4133076602192971179">Öppna appen och ändra lösenordet</translation>
-<translation id="4133265950310064865">Förbättrat skydd</translation>
 <translation id="4136203100490971508">Nattljuset släcks automatiskt vid soluppgången</translation>
 <translation id="41365691917097717">Om du fortsätter aktiveras felsökning med ADB för Android-appar som du skapar och testar. Observera att den här åtgärden tillåter att Android-appar som inte har verifierats av Google installeras. Du måste återställa enheten till standardinställningarna för att inaktivera detta.</translation>
 <translation id="4138267921960073861">Visa användarnamn och foton på inloggningssidan</translation>
@@ -2771,7 +2766,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4660540330091848931">Ändrar storlek</translation>
 <translation id="4660838440047236328">hur ditt rum ser ut</translation>
 <translation id="4661407454952063730">Appdata är all data som har sparats i en app (utifrån utvecklarens inställningar), bland annat data som kontakter, meddelanden och foton.</translation>
-<translation id="4661931051827810091">Skickar anonymiserade webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll för att upptäcka och blockera nya hot mot alla användare på internet.</translation>
 <translation id="4662788913887017617">Dela det här bokmärket med din iPhone</translation>
 <translation id="4663373278480897665">Kamera är tillåten</translation>
 <translation id="4664482161435122549">Fel vid export av PKCS #12</translation>
@@ -2779,7 +2773,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4665446389743427678">All data som lagrats av <ph name="SITE" /> raderas.</translation>
 <translation id="4668721319092543482">Klicka för att aktivera <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Virtuell verklighet</translation>
-<translation id="4672879467403304774">Skyddar dig i Chrome och andra Google-appar när du är inloggad</translation>
 <translation id="46733273239502219">Offlinedata i installerade appar raderas också</translation>
 <translation id="4673442866648850031">Öppna verktyg för e-penna när e-pennan tas bort</translation>
 <translation id="4677772697204437347">GPU-minne</translation>
@@ -2856,7 +2849,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4798236378408895261">Bifoga <ph name="BEGIN_LINK" />Bluetooth-loggar<ph name="END_LINK" /> (internt för Google)</translation>
 <translation id="4801448226354548035">Dölj konton</translation>
 <translation id="4801512016965057443">Tillåt mobil dataroaming</translation>
-<translation id="480395942558135789">Webbplatser får förbättra surfupplevelsen med hjälp av cookies, till exempel genom att låta dig förbli inloggad eller spara vad du har lagt till i kundvagnen.</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805077164141082536">Vi rekommenderar att du säkerhetskopierar din nuvarande Linux-behållare innan du uppgraderar.</translation>
@@ -3101,7 +3093,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5127881134400491887">Hantera nätverksanslutningar</translation>
 <translation id="512903556749061217">ansluten</translation>
 <translation id="5133483819862530305">Solnedgång till soluppgång</translation>
-<translation id="5134113140145104829">Du kan när som helst återgå till startskärmen genom att svepa uppåt från skärmens nederkant.</translation>
 <translation id="5135085122826131075">Starta assistenten när du säger ”Ok Google”.</translation>
 <translation id="5135533361271311778">Det gick inte att skapa bokmärkesobjektet.</translation>
 <translation id="5137501176474113045">Ta bort det här objektet</translation>
@@ -3467,7 +3458,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5614190747811328134">Meddelande till användaren</translation>
 <translation id="5614553682702429503">Vill du spara lösenordet?</translation>
 <translation id="561698261642843490">Stäng Firefox</translation>
-<translation id="5618075537869101857">Det gick inte att starta kioskappen.</translation>
 <translation id="5618333180342767515">(det kan ta några minuter)</translation>
 <translation id="56197088284879152">Anslutningen till fjärrenheten <ph name="DEVICE_NAME" /> är överbelastad.</translation>
 <translation id="5620163320393916465">Inga sparade lösenord</translation>
@@ -4029,7 +4019,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6362853299801475928">&amp;Rapportera ett problem...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Lägg till familj och vänner</translation>
-<translation id="6366190659675876144">Standardskydd</translation>
 <translation id="636850387210749493">Företagsregistrering</translation>
 <translation id="6370021412472292592">Det gick inte att läsa in manifestet.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Byt lösenord}other{Byt lösenord}}</translation>
@@ -4455,7 +4444,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Enhet</translation>
-<translation id="6966201992886493384">Webbplatser får förbättra surfupplevelsen med hjälp av cookies, till exempel genom att låta dig förbli inloggad eller spara vad du har lagt till i kundvagnen</translation>
 <translation id="696780070563539690">Webbplatser får inte se din webbaktivitet på olika webbplatser med hjälp av cookies och till exempel anpassa annonser.</translation>
 <translation id="6968288415730398122">Ange lösenordet om du vill konfigurera skärmlås</translation>
 <translation id="6970480684834282392">Starttyp</translation>
@@ -4871,7 +4859,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7507207699631365376">Läs leverantörens <ph name="BEGIN_LINK" />sekretesspolicy<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">Status för svarscertifikat</translation>
 <translation id="7508054832109420082">Ge åtkomst till skrivare</translation>
-<translation id="751120035300339">Webbplatser får inte förbättra surfupplevelsen med hjälp av cookies, till exempel genom att låta dig förbli inloggad eller spara vad du har lagt till i kundvagnen</translation>
 <translation id="7513029293694390567">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
 <translation id="7514239104543605883">Kopiera till din enhet</translation>
 <translation id="7514365320538308">Ladda ned</translation>
@@ -5571,7 +5558,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="8417548266957501132">Förälderns lösenord</translation>
-<translation id="8417573335434189196">Skyddar inte mot farliga webbplatser, nedladdningar eller tillägg. Chrome rekommenderar inte denna inställning.</translation>
 <translation id="8418445294933751433">&amp;Visa som flik</translation>
 <translation id="8419098111404128271">Sökresultat för ”<ph name="SEARCH_TEXT" />”</translation>
 <translation id="8419368276599091549">Välkommen till <ph name="DEVICE_TYPE" />!</translation>

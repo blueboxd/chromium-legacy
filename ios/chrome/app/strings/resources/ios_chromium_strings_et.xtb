@@ -3,7 +3,6 @@
 <translationbundle lang="et">
 <translation id="102360288709523007">Aidake muuta Chromium paremaks, saates Google'ile kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="1185134272377778587">Teave Chromiumi kohta</translation>
-<translation id="1289966288285062467">Chromiumi privaatsusteatis</translation>
 <translation id="1472013873724362412">Teie konto ei tööta Chromiumis. Võtke ühendust domeeni administraatoriga või kasutage sisselogimiseks tavalist Google'i kontot.</translation>
 <translation id="1507010443238049608">Aidake täiustada Chromiumi funktsioone ja toimivust</translation>
 <translation id="1617663976202781617">Chromiumi andmete sünkroonimine</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Kas logida Chromiumist välja?</translation>
 <translation id="6424492062988593837">Chromium muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="6604711459180487467">Täiustage Chromiumis oma kasutuskogemust asukohateabe abil.</translation>
-<translation id="6626296268883197964">Seda rakendust kasutades nõustute Chromiumi <ph name="BEGIN_LINK_TOS" />teenusetingimuste<ph name="END_LINK_TOS" /> ja <ph name="BEGIN_LINK_PRIVACY" />privaatsusteatisega<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="7099326575020694068">Chromium ei saa poolitatud vaate režiimis kaamerat kasutada</translation>
 <translation id="7208566199746267865">Chromium säästab aega, tuues teie kontod veebi. Kontosid saate lisada või eemaldada menüüs Seaded.</translation>
 <translation id="7269362888766543920">Mõned pistikprogrammid põhjustavad Chromiumi kokkujooksmise. Proovige need desinstallida.</translation>

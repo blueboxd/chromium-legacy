@@ -3,7 +3,6 @@
 <translationbundle lang="vi">
 <translation id="102360288709523007">Cải thiện Chromium bằng cách gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="1185134272377778587">Giới thiệu về Chromium</translation>
-<translation id="1289966288285062467">Thông báo bảo mật của Chromium</translation>
 <translation id="1472013873724362412">Tài khoản của bạn không hoạt động trên Chromium. Vui lòng liên hệ với quản trị viên miền của bạn hoặc sử dụng Tài khoản Google thông thường để đăng nhập.</translation>
 <translation id="1507010443238049608">Giúp cải thiện hiệu suất và các tính năng của Chromium</translation>
 <translation id="1617663976202781617">Dữ liệu từ tính năng đồng bộ hóa của Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Đăng xuất khỏi Chromium?</translation>
 <translation id="6424492062988593837">Chromium được cải tiến hơn! Đã có phiên bản mới.</translation>
 <translation id="6604711459180487467">Có được trải nghiệm tốt hơn trong Chromium dựa trên vị trí của bạn.</translation>
-<translation id="6626296268883197964">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK_TOS" />Điều khoản dịch vụ<ph name="END_LINK_TOS" /> và <ph name="BEGIN_LINK_PRIVACY" />Thông báo quyền riêng tư<ph name="END_LINK_PRIVACY" /> của Chromium.</translation>
 <translation id="7099326575020694068">Chromium không thể sử dụng máy ảnh của bạn ở Chế độ xem phân tách</translation>
 <translation id="7208566199746267865">Chromium giúp bạn tiết kiệm thời gian bằng cách đưa tài khoản của bạn lên web. Bạn có thể thêm hoặc xóa tài khoản trong Cài đặt.</translation>
 <translation id="7269362888766543920">Một số tiện ích bổ sung khiến Chromium trục trặc. Hãy thử gỡ cài đặt chúng.</translation>

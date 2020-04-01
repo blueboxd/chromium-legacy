@@ -149,6 +149,7 @@ copy("chrome_camera_app_js_lib") {
 
 copy("chrome_camera_app_js_models") {
   sources = [
+    "src/js/models/async_writer.js",
     "src/js/models/filenamer.js",
     "src/js/models/filesystem.js",
     "src/js/models/result_saver.js",

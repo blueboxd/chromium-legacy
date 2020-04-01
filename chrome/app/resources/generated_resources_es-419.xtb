@@ -1061,7 +1061,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2408955596600435184">Ingresa tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
-<translation id="2413749388954403953">Cambiar la interfaz de usuario de los favoritos</translation>
 <translation id="2417206894320497232">Plugin VM está listo para usarse.</translation>
 <translation id="241727068219398187">Los datos se encriptaron con tu contraseña de Google a partir del
           <ph name="TIME" />. No se incluyen formas de pago ni direcciones de Google Pay.</translation>
@@ -1155,7 +1154,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="252219247728877310">Componente no actualizado</translation>
 <translation id="2522791476825452208">Muy cerca</translation>
 <translation id="2523184218357549926">Envía a Google las URL de las páginas que visitas</translation>
-<translation id="2525250408503682495">¡Kriptonita! No se pudo activar Cryptohome para la aplicación del kiosco.</translation>
 <translation id="2526277209479171883">Instalar y continuar</translation>
 <translation id="2526590354069164005">Escritorio</translation>
 <translation id="2526619973349913024">Verificar actualización</translation>
@@ -1183,7 +1181,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no se pudo conectar a <ph name="NETWORK_ID" />. Selecciona otra red o inténtalo de nuevo.</translation>
 <translation id="2553440850688409052">Ocultar este complemento</translation>
 <translation id="2554553592469060349">El archivo seleccionado es demasiado grande (tamaño máximo: 3 MB).</translation>
-<translation id="2556092377360758201">Sin protección (opción no recomendada)</translation>
 <translation id="2557378327156922632">El archivo incluye contenido sensible.</translation>
 <translation id="255747371423522804">Agregar al grupo existente</translation>
 <translation id="2558896001721082624">Siempre mostrar opciones de accesibilidad en el menú del sistema</translation>
@@ -2394,7 +2391,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4100853287411968461">Nuevo límite en el horario de uso</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="4107048419833779140">Identificar y expulsar los dispositivos de almacenamiento</translation>
-<translation id="4108998448622696017">Detecta y te advierte sobre eventos peligrosos cuando ocurren.</translation>
 <translation id="4109135793348361820">Mover ventana a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Se completó la descarga: <ph name="FILE_NAME" />. Presiona mayúscula + F6 para ir al área de la barra de descargas.</translation>
 <translation id="4110895898888439383">Navegar en la Web en el modo de contraste alto</translation>
@@ -2415,7 +2411,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="413121957363593859">Componentes</translation>
 <translation id="4131410914670010031">Blanco y negro</translation>
 <translation id="4133076602192971179">Abrir la app para cambiar la contraseña</translation>
-<translation id="4133265950310064865">Protección mejorada</translation>
 <translation id="4136203100490971508">La Luz nocturna se desactivará automáticamente al amanecer</translation>
 <translation id="41365691917097717">Si continúas, se habilitará la depuración de ADB para crear y probar apps para Android. Ten en cuenta que esta acción permite la instalación de apps para Android que Google no verificó. Si quieres inhabilitar ADB, deberás restablecer la configuración de fábrica.</translation>
 <translation id="4138267921960073861">Mostrar nombres de usuarios y fotos en la pantalla de inicio</translation>
@@ -2765,7 +2760,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4660540330091848931">Cambiando el tamaño</translation>
 <translation id="4660838440047236328">la disposición de tu habitación</translation>
 <translation id="4661407454952063730">Los datos de las apps abarcan cualquier información guardada por una app (según la configuración del desarrollador), incluidos contactos, mensajes y fotos.</translation>
-<translation id="4661931051827810091">Envía URL anónimas de algunas páginas que visitas, información limitada del sistema y parte del contenido de las páginas para ayudar a detectar y bloquear nuevas amenazas contra todos los usuarios en la Web.</translation>
 <translation id="4662788913887017617">Compartir este favorito con tu iPhone</translation>
 <translation id="4663373278480897665">Cámara permitida</translation>
 <translation id="4664482161435122549">Error en la exportación de PKCS #12</translation>
@@ -2773,7 +2767,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4665446389743427678">Se borrarán todos los datos que almacene <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Hacer clic para habilitar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Realidad virtual</translation>
-<translation id="4672879467403304774">Te protege en Chrome y otras apps de Google cuando accedes a tu cuenta.</translation>
 <translation id="46733273239502219">También se borrarán los datos sin conexión de las apps instaladas</translation>
 <translation id="4673442866648850031">Abrir las herramientas de pluma stylus al quitarla</translation>
 <translation id="4677772697204437347">Memoria de la GPU</translation>
@@ -2850,7 +2843,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4798236378408895261">Adjuntar <ph name="BEGIN_LINK" />registros de Bluetooth<ph name="END_LINK" /> (para uso interno de Google)</translation>
 <translation id="4801448226354548035">Ocultar cuentas</translation>
 <translation id="4801512016965057443">Permitir itinerancia de datos móviles</translation>
-<translation id="480395942558135789">Los sitios pueden usar cookies para mejorar la experiencia de navegación, por ejemplo, para mantener el acceso o recordar elementos del carrito de compras.</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Aguacate</translation>
 <translation id="4805077164141082536">Te recomendamos crear una copia de seguridad de tu contenedor actual de Linux antes de actualizarlo.</translation>
@@ -3094,7 +3086,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5127881134400491887">Administrar conexiones de red</translation>
 <translation id="512903556749061217">conectado</translation>
 <translation id="5133483819862530305">Del atardecer al amanecer</translation>
-<translation id="5134113140145104829">Si quieres acceder a la pantalla de inicio en cualquier momento, desliza el dedo hacia arriba desde la parte inferior.</translation>
 <translation id="5135085122826131075">Di "Ok Google" para acceder al Asistente.</translation>
 <translation id="5135533361271311778">No se pudo crear el elemento de marcador.</translation>
 <translation id="5137501176474113045">Borrar este elemento</translation>
@@ -3460,7 +3451,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5614190747811328134">Aviso de usuario</translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="561698261642843490">Cerrar Firefox</translation>
-<translation id="5618075537869101857">No se pudo iniciar la aplicación del kiosco.</translation>
 <translation id="5618333180342767515">(esto puede llevar algunos minutos)</translation>
 <translation id="56197088284879152">La conexión está congestionada en un dispositivo remoto: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">No hay contraseñas guardadas</translation>
@@ -4022,7 +4012,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6362853299801475928">&amp;Cómo informar de un problema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Agregar familiares y amigos</translation>
-<translation id="6366190659675876144">Protección estándar</translation>
 <translation id="636850387210749493">Registro de empresa</translation>
 <translation id="6370021412472292592">No se pudo cargar el manifiesto.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Cambiar contraseña}other{Cambiar contraseñas}}</translation>
@@ -4448,7 +4437,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6965648386495488594">Puerto</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
-<translation id="6966201992886493384">Los sitios pueden usar cookies para mejorar la experiencia de navegación, por ejemplo, para mantener el acceso a ellos o recordar elementos del carrito de compras.</translation>
 <translation id="696780070563539690">Los sitios no pueden usar tus cookies para ver la actividad de navegación en diferentes sitios, por ejemplo, con el fin de personalizar anuncios</translation>
 <translation id="6968288415730398122">Ingresa tu contraseña para configurar el bloqueo de pantalla</translation>
 <translation id="6970480684834282392">Tipo de inicio</translation>
@@ -4864,7 +4852,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7507207699631365376">Consulta la <ph name="BEGIN_LINK" />Política de Privacidad<ph name="END_LINK" /> de este proveedor</translation>
 <translation id="7507930499305566459">Certificado del respondedor de estado</translation>
 <translation id="7508054832109420082">Otorgar acceso a las impresoras</translation>
-<translation id="751120035300339">Los sitios no pueden usar cookies para mejorar la experiencia de navegación, por ejemplo, para mantener el acceso a ellos o recordar elementos del carrito de compras.</translation>
 <translation id="7513029293694390567">Accede automáticamente a los sitios web con las credenciales almacenadas. Si la función está inhabilitada, deberás confirmar siempre tu identidad para acceder a un sitio web.</translation>
 <translation id="7514239104543605883">Copiar a tu dispositivo</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -5562,7 +5549,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Preguntar primero (recomendado)</translation>
 <translation id="8417548266957501132">Contraseña del padre o madre</translation>
-<translation id="8417573335434189196">No te protege contra descargas, extensiones ni sitios web peligrosos. Chrome no recomienda usar esta opción de configuración.</translation>
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
 <translation id="8419098111404128271">Resultados de la búsqueda para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">Te damos la bienvenida a tu <ph name="DEVICE_TYPE" /></translation>

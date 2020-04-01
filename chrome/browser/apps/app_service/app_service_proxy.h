@@ -106,6 +106,17 @@ class AppServiceProxy : public KeyedService,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id);
 
+  // Launches the app for the given |app_id| with files from |file_paths|.
+  // |event_flags| provides additional context about the action which launches
+  // the app (e.g. a middle click indicating opening a background tab).
+  // |launch_source| is the possible app launch sources, e.g. from Shelf, from
+  // the search box, etc.
+  void LaunchAppWithFiles(const std::string& app_id,
+                          apps::mojom::LaunchContainer container,
+                          int32_t event_flags,
+                          apps::mojom::LaunchSource launch_source,
+                          apps::mojom::FilePathsPtr file_paths);
+
   // Launches an app for the given |app_id|, passing |intent| to the app.
   // |launch_source| is the possible app launch sources. |display_id| is the id
   // of the display from which the app is launched.

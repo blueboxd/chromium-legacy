@@ -3,7 +3,6 @@
 <translationbundle lang="es-419">
 <translation id="102360288709523007">Envía estadísticas de uso e informes de fallos a Google para mejorar Chromium.</translation>
 <translation id="1185134272377778587">Acerca de Chromium</translation>
-<translation id="1289966288285062467">Aviso de privacidad de Chromium</translation>
 <translation id="1472013873724362412">Tu cuenta no funciona en Chromium. Comunícate con tu administrador de dominio o utiliza una cuenta común de Google para acceder.</translation>
 <translation id="1507010443238049608">Ayudar a mejorar las funciones y el rendimiento de Chromium</translation>
 <translation id="1617663976202781617">Datos de la sincronización de Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">¿Salir de Chromium?</translation>
 <translation id="6424492062988593837">¡Chromium mejoró! Hay una nueva versión disponible.</translation>
 <translation id="6604711459180487467">Disfruta de una mejor experiencia en Chromium según tu ubicación.</translation>
-<translation id="6626296268883197964">Al usar esta app, aceptas las <ph name="BEGIN_LINK_TOS" />Condiciones del Servicio<ph name="END_LINK_TOS" /> y el <ph name="BEGIN_LINK_PRIVACY" />Aviso de privacidad<ph name="END_LINK_PRIVACY" /> de Chromium.</translation>
 <translation id="7099326575020694068">Chromium no puede usar tu cámara en el modo de vista dividida</translation>
 <translation id="7208566199746267865">Chromium lleva tus cuentas a la Web para ahorrarte tiempo. Puedes agregar o quitar cuentas en la configuración.</translation>
 <translation id="7269362888766543920">Algunos complementos causan fallos en Chromium. Intenta desinstalarlos.</translation>

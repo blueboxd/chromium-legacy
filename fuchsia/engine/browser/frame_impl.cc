@@ -34,7 +34,6 @@
 #include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/event_filter.h"
 #include "fuchsia/engine/browser/frame_layout_manager.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -518,7 +517,6 @@ void FrameImpl::DestroyWindowTreeHost() {
 
   aura::client::SetFocusClient(root_window(), nullptr);
   wm::SetActivationClient(root_window(), nullptr);
-  root_window()->RemovePreTargetHandler(&event_filter_);
   root_window()->RemovePreTargetHandler(focus_controller_.get());
   web_contents_->GetNativeView()->Hide();
   window_tree_host_->Hide();
@@ -743,9 +741,8 @@ void FrameImpl::SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) {
   log_level_ = ConsoleLogLevelToLoggingSeverity(level);
 }
 
-void FrameImpl::ConfigureInputTypes(fuchsia::web::InputTypes types,
-                                    fuchsia::web::AllowInputState allow) {
-  event_filter_.ConfigureInputTypes(types, allow);
+void FrameImpl::SetEnableInput(bool enable_input) {
+  discarding_event_filter_.set_discard_events(!enable_input);
 }
 
 void FrameImpl::SetPopupFrameCreationListener(
@@ -807,7 +804,9 @@ void FrameImpl::SetWindowTreeHost(
 
   window_tree_host_ = std::move(window_tree_host);
   window_tree_host_->InitHost();
-  root_window()->AddPreTargetHandler(&event_filter_);
+
+  window_tree_host_->window()->GetHost()->AddEventRewriter(
+      &discarding_event_filter_);
 
   // Add hooks which automatically set the focus state when input events are
   // received.

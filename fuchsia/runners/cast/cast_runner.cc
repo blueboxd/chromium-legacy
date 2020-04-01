@@ -158,8 +158,8 @@ void CastRunner::StartComponent(
   // Request the configuration for this application from the app_config_manager.
   // This will return the configuration for the application, as well as the
   // agent that should handle this application.
-  pending_component->agent_manager->ConnectToAgentService(
-      kAgentComponentUrl, pending_component->app_config_manager.NewRequest());
+  pending_component->startup_context->svc()->Connect(
+      pending_component->app_config_manager.NewRequest());
   pending_component->app_config_manager.set_error_handler(
       [this, pending_component = pending_component.get()](zx_status_t status) {
         ZX_LOG(ERROR, status) << "ApplicationConfigManager disconnected.";

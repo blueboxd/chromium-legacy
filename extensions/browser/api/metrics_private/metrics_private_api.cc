@@ -12,9 +12,14 @@
 
 #include "base/hash/hash.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/strcat.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/metrics_private/metrics_private_delegate.h"
 #include "extensions/common/api/metrics_private.h"
@@ -41,6 +46,11 @@ namespace {
 const size_t kMaxBuckets = 10000;  // We don't ever want more than these many
                                    // buckets; there is no real need for them
                                    // and would cause crazy memory usage
+
+// Amount of time to give other processes to report their histograms.
+constexpr base::TimeDelta kHistogramsRefreshTimeout =
+    base::TimeDelta::FromSeconds(10);
+
 }  // namespace
 
 ExtensionFunction::ResponseAction
@@ -241,6 +251,61 @@ ExtensionFunction::ResponseAction MetricsPrivateRecordLongTimeFunction::Run() {
   RecordValue(params->metric_name, base::HISTOGRAM, 1, kOneHourMs, 50,
               params->value);
   return RespondNow(NoArguments());
+}
+
+MetricsPrivateGetHistogramFunction::~MetricsPrivateGetHistogramFunction() =
+    default;
+
+ExtensionFunction::ResponseAction MetricsPrivateGetHistogramFunction::Run() {
+  std::unique_ptr<api::metrics_private::GetHistogram::Params> params(
+      api::metrics_private::GetHistogram::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // Collect histogram data from other processes before responding. Otherwise,
+  // we'd report stale data for histograms that are e.g. recorded by renderers.
+  content::FetchHistogramsAsynchronously(
+      base::ThreadTaskRunnerHandle::Get(),
+      base::BindOnce(
+          &MetricsPrivateGetHistogramFunction::RespondOnHistogramsFetched, this,
+          params->name),
+      kHistogramsRefreshTimeout);
+  return RespondLater();
+}
+
+void MetricsPrivateGetHistogramFunction::RespondOnHistogramsFetched(
+    const std::string& name) {
+  // Incorporate the data collected by content::FetchHistogramsAsynchronously().
+  base::StatisticsRecorder::ImportProvidedHistograms();
+  Respond(GetHistogram(name));
+}
+
+ExtensionFunction::ResponseValue
+MetricsPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
+  const base::HistogramBase* histogram =
+      base::StatisticsRecorder::FindHistogram(name);
+  if (!histogram)
+    return Error(base::StrCat({"Histogram ", name, " not found"}));
+
+  std::unique_ptr<base::HistogramSamples> samples =
+      histogram->SnapshotSamples();
+  api::metrics_private::Histogram result;
+  result.sum = samples->sum();
+
+  for (std::unique_ptr<base::SampleCountIterator> it = samples->Iterator();
+       !it->Done(); it->Next()) {
+    base::HistogramBase::Sample min = 0;
+    int64_t max = 0;
+    base::HistogramBase::Count count = 0;
+    it->Get(&min, &max, &count);
+
+    api::metrics_private::HistogramBucket bucket;
+    bucket.min = min;
+    bucket.max = max;
+    bucket.count = count;
+    result.buckets.push_back(std::move(bucket));
+  }
+
+  return OneArgument(result.ToValue());
 }
 
 }  // namespace extensions

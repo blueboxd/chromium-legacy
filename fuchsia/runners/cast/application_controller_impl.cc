@@ -26,8 +26,5 @@ ApplicationControllerImpl::ApplicationControllerImpl(
 ApplicationControllerImpl::~ApplicationControllerImpl() = default;
 
 void ApplicationControllerImpl::SetTouchInputEnabled(bool enable) {
-  frame_->ConfigureInputTypes(fuchsia::web::InputTypes::GESTURE_TAP |
-                                  fuchsia::web::InputTypes::GESTURE_DRAG,
-                              (enable ? fuchsia::web::AllowInputState::ALLOW
-                                      : fuchsia::web::AllowInputState::DENY));
+  frame_->SetEnableInput(enable);
 }

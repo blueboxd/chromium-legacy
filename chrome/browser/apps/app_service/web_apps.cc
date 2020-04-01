@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -64,26 +65,6 @@ const ContentSettingsType kSupportedPermissionTypes[] = {
     ContentSettingsType::GEOLOCATION,
     ContentSettingsType::NOTIFICATIONS,
 };
-
-apps::AppLaunchParams CreateAppLaunchParamsForIntent(
-    const std::string& app_id,
-    const apps::mojom::IntentPtr& intent) {
-  apps::AppLaunchParams params(
-      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceNone);
-
-  if (intent->scheme.has_value() && intent->host.has_value() &&
-      intent->path.has_value()) {
-    params.source = apps::mojom::AppLaunchSource::kSourceIntentUrl;
-    params.override_url =
-        GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
-             intent->host.value() + intent->path.value());
-    DCHECK(params.override_url.is_valid());
-  }
-
-  return params;
-}
 
 apps::mojom::InstallSource GetHighestPriorityInstallSource(
     const web_app::WebApp* web_app) {
@@ -241,6 +222,22 @@ void WebApps::Launch(const std::string& app_id,
       apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id,
       /*fallback_container=*/
       web_app::ConvertDisplayModeToAppLaunchContainer(display_mode));
+
+  // The app will be created for the currently active profile.
+  web_app_launch_manager_->OpenApplication(params);
+}
+
+void WebApps::LaunchAppWithFiles(const std::string& app_id,
+                                 apps::mojom::LaunchContainer container,
+                                 int32_t event_flags,
+                                 apps::mojom::LaunchSource launch_source,
+                                 apps::mojom::FilePathsPtr file_paths) {
+  apps::AppLaunchParams params(
+      app_id, container, ui::DispositionFromEventFlags(event_flags),
+      GetAppLaunchSource(launch_source), display::kDefaultDisplayId);
+  for (const auto& file_path : file_paths->file_paths) {
+    params.launch_files.push_back(file_path);
+  }
 
   // The app will be created for the currently active profile.
   web_app_launch_manager_->OpenApplication(params);

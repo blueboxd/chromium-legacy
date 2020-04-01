@@ -3768,7 +3768,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Deze instelling beheert de presentatie van de welkomstpagina's waar gebruikers kunnen inloggen bij <ph name="PRODUCT_NAME" />, de browser kunnen instellen als hun standaardbrowser of anderszins informatie krijgen over productfuncties.</translation>
 <translation id="6766216162565713893">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een Bluetooth-apparaat in de buurt</translation>
 <translation id="6770454900105963262">Informatie over actieve kiosk-sessies melden</translation>
-<translation id="6772045451150098845">Met dit beleid wordt bepaald of gebruikers die bij 'Geavanceerde beveiliging' zijn ingeschreven, extra functies ontvangen. Voor sommige van deze functies kunnen gegevens worden gedeeld met Google (gebruikers van 'Geavanceerde beveiliging' kunnen bijvoorbeeld hun downloads naar Google sturen om ze te scannen op malware). Als dit beleid is ingesteld op True of niet is ingesteld, ontvangen ingeschreven gebruikers extra functies. Als dit beleid is ingesteld op False, ontvangen gebruikers van 'Geavanceerde beveiliging' alleen de standaardfuncties voor consumenten.</translation>
 <translation id="6786747875388722282">Extensies</translation>
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6795485990775913659">Alleen afdrukken toestaan zonder pincode</translation>

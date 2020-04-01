@@ -169,11 +169,13 @@ public class TabListCoordinator implements Destroyable {
             }, TabStripViewBinder::bind);
         } else if (mMode == TabListMode.LIST) {
             mAdapter.registerType(UiType.CLOSABLE, parent -> {
-                ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
-                        R.layout.closable_tab_list_card_item, parentView, false);
+                ViewLookupCachingFrameLayout group =
+                        (ViewLookupCachingFrameLayout) LayoutInflater.from(context).inflate(
+                                R.layout.closable_tab_list_card_item, parentView, false);
                 group.setClickable(true);
 
-                ImageView actionButton = (ImageView) group.findViewById(R.id.action_button);
+                ImageView actionButton = (ImageView) group.fastFindViewById(R.id.end_button);
+                actionButton.setVisibility(View.VISIBLE);
                 Resources resources = group.getResources();
                 int closeButtonSize =
                         (int) resources.getDimension(R.dimen.tab_grid_close_button_size);
@@ -188,6 +190,7 @@ public class TabListCoordinator implements Destroyable {
                 ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.selectable_tab_list_card_item, parentView, false);
                 group.setClickable(true);
+
                 return group;
             }, TabListViewBinder::bindSelectableListTab);
         } else {

@@ -318,6 +318,7 @@ source_set("wayland_unittests") {
     "//ui/events/ozone/layout",
     "//ui/gfx/linux:drm",
     "//ui/gfx/linux:gbm",
+    "//ui/gfx/linux:test_support",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
     "//ui/platform_window/platform_window_handler",

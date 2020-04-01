@@ -3,7 +3,6 @@
 <translationbundle lang="mn">
 <translation id="102360288709523007">Хэрэглээний статистик мэдээлэл, алдааны тайланг Google-д автоматаар илгээж, Google Chrome-г сайжруулахад тусална уу.</translation>
 <translation id="1185134272377778587">Chromium-ийн тухай</translation>
-<translation id="1289966288285062467">Chromium-н нууцлалын мэдэгдэл</translation>
 <translation id="1472013873724362412">Таны бүртгэл Chromium-д ажилладаггүй. Нэвтрэхийн тулд та домайн админдаа хандах, эсвэл Google Бүртгэлийн энгийн хувилбарыг ашиглах боломжтой.</translation>
 <translation id="1507010443238049608">Chromium-н онцлог болон гүйцэтгэлийг сайжруулахад туслах</translation>
 <translation id="1617663976202781617">Chromium синкийн өгөгдөл</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Chromium-с гарах уу?</translation>
 <translation id="6424492062988593837">Chromium-ыг сайжрууллаа! Одоо шинэ хувилбарыг ашиглах боломжтой.</translation>
 <translation id="6604711459180487467">Өөрийн байршилд тулгуурлан Chromium-н хэрэглээгээ сайжруулна уу.</translation>
-<translation id="6626296268883197964">Энэ аппыг ашигласнаар та Chromium-н <ph name="BEGIN_LINK_TOS" />Үйлчилгээний нөхцөл<ph name="END_LINK_TOS" /> болон <ph name="BEGIN_LINK_PRIVACY" />Нууцлалын мэдэгдлийг<ph name="END_LINK_PRIVACY" /> зөвшөөрч байна.</translation>
 <translation id="7099326575020694068">Chromium таны камерыг хувааж харах горимд ашиглах боломжгүй</translation>
 <translation id="7208566199746267865">Chromium таны бүртгэлийг вэбэд оруулснаар таны цагийг хэмнэдэг. Та тохиргоо хэсэгт бүртгэл нэмэх, эсвэл устгах боломжтой.</translation>
 <translation id="7269362888766543920">Зарим нэмэлт онцлог нь Chromium-г эвдрэхэд хүргэдэг. Тэдгээрийг устгана уу.</translation>

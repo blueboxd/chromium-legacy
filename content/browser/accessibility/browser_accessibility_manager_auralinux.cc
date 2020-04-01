@@ -162,18 +162,6 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::EXPANDED:
       FireExpandedEvent(node, true);
       break;
-    case ui::AXEventGenerator::Event::IGNORED_CHANGED:
-      // Since AuraLinux needs to send the children-changed::add event with the
-      // index in parent, the event must be fired after the node is unignored.
-      // children-changed:remove is handled in |OnStateChanged|
-      if (!node->IsIgnored()) {
-        if (node->IsNative() && node->GetParent()) {
-          g_signal_emit_by_name(node->GetParent(), "children-changed::add",
-                                node->GetIndexInParent(),
-                                node->GetNativeViewAccessible());
-        }
-      }
-      break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireLoadingEvent(node, false);
       FireEvent(node, ax::mojom::Event::kLoadComplete);

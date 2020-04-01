@@ -20,6 +20,7 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
+#include "ui/gfx/linux/test/mock_gbm_device.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
@@ -28,7 +29,6 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
 
 namespace {
 

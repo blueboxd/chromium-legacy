@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/linux/gbm_buffer.h"
+#include "ui/gfx/linux/test/mock_gbm_device.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
@@ -22,7 +23,6 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
 
 namespace {
 

@@ -27,6 +27,30 @@ namespace errors = manifest_errors;
 
 namespace {
 
+bool ReadLaunchDimension(const extensions::Manifest* manifest,
+                         const char* key,
+                         int* target,
+                         bool is_valid_container,
+                         base::string16* error) {
+  const base::Value* temp = NULL;
+  if (manifest->Get(key, &temp)) {
+    if (!is_valid_container) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidLaunchValueContainer,
+          key);
+      return false;
+    }
+    if (!temp->GetAsInteger(target) || *target < 0) {
+      *target = 0;
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidLaunchValue,
+          key);
+      return false;
+    }
+  }
+  return true;
+}
+
 bool HasValidComponentBookmarkAppURL(const GURL& url) {
   // For component Bookmark Apps we additionally accept chrome:// and
   // chrome-untrusted://.
@@ -260,6 +284,30 @@ bool AppLaunchInfo::LoadLaunchContainer(Extension* extension,
     *error = base::ASCIIToUTF16(errors::kInvalidLaunchContainer);
     return false;
   }
+
+  // TODO(manucornet): Remove this special behavior now that panels are
+  // deprecated.
+  bool can_specify_initial_size =
+      launch_container_ == LaunchContainer::kLaunchContainerPanelDeprecated;
+
+  // Validate the container width if present.
+  if (!ReadLaunchDimension(extension->manifest(),
+                           keys::kLaunchWidth,
+                           &launch_width_,
+                           can_specify_initial_size,
+                           error)) {
+    return false;
+  }
+
+  // Validate container height if present.
+  if (!ReadLaunchDimension(extension->manifest(),
+                           keys::kLaunchHeight,
+                           &launch_height_,
+                           can_specify_initial_size,
+                           error)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -308,7 +356,8 @@ bool AppLaunchManifestHandler::AlwaysParseForType(Manifest::Type type) const {
 
 base::span<const char* const> AppLaunchManifestHandler::Keys() const {
   static constexpr const char* kKeys[] = {
-      keys::kLaunchLocalPath, keys::kLaunchWebURL, keys::kLaunchContainer};
+      keys::kLaunchLocalPath, keys::kLaunchWebURL, keys::kLaunchContainer,
+      keys::kLaunchHeight, keys::kLaunchWidth};
   return kKeys;
 }
 

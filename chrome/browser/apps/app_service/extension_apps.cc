@@ -22,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
@@ -134,26 +135,6 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromMenu:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
-}
-
-apps::AppLaunchParams CreateAppLaunchParamsForIntent(
-    const std::string& app_id,
-    const apps::mojom::IntentPtr& intent) {
-  apps::AppLaunchParams params(
-      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceNone);
-
-  if (intent->scheme.has_value() && intent->host.has_value() &&
-      intent->path.has_value()) {
-    params.source = apps::mojom::AppLaunchSource::kSourceIntentUrl;
-    params.override_url =
-        GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
-             intent->host.value() + intent->path.value());
-    DCHECK(params.override_url.is_valid());
-  }
-
-  return params;
 }
 
 // Get the LaunchId for a given |app_window|. Set launch_id default value to an
@@ -472,6 +453,20 @@ void ExtensionApps::Launch(const std::string& app_id,
         extension_url, extension_urls::kWebstoreSourceField, source_value);
   }
 
+  LaunchImpl(params);
+}
+
+void ExtensionApps::LaunchAppWithFiles(const std::string& app_id,
+                                       apps::mojom::LaunchContainer container,
+                                       int32_t event_flags,
+                                       apps::mojom::LaunchSource launch_source,
+                                       apps::mojom::FilePathsPtr file_paths) {
+  AppLaunchParams params(
+      app_id, container, ui::DispositionFromEventFlags(event_flags),
+      GetAppLaunchSource(launch_source), display::kDefaultDisplayId);
+  for (const auto& file_path : file_paths->file_paths) {
+    params.launch_files.push_back(file_path);
+  }
   LaunchImpl(params);
 }
 

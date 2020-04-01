@@ -1967,9 +1967,11 @@
             ],
             "experiments": [
                 {
-                    "name": "DisabledImplDisabledMain",
+                    "name": "EnabledImplDisabledMain",
+                    "enable_features": [
+                        "ImplLatencyRecovery"
+                    ],
                     "disable_features": [
-                        "ImplLatencyRecovery",
                         "MainLatencyRecovery"
                     ]
                 }

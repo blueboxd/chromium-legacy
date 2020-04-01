@@ -8,6 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "ui/base/window_open_disposition.h"
+
 class Browser;
 class Profile;
 
@@ -37,6 +41,20 @@ std::vector<base::FilePath> GetLaunchFilesFromCommandLine(
 // When a command line launch has an unknown app id, we open a browser with only
 // the new tab page.
 Browser* CreateBrowserWithNewTabPage(Profile* profile);
+
+apps::AppLaunchParams CreateAppLaunchParamsForIntent(
+    const std::string& app_id,
+    const apps::mojom::IntentPtr& intent);
+
+apps::mojom::AppLaunchSource GetAppLaunchSource(
+    apps::mojom::LaunchSource launch_source);
+
+// Returns event flag for |container| and |disposition|. If |prefer_container|
+// is true, |disposition| will be ignored. Otherwise, |container| is ignored and
+// an event flag based on |disposition| will be returned.
+int GetEventFlags(apps::mojom::LaunchContainer container,
+                  WindowOpenDisposition disposition,
+                  bool prefer_container);
 
 }  // namespace apps
 

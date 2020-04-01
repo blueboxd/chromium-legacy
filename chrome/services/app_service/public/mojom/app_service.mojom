@@ -5,6 +5,7 @@
 module apps.mojom;
 
 import "chrome/services/app_service/public/mojom/types.mojom";
+import "components/services/app_service/public/mojom/types.mojom";
 
 // An intermediary between M app consumers (e.g. app launcher UI, intent
 // pickers) and N app providers (also known as app platforms, e.g. Android
@@ -38,6 +39,15 @@ interface AppService {
       int32 event_flags,
       LaunchSource launch_source,
       int64 display_id);
+
+  // Launches an app with |app_id| and |file_path|
+  LaunchAppWithFiles(
+      AppType app_type,
+      string app_id,
+      LaunchContainer container,
+      int32 event_flags,
+      LaunchSource launch_source,
+      FilePaths file_paths);
 
   // Launches an app with |app_id| and Chrome OS generic |intent| irrespective
   // of app platform.
@@ -125,6 +135,14 @@ interface Publisher {
       int32 event_flags,
       LaunchSource launch_source,
       int64 display_id);
+
+  // Launches an app with |app_id| and |file_path|
+  LaunchAppWithFiles(
+      string app_id,
+      LaunchContainer container,
+      int32 event_flags,
+      LaunchSource launch_source,
+      FilePaths file_paths);
 
   // Launches an app with |app_id| and Chrome OS generic |intent| irrespective
   // of app platform.

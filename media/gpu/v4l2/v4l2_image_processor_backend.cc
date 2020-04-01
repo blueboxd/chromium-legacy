@@ -598,7 +598,6 @@ void V4L2ImageProcessorBackend::Reset() {
 
 bool V4L2ImageProcessorBackend::ApplyCrop(const gfx::Rect& visible_rect,
                                           enum v4l2_buf_type type) {
-  DCHECK(V4L2_TYPE_IS_MULTIPLANAR(type));
   struct v4l2_rect rect {};
   rect.left = visible_rect.x();
   rect.top = visible_rect.y();

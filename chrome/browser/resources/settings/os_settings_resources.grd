@@ -17,6 +17,10 @@
                file="${root_gen_dir}\skia\public\mojom\bitmap.mojom-lite.js"
                use_base_dir="false"
                type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_FILE_PATH_MOJO_LITE_JS"
+               file="${root_gen_dir}\mojo\public\mojom\base\file_path.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
       <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS"
                file="${root_gen_dir}\skia\public\mojom\image_info.mojom-lite.js"
                use_base_dir="false"

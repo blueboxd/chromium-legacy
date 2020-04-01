@@ -44,7 +44,12 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "extensions/common/constants.h"
 #endif
 
 namespace extensions {
@@ -55,12 +60,18 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
       is_child_(profile_->IsChild()) {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagement::ExtensionManagement::ctor");
-#if defined(OS_CHROMEOS)
-  is_signin_profile_ = chromeos::ProfileHelper::IsSigninProfile(profile);
-#endif
-  pref_change_registrar_.Init(pref_service_);
   base::Closure pref_change_callback = base::Bind(
       &ExtensionManagement::OnExtensionPrefChanged, base::Unretained(this));
+#if defined(OS_CHROMEOS)
+  is_signin_profile_ = chromeos::ProfileHelper::IsSigninProfile(profile);
+  PrefService* const local_state = g_browser_process->local_state();
+  if (local_state) {  // Sometimes it's not available in tests.
+    local_state_pref_change_registrar_.Init(local_state);
+    local_state_pref_change_registrar_.Add(
+        policy::policy_prefs::kSystemFeaturesDisableList, pref_change_callback);
+  }
+#endif
+  pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(pref_names::kInstallAllowList,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kInstallDenyList,
@@ -95,6 +106,7 @@ ExtensionManagement::~ExtensionManagement() {
 
 void ExtensionManagement::Shutdown() {
   pref_change_registrar_.RemoveAll();
+  local_state_pref_change_registrar_.RemoveAll();
   pref_service_ = nullptr;
 }
 
@@ -496,6 +508,30 @@ void ExtensionManagement::Refresh() {
       }
     }
   }
+
+#if defined(OS_CHROMEOS)
+  const base::Value* system_features_disable_list_pref = nullptr;
+  PrefService* const local_state = g_browser_process->local_state();
+  if (local_state) {  // Sometimes it's not available in tests.
+    system_features_disable_list_pref =
+        local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
+  }
+
+  if (system_features_disable_list_pref) {
+    for (const auto& entry : system_features_disable_list_pref->GetList()) {
+      switch (entry.GetInt()) {
+        case policy::SystemFeature::CAMERA:
+          AccessById(extension_misc::kCameraAppId)->installation_mode =
+              INSTALLATION_BLOCKED;
+          break;
+        case policy::SystemFeature::SETTINGS:
+          AccessById(chromeos::default_web_apps::kOsSettingsAppId)
+              ->installation_mode = INSTALLATION_BLOCKED;
+          break;
+      }
+    }
+  }
+#endif
 }
 
 const base::Value* ExtensionManagement::LoadPreference(

@@ -3708,7 +3708,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Setelan ini mengontrol penyajian halaman sambutan yang membantu pengguna login ke <ph name="PRODUCT_NAME" />, memilihnya sebagai browser default, atau memberi tahu pengguna tentang fitur produk.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
-<translation id="6772045451150098845">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima fitur tambahan. Beberapa fitur ini dapat mencakup pembagian data dengan Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima fitur tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur konsumen standar.</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
 <translation id="6795485990775913659">Hanya izinkan pencetakan tanpa PIN</translation>

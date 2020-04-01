@@ -3,7 +3,6 @@
 <translationbundle lang="th">
 <translation id="102360288709523007">ช่วยให้ Chromium ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
 <translation id="1185134272377778587">เกี่ยวกับ Chromium</translation>
-<translation id="1289966288285062467">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Chromium</translation>
 <translation id="1472013873724362412">บัญชีของคุณไม่ทำงานใน Chromium โปรดติดต่อผู้ดูแลระบบโดเมนหรือใช้บัญชี Google ปกติเพื่อลงชื่อเข้าใช้</translation>
 <translation id="1507010443238049608">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chromium</translation>
 <translation id="1617663976202781617">ข้อมูลจากการซิงค์ Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">ต้องการออกจาก Chromium ใช่ไหม</translation>
 <translation id="6424492062988593837">Chromium พัฒนาใหม่! มีรุ่นใหม่ให้ใช้งานแล้ว</translation>
 <translation id="6604711459180487467">รับประสบการณ์ที่ดีขึ้นใน Chromium ตามสถานที่ที่คุณอยู่</translation>
-<translation id="6626296268883197964">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK_TOS" />ข้อกำหนดในการให้บริการ<ph name="END_LINK_TOS" />และ<ph name="BEGIN_LINK_PRIVACY" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK_PRIVACY" />ของ Chromium</translation>
 <translation id="7099326575020694068">Chromium ไม่สามารถใช้กล้องถ่ายรูปในโหมด Split View</translation>
 <translation id="7208566199746267865">Chromium ช่วยคุณประหยัดเวลาโดยนำบัญชีของคุณไปไว้บนเว็บ คุณสามารถเพิ่มหรือนำบัญชีออกได้ในการตั้งค่า</translation>
 <translation id="7269362888766543920">ส่วนเสริมบางรายการทำให้ Chromium ขัดข้อง โปรดลองถอนการติดตั้งส่วนเสริมนั้น</translation>

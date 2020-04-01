@@ -506,6 +506,14 @@ void ArcApps::Launch(const std::string& app_id,
                  display_id);
 }
 
+void ArcApps::LaunchAppWithFiles(const std::string& app_id,
+                                 apps::mojom::LaunchContainer container,
+                                 int32_t event_flags,
+                                 apps::mojom::LaunchSource launch_source,
+                                 apps::mojom::FilePathsPtr file_paths) {
+  NOTIMPLEMENTED();
+}
+
 void ArcApps::LaunchAppWithIntent(const std::string& app_id,
                                   apps::mojom::IntentPtr intent,
                                   apps::mojom::LaunchSource launch_source,

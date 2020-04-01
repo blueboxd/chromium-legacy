@@ -940,6 +940,16 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
         buffer->data() + decoder_current_bitstream_buffer_->bytes_used;
     const size_t data_size =
         buffer->data_size() - decoder_current_bitstream_buffer_->bytes_used;
+
+    for (auto& workaround : workarounds_) {
+      auto result = workaround->Apply(data, data_size);
+      if (result == V4L2StatefulWorkaround::Result::NotifyError) {
+        LOG(ERROR) << "Failed applying a workaround";
+        NOTIFY_ERROR(PLATFORM_FAILURE);
+        return;
+      }
+    }
+
     if (!AdvanceFrameFragment(data, data_size, &decoded_size)) {
       LOG(ERROR) << "Invalid Stream";
       NOTIFY_ERROR(UNREADABLE_INPUT);
@@ -985,15 +995,6 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
                                                       size_t size,
                                                       size_t* endpos) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-
-  for (auto& workaround : workarounds_) {
-    auto result = workaround->Apply(data, size, endpos);
-    if (result == V4L2StatefulWorkaround::Result::NotifyError) {
-      LOG(ERROR) << "Failed doing a workaround";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return false;
-    }
-  }
 
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     // For H264, we need to feed HW one frame at a time.  This is going to take

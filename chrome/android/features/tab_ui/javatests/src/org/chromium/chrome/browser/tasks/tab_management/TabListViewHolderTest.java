@@ -234,14 +234,14 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
 
         testGridSelected(mSelectableTabListView, mSelectableModel);
         mSelectableModel.set(TabProperties.IS_SELECTED, true);
-        ImageView actionButtonList = mSelectableTabListView.findViewById(R.id.action_button);
-        Assert.assertEquals(1, actionButtonList.getBackground().getLevel());
-        Assert.assertNotNull(actionButtonList.getDrawable());
+        ImageView endButton = mSelectableTabListView.findViewById(R.id.end_button);
+        Assert.assertEquals(1, endButton.getBackground().getLevel());
+        Assert.assertNotNull(endButton.getDrawable());
         Assert.assertEquals(255, actionButton.getDrawable().getAlpha());
 
         mSelectableModel.set(TabProperties.IS_SELECTED, false);
-        Assert.assertEquals(0, actionButtonList.getBackground().getLevel());
-        Assert.assertEquals(0, actionButtonList.getDrawable().getAlpha());
+        Assert.assertEquals(0, endButton.getBackground().getLevel());
+        Assert.assertEquals(0, endButton.getDrawable().getAlpha());
     }
 
     @Test
@@ -450,8 +450,11 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         testSelectableTabClickToSelect(mSelectableTabGridView, mSelectableModel, false);
         testSelectableTabClickToSelect(mSelectableTabGridView, mSelectableModel, true);
 
-        testSelectableTabClickToSelect(mSelectableTabListView, mSelectableModel, false);
-        testSelectableTabClickToSelect(mSelectableTabListView, mSelectableModel, true);
+        // For the List version, we need to trigger the click from the view that has id
+        // content_view, because of the xml hierarchy.
+        ViewGroup selectableTabListContent = mSelectableTabListView.findViewById(R.id.content_view);
+        testSelectableTabClickToSelect(selectableTabListContent, mSelectableModel, false);
+        testSelectableTabClickToSelect(selectableTabListContent, mSelectableModel, true);
     }
 
     @Test

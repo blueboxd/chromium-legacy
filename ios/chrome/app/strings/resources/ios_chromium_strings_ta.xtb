@@ -3,7 +3,6 @@
 <translationbundle lang="ta">
 <translation id="102360288709523007">உபயோகப் புள்ளிவிவரங்களையும் சிதைவு அறிக்கைகளையும் Googleளுக்கு அனுப்பி, Chromiumஐ இன்னும் சிறப்பானதாக்க உதவவும்.</translation>
 <translation id="1185134272377778587">Chromium அறிமுகம்</translation>
-<translation id="1289966288285062467">Chromium தனியுரிமை அறிக்கை</translation>
 <translation id="1472013873724362412">Chromiumமில் உங்கள் கணக்கு செயல்படாது. உங்கள் டொமைன் நிர்வாகியைத் தொடர்பு கொள்ளவும் அல்லது உள்நுழைவதற்கு வழக்கமான Google கணக்கைப் பயன்படுத்தவும்.</translation>
 <translation id="1507010443238049608">Chromiumமின் அம்சங்களையும் செயல்திறனையும் மேம்படுத்த உதவுதல்</translation>
 <translation id="1617663976202781617">Chromium ஒத்திசைவிலிருந்து தரவு</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Chromium இலிருந்து வெளியேறவா?</translation>
 <translation id="6424492062988593837">Chromium தற்போதுதான் சிறப்பைப் பெற்றது! புதிய பதிப்பு உள்ளது.</translation>
 <translation id="6604711459180487467">உங்கள் இருப்பிடத்தின் அடிப்படையில் Chromium இல் சிறந்த அனுபவத்தைப் பெறலாம்.</translation>
-<translation id="6626296268883197964">இந்தப் பயன்பாட்டைப் பயன்படுத்துவதன் மூலம், Chromium இன் <ph name="BEGIN_LINK_TOS" />சேவை விதிமுறைகள்<ph name="END_LINK_TOS" /> மற்றும் <ph name="BEGIN_LINK_PRIVACY" />தனியுரிமை அறிக்கையை<ph name="END_LINK_PRIVACY" /> ஏற்கிறீர்கள்.</translation>
 <translation id="7099326575020694068">Chromiumமால் காட்சிப் பிரிப்புப் பயன்முறையில் கேமராவைப் பயன்படுத்த முடியாது</translation>
 <translation id="7208566199746267865">கணக்குகளை இணையத்துடன் இணைத்து, Chromium உங்கள் நேரத்தைச் சேமிக்கும். அமைப்புகளில் கணக்குகளைச் சேர்க்கலாம் அல்லது அகற்றலாம்.</translation>
 <translation id="7269362888766543920">சில செருகு நிரல்களால் Chromium சிதைவுக்குட்படுகிறது. அவற்றை நிறுவல் நீக்கவும்.</translation>

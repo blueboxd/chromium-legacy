@@ -37,14 +37,11 @@ class TabListViewBinder {
             ((TextView) fastView.findViewById(R.id.title)).setText(title);
         } else if (TabProperties.FAVICON == propertyKey) {
             Drawable favicon = model.get(TabProperties.FAVICON);
-            ImageView faviconView = (ImageView) fastView.findViewById(R.id.icon_view);
+            ImageView faviconView = (ImageView) fastView.findViewById(R.id.start_icon);
+            faviconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
             faviconView.setImageDrawable(favicon);
-            int padding = favicon == null
-                    ? 0
-                    : (int) view.getResources().getDimension(R.dimen.tab_list_card_padding);
-            faviconView.setPadding(padding, padding, padding, padding);
         } else if (TabProperties.TAB_CLOSED_LISTENER == propertyKey) {
-            fastView.findViewById(R.id.action_button).setOnClickListener(v -> {
+            fastView.findViewById(R.id.end_button).setOnClickListener(v -> {
                 int tabId = model.get(TabProperties.TAB_ID);
                 model.get(TabProperties.TAB_CLOSED_LISTENER).run(tabId);
             });
@@ -94,25 +91,31 @@ class TabListViewBinder {
         final int defaultLevel = view.getResources().getInteger(R.integer.list_item_level_default);
         final int selectedLevel =
                 view.getResources().getInteger(R.integer.list_item_level_selected);
+        SelectableTabGridView selectableTabListView = view.findViewById(R.id.content_view);
 
         if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
-            view.setOnClickListener(v -> {
+            View.OnClickListener onClickListener = v -> {
                 model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                ((SelectableTabGridView) view).onClick();
-            });
-            view.setOnLongClickListener(v -> {
+                selectableTabListView.onClick();
+            };
+            View.OnLongClickListener onLongClickListener = v -> {
                 model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);
-                return ((SelectableTabGridView) view).onLongClick(view);
-            });
+                return selectableTabListView.onLongClick(selectableTabListView);
+            };
+            selectableTabListView.setOnClickListener(onClickListener);
+            selectableTabListView.setOnLongClickListener(onLongClickListener);
+
+            ImageView endButton = selectableTabListView.findViewById(R.id.end_button);
+            endButton.setOnClickListener(onClickListener);
+            endButton.setOnLongClickListener(onLongClickListener);
         } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
             assert model.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
-
-            ((SelectableTabGridView) view)
-                    .setSelectionDelegate(model.get(TabProperties.TAB_SELECTION_DELEGATE));
-            ((SelectableTabGridView) view).setItem(tabId);
+            selectableTabListView.setSelectionDelegate(
+                    model.get(TabProperties.TAB_SELECTION_DELEGATE));
+            selectableTabListView.setItem(tabId);
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             boolean isSelected = model.get(TabProperties.IS_SELECTED);
-            ImageView actionButton = (ImageView) view.findViewById(R.id.action_button);
+            ImageView actionButton = (ImageView) view.findViewById(R.id.end_button);
             actionButton.getBackground().setLevel(isSelected ? selectedLevel : defaultLevel);
             DrawableCompat.setTintList(actionButton.getBackground().mutate(),
                     isSelected ? model.get(

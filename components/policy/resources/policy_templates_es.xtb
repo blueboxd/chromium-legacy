@@ -3809,7 +3809,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Esta opción controla la presentación de páginas de bienvenida que ayudan a los usuarios a iniciar sesión en <ph name="PRODUCT_NAME" />, les permiten elegirlo como navegador predeterminado o les informan de funciones del producto.</translation>
 <translation id="6766216162565713893">Permitir que los sitios web le pidan permiso al usuario para acceder a dispositivos Bluetooth cercanos</translation>
 <translation id="6770454900105963262">Informar sobre sesiones del kiosco activas</translation>
-<translation id="6772045451150098845">Esta política controla si los usuarios registrados en el Programa de Protección Avanzada tienen acceso a funciones adicionales. Puede que algunas de estas funciones impliquen compartir datos con Google (por ejemplo, los usuarios del Programa de Protección Avanzada podrán enviar sus descargas a Google para que realice un análisis de software malicioso). Si se asigna el valor "True" a esta política o no se le asigna ningún valor, los usuarios registrados tendrán acceso a funciones adicionales. Si se le asigna el valor "False", los usuarios de Protección Avanzada solo tendrán acceso a las funciones estándar.</translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Especificar el directorio de perfiles de itinerancia</translation>
 <translation id="6795485990775913659">Permitir imprimir solo sin PIN</translation>

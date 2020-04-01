@@ -10,7 +10,6 @@
 
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
@@ -247,8 +246,6 @@ SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
     const GURL& main_frame_url,
     const UnsafeResource& unsafe_resource,
     bool should_trigger_reporting) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.ResourceType",
-                            unsafe_resource.resource_type);
   const UnsafeResourceList resources{unsafe_resource};
   // Set up the factory if this has not been done already (tests do that
   // before this method is called).

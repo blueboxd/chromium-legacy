@@ -11,9 +11,9 @@
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/linux/test/mock_gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
 
 namespace ui {
 

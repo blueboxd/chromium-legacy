@@ -481,8 +481,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("checkbox-validity.html"));
 }
 
+// Flaky on TSAN, see https://crbug.com/1066702
+#if defined(THREAD_SANITIZER)
+#define MAYBE_AccessibilityEventsCaretBrowsingEnabled \
+  DISABLED_AccessibilityEventsCaretBrowsingEnabled
+#else
+#define MAYBE_AccessibilityEventsCaretBrowsingEnabled \
+  AccessibilityEventsCaretBrowsingEnabled
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsCaretBrowsingEnabled) {
+                       MAYBE_AccessibilityEventsCaretBrowsingEnabled) {
   // Add command line switch that forces caret browsing on.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableCaretBrowsing);

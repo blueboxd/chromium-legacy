@@ -29,8 +29,8 @@ PASS name0027 - name0027
 FAIL name0028 - name0028 assert_equals: expected "" but got "a"
 PASS name0029 - name0029
 PASS name0030 - name0030
-FAIL name0031 - name0031 assert_equals: expected "" but got "\"foo"
-FAIL name0032 - name0032 assert_equals: expected "" but got "\"foo\\\"bar"
+PASS name0031 - name0031
+PASS name0032 - name0032
 FAIL name0033 - name0033 assert_equals: expected "" but got "aaa"
 Harness: the test ran to completion.
 

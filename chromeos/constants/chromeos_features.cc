@@ -229,6 +229,10 @@ const base::Feature kNewOsSettingsSearch{"NewOsSettingsSearch",
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the option to share the camera with PluginVm or not
+const base::Feature kPluginVmShowCameraSetting{
+    "PluginVmShowCameraSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to show printer statuses.
 const base::Feature kPrinterStatus{"PrinterStatus",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

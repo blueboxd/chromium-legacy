@@ -1064,7 +1064,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2408955596600435184">Enter your PIN</translation>
 <translation id="241082044617551207">Unknown plug-in</translation>
 <translation id="2412593942846481727">Update available</translation>
-<translation id="2413749388954403953">Change the bookmarks user interface</translation>
 <translation id="2417206894320497232">Plugin VM is ready to use.</translation>
 <translation id="241727068219398187">Data was encrypted with your Google password as of
           <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
@@ -1158,7 +1157,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="252219247728877310">Component not updated</translation>
 <translation id="2522791476825452208">Very close</translation>
 <translation id="2523184218357549926">Sends URLs of pages that you visit to Google</translation>
-<translation id="2525250408503682495">Kryptonite! The cryptohome for the kiosk application could not be mounted.</translation>
 <translation id="2526277209479171883">Install and continue</translation>
 <translation id="2526590354069164005">Desktop</translation>
 <translation id="2526619973349913024">Check for update</translation>
@@ -1186,7 +1184,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> was unable to connect to <ph name="NETWORK_ID" />. Please select another network or try again.</translation>
 <translation id="2553440850688409052">Hide This Plug-in</translation>
 <translation id="2554553592469060349">Selected file is too big (max size: 3mb).</translation>
-<translation id="2556092377360758201">No protection (not recommended)</translation>
 <translation id="2557378327156922632">This file contains sensitive content.</translation>
 <translation id="255747371423522804">Add to existing group</translation>
 <translation id="2558896001721082624">Always show accessibility options in the system menu</translation>
@@ -2400,7 +2397,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4100853287411968461">New screen time limit</translation>
 <translation id="4104163789986725820">E&amp;xport...</translation>
 <translation id="4107048419833779140">Identify and eject storage devices</translation>
-<translation id="4108998448622696017">Detects and warns you about dangerous events when they happen.</translation>
 <translation id="4109135793348361820">Move window to <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download complete: <ph name="FILE_NAME" />. Press Shift+F6 to cycle to the downloads bar area.</translation>
 <translation id="4110895898888439383">Browse the web in high contrast mode</translation>
@@ -2421,7 +2417,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="413121957363593859">Components</translation>
 <translation id="4131410914670010031">Black and white</translation>
 <translation id="4133076602192971179">Open the app to change your password</translation>
-<translation id="4133265950310064865">Enhanced protection</translation>
 <translation id="4136203100490971508">Night Light will turn off automatically at sunrise</translation>
 <translation id="41365691917097717">Continuing will enable ADB debugging for creating and testing Android apps. Note that this action allows installation of Android apps that haven't been verified by Google, and requires a factory reset to disable.</translation>
 <translation id="4138267921960073861">Show usernames and photos on the sign-in screen</translation>
@@ -2771,7 +2766,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4660540330091848931">Resizing</translation>
 <translation id="4660838440047236328">the layout of your room</translation>
 <translation id="4661407454952063730">App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages and photos.</translation>
-<translation id="4661931051827810091">Sends anonymous URLs of some pages that you visit, limited system information and some page content to help discover and block new threats against all users on the web.</translation>
 <translation id="4662788913887017617">Share this bookmark with your iPhone</translation>
 <translation id="4663373278480897665">Camera allowed</translation>
 <translation id="4664482161435122549">PKCS No.12 Export Error</translation>
@@ -2779,7 +2773,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4665446389743427678">All data stored by <ph name="SITE" /> will be deleted.</translation>
 <translation id="4668721319092543482">Click to enable <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Virtual reality</translation>
-<translation id="4672879467403304774">Keeps you safe on Chrome and other Google apps when you’re signed in</translation>
 <translation id="46733273239502219">Offline data in installed apps will also be cleared</translation>
 <translation id="4673442866648850031">Open stylus tools when the stylus is removed</translation>
 <translation id="4677772697204437347">GPU memory</translation>
@@ -2856,7 +2849,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4798236378408895261">Attach <ph name="BEGIN_LINK" />Bluetooth Logs<ph name="END_LINK" /> (Google internal)</translation>
 <translation id="4801448226354548035">Hide accounts</translation>
 <translation id="4801512016965057443">Allow mobile data roaming</translation>
-<translation id="480395942558135789">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping basket.</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4805077164141082536">We recommend that you back up your current Linux container prior to upgrading.</translation>
@@ -3101,7 +3093,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5127881134400491887">Manage network connections</translation>
 <translation id="512903556749061217">attached</translation>
 <translation id="5133483819862530305">Sunset to Sunrise</translation>
-<translation id="5134113140145104829">To get to the homescreen at any time, swipe up from the bottom.</translation>
 <translation id="5135085122826131075">Access your Assistant when you say "Ok Google".</translation>
 <translation id="5135533361271311778">Could not create bookmark item.</translation>
 <translation id="5137501176474113045">Delete this item</translation>
@@ -3467,7 +3458,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5614190747811328134">User Notice</translation>
 <translation id="5614553682702429503">Save password?</translation>
 <translation id="561698261642843490">Close Firefox</translation>
-<translation id="5618075537869101857">Oh no, the kiosk application could not be launched.</translation>
 <translation id="5618333180342767515">(this might take a few minutes)</translation>
 <translation id="56197088284879152">Connection is congested to remote device: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5620163320393916465">No saved passwords</translation>
@@ -4029,7 +4019,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6362853299801475928">&amp;Report an issue...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Add family and friends</translation>
-<translation id="6366190659675876144">Standard protection</translation>
 <translation id="636850387210749493">Enterprise enrolment</translation>
 <translation id="6370021412472292592">Could not load manifest.</translation>
 <translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{Change password}other{Change passwords}}</translation>
@@ -4455,7 +4444,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Device</translation>
-<translation id="6966201992886493384">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping basket</translation>
 <translation id="696780070563539690">Sites can't use your cookies to see your browsing activity across different sites, for example, to personalise ads</translation>
 <translation id="6968288415730398122">Enter your password to configure screen lock</translation>
 <translation id="6970480684834282392">Startup type</translation>
@@ -4871,7 +4859,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7507207699631365376">See this provider's <ph name="BEGIN_LINK" />privacy policy<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">Status Responder Certificate</translation>
 <translation id="7508054832109420082">Give access to printers</translation>
-<translation id="751120035300339">Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping basket</translation>
 <translation id="7513029293694390567">Automatically sign in to websites using stored credentials. If disabled, you will be asked for confirmation every time before signing in to a website.</translation>
 <translation id="7514239104543605883">Copy to your device</translation>
 <translation id="7514365320538308">Download</translation>
@@ -5571,7 +5558,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Ask first (recommended)</translation>
 <translation id="8417548266957501132">Parent password</translation>
-<translation id="8417573335434189196">Does not protect you against dangerous websites, downloads or extensions. Chrome does not recommend this setting.</translation>
 <translation id="8418445294933751433">&amp;Show as tab</translation>
 <translation id="8419098111404128271">Search results for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8419368276599091549">Welcome to your <ph name="DEVICE_TYPE" />!</translation>

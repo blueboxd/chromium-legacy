@@ -3,7 +3,6 @@
 <translationbundle lang="fr-CA">
 <translation id="102360288709523007">Améliorer Chromium en envoyant des statistiques d'utilisation et des rapports d'erreur.</translation>
 <translation id="1185134272377778587">À propos de Chromium</translation>
-<translation id="1289966288285062467">Avis de confidentialité de Chromium</translation>
 <translation id="1472013873724362412">Votre compte n'est pas compatible avec Chromium. Veuillez communiquer avec l'administrateur de votre domaine ou utiliser un compte Google ordinaire pour vous connecter.</translation>
 <translation id="1507010443238049608">Nous aider à améliorer les fonctionnalités et les performances de Chromium</translation>
 <translation id="1617663976202781617">Données de la synchronisation de Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="6268381023930128611">Se déconnecter de Chromium?</translation>
 <translation id="6424492062988593837">Une nouvelle version améliorée de Chromium est maintenant offerte.</translation>
 <translation id="6604711459180487467">Profitez d'une meilleure expérience dans Chromium en fonction de votre emplacement.</translation>
-<translation id="6626296268883197964">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK_TOS" />conditions d'utilisation<ph name="END_LINK_TOS" /> et l'<ph name="BEGIN_LINK_PRIVACY" />avis de confidentialité<ph name="END_LINK_PRIVACY" /> de Chromium.</translation>
 <translation id="7099326575020694068">Chromium ne peut pas utiliser votre appareil photo en mode Vue partagée</translation>
 <translation id="7208566199746267865">Chromium vous fait gagner du temps en mettant vos comptes sur le Web. Vous pouvez ajouter ou supprimer des comptes dans Paramètres.</translation>
 <translation id="7269362888766543920">Certains modules complémentaires provoquent le plantage de Chromium. Veuillez essayer de les désinstaller.</translation>

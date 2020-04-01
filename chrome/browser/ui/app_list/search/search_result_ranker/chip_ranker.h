@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,22 +22,24 @@ namespace app_list {
 // A ChipRanker provides a method for ranking suggestion chips in the Chrome OS
 // Launcher. Given a list of SortedResults from the Mixer, the ChipRanker will
 // rescore the chip items so that they are appropriately ranked, while
-// preserving the original ordering of all groups of results.
+// preserving the original ordering of all types of results.
 //
-// The ranking algorithm works as follows:
-//   - Start with sorting the results already scored from the Mixer
-//   - Take the top two app items, app1 and app2
-//   - For each chip in the SortedResults list:
-//      1. Rank app1, app2 and chip using a Dolphin model
-//      2. Adjust chip score to sit in the correct position
-//         relative to the two apps:
-//        - If chip should be first
-//            set chip score > app1 score
-//        - If chip should sit between
-//            set chip score > app2 score, < app1 score
-//        - If chip is ranked last
-//            take app2 and the next app item, app3, and continue
-//          with same file.
+// To combine the two app and file items, a type score is stored for the two
+// categories 'apps' and 'files', tracking the user's overall usage of those
+// categories. This is updated when results are launched. To produce a combined
+// list of apps and files, we do the following:
+//
+// - Make a copy of the type scores: app_score and file_score.
+// - Calculate delta = (app_score + file_score) / number_of_chips
+// - Until we have number_of_chips results:
+//   - Select the highest scoring unchosen app or file, depending on whether
+//     app_score > file_score.
+//   - Decrease the score of the selected type by delta.
+//
+// The types of the shown results reflect the proportion of the type scores and,
+// as a type's score increases, its results appear closer to the front of the
+// list. Note the implementation also handles the case of one type not having
+// enough results.
 class ChipRanker {
  public:
   explicit ChipRanker(Profile* profile);
@@ -52,12 +55,11 @@ class ChipRanker {
   // ranking algorithm detailed above.
   void Rank(Mixer::SortedResults* results);
 
-  // Set a fake ranker for tests.
-  void SetForTest(std::unique_ptr<RecurrenceRanker> ranker);
+  // Get a pointer to the ranker for testing.
+  RecurrenceRanker* GetRankerForTest();
 
-  // Ranker generates scores used for re-arranging items, not
-  // raw result scores.
-  std::unique_ptr<RecurrenceRanker> ranker_;
+  // Stores scores tracking a user's overall usage of apps or files.
+  std::unique_ptr<RecurrenceRanker> type_ranker_;
 
  private:
   Profile* profile_;

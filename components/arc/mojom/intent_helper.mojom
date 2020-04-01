@@ -171,8 +171,10 @@ enum ChromePage {
   ETHERNET,
   CELLULAR,
   AMBIENTMODE,
+  PLUGINVMDETAILS,
+  PLUGINVMSHAREDPATHS,
 
-  LAST = AMBIENTMODE,
+  LAST = PLUGINVMSHAREDPATHS,
 };
 
 // Describes an unique chrome app.

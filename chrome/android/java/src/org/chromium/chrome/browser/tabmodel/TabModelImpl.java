@@ -106,8 +106,11 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     public void destroy() {
-        for (Tab tab : mTabs) {
-            if (tab.isInitialized()) tab.destroy();
+        // When reparenting tabs, only commit that tab closures and keep the rest of the tabs alive.
+        if (!mModelDelegate.isReparentingInProgress()) {
+            for (Tab tab : mTabs) {
+                if (tab.isInitialized()) tab.destroy();
+            }
         }
 
         mRewoundList.destroy();
@@ -752,6 +755,8 @@ public class TabModelImpl extends TabModelJniBridge {
          * before destroying it.
          */
         public void destroy() {
+            // All tabs pending closure are committed in TabModelImpl#destroy.
+            if (TabModelImpl.this.mModelDelegate.isReparentingInProgress()) return;
             for (Tab tab : mRewoundTabs) {
                 if (tab.isInitialized()) tab.destroy();
             }

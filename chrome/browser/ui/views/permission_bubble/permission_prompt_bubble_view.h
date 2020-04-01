@@ -25,6 +25,8 @@ class PermissionPromptBubbleView : public views::ButtonListener,
   PermissionPromptBubbleView(Browser* browser,
                              permissions::PermissionPrompt::Delegate* delegate);
 
+  void Show();
+
   // Anchors the bubble to the view or rectangle returned from
   // bubble_anchor_util::GetPageInfoAnchorConfiguration.
   void UpdateAnchorPosition();
@@ -32,6 +34,7 @@ class PermissionPromptBubbleView : public views::ButtonListener,
   // views::BubbleDialogDelegateView:
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;
 
@@ -47,8 +50,6 @@ class PermissionPromptBubbleView : public views::ButtonListener,
   };
 
   void AddPermissionRequestLine(permissions::PermissionRequest* request);
-
-  void Show();
 
   // Returns the origin to be displayed in the permission prompt. May return
   // a non-origin, e.g. extension URLs use the name of the extension.

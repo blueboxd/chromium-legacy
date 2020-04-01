@@ -2708,6 +2708,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "media-history",
+    "owners": [ "beccahughes", "media-dev" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "media-router-cast-allow-all-ips",
     "owners": [ "mfoltz" ],
     // This flag is used by users with unusual network configurations to allow
@@ -3768,6 +3773,11 @@
   {
     "name": "system-keyboard-lock",
     "owners": [ "joedow", "garykac", "jamiewalch" ],
+    "expiry_milestone": 86
+  },
+  {
+    "name": "system-tray-mic-gain",
+    "owners": ["amehfooz", "tengs"],
     "expiry_milestone": 86
   },
   {

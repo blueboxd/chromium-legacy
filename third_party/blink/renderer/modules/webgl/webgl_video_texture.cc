@@ -110,13 +110,17 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
   // would need to save the current time as well as the presentation time.
   current_frame_metadata_->setPresentationTime(
       frame_metadata_ptr->timestamp.InMicrosecondsF());
-  current_frame_metadata_->setExpectedPresentationTime(
+  current_frame_metadata_->setExpectedDisplayTime(
       frame_metadata_ptr->expected_timestamp.InMicrosecondsF());
 
   current_frame_metadata_->setWidth(frame_metadata_ptr->visible_rect.width());
   current_frame_metadata_->setHeight(frame_metadata_ptr->visible_rect.height());
-  current_frame_metadata_->setPresentationTimestamp(
+  current_frame_metadata_->setMediaTime(
       frame_metadata_ptr->timestamp.InSecondsF());
+
+  // This is a required field. It is supposed to be monotonically increasing for
+  // video.requestAnimationFrame, but it isn't used yet for WebGLVideoTexture.
+  current_frame_metadata_->setPresentedFrames(0);
   return current_frame_metadata_;
 #endif  // defined OS_ANDROID
 }

@@ -40,8 +40,6 @@ source_set("google_services") {
     "//components/metrics",
     "//components/password_manager/core/common",
     "//components/prefs",
-    "//components/safe_browsing/core:features",
-    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
     "//components/strings",
@@ -76,7 +74,6 @@ source_set("google_services") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/signin",
-    "//ios/web/common:features",
     "//ui/base",
   ]
   allow_circular_includes_from = [

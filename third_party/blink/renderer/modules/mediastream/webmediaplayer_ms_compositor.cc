@@ -543,7 +543,7 @@ void WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor(
 
 void WebMediaPlayerMSCompositor::SetCurrentFrame(
     scoped_refptr<media::VideoFrame> frame,
-    base::Optional<base::TimeTicks> expected_presentation_time) {
+    base::Optional<base::TimeTicks> expected_display_time) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   current_frame_lock_.AssertAcquired();
   TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::SetCurrentFrame",
@@ -594,7 +594,7 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   // we only use RenderWithoutAlgorithm.
   base::TimeTicks now = base::TimeTicks::Now();
   last_presentation_time_ = now;
-  last_expected_presentation_time_ = expected_presentation_time.value_or(now);
+  last_expected_display_time_ = expected_display_time.value_or(now);
   ++presented_frames_;
 
   OnNewFramePresentedCB presented_frame_cb;
@@ -744,8 +744,7 @@ WebMediaPlayerMSCompositor::GetLastPresentedFrameMetadata() {
     base::AutoLock lock(current_frame_lock_);
     last_frame = current_frame_;
     frame_metadata->presentation_time = last_presentation_time_;
-    frame_metadata->expected_presentation_time =
-        last_expected_presentation_time_;
+    frame_metadata->expected_display_time = last_expected_display_time_;
     frame_metadata->presented_frames = static_cast<uint32_t>(presented_frames_);
 
     frame_metadata->average_frame_duration = GetPreferredRenderInterval();
@@ -755,7 +754,7 @@ WebMediaPlayerMSCompositor::GetLastPresentedFrameMetadata() {
   frame_metadata->width = last_frame->visible_rect().width();
   frame_metadata->height = last_frame->visible_rect().height();
 
-  frame_metadata->presentation_timestamp = last_frame->timestamp();
+  frame_metadata->media_time = last_frame->timestamp();
 
   frame_metadata->metadata.MergeMetadataFrom(last_frame->metadata());
 

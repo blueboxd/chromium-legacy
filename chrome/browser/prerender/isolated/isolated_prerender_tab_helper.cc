@@ -114,6 +114,12 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
 
   // User is navigating, don't bother prefetching further.
   page_->url_loader_.reset();
+
+  if (page_->metrics_.prefetch_attempted_count > 0) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects",
+        page_->metrics_.prefetch_total_redirect_count);
+  }
 }
 
 void IsolatedPrerenderTabHelper::DidFinishNavigation(
@@ -252,6 +258,8 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
     const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* removed_headers) {
   DCHECK(PrefetchingActive());
+
+  page_->metrics_.prefetch_total_redirect_count++;
 
   // Run the new URL through all the eligibility checks. In the mean time,
   // continue on with other Prefetches.

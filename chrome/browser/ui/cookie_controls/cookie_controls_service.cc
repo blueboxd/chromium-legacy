@@ -77,8 +77,11 @@ bool CookieControlsService::ShouldEnforceCookieControls() {
 
 CookieControlsEnforcement
 CookieControlsService::GetCookieControlsEnforcement() {
-  if (profile_->GetPrefs()->IsManagedPreference(prefs::kBlockThirdPartyCookies))
+  auto* pref = profile_->GetPrefs()->FindPreference(prefs::kCookieControlsMode);
+  if (pref->IsManaged())
     return CookieControlsEnforcement::kEnforcedByPolicy;
+  if (pref->IsExtensionControlled())
+    return CookieControlsEnforcement::kEnforcedByExtension;
   if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies))
     return CookieControlsEnforcement::kEnforcedByCookieSetting;
   return CookieControlsEnforcement::kNoEnforcement;

@@ -156,8 +156,10 @@ DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
 
   switch (extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile()), extension)) {
-    case LaunchContainer::kLaunchContainerWindow:
     case LaunchContainer::kLaunchContainerPanelDeprecated:
+      NOTREACHED();
+      FALLTHROUGH;
+    case LaunchContainer::kLaunchContainerWindow:
       return DisplayMode::kStandalone;
     case LaunchContainer::kLaunchContainerTab:
       return DisplayMode::kBrowser;

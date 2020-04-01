@@ -401,10 +401,7 @@ int Main(const MainParams& params) {
       DCHECK(!mojo_config.is_broker_process);
       // Otherwise, this is a sandboxed process that will need brokering to
       // allocate shared memory.
-      base::SharedMemoryHooks::SetCreateHooks(
-          &mojo::CreateReadOnlySharedMemoryRegion,
-          &mojo::CreateUnsafeSharedMemoryRegion,
-          &mojo::CreateWritableSharedMemoryRegion);
+      mojo::SharedMemoryUtils::InstallBaseHooks();
     }
 #endif  // !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
 

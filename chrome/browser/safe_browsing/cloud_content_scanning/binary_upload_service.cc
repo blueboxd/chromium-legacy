@@ -308,6 +308,7 @@ void BinaryUploadService::MaybeFinishRequest(Request* request) {
   }
 
   DeepScanningClientResponse response;
+  response.set_token(request->deep_scanning_request().request_token());
   if (requested_dlp_scan_response) {
     // Transfers ownership of the DLP response to |response|.
     response.set_allocated_dlp_scan_verdict(

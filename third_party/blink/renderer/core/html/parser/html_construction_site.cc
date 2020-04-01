@@ -843,7 +843,7 @@ CreateElementFlags HTMLConstructionSite::GetCreateElementFlags() const {
                               : CreateElementFlags::ByParser();
 }
 
-inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
+Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
   if (auto* template_element = DynamicTo<HTMLTemplateElement>(*CurrentNode()))
     return template_element->content()->GetDocument();
   return CurrentNode()->GetDocument();

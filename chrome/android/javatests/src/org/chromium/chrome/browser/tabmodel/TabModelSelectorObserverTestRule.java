@@ -123,6 +123,12 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
             public boolean closeAllTabsRequest(boolean incognito) {
                 return false;
             }
+
+            @Override
+            public boolean isReparentingInProgress() {
+                return false;
+            }
+
         };
         mNormalTabModel = new TabModelSelectorTestTabModel(
                 false, orderController, tabContentManager, tabPersistentStore, delegate);

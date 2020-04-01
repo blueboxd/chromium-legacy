@@ -52,6 +52,21 @@ WebView* FrameTracker::GetTargetForFrame(const std::string& frame_id) {
   return nullptr;
 }
 
+bool FrameTracker::IsKnownFrame(const std::string& frame_id) const {
+  if (attached_frames_.count(frame_id) != 0 ||
+      frame_to_context_map_.count(frame_id) != 0 ||
+      frame_to_target_map_.count(frame_id) != 0) {
+    return true;
+  }
+  // Frame unknown to this tracker, recursively search all child targets.
+  for (const auto& it : frame_to_target_map_) {
+    FrameTracker* child = it.second->GetFrameTracker();
+    if (child != nullptr && child->IsKnownFrame(frame_id))
+      return true;
+  }
+  return false;
+}
+
 void FrameTracker::DeleteTargetForFrame(const std::string& frame_id) {
   frame_to_target_map_.erase(frame_id);
 }
@@ -59,6 +74,7 @@ void FrameTracker::DeleteTargetForFrame(const std::string& frame_id) {
 Status FrameTracker::OnConnected(DevToolsClient* client) {
   frame_to_context_map_.clear();
   frame_to_target_map_.clear();
+  attached_frames_.clear();
   // Enable target events to allow tracking iframe targets creation.
   base::DictionaryValue params;
   params.SetBoolean("autoAttach", true);
@@ -141,6 +157,18 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
     }
   } else if (method == "Runtime.executionContextsCleared") {
     frame_to_context_map_.clear();
+  } else if (method == "Page.frameAttached") {
+    std::string frame_id;
+    if (!params.GetString("frameId", &frame_id))
+      return Status(kUnknownError,
+                    "missing frameId in Page.frameAttached event");
+    attached_frames_.insert(frame_id);
+  } else if (method == "Page.frameDetached") {
+    std::string frame_id;
+    if (!params.GetString("frameId", &frame_id))
+      return Status(kUnknownError,
+                    "missing frameId in Page.frameDetached event");
+    attached_frames_.erase(frame_id);
   } else if (method == "Page.frameNavigated") {
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value))

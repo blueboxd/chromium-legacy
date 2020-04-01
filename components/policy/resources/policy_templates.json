@@ -1773,9 +1773,9 @@
       'tags': [],
       'desc': '''Configures the required client domain names that will be imposed on remote access clients and prevents users from changing it.
 
-          If this setting is enabled, then only clients from one of the specified domains can connect to the host.
+          If this setting is enabled and set to one or more domains, then only clients from one of the specified domains can connect to the host.
 
-          If this setting is disabled or not set, then the default policy for the connection type is applied. For remote assistance, this allows clients from any domain to connect to the host; for anytime remote access, only the host owner can connect.
+          If this setting is disabled, not set, or set to an empty list, then the default policy for the connection type is applied. For remote assistance, this allows clients from any domain to connect to the host; for anytime remote access, only the host owner can connect.
 
           This setting will override RemoteAccessHostClientDomain, if present.
 
@@ -1839,9 +1839,9 @@
       'tags': [],
       'desc': '''Configures the required host domain names that will be imposed on remote access hosts and prevents users from changing it.
 
-          If this setting is enabled, then hosts can be shared only using accounts registered on one of the specified domain names.
+          If this setting is enabled and set to one or more domains, then hosts can be shared only using accounts registered on one of the specified domain names.
 
-          If this setting is disabled or not set, then hosts can be shared using any account.
+          If this setting is disabled, not set, or set to an empty list, then hosts can be shared using any account.
 
           This setting will override RemoteAccessHostDomain, if present.
 

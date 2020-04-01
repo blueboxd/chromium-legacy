@@ -27,8 +27,6 @@
 
 namespace ash {
 
-using OverviewTransition = OverviewSession::OverviewTransition;
-
 class OverviewGridTest : public AshTestBase {
  public:
   OverviewGridTest() = default;
@@ -279,7 +277,7 @@ TEST_F(OverviewGridTest, SnappedWindow) {
   // grid calls |GetGridBoundsInScreen| with split view state both snapped which
   // is an unnatural state.
   Shell::Get()->overview_controller()->StartOverview(
-      OverviewSession::EnterExitOverviewType::kNormal);
+      OverviewEnterExitType::kNormal);
 
   // Tests that |window3| is not animated even though its bounds are larger than
   // |window2| because it is fully occluded by |window1| + |window2| and the

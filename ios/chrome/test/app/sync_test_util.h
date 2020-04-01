@@ -52,12 +52,12 @@ void InjectLegacyBookmarkOnFakeSyncServer(
 
 // Injects an autofill profile into the fake sync server with |guid| and
 // |full_name|.
-void InjectAutofillProfileOnFakeSyncServer(std::string guid,
-                                           std::string full_name);
+void AddAutofillProfileToFakeSyncServer(std::string guid,
+                                        std::string full_name);
 
 // Deletes an autofill profile from the fake sync server with |guid|, if it
 // exists. If it doesn't exist, nothing is done.
-void DeleteAutofillProfileOnFakeSyncServer(std::string guid);
+void DeleteAutofillProfileFromFakeSyncServer(std::string guid);
 
 // Clears the autofill profile for the given |guid|.
 void ClearAutofillProfile(std::string guid);

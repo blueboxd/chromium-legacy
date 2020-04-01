@@ -45,9 +45,9 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -522,7 +522,7 @@ std::vector<em::CPUTempInfo> InvokeCpuTempFetcher(
 // Utility method to complete information for a reported Crostini App.
 // Returns whether all required App information could be retrieved or not.
 bool AddCrostiniAppInfo(
-    const crostini::CrostiniRegistryService::Registration& registration,
+    const guest_os::GuestOsRegistryService::Registration& registration,
     em::CrostiniApp* const app) {
   app->set_app_name(registration.Name());
   const base::Time last_launch_time = registration.LastLaunchTime();
@@ -561,8 +561,8 @@ bool AddCrostiniAppInfo(
 // Utility method to add a list of installed Crostini Apps to Crostini status
 void AddCrostiniAppListForProfile(Profile* const profile,
                                   em::CrostiniStatus* const crostini_status) {
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   for (const auto& pair : registry_service->GetRegisteredApps()) {
     const std::string& registered_app_id = pair.first;
     const auto& registration = pair.second;

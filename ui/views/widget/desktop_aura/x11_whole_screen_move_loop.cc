@@ -257,13 +257,12 @@ void X11WholeScreenMoveLoop::GrabEscKey() {
 }
 
 void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
-  unsigned long attribute_mask = CWOverrideRedirect;
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.override_redirect = x11::True;
   grab_input_window_ = XCreateWindow(display, DefaultRootWindow(display), -100,
                                      -100, 10, 10, 0, CopyFromParent, InputOnly,
-                                     CopyFromParent, attribute_mask, &swa);
+                                     CopyFromParent, CWOverrideRedirect, &swa);
   uint32_t event_mask = ButtonPressMask | ButtonReleaseMask |
                         PointerMotionMask | KeyPressMask | KeyReleaseMask |
                         StructureNotifyMask;

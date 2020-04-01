@@ -178,7 +178,7 @@ BoundsAnimator::Data::~Data() = default;
 BoundsAnimator::Data BoundsAnimator::RemoveFromMaps(View* view) {
   const auto i = data_.find(view);
   DCHECK(i != data_.end());
-  DCHECK(animation_to_view_.count(i->second.animation.get()) > 0);
+  DCHECK_GT(animation_to_view_.count(i->second.animation.get()), 0u);
 
   Data old_data = std::move(i->second);
   data_.erase(view);

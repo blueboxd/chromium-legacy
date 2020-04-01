@@ -47,9 +47,9 @@ class FixedKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
       : issuer_(issuer), result_(std::move(result)) {}
   void Get(const url::Origin& origin,
            base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)>
-               on_done) override {
+               on_done) const override {
     EXPECT_EQ(origin, issuer_);
-    std::move(on_done).Run(std::move(result_));
+    std::move(on_done).Run(result_.Clone());
   }
 
  private:

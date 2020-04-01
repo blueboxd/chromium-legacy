@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -132,11 +133,14 @@ bool WasFrameWithScriptLoaded(content::RenderFrameHost* rfh) {
 // Used to monitor requests that reach the RulesetManager.
 class URLRequestMonitor : public RulesetManager::TestObserver {
  public:
-  explicit URLRequestMonitor(GURL url) : url_(std::move(url)) {}
+  explicit URLRequestMonitor(RulesetManager* manager, GURL url)
+      : manager_(manager), url_(std::move(url)) {
+    manager_->SetObserverForTest(this);
+  }
+  ~URLRequestMonitor() override { manager_->SetObserverForTest(nullptr); }
 
-  // This is called from both the UI and IO thread. Clients should ensure
-  // there's no race.
   bool GetAndResetRequestSeen(bool new_val) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     bool return_val = request_seen_;
     request_seen_ = new_val;
     return return_val;
@@ -146,12 +150,15 @@ class URLRequestMonitor : public RulesetManager::TestObserver {
   // RulesetManager::TestObserver implementation.
   void OnEvaluateRequest(const WebRequestInfo& request,
                          bool is_incognito_context) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (request.url == url_)
       GetAndResetRequestSeen(true);
   }
 
+  RulesetManager* const manager_;
   GURL url_;
   bool request_seen_ = false;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestMonitor);
 };
@@ -160,74 +167,44 @@ class URLRequestMonitor : public RulesetManager::TestObserver {
 // a certain count.
 class RulesetCountWaiter : public RulesetManager::TestObserver {
  public:
-  RulesetCountWaiter() = default;
+  explicit RulesetCountWaiter(RulesetManager* manager)
+      : manager_(manager), current_count_(manager_->GetMatcherCountForTest()) {
+    manager_->SetObserverForTest(this);
+  }
+  ~RulesetCountWaiter() override { manager_->SetObserverForTest(nullptr); }
 
   void WaitForRulesetCount(size_t count) {
-    {
-      base::AutoLock lock(lock_);
-      ASSERT_FALSE(expected_count_);
-      if (current_count_ == count)
-        return;
-      expected_count_ = count;
-      run_loop_ = std::make_unique<base::RunLoop>();
-    }
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    ASSERT_FALSE(expected_count_);
+    if (current_count_ == count)
+      return;
 
+    expected_count_ = count;
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 
  private:
   // RulesetManager::TestObserver implementation.
   void OnRulesetCountChanged(size_t count) override {
-    base::AutoLock lock(lock_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     current_count_ = count;
     if (expected_count_ != count)
       return;
 
     ASSERT_TRUE(run_loop_.get());
 
-    // The run-loop has either started or a task on the UI thread to start it is
-    // underway. RunLoop::Quit is thread-safe and should post a task to the UI
-    // thread to quit the run-loop.
     run_loop_->Quit();
     expected_count_.reset();
   }
 
-  // Accessed on both the UI and IO threads. Access is synchronized using
-  // |lock_|.
+  RulesetManager* const manager_;
   size_t current_count_ = 0;
   base::Optional<size_t> expected_count_;
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  base::Lock lock_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RulesetCountWaiter);
-};
-
-// Helper to set (and reset on destruction) the given
-// RulesetManager::TestObserver on the IO thread. Lifetime of |observer| should
-// be managed by clients.
-class ScopedRulesetManagerTestObserver {
- public:
-  ScopedRulesetManagerTestObserver(RulesetManager::TestObserver* observer,
-                                   content::BrowserContext* browser_context)
-      : browser_context_(browser_context) {
-    SetRulesetManagerTestObserver(observer);
-  }
-
-  ~ScopedRulesetManagerTestObserver() {
-    SetRulesetManagerTestObserver(nullptr);
-  }
-
- private:
-  void SetRulesetManagerTestObserver(RulesetManager::TestObserver* observer) {
-    declarative_net_request::RulesMonitorService::Get(browser_context_)
-        ->ruleset_manager()
-        ->SetObserverForTest(observer);
-  }
-
-  content::BrowserContext* browser_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedRulesetManagerTestObserver);
 };
 
 // Helper to wait for warnings thrown for a given extension.
@@ -329,6 +306,10 @@ class DeclarativeNetRequestBrowserTest
         ->GetController()
         .GetLastCommittedEntry()
         ->GetPageType();
+  }
+
+  RulesetManager* ruleset_manager() {
+    return RulesMonitorService::Get(profile())->ruleset_manager();
   }
 
   content::PageType GetPageType() const { return GetPageType(browser()); }
@@ -1621,8 +1602,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   // Set-up an observer for RulesetMatcher to monitor requests to
   // script.js.
   URLRequestMonitor script_monitor(
+      ruleset_manager(),
       embedded_test_server()->GetURL("example.com", "/cached/script.js"));
-  ScopedRulesetManagerTestObserver scoped_observer(&script_monitor, profile());
 
   GURL url = embedded_test_server()->GetURL(
       "example.com", "/cached/page_with_cacheable_script.html");
@@ -1849,9 +1830,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                        CorruptedIndexedRuleset) {
   // Set-up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
-  RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
-                                                   profile());
+  RulesetCountWaiter ruleset_count_waiter(ruleset_manager());
 
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
@@ -2056,9 +2035,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
-  RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
-                                                   profile());
+  RulesetCountWaiter ruleset_count_waiter(ruleset_manager());
 
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("*");
@@ -2387,9 +2364,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
-  RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
-                                                   profile());
+  RulesetCountWaiter ruleset_count_waiter(ruleset_manager());
 
   EXPECT_FALSE(
       ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(

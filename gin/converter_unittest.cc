@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "gin/function_template.h"
 #include "gin/handle.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
@@ -222,6 +223,47 @@ TEST_F(ConverterTest, VectorOfWrappables) {
   std::vector<MyObject*> out_value2;
   ASSERT_TRUE(ConvertFromV8(isolate, array2, &out_value2));
   EXPECT_THAT(out_value2, testing::ContainerEq(vector));
+}
+
+namespace {
+
+class MoveOnlyObject {
+ public:
+  MoveOnlyObject() = default;
+  MoveOnlyObject(const MoveOnlyObject&) = delete;
+  MoveOnlyObject& operator=(const MoveOnlyObject&) = delete;
+
+  MoveOnlyObject(MoveOnlyObject&&) noexcept = default;
+  MoveOnlyObject& operator=(MoveOnlyObject&&) noexcept = default;
+};
+
+}  // namespace
+
+template <>
+struct Converter<MoveOnlyObject> {
+  static v8::Local<v8::Value> ToV8(v8::Isolate* isolate, MoveOnlyObject in) {
+    return v8::Undefined(isolate);
+  }
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Local<v8::Value> val,
+                     MoveOnlyObject* out) {
+    *out = MoveOnlyObject();
+    return true;
+  }
+};
+
+TEST_F(ConverterTest, MoveOnlyParameters) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  auto receives_move_only_obj = [](MoveOnlyObject obj) {};
+  auto func_templ = gin::CreateFunctionTemplate(
+      isolate, base::BindRepeating(receives_move_only_obj));
+
+  v8::Local<v8::Context> context = instance_->isolate()->GetCurrentContext();
+  auto func = func_templ->GetFunction(context).ToLocalChecked();
+  v8::Local<v8::Value> argv[] = {v8::Undefined(isolate)};
+  func->Call(context, v8::Undefined(isolate), 1, argv).ToLocalChecked();
 }
 
 }  // namespace gin

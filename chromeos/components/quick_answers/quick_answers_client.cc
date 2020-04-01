@@ -89,7 +89,12 @@ void QuickAnswersClient::OnAssistantContextEnabled(bool enabled) {
 }
 
 void QuickAnswersClient::OnLocaleChanged(const std::string& locale) {
-  const std::string kAllowedLocales[] = {ULOC_US};
+  // String literals used in some cases in the array because their
+  // constant equivalents don't exist in:
+  // third_party/icu/source/common/unicode/uloc.h
+  const std::string kAllowedLocales[] = {ULOC_CANADA, ULOC_UK, ULOC_US,
+                                         "en_AU",     "en_IN", "en_NZ"};
+
   const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
   locale_supported_ = (base::Contains(kAllowedLocales, locale) ||
                        base::Contains(kAllowedLocales, kRuntimeLocale));
@@ -124,6 +129,7 @@ void QuickAnswersClient::OnQuickAnswerClick(ResultType result_type) {
 
 void QuickAnswersClient::NotifyEligibilityChanged() {
   DCHECK(delegate_);
+
   bool is_eligible =
       (chromeos::features::IsQuickAnswersEnabled() && assistant_state_ &&
        assistant_enabled_ && locale_supported_ && assistant_context_enabled_ &&

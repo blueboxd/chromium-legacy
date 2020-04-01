@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -50,7 +49,7 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
         mMediator = new StatusMediator(mModel, mStatusView.getResources(), mStatusView.getContext(),
-                urlBarEditingTextStateProvider);
+                urlBarEditingTextStateProvider, isTablet);
 
         Resources res = mStatusView.getResources();
         mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
@@ -255,7 +254,7 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
      **/
     private void reconcileVisualState(boolean showStatusIconWhenFocused) {
         // No reconciliation is needed on tablet because the status icon is always shown.
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mStatusView.getContext())) return;
+        if (mIsTablet) return;
 
         // State requirements:
         // - The ToolbarDataProvider and views are not null.

@@ -729,6 +729,14 @@ AutocompleteResult::GetMatchDedupComparators() const {
   return comparators;
 }
 
+base::string16 AutocompleteResult::GetHeaderForGroupId(
+    int suggestion_group_id) {
+  const auto& it = headers_map_.find(suggestion_group_id);
+  if (it != headers_map_.end())
+    return it->second;
+  return base::string16();
+}
+
 // static
 void AutocompleteResult::LogAsynchronousUpdateMetrics(
     const std::vector<MatchDedupComparator>& old_result,

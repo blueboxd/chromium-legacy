@@ -22,7 +22,7 @@ import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
- * Tests the {@link CurrentPageVerifier} integration with {@link WebApkActivity}.
+ * Tests the {@link CurrentPageVerifier} integration with WebAPK Activity.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -37,7 +37,7 @@ public final class WebApkCurrentPageVerifierTest {
         mTestServer = mActivityTestRule.getTestServer();
     }
 
-    private WebApkActivity launchWebApk(String url) {
+    private WebappActivity launchWebApk(String url) {
         WebApkInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk.random", url).build();
         return mActivityTestRule.startWebApkActivity(webApkInfo);
     }

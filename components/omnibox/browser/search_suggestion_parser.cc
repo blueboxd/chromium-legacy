@@ -453,8 +453,13 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
     const base::DictionaryValue* wrapper_dict = nullptr;
     if (extras->GetDictionary("google:headertexts", &wrapper_dict) &&
-        wrapper_dict) {
-      wrapper_dict->GetDictionary("a", &headers);
+        wrapper_dict && wrapper_dict->GetDictionary("a", &headers) && headers) {
+      for (const auto& it : headers->DictItems()) {
+        int suggestion_group_id;
+        base::StringToInt(it.first, &suggestion_group_id);
+        results->headers_map[suggestion_group_id] =
+            base::UTF8ToUTF16(it.second.GetString());
+      }
     }
 
     const base::DictionaryValue* client_data = nullptr;
@@ -552,7 +557,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       std::string image_dominant_color;
       std::string image_url;
       std::string additional_query_params;
-      base::string16 header;
+      base::Optional<int> suggestion_group_id;
 
       if (suggestion_details) {
         suggestion_details->GetDictionary(index, &suggestion_detail);
@@ -567,15 +572,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("i", &image_url);
           suggestion_detail->GetString("q", &additional_query_params);
 
-          // Header text.
-          if (headers) {
-            base::Optional<int> zero_suggest_group =
-                suggestion_detail->FindIntPath("zl");
-            if (zero_suggest_group) {
-              headers->GetString(base::NumberToString(*zero_suggest_group),
-                                 &header);
-            }
-          }
+          // Suggestion group Id.
+          suggestion_group_id = suggestion_detail->FindIntPath("zl");
 
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
@@ -611,7 +609,11 @@ bool SearchSuggestionParser::ParseSuggestResults(
           relevances != nullptr,
           should_prefetch,
           trimmed_input));
-      results->suggest_results.back().set_header(header);
+
+      if (suggestion_group_id) {
+        results->suggest_results.back().set_suggestion_group_id(
+            *suggestion_group_id);
+      }
       if (answer_parsed_successfully)
         results->suggest_results.back().SetAnswer(answer);
     }

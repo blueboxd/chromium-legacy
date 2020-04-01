@@ -5,39 +5,25 @@
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
-import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
-import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
-import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
-import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
 
-import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
-import dagger.Reusable;
 
 /**
  * Module for custom tab specific bindings.
  */
 @Module
 public class CustomTabActivityModule {
-    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final CustomTabNightModeStateController mNightModeController;
-    private final IntentIgnoringCriterion mIntentIgnoringCriterion;
     private final StartupTabPreloader mStartupTabPreloader;
 
-    public CustomTabActivityModule(BrowserServicesIntentDataProvider intentDataProvider,
-            CustomTabNightModeStateController nightModeController,
-            IntentIgnoringCriterion intentIgnoringCriterion,
+    public CustomTabActivityModule(CustomTabNightModeStateController nightModeController,
             StartupTabPreloader startupTabPreloader) {
-        mIntentDataProvider = intentDataProvider;
         mNightModeController = nightModeController;
-        mIntentIgnoringCriterion = intentIgnoringCriterion;
         mStartupTabPreloader = startupTabPreloader;
     }
 
@@ -55,24 +41,6 @@ public class CustomTabActivityModule {
     @Provides
     public CustomTabNightModeStateController provideNightModeController() {
         return mNightModeController;
-    }
-
-    @Provides
-    public CustomTabIntentHandlingStrategy provideIntentHandler(
-            Lazy<DefaultCustomTabIntentHandlingStrategy> defaultHandler,
-            Lazy<TwaIntentHandlingStrategy> twaHandler) {
-        return mIntentDataProvider.isTrustedWebActivity() ? twaHandler.get() : defaultHandler.get();
-    }
-
-    @Provides
-    public IntentIgnoringCriterion provideIntentIgnoringCriterion() {
-        return mIntentIgnoringCriterion;
-    }
-
-    @Provides
-    @Reusable
-    public WebApkPostShareTargetNavigator providePostShareTargetNavigator() {
-        return new WebApkPostShareTargetNavigator();
     }
 
     @Provides

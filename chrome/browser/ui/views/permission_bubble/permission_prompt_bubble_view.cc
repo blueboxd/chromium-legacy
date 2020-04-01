@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,7 +42,7 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
     : browser_(browser),
       delegate_(delegate),
       name_or_origin_(GetDisplayNameOrOrigin()) {
-  DCHECK(browser_);
+  // Note that browser_ may be null in unit tests.
   DCHECK(delegate_);
 
   // To prevent permissions being accepted accidentally, and as a security
@@ -72,9 +73,25 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
 
   for (permissions::PermissionRequest* request : delegate_->Requests())
     AddPermissionRequestLine(request);
+}
 
-  Show();
+void PermissionPromptBubbleView::Show() {
+  DCHECK(browser_->window());
 
+  // Set |parent_window| because some valid anchors can become hidden.
+  set_parent_window(
+      platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
+
+  views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
+  // If a browser window (or popup) other than the bubble parent has focus,
+  // don't take focus.
+  if (browser_->window()->IsActive())
+    widget->Show();
+  else
+    widget->ShowInactive();
+
+  SizeToContents();
+  UpdateAnchorPosition();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PERMISSIONS);
 }
 
@@ -172,6 +189,38 @@ base::string16 PermissionPromptBubbleView::GetWindowTitle() const {
                                     name_or_origin_.name_or_origin);
 }
 
+base::string16 PermissionPromptBubbleView::GetAccessibleWindowTitle() const {
+  // Generate one of:
+  //   $origin wants to: $permission
+  //   $origin wants to: $permission and $permission
+  //   $origin wants to: $permission, $permission, and more
+  // where $permission is the permission's text fragment, a verb phrase
+  // describing what the permission is, like:
+  //   "Download multiple files"
+  //   "Use your camera"
+  //
+  // There are three separate internationalized messages used, one for each
+  // format of title, to provide for accurate i18n. See https://crbug.com/434574
+  // for more details.
+  const std::vector<permissions::PermissionRequest*>& requests =
+      delegate_->Requests();
+  DCHECK(!requests.empty());
+
+  if (requests.size() == 1) {
+    return l10n_util::GetStringFUTF16(
+        IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_ONE_PERM,
+        name_or_origin_.name_or_origin, requests[0]->GetMessageTextFragment());
+  }
+
+  int template_id =
+      requests.size() == 2
+          ? IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_TWO_PERMS
+          : IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_TWO_PERMS_MORE;
+  return l10n_util::GetStringFUTF16(template_id, name_or_origin_.name_or_origin,
+                                    requests[0]->GetMessageTextFragment(),
+                                    requests[1]->GetMessageTextFragment());
+}
+
 gfx::Size PermissionPromptBubbleView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
@@ -185,25 +234,6 @@ void PermissionPromptBubbleView::ButtonPressed(views::Button* sender,
     chrome::AddSelectedTabWithURL(browser_,
                                   GURL(chrome::kFlashDeprecationLearnMoreURL),
                                   ui::PAGE_TRANSITION_LINK);
-}
-
-void PermissionPromptBubbleView::Show() {
-  DCHECK(browser_->window());
-
-  // Set |parent_window| because some valid anchors can become hidden.
-  set_parent_window(
-      platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
-
-  views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
-  // If a browser window (or popup) other than the bubble parent has focus,
-  // don't take focus.
-  if (browser_->window()->IsActive())
-    widget->Show();
-  else
-    widget->ShowInactive();
-
-  SizeToContents();
-  UpdateAnchorPosition();
 }
 
 PermissionPromptBubbleView::DisplayNameOrOrigin

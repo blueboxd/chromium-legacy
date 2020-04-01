@@ -16,6 +16,8 @@
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "chromeos/components/sync_wifi/test_data_generator.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -120,6 +122,9 @@ class WifiConfigurationBridgeTest : public testing::Test {
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {}
 
   void SetUp() override {
+    shill_clients::InitializeFakes();
+    NetworkHandler::Initialize();
+
     ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(true));
     synced_network_updater_ = std::make_unique<TestSyncedNetworkUpdater>();
     local_network_collector_ = std::make_unique<FakeLocalNetworkCollector>();
@@ -141,6 +146,11 @@ class WifiConfigurationBridgeTest : public testing::Test {
         mock_processor_.CreateForwardingProcessor(),
         syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)));
     bridge_->SetNetworkMetadataStore(network_metadata_store_->GetWeakPtr());
+  }
+
+  void TearDown() override {
+    NetworkHandler::Shutdown();
+    shill_clients::Shutdown();
   }
 
   void DisableBridge() {

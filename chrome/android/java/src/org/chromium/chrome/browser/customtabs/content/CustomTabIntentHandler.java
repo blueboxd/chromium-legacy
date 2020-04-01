@@ -16,6 +16,7 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.net.NetworkChangeNotifier;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -72,6 +73,10 @@ public class CustomTabIntentHandler {
         runWhenTabCreated(() -> {
             if (mTabProvider.getInitialTabCreationMode() != TabCreationMode.RESTORED) {
                 mHandlingStrategy.handleInitialIntent(mIntentDataProvider);
+            } else if (mIntentDataProvider.isWebappOrWebApkActivity()
+                    && !mIntentDataProvider.isWebApkActivity()
+                    && NetworkChangeNotifier.isOnline()) {
+                mTabProvider.getTab().reloadIgnoringCache();
             }
         });
     }
@@ -86,7 +91,8 @@ public class CustomTabIntentHandler {
     public boolean onNewIntent(BrowserServicesIntentDataProvider intentDataProvider) {
         Intent intent = intentDataProvider.getIntent();
         CustomTabsSessionToken session = intentDataProvider.getSession();
-        if (session == null || !session.equals(mIntentDataProvider.getSession())) {
+        if (!intentDataProvider.isWebappOrWebApkActivity()
+                && (session == null || !session.equals(mIntentDataProvider.getSession()))) {
             assert false : "New intent delivered into a Custom Tab with a different session";
             int flagsToRemove = Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP;
             intent.setFlags((intent.getFlags() & ~flagsToRemove) | Intent.FLAG_ACTIVITY_NEW_TASK);

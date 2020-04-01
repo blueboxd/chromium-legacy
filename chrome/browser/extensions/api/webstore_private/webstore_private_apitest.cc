@@ -636,6 +636,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
   ASSERT_FALSE(service->IsExtensionAllowed(*extension));
 }
 
+// Tests that no parent permission is required for a child to install a theme.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
+                       NoParentPermissionRequiredForTheme) {
+  WebstoreInstallListener listener;
+  WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
+  ASSERT_TRUE(RunInstallTest("theme.html", "../../theme.crx"));
+  listener.Wait();
+  ASSERT_TRUE(listener.received_success());
+  ASSERT_EQ("idlfhncioikpdnlhnmcjogambnefbbfp", listener.id());
+}
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {

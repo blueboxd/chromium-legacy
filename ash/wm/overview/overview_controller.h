@@ -13,6 +13,7 @@
 #include "ash/wm/overview/overview_delegate.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -34,10 +35,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Starts/Ends overview with |type|. Returns true if enter or exit overview
   // successful. Depending on |type| the enter/exit animation will look
   // different.
-  bool StartOverview(OverviewSession::EnterExitOverviewType type =
-                         OverviewSession::EnterExitOverviewType::kNormal);
-  bool EndOverview(OverviewSession::EnterExitOverviewType type =
-                       OverviewSession::EnterExitOverviewType::kNormal);
+  bool StartOverview(
+      OverviewEnterExitType type = OverviewEnterExitType::kNormal);
+  bool EndOverview(OverviewEnterExitType type = OverviewEnterExitType::kNormal);
 
   // Returns true if overview mode is active.
   bool InOverviewSession() const;
@@ -110,14 +110,14 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   // Toggle overview mode. Depending on |type| the enter/exit animation will
   // look different.
-  void ToggleOverview(OverviewSession::EnterExitOverviewType type =
-                          OverviewSession::EnterExitOverviewType::kNormal);
+  void ToggleOverview(
+      OverviewEnterExitType type = OverviewEnterExitType::kNormal);
 
   // Returns true if it's possible to enter or exit overview mode in the current
   // configuration. This can be false at certain times, such as when the lock
   // screen is visible we can't overview mode.
   bool CanEnterOverview();
-  bool CanEndOverview(OverviewSession::EnterExitOverviewType type);
+  bool CanEndOverview(OverviewEnterExitType type);
 
   void OnStartingAnimationComplete(bool canceled);
   void OnEndingAnimationComplete(bool canceled);

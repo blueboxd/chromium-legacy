@@ -8,9 +8,9 @@
 
 #include "base/optional.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -77,7 +77,7 @@ class CrostiniShelfUtilsTest : public testing::Test {
       if (in_app.no_display)
         out_app.set_no_display(*in_app.no_display);
     }
-    CrostiniRegistryService service(&testing_profile_);
+    guest_os::GuestOsRegistryService service(&testing_profile_);
     for (AppLists::value_type& value : app_lists) {
       service.UpdateApplicationList(std::move(value.second));
     }

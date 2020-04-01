@@ -167,8 +167,8 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
       if (prefer_maskable_icon &&
           base::Contains(icon.purpose,
                          blink::Manifest::ImageResource::Purpose::MASKABLE) &&
-          size.height() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx &
-              size.width() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx) {
+          size.height() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx &&
+          size.width() >= kMinimumPrimaryAdaptiveLauncherIconSizeInPx) {
         return true;
       }
     }

@@ -8,7 +8,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
-# See build/no_sources_assignment_filter.md for more information.
+# See docs/no_sources_assignment_filter.md for more information.
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
@@ -265,6 +265,7 @@ jumbo_source_set("internal") {
         "policy_loader_ios.mm",
       ]
       configs += [ "//build/config/compiler:enable_arc" ]
+      frameworks += [ "Foundation.framework" ]
     }
   }
 }
@@ -351,6 +352,15 @@ source_set("common_constants") {
     "policy_switches.h",
     "policy_types.h",
   ]
+
+  if (is_ios) {
+    sources += [
+      "policy_loader_ios_constants.h",
+      "policy_loader_ios_constants.mm",
+    ]
+    configs += [ "//build/config/compiler:enable_arc" ]
+    frameworks = [ "Foundation.framework" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -432,6 +442,7 @@ source_set("unit_tests") {
   }
 
   deps = [
+    ":common_constants",
     ":test_support",
     "//base",
     "//base/test:test_support",

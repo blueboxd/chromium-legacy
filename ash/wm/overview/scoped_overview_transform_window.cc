@@ -165,15 +165,15 @@ float ScopedOverviewTransformWindow::GetItemScale(const gfx::SizeF& source,
 }
 
 // static
-ScopedOverviewTransformWindow::GridWindowFillMode
+OverviewGridWindowFillMode
 ScopedOverviewTransformWindow::GetWindowDimensionsType(const gfx::Size& size) {
   if (size.width() > size.height() * kExtremeWindowRatioThreshold)
-    return ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed;
+    return OverviewGridWindowFillMode::kLetterBoxed;
 
   if (size.height() > size.width() * kExtremeWindowRatioThreshold)
-    return ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed;
+    return OverviewGridWindowFillMode::kPillarBoxed;
 
-  return ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
+  return OverviewGridWindowFillMode::kNormal;
 }
 
 void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
@@ -322,14 +322,12 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
                         bounds.y() + vertical_offset, width, height);
 
   switch (type()) {
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed: {
+    case OverviewGridWindowFillMode::kLetterBoxed:
+    case OverviewGridWindowFillMode::kPillarBoxed: {
       // Attempt to scale |rect| to fit |bounds|. Maintain the aspect ratio of
       // |rect|. Letter boxed windows' width will match |bounds|'s width and
       // pillar boxed windows' height will match |bounds|'s height.
-      const bool is_pillar =
-          type() ==
-          ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed;
+      const bool is_pillar = type() == OverviewGridWindowFillMode::kPillarBoxed;
       const gfx::Rect window_bounds =
           ::wm::GetTransientRoot(window_)->GetBoundsInScreen();
       const float window_ratio =

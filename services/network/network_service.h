@@ -38,6 +38,8 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "services/network/trust_tokens/trust_token_key_commitments.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace net {
@@ -173,6 +175,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void SetEnvironment(
       std::vector<mojom::EnvironmentVariablePtr> environment) override;
+  void SetTrustTokenKeyCommitments(
+      base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr>
+          commitments) override;
+
 #if defined(OS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
@@ -232,6 +238,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   bool split_auth_cache_by_network_isolation_key() const {
     return split_auth_cache_by_network_isolation_key_;
+  }
+
+  const TrustTokenKeyCommitments* trust_token_key_commitments() const {
+    return trust_token_key_commitments_.get();
   }
 
   static NetworkService* GetNetworkServiceForTesting();
@@ -344,6 +354,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Whether new NetworkContexts will be configured to partition their
   // HttpAuthCaches by NetworkIsolationKey.
   bool split_auth_cache_by_network_isolation_key_ = false;
+
+  // Globally-scoped cryptographic state for the Trust Tokens protocol
+  // (https://github.com/wicg/trust-token-api), updated via a Mojo IPC and
+  // provided to NetworkContexts via the getter.
+  std::unique_ptr<TrustTokenKeyCommitments> trust_token_key_commitments_;
 
   std::unique_ptr<DelayedDohProbeActivator> doh_probe_activator_;
 

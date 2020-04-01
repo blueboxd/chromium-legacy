@@ -1338,6 +1338,8 @@ std::string SerializeDeepScanningRequest(
   }
 
   request_dict.SetKey("request_token", base::Value(request.request_token()));
+  request_dict.SetKey("filename", base::Value(request.filename()));
+  request_dict.SetKey("digest", base::Value(request.digest()));
 
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);

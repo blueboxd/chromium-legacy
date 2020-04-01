@@ -35,6 +35,8 @@ function getAriaLabel(alertState) {
       return loadTimeData.getStringF('bluetoothConnected', '');
     case TabAlertState.USB_CONNECTED:
       return loadTimeData.getStringF('usbConnected', '');
+    case TabAlertState.HID_CONNECTED:
+      return loadTimeData.getStringF('hidConnected', '');
     case TabAlertState.SERIAL_CONNECTED:
       return loadTimeData.getStringF('serialConnected', '');
     case TabAlertState.PIP_PLAYING:

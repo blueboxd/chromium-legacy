@@ -27,6 +27,8 @@ action("generate_schema_org_code") {
   sources = [
     "templates/schema_org_entity_names.cc.tmpl",
     "templates/schema_org_entity_names.h.tmpl",
+    "templates/schema_org_enums.cc.tmpl",
+    "templates/schema_org_enums.h.tmpl",
     "templates/schema_org_property_configurations.cc.tmpl",
     "templates/schema_org_property_configurations.h.tmpl",
     "templates/schema_org_property_names.cc.tmpl",
@@ -47,6 +49,8 @@ action("generate_schema_org_code") {
     "$target_gen_dir/schema_org_property_configurations.cc",
     "$target_gen_dir/schema_org_property_names.h",
     "$target_gen_dir/schema_org_property_names.cc",
+    "$target_gen_dir/schema_org_enums.h",
+    "$target_gen_dir/schema_org_enums.cc",
   ]
 }
 
@@ -54,6 +58,8 @@ static_library("schema_org_properties") {
   sources = [
     "$target_gen_dir/schema_org_entity_names.cc",
     "$target_gen_dir/schema_org_entity_names.h",
+    "$target_gen_dir/schema_org_enums.cc",
+    "$target_gen_dir/schema_org_enums.h",
     "$target_gen_dir/schema_org_property_configurations.cc",
     "$target_gen_dir/schema_org_property_configurations.h",
     "$target_gen_dir/schema_org_property_names.cc",

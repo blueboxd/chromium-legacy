@@ -31,6 +31,8 @@ android_library("java") {
     "org/chromium/weblayer/Callback.java",
     "org/chromium/weblayer/ChildProcessService.java",
     "org/chromium/weblayer/ContextMenuParams.java",
+    "org/chromium/weblayer/CookieChangeCause.java",
+    "org/chromium/weblayer/CookieChangedCallback.java",
     "org/chromium/weblayer/CookieManager.java",
     "org/chromium/weblayer/CrashReporterCallback.java",
     "org/chromium/weblayer/CrashReporterController.java",

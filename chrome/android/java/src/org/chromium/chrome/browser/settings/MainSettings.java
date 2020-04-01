@@ -56,6 +56,7 @@ public class MainSettings extends PreferenceFragmentCompat
     public static final String PREF_UI_THEME = "ui_theme";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
     public static final String PREF_NOTIFICATIONS = "notifications";
+    public static final String PREF_LANGUAGES = "languages";
     public static final String PREF_DOWNLOADS = "downloads";
     public static final String PREF_DEVELOPER = "developer";
 

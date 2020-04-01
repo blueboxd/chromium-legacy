@@ -469,6 +469,7 @@ jumbo_source_set("test_support") {
     "//services/network/public/cpp",
     "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
+    "//services/network/trust_tokens:test_support",
   ]
 
   deps = [

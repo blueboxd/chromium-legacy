@@ -119,7 +119,7 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   template <typename AuraViewWrapper, typename AuraView>
   AXAuraObjWrapper* CreateInternal(
       AuraView* aura_view,
-      std::map<AuraView*, int32_t>& aura_view_to_id_map);
+      std::map<AuraView*, int32_t>* aura_view_to_id_map);
 
   template <typename AuraView>
   int32_t GetIDInternal(
@@ -128,7 +128,7 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
 
   template <typename AuraView>
   void RemoveInternal(AuraView* aura_view,
-                      std::map<AuraView*, int32_t>& aura_view_to_id_map);
+                      std::map<AuraView*, int32_t>* aura_view_to_id_map);
 
   std::map<views::View*, int32_t> view_to_id_map_;
   std::map<views::Widget*, int32_t> widget_to_id_map_;

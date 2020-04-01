@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -84,8 +82,6 @@ public class NightModeReparentingControllerTest {
 
     @Mock
     ReparentingTask mTask;
-    @Mock
-    ReparentingTask.Delegate mReparentingTaskDelegate;
 
     MockTabModel mTabModel;
     MockTabModel mIncognitoTabModel;
@@ -104,7 +100,7 @@ public class NightModeReparentingControllerTest {
 
         mDelegate = new FakeNightModeReparentingDelegate();
         mDelegate.setIsNTPUrl(false);
-        mController = new NightModeReparentingController(mDelegate, mReparentingTaskDelegate);
+        mController = new NightModeReparentingController(mDelegate);
     }
 
     @After
@@ -124,18 +120,9 @@ public class NightModeReparentingControllerTest {
         Assert.assertTrue(params instanceof TabReparentingParams);
 
         TabReparentingParams trp = (TabReparentingParams) params;
-        Assert.assertEquals(
-                "The index of the first tab stored should match it's index in the tab stack.", 0,
-                trp.getTabIndex());
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-
         Tab tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
-        Assert.assertEquals(1, tab.getId());
         verify(mTask, times(1)).detach();
-
-        mController.onNativeInitialized();
-        verify(mTask, times(1)).finish(anyObject(), anyObject());
     }
 
     @Test
@@ -148,18 +135,6 @@ public class NightModeReparentingControllerTest {
     }
 
     @Test
-    public void testReparenting_singleTab_currentModelNullOnStart() {
-        mForegroundTab = createAndAddMockTab(1, false);
-        mController.onNightModeStateChanged();
-
-        doReturn(null).when(mDelegate.getTabModelSelector()).getModel(anyBoolean());
-        mController.onNativeInitialized();
-
-        AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(1);
-        Assert.assertNull(params);
-    }
-
-    @Test
     public void testReparenting_multipleTabs() {
         mForegroundTab = createAndAddMockTab(1, false);
         createAndAddMockTab(2, false);
@@ -167,29 +142,14 @@ public class NightModeReparentingControllerTest {
 
         TabReparentingParams trp =
                 (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(1);
-        Assert.assertEquals(
-                "The index of the first tab stored should match its index in the tab stack.", 0,
-                trp.getTabIndex());
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-        Assert.assertTrue(trp.isForegroundTab());
-
         Tab tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
-        Assert.assertEquals(1, tab.getId());
-
         trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(2);
-        Assert.assertEquals(1, trp.getTabIndex());
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-        Assert.assertFalse(trp.isForegroundTab());
 
         tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
-        Assert.assertEquals(2, tab.getId());
 
         verify(mTask, times(2)).detach();
-
-        mController.onNativeInitialized();
-        verify(mTask, times(2)).finish(anyObject(), anyObject());
     }
 
     @Test
@@ -203,18 +163,10 @@ public class NightModeReparentingControllerTest {
         Assert.assertTrue(params instanceof TabReparentingParams);
 
         TabReparentingParams trp = (TabReparentingParams) params;
-        Assert.assertEquals(1, trp.getTabIndex());
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-        Assert.assertTrue(trp.isForegroundTab());
-
         Tab tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
-        Assert.assertEquals(2, tab.getId());
 
         verify(mTask, times(2)).detach();
-
-        mController.onNativeInitialized();
-        verify(mTask, times(2)).finish(anyObject(), anyObject());
     }
 
     @Test
@@ -228,18 +180,11 @@ public class NightModeReparentingControllerTest {
         Assert.assertTrue(params instanceof TabReparentingParams);
 
         TabReparentingParams trp = (TabReparentingParams) params;
-        Assert.assertEquals(0, trp.getTabIndex());
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-        Assert.assertTrue(trp.isForegroundTab());
 
         Tab tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
-        Assert.assertEquals(2, tab.getId());
 
         verify(mTask, times(2)).detach();
-
-        mController.onNativeInitialized();
-        verify(mTask, times(2)).finish(anyObject(), anyObject());
     }
 
     @Test
@@ -252,39 +197,15 @@ public class NightModeReparentingControllerTest {
         // Check the foreground tab.
         TabReparentingParams trp =
                 (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(2);
-        Assert.assertEquals(1, trp.getTabIndex());
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-        Assert.assertTrue(trp.isForegroundTab());
 
         Tab tab = trp.getTabToReparent();
         Assert.assertNotNull(tab);
-        Assert.assertEquals(2, tab.getId());
 
         // Check the background tabs.
         trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(1);
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-        Assert.assertFalse(trp.isForegroundTab());
         trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(3);
-        Assert.assertTrue(trp.isFromNightModeReparenting());
-        Assert.assertFalse(trp.isForegroundTab());
 
         verify(mTask, times(3)).detach();
-
-        mController.onNativeInitialized();
-        verify(mTask, times(3)).finish(anyObject(), anyObject());
-    }
-
-    @Test
-    public void testTabGetsStored_noTab() {
-        try {
-            mController.onNightModeStateChanged();
-            mController.onNativeInitialized();
-            verify(mTask, times(0)).finish(anyObject(), anyObject());
-        } catch (Exception e) {
-            Assert.assertTrue(
-                    "NightModeReparentingController shouldn't crash even when there's no tab!",
-                    false);
-        }
     }
 
     /**

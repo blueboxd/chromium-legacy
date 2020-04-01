@@ -22,9 +22,9 @@ class SliderTestApi;
 
 class Slider;
 
-enum SliderChangeReason {
-  VALUE_CHANGED_BY_USER,  // value was changed by the user (by clicking, e.g.)
-  VALUE_CHANGED_BY_API,   // value was changed by a call to SetValue.
+enum class SliderChangeReason {
+  kByUser,  // value was changed by the user (e.g. by clicking)
+  kByApi,   // value was changed by a call to SetValue.
 };
 
 class VIEWS_EXPORT SliderListener {

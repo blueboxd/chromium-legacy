@@ -146,6 +146,67 @@ in
 and `IDNSpoofChecker` class in
 [`components/url_formatter/spoof_checks/idn_spoof_checker.cc`](https://cs.chromium.org/chromium/src/components/url_formatter/spoof_checks/idn_spoof_checker.cc).
 
+## Additional Protections
+
+In addition to the spoof checks above, Chrome also implements a full page
+security warning to protect against lookalike URLs. You can find an example of 
+this warning at `chrome://interstitials/lookalike`. This warning blocks main
+frame navigations that involve lookalike URLs, either as a direct navigation or
+as part of a redirect.
+
+The algorithm to show this warning is as follows:
+
+1. If the scheme of the navigation is not `http` or `https`, allow
+the navigation.
+
+2. If the navigation is a redirect, check the redirect chain. If the redirect
+chain is safe, allow the navigation. (See Defensive Registrations section for
+details).
+
+3. If the hostname of the navigation has at least a medium site engagement
+score, allow the navigation. Site engagement score is assigned to sites by the
+[Site Engagement
+Service](https://www.chromium.org/developers/design-documents/site-engagement).
+
+4. If the hostname of the navigation is in
+[`domains.list`](https://cs.chromium.org/chromium/src/components/url_formatter/spoof_checks/top_domains/domains.list),
+allow the navigation.
+
+5. If the user previously allowed the hostname of the navigation by clicking
+"Ignore" in the warning, allow the navigation. Currently, user decisions are
+stored per tab, so navigating to the same site in a new tab may show the
+warning.
+
+6. If the hostname has the same skeleton as a recently engaged site or a top 500
+domain, block the navigation and show the warning.
+
+All of these checks are done locally on the client side.
+
+### Defensive Registrations
+
+Domain owners can sometimes register multiple versions of their domains, such
+as the ASCII and IDN versions, to improve user experience and prevent potential
+spoofs. We call these supplementary domains defensive registrations.
+
+In some cases, Chrome's lookalike warning may flag and block navigations to
+these domains:
+ - If one of the sites is in `domains.list` but the other isn't, the latter will
+be blocked. 
+ - If the user engaged with one of the sites but not the other, the latter will
+be blocked.
+
+### Avoiding a lookalike warning on your site
+
+**Domain owners can avoid the "Did you mean" warning by redirecting their
+defensive registrations to their canonical domain.**
+
+**Example**: If you own both `example.com` and `éxample.com` and the majority of
+your traffic is to `example.com`, you can fix the warning by redirecting
+`éxample.com` to `example.com`. The lookalike warning logic considers this a
+safe redirect and allows the navigation. If you must also redirect `http`
+navigations to `https`, do this in a single redirect such as
+`http://éxample.com -> https://example.com`. Use HTTP 301 or HTTP 302
+redirects, the lookalike warning ignores meta redirects.
 
 ## Reporting Security Bugs
 

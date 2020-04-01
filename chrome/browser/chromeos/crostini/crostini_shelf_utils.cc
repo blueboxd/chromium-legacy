@@ -6,7 +6,6 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/profiles/profile.h"

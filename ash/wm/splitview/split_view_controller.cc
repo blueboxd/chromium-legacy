@@ -908,8 +908,7 @@ void SplitViewController::OnOverviewButtonTrayLongPressed(
   }
 
   // Start overview mode if we aren't already in it.
-  overview_controller->StartOverview(
-      OverviewSession::EnterExitOverviewType::kImmediateEnter);
+  overview_controller->StartOverview(OverviewEnterExitType::kImmediateEnter);
 
   SnapWindow(target_window, SplitViewController::LEFT);
   wm::ActivateWindow(target_window);
@@ -1195,7 +1194,7 @@ void SplitViewController::OnOverviewModeEnding(
   // Early exit if overview is ended while swiping up on the shelf to avoid
   // snapping a window or showing a toast.
   if (overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
+      OverviewEnterExitType::kSwipeFromShelf) {
     EndSplitView();
     return;
   }
@@ -1256,7 +1255,7 @@ void SplitViewController::OnDisplayRemoved(
   // are in overview (see https://crbug.com/1027179).
   if (state_ == State::kLeftSnapped || state_ == State::kRightSnapped) {
     Shell::Get()->overview_controller()->StartOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateEnter);
+        OverviewEnterExitType::kImmediateEnter);
   }
 }
 
@@ -1673,8 +1672,8 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
     default_snap_position_ = left_window_ ? LEFT : RIGHT;
     UpdateStateAndNotifyObservers();
     Shell::Get()->overview_controller()->StartOverview(
-        window_drag ? OverviewSession::EnterExitOverviewType::kImmediateEnter
-                    : OverviewSession::EnterExitOverviewType::kNormal);
+        window_drag ? OverviewEnterExitType::kImmediateEnter
+                    : OverviewEnterExitType::kNormal);
   }
 }
 
@@ -1934,7 +1933,7 @@ void SplitViewController::EndWindowDragImpl(
         // Set the overview exit type to kImmediateExit to avoid update bounds
         // animation of the windows in overview grid.
         overview_session->set_enter_exit_overview_type(
-            OverviewSession::EnterExitOverviewType::kImmediateExit);
+            OverviewEnterExitType::kImmediateExit);
       }
       // Activate the dragged window and end the overview. The dragged window
       // will be restored back to its previous state before dragging.

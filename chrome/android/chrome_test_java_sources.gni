@@ -428,7 +428,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/searchwidget/SearchActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/searchwidget/SearchWidgetProviderTest.java",
   "javatests/src/org/chromium/chrome/browser/services/GoogleServicesManagerIntegrationTest.java",
-  "javatests/src/org/chromium/chrome/browser/settings/MainSettingsFragmentTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/SettingsActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/homepage/HomepageSettingsFragmentTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/homepage/HomepageSettingsFragmentWithEditorTest.java",

@@ -59,7 +59,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
@@ -788,14 +788,13 @@ public class VrShellDelegate
     private static void startFeedback(Tab tab) {
         // TODO(ymalik): This call will connect to the Google Services api which can be slow. Can we
         // connect to it beforehand when we know that we'll be prompting for feedback?
-        HelpAndFeedback.getInstance().showFeedback(((TabImpl) tab).getActivity(),
+        HelpAndFeedback.getInstance().showFeedback(TabUtils.getActivity(tab),
                 Profile.fromWebContents(tab.getWebContents()), tab.getUrlString(),
                 ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_REPORT_TYPE);
     }
 
     private static void promptForFeedback(final Tab tab) {
         if (tab == null) return;
-        final ChromeActivity activity = ((TabImpl) tab).getActivity();
         SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
             @Override
             public void onInfoBarDismissed() {}
@@ -823,7 +822,7 @@ public class VrShellDelegate
                         org.chromium.chrome.vr.R.string.vr_shell_feedback_infobar_description),
                 ContextUtils.getApplicationContext().getString(
                         org.chromium.chrome.vr.R.string.vr_shell_feedback_infobar_feedback_button),
-                activity.getString(R.string.no_thanks), null /* linkText */,
+                tab.getContext().getString(R.string.no_thanks), null /* linkText */,
                 true /* autoExpire  */);
     }
 

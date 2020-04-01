@@ -350,6 +350,10 @@ class OmniboxEditModel {
   // negative for moving up, positive for moving down. Virtual for testing.
   virtual void OnUpOrDownKeyPressed(int count);
 
+  // If no query is in progress, starts working on an autocomplete query.
+  // Returns true if started; false otherwise.
+  bool MaybeStartQueryForPopup();
+
   // Called when any relevant data changes.  This rolls together several
   // separate pieces of data into one call so we can update all the UI
   // efficiently:
@@ -482,11 +486,6 @@ class OmniboxEditModel {
   // change). If the caret visibility changes, we call ApplyCaretVisibility() on
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
-
-  // Calculates the new selected line based on |count|, how many
-  // suggestions are currently in the results, and any features
-  // that are enabled.
-  size_t GetNewSelectedLine(int count);
 
   // NOTE: |client_| must outlive |omnibox_controller_|, as the latter has a
   // reference to the former.

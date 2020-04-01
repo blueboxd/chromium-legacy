@@ -190,7 +190,7 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
         break;
       case ui::ET_GESTURE_SCROLL_END:
         if (drag_in_progress_) {
-          container_->EndDragToOpen(false);
+          container_->EndDragToOpen();
           event->SetHandled();
           drag_in_progress_ = false;
         }
@@ -206,7 +206,16 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
           // have been sent. Tell the container a drag began.
           container_->UpdateHeightForDragToOpen(0.0f);
         }
-        container_->EndDragToOpen(event->details().swipe_down());
+
+        if (event->details().swipe_down() || event->details().swipe_up()) {
+          container_->EndDragToOpen(event->details().swipe_down()
+                                        ? FlingDirection::kDown
+                                        : FlingDirection::kUp);
+        } else {
+          // Treat a sideways swipe as a normal drag end.
+          container_->EndDragToOpen();
+        }
+
         event->SetHandled();
         drag_in_progress_ = false;
         break;
@@ -215,7 +224,7 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
           // If an unsupported gesture is sent, ensure that we still
           // finish the drag on gesture end. Otherwise, the container
           // will be stuck partially open.
-          container_->EndDragToOpen(false);
+          container_->EndDragToOpen();
           event->SetHandled();
           drag_in_progress_ = false;
         }
@@ -423,18 +432,25 @@ void WebUITabStripContainerView::UpdateHeightForDragToOpen(float height_delta) {
   PreferredSizeChanged();
 }
 
-void WebUITabStripContainerView::EndDragToOpen(bool fling_to_open) {
+void WebUITabStripContainerView::EndDragToOpen(
+    base::Optional<FlingDirection> fling_direction) {
   if (!current_drag_height_)
     return;
 
   const int final_drag_height = *current_drag_height_;
   current_drag_height_ = base::nullopt;
 
-  // If we are at least halfway open by now, animate fully open.
-  // Otherwise, animate back to closed.
+  // If this wasn't a fling, determine whether to open or close based on
+  // final height.
   const double open_proportion =
       static_cast<double>(final_drag_height) / desired_height_;
-  const bool opening = fling_to_open || open_proportion >= 0.5;
+  bool opening = open_proportion >= 0.5;
+  if (fling_direction) {
+    // If this was a fling, ignore the final height and use the fling
+    // direction.
+    opening = fling_direction == FlingDirection::kDown;
+  }
+
   if (opening) {
     iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripOpened);
     RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kToolbarDrag);

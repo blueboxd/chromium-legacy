@@ -149,8 +149,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
 
     if (overview_controller->InOverviewSession()) {
       // End overview mode.
-      overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kSlideOutExit);
+      overview_controller->EndOverview(OverviewEnterExitType::kSlideOutExit);
       return true;
     }
 
@@ -195,10 +194,8 @@ bool HomeScreenController::GoHome(int64_t display_id) {
     // If overview session is active (e.g. on one side of the split view), end
     // it immediately, to prevent overview UI being visible while transitioning
     // to home screen.
-    if (overview_controller->InOverviewSession()) {
-      overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kImmediateExit);
-    }
+    if (overview_controller->InOverviewSession())
+      overview_controller->EndOverview(OverviewEnterExitType::kImmediateExit);
 
     // End split view mode.
     split_view_controller->EndSplitView(
@@ -208,8 +205,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   // If overview is active (if overview was active in split view, it exited by
   // this point), just fade it out to home screen.
   if (overview_controller->InOverviewSession()) {
-    overview_controller->EndOverview(
-        OverviewSession::EnterExitOverviewType::kFadeOutExit);
+    overview_controller->EndOverview(OverviewEnterExitType::kFadeOutExit);
     return true;
   }
 
@@ -335,7 +331,7 @@ void HomeScreenController::OnSplitViewStateChanged(
 }
 
 void HomeScreenController::OnOverviewModeStarting() {
-  const OverviewSession::EnterExitOverviewType overview_enter_type =
+  const OverviewEnterExitType overview_enter_type =
       Shell::Get()
           ->overview_controller()
           ->overview_session()
@@ -343,13 +339,10 @@ void HomeScreenController::OnOverviewModeStarting() {
 
   const bool animate =
       IsHomeScreenVisible() &&
-      (overview_enter_type ==
-           OverviewSession::EnterExitOverviewType::kSlideInEnter ||
-       overview_enter_type ==
-           OverviewSession::EnterExitOverviewType::kFadeInEnter);
+      (overview_enter_type == OverviewEnterExitType::kSlideInEnter ||
+       overview_enter_type == OverviewEnterExitType::kFadeInEnter);
   const HomeScreenPresenter::TransitionType transition =
-      overview_enter_type ==
-              OverviewSession::EnterExitOverviewType::kFadeInEnter
+      overview_enter_type == OverviewEnterExitType::kFadeInEnter
           ? HomeScreenPresenter::TransitionType::kScaleHomeOut
           : HomeScreenPresenter::TransitionType::kSlideHomeOut;
 
@@ -368,7 +361,7 @@ void HomeScreenController::OnOverviewModeEnding(
   // Otherwise the transition will be initiated in
   // OnOverviewModeEndingAnimationComplete().
   if (overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kFadeOutExit) {
+      OverviewEnterExitType::kFadeOutExit) {
     home_screen_presenter_.ScheduleOverviewModeAnimation(
         HomeScreenPresenter::TransitionType::kScaleHomeIn, true /*animate*/);
 
@@ -382,22 +375,18 @@ void HomeScreenController::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
   DCHECK(overview_exit_type_.has_value());
 
-  // For kFadeOutExit EnterExitOverviewType, the home animation is scheduled in
+  // For kFadeOutExit OverviewEnterExitType, the home animation is scheduled in
   // OnOverviewModeEnding(), so there is nothing else to do at this point.
-  if (canceled || *overview_exit_type_ ==
-                      OverviewSession::EnterExitOverviewType::kFadeOutExit) {
+  if (canceled || *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit) {
     overview_exit_type_ = base::nullopt;
     return;
   }
 
   const bool animate =
-      *overview_exit_type_ ==
-          OverviewSession::EnterExitOverviewType::kSlideOutExit ||
-      *overview_exit_type_ ==
-          OverviewSession::EnterExitOverviewType::kFadeOutExit;
+      *overview_exit_type_ == OverviewEnterExitType::kSlideOutExit ||
+      *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit;
   const HomeScreenPresenter::TransitionType transition =
-      *overview_exit_type_ ==
-              OverviewSession::EnterExitOverviewType::kFadeOutExit
+      *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit
           ? HomeScreenPresenter::TransitionType::kScaleHomeIn
           : HomeScreenPresenter::TransitionType::kSlideHomeIn;
   overview_exit_type_ = base::nullopt;

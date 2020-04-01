@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/overview/overview_types.h"
 #include "base/macros.h"
 
 namespace aura {

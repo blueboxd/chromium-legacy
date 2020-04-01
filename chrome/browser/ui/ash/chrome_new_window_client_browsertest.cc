@@ -318,6 +318,10 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kKnownNetworksSubPage));
   TestOpenChromePage(ChromePage::MANAGEACCESSIBILITYTTS,
                      base_url.Resolve(chrome::kManageAccessibilityTtsSubPage));
+  TestOpenChromePage(ChromePage::PLUGINVMDETAILS,
+                     base_url.Resolve(chrome::kPluginVmDetailsSubPage));
+  TestOpenChromePage(ChromePage::PLUGINVMSHAREDPATHS,
+                     base_url.Resolve(chrome::kPluginVmSharedPathsSubPage));
   TestOpenChromePage(ChromePage::SMARTLOCKSETTINGS,
                      base_url.Resolve(chrome::kSmartLockSettingsSubPage));
   TestOpenChromePage(ChromePage::STYLUS,

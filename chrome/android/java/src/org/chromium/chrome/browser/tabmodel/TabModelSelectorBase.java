@@ -36,6 +36,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     private final ObserverList<TabModelSelectorObserver> mObservers = new ObserverList<>();
     private boolean mTabStateInitialized;
     private boolean mStartIncognito;
+    private boolean mReparentingInProgress;
 
     private final TabCreatorManager mTabCreatorManager;
 
@@ -195,9 +196,6 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     }
 
     @Override
-    public void saveState() {}
-
-    @Override
     public Tab getTabById(int id) {
         for (int i = 0; i < getModels().size(); i++) {
             Tab tab = TabModelUtils.getTabById(mTabModels.get(i), id);
@@ -290,5 +288,15 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
 
     protected TabCreatorManager getTabCreatorManager() {
         return mTabCreatorManager;
+    }
+
+    @Override
+    public void enterReparentingMode() {
+        mReparentingInProgress = true;
+    }
+
+    /** @see TabModelDelegate#isReparentingInProgress */
+    protected boolean isReparentingInProgress() {
+        return mReparentingInProgress;
     }
 }

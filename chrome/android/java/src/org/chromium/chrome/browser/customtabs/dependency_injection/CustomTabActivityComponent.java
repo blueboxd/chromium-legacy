@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
-import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
@@ -34,7 +33,6 @@ public interface CustomTabActivityComponent extends BaseCustomTabActivityCompone
     CustomTabBottomBarDelegate resolveBottomBarDelegate();
     CustomTabActivityTabController resolveTabController();
     CustomTabActivityLifecycleUmaTracker resolveUmaTracker();
-    CustomTabIntentHandler resolveIntentHandler();
     CustomTabIncognitoManager resolveCustomTabIncognitoManager();
     CustomTabUmaRecorder resolveCustomTabUmaRecorder();
     CustomTabSessionHandler resolveSessionHandler();

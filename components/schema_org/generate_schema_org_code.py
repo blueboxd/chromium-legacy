@@ -41,6 +41,22 @@ def get_schema_obj(obj_id, schema):
     return matches[0] if len(matches) == 1 else None
 
 
+def is_enum_type(class_obj):
+    if 'rdfs:subClassOf' in class_obj:
+        parent_class = class_obj['rdfs:subClassOf']
+        if isinstance(parent_class, list):
+            return any(parent['@id'] == schema_org_id('Enumeration')
+                       for parent in parent_class)
+        return parent_class['@id'] == schema_org_id('Enumeration')
+
+
+def find_enum_options(obj_id, schema):
+    return [
+        object_name_from_id(obj['@id']) for obj in schema['@graph']
+        if obj['@type'] == obj_id
+    ]
+
+
 def get_root_type(the_class, schema):
     """Get the base type the class is descended from."""
     class_obj = get_schema_obj(the_class['@id'], schema)
@@ -57,17 +73,25 @@ def get_root_type(the_class, schema):
             and schema_org_id('DataType') in class_obj['@type']):
         return class_obj
     if 'rdfs:subClassOf' in class_obj:
-        subclass = class_obj['rdfs:subClassOf']
+        parent_class = class_obj['rdfs:subClassOf']
         # All classes that use multiple inheritance are Thing type.
-        if isinstance(subclass, list):
+        if isinstance(parent_class, list):
             return get_schema_obj(schema_org_id('Thing'), schema)
-        return get_root_type(subclass, schema)
+        # Enumeration classes are treated specially. Return the specific type
+        # of enum this class is.
+        if parent_class['@id'] == schema_org_id('Enumeration'):
+            return class_obj
+        return get_root_type(parent_class, schema)
     return class_obj
 
 
 def parse_property(prop, schema):
     """Parse out details about the property, including what type it can be."""
-    parsed_prop = {'name': object_name_from_id(prop['@id']), 'thing_types': []}
+    parsed_prop = {
+        'name': object_name_from_id(prop['@id']),
+        'thing_types': [],
+        'enum_types': []
+    }
 
     if not schema_org_id('rangeIncludes') in prop:
         return parsed_prop
@@ -94,12 +118,14 @@ def parse_property(prop, schema):
             parsed_prop['has_date_time'] = True
         elif root_type['@id'] == schema_org_id('URL'):
             parsed_prop['has_url'] = True
+        elif is_enum_type(root_type):
+            parsed_prop['enum_types'].append(possible_type['@id'])
     return parsed_prop
 
 
 def get_template_vars(schema_file_path):
     """Read the needed template variables from the schema file."""
-    template_vars = {'entities': [], 'properties': []}
+    template_vars = {'entities': [], 'properties': [], 'enums': []}
 
     with open(schema_file_path) as schema_file:
         schema = json.loads(schema_file.read())
@@ -107,6 +133,15 @@ def get_template_vars(schema_file_path):
     for thing in schema['@graph']:
         if thing['@type'] == 'rdfs:Class':
             template_vars['entities'].append(object_name_from_id(thing['@id']))
+            if is_enum_type(thing):
+                template_vars['enums'].append({
+                    'name':
+                    object_name_from_id(thing['@id']),
+                    'id':
+                    thing['@id'],
+                    'options':
+                    find_enum_options(thing['@id'], schema)
+                })
         elif thing['@type'] == 'rdf:Property':
             template_vars['properties'].append(parse_property(thing, schema))
 

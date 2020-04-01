@@ -187,7 +187,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
                        bool repaint_duplicate_frame);
 
   void SetCurrentFrame_Locked(scoped_refptr<VideoFrame> frame,
-                              base::TimeTicks expected_presentation_time);
+                              base::TimeTicks expected_display_time);
 
   // Called by |background_rendering_timer_| when enough time elapses where we
   // haven't seen a Render() call.
@@ -243,8 +243,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Used to fulfill video.requestAnimationFrame() calls.
   // See https://wicg.github.io/video-raf/.
   base::TimeTicks last_presentation_time_ GUARDED_BY(current_frame_lock_);
-  base::TimeTicks last_expected_presentation_time_
-      GUARDED_BY(current_frame_lock_);
+  base::TimeTicks last_expected_display_time_ GUARDED_BY(current_frame_lock_);
   uint32_t presentation_counter_ GUARDED_BY(current_frame_lock_) = 0u;
 
   // These values are updated and read from the media and compositor threads.

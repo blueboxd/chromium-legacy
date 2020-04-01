@@ -603,9 +603,8 @@ void SystemNetworkContextManager::GetStubResolverConfig(
   std::string server_method;
   if (!doh_templates.empty() &&
       *secure_dns_mode != net::DnsConfig::SecureDnsMode::OFF) {
-    for (const std::string& server_template :
-         SplitString(doh_templates, " ", base::TRIM_WHITESPACE,
-                     base::SPLIT_WANT_NONEMPTY)) {
+    for (base::StringPiece server_template :
+         chrome_browser_net::SplitDohTemplateGroup(doh_templates)) {
       if (!net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
         continue;
       }
@@ -617,7 +616,7 @@ void SystemNetworkContextManager::GetStubResolverConfig(
 
       network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
           network::mojom::DnsOverHttpsServer::New();
-      dns_over_https_server->server_template = server_template;
+      dns_over_https_server->server_template = std::string(server_template);
       dns_over_https_server->use_post = (server_method == "POST");
       (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
     }

@@ -1215,6 +1215,8 @@ void OmniboxEditModel::OnPaste() {
 }
 
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
+  DCHECK(count == -1 || count == 1);
+
   // NOTE: This purposefully doesn't trigger any code that resets paste_state_.
   if (PopupIsOpen()) {
     // The popup is open, so the user should be able to interact with it
@@ -1227,17 +1229,30 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     // Reverting, however, does not make sense for on-focus suggestions
     // (user_input_in_progress_ is false) unless the first result is a
     // verbatim match of the omnibox input (on-focus query refinements on SERP).
-    const size_t line_no = GetNewSelectedLine(count);
-    if (result().default_match() && has_temporary_text_ && line_no == 0 &&
+    const auto next_selection = popup_model()->GetNextSelection(
+        count > 0 ? OmniboxPopupModel::kForward : OmniboxPopupModel::kBackward,
+        OmniboxPopupModel::kWholeLine);
+    if (result().default_match() && has_temporary_text_ &&
+        next_selection.line == 0 &&
         (user_input_in_progress_ ||
          result().default_match()->IsVerbatimType())) {
       RevertTemporaryTextAndPopup();
     } else {
-      popup_model()->MoveTo(line_no);
+      popup_model()->SetSelection(next_selection);
     }
     return;
   }
 
+  MaybeStartQueryForPopup();
+
+  // TODO(pkasting): Here, the popup could be working on a query but is not
+  // open. In that case, we should force it to open immediately.
+}
+
+bool OmniboxEditModel::MaybeStartQueryForPopup() {
+  if (PopupIsOpen()) {
+    return false;
+  }
   if (!query_in_progress()) {
     // The popup is neither open nor working on a query already.  So, start an
     // autocomplete query for the current text.  This also sets
@@ -1250,11 +1265,9 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     if (!user_input_in_progress_)
       InternalSetUserText(url_for_editing_);
     view_->UpdatePopup();
-    return;
+    return true;
   }
-
-  // TODO(pkasting): The popup is working on a query but is not open.  We should
-  // force it to open immediately.
+  return false;
 }
 
 void OmniboxEditModel::OnPopupDataChanged(const base::string16& text,
@@ -1703,12 +1716,4 @@ void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
     view_->ApplyCaretVisibility();
 
   client_->OnFocusChanged(focus_state_, reason);
-}
-
-size_t OmniboxEditModel::GetNewSelectedLine(int count) {
-  int line_no = (static_cast<int>(popup_model()->selected_line()) + count) %
-                static_cast<int>(popup_model()->result().size());
-  if (line_no < 0)
-    line_no += popup_model()->result().size();
-  return line_no;
 }

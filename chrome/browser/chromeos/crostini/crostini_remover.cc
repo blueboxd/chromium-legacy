@@ -12,9 +12,9 @@
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -69,8 +69,8 @@ void CrostiniRemover::StopVmFinished(CrostiniResult result) {
     return;
   }
 
-  CrostiniRegistryServiceFactory::GetForProfile(profile_)->ClearApplicationList(
-      vm_name_, "");
+  guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
+      ->ClearApplicationList(vm_name_, "");
   CrostiniMimeTypesServiceFactory::GetForProfile(profile_)->ClearMimeTypes(
       vm_name_, "");
   CrostiniManager::GetForProfile(profile_)->DestroyDiskImage(

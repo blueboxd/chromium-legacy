@@ -280,7 +280,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
   // Initially, there are no alerts
   ScopedBstr alerts_bstr(L"alerts");
   IUnknown** targets;
-  long n_targets;
+  LONG n_targets;
   ASSERT_EQ(S_FALSE, root_view_accessible->get_relationTargetsOfType(
                          alerts_bstr.Get(), 0, &targets, &n_targets));
   ASSERT_EQ(0, n_targets);

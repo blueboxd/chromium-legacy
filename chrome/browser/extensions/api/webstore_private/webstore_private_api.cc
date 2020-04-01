@@ -455,7 +455,13 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
         ExtensionInstallPrompt::INSTALL_PROMPT);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    prompt->set_user_is_child(profile->IsChild());
+
+    if (!dummy_extension_->is_theme()) {
+      // We don't prompt for parent permission for themes, so no need
+      // to configure the install prompt to indicate that this is a child
+      // asking a parent for installation permission.
+      prompt->set_requires_parent_permission(profile->IsChild());
+    }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
     install_prompt_->ShowDialog(
@@ -570,7 +576,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
       // Handle parent permission for child accounts on ChromeOS.
       Profile* profile = chrome_details_.GetProfile();
-      if (g_browser_process->profile_manager()->IsValidProfile(profile) &&
+      if (!dummy_extension_->is_theme()  // Parent permission not required for
+                                         // theme installation
+          && g_browser_process->profile_manager()->IsValidProfile(profile) &&
           profile->IsChild()) {
         if (PromptForParentApproval()) {
           // If are showing parent permission dialog, return instead of

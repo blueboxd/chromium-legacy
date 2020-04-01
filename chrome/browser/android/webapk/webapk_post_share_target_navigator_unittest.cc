@@ -38,7 +38,7 @@ void CheckDataElements(
 }
 
 // Test that multipart/form-data body is empty if inputs are of different sizes.
-TEST(WebApkActivityTest, InvalidMultipartBody) {
+TEST(WebApkPostShareTargetNavigatorTest, InvalidMultipartBody) {
   std::vector<std::string> names = {"name"};
   std::vector<std::string> values;
   std::vector<bool> is_value_file_uris;
@@ -53,7 +53,7 @@ TEST(WebApkActivityTest, InvalidMultipartBody) {
 
 // Test that multipart/form-data body is correctly computed for accepted
 // file inputs.
-TEST(WebApkActivityTest, ValidMultipartBodyForFile) {
+TEST(WebApkPostShareTargetNavigatorTest, ValidMultipartBodyForFile) {
   std::vector<std::string> names = {"share-file\"", "share-file\""};
   std::vector<std::string> values = {"mock-file-path", "mock-shared-text"};
   std::vector<bool> is_value_file_uris = {true, false};
@@ -84,7 +84,7 @@ TEST(WebApkActivityTest, ValidMultipartBodyForFile) {
 }
 
 // Test that multipart/form-data body is correctly computed for non-file inputs.
-TEST(WebApkActivityTest, ValidMultipartBodyForText) {
+TEST(WebApkPostShareTargetNavigatorTest, ValidMultipartBodyForText) {
   std::vector<std::string> names = {"name\""};
   std::vector<std::string> values = {"value"};
   std::vector<bool> is_value_file_uris = {false};
@@ -108,7 +108,7 @@ TEST(WebApkActivityTest, ValidMultipartBodyForText) {
 
 // Test that multipart/form-data body is correctly computed for a mixture
 // of file and non-file inputs.
-TEST(WebApkActivityTest, ValidMultipartBodyForTextAndFile) {
+TEST(WebApkPostShareTargetNavigatorTest, ValidMultipartBodyForTextAndFile) {
   std::vector<std::string> names = {"name1\"", "name2", "name3",
                                     "name4",   "name5", "name6"};
   std::vector<std::string> values = {"value1", "file_uri2", "file_uri3",
@@ -173,7 +173,7 @@ TEST(WebApkActivityTest, ValidMultipartBodyForTextAndFile) {
 }
 
 // Test that multipart/form-data body is properly percent-escaped.
-TEST(WebApkActivityTest, MultipartBodyWithPercentEncoding) {
+TEST(WebApkPostShareTargetNavigatorTest, MultipartBodyWithPercentEncoding) {
   std::vector<std::string> names = {"name"};
   std::vector<std::string> values = {"value"};
   std::vector<bool> is_value_file_uris = {false};
@@ -199,7 +199,7 @@ TEST(WebApkActivityTest, MultipartBodyWithPercentEncoding) {
 
 // Test that application/x-www-form-urlencoded body is empty if inputs are of
 // different sizes.
-TEST(WebApkActivityTest, InvalidApplicationBody) {
+TEST(WebApkPostShareTargetNavigatorTest, InvalidApplicationBody) {
   std::vector<std::string> names = {"name1", "name2"};
   std::vector<std::string> values = {"value1"};
   std::string application_body = webapk::ComputeUrlEncodedBody(names, values);
@@ -208,7 +208,7 @@ TEST(WebApkActivityTest, InvalidApplicationBody) {
 
 // Test that application/x-www-form-urlencoded body is correctly computed for
 // accepted inputs.
-TEST(WebApkActivityTest, ValidApplicationBody) {
+TEST(WebApkPostShareTargetNavigatorTest, ValidApplicationBody) {
   std::vector<std::string> names = {"name1", "name2"};
   std::vector<std::string> values = {"value1", "value2"};
   std::string application_body = webapk::ComputeUrlEncodedBody(names, values);
@@ -216,22 +216,22 @@ TEST(WebApkActivityTest, ValidApplicationBody) {
 }
 
 // Test that PercentEscapeString correctly escapes quotes to %22.
-TEST(WebApkActivityTest, NeedsPercentEscapeQuote) {
+TEST(WebApkPostShareTargetNavigatorTest, NeedsPercentEscapeQuote) {
   EXPECT_EQ("hello%22", webapk::PercentEscapeString("hello\""));
 }
 
 // Test that PercentEscapeString correctly escapes newline to %0A.
-TEST(WebApkActivityTest, NeedsPercentEscape0A) {
+TEST(WebApkPostShareTargetNavigatorTest, NeedsPercentEscape0A) {
   EXPECT_EQ("%0A", webapk::PercentEscapeString("\n"));
 }
 
 // Test that PercentEscapeString correctly escapes \r to %0D.
-TEST(WebApkActivityTest, NeedsPercentEscape0D) {
+TEST(WebApkPostShareTargetNavigatorTest, NeedsPercentEscape0D) {
   EXPECT_EQ("%0D", webapk::PercentEscapeString("\r"));
 }
 
 // Test that Percent Escape is not performed on strings that don't need to be
 // escaped.
-TEST(WebApkActivityTest, NoPercentEscape) {
+TEST(WebApkPostShareTargetNavigatorTest, NoPercentEscape) {
   EXPECT_EQ("helloworld", webapk::PercentEscapeString("helloworld"));
 }

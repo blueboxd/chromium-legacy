@@ -160,8 +160,12 @@ class SearchSuggestionParser {
       return additional_query_params_;
     }
 
-    void set_header(const base::string16& header) { header_ = header; }
-    const base::string16& header() const { return header_; }
+    void set_suggestion_group_id(int suggestion_group_id) {
+      suggestion_group_id_ = suggestion_group_id;
+    }
+    base::Optional<int> suggestion_group_id() const {
+      return suggestion_group_id_;
+    }
 
     void SetAnswer(const SuggestionAnswer& answer);
     const base::Optional<SuggestionAnswer>& answer() const { return answer_; }
@@ -202,9 +206,11 @@ class SearchSuggestionParser {
     // Optional additional parameters to be added to the search URL.
     std::string additional_query_params_;
 
-    // An optional header text this suggestion must appear under. Currently only
-    // zero-prefix suggestions may have a header.
-    base::string16 header_;
+    // The suggestion group Id based on the SuggestionGroupIds enum in
+    // http://google3/suggest/base/suggestion_config.proto
+    // Used to look up the header this suggestion must appear under from the
+    // server supplied map of suggestion group Ids to headers.
+    base::Optional<int> suggestion_group_id_;
 
     // Optional short answer to the input that produced this suggestion.
     base::Optional<SuggestionAnswer> answer_;
@@ -267,6 +273,7 @@ class SearchSuggestionParser {
     ACMatchClassifications description_class_;
   };
 
+  typedef std::map<int, base::string16> HeadersMap;
   typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
   typedef std::vector<base::Value> ExperimentStats;
@@ -316,6 +323,9 @@ class SearchSuggestionParser {
 
     // If the relevance values of the results are from the server.
     bool relevances_from_server;
+
+    // The server supplied map of suggestion group Ids to headers.
+    HeadersMap headers_map;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);

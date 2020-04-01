@@ -27,7 +27,9 @@
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/compositor_thread_event_queue.h"
@@ -343,8 +345,10 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 
   current_overscroll_params_.reset();
 
+  blink::WebInputEventAttribution attribution =
+      PerformEventAttribution(event_with_callback->event());
   InputHandlerProxy::EventDisposition disposition = RouteToTypeSpecificHandler(
-      event_with_callback.get(), original_latency_info);
+      event_with_callback.get(), original_latency_info, attribution);
 
   const blink::WebInputEvent& event = event_with_callback->event();
   const blink::WebGestureEvent::Type type = event.GetType();
@@ -389,7 +393,8 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 
   // Will run callback for every original events.
   event_with_callback->RunCallbacks(disposition, monitored_latency_info,
-                                    std::move(current_overscroll_params_));
+                                    std::move(current_overscroll_params_),
+                                    attribution);
 }
 
 void InputHandlerProxy::DispatchQueuedInputEvents() {
@@ -481,7 +486,8 @@ bool HasModifier(const WebInputEvent& event) {
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::RouteToTypeSpecificHandler(
     EventWithCallback* event_with_callback,
-    const LatencyInfo& original_latency_info) {
+    const LatencyInfo& original_latency_info,
+    const blink::WebInputEventAttribution& original_attribution) {
   DCHECK(input_handler_);
 
   if (force_input_to_main_thread_)
@@ -504,7 +510,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
 
     case WebInputEvent::kGestureScrollUpdate:
       return HandleGestureScrollUpdate(
-          static_cast<const WebGestureEvent&>(event));
+          static_cast<const WebGestureEvent&>(event), original_attribution);
 
     case WebInputEvent::kGestureScrollEnd:
       return HandleGestureScrollEnd(static_cast<const WebGestureEvent&>(event));
@@ -675,6 +681,30 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
   }
 
   return DID_NOT_HANDLE;
+}
+
+blink::WebInputEventAttribution InputHandlerProxy::PerformEventAttribution(
+    const blink::WebInputEvent& event) {
+  if (blink::WebInputEvent::IsKeyboardEventType(event.GetType())) {
+    // Keyboard events should be dispatched to the focused frame.
+    return blink::WebInputEventAttribution(
+        blink::WebInputEventAttribution::kFocusedFrame);
+  } else if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
+             event.GetType() == WebInputEvent::kMouseWheel) {
+    // Mouse events are dispatched based on their location in the DOM tree.
+    // Perform frame attribution via cc.
+    // TODO(acomminos): handle pointer locks, or provide a hint to the renderer
+    //                  to check pointer lock state
+    gfx::PointF point =
+        static_cast<const WebMouseEvent&>(event).PositionInWidget();
+    return blink::WebInputEventAttribution(
+        blink::WebInputEventAttribution::kTargetedFrame,
+        input_handler_->FindFrameElementIdAtPoint(point));
+  } else {
+    // TODO(acomminos): implement for more event types (pointer, touch)
+    return blink::WebInputEventAttribution(
+        blink::WebInputEventAttribution::kUnknown);
+  }
 }
 
 void InputHandlerProxy::RecordMainThreadScrollingReasons(
@@ -889,7 +919,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::HandleGestureScrollUpdate(
-    const WebGestureEvent& gesture_event) {
+    const WebGestureEvent& gesture_event,
+    const blink::WebInputEventAttribution& original_attribution) {
   TRACE_EVENT2("input", "InputHandlerProxy::HandleGestureScrollUpdate", "dx",
                -gesture_event.data.scroll_update.delta_x, "dy",
                -gesture_event.data.scroll_update.delta_y);
@@ -921,7 +952,8 @@ InputHandlerProxy::HandleGestureScrollUpdate(
                          TRACE_EVENT_SCOPE_THREAD);
     handling_gesture_on_impl_thread_ = false;
     currently_active_gesture_device_ = base::nullopt;
-    client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
+    client_->GenerateScrollBeginAndSendToMainThread(gesture_event,
+                                                    original_attribution);
 
     // TODO(bokan): |!gesture_pinch_in_progress_| was put here by
     // https://crrev.com/2720903005 but it's not clear to me how this is

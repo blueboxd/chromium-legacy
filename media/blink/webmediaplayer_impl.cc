@@ -3207,17 +3207,20 @@ void WebMediaPlayerImpl::OnMainThreadMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   const PipelineStatistics stats = GetPipelineStatistics();
+  auto player_node_name =
+      base::StringPrintf("media/webmediaplayer/player_0x%x", id);
+  auto* player_node = pmd->CreateAllocatorDump(player_node_name);
+  player_node->AddScalar(
+      base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+      base::trace_event::MemoryAllocatorDump::kUnitsObjects, 1);
 
   if (args.level_of_detail !=
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     bool suspended = pipeline_controller_->IsPipelineSuspended();
-    auto state_node_name =
-        base::StringPrintf("media/webmediaplayer/player_0x%x", id);
     auto player_state =
         base::StringPrintf("Paused: %d Ended: %d ReadyState: %d Suspended: %d",
                            paused_, ended_, GetReadyState(), suspended);
-    auto* state_node = pmd->CreateAllocatorDump(state_node_name);
-    state_node->AddString("player_state", "", player_state);
+    player_node->AddString("player_state", "", player_state);
   }
 
   CreateAllocation(pmd, id, "audio", stats.audio_memory_usage);

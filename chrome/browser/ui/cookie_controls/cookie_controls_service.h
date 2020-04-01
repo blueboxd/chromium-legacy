@@ -28,7 +28,8 @@ class PolicyChangeRegistrar;
 enum class CookieControlsEnforcement {
   kNoEnforcement = 0,
   kEnforcedByPolicy = 1,
-  kEnforcedByCookieSetting = 2,
+  kEnforcedByExtension = 2,
+  kEnforcedByCookieSetting = 3,
   kMaxValue = kEnforcedByCookieSetting,
 };
 

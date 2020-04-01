@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
@@ -945,6 +946,58 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
   // VerifyCorbEligibleFetchFromContentScript).
   VerifyCorbEligibleFetchFromContentScript(histograms, fetch_result,
                                            "nosniff.xml - body\n");
+}
+
+// Verification that granting file access to extensions doesn't relax CORS in
+// case of requests to file: URLs (even from content scripts of allowlisted
+// extensions with <all_urls> permission).  See also
+// https://crbug.com/1049604#c14.
+IN_PROC_BROWSER_TEST_P(
+    CorbAndCorsExtensionBrowserTest,
+    FromProgrammaticContentScript_PermissionToAllUrls_FileUrls) {
+  // Install the extension and verify that the extension has access to file URLs
+  // (<all_urls> permission is not sufficient - the extension has to be
+  // additionally granted file access by passing kFlagEnableFileAccess in
+  // ExtensionBrowserTest::LoadExtension).
+  const Extension* extension = InstallExtensionWithPermissionToAllUrls();
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(util::AllowFileAccess(
+      extension->id(), active_web_contents()->GetBrowserContext()));
+
+  // Gather the test URLs.
+  GURL page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("title1.html")));
+  GURL same_dir_resource = ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("title2.html")));
+  ASSERT_EQ(url::kFileScheme, page_url.scheme());
+  ASSERT_EQ(url::kFileScheme, same_dir_resource.scheme());
+
+  // Navigate to a file:// test page.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+
+  // Inject a content script that performs a cross-origin fetch from another
+  // file: URL (all file: URLs are treated as an opaque origin, so all such
+  // fetches would be considered cross-origin).
+  //
+  // The ability to inject content scripts into file: URLs comes from a
+  // combination of <all_urls> and granting file access to the extension.
+  base::HistogramTester histograms;
+  std::string fetch_result =
+      FetchViaContentScript(same_dir_resource, active_web_contents());
+
+  // Verify that the fetch was blocked by CORS-equivalent in
+  // FileURLLoaderFactory (even though the extension has <all_urls> permission
+  // and was granted file access).
+  EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
+
+  // CORB is not used from FileURLLoaderFactory - verify that no CORB UMAs have
+  // been logged.
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  EXPECT_EQ(
+      0u,
+      histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
 }
 
 // Coverage of *.subdomain.com extension permissions for CORB-eligible fetches

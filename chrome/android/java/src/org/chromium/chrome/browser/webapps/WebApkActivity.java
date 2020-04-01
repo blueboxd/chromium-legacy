@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 
-import androidx.browser.trusted.sharing.ShareData;
-
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -43,18 +41,6 @@ public class WebApkActivity extends WebappActivity {
         ChromeWebApkHost.disconnectFromAllServices(true /* waitForPendingWork */);
 
         super.onDestroyInternal();
-    }
-
-    @Override
-    protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
-        WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
-        ShareData shareData = webApkInfo.shareData();
-        if (shareData == null) {
-            return false;
-        }
-        return new WebApkPostShareTargetNavigator().navigateIfPostShareTarget(
-                webApkInfo.url(), webApkInfo.shareTarget(), shareData,
-                getActivityTab().getWebContents());
     }
 
     @Override

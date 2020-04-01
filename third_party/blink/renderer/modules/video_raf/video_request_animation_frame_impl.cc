@@ -142,22 +142,22 @@ void VideoRequestAnimationFrameImpl::ExecuteFrameCallbacks(
       time_converter.MonotonicTimeToZeroBasedDocumentTime(
           frame_metadata->presentation_time)));
 
-  metadata->setExpectedPresentationTime(GetClampedTimeInMillis(
+  metadata->setExpectedDisplayTime(GetClampedTimeInMillis(
       time_converter.MonotonicTimeToZeroBasedDocumentTime(
-          frame_metadata->expected_presentation_time)));
+          frame_metadata->expected_display_time)));
 
   metadata->setPresentedFrames(frame_metadata->presented_frames);
 
   metadata->setWidth(frame_metadata->width);
   metadata->setHeight(frame_metadata->height);
 
-  metadata->setPresentationTimestamp(
-      frame_metadata->presentation_timestamp.InSecondsF());
+  metadata->setMediaTime(frame_metadata->media_time.InSecondsF());
 
-  base::TimeDelta elapsed;
+  base::TimeDelta processing_duration;
   if (frame_metadata->metadata.GetTimeDelta(
-          media::VideoFrameMetadata::PROCESSING_TIME, &elapsed)) {
-    metadata->setElapsedProcessingTime(GetCoarseClampedTimeInSeconds(elapsed));
+          media::VideoFrameMetadata::PROCESSING_TIME, &processing_duration)) {
+    metadata->setProcessingDuration(
+        GetCoarseClampedTimeInSeconds(processing_duration));
   }
 
   base::TimeTicks capture_time;

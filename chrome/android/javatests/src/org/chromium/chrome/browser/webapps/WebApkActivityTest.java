@@ -34,7 +34,7 @@ import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
-/** Tests for WebApkActivity. */
+/** Tests for WebAPK {@link WebappActivity}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class WebApkActivityTest {
@@ -66,11 +66,11 @@ public final class WebApkActivityTest {
     @LargeTest
     @Feature({"WebApk"})
     public void testLaunchAndNavigateOutsideScope() throws Exception {
-        WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
+        WebappActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
                 getTestServerUrl("scope_a/page_1.html"), getTestServerUrl("scope_a/")));
         WebappActivityTestRule.assertToolbarShowState(webApkActivity, false);
 
-        // We navigate outside scope and expect CCT toolbar to show on top of WebApkActivity.
+        // We navigate outside scope and expect CCT toolbar to show on top of WebAPK Activity.
         String outOfScopeUrl = getTestServerUrl("manifest_test_page.html");
         mActivityTestRule.runJavaScriptCodeInCurrentTab(
                 "window.top.location = '" + outOfScopeUrl + "'");
@@ -89,7 +89,7 @@ public final class WebApkActivityTest {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Launch WebAPK.
-        WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
+        WebappActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
                 getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));
 
         Class<? extends ChromeActivity> mainClass = ChromeTabbedActivity.class;
@@ -109,8 +109,8 @@ public final class WebApkActivityTest {
             tabDelegate.activateContents();
         });
 
-        // WebApkActivity should have been brought back to the foreground.
-        ChromeActivityTestRule.waitFor(WebApkActivity.class);
+        // WebAPK Activity should have been brought back to the foreground.
+        ChromeActivityTestRule.waitFor(WebappActivity.class);
     }
 
     private WebApkInfo createWebApkInfo(String startUrl, String scopeUrl) {

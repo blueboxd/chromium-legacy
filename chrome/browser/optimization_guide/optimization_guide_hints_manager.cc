@@ -607,8 +607,8 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
         get_hints_response) {
   if (!get_hints_response.has_value() || !get_hints_response.value()) {
     if (navigation_url) {
-      PrepareToInvokeRegisteredCallbacks(*navigation_url);
       CleanUpFetcherForNavigation(*navigation_url);
+      PrepareToInvokeRegisteredCallbacks(*navigation_url);
     }
     return;
   }
@@ -645,8 +645,8 @@ void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored(
   }
 
   if (navigation_url) {
-    PrepareToInvokeRegisteredCallbacks(*navigation_url);
     CleanUpFetcherForNavigation(*navigation_url);
+    PrepareToInvokeRegisteredCallbacks(*navigation_url);
   }
 
   for (const auto& host : page_navigation_hosts_requested)

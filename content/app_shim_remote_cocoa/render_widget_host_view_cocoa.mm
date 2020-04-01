@@ -951,8 +951,8 @@ void ExtractUnderlines(NSAttributedString* string,
   // Don't cancel child popups; the key events are probably what's triggering
   // the popup in the first place.
 
-
-  NativeWebKeyboardEvent event(theEvent);
+  NativeWebKeyboardEvent event =
+      NativeWebKeyboardEvent::CreateForRenderer(theEvent);
   ui::LatencyInfo latency_info;
   if (event.GetType() == blink::WebInputEvent::kRawKeyDown ||
       event.GetType() == blink::WebInputEvent::kChar) {

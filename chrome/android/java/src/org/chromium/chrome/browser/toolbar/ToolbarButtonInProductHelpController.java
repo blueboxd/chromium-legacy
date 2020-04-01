@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.translate.TranslateUtils;
@@ -264,9 +263,8 @@ public class ToolbarButtonInProductHelpController
      */
     private void showDownloadPageTextBubble(final Tab tab, String featureName) {
         if (tab == null) return;
-        ChromeActivity activity = ((TabImpl) tab).getActivity();
-        if (!(activity instanceof ChromeTabbedActivity) || activity.isTablet()
-                || activity.isInOverviewMode() || !DownloadUtils.isAllowedToDownloadPage(tab)) {
+        if (!(mActivity instanceof ChromeTabbedActivity) || mActivity.isTablet()
+                || mActivity.isInOverviewMode() || !DownloadUtils.isAllowedToDownloadPage(tab)) {
             return;
         }
 
@@ -280,9 +278,7 @@ public class ToolbarButtonInProductHelpController
                         .setAnchorView(mActivity.getToolbarManager().getMenuButtonView())
                         .build());
         // Record metrics if we show Download IPH after a screenshot of the page.
-        ChromeTabbedActivity chromeActivity = ((ChromeTabbedActivity) activity);
-        ScreenshotTabObserver tabObserver =
-                ScreenshotTabObserver.from(chromeActivity.getActivityTab());
+        ScreenshotTabObserver tabObserver = ScreenshotTabObserver.from(tab);
         if (tabObserver != null) {
             tabObserver.onActionPerformedAfterScreenshot(
                     ScreenshotTabObserver.SCREENSHOT_ACTION_DOWNLOAD_IPH);

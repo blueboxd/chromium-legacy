@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -37,15 +37,6 @@ class ScopedOverviewHideWindows;
 class ASH_EXPORT ScopedOverviewTransformWindow
     : public aura::client::TransientWindowClientObserver {
  public:
-  // Overview windows have certain properties if their aspect ratio exceeds a
-  // threshold. This enum keeps track of which category the window falls into,
-  // based on its aspect ratio.
-  enum class GridWindowFillMode {
-    kNormal = 0,
-    kLetterBoxed,
-    kPillarBoxed,
-  };
-
   using ScopedAnimationSettings =
       std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
 
@@ -56,8 +47,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
                             int top_view_inset,
                             int title_height);
 
-  static ScopedOverviewTransformWindow::GridWindowFillMode
-  GetWindowDimensionsType(const gfx::Size& size);
+  static OverviewGridWindowFillMode GetWindowDimensionsType(
+      const gfx::Size& size);
 
   ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);
@@ -146,7 +137,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   aura::Window* window() const { return window_; }
 
-  GridWindowFillMode type() const { return type_; }
+  OverviewGridWindowFillMode type() const { return type_; }
 
  private:
   friend class OverviewHighlightControllerTest;
@@ -170,7 +161,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   float original_opacity_;
 
   // Specifies how the window is laid out in the grid.
-  GridWindowFillMode type_ = GridWindowFillMode::kNormal;
+  OverviewGridWindowFillMode type_ = OverviewGridWindowFillMode::kNormal;
 
   // The observers associated with the layers we requested caching render
   // surface and trilinear filtering. The requests will be removed in dtor if

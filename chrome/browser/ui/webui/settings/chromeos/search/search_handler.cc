@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
+#include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "chrome/services/local_search_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -15,7 +16,6 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-const int32_t kLocalSearchServiceMaxLatencyMs = 3000;
 const int32_t kLocalSearchServiceMaxResults = 10;
 
 }  // namespace
@@ -25,13 +25,10 @@ const size_t SearchHandler::kNumMaxResults = 5;
 
 SearchHandler::SearchHandler(
     OsSettingsLocalizedStringsProvider* strings_provider,
-    local_search_service::mojom::LocalSearchService* local_search_service)
-    : strings_provider_(strings_provider) {
-  DCHECK(strings_provider_);
-  local_search_service->GetIndex(
-      local_search_service::mojom::LocalSearchService::IndexId::CROS_SETTINGS,
-      index_remote_.BindNewPipeAndPassReceiver());
-}
+    local_search_service::LocalSearchServiceImpl* local_search_service)
+    : strings_provider_(strings_provider),
+      index_(local_search_service->GetIndexImpl(
+          local_search_service::IndexId::kCrosSettings)) {}
 
 SearchHandler::~SearchHandler() = default;
 
@@ -40,43 +37,33 @@ void SearchHandler::BindInterface(
   receivers_.Add(this, std::move(pending_receiver));
 }
 
-void SearchHandler::Search(const base::string16& query,
-                           SearchCallback callback) {
-  index_remote_->Find(
-      query, kLocalSearchServiceMaxLatencyMs, kLocalSearchServiceMaxResults,
-      base::BindOnce(&SearchHandler::OnLocalSearchServiceResults,
-                     base::Unretained(this), std::move(callback)));
-}
+std::vector<mojom::SearchResultPtr> SearchHandler::Search(
+    const base::string16& query) {
+  std::vector<local_search_service::Result> local_search_service_results;
+  local_search_service::ResponseStatus response_status = index_->Find(
+      query, kLocalSearchServiceMaxResults, &local_search_service_results);
 
-void SearchHandler::OnLocalSearchServiceResults(
-    SearchCallback callback,
-    local_search_service::mojom::ResponseStatus response_status,
-    base::Optional<std::vector<local_search_service::mojom::ResultPtr>>
-        results) {
-  switch (response_status) {
-    case local_search_service::mojom::ResponseStatus::UNKNOWN_ERROR:
-    case local_search_service::mojom::ResponseStatus::EMPTY_QUERY:
-    case local_search_service::mojom::ResponseStatus::EMPTY_INDEX:
-      LOG(ERROR) << "Cannot search; LocalSearchService returned "
-                 << response_status << ". Returning empty results array.";
-      std::move(callback).Run({});
-      return;
-    case local_search_service::mojom::ResponseStatus::SUCCESS:
-      DCHECK(results);
-      ReturnSuccessfulResults(std::move(callback), std::move(results));
-      return;
+  if (response_status != local_search_service::ResponseStatus::kSuccess) {
+    LOG(ERROR) << "Cannot search; LocalSearchService returned "
+               << static_cast<int>(response_status)
+               << ". Returning empty results array.";
+    return {};
   }
 
-  NOTREACHED() << "Invalid response status: " << response_status << ".";
+  return GenerateSearchResultsArray(local_search_service_results);
 }
 
-void SearchHandler::ReturnSuccessfulResults(
-    SearchCallback callback,
-    base::Optional<std::vector<local_search_service::mojom::ResultPtr>>
-        results) {
+void SearchHandler::Search(const base::string16& query,
+                           SearchCallback callback) {
+  std::move(callback).Run(Search(query));
+}
+
+std::vector<mojom::SearchResultPtr> SearchHandler::GenerateSearchResultsArray(
+    const std::vector<local_search_service::Result>&
+        local_search_service_results) {
   std::vector<mojom::SearchResultPtr> search_results;
-  for (const auto& result : *results) {
-    mojom::SearchResultPtr result_ptr = ResultToSearchResult(*result);
+  for (const auto& result : local_search_service_results) {
+    mojom::SearchResultPtr result_ptr = ResultToSearchResult(result);
     if (result_ptr)
       search_results.push_back(std::move(result_ptr));
 
@@ -85,11 +72,11 @@ void SearchHandler::ReturnSuccessfulResults(
       break;
   }
 
-  std::move(callback).Run(std::move(search_results));
+  return search_results;
 }
 
 mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
-    const local_search_service::mojom::Result& result) {
+    const local_search_service::Result& result) {
   int message_id;
 
   // The result's ID is expected to be a stringified int.
@@ -112,8 +99,8 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
 
 void SearchHandler::Shutdown() {
   strings_provider_ = nullptr;
+  index_ = nullptr;
   receivers_.Clear();
-  index_remote_.reset();
 }
 
 }  // namespace settings

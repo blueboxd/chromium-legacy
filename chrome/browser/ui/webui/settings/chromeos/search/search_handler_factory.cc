@@ -45,7 +45,7 @@ KeyedService* SearchHandlerFactory::BuildServiceInstanceFor(
       OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile),
       local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
           Profile::FromBrowserContext(profile))
-          ->GetLocalSearchService());
+          ->GetLocalSearchServiceImpl());
 }
 
 bool SearchHandlerFactory::ServiceIsNULLWhileTesting() const {

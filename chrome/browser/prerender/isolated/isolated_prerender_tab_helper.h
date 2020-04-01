@@ -67,6 +67,9 @@ class IsolatedPrerenderTabHelper
     // The number of attempted prefetches that were successful (net error was OK
     // and HTTP response code was 2XX).
     size_t prefetch_successful_count = 0;
+
+    // The total number of redirects encountered during all prefetches.
+    size_t prefetch_total_redirect_count = 0;
   };
 
   const PrefetchMetrics& metrics() const { return page_->metrics_; }

@@ -83,7 +83,6 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE:
       return kDropTargetFade;
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
-    case OVERVIEW_ANIMATION_SELECTION_WINDOW:
     case OVERVIEW_ANIMATION_FRAME_HEADER_CLIP:
       return kOverviewHighlightTransition;
     case OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG:
@@ -192,11 +191,6 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       break;
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
       animation_settings_->SetTweenType(gfx::Tween::EASE_IN_OUT);
-      animation_settings_->SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      break;
-    case OVERVIEW_ANIMATION_SELECTION_WINDOW:
-      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;

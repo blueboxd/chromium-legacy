@@ -22,10 +22,10 @@
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
@@ -127,7 +127,7 @@ void OnApplicationLaunched(crostini::LaunchCrostiniAppCallback callback,
 void OnSharePathForLaunchApplication(
     Profile* profile,
     const std::string& app_id,
-    crostini::CrostiniRegistryService::Registration registration,
+    guest_os::GuestOsRegistryService::Registration registration,
     const std::vector<std::string>& files,
     bool display_scaled,
     crostini::LaunchCrostiniAppCallback callback,
@@ -160,7 +160,7 @@ void LaunchTerminal(Profile* profile,
 void LaunchApplication(
     Profile* profile,
     const std::string& app_id,
-    crostini::CrostiniRegistryService::Registration registration,
+    guest_os::GuestOsRegistryService::Registration registration,
     int64_t display_id,
     const std::vector<storage::FileSystemURL>& files,
     bool display_scaled,
@@ -324,9 +324,9 @@ bool IsUninstallable(Profile* profile, const std::string& app_id) {
       app_id == GetTerminalId()) {
     return false;
   }
-  CrostiniRegistryService* registry_service =
-      CrostiniRegistryServiceFactory::GetForProfile(profile);
-  base::Optional<CrostiniRegistryService::Registration> registration =
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
+  base::Optional<guest_os::GuestOsRegistryService::Registration> registration =
       registry_service->GetRegistration(app_id);
   if (registration)
     return registration->CanUninstall();
@@ -392,12 +392,11 @@ void LaunchCrostiniAppImpl(
     const std::string& app_id,
     int64_t display_id,
     const std::vector<storage::FileSystemURL>& files,
-    base::Optional<crostini::CrostiniRegistryService::Registration>
-        registration,
+    base::Optional<guest_os::GuestOsRegistryService::Registration> registration,
     LaunchCrostiniAppCallback callback) {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   // Store these as we move |registration| into LaunchContainerApplication().
   const std::string vm_name = registration->VmName();
   const std::string container_name = registration->ContainerName();
@@ -476,9 +475,9 @@ void LaunchCrostiniApp(Profile* profile,
     return std::move(callback).Run(false, "Crostini not installed");
   }
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
-  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
+  base::Optional<guest_os::GuestOsRegistryService::Registration> registration =
       registry_service->GetRegistration(app_id);
   if (!registration) {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kUnknownApp);
@@ -590,8 +589,8 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
                      return MatchContainerDict(dict, container_id);
                    }));
 
-  CrostiniRegistryServiceFactory::GetForProfile(profile)->ClearApplicationList(
-      vm_name, container_name);
+  guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)
+      ->ClearApplicationList(vm_name, container_name);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile)->ClearMimeTypes(
       vm_name, container_name);
 }

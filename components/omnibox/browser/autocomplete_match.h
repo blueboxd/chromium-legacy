@@ -555,9 +555,10 @@ struct AutocompleteMatch {
   base::string16 description_for_shortcuts;
   ACMatchClassifications description_class_for_shortcuts;
 
-  // An optional header text this match must appear under. Currently only
-  // zero-prefix matches may have a header.
-  base::string16 header;
+  // The optional suggestion group Id based on the SuggestionGroupIds enum in
+  // suggestion_config.proto. Used to look up the header text this match must
+  // appear under from ACResult.
+  base::Optional<int> suggestion_group_id;
 
   // If true, UI-level code should swap the contents and description fields
   // before displaying.

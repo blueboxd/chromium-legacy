@@ -110,6 +110,11 @@
           type="BINDATA"
           compress="gzip" />
       <include
+          name="IDR_TAB_STRIP_TAB_HID_CONNECTED_SVG"
+          file="alert_indicators/tab_hid_connected.svg"
+          type="BINDATA"
+          compress="gzip" />
+      <include
           name="IDR_TAB_STRIP_TAB_MEDIA_CAPTURING_WITH_ARROW_SVG"
           file="alert_indicators/tab_media_capturing_with_arrow.svg"
           type="BINDATA"

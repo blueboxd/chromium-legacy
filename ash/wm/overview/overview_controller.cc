@@ -61,11 +61,11 @@ bool IsSplitViewDividerDraggedOrAnimated() {
 // either slide, or fade to home modes.
 // |enter| - Whether |original_type| is used for entering overview.
 // |windows| - The list of windows that are displayed in the overview UI.
-OverviewSession::EnterExitOverviewType MaybeOverrideEnterExitTypeForHomeScreen(
-    OverviewSession::EnterExitOverviewType original_type,
+OverviewEnterExitType MaybeOverrideEnterExitTypeForHomeScreen(
+    OverviewEnterExitType original_type,
     bool enter,
     const std::vector<aura::Window*>& windows) {
-  if (original_type != OverviewSession::EnterExitOverviewType::kNormal)
+  if (original_type != OverviewEnterExitType::kNormal)
     return original_type;
 
   // Use normal type if home launcher is not available.
@@ -82,8 +82,8 @@ OverviewSession::EnterExitOverviewType MaybeOverrideEnterExitTypeForHomeScreen(
   // If kDragFromShelfToHomeOrOverview is enabled, overview is expected to fade
   // in or out to home screen (when all windows are minimized).
   if (ash::features::IsDragFromShelfToHomeOrOverviewEnabled()) {
-    return enter ? OverviewSession::EnterExitOverviewType::kFadeInEnter
-                 : OverviewSession::EnterExitOverviewType::kFadeOutExit;
+    return enter ? OverviewEnterExitType::kFadeInEnter
+                 : OverviewEnterExitType::kFadeOutExit;
   }
 
   // When kDragFromShelfToHomeOrOverview is enabled, the original type is
@@ -93,8 +93,8 @@ OverviewSession::EnterExitOverviewType MaybeOverrideEnterExitTypeForHomeScreen(
   if (windows.empty())
     return original_type;
 
-  return enter ? OverviewSession::EnterExitOverviewType::kSlideInEnter
-               : OverviewSession::EnterExitOverviewType::kSlideOutExit;
+  return enter ? OverviewEnterExitType::kSlideInEnter
+               : OverviewEnterExitType::kSlideOutExit;
 }
 
 }  // namespace
@@ -124,8 +124,7 @@ OverviewController::~OverviewController() {
   }
 }
 
-bool OverviewController::StartOverview(
-    OverviewSession::EnterExitOverviewType type) {
+bool OverviewController::StartOverview(OverviewEnterExitType type) {
   // No need to start overview if overview is currently active.
   if (InOverviewSession())
     return true;
@@ -137,8 +136,7 @@ bool OverviewController::StartOverview(
   return true;
 }
 
-bool OverviewController::EndOverview(
-    OverviewSession::EnterExitOverviewType type) {
+bool OverviewController::EndOverview(OverviewEnterExitType type) {
   // No need to end overview if overview is already ended.
   if (!InOverviewSession())
     return true;
@@ -208,7 +206,7 @@ void OverviewController::AddExitAnimationObserver(
   // No delayed animations should be created when overview mode is set to exit
   // immediately.
   DCHECK_NE(overview_session_->enter_exit_overview_type(),
-            OverviewSession::EnterExitOverviewType::kImmediateExit);
+            OverviewEnterExitType::kImmediateExit);
 
   animation_observer->SetOwner(this);
   delayed_animations_.push_back(std::move(animation_observer));
@@ -282,8 +280,7 @@ OverviewController::GetItemWindowListInOverviewGridsForTest() {
   return windows;
 }
 
-void OverviewController::ToggleOverview(
-    OverviewSession::EnterExitOverviewType type) {
+void OverviewController::ToggleOverview(OverviewEnterExitType type) {
   // Hide the virtual keyboard as it obstructs the overview mode.
   // Don't need to hide if it's the a11y keyboard, as overview mode
   // can accept text input and it resizes correctly with the a11y keyboard.
@@ -315,7 +312,7 @@ void OverviewController::ToggleOverview(
 
     // We may want to slide out the overview grid in some cases, even if not
     // explicitly stated.
-    OverviewSession::EnterExitOverviewType new_type =
+    OverviewEnterExitType new_type =
         MaybeOverrideEnterExitTypeForHomeScreen(type, /*enter=*/false, windows);
     overview_session_->set_enter_exit_overview_type(new_type);
 
@@ -325,9 +322,9 @@ void OverviewController::ToggleOverview(
       OnStartingAnimationComplete(/*canceled=*/true);
     start_animations_.clear();
 
-    if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit ||
-        type == OverviewSession::EnterExitOverviewType::kFadeOutExit ||
-        type == OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
+    if (type == OverviewEnterExitType::kSlideOutExit ||
+        type == OverviewEnterExitType::kFadeOutExit ||
+        type == OverviewEnterExitType::kSwipeFromShelf) {
       // Minimize the windows without animations. When the home launcher button
       // is pressed, minimized widgets will get created in their place, and
       // those widgets will be slid out of overview. Otherwise,
@@ -353,7 +350,7 @@ void OverviewController::ToggleOverview(
 
     const bool should_end_immediately =
         overview_session_->enter_exit_overview_type() ==
-        OverviewSession::EnterExitOverviewType::kImmediateExit;
+        OverviewEnterExitType::kImmediateExit;
     if (should_end_immediately) {
       for (const auto& animation : delayed_animations_)
         animation->Shutdown();
@@ -425,7 +422,7 @@ void OverviewController::ToggleOverview(
     overview_session_ = std::make_unique<OverviewSession>(this);
     // We may want to slide in the overview grid in some cases, even if not
     // explicitly stated.
-    OverviewSession::EnterExitOverviewType new_type =
+    OverviewEnterExitType new_type =
         MaybeOverrideEnterExitTypeForHomeScreen(type, /*enter=*/true, windows);
     overview_session_->set_enter_exit_overview_type(new_type);
     for (auto& observer : observers_)
@@ -437,13 +434,12 @@ void OverviewController::ToggleOverview(
     // the overview immediately, so delaying blur start until start animations
     // finish looks janky.
     overview_wallpaper_controller_->Blur(
-        /*animate_only=*/new_type ==
-        OverviewSession::EnterExitOverviewType::kFadeInEnter);
+        /*animate_only=*/new_type == OverviewEnterExitType::kFadeInEnter);
 
     // For app dragging, there are no start animations so add a delay to delay
     // animations observing when the start animation ends, such as the shelf,
     // shadow and rounded corners.
-    if (new_type == OverviewSession::EnterExitOverviewType::kImmediateEnter &&
+    if (new_type == OverviewEnterExitType::kImmediateEnter &&
         !delayed_animation_task_delay_.is_zero()) {
       auto force_delay_observer =
           std::make_unique<ForceDelayObserver>(delayed_animation_task_delay_);
@@ -477,8 +473,7 @@ bool OverviewController::CanEnterOverview() {
          !session_controller->IsRunningInAppMode();
 }
 
-bool OverviewController::CanEndOverview(
-    OverviewSession::EnterExitOverviewType type) {
+bool OverviewController::CanEndOverview(OverviewEnterExitType type) {
   // Prevent ending overview while the divider is dragged or animated.
   if (IsSplitViewDividerDraggedOrAnimated())
     return false;
@@ -492,8 +487,8 @@ bool OverviewController::CanEndOverview(
       split_view_controller->state() !=
           SplitViewController::State::kBothSnapped &&
       InOverviewSession() && overview_session_->IsEmpty() &&
-      type != OverviewSession::EnterExitOverviewType::kSwipeFromShelf &&
-      type != OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      type != OverviewEnterExitType::kSwipeFromShelf &&
+      type != OverviewEnterExitType::kImmediateExit) {
     return false;
   }
 
@@ -506,7 +501,7 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
   // For kFadeInEnter, wallpaper blur is initiated on transition start,
   // so it doesn't have to be requested again on starting animation end.
   if (!canceled && overview_session_->enter_exit_overview_type() !=
-                       OverviewSession::EnterExitOverviewType::kFadeInEnter) {
+                       OverviewEnterExitType::kFadeInEnter) {
     overview_wallpaper_controller_->Blur(/*animate_only=*/true);
   }
 

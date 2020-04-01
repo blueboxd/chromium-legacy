@@ -19,8 +19,8 @@ namespace base {
 class FilePath;
 }
 
-namespace crostini {
-class CrostiniRegistryService;
+namespace guest_os {
+class GuestOsRegistryService;
 }
 
 class Profile;
@@ -51,7 +51,7 @@ class CrostiniAppIcon {
 
   // Icon loading is performed in several steps. It is initiated by
   // LoadImageForScaleFactor request that specifies a required scale factor.
-  // CrostiniRegistryService is used to resolve a path to resource. Content of
+  // GuestOsRegistryService is used to resolve a path to resource. Content of
   // file is asynchronously read in context of browser file thread. On
   // successful read, an icon data is decoded to an image in the special utility
   // process. DecodeRequest is used to interact with the utility process, and
@@ -60,8 +60,8 @@ class CrostiniAppIcon {
   // corresponding request is removed from |decode_requests_|. In case of some
   // requests are not completed by the time of deleting this icon, they are
   // automatically canceled. In case of the icon file is not available this
-  // requests CrostiniRegistryService to install required resource from Crostini
-  // side. CrostiniRegistryService notifies UI items that new icon is available
+  // requests GuestOsRegistryService to install required resource from Crostini
+  // side. GuestOsRegistryService notifies UI items that new icon is available
   // and corresponding item should invoke LoadImageForScaleFactor again.
   void LoadForScaleFactor(ui::ScaleFactor scale_factor);
 
@@ -85,7 +85,7 @@ class CrostiniAppIcon {
   // Removed the corresponding |request| from our list.
   void DiscardDecodeRequest(DecodeRequest* request);
 
-  base::WeakPtr<crostini::CrostiniRegistryService> registry_service_;
+  base::WeakPtr<guest_os::GuestOsRegistryService> registry_service_;
   const std::string app_id_;
   const int resource_size_in_dip_;
   Observer* const observer_;

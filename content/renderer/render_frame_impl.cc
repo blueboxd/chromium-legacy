@@ -6296,7 +6296,10 @@ void RenderFrameImpl::BeginNavigationInternal(
           searchable_form_encoding, client_side_redirect_url,
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
                     : base::nullopt,
-          info->url_request.GetExtraData()->attach_same_site_cookies());
+          info->url_request.GetExtraData()->attach_same_site_cookies(),
+          info->url_request.TrustTokenParams()
+              ? info->url_request.TrustTokenParams()->Clone()
+              : nullptr);
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;

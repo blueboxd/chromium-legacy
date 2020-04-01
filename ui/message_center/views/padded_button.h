@@ -28,7 +28,7 @@ class MESSAGE_CENTER_EXPORT PaddedButton : public views::ImageButton {
 
   // views::ImageButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  void OnThemeChanged() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaddedButton);

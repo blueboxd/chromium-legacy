@@ -214,7 +214,7 @@ TEST_P(VideoFrameCompositorTest, RenderFiresPrensentationCallback) {
 
   auto metadata = compositor()->GetLastPresentedFrameMetadata();
   EXPECT_NE(base::TimeTicks(), metadata->presentation_time);
-  EXPECT_NE(base::TimeTicks(), metadata->expected_presentation_time);
+  EXPECT_NE(base::TimeTicks(), metadata->expected_display_time);
 }
 
 TEST_P(VideoFrameCompositorTest, MultiplePresentationCallbacks) {

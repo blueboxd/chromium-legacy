@@ -22,8 +22,8 @@ bool HighlightOverviewWindow(const aura::Window* window);
 // highlighted.
 const aura::Window* GetOverviewHighlightedWindow();
 
-void ToggleOverview(OverviewSession::EnterExitOverviewType type =
-                        OverviewSession::EnterExitOverviewType::kNormal);
+void ToggleOverview(
+    OverviewEnterExitType type = OverviewEnterExitType::kNormal);
 
 OverviewSession* GetOverviewSession();
 

@@ -23,10 +23,6 @@ public class TabReparentingParams implements AsyncTabParams {
     private final Intent mOriginalIntent;
     private final Runnable mFinalizeCallback;
 
-    private int mTabIndex = TAB_INDEX_NOT_SET;
-    private boolean mIsFromNightModeReparenting;
-    private boolean mIsForegroundTab;
-
     /**
      * Basic constructor for {@link TabReparentingParams}.
      */
@@ -81,37 +77,5 @@ public class TabReparentingParams implements AsyncTabParams {
     @Override
     public void destroy() {
         if (mTabToReparent != null) mTabToReparent.destroy();
-    }
-
-    // Night mode reparenting implementation.
-
-    /** Set the tab index for later retrieval. */
-    public void setTabIndex(int tabIndex) {
-        mTabIndex = tabIndex;
-    }
-
-    /** @return Index of the stored tab. */
-    public int getTabIndex() {
-        return mTabIndex;
-    }
-
-    /** Set whether these params are from night mode reparenting. */
-    public void setFromNightModeReparenting(boolean fromNightModeReparenting) {
-        mIsFromNightModeReparenting = fromNightModeReparenting;
-    }
-
-    /** @return Whether these params are from night mode reparenting. */
-    public boolean isFromNightModeReparenting() {
-        return mIsFromNightModeReparenting;
-    }
-
-    /** Set whether this is the foreground tab. */
-    public void setIsForegroundTab(boolean isForegroundTab) {
-        mIsForegroundTab = isForegroundTab;
-    }
-
-    /** @return Whether this is a foreground tab. */
-    public boolean isForegroundTab() {
-        return mIsForegroundTab;
     }
 }

@@ -320,8 +320,7 @@ TEST_F(
       runMochaSuite('PrivacyPageSound');
     });
 
-// TODO(sauski): Privacy page UMA changing, tests need updating/removal.
-TEST_F('CrSettingsPrivacyPageV3Test', 'DISABLED_UMALoggingTests', function() {
+TEST_F('CrSettingsPrivacyPageV3Test', 'UMALoggingTests', function() {
   runMochaSuite('PrivacyPageUMACheck');
 });
 

@@ -28,16 +28,17 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
                                   public ui::CompositorAnimationObserver,
                                   public WidgetObserver {
  public:
-  // Callers can also pass a AnimationMetricsReporter which will record metrics
-  // after an animation is complete. A non zero |expected_duration| is required
-  // for computations.
-  explicit CompositorAnimationRunner(
-      Widget* widget,
-      ui::AnimationMetricsReporter* animation_metrics_reporter = nullptr,
-      base::TimeDelta expected_duration = base::TimeDelta());
+  explicit CompositorAnimationRunner(Widget* widget);
   CompositorAnimationRunner(CompositorAnimationRunner&) = delete;
   CompositorAnimationRunner& operator=(CompositorAnimationRunner&) = delete;
   ~CompositorAnimationRunner() override;
+
+  // Set a AnimationMetricsReporter which will record metrics
+  // after an animation is complete. A non zero |expected_duration| is required
+  // for computations.
+  void SetAnimationMetricsReporter(
+      ui::AnimationMetricsReporter* animation_metrics_reporter,
+      base::TimeDelta expected_duration);
 
   // gfx::AnimationRunner:
   void Stop() override;
@@ -72,7 +73,7 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
 
   // Expected duration of an animation. Used for and required to be non zero for
   // animation metrics recording.
-  const base::TimeDelta expected_duration_;
+  base::TimeDelta expected_duration_;
   std::unique_ptr<ui::AnimationMetricsRecorder> animation_metrics_recorder_;
 };
 

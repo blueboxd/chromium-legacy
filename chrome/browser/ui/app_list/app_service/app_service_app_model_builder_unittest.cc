@@ -15,10 +15,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
@@ -487,8 +487,8 @@ class CrostiniAppTest : public AppListTestBase {
     model_updater_factory_scope_.reset();
   }
 
-  crostini::CrostiniRegistryService* RegistryService() {
-    return crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
+  guest_os::GuestOsRegistryService* RegistryService() {
+    return guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile());
   }
 
   std::string TerminalAppName() {

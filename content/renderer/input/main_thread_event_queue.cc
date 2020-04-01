@@ -12,6 +12,7 @@
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/render_widget.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 
 namespace content {
 
@@ -53,11 +54,13 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
                       const ui::LatencyInfo& latency,
                       bool originally_cancelable,
                       HandledEventCallback callback,
-                      bool known_by_scheduler)
+                      bool known_by_scheduler,
+                      const blink::WebInputEventAttribution& attribution)
       : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
         originally_cancelable_(originally_cancelable),
         callback_(std::move(callback)),
-        known_by_scheduler_count_(known_by_scheduler ? 1 : 0) {}
+        known_by_scheduler_count_(known_by_scheduler ? 1 : 0),
+        attribution_(attribution) {}
 
   ~QueuedWebInputEvent() override {}
 
@@ -113,7 +116,7 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
         base::BindOnce(&QueuedWebInputEvent::HandledEvent,
                        base::Unretained(this), base::RetainedRef(queue));
     if (!queue->HandleEventOnMainThread(coalesced_event(), latencyInfo(),
-                                        std::move(callback))) {
+                                        attribution(), std::move(callback))) {
       // The |callback| won't be run, so our stored |callback_| should run
       // indicating error.
       HandledEvent(queue, INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latencyInfo(),
@@ -156,6 +159,8 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
 
   bool originallyCancelable() const { return originally_cancelable_; }
 
+  blink::WebInputEventAttribution attribution() const { return attribution_; }
+
  private:
   FilterResult HandleTouchScrollStartQueued() {
     // A TouchScrollStart will queued after this touch move which will make all
@@ -192,6 +197,8 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   HandledEventCallback callback_;
 
   size_t known_by_scheduler_count_;
+
+  const blink::WebInputEventAttribution attribution_;
 };
 
 MainThreadEventQueue::SharedState::SharedState()
@@ -227,6 +234,7 @@ void MainThreadEventQueue::HandleEvent(
     const ui::LatencyInfo& latency,
     InputEventDispatchType original_dispatch_type,
     InputEventAckState ack_result,
+    const blink::WebInputEventAttribution& attribution,
     HandledEventCallback callback) {
   TRACE_EVENT2("input", "MainThreadEventQueue::HandleEvent", "dispatch_type",
                original_dispatch_type, "event_type", event->GetType());
@@ -304,7 +312,7 @@ void MainThreadEventQueue::HandleEvent(
           *(static_cast<blink::WebMouseEvent*>(event.get()))));
       std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
           new QueuedWebInputEvent(std::move(raw_event), latency, false,
-                                  HandledEventCallback(), false));
+                                  HandledEventCallback(), false, attribution));
 
       QueueEvent(std::move(raw_queued_event));
     } else if (event->GetType() == WebInputEvent::kTouchMove) {
@@ -318,7 +326,8 @@ void MainThreadEventQueue::HandleEvent(
           raw_event->SetType(WebInputEvent::kPointerRawUpdate);
           std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
               new QueuedWebInputEvent(std::move(raw_event), latency, false,
-                                      HandledEventCallback(), false));
+                                      HandledEventCallback(), false,
+                                      attribution));
           QueueEvent(std::move(raw_queued_event));
         }
       }
@@ -327,7 +336,8 @@ void MainThreadEventQueue::HandleEvent(
 
   std::unique_ptr<QueuedWebInputEvent> queued_event(new QueuedWebInputEvent(
       std::move(event), latency, originally_cancelable,
-      std::move(event_callback), IsForwardedAndSchedulerKnown(ack_result)));
+      std::move(event_callback), IsForwardedAndSchedulerKnown(ack_result),
+      attribution));
 
   QueueEvent(std::move(queued_event));
 
@@ -513,10 +523,12 @@ void MainThreadEventQueue::QueueEvent(
   // can be notified of its dispatch (if the event is not coalesced).
   bool is_input_event = event->IsWebInputEvent();
   WebInputEvent::Type input_event_type = WebInputEvent::kUndefined;
+  blink::WebInputEventAttribution attribution;
   if (is_input_event) {
     auto* queued_input_event =
         static_cast<const QueuedWebInputEvent*>(event.get());
     input_event_type = queued_input_event->event().GetType();
+    attribution = queued_input_event->attribution();
   }
 
   {
@@ -534,8 +546,8 @@ void MainThreadEventQueue::QueueEvent(
 
       // Notify the scheduler that we'll enqueue a task to the main thread.
       if (is_input_event && main_thread_scheduler_) {
-        main_thread_scheduler_->WillPostInputEventToMainThread(
-            input_event_type);
+        main_thread_scheduler_->WillPostInputEventToMainThread(input_event_type,
+                                                               attribution);
       }
     }
   }
@@ -591,10 +603,12 @@ void MainThreadEventQueue::HandleEventResampling(
 bool MainThreadEventQueue::HandleEventOnMainThread(
     const blink::WebCoalescedInputEvent& event,
     const ui::LatencyInfo& latency,
+    const blink::WebInputEventAttribution& attribution,
     HandledEventCallback handled_callback) {
   // Notify the scheduler that the main thread is about to execute handlers.
   if (auto* scheduler = main_thread_scheduler_)
-    scheduler->WillHandleInputEventOnMainThread(event.Event().GetType());
+    scheduler->WillHandleInputEventOnMainThread(event.Event().GetType(),
+                                                attribution);
 
   bool handled = false;
   if (client_) {

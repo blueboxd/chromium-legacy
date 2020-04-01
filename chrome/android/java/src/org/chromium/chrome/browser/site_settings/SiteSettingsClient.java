@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.site_settings;
 
+import android.app.Activity;
+
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 
 /**
@@ -16,4 +18,9 @@ public interface SiteSettingsClient {
      *         Preferences.
      */
     ManagedPreferenceDelegate getManagedPreferenceDelegate();
+
+    /**
+     * @see org.chromium.chrome.browser.help.HelpAndFeedback#show
+     */
+    void launchHelpAndFeedbackActivity(Activity currentActivity, String helpContext);
 }

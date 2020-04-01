@@ -14,6 +14,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/overview/overview_types.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -55,53 +56,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public ShellObserver,
                                    public SplitViewObserver {
  public:
-  enum class OverviewTransition {
-    kEnter,       // Entering overview.
-    kInOverview,  // Already in overview.
-    kExit         // Exiting overview.
-  };
-
-  // Enum describing the different ways overview can be entered or exited.
-  enum class EnterExitOverviewType {
-    // The default way, window(s) animate from their initial bounds to the grid
-    // bounds. Window(s) that are not visible to the user do not get animated.
-    // This should always be the type when in clamshell mode.
-    kNormal,
-    // Slide all windows in to enter overview. This can happen when going from
-    // a state which all window(s) are minimized.
-    kSlideInEnter,
-    // Slide all windows out to exit overview. This can happen when going to
-    // a state which all window(s) are minimized. This will minimize windows on
-    // exit if needed, so that we do not need to add a delayed observer to
-    // handle minimizing the windows after overview exit animations are
-    // finished.
-    kSlideOutExit,
-    // Overview can be closed by swiping up from the shelf. In this mode, the
-    // call site will handle shifting the bounds of the windows, so overview
-    // code does not need to handle any animations. This is an exit only type.
-    kSwipeFromShelf,
-    // Used only when it's desired to enter overview mode immediately without
-    // animations. It's used when entering overview by dragging a window from
-    // the top of the screen or from the shelf, or by long pressing the overview
-    // button tray. It's also used to address https://crbug.com/1027179. This
-    // should not be used for exiting overview mode.
-    kImmediateEnter,
-    // Used only when it's desired to exit overview mode immediately without
-    // animations. This is used when performing the desk switch animation when
-    // the source desk is in overview mode, while the target desk is not.
-    // This should not be used for entering overview mode.
-    kImmediateExit,
-    // Fades all windows in to enter overview. This can happen when
-    // transitioning to overview from home screen (in a state where all windows
-    // are minimized).
-    kFadeInEnter,
-    // Fades all windows out to exit overview (when going to a state where all
-    // windows are minimized). This will minimize windows on exit if needed, so
-    // that we do not need to add a delayed observer to handle minimizing the
-    // windows after overview exit animations are finished.
-    kFadeOutExit
-  };
-
   // Callback which fills out the passed settings object. Used by several
   // functions so different callers can do similar animations with different
   // settings.
@@ -354,10 +308,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   size_t num_items() const { return num_items_; }
 
-  EnterExitOverviewType enter_exit_overview_type() const {
+  OverviewEnterExitType enter_exit_overview_type() const {
     return enter_exit_overview_type_;
   }
-  void set_enter_exit_overview_type(EnterExitOverviewType val) {
+  void set_enter_exit_overview_type(OverviewEnterExitType val) {
     enter_exit_overview_type_ = val;
   }
 
@@ -448,8 +402,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Stores the overview enter/exit type. See the enum declaration for
   // information on how these types affect overview mode.
-  EnterExitOverviewType enter_exit_overview_type_ =
-      EnterExitOverviewType::kNormal;
+  OverviewEnterExitType enter_exit_overview_type_ =
+      OverviewEnterExitType::kNormal;
 
   // The selected item when exiting overview mode. nullptr if no window
   // selected.

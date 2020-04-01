@@ -30,7 +30,7 @@ import java.util.List;
 public final class ProfileImpl extends IProfile.Stub {
     private final String mName;
     private long mNativeProfile;
-    private final CookieManagerImpl mCookieManager;
+    private CookieManagerImpl mCookieManager;
     private Runnable mOnDestroyCallback;
     private boolean mBeingDeleted;
     private DownloadCallbackProxy mDownloadCallbackProxy;
@@ -59,6 +59,11 @@ public final class ProfileImpl extends IProfile.Stub {
         if (mDownloadCallbackProxy != null) {
             mDownloadCallbackProxy.destroy();
             mDownloadCallbackProxy = null;
+        }
+
+        if (mCookieManager != null) {
+            mCookieManager.destroy();
+            mCookieManager = null;
         }
 
         deleteNativeProfile();

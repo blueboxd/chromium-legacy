@@ -109,11 +109,13 @@ class ExtensionInstallPrompt {
     base::string16 GetRetainedDevicesHeading() const;
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    void set_user_is_child(bool user_is_child) {
-      user_is_child_ = user_is_child;
+    void set_requires_parent_permission(bool requires_parent_permission) {
+      requires_parent_permission_ = requires_parent_permission;
     }
 
-    bool user_is_child() const { return user_is_child_; }
+    bool requires_parent_permission() const {
+      return requires_parent_permission_;
+    }
 #endif
 
     bool ShouldShowPermissions() const;
@@ -178,7 +180,7 @@ class ExtensionInstallPrompt {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     // True if the current user is a child.
-    bool user_is_child_ = false;
+    bool requires_parent_permission_ = false;
 #endif
 
     bool is_requesting_host_permissions_;

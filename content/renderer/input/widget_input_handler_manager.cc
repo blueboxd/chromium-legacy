@@ -14,6 +14,7 @@
 #include "content/renderer/input/widget_input_handler_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -214,11 +215,13 @@ void WidgetInputHandlerManager::WillShutdown() {
 
 void WidgetInputHandlerManager::DispatchNonBlockingEventToMainThread(
     ui::WebScopedInputEvent event,
-    const ui::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info,
+    const blink::WebInputEventAttribution& attribution) {
   DCHECK(input_event_queue_);
-  input_event_queue_->HandleEvent(
-      std::move(event), latency_info, DISPATCH_TYPE_NON_BLOCKING,
-      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING, HandledEventCallback());
+  input_event_queue_->HandleEvent(std::move(event), latency_info,
+                                  DISPATCH_TYPE_NON_BLOCKING,
+                                  INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
+                                  attribution, HandledEventCallback());
 }
 
 void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
@@ -263,12 +266,14 @@ void WidgetInputHandlerManager::DidStartScrollingViewport() {
 }
 
 void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
-    const blink::WebGestureEvent& update_event) {
+    const blink::WebGestureEvent& update_event,
+    const blink::WebInputEventAttribution& attribution) {
   DCHECK_EQ(update_event.GetType(), blink::WebInputEvent::kGestureScrollUpdate);
   blink::WebGestureEvent scroll_begin =
       ui::ScrollBeginFromScrollUpdate(update_event);
 
-  DispatchNonBlockingEventToMainThread(scroll_begin.Clone(), ui::LatencyInfo());
+  DispatchNonBlockingEventToMainThread(scroll_begin.Clone(), ui::LatencyInfo(),
+                                       attribution);
 }
 
 void WidgetInputHandlerManager::SetWhiteListedTouchAction(
@@ -599,7 +604,8 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
     ui::InputHandlerProxy::EventDisposition event_disposition,
     ui::WebScopedInputEvent input_event,
     const ui::LatencyInfo& latency_info,
-    std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+    std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+    const blink::WebInputEventAttribution& attribution) {
   TRACE_EVENT1("input",
                "WidgetInputHandlerManager::DidHandleInputEventAndOverscroll",
                "Disposition", event_disposition);
@@ -627,7 +633,7 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
         base::BindOnce(&WidgetInputHandlerManager::HandledInputEvent, this,
                        std::move(callback));
     input_event_queue_->HandleEvent(std::move(input_event), latency_info,
-                                    dispatch_type, ack_state,
+                                    dispatch_type, ack_state, attribution,
                                     std::move(handled_event));
     return;
   }

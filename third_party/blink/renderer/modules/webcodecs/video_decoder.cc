@@ -110,9 +110,8 @@ VideoDecoder* VideoDecoder::Create(ScriptState* script_state) {
 }
 
 VideoDecoder::VideoDecoder(ScriptState* script_state)
-    : script_state_(script_state), weak_factory_(this) {
+    : script_state_(script_state) {
   DVLOG(1) << __func__;
-  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 VideoDecoder::~VideoDecoder() {
@@ -189,8 +188,9 @@ ScriptPromise VideoDecoder::configure(const EncodedVideoConfig* config,
           media::VideoColorSpace::REC709(), media::kNoTransformation,
           gfx::Size(320, 180), gfx::Rect(0, 0, 320, 180), gfx::Size(320, 180),
           media::EmptyExtraData(), media::EncryptionScheme::kUnencrypted),
-      false, nullptr, WTF::Bind(&VideoDecoder::OnInitializeDone, weak_this_),
-      WTF::BindRepeating(&VideoDecoder::OnOutput, weak_this_),
+      false, nullptr,
+      WTF::Bind(&VideoDecoder::OnInitializeDone, WrapWeakPersistent(this)),
+      WTF::BindRepeating(&VideoDecoder::OnOutput, WrapWeakPersistent(this)),
       base::RepeatingCallback<void(media::WaitingReason)>());
 
   return configure_resolver->Promise();
@@ -291,8 +291,9 @@ ScriptPromise VideoDecoder::Write(ScriptValue chunk,
   // TODO(sandersd): Add reentrancy checker; OnDecodeDone() could disturb
   // |pending_decodes_|.
   pending_decodes_++;
-  decoder_->Decode(std::move(decoder_buffer),
-                   WTF::Bind(&VideoDecoder::OnDecodeDone, weak_this_));
+  decoder_->Decode(
+      std::move(decoder_buffer),
+      WTF::Bind(&VideoDecoder::OnDecodeDone, WrapWeakPersistent(this)));
   return CreateWritePromise();
 }
 

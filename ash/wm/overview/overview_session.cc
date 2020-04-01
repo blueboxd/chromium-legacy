@@ -149,19 +149,19 @@ void OverviewSession::Init(const WindowList& windows,
 
     // Do not animate if there is any window that is being dragged in the
     // grid.
-    if (enter_exit_overview_type_ == EnterExitOverviewType::kImmediateEnter) {
+    if (enter_exit_overview_type_ == OverviewEnterExitType::kImmediateEnter) {
       overview_grid->PositionWindows(/*animate=*/false);
     } else if (enter_exit_overview_type_ ==
-               EnterExitOverviewType::kSlideInEnter) {
+               OverviewEnterExitType::kSlideInEnter) {
       overview_grid->PositionWindows(/*animate=*/false);
       overview_grid->SlideWindowsIn();
     } else {
       // Exit only types should not appear here:
       DCHECK_NE(enter_exit_overview_type_,
-                EnterExitOverviewType::kSwipeFromShelf);
+                OverviewEnterExitType::kSwipeFromShelf);
       DCHECK_NE(enter_exit_overview_type_,
-                EnterExitOverviewType::kSlideOutExit);
-      DCHECK_NE(enter_exit_overview_type_, EnterExitOverviewType::kFadeOutExit);
+                OverviewEnterExitType::kSlideOutExit);
+      DCHECK_NE(enter_exit_overview_type_, OverviewEnterExitType::kFadeOutExit);
 
       overview_grid->PositionWindows(/*animate=*/true, /*ignored_items=*/{},
                                      OverviewTransition::kEnter);
@@ -223,7 +223,7 @@ void OverviewSession::Shutdown() {
     // During shutdown, do not animate all windows in overview if we need to
     // animate the snapped window.
     if (overview_grid->should_animate_when_exiting() &&
-        enter_exit_overview_type_ != EnterExitOverviewType::kImmediateExit) {
+        enter_exit_overview_type_ != OverviewEnterExitType::kImmediateExit) {
       overview_grid->CalculateWindowListAnimationStates(
           selected_item_ &&
                   selected_item_->overview_grid() == overview_grid.get()
@@ -240,8 +240,8 @@ void OverviewSession::Shutdown() {
   // No need to restore if we are sliding to the home launcher screen, as all
   // windows will be minimized.
   const bool should_focus =
-      enter_exit_overview_type_ == EnterExitOverviewType::kNormal ||
-      enter_exit_overview_type_ == EnterExitOverviewType::kImmediateExit;
+      enter_exit_overview_type_ == OverviewEnterExitType::kNormal ||
+      enter_exit_overview_type_ == OverviewEnterExitType::kImmediateExit;
   ResetFocusRestoreWindow(should_focus);
   RemoveAllObservers();
 
@@ -263,7 +263,7 @@ void OverviewSession::Shutdown() {
     overview_focus_widget_->Hide();
 
   if (no_windows_widget_) {
-    if (enter_exit_overview_type_ == EnterExitOverviewType::kImmediateExit) {
+    if (enter_exit_overview_type_ == OverviewEnterExitType::kImmediateExit) {
       ImmediatelyCloseWidgetOnExit(std::move(no_windows_widget_));
       return;
     }

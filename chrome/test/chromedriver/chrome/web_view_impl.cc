@@ -1125,6 +1125,11 @@ void WebViewImpl::ClearNavigationState(const std::string& new_frame_id) {
 Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
                                            const Timeout* timeout,
                                            bool* is_not_pending) {
+  if (!frame_id.empty() && !frame_tracker_->IsKnownFrame(frame_id)) {
+    // Frame has already been destroyed.
+    *is_not_pending = true;
+    return Status(kOk);
+  }
   bool is_pending;
   Status status =
       navigation_tracker_->IsPendingNavigation(frame_id, timeout, &is_pending);

@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Unhandled rejection: The user aborted a request.
-PASS A new ready promise is created when play()/pause() is called
-PASS Redundant calls to play() do not generate new ready promise objects
-PASS The ready promise is fulfilled with its Animation
-FAIL The ready promise does not report an unhandledrejection when rejected assert_unreached: Should not get an unhandled rejection Reached unreachable code
-Harness: the test ran to completion.
-

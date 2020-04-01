@@ -479,6 +479,47 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reset) {
   EXPECT_NE(old_actual, new_actual);
 }
 
+TEST_F(ScriptPromisePropertyGarbageCollectedTest, MarkAsHandled) {
+  {
+    // Unhandled promise.
+    ScriptState::Scope scope(MainScriptState());
+    ScriptPromise promise =
+        GetProperty()->Promise(DOMWrapperWorld::MainWorld());
+    GarbageCollectedScriptWrappable* reason =
+        MakeGarbageCollected<GarbageCollectedScriptWrappable>("reason");
+    GetProperty()->Reject(reason);
+    EXPECT_FALSE(promise.V8Value().As<v8::Promise>()->HasHandler());
+  }
+
+  GetProperty()->Reset();
+
+  {
+    // MarkAsHandled applies to newly created promises.
+    ScriptState::Scope scope(MainScriptState());
+    GetProperty()->MarkAsHandled();
+    ScriptPromise promise =
+        GetProperty()->Promise(DOMWrapperWorld::MainWorld());
+    GarbageCollectedScriptWrappable* reason =
+        MakeGarbageCollected<GarbageCollectedScriptWrappable>("reason");
+    GetProperty()->Reject(reason);
+    EXPECT_TRUE(promise.V8Value().As<v8::Promise>()->HasHandler());
+  }
+
+  GetProperty()->Reset();
+
+  {
+    // MarkAsHandled applies to previously vended promises.
+    ScriptState::Scope scope(MainScriptState());
+    ScriptPromise promise =
+        GetProperty()->Promise(DOMWrapperWorld::MainWorld());
+    GetProperty()->MarkAsHandled();
+    GarbageCollectedScriptWrappable* reason =
+        MakeGarbageCollected<GarbageCollectedScriptWrappable>("reason");
+    GetProperty()->Reject(reason);
+    EXPECT_TRUE(promise.V8Value().As<v8::Promise>()->HasHandler());
+  }
+}
+
 TEST_F(ScriptPromisePropertyNonScriptWrappableResolutionTargetTest,
        ResolveWithUndefined) {
   Test(ToV8UndefinedGenerator(), "undefined", __FILE__, __LINE__);

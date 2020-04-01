@@ -236,8 +236,8 @@
 
 // Injects an autofill profile into the fake sync server with |GUID| and
 // |full_name|.
-+ (void)injectAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID
-                                  autofillProfileName:(NSString*)fullName;
++ (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
+                               autofillProfileName:(NSString*)fullName;
 
 // Returns YES if there is an autofilll profile with the corresponding |GUID|
 // and |full_name|.
@@ -322,7 +322,7 @@
 
 // Deletes an autofill profile from the fake sync server with |GUID|, if it
 // exists. If it doesn't exist, nothing is done.
-+ (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID;
++ (void)deleteAutofillProfileFromFakeSyncServerWithGUID:(NSString*)GUID;
 
 // Verifies the sessions hierarchy on the Sync FakeServer. |specs| is
 // the collection of URLs that are to be expected for a single window. On

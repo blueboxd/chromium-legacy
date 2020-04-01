@@ -37840,6 +37840,7 @@ from previous Chrome versions.
   <int value="-1621963267" label="EnableAssistantLauncherUI:enabled"/>
   <int value="-1620804800" label="NoScriptPreviews:disabled"/>
   <int value="-1620568042" label="FeaturePolicy:disabled"/>
+  <int value="-1620046590" label="UseMediaHistoryStore:enabled"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
   <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
   <int value="-1617183455" label="OfflineRecentPages:disabled"/>
@@ -37943,6 +37944,7 @@ from previous Chrome versions.
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
   <int value="-1488744539" label="QuickUnlockFingerprint:enabled"/>
   <int value="-1487243228" label="NewUsbBackend:disabled"/>
+  <int value="-1486521264" label="UseMediaHistoryStore:disabled"/>
   <int value="-1486198877" label="VrIconInDaydreamHome:disabled"/>
   <int value="-1485461805" label="EnterpriseReportingInBrowser:enabled"/>
   <int value="-1482730792" label="stop-in-background:enabled"/>
@@ -39145,6 +39147,7 @@ from previous Chrome versions.
   <int value="-90032223" label="BuiltInModuleInfra:disabled"/>
   <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
   <int value="-89567017" label="ChromeColorsCustomColorPicker:enabled"/>
+  <int value="-89434839" label="SystemTrayMicGainSetting:enabled"/>
   <int value="-88822940" label="ssl-version-min"/>
   <int value="-88273414" label="ContentSuggestionsShowSummary:enabled"/>
   <int value="-86788587" label="allow-autofill-sync-credential"/>
@@ -40679,6 +40682,7 @@ from previous Chrome versions.
   <int value="1733390925" label="force-enable-stylus-tools"/>
   <int value="1735934914" label="OverlayScrollbarFlashWhenMouseEnter:disabled"/>
   <int value="1736698988" label="FsNosymfollow:disabled"/>
+  <int value="1738520473" label="SystemTrayMicGainSetting:disabled"/>
   <int value="1739456903" label="PWAFullCodeCache:enabled"/>
   <int value="1741855651"
       label="OmniboxTabSwitchSuggestionsDedicatedRow:disabled"/>
@@ -43973,6 +43977,10 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MobileFreLinkTappedStatus">
+  <obsolete>
+    Removed 04/2020 because the Privacy Notice is removed from FRE. (See
+    crbug.com/1065912)
+  </obsolete>
   <int value="0" label="Link successfully loaded."/>
   <int value="1" label="Link failed to load."/>
   <int value="2" label="Link load did not complete."/>

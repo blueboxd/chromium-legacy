@@ -97,8 +97,7 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
     private boolean hasSufficientSpaceForIllustration(int heightPx) {
         // If |mResources| is null, it means that the dialog was not initialized yet.
         if (mResources == null) return false;
-        heightPx -=
-                ChromeTabModalPresenter.getContainerTopMargin(mResources, mContainerHeightResource);
+        heightPx -= ChromeTabModalPresenter.getContainerTopMargin(mResources, mFullscreenManager);
         heightPx -= ChromeTabModalPresenter.getContainerBottomMargin(mFullscreenManager);
         return heightPx >= mResources.getDimensionPixelSize(
                        R.dimen.password_manager_dialog_min_vertical_space_to_show_illustration);

@@ -163,6 +163,7 @@ This file contains strings for code in //services.
     <file path="strings/services_strings_sl.xtb" lang="sl" />
     <file path="strings/services_strings_sq.xtb" lang="sq" />
     <file path="strings/services_strings_sr.xtb" lang="sr" />
+    <file path="strings/services_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="strings/services_strings_sv.xtb" lang="sv" />
     <file path="strings/services_strings_sw.xtb" lang="sw" />
     <file path="strings/services_strings_ta.xtb" lang="ta" />

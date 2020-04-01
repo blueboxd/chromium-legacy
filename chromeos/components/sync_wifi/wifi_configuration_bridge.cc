@@ -15,8 +15,10 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
+#include "chromeos/components/sync_wifi/network_type_conversions.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/sync/model/entity_change.h"
@@ -99,8 +101,8 @@ void WifiConfigurationBridge::OnGetAllSyncableNetworksResult(
   // locally to Shill.  For networks which exist on both lists, we compare the
   // last connected timestamp and take the newer configuration.
 
-  NET_LOG(DEBUG) << local_network_list.size()
-                 << " local networks eligible for sync.";
+  NET_LOG(EVENT) << "Merging " << local_network_list.size() << " local and "
+                 << change_list.size() << " synced networks.";
   base::flat_map<NetworkIdentifier, sync_pb::WifiConfigurationSpecifics>
       sync_networks;
   base::flat_map<NetworkIdentifier, sync_pb::WifiConfigurationSpecifics>
@@ -181,7 +183,7 @@ base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
 
-  NET_LOG(DEBUG) << "Applying  " << entity_changes.size()
+  NET_LOG(EVENT) << "Applying  " << entity_changes.size()
                  << " pending changes.";
 
   // TODO(jonmann) Don't override synced network configurations that are newer
@@ -194,6 +196,9 @@ base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
         batch->DeleteData(change->storage_key());
         synced_network_updater_->RemoveNetwork(
             NetworkIdentifier::DeserializeFromString(change->storage_key()));
+      } else {
+        NET_LOG(EVENT) << "Received delete request for network which is not "
+                          "tracked by sync.";
       }
       continue;
     }
@@ -269,7 +274,8 @@ void WifiConfigurationBridge::OnReadAllData(
   for (syncer::ModelTypeStore::Record& record : *records) {
     sync_pb::WifiConfigurationSpecifics data;
     if (record.id.empty() || !data.ParseFromString(record.value)) {
-      DVLOG(1) << "Unable to parse proto for entry with key: " << record.id;
+      NET_LOG(EVENT) << "Unable to parse proto for entry with key: "
+                     << record.id;
       continue;
     }
     entries_[record.id] = std::move(data);
@@ -315,9 +321,12 @@ void WifiConfigurationBridge::OnFirstConnectionToNetwork(
     const std::string& guid) {
   if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
     // Don't have to upload a configuration that came from sync.
+    NET_LOG(EVENT) << "Not uploading newly configured network "
+                   << NetworkGuidId(guid) << ", it was added by sync.";
     return;
   }
 
+  NET_LOG(EVENT) << "Syncing newly configured network " << NetworkGuidId(guid);
   local_network_collector_->GetSyncableNetwork(
       guid, base::BindOnce(&WifiConfigurationBridge::SaveNetworkToSync,
                            weak_ptr_factory_.GetWeakPtr()));
@@ -331,6 +340,7 @@ void WifiConfigurationBridge::SaveNetworkToSync(
 
   std::unique_ptr<syncer::EntityData> entity_data =
       GenerateWifiEntityData(*proto);
+  auto id = NetworkIdentifier::FromProto(*proto);
   std::string storage_key = GetStorageKey(*entity_data);
 
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
@@ -340,6 +350,9 @@ void WifiConfigurationBridge::SaveNetworkToSync(
                           batch->GetMetadataChangeList());
   entries_[storage_key] = *proto;
   Commit(std::move(batch));
+  NET_LOG(EVENT) << "Saved network "
+                 << NetworkId(NetworkStateFromNetworkIdentifier(id))
+                 << "to sync.";
 }
 
 void WifiConfigurationBridge::OnBeforeConfigurationRemoved(
@@ -351,6 +364,8 @@ void WifiConfigurationBridge::OnBeforeConfigurationRemoved(
     return;
   }
 
+  NET_LOG(EVENT) << "Storing metadata for " << NetworkPathId(service_path)
+                 << " in preparation for removal.";
   std::string storage_key = id->SerializeToString();
   if (entries_.contains(storage_key))
     pending_deletes_[guid] = storage_key;
@@ -359,18 +374,20 @@ void WifiConfigurationBridge::OnBeforeConfigurationRemoved(
 void WifiConfigurationBridge::OnConfigurationRemoved(
     const std::string& service_path,
     const std::string& network_guid) {
-  LOG(ERROR) << "WifiConfigurationBridge::RemoveNetworkFromSync" << this;
-  if (!pending_deletes_.contains(network_guid))
+  if (!pending_deletes_.contains(network_guid)) {
+    NET_LOG(EVENT) << "Configuraiton " << network_guid
+                   << " removed with no matching saved metadata.";
     return;
+  }
 
   std::string storage_key = pending_deletes_[network_guid];
-
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
   batch->DeleteData(storage_key);
   change_processor()->Delete(storage_key, batch->GetMetadataChangeList());
   entries_.erase(storage_key);
   Commit(std::move(batch));
+  NET_LOG(EVENT) << "Removed network from sync.";
 }
 
 void WifiConfigurationBridge::OnConfigurationModified(
@@ -382,18 +399,27 @@ void WifiConfigurationBridge::OnConfigurationModified(
 
   if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
     // Don't have to upload a configuration that came from sync.
+    NET_LOG(EVENT) << "Not uploading change to " << NetworkGuidId(guid)
+                   << ", modified network was configured "
+                      "by sync.";
     return;
   }
-  if (set_properties->HasKey(shill::kAutoConnectProperty) ||
-      set_properties->HasKey(shill::kPriorityProperty) ||
-      set_properties->HasKey(shill::kProxyConfigProperty) ||
-      set_properties->FindPath(
+  if (!set_properties->HasKey(shill::kAutoConnectProperty) &&
+      !set_properties->HasKey(shill::kPriorityProperty) &&
+      !set_properties->HasKey(shill::kProxyConfigProperty) &&
+      !set_properties->FindPath(
           base::StringPrintf("%s.%s", shill::kStaticIPConfigProperty,
                              shill::kNameServersProperty))) {
-    local_network_collector_->GetSyncableNetwork(
-        guid, base::BindOnce(&WifiConfigurationBridge::SaveNetworkToSync,
-                             weak_ptr_factory_.GetWeakPtr()));
+    NET_LOG(EVENT)
+        << "Not uploading change, modified network field is not synced.";
+    return;
   }
+
+  NET_LOG(EVENT) << "Updating sync with changes to "
+                 << NetworkPathId(service_path);
+  local_network_collector_->GetSyncableNetwork(
+      guid, base::BindOnce(&WifiConfigurationBridge::SaveNetworkToSync,
+                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WifiConfigurationBridge::SetNetworkMetadataStore(

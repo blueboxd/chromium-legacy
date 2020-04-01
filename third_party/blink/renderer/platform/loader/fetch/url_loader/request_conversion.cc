@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/trust_token_params_conversion.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 
 namespace blink {
@@ -174,30 +175,6 @@ mojom::ResourceType RequestContextToResourceType(
       NOTREACHED();
       return mojom::ResourceType::kSubResource;
   }
-}
-
-// Converts a mojom::blink TrustTokenParams object to its non-Blink counterpart
-// by copying all fields.
-network::OptionalTrustTokenParams ConvertTrustTokenParams(
-    const base::Optional<network::mojom::blink::TrustTokenParams>& maybe_in) {
-  if (!maybe_in)
-    return base::nullopt;
-  const network::mojom::blink::TrustTokenParams& in = *maybe_in;
-
-  network::mojom::TrustTokenParamsPtr out =
-      network::mojom::TrustTokenParams::New();
-  out->type = in.type;
-  out->refresh_policy = in.refresh_policy;
-  out->sign_request_data = in.sign_request_data;
-  out->include_timestamp_header = in.include_timestamp_header;
-  // Optional value:
-  if (in.issuer)
-    out->issuer = in.issuer->ToUrlOrigin();
-  for (const String& additional_header : in.additional_signed_headers) {
-    out->additional_signed_headers.push_back(additional_header.Latin1());
-  }
-
-  return network::OptionalTrustTokenParams(std::move(out));
 }
 
 }  // namespace

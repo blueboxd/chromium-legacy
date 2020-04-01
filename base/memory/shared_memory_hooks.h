@@ -16,10 +16,11 @@ struct MainFunctionParams;
 }  // namespace content
 int CloudPrintServiceProcessMain(const content::MainFunctionParams& parameters);
 
-namespace service_manager {
-struct MainParams;
-int Main(const MainParams&);
-}  // namespace service_manager
+namespace mojo {
+
+class SharedMemoryUtils;
+
+}  // namespace mojo
 
 namespace base {
 
@@ -31,7 +32,7 @@ class SharedMemoryHooks {
   friend class SharedMemoryHooksTest;
   friend int ::CloudPrintServiceProcessMain(
       const content::MainFunctionParams& parameters);
-  friend int service_manager::Main(const service_manager::MainParams&);
+  friend mojo::SharedMemoryUtils;
 
   // Allows shared memory region creation to be hooked. Useful for sandboxed
   // processes that are restricted from invoking the platform APIs directly.

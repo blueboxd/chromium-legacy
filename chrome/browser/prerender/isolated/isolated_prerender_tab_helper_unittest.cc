@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -136,6 +137,11 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     task_environment()->RunUntilIdle();
   }
 
+  void TriggerRedirectHistogramRecording() {
+    content::MockNavigationHandle handle(web_contents());
+    tab_helper_->DidStartNavigation(&handle);
+  }
+
   int RequestCount() { return test_url_loader_factory_.NumPending(); }
 
   IsolatedPrerenderTabHelper* tab_helper() const { return tab_helper_.get(); }
@@ -154,6 +160,10 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   size_t prefetch_successful_count() const {
     return tab_helper_->metrics().prefetch_successful_count;
+  }
+
+  size_t prefetch_total_redirect_count() const {
+    return tab_helper_->metrics().prefetch_total_redirect_count;
   }
 
   void VerifyNIK(const net::NetworkIsolationKey& key) {
@@ -273,6 +283,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(IsolatedPrerenderTabHelperTest, FeatureDisabled) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(features::kIsolatePrerenders);
 
@@ -284,9 +295,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, FeatureDisabled) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, DataSaverDisabled) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -300,9 +326,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, DataSaverDisabled) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, GoogleSRPOnly) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -314,9 +355,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, GoogleSRPOnly) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, SRPOnly) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -328,9 +384,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, SRPOnly) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, HTTPSPredictionsOnly) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -342,9 +413,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, HTTPSPredictionsOnly) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, DontFetchGoogleLinks) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -356,9 +442,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, DontFetchGoogleLinks) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, DontFetchIPAddresses) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -370,9 +471,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, DontFetchIPAddresses) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, WrongWebContents) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -384,9 +500,24 @@ TEST_F(IsolatedPrerenderTabHelperTest, WrongWebContents) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, HasPurposePrefetchHeader) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -400,9 +531,11 @@ TEST_F(IsolatedPrerenderTabHelperTest, HasPurposePrefetchHeader) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -418,6 +551,20 @@ TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
@@ -436,6 +583,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -449,6 +597,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       1);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
@@ -467,6 +619,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError",
@@ -479,6 +632,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
       "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
   histogram_tester.ExpectTotalCount(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
@@ -498,6 +655,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -510,9 +668,14 @@ TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       1);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
@@ -529,6 +692,20 @@ TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 // Verify that isolated prerender is not triggered if the predictions for next
@@ -573,6 +750,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 1U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -586,9 +764,14 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       1);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kIsolatePrerenders, {{"max_srp_prefetches", "0"}});
@@ -602,6 +785,20 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 0);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest,
@@ -633,6 +830,7 @@ TEST_F(IsolatedPrerenderTabHelperTest,
   EXPECT_EQ(prefetch_eligible_count(), 3U);
   EXPECT_EQ(prefetch_attempted_count(), 3U);
   EXPECT_EQ(prefetch_successful_count(), 2U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectBucketCount(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 2);
@@ -654,6 +852,10 @@ TEST_F(IsolatedPrerenderTabHelperTest,
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       2);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, OrderedBitMask) {
@@ -708,6 +910,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NumberOfPrefetches_UnlimitedByCmdLine) {
   EXPECT_EQ(prefetch_eligible_count(), 3U);
   EXPECT_EQ(prefetch_attempted_count(), 3U);
   EXPECT_EQ(prefetch_successful_count(), 2U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectBucketCount(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 2);
@@ -729,6 +932,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, NumberOfPrefetches_UnlimitedByCmdLine) {
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       2);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
@@ -757,6 +964,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
   EXPECT_EQ(prefetch_eligible_count(), 3U);
   EXPECT_EQ(prefetch_attempted_count(), 2U);
   EXPECT_EQ(prefetch_successful_count(), 1U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectBucketCount(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -778,6 +986,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       1);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingNotStartedWhileInvisible) {
@@ -795,6 +1007,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingNotStartedWhileInvisible) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
@@ -821,6 +1034,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
   EXPECT_EQ(prefetch_eligible_count(), 2U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 1U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -834,6 +1048,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       1);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 0, 1);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingRestartedWhenVisible) {
@@ -851,6 +1069,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingRestartedWhenVisible) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 
   web_contents()->WasShown();
 
@@ -858,6 +1077,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingRestartedWhenVisible) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
@@ -879,6 +1099,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
@@ -902,6 +1123,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 0U);
 }
 
 class IsolatedPrerenderTabHelperRedirectTest
@@ -1003,6 +1225,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Cookies) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 1U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
@@ -1011,6 +1234,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 1U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Google) {
@@ -1019,6 +1243,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Google) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 1U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
@@ -1035,6 +1260,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 1U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
@@ -1067,6 +1293,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
   EXPECT_EQ(prefetch_eligible_count(), 2U);
   EXPECT_EQ(prefetch_attempted_count(), 2U);
   EXPECT_EQ(prefetch_successful_count(), 1U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 1U);
 
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.NetError", net::OK, 1);
@@ -1080,4 +1307,8 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", kConnectTimeDuration,
       1);
+
+  TriggerRedirectHistogramRecording();
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects", 1, 1);
 }

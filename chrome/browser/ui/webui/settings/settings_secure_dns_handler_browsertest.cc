@@ -515,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   base::ListValue args_valid;
   args_valid.AppendString(kWebUiFunctionName);
   args_valid.AppendString(
-      "invalid_template    https://example.template/dns-query");
+      "https://example1.template/dns    https://example2.template/dns-query");
   web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args_valid);
   const content::TestWebUI::CallData& call_data_valid =
       *web_ui_.call_data().back();
@@ -523,15 +523,15 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   EXPECT_EQ(kWebUiFunctionName, call_data_valid.arg1()->GetString());
   // The request should be successful.
   ASSERT_TRUE(call_data_valid.arg2()->GetBool());
-  // The second template should be valid.
-  ASSERT_EQ("https://example.template/dns-query",
+  // Both templates are valid, so validate returns the first.
+  ASSERT_EQ("https://example1.template/dns",
             call_data_valid.arg3()->GetString());
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 0);
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 
   base::ListValue args_invalid;
   args_invalid.AppendString(kWebUiFunctionName);
-  args_invalid.AppendString("invalid_template another_invalid_template");
+  args_invalid.AppendString("invalid_template https://example.template/dns");
   web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args_invalid);
   const content::TestWebUI::CallData& call_data_invalid =
       *web_ui_.call_data().back();

@@ -1466,6 +1466,9 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
   if (!finished_promise_) {
     finished_promise_ = MakeGarbageCollected<AnimationPromise>(
         ExecutionContext::From(script_state));
+    // Do not report unhandled rejections of the finished promise.
+    finished_promise_->MarkAsHandled();
+
     // Defer resolving the finished promise if the finish notification task is
     // pending. The finished state could change before the next microtask
     // checkpoint.
@@ -1485,6 +1488,8 @@ ScriptPromise Animation::ready(ScriptState* script_state) {
   if (!ready_promise_) {
     ready_promise_ = MakeGarbageCollected<AnimationPromise>(
         ExecutionContext::From(script_state));
+    // Do not report unhandled rejections of the ready promise.
+    ready_promise_->MarkAsHandled();
     if (!is_pending)
       ready_promise_->Resolve(this);
   }

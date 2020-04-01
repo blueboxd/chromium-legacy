@@ -51,7 +51,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(network::kSigningTrustTokenTestParameters));
 
 IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
-                       PopulatesResourceRequest) {
+                       PopulatesResourceRequestViaFetch) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   network::TrustTokenParametersAndSerialization
@@ -70,6 +70,39 @@ IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
       ExecJs(shell(), JsReplace("fetch($1, {trustToken: ", trust_token_url) +
                           expected_params_and_serialization.serialized_params +
                           "});"));
+
+  monitor.WaitForUrls();
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(trust_token_url);
+  ASSERT_TRUE(request);
+  ASSERT_TRUE(request->trust_token_params);
+  EXPECT_TRUE(request->trust_token_params.as_ptr().Equals(
+      expected_params_and_serialization.params));
+}
+
+IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
+                       PopulatesResourceRequestViaIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  network::TrustTokenParametersAndSerialization
+      expected_params_and_serialization =
+          network::SerializeTrustTokenParametersAndConstructExpectation(
+              GetParam());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL trust_token_url(embedded_test_server()->GetURL("/title2.html"));
+
+  URLLoaderMonitor monitor({trust_token_url});
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  EXPECT_TRUE(ExecJs(
+      shell(), JsReplace("let iframe = document.createElement('iframe');"
+                         "iframe.src = $1;"
+                         "iframe.trustToken = $2;"
+                         "document.body.appendChild(iframe);",
+                         trust_token_url,
+                         expected_params_and_serialization.serialized_params)));
 
   monitor.WaitForUrls();
   base::Optional<network::ResourceRequest> request =

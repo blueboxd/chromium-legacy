@@ -190,6 +190,7 @@ third_party/libaddressinput/BUILD.gn.
     <file path="resources/address_input_strings_sl.xtb" lang="sl" />
     <file path="resources/address_input_strings_sq.xtb" lang="sq" />
     <file path="resources/address_input_strings_sr.xtb" lang="sr" />
+    <file path="resources/address_input_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="resources/address_input_strings_sv.xtb" lang="sv" />
     <file path="resources/address_input_strings_sw.xtb" lang="sw" />
     <file path="resources/address_input_strings_ta.xtb" lang="ta" />

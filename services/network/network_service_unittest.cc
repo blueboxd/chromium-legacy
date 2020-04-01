@@ -1222,6 +1222,38 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 }
 
+// Integration test confirming that the SetTrustTokenKeyCommitments IPC is wired
+// up correctly by verifying that it's possible to read a value previously
+// passed to the setter.
+TEST_F(NetworkServiceTestWithService, SetsTrustTokenKeyCommitments) {
+  ASSERT_TRUE(service_->trust_token_key_commitments());
+
+  auto expectation = mojom::TrustTokenKeyCommitmentResult::New();
+  expectation->batch_size = mojom::TrustTokenKeyCommitmentBatchSize::New(5);
+
+  url::Origin issuer_origin =
+      url::Origin::Create(GURL("https://issuer.example"));
+
+  base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr> to_set;
+  to_set.insert_or_assign(issuer_origin, expectation.Clone());
+  network_service_->SetTrustTokenKeyCommitments(std::move(to_set));
+  network_service_.FlushForTesting();
+
+  mojom::TrustTokenKeyCommitmentResultPtr result;
+  bool ran = false;
+
+  service_->trust_token_key_commitments()->Get(
+      issuer_origin, base::BindLambdaForTesting(
+                         [&](mojom::TrustTokenKeyCommitmentResultPtr ptr) {
+                           result = std::move(ptr);
+                           ran = true;
+                         }));
+
+  ASSERT_TRUE(ran);
+
+  EXPECT_TRUE(result.Equals(expectation));
+}
+
 // CRLSets are not supported on iOS and Android system verifiers.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 

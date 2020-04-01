@@ -28,7 +28,7 @@ export const TabNetworkState = {
 
 /**
  * Must be kept in sync with TabAlertState from
- * //chrome/browser ui/tabs/tab_utils.h
+ * //chrome/browser/ui/tabs/tab_utils.h
  * @enum {number}
  */
 export const TabAlertState = {
@@ -38,10 +38,11 @@ export const TabAlertState = {
   AUDIO_MUTING: 3,
   BLUETOOTH_CONNECTED: 4,
   USB_CONNECTED: 5,
-  SERIAL_CONNECTED: 6,
-  PIP_PLAYING: 7,
-  DESKTOP_CAPTURING: 8,
-  VR_PRESENTING_IN_HEADSET: 9,
+  HID_CONNECTED: 6,
+  SERIAL_CONNECTED: 7,
+  PIP_PLAYING: 8,
+  DESKTOP_CAPTURING: 9,
+  VR_PRESENTING_IN_HEADSET: 10,
 };
 
 /**

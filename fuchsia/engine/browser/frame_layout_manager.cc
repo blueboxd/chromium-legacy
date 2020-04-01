@@ -10,10 +10,6 @@
 
 namespace {
 
-// The background color that is shown when the main window does not fully
-// fill the View.
-constexpr SkColor kLetterboxBackgroundColor = SK_ColorBLACK;
-
 // Returns a scaling factor that will allow |inset| to fit fully inside
 // |container| without clipping.
 float ProportionalScale(gfx::Size inset, gfx::Size container) {
@@ -54,8 +50,13 @@ void FrameLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     main_child_ = child;
     SetChildBoundsDirect(main_child_,
                          gfx::Rect(main_child_->parent()->bounds().size()));
-
     UpdateContentBounds();
+
+    // Make the compositor's background transparent by default.
+    main_child_->parent()->GetHost()->compositor()->SetBackgroundColor(
+        SK_AlphaTRANSPARENT);
+    main_child_->GetHost()->compositor()->SetBackgroundColor(
+        SK_AlphaTRANSPARENT);
   }
 }
 
@@ -103,7 +104,4 @@ void FrameLayoutManager::UpdateContentBounds() {
       (actual_size.height() - (render_size_override_.height() * scale)) / 2.0;
   transform.Translate(center_x_offset, center_y_offset);
   main_child_->SetTransform(transform);
-
-  main_child_->parent()->GetHost()->compositor()->SetBackgroundColor(
-      kLetterboxBackgroundColor);
 }

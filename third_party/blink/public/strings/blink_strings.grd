@@ -199,6 +199,7 @@ below:
     <file path="translations/blink_strings_sl.xtb" lang="sl" />
     <file path="translations/blink_strings_sq.xtb" lang="sq" />
     <file path="translations/blink_strings_sr.xtb" lang="sr" />
+    <file path="translations/blink_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="translations/blink_strings_sv.xtb" lang="sv" />
     <file path="translations/blink_strings_sw.xtb" lang="sw" />
     <file path="translations/blink_strings_ta.xtb" lang="ta" />

@@ -334,6 +334,8 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
       std::make_unique<LegacyTLSConfigDistributor>();
 
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
+
+  trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
 }
 
 NetworkService::~NetworkService() {
@@ -707,6 +709,12 @@ void NetworkService::SetEnvironment(
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   for (const auto& variable : environment)
     env->SetVar(variable->name, variable->value);
+}
+
+void NetworkService::SetTrustTokenKeyCommitments(
+    base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr>
+        commitments) {
+  trust_token_key_commitments_->Set(std::move(commitments));
 }
 
 #if defined(OS_ANDROID)

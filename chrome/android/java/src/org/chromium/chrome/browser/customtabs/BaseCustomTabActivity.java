@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
@@ -47,6 +48,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabToolbarColorController mToolbarColorController;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
+    protected CustomTabIntentHandler mCustomTabIntentHandler;
     protected @Nullable WebappActivityCoordinator mWebappActivityCoordinator;
 
     // This is to give the right package name while using the client's resources during an
@@ -77,6 +79,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         mToolbarColorController = component.resolveToolbarColorController();
         mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabFactory = component.resolveTabFactory();
+        mCustomTabIntentHandler = component.resolveIntentHandler();
 
         component.resolveCompositorContentInitializer();
         component.resolveTaskDescriptionHelper();

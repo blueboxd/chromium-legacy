@@ -1393,7 +1393,7 @@ TEST_P(WebMediaPlayerMSTest, RequestAnimationFrame) {
   auto metadata = player_->GetVideoFramePresentationMetadata();
 
   EXPECT_GT(metadata->presentation_time, base::TimeTicks());
-  EXPECT_GE(metadata->expected_presentation_time, metadata->presentation_time);
+  EXPECT_GE(metadata->expected_display_time, metadata->presentation_time);
   testing::Mock::VerifyAndClearExpectations(this);
 
   // Make sure multiple calls to RAF only result in one call per frame to OnRAF.

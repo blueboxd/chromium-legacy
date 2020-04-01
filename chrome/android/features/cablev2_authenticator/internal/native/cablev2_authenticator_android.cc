@@ -175,7 +175,8 @@ struct MakeCredRequest {
   const std::vector<uint8_t>* user_id;
   const cbor::Value::ArrayValue* cred_params;
   const cbor::Value::ArrayValue* excluded_credentials;
-  const cbor::Value* client_data_extension;
+  const std::string* origin;
+  const std::vector<uint8_t>* challenge;
 };
 
 static constexpr StepOrByte<MakeCredRequest> kMakeCredParseSteps[] = {
@@ -203,10 +204,16 @@ static constexpr StepOrByte<MakeCredRequest> kMakeCredParseSteps[] = {
     // TODO: remove once the FIDO API can handle clientDataJSON
     Map<MakeCredRequest>(),
     IntKey<MakeCredRequest>(6),
-      ELEMENT(Is::kRequired, MakeCredRequest, client_data_extension),
+      Map<MakeCredRequest>(),
       StringKey<MakeCredRequest>(),
           'g', 'o', 'o', 'g', 'l', 'e', 'A', 'n', 'd', 'r', 'o', 'i', 'd',
           'C', 'l', 'i', 'e', 'n', 't', 'D', 'a', 't', 'a', '\0',
+          ELEMENT(Is::kRequired, MakeCredRequest, origin),
+          IntKey<MakeCredRequest>(2),
+
+          ELEMENT(Is::kRequired, MakeCredRequest, challenge),
+          IntKey<MakeCredRequest>(3),
+      Stop<MakeCredRequest>(),
     Stop<MakeCredRequest>(),
 
     Stop<MakeCredRequest>(),
@@ -237,7 +244,8 @@ struct GetAssertionRequest {
   const std::string* rp_id;
   const std::vector<uint8_t>* client_data_hash;
   const cbor::Value::ArrayValue* allowed_credentials;
-  const cbor::Value* client_data_extension;
+  const std::string* origin;
+  const std::vector<uint8_t>* challenge;
 };
 
 static constexpr StepOrByte<GetAssertionRequest> kGetAssertionParseSteps[] = {
@@ -254,10 +262,16 @@ static constexpr StepOrByte<GetAssertionRequest> kGetAssertionParseSteps[] = {
     // TODO: remove once the FIDO API can handle clientDataJSON
     Map<GetAssertionRequest>(),
     IntKey<GetAssertionRequest>(4),
-      ELEMENT(Is::kRequired, GetAssertionRequest, client_data_extension),
+      Map<GetAssertionRequest>(),
       StringKey<GetAssertionRequest>(),
           'g', 'o', 'o', 'g', 'l', 'e', 'A', 'n', 'd', 'r', 'o', 'i', 'd',
           'C', 'l', 'i', 'e', 'n', 't', 'D', 'a', 't', 'a', '\0',
+          ELEMENT(Is::kRequired, GetAssertionRequest, origin),
+          IntKey<GetAssertionRequest>(2),
+
+          ELEMENT(Is::kRequired, GetAssertionRequest, challenge),
+          IntKey<GetAssertionRequest>(3),
+      Stop<GetAssertionRequest>(),
     Stop<GetAssertionRequest>(),
 
     Stop<GetAssertionRequest>(),
@@ -519,23 +533,12 @@ class Client {
               return false;
             }
 
-            const cbor::Value::MapValue& client_data_map =
-                make_cred_request.client_data_extension->GetMap();
-            const auto origin_it = client_data_map.find(cbor::Value(2));
-            const auto challenge_it = client_data_map.find(cbor::Value(3));
-            if (origin_it == client_data_map.end() ||
-                !origin_it->second.is_string() ||
-                challenge_it == client_data_map.end() ||
-                !challenge_it->second.is_bytestring()) {
-              return false;
-            }
-
             // TODO: plumb the rk flag through once GmsCore supports resident
             // keys. This will require support for optional maps in |Extract|.
             delegate_->MakeCredential(
-                addr_, origin_it->second.GetString(), *make_cred_request.rp_id,
-                challenge_it->second.GetBytestring(),
-                *make_cred_request.user_id, algorithms, excluded_credential_ids,
+                addr_, *make_cred_request.origin, *make_cred_request.rp_id,
+                *make_cred_request.challenge, *make_cred_request.user_id,
+                algorithms, excluded_credential_ids,
                 /*resident_key=*/false);
             return true;
           }
@@ -572,21 +575,9 @@ class Client {
               return false;
             }
 
-            const cbor::Value::MapValue& client_data_map =
-                get_assertion_request.client_data_extension->GetMap();
-            const auto origin_it = client_data_map.find(cbor::Value(2));
-            const auto challenge_it = client_data_map.find(cbor::Value(3));
-            if (origin_it == client_data_map.end() ||
-                !origin_it->second.is_string() ||
-                challenge_it == client_data_map.end() ||
-                !challenge_it->second.is_bytestring()) {
-              return false;
-            }
-
-            delegate_->GetAssertion(addr_, origin_it->second.GetString(),
-
+            delegate_->GetAssertion(addr_, *get_assertion_request.origin,
                                     *get_assertion_request.rp_id,
-                                    challenge_it->second.GetBytestring(),
+                                    *get_assertion_request.challenge,
                                     allowed_credential_ids);
             return true;
           }

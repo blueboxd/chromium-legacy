@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_
 
 #include <memory>
+#include <set>
 
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -92,10 +93,16 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // Called as we are dragged open.
   void UpdateHeightForDragToOpen(float height_delta);
 
-  // Called when drag-to-open finishes. If |fling_to_open| is true, the
-  // user released their touch with a high enough velocity that we
-  // should animate open regardless of the final height.
-  void EndDragToOpen(bool fling_to_open);
+  enum class FlingDirection {
+    kUp,
+    kDown,
+  };
+
+  // Called when drag-to-open finishes. If |fling_direction| is present,
+  // the user released their touch with a high velocity. We should use
+  // just this direction to animate open or closed.
+  void EndDragToOpen(
+      base::Optional<FlingDirection> fling_direction = base::nullopt);
 
   void SetContainerTargetVisibility(bool target_visible);
 

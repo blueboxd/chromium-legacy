@@ -84,6 +84,8 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
       return gfx::kGoogleGrey500;
     case NativeTheme::kColorId_TextOnProminentButtonColor:
       return gfx::kGoogleGrey900;
+    case NativeTheme::kColorId_PaddedButtonInkDropColor:
+      return SK_ColorWHITE;
 
     // MenuItem
     case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
@@ -194,7 +196,6 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
                         NativeTheme::ColorScheme color_scheme) {
   constexpr SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
 
-
   switch (color_id) {
     // Dialogs
     case NativeTheme::kColorId_WindowBackground:
@@ -253,6 +254,8 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     }
     case NativeTheme::kColorId_ButtonBorderColor:
       return gfx::kGoogleGrey300;
+    case NativeTheme::kColorId_PaddedButtonInkDropColor:
+      return gfx::kGoogleGrey900;
 
     // ToggleButton
     case NativeTheme::kColorId_ToggleButtonShadowColor:

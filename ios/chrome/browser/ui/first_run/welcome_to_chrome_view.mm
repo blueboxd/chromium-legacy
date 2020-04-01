@@ -87,10 +87,8 @@ NSString* const kAppLogoImageName = @"launchscreen_app_logo";
 NSString* const kCheckBoxImageName = @"checkbox";
 NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 
-// Constants for the Terms of Service and Privacy Notice URLs in the
-// first run experience.
+// Constant for the Terms of Service URL in the first run experience.
 const char kTermsOfServiceUrl[] = "internal://terms-of-service";
-const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 
 }  // namespace
 
@@ -386,17 +384,11 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   self.TOSLabel.frame = {CGPointZero, containerSize};
   NSString* TOSText = l10n_util::GetNSString(IDS_IOS_FIRSTRUN_AGREE_TO_TERMS);
   NSRange tosLinkTextRange = NSMakeRange(NSNotFound, 0);
-  NSRange privacyLinkTextRange = NSMakeRange(NSNotFound, 0);
   TOSText = ParseStringWithTag(TOSText, &tosLinkTextRange,
                                @"BEGIN_LINK_TOS[ \t]*", @"[ \t]*END_LINK_TOS");
-  TOSText = ParseStringWithTag(TOSText, &privacyLinkTextRange,
-                               @"BEGIN_LINK_PRIVACY[ \t]*",
-                               @"[ \t]*END_LINK_PRIVACY");
 
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(tosLinkTextRange.location));
   DCHECK_NE(0u, tosLinkTextRange.length);
-  DCHECK_NE(NSNotFound, static_cast<NSInteger>(privacyLinkTextRange.location));
-  DCHECK_NE(0u, privacyLinkTextRange.length);
 
   self.TOSLabel.text = TOSText;
 
@@ -407,8 +399,6 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
       return;
     if (url == kTermsOfServiceUrl) {
       [[strongSelf delegate] welcomeToChromeViewDidTapTOSLink];
-    } else if (url == kPrivacyNoticeUrl) {
-      [[strongSelf delegate] welcomeToChromeViewDidTapPrivacyLink];
     } else {
       NOTREACHED();
     }
@@ -418,8 +408,6 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
       [[LabelLinkController alloc] initWithLabel:_TOSLabel action:action];
   [_TOSLabelLinkController addLinkWithRange:tosLinkTextRange
                                         url:GURL(kTermsOfServiceUrl)];
-  [_TOSLabelLinkController addLinkWithRange:privacyLinkTextRange
-                                        url:GURL(kPrivacyNoticeUrl)];
   [_TOSLabelLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
 
   CGSize TOSLabelSize = [self.TOSLabel sizeThatFits:containerSize];

@@ -91,6 +91,15 @@ public class DefaultCustomTabIntentHandlingStrategy implements CustomTabIntentHa
         String url = intentDataProvider.getUrlToLoad();
         if (TextUtils.isEmpty(url)) return;
         LoadUrlParams params = new LoadUrlParams(url);
+
+        if (intentDataProvider.isWebApkActivity()) {
+            // The back stack should be cleared when a WebAPK receives a deep link intent. This is
+            // unnecessary for Trusted Web Activities and new-style WebAPKs because Trusted Web
+            // Activities and new-style WebAPKs are restarted when they receive an intent from a
+            // deep link.
+            params.setShouldClearHistoryList(true);
+        }
+
         mNavigationController.navigate(params, getTimestamp(intentDataProvider));
     }
 

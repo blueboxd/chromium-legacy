@@ -282,9 +282,8 @@ void TooltipAura::Hide() {
     // OnPaint() which happens asynchronously after the Show(). As a result,
     // we can just destroy the widget and create a new one each time which
     // guarantees we never show outdated information.
-    // TODO: Figure out why the old content is displayed despite the size
-    // change.
-    // http://crbug.com/998280
+    // TODO(http://crbug.com/998280): Figure out why the old content is
+    // displayed despite the size change.
     DestroyWidget();
     tooltip_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTooltipClosed,
                                             true);

@@ -150,6 +150,7 @@
     <file lang="sl" path="translations/autofill_strings_sl.xtb" />
     <file lang="sq" path="translations/autofill_strings_sq.xtb" />
     <file lang="sr" path="translations/autofill_strings_sr.xtb" />
+    <file lang="sr-Latn" path="translations/autofill_strings_sr-Latn.xtb" />
     <file lang="sv" path="translations/autofill_strings_sv.xtb" />
     <file lang="sw" path="translations/autofill_strings_sw.xtb" />
     <file lang="ta" path="translations/autofill_strings_ta.xtb" />

@@ -200,8 +200,8 @@ std::unique_ptr<ScrollView> TableView::CreateScrollViewWithTable(
   return scroll_view;
 }
 
-// TODO: this doesn't support arbitrarily changing the model, rename this to
-// ClearModel() or something.
+// TODO(sky): this doesn't support arbitrarily changing the model, rename this
+// to ClearModel() or something.
 void TableView::SetModel(ui::TableModel* model) {
   if (model == model_)
     return;

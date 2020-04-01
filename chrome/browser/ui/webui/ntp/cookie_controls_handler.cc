@@ -7,14 +7,17 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
+#include "chrome/common/chrome_features.h"
 
 namespace {
-static const char* kSettingsIcon = "cr:settings_icon";
 static const char* kPolicyIcon = "cr20:domain";
+static const char* kExtensionIcon = "cr:extension";
+static const char* kSettingsIcon = "cr:settings_icon";
 }  // namespace
 
 CookieControlsHandler::CookieControlsHandler(Profile* profile)
@@ -55,7 +58,7 @@ void CookieControlsHandler::HandleCookieControlsToggleChanged(
 void CookieControlsHandler::HandleObserveCookieControlsSettingsChanges(
     const base::ListValue* args) {
   AllowJavascript();
-  OnThirdPartyCookieBlockingPrefChanged();
+  SendCookieControlsUIChanges();
 }
 
 const char* CookieControlsHandler::GetEnforcementIcon(Profile* profile) {
@@ -64,6 +67,8 @@ const char* CookieControlsHandler::GetEnforcementIcon(Profile* profile) {
   switch (service->GetCookieControlsEnforcement()) {
     case CookieControlsEnforcement::kEnforcedByPolicy:
       return kPolicyIcon;
+    case CookieControlsEnforcement::kEnforcedByExtension:
+      return kExtensionIcon;
     case CookieControlsEnforcement::kEnforcedByCookieSetting:
       return kSettingsIcon;
     case CookieControlsEnforcement::kNoEnforcement:
@@ -85,5 +90,10 @@ void CookieControlsHandler::SendCookieControlsUIChanges() {
   dict.SetBoolKey("enforced", service_->ShouldEnforceCookieControls());
   dict.SetBoolKey("checked", service_->GetToggleCheckedValue());
   dict.SetStringKey("icon", CookieControlsHandler::GetEnforcementIcon(profile));
+  bool use_new_cookie_page =
+      base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign);
+  dict.SetString("cookieSettingsUrl",
+                 use_new_cookie_page ? "chrome://settings/cookies"
+                                     : "chrome://settings/content/cookies");
   FireWebUIListener("cookie-controls-changed", dict);
 }

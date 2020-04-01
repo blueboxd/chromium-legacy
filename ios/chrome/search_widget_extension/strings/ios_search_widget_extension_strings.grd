@@ -140,6 +140,7 @@ all other OS specific variables will be false.
     <file path="resources/ios_search_widget_extension_strings_sl.xtb" lang="sl" />
     <file path="resources/ios_search_widget_extension_strings_sq.xtb" lang="sq" />
     <file path="resources/ios_search_widget_extension_strings_sr.xtb" lang="sr" />
+    <file path="resources/ios_search_widget_extension_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="resources/ios_search_widget_extension_strings_sv.xtb" lang="sv" />
     <file path="resources/ios_search_widget_extension_strings_sw.xtb" lang="sw" />
     <file path="resources/ios_search_widget_extension_strings_ta.xtb" lang="ta" />

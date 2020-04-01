@@ -626,15 +626,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:GUID];
 }
 
-- (void)injectAutofillProfileOnFakeSyncServerWithGUID:
-            (const std::string&)UTF8GUID
-                                  autofillProfileName:
-                                      (const std::string&)UTF8FullName {
+- (void)addAutofillProfileToFakeSyncServerWithGUID:(const std::string&)UTF8GUID
+                               autofillProfileName:
+                                   (const std::string&)UTF8FullName {
   NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
   NSString* fullName = base::SysUTF8ToNSString(UTF8FullName);
   [ChromeEarlGreyAppInterface
-      injectAutofillProfileOnFakeSyncServerWithGUID:GUID
-                                autofillProfileName:fullName];
+      addAutofillProfileToFakeSyncServerWithGUID:GUID
+                             autofillProfileName:fullName];
 }
 
 - (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)UTF8GUID
@@ -714,11 +713,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface triggerSyncCycleForType:type];
 }
 
-- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:
+- (void)deleteAutofillProfileFromFakeSyncServerWithGUID:
     (const std::string&)UTF8GUID {
   NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
   [ChromeEarlGreyAppInterface
-      deleteAutofillProfileOnFakeSyncServerWithGUID:GUID];
+      deleteAutofillProfileFromFakeSyncServerWithGUID:GUID];
 }
 
 - (void)waitForSyncInitialized:(BOOL)isInitialized

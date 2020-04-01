@@ -24,6 +24,11 @@ class FeedStreamSurface {
 
   void OnStreamUpdated(const feedui::StreamUpdate& stream_update);
 
+  void NavigationStarted(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& caller,
+                         const base::android::JavaParamRef<jstring>& url,
+                         jboolean in_new_tab);
+
   void NavigationDone(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& caller,
                       const base::android::JavaParamRef<jstring>& url,

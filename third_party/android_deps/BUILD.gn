@@ -1634,9 +1634,6 @@ android_aar_prebuilt("androidx_fragment_fragment_java") {
   aar_path = "libs/androidx_fragment_fragment/fragment-1.0.0.aar"
   info_path = "libs/androidx_fragment_fragment/androidx_fragment_fragment.info"
 
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
@@ -1823,9 +1820,6 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_java") {
       "libs/androidx_vectordrawable_vectordrawable/vectordrawable-1.0.0.aar"
   info_path = "libs/androidx_vectordrawable_vectordrawable/androidx_vectordrawable_vectordrawable.info"
 
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
@@ -1839,9 +1833,6 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_animated_java") {
   aar_path = "libs/androidx_vectordrawable_vectordrawable_animated/vectordrawable-animated-1.0.0.aar"
   info_path = "libs/androidx_vectordrawable_vectordrawable_animated/androidx_vectordrawable_vectordrawable_animated.info"
 
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
   deps = [
     ":androidx_legacy_legacy_support_core_ui_java",
     ":androidx_vectordrawable_vectordrawable_java",

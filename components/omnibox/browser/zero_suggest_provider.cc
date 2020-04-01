@@ -300,6 +300,7 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
     results_.suggest_results.clear();
     results_.navigation_results.clear();
     results_.experiment_stats.clear();
+    results_.headers_map.clear();
     current_query_.clear();
     current_title_.clear();
     most_visited_urls_.clear();

@@ -2098,12 +2098,22 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
           ASSERT_GT(it->second->GetSizeInternal(), 0u) << name;
         }
 
+        auto it = dumps.find(
+            base::StringPrintf("media/webmediaplayer/player_0x%x", id));
+        ASSERT_NE(dumps.end(), it);
+        auto* player_dump = it->second.get();
+        const auto& entries = player_dump->entries();
+
+        auto instance_counter_it =
+            std::find_if(entries.begin(), entries.end(), [](const auto& e) {
+              auto* name =
+                  base::trace_event::MemoryAllocatorDump::kNameObjectCount;
+              return e.name == name && e.value_uint64 == 1;
+            });
+        ASSERT_NE(entries.end(), instance_counter_it);
+
         if (args.level_of_detail ==
             base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
-          auto it = dumps.find(
-              base::StringPrintf("media/webmediaplayer/player_0x%x", id));
-          ASSERT_NE(dumps.end(), it);
-          const auto& entries = it->second->entries();
           auto player_state_it =
               std::find_if(entries.begin(), entries.end(), [](const auto& e) {
                 return e.name == "player_state" && !e.value_string.empty();

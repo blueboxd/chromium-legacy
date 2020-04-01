@@ -124,8 +124,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // window from shelf.
   void SetVisibleDuringWindowDragging(bool visible, bool animate);
 
-  ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
-      const;
+  OverviewGridWindowFillMode GetWindowDimensionsType() const;
 
   // Recalculates the window dimensions type of |transform_window_|. Called when
   // |window_|'s bounds change.

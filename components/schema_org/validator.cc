@@ -8,6 +8,7 @@
 
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
+#include "components/schema_org/schema_org_enums.h"
 #include "components/schema_org/schema_org_property_configurations.h"
 #include "components/schema_org/schema_org_property_names.h"
 
@@ -63,6 +64,37 @@ bool ValidateEntity(Entity* entity) {
         } else {
           ++it;
         }
+      }
+    } else if (!(*it)->values->url_values.empty()) {
+      if (config.url) {
+        ++it;
+      } else if (!config.enum_types.empty()) {
+        // Check all the url values in this property. Remove any ones that
+        // aren't a valid enum option for the enum type. Although stored as a
+        // set, all properties should only have one valid enum type.
+        auto enum_type = *config.enum_types.begin();
+        bool has_valid_enums = false;
+        auto nested_it = (*it)->values->url_values.begin();
+        while (nested_it != (*it)->values->url_values.end()) {
+          auto& url = *nested_it;
+          if (!enums::CheckValidEnumString(enum_type, url).has_value()) {
+            nested_it = (*it)->values->url_values.erase(nested_it);
+          } else {
+            has_valid_enums = true;
+            ++nested_it;
+          }
+        }
+
+        // If there were no valid url values representing enum options for
+        // this property, remove the whole property.
+        if (!has_valid_enums) {
+          it = entity->properties.erase(it);
+        } else {
+          ++it;
+        }
+      } else {
+        // This property shouldn't have any url values according to the config.
+        it = entity->properties.erase(it);
       }
     } else {
       ++it;

@@ -432,11 +432,11 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   chrome_test_util::ClearAutofillProfile(utfGUID);
 }
 
-+ (void)injectAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID
-                                  autofillProfileName:(NSString*)fullName {
++ (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
+                               autofillProfileName:(NSString*)fullName {
   std::string utfGUID = base::SysNSStringToUTF8(GUID);
   std::string utfFullName = base::SysNSStringToUTF8(fullName);
-  chrome_test_util::InjectAutofillProfileOnFakeSyncServer(utfGUID, utfFullName);
+  chrome_test_util::AddAutofillProfileToFakeSyncServer(utfGUID, utfFullName);
 }
 
 + (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
@@ -521,8 +521,8 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   chrome_test_util::TriggerSyncCycle(type);
 }
 
-+ (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID {
-  chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(
++ (void)deleteAutofillProfileFromFakeSyncServerWithGUID:(NSString*)GUID {
+  chrome_test_util::DeleteAutofillProfileFromFakeSyncServer(
       base::SysNSStringToUTF8(GUID));
 }
 

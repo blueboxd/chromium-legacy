@@ -17,13 +17,13 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
-#include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item_view.h"
+#include "ash/wm/overview/overview_types.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_label_widget.h"
@@ -116,18 +116,18 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
-    OverviewSession::EnterExitOverviewType type,
+    OverviewEnterExitType type,
     bool should_animate_when_exiting) {
   // We should never get here when overview mode should exit immediately. The
   // minimized window's |item_widget_| should be closed and destroyed
   // immediately.
-  DCHECK_NE(type, OverviewSession::EnterExitOverviewType::kImmediateExit);
+  DCHECK_NE(type, OverviewEnterExitType::kImmediateExit);
 
-  // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
+  // OverviewEnterExitType can only be set to kWindowMinimized in talbet mode.
   // Fade out the minimized window without animation if switch from tablet mode
   // to clamshell mode.
-  if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit ||
-      type == OverviewSession::EnterExitOverviewType::kFadeOutExit) {
+  if (type == OverviewEnterExitType::kSlideOutExit ||
+      type == OverviewEnterExitType::kFadeOutExit) {
     return Shell::Get()->tablet_mode_controller()->InTabletMode()
                ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
                : OVERVIEW_ANIMATION_NONE;
@@ -231,8 +231,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
     const auto enter_exit_type = overview_session_->enter_exit_overview_type();
 
     if (is_moving_to_another_desk_ ||
-        enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kImmediateExit) {
+        enter_exit_type == OverviewEnterExitType::kImmediateExit) {
       overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
           overview_item_view_);
       ImmediatelyCloseWidgetOnExit(std::move(item_widget_));
@@ -246,8 +245,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
     FadeOutWidgetAndMaybeSlideOnExit(
         std::move(item_widget_), animation_type,
         animation_type == OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER &&
-            enter_exit_type ==
-                OverviewSession::EnterExitOverviewType::kSlideOutExit);
+            enter_exit_type == OverviewEnterExitType::kSlideOutExit);
   }
 }
 
@@ -369,9 +367,8 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
         } else {
           // Items that are slide in already have their slide in animations
           // handled in |SlideWindowIn|.
-          const bool slide_in =
-              overview_session_->enter_exit_overview_type() ==
-              OverviewSession::EnterExitOverviewType::kSlideInEnter;
+          const bool slide_in = overview_session_->enter_exit_overview_type() ==
+                                OverviewEnterExitType::kSlideInEnter;
           if (!slide_in) {
             // If entering from home launcher, use the home specific (fade)
             // animation.
@@ -569,16 +566,14 @@ void OverviewItem::SetVisibleDuringWindowDragging(bool visible, bool animate) {
   }
 }
 
-ScopedOverviewTransformWindow::GridWindowFillMode
-OverviewItem::GetWindowDimensionsType() const {
+OverviewGridWindowFillMode OverviewItem::GetWindowDimensionsType() const {
   return transform_window_.type();
 }
 
 void OverviewItem::UpdateWindowDimensionsType() {
   transform_window_.UpdateWindowDimensionsType();
   const bool show_backdrop =
-      GetWindowDimensionsType() !=
-      ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
+      GetWindowDimensionsType() != OverviewGridWindowFillMode::kNormal;
   overview_item_view_->SetBackdropVisibility(show_backdrop);
 }
 
@@ -805,8 +800,7 @@ void OverviewItem::OnStartingAnimationComplete() {
         /*slide=*/false, /*observe=*/false);
   }
   const bool show_backdrop =
-      GetWindowDimensionsType() !=
-      ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
+      GetWindowDimensionsType() != OverviewGridWindowFillMode::kNormal;
   overview_item_view_->SetBackdropVisibility(show_backdrop);
   UpdateCannotSnapWarningVisibility();
 }
@@ -829,7 +823,7 @@ float OverviewItem::GetOpacity() {
 
 OverviewAnimationType OverviewItem::GetExitOverviewAnimationType() {
   if (overview_session_->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      OverviewEnterExitType::kImmediateExit) {
     return OVERVIEW_ANIMATION_NONE;
   }
 
@@ -841,7 +835,7 @@ OverviewAnimationType OverviewItem::GetExitOverviewAnimationType() {
 OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
   if (is_moving_to_another_desk_ ||
       overview_session_->enter_exit_overview_type() ==
-          OverviewSession::EnterExitOverviewType::kImmediateExit) {
+          OverviewEnterExitType::kImmediateExit) {
     return OVERVIEW_ANIMATION_NONE;
   }
 
@@ -1066,7 +1060,7 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   // When swiping away overview mode via shelf, windows will get minimized, but
   // we do not want show a mirrored view in this case.
   if (overview_session_->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
+      OverviewEnterExitType::kSwipeFromShelf) {
     return;
   }
 

@@ -19,8 +19,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface StaticFileViewController ()<UIScrollViewDelegate,
-                                       WKNavigationDelegate> {
+@interface StaticFileViewController () <UIScrollViewDelegate> {
   ChromeBrowserState* _browserState;  // weak
   NSURL* _URL;
   // YES if the header has been configured for RTL.
@@ -37,8 +36,6 @@
 @end
 
 @implementation StaticFileViewController
-
-@synthesize loadStatus = _loadStatus;
 
 - (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                                  URL:(NSURL*)URL {
@@ -73,7 +70,6 @@
                         timeoutInterval:60.0];
   [_webView loadRequest:request];
   [_webView setBackgroundColor:UIColor.cr_systemBackgroundColor];
-  _webView.navigationDelegate = self;
   [self.view addSubview:_webView];
 
   ConfigureAppBarViewControllerWithCardStyle(_appBarViewController);
@@ -97,7 +93,6 @@
       [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                           target:self
                                           action:@selector(back)];
-  self.loadStatus = DID_NOT_COMPLETE;
 }
 
 #pragma mark - Actions
@@ -106,22 +101,4 @@
   [self.navigationController popViewControllerAnimated:YES];
 }
 
-#pragma mark - WKNavigationDelegate
-
-- (void)webView:(WKWebView*)webView
-    didFailProvisionalNavigation:(WKNavigation*)navigation
-                       withError:(NSError*)error {
-  self.loadStatus = FAILED;
-}
-
-- (void)webView:(WKWebView*)webView
-    didFailNavigation:(WKNavigation*)navigation
-            withError:(NSError*)error {
-  self.loadStatus = FAILED;
-}
-
-- (void)webView:(WKWebView*)webView
-    didFinishNavigation:(WKNavigation*)navigation {
-  self.loadStatus = SUCCESS;
-}
 @end

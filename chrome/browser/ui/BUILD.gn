@@ -2073,7 +2073,7 @@ jumbo_static_library("ui") {
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
       "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings",
       "//chrome/services/file_util/public/cpp",
-      "//chrome/services/local_search_service/public/mojom",
+      "//chrome/services/local_search_service",
       "//chromeos",
       "//chromeos/assistant:buildflags",
       "//chromeos/audio",

@@ -21,6 +21,7 @@
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/platform/scheduler/test/web_mock_thread_scheduler.h"
 
 using blink::WebInputEvent;
@@ -198,9 +199,9 @@ class MainThreadEventQueueTest : public testing::Test,
   void HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
     base::AutoReset<bool> in_handle_event(&handler_callback_->handling_event_,
                                           true);
-    queue_->HandleEvent(event.Clone(), ui::LatencyInfo(),
-                        DISPATCH_TYPE_BLOCKING, ack_result,
-                        handler_callback_->GetCallback());
+    queue_->HandleEvent(
+        event.Clone(), ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING, ack_result,
+        blink::WebInputEventAttribution(), handler_callback_->GetCallback());
   }
 
   void RunClosure(unsigned closure_id) {

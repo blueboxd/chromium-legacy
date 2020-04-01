@@ -473,7 +473,7 @@ bool ViewAXPlatformNodeDelegate::ShouldIgnoreHoveredStateForTesting() {
 }
 
 bool ViewAXPlatformNodeDelegate::IsOffscreen() const {
-  // TODO: need to implement.
+  // TODO(katydek): need to implement.
   return false;
 }
 
@@ -570,9 +570,9 @@ void ViewAXPlatformNodeDelegate::GetViewsInGroupForSet(
             ViewAccessibility& view_accessibility =
                 view->GetViewAccessibility();
             bool is_ignored = view_accessibility.IsIgnored();
-            // TODO Remove the ViewAXPlatformNodeDelegate::GetData() part of
-            // this lambda, once the temporary code in GetData() setting the
-            // role to kIgnored is moved to ViewAccessibility.
+            // TODO(dmazzoni): Remove the remainder of this lambda once the
+            // temporary code in GetData() setting the role to kIgnored is moved
+            // to ViewAccessibility.
             ViewAXPlatformNodeDelegate* ax_delegate =
                 static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
             if (ax_delegate)

@@ -4,7 +4,11 @@
 
 #include "chrome/browser/net/dns_util.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/feature_list.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -12,6 +16,7 @@
 #include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "net/dns/public/util.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "url/gurl.h"
 
@@ -104,6 +109,21 @@ void MigrateDNSProbesSettingToOrFromBackup(PrefService* prefs) {
                       prefs->GetBoolean(kAlternateErrorPagesBackup));
     prefs->ClearPref(kAlternateErrorPagesBackup);
   }
+}
+
+std::vector<base::StringPiece> SplitDohTemplateGroup(base::StringPiece group) {
+  // Templates in a group are whitespace-separated.
+  return SplitStringPiece(group, " ", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+}
+
+bool IsValidDohTemplateGroup(base::StringPiece group) {
+  // All templates must be valid for the group to be considered valid.
+  std::vector<base::StringPiece> templates = SplitDohTemplateGroup(group);
+  return std::all_of(templates.begin(), templates.end(), [](auto t) {
+    std::string method;
+    return net::dns_util::IsValidDohTemplate(t, &method);
+  });
 }
 
 }  // namespace chrome_browser_net

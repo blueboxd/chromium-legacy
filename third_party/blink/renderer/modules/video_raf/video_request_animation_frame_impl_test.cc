@@ -68,10 +68,10 @@ class MetadataHelper {
 
     copy->presented_frames = metadata_.presented_frames;
     copy->presentation_time = metadata_.presentation_time;
-    copy->expected_presentation_time = metadata_.expected_presentation_time;
+    copy->expected_display_time = metadata_.expected_display_time;
     copy->width = metadata_.width;
     copy->height = metadata_.height;
-    copy->presentation_timestamp = metadata_.presentation_timestamp;
+    copy->media_time = metadata_.media_time;
     copy->metadata.MergeMetadataFrom(&(metadata_.metadata));
 
     return copy;
@@ -89,11 +89,11 @@ class MetadataHelper {
     metadata_.presented_frames = 42;
     metadata_.presentation_time =
         now + base::TimeDelta::FromMillisecondsD(10.1234);
-    metadata_.expected_presentation_time =
+    metadata_.expected_display_time =
         now + base::TimeDelta::FromMillisecondsD(26.3467);
     metadata_.width = 320;
     metadata_.height = 480;
-    metadata_.presentation_timestamp = base::TimeDelta::FromSecondsD(3.14);
+    metadata_.media_time = base::TimeDelta::FromSecondsD(3.14);
     metadata_.metadata.SetTimeDelta(media::VideoFrameMetadata::PROCESSING_TIME,
                                     base::TimeDelta::FromMillisecondsD(60.982));
     metadata_.metadata.SetTimeTicks(
@@ -133,8 +133,7 @@ class VideoRafParameterVerifierCallback
     EXPECT_EQ(expected->presented_frames, metadata->presentedFrames());
     EXPECT_EQ((unsigned int)expected->width, metadata->width());
     EXPECT_EQ((unsigned int)expected->height, metadata->height());
-    EXPECT_EQ(expected->presentation_timestamp.InSecondsF(),
-              metadata->presentationTimestamp());
+    EXPECT_EQ(expected->media_time.InSecondsF(), metadata->mediaTime());
 
     double rtp_timestamp;
     EXPECT_TRUE(expected->metadata.GetDouble(
@@ -144,9 +143,9 @@ class VideoRafParameterVerifierCallback
     // Verify that values were correctly clamped.
     VerifyTicksClamping(expected->presentation_time,
                         metadata->presentationTime(), "presentation_time");
-    VerifyTicksClamping(expected->expected_presentation_time,
-                        metadata->expectedPresentationTime(),
-                        "expected_presentation_time");
+    VerifyTicksClamping(expected->expected_display_time,
+                        metadata->expectedDisplayTime(),
+                        "expected_display_time");
 
     base::TimeTicks capture_time;
     EXPECT_TRUE(expected->metadata.GetTimeTicks(
@@ -162,8 +161,8 @@ class VideoRafParameterVerifierCallback
     EXPECT_TRUE(expected->metadata.GetTimeDelta(
         media::VideoFrameMetadata::PROCESSING_TIME, &processing_time));
     EXPECT_EQ(ClampElapsedProcessingTime(processing_time),
-              metadata->elapsedProcessingTime());
-    EXPECT_NE(processing_time.InSecondsF(), metadata->elapsedProcessingTime());
+              metadata->processingDuration());
+    EXPECT_NE(processing_time.InSecondsF(), metadata->processingDuration());
   }
 
   double last_now() { return now_; }

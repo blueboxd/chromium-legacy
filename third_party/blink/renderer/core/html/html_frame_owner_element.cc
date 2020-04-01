@@ -469,6 +469,11 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   ResourceRequestHead request(url_to_request);
   request.SetReferrerPolicy(ReferrerPolicyAttribute());
 
+  network::mojom::blink::TrustTokenParamsPtr trust_token_params =
+      ConstructTrustTokenParams();
+  if (trust_token_params)
+    request.SetTrustTokenParams(*trust_token_params);
+
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.
     FrameLoadRequest frame_load_request(&GetDocument(), request);

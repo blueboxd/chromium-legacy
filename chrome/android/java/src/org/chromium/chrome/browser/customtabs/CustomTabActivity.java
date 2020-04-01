@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
-import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
@@ -68,7 +67,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
     private CustomTabActivityTabController mTabController;
-    private CustomTabIntentHandler mCustomTabIntentHandler;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
@@ -362,9 +360,10 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
                 (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
         BaseCustomTabActivityModule baseCustomTabsModule =
-                new BaseCustomTabActivityModule(mIntentDataProvider);
-        CustomTabActivityModule customTabsModule = new CustomTabActivityModule(mIntentDataProvider,
-                mNightModeStateController, intentIgnoringCriterion, getStartupTabPreloader());
+                new BaseCustomTabActivityModule(mIntentDataProvider, intentIgnoringCriterion);
+        CustomTabActivityModule customTabsModule =
+                new CustomTabActivityModule(mNightModeStateController, getStartupTabPreloader());
+
         CustomTabActivityComponent component =
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
                         commonsModule, baseCustomTabsModule, customTabsModule);
@@ -379,7 +378,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
             if (reason == USER_NAVIGATION) connectionKeeper.recordClientConnectionStatus();
             handleFinishAndClose();
         });
-        mCustomTabIntentHandler = component.resolveIntentHandler();
         component.resolveSessionHandler();
         component.resolveCustomTabIncognitoManager();
 

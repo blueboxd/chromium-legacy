@@ -13,9 +13,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,7 +33,7 @@ bool IsDisplayScaleFactorOne(int64_t display_id) {
 }
 
 bool ShouldShowDisplayDensityMenuItem(
-    const base::Optional<crostini::CrostiniRegistryService::Registration>& reg,
+    const base::Optional<guest_os::GuestOsRegistryService::Registration>& reg,
     int64_t display_id) {
   // The default terminal app is crosh in a Chrome window and it doesn't run in
   // the Crostini container so it doesn't support display density the same way.
@@ -54,10 +54,10 @@ CrostiniShelfContextMenu::~CrostiniShelfContextMenu() = default;
 
 void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = GetBaseMenuModel();
-  const crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+  const auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(
           controller()->profile());
-  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+  base::Optional<guest_os::GuestOsRegistryService::Registration> registration =
       registry_service->GetRegistration(item().id.app_id);
 
   // For apps which Crostini knows about (i.e. those with .desktop files), we
@@ -136,8 +136,8 @@ void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       return;
     case ash::CROSTINI_USE_LOW_DENSITY:
     case ash::CROSTINI_USE_HIGH_DENSITY: {
-      crostini::CrostiniRegistryService* registry_service =
-          crostini::CrostiniRegistryServiceFactory::GetForProfile(
+      auto* registry_service =
+          guest_os::GuestOsRegistryServiceFactory::GetForProfile(
               controller()->profile());
       const bool scaled = command_id == ash::CROSTINI_USE_LOW_DENSITY;
       registry_service->SetAppScaled(item().id.app_id, scaled);

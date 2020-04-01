@@ -350,7 +350,7 @@ void TreeView::Expand(TreeModelNode* node) {
     }
     NotifyAccessibilityEvent(ax::mojom::Event::kRowCountChanged, true);
   }
-  // TODO: need to support auto_expand_children_.
+  // TODO(sky): need to support auto_expand_children_.
 }
 
 void TreeView::ExpandAll(TreeModelNode* node) {

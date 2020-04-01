@@ -7,8 +7,8 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/grit/generated_resources.h"
@@ -61,7 +61,8 @@ CrostiniPackageNotification::CrostiniPackageNotification(
       container_id_(container_id) {
   if (status == PackageOperationStatus::RUNNING) {
     running_start_time_ = base::TimeTicks::Now();
-    CrostiniRegistryServiceFactory::GetForProfile(profile_)->AddObserver(this);
+    guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
+        ->AddObserver(this);
   }
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &kNotificationLinuxIcon;
@@ -85,7 +86,8 @@ CrostiniPackageNotification::CrostiniPackageNotification(
 }
 
 CrostiniPackageNotification::~CrostiniPackageNotification() {
-  CrostiniRegistryServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+  guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
+      ->RemoveObserver(this);
 }
 
 PackageOperationStatus CrostiniPackageNotification::GetOperationStatus() const {
@@ -93,7 +95,7 @@ PackageOperationStatus CrostiniPackageNotification::GetOperationStatus() const {
 }
 
 void CrostiniPackageNotification::OnRegistryUpdated(
-    CrostiniRegistryService* registry_service,
+    guest_os::GuestOsRegistryService* registry_service,
     const std::vector<std::string>& updated_apps,
     const std::vector<std::string>& removed_apps,
     const std::vector<std::string>& inserted_apps) {
@@ -164,7 +166,8 @@ void CrostiniPackageNotification::UpdateProgress(
   if (status == PackageOperationStatus::RUNNING &&
       current_status_ != PackageOperationStatus::RUNNING) {
     running_start_time_ = base::TimeTicks::Now();
-    CrostiniRegistryServiceFactory::GetForProfile(profile_)->AddObserver(this);
+    guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
+        ->AddObserver(this);
   }
   current_status_ = status;
 
@@ -175,8 +178,8 @@ void CrostiniPackageNotification::UpdateProgress(
       message_center::NOTIFICATION_TYPE_SIMPLE;
   bool never_timeout = false;
   app_count_ = 0;
-  CrostiniRegistryService* crostini_registry_service =
-      CrostiniRegistryServiceFactory::GetForProfile(profile_);
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_);
 
   switch (status) {
     case PackageOperationStatus::SUCCEEDED:
@@ -189,8 +192,7 @@ void CrostiniPackageNotification::UpdateProgress(
         // we shouldn't see icons appearing during an install that aren't
         // because of that install.
         for (const std::string& app_id : inserted_apps_) {
-          auto registration =
-              crostini_registry_service->GetRegistration(app_id);
+          auto registration = registry_service->GetRegistration(app_id);
           if (registration.has_value() &&
               registration->VmName() == container_id_.vm_name &&
               registration->ContainerName() == container_id_.container_name) {
@@ -204,7 +206,7 @@ void CrostiniPackageNotification::UpdateProgress(
                   IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_COMPLETED_BUTTON)));
         }
       }
-      crostini_registry_service->RemoveObserver(this);
+      registry_service->RemoveObserver(this);
 
       break;
 

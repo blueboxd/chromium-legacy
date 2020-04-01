@@ -402,3 +402,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_blackhole_detector, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_idle_network_detector,
           false)
+
+// If true, when QUIC switches from BbrSender to Bbr2Sender, Bbr2Sender will
+// copy the bandwidth sampler states from BbrSender.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr_copy_sampler_state_from_v1_to_v2,
+          false)

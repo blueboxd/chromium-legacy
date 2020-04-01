@@ -178,9 +178,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const WebInputEvent& web_input_event,
       InputEventState event_state) override;
   void WillPostInputEventToMainThread(
-      WebInputEvent::Type web_input_event_type) override;
+      WebInputEvent::Type web_input_event_type,
+      const WebInputEventAttribution& web_input_event_attribution) override;
   void WillHandleInputEventOnMainThread(
-      WebInputEvent::Type web_input_event_type) override;
+      WebInputEvent::Type web_input_event_type,
+      const WebInputEventAttribution& web_input_event_attribution) override;
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;

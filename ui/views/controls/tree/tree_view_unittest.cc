@@ -37,7 +37,7 @@ namespace views {
 
 namespace {
 
-std::string AccessibilityViewAsString(AXVirtualView& view) {
+std::string AccessibilityViewAsString(const AXVirtualView& view) {
   std::string result =
       view.GetData().GetStringAttribute(ax::mojom::StringAttribute::kName);
   if (!view.GetChildCount() ||
@@ -47,7 +47,7 @@ std::string AccessibilityViewAsString(AXVirtualView& view) {
   }
 
   result += " [";
-  for (auto& child_view : view.children()) {
+  for (const auto& child_view : view.children()) {
     result += AccessibilityViewAsString(*child_view) + " ";
   }
   result.pop_back();

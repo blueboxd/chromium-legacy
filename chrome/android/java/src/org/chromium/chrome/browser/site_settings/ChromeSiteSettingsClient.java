@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.site_settings;
 
+import android.app.Activity;
+
 import androidx.preference.Preference;
 
+import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 
@@ -26,5 +30,11 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
             };
         }
         return mManagedPreferenceDelegate;
+    }
+
+    @Override
+    public void launchHelpAndFeedbackActivity(Activity currentActivity, String helpContext) {
+        HelpAndFeedback.getInstance().show(
+                currentActivity, helpContext, Profile.getLastUsedRegularProfile(), null);
     }
 }

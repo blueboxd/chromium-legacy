@@ -14,9 +14,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
@@ -59,7 +57,7 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
         String url = webContents.getLastCommittedUrl();
         ArConsentDialog dialog = new ArConsentDialog(instance, url);
 
-        dialog.show(((TabImpl) tab).getActivity());
+        dialog.show(tab.getWindowAndroid());
 
         return dialog;
     }
@@ -75,9 +73,9 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
         mUrl = url;
     }
 
-    public void show(ChromeActivity activity) {
-        mWindowAndroid = activity.getWindowAndroid();
-        Resources resources = activity.getResources();
+    public void show(WindowAndroid window) {
+        mWindowAndroid = window;
+        Resources resources = window.getContext().get().getResources();
 
         String dialogTitle = resources.getString(R.string.ar_immersive_mode_consent_title,
                 UrlFormatter.formatUrlForSecurityDisplay(mUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
@@ -93,7 +91,7 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
                                               R.string.cancel)
                                       .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                                       .build();
-        mModalDialogManager = activity.getModalDialogManager();
+        mModalDialogManager = window.getModalDialogManager();
         mModalDialogManager.showDialog(model, ModalDialogManager.ModalDialogType.TAB);
     }
 

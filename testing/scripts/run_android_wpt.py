@@ -63,9 +63,12 @@ BLINK_TOOLS_DIR = os.path.join(SRC_DIR, 'third_party', 'blink', 'tools')
 WEB_TESTS_DIR = os.path.join(BLINK_TOOLS_DIR, os.pardir, 'web_tests')
 DEFAULT_WPT = os.path.join(WEB_TESTS_DIR, 'external', 'wpt', 'wpt')
 
+ANDROID_WEBLAYER = 'android_weblayer'
+ANDROID_WEBVIEW = 'android_webview'
+CHROME_ANDROID = 'chrome_android'
 
 # List of supported products.
-PRODUCTS = ['android_weblayer', 'android_webview', 'chrome_android']
+PRODUCTS = [ANDROID_WEBLAYER, ANDROID_WEBVIEW, CHROME_ANDROID]
 
 
 class PassThroughArgs(argparse.Action):
@@ -87,10 +90,17 @@ class PassThroughArgs(argparse.Action):
 
 
 def _get_adapter(device):
-  product = WPTAndroidAdapter(device).options.product
-  if product == 'android_weblayer':
+  usage = '%(prog)s --product={' + ','.join(PRODUCTS) + '} ...'
+  product_parser = argparse.ArgumentParser(
+      add_help=False, prog='run_android_wpt.py', usage=usage)
+  product_parser.add_argument(
+      '--product', action='store', required=True, choices=PRODUCTS)
+  options, _ = product_parser.parse_known_args()
+  product = options.product
+
+  if product == ANDROID_WEBLAYER:
     return WPTWeblayerAdapter(device)
-  elif product == 'android_webview':
+  elif product == ANDROID_WEBVIEW:
     return WPTWebviewAdapter(device)
   else:
     return WPTClankAdapter(device)
@@ -109,7 +119,6 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     # Arguments from add_extra_argumentsparse were added so
     # its safe to parse the arguments and set self._options
     self.parse_args()
-
 
   def generate_test_output_args(self, output):
     return ['--log-chromium', output]
@@ -131,7 +140,6 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
 
     rest_args.extend(["run",
       "--test-type=" + self.options.test_type,
-      self.options.product,
       "--webdriver-binary",
       self.options.webdriver_binary,
       "--headless",
@@ -143,18 +151,6 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     # to the list of wpt arguments
     if self._metadata_dir:
       rest_args.extend(['--metadata', self._metadata_dir])
-
-    # Default to the apk's package name for chrome_android
-    if not self.options.package_name:
-      if self.options.product == 'chrome_android':
-        if self.options.apk:
-          pkg = apk_helper.GetPackageName(self.options.apk)
-          logger.info("Defaulting --package-name to that of the apk: %s", pkg)
-          rest_args.extend(['--package-name', pkg])
-        else:
-          raise Exception('chrome_android requires --package-name or --apk.')
-    else:
-      rest_args.extend(['--package-name', self.options.package_name])
 
     if self.options.verbose >= 3:
       rest_args.extend(["--log-mach=-", "--log-mach-level=debug",
@@ -175,8 +171,8 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     if not self._test_apk:
       assert self._missing_test_apk_arg, (
           'self._missing_test_apk_arg was not set.')
-      logger.info('%s was not set, skipping metadata generation.' %
-                  self._missing_test_apk_arg)
+      logger.warning('%s was not set, skipping metadata generation.' %
+                     self._missing_test_apk_arg)
       return
 
     metadata_builder_cmd = [
@@ -213,6 +209,9 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     class WPTPassThroughArgs(PassThroughArgs):
       pass_through_args = self.pass_through_wpt_args
 
+    # Add this so that product argument does not go in self._rest_args
+    # when self.parse_args() is called
+    parser.add_argument('--product', help=argparse.SUPPRESS)
     parser.add_argument('--webdriver-binary', required=True,
                         help='Path of the webdriver binary.  It needs to have'
                         ' the same major version as the apk.')
@@ -223,19 +222,6 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     parser.add_argument('--test-type', default='testharness',
                         help='Specify to experiment with other test types.'
                         ' Currently only the default is expected to work.')
-    parser.add_argument('--product', choices=PRODUCTS,
-                        required=True)
-    parser.add_argument('--apk', help='Apk to install during test.  Defaults to'
-                        ' the on-device WebView provider or Chrome.')
-    parser.add_argument('--system-webview-shell', help='System'
-                        ' WebView Shell apk to install during test.  Defaults'
-                        ' to the on-device WebView Shell apk.')
-    parser.add_argument('--weblayer-shell', help='WebLayer'
-                        ' Shell apk to install during test.')
-    parser.add_argument('--weblayer-support', help='WebLayer'
-                        ' Support apk to install during test.')
-    parser.add_argument('--package-name', help='The package name of Chrome'
-                        ' to test, defaults to that of the --apk.')
     parser.add_argument('--verbose', '-v', action='count',
                         help='Verbosity level.')
     parser.add_argument('--include', metavar='TEST_OR_DIR',
@@ -284,24 +270,16 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
 
   @contextlib.contextmanager
   def _install_apks(self):
-    if self.options.package_name:
-      logger.warn('--package-name has no effect for weblayer, provider'
-            'will be set to the --apk if it is provided.')
     install_weblayer_shell_as_needed = maybe_install_user_apk(
         self._device, self.options.weblayer_shell, self.WEBLAYER_SHELL_PKG)
     install_weblayer_support_as_needed = maybe_install_user_apk(
         self._device, self.options.weblayer_support, self.WEBLAYER_SUPPORT_PKG)
-
-    if self.options.apk:
-      install_webview_as_needed = webview_app.UseWebViewProvider(
-          self._device, self.options.apk)
-      logger.info('Will install WebView apk at ' + self.options.apk)
-    else:
-      install_webview_as_needed = no_op()
+    install_webview_provider_as_needed = maybe_install_webview_provider(
+        self._device, self.options.webview_provider)
 
     with install_weblayer_shell_as_needed,   \
          install_weblayer_support_as_needed, \
-         install_webview_as_needed:
+         install_webview_provider_as_needed:
       yield
 
   def _extra_metadata_builder_args(self):
@@ -309,6 +287,21 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
       '--additional-expectations',
       os.path.join(WEB_TESTS_DIR,
                    'android', 'WeblayerWPTOverrideExpectations')]
+
+  def add_extra_arguments(self, parser):
+    super(WPTWeblayerAdapter, self).add_extra_arguments(parser)
+    parser.add_argument('--weblayer-shell',
+                        help='WebLayer Shell apk to install.')
+    parser.add_argument('--weblayer-support',
+                        help='WebLayer Support apk to install.')
+    parser.add_argument('--webview-provider',
+                        help='Webview provider apk to install.')
+
+  @property
+  def rest_args(self):
+    args = super(WPTWeblayerAdapter, self).rest_args
+    args.append(ANDROID_WEBLAYER)
+    return args
 
 
 class WPTWebviewAdapter(WPTAndroidAdapter):
@@ -322,25 +315,13 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
 
   @contextlib.contextmanager
   def _install_apks(self):
-    if self.options.package_name:
-      logger.warn('--package-name has no effect for android_webview, provider'
-            'will be set to the --apk if it is provided.')
+    install_shell_as_needed = maybe_install_user_apk(
+        self._device, self.options.system_webview_shell,
+        self.SYSTEM_WEBVIEW_SHELL_PKG)
+    install_webview_provider_as_needed = maybe_install_webview_provider(
+        self._device, self.options.webview_provider)
 
-    if self.options.system_webview_shell:
-      install_shell_as_needed = maybe_install_user_apk(
-          self._device, self.options.system_webview_shell,
-          self.SYSTEM_WEBVIEW_SHELL_PKG)
-    else:
-      install_shell_as_needed = no_op()
-
-    if self.options.apk:
-      install_webview_as_needed = webview_app.UseWebViewProvider(
-          self._device, self.options.apk)
-      logger.info('Will install WebView apk at ' + self.options.apk)
-    else:
-      install_webview_as_needed = no_op()
-
-    with install_shell_as_needed, install_webview_as_needed:
+    with install_shell_as_needed, install_webview_provider_as_needed:
       yield
 
   def _extra_metadata_builder_args(self):
@@ -349,18 +330,32 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
       os.path.join(
           WEB_TESTS_DIR, 'android', 'WebviewWPTOverrideExpectations')]
 
+  def add_extra_arguments(self, parser):
+    super(WPTWebviewAdapter, self).add_extra_arguments(parser)
+    parser.add_argument('--system-webview-shell',
+                        help=('System WebView Shell apk to install. If not '
+                              'specified then the on-device WebView apk '
+                              'will be used.'))
+    parser.add_argument('--webview-provider',
+                        help='Webview provider APK to install.')
+
+  @property
+  def rest_args(self):
+    args = super(WPTWebviewAdapter, self).rest_args
+    args.append(ANDROID_WEBVIEW)
+    return args
 
 class WPTClankAdapter(WPTAndroidAdapter):
 
   def __init__(self, device):
     super(WPTClankAdapter, self).__init__(device)
-    self._test_apk = self.options.apk
-    self._missing_test_apk_arg = '--apk'
+    self._test_apk = self.options.chrome_apk
+    self._missing_test_apk_arg = '--chrome-apk'
 
   @contextlib.contextmanager
   def _install_apks(self):
     install_clank_as_needed = maybe_install_user_apk(
-        self._device, self.options.apk)
+        self._device, self.options.chrome_apk)
     with install_clank_as_needed:
       yield
 
@@ -368,6 +363,39 @@ class WPTClankAdapter(WPTAndroidAdapter):
     return [
       '--additional-expectations',
       os.path.join(WEB_TESTS_DIR, 'android', 'ClankWPTOverrideExpectations')]
+
+  def add_extra_arguments(self, parser):
+    super(WPTClankAdapter, self).add_extra_arguments(parser)
+    parser.add_argument(
+        '--chrome-apk', help='Chrome apk to install.')
+    parser.add_argument(
+        '--chrome-package-name',
+        help=('The package name of Chrome to test,'
+              ' defaults to that of the compiled Chrome apk.'))
+
+  @property
+  def rest_args(self):
+    args = super(WPTClankAdapter, self).rest_args
+    if not self.options.chrome_package_name and not self.options.chrome_apk:
+      raise Exception('Either the --chrome-package-name or --chrome-apk '
+                      'command line arguments must be used.')
+    if not self.options.chrome_package_name:
+      self.options.chrome_package_name = apk_helper.GetPackageName(
+          self.options.chrome_apk)
+      logger.info("Using Chrome apk's default package %s." %
+                  self.options.chrome_package_name)
+    args.extend(['--package-name', self.options.chrome_package_name])
+    # add the product postional argument
+    args.append(CHROME_ANDROID)
+    return args
+
+
+def maybe_install_webview_provider(device, apk):
+  if apk:
+    logger.info('Will install WebView apk at ' + apk)
+    return webview_app.UseWebViewProvider(device, apk)
+  else:
+    return no_op()
 
 
 def maybe_install_user_apk(device, apk, expected_pkg=None):
@@ -428,7 +456,6 @@ def main():
   device = devices[0]
 
   adapter = _get_adapter(device)
-  adapter.parse_args()
 
   if adapter.options.verbose:
     if adapter.options.verbose == 1:

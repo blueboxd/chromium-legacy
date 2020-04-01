@@ -18,6 +18,12 @@ if (use_cups && is_chromeos) {
   import("//printing/backend/tools/code_generator.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See docs/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 if ((enable_basic_printing && is_win) || enable_print_preview) {
   # Windows basic printing or print preview requires pdf enabled.
   assert(enable_pdf,
@@ -48,10 +54,6 @@ component("printing") {
     "backend/print_backend_consts.cc",
     "backend/print_backend_consts.h",
     "backend/print_backend_dummy.cc",
-    "backend/printing_info_win.cc",
-    "backend/printing_info_win.h",
-    "emf_win.cc",
-    "emf_win.h",
     "metafile.cc",
     "metafile.h",
     "metafile_skia.cc",
@@ -66,8 +68,6 @@ component("printing") {
     "page_setup.cc",
     "page_setup.h",
     "page_size_margins.h",
-    "pdf_metafile_cg_mac.cc",
-    "pdf_metafile_cg_mac.h",
     "pdf_render_settings.h",
     "print_dialog_gtk_interface.h",
     "print_job_constants.cc",
@@ -76,14 +76,8 @@ component("printing") {
     "print_settings.h",
     "print_settings_conversion.cc",
     "print_settings_conversion.h",
-    "print_settings_initializer_mac.cc",
-    "print_settings_initializer_mac.h",
-    "print_settings_initializer_win.cc",
-    "print_settings_initializer_win.h",
     "printed_document.cc",
     "printed_document.h",
-    "printed_document_mac.cc",
-    "printed_document_win.cc",
     "printing_context.cc",
     "printing_context.h",
     "printing_features.cc",
@@ -115,20 +109,57 @@ component("printing") {
     "//url",
   ]
 
-  if (use_aura) {
-    deps += [ "//ui/aura" ]
+  if (is_android) {
+    sources += [
+      "printed_document_android.cc",
+      "printing_context_android.cc",
+      "printing_context_android.h",
+    ]
+
+    deps += [
+      ":printing_jni_headers",
+      "//ui/android",
+    ]
+  }
+
+  if (is_chromeos) {
+    defines += [ "PRINT_BACKEND_AVAILABLE" ]
+
+    sources += [
+      "backend/print_backend_chromeos.cc",
+      "backend/printing_restrictions.cc",
+      "backend/printing_restrictions.h",
+      "printed_document_chromeos.cc",
+      "printing_context_no_system_dialog.cc",
+      "printing_context_no_system_dialog.h",
+    ]
+  }
+
+  if (is_desktop_linux) {
+    sources += [
+      "printed_document_linux.cc",
+      "printing_context_linux.cc",
+      "printing_context_linux.h",
+    ]
   }
 
   if (is_mac) {
+    sources += [
+      "pdf_metafile_cg_mac.cc",
+      "pdf_metafile_cg_mac.h",
+      "print_settings_initializer_mac.cc",
+      "print_settings_initializer_mac.h",
+    ]
+
     # Mac-Aura does not support printing.
-    if (use_aura) {
-      sources -= [ "printed_document_mac.cc" ]
-    } else {
+    if (!use_aura) {
       sources += [
+        "printed_document_mac.cc",
         "printing_context_mac.h",
         "printing_context_mac.mm",
       ]
     }
+
     libs = [
       "AppKit.framework",
       "QuartzCore.framework",
@@ -144,8 +175,15 @@ component("printing") {
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
     sources += [
       "backend/print_backend_win.cc",
+      "backend/printing_info_win.cc",
+      "backend/printing_info_win.h",
       "backend/win_helper.cc",
       "backend/win_helper.h",
+      "emf_win.cc",
+      "emf_win.h",
+      "print_settings_initializer_win.cc",
+      "print_settings_initializer_win.h",
+      "printed_document_win.cc",
       "printed_page_win.cc",
       "printed_page_win.h",
       "printing_context_system_dialog_win.cc",
@@ -155,8 +193,8 @@ component("printing") {
     ]
   }
 
-  if (is_android) {
-    deps += [ "//ui/android" ]
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
   }
 
   if (use_cups) {
@@ -233,33 +271,6 @@ component("printing") {
     }
   }
 
-  if (is_chromeos) {
-    defines += [ "PRINT_BACKEND_AVAILABLE" ]
-
-    sources += [
-      "backend/print_backend_chromeos.cc",
-      "backend/printing_restrictions.cc",
-      "backend/printing_restrictions.h",
-      "printed_document_chromeos.cc",
-      "printing_context_no_system_dialog.cc",
-      "printing_context_no_system_dialog.h",
-    ]
-  } else if (is_android) {
-    sources += [
-      "printed_document_android.cc",
-      "printing_context_android.cc",
-      "printing_context_android.h",
-    ]
-
-    deps += [ ":printing_jni_headers" ]
-  } else if (is_linux) {  # Desktop Linux.
-    sources += [
-      "printed_document_linux.cc",
-      "printing_context_linux.cc",
-      "printing_context_linux.h",
-    ]
-  }
-
   if (is_chromeos || is_mac) {
     sources += [
       "printer_query_result.h",
@@ -276,14 +287,7 @@ static_library("test_support") {
     "backend/test_print_backend.h",
     "image.cc",
     "image.h",
-    "image_android.cc",
-    "image_linux.cc",
-    "image_mac.cc",
-    "image_win.cc",
   ]
-  if (is_fuchsia) {
-    sources += [ "image_fuchsia.cc" ]
-  }
 
   configs += [ "//build/config/compiler:noshadowing" ]
   public_deps = [
@@ -295,19 +299,32 @@ static_library("test_support") {
     "//skia",
     "//ui/gfx",
   ]
+
+  if (is_android) {
+    sources += [ "image_android.cc" ]
+  }
+  if (is_fuchsia) {
+    sources += [ "image_fuchsia.cc" ]
+  }
+  if (is_linux) {
+    sources += [ "image_linux.cc" ]
+  }
+  if (is_mac) {
+    sources += [ "image_mac.cc" ]
+  }
+  if (is_win) {
+    sources += [ "image_win.cc" ]
+  }
 }
 
 test("printing_unittests") {
   sources = [
-    "emf_win_unittest.cc",
     "metafile_skia_unittest.cc",
     "nup_parameters_unittest.cc",
     "page_number_unittest.cc",
     "page_range_unittest.cc",
     "page_setup_unittest.cc",
-    "pdf_metafile_cg_mac_unittest.cc",
     "print_settings_conversion_unittest.cc",
-    "printing_context_win_unittest.cc",
     "printing_test.h",
     "printing_utils_unittest.cc",
     "units_unittest.cc",
@@ -327,17 +344,27 @@ test("printing_unittests") {
     "//ui/gfx/geometry",
   ]
 
-  data = [
-    "test/data/",
-    "../pdf/test/data/",
-  ]
+  if (is_mac) {
+    sources += [ "pdf_metafile_cg_mac_unittest.cc" ]
 
-  if (is_win || is_mac) {
-    sources += [ "printed_document_unittest.cc" ]
+    data = [
+      "test/data/pdf_cg/",
+      "../pdf/test/data/",
+    ]
   }
 
   if (is_win) {
-    sources += [ "printed_page_win_unittest.cc" ]
+    sources += [
+      "emf_win_unittest.cc",
+      "printed_page_win_unittest.cc",
+      "printing_context_win_unittest.cc",
+    ]
+
+    data = [ "test/data/emf/" ]
+  }
+
+  if (is_win || is_mac) {
+    sources += [ "printed_document_unittest.cc" ]
   }
 
   if (use_cups) {

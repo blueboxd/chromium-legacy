@@ -28,15 +28,15 @@ IPEndPoint GetMdnsIPEndPoint(const char* address) {
 
 namespace dns_util {
 
-bool IsValidDohTemplate(const std::string& server_template,
+bool IsValidDohTemplate(base::StringPiece server_template,
                         std::string* server_method) {
   std::string url_string;
   std::string test_query = "this_is_a_test_query";
   std::unordered_map<std::string, std::string> template_params(
       {{"dns", test_query}});
   std::set<std::string> vars_found;
-  bool valid_template = uri_template::Expand(server_template, template_params,
-                                             &url_string, &vars_found);
+  bool valid_template = uri_template::Expand(
+      std::string(server_template), template_params, &url_string, &vars_found);
   if (!valid_template) {
     // The URI template is malformed.
     return false;

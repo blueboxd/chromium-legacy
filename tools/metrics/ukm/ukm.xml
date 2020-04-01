@@ -6068,6 +6068,11 @@ be describing additional metrics about the same event.
       The number of nodes that the associated renderer owns.
     </summary>
   </metric>
+  <metric name="NumberOfWebMediaPlayers">
+    <summary>
+      The number of web media players in the associated renderer.
+    </summary>
+  </metric>
   <metric name="OmniboxSuggestions">
     <summary>
       Measure of memory used due to URL indexing and autocomplete suggestions.

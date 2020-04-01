@@ -1591,51 +1591,51 @@ TEST_F(TextfieldModelTest, Undo_SelectionTest) {
   EXPECT_EQ(model.render_text()->selection(), gfx::Range(1, 3));
 }
 
-void RunInsertReplaceTest(TextfieldModel& model) {
-  const bool reverse = model.render_text()->selection().is_reversed();
-  model.InsertChar('1');
-  model.InsertChar('2');
-  model.InsertChar('3');
-  EXPECT_STR_EQ("a123d", model.text());
-  EXPECT_EQ(4U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("abcd", model.text());
-  EXPECT_EQ(reverse ? 1U : 3U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("", model.text());
-  EXPECT_EQ(0U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Undo());
-  EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("abcd", model.text());
-  EXPECT_EQ(4U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("a123d", model.text());
-  EXPECT_EQ(4U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Redo());
+void RunInsertReplaceTest(TextfieldModel* model) {
+  const bool reverse = model->render_text()->selection().is_reversed();
+  model->InsertChar('1');
+  model->InsertChar('2');
+  model->InsertChar('3');
+  EXPECT_STR_EQ("a123d", model->text());
+  EXPECT_EQ(4U, model->GetCursorPosition());
+  EXPECT_TRUE(model->Undo());
+  EXPECT_STR_EQ("abcd", model->text());
+  EXPECT_EQ(reverse ? 1U : 3U, model->GetCursorPosition());
+  EXPECT_TRUE(model->Undo());
+  EXPECT_STR_EQ("", model->text());
+  EXPECT_EQ(0U, model->GetCursorPosition());
+  EXPECT_FALSE(model->Undo());
+  EXPECT_TRUE(model->Redo());
+  EXPECT_STR_EQ("abcd", model->text());
+  EXPECT_EQ(4U, model->GetCursorPosition());
+  EXPECT_TRUE(model->Redo());
+  EXPECT_STR_EQ("a123d", model->text());
+  EXPECT_EQ(4U, model->GetCursorPosition());
+  EXPECT_FALSE(model->Redo());
 }
 
-void RunOverwriteReplaceTest(TextfieldModel& model) {
-  const bool reverse = model.render_text()->selection().is_reversed();
-  model.ReplaceChar('1');
-  model.ReplaceChar('2');
-  model.ReplaceChar('3');
-  model.ReplaceChar('4');
-  EXPECT_STR_EQ("a1234", model.text());
-  EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("abcd", model.text());
-  EXPECT_EQ(reverse ? 1U : 3U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("", model.text());
-  EXPECT_EQ(0U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Undo());
-  EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("abcd", model.text());
-  EXPECT_EQ(4U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("a1234", model.text());
-  EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Redo());
+void RunOverwriteReplaceTest(TextfieldModel* model) {
+  const bool reverse = model->render_text()->selection().is_reversed();
+  model->ReplaceChar('1');
+  model->ReplaceChar('2');
+  model->ReplaceChar('3');
+  model->ReplaceChar('4');
+  EXPECT_STR_EQ("a1234", model->text());
+  EXPECT_EQ(5U, model->GetCursorPosition());
+  EXPECT_TRUE(model->Undo());
+  EXPECT_STR_EQ("abcd", model->text());
+  EXPECT_EQ(reverse ? 1U : 3U, model->GetCursorPosition());
+  EXPECT_TRUE(model->Undo());
+  EXPECT_STR_EQ("", model->text());
+  EXPECT_EQ(0U, model->GetCursorPosition());
+  EXPECT_FALSE(model->Undo());
+  EXPECT_TRUE(model->Redo());
+  EXPECT_STR_EQ("abcd", model->text());
+  EXPECT_EQ(4U, model->GetCursorPosition());
+  EXPECT_TRUE(model->Redo());
+  EXPECT_STR_EQ("a1234", model->text());
+  EXPECT_EQ(5U, model->GetCursorPosition());
+  EXPECT_FALSE(model->Redo());
 }
 
 TEST_F(TextfieldModelTest, UndoRedo_ReplaceTest) {
@@ -1644,28 +1644,28 @@ TEST_F(TextfieldModelTest, UndoRedo_ReplaceTest) {
     TextfieldModel model(nullptr);
     model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(1, 3));
-    RunInsertReplaceTest(model);
+    RunInsertReplaceTest(&model);
   }
   {
     SCOPED_TRACE("Select reversed and insert.");
     TextfieldModel model(nullptr);
     model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(3, 1));
-    RunInsertReplaceTest(model);
+    RunInsertReplaceTest(&model);
   }
   {
     SCOPED_TRACE("Select forwards and overwrite.");
     TextfieldModel model(nullptr);
     model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(1, 3));
-    RunOverwriteReplaceTest(model);
+    RunOverwriteReplaceTest(&model);
   }
   {
     SCOPED_TRACE("Select reversed and overwrite.");
     TextfieldModel model(nullptr);
     model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(3, 1));
-    RunOverwriteReplaceTest(model);
+    RunOverwriteReplaceTest(&model);
   }
 }
 

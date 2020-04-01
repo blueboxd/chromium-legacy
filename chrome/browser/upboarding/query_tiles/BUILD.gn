@@ -116,8 +116,14 @@ if (is_android) {
   }
 }
 
-group("unit_tests") {
+source_set("unit_tests") {
   testonly = true
+  sources = [ "query_tile_entry_unittest.cc" ]
   visibility = [ "//chrome/browser/upboarding:unit_tests" ]
-  deps = [ "//chrome/browser/upboarding/query_tiles/internal:unit_tests" ]
+  deps = [
+    ":public",
+    "//chrome/browser/upboarding/query_tiles/internal:unit_tests",
+    "//testing/gtest",
+    "//url",
+  ]
 }

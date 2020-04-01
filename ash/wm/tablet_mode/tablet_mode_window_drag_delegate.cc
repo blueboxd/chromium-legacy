@@ -174,8 +174,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
             ->overview_button_tray();
     DCHECK(overview_button_tray);
     overview_button_tray->SnapRippleToActivated();
-    controller->StartOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateEnter);
+    controller->StartOverview(OverviewEnterExitType::kImmediateEnter);
   }
 
   if (controller->InOverviewSession()) {

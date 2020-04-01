@@ -49,6 +49,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/display/win/screen_win.h"
@@ -56,10 +58,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tree_host.h"
 #endif
 
 using base::TimeDelta;
@@ -230,7 +229,6 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
   if (!native_view)
     return;
 
-#if defined(OS_WIN)
   gfx::Point screen_loc_pixels =
       display::win::ScreenWin::DIPToScreenPoint(screen_loc);
   HWND target_window = ::WindowFromPoint(screen_loc_pixels.ToPOINT());
@@ -300,9 +298,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
     PostMessage(target_window, event_type, target, window_coords);
     return;
   }
-#endif  // defined(OS_WIN)
 
-#if defined(USE_AURA)
   if (!window)
     return;
 
@@ -322,7 +318,6 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
   located_event->set_root_location(root_loc);
 
   root->GetHost()->dispatcher()->RepostEvent(located_event.get());
-#endif  // defined(USE_AURA)
 }
 #endif  // defined(OS_WIN)
 

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -244,7 +245,8 @@ class AutocompleteProviderTest : public testing::Test {
   };
 
   struct HeaderTestData {
-    std::string header;
+    SearchSuggestionParser::HeadersMap headers_map;
+    std::vector<base::Optional<int>> suggestion_group_ids;
   };
 
   struct AssistedQueryStatsTestData {
@@ -277,8 +279,7 @@ class AutocompleteProviderTest : public testing::Test {
                       const KeywordTestData* match_data,
                       size_t size);
 
-  void UpdateResultsWithHeaderTestData(const HeaderTestData* match_data,
-                                       size_t size);
+  void UpdateResultsWithHeaderTestData(const HeaderTestData& headers_data);
 
   void RunAssistedQueryStatsTest(
       const AssistedQueryStatsTestData* aqs_test_data,
@@ -317,6 +318,13 @@ class AutocompleteProviderTest : public testing::Test {
         const_cast<SearchSuggestionParser::ExperimentStats&>(
             controller_->zero_suggest_provider_->experiment_stats());
     experiment_stats.push_back(experiment_stat.Clone());
+  }
+  void add_zero_suggest_provider_headers_map(
+      const SearchSuggestionParser::HeadersMap& headers_map) {
+    auto& provider_headers_map =
+        const_cast<SearchSuggestionParser::HeadersMap&>(
+            controller_->zero_suggest_provider_->headers_map());
+    provider_headers_map = headers_map;
   }
 
   AutocompleteResult result_;
@@ -519,21 +527,23 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
 }
 
 void AutocompleteProviderTest::UpdateResultsWithHeaderTestData(
-    const HeaderTestData* match_data,
-    size_t size) {
-  // Prepare input.
-  const size_t kMaxRelevance = 1000;
+    const HeaderTestData& headers_data) {
+  // Prepare.
+  size_t relevance = 1000;
   ACMatches matches;
-  for (size_t i = 0; i < size; ++i) {
-    AutocompleteMatch match(nullptr, kMaxRelevance - i, false,
+  for (auto suggestion_group_id : headers_data.suggestion_group_ids) {
+    AutocompleteMatch match(nullptr, relevance--, false,
                             AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED);
-    match.header = base::ASCIIToUTF16(match_data[i].header);
+    match.suggestion_group_id = suggestion_group_id;
     matches.push_back(match);
   }
+
+  add_zero_suggest_provider_headers_map(headers_data.headers_map);
+
   result_.Reset();
   result_.AppendMatches(AutocompleteInput(), matches);
 
-  // Update headers.
+  // Update the result with the header information and demote grouped matches.
   controller_->UpdateHeaders(&result_);
 }
 
@@ -757,65 +767,78 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
   }
 }
 
-// Tests that match headers are updated correctly.
+// Tests that the AutocompleteResult is updated with the header information and
+// grouped matches are demoted correctly.
 TEST_F(AutocompleteProviderTest, Headers) {
-  using base::ASCIIToUTF16;
+  ResetControllerWithKeywordAndSearchProviders();
 
-  ResetControllerWithTestProviders(false, nullptr, nullptr);
-
-  const char kRecentSearchesHeader[] = "Recent Searches";
+  const int kRecommendedForYouGroupId = 1;
   const char kRecommendedForYouHeader[] = "Recommended for you";
+  const int kRecentSearchesGroupId = 2;
+  const char kRecentSearchesHeader[] = "Recent Searches";
+
+  SearchSuggestionParser::HeadersMap headers_map = {
+      {kRecommendedForYouGroupId, base::ASCIIToUTF16(kRecommendedForYouHeader)},
+      {kRecentSearchesGroupId, base::ASCIIToUTF16(kRecentSearchesHeader)}};
 
   {
-    // The first header in every group of adjacent identical headers is kept.
-    HeaderTestData test_data[] = {{""},
-                                  {""},
-                                  {kRecentSearchesHeader},
-                                  {kRecentSearchesHeader},
-                                  {kRecommendedForYouHeader},
-                                  {kRecommendedForYouHeader}};
-    UpdateResultsWithHeaderTestData(test_data, base::size(test_data));
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(0)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(1)->header);
-    EXPECT_EQ(ASCIIToUTF16(kRecentSearchesHeader), result_.match_at(2)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(3)->header);
-    EXPECT_EQ(ASCIIToUTF16(kRecommendedForYouHeader),
-              result_.match_at(4)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(5)->header);
+    HeaderTestData test_data = {headers_map,
+                                {{base::nullopt},
+                                 {base::nullopt},
+                                 {base::nullopt},
+                                 {kRecentSearchesGroupId},
+                                 {kRecommendedForYouGroupId}}};
+    UpdateResultsWithHeaderTestData(test_data);
+    EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
+    EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
+    EXPECT_FALSE(result_.match_at(2)->suggestion_group_id.has_value());
+    EXPECT_EQ(kRecentSearchesGroupId,
+              result_.match_at(3)->suggestion_group_id.value());
+    EXPECT_EQ(kRecommendedForYouGroupId,
+              result_.match_at(4)->suggestion_group_id.value());
+
+    // Verify that AutocompleteResult is updated with the header information.
+    EXPECT_EQ(base::ASCIIToUTF16(kRecommendedForYouHeader),
+              result_.GetHeaderForGroupId(kRecommendedForYouGroupId));
+    EXPECT_EQ(base::ASCIIToUTF16(kRecentSearchesHeader),
+              result_.GetHeaderForGroupId(kRecentSearchesGroupId));
+    EXPECT_EQ(base::string16(), result_.GetHeaderForGroupId(-1));
   }
   {
-    // All headers are cleared because identical headers cannot be interleaved
-    // by other headers.
-    HeaderTestData test_data[] = {{""},
-                                  {""},
-                                  {kRecommendedForYouHeader},
-                                  {kRecentSearchesHeader},
-                                  {kRecentSearchesHeader},
-                                  {kRecommendedForYouHeader}};
-    UpdateResultsWithHeaderTestData(test_data, base::size(test_data));
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(0)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(1)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(2)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(3)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(4)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(5)->header);
+    HeaderTestData test_data = {headers_map,
+                                {
+                                    {base::nullopt},
+                                    {kRecentSearchesGroupId},
+                                    {kRecommendedForYouGroupId},
+                                    {base::nullopt},
+                                    {base::nullopt},
+                                }};
+    UpdateResultsWithHeaderTestData(test_data);
+    EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
+    EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
+    EXPECT_FALSE(result_.match_at(2)->suggestion_group_id.has_value());
+    EXPECT_EQ(kRecentSearchesGroupId,
+              result_.match_at(3)->suggestion_group_id.value());
+    EXPECT_EQ(kRecommendedForYouGroupId,
+              result_.match_at(4)->suggestion_group_id.value());
   }
   {
-    // All headers are cleared because an empty header cannot appear after
-    // a non-empty one.
-    HeaderTestData test_data[] = {{kRecentSearchesHeader},
-                                  {kRecentSearchesHeader},
-                                  {kRecommendedForYouHeader},
-                                  {kRecommendedForYouHeader},
-                                  {""},
-                                  {""}};
-    UpdateResultsWithHeaderTestData(test_data, base::size(test_data));
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(0)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(1)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(2)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(3)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(4)->header);
-    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(5)->header);
+    HeaderTestData test_data = {headers_map,
+                                {
+                                    {kRecentSearchesGroupId},
+                                    {kRecommendedForYouGroupId},
+                                    {base::nullopt},
+                                    {base::nullopt},
+                                    {base::nullopt},
+                                }};
+    UpdateResultsWithHeaderTestData(test_data);
+    EXPECT_FALSE(result_.match_at(0)->suggestion_group_id.has_value());
+    EXPECT_FALSE(result_.match_at(1)->suggestion_group_id.has_value());
+    EXPECT_FALSE(result_.match_at(2)->suggestion_group_id.has_value());
+    EXPECT_EQ(kRecentSearchesGroupId,
+              result_.match_at(3)->suggestion_group_id.value());
+    EXPECT_EQ(kRecommendedForYouGroupId,
+              result_.match_at(4)->suggestion_group_id.value());
   }
 }
 

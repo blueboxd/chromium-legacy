@@ -588,7 +588,7 @@ void StyledLabel::UpdateLabelBackgroundColor() {
           ui::NativeTheme::kColorId_DialogBackground));
   for (View* child : children()) {
     if (!child->GetProperty(kStyledLabelCustomViewKey)) {
-      // TODO (kylixrd): Should updating the label background color even be
+      // TODO(kylixrd): Should updating the label background color even be
       // allowed if there are custom views?
       DCHECK((child->GetClassName() == Label::kViewClassName) ||
              (child->GetClassName() == Link::kViewClassName));

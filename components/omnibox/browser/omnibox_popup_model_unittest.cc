@@ -157,6 +157,87 @@ TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
   }
 }
 
+TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
+  ACMatches matches;
+  for (size_t i = 0; i < 3; ++i) {
+    AutocompleteMatch match(nullptr, 1000, false,
+                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    match.keyword = base::ASCIIToUTF16("match");
+    match.allowed_to_be_default_match = true;
+    matches.push_back(match);
+  }
+  // Give one match an associated keyword for irregular state stepping.
+  matches.back().associated_keyword =
+      std::make_unique<AutocompleteMatch>(matches.back());
+  auto* result = &model()->autocomplete_controller()->result_;
+  AutocompleteInput input(base::UTF8ToUTF16("match"),
+                          metrics::OmniboxEventProto::NTP,
+                          TestSchemeClassifier());
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(0u, model()->popup_model()->selected_line());
+
+  // Step by lines forward.
+  for (size_t n : {1, 2, 0}) {
+    popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                                 OmniboxPopupModel::kWholeLine);
+    EXPECT_EQ(n, model()->popup_model()->selected_line());
+  }
+  // Step by lines backward.
+  for (size_t n : {2, 1, 0}) {
+    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                                 OmniboxPopupModel::kWholeLine);
+    EXPECT_EQ(n, model()->popup_model()->selected_line());
+  }
+  // Step by states forward.
+  for (auto selection : {
+           OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(2, OmniboxPopupModel::KEYWORD),
+           OmniboxPopupModel::Selection(0, OmniboxPopupModel::NORMAL),
+       }) {
+    popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                                 OmniboxPopupModel::kStateOrLine);
+    EXPECT_EQ(selection, model()->popup_model()->selection());
+  }
+  // Step by states backward.
+  // Note the lack of KEYWORD. This is by design. Stepping forward
+  // should land on KEYWORD, but stepping backward should not.
+  for (auto selection : {
+           OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(0, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+       }) {
+    popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                                 OmniboxPopupModel::kStateOrLine);
+    EXPECT_EQ(selection, model()->popup_model()->selection());
+  }
+
+  // Try some kStateOrNothing steps on the keyword line.
+  // Note that keyword mode is specially excepted with this
+  // step behavior.
+  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                               OmniboxPopupModel::kStateOrNothing);
+  EXPECT_EQ(OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+  popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                               OmniboxPopupModel::kStateOrNothing);
+  EXPECT_EQ(OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+
+  // Try the kAllLines step behavior.
+  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                               OmniboxPopupModel::kAllLines);
+  EXPECT_EQ(OmniboxPopupModel::Selection(0, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+  popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                               OmniboxPopupModel::kAllLines);
+  EXPECT_EQ(OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+}
+
 TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
   int contents_max_width, description_max_width;
   const int separator_width = 10;

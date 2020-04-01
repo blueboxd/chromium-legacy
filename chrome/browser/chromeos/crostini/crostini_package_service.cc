@@ -12,8 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -138,9 +138,9 @@ void CrostiniPackageService::Shutdown() {
   manager->RemovePendingAppListUpdatesObserver(this);
   manager->RemoveVmShutdownObserver(this);
 
-  // CrostiniPackageNotification registers itself as a CrostiniRegistryService
+  // CrostiniPackageNotification registers itself as a GuestOsRegistryService
   // observer, so they need to be destroyed here while the
-  // CrostiniRegistryService still exists.
+  // GuestOsRegistryService still exists.
   running_notifications_.clear();
   queued_installs_.clear();
   queued_uninstalls_.clear();
@@ -296,8 +296,8 @@ void CrostiniPackageService::OnVmShutdown(const std::string& vm_name) {
 void CrostiniPackageService::QueueUninstallApplication(
     const std::string& app_id) {
   auto registration =
-      CrostiniRegistryServiceFactory::GetForProfile(profile_)->GetRegistration(
-          app_id);
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
+          ->GetRegistration(app_id);
   if (!registration.has_value()) {
     LOG(ERROR)
         << "Tried to uninstall application that has already been uninstalled";
@@ -469,7 +469,7 @@ void CrostiniPackageService::OnInstallLinuxPackage(
 }
 
 void CrostiniPackageService::UninstallApplication(
-    const CrostiniRegistryService::Registration& registration,
+    const guest_os::GuestOsRegistryService::Registration& registration,
     const std::string& app_id) {
   const std::string vm_name = registration.VmName();
   const std::string container_name = registration.ContainerName();
@@ -542,8 +542,9 @@ void CrostiniPackageService::StartQueuedOperation(
       uninstall_queue.pop();  // Invalidates |next|
     }
 
-    auto registration = CrostiniRegistryServiceFactory::GetForProfile(profile_)
-                            ->GetRegistration(app_id);
+    auto registration =
+        guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
+            ->GetRegistration(app_id);
 
     // It's possible that some other process has uninstalled this application
     // already. If this happens, we want to skip the notification directly to

@@ -73,9 +73,9 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, ExperimentalPermissionsFail) {
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(NDEBUG)
 #define MAYBE_FaviconPermission DISABLED_FaviconPermission
 #else
-#define MAYBE_FaviconPermission MAYBE_FaviconPermission
+#define MAYBE_FaviconPermission FaviconPermission
 #endif
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FaviconPermission) {
+IN_PROC_BROWSER_TEST_F(PermissionsApiTest, MAYBE_FaviconPermission) {
   base::HistogramTester tester;
   ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;
   tester.ExpectBucketCount("Extensions.FaviconResourceRequested",

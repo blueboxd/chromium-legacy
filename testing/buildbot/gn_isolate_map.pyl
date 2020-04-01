@@ -482,7 +482,7 @@
     "script": "//testing/scripts/run_android_wpt.py",
     "args": [
       "--product=chrome_android",
-      "--apk=apks/ChromePublic.apk",
+      "--chrome-apk=apks/ChromePublic.apk",
       "--webdriver-binary=clang_x64/chromedriver",
       "-v",
     ],
@@ -1601,7 +1601,7 @@
     "script": "//testing/scripts/run_android_wpt.py",
     "args": [
       "--product=android_webview",
-      "--apk=apks/SystemWebView.apk",
+      "--webview-provider=apks/SystemWebView.apk",
       "--system-webview-shell=apks/SystemWebViewShell.apk",
       "--webdriver-binary=clang_x64/chromedriver",
       "-v",

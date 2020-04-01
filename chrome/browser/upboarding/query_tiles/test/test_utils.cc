@@ -23,8 +23,8 @@ void SerializeEntry(const QueryTileEntry* entry, std::stringstream& out) {
       << "  accessibility_text: " << entry->accessibility_text << " \n";
 
   for (const auto& image : entry->image_metadatas)
-    out << "image id: " << image.id << " image url: " << image.url.spec()
-        << " \n";
+    out << "image id: " << image.id
+        << " image url: " << image.url.possibly_invalid_spec() << " \n";
 }
 
 }  // namespace
@@ -33,7 +33,7 @@ const std::string DebugString(const QueryTileEntry* root) {
   if (!root)
     return std::string();
   std::stringstream out;
-  out << "entries detail: \n";
+  out << "Entries detail: \n";
   std::map<std::string, std::vector<std::string>> cache;
   std::deque<const QueryTileEntry*> queue;
   queue.emplace_back(root);
@@ -49,7 +49,7 @@ const std::string DebugString(const QueryTileEntry* root) {
       }
     }
   }
-  out << "tree table: \n";
+  out << "Tree table: \n";
   for (auto& pair : cache) {
     std::string line;
     line += pair.first + " : [";

@@ -13,18 +13,9 @@ namespace views {
 // CompositorAnimationRunner
 //
 
-CompositorAnimationRunner::CompositorAnimationRunner(
-    Widget* widget,
-    ui::AnimationMetricsReporter* animation_metrics_reporter,
-    base::TimeDelta expected_duration)
-    : widget_(widget), expected_duration_(expected_duration) {
+CompositorAnimationRunner::CompositorAnimationRunner(Widget* widget)
+    : widget_(widget) {
   widget_->AddObserver(this);
-  if (animation_metrics_reporter) {
-    DCHECK(!expected_duration_.is_zero());
-    animation_metrics_recorder_ =
-        std::make_unique<ui::AnimationMetricsRecorder>(
-            animation_metrics_reporter);
-  }
 }
 
 CompositorAnimationRunner::~CompositorAnimationRunner() {
@@ -32,6 +23,20 @@ CompositorAnimationRunner::~CompositorAnimationRunner() {
   if (widget_)
     OnWidgetDestroying(widget_);
   DCHECK(!compositor_ || !compositor_->HasAnimationObserver(this));
+}
+
+void CompositorAnimationRunner::SetAnimationMetricsReporter(
+    ui::AnimationMetricsReporter* animation_metrics_reporter,
+    base::TimeDelta expected_duration) {
+  if (animation_metrics_reporter) {
+    DCHECK(!expected_duration.is_zero());
+    animation_metrics_recorder_ =
+        std::make_unique<ui::AnimationMetricsRecorder>(
+            animation_metrics_reporter);
+    expected_duration_ = expected_duration;
+  } else {
+    animation_metrics_recorder_.reset();
+  }
 }
 
 void CompositorAnimationRunner::Stop() {

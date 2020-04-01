@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Tests that the expected classes are constructed when a {@link WebApkActivity} is launched.
+ * Tests that the expected classes are constructed when a WebAPK Activity is launched.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -98,7 +98,7 @@ public class WebApkInitializationTest {
     /**
      * Test that {@link WebappActionsNotificationManager},
      * {@link WebappDisclosureSnackbarController} and {@link WebApkActivityLifecycleUmaTracker} are
-     * constructed when a {@link WebApkActivity} is launched.
+     * constructed when a WebAPK Activity is launched.
      */
     @Test
     @LargeTest

@@ -49,6 +49,8 @@ enum class ReferrerPolicy : int32_t;
 enum class RequestMode : int32_t;
 enum class RequestDestination : int32_t;
 }  // namespace mojom
+
+class OptionalTrustTokenParams;
 }  // namespace network
 
 namespace net {
@@ -393,6 +395,11 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT base::Optional<base::UnguessableToken>
   RecursivePrefetchToken() const;
+
+  // Specifies a Trust Tokens protocol operation to execute alongside the
+  // request's load (https://github.com/wicg/trust-token-api).
+  BLINK_PLATFORM_EXPORT network::OptionalTrustTokenParams TrustTokenParams()
+      const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();

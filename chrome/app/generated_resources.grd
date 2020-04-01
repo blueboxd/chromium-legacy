@@ -251,6 +251,7 @@ are declared in tools/grit/grit_rule.gni.
     <file path="resources/generated_resources_sl.xtb" lang="sl" />
     <file path="resources/generated_resources_sq.xtb" lang="sq" />
     <file path="resources/generated_resources_sr.xtb" lang="sr" />
+    <file path="resources/generated_resources_sr-Latn.xtb" lang="sr-Latn" />
     <file path="resources/generated_resources_sv.xtb" lang="sv" />
     <file path="resources/generated_resources_sw.xtb" lang="sw" />
     <file path="resources/generated_resources_ta.xtb" lang="ta" />
@@ -363,6 +364,15 @@ are declared in tools/grit/grit_rule.gni.
 
       <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a popup.">
         <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to
+      </message>
+      <message name="IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_ONE_PERM" desc="The label that is read by a screen reader to describe the permissions prompt bubble. This will be followed by the short name of a single permission.">
+        <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to: <ph name="PERMISSION">$2<ex>use your microphone</ex></ph>
+      </message>
+      <message name="IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_TWO_PERMS" desc="The label that is read by a screen reader to describe the permissions prompt bubble. This will be followed by the short names of two permissions.">
+        <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to: <ph name="FIRST_PERMISSION">$2<ex>use your microphone</ex></ph> and <ph name="SECOND_PERMISSION">$3<ex>use your location</ex></ph>
+      </message>
+      <message name="IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_TWO_PERMS_MORE" desc="The label that is read by a screen reader to describe the permissions prompt bubble. This will be followed by the short names of two permissions, then an &quot;and more&quot; descriptive text indicating that the dialog's body contains the entire list of requested permissions.">
+        <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to: <ph name="FIRST_PERMISSION">$2<ex>use your microphone</ex></ph>, <ph name="SECOND_PERMISSION">$3<ex>use your location</ex></ph>, and more
       </message>
       <message name="IDS_PERMISSION_CUSTOMIZE" desc="Label on text button to allow the user to customize a permissions request.">
         Customize
@@ -1987,13 +1997,13 @@ are declared in tools/grit/grit_rule.gni.
         <then>
           <message name="IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT"
                    desc="The title of a download notification inidcating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
-            <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> may be dangerous. Send to Google Advanced Proection for scanning?
+            <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> may be dangerous. Send to Google Advanced Protection for scanning?
           </message>
         </then>
         <else>
           <message name="IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT"
                    desc="The title of a download notification inidcating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
-            <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> may be dangerous. Send to Google Advanced Proection for scanning? Press Shift+F6 to cycle to the downloads bar area.
+            <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> may be dangerous. Send to Google Advanced Protection for scanning? Press Shift+F6 to cycle to the downloads bar area.
           </message>
         </else>
       </if>

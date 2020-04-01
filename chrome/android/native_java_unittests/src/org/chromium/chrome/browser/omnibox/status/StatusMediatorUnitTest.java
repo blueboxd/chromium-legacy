@@ -72,8 +72,8 @@ public final class StatusMediatorUnitTest {
         mResources = mContext.getResources();
 
         mModel = new PropertyModel(StatusProperties.ALL_KEYS);
-        mMediator =
-                new StatusMediator(mModel, mResources, mContext, mUrlBarEditingTextStateProvider);
+        mMediator = new StatusMediator(mModel, mResources, mContext,
+                mUrlBarEditingTextStateProvider, /* isTablet */ false);
         mMediator.setToolbarCommonPropertiesModel(mToolbarCommonPropertiesModel);
         mMediator.setDelegateForTesting(mDelegate);
         mBitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);

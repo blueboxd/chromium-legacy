@@ -6,6 +6,7 @@ package org.chromium.weblayer.test;
 
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
+import android.support.v4.app.FragmentManager;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,8 +16,12 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.CookieChangeCause;
+import org.chromium.weblayer.CookieChangedCallback;
 import org.chromium.weblayer.CookieManager;
 import org.chromium.weblayer.shell.InstrumentationActivity;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests that CookieManager works as expected.
@@ -24,6 +29,7 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 @RunWith(WebLayerJUnit4ClassRunner.class)
 public class CookieManagerTest {
     private CookieManager mCookieManager;
+    private Uri mBaseUri;
 
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
@@ -34,6 +40,7 @@ public class CookieManagerTest {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         mCookieManager = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> { return activity.getBrowser().getProfile().getCookieManager(); });
+        mBaseUri = Uri.parse(mActivityTestRule.getTestServer().getURL("/"));
     }
 
     @Test
@@ -50,10 +57,9 @@ public class CookieManagerTest {
     @Test
     @SmallTest
     public void testSetCookieInvalid() throws Exception {
-        String baseUrl = mActivityTestRule.getTestServer().getURL("/");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
-                mCookieManager.setCookie(Uri.parse(baseUrl), "", null);
+                mCookieManager.setCookie(mBaseUri, "", null);
                 Assert.fail("Exception not thrown.");
             } catch (IllegalArgumentException e) {
                 Assert.assertEquals(e.getMessage(), "Invalid cookie: ");
@@ -70,9 +76,8 @@ public class CookieManagerTest {
     @Test
     @SmallTest
     public void testSetCookieNullCallback() throws Exception {
-        String baseUrl = mActivityTestRule.getTestServer().getURL("/");
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mCookieManager.setCookie(Uri.parse(baseUrl), "foo=bar", null); });
+                () -> { mCookieManager.setCookie(mBaseUri, "foo=bar", null); });
 
         // Do a navigation to make sure the cookie gets set.
         mActivityTestRule.navigateAndWait(mActivityTestRule.getTestServer().getURL("/echo"));
@@ -93,12 +98,69 @@ public class CookieManagerTest {
         Assert.assertEquals(getCookie(), "foo=bar");
     }
 
+    @Test
+    @SmallTest
+    public void testCookieChanged() throws Exception {
+        CookieChangedCallbackHelper helper = new CookieChangedCallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mCookieManager.addCookieChangedCallback(mBaseUri, null, helper); });
+        Assert.assertTrue(setCookie("foo=bar"));
+        helper.waitForChange();
+        Assert.assertEquals(helper.getCause(), CookieChangeCause.INSERTED);
+        Assert.assertEquals(helper.getCookie(), "foo=bar");
+
+        Assert.assertTrue(setCookie("foo=baz"));
+        helper.waitForChange();
+        Assert.assertEquals(helper.getCause(), CookieChangeCause.OVERWRITE);
+        Assert.assertEquals(helper.getCookie(), "foo=bar");
+        helper.waitForChange();
+        Assert.assertEquals(helper.getCause(), CookieChangeCause.INSERTED);
+        Assert.assertEquals(helper.getCookie(), "foo=baz");
+    }
+
+    @Test
+    @SmallTest
+    public void testCookieChangedRemoveCallback() throws Exception {
+        CookieChangedCallbackHelper helper = new CookieChangedCallbackHelper();
+        Runnable remove = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mCookieManager.addCookieChangedCallback(mBaseUri, "cookie2", helper);
+            return mCookieManager.addCookieChangedCallback(mBaseUri, "cookie1", helper);
+        });
+        Assert.assertTrue(setCookie("cookie1=something"));
+        helper.waitForChange();
+        Assert.assertEquals(helper.getCookie(), "cookie1=something");
+
+        TestThreadUtils.runOnUiThreadBlocking(remove);
+
+        // Set cookie1 first and then cookie2. We should only receive a cookie change event for
+        // cookie2.
+        Assert.assertTrue(setCookie("cookie1=other"));
+        Assert.assertTrue(setCookie("cookie2=something"));
+        helper.waitForChange();
+        Assert.assertEquals(helper.getCookie(), "cookie2=something");
+    }
+
+    @Test
+    @SmallTest
+    public void testCookieChangedRemoveCallbackAfterProfileDestroyed() throws Exception {
+        // Removing change callback should be a no-op after the profile is destroyed.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Runnable remove = mCookieManager.addCookieChangedCallback(
+                    mBaseUri, null, new CookieChangedCallbackHelper());
+            // We need to remove the fragment before calling Profile#destroy().
+            FragmentManager fm = mActivityTestRule.getActivity().getSupportFragmentManager();
+            fm.beginTransaction().remove(fm.getFragments().get(0)).commitNow();
+
+            mActivityTestRule.getActivity().getBrowser().getProfile().destroy();
+            remove.run();
+        });
+    }
+
     private boolean setCookie(String value) throws Exception {
         Boolean[] resultHolder = new Boolean[1];
         CallbackHelper callbackHelper = new CallbackHelper();
-        String baseUrl = mActivityTestRule.getTestServer().getURL("/");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mCookieManager.setCookie(Uri.parse(baseUrl), value, (Boolean result) -> {
+            mCookieManager.setCookie(mBaseUri, value, (Boolean result) -> {
                 resultHolder[0] = result;
                 callbackHelper.notifyCalled();
             });
@@ -110,14 +172,41 @@ public class CookieManagerTest {
     private String getCookie() throws Exception {
         String[] resultHolder = new String[1];
         CallbackHelper callbackHelper = new CallbackHelper();
-        String baseUrl = mActivityTestRule.getTestServer().getURL("/");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mCookieManager.getCookie(Uri.parse(baseUrl), (String result) -> {
+            mCookieManager.getCookie(mBaseUri, (String result) -> {
                 resultHolder[0] = result;
                 callbackHelper.notifyCalled();
             });
         });
         callbackHelper.waitForFirst();
         return resultHolder[0];
+    }
+
+    private static class CookieChangedCallbackHelper extends CookieChangedCallback {
+        private CallbackHelper mCallbackHelper = new CallbackHelper();
+        private int mCallCount;
+        private int mCause;
+        private String mCookie;
+
+        public void waitForChange() throws TimeoutException {
+            mCallbackHelper.waitForCallback(mCallCount);
+            mCallCount++;
+        }
+
+        @CookieChangeCause
+        public int getCause() {
+            return mCause;
+        }
+
+        public String getCookie() {
+            return mCookie;
+        }
+
+        @Override
+        public void onCookieChanged(String cookie, @CookieChangeCause int cause) {
+            mCookie = cookie;
+            mCause = cause;
+            mCallbackHelper.notifyCalled();
+        }
     }
 }

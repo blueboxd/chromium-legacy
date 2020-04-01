@@ -7,9 +7,13 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback_list.h"
 
 class GURL;
+
+namespace net {
+struct CookieChangeInfo;
+}
 
 namespace weblayer {
 
@@ -26,6 +30,16 @@ class CookieManager {
   // Gets the cookies for the given URL.
   using GetCookieCallback = base::OnceCallback<void(const std::string&)>;
   virtual void GetCookie(const GURL& url, GetCookieCallback callback) = 0;
+
+  // Adds a callback to listen for changes to cookies for the given URL.
+  using CookieChangedCallbackList =
+      base::CallbackList<void(const net::CookieChangeInfo&)>;
+  using CookieChangedCallback = CookieChangedCallbackList::CallbackType;
+  using CookieChangedSubscription = CookieChangedCallbackList::Subscription;
+  virtual std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+      const GURL& url,
+      const std::string* name,
+      CookieChangedCallback callback) = 0;
 };
 
 }  // namespace weblayer

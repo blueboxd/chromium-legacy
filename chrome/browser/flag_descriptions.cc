@@ -1116,6 +1116,11 @@ const char kLookalikeUrlNavigationSuggestionsDescription[] =
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 
+const char kMediaHistoryName[] = "Enable Media History";
+const char kMediaHistoryDescription[] =
+    "Enables Media History which records data around media playbacks on "
+    "websites.";
+
 const char kMediaInspectorLoggingName[] = "Enable media log in developer tools";
 const char kMediaInspectorLoggingDescription[] =
     "Move media logging from chrome://media-internals into the developer tools "
@@ -1853,6 +1858,11 @@ const char kSystemKeyboardLockDescription[] =
     "Enables websites to use the keyboard.lock() API to intercept system "
     "keyboard shortcuts and have the events routed directly to the website "
     "when in fullscreen mode.";
+
+const char kSystemTrayMicGainName[] = "Modify mic gain in the system tray";
+const char kSystemTrayMicGainDescription[] =
+    "Enables mic gain settings in the system tray audio "
+    "settings.";
 
 const char kTabEngagementReportingName[] = "Tab Engagement Metrics";
 const char kTabEngagementReportingDescription[] =

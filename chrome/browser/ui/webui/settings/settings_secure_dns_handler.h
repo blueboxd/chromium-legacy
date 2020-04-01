@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_SECURE_DNS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_SECURE_DNS_HANDLER_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -48,7 +52,7 @@ class SecureDnsHandler : public SettingsPageUIHandler,
   // Intended to be called once upon creation of the secure DNS setting.
   void HandleGetSecureDnsSetting(const base::ListValue* args);
 
-  // Returns whether or not a custom entry is valid.
+  // Returns the first template if a custom entry is valid.
   void HandleValidateCustomDnsEntry(const base::ListValue* args);
 
   // Returns whether or not a test query to the resolver succeeds.

@@ -393,9 +393,8 @@ void OverviewGrid::Shutdown() {
       SplitViewController::Get(root_window_)->InSplitViewMode();
   // OverviewGrid in splitscreen does not include the window to be activated.
   if (!window_list_.empty() || in_split_view) {
-    bool minimized_in_tablet =
-        overview_session_->enter_exit_overview_type() ==
-        OverviewSession::EnterExitOverviewType::kFadeOutExit;
+    bool minimized_in_tablet = overview_session_->enter_exit_overview_type() ==
+                               OverviewEnterExitType::kFadeOutExit;
     // The following instance self-destructs when shutdown animation ends.
     new ShutdownAnimationFpsCounterObserver(
         root_window_->layer()->GetCompositor(), in_split_view,
@@ -428,11 +427,11 @@ void OverviewGrid::PrepareForOverview() {
 void OverviewGrid::PositionWindows(
     bool animate,
     const base::flat_set<OverviewItem*>& ignored_items,
-    OverviewSession::OverviewTransition transition) {
+    OverviewTransition transition) {
   if (!overview_session_ || suspend_reposition_ || window_list_.empty())
     return;
 
-  DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
+  DCHECK_NE(transition, OverviewTransition::kExit);
 
   std::vector<gfx::RectF> rects =
       ShouldUseTabletModeGridLayout() &&
@@ -441,7 +440,7 @@ void OverviewGrid::PositionWindows(
           ? GetWindowRectsForTabletModeLayout(ignored_items)
           : GetWindowRects(ignored_items);
 
-  if (transition == OverviewSession::OverviewTransition::kEnter) {
+  if (transition == OverviewTransition::kEnter) {
     CalculateWindowListAnimationStates(/*selected_item=*/nullptr, transition,
                                        rects);
   }
@@ -450,19 +449,19 @@ void OverviewGrid::PositionWindows(
   // position items in |ignored_items|.
   OverviewAnimationType animation_type = OVERVIEW_ANIMATION_NONE;
   switch (transition) {
-    case OverviewSession::OverviewTransition::kEnter: {
+    case OverviewTransition::kEnter: {
       const bool entering_from_home =
           overview_session_->enter_exit_overview_type() ==
-          OverviewSession::EnterExitOverviewType::kFadeInEnter;
+          OverviewEnterExitType::kFadeInEnter;
       animation_type = entering_from_home
                            ? OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER
                            : OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER;
       break;
     }
-    case OverviewSession::OverviewTransition::kInOverview:
+    case OverviewTransition::kInOverview:
       animation_type = OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW;
       break;
-    case OverviewSession::OverviewTransition::kExit:
+    case OverviewTransition::kExit:
       NOTREACHED();
   }
 
@@ -471,7 +470,7 @@ void OverviewGrid::PositionWindows(
   std::vector<OverviewAnimationType> animation_types(rects.size());
 
   const bool can_do_spawn_animation =
-      animate && transition == OverviewSession::OverviewTransition::kInOverview;
+      animate && transition == OverviewTransition::kInOverview;
 
   for (size_t i = 0; i < window_list_.size(); ++i) {
     OverviewItem* window_item = window_list_[i].get();
@@ -484,10 +483,10 @@ void OverviewGrid::PositionWindows(
     bool should_animate_item = animate;
     // If we're in entering overview process, not all window items in the grid
     // might need animation even if the grid needs animation.
-    if (animate && transition == OverviewSession::OverviewTransition::kEnter)
+    if (animate && transition == OverviewTransition::kEnter)
       should_animate_item = window_item->should_animate_when_entering();
 
-    if (animate && transition == OverviewSession::OverviewTransition::kEnter) {
+    if (animate && transition == OverviewTransition::kEnter) {
       if (window_item->should_animate_when_entering() &&
           !has_non_cover_animating) {
         has_non_cover_animating |=
@@ -503,14 +502,13 @@ void OverviewGrid::PositionWindows(
         should_animate_item ? animation_type : OVERVIEW_ANIMATION_NONE;
   }
 
-  if (animate && transition == OverviewSession::OverviewTransition::kEnter &&
+  if (animate && transition == OverviewTransition::kEnter &&
       !window_list_.empty()) {
     bool single_animation_in_clamshell =
         animate_count == 1 && !has_non_cover_animating &&
         !Shell::Get()->tablet_mode_controller()->InTabletMode();
-    bool minimized_in_tablet =
-        overview_session_->enter_exit_overview_type() ==
-        OverviewSession::EnterExitOverviewType::kFadeInEnter;
+    bool minimized_in_tablet = overview_session_->enter_exit_overview_type() ==
+                               OverviewEnterExitType::kFadeInEnter;
     fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
         window_list_[0]->GetWindow()->layer()->GetCompositor(),
         SplitViewController::Get(root_window_)->InSplitViewMode(),
@@ -1013,9 +1011,9 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
 
 void OverviewGrid::CalculateWindowListAnimationStates(
     OverviewItem* selected_item,
-    OverviewSession::OverviewTransition transition,
+    OverviewTransition transition,
     const std::vector<gfx::RectF>& target_bounds) {
-  using OverviewTransition = OverviewSession::OverviewTransition;
+  using OverviewTransition = OverviewTransition;
 
   // Sanity checks to enforce assumptions used in later codes.
   switch (transition) {
@@ -1141,9 +1139,9 @@ void OverviewGrid::CalculateWindowListAnimationStates(
       occluded_region.op(src_bounds, SkRegion::kUnion_Op);
 
     const bool should_animate = !(src_occluded && dst_occluded);
-    if (transition == OverviewSession::OverviewTransition::kEnter)
+    if (transition == OverviewTransition::kEnter)
       items[i]->set_should_animate_when_entering(should_animate);
-    else if (transition == OverviewSession::OverviewTransition::kExit)
+    else if (transition == OverviewTransition::kExit)
       items[i]->set_should_animate_when_exiting(should_animate);
   }
 }
@@ -1491,8 +1489,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   const gfx::Size item_size(0, height);
   gfx::SizeF target_size = item->GetTargetBoundsInScreen().size();
   float scale = item->GetItemScale(item_size);
-  ScopedOverviewTransformWindow::GridWindowFillMode grid_fill_mode =
-      item->GetWindowDimensionsType();
+  OverviewGridWindowFillMode grid_fill_mode = item->GetWindowDimensionsType();
 
   // The drop target, unlike the other windows has its bounds set directly, so
   // |GetTargetBoundsInScreen()| won't return the value we want. Instead, get
@@ -1540,10 +1537,10 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   int width = std::max(
       1, gfx::ToFlooredInt(target_size.width() * scale) + 2 * kWindowMargin);
   switch (grid_fill_mode) {
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
+    case OverviewGridWindowFillMode::kLetterBoxed:
       width = kExtremeWindowRatioThreshold * height;
       break;
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
+    case OverviewGridWindowFillMode::kPillarBoxed:
       width = height / kExtremeWindowRatioThreshold;
       break;
     default:

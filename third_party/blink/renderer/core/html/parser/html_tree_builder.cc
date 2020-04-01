@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
@@ -944,8 +945,13 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
             manual_slotting ? SlotAssignmentMode::kManual
                             : SlotAssignmentMode::kAuto);
       } else {
-        // TODO(1063153): Add a console warning here.
-        LOG(ERROR) << "Invalid shadowroot value " << shadow_mode;
+        tree_.OwnerDocumentForCurrentNode().AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::blink::ConsoleMessageSource::kOther,
+                mojom::blink::ConsoleMessageLevel::kWarning,
+                "Invalid declarative shadowroot attribute value \"" +
+                    shadow_mode +
+                    "\". Valid values include \"open\" and \"closed\"."));
       }
     }
   }

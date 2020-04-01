@@ -103,6 +103,8 @@ blink_platform_sources("loader") {
     "fetch/stale_revalidation_resource_client.h",
     "fetch/text_resource_decoder_options.cc",
     "fetch/text_resource_decoder_options.h",
+    "fetch/trust_token_params_conversion.cc",
+    "fetch/trust_token_params_conversion.h",
     "fetch/unique_identifier.cc",
     "fetch/unique_identifier.h",
     "fetch/url_loader/request_conversion.cc",

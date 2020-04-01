@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/db/hit_report.h"
 #include "url/gurl.h"
 
@@ -52,6 +53,7 @@ struct UnsafeResource {
   bool is_subframe;
   safe_browsing::SBThreatType threat_type;
   safe_browsing::ThreatMetadata threat_metadata;
+  safe_browsing::ResourceType resource_type;
   UrlCheckCallback callback;  // This is called back on |callback_thread|.
   scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
   base::RepeatingCallback<content::WebContents*(void)> web_contents_getter;

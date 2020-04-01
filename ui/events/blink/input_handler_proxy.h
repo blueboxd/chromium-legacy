@@ -21,6 +21,7 @@ class TickClock;
 }
 
 namespace blink {
+class WebInputEventAttribution;
 class WebMouseWheelEvent;
 class WebTouchEvent;
 }  // namespace blink
@@ -77,7 +78,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       base::OnceCallback<void(EventDisposition,
                               WebScopedInputEvent WebInputEvent,
                               const LatencyInfo&,
-                              std::unique_ptr<ui::DidOverscrollParams>)>;
+                              std::unique_ptr<ui::DidOverscrollParams>,
+                              const blink::WebInputEventAttribution&)>;
   void HandleInputEventWithLatencyInfo(WebScopedInputEvent event,
                                        const LatencyInfo& latency_info,
                                        EventDispositionCallback callback);
@@ -87,6 +89,11 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       const cc::InputHandlerPointerResult& pointer_result,
       const LatencyInfo& latency_info,
       const base::TimeTicks now);
+
+  // Attempts to perform attribution of the given WebInputEvent to a target
+  // frame. Intended for simple impl-side hit testing.
+  blink::WebInputEventAttribution PerformEventAttribution(
+      const blink::WebInputEvent& event);
 
   // cc::InputHandlerClient implementation.
   void WillShutdown() override;
@@ -144,7 +151,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   EventDisposition HandleGestureScrollBegin(
       const blink::WebGestureEvent& event);
   EventDisposition HandleGestureScrollUpdate(
-      const blink::WebGestureEvent& event);
+      const blink::WebGestureEvent& event,
+      const blink::WebInputEventAttribution& original_attribution);
   EventDisposition HandleGestureScrollEnd(const blink::WebGestureEvent& event);
   EventDisposition HandleTouchStart(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
@@ -182,7 +190,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   EventDisposition RouteToTypeSpecificHandler(
       EventWithCallback* event_with_callback,
-      const LatencyInfo& original_latency_info);
+      const LatencyInfo& original_latency_info,
+      const blink::WebInputEventAttribution& original_attribution);
 
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;

@@ -236,8 +236,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   // TODO(https://crbug.com/1050755): Improve the accuracy of these fields for
   // cases where we only use RenderWithoutAlgorithm().
   base::TimeTicks last_presentation_time_ GUARDED_BY(current_frame_lock_);
-  base::TimeTicks last_expected_presentation_time_
-      GUARDED_BY(current_frame_lock_);
+  base::TimeTicks last_expected_display_time_ GUARDED_BY(current_frame_lock_);
   size_t presented_frames_ GUARDED_BY(current_frame_lock_) = 0u;
 
   bool stopped_;

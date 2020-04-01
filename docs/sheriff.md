@@ -154,6 +154,10 @@ for example), the important features of the build page are:
    Note that the sharded tasks are actually executing on different machines and
    are aggregated back into the builder's results.
 
+#### CI<->Try Mapping
+To translate CI builder names to try builder names, refer to the
+[CI<->Try mapping](https://source.chromium.org/chromium/chromium/tools/build/+/master:scripts/slave/recipe_modules/chromium_tests/trybots.py).
+
 ### The Flake Portal (The "New Flakiness Dashboard")
 
 The [new flakiness dashboard] is much faster than the old one but has a

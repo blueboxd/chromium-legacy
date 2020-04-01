@@ -68,6 +68,7 @@
     <file path="strings/gaia_resources_sl.xtb" lang="sl" />
     <file path="strings/gaia_resources_sq.xtb" lang="sq" />
     <file path="strings/gaia_resources_sr.xtb" lang="sr" />
+    <file path="strings/gaia_resources_sr-Latn.xtb" lang="sr-Latn" />
     <file path="strings/gaia_resources_sv.xtb" lang="sv" />
     <file path="strings/gaia_resources_sw.xtb" lang="sw" />
     <file path="strings/gaia_resources_ta.xtb" lang="ta" />

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/settings/settings_secure_dns_handler.h"
 
-#include <string>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -207,24 +207,20 @@ void SecureDnsHandler::HandleValidateCustomDnsEntry(
     const base::ListValue* args) {
   AllowJavascript();
   const base::Value* callback_id;
-  std::string server_templates;
+  std::string custom_entry;
   CHECK(args->Get(0, &callback_id));
-  CHECK(args->GetString(1, &server_templates));
+  CHECK(args->GetString(1, &custom_entry));
 
-  // At least one template must be valid for the entry to be considered valid.
-  std::string server_method;
-  std::string valid_template;
-  for (const std::string& server_template :
-       SplitString(server_templates, " ", base::TRIM_WHITESPACE,
-                   base::SPLIT_WANT_NONEMPTY)) {
-    if (net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
-      valid_template = server_template;
-      break;
-    }
+  // Return the first template, or none if the entry is invalid.
+  std::string first_template;
+  bool valid = !custom_entry.empty() &&
+               chrome_browser_net::IsValidDohTemplateGroup(custom_entry);
+  if (valid) {
+    first_template =
+        std::string(chrome_browser_net::SplitDohTemplateGroup(custom_entry)[0]);
   }
-  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ValidationAttemptSuccess",
-                        !valid_template.empty());
-  ResolveJavascriptCallback(*callback_id, base::Value(valid_template));
+  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ValidationAttemptSuccess", valid);
+  ResolveJavascriptCallback(*callback_id, base::Value(first_template));
 }
 
 void SecureDnsHandler::HandleProbeCustomDnsTemplate(

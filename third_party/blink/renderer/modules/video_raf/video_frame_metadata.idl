@@ -9,7 +9,7 @@ dictionary VideoFrameMetadata {
     required DOMHighResTimeStamp presentationTime;
 
     // The time at which the user agent expects the frame to be visible.
-    required DOMHighResTimeStamp expectedPresentationTime;
+    required DOMHighResTimeStamp expectedDisplayTime;
 
     // The visible width and height of the presented video frame.
     required unsigned long width;
@@ -17,7 +17,7 @@ dictionary VideoFrameMetadata {
 
     // The presentation timestamp in seconds of the frame presented. May not be
     // known to the compositor or exist in all cases.
-    double presentationTimestamp;
+    required double mediaTime;
 
     // The elapsed time in seconds from submission of the encoded packet with
     // the same presentationTimestamp as this frame to the decoder until the
@@ -25,13 +25,13 @@ dictionary VideoFrameMetadata {
     //
     // In addition to decoding time, may include processing time. E.g., YUV
     // conversion and/or staging into GPU backed memory.
-    double elapsedProcessingTime;
+    double processingDuration;
 
     // A count of the number of frames submitted for composition. Allows clients
     // to determine if frames were missed between VideoFrameRequestCallbacks.
     //
     // https://wiki.whatwg.org/wiki/Video_Metrics#presentedFrames
-    unsigned long presentedFrames;
+    required unsigned long presentedFrames;
 
     // For video frames coming from either a local or remote source, this is
     // the time at which the frame was captured by the camera. For a remote

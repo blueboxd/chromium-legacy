@@ -8,6 +8,7 @@
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
@@ -132,10 +133,14 @@ bool LocalNetworkCollectorImpl::IsEligible(
   }
 
   if (!network->connectable) {
+    NET_LOG(EVENT) << NetworkGuidId(network->guid)
+                   << " is not eligible, it is not connectable.";
     return false;
   }
 
   if (network->source != network_config::mojom::OncSource::kUser) {
+    NET_LOG(EVENT) << NetworkGuidId(network->guid)
+                   << " is not eligible, was not configured by user.";
     return false;
   }
 
@@ -145,15 +150,21 @@ bool LocalNetworkCollectorImpl::IsEligible(
           network_config::mojom::SecurityType::kWepPsk &&
       wifi_properties->security !=
           network_config::mojom::SecurityType::kWpaPsk) {
+    NET_LOG(EVENT) << NetworkGuidId(network->guid)
+                   << " is not eligible, security type not supported: "
+                   << wifi_properties->security;
     return false;
   }
 
   base::TimeDelta timestamp =
       network_metadata_store_->GetLastConnectedTimestamp(network->guid);
   if (timestamp.is_zero()) {
+    NET_LOG(EVENT) << NetworkGuidId(network->guid)
+                   << " is not eligible, never connected.";
     return false;
   }
 
+  NET_LOG(EVENT) << NetworkGuidId(network->guid) << " is eligible for sync.";
   return true;
 }
 
@@ -178,7 +189,7 @@ void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
     const std::string& request_guid,
     network_config::mojom::ManagedPropertiesPtr properties) {
   if (!properties) {
-    LOG(ERROR) << "GetManagedProperties failed.";
+    NET_LOG(ERROR) << "GetManagedProperties failed.";
     OnNetworkFinished(NetworkIdentifier::FromProto(proto), request_guid);
     return;
   }

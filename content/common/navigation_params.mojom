@@ -13,6 +13,7 @@ import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/source_location.mojom";
+import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
@@ -138,6 +139,11 @@ struct BeginNavigationParams {
   // they were cross-site due to the site_for_cookies and request URL differing.
   // See the field of the same name in network::ResourceRequest.
   bool attach_same_site_cookies = false;
+
+  // Specifies whether, and how, the navigation should execute a Trust Tokens
+  // operation (https://github.com/wicg/trust-token-api) and attach headers
+  // conveying the result of the operation. Set on some child frame navigations.
+  network.mojom.TrustTokenParams? trust_token_params;
 };
 
 // Provided by the browser or the renderer -------------------------------------

@@ -5,7 +5,6 @@
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -187,6 +186,20 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
           : 0);
 
   return config;
+}
+
+const NetworkState* NetworkStateFromNetworkIdentifier(
+    const NetworkIdentifier& id) {
+  NetworkStateHandler::NetworkStateList networks;
+  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      NetworkTypePattern::WiFi(), /*configured_only=*/true,
+      /*visibleOnly=*/false, /*limit=*/0, &networks);
+  for (const NetworkState* network : networks) {
+    if (NetworkIdentifier::FromNetworkState(network) == id) {
+      return network;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace sync_wifi

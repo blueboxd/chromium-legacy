@@ -143,7 +143,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       description_class(match.description_class),
       description_for_shortcuts(match.description_for_shortcuts),
       description_class_for_shortcuts(match.description_class_for_shortcuts),
-      header(match.header),
+      suggestion_group_id(match.suggestion_group_id),
       swap_contents_and_description(match.swap_contents_and_description),
       answer(match.answer),
       transition(match.transition),
@@ -200,7 +200,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   description_class = match.description_class;
   description_for_shortcuts = match.description_for_shortcuts;
   description_class_for_shortcuts = match.description_class_for_shortcuts;
-  header = match.header;
+  suggestion_group_id = match.suggestion_group_id;
   swap_contents_and_description = match.swap_contents_and_description;
   answer = match.answer;
   transition = match.transition;

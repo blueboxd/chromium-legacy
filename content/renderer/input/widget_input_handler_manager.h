@@ -18,6 +18,7 @@
 #include "ui/events/blink/input_handler_proxy_client.h"
 
 namespace blink {
+class WebInputEventAttribution;
 namespace scheduler {
 class WebThreadScheduler;
 }  // namespace scheduler
@@ -77,7 +78,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void WillShutdown() override;
   void DispatchNonBlockingEventToMainThread(
       ui::WebScopedInputEvent event,
-      const ui::LatencyInfo& latency_info) override;
+      const ui::LatencyInfo& latency_info,
+      const blink::WebInputEventAttribution& attribution) override;
 
   void DidOverscroll(
       const gfx::Vector2dF& accumulated_overscroll,
@@ -88,7 +90,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void DidAnimateForInput() override;
   void DidStartScrollingViewport() override;
   void GenerateScrollBeginAndSendToMainThread(
-      const blink::WebGestureEvent& update_event) override;
+      const blink::WebGestureEvent& update_event,
+      const blink::WebInputEventAttribution& attribution) override;
   void SetWhiteListedTouchAction(
       cc::TouchAction touch_action,
       uint32_t unique_touch_event_id,
@@ -171,7 +174,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       ui::InputHandlerProxy::EventDisposition event_disposition,
       ui::WebScopedInputEvent input_event,
       const ui::LatencyInfo& latency_info,
-      std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
+      std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+      const blink::WebInputEventAttribution& attribution);
   void HandledInputEvent(
       mojom::WidgetInputHandler::DispatchEventCallback callback,
       InputEventAckState ack_state,

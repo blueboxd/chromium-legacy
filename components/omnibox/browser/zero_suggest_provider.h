@@ -82,6 +82,12 @@ class ZeroSuggestProvider : public BaseSearchProvider {
     return results_.experiment_stats;
   }
 
+  // Returns the map of suggestion group Ids to headers corresponding to the
+  // latest |results_|.
+  const SearchSuggestionParser::HeadersMap& headers_map() const {
+    return results_.headers_map;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,

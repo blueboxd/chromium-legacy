@@ -32,7 +32,9 @@ bool AreTreesIdentical(const QueryTileEntry* lhs, const QueryTileEntry* rhs) {
   if (!lhs || !rhs || lhs->id != rhs->id ||
       lhs->display_text != rhs->display_text ||
       lhs->query_text != rhs->query_text ||
-      lhs->accessibility_text != rhs->accessibility_text)
+      lhs->accessibility_text != rhs->accessibility_text ||
+      lhs->image_metadatas.size() != rhs->image_metadatas.size() ||
+      lhs->sub_tiles.size() != rhs->sub_tiles.size())
     return false;
 
   for (const auto& it : lhs->image_metadatas) {

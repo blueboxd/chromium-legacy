@@ -20,13 +20,13 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
-/** Custom {@link ChromeActivityTestRule} for tests using {@link WebApkActivity}. */
-public class WebApkActivityTestRule extends ChromeActivityTestRule<WebApkActivity> {
+/** Custom {@link ChromeActivityTestRule} for tests using a WebAPK {@link WebappActivity}. */
+public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivity> {
     /** Time in milliseconds to wait for page to be loaded. */
     private static final long STARTUP_TIMEOUT = ScalableTimeout.scaleTimeout(10000);
 
     public WebApkActivityTestRule() {
-        super(WebApkActivity.class);
+        super(WebappActivity.class);
     }
 
     @Override
@@ -45,15 +45,15 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebApkActivit
     }
 
     /**
-     * Launches WebApkActivity and waits for the page to have finished loading and for the splash
+     * Launches a WebAPK Activity and waits for the page to have finished loading and for the splash
      * screen to be hidden.
      */
-    public WebApkActivity startWebApkActivity(WebApkInfo webApkInfo) {
+    public WebappActivity startWebApkActivity(WebApkInfo webApkInfo) {
         Intent intent = createIntent(webApkInfo);
 
         WebappActivity.addWebappInfo(webApkInfo.id(), webApkInfo);
-        final WebApkActivity webApkActivity =
-                (WebApkActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
+        final WebappActivity webApkActivity =
+                (WebappActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
                         intent);
         setActivity(webApkActivity);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();

@@ -59,6 +59,29 @@
 namespace {
 constexpr int kSectionPaddingTop = 20;
 
+// Label that may contain empty text.
+// Override is needed to configure accessibility node for an empty name.
+class MaybeEmptyLabel : public views::Label {
+ public:
+  explicit MaybeEmptyLabel(const std::string& text)
+      : views::Label(base::UTF8ToUTF16(text),
+                     CONTEXT_BODY_TEXT_LARGE,
+                     views::style::STYLE_SECONDARY) {}
+
+  MaybeEmptyLabel& operator=(const MaybeEmptyLabel&) = delete;
+  MaybeEmptyLabel(const MaybeEmptyLabel&) = delete;
+  ~MaybeEmptyLabel() override = default;
+
+  // views::Label:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    views::Label::GetAccessibleNodeData(node_data);
+    if (!GetText().empty())
+      node_data->SetName(GetText());
+    else
+      node_data->SetNameExplicitlyEmpty();
+  }
+};
+
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 const gfx::ImageSkia& GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
@@ -435,9 +458,7 @@ void ParentPermissionDialogView::CreateContents() {
   // Add the invalid credential label, which is initially empty,
   // and hence invisible.  It will be updated if the user enters
   // an incorrect password.
-  auto invalid_credential_label = std::make_unique<views::Label>(
-      base::UTF8ToUTF16(""), CONTEXT_BODY_TEXT_LARGE,
-      views::style::STYLE_SECONDARY);
+  auto invalid_credential_label = std::make_unique<MaybeEmptyLabel>("");
   invalid_credential_label->SetBorder(views::CreateEmptyBorder(
       0, content_insets.left(), 0, content_insets.right()));
   invalid_credential_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -651,6 +672,8 @@ void ParentPermissionDialogView::OnReAuthProofTokenFailure(
       SetEnabled(true);
       invalid_credential_label_->SetText(l10n_util::GetStringUTF16(
           IDS_PARENT_PERMISSION_PROMPT_PASSWORD_INCORRECT_LABEL));
+      invalid_credential_label_->NotifyAccessibilityEvent(
+          ax::mojom::Event::kAlert, true);
       return;
     }
   }

@@ -18,11 +18,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "extensions/browser/entry_info.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/layout.h"
@@ -141,8 +141,8 @@ void FindCrostiniApps(Profile* profile,
                       const std::vector<extensions::EntryInfo>& entries,
                       std::vector<std::string>* app_ids,
                       std::vector<std::string>* app_names) {
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   crostini::CrostiniMimeTypesService* mime_types_service =
       crostini::CrostiniMimeTypesServiceFactory::GetForProfile(profile);
   for (const auto& pair : registry_service->GetRegisteredApps()) {

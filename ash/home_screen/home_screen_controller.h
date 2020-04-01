@@ -130,7 +130,7 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // it can be used to decide how to update home screen  when overview mode exit
   // animations are finished (at which point this information will not be
   // available).
-  base::Optional<OverviewSession::EnterExitOverviewType> overview_exit_type_;
+  base::Optional<OverviewEnterExitType> overview_exit_type_;
 
   // Responsible for recording smoothness related UMA stats for homescreen
   // animations.

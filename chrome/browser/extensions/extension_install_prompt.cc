@@ -187,9 +187,9 @@ base::string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
     case INSTALL_PROMPT:
     case WEBSTORE_WIDGET_PROMPT:
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-      if (user_is_child()) {
+      if (requires_parent_permission())
         id = IDS_EXTENSION_INSTALL_PROMPT_ASK_A_PARENT_BUTTON;
-      } else
+      else
 #endif
           // NOTE: strange indentation formatting is due to intervening
           // BUILDFLAG above.

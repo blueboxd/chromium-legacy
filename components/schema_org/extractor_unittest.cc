@@ -257,6 +257,26 @@ TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDateTime) {
   EXPECT_EQ(expected, extracted);
 }
 
+TEST_F(SchemaOrgExtractorTest, StringValueRepresentingEnum) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\",\"potentialAction\": {\"@type\": "
+      "\"Action\", \"actionStatus\": "
+      "\"http://schema.org/ActiveActionStatus\"}}");
+
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  EntityPtr action = Entity::New();
+  action->type = "Action";
+  action->properties.push_back(CreateUrlProperty(
+      "actionStatus", GURL("http://schema.org/ActiveActionStatus")));
+  expected->properties.push_back(
+      CreateEntityProperty("potentialAction", std::move(action)));
+
+  EXPECT_EQ(expected, extracted);
+}
+
 TEST_F(SchemaOrgExtractorTest, UrlValue) {
   EntityPtr extracted = Extract(
       "{\"@type\": \"VideoObject\", "

@@ -1954,8 +1954,7 @@ TEST_F(TabletModeDesksTest, Backdrops) {
 
   // Exit overview, and expect that desk_2's backdrop remains hidden since the
   // desk is not activated yet.
-  overview_controller->EndOverview(
-      OverviewSession::EnterExitOverviewType::kImmediateExit);
+  overview_controller->EndOverview(OverviewEnterExitType::kImmediateExit);
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
   ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());

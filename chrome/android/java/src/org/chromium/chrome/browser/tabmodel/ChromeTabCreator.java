@@ -351,7 +351,28 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
         Tab parent = selector != null ? selector.getTabById(state.parentId) : null;
         boolean selectTab = mOrderController.willOpenInForeground(
                 TabLaunchType.FROM_RESTORE, state.isIncognito());
-        Tab tab = TabBuilder.createFromFrozenState()
+        AsyncTabParams asyncParams = AsyncTabParamsManager.remove(id);
+        Tab tab = null;
+        @TabLaunchType
+        int launchType = TabLaunchType.FROM_RESTORE;
+        @TabCreationState
+        int creationState = TabCreationState.FROZEN_ON_RESTORE;
+        if (asyncParams != null && asyncParams.getTabToReparent() != null) {
+            creationState = TabCreationState.LIVE_IN_BACKGROUND;
+
+            TabReparentingParams params = (TabReparentingParams) asyncParams;
+            tab = params.getTabToReparent();
+            if (tab.isIncognito() != state.isIncognito()) {
+                throw new IllegalStateException("Incognito state mismatch");
+            }
+            ReparentingTask.from(tab).finish(
+                    ReparentingDelegateFactory.createReparentingTaskDelegate(
+                            mActivity.getCompositorViewHolder(), mActivity.getWindowAndroid(),
+                            createDefaultTabDelegateFactory()),
+                    params.getFinalizeCallback());
+        }
+        if (tab == null) {
+            tab = TabBuilder.createFromFrozenState()
                           .setId(id)
                           .setParent(parent)
                           .setIncognito(state.isIncognito())
@@ -360,9 +381,9 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                           .setInitiallyHidden(!selectTab)
                           .setTabState(state)
                           .build();
+        }
         assert state.isIncognito() == mIncognito;
-        mTabModel.addTab(
-                tab, index, TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE);
+        mTabModel.addTab(tab, index, launchType, creationState);
         return tab;
     }
 

@@ -143,3 +143,5 @@ TEST_F(WebUITabStripDevToolsTest, DevToolsWindowHasNoTabStrip) {
   ui::TouchUiController::TouchUiScoperForTesting reenable_touch_mode(true);
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
 }
+
+// TODO(crbug.com/1066624): add coverage of open and close gestures.

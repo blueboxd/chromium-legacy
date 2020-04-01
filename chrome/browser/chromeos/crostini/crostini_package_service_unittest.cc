@@ -13,11 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
@@ -361,28 +361,28 @@ class CrostiniPackageServiceTest : public testing::Test {
     return app;
   }
 
-  // Create a registration in CrostiniRegistryService for an app with app_id
+  // Create a registration in GuestOsRegistryService for an app with app_id
   // kDefaultAppId and desktop file ID kDefaultAppFileId.
   void CreateDefaultAppRegistration() {
     auto app = BasicApp(kDefaultAppFileId, kDefaultAppName, "123-thing");
     crostini_test_helper_->AddApp(app);
   }
 
-  // Create a registration in CrostiniRegistryService for an app with app_id
+  // Create a registration in GuestOsRegistryService for an app with app_id
   // kSecondAppId and desktop file ID kSecondAppFileId.
   void CreateSecondAppRegistration() {
     auto app = BasicApp(kSecondAppFileId, kSecondAppName, "abc-another");
     crostini_test_helper_->AddApp(app);
   }
 
-  // Create a registration in CrostiniRegistryService for an app with app_id
+  // Create a registration in GuestOsRegistryService for an app with app_id
   // kThirdAppId and desktop file ID kThirdAppFileId.
   void CreateThirdAppRegistration() {
     auto app = BasicApp(kThirdAppFileId, kThirdAppName, "yanpi");
     crostini_test_helper_->AddApp(app);
   }
 
-  // Create a registration in CrostiniRegistryService for apps with app_id
+  // Create a registration in GuestOsRegistryService for apps with app_id
   // kDifferentVmAppId and kDifferentVmApp2Id inside kDifferentVmVmName.
   void CreateDifferentVmAppRegistration() {
     // CrostiniTestHelper doesn't directly allow apps to be added for VMs other
@@ -394,11 +394,11 @@ class CrostiniPackageServiceTest : public testing::Test {
         BasicApp(kDifferentVmAppFileId, kDifferentVmAppName, "pack5");
     *app_list.add_apps() =
         BasicApp(kDifferentVmApp2FileId, kDifferentVmApp2Name, "pack5-2");
-    crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_.get())
+    guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_.get())
         ->UpdateApplicationList(app_list);
   }
 
-  // Create a registration in CrostiniRegistryService for apps with app_id
+  // Create a registration in GuestOsRegistryService for apps with app_id
   // kDifferentContainerAppId and kDifferentContainerApp2Id inside
   // kDifferentContainerContainerName.
   void CreateDifferentContainerAppRegistration() {
@@ -411,7 +411,7 @@ class CrostiniPackageServiceTest : public testing::Test {
                                     kDifferentContainerAppName, "pack7");
     *app_list.add_apps() = BasicApp(kDifferentContainerApp2FileId,
                                     kDifferentContainerApp2Name, "pack7-2");
-    crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_.get())
+    guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_.get())
         ->UpdateApplicationList(app_list);
   }
 };

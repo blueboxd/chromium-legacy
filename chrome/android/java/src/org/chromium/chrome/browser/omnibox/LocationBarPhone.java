@@ -307,6 +307,7 @@ public class LocationBarPhone extends LocationBarLayout {
             mUrlActionContainer.setVisibility(GONE);
         }
         updateUrlBarPaddingForSearchEngineIcon();
+        mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
     }
 
     @Override

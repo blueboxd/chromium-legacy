@@ -155,14 +155,14 @@ scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrameOnAnyThread() {
 
 void VideoFrameCompositor::SetCurrentFrame_Locked(
     scoped_refptr<VideoFrame> frame,
-    base::TimeTicks expected_presentation_time) {
+    base::TimeTicks expected_display_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("media", "VideoFrameCompositor::SetCurrentFrame", "frame",
                frame->AsHumanReadableString());
   current_frame_lock_.AssertAcquired();
   current_frame_ = std::move(frame);
   last_presentation_time_ = tick_clock_->NowTicks();
-  last_expected_presentation_time_ = expected_presentation_time;
+  last_expected_display_time_ = expected_display_time;
   ++presentation_counter_;
 }
 
@@ -290,15 +290,14 @@ VideoFrameCompositor::GetLastPresentedFrameMetadata() {
     base::AutoLock lock(current_frame_lock_);
     last_frame = current_frame_;
     frame_metadata->presentation_time = last_presentation_time_;
-    frame_metadata->expected_presentation_time =
-        last_expected_presentation_time_;
+    frame_metadata->expected_display_time = last_expected_display_time_;
     frame_metadata->presented_frames = presentation_counter_;
   }
 
   frame_metadata->width = last_frame->visible_rect().width();
   frame_metadata->height = last_frame->visible_rect().height();
 
-  frame_metadata->presentation_timestamp = last_frame->timestamp();
+  frame_metadata->media_time = last_frame->timestamp();
 
   frame_metadata->metadata.MergeMetadataFrom(last_frame->metadata());
 

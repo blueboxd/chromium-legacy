@@ -9,11 +9,15 @@
 
 #include "base/optional.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
-#include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
+#include "chrome/services/local_search_service/index_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+namespace local_search_service {
+class LocalSearchServiceImpl;
+}  // namespace local_search_service
 
 namespace chromeos {
 namespace settings {
@@ -35,7 +39,7 @@ class SearchHandler : public mojom::SearchHandler, public KeyedService {
 
   SearchHandler(
       OsSettingsLocalizedStringsProvider* strings_provider,
-      local_search_service::mojom::LocalSearchService* local_search_service);
+      local_search_service::LocalSearchServiceImpl* local_search_service);
   ~SearchHandler() override;
 
   SearchHandler(const SearchHandler& other) = delete;
@@ -44,6 +48,9 @@ class SearchHandler : public mojom::SearchHandler, public KeyedService {
   void BindInterface(
       mojo::PendingReceiver<mojom::SearchHandler> pending_receiver);
 
+  // Synchronous search implementation (for in-process clients).
+  std::vector<mojom::SearchResultPtr> Search(const base::string16& query);
+
   // mojom::SearchHandler:
   void Search(const base::string16& query, SearchCallback callback) override;
 
@@ -51,22 +58,17 @@ class SearchHandler : public mojom::SearchHandler, public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
-  void OnLocalSearchServiceResults(
-      SearchCallback callback,
-      local_search_service::mojom::ResponseStatus response_status,
-      base::Optional<std::vector<local_search_service::mojom::ResultPtr>>
-          results);
-  void ReturnSuccessfulResults(
-      SearchCallback callback,
-      base::Optional<std::vector<local_search_service::mojom::ResultPtr>>
-          results);
+  std::vector<mojom::SearchResultPtr> GenerateSearchResultsArray(
+      const std::vector<local_search_service::Result>&
+          local_search_service_results);
   mojom::SearchResultPtr ResultToSearchResult(
-      const local_search_service::mojom::Result& result);
+      const local_search_service::Result& result);
 
   OsSettingsLocalizedStringsProvider* strings_provider_;
+  local_search_service::IndexImpl* index_;
+
   // Note: Expected to have multiple clients, so a ReceiverSet is used.
   mojo::ReceiverSet<mojom::SearchHandler> receivers_;
-  mojo::Remote<local_search_service::mojom::Index> index_remote_;
 };
 
 }  // namespace settings

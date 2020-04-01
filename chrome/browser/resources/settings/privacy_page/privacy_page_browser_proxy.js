@@ -73,7 +73,7 @@ cr.define('settings', function() {
     getSecureDnsSetting() {}
 
     /**
-     * Returns the first valid URL template, if any.
+     * Returns the first valid URL template, if they are all valid.
      * @param {string} entry
      * @return {!Promise<string>}
      */

@@ -141,19 +141,16 @@ class TestOverviewObserver : public OverviewObserver {
  private:
   void UpdateLastAnimationStates(OverviewSession* selector) {
     DCHECK(selector);
-    const OverviewSession::EnterExitOverviewType enter_exit_type =
+    const OverviewEnterExitType enter_exit_type =
         selector->enter_exit_overview_type();
 
     last_animation_was_slide_ =
-        enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kSlideInEnter ||
-        enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kSlideOutExit;
+        enter_exit_type == OverviewEnterExitType::kSlideInEnter ||
+        enter_exit_type == OverviewEnterExitType::kSlideOutExit;
 
     last_animation_was_fade_ =
-        enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kFadeInEnter ||
-        enter_exit_type == OverviewSession::EnterExitOverviewType::kFadeOutExit;
+        enter_exit_type == OverviewEnterExitType::kFadeInEnter ||
+        enter_exit_type == OverviewEnterExitType::kFadeOutExit;
   }
 
   // Struct which keeps track of the counts a OverviewObserver method has fired.
@@ -498,9 +495,8 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
   // should minimize all windows.
   const bool is_homerview_enabled = GetParam();
   Shell::Get()->overview_controller()->EndOverview(
-      is_homerview_enabled
-          ? OverviewSession::EnterExitOverviewType::kFadeOutExit
-          : OverviewSession::EnterExitOverviewType::kSlideOutExit);
+      is_homerview_enabled ? OverviewEnterExitType::kFadeOutExit
+                           : OverviewEnterExitType::kSlideOutExit);
 
   EXPECT_EQ(is_homerview_enabled, observer.last_animation_was_fade());
   EXPECT_EQ(!is_homerview_enabled, observer.last_animation_was_slide());
@@ -554,9 +550,8 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
 
   const bool is_homerview_enabled = GetParam();
   Shell::Get()->overview_controller()->StartOverview(
-      is_homerview_enabled
-          ? OverviewSession::EnterExitOverviewType::kFadeInEnter
-          : OverviewSession::EnterExitOverviewType::kSlideInEnter);
+      is_homerview_enabled ? OverviewEnterExitType::kFadeInEnter
+                           : OverviewEnterExitType::kSlideInEnter);
   auto* wallpaper_widget_controller =
       Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
   EXPECT_EQ(is_homerview_enabled,
@@ -588,9 +583,8 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
   const bool is_homerview_enabled = GetParam();
   TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
   Shell::Get()->overview_controller()->EndOverview(
-      is_homerview_enabled
-          ? OverviewSession::EnterExitOverviewType::kFadeOutExit
-          : OverviewSession::EnterExitOverviewType::kSlideOutExit);
+      is_homerview_enabled ? OverviewEnterExitType::kFadeOutExit
+                           : OverviewEnterExitType::kSlideOutExit);
 
   EXPECT_EQ(is_homerview_enabled, observer.last_animation_was_fade());
   EXPECT_EQ(!is_homerview_enabled, observer.last_animation_was_slide());

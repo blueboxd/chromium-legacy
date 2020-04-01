@@ -98,6 +98,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   emf_file = emf_file.Append(FILE_PATH_LITERAL("printing"))
                  .Append(FILE_PATH_LITERAL("test"))
                  .Append(FILE_PATH_LITERAL("data"))
+                 .Append(FILE_PATH_LITERAL("emf"))
                  .Append(FILE_PATH_LITERAL("test4.emf"));
 
   // Load any EMF with an image.

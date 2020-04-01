@@ -93,8 +93,9 @@ TEST_F(CompositorAnimationRunnerTest, AnimationMetricsReporter) {
   ui::DrawWaiterForTest::WaitForCompositingStarted(widget->GetCompositor());
 
   TestAnimationMetricsReporter metrics_reporter;
+  TestAnimationMetricsReporter metrics_reporter2;
   TestAnimationDelegateViews delegate(widget->GetContentsView());
-  delegate.set_animation_metrics_reporter(&metrics_reporter);
+  delegate.SetAnimationMetricsReporter(&metrics_reporter);
   gfx::LinearAnimation animation(
       kDuration, gfx::LinearAnimation::kDefaultFrameRate, &delegate);
 
@@ -114,6 +115,25 @@ TEST_F(CompositorAnimationRunnerTest, AnimationMetricsReporter) {
                        }));
   run_loop.Run();
   EXPECT_EQ(1, metrics_reporter.report_count());
+  EXPECT_EQ(0, metrics_reporter2.report_count());
+
+  // Tests that switching metrics reporters for the next animation works as
+  // expected.
+  base::RunLoop run_loop2;
+  delegate.SetAnimationMetricsReporter(&metrics_reporter2);
+  animation.Start();
+  EXPECT_TRUE(animation.is_animating());
+
+  interval_timer.Start(FROM_HERE, kDuration, base::BindLambdaForTesting([&]() {
+                         if (animation.is_animating())
+                           return;
+
+                         interval_timer.Stop();
+                         run_loop2.Quit();
+                       }));
+  run_loop2.Run();
+  EXPECT_EQ(1, metrics_reporter.report_count());
+  EXPECT_EQ(1, metrics_reporter2.report_count());
 }
 
 // No DesktopAura on ChromeOS.

@@ -68,11 +68,13 @@ void LargestContentfulPaintCalculator::UpdateLargestContentPaintIfNeeded(
   bool text_has_changed = false;
   if (largest_image.has_value()) {
     image_has_changed = HasLargestImageChanged(largest_image_, *largest_image);
-    OnLargestImageUpdated(*largest_image);
+    if (image_has_changed)
+      OnLargestImageUpdated(*largest_image);
   }
   if (largest_text.has_value()) {
     text_has_changed = HasLargestTextChanged(largest_text_, *largest_text);
-    OnLargestTextUpdated(*largest_text);
+    if (text_has_changed)
+      OnLargestTextUpdated(*largest_text);
   }
   // If |largest_image| does not have value, the detector may have been
   // destroyed. In this case, keep using its last candidate for comparison with

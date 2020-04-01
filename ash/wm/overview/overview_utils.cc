@@ -71,10 +71,8 @@ bool ShouldAnimateWallpaper(aura::Window* root_window) {
   if (overview_session) {
     // Never animate when doing app dragging or when immediately exiting.
     const auto enter_exit_type = overview_session->enter_exit_overview_type();
-    if (enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kImmediateEnter ||
-        enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kImmediateExit) {
+    if (enter_exit_type == OverviewEnterExitType::kImmediateEnter ||
+        enter_exit_type == OverviewEnterExitType::kImmediateExit) {
       return false;
     }
 
@@ -336,7 +334,7 @@ gfx::Rect GetGridBoundsInScreen(
     const bool hotseat_will_extend =
         overview_session &&
         overview_session->enter_exit_overview_type() ==
-            OverviewSession::EnterExitOverviewType::kImmediateEnter &&
+            OverviewEnterExitType::kImmediateEnter &&
         !split_view_controller->InSplitViewMode();
     if (hotseat_extended || hotseat_will_extend) {
       const int hotseat_bottom_inset =

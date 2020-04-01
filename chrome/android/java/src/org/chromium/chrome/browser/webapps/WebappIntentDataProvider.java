@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
@@ -27,6 +28,7 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     private final ShareData mShareData;
     private final @NonNull WebappExtras mWebappExtras;
     private final @Nullable WebApkExtras mWebApkExtras;
+    private final Intent mIntent;
 
     /**
      * Returns the toolbar color to use if a custom color is not specified by the webapp.
@@ -44,6 +46,13 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         mShareData = shareData;
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
+        mIntent = new Intent();
+    }
+
+    @Override
+    @Nullable
+    public Intent getIntent() {
+        return mIntent;
     }
 
     @Override

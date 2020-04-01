@@ -37,6 +37,7 @@ dependencies {
     compile "androidx.coordinatorlayout:coordinatorlayout:${androidXSupportLibVersion}"
     compile "androidx.customview:customview:${androidXSupportLibVersion}"
     compile "androidx.drawerlayout:drawerlayout:${androidXSupportLibVersion}"
+    compile "androidx.fragment:fragment:${androidXSupportLibVersion}"
     compile "androidx.gridlayout:gridlayout:${androidXSupportLibVersion}"
     compile "androidx.interpolator:interpolator:${androidXSupportLibVersion}"
     compile "androidx.leanback:leanback-preference:${androidXSupportLibVersion}"
@@ -45,6 +46,8 @@ dependencies {
     compile "androidx.preference:preference:${androidXSupportLibVersion}"
     compile "androidx.recyclerview:recyclerview:${androidXSupportLibVersion}"
     compile "androidx.swiperefreshlayout:swiperefreshlayout:${androidXSupportLibVersion}"
+    compile "androidx.vectordrawable:vectordrawable:${androidXSupportLibVersion}"
+    compile "androidx.vectordrawable:vectordrawable-animated:${androidXSupportLibVersion}"
     compile "androidx.viewpager:viewpager:${androidXSupportLibVersion}"
 
     compile "androidx.multidex:multidex:2.0.0"

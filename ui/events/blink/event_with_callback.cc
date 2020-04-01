@@ -5,6 +5,7 @@
 #include "ui/events/blink/event_with_callback.h"
 
 #include "base/time/time.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -88,7 +89,8 @@ static bool HandledOnCompositorThread(
 void EventWithCallback::RunCallbacks(
     InputHandlerProxy::EventDisposition disposition,
     const LatencyInfo& latency,
-    std::unique_ptr<DidOverscrollParams> did_overscroll_params) {
+    std::unique_ptr<DidOverscrollParams> did_overscroll_params,
+    const blink::WebInputEventAttribution& attribution) {
   // |original_events_| could be empty if this is the scroll event extracted
   // from the matrix multiplication.
   if (original_events_.size() == 0)
@@ -99,7 +101,8 @@ void EventWithCallback::RunCallbacks(
       .Run(disposition, std::move(original_events_.front().event_), latency,
            did_overscroll_params
                ? std::make_unique<DidOverscrollParams>(*did_overscroll_params)
-               : nullptr);
+               : nullptr,
+           attribution);
   original_events_.pop_front();
 
   // If the event was handled on compositor thread, ack other events with
@@ -116,7 +119,8 @@ void EventWithCallback::RunCallbacks(
              coalesced_event.latency_,
              did_overscroll_params
                  ? std::make_unique<DidOverscrollParams>(*did_overscroll_params)
-                 : nullptr);
+                 : nullptr,
+             attribution);
   }
 }
 

@@ -154,6 +154,7 @@
     <file path="translations/aw_strings_sl.xtb" lang="sl" />
     <file path="translations/aw_strings_sq.xtb" lang="sq" />
     <file path="translations/aw_strings_sr.xtb" lang="sr" />
+    <file path="translations/aw_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="translations/aw_strings_sv.xtb" lang="sv" />
     <file path="translations/aw_strings_sw.xtb" lang="sw" />
     <file path="translations/aw_strings_ta.xtb" lang="ta" />

@@ -248,7 +248,7 @@ const gfx::ShadowValues& BubbleBorder::GetShadowValues(
 
   gfx::ShadowValues shadows;
   if (elevation.has_value()) {
-    DCHECK(elevation.value() >= 0);
+    DCHECK_GE(elevation.value(), 0);
     shadows = LayoutProvider::Get()->MakeShadowValues(elevation.value(), color);
   } else {
     constexpr int kSmallShadowVerticalOffset = 2;

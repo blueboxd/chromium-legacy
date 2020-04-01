@@ -193,7 +193,9 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
             @Override
             public void onActivityAttachmentChanged(Tab tab, boolean attached) {
-                if (!attached) getModel(tab.isIncognito()).removeTab(tab);
+                if (!attached && !isReparentingInProgress()) {
+                    getModel(tab.isIncognito()).removeTab(tab);
+                }
             }
 
             @Override
@@ -263,7 +265,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         return isIncognitoSelected() == model.isIncognito();
     }
 
-    @Override
+    /**
+     * Save the current state of the tab model. Usage of this method is discouraged due to it
+     * writing to disk.
+     */
     public void saveState() {
         commitAllTabClosures();
         mTabSaver.saveState();
@@ -391,6 +396,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     @Override
     public boolean isSessionRestoreInProgress() {
         return mSessionRestoreInProgress.get();
+    }
+
+    @Override
+    public boolean isReparentingInProgress() {
+        return super.isReparentingInProgress();
     }
 
     // TODO(tedchoc): Remove the need for this to be exposed.

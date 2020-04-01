@@ -30,6 +30,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -45,6 +46,7 @@ import java.util.List;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+@DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 public class TabSelectionEditorTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -65,7 +67,6 @@ public class TabSelectionEditorTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        prepareBlankTab(2, false);
 
         mTabModelSelector = mActivityTestRule.getActivity().getTabModelSelector();
 
@@ -98,9 +99,18 @@ public class TabSelectionEditorTest {
         }
     }
 
+    private void prepareBlankTabWithThumbnail(int num, boolean isIncognito) {
+        if (isIncognito) {
+            TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 0, num, "about:blank");
+        } else {
+            TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, num, 0, "about:blank");
+        }
+    }
+
     @Test
     @MediumTest
     public void testShowTabs() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
@@ -117,6 +127,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testToggleItem() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
@@ -136,6 +147,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testToolbarNavigationButtonHideTabSelectionEditor() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
@@ -149,6 +161,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testToolbarGroupButtonEnabledState() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
@@ -169,6 +182,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testToolbarGroupButton() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
@@ -190,6 +204,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testConfigureToolbar_ActionButtonEnableThreshold() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         int enableThreshold = 1;
@@ -213,6 +228,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testShowTabsWithPreSelectedTabs() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
         int preSelectedTabCount = 1;
         TestThreadUtils.runOnUiThreadBlocking(
@@ -231,15 +247,8 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testShowTabsWithPreSelectedTabs_10Tabs() {
+        prepareBlankTab(11, false);
         int preSelectedTabCount = 10;
-        int additionalTabCount =
-                preSelectedTabCount + 1 - mTabModelSelector.getCurrentModel().getCount();
-
-        for (int i = 0; i < additionalTabCount; i++) {
-            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                    mActivityTestRule.getActivity(), mTabModelSelector.isIncognitoSelected(), true);
-        }
-
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(
@@ -254,6 +263,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     public void testDividerIsNotClickable() {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
         int preSelectedTabCount = 1;
         TestThreadUtils.runOnUiThreadBlocking(
@@ -265,13 +275,125 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    public void testGridViewAppearance() throws IOException {
+        prepareBlankTabWithThumbnail(3, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        // Enter tab switcher to get all thumbnails.
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                mActivityTestRule.getActivity().getCurrentTabModel());
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
+        mRenderTestRule.setPixelDiffThreshold(5);
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testGridViewAppearance_oneSelectedTab() throws IOException {
+        prepareBlankTabWithThumbnail(3, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        // Enter tab switcher to get all thumbnails.
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                mActivityTestRule.getActivity().getCurrentTabModel());
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(0);
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
+        mRenderTestRule.setPixelDiffThreshold(5);
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_one_selected_tab");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testGridViewAppearance_onePreSelectedTab() throws IOException {
+        prepareBlankTabWithThumbnail(3, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+        int preSelectedTabCount = 1;
+
+        // Enter tab switcher to get all thumbnails.
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                mActivityTestRule.getActivity().getCurrentTabModel());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
+        mRenderTestRule.setPixelDiffThreshold(5);
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_one_pre_selected_tab");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testGridViewAppearance_twoPreSelectedTab() throws IOException {
+        prepareBlankTabWithThumbnail(3, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+        int preSelectedTabCount = 2;
+
+        // Enter tab switcher to get all thumbnails.
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                mActivityTestRule.getActivity().getCurrentTabModel());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
+        mRenderTestRule.setPixelDiffThreshold(5);
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_two_pre_selected_tab");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testGridViewAppearance_allPreSelectedTab() throws IOException {
+        prepareBlankTabWithThumbnail(3, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+        int preSelectedTabCount = tabs.size();
+
+        // Enter tab switcher to get all thumbnails.
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                mActivityTestRule.getActivity().getCurrentTabModel());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
+        mRenderTestRule.setPixelDiffThreshold(5);
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_all_pre_selected_tab");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testListViewAppearance() throws IOException {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
         mRenderTestRule.render(mTabSelectionEditorLayout, "list_view");
     }
 
@@ -281,12 +403,16 @@ public class TabSelectionEditorTest {
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testListViewAppearance_oneSelectedTab() throws IOException {
+        prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
 
         mRobot.actionRobot.clickItemAtAdapterPosition(0);
 
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
         mRenderTestRule.render(mTabSelectionEditorLayout, "list_view_one_selected_tab");
     }
 

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 
 namespace base {
@@ -40,8 +41,10 @@ class WebMockThreadScheduler : public WebThreadScheduler {
   MOCK_METHOD0(DidCommitFrameToCompositor, void());
   MOCK_METHOD2(DidHandleInputEventOnCompositorThread,
                void(const WebInputEvent&, InputEventState));
-  MOCK_METHOD1(WillPostInputEventToMainThread, void(WebInputEvent::Type));
-  MOCK_METHOD1(WillHandleInputEventOnMainThread, void(WebInputEvent::Type));
+  MOCK_METHOD2(WillPostInputEventToMainThread,
+               void(WebInputEvent::Type, const WebInputEventAttribution&));
+  MOCK_METHOD2(WillHandleInputEventOnMainThread,
+               void(WebInputEvent::Type, const WebInputEventAttribution&));
   MOCK_METHOD2(DidHandleInputEventOnMainThread,
                void(const WebInputEvent&, WebInputEventResult));
   MOCK_METHOD0(DidAnimateForInputOnCompositorThread, void());

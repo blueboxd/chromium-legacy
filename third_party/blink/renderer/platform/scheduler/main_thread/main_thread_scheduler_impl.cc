@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
@@ -1259,13 +1260,15 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
 }
 
 void MainThreadSchedulerImpl::WillPostInputEventToMainThread(
-    WebInputEvent::Type web_input_event_type) {
+    WebInputEvent::Type web_input_event_type,
+    const WebInputEventAttribution& web_input_event_attribution) {
   base::AutoLock lock(any_thread_lock_);
   any_thread().pending_input_monitor.OnEnqueue(web_input_event_type);
 }
 
 void MainThreadSchedulerImpl::WillHandleInputEventOnMainThread(
-    WebInputEvent::Type web_input_event_type) {
+    WebInputEvent::Type web_input_event_type,
+    const WebInputEventAttribution& web_input_event_attribution) {
   helper_.CheckOnValidThread();
 
   base::AutoLock lock(any_thread_lock_);

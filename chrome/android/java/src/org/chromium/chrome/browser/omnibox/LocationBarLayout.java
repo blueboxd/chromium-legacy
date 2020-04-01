@@ -1191,7 +1191,6 @@ public class LocationBarLayout extends FrameLayout
      */
     protected void finishUrlFocusChange(boolean hasFocus) {
         setKeyboardVisibilityInternal(true);
-        mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
         setUrlFocusChangeInProgress(false);
         updateShouldAnimateIconChanges();
     }

@@ -77,6 +77,7 @@ class StatusMediator {
     private boolean mIsSearchEngineStateSetup;
     private boolean mIsSearchEngineGoogle;
     private boolean mShouldCancelCustomFavicon;
+    private boolean mIsTablet;
 
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
@@ -111,7 +112,7 @@ class StatusMediator {
     private final float mTextOffsetAdjustedScale;
 
     StatusMediator(PropertyModel model, Resources resources, Context context,
-            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
+            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider, boolean isTablet) {
         mModel = model;
         mDelegate = new StatusMediatorDelegate();
         updateColorTheme();
@@ -128,6 +129,8 @@ class StatusMediator {
                         - resources.getDimensionPixelSize(
                                 R.dimen.sei_location_bar_icon_end_padding));
         mTextOffsetAdjustedScale = mTextOffsetThreshold == 1 ? 1 : (1 - mTextOffsetThreshold);
+
+        mIsTablet = isTablet;
     }
 
     /**
@@ -262,7 +265,12 @@ class StatusMediator {
         if (!mUrlHasFocus) updateLocationBarIconForUrlBarAutocompleteText("");
     }
 
+    // Extra logic to support extra NTP use cases which show the status icon when animating and when
+    // focused, but hide it when unfocused.
     void setUrlAnimationFinished(boolean urlHasFocus) {
+        // On tablets, the status icon should always be shown so the following logic doesn't apply.
+        assert !mIsTablet : "This logic shouldn't be called on tablets";
+
         if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
             return;
         }
@@ -286,6 +294,9 @@ class StatusMediator {
      */
     void setUrlFocusChangePercent(float percent) {
         mUrlFocusPercent = percent;
+        // On tablets, the status icon should always be shown so the following logic doesn't apply.
+        assert !mIsTablet : "This logic shouldn't be called on tablets";
+
         if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
             return;
         }

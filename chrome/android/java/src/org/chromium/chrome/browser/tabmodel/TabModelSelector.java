@@ -164,12 +164,6 @@ public interface TabModelSelector {
     void commitAllTabClosures();
 
     /**
-     * Save the current state of the tab model. Usage of this method is discouraged due to it
-     * writing to disk.
-     **/
-    void saveState();
-
-    /**
      * Sets the delegate to handle the requests to close tabs in a single model.
      * @param delegate The delegate to be used.
      */
@@ -191,6 +185,15 @@ public interface TabModelSelector {
      * Merges the tab states from two tab models.
      */
     void mergeState();
+
+    /**
+     * Prevents the TabModelSelector from destroying its tabs to allow for reparenting.
+     *
+     * This is only safe to be called immediately before destruction. After entering reparenting
+     * mode, all the tabs are removed and stored in memory and on disk. The app is recreated right
+     * after, so there should never be a need to "exit" reparenting mode.
+     */
+    void enterReparentingMode();
 
     /**
      * Destroy all owned {@link TabModel}s and {@link Tab}s referenced by this selector.

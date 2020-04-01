@@ -29,6 +29,7 @@
 #include "services/tracing/public/cpp/perfetto/macros.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
@@ -617,11 +618,14 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
 
     ui::LatencyInfo latency_info;
     ui::WebScopedInputEvent web_scoped_gesture_event(gesture_event.release());
+    // TODO(acomminos): If/when we add support for gesture event attribution on
+    //                  the impl thread, have the caller provide attribution.
+    blink::WebInputEventAttribution attribution;
 
     widget_->GetInputEventQueue()->HandleEvent(
         std::move(web_scoped_gesture_event), latency_info,
         DISPATCH_TYPE_NON_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-        HandledEventCallback());
+        attribution, HandledEventCallback());
   }
 }
 

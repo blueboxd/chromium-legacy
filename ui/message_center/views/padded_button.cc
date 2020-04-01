@@ -26,7 +26,7 @@ PaddedButton::PaddedButton(views::ButtonListener* listener)
   set_animate_on_state_change(false);
 
   SetInkDropMode(InkDropMode::ON);
-  set_ink_drop_base_color(SkColorSetA(SK_ColorBLACK, 0.6 * 0xff));
+  set_ink_drop_visible_opacity(0.12f);
   set_has_ink_drop_action_on_click(true);
 }
 
@@ -37,11 +37,10 @@ std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {
   return std::move(ink_drop);
 }
 
-std::unique_ptr<views::InkDropRipple> PaddedButton::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(),
-      SkColorSetA(SK_ColorBLACK, 0.6 * 255), ink_drop_visible_opacity());
+void PaddedButton::OnThemeChanged() {
+  ImageButton::OnThemeChanged();
+  set_ink_drop_base_color(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_PaddedButtonInkDropColor));
 }
 
 }  // namespace message_center

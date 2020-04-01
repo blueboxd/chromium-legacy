@@ -39,10 +39,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.browser.site_settings.Website.StoredDataClearedCallback;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
@@ -417,8 +415,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
                 helpContextResId = R.string.help_context_protected_content;
             }
-            HelpAndFeedback.getInstance().show(getActivity(), getString(helpContextResId),
-                    Profile.getLastUsedRegularProfile(), null);
+            getSiteSettingsClient().launchHelpAndFeedbackActivity(
+                    getActivity(), getString(helpContextResId));
             return true;
         }
         if (handleSearchNavigation(item, mSearchItem, mSearch, getActivity())) {

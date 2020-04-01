@@ -341,7 +341,7 @@ def write_file(new_text, destination_filename):
     # Write file in binary so that when run on Windows, line endings are not
     # converted
     with open(destination_filename, 'wb') as destination_file:
-        destination_file.write(new_text)
+        destination_file.write(new_text.encode('utf-8'))
 
 
 def write_pickle_file(pickle_filename, data):

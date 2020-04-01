@@ -26,6 +26,7 @@ class BlameContext;
 
 namespace blink {
 class Thread;
+class WebInputEventAttribution;
 }  // namespace blink
 
 namespace viz {
@@ -140,12 +141,14 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // posted to the main thread. Must be followed later by a call to
   // WillHandleInputEventOnMainThread. Called by the compositor thread.
   virtual void WillPostInputEventToMainThread(
-      WebInputEvent::Type web_input_event_type);
+      WebInputEvent::Type web_input_event_type,
+      const WebInputEventAttribution& web_input_event_attribution);
 
   // Tells the scheduler the input event of the given type is about to be
   // handled. Called on the main thread.
   virtual void WillHandleInputEventOnMainThread(
-      WebInputEvent::Type web_input_event_type);
+      WebInputEvent::Type web_input_event_type,
+      const WebInputEventAttribution& web_input_event_attribution);
 
   // Tells the scheduler that the system processed an input event. Must be
   // called from the main thread.

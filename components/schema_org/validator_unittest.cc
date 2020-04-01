@@ -8,6 +8,7 @@
 
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
+#include "components/schema_org/schema_org_enums.h"
 #include "components/schema_org/schema_org_property_configurations.h"
 #include "components/schema_org/schema_org_property_names.h"
 #include "components/schema_org/validator.h"
@@ -269,6 +270,40 @@ TEST_F(SchemaOrgValidatorTest, InvalidRepeatedEntityPropertyValue) {
 
   property->values->entity_values.push_back(std::move(value1));
   property->values->entity_values.push_back(std::move(value2));
+
+  entity->properties.push_back(std::move(property));
+
+  bool validated_entity = ValidateEntity(entity.get());
+  EXPECT_TRUE(validated_entity);
+  EXPECT_TRUE(entity->properties.empty());
+}
+
+TEST_F(SchemaOrgValidatorTest, ValidEnumPropertyValue) {
+  EntityPtr entity = Entity::New();
+  entity->type = entity::kAction;
+
+  PropertyPtr property = Property::New();
+  property->name = property::kActionStatus;
+  property->values = Values::New();
+  property->values->url_values.push_back(
+      GURL("http://schema.org/ActiveActionStatus"));
+
+  entity->properties.push_back(std::move(property));
+
+  bool validated_entity = ValidateEntity(entity.get());
+  EXPECT_TRUE(validated_entity);
+  EXPECT_EQ(1u, entity->properties.size());
+}
+
+TEST_F(SchemaOrgValidatorTest, InvalidEnumPropertyValue) {
+  EntityPtr entity = Entity::New();
+  entity->type = entity::kAction;
+
+  PropertyPtr property = Property::New();
+  property->name = property::kActionStatus;
+  property->values = Values::New();
+  property->values->url_values.push_back(
+      GURL("http://schema.org/FakeActionStatus"));
 
   entity->properties.push_back(std::move(property));
 

@@ -16,6 +16,7 @@ android_library("javatests") {
   testonly = true
 
   sources = [
+    "android/java/src/org/chromium/chrome/browser/settings/ChromeBasePreferenceTest.java",
     "android/java/src/org/chromium/chrome/browser/settings/DummySettingsForTest.java",
     "android/java/src/org/chromium/chrome/browser/settings/ManagedPreferencesUtilsTest.java",
   ]

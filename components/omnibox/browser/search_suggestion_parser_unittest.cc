@@ -235,7 +235,7 @@ TEST(SearchSuggestionParserTest, NavigationClassification) {
   EXPECT_EQ(kNone, result.match_contents_class());
 }
 
-TEST(SearchSuggestionParserTest, ParseHeaderTexts) {
+TEST(SearchSuggestionParserTest, ParseHeaderInfo) {
   std::string json_data = R"([
       "",
       ["los angeles", "san diego", "las vegas", "san francisco"],
@@ -283,26 +283,23 @@ TEST(SearchSuggestionParserTest, ParseHeaderTexts) {
     const auto& suggestion_result = results.suggest_results[0];
     ASSERT_EQ(base::ASCIIToUTF16("los angeles"),
               suggestion_result.suggestion());
-    // This suggestion has no header text.
-    ASSERT_EQ(base::ASCIIToUTF16(""), suggestion_result.header());
+    // This suggestion does not belong to a group.
+    ASSERT_EQ(base::nullopt, suggestion_result.suggestion_group_id());
   }
   {
     const auto& suggestion_result = results.suggest_results[1];
     ASSERT_EQ(base::ASCIIToUTF16("san diego"), suggestion_result.suggestion());
-    ASSERT_EQ(base::ASCIIToUTF16("Not recommended for you"),
-              suggestion_result.header());
+    ASSERT_EQ(40007, *suggestion_result.suggestion_group_id());
   }
   {
     const auto& suggestion_result = results.suggest_results[2];
     ASSERT_EQ(base::ASCIIToUTF16("las vegas"), suggestion_result.suggestion());
-    ASSERT_EQ(base::ASCIIToUTF16("Recommended for you"),
-              suggestion_result.header());
+    ASSERT_EQ(40008, *suggestion_result.suggestion_group_id());
   }
   {
     const auto& suggestion_result = results.suggest_results[3];
     ASSERT_EQ(base::ASCIIToUTF16("san francisco"),
               suggestion_result.suggestion());
-    // This suggestion has no header text.
-    ASSERT_EQ(base::ASCIIToUTF16(""), suggestion_result.header());
+    ASSERT_EQ(40009, *suggestion_result.suggestion_group_id());
   }
 }

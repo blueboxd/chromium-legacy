@@ -17,10 +17,10 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -219,8 +219,8 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   if (shelf_app_id.empty())
     return;
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(
           primary_account_profile);
 
   // At this point, all remaining windows are Crostini windows. Firstly, we add
@@ -228,7 +228,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   // app's name, but this may be null in the case of apps with no associated
   // launcher entry (i.e. no .desktop file), in which case the app's name is
   // unknown.
-  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+  base::Optional<guest_os::GuestOsRegistryService::Registration> registration =
       registry_service->GetRegistration(shelf_app_id);
   RegisterCrostiniWindowForForceClose(
       window, registration.has_value() ? registration->Name() : "");

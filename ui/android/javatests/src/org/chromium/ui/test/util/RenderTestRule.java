@@ -7,12 +7,16 @@ package org.chromium.ui.test.util;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
+
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -355,6 +359,11 @@ public class RenderTestRule extends TestWatcher {
         } else if (view instanceof EditText) {
             EditText editText = (EditText) view;
             editText.setCursorVisible(false);
+        } else if (view instanceof ImageView) {
+            Drawable drawable = ((ImageView) view).getDrawable();
+            if (drawable instanceof AnimatedVectorDrawableCompat) {
+                ((AnimatedVectorDrawableCompat) drawable).stop();
+            }
         }
     }
 

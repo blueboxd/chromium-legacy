@@ -28,7 +28,6 @@ class SecureDnsPolicyHandler : public ConfigurationPolicyHandler {
  private:
   bool IsTemplatesPolicyNotSpecified(const base::Value* templates,
                                      const base::StringPiece mode_str);
-  bool IsTemplatesPolicyInvalid(const base::StringPiece templates_str);
 
   bool ShouldSetTemplatesPref(const base::Value* templates);
 

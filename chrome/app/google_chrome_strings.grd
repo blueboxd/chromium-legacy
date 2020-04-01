@@ -162,6 +162,7 @@ chromium_strings.grd. -->
     <file path="resources/google_chrome_strings_sl.xtb" lang="sl" />
     <file path="resources/google_chrome_strings_sq.xtb" lang="sq" />
     <file path="resources/google_chrome_strings_sr.xtb" lang="sr" />
+    <file path="resources/google_chrome_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="resources/google_chrome_strings_sv.xtb" lang="sv" />
     <file path="resources/google_chrome_strings_sw.xtb" lang="sw" />
     <file path="resources/google_chrome_strings_ta.xtb" lang="ta" />

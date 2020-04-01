@@ -189,6 +189,7 @@ class AutocompleteController : public AutocompleteProviderListener,
                            SetSelectedLineWithNoDefaultMatches);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, TestFocusFixing);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, PopupPositionChanging);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, PopupStepSelection);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
                            EmitSelectedChildrenChangedAccessibilityEvent);
 
@@ -214,17 +215,17 @@ class AutocompleteController : public AutocompleteProviderListener,
   // relevance before this is called.
   void UpdateAssociatedKeywords(AutocompleteResult* result);
 
-  // For each group of adjacent matches with the same header, keeps the header
-  // for the first match in that group and clears the rest of the headers. If
-  // any of the following error conditions occur, headers are deemed invalid and
-  // are entirely discarded:
-  // 1) Matches with the same header are not adjacent to one another, i.e., are
-  //    interleaved by matches with different headers or matches without one.
-  // 2) Matches without a header come after the ones with headers.
-  // Note that the headers do not determine classification or ranking of the
-  // matches. They are expected to be valid after the AutocompleteResult is
-  // finalized. These error conditions, however, are in place to safeguard the
-  // integrity of the displayed headers.
+  // Called for zero-prefix suggestions only.
+  // - Updates |result| with suggestion group ID to header mapping information.
+  // - Ensures matches that belong to a group appear at the bottom.
+  // Remote zero-prefix suggestions may be backfilled with local zero-prefix
+  // suggestions if there are not enough of them to fill all the available
+  // slots. However this cannot be done when remote proactive zero-prefix
+  // suggestions (aka PZPS) are present (i.e., there are suggestions with a
+  // |suggestion_groupd_id|), as those must appear under a header for
+  // transparency reasons. Hence we demote grouped matches to the bottom here.
+  // This function makes an implicit assumption that remote non-PZPS are not
+  // grouped. Otherwise local ZPS would appear at the top of the list.
   void UpdateHeaders(AutocompleteResult* result);
 
   // For each group of contiguous matches from the same TemplateURL, show the

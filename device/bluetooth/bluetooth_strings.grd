@@ -175,6 +175,7 @@ This file contains the strings for bluetooth.
     <file path="strings/bluetooth_strings_sl.xtb" lang="sl" />
     <file path="strings/bluetooth_strings_sq.xtb" lang="sq" />
     <file path="strings/bluetooth_strings_sr.xtb" lang="sr" />
+    <file path="strings/bluetooth_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="strings/bluetooth_strings_sv.xtb" lang="sv" />
     <file path="strings/bluetooth_strings_sw.xtb" lang="sw" />
     <file path="strings/bluetooth_strings_ta.xtb" lang="ta" />

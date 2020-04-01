@@ -242,7 +242,9 @@ class TabGridViewBinder {
             actionButton.getDrawable().setAlpha(isSelected ? 255 : 0);
             ApiCompatibilityUtils.setImageTintList(actionButton,
                     isSelected ? model.get(TabProperties.CHECKED_DRAWABLE_STATE_LIST) : null);
-            if (isSelected) ((AnimatedVectorDrawableCompat) actionButton.getDrawable()).start();
+            if (isSelected) {
+                ((AnimatedVectorDrawableCompat) actionButton.getDrawable()).start();
+            }
         } else if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
             view.setOnClickListener(v -> {
                 model.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(tabId);

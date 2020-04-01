@@ -12,9 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.ICookieChangedCallbackClient;
 import org.chromium.weblayer_private.interfaces.ICookieManager;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Manages cookies for a WebLayer profile.
@@ -80,6 +82,48 @@ public class CookieManager {
             mImpl.getCookie(uri.toString(), ObjectWrapper.wrap(valueCallback));
         } catch (RemoteException e) {
             throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Adds a callback to listen for changes to cookies for the given URI.
+     *
+     * @param uri the URI to listen to cookie changes on.
+     * @param name the name of the cookie to listen for changes on. Can be null to listen for
+     *     changes on all cookies.
+     * @param callback a callback that will be notified on cookie changes.
+     * @return a Runnable which will unregister the callback from listening to cookie changes.
+     * @throws IllegalArgumentException if the cookie name is an empty string.
+     */
+    @NonNull
+    public Runnable addCookieChangedCallback(
+            @NonNull Uri uri, @Nullable String name, @NonNull CookieChangedCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (name != null && name.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Name cannot be empty, use null to listen for all cookie changes.");
+        }
+        try {
+            return ObjectWrapper.unwrap(mImpl.addCookieChangedCallback(uri.toString(), name,
+                                                new CookieChangedCallbackClientImpl(callback)),
+                    Runnable.class);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    private static final class CookieChangedCallbackClientImpl
+            extends ICookieChangedCallbackClient.Stub {
+        private final CookieChangedCallback mCallback;
+
+        CookieChangedCallbackClientImpl(CookieChangedCallback callback) {
+            mCallback = callback;
+        }
+
+        @Override
+        public void onCookieChanged(String cookie, @CookieChangeCause int cause) {
+            StrictModeWorkaround.apply();
+            mCallback.onCookieChanged(cookie, cause);
         }
     }
 }

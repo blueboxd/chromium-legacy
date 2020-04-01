@@ -25,6 +25,11 @@ PropertyConfiguration GetPropertyConfiguration(const std::string& name) {
         {% for thing_type in property.thing_types %}
         "{{thing_type}}",
         {% endfor %}
+      },
+      /* .enum_types = */ {
+        {% for enum_type in property.enum_types %}
+        "{{enum_type}}",
+        {% endfor %}
       }
     };
   }

@@ -42,6 +42,7 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
     content_settings::UpdateLocationBarUiForWebContents(web_contents_);
   } else {
     prompt_bubble_ = new PermissionPromptBubbleView(browser, delegate);
+    prompt_bubble_->Show();
   }
 }
 

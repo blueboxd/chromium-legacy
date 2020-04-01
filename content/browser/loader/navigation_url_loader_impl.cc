@@ -309,6 +309,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->devtools_request_id =
       request_info->devtools_navigation_token.ToString();
   new_request->obey_origin_policy = request_info->obey_origin_policy;
+  if (request_info->begin_params->trust_token_params) {
+    new_request->trust_token_params =
+        *request_info->begin_params->trust_token_params;
+  }
   return new_request;
 }
 

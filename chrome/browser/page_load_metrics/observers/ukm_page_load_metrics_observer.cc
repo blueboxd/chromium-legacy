@@ -583,6 +583,8 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
                                   .layout_shift_score_before_input_or_scroll))
       .Record(ukm::UkmRecorder::Get());
 
+  // TODO(crbug.com/1064483): We should move UMA recording to components/
+
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.LayoutInstability.CumulativeShiftScore",
       LayoutShiftUmaValue(
@@ -592,6 +594,15 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
       "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
       LayoutShiftUmaValue(
           GetDelegate().GetMainFrameRenderData().layout_shift_score));
+
+  // Note: This depends on PageLoadMetrics internally processing loading
+  // behavior before timing metrics if they come in the same IPC update.
+  if (render_delayed_for_web_font_preloading_observed_) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "PageLoad.Clients.FontPreload.LayoutInstability.CumulativeShiftScore",
+        LayoutShiftUmaValue(
+            GetDelegate().GetPageRenderData().layout_shift_score));
+  }
 }
 
 void UkmPageLoadMetricsObserver::RecordInputTimingMetrics() {
@@ -755,4 +766,13 @@ void UkmPageLoadMetricsObserver::RecordGeneratedNavigationUKM(
   builder.SetFirstURLIsHomePage(start_url_is_home_page_);
   builder.SetFirstURLIsDefaultSearchEngine(start_url_is_default_search_);
   builder.Record(ukm::UkmRecorder::Get());
+}
+
+void UkmPageLoadMetricsObserver::OnLoadingBehaviorObserved(
+    content::RenderFrameHost* rfh,
+    int behavior_flag) {
+  if (behavior_flag & blink::LoadingBehaviorFlag::
+                          kLoadingBehaviorFontPreloadStartedBeforeRendering) {
+    render_delayed_for_web_font_preloading_observed_ = true;
+  }
 }

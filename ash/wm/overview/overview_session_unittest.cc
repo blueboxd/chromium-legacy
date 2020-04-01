@@ -2871,7 +2871,7 @@ TEST_P(OverviewSessionTest, DraggingFromTopAnimation) {
   drag_controller->Drag(event.location_f(), event.flags());
 
   ASSERT_TRUE(InOverviewSession());
-  EXPECT_EQ(OverviewSession::EnterExitOverviewType::kImmediateEnter,
+  EXPECT_EQ(OverviewEnterExitType::kImmediateEnter,
             overview_session()->enter_exit_overview_type());
 }
 
@@ -2918,7 +2918,7 @@ TEST_P(OverviewSessionTest, SelectingWindowWithBackdrop) {
 
   ToggleOverview();
   OverviewItem* item = GetOverviewItemForWindow(window.get());
-  ASSERT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed,
+  ASSERT_EQ(OverviewGridWindowFillMode::kLetterBoxed,
             item->GetWindowDimensionsType());
 
   // Tap the target.
@@ -3016,7 +3016,7 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeIn) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeInEnter);
+  ToggleOverview(OverviewEnterExitType::kFadeInEnter);
   ASSERT_TRUE(InOverviewSession());
 
   OverviewItem* item = GetOverviewItemForWindow(window.get());
@@ -3041,7 +3041,7 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeIn) {
       1.0f,
       item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
 
-  EXPECT_EQ(OverviewSession::EnterExitOverviewType::kFadeInEnter,
+  EXPECT_EQ(OverviewEnterExitType::kFadeInEnter,
             overview_session()->enter_exit_overview_type());
 }
 
@@ -3065,7 +3065,7 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeOutExit) {
   views::Widget* grid_item_widget = item->item_widget();
   gfx::Rect item_bounds = grid_item_widget->GetWindowBoundsInScreen();
 
-  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeOutExit);
+  ToggleOverview(OverviewEnterExitType::kFadeOutExit);
   ASSERT_FALSE(InOverviewSession());
 
   // The test window should be minimized as overview fade out exit starts.
@@ -5688,7 +5688,7 @@ TEST_P(SplitViewOverviewSessionTest, ExitOverviewWithOneSnapped) {
   ASSERT_TRUE(InOverviewSession());
 
   // Tests that we can exit overview if we swipe up from the shelf.
-  ToggleOverview(OverviewSession::EnterExitOverviewType::kSwipeFromShelf);
+  ToggleOverview(OverviewEnterExitType::kSwipeFromShelf);
   EXPECT_FALSE(InOverviewSession());
 }
 
@@ -6840,7 +6840,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   ToggleOverview();
   OverviewItem* item = GetOverviewItemForWindow(window.get());
   // Verify that |item| is letter boxed.
-  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed,
+  EXPECT_EQ(OverviewGridWindowFillMode::kLetterBoxed,
             item->GetWindowDimensionsType());
   EXPECT_EQ(2.f,
             item->target_bounds().width() / item->target_bounds().height());
@@ -6906,14 +6906,14 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   OverviewItem* item4 = GetOverviewItemForWindow(window4.get());
 
   // For good test coverage in each case, the dragged window and the drop target
-  // have different |ScopedOverviewTransformWindow::GridWindowFillMode| values.
-  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kNormal,
+  // have different |OverviewGridWindowFillMode| values.
+  EXPECT_EQ(OverviewGridWindowFillMode::kNormal,
             item1->GetWindowDimensionsType());
-  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed,
+  EXPECT_EQ(OverviewGridWindowFillMode::kLetterBoxed,
             item2->GetWindowDimensionsType());
-  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kNormal,
+  EXPECT_EQ(OverviewGridWindowFillMode::kNormal,
             item3->GetWindowDimensionsType());
-  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed,
+  EXPECT_EQ(OverviewGridWindowFillMode::kPillarBoxed,
             item4->GetWindowDimensionsType());
 
   EXPECT_EQ(root1_drop_target_bounds(item1), root1_drop_target_bounds(item2));

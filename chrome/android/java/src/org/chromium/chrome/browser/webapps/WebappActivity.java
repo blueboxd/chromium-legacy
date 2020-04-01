@@ -12,7 +12,6 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.ViewGroup;
@@ -34,6 +33,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
+import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
@@ -50,12 +50,9 @@ import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.ui.base.PageTransition;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -151,7 +148,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);
         } else if (newWebappInfo.shouldForceNavigation() && mIsInitialized) {
-            loadUrl(newWebappInfo, getActivityTab());
+            mCustomTabIntentHandler.onNewIntent(newWebappInfo.getProvider());
         }
     }
 
@@ -163,16 +160,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
         return false;
-    }
-
-    protected void loadUrl(WebappInfo webappInfo, Tab tab) {
-        if (loadUrlIfPostShareTarget(webappInfo)) {
-            // Web Share Target Post was successful, so don't load anything.
-            return;
-        }
-        LoadUrlParams params = new LoadUrlParams(webappInfo.url(), PageTransition.AUTO_TOPLEVEL);
-        params.setShouldClearHistoryList(true);
-        tab.loadUrl(params);
     }
 
     protected boolean isInitialized() {
@@ -188,7 +175,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         super.initializeState();
 
         mTabController.initializeState();
-        initializeUI(getSavedInstanceState());
+        mTabObserverRegistrar.registerActivityTabObserver(createTabObserver());
     }
 
     @VisibleForTesting
@@ -247,22 +234,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         WarmupManager.transferViewHeirarchy(mainView, contentView);
         mSplashController.bringSplashBackToFront();
         onInitialLayoutInflationComplete();
-    }
-
-    protected void initializeUI(Bundle savedInstanceState) {
-        Tab tab = getActivityTab();
-
-        // We do not load URL when restoring from saved instance states. However, it's possible that
-        // we saved instance state before loading a URL, so even after restoring from
-        // SavedInstanceState we might not have a URL and should initialize from the intent.
-        if (tab.getUrlString().isEmpty()) {
-            loadUrl(mWebappInfo, tab);
-        } else {
-            if (!mWebappInfo.isForWebApk() && NetworkChangeNotifier.isOnline()) {
-                tab.reloadIgnoringCache();
-            }
-        }
-        mTabObserverRegistrar.registerActivityTabObserver(createTabObserver());
     }
 
     @Override
@@ -327,9 +298,12 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     @Override
     protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
+        IntentIgnoringCriterion intentIgnoringCriterion =
+                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
+
         mIntentDataProvider = mWebappInfo.getProvider();
         BaseCustomTabActivityModule baseCustomTabModule =
-                new BaseCustomTabActivityModule(mIntentDataProvider);
+                new BaseCustomTabActivityModule(mIntentDataProvider, intentIgnoringCriterion);
         WebappActivityModule webappModule = new WebappActivityModule();
         WebappActivityComponent component =
                 ChromeApplication.getComponent().createWebappActivityComponent(

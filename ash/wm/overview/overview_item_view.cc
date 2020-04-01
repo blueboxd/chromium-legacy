@@ -275,15 +275,15 @@ gfx::Size OverviewItemView::GetPreviewViewSize() const {
   const float aspect_ratio =
       preview_pref_size.width() / preview_pref_size.height();
   gfx::SizeF target_size(GetContentAreaBounds().size());
-  ScopedOverviewTransformWindow::GridWindowFillMode fill_mode =
+  OverviewGridWindowFillMode fill_mode =
       overview_item_->GetWindowDimensionsType();
   switch (fill_mode) {
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kNormal:
+    case OverviewGridWindowFillMode::kNormal:
       break;
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
+    case OverviewGridWindowFillMode::kLetterBoxed:
       target_size.set_height(target_size.width() / aspect_ratio);
       break;
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
+    case OverviewGridWindowFillMode::kPillarBoxed:
       target_size.set_width(target_size.height() * aspect_ratio);
       break;
   }

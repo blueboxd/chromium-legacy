@@ -19,6 +19,7 @@ class AnimationMetricsReporter;
 }
 
 namespace views {
+class CompositorAnimationRunner;
 
 // Provides default implementation to adapt CompositorAnimationRunner for
 // Animation. Falls back to the default animation runner when |view| is nullptr.
@@ -50,12 +51,10 @@ class VIEWS_EXPORT AnimationDelegateViews
   // |set_animation_metrics_reporter()|.
   virtual base::TimeDelta GetAnimationDurationForReporting() const;
 
-  gfx::AnimationContainer* container() { return container_; }
+  void SetAnimationMetricsReporter(
+      ui::AnimationMetricsReporter* animation_metrics_reporter);
 
-  void set_animation_metrics_reporter(
-      ui::AnimationMetricsReporter* animation_metrics_reporter) {
-    animation_metrics_reporter_ = animation_metrics_reporter;
-  }
+  gfx::AnimationContainer* container() { return container_; }
 
  private:
   // Sets CompositorAnimationRunner to |container_| if possible. Otherwise,
@@ -66,6 +65,9 @@ class VIEWS_EXPORT AnimationDelegateViews
   gfx::AnimationContainer* container_ = nullptr;
 
   ui::AnimationMetricsReporter* animation_metrics_reporter_ = nullptr;
+
+  // The animation runner that |container_| uses.
+  CompositorAnimationRunner* compositor_animation_runner_ = nullptr;
 
   ScopedObserver<View, ViewObserver> scoped_observer_{this};
 };

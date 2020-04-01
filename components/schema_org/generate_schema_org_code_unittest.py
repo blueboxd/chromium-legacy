@@ -44,8 +44,10 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
                     'entities': ['MediaObject'],
                     'properties': [{
                         'name': 'propertyName',
-                        'thing_types': []
-                    }]
+                        'thing_types': [],
+                        'enum_types': []
+                    }],
+                    'enums': [],
                 })
 
     def test_get_root_type_thing(self):
@@ -74,6 +76,26 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
 
         self.assertEqual(
             generate_schema_org_code.get_root_type(integer, schema), number)
+
+    def test_get_root_type_enum(self):
+        thing = {'@id': schema_org_id('Thing')}
+        intangible = {
+            '@id': schema_org_id('Intangible'),
+            'rdfs:subClassOf': thing
+        }
+        enumeration = {
+            '@id': schema_org_id('Enumeration'),
+            'rdfs:subClassOf': intangible
+        }
+        actionStatusType = {
+            '@id': schema_org_id('ActionStatusType'),
+            'rdfs:subClassOf': enumeration
+        }
+        schema = {'@graph': [thing, intangible, enumeration, actionStatusType]}
+
+        self.assertEqual(
+            generate_schema_org_code.get_root_type(actionStatusType, schema),
+            actionStatusType)
 
     def test_parse_property_identifier(self):
         thing = {'@id': schema_org_id('Thing')}
@@ -109,7 +131,8 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
             generate_schema_org_code.parse_property(identifier, schema), {
                 'name': 'Identifier',
                 'has_number': True,
-                'thing_types': [property_value['@id']]
+                'thing_types': [property_value['@id']],
+                'enum_types': []
             })
 
 

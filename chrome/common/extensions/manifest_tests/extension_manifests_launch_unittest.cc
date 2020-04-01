@@ -27,19 +27,9 @@ TEST_F(AppLaunchManifestTest, AppLaunchContainer) {
   EXPECT_EQ(LaunchContainer::kLaunchContainerTab,
             AppLaunchInfo::GetLaunchContainer(extension.get()));
 
-  extension = LoadAndExpectSuccess("launch_panel.json");
-  EXPECT_EQ(LaunchContainer::kLaunchContainerPanelDeprecated,
-            AppLaunchInfo::GetLaunchContainer(extension.get()));
-
   extension = LoadAndExpectSuccess("launch_default.json");
   EXPECT_EQ(LaunchContainer::kLaunchContainerTab,
             AppLaunchInfo::GetLaunchContainer(extension.get()));
-
-  extension = LoadAndExpectSuccess("launch_width.json");
-  EXPECT_EQ(640, AppLaunchInfo::GetLaunchWidth(extension.get()));
-
-  extension = LoadAndExpectSuccess("launch_height.json");
-  EXPECT_EQ(480, AppLaunchInfo::GetLaunchHeight(extension.get()));
 
   Testcase testcases[] = {
     Testcase("launch_window.json", errors::kInvalidLaunchContainer),
@@ -49,22 +39,6 @@ TEST_F(AppLaunchManifestTest, AppLaunchContainer) {
              errors::kInvalidLaunchContainer),
     Testcase("launch_container_without_launch_url.json",
              errors::kLaunchURLRequired),
-    Testcase("launch_width_invalid.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValueContainer,
-                 keys::kLaunchWidth)),
-    Testcase("launch_width_negative.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValue,
-                 keys::kLaunchWidth)),
-    Testcase("launch_height_invalid.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValueContainer,
-                 keys::kLaunchHeight)),
-    Testcase("launch_height_negative.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValue,
-                 keys::kLaunchHeight))
   };
   RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }

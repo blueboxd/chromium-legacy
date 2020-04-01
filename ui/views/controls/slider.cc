@@ -69,7 +69,7 @@ float Slider::GetValue() const {
 }
 
 void Slider::SetValue(float value) {
-  SetValueInternal(value, VALUE_CHANGED_BY_API);
+  SetValueInternal(value, SliderChangeReason::kByApi);
 }
 
 bool Slider::GetEnableAccessibilityEvents() const {
@@ -180,7 +180,7 @@ void Slider::MoveButtonTo(const gfx::Point& point) {
                    : point.x() - inset.left() - initial_button_offset_;
   SetValueInternal(
       static_cast<float>(amount) / (width() - inset.width() - kThumbWidth),
-      VALUE_CHANGED_BY_USER);
+      SliderChangeReason::kByUser);
 }
 
 void Slider::OnSliderDragStarted() {
@@ -240,7 +240,7 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
       return false;
   }
   SetValueInternal(value_ + direction * keyboard_increment_,
-                   VALUE_CHANGED_BY_USER);
+                   SliderChangeReason::kByUser);
   return true;
 }
 

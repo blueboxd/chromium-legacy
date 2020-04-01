@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_NET_DNS_UTIL_H_
 #define CHROME_BROWSER_NET_DNS_UTIL_H_
 
-#include <string>
+#include <vector>
+
+#include "base/strings/string_piece.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -21,6 +23,14 @@ bool ShouldDisableDohForManaged();
 
 // Returns true if there are parental controls detected on the device.
 bool ShouldDisableDohForParentalControls();
+
+// Implements the whitespace-delimited group syntax for DoH templates.
+std::vector<base::StringPiece> SplitDohTemplateGroup(base::StringPiece group);
+
+// Returns true if a group of templates are all valid per
+// net::dns_util::IsValidDohTemplate().  This should be checked before updating
+// stored preferences.
+bool IsValidDohTemplateGroup(base::StringPiece group);
 
 const char kDnsOverHttpsModeOff[] = "off";
 const char kDnsOverHttpsModeAutomatic[] = "automatic";

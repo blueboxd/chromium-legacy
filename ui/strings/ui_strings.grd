@@ -181,6 +181,7 @@ need to be translated for each locale.-->
     <file path="translations/ui_strings_sl.xtb" lang="sl" />
     <file path="translations/ui_strings_sq.xtb" lang="sq" />
     <file path="translations/ui_strings_sr.xtb" lang="sr" />
+    <file path="translations/ui_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="translations/ui_strings_sv.xtb" lang="sv" />
     <file path="translations/ui_strings_sw.xtb" lang="sw" />
     <file path="translations/ui_strings_ta.xtb" lang="ta" />

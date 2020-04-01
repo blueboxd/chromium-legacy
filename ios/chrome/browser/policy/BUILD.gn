@@ -96,12 +96,15 @@ source_set("eg2_tests") {
   testonly = true
 
   sources = [
+    "policy_app_interface.h",
+    "policy_app_interface_stub.mm",
     "policy_egtest.mm",
-    "policy_egtest_app_interface.h",
+    "policy_platform_provider_egtest.mm",
   ]
 
   deps = [
     "//base",
+    "//components/policy/core/common:common_constants",
     "//components/strings",
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser:utils",
@@ -119,8 +122,8 @@ source_set("eg_app_support+eg2") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "policy_egtest_app_interface.h",
-    "policy_egtest_app_interface.mm",
+    "policy_app_interface.h",
+    "policy_app_interface.mm",
   ]
   deps = [
     ":policy",

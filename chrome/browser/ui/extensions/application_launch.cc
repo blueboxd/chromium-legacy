@@ -338,8 +338,6 @@ WebContents* OpenEnabledApplication(Profile* profile,
       NOTREACHED();
       break;
     }
-    // Panels are deprecated. Launch a normal window instead.
-    case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
     case extensions::LaunchContainer::kLaunchContainerWindow:
       tab = OpenApplicationWindow(profile, params, url);
       break;

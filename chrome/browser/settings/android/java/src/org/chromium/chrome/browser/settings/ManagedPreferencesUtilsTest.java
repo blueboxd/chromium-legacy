@@ -44,6 +44,78 @@ public class ManagedPreferencesUtilsTest {
     public ActivityTestRule<SettingsActivity> mRule =
             new ActivityTestRule<>(SettingsActivity.class);
 
+    public static final ManagedPreferenceDelegate UNMANAGED_DELEGATE =
+            new ManagedPreferenceDelegate() {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return false;
+                }
+
+                @Override
+                public boolean isPreferenceControlledByCustodian(Preference preference) {
+                    return false;
+                }
+
+                @Override
+                public boolean doesProfileHaveMultipleCustodians() {
+                    return false;
+                }
+            };
+
+    public static final ManagedPreferenceDelegate POLICY_DELEGATE =
+            new ManagedPreferenceDelegate() {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return true;
+                }
+
+                @Override
+                public boolean isPreferenceControlledByCustodian(Preference preference) {
+                    return false;
+                }
+
+                @Override
+                public boolean doesProfileHaveMultipleCustodians() {
+                    return false;
+                }
+            };
+
+    public static final ManagedPreferenceDelegate SINGLE_CUSTODIAN_DELEGATE =
+            new ManagedPreferenceDelegate() {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return false;
+                }
+
+                @Override
+                public boolean isPreferenceControlledByCustodian(Preference preference) {
+                    return true;
+                }
+
+                @Override
+                public boolean doesProfileHaveMultipleCustodians() {
+                    return false;
+                }
+            };
+
+    public static final ManagedPreferenceDelegate MULTI_CUSTODIAN_DELEGATE =
+            new ManagedPreferenceDelegate() {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return false;
+                }
+
+                @Override
+                public boolean isPreferenceControlledByCustodian(Preference preference) {
+                    return true;
+                }
+
+                @Override
+                public boolean doesProfileHaveMultipleCustodians() {
+                    return true;
+                }
+            };
+
     @Before
     public void setUp() {
         Context context = InstrumentationRegistry.getInstrumentation().getContext();
@@ -79,26 +151,9 @@ public class ManagedPreferencesUtilsTest {
     @Test
     @SmallTest
     public void testShowManagedByParentToastSingleCustodian() {
-        ManagedPreferenceDelegate singleCustodianDelegate = new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return false;
-            }
-
-            @Override
-            public boolean isPreferenceControlledByCustodian(Preference preference) {
-                return true;
-            }
-
-            @Override
-            public boolean doesProfileHaveMultipleCustodians() {
-                return false;
-            }
-        };
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManagedPreferencesUtils.showManagedByParentToast(
-                    mRule.getActivity(), singleCustodianDelegate);
+                    mRule.getActivity(), SINGLE_CUSTODIAN_DELEGATE);
         });
 
         onView(withText(R.string.managed_by_your_parent))
@@ -109,26 +164,9 @@ public class ManagedPreferencesUtilsTest {
     @Test
     @SmallTest
     public void testShowManagedByParentToastMultipleCustodians() {
-        ManagedPreferenceDelegate multiCustodianDelegate = new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return false;
-            }
-
-            @Override
-            public boolean isPreferenceControlledByCustodian(Preference preference) {
-                return true;
-            }
-
-            @Override
-            public boolean doesProfileHaveMultipleCustodians() {
-                return true;
-            }
-        };
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManagedPreferencesUtils.showManagedByParentToast(
-                    mRule.getActivity(), multiCustodianDelegate);
+                    mRule.getActivity(), MULTI_CUSTODIAN_DELEGATE);
         });
 
         onView(withText(R.string.managed_by_your_parents))

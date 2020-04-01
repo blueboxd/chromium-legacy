@@ -191,8 +191,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   GREYAssertFalse([ChromeEarlGrey isAutofillProfilePresentWithGUID:kGuid
                                                autofillProfileName:kFullName],
                   @"autofill profile should not exist");
-  [ChromeEarlGrey injectAutofillProfileOnFakeSyncServerWithGUID:kGuid
-                                            autofillProfileName:kFullName];
+  [ChromeEarlGrey addAutofillProfileToFakeSyncServerWithGUID:kGuid
+                                         autofillProfileName:kFullName];
   [self setTearDownHandler:^{
     [ChromeEarlGrey clearAutofillProfileWithGUID:kGuid];
   }];
@@ -220,8 +220,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
                                                autofillProfileName:kFullName],
                   @"autofill profile should not exist");
 
-  [ChromeEarlGrey injectAutofillProfileOnFakeSyncServerWithGUID:kGuid
-                                            autofillProfileName:kFullName];
+  [ChromeEarlGrey addAutofillProfileToFakeSyncServerWithGUID:kGuid
+                                         autofillProfileName:kFullName];
   [self setTearDownHandler:^{
     [ChromeEarlGrey clearAutofillProfileWithGUID:kGuid];
   }];
@@ -239,9 +239,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
                  @"autofill profile should exist");
 
   // Update autofill profile.
-  [ChromeEarlGrey
-      injectAutofillProfileOnFakeSyncServerWithGUID:kGuid
-                                autofillProfileName:kUpdatedFullName];
+  [ChromeEarlGrey addAutofillProfileToFakeSyncServerWithGUID:kGuid
+                                         autofillProfileName:kUpdatedFullName];
 
   // Trigger sync cycle and wait for update.
   [ChromeEarlGrey triggerSyncCycleForType:syncer::AUTOFILL_PROFILE];
@@ -267,8 +266,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   GREYAssertFalse([ChromeEarlGrey isAutofillProfilePresentWithGUID:kGuid
                                                autofillProfileName:kFullName],
                   @"autofill profile should not exist");
-  [ChromeEarlGrey injectAutofillProfileOnFakeSyncServerWithGUID:kGuid
-                                            autofillProfileName:kFullName];
+  [ChromeEarlGrey addAutofillProfileToFakeSyncServerWithGUID:kGuid
+                                         autofillProfileName:kFullName];
   [self setTearDownHandler:^{
     [ChromeEarlGrey clearAutofillProfileWithGUID:kGuid];
   }];
@@ -286,7 +285,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
                  @"autofill profile should exist");
 
   // Delete autofill profile from server, and verify it is removed.
-  [ChromeEarlGrey deleteAutofillProfileOnFakeSyncServerWithGUID:kGuid];
+  [ChromeEarlGrey deleteAutofillProfileFromFakeSyncServerWithGUID:kGuid];
   [ChromeEarlGrey triggerSyncCycleForType:syncer::AUTOFILL_PROFILE];
   ConditionBlock condition = ^{
     return ![ChromeEarlGrey isAutofillProfilePresentWithGUID:kGuid

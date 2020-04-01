@@ -666,6 +666,9 @@ extern const char kMarkHttpAsDangerous[];
 extern const char kMarkHttpAsWarning[];
 extern const char kMarkHttpAsWarningAndDangerousOnFormEdits[];
 
+extern const char kMediaHistoryName[];
+extern const char kMediaHistoryDescription[];
+
 extern const char kMediaInspectorLoggingName[];
 extern const char kMediaInspectorLoggingDescription[];
 
@@ -1068,6 +1071,9 @@ extern const char kSyncErrorInfoBarDescription[];
 
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
+
+extern const char kSystemTrayMicGainName[];
+extern const char kSystemTrayMicGainDescription[];
 
 extern const char kTabEngagementReportingName[];
 extern const char kTabEngagementReportingDescription[];

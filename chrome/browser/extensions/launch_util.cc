@@ -80,9 +80,6 @@ LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,
   base::Optional<LaunchContainer> result;
 
   if (manifest_launch_container ==
-      LaunchContainer::kLaunchContainerPanelDeprecated) {
-    result = manifest_launch_container;
-  } else if (manifest_launch_container ==
              LaunchContainer::kLaunchContainerTab) {
     // Look for prefs that indicate the user's choice of launch container. The
     // app's menu on the NTP provides a UI to set this preference.

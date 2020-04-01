@@ -121,6 +121,13 @@ bool ParseStringValue(const std::string& property_type,
       return true;
     }
   }
+  if (!prop_config.enum_types.empty()) {
+    auto url = GURL(value);
+    if (!url.is_valid())
+      return false;
+    values->url_values.push_back(url);
+    return true;
+  }
   return false;
 }
 

@@ -13,14 +13,13 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.XrConsentPromptLevel;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -57,7 +56,7 @@ public class VrConsentDialog
     private static VrConsentDialog promptForUserConsent(
             long instance, final Tab tab, @XrConsentPromptLevel int consentLevel) {
         VrConsentDialog dialog = new VrConsentDialog(instance, tab.getWebContents(), consentLevel);
-        dialog.show(((TabImpl) tab).getActivity(), new VrConsentListener() {
+        dialog.show(tab.getWindowAndroid(), new VrConsentListener() {
             @Override
             public void onUserConsent(boolean allowed) {
                 dialog.onUserGesture(allowed);
@@ -83,10 +82,10 @@ public class VrConsentDialog
         return resources.getString(R.string.xr_consent_bullet, resources.getString(id));
     }
 
-    public void show(@NonNull ChromeActivity activity, @NonNull VrConsentListener listener) {
+    public void show(@NonNull WindowAndroid window, @NonNull VrConsentListener listener) {
         mListener = listener;
 
-        Resources resources = activity.getResources();
+        Resources resources = window.getContext().get().getResources();
 
         String dialogTitle = resources.getString(R.string.xr_consent_dialog_title,
                 UrlFormatter.formatUrlForSecurityDisplay(mUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
@@ -121,7 +120,7 @@ public class VrConsentDialog
                                               R.string.cancel)
                                       .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                                       .build();
-        mModalDialogManager = activity.getModalDialogManager();
+        mModalDialogManager = window.getModalDialogManager();
         mModalDialogManager.showDialog(model, ModalDialogManager.ModalDialogType.TAB);
     }
 

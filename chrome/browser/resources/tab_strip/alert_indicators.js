@@ -28,6 +28,7 @@ export class AlertIndicatorsElement extends CustomElement {
       [TabAlertState.AUDIO_MUTING, audioIndicator],
       [TabAlertState.BLUETOOTH_CONNECTED, new AlertIndicatorElement()],
       [TabAlertState.USB_CONNECTED, new AlertIndicatorElement()],
+      [TabAlertState.HID_CONNECTED, new AlertIndicatorElement()],
       [TabAlertState.SERIAL_CONNECTED, new AlertIndicatorElement()],
       [TabAlertState.PIP_PLAYING, new AlertIndicatorElement()],
       [TabAlertState.DESKTOP_CAPTURING, recordingIndicator],

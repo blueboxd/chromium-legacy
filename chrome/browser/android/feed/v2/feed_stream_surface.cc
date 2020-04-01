@@ -39,6 +39,11 @@ void FeedStreamSurface::OnStreamUpdated(
   Java_FeedStreamSurface_onStreamUpdated(env, java_ref_, j_data);
 }
 
+void FeedStreamSurface::NavigationStarted(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj,
+                                          const JavaParamRef<jstring>& url,
+                                          jboolean in_new_tab) {}
+
 void FeedStreamSurface::NavigationDone(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        const JavaParamRef<jstring>& url,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/schema_org/schema_org_entity_names.h"
+#include "components/schema_org/schema_org_enums.h"
 #include "components/schema_org/schema_org_property_configurations.h"
 #include "components/schema_org/schema_org_property_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -50,11 +51,15 @@ TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsUrl) {
 }
 
 TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsThingType) {
+  EXPECT_THAT(property::GetPropertyConfiguration(property::kBrand).thing_types,
+              testing::UnorderedElementsAre("http://schema.org/Brand",
+                                            "http://schema.org/Organization"));
+}
+
+TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsEnumType) {
   EXPECT_THAT(
-      property::GetPropertyConfiguration(property::kAcceptedPaymentMethod)
-          .thing_types,
-      testing::UnorderedElementsAre("http://schema.org/LoanOrCredit",
-                                    "http://schema.org/PaymentMethod"));
+      property::GetPropertyConfiguration(property::kActionStatus).enum_types,
+      testing::UnorderedElementsAre("http://schema.org/ActionStatusType"));
 }
 
 TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsMultipleTypes) {
@@ -62,6 +67,22 @@ TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsMultipleTypes) {
   EXPECT_THAT(
       property::GetPropertyConfiguration(property::kIdentifier).thing_types,
       testing::UnorderedElementsAre("http://schema.org/PropertyValue"));
+}
+
+TEST(GenerateSchemaOrgCodeTest, CheckValidEnumStringReturnsCorrectOption) {
+  auto enum_value =
+      enums::CheckValidEnumString("http://schema.org/ActionStatusType",
+                                  GURL("http://schema.org/ActiveActionStatus"));
+  ASSERT_TRUE(enum_value.has_value());
+  EXPECT_EQ(static_cast<int>(enums::ActionStatusType::kActiveActionStatus),
+            enum_value.value());
+}
+
+TEST(GenerateSchemaOrgCodeTest, CheckValidEnumStringReturnsAbsent) {
+  EXPECT_FALSE(
+      enums::CheckValidEnumString("http://schema.org/ActionStatusType",
+                                  GURL("http://schema.org/FakeActionStatus"))
+          .has_value());
 }
 
 }  // namespace schema_org

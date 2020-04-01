@@ -75,10 +75,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // |animate| is true. Items in |ignored_items| are not positioned. This is for
   // dragging. |transition| specifies the overview state when this function is
   // called.
-  void PositionWindows(bool animate,
-                       const base::flat_set<OverviewItem*>& ignored_items = {},
-                       OverviewSession::OverviewTransition transition =
-                           OverviewSession::OverviewTransition::kInOverview);
+  void PositionWindows(
+      bool animate,
+      const base::flat_set<OverviewItem*>& ignored_items = {},
+      OverviewTransition transition = OverviewTransition::kInOverview);
 
   // Returns the OverviewItem if a window is contained in any of the
   // OverviewItems this grid owns. Returns nullptr if no such a OverviewItem
@@ -231,7 +231,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // and the overview bounds should be queried from |window_list_|.
   void CalculateWindowListAnimationStates(
       OverviewItem* selected_item,
-      OverviewSession::OverviewTransition transition,
+      OverviewTransition transition,
       const std::vector<gfx::RectF>& target_bounds);
 
   // Do not animate the entire window list during exiting the overview. It's

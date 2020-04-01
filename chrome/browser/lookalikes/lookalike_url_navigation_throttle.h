@@ -35,6 +35,9 @@ bool IsSafeRedirect(const std::string& safe_url_host,
 
 // Observes navigations and shows an interstitial if the navigated domain name
 // is visually similar to a top domain or a domain with a site engagement score.
+//
+// Remember to update //docs/idn.md with the appropriate information if you
+// modify the lookalike heuristics.
 class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
  public:
   explicit LookalikeUrlNavigationThrottle(content::NavigationHandle* handle);

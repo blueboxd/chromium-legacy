@@ -58,22 +58,22 @@ Polymer({
   validate: async function() {
     this.showError_ = false;
     const valueToValidate = this.value;
-    const validTemplate =
+    const firstTemplate =
         await this.browserProxy_.validateCustomDnsEntry(valueToValidate);
-    const successfulProbe = validTemplate &&
-        await this.browserProxy_.probeCustomDnsTemplate(validTemplate);
-    // If there was no valid template or a valid template doesn't successfully
+    const successfulProbe = firstTemplate &&
+        await this.browserProxy_.probeCustomDnsTemplate(firstTemplate);
+    // If the group was invalid or the first template doesn't successfully
     // answer a probe query, show an error as long as the input field value
     // hasn't changed and is non-empty.
     if (valueToValidate === this.value && this.value !== '' &&
         !successfulProbe) {
       this.errorText_ = loadTimeData.getString(
-          validTemplate ? 'secureDnsCustomConnectionError' :
+          firstTemplate ? 'secureDnsCustomConnectionError' :
                           'secureDnsCustomFormatError');
       this.showError_ = true;
     }
     this.fire(
-        'value-update', {isValid: !!validTemplate, text: valueToValidate});
+        'value-update', {isValid: !!firstTemplate, text: valueToValidate});
   },
 
   /**

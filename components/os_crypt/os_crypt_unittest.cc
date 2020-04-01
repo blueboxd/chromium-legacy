@@ -164,7 +164,13 @@ class OSCryptConcurrencyTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(OSCryptConcurrencyTest);
 };
 
-TEST_F(OSCryptConcurrencyTest, ConcurrentInitialization) {
+// Flaky on Win 7 (dbg) and win-asan, see https://crbug.com/1066699
+#if defined(OS_WIN)
+#define MAYBE_ConcurrentInitialization DISABLED_ConcurrentInitialization
+#else
+#define MAYBE_ConcurrentInitialization ConcurrentInitialization
+#endif
+TEST_F(OSCryptConcurrencyTest, MAYBE_ConcurrentInitialization) {
   // Launch multiple threads
   base::Thread thread1("thread1");
   base::Thread thread2("thread2");

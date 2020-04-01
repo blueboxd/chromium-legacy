@@ -132,10 +132,10 @@ class WebMediaPlayer {
   struct VideoFramePresentationMetadata {
     uint32_t presented_frames;
     base::TimeTicks presentation_time;
-    base::TimeTicks expected_presentation_time;
+    base::TimeTicks expected_display_time;
     int width;
     int height;
-    base::TimeDelta presentation_timestamp;
+    base::TimeDelta media_time;
     media::VideoFrameMetadata metadata;
     base::TimeDelta rendering_interval;
     base::TimeDelta average_frame_duration;

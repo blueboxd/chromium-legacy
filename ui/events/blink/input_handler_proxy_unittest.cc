@@ -23,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
@@ -228,12 +229,14 @@ class MockInputHandlerProxyClient : public InputHandlerProxyClient {
   MOCK_METHOD1(DispatchNonBlockingEventToMainThread_,
                void(const WebInputEvent&));
 
-  MOCK_METHOD1(GenerateScrollBeginAndSendToMainThread,
-               void(const blink::WebGestureEvent& update_event));
+  MOCK_METHOD2(GenerateScrollBeginAndSendToMainThread,
+               void(const blink::WebGestureEvent& update_event,
+                    const blink::WebInputEventAttribution&));
 
   void DispatchNonBlockingEventToMainThread(
       WebScopedInputEvent event,
-      const ui::LatencyInfo& latency_info) override {
+      const ui::LatencyInfo& latency_info,
+      const blink::WebInputEventAttribution&) override {
     CHECK(event.get());
     DispatchNonBlockingEventToMainThread_(*event.get());
   }
@@ -432,7 +435,8 @@ InputHandlerProxy::EventDisposition HandleInputEventWithLatencyInfo(
           [&event_disposition](
               InputHandlerProxy::EventDisposition disposition,
               WebScopedInputEvent event, const LatencyInfo& latency_info,
-              std::unique_ptr<ui::DidOverscrollParams> callback) {
+              std::unique_ptr<ui::DidOverscrollParams> callback,
+              const blink::WebInputEventAttribution& attribution) {
             event_disposition = disposition;
           }));
   return event_disposition;
@@ -454,7 +458,8 @@ InputHandlerProxy::EventDisposition HandleInputEventAndFlushEventQueue(
           [&event_disposition](
               InputHandlerProxy::EventDisposition disposition,
               WebScopedInputEvent event, const LatencyInfo& latency_info,
-              std::unique_ptr<ui::DidOverscrollParams> callback) {
+              std::unique_ptr<ui::DidOverscrollParams> callback,
+              const blink::WebInputEventAttribution& attribution) {
             event_disposition = disposition;
           }));
 
@@ -513,7 +518,8 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
       InputHandlerProxy::EventDisposition event_disposition,
       WebScopedInputEvent input_event,
       const ui::LatencyInfo& latency_info,
-      std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+      std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+      const blink::WebInputEventAttribution& attribution) {
     event_disposition_recorder_.push_back(event_disposition);
     latency_info_recorder_.push_back(latency_info);
   }
@@ -1182,7 +1188,7 @@ void InputHandlerProxyTest::ScrollHandlingSwitchedToMainThread() {
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(mock_client_, GenerateScrollBeginAndSendToMainThread(_));
+  EXPECT_CALL(mock_client_, GenerateScrollBeginAndSendToMainThread(_, _));
   EXPECT_EQ(expected_disposition_,
             HandleInputEventAndFlushEventQueue(mock_input_handler_,
                                                input_handler_.get(), gesture_));

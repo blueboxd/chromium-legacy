@@ -188,8 +188,7 @@ void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
   if (std::abs(scroll_y) <= kOpenOverviewThreshold &&
       !overview_controller->InOverviewSession() &&
       windows_hider_->WindowsMinimized()) {
-    overview_controller->StartOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateEnter);
+    overview_controller->StartOverview(OverviewEnterExitType::kImmediateEnter);
     OnWindowDragStartedInOverview();
   }
 
@@ -255,10 +254,8 @@ base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
   window_drag_result_ = base::nullopt;
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     DCHECK(!in_splitview);
-    if (in_overview) {
-      overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kFadeOutExit);
-    }
+    if (in_overview)
+      overview_controller->EndOverview(OverviewEnterExitType::kFadeOutExit);
     window_drag_result_ = ShelfWindowDragResult::kGoToHomeScreen;
   } else if (ShouldRestoreToOriginalBounds(location_in_screen)) {
     window_drag_result_ = ShelfWindowDragResult::kRestoreToOriginalBounds;
@@ -300,10 +297,8 @@ void DragWindowFromShelfController::CancelDrag() {
 
   // End overview if it was opened during dragging.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller->InOverviewSession()) {
-    overview_controller->EndOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateExit);
-  }
+  if (overview_controller->InOverviewSession())
+    overview_controller->EndOverview(OverviewEnterExitType::kImmediateExit);
   ReshowHiddenWindowsOnDragEnd();
 
   OnDragEnded(previous_location_in_screen_,
@@ -682,7 +677,7 @@ void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(
   base::AutoReset<bool> auto_reset(&during_window_restoration_callback_, true);
   if (end_overview) {
     Shell::Get()->overview_controller()->EndOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateExit);
+        OverviewEnterExitType::kImmediateExit);
   }
   ReshowHiddenWindowsOnDragEnd();
 }

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/overview/overview_types.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/optional.h"

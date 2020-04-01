@@ -7,6 +7,7 @@
 #include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
+#include <limits>
 
 #include "base/bind_helpers.h"
 #include "base/fuchsia/default_context.h"
@@ -23,6 +24,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/permission_controller_delegate.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/was_activated_option.mojom.h"
@@ -30,6 +34,7 @@
 #include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/context_impl.h"
+#include "fuchsia/engine/browser/event_filter.h"
 #include "fuchsia/engine/browser/frame_layout_manager.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -513,6 +518,7 @@ void FrameImpl::DestroyWindowTreeHost() {
 
   aura::client::SetFocusClient(root_window(), nullptr);
   wm::SetActivationClient(root_window(), nullptr);
+  root_window()->RemovePreTargetHandler(&event_filter_);
   root_window()->RemovePreTargetHandler(focus_controller_.get());
   web_contents_->GetNativeView()->Hide();
   window_tree_host_->Hide();
@@ -737,8 +743,9 @@ void FrameImpl::SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) {
   log_level_ = ConsoleLogLevelToLoggingSeverity(level);
 }
 
-void FrameImpl::SetEnableInput(bool enable_input) {
-  discarding_event_filter_.set_discard_events(!enable_input);
+void FrameImpl::ConfigureInputTypes(fuchsia::web::InputTypes types,
+                                    fuchsia::web::AllowInputState allow) {
+  event_filter_.ConfigureInputTypes(types, allow);
 }
 
 void FrameImpl::SetPopupFrameCreationListener(
@@ -800,9 +807,7 @@ void FrameImpl::SetWindowTreeHost(
 
   window_tree_host_ = std::move(window_tree_host);
   window_tree_host_->InitHost();
-
-  window_tree_host_->window()->GetHost()->AddEventRewriter(
-      &discarding_event_filter_);
+  root_window()->AddPreTargetHandler(&event_filter_);
 
   // Add hooks which automatically set the focus state when input events are
   // received.
@@ -1023,4 +1028,21 @@ void FrameImpl::ReadyToCommitNavigation(
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url) {
   context_->devtools_controller()->OnFrameLoaded(web_contents_.get());
+}
+
+void FrameImpl::RenderViewCreated(content::RenderViewHost* render_view_host) {
+  render_view_host->GetWidget()->GetView()->SetBackgroundColor(
+      SK_AlphaTRANSPARENT);
+}
+
+void FrameImpl::RenderViewReady() {
+  web_contents_->GetRenderViewHost()
+      ->GetWidget()
+      ->GetView()
+      ->SetBackgroundColor(SK_AlphaTRANSPARENT);
+
+  // Setting the background color doesn't necessarily apply it right away, so
+  // request a redraw if there is a view connected to this Frame.
+  if (window_tree_host_)
+    window_tree_host_->compositor()->ScheduleDraw();
 }

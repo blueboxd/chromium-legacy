@@ -47,7 +47,9 @@ constexpr float kDefaultMediaDbFS = -25.0f;
 constexpr float kDefaultAlarmDbFS = -20.0f;
 constexpr float kDefaultCommunicationDbFS = -25.0f;
 
+#if !BUILDFLAG(SYSTEM_OWNS_VOLUME)
 constexpr float kMinDbFS = -120.0f;
+#endif
 
 constexpr char kKeyMediaDbFS[] = "dbfs.media";
 constexpr char kKeyAlarmDbFS[] = "dbfs.alarm";

@@ -109,6 +109,12 @@ std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
   return get_hints_response;
 }
 
+void RunHintsFetchedCallbackWithResponse(
+    optimization_guide::HintsFetchedCallback hints_fetched_callback,
+    std::unique_ptr<optimization_guide::proto::GetHintsResponse> response) {
+  std::move(hints_fetched_callback).Run(std::move(response));
+}
+
 }  // namespace
 
 class TestOptimizationGuideService
@@ -199,16 +205,24 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
         std::move(hints_fetched_callback).Run(base::nullopt);
         return false;
       case HintsFetcherEndState::kFetchSuccessWithHostHints:
-        std::move(hints_fetched_callback)
-            .Run(BuildHintsResponse({"host.com"}, {}));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(&RunHintsFetchedCallbackWithResponse,
+                                      std::move(hints_fetched_callback),
+                                      BuildHintsResponse({"host.com"}, {})));
         return true;
       case HintsFetcherEndState::kFetchSuccessWithURLHints:
-        std::move(hints_fetched_callback)
-            .Run(BuildHintsResponse({},
-                                    {"https://somedomain.org/news/whatever"}));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&RunHintsFetchedCallbackWithResponse,
+                           std::move(hints_fetched_callback),
+                           BuildHintsResponse(
+                               {}, {"https://somedomain.org/news/whatever"})));
         return true;
       case HintsFetcherEndState::kFetchSuccessWithNoHints:
-        std::move(hints_fetched_callback).Run(BuildHintsResponse({}, {}));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(&RunHintsFetchedCallbackWithResponse,
+                                      std::move(hints_fetched_callback),
+                                      BuildHintsResponse({}, {})));
         return true;
     }
     return true;
@@ -3259,6 +3273,44 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecisionAsync.PerformanceHints",
       optimization_guide::OptimizationTypeDecision::kNotAllowedByHint, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationAsyncHintComesInAndNotWhitelisted) {
+  base::HistogramTester histogram_tester;
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::PERFORMANCE_HINTS});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithNoHints}));
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  hints_manager()->CanApplyOptimizationAsync(
+      url_without_hints(), optimization_guide::proto::PERFORMANCE_HINTS,
+      base::BindOnce(
+          [](optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+                      decision);
+          }));
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecisionAsync.PerformanceHints",
+      optimization_guide::OptimizationTypeDecision::kNoHintAvailable, 1);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,

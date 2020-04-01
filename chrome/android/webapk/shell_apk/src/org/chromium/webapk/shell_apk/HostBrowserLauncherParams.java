@@ -176,6 +176,9 @@ public class HostBrowserLauncherParams {
      */
     protected static String createGETWebShareTargetUriString(
             String action, ArrayList<Pair<String, String>> entryList) {
+        // Building the query string here is unnecessary if the host browser is M83+. M83+ Chrome
+        // builds the query string from the WebAPK's <meta-data>.
+
         Uri.Builder queryBuilder = new Uri.Builder();
         for (Pair<String, String> nameValue : entryList) {
             if (!TextUtils.isEmpty(nameValue.first) && !TextUtils.isEmpty(nameValue.second)) {

@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -60,7 +61,7 @@ public class WebApkIntegrationTest {
     }
 
     /**
-     * Tests that WebApkActivities are started properly by WebappLauncherActivity.
+     * Tests that WebAPK Activities are started properly by WebappLauncherActivity.
      */
     @Test
     @LargeTest
@@ -77,7 +78,8 @@ public class WebApkIntegrationTest {
 
         mActivityTestRule.startActivityCompletely(intent);
 
-        WebApkActivity lastActivity = mActivityTestRule.getActivity();
+        WebappActivity lastActivity = mActivityTestRule.getActivity();
+        Assert.assertEquals(ActivityType.WEB_APK, lastActivity.getActivityType());
         Assert.assertEquals(pwaRocksUrl, lastActivity.getWebappInfo().url());
     }
 }

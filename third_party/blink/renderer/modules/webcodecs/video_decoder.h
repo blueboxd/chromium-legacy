@@ -86,9 +86,6 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
   std::unique_ptr<media::VideoDecoder> decoder_;
   bool has_error_ = false;
   int pending_decodes_ = 0;
-
-  base::WeakPtr<VideoDecoder> weak_this_;
-  base::WeakPtrFactory<VideoDecoder> weak_factory_;
 };
 
 }  // namespace blink

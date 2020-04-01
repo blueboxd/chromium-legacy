@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -30,7 +30,7 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class CrostiniApps : public KeyedService,
                      public apps::mojom::Publisher,
-                     public crostini::CrostiniRegistryService::Observer {
+                     public guest_os::GuestOsRegistryService::Observer {
  public:
   CrostiniApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                Profile* profile);
@@ -86,9 +86,9 @@ class CrostiniApps : public KeyedService,
       apps::mojom::IntentPtr intent,
       apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
 
-  // CrostiniRegistryService::Observer overrides.
+  // GuestOsRegistryService::Observer overrides.
   void OnRegistryUpdated(
-      crostini::CrostiniRegistryService* registry_service,
+      guest_os::GuestOsRegistryService* registry_service,
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override;
@@ -110,7 +110,7 @@ class CrostiniApps : public KeyedService,
 
   apps::mojom::AppPtr Convert(
       const std::string& app_id,
-      const crostini::CrostiniRegistryService::Registration& registration,
+      const guest_os::GuestOsRegistryService::Registration& registration,
       bool new_icon_key);
   apps::mojom::IconKeyPtr NewIconKey(const std::string& app_id);
   void PublishAppID(const std::string& app_id, PublishAppIDType type);
@@ -122,7 +122,7 @@ class CrostiniApps : public KeyedService,
   Profile* profile_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  crostini::CrostiniRegistryService* registry_;
+  guest_os::GuestOsRegistryService* registry_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 

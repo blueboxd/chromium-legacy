@@ -111,15 +111,11 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
     return views;
   }
 
-  // Adds group id information to the first 5 values in |views|. If |views| is
-  // empty, populates it with one parent View and four child Views. It is
-  // assumed |views| is either empty or has at least 5 items.
-  void SetUpExtraViewsWithGroups(View::Views& views) {
+  // Adds group id information to the first 5 values in |views|.
+  void SetUpExtraViewsGroups(const View::Views& views) {
     //                v[0] g1
     //     |        |        |      |
     // v[1] g1  v[2] g1  v[3] g2  v[4]
-    if (views.empty())
-      views = SetUpExtraViews();
     ASSERT_GE(views.size(), 5u);
 
     views[0]->SetGroup(1);
@@ -129,15 +125,11 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
     // Skip views[4] - no group id.
   }
 
-  // Adds posInSet and setSize overrides to the first 5 values in |views|. If
-  // |views| is empty, populates it with one parent View and four child Views.
-  // It is assumed |views| is either empty or has at least 5 items.
-  void SetUpExtraViewsWithSetOverrides(View::Views& views) {
+  // Adds posInSet and setSize overrides to the first 5 values in |views|.
+  void SetUpExtraViewsSetOverrides(const View::Views& views) {
     //                     v[0] p4 s4
     //      |            |            |            |
     //  v[1] p3 s4   v[2] p2 s4   v[3] p- s-   v[4] p1 s4
-    if (views.empty())
-      views = SetUpExtraViews();
     ASSERT_GE(views.size(), 5u);
 
     views[0]->GetViewAccessibility().OverridePosInSet(4, 4);
@@ -245,8 +237,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, GetAuthorUniqueIdNonDefault) {
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, IsOrderedSet) {
-  View::Views group_ids;
-  SetUpExtraViewsWithGroups(group_ids);
+  View::Views group_ids = SetUpExtraViews();
+  SetUpExtraViewsGroups(group_ids);
   // Only last element has no group id.
   EXPECT_TRUE(view_accessibility(group_ids[0])->IsOrderedSet());
   EXPECT_TRUE(view_accessibility(group_ids[1])->IsOrderedSet());
@@ -260,8 +252,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, IsOrderedSet) {
   EXPECT_TRUE(view_accessibility(group_ids[3])->IsOrderedSetItem());
   EXPECT_FALSE(view_accessibility(group_ids[4])->IsOrderedSetItem());
 
-  View::Views overrides;
-  SetUpExtraViewsWithSetOverrides(overrides);
+  View::Views overrides = SetUpExtraViews();
+  SetUpExtraViewsSetOverrides(overrides);
   // Only overrides[3] has no override values for setSize/ posInSet.
   EXPECT_TRUE(view_accessibility(overrides[0])->IsOrderedSet());
   EXPECT_TRUE(view_accessibility(overrides[1])->IsOrderedSet());
@@ -278,8 +270,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, IsOrderedSet) {
 
 TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   // Test Views with group ids.
-  View::Views group_ids;
-  SetUpExtraViewsWithGroups(group_ids);
+  View::Views group_ids = SetUpExtraViews();
+  SetUpExtraViewsGroups(group_ids);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 3);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 1);
   EXPECT_EQ(view_accessibility(group_ids[1])->GetSetSize(), 3);
@@ -306,8 +298,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   group_ids[2]->GetViewAccessibility().OverrideIsIgnored(false);
 
   // Test Views with setSize/ posInSet override values set.
-  View::Views overrides;
-  SetUpExtraViewsWithSetOverrides(overrides);
+  View::Views overrides = SetUpExtraViews();
+  SetUpExtraViewsSetOverrides(overrides);
   EXPECT_EQ(view_accessibility(overrides[0])->GetSetSize(), 4);
   EXPECT_EQ(view_accessibility(overrides[0])->GetPosInSet(), 4);
   EXPECT_EQ(view_accessibility(overrides[1])->GetSetSize(), 4);
@@ -324,7 +316,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   // Test Views with both group ids and setSize/ posInSet override values set.
   // Make sure the override values take precedence when both are set.
   // Add setSize/ posInSet overrides to the Views with group ids.
-  SetUpExtraViewsWithSetOverrides(group_ids);
+  SetUpExtraViewsSetOverrides(group_ids);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 4);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 4);
   EXPECT_EQ(view_accessibility(group_ids[1])->GetSetSize(), 4);
@@ -447,8 +439,8 @@ using ViewAccessibilityTest = ViewsTestBase;
 // Check if the destruction of the widget ends successfully if |view|'s
 // visibility changed during destruction.
 TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
-  // TODO: Construct a real AutomationManagerAura rather than using this
-  // observer to simulate it.
+  // TODO(jamescook): Construct a real AutomationManagerAura rather than using
+  // this observer to simulate it.
   AXAuraObjCache cache;
   TestAXEventObserver observer(&cache);
   std::unique_ptr<Widget> widget(new Widget);

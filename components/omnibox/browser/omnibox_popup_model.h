@@ -28,11 +28,41 @@ class Image;
 
 class OmniboxPopupModel {
  public:
+  // Directions for stepping through selections. These may apply for going
+  // up/down by lines or cycling left/right through states within a line.
+  enum Direction { kForward, kBackward };
+
+  // When changing selections, these are the possible stepping behaviors.
+  enum Step {
+    // Step by an entire line regardless of line state.
+    kWholeLine,
+
+    // Step by a state if another one is available on the current line;
+    // otherwise step by line.
+    kStateOrLine,
+
+    // Step by a state if another one is available on the current line;
+    // otherwise do not step.
+    kStateOrNothing,
+
+    // Step across all lines to the first or last line.
+    kAllLines
+  };
+
+  // The sentinel value for Selection::line which means no line is selected.
+  static const size_t kNoMatch;
+
   // See |Selection::state| below for details.
   enum LineState {
-    NORMAL = 0,
+    NORMAL,
     KEYWORD,
-    BUTTON_FOCUSED
+    BUTTON_FOCUSED,
+
+    // NO_STATE logically indicates unavailability of a state, and is
+    // only used internally. NO_STATE values are not persisted in members,
+    // are not returned from public methods, and should not be used by
+    // other classes.
+    NO_STATE
   };
 
   struct Selection {
@@ -48,6 +78,16 @@ class OmniboxPopupModel {
     LineState state;
 
     Selection(size_t line, LineState state) : line(line), state(state) {}
+
+    bool operator==(const Selection&) const;
+    bool operator!=(const Selection&) const;
+
+    // Returns true if going to this selection from given |from| selection
+    // results in activation of keyword state when it wasn't active before.
+    bool IsChangeToKeyword(Selection from) const;
+
+    // Derive another selection as copy of this one but with given state change.
+    Selection With(LineState new_state) const;
   };
 
   OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
@@ -74,6 +114,9 @@ class OmniboxPopupModel {
                                     bool allow_shrinking_contents,
                                     int* contents_max_width,
                                     int* description_max_width);
+
+  // Fully defines forward and backward ordering for all possible line states.
+  static LineState GetNextLineState(LineState state, Direction direction);
 
   // Returns true if the popup is currently open.
   bool IsOpen() const;
@@ -109,12 +152,6 @@ class OmniboxPopupModel {
   // Called when the user hits escape after arrowing around the popup.  This
   // will reset the popup to the initial state.
   void ResetToInitialState();
-
-  // Immediately updates and opens the popup if necessary, then moves the
-  // current selection to the respective line. If the line is unchanged, the
-  // selection will be unchanged, but the popup will still redraw and modify
-  // the text in the OmniboxEditModel.
-  void MoveTo(size_t new_line);
 
   // If the selected line has both a normal match and a keyword match, this can
   // be used to choose which to select.  This allows the user to toggle between
@@ -167,12 +204,33 @@ class OmniboxPopupModel {
 
   OmniboxEditModel* edit_model() { return edit_model_; }
 
-  // The token value for selected_line_ and functions dealing with a "line
-  // number" that indicates "no line".
-  static const size_t kNoMatch;
+  // Advances selection with consideration for both line number and line state.
+  // |direction| indicates direction of step, and |step| determines what kind
+  // of step to take. Returns the next selection, which could be anything.
+  Selection GetNextSelection(Direction direction, Step step) const;
+
+  // Applies the next selection as provided by GetNextSelection.
+  // Stepping the popup model selection gives special consideration for
+  // keyword mode state maintained in the edit model.
+  Selection StepSelection(Direction direction, Step step);
+
+  // Applies a given selection. Use GetNextSelection instead of constructing
+  // a selection from scratch.
+  void SetSelection(Selection selection);
+
+  // Preserves current selection line but resets it to default state.
+  // Returns new selection.
+  Selection ClearSelectionState();
 
  private:
-  void SetSelection(Selection selection);
+  // Returns true if the |selection| is available according to result matches.
+  bool IsSelectionAvailable(Selection selection) const;
+
+  // Returns the next line state that can be applied for given |from| selection,
+  // with |direction| indicating the direction of step. May return NO_STATE.
+  LineState GetNextAvailableLineState(Selection from,
+                                      Direction direction,
+                                      bool skip_keyword) const;
 
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);
 

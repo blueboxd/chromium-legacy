@@ -478,6 +478,8 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kNativePrintingSettingsSubPage,
       kNetworkDetailSubPage,
       kNetworksSubPage,
+      kPluginVmDetailsSubPage,
+      kPluginVmSharedPathsSubPage,
       kPointerOverlaySubPage,
       kPowerSubPage,
       // reset is both an OS and browser sub page, but prefer the OS version

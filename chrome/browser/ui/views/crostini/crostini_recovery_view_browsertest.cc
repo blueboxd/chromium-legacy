@@ -9,10 +9,10 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
@@ -82,8 +82,7 @@ class CrostiniRecoveryViewBrowserTest : public CrostiniDialogBrowserTest {
         crostini::CrostiniTestHelper::BasicAppList(
             kDesktopFileId, crostini::kCrostiniDefaultVmName,
             crostini::kCrostiniDefaultContainerName);
-    crostini::CrostiniRegistryServiceFactory::GetForProfile(
-        browser()->profile())
+    guest_os::GuestOsRegistryServiceFactory::GetForProfile(browser()->profile())
         ->UpdateApplicationList(app_list);
   }
 

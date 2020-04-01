@@ -9,8 +9,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -180,7 +180,7 @@ ApplicationList CrostiniTestHelper::BasicAppList(
 }
 
 void CrostiniTestHelper::UpdateRegistry() {
-  crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_)
+  guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
       ->UpdateApplicationList(current_apps_);
 }
 

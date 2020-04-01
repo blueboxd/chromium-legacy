@@ -184,8 +184,8 @@ std::string GetSyncCacheGuid() {
   return info_provider->GetLocalDeviceInfo()->guid();
 }
 
-void InjectAutofillProfileOnFakeSyncServer(std::string guid,
-                                           std::string full_name) {
+void AddAutofillProfileToFakeSyncServer(std::string guid,
+                                        std::string full_name) {
   DCHECK(gSyncFakeServer);
   sync_pb::EntitySpecifics entity_specifics;
   sync_pb::AutofillProfileSpecifics* autofill_profile =
@@ -200,7 +200,7 @@ void InjectAutofillProfileOnFakeSyncServer(std::string guid,
   gSyncFakeServer->InjectEntity(std::move(entity));
 }
 
-void DeleteAutofillProfileOnFakeSyncServer(std::string guid) {
+void DeleteAutofillProfileFromFakeSyncServer(std::string guid) {
   DCHECK(gSyncFakeServer);
   std::vector<sync_pb::SyncEntity> autofill_profiles =
       gSyncFakeServer->GetSyncEntitiesByModelType(syncer::AUTOFILL_PROFILE);

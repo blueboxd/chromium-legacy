@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/match_compare.h"
+#include "components/omnibox/browser/search_suggestion_parser.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
@@ -122,6 +123,10 @@ class AutocompleteResult {
       const ACMatches& matches,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
 
+  const SearchSuggestionParser::HeadersMap& headers_map() const {
+    return headers_map_;
+  }
+
   // Clears the matches for this result set.
   void Reset();
 
@@ -150,11 +155,17 @@ class AutocompleteResult {
   // Get a list of comparators used for deduping for the matches in this result.
   std::vector<MatchDedupComparator> GetMatchDedupComparators() const;
 
+  base::string16 GetHeaderForGroupId(int suggestion_group_id);
+
   // Logs metrics for when |new_result| replaces |old_result| asynchronously.
   // |old_result| a list of the comparators for the old matches.
   static void LogAsynchronousUpdateMetrics(
       const std::vector<MatchDedupComparator>& old_result,
       const AutocompleteResult& new_result);
+
+  void set_headers_map(const SearchSuggestionParser::HeadersMap& headers_map) {
+    headers_map_ = headers_map;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
@@ -236,6 +247,8 @@ class AutocompleteResult {
   void DemoteOnDeviceSearchSuggestions();
 
   ACMatches matches_;
+
+  SearchSuggestionParser::HeadersMap headers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
 };

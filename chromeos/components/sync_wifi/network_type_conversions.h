@@ -5,10 +5,13 @@
 #ifndef CHROMEOS_COMPONENTS_SYNC_WIFI_NETWORK_TYPE_CONVERSIONS_H_
 #define CHROMEOS_COMPONENTS_SYNC_WIFI_NETWORK_TYPE_CONVERSIONS_H_
 
+#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 
 namespace chromeos {
+
+class NetworkState;
 
 namespace sync_wifi {
 
@@ -46,6 +49,9 @@ network_config::mojom::SecurityType MojoSecurityTypeFromProto(
 
 network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
     const sync_pb::WifiConfigurationSpecifics& specifics);
+
+const NetworkState* NetworkStateFromNetworkIdentifier(
+    const NetworkIdentifier& id);
 
 }  // namespace sync_wifi
 

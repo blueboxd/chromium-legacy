@@ -79,6 +79,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       {"audioPlaying", IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT},
       {"usbConnected", IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT},
       {"bluetoothConnected", IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT},
+      {"hidConnected", IDS_TAB_AX_LABEL_HID_CONNECTED_FORMAT},
       {"serialConnected", IDS_TAB_AX_LABEL_SERIAL_CONNECTED_FORMAT},
       {"mediaRecording", IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT},
       {"audioMuting", IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT},

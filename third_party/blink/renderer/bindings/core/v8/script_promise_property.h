@@ -72,6 +72,8 @@ class ScriptPromiseProperty final
     // suppress the check forcibly.
     resolver->SuppressDetachCheck();
     ScriptPromise promise = resolver->Promise();
+    if (mark_as_handled_)
+      promise.MarkAsHandled();
     switch (state_) {
       case kPending:
         resolvers_.push_back(resolver);
@@ -147,6 +149,14 @@ class ScriptPromiseProperty final
     resolved_with_undefined_ = false;
   }
 
+  // Mark generated promises as handled to avoid reporting unhandled rejections.
+  void MarkAsHandled() {
+    mark_as_handled_ = true;
+    for (auto& promise : promises_) {
+      promise.MarkAsHandled();
+    }
+  }
+
   void Trace(Visitor* visitor) override {
     TraceIfNeeded<ResolvedType>::Trace(visitor, resolved_);
     TraceIfNeeded<RejectedType>::Trace(visitor, rejected_);
@@ -164,6 +174,7 @@ class ScriptPromiseProperty final
   HeapVector<Member<ScriptPromiseResolver>> resolvers_;
   HeapVector<ScriptPromise> promises_;
   bool resolved_with_undefined_ = false;
+  bool mark_as_handled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptPromiseProperty);
 };

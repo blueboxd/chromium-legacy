@@ -152,8 +152,8 @@
   GREYAssertTrue(![ChromeEarlGrey isAutofillProfilePresentWithGUID:fakeGUID
                                                autofillProfileName:profileName],
                  @"Autofill profile should not be present.");
-  [ChromeEarlGrey injectAutofillProfileOnFakeSyncServerWithGUID:fakeGUID
-                                            autofillProfileName:profileName];
+  [ChromeEarlGrey addAutofillProfileToFakeSyncServerWithGUID:fakeGUID
+                                         autofillProfileName:profileName];
 }
 
 // Tests waitForSufficientlyVisibleElementWithMatcher in chrome_earl_grey.h

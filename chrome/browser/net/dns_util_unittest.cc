@@ -4,12 +4,17 @@
 
 #include "chrome/browser/net/dns_util.h"
 
+#include <memory>
+
 #include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_features.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::ElementsAre;
 
 namespace chrome_browser_net {
 
@@ -140,6 +145,24 @@ TEST_F(DNSUtilTest, MigrateDNSProbesPref) {
     EXPECT_TRUE(user_pref->GetBool());
   }
   EXPECT_FALSE(backup_pref->HasUserSetting());
+}
+
+TEST(DNSUtil, SplitDohTemplateGroup) {
+  EXPECT_THAT(SplitDohTemplateGroup("a"), ElementsAre("a"));
+  EXPECT_THAT(SplitDohTemplateGroup("a b"), ElementsAre("a", "b"));
+  EXPECT_THAT(SplitDohTemplateGroup("a \tb\nc"), ElementsAre("a", "b\nc"));
+  EXPECT_THAT(SplitDohTemplateGroup(" \ta b\n"), ElementsAre("a", "b"));
+}
+
+TEST(DNSUtil, IsValidDohTemplateGroup) {
+  EXPECT_TRUE(IsValidDohTemplateGroup(""));
+  EXPECT_TRUE(IsValidDohTemplateGroup("https://valid"));
+  EXPECT_TRUE(IsValidDohTemplateGroup("https://valid https://valid2"));
+
+  EXPECT_FALSE(IsValidDohTemplateGroup("https://valid invalid"));
+  EXPECT_FALSE(IsValidDohTemplateGroup("invalid https://valid"));
+  EXPECT_FALSE(IsValidDohTemplateGroup("invalid"));
+  EXPECT_FALSE(IsValidDohTemplateGroup("invalid invalid2"));
 }
 
 }  // namespace chrome_browser_net

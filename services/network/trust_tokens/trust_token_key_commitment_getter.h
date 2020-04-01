@@ -21,8 +21,8 @@ class TrustTokenKeyCommitmentGetter {
   virtual ~TrustTokenKeyCommitmentGetter() = default;
   virtual void Get(
       const url::Origin& origin,
-      base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)>
-          on_done) = 0;
+      base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)> on_done)
+      const = 0;
 };
 
 }  // namespace network

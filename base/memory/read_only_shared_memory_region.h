@@ -32,12 +32,6 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   // This means that the caller's process is the only process that can modify
   // the region content. If you need to pass write access to another process,
   // consider using WritableSharedMemoryRegion or UnsafeSharedMemoryRegion.
-  //
-  // This call will fail if the process does not have sufficient permissions to
-  // create a shared memory region itself. See
-  // mojo::CreateReadOnlySharedMemoryRegion in
-  // mojo/public/cpp/base/shared_memory_utils.h for creating a shared memory
-  // region from a an unprivileged process where a broker must be used.
   static MappedReadOnlyRegion Create(size_t size);
   using CreateFunction = decltype(Create);
 

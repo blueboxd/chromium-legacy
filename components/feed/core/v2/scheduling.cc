@@ -40,16 +40,12 @@ base::TimeDelta GetUserClassTriggerThreshold(UserClass user_class,
   }
 }
 
-LoadRefreshBehavior DetermineLoadRefreshBehavior(UserClass user_class,
-                                                 bool has_content,
-                                                 base::TimeDelta content_age) {
-  if (!has_content)
-    return LoadRefreshBehavior::kWaitForRefresh;
-  if (content_age >
-      GetUserClassTriggerThreshold(user_class, TriggerType::kForegrounded))
-    return LoadRefreshBehavior::kLimitedWaitForRefresh;
-  // TODO(harringtond): We are probably not going to support |kRefreshInline|.
-  return LoadRefreshBehavior::kRefreshInline;
+bool ShouldWaitForNewContent(UserClass user_class,
+                             bool has_content,
+                             base::TimeDelta content_age) {
+  return !has_content ||
+         content_age > GetUserClassTriggerThreshold(user_class,
+                                                    TriggerType::kForegrounded);
 }
 
 }  // namespace feed

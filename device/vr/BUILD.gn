@@ -245,7 +245,7 @@ if (enable_vr) {
     }
   }
 
-  static_library("fakes") {
+  component("vr_fakes") {
     testonly = true
 
     defines = [ "DEVICE_VR_IMPLEMENTATION" ]

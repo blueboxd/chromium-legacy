@@ -84,8 +84,8 @@ void XmppRegisterSupportHostRequest::OnSignalStrategyStateChange(
     request_ = iq_sender_->SendIq(
         jingle_xmpp::STR_SET, directory_bot_jid_,
         CreateRegistrationRequest(host_jid),
-        base::BindRepeating(&XmppRegisterSupportHostRequest::ProcessResponse,
-                            base::Unretained(this)));
+        base::BindOnce(&XmppRegisterSupportHostRequest::ProcessResponse,
+                       base::Unretained(this)));
     if (!request_) {
       LOG(ERROR) << "Error sending the register-support-host request.";
       CallCallback(std::string(), base::TimeDelta(),

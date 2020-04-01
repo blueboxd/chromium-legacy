@@ -76,8 +76,8 @@ void PseudoTcpChannelFactory::OnDatagramChannelCreated(
     adapter->SetWriteWaitsForSend(true);
 
   int result = adapter->Connect(
-      base::Bind(&PseudoTcpChannelFactory::OnPseudoTcpConnected,
-                 base::Unretained(this), name, callback));
+      base::BindOnce(&PseudoTcpChannelFactory::OnPseudoTcpConnected,
+                     base::Unretained(this), name, callback));
   if (result != net::ERR_IO_PENDING)
     OnPseudoTcpConnected(name, callback, result);
 }

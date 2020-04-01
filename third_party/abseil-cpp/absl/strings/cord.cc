@@ -28,6 +28,7 @@
 
 #include "absl/base/casts.h"
 #include "absl/base/internal/raw_logging.h"
+#include "absl/base/macros.h"
 #include "absl/base/port.h"
 #include "absl/container/fixed_array.h"
 #include "absl/strings/escaping.h"
@@ -713,6 +714,14 @@ void Cord::InlineRep::ClearSlow() {
   memset(data_, 0, sizeof(data_));
 }
 
+inline Cord::InternalChunkIterator Cord::internal_chunk_begin() const {
+  return InternalChunkIterator(this);
+}
+
+inline Cord::InternalChunkRange Cord::InternalChunks() const {
+  return InternalChunkRange(this);
+}
+
 // --------------------------------------------------------------------
 // Constructors and destructors
 
@@ -1087,7 +1096,7 @@ Cord Cord::Subcord(size_t pos, size_t new_size) const {
   } else if (new_size == 0) {
     // We want to return empty subcord, so nothing to do.
   } else if (new_size <= InlineRep::kMaxInline) {
-    Cord::ChunkIterator it = chunk_begin();
+    Cord::InternalChunkIterator it = internal_chunk_begin();
     it.AdvanceBytes(pos);
     char* dest = sub_cord.contents_.data_;
     size_t remaining_size = new_size;
@@ -1325,7 +1334,7 @@ inline absl::string_view Cord::InlineRep::FindFlatStartPiece() const {
 
 inline int Cord::CompareSlowPath(absl::string_view rhs, size_t compared_size,
                                  size_t size_to_compare) const {
-  auto advance = [](Cord::ChunkIterator* it, absl::string_view* chunk) {
+  auto advance = [](Cord::InternalChunkIterator* it, absl::string_view* chunk) {
     if (!chunk->empty()) return true;
     ++*it;
     if (it->bytes_remaining_ == 0) return false;
@@ -1333,7 +1342,7 @@ inline int Cord::CompareSlowPath(absl::string_view rhs, size_t compared_size,
     return true;
   };
 
-  Cord::ChunkIterator lhs_it = chunk_begin();
+  Cord::InternalChunkIterator lhs_it = internal_chunk_begin();
 
   // compared_size is inside first chunk.
   absl::string_view lhs_chunk =
@@ -1355,7 +1364,7 @@ inline int Cord::CompareSlowPath(absl::string_view rhs, size_t compared_size,
 
 inline int Cord::CompareSlowPath(const Cord& rhs, size_t compared_size,
                                  size_t size_to_compare) const {
-  auto advance = [](Cord::ChunkIterator* it, absl::string_view* chunk) {
+  auto advance = [](Cord::InternalChunkIterator* it, absl::string_view* chunk) {
     if (!chunk->empty()) return true;
     ++*it;
     if (it->bytes_remaining_ == 0) return false;
@@ -1363,8 +1372,8 @@ inline int Cord::CompareSlowPath(const Cord& rhs, size_t compared_size,
     return true;
   };
 
-  Cord::ChunkIterator lhs_it = chunk_begin();
-  Cord::ChunkIterator rhs_it = rhs.chunk_begin();
+  Cord::InternalChunkIterator lhs_it = internal_chunk_begin();
+  Cord::InternalChunkIterator rhs_it = rhs.internal_chunk_begin();
 
   // compared_size is inside both first chunks.
   absl::string_view lhs_chunk =
@@ -1498,8 +1507,11 @@ void Cord::CopyToArraySlowPath(char* dst) const {
   }
 }
 
-Cord::ChunkIterator& Cord::ChunkIterator::operator++() {
-  assert(bytes_remaining_ > 0 && "Attempted to iterate past `end()`");
+template <typename StorageType>
+Cord::GenericChunkIterator<StorageType>&
+Cord::GenericChunkIterator<StorageType>::operator++() {
+  ABSL_HARDENING_ASSERT(bytes_remaining_ > 0 &&
+                        "Attempted to iterate past `end()`");
   assert(bytes_remaining_ >= current_chunk_.size());
   bytes_remaining_ -= current_chunk_.size();
 
@@ -1537,8 +1549,10 @@ Cord::ChunkIterator& Cord::ChunkIterator::operator++() {
   return *this;
 }
 
-Cord Cord::ChunkIterator::AdvanceAndReadBytes(size_t n) {
-  assert(bytes_remaining_ >= n && "Attempted to iterate past `end()`");
+template <typename StorageType>
+Cord Cord::GenericChunkIterator<StorageType>::AdvanceAndReadBytes(size_t n) {
+  ABSL_HARDENING_ASSERT(bytes_remaining_ >= n &&
+                        "Attempted to iterate past `end()`");
   Cord subcord;
 
   if (n <= InlineRep::kMaxInline) {
@@ -1650,7 +1664,8 @@ Cord Cord::ChunkIterator::AdvanceAndReadBytes(size_t n) {
   return subcord;
 }
 
-void Cord::ChunkIterator::AdvanceBytesSlowPath(size_t n) {
+template <typename StorageType>
+void Cord::GenericChunkIterator<StorageType>::AdvanceBytesSlowPath(size_t n) {
   assert(bytes_remaining_ >= n && "Attempted to iterate past `end()`");
   assert(n >= current_chunk_.size());  // This should only be called when
                                        // iterating to a new node.
@@ -1709,7 +1724,7 @@ void Cord::ChunkIterator::AdvanceBytesSlowPath(size_t n) {
 }
 
 char Cord::operator[](size_t i) const {
-  assert(i < size());
+  ABSL_HARDENING_ASSERT(i < size());
   size_t offset = i;
   const CordRep* rep = contents_.tree();
   if (rep == nullptr) {
@@ -1989,6 +2004,9 @@ std::ostream& operator<<(std::ostream& out, const Cord& cord) {
   }
   return out;
 }
+
+template class Cord::GenericChunkIterator<cord_internal::CordTreeMutablePath>;
+template class Cord::GenericChunkIterator<cord_internal::CordTreeDynamicPath>;
 
 namespace strings_internal {
 size_t CordTestAccess::FlatOverhead() { return kFlatOverhead; }

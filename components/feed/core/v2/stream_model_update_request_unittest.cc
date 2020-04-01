@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/feed_response.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
+#include "components/feed/core/v2/proto_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -21,7 +22,8 @@ namespace {
 
 const char kResponsePbPath[] = "components/test/data/feed/response.binarypb";
 constexpr base::TimeDelta kResponseTime = base::TimeDelta::FromSeconds(42);
-
+const base::Time kCurrentTime =
+    base::Time::UnixEpoch() + base::TimeDelta::FromDays(123);
 // TODO(iwells): Replace response.binarypb with a response that uses the new
 // wire protocol.
 //
@@ -75,9 +77,10 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
             kExpectedStreamStructureCount + 1);
 
   std::unique_ptr<StreamModelUpdateRequest> translated =
-      TranslateWireResponse(response, kResponseTime);
+      TranslateWireResponse(response, kResponseTime, kCurrentTime);
 
   ASSERT_TRUE(translated);
+  EXPECT_EQ(kCurrentTime, feedstore::GetLastAddedTime(translated->stream_data));
   ASSERT_EQ(translated->stream_structures.size(),
             static_cast<size_t>(kExpectedStreamStructureCount));
 

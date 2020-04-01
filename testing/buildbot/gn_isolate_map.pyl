@@ -1726,7 +1726,8 @@
   },
   "upload_trace_processor": {
     "label": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor",
-    "type": "raw",
+    "type": "generated_script",
+    "script": "upload_trace_processor",
   },
   "url_unittests": {
     "label": "//url:url_unittests",

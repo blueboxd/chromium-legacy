@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_PLATFORM_SCREEN_H_
 #define UI_OZONE_PUBLIC_PLATFORM_SCREEN_H_
 
+#include "base/component_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace display {
@@ -22,6 +23,8 @@ namespace ui {
 // PlatformScreen is an abstract base class for an interface to an Ozone
 // platform's functionality exposed to Chrome via display::Screen.
 //
+// Additionally, may notify DisplayObservers with global workspace changes.
+//
 // Recall that in Chrome, a |Screen| is the union of all attached |Display|
 // instances. The |Screen|'s coordinate system is in DIP pixels (so that
 // it can reasonably support |Display|s of differing pixel densities.) The
@@ -29,10 +32,10 @@ namespace ui {
 // |Screen|. Coordinates increase down and to the right.
 //
 // TODO(rjkroege): Add ascii art?
-class PlatformScreen {
+class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
  public:
-  PlatformScreen() = default;
-  virtual ~PlatformScreen() = default;
+  PlatformScreen();
+  virtual ~PlatformScreen();
 
   // Provide a |display:;Display| for each physical display available to Chrome.
   virtual const std::vector<display::Display>& GetAllDisplays() const = 0;
@@ -67,6 +70,10 @@ class PlatformScreen {
   // Adds/Removes display observers.
   virtual void AddObserver(display::DisplayObserver* observer) = 0;
   virtual void RemoveObserver(display::DisplayObserver* observer) = 0;
+
+  // Returns currently used workspace. If a platform does not support this, the
+  // empty string is returned.
+  virtual std::string GetCurrentWorkspace();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformScreen);

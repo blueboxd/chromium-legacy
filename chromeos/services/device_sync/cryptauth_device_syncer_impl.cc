@@ -256,8 +256,8 @@ void CryptAuthDeviceSyncerImpl::SyncMetadata() {
       request_context_, local_better_together_device_metadata_,
       key_registry_->GetActiveKey(
           CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey),
-      base::Bind(&CryptAuthDeviceSyncerImpl::OnSyncMetadataFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&CryptAuthDeviceSyncerImpl::OnSyncMetadataFinished,
+                     base::Unretained(this)));
 }
 
 void CryptAuthDeviceSyncerImpl::OnSyncMetadataFinished(
@@ -346,8 +346,8 @@ void CryptAuthDeviceSyncerImpl::GetFeatureStatuses() {
       CryptAuthFeatureStatusGetterImpl::Factory::Create(client_factory_);
   feature_status_getter_->GetFeatureStatuses(
       request_context_, device_ids,
-      base::Bind(&CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished,
+                     base::Unretained(this)));
 }
 
 void CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished(
@@ -651,8 +651,8 @@ void CryptAuthDeviceSyncerImpl::ShareGroupPrivateKey() {
       CryptAuthGroupPrivateKeySharerImpl::Factory::Create(client_factory_);
   group_private_key_sharer_->ShareGroupPrivateKey(
       request_context_, *group_key, id_to_encrypting_key_map,
-      base::Bind(&CryptAuthDeviceSyncerImpl::OnShareGroupPrivateKeyFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&CryptAuthDeviceSyncerImpl::OnShareGroupPrivateKeyFinished,
+                     base::Unretained(this)));
 }
 
 void CryptAuthDeviceSyncerImpl::OnShareGroupPrivateKeyFinished(

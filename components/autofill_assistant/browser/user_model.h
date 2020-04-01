@@ -49,15 +49,18 @@ class UserModel {
   // Returns the value for |identifier| or nullopt if there is no such value.
   base::Optional<ValueProto> GetValue(const std::string& identifier) const;
 
+  // Returns the value for |reference| or nullopt if there is no such value.
+  base::Optional<ValueProto> GetValue(
+      const ValueReferenceProto& reference) const;
+
   // Returns all specified values in a new std::vector. Returns nullopt if any
-  // of the requested values was not found. |model_identifiers| must be
-  // a std::string iterable.
+  // of the requested values was not found.
   template <class T>
   base::Optional<std::vector<ValueProto>> GetValues(
-      const T& model_identifiers) const {
+      const T& value_references) const {
     std::vector<ValueProto> values;
-    for (const auto& identifier : model_identifiers) {
-      auto value = GetValue(identifier);
+    for (const auto& reference : value_references) {
+      auto value = GetValue(reference);
       if (!value.has_value()) {
         return base::nullopt;
       }

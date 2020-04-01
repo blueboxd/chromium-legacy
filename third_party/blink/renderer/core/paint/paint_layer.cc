@@ -865,19 +865,6 @@ void PaintLayer::UpdateSizeAndScrollingAfterLayout() {
   }
 }
 
-TransformationMatrix PaintLayer::PerspectiveTransform() const {
-  if (!GetLayoutObject().HasTransformRelatedProperty())
-    return TransformationMatrix();
-
-  const ComputedStyle& style = GetLayoutObject().StyleRef();
-  if (!style.HasPerspective())
-    return TransformationMatrix();
-
-  TransformationMatrix t;
-  t.ApplyPerspective(style.Perspective());
-  return t;
-}
-
 FloatPoint PaintLayer::PerspectiveOrigin() const {
   if (!GetLayoutObject().HasTransformRelatedProperty())
     return FloatPoint();
@@ -1182,106 +1169,6 @@ bool PaintLayer::HasAncestorWithFilterThatMovesPixels() const {
       return true;
   }
   return false;
-}
-
-static void ExpandClipRectForDescendants(
-    PhysicalRect& clip_rect,
-    const PaintLayer* layer,
-    const PaintLayer* root_layer,
-    PaintLayer::TransparencyClipBoxBehavior transparency_behavior,
-    const PhysicalOffset& sub_pixel_accumulation,
-    GlobalPaintFlags global_paint_flags) {
-  // If we have a mask, then the clip is limited to the border box area (and
-  // there is no need to examine child layers).
-  if (!layer->GetLayoutObject().HasMask()) {
-    // Note: we don't have to walk z-order lists since transparent elements
-    // always establish a stacking container. This means we can just walk the
-    // layer tree directly.
-    for (PaintLayer* curr = layer->FirstChild(); curr;
-         curr = curr->NextSibling())
-      clip_rect.Unite(PaintLayer::TransparencyClipBox(
-          curr, root_layer, transparency_behavior,
-          PaintLayer::kDescendantsOfTransparencyClipBox, sub_pixel_accumulation,
-          global_paint_flags));
-  }
-}
-
-PhysicalRect PaintLayer::TransparencyClipBox(
-    const PaintLayer* layer,
-    const PaintLayer* root_layer,
-    TransparencyClipBoxBehavior transparency_behavior,
-    TransparencyClipBoxMode transparency_mode,
-    const PhysicalOffset& sub_pixel_accumulation,
-    GlobalPaintFlags global_paint_flags) {
-  // FIXME: Although this function completely ignores CSS-imposed clipping, we
-  // did already intersect with the paintDirtyRect, and that should cut down on
-  // the amount we have to paint.  Still it would be better to respect clips.
-
-  if (root_layer != layer &&
-      ((transparency_behavior == kPaintingTransparencyClipBox &&
-        layer->PaintsWithTransform(global_paint_flags)) ||
-       (transparency_behavior == kHitTestingTransparencyClipBox &&
-        layer->HasTransformRelatedProperty()))) {
-    // The best we can do here is to use enclosed bounding boxes to establish a
-    // "fuzzy" enough clip to encompass the transformed layer and all of its
-    // children.
-    const PaintLayer* pagination_layer =
-        transparency_mode == kDescendantsOfTransparencyClipBox
-            ? layer->EnclosingPaginationLayer()
-            : nullptr;
-    const PaintLayer* root_layer_for_transform =
-        pagination_layer ? pagination_layer : root_layer;
-    PhysicalOffset delta;
-    layer->ConvertToLayerCoords(root_layer_for_transform, delta);
-
-    delta += sub_pixel_accumulation;
-    IntPoint pixel_snapped_delta = RoundedIntPoint(delta);
-    TransformationMatrix transform;
-    transform.Translate(pixel_snapped_delta.X(), pixel_snapped_delta.Y());
-    if (layer->Transform())
-      transform = transform * *layer->Transform();
-
-    // We don't use fragment boxes when collecting a transformed layer's
-    // bounding box, since it always paints unfragmented.
-    PhysicalRect clip_rect = layer->LocalBoundingBox();
-    ExpandClipRectForDescendants(clip_rect, layer, layer, transparency_behavior,
-                                 sub_pixel_accumulation, global_paint_flags);
-    PhysicalRect result = PhysicalRect::EnclosingRect(
-        transform.MapRect(layer->MapRectForFilter(FloatRect(clip_rect))));
-    if (!pagination_layer)
-      return result;
-
-    // We have to break up the transformed extent across our columns.
-    // Split our box up into the actual fragment boxes that layout in the
-    // columns/pages and unite those together to get our true bounding box.
-    LayoutFlowThread& enclosing_flow_thread =
-        ToLayoutFlowThread(pagination_layer->GetLayoutObject());
-    result = PhysicalRectToBeNoop(
-        enclosing_flow_thread.FragmentsBoundingBox(result.ToLayoutRect()));
-
-    PhysicalOffset root_layer_delta;
-    pagination_layer->ConvertToLayerCoords(root_layer, root_layer_delta);
-    result.Move(root_layer_delta);
-    return result;
-  }
-
-  PhysicalRect clip_rect = layer->ShouldFragmentCompositedBounds(root_layer)
-                               ? layer->FragmentsBoundingBox(root_layer)
-                               : layer->PhysicalBoundingBox(root_layer);
-  ExpandClipRectForDescendants(clip_rect, layer, root_layer,
-                               transparency_behavior, sub_pixel_accumulation,
-                               global_paint_flags);
-
-  // Convert clipRect into local coordinates for mapLayerRectForFilter(), and
-  // convert back after.
-  PhysicalOffset delta;
-  layer->ConvertToLayerCoords(root_layer, delta);
-  clip_rect.Move(-delta);
-  clip_rect = layer->MapRectForFilter(clip_rect);
-  clip_rect.Move(delta);
-
-  clip_rect.Move(sub_pixel_accumulation);
-  return clip_rect;
 }
 
 void* PaintLayer::operator new(size_t sz) {
@@ -1655,12 +1542,16 @@ void PaintLayer::UpdateScrollableArea() {
     if (Compositor()) {
       Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     }
+    GetLayoutObject().SetNeedsPaintPropertyUpdate();
   } else if (!RequiresScrollableArea() && scrollable_area_) {
     scrollable_area_->Dispose();
     scrollable_area_.Clear();
     if (Compositor()) {
       Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     }
+    GetLayoutObject().SetBackgroundPaintLocation(
+        kBackgroundPaintInGraphicsLayer);
+    GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
 

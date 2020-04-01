@@ -111,6 +111,7 @@ absl_source_set("container_memory") {
   public = [ "internal/container_memory.h" ]
   deps = [
     "../memory",
+    "../meta:type_traits",
     "../utility",
   ]
 }

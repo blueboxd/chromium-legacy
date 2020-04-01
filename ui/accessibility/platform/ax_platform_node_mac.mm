@@ -414,7 +414,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   if (!_node || !_node->GetDelegate())
     return NSZeroRect;
   return gfx::ScreenRectToNSRect(_node->GetDelegate()->GetBoundsRect(
-      ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kClipped));
+      ui::AXCoordinateSystem::kScreenDIPs, ui::AXClippingBehavior::kClipped));
 }
 
 - (NSString*)getStringAttribute:(ax::mojom::StringAttribute)attribute {

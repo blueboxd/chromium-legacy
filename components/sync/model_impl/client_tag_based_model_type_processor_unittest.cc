@@ -38,8 +38,6 @@ namespace syncer {
 
 namespace {
 
-const char kDefaultAuthenticatedAccountId[] = "DefaultAccountId";
-
 const char kKey1[] = "key1";
 const char kKey2[] = "key2";
 const char kKey3[] = "key3";
@@ -135,8 +133,6 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     model_type_state.set_initial_sync_done(is_done);
     model_type_state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(model_type_));
-    model_type_state.set_authenticated_account_id(
-        kDefaultAuthenticatedAccountId);
     db_->set_model_type_state(model_type_state);
   }
 
@@ -276,10 +272,10 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   void OnCommitDataLoaded() { bridge()->OnCommitDataLoaded(); }
 
-  void OnSyncStarting(const std::string& authenticated_account_id =
-                          kDefaultAuthenticatedAccountId,
-                      const std::string& cache_guid = "TestCacheGuid",
-                      SyncMode sync_mode = SyncMode::kFull) {
+  void OnSyncStarting(
+      const std::string& authenticated_account_id = "SomeAccountId",
+      const std::string& cache_guid = "TestCacheGuid",
+      SyncMode sync_mode = SyncMode::kFull) {
     DataTypeActivationRequest request;
     request.error_handler = base::BindRepeating(
         &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
@@ -378,9 +374,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   // Return the number of entities the processor has metadata for.
   size_t ProcessorEntityCount() const {
-    if (type_processor()->entity_tracker_)
-      return type_processor()->entity_tracker_->size();
-    return 0;
+    return type_processor()->entity_tracker_->size();
   }
 
   // Expect to receive an error from the processor.
@@ -460,10 +454,9 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldExposeNewlyTrackedAccountId) {
   ModelReadyToSync();
   ASSERT_EQ("", type_processor()->TrackedAccountId());
-  OnSyncStarting();
+  OnSyncStarting("SomeAccountId");
   worker()->UpdateFromServer();
-  EXPECT_EQ(kDefaultAuthenticatedAccountId,
-            type_processor()->TrackedAccountId());
+  EXPECT_EQ("SomeAccountId", type_processor()->TrackedAccountId());
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
@@ -489,7 +482,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldExposeNewlyTrackedCacheGuid) {
   ModelReadyToSync();
   ASSERT_EQ("", type_processor()->TrackedCacheGuid());
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid");
+  OnSyncStarting("SomeAccountId", "TestCacheGuid");
   worker()->UpdateFromServer();
   EXPECT_EQ("TestCacheGuid", type_processor()->TrackedCacheGuid());
 }
@@ -500,7 +493,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_cache_guid("PersistedCacheGuid");
-  model_type_state.set_authenticated_account_id(kDefaultAuthenticatedAccountId);
   model_type_state.mutable_progress_marker()->set_data_type_id(
       GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
@@ -510,7 +502,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ("PersistedCacheGuid", type_processor()->TrackedCacheGuid());
 
   // If sync gets started, the cache guid should still be set.
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "PersistedCacheGuid");
+  OnSyncStarting("SomeAccountId", "PersistedCacheGuid");
   EXPECT_EQ("PersistedCacheGuid", type_processor()->TrackedCacheGuid());
 }
 
@@ -1881,8 +1873,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid",
-                 SyncMode::kTransportOnly);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", SyncMode::kTransportOnly);
 
   base::HistogramTester histogram_tester;
 
@@ -1906,8 +1897,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldReportPersistentConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid",
-                 SyncMode::kFull);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", SyncMode::kFull);
 
   base::HistogramTester histogram_tester;
 
@@ -1976,8 +1966,7 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
 TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTimeOnlyForFirstFullUpdate) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting(kDefaultAuthenticatedAccountId, "TestCacheGuid",
-                 SyncMode::kTransportOnly);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", SyncMode::kTransportOnly);
 
   UpdateResponseDataList updates1;
   updates1.push_back(worker()->GenerateUpdateData(
@@ -2541,7 +2530,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldPropagateFailedCommitItemsToBridgeWhenCommitCompleted) {
-  InitializeToReadyState();
   FailedCommitResponseData response_data;
   response_data.client_tag_hash = GetHash("dummy tag");
   response_data.response_type = sync_pb::CommitResponse::TRANSIENT_ERROR;
@@ -2584,7 +2572,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldNotPropagateFailedCommitAttemptToBridgeWhenNoFailedItems) {
-  InitializeToReadyState();
   auto on_commit_attempt_errors_callback = base::BindOnce(
       [](const FailedCommitResponseDataList& error_response_list) {
         ADD_FAILURE()
@@ -2618,9 +2605,8 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
        ShouldExposeNewlyTrackedAccountId) {
   ModelReadyToSync();
   ASSERT_EQ("", type_processor()->TrackedAccountId());
-  OnSyncStarting();
-  EXPECT_EQ(kDefaultAuthenticatedAccountId,
-            type_processor()->TrackedAccountId());
+  OnSyncStarting("SomeAccountId");
+  EXPECT_EQ("SomeAccountId", type_processor()->TrackedAccountId());
 }
 
 TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
@@ -2713,52 +2699,6 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   worker()->VerifyPendingCommits({});
   EXPECT_EQ(0U, db()->data_count());
   EXPECT_EQ(0U, db()->metadata_count());
-}
-
-TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldResetOnInvalidCacheGuid) {
-  ResetStateWriteItem(kKey1, kValue1);
-  InitializeToMetadataLoaded();
-  OnSyncStarting();
-  OnCommitDataLoaded();
-  ASSERT_EQ(1U, ProcessorEntityCount());
-
-  ResetStateWriteItem(kKey1, kValue1);
-  sync_pb::ModelTypeState model_type_state = db()->model_type_state();
-  model_type_state.set_cache_guid("OtherCacheGuid");
-  db()->set_model_type_state(model_type_state);
-
-  ModelReadyToSync();
-  OnSyncStarting();
-  EXPECT_EQ(0U, ProcessorEntityCount());
-}
-
-TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldResetOnInvalidDataTypeId) {
-  ResetStateWriteItem(kKey1, kValue1);
-  ASSERT_EQ(0U, ProcessorEntityCount());
-
-  // Initialize change processor, expect to load data from the bridge.
-  InitializeToMetadataLoaded();
-  OnSyncStarting();
-  OnCommitDataLoaded();
-  ASSERT_EQ(1U, ProcessorEntityCount());
-
-  ResetStateWriteItem(kKey1, kValue1);
-
-  base::HistogramTester histogram_tester;
-  OnSyncStarting();
-  // Set different data type id.
-  sync_pb::ModelTypeState model_type_state = db()->model_type_state();
-
-  ASSERT_NE(model_type_state.progress_marker().data_type_id(),
-            GetSpecificsFieldNumberFromModelType(AUTOFILL));
-  model_type_state.mutable_progress_marker()->set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(AUTOFILL));
-  db()->set_model_type_state(model_type_state);
-
-  ModelReadyToSync();
-  EXPECT_EQ(0U, ProcessorEntityCount());
-  histogram_tester.ExpectUniqueSample("Sync.PersistedModelTypeIdMismatch",
-                                      ModelTypeForHistograms::kPreferences, 1);
 }
 
 }  // namespace syncer

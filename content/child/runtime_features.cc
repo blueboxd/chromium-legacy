@@ -341,6 +341,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"AllowContentInitiatedDataUrlNavigations",
            features::kAllowContentInitiatedDataUrlNavigations,
            kUseFeatureState},
+          {"AppCache", blink::features::kAppCache, kDisableOnly},
           {"AudioWorkletRealtimeThread",
            blink::features::kAudioWorkletRealtimeThread, kEnableOnly},
           {"BlockCredentialedSubresources",

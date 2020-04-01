@@ -634,19 +634,12 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
 }
 
 void SetBackfaceVisibilityTransform(Layer* layer, bool created_transform_node) {
-  if (layer->use_parent_backface_visibility()) {
-    DCHECK(layer->parent());
-    DCHECK(!layer->parent()->use_parent_backface_visibility());
-    layer->SetShouldCheckBackfaceVisibility(
-        layer->parent()->should_check_backface_visibility());
-  } else {
-    // A double-sided layer's backface can been shown when its visible.
-    // In addition, we need to check if (1) there might be a local 3D transform
-    // on the layer that might turn it to the backface, or (2) it is not drawn
-    // into a flattened space.
-    layer->SetShouldCheckBackfaceVisibility(!layer->double_sided() &&
-                                            created_transform_node);
-  }
+  // A double-sided layer's backface can been shown when its visible.
+  // In addition, we need to check if (1) there might be a local 3D transform
+  // on the layer that might turn it to the backface, or (2) it is not drawn
+  // into a flattened space.
+  layer->SetShouldCheckBackfaceVisibility(!layer->double_sided() &&
+                                          created_transform_node);
 }
 
 void SetSafeOpaqueBackgroundColor(const DataForRecursion& data_from_ancestor,

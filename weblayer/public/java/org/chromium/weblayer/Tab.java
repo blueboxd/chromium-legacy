@@ -285,6 +285,7 @@ public class Tab {
      * @return the unique id.
      * @since 82
      */
+    @NonNull
     public String getGuid() {
         ThreadCheck.ensureOnUiThread();
         if (WebLayer.getSupportedMajorVersionInternal() < 82) {

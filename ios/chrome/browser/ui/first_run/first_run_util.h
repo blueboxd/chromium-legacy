@@ -11,10 +11,6 @@ class ChromeBrowserState;
 @class FirstRunConfiguration;
 @protocol SyncPresenter;
 
-namespace base {
-class TimeTicks;
-}
-
 namespace web {
 class WebState;
 }
@@ -42,17 +38,7 @@ void FinishFirstRun(ChromeBrowserState* browserState,
                     FirstRunConfiguration* config,
                     id<SyncPresenter> presenter);
 
-// Records Product tour timing metrics using histogram.
-void RecordProductTourTimingMetrics(NSString* timer_name,
-                                    base::TimeTicks start_time);
-
 // Posts a notification that First Run did finish.
 void FirstRunDismissed();
-
-// Enables or disables the data reduction proxy and also sets a key indicating
-// application is using Data Reduction Proxy.
-void SetDataReductionProxyEnabled(ChromeBrowserState* browserState,
-                                  BOOL enabled,
-                                  BOOL toggled_switch);
 
 #endif  // IOS_CHROME_BROWSER_UI_FIRST_RUN_FIRST_RUN_UTIL_H_

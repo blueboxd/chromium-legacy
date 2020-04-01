@@ -2412,7 +2412,7 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK" desc="The sub-label for links to manage cookies when the current cookie setting is allow.">
     {COUNT, plural,
-     =0 {Cookies are blocked.}
+     =0 {Cookies are blocked}
      =1 {Cookies are blocked, 1 exception}
      other {Cookies are blocked, {COUNT} exceptions}}
   </message>

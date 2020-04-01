@@ -26,6 +26,7 @@ source_set("interstitials") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/ui/util",
+    "//ios/components/ui_util",
     "//ios/web",
     "//ios/web/common",
     "//ios/web/public",

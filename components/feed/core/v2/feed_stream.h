@@ -68,7 +68,8 @@ class FeedStream : public FeedStreamApi,
     ~WireResponseTranslator() = default;
     virtual std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
         feedwire::Response response,
-        base::TimeDelta response_time);
+        base::TimeDelta response_time,
+        base::Time current_time);
   };
 
   FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
@@ -149,6 +150,8 @@ class FeedStream : public FeedStreamApi,
   // Returns the model if it is loaded, or null otherwise.
   StreamModel* GetModel() { return model_.get(); }
 
+  const base::Clock* GetClock() { return clock_; }
+
   WireResponseTranslator* GetWireResponseTranslator() const {
     return wire_response_translator_;
   }
@@ -159,6 +162,8 @@ class FeedStream : public FeedStreamApi,
   }
 
   void SetIdleCallbackForTesting(base::RepeatingClosure idle_callback);
+  void SetUserClassifierForTesting(
+      std::unique_ptr<UserClassifier> user_classifier);
 
  private:
   class ModelMonitor;
@@ -206,7 +211,7 @@ class FeedStream : public FeedStreamApi,
   base::ObserverList<SurfaceInterface> surfaces_;
 
   // Mutable state.
-  UserClassifier user_classifier_;
+  std::unique_ptr<UserClassifier> user_classifier_;
   MasterRefreshThrottler refresh_throttler_;
   base::TimeTicks suppress_refreshes_until_;
 

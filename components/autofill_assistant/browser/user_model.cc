@@ -42,6 +42,18 @@ base::Optional<ValueProto> UserModel::GetValue(
   return base::nullopt;
 }
 
+base::Optional<ValueProto> UserModel::GetValue(
+    const ValueReferenceProto& reference) const {
+  switch (reference.kind_case()) {
+    case ValueReferenceProto::kValue:
+      return reference.value();
+    case ValueReferenceProto::kModelIdentifier:
+      return GetValue(reference.model_identifier());
+    case ValueReferenceProto::KIND_NOT_SET:
+      return base::nullopt;
+  }
+}
+
 void UserModel::MergeWithProto(const ModelProto& another,
                                bool force_notifications) {
   for (const auto& another_value : another.values()) {

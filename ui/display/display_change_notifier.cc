@@ -90,4 +90,10 @@ void DisplayChangeNotifier::NotifyDisplaysChanged(
   }
 }
 
+void DisplayChangeNotifier::NotifyCurrentWorkspaceChanged(
+    const std::string& workspace) {
+  for (DisplayObserver& observer : observer_list_)
+    observer.OnCurrentWorkspaceChanged(workspace);
+}
+
 }  // namespace display

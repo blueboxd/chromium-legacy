@@ -29,8 +29,8 @@ const patternRegExp = new RegExp(
     '((http|https|\\*)://)?' +
     // Include subdomains specifier; optional.
     '(\\*\\.)?' +
-    // Hostname, required.
-    '([a-z0-9\\.-]+\\.[a-z0-9]+)' +
+    // Hostname or localhost, required.
+    '([a-z0-9\\.-]+\\.[a-z0-9]+|localhost)' +
     // Port, optional.
     '(:[0-9]+)?' +
     // Path, optional but if present must be '/' or '/*'.

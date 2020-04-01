@@ -19,4 +19,7 @@ void DisplayObserver::OnDisplayRemoved(const Display& old_display) {}
 void DisplayObserver::OnDisplayMetricsChanged(const Display& display,
                                               uint32_t changed_metrics) {}
 
+void DisplayObserver::OnCurrentWorkspaceChanged(
+    const std::string& new_workspace) {}
+
 }  // namespace display

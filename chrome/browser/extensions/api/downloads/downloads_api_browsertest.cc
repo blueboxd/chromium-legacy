@@ -821,7 +821,8 @@ class HTML5FileWriter {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context->operation_runner()->CopyInForeignFile(
         temp_file, path,
-        base::Bind(&CopyInCompletion, base::Unretained(result), quit_closure));
+        base::BindOnce(&CopyInCompletion, base::Unretained(result),
+                       quit_closure));
   }
 };
 
@@ -4471,7 +4472,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                          R"(    "current": "complete"}}])",
                                          result_id)));
 
-  item->DeleteFile(base::BindRepeating(OnFileDeleted));
+  item->DeleteFile(base::BindOnce(OnFileDeleted));
 
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
                       base::StringPrintf(R"([{"id": %d,)"

@@ -593,6 +593,14 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
   }
 }
 
+void QuicConnectionLogger::OnStreamFrameCoalesced(
+    const quic::QuicStreamFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STREAM_FRAME_COALESCED,
+                    [&] { return NetLogQuicStreamFrameParams(frame); });
+}
+
 void QuicConnectionLogger::OnPacketSent(
     const quic::SerializedPacket& serialized_packet,
     quic::TransmissionType transmission_type,
@@ -952,6 +960,24 @@ void QuicConnectionLogger::OnMessageFrame(const quic::QuicMessageFrame& frame) {
   net_log_.AddEventWithIntParams(
       NetLogEventType::QUIC_SESSION_MESSAGE_FRAME_RECEIVED, "message_length",
       frame.message_length);
+}
+
+void QuicConnectionLogger::OnHandshakeDoneFrame(
+    const quic::QuicHandshakeDoneFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_HANDSHAKE_DONE_FRAME_RECEIVED);
+}
+
+void QuicConnectionLogger::OnCoalescedPacketSent(
+    const quic::QuicCoalescedPacket& coalesced_packet,
+    size_t length) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEventWithStringParams(
+      NetLogEventType::QUIC_SESSION_COALESCED_PACKET_SENT, "info",
+      coalesced_packet.ToString(length));
 }
 
 void QuicConnectionLogger::OnPublicResetPacket(

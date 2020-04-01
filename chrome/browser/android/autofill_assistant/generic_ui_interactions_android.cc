@@ -71,24 +71,23 @@ void ShowListPopup(base::WeakPtr<UserModel> user_model,
     return;
   }
 
-  auto item_names = user_model->GetValue(proto.item_names_model_identifier());
+  auto item_names = user_model->GetValue(proto.item_names());
   if (!item_names.has_value()) {
-    DVLOG(2) << "Failed to show list popup: '"
-             << proto.item_names_model_identifier() << "' not found in model.";
+    DVLOG(2) << "Failed to show list popup: '" << proto.item_names()
+             << "' not found in model.";
     return;
   }
   if (item_names->strings().values().size() == 0) {
     DVLOG(2) << "Failed to show list popup: the list of item names in '"
-             << proto.item_names_model_identifier() << "' was empty.";
+             << proto.item_names() << "' was empty.";
     return;
   }
 
   base::Optional<ValueProto> item_types;
-  if (proto.has_item_types_model_identifier()) {
-    item_types = user_model->GetValue(proto.item_types_model_identifier());
+  if (proto.has_item_types()) {
+    item_types = user_model->GetValue(proto.item_types());
     if (!item_types.has_value()) {
-      DVLOG(2) << "Failed to show list popup: '"
-               << proto.item_types_model_identifier()
+      DVLOG(2) << "Failed to show list popup: '" << proto.item_types()
                << "' not found in the model.";
       return;
     }
@@ -177,19 +176,19 @@ void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,
     return;
   }
 
-  auto min_date = user_model->GetValue(proto.min_date_model_identifier());
+  auto min_date = user_model->GetValue(proto.min_date());
   if (!min_date.has_value() || min_date->dates().values().size() != 1) {
     DVLOG(2) << "Failed to show calendar popup: min_date not found or invalid "
                 "in user model at "
-             << proto.min_date_model_identifier();
+             << proto.min_date();
     return;
   }
 
-  auto max_date = user_model->GetValue(proto.max_date_model_identifier());
+  auto max_date = user_model->GetValue(proto.max_date());
   if (!max_date.has_value() || max_date->dates().values().size() != 1) {
     DVLOG(2) << "Failed to show calendar popup: max_date not found or invalid "
                 "in user model at "
-             << proto.max_date_model_identifier();
+             << proto.max_date();
     return;
   }
 
@@ -217,15 +216,15 @@ void SetViewText(
     return;
   }
 
-  auto text = user_model->GetValue(proto.model_identifier());
+  auto text = user_model->GetValue(proto.text());
   if (!text.has_value()) {
     DVLOG(2) << "Failed to set text for " << proto.view_identifier() << ": "
-             << proto.model_identifier() << " not found in model";
+             << proto.text() << " not found in model";
     return;
   }
   if (text->strings().values_size() != 1) {
     DVLOG(2) << "Failed to set text for " << proto.view_identifier()
-             << ": expected " << proto.model_identifier()
+             << ": expected " << proto.text()
              << " to contain single string, but was instead " << *text;
     return;
   }
@@ -259,12 +258,11 @@ void SetViewVisibility(
     return;
   }
 
-  auto visible_value = user_model->GetValue(proto.model_identifier());
+  auto visible_value = user_model->GetValue(proto.visible());
   if (!visible_value.has_value() ||
       visible_value->booleans().values_size() != 1) {
     DVLOG(2) << "Failed to set view visibility for " << proto.view_identifier()
-             << ": " << proto.model_identifier()
-             << " did not contain single boolean";
+             << ": " << proto.visible() << " did not contain single boolean";
     return;
   }
 

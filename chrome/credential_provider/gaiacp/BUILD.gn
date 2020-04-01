@@ -35,6 +35,7 @@ source_set("common") {
   public_configs = [ ":common_config" ]
   public_deps = [ "//chrome/credential_provider/common:common_constants" ]
   deps = [
+    ":gaia_credential_provider_idl",
     ":string_resources",
     "//base",
     "//build:branding_buildflags",

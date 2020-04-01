@@ -288,7 +288,10 @@ void X11Window::ToggleFullscreen() {
     const display::Display display =
         screen->GetDisplayMatching(bounds_in_pixels);
     SetRestoredBoundsInPixels(bounds_in_pixels);
-    bounds_in_pixels = display.bounds();
+    bounds_in_pixels =
+        gfx::Rect(gfx::ScaleToFlooredPoint(display.bounds().origin(),
+                                           display.device_scale_factor()),
+                  display.GetSizeInPixel());
   } else {
     // Exiting "browser fullscreen mode", but the X11 window is not necessarily
     // in fullscreen state (e.g: a WM keybinding might have been used to toggle

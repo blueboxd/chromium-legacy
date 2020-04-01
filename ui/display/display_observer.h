@@ -49,6 +49,10 @@ class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
   virtual void OnDisplayMetricsChanged(const Display& display,
                                        uint32_t changed_metrics);
 
+  // Called when the (platform-specific) workspace ID changes to
+  // |new_workspace|.
+  virtual void OnCurrentWorkspaceChanged(const std::string& new_workspace);
+
  protected:
   ~DisplayObserver() override;
 };

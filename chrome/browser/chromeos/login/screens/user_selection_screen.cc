@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -337,6 +338,8 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       UpdateUI(account_id, false);
       return;
     }
+    UMA_HISTOGRAM_BOOLEAN("Ash.Login.Login.MigrationBanner",
+                          needs_migration.value());
 
     needs_dircrypto_migration_cache_[account_id] = needs_migration.value();
     UpdateUI(account_id, needs_migration.value());

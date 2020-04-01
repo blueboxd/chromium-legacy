@@ -229,21 +229,6 @@
 // Returns the size of the current WebState's web view.
 + (CGSize)webStateWebViewSize;
 
-#pragma mark - Sync Utilities (EG2)
-
-// Clears the autofill profile for the given |GUID|.
-+ (void)clearAutofillProfileWithGUID:(NSString*)GUID;
-
-// Injects an autofill profile into the fake sync server with |GUID| and
-// |full_name|.
-+ (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
-                               autofillProfileName:(NSString*)fullName;
-
-// Returns YES if there is an autofilll profile with the corresponding |GUID|
-// and |full_name|.
-+ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
-                     autofillProfileName:(NSString*)fullName;
-
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
@@ -320,6 +305,25 @@
 // Triggers a sync cycle for a |type|.
 + (void)triggerSyncCycleForType:(syncer::ModelType)type;
 
+// Injects user demographics into the fake sync server. The year is the
+// un-noised birth year, and the gender corresponds to the options in
+// UserDemographicsProto::Gender..
++ (void)addUserDemographicsToSyncServerWithBirthYear:(int)birthYear
+                                              gender:(int)gender;
+
+// Clears the autofill profile for the given |GUID|.
++ (void)clearAutofillProfileWithGUID:(NSString*)GUID;
+
+// Injects an autofill profile into the fake sync server with |GUID| and
+// |full_name|.
++ (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
+                               autofillProfileName:(NSString*)fullName;
+
+// Returns YES if there is an autofilll profile with the corresponding |GUID|
+// and |full_name|.
++ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
+                     autofillProfileName:(NSString*)fullName;
+
 // Deletes an autofill profile from the fake sync server with |GUID|, if it
 // exists. If it doesn't exist, nothing is done.
 + (void)deleteAutofillProfileFromFakeSyncServerWithGUID:(NSString*)GUID;
@@ -383,6 +387,9 @@
 
 // Returns YES if AutofillEnableCompanyName feature is enabled.
 + (BOOL)isAutofillCompanyNameEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if DemographicMetricsReporting feature is enabled.
++ (BOOL)isDemographicMetricsReportingEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if the |launchSwitch| is found in host app launch switches.
 + (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch;

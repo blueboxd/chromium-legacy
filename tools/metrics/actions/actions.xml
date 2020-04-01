@@ -24634,6 +24634,18 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="XR.ARCoreDeviceProviderFactory.NotInstalled"
+    not_user_triggered="true">
+  <owner>bialpio@chromium.org</owner>
+  <description>
+    Raised when XR service was unable to obtain necessary component. The action
+    is not directly raised by the user's behavior as it should only be logged
+    when the user navigates to a website that uses WebXR Device API, only in
+    case the necessary provider was not installed during browser start-up.
+    Created to assess the impact of the issue causing https://crbug.com/1050470.
+  </description>
+</action>
+
 <action name="ZoomMinus">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

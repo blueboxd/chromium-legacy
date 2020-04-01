@@ -19,6 +19,16 @@ login.createScreen('EulaScreen', 'eula', function() {
         '}'
   };
 
+  const EULA_FONTS_CSS = {
+    code: `body * {
+          font-family: Roboto, sans-serif !important;
+          font-size: 13px !important;
+          line-height: 20px !important;}
+         body h2 {
+           font-size: 15px !important;
+           line-height: 22px !important;}`
+  };
+
   /**
    * Timeout to load online Eula.
    * @type {number}
@@ -74,6 +84,9 @@ login.createScreen('EulaScreen', 'eula', function() {
           webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
         });
       }
+      webview.addEventListener('contentload', () => {
+        webview.insertCSS(EULA_FONTS_CSS);
+      });
 
       // Monitor webRequests API events
       this.webview_.request.onCompleted.addListener(

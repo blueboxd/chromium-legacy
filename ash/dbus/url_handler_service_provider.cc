@@ -45,7 +45,7 @@ void UrlHandlerServiceProvider::Start(
       chromeos::kUrlHandlerServiceOpenUrlMethod,
       base::BindRepeating(&UrlHandlerServiceProvider::OpenUrl,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&OnExported));
+      base::BindOnce(&OnExported));
 }
 
 bool UrlHandlerServiceProvider::UrlAllowed(const GURL& gurl) const {

@@ -3656,7 +3656,7 @@ public class AwContents implements SmartClipProvider {
 
             // Tint everything one color, to make WebViews easier to spot.
             if (CommandLine.getInstance().hasSwitch(AwSwitches.HIGHLIGHT_ALL_WEBVIEWS)) {
-                int semiTransparentYellow = Color.argb(127, 255, 255, 0);
+                int semiTransparentYellow = Color.argb(80, 252, 252, 109);
                 canvas.drawColor(semiTransparentYellow);
             }
         }

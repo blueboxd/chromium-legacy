@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/strings/string_number_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_menu_list.h"
@@ -16,7 +15,6 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
 namespace {
 
@@ -48,8 +46,7 @@ X11DesktopHandler::X11DesktopHandler()
   aura::Env::GetInstance()->AddObserver(this);
 
   x_root_window_events_ = std::make_unique<ui::XScopedEventSelector>(
-      x_root_window_,
-      PropertyChangeMask | StructureNotifyMask | SubstructureNotifyMask);
+      x_root_window_, StructureNotifyMask | SubstructureNotifyMask);
 }
 
 X11DesktopHandler::~X11DesktopHandler() {
@@ -58,45 +55,11 @@ X11DesktopHandler::~X11DesktopHandler() {
     ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
-void X11DesktopHandler::AddObserver(X11DesktopHandlerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void X11DesktopHandler::RemoveObserver(X11DesktopHandlerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-std::string X11DesktopHandler::GetWorkspace() {
-  if (workspace_.empty())
-    UpdateWorkspace();
-  return workspace_;
-}
-
-bool X11DesktopHandler::UpdateWorkspace() {
-  int desktop;
-  if (ui::GetCurrentDesktop(&desktop)) {
-    workspace_ = base::NumberToString(desktop);
-    return true;
-  }
-  return false;
-}
-
 bool X11DesktopHandler::DispatchXEvent(XEvent* event) {
-  if (event->type != CreateNotify && event->type != DestroyNotify &&
-      (event->type != PropertyNotify ||
-       event->xproperty.window != x_root_window_)) {
+  if (event->type != CreateNotify && event->type != DestroyNotify) {
     return false;
   }
   switch (event->type) {
-    case PropertyNotify: {
-      if (event->xproperty.atom == gfx::GetAtom("_NET_CURRENT_DESKTOP")) {
-        if (UpdateWorkspace()) {
-          for (views::X11DesktopHandlerObserver& observer : observers_)
-            observer.OnWorkspaceChanged(workspace_);
-        }
-      }
-      break;
-    }
     case CreateNotify:
       OnWindowCreatedOrDestroyed(event->type, event->xcreatewindow.window);
       break;

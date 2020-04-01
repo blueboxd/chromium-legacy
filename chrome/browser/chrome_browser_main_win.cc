@@ -447,7 +447,7 @@ void MaybePostSettingsResetPrompt() {
     base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
+        base::BindOnce(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
   }
 }
 

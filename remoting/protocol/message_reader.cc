@@ -53,9 +53,8 @@ void MessageReader::DoRead() {
   while (read_succeeded && !closed_ && !read_pending_) {
     read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadBufferSize);
     int result = socket_->Read(
-        read_buffer_.get(),
-        kReadBufferSize,
-        base::Bind(&MessageReader::OnRead, weak_factory_.GetWeakPtr()));
+        read_buffer_.get(), kReadBufferSize,
+        base::BindOnce(&MessageReader::OnRead, weak_factory_.GetWeakPtr()));
 
     HandleReadResult(result, &read_succeeded);
   }

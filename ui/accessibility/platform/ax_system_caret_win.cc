@@ -114,9 +114,10 @@ gfx::Rect AXSystemCaretWin::GetBoundsRect(
     const AXClippingBehavior clipping_behavior,
     AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case AXCoordinateSystem::kScreen:
+    case AXCoordinateSystem::kScreenDIPs:
       // We could optionally add clipping here if ever needed.
       return ToEnclosingRect(data_.relative_bounds.bounds);
+    case AXCoordinateSystem::kScreenPhysicalPixels:
     case AXCoordinateSystem::kRootFrame:
     case AXCoordinateSystem::kFrame:
       NOTIMPLEMENTED();

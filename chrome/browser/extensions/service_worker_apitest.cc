@@ -310,9 +310,7 @@ class ServiceWorkerBasedBackgroundTestWithNotification
 // The extension is installed and loaded during this step and it registers
 // an event listener for tabs.onCreated event. The step also verifies that tab
 // creation correctly fires the listener.
-//
-// Disabled due to flakiness: https://crbug.com/1003244.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, DISABLED_PRE_Basic) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, PRE_Basic) {
   ExtensionTestMessageListener newtab_listener("CREATED", false);
   newtab_listener.set_failure_message("CREATE_FAILED");
   ExtensionTestMessageListener worker_listener("WORKER_RUNNING", false);
@@ -337,9 +335,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, DISABLED_PRE_Basic) {
 // tabs.onCreated event listener to the extension without explicitly loading the
 // extension. This is because the extension registered a listener before browser
 // restarted in PRE_Basic.
-//
-// Disabled due to flakiness: https://crbug.com/1003244.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, DISABLED_Basic) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, Basic) {
   ExtensionTestMessageListener newtab_listener("CREATED", false);
   newtab_listener.set_failure_message("CREATE_FAILED");
   const GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");

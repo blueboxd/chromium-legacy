@@ -355,11 +355,6 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
-    name = 'fuchsia-x64-dbg',
-    notifies = ['cr-fuchsia'],
-)
-
-ci.linux_builder(
     name = 'linux-ozone-rel',
 )
 

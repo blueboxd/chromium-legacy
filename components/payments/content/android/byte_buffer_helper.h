@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/logging.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 
 namespace payments {
 namespace android {
@@ -22,7 +24,39 @@ namespace android {
 //      &details);
 std::vector<uint8_t> JavaByteBufferToNativeByteVector(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& buffer);
+    const base::android::JavaRef<jobject>& buffer);
+
+// Deserializes a java.nio.ByteBuffer into a native Mojo object. Returns true if
+// deserialization is successful.
+template <typename T>
+bool DeserializeFromJavaByteBuffer(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jbuffer,
+    mojo::StructPtr<T>* out) {
+  DCHECK(out);
+  return T::Deserialize(JavaByteBufferToNativeByteVector(env, jbuffer), out);
+}
+
+// Deserializes a java.nio.ByteBuffer[] into a vector of native Mojo objects.
+// The content of |out| is replaced. Returns true if all entries are
+// deserialized successfully.
+template <typename T>
+bool DeserializeFromJavaByteBufferArray(
+    JNIEnv* env,
+    const base::android::JavaRef<jobjectArray>& jbuffers,
+    std::vector<mojo::StructPtr<T>>* out) {
+  DCHECK(out);
+  out->clear();
+  for (const auto& jbuffer : jbuffers.ReadElements<jobject>()) {
+    mojo::StructPtr<T> data;
+    if (!DeserializeFromJavaByteBuffer(env, jbuffer, &data)) {
+      out->clear();
+      return false;
+    }
+    out->push_back(std::move(data));
+  }
+  return true;
+}
 
 }  // namespace android
 }  // namespace payments

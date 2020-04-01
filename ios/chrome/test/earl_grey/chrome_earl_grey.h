@@ -155,6 +155,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Stops the sync server. The server should be running when calling this.
 - (void)stopSync;
 
+// Injects user demographics into the fake sync server. The year is the
+// un-noised birth year, and the gender corresponds to the options in
+// UserDemographicsProto::Gender.
+- (void)addUserDemographicsToSyncServerWithBirthYear:(int)birthYear
+                                              gender:(int)gender;
+
 // Clears the autofill profile for the given |GUID|.
 - (void)clearAutofillProfileWithGUID:(const std::string&)GUID;
 
@@ -478,6 +484,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns YES if AutofillEnableCompanyName feature is enabled.
 - (BOOL)isAutofillCompanyNameEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if DemographicMetricsReporting feature is enabled.
+- (BOOL)isDemographicMetricsReportingEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if the |launchSwitch| is found in host app launch switches.
 - (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch;

@@ -221,9 +221,9 @@ void OtaActivatorImpl::AttemptToDiscoverSim() {
     NET_LOG(DEBUG) << "No SIM detected; restarting modem.";
     ShillDeviceClient::Get()->Reset(
         dbus::ObjectPath(cellular_device->path()),
-        base::Bind(&OtaActivatorImpl::AttemptNextActivationStep,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&OnModemResetError));
+        base::BindOnce(&OtaActivatorImpl::AttemptNextActivationStep,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&OnModemResetError));
     return;
   }
 

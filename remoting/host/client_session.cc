@@ -304,8 +304,8 @@ void ClientSession::OnConnectionAuthenticated() {
   if (max_duration_ > base::TimeDelta()) {
     max_duration_timer_.Start(
         FROM_HERE, max_duration_,
-        base::Bind(&ClientSession::DisconnectSession, base::Unretained(this),
-                   protocol::MAX_SESSION_LENGTH));
+        base::BindOnce(&ClientSession::DisconnectSession,
+                       base::Unretained(this), protocol::MAX_SESSION_LENGTH));
   }
 
   // Notify EventHandler.

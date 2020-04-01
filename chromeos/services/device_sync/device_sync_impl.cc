@@ -617,10 +617,10 @@ void DeviceSyncImpl::NotifyDevices(
   device_notifier_->NotifyDevices(
       device_instance_ids, target_service,
       CryptAuthFeatureTypeFromSoftwareFeature(feature),
-      base::Bind(&DeviceSyncImpl::OnNotifyDevicesSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), request_id),
-      base::Bind(&DeviceSyncImpl::OnNotifyDevicesError,
-                 weak_ptr_factory_.GetWeakPtr(), request_id));
+      base::BindOnce(&DeviceSyncImpl::OnNotifyDevicesSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), request_id),
+      base::BindOnce(&DeviceSyncImpl::OnNotifyDevicesError,
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
 void DeviceSyncImpl::GetDevicesActivityStatus(
@@ -645,10 +645,10 @@ void DeviceSyncImpl::GetDevicesActivityStatus(
           cryptauth_gcm_manager_.get());
 
   cryptauth_device_activity_getter_->GetDevicesActivityStatus(
-      base::Bind(&DeviceSyncImpl::OnGetDevicesActivityStatusFinished,
-                 weak_ptr_factory_.GetWeakPtr(), request_id),
-      base::Bind(&DeviceSyncImpl::OnGetDevicesActivityStatusError,
-                 weak_ptr_factory_.GetWeakPtr(), request_id));
+      base::BindOnce(&DeviceSyncImpl::OnGetDevicesActivityStatusFinished,
+                     weak_ptr_factory_.GetWeakPtr(), request_id),
+      base::BindOnce(&DeviceSyncImpl::OnGetDevicesActivityStatusError,
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
 void DeviceSyncImpl::GetDebugInfo(GetDebugInfoCallback callback) {
@@ -1121,8 +1121,8 @@ void DeviceSyncImpl::OnGetDevicesActivityStatusError(
 void DeviceSyncImpl::StartSetSoftwareFeatureTimer() {
   set_software_feature_timer_->Start(
       FROM_HERE, kSetFeatureEnabledTimeout,
-      base::Bind(&DeviceSyncImpl::OnSetSoftwareFeatureTimerFired,
-                 base::Unretained(this)));
+      base::BindOnce(&DeviceSyncImpl::OnSetSoftwareFeatureTimerFired,
+                     base::Unretained(this)));
 }
 
 void DeviceSyncImpl::OnSetSoftwareFeatureTimerFired() {

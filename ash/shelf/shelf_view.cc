@@ -589,7 +589,6 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
 void ShelfView::ButtonPressed(views::Button* sender,
                               const ui::Event& event,
                               views::InkDrop* ink_drop) {
-
   if (!ShouldEventActivateButton(sender, event)) {
     ink_drop->SnapToHidden();
     return;
@@ -639,14 +638,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
       NOTREACHED() << "ShelfItemType must be set.";
       break;
   }
-
-  // Record the current AppListViewState to be used later for metrics. The
-  // AppListViewState will change on app launch, so this will record the
-  // AppListViewState before the app was launched.
-  recorded_app_list_view_state_ =
-      Shell::Get()->app_list_controller()->GetAppListViewState();
-  app_list_visibility_before_app_launch_ =
-      Shell::Get()->app_list_controller()->IsVisible(GetDisplayIdForView(this));
 
   // Run AfterItemSelected directly if the item has no delegate (ie. in tests).
   const ShelfItem& item = model_->items()[last_pressed_index_];
@@ -1547,8 +1538,7 @@ void ShelfView::OnFadeOutAnimationEnded() {
   StartFadeInLastVisibleItem();
 }
 
-void ShelfView::StartFadeInLastVisibleItem() {
-}
+void ShelfView::StartFadeInLastVisibleItem() {}
 
 gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
                                        const gfx::Point& location,
@@ -1914,8 +1904,7 @@ void ShelfView::AfterItemSelected(const ShelfItem& item,
   // Record AppList metric for any action considered an app launch.
   if (action == SHELF_ACTION_NEW_WINDOW_CREATED ||
       action == SHELF_ACTION_WINDOW_ACTIVATED) {
-    Shell::Get()->app_list_controller()->RecordShelfAppLaunched(
-        recorded_app_list_view_state_, app_list_visibility_before_app_launch_);
+    Shell::Get()->app_list_controller()->RecordShelfAppLaunched();
   }
 
   // The app list handles its own ink drop effect state changes.

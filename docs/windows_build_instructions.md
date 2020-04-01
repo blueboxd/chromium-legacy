@@ -61,22 +61,6 @@ Software Development Kit" → Change → Change → Check "Debugging Tools For
 Windows" → Change. Or, you can download the standalone SDK installer and use it
 to install the Debugging Tools.
 
-### Known issue with Visual Studio 16.5.0
-Visual Studio 16.5.0 includes some header files which are incompatible with the
-C++ standard used in Chromium (see [crbug.com/1063424](https://crbug.com/1063424)
-for details.) A workaround is to install the older command-line tools:
-```shell
-$ PATH_TO_INSTALLER.exe ^
-    --add "Microsoft.VisualStudio.Component.VC.14.24.ARM64" ^
-    --add "Microsoft.VisualStudio.Component.VC.14.24.x86.x64" ^
-    --add "Microsoft.VisualStudio.Component.VC.14.24.ATL.ARM64" ^
-    --add "Microsoft.VisualStudio.Component.VC.14.24.ATL" ^
-    --add "Microsoft.VisualStudio.Component.VC.14.24.MFC.ARM64" ^
-    --add "Microsoft.VisualStudio.Component.VC.14.24.MFC" ^
-    --includeRecommended
-```
-
-
 ## Install `depot_tools`
 
 Download the [depot_tools bundle](https://storage.googleapis.com/chrome-infra/depot_tools.zip)

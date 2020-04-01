@@ -325,7 +325,7 @@ EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
   std::unique_ptr<api_epk::ChallengeUserKey::Params> params(
       api_epk::ChallengeUserKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  chromeos::attestation::TpmChallengeKeyCallback callback = base::Bind(
+  chromeos::attestation::TpmChallengeKeyCallback callback = base::BindOnce(
       &EnterprisePlatformKeysChallengeUserKeyFunction::OnChallengedKey, this);
   // base::Unretained is safe on impl_ since its life-cycle matches |this| and
   // |callback| holds a reference to |this|.

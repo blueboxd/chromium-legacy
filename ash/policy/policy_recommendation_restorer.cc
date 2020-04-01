@@ -119,10 +119,9 @@ void PolicyRecommendationRestorer::StartTimer() {
   // case of a recommended value changing, a single timer is a close
   // approximation of the behavior that would be obtained by resetting the timer
   // for the affected pref only.
-  restore_timer_.Start(
-      FROM_HERE, kRestoreDelayInMinutes,
-      base::BindRepeating(&PolicyRecommendationRestorer::RestoreAll,
-                          base::Unretained(this)));
+  restore_timer_.Start(FROM_HERE, kRestoreDelayInMinutes,
+                       base::BindOnce(&PolicyRecommendationRestorer::RestoreAll,
+                                      base::Unretained(this)));
 }
 
 void PolicyRecommendationRestorer::StopTimer() {

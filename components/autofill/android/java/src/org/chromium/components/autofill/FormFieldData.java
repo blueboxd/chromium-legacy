@@ -4,6 +4,8 @@
 
 package org.chromium.components.autofill;
 
+import android.graphics.RectF;
+
 import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -40,6 +42,10 @@ public class FormFieldData {
     public final @ControlType int mControlType;
     public final int mMaxLength;
     public final String mHeuristicType;
+    // The bounds in the viewport's coordinates
+    private final RectF mBounds;
+    // The bounds in the container view's coordinates.
+    private RectF mBoundsInContainerViewCoordinates;
 
     private boolean mIsChecked;
     private String mValue;
@@ -51,7 +57,7 @@ public class FormFieldData {
     private FormFieldData(String name, String label, String value, String autocompleteAttr,
             boolean shouldAutocomplete, String placeholder, String type, String id,
             String[] optionValues, String[] optionContents, boolean isCheckField, boolean isChecked,
-            int maxLength, String heuristicType) {
+            int maxLength, String heuristicType, float left, float top, float right, float bottom) {
         mName = name;
         mLabel = label;
         mValue = value;
@@ -72,10 +78,23 @@ public class FormFieldData {
         }
         mMaxLength = maxLength;
         mHeuristicType = heuristicType;
+        mBounds = new RectF(left, top, right, bottom);
     }
 
     public @ControlType int getControlType() {
         return mControlType;
+    }
+
+    public RectF getBounds() {
+        return mBounds;
+    }
+
+    public void setBoundsInContainerViewCoordinates(RectF bounds) {
+        mBoundsInContainerViewCoordinates = bounds;
+    }
+
+    public RectF getBoundsInContainerViewCoordinates() {
+        return mBoundsInContainerViewCoordinates;
     }
 
     /**
@@ -120,9 +139,10 @@ public class FormFieldData {
     private static FormFieldData createFormFieldData(String name, String label, String value,
             String autocompleteAttr, boolean shouldAutocomplete, String placeholder, String type,
             String id, String[] optionValues, String[] optionContents, boolean isCheckField,
-            boolean isChecked, int maxLength, String heuristicType) {
+            boolean isChecked, int maxLength, String heuristicType, float left, float top,
+            float right, float bottom) {
         return new FormFieldData(name, label, value, autocompleteAttr, shouldAutocomplete,
                 placeholder, type, id, optionValues, optionContents, isCheckField, isChecked,
-                maxLength, heuristicType);
+                maxLength, heuristicType, left, top, right, bottom);
     }
 }

@@ -95,8 +95,8 @@ void MediaSinkServiceBase::StartTimer() {
 
   discovery_timer_->Start(
       FROM_HERE, kDiscoveryTimeout,
-      base::BindRepeating(&MediaSinkServiceBase::OnDiscoveryComplete,
-                          base::Unretained(this)));
+      base::BindOnce(&MediaSinkServiceBase::OnDiscoveryComplete,
+                     base::Unretained(this)));
 }
 
 void MediaSinkServiceBase::OnDiscoveryComplete() {

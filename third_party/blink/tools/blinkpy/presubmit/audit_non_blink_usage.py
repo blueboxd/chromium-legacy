@@ -345,6 +345,7 @@ _CONFIG = [
             'event_handling_util::.+',
             'event_util::.+',
             'file_error::.+',
+            'geometry_util::.+',
             'inspector_\\w+_event::.+',
             'inspector_async_task::.+',
             'inspector_set_layer_tree_id::.+',

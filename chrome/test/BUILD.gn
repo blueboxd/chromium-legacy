@@ -3887,6 +3887,7 @@ test("unit_tests") {
       "../browser/diagnostics/diagnostics_model_unittest.cc",
       "../browser/download/download_commands_unittest.cc",
       "../browser/download/download_shelf_unittest.cc",
+      "../browser/enterprise/connectors/connectors_manager_unittest.cc",
       "../browser/enterprise/connectors/enterprise_connectors_policy_handler_unittest.cc",
       "../browser/enterprise/reporting/browser_report_generator_unittest.cc",
       "../browser/enterprise/reporting/extension_info_unittest.cc",
@@ -3992,6 +3993,7 @@ test("unit_tests") {
       "../browser/performance_manager/graph/policies/urgent_page_discarding_policy_unittest.cc",
 
       # Background tab loading from performance_manager isn't supported on Android.
+      "../browser/performance_manager/graph/policies/background_tab_loading_policy_helpers_unittest.cc",
       "../browser/performance_manager/graph/policies/background_tab_loading_policy_unittest.cc",
 
       # Android does not use the Message Center notification system.
@@ -4277,6 +4279,8 @@ test("unit_tests") {
       "../browser/ui/toolbar/media_router_contextual_menu_unittest.cc",
       "../browser/ui/toolbar/mock_media_router_action_controller.cc",
       "../browser/ui/toolbar/mock_media_router_action_controller.h",
+      "../browser/ui/views/passwords/password_bubble_view_test_base.cc",
+      "../browser/ui/views/passwords/password_bubble_view_test_base.h",
       "../browser/ui/views/passwords/password_save_update_with_account_store_view_unittest.cc",
       "../common/media_router/discovery/media_sink_internal_unittest.cc",
       "../common/media_router/discovery/media_sink_service_base_unittest.cc",
@@ -4758,7 +4762,6 @@ test("unit_tests") {
       "../common/extensions/chrome_manifest_url_handlers_unittest.cc",
       "../common/extensions/command_unittest.cc",
       "../common/extensions/extension_unittest.cc",
-      "../common/extensions/feature_switch_unittest.cc",
       "../common/extensions/manifest_handlers/app_display_mode_manifest_unittest.cc",
       "../common/extensions/manifest_handlers/app_theme_color_manifest_unittest.cc",
       "../common/extensions/manifest_handlers/automation_unittest.cc",

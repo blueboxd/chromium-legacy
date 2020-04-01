@@ -371,8 +371,8 @@ void ChannelMultiplexer::OnBaseChannelReady(
                                     base::Unretained(this)));
     writer_.Start(base::Bind(&P2PStreamSocket::Write,
                              base::Unretained(base_channel_.get())),
-                  base::Bind(&ChannelMultiplexer::OnBaseChannelError,
-                             base::Unretained(this)));
+                  base::BindOnce(&ChannelMultiplexer::OnBaseChannelError,
+                                 base::Unretained(this)));
   }
 
   DoCreatePendingChannels();

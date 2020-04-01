@@ -284,14 +284,14 @@ namespace {
 
 class RetiredFlagObj final : public flags_internal::CommandLineFlag {
  public:
-  constexpr RetiredFlagObj(const char* name, FlagStaticTypeId type_id)
+  constexpr RetiredFlagObj(const char* name, FlagFastTypeId type_id)
       : name_(name), type_id_(type_id) {}
 
  private:
   absl::string_view Name() const override { return name_; }
   std::string Filename() const override { return "RETIRED"; }
   absl::string_view Typename() const override { return ""; }
-  FlagStaticTypeId TypeId() const override { return type_id_; }
+  FlagFastTypeId TypeId() const override { return type_id_; }
   std::string Help() const override { return ""; }
   bool IsRetired() const override { return true; }
   bool IsModified() const override { return false; }
@@ -306,8 +306,8 @@ class RetiredFlagObj final : public flags_internal::CommandLineFlag {
     return nullptr;
   }
 
-  bool SetFromString(absl::string_view, flags_internal::FlagSettingMode,
-                     flags_internal::ValueSource, std::string*) override {
+  bool ParseFrom(absl::string_view, flags_internal::FlagSettingMode,
+                 flags_internal::ValueSource, std::string*) override {
     return false;
   }
 
@@ -317,7 +317,7 @@ class RetiredFlagObj final : public flags_internal::CommandLineFlag {
 
   // Data members
   const char* const name_;
-  const FlagStaticTypeId type_id_;
+  const FlagFastTypeId type_id_;
 };
 
 void DestroyRetiredFlag(flags_internal::CommandLineFlag* flag) {
@@ -327,7 +327,7 @@ void DestroyRetiredFlag(flags_internal::CommandLineFlag* flag) {
 
 }  // namespace
 
-bool Retire(const char* name, FlagStaticTypeId type_id) {
+bool Retire(const char* name, FlagFastTypeId type_id) {
   auto* flag = new flags_internal::RetiredFlagObj(name, type_id);
   FlagRegistry::GlobalRegistry()->RegisterFlag(flag);
   return true;

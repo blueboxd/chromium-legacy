@@ -340,7 +340,7 @@ bool CreateImplicitInteractionsForView(
           ->mutable_on_value_changed()
           ->set_model_identifier(proto.text_input_view().model_identifier());
       SetTextProto set_text_callback;
-      set_text_callback.set_model_identifier(
+      set_text_callback.mutable_text()->set_model_identifier(
           proto.text_input_view().model_identifier());
       set_text_callback.set_view_identifier(proto.identifier());
       *implicit_set_text_interaction.add_callbacks()->mutable_set_text() =
@@ -364,7 +364,7 @@ bool CreateImplicitInteractionsForView(
           ->mutable_on_value_changed()
           ->set_model_identifier(proto.text_view().model_identifier());
       SetTextProto set_text_callback;
-      set_text_callback.set_model_identifier(
+      set_text_callback.mutable_text()->set_model_identifier(
           proto.text_view().model_identifier());
       set_text_callback.set_view_identifier(proto.identifier());
       *implicit_set_text_interaction.add_callbacks()->mutable_set_text() =

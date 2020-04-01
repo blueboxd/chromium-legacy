@@ -100,9 +100,10 @@ std::unique_ptr<webrtc::RtpParameters> FakeRTCRtpSenderImpl::GetParameters()
   return nullptr;
 }
 
-void FakeRTCRtpSenderImpl::SetParameters(Vector<webrtc::RtpEncodingParameters>,
-                                         webrtc::DegradationPreference,
-                                         blink::RTCVoidRequest*) {
+void FakeRTCRtpSenderImpl::SetParameters(
+    Vector<webrtc::RtpEncodingParameters>,
+    absl::optional<webrtc::DegradationPreference>,
+    blink::RTCVoidRequest*) {
   NOTIMPLEMENTED();
 }
 

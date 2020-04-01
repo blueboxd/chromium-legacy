@@ -23,13 +23,15 @@ class ProcessorEntity;
 // This component tracks entities for ClientTagBasedModelTypeProcessor.
 class ProcessorEntityTracker {
  public:
+  explicit ProcessorEntityTracker(ModelType type);
+
   // Creates tracker and fills entities data from batch metadata map. This
   // constructor must be used only if initial_sync_done returns true in
   // |model_type_state|.
   ProcessorEntityTracker(
-      const sync_pb::ModelTypeState& model_type_state,
       std::map<std::string, std::unique_ptr<sync_pb::EntityMetadata>>
-          metadata_map);
+          metadata_map,
+      const sync_pb::ModelTypeState& model_type_state);
 
   ~ProcessorEntityTracker();
 
@@ -88,6 +90,9 @@ class ProcessorEntityTracker {
   void set_model_type_state(const sync_pb::ModelTypeState& model_type_state) {
     model_type_state_ = model_type_state;
   }
+
+  // Sets data type id to model type state. Used for first time syncing.
+  void InitializeMetadata(ModelType type);
 
   // Returns number of entities, including tombstones.
   size_t size() const;

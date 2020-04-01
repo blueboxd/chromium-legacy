@@ -157,13 +157,8 @@ ActivityLogPrivateGetExtensionActivitiesFunction::Run() {
   ActivityLog* activity_log = ActivityLog::GetInstance(browser_context());
   DCHECK(activity_log);
   activity_log->GetFilteredActions(
-      extension_id,
-      action_type,
-      api_call,
-      page_url,
-      arg_url,
-      days_ago,
-      base::Bind(
+      extension_id, action_type, api_call, page_url, arg_url, days_ago,
+      base::BindOnce(
           &ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted,
           this));
 

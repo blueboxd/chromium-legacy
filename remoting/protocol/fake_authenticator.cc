@@ -45,8 +45,8 @@ void FakeChannelAuthenticator::SecureAndAuthenticate(
       write_buf->data()[0] = 0;
       int result = socket_->Write(
           write_buf.get(), 1,
-          base::Bind(&FakeChannelAuthenticator::OnAuthBytesWritten,
-                     weak_factory_.GetWeakPtr()),
+          base::BindOnce(&FakeChannelAuthenticator::OnAuthBytesWritten,
+                         weak_factory_.GetWeakPtr()),
           TRAFFIC_ANNOTATION_FOR_TESTS);
       if (result != net::ERR_IO_PENDING) {
         // This will not call the callback because |did_read_bytes_| is
@@ -59,8 +59,8 @@ void FakeChannelAuthenticator::SecureAndAuthenticate(
         base::MakeRefCounted<net::IOBuffer>(1);
     int result =
         socket_->Read(read_buf.get(), 1,
-                      base::Bind(&FakeChannelAuthenticator::OnAuthBytesRead,
-                                 weak_factory_.GetWeakPtr()));
+                      base::BindOnce(&FakeChannelAuthenticator::OnAuthBytesRead,
+                                     weak_factory_.GetWeakPtr()));
     if (result != net::ERR_IO_PENDING)
       OnAuthBytesRead(result);
   } else {

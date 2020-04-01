@@ -34,6 +34,8 @@ jumbo_component("x") {
     "x11_util_internal.h",
     "x11_window.cc",
     "x11_window.h",
+    "x11_workspace_handler.cc",
+    "x11_workspace_handler.h",
   ]
 
   if (is_desktop_linux) {

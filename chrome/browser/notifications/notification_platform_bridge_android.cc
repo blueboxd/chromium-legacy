@@ -192,10 +192,10 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
 
   profile_manager->LoadProfile(
       profile_id, incognito,
-      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
-                 NotificationCommon::OPERATION_CLICK, notification_type, origin,
-                 notification_id, std::move(action_index), std::move(reply),
-                 base::nullopt /* by_user */));
+      base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
+                     NotificationCommon::OPERATION_CLICK, notification_type,
+                     origin, notification_id, std::move(action_index),
+                     std::move(reply), base::nullopt /* by_user */));
 }
 
 void NotificationPlatformBridgeAndroid::
@@ -241,11 +241,11 @@ void NotificationPlatformBridgeAndroid::OnNotificationClosed(
 
   profile_manager->LoadProfile(
       profile_id, incognito,
-      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
-                 NotificationCommon::OPERATION_CLOSE, notification_type,
-                 GURL(ConvertJavaStringToUTF8(env, java_origin)),
-                 notification_id, base::nullopt /* action index */,
-                 base::nullopt /* reply */, by_user));
+      base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
+                     NotificationCommon::OPERATION_CLOSE, notification_type,
+                     GURL(ConvertJavaStringToUTF8(env, java_origin)),
+                     notification_id, base::nullopt /* action index */,
+                     base::nullopt /* reply */, by_user));
 }
 
 void NotificationPlatformBridgeAndroid::Display(

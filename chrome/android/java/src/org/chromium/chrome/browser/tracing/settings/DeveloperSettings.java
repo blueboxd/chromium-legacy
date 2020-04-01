@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tracing.settings;
 
 import android.os.Bundle;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
@@ -25,9 +26,13 @@ public class DeveloperSettings extends PreferenceFragmentCompat {
     // Non-translated strings:
     private static final String MSG_DEVELOPER_OPTIONS_TITLE = "Developer options";
 
+    private static Boolean sIsEnabledForTests;
+
     public static boolean shouldShowDeveloperSettings() {
         // Always enabled on canary, dev and local builds, otherwise can be enabled by tapping the
         // Chrome version in Settings>About multiple times.
+        if (sIsEnabledForTests != null) return sIsEnabledForTests;
+
         if (VersionConstants.CHANNEL <= Channel.DEV) return true;
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.SETTINGS_DEVELOPER_ENABLED, false);
@@ -36,6 +41,11 @@ public class DeveloperSettings extends PreferenceFragmentCompat {
     public static void setDeveloperSettingsEnabled() {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.SETTINGS_DEVELOPER_ENABLED, true);
+    }
+
+    @VisibleForTesting
+    public static void setIsEnabledForTests(Boolean isEnabled) {
+        sIsEnabledForTests = isEnabled;
     }
 
     @Override

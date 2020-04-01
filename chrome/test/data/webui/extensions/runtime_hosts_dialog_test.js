@@ -121,6 +121,8 @@ suite('RuntimeHostsDialog', function() {
     expectEquals(
         'https://example.com:80/*',
         getPatternFromSite('https://example.com:80/*'));
+    expectEquals(
+        'http://localhost:3030/*', getPatternFromSite('http://localhost:3030'));
   });
 
   test('update site access', function() {

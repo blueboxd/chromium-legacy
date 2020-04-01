@@ -159,6 +159,7 @@
       status: "experimental",
     },
     {
+      // Enabled when blink::features::kAppCache is enabled.
       name: "AppCache",
       status: "stable",
     },
@@ -653,7 +654,6 @@
     },
     {
       name: "EventTiming",
-      origin_trial_feature_name: "EventTiming",
       status: "experimental",
     },
     {

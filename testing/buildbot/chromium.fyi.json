@@ -38582,16 +38582,17 @@
     ]
   },
   "linux-upload-perfetto": {
-    "gtest_tests": [
+    "isolated_scripts": [
       {
+        "isolate_name": "upload_trace_processor",
         "merge": {
           "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "upload_trace_processor",
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "upload_trace_processor",
         "test_target": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor"
       }
     ]
@@ -42162,11 +42163,12 @@
     "gtest_tests": [
       {
         "args": [
-          "--build-revision=${got_revision}",
           "--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter",
           "--browser-ui-tests-verify-pixels",
           "--test-launcher-retry-limit=0",
-          "--enable-pixel-output-in-tests"
+          "--enable-pixel-output-in-tests",
+          "--git-revision",
+          "${got_revision}"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -42175,9 +42177,12 @@
         },
         "name": "pixel_browser_tests",
         "precommit_args": [
-          "--issue=${patch_issue}",
-          "--patchset=${patch_set}",
-          "--jobid=${buildbucket_build_id}"
+          "--gerrit-issue",
+          "${patch_issue}",
+          "--gerrit-patchset",
+          "${patch_set}",
+          "--buildbucket-id",
+          "${buildbucket_build_id}"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

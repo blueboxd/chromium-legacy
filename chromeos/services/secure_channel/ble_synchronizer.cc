@@ -72,8 +72,8 @@ void BleSynchronizer::ProcessQueue() {
           base::TimeDelta::FromMilliseconds(kTimeBetweenEachCommandMs)) {
     timer_->Start(FROM_HERE,
                   base::TimeDelta::FromMilliseconds(kTimeBetweenEachCommandMs),
-                  base::Bind(&BleSynchronizer::ProcessQueue,
-                             weak_ptr_factory_.GetWeakPtr()));
+                  base::BindOnce(&BleSynchronizer::ProcessQueue,
+                                 weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 

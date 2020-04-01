@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
@@ -1061,6 +1063,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetSkipServiceWorker(is_isolated_world_);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
+  if (trust_token_params_)
+    request.SetTrustTokenParams(*trust_token_params_);
 
   probe::WillLoadXHR(&execution_context, method_, url_, async_,
                      request_headers_, with_credentials_);
@@ -1438,6 +1442,38 @@ void XMLHttpRequest::SetRequestHeaderInternal(const AtomicString& name,
     AtomicString new_value = result.stored_value->value + ", " + value;
     result.stored_value->value = new_value;
   }
+}
+
+void XMLHttpRequest::setTrustToken(const TrustToken* trust_token,
+                                   ExceptionState& exception_state) {
+  // These precondition checks are copied from |setRequestHeader|.
+  if (state_ != kOpened || send_flag_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The object's state must be OPENED.");
+    return;
+  }
+
+  auto params = network::mojom::blink::TrustTokenParams::New();
+  if (!ConvertTrustTokenToMojom(*trust_token, &exception_state, params.get())) {
+    DCHECK(exception_state.HadException());
+    return;
+  }
+
+  bool operation_requires_feature_policy =
+      params->type ==
+          network::mojom::blink::TrustTokenOperationType::kRedemption ||
+      params->type == network::mojom::blink::TrustTokenOperationType::kSigning;
+  if (operation_requires_feature_policy &&
+      !GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kTrustTokenRedemption)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "Trust Tokens redemption and signing require the "
+        "trust-token-redemption Feature Policy feature.");
+    return;
+  }
+
+  trust_token_params_ = std::move(params);
 }
 
 bool XMLHttpRequest::HasContentTypeRequestHeader() const {

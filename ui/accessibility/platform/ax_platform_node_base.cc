@@ -1865,7 +1865,7 @@ int AXPlatformNodeBase::NearestTextIndexToPoint(gfx::Point point) {
   // have an embedded div inside them that holds all the text,
   // GetRangeBoundsRect will correctly handle these nodes
   int nearest_index = 0;
-  const AXCoordinateSystem coordinate_system = AXCoordinateSystem::kScreen;
+  const AXCoordinateSystem coordinate_system = AXCoordinateSystem::kScreenDIPs;
   const AXClippingBehavior clipping_behavior = AXClippingBehavior::kUnclipped;
 
   // Manhattan Distance  is used to provide faster distance estimates.

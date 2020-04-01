@@ -114,9 +114,8 @@ ExtensionFunction::ResponseAction GcmRegisterFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GetGCMDriver()->Register(
-      extension()->id(),
-      params->sender_ids,
-      base::Bind(&GcmRegisterFunction::CompleteFunctionWithResult, this));
+      extension()->id(), params->sender_ids,
+      base::BindOnce(&GcmRegisterFunction::CompleteFunctionWithResult, this));
 
   // Register() might have returned synchronously.
   return did_respond() ? AlreadyResponded() : RespondLater();
@@ -143,7 +142,7 @@ GcmUnregisterFunction::~GcmUnregisterFunction() {}
 ExtensionFunction::ResponseAction GcmUnregisterFunction::Run() {
   GetGCMDriver()->Unregister(
       extension()->id(),
-      base::Bind(&GcmUnregisterFunction::CompleteFunctionWithResult, this));
+      base::BindOnce(&GcmUnregisterFunction::CompleteFunctionWithResult, this));
 
   // Unregister might have responded already (synchronously).
   return did_respond() ? AlreadyResponded() : RespondLater();
@@ -173,10 +172,8 @@ ExtensionFunction::ResponseAction GcmSendFunction::Run() {
     outgoing_message.time_to_live = *params->message.time_to_live;
 
   GetGCMDriver()->Send(
-      extension()->id(),
-      params->message.destination_id,
-      outgoing_message,
-      base::Bind(&GcmSendFunction::CompleteFunctionWithResult, this));
+      extension()->id(), params->message.destination_id, outgoing_message,
+      base::BindOnce(&GcmSendFunction::CompleteFunctionWithResult, this));
 
   // Send might have already responded synchronously.
   return did_respond() ? AlreadyResponded() : RespondLater();

@@ -97,6 +97,10 @@ void ScreenOzone::RemoveObserver(display::DisplayObserver* observer) {
   platform_screen_->RemoveObserver(observer);
 }
 
+std::string ScreenOzone::GetCurrentWorkspace() {
+  return platform_screen_->GetCurrentWorkspace();
+}
+
 gfx::AcceleratedWidget ScreenOzone::GetAcceleratedWidgetForWindow(
     aura::Window* window) const {
   if (!window)

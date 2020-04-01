@@ -622,28 +622,24 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   if (Layer()->EnclosingPaginationLayer())
     box->SetSubtreeShouldCheckForPaintInvalidation();
 
-  // If not composited, background always paints into the main graphics layer.
-  bool background_paint_in_graphics_layer = true;
-  bool background_paint_in_scrolling_contents = false;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      UsesCompositedScrolling()) {
+  if (!box->BackgroundNeedsFullPaintInvalidation()) {
     auto background_paint_location = box->GetBackgroundPaintLocation();
-    background_paint_in_graphics_layer =
+    bool background_paint_in_graphics_layer =
         background_paint_location & kBackgroundPaintInGraphicsLayer;
-    background_paint_in_scrolling_contents =
+    bool background_paint_in_scrolling_contents =
         background_paint_location & kBackgroundPaintInScrollingContents;
-  }
 
-  // Both local attachment background painted in graphics layer and normal
-  // attachment background painted in scrolling contents require paint
-  // invalidation. Fixed attachment background has been dealt with in
-  // frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll().
-  auto background_layers = box->StyleRef().BackgroundLayers();
-  if ((background_layers.AnyLayerHasLocalAttachmentImage() &&
-       background_paint_in_graphics_layer) ||
-      (background_layers.AnyLayerHasDefaultAttachmentImage() &&
-       background_paint_in_scrolling_contents))
-    box->SetBackgroundNeedsFullPaintInvalidation();
+    // Both local attachment background painted in graphics layer and normal
+    // attachment background painted in scrolling contents require paint
+    // invalidation. Fixed attachment background has been dealt with in
+    // frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll().
+    auto background_layers = box->StyleRef().BackgroundLayers();
+    if ((background_layers.AnyLayerHasLocalAttachmentImage() &&
+         background_paint_in_graphics_layer) ||
+        (background_layers.AnyLayerHasDefaultAttachmentImage() &&
+         background_paint_in_scrolling_contents))
+      box->SetBackgroundNeedsFullPaintInvalidation();
+  }
 
   // If any scrolling content might have been clipped by a cull rect, then
   // that cull rect could be affected by scroll offset. For composited
@@ -2459,7 +2455,29 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
                 : DocumentLifecycle::kInCompositingUpdate,
             GetDocument()->Lifecycle().GetState());
 
+  const auto* box = GetLayoutBox();
+  auto old_background_paint_location = box->GetBackgroundPaintLocation();
   non_composited_main_thread_scrolling_reasons_ = 0;
+  auto new_background_paint_location =
+      box->ComputeBackgroundPaintLocationIfComposited(
+          &non_composited_main_thread_scrolling_reasons_);
+  bool needs_composited_scrolling = ComputeNeedsCompositedScrollingInternal(
+      new_background_paint_location, force_prefer_compositing_to_lcd_text);
+  if (!needs_composited_scrolling)
+    new_background_paint_location = kBackgroundPaintInGraphicsLayer;
+  if (new_background_paint_location != old_background_paint_location) {
+    box->GetMutableForPainting().SetBackgroundPaintLocation(
+        new_background_paint_location);
+  }
+
+  return needs_composited_scrolling;
+}
+
+bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
+    BackgroundPaintLocation background_paint_location_if_composited,
+    bool force_prefer_compositing_to_lcd_text) {
+  DCHECK_EQ(background_paint_location_if_composited,
+            GetLayoutBox()->ComputeBackgroundPaintLocationIfComposited());
 
   if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer_))
     return true;
@@ -2493,8 +2511,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   // transforms are also integer.
   bool background_supports_lcd_text =
       box->StyleRef().IsStackingContext() &&
-      (box->GetBackgroundPaintLocation(
-           &non_composited_main_thread_scrolling_reasons_) &
+      (background_paint_location_if_composited &
        kBackgroundPaintInScrollingContents) &&
       layer_->BackgroundIsKnownToBeOpaqueInRect(box->PhysicalPaddingBoxRect(),
                                                 true) &&

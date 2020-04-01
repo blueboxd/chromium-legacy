@@ -54,8 +54,8 @@ void MarketingOptInScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES);
   builder->Add("marketingOptInScreenAllSet",
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_ALL_SET);
-  builder->Add("marketingOptInA11yLinkLabel",
-               IDS_MARKETING_OPT_IN_ACCESSIBILITY_SETTINGS_LINK);
+  builder->Add("marketingOptInA11yButtonLabel",
+               IDS_MARKETING_OPT_IN_ACCESSIBILITY_BUTTON_LABEL);
   builder->Add("finalA11yPageTitle", IDS_MARKETING_OPT_IN_ACCESSIBILITY_TITLE);
   builder->Add("finalA11yPageNavButtonSettingTitle",
                IDS_MARKETING_OPT_IN_ACCESSIBILITY_NAV_BUTTON_SETTING_TITLE);
@@ -80,16 +80,6 @@ void MarketingOptInScreenHandler::Hide() {
     a11y_nav_buttons_toggle_metrics_reporter_timer_.FireNow();
 }
 
-void MarketingOptInScreenHandler::UpdateAllSetButtonVisibility(bool visible) {
-  CallJS("login.MarketingOptInScreen.updateAllSetButtonVisibility", visible);
-}
-
-void MarketingOptInScreenHandler::UpdateA11ySettingsButtonVisibility(
-    bool shown) {
-  CallJS("login.MarketingOptInScreen.updateA11ySettingsButtonVisibility",
-         shown);
-}
-
 void MarketingOptInScreenHandler::UpdateA11yShelfNavigationButtonToggle(
     bool enabled) {
   CallJS("login.MarketingOptInScreen.updateA11yNavigationButtonToggle",
@@ -104,9 +94,6 @@ void MarketingOptInScreenHandler::RegisterMessages() {
   AddCallback(
       "login.MarketingOptInScreen.setA11yNavigationButtonsEnabled",
       &MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled);
-  AddCallback(
-      "login.MarketingOptInScreen.accessibilityPageVisibilityChanged",
-      &MarketingOptInScreenHandler::HandleAccessibilityPageVisibilityChanged);
 }
 
 void MarketingOptInScreenHandler::GetAdditionalParameters(
@@ -121,11 +108,6 @@ void MarketingOptInScreenHandler::HandleAllSet(
     bool play_communications_opt_in,
     bool tips_communications_opt_in) {
   screen_->OnAllSet(play_communications_opt_in, tips_communications_opt_in);
-}
-
-void MarketingOptInScreenHandler::HandleAccessibilityPageVisibilityChanged(
-    bool shown) {
-  screen_->OnAccessibilityPageVisibilityChanged(shown);
 }
 
 void MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled(

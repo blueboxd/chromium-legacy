@@ -45,6 +45,7 @@
 
 using credential_provider::GetGlobalFlagOrDefault;
 using credential_provider::kRegEnableVerboseLogging;
+using credential_provider::MakeGcpwDefaultCP;
 using credential_provider::putHR;
 
 namespace {
@@ -100,6 +101,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
   if (GetGlobalFlagOrDefault(kRegEnableVerboseLogging, 1))
     logging::SetMinLogLevel(logging::LOG_VERBOSE);
+
+  // Set GCPW as the default credential provider for the end user.
+  MakeGcpwDefaultCP();
 
   if (cmdline->HasSwitch(switches::kLoggingLevel)) {
     std::string log_level =

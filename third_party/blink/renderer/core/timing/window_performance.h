@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
+#include "third_party/blink/renderer/core/timing/event_counts.h"
 #include "third_party/blink/renderer/core/timing/memory_info.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_navigation.h"
@@ -60,6 +61,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   PerformanceNavigation* navigation() const override;
 
   MemoryInfo* memory() const override;
+
+  EventCounts* eventCounts() override;
 
   bool FirstInputDetected() const { return !!first_input_timing_; }
 
@@ -122,6 +125,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // |duration| has not been resolved.
   HeapVector<Member<PerformanceEventTiming>> event_timings_;
   Member<PerformanceEventTiming> first_pointer_down_event_timing_;
+  Member<EventCounts> event_counts_;
   mutable Member<PerformanceNavigation> navigation_;
   mutable Member<PerformanceTiming> timing_;
 };

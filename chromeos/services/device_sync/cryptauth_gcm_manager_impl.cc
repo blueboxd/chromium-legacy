@@ -256,8 +256,8 @@ void CryptAuthGCMManagerImpl::RegisterWithGCM() {
   std::vector<std::string> sender_ids(1, kCryptAuthGcmSenderId);
   gcm_driver_->Register(
       kCryptAuthGcmAppId, sender_ids,
-      base::Bind(&CryptAuthGCMManagerImpl::OnRegistrationCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CryptAuthGCMManagerImpl::OnRegistrationCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::string CryptAuthGCMManagerImpl::GetRegistrationId() {

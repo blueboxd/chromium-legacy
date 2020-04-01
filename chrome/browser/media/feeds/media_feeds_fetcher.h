@@ -7,6 +7,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
+#include "components/schema_org/extractor.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -50,6 +51,8 @@ class MediaFeedsFetcher {
   // Contains the current fetch request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete| or if cancelled.
   std::unique_ptr<::network::SimpleURLLoader> pending_request_;
+
+  schema_org::Extractor extractor_;
 
   base::ThreadChecker thread_checker_;
 };

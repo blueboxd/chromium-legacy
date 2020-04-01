@@ -125,6 +125,7 @@ class DiagnosticsReporter {
   unsigned diag_field_should_not_be_traced_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
+  unsigned diag_weak_ptr_to_gc_managed_class_note_;
   unsigned diag_reference_ptr_to_gc_managed_class_note_;
   unsigned diag_own_ptr_to_gc_managed_class_note_;
   unsigned diag_unique_ptr_to_gc_managed_class_note_;

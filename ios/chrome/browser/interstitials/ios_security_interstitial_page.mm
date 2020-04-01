@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
+#include "ios/components/ui_util/dynamic_type_util.h"
 #include "ios/web/common/features.h"
 #include "ios/web/public/security/web_interstitial.h"
 #import "ios/web/public/web_state.h"
@@ -39,7 +39,7 @@ void AdjustFontSize(base::DictionaryValue& load_time_data) {
   bool converted =
       base::StringToDouble(old_size.substr(0, old_size.size() - 1), &new_size);
   DCHECK(converted);
-  new_size *= SystemSuggestedFontSizeMultiplier();
+  new_size *= ui_util::SystemSuggestedFontSizeMultiplier();
   load_time_data.SetString("fontsize", base::StringPrintf("%.0lf%%", new_size));
 }
 }

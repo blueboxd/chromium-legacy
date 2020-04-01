@@ -193,8 +193,8 @@ TEST_F(TokenValidatorFactoryImplTest, Success) {
               CreateResponse(token_validator_->token_scope()));
 
   token_validator_->ValidateThirdPartyToken(
-      kToken, base::Bind(&TokenValidatorFactoryImplTest::SuccessCallback,
-                         base::Unretained(this)));
+      kToken, base::BindOnce(&TokenValidatorFactoryImplTest::SuccessCallback,
+                             base::Unretained(this)));
   run_loop_.Run();
 }
 
@@ -207,8 +207,8 @@ TEST_F(TokenValidatorFactoryImplTest,
               ")]}'\n" + CreateResponse(token_validator_->token_scope()));
 
   token_validator_->ValidateThirdPartyToken(
-      kToken, base::Bind(&TokenValidatorFactoryImplTest::SuccessCallback,
-                         base::Unretained(this)));
+      kToken, base::BindOnce(&TokenValidatorFactoryImplTest::SuccessCallback,
+                             base::Unretained(this)));
   run_loop_.Run();
 }
 
@@ -219,8 +219,8 @@ TEST_F(TokenValidatorFactoryImplTest, BadToken) {
   SetResponse(net::URLRequestTestJob::test_error_headers(), std::string());
 
   token_validator_->ValidateThirdPartyToken(
-      kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
-                         base::Unretained(this)));
+      kToken, base::BindOnce(&TokenValidatorFactoryImplTest::FailureCallback,
+                             base::Unretained(this)));
   run_loop_.Run();
 }
 
@@ -232,8 +232,8 @@ TEST_F(TokenValidatorFactoryImplTest, BadScope) {
               CreateResponse(kBadScope));
 
   token_validator_->ValidateThirdPartyToken(
-      kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
-                         base::Unretained(this)));
+      kToken, base::BindOnce(&TokenValidatorFactoryImplTest::FailureCallback,
+                             base::Unretained(this)));
   run_loop_.Run();
 }
 
@@ -245,8 +245,8 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnFailure) {
 
   token_validator_->ValidateThirdPartyToken(
       kToken,
-      base::Bind(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
+                     base::Unretained(this)));
   run_loop_.Run();
 }
 
@@ -258,8 +258,8 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnStartError) {
 
   token_validator_->ValidateThirdPartyToken(
       kToken,
-      base::Bind(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
+                     base::Unretained(this)));
   run_loop_.Run();
 }
 
@@ -271,8 +271,8 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnSyncReadError) {
 
   token_validator_->ValidateThirdPartyToken(
       kToken,
-      base::Bind(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
+                     base::Unretained(this)));
   run_loop_.Run();
 }
 
@@ -284,8 +284,8 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnAsyncReadError) {
 
   token_validator_->ValidateThirdPartyToken(
       kToken,
-      base::Bind(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
+                     base::Unretained(this)));
   run_loop_.Run();
 }
 

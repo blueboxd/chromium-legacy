@@ -58,6 +58,7 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   display::Display GetDisplayNearestWindow(
       gfx::NativeWindow window) const override;
+  std::string GetCurrentWorkspace() override;
 
  private:
   explicit TestScreen(const gfx::Rect& screen_bounds);

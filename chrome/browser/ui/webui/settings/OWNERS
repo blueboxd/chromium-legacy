@@ -2,4 +2,9 @@ file://chrome/browser/resources/settings/OWNERS
 
 per-file people_handler*=tangltom@chromium.org
 
+per-file safe_browsing_handler*=msramek@chromium.org
+per-file safe_browsing_handler*=sauski@google.com
+per-file site_settings_handler*=msramek@chromium.org
+per-file site_settings_handler*=sauski@google.com
+
 # COMPONENT: UI>Settings

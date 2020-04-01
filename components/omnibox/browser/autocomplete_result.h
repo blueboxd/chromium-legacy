@@ -32,7 +32,7 @@ class AutocompleteResult {
   using MatchDedupComparator = std::pair<GURL, bool>;
 
   // Max number of matches we'll show from the various providers.
-  static size_t GetMaxMatches(bool is_zero_suggest = false);
+  static size_t GetMaxMatches();
 
   AutocompleteResult();
   ~AutocompleteResult();

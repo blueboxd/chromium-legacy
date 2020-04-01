@@ -16,19 +16,26 @@ constexpr unsigned kNumberOfSamplesToReport = 100u;
 ThroughputUkmReporter::ThroughputUkmReporter(UkmManager* ukm_manager)
     : ukm_manager_(ukm_manager) {
   DCHECK(ukm_manager_);
+  // TODO(crbug.com/1040634): Setting it to 1 such that the first sample is
+  // ignored. TThis is because the universal tracker is active during the page
+  // load and the first sample is heavily biased by loading as a result.
+  samples_to_next_event_[static_cast<int>(
+      FrameSequenceTrackerType::kUniversal)] = 1;
 }
+
+ThroughputUkmReporter::~ThroughputUkmReporter() = default;
 
 void ThroughputUkmReporter::ReportThroughputUkm(
     const base::Optional<int>& slower_throughput_percent,
     const base::Optional<int>& impl_throughput_percent,
     const base::Optional<int>& main_throughput_percent,
     FrameSequenceTrackerType type) {
-  if (samples_to_next_event_ == 0) {
-    // Sample every 2000 events. Using the Universal tracker as an example
+  if (samples_to_next_event_[static_cast<int>(type)] == 0) {
+    // Sample every 100 events. Using the Universal tracker as an example
     // which reports UMA every 5s, then the system collects UKM once per
-    // 2000*5 = 10000 seconds, which is about 3 hours. This number may need to
-    // be tuned to not throttle the UKM system.
-    samples_to_next_event_ = kNumberOfSamplesToReport;
+    // 100*5 = 500 seconds. This number may need to be tuned to not throttle
+    // the UKM system.
+    samples_to_next_event_[static_cast<int>(type)] = kNumberOfSamplesToReport;
     if (impl_throughput_percent) {
       ukm_manager_->RecordThroughputUKM(
           type, FrameSequenceMetrics::ThreadType::kCompositor,
@@ -43,8 +50,8 @@ void ThroughputUkmReporter::ReportThroughputUkm(
                                       FrameSequenceMetrics::ThreadType::kSlower,
                                       slower_throughput_percent.value());
   }
-  DCHECK_GT(samples_to_next_event_, 0u);
-  samples_to_next_event_--;
+  DCHECK_GT(samples_to_next_event_[static_cast<int>(type)], 0u);
+  samples_to_next_event_[static_cast<int>(type)]--;
 }
 
 void ThroughputUkmReporter::ReportAggregateThroughput(

@@ -1827,8 +1827,8 @@ void CrosNetworkConfig::GetManagedProperties(
 
   network_configuration_handler_->GetManagedProperties(
       chromeos::LoginState::Get()->primary_user_hash(), network->path(),
-      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::GetManagedPropertiesSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::GetManagedPropertiesFailure,
                  weak_factory_.GetWeakPtr(), guid, callback_id));
 }
@@ -1876,8 +1876,8 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
   managed_properties_[callback_id] = std::move(managed_properties);
   network_configuration_handler_->GetManagedProperties(
       chromeos::LoginState::Get()->primary_user_hash(), eap_state->path(),
-      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessEap,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::GetManagedPropertiesSuccessEap,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessNoEap,
                  weak_factory_.GetWeakPtr(), callback_id));
 }
@@ -2372,8 +2372,8 @@ void CrosNetworkConfig::StartConnect(const std::string& guid,
 
   network_connection_handler_->ConnectToNetwork(
       service_path,
-      base::Bind(&CrosNetworkConfig::StartConnectSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::StartConnectSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::StartConnectFailure,
                  weak_factory_.GetWeakPtr(), callback_id),
       true /* check_error_state */, chromeos::ConnectCallbackMode::ON_STARTED);
@@ -2434,8 +2434,8 @@ void CrosNetworkConfig::StartDisconnect(const std::string& guid,
 
   network_connection_handler_->DisconnectNetwork(
       service_path,
-      base::Bind(&CrosNetworkConfig::StartDisconnectSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::StartDisconnectSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::StartDisconnectFailure,
                  weak_factory_.GetWeakPtr(), callback_id));
 }

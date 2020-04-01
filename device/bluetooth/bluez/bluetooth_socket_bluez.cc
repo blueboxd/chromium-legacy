@@ -263,10 +263,10 @@ void BluetoothSocketBlueZ::OnRegisterProfile(
 
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
       device_path_, uuid_.canonical_value(),
-      base::Bind(&BluetoothSocketBlueZ::OnConnectProfile, this,
-                 success_callback),
-      base::Bind(&BluetoothSocketBlueZ::OnConnectProfileError, this,
-                 error_callback));
+      base::BindOnce(&BluetoothSocketBlueZ::OnConnectProfile, this,
+                     success_callback),
+      base::BindOnce(&BluetoothSocketBlueZ::OnConnectProfileError, this,
+                     error_callback));
 }
 
 void BluetoothSocketBlueZ::OnRegisterProfileError(

@@ -22,6 +22,18 @@ namespace password_manager {
 
 class PasswordManagerClient;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Needs to stay in sync with HttpPasswordMigrationMode in enums.xml.
+enum class HttpPasswordMigrationMode {
+  // HTTP credentials are deleted after migration to HTTPS.
+  kMove = 0,
+  // HTTP credentials are kept after migration to HTTPS.
+  kCopy = 1,
+  kMaxValue = kCopy,
+};
+
 // The class is responsible for migrating the passwords saved on HTTP to HTTPS
 // origin. It automatically determines whether HTTP passwords should be moved or
 // copied depending on the site's HSTS status. If a site has HSTS enabled, the
@@ -62,11 +74,6 @@ class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
   void OnHSTSQueryResult(HSTSResult is_hsts);
 
  private:
-  enum class MigrationMode {
-    MOVE,  // HTTP credentials are deleted after migration to HTTPS.
-    COPY,  // HTTP credentials are kept after migration to HTTPS.
-  };
-
   void ProcessPasswordStoreResults();
 
   const PasswordManagerClient* const client_;
@@ -78,7 +85,7 @@ class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
   // if both are set to true |ProcessPasswordStoreResults| gets called.
   bool got_hsts_query_result_ = false;
   bool got_password_store_results_ = false;
-  MigrationMode mode_;
+  HttpPasswordMigrationMode mode_ = HttpPasswordMigrationMode::kMove;
   std::vector<std::unique_ptr<autofill::PasswordForm>> results_;
   GURL http_origin_domain_;
   SEQUENCE_CHECKER(sequence_checker_);

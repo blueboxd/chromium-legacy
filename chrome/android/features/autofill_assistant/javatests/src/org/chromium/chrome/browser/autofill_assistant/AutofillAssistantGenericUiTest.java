@@ -111,6 +111,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.UserActionList;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueComparisonProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ValueReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.VerticalExpanderAccordionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.VerticalExpanderViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ViewAttributesProto;
@@ -369,8 +370,10 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output_1")
-                                        .setValue(ValueProto.newBuilder().setBooleans(
-                                                BooleanList.newBuilder().addValues(true)))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setBooleans(
+                                                        BooleanList.newBuilder().addValues(
+                                                                true))))))
                         .build());
         List<InteractionProto> interactionsAppended = new ArrayList<>();
         interactionsAppended.add(
@@ -381,8 +384,10 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output_2")
-                                        .setValue(ValueProto.newBuilder().setStrings(
-                                                StringList.newBuilder().addValues("Hello World")))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setStrings(
+                                                        StringList.newBuilder().addValues(
+                                                                "Hello World"))))))
                         .build());
 
         List<ModelProto.ModelValue> modelValuesPrepended = new ArrayList<>();
@@ -504,13 +509,17 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output_1")
-                                        .setValue(ValueProto.newBuilder().setStrings(
-                                                StringList.newBuilder().addValues("Hello World")))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setStrings(
+                                                        StringList.newBuilder().addValues(
+                                                                "Hello World"))))))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output_3")
-                                        .setValue(ValueProto.newBuilder().setStrings(
-                                                StringList.newBuilder().addValues("Hello World")))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setStrings(
+                                                        StringList.newBuilder().addValues(
+                                                                "Hello World"))))))
                         .build());
         // Whenever output_1 changes, copy the value to output_2.
         interactions.add(
@@ -521,8 +530,10 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output_2")
-                                        .setValue(ValueProto.newBuilder().setStrings(
-                                                StringList.newBuilder().addValues("Hello World")))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setStrings(
+                                                        StringList.newBuilder().addValues(
+                                                                "Hello World"))))))
                         .build());
         // Whenever output_2 changes, copy the value to output_1. This tests that no infinite loop
         // is created, because events should only be fired for actual value changes.
@@ -534,8 +545,10 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output_1")
-                                        .setValue(ValueProto.newBuilder().setStrings(
-                                                StringList.newBuilder().addValues("Hello World")))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setStrings(
+                                                        StringList.newBuilder().addValues(
+                                                                "Hello World"))))))
                         .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
@@ -701,7 +714,9 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "chips")))
                         .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
-                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
                         .build());
         interactions.add((InteractionProto) InteractionProto.newBuilder()
                                  .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
@@ -718,7 +733,12 @@ public class AutofillAssistantGenericUiTest {
                                         "clickableView")))
                         .addCallbacks(CallbackProto.newBuilder().setShowListPopup(
                                 ShowListPopupProto.newBuilder()
-                                        .setItemNamesModelIdentifier("items")
+                                        .setItemNames(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setStrings(
+                                                        StringList.newBuilder().addAllValues(
+                                                                Arrays.asList("08:00 AM",
+                                                                        "08:30 AM", "09:00 AM",
+                                                                        "09:30 AM", "10:00 AM")))))
                                         .setSelectedItemIndicesModelIdentifier(
                                                 "selected_items_indices")
                                         .setSelectedItemNamesModelIdentifier("selected_item_names")
@@ -726,11 +746,6 @@ public class AutofillAssistantGenericUiTest {
                         .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
-        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                                .setIdentifier("value_a")
-                                .setValue(ValueProto.newBuilder().setInts(
-                                        IntList.newBuilder().addValues(1)))
-                                .build());
         modelValues.add(
                 (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                         .setIdentifier("chips")
@@ -741,13 +756,6 @@ public class AutofillAssistantGenericUiTest {
                                                                  .setText("Done")
                                                                  .setType(ChipType.NORMAL_ACTION))
                                                 .setIdentifier("done_chip"))))
-                        .build());
-        modelValues.add(
-                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                        .setIdentifier("items")
-                        .setValue(ValueProto.newBuilder().setStrings(
-                                StringList.newBuilder().addAllValues(Arrays.asList("08:00 AM",
-                                        "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM"))))
                         .build());
         modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                                 .setIdentifier("selected_items_indices")
@@ -852,8 +860,10 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output1")
-                                        .setValue(ValueProto.newBuilder().setBooleans(
-                                                BooleanList.newBuilder().addValues(true)))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setBooleans(
+                                                        BooleanList.newBuilder().addValues(
+                                                                true))))))
                         .build());
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
@@ -863,8 +873,10 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
                                 SetModelValueProto.newBuilder()
                                         .setModelIdentifier("output2")
-                                        .setValue(ValueProto.newBuilder().setBooleans(
-                                                BooleanList.newBuilder().addValues(true)))))
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setBooleans(
+                                                        BooleanList.newBuilder().addValues(
+                                                                true))))))
                         .build());
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
@@ -873,9 +885,13 @@ public class AutofillAssistantGenericUiTest {
                                         "output1")))
                         .addCallbacks(CallbackProto.newBuilder().setComputeValue(
                                 ComputeValueProto.newBuilder()
-                                        .setBooleanAnd(
-                                                BooleanAndProto.newBuilder().addAllModelIdentifiers(
-                                                        Arrays.asList("output1", "output2")))
+                                        .setBooleanAnd(BooleanAndProto.newBuilder().addAllValues(
+                                                Arrays.asList(ValueReferenceProto.newBuilder()
+                                                                      .setModelIdentifier("output1")
+                                                                      .build(),
+                                                        ValueReferenceProto.newBuilder()
+                                                                .setModelIdentifier("output2")
+                                                                .build())))
                                         .setResultModelIdentifier("combined")))
                         .build());
         interactions.add(
@@ -885,9 +901,13 @@ public class AutofillAssistantGenericUiTest {
                                         "output2")))
                         .addCallbacks(CallbackProto.newBuilder().setComputeValue(
                                 ComputeValueProto.newBuilder()
-                                        .setBooleanAnd(
-                                                BooleanAndProto.newBuilder().addAllModelIdentifiers(
-                                                        Arrays.asList("output1", "output2")))
+                                        .setBooleanAnd(BooleanAndProto.newBuilder().addAllValues(
+                                                Arrays.asList(ValueReferenceProto.newBuilder()
+                                                                      .setModelIdentifier("output1")
+                                                                      .build(),
+                                                        ValueReferenceProto.newBuilder()
+                                                                .setModelIdentifier("output2")
+                                                                .build())))
                                         .setResultModelIdentifier("combined")))
                         .build());
 
@@ -961,7 +981,9 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "chips")))
                         .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
-                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
                         .build());
         interactions.add((InteractionProto) InteractionProto.newBuilder()
                                  .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
@@ -1053,18 +1075,6 @@ public class AutofillAssistantGenericUiTest {
                                 .build());
         modelValues.add(
                 (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                        .setIdentifier("min_date")
-                        .setValue(ValueProto.newBuilder().setDates(DateList.newBuilder().addValues(
-                                DateProto.newBuilder().setYear(2020).setMonth(1).setDay(1))))
-                        .build());
-        modelValues.add(
-                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                        .setIdentifier("max_date")
-                        .setValue(ValueProto.newBuilder().setDates(DateList.newBuilder().addValues(
-                                DateProto.newBuilder().setYear(2020).setMonth(12).setDay(31))))
-                        .build());
-        modelValues.add(
-                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                         .setIdentifier("chips")
                         .setValue(ValueProto.newBuilder().setUserActions(
                                 UserActionList.newBuilder().addValues(
@@ -1082,7 +1092,9 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "chips")))
                         .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
-                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
                         .build());
         interactions.add((InteractionProto) InteractionProto.newBuilder()
                                  .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
@@ -1092,16 +1104,29 @@ public class AutofillAssistantGenericUiTest {
                                          EndActionProto.newBuilder().setStatus(
                                                  ProcessedActionStatusProto.ACTION_APPLIED)))
                                  .build());
-        interactions.add((InteractionProto) InteractionProto.newBuilder()
-                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
-                                                 "text_view")))
-                                 .addCallbacks(CallbackProto.newBuilder().setShowCalendarPopup(
-                                         ShowCalendarPopupProto.newBuilder()
-                                                 .setDateModelIdentifier("date")
-                                                 .setMinDateModelIdentifier("min_date")
-                                                 .setMaxDateModelIdentifier("max_date")))
-                                 .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "text_view")))
+                        .addCallbacks(CallbackProto.newBuilder().setShowCalendarPopup(
+                                ShowCalendarPopupProto.newBuilder()
+                                        .setDateModelIdentifier("date")
+                                        .setMinDate(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setDates(
+                                                        DateList.newBuilder().addValues(
+                                                                DateProto.newBuilder()
+                                                                        .setYear(2020)
+                                                                        .setMonth(1)
+                                                                        .setDay(1)))))
+                                        .setMaxDate(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setDates(
+                                                        DateList.newBuilder().addValues(
+                                                                DateProto.newBuilder()
+                                                                        .setYear(2020)
+                                                                        .setMonth(12)
+                                                                        .setDay(31)))))))
+                        .build());
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
@@ -1112,7 +1137,9 @@ public class AutofillAssistantGenericUiTest {
                                         .setResultModelIdentifier("date_string")
                                         .setToString(
                                                 ToStringProto.newBuilder()
-                                                        .setModelIdentifier("date")
+                                                        .setValue(
+                                                                ValueReferenceProto.newBuilder()
+                                                                        .setModelIdentifier("date"))
                                                         .setDateFormat(
                                                                 DateFormatProto.newBuilder()
                                                                         .setDateFormat(
@@ -1268,7 +1295,9 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "chips")))
                         .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
-                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
                         .build());
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
@@ -1278,7 +1307,9 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setToggleUserAction(
                                 ToggleUserActionProto.newBuilder()
                                         .setUserActionsModelIdentifier("chips")
-                                        .setEnabledModelIdentifier("enabled")
+                                        .setEnabled(
+                                                ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                        "enabled"))
                                         .setUserActionIdentifier("done_chip")))
                         .build());
         interactions.add(
@@ -1289,9 +1320,9 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setComputeValue(
                                 ComputeValueProto.newBuilder()
                                         .setResultModelIdentifier("enabled")
-                                        .setBooleanNot(
-                                                BooleanNotProto.newBuilder().setModelIdentifier(
-                                                        "enabled"))))
+                                        .setBooleanNot(BooleanNotProto.newBuilder().setValue(
+                                                ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                        "enabled")))))
                         .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
@@ -1354,6 +1385,10 @@ public class AutofillAssistantGenericUiTest {
     @MediumTest
     public void testShowPopupIfClickedAtLeastThreeTimes() {
         List<InteractionProto> interactions = new ArrayList<>();
+        ValueReferenceProto increment = ValueReferenceProto.newBuilder()
+                                                .setValue(ValueProto.newBuilder().setInts(
+                                                        IntList.newBuilder().addValues(1)))
+                                                .build();
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
@@ -1362,9 +1397,11 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setComputeValue(
                                 ComputeValueProto.newBuilder()
                                         .setResultModelIdentifier("counter")
-                                        .setIntegerSum(IntegerSumProto.newBuilder()
-                                                               .setModelIdentifierA("counter")
-                                                               .setModelIdentifierB("increment"))))
+                                        .setIntegerSum(IntegerSumProto.newBuilder().addAllValues(
+                                                Arrays.asList(ValueReferenceProto.newBuilder()
+                                                                      .setModelIdentifier("counter")
+                                                                      .build(),
+                                                        increment)))))
                         .addCallbacks(CallbackProto.newBuilder()
                                               .setConditionModelIdentifier("condition")
                                               .setShowInfoPopup(
@@ -1373,6 +1410,10 @@ public class AutofillAssistantGenericUiTest {
                                                                       .setTitle("Info popup title")
                                                                       .setText("Info text"))))
                         .build());
+        ValueReferenceProto target = ValueReferenceProto.newBuilder()
+                                             .setValue(ValueProto.newBuilder().setInts(
+                                                     IntList.newBuilder().addValues(3)))
+                                             .build();
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
@@ -1383,8 +1424,10 @@ public class AutofillAssistantGenericUiTest {
                                         .setResultModelIdentifier("condition")
                                         .setComparison(
                                                 ValueComparisonProto.newBuilder()
-                                                        .setModelIdentifierA("counter")
-                                                        .setModelIdentifierB("target_counter")
+                                                        .setValueA(ValueReferenceProto.newBuilder()
+                                                                           .setModelIdentifier(
+                                                                                   "counter"))
+                                                        .setValueB(target)
                                                         .setMode(ValueComparisonProto.Mode
                                                                          .GREATER_OR_EQUAL))))
                         .build());
@@ -1394,16 +1437,6 @@ public class AutofillAssistantGenericUiTest {
                                 .setIdentifier("counter")
                                 .setValue(ValueProto.newBuilder().setInts(
                                         IntList.newBuilder().addValues(0)))
-                                .build());
-        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                                .setIdentifier("increment")
-                                .setValue(ValueProto.newBuilder().setInts(
-                                        IntList.newBuilder().addValues(1)))
-                                .build());
-        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
-                                .setIdentifier("target_counter")
-                                .setValue(ValueProto.newBuilder().setInts(
-                                        IntList.newBuilder().addValues(3)))
                                 .build());
         modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                                 .setIdentifier("condition")
@@ -1460,9 +1493,9 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setComputeValue(
                                 ComputeValueProto.newBuilder()
                                         .setResultModelIdentifier("visible")
-                                        .setBooleanNot(
-                                                BooleanNotProto.newBuilder().setModelIdentifier(
-                                                        "visible"))))
+                                        .setBooleanNot(BooleanNotProto.newBuilder().setValue(
+                                                ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                        "visible")))))
                         .build());
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
@@ -1472,7 +1505,9 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setSetViewVisibility(
                                 SetViewVisibilityProto.newBuilder()
                                         .setViewIdentifier("text_view")
-                                        .setModelIdentifier("visible")))
+                                        .setVisible(
+                                                ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                        "visible"))))
                         .build());
 
         // Set visibility initially to false for text_view.
@@ -1565,7 +1600,9 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "chips")))
                         .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
-                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
                         .build());
         interactions.add((InteractionProto) InteractionProto.newBuilder()
                                  .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
@@ -1646,18 +1683,20 @@ public class AutofillAssistantGenericUiTest {
                                 .build());
 
         List<InteractionProto> interactions = new ArrayList<>();
-        interactions.add((InteractionProto) InteractionProto.newBuilder()
-                                 .setTriggerEvent(EventProto.newBuilder().setOnTextLinkClicked(
-                                         OnTextLinkClickedProto.newBuilder().setTextLink(1)))
-                                 .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                         SetModelValueProto.newBuilder()
-                                                 .setValue(ValueProto.newBuilder().setBooleans(
-                                                         BooleanList.newBuilder().addValues(true)))
-                                                 .setModelIdentifier("text_link_clicked")))
-                                 .addCallbacks(CallbackProto.newBuilder().setEndAction(
-                                         EndActionProto.newBuilder().setStatus(
-                                                 ProcessedActionStatusProto.ACTION_APPLIED)))
-                                 .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnTextLinkClicked(
+                                OnTextLinkClickedProto.newBuilder().setTextLink(1)))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setBooleans(
+                                                        BooleanList.newBuilder().addValues(true))))
+                                        .setModelIdentifier("text_link_clicked")))
+                        .addCallbacks(CallbackProto.newBuilder().setEndAction(
+                                EndActionProto.newBuilder().setStatus(
+                                        ProcessedActionStatusProto.ACTION_APPLIED)))
+                        .build());
 
         GenericUserInterfaceProto genericUserInterface =
                 (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
@@ -1893,7 +1932,9 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "chips")))
                         .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
-                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
                         .build());
         interactions.add((InteractionProto) InteractionProto.newBuilder()
                                  .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(

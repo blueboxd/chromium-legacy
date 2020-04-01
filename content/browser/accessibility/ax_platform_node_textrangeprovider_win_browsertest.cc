@@ -640,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   // between platforms (e.g. title bar height) because the results of
   // |GetBoundingRectangles| are in screen coordinates.
   gfx::Vector2d view_offset =
-      node->manager()->GetViewBounds().OffsetFromOrigin();
+      node->manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin();
   std::vector<double> expected_values = {
       8 + view_offset.x(), 16 + view_offset.y(), 49, 17,
       8 + view_offset.x(), 34 + view_offset.y(), 44, 17};
@@ -2314,8 +2314,9 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->GetBoundingRectangles(rectangles.Receive()));
 
-  gfx::Vector2d view_offset =
-      text_before_list->manager()->GetViewBounds().OffsetFromOrigin();
+  gfx::Vector2d view_offset = text_before_list->manager()
+                                  ->GetViewBoundsInScreenCoordinates()
+                                  .OffsetFromOrigin();
   std::vector<double> expected_values = {85 + view_offset.x(),
                                          16 + view_offset.y(), 20, 17};
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);

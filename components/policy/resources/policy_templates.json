@@ -735,9 +735,9 @@
       'desc': '''Configure Safe Browsing related policies.''',
       'policies': [
         'SafeBrowsingEnabled',
-        'SafeBrowsingEnhancedProtection',
         'SafeBrowsingExtendedReportingEnabled',
         'SafeBrowsingExtendedReportingOptInAllowed',
+        'SafeBrowsingProtectionLevel',
         'SafeBrowsingWhitelistDomains',
         'PasswordProtectionWarningTrigger',
         'PasswordProtectionLoginURLs',
@@ -2727,7 +2727,9 @@
       'id': 14,
       'caption': '''Enable Safe Browsing''',
       'tags': ['system-security'],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
+      'desc': '''This policy is deprecated in M83, please use SafeBrowsingProtectionLevel instead.
+
+      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
 
       If you enable this setting, Safe Browsing is always active.
 
@@ -2739,33 +2741,57 @@
 
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.
+
+      If the policy SafeBrowsingProtectionLevel is set, the value of the policy SafeBrowsingEnabled is ignored.''',
     },
     {
-      'name': 'SafeBrowsingEnhancedProtection',
-      'owners': ['bdea@chromium.org'],
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:82-', 'chrome_os:82-'],
+      'name': 'SafeBrowsingProtectionLevel',
+      'owners': ['vakh@chromium.org', 'file://components/safe_browsing/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'NoProtection',
+          'value': 0,
+          'caption': '''Safe Browsing is never active.''',
+        },
+        {
+          'name': 'StandardProtection',
+          'value': 1,
+          'caption': '''Safe Browsing is active in the standard mode.''',
+        },
+        {
+          'name': 'EnhancedProtection',
+          'value': 2,
+          'caption': '''Safe Browsing is active in the enhanced mode. This mode provides better security, but requires sharing more browsing information with Google.''',
+        },
+      ],
+      'supported_on': ['chrome.*:83-', 'chrome_os:83-'],
       'future': True,
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': True,
+      'example_value': 2,
       'id': 684,
-      'caption': '''Enable Safe Browsing Enhanced Protection''',
+      'caption': '''Safe Browsing Protection Level''',
       'tags': ['system-security'],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing Enhanced Protection feature and prevents users from changing this setting.
+      'desc': '''Allows you to control whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature is enabled and the mode it operates in.
 
-      If you enable this setting, Safe Browsing Enhanced protection is always active.
+      If this policy is set to 'NoProtection' (value 0), Safe Browsing is never active.
 
-      If you disable this setting, Safe Browsing Enhanced Protection is never active.
+      If this policy is set to 'StandardProtection' (value 1, which is the default), Safe Browsing is always active in the standard mode.
 
-      If you set this policy as mandatory, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      If this policy is set to 'EnhancedProtection' (value 2), Safe Browsing is always active in the enhanced mode, which provides better security, but requires sharing more browsing information with Google.
 
-      If this policy is left not set, Safe Browsing Enhanced protection will be disabled by default but the user can enable it.
+      If you set this policy as mandatory, users cannot change or override the Safe Browsing setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set, Safe Browsing will operate in Standard Protection mode but users can change this setting.
 
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
@@ -21051,6 +21077,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'SafeBrowsingEnabled',
         'SafeBrowsingExtendedReportingEnabled',
         'SafeBrowsingExtendedReportingOptInAllowed',
+        'SafeBrowsingProtectionLevel',
         'SafeBrowsingWhitelistDomains',
       ],
     },

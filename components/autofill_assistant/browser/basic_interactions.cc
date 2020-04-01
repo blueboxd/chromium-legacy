@@ -19,7 +19,7 @@ namespace {
 bool BooleanAnd(UserModel* user_model,
                 const std::string& result_model_identifier,
                 const BooleanAndProto& proto) {
-  auto values = user_model->GetValues(proto.model_identifiers());
+  auto values = user_model->GetValues(proto.values());
   if (!values.has_value()) {
     DVLOG(2) << "Failed to find values in user model";
     return false;
@@ -42,7 +42,7 @@ bool BooleanAnd(UserModel* user_model,
 bool BooleanOr(UserModel* user_model,
                const std::string& result_model_identifier,
                const BooleanOrProto& proto) {
-  auto values = user_model->GetValues(proto.model_identifiers());
+  auto values = user_model->GetValues(proto.values());
   if (!values.has_value()) {
     DVLOG(2) << "Failed to find values in user model";
     return false;
@@ -65,10 +65,10 @@ bool BooleanOr(UserModel* user_model,
 bool BooleanNot(UserModel* user_model,
                 const std::string& result_model_identifier,
                 const BooleanNotProto& proto) {
-  auto value = user_model->GetValue(proto.model_identifier());
+  auto value = user_model->GetValue(proto.value());
   if (!value.has_value()) {
-    DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.model_identifier() << " not found in model";
+    DVLOG(2) << "Error evaluating " << __func__ << ": " << proto.value()
+             << " not found in model";
     return false;
   }
   if (value->booleans().values().size() != 1) {
@@ -85,12 +85,12 @@ bool BooleanNot(UserModel* user_model,
 bool ValueToString(UserModel* user_model,
                    const std::string& result_model_identifier,
                    const ToStringProto& proto) {
-  auto value = user_model->GetValue(proto.model_identifier());
+  auto value = user_model->GetValue(proto.value());
   std::string result;
 
   if (!value.has_value()) {
-    DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.model_identifier() << " not found in model";
+    DVLOG(2) << "Error evaluating " << __func__ << ": " << proto.value()
+             << " not found in model";
     return false;
   }
   if (!AreAllValuesOfSize({*value}, 1)) {
@@ -153,16 +153,16 @@ bool ValueToString(UserModel* user_model,
 bool Compare(UserModel* user_model,
              const std::string& result_model_identifier,
              const ValueComparisonProto& proto) {
-  auto value_a = user_model->GetValue(proto.model_identifier_a());
+  auto value_a = user_model->GetValue(proto.value_a());
   if (!value_a.has_value()) {
-    DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.model_identifier_a() << " not found in model";
+    DVLOG(2) << "Error evaluating " << __func__ << ": " << proto.value_a()
+             << " not found in model";
     return false;
   }
-  auto value_b = user_model->GetValue(proto.model_identifier_b());
+  auto value_b = user_model->GetValue(proto.value_b());
   if (!value_b.has_value()) {
-    DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.model_identifier_b() << " not found in model";
+    DVLOG(2) << "Error evaluating " << __func__ << ": " << proto.value_b()
+             << " not found in model";
     return false;
   }
   if (proto.mode() == ValueComparisonProto::UNDEFINED) {
@@ -227,29 +227,26 @@ bool Compare(UserModel* user_model,
 bool IntegerSum(UserModel* user_model,
                 const std::string& result_model_identifier,
                 const IntegerSumProto& proto) {
-  auto value_a = user_model->GetValue(proto.model_identifier_a());
-  if (!value_a.has_value()) {
+  auto values = user_model->GetValues(proto.values());
+  if (!values.has_value()) {
     DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.model_identifier_a() << " not found in model";
-    return false;
-  }
-  auto value_b = user_model->GetValue(proto.model_identifier_b());
-  if (!value_b.has_value()) {
-    DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.model_identifier_b() << " not found in model";
+             << "Failed to find values in user model";
     return false;
   }
 
-  if (!AreAllValuesOfSize({*value_a, *value_b}, 1) ||
-      !AreAllValuesOfType({*value_a, *value_b}, ValueProto::kInts)) {
+  if (!AreAllValuesOfSize(*values, 1) ||
+      !AreAllValuesOfType(*values, ValueProto::kInts)) {
     DVLOG(2) << "Error evaluating " << __func__ << ": "
              << "all input values must be single integers";
     return false;
   }
 
-  user_model->SetValue(
-      result_model_identifier,
-      SimpleValue(value_a->ints().values(0) + value_b->ints().values(0)));
+  int sum = 0;
+  for (const auto& value : *values) {
+    sum += value.ints().values(0);
+  }
+
+  user_model->SetValue(result_model_identifier, SimpleValue(sum));
   return true;
 }
 
@@ -269,7 +266,12 @@ bool BasicInteractions::SetValue(const SetModelValueProto& proto) {
     DVLOG(2) << "Error setting value: model_identifier empty";
     return false;
   }
-  delegate_->GetUserModel()->SetValue(proto.model_identifier(), proto.value());
+  auto value = delegate_->GetUserModel()->GetValue(proto.value());
+  if (!value.has_value()) {
+    DVLOG(2) << "Error setting value: " << proto.value() << " not found";
+    return false;
+  }
+  delegate_->GetUserModel()->SetValue(proto.model_identifier(), *value);
   return true;
 }
 
@@ -281,33 +283,33 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
 
   switch (proto.kind_case()) {
     case ComputeValueProto::kBooleanAnd:
-      if (proto.boolean_and().model_identifiers().size() == 0) {
+      if (proto.boolean_and().values().size() == 0) {
         DVLOG(2) << "Error computing ComputeValue::BooleanAnd: no "
-                    "model_identifiers specified";
+                    "values specified";
         return false;
       }
       return BooleanAnd(delegate_->GetUserModel(),
                         proto.result_model_identifier(), proto.boolean_and());
     case ComputeValueProto::kBooleanOr:
-      if (proto.boolean_or().model_identifiers().size() == 0) {
+      if (proto.boolean_or().values().size() == 0) {
         DVLOG(2) << "Error computing ComputeValue::BooleanOr: no "
-                    "model_identifiers specified";
+                    "values specified";
         return false;
       }
       return BooleanOr(delegate_->GetUserModel(),
                        proto.result_model_identifier(), proto.boolean_or());
     case ComputeValueProto::kBooleanNot:
-      if (proto.boolean_not().model_identifier().empty()) {
+      if (!proto.boolean_not().has_value()) {
         DVLOG(2) << "Error computing ComputeValue::BooleanNot: "
-                    "model_identifier not specified";
+                    "value not specified";
         return false;
       }
       return BooleanNot(delegate_->GetUserModel(),
                         proto.result_model_identifier(), proto.boolean_not());
     case ComputeValueProto::kToString:
-      if (proto.to_string().model_identifier().empty()) {
+      if (!proto.to_string().has_value()) {
         DVLOG(2) << "Error computing ComputeValue::ToString: "
-                    "model_identifier not specified";
+                    "value not specified";
         return false;
       }
       return ValueToString(delegate_->GetUserModel(),
@@ -316,10 +318,9 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
       return Compare(delegate_->GetUserModel(), proto.result_model_identifier(),
                      proto.comparison());
     case ComputeValueProto::kIntegerSum:
-      if (proto.integer_sum().model_identifier_a().empty() ||
-          proto.integer_sum().model_identifier_b().empty()) {
+      if (proto.integer_sum().values().size() == 0) {
         DVLOG(2) << "Error computing ComputeValue::IntegerSum: "
-                    "model_identifier_a or model_identifier_b not specified";
+                    "no values specified";
         return false;
       }
       return IntegerSum(delegate_->GetUserModel(),
@@ -331,20 +332,20 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
 }
 
 bool BasicInteractions::SetUserActions(const SetUserActionsProto& proto) {
-  if (proto.model_identifier().empty()) {
-    DVLOG(2) << "Error setting user actions: model_identifier empty";
+  if (!proto.has_user_actions()) {
+    DVLOG(2) << "Error setting user actions: user_actions not set";
     return false;
   }
   auto user_actions_value =
-      delegate_->GetUserModel()->GetValue(proto.model_identifier());
+      delegate_->GetUserModel()->GetValue(proto.user_actions());
   if (!user_actions_value.has_value()) {
-    DVLOG(2) << "Error setting user actions: " << proto.model_identifier()
+    DVLOG(2) << "Error setting user actions: " << proto.user_actions()
              << " not found in model";
     return false;
   }
   if (!user_actions_value->has_user_actions()) {
-    DVLOG(2) << "Error setting user actions: Expected "
-             << proto.model_identifier() << " to hold UserActions, but found "
+    DVLOG(2) << "Error setting user actions: Expected " << proto.user_actions()
+             << " to hold UserActions, but found "
              << user_actions_value->kind_case() << " instead";
     return false;
   }
@@ -378,17 +379,15 @@ bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
     return false;
   }
 
-  auto enabled_value =
-      delegate_->GetUserModel()->GetValue(proto.enabled_model_identifier());
+  auto enabled_value = delegate_->GetUserModel()->GetValue(proto.enabled());
   if (!enabled_value.has_value()) {
-    DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.enabled_model_identifier() << " not found in model";
+    DVLOG(2) << "Error evaluating " << __func__ << ": " << proto.enabled()
+             << " not found in model";
     return false;
   }
   if (enabled_value->booleans().values().size() != 1) {
     DVLOG(2) << "Error evaluating " << __func__
-             << ": expected enabled_model_identifier to contain a single bool, "
-                "but was "
+             << ": expected enabled to contain a single bool, but was "
              << *enabled_value;
     return false;
   }

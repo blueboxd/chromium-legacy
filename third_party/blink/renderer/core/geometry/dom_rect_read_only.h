@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_RECT_READ_ONLY_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/geometry/geometry_util.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -35,10 +36,10 @@ class CORE_EXPORT DOMRectReadOnly : public ScriptWrappable {
   double width() const { return width_; }
   double height() const { return height_; }
 
-  double top() const { return std::min(y_, y_ + height_); }
-  double right() const { return std::max(x_, x_ + width_); }
-  double bottom() const { return std::max(y_, y_ + height_); }
-  double left() const { return std::min(x_, x_ + width_); }
+  double top() const { return geometry_util::NanSafeMin(y_, y_ + height_); }
+  double right() const { return geometry_util::NanSafeMax(x_, x_ + width_); }
+  double bottom() const { return geometry_util::NanSafeMax(y_, y_ + height_); }
+  double left() const { return geometry_util::NanSafeMin(x_, x_ + width_); }
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 

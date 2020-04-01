@@ -11,17 +11,7 @@ Polymer({
   is: 'marketing-opt-in',
 
   properties: {
-    allSetButtonVisible_: {
-      type: Boolean,
-      value: true,
-    },
-
     isAccessibilitySettingsShown_: {
-      type: Boolean,
-      value: false,
-    },
-
-    isA11ySettingsButtonVisible_: {
       type: Boolean,
       value: false,
     },
@@ -45,8 +35,6 @@ Polymer({
 
   /** Overridden from LoginScreenBehavior. */
   EXTERNAL_API: [
-    'updateAllSetButtonVisibility',
-    'updateA11ySettingsButtonVisibility',
     'updateA11yNavigationButtonToggle',
   ],
 
@@ -82,25 +70,6 @@ Polymer({
   },
 
   /**
-   * @param {boolean} visible Whether the all set button should be shown.
-   */
-  updateAllSetButtonVisibility(visible) {
-    this.allSetButtonVisible_ = visible;
-
-    // When showing the all set button, give the user a way to disable shelf
-    // gestures, and enabled "all set" button.
-    if(visible)
-      this.isA11ySettingsButtonVisible_ = true;
-  },
-
-  /**
-   * @param {boolean} shown Whether the A11y Settings button should be shown.
-   */
-  updateA11ySettingsButtonVisibility(shown) {
-    this.isA11ySettingsButtonVisible_ = shown;
-  },
-
-  /**
    * @param {boolean} enabled Whether the a11y setting for shownig shelf
    * navigation buttons is enabled.
    */
@@ -118,11 +87,6 @@ Polymer({
     this.$['marketingOptInOverviewDialog']
         .querySelector('.marketing-animation')
         .setPlay(!this.isAccessibilitySettingsShown_);
-
-    chrome.send(
-        'login.MarketingOptInScreen.accessibilityPageVisibilityChanged', [
-          this.isAccessibilitySettingsShown_
-        ]);
   },
 
   /**

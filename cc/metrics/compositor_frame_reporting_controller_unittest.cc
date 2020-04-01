@@ -28,7 +28,8 @@ MATCHER(IsWhitelisted,
 class TestCompositorFrameReportingController
     : public CompositorFrameReportingController {
  public:
-  TestCompositorFrameReportingController() = default;
+  TestCompositorFrameReportingController()
+      : CompositorFrameReportingController(/*should_report_metrics=*/true) {}
 
   TestCompositorFrameReportingController(
       const TestCompositorFrameReportingController& controller) = delete;
@@ -321,6 +322,50 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
       "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.DroppedFrame.SendBeginMainFrameToCommit", 0);
+}
+
+TEST_F(CompositorFrameReportingControllerTest, DidNotProduceFrame) {
+  base::HistogramTester histogram_tester;
+
+  viz::BeginFrameId current_id_1(1, 1);
+  viz::BeginFrameArgs args_1 = SimulateBeginFrameArgs(current_id_1);
+
+  viz::BeginFrameId current_id_2(1, 2);
+  viz::BeginFrameArgs args_2 = SimulateBeginFrameArgs(current_id_2);
+
+  reporting_controller_.WillBeginImplFrame(args_1);
+  reporting_controller_.WillBeginMainFrame(args_1);
+  reporting_controller_.OnFinishImplFrame(current_id_1);
+  reporting_controller_.DidNotProduceFrame(current_id_1);
+
+  reporting_controller_.WillBeginImplFrame(args_2);
+  reporting_controller_.OnFinishImplFrame(current_id_2);
+  reporting_controller_.WillCommit();
+  reporting_controller_.DidCommit();
+  reporting_controller_.WillActivate();
+  reporting_controller_.DidActivate();
+  reporting_controller_.DidSubmitCompositorFrame(1, current_id_2, current_id_1,
+                                                 std::vector<EventMetrics>());
+  viz::FrameTimingDetails details = {};
+  reporting_controller_.DidPresentCompositorFrame(1, details);
+
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.DroppedFrame.SendBeginMainFrameToCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
+                                    1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.EndActivateToSubmitCompositorFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
+      1);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {

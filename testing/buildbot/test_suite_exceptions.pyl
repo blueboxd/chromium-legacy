@@ -23,7 +23,7 @@
           '--gtest_filter=-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode', # https://crbug.com/1034001
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--gtest_filter=-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode', # https://crbug.com/1034001
         ],
@@ -589,7 +589,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter',
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         # https://crbug.com/1039860
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter',
@@ -659,7 +659,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter', # https://crbug.com/1010211
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb',
           # https://crbug.com/1046059
@@ -686,7 +686,7 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'android-marshmallow-x86-fyi-rel',
-      'android-pie-x86-fyi-rel',
+      'android-pie-x86-rel',
       'android-pie-arm64-rel', # https://crbug.com/1010211
       'ToTAndroid',
       'ToTAndroidCFI',
@@ -846,7 +846,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter',
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter',
         ],
@@ -894,7 +894,7 @@
           '--gtest_filter=-ContentViewScrollingTest.testFling',
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--gtest_filter=-ContentViewScrollingTest.testFling',
         ],
@@ -1076,7 +1076,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter', # https://crbug.com/1034007
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',
         ],
@@ -1280,27 +1280,27 @@
       # use ${got_cr_revision}, which is only set on the V8 bots.
       'Android V8 FYI Release (Nexus 5X)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Linux V8 FYI Release (NVIDIA)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Linux V8 FYI Release - pointer compression (NVIDIA)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Mac V8 FYI Release (Intel)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Win V8 FYI Release (NVIDIA)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
     },
@@ -1317,7 +1317,7 @@
           '--gtest_filter=-AAudio/AudioOutputTest.Play200HzTone/0', # https://crbug.com/1034009
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
         ],
@@ -1486,7 +1486,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         # crbug.com/1046060
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
@@ -1652,7 +1652,7 @@
       'android-code-coverage-native', # https://crbug.com/1018780
     ],
     'modifications': {
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb',
           # https://crbug.com/1046059
@@ -1706,7 +1706,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter',
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter',
         ],
@@ -1735,7 +1735,7 @@
           '--gtest_filter=-ContentViewScrollingTest.testFling',
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--gtest_filter=-ContentViewScrollingTest.testFling',
         ],
@@ -1759,7 +1759,7 @@
       'android-code-coverage-native', # https://crbug.com/1018431
     ],
     'modifications': {
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_instrumentation_test_apk.filter',
         ],
@@ -1837,7 +1837,7 @@
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-fyi-rel',
       'android-pie-arm64-rel',
-      'android-pie-x86-fyi-rel',
+      'android-pie-x86-rel',
       'Android CFI',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
@@ -1876,27 +1876,27 @@
       # use ${got_cr_revision}, which is only set on the V8 bots.
       'Android V8 FYI Release (Nexus 5X)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Linux V8 FYI Release (NVIDIA)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Linux V8 FYI Release - pointer compression (NVIDIA)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Mac V8 FYI Release (Intel)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
       'Win V8 FYI Release (NVIDIA)': {
         'args': {
-          '--build-revision': '${got_cr_revision}',
+          '--git-revision': '${got_cr_revision}',
         },
       },
     },
@@ -1961,7 +1961,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
         ]
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
         ]
@@ -2246,7 +2246,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
         ],
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
         ],
@@ -2256,21 +2256,21 @@
   'vr_android_unittests': {
     'remove_from': [
       'android-marshmallow-x86-fyi-rel',
-      'android-pie-x86-fyi-rel',
+      'android-pie-x86-rel',
       'android-code-coverage-native', # crbug/1018434
     ],
   },
   'vr_common_unittests': {
     'remove_from': [
       'android-marshmallow-x86-fyi-rel',
-      'android-pie-x86-fyi-rel',
+      'android-pie-x86-rel',
       'android-code-coverage-native', # crbug/1018431
     ],
   },
   'vr_pixeltests': {
     'remove_from': [
       'android-marshmallow-x86-fyi-rel',
-      'android-pie-x86-fyi-rel',
+      'android-pie-x86-rel',
       'VR Linux',
       'android-code-coverage-native', # crbug/1018431
       # These tests fail on Win7, and given that We don't support VR there,
@@ -2432,7 +2432,7 @@
         # either passing or there is more capacity.
         'experiment_percentage': 0,
       },
-      'android-pie-x86-fyi-rel': {
+      'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_instrumentation_test_apk.filter',
         ],

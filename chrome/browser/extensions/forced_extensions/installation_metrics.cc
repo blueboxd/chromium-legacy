@@ -73,8 +73,8 @@ InstallationMetrics::InstallationMetrics(
       timer_(std::move(timer)) {
   timer_->Start(
       FROM_HERE, kInstallationTimeout,
-      base::BindRepeating(&InstallationMetrics::OnForceInstallationFinished,
-                          base::Unretained(this)));
+      base::BindOnce(&InstallationMetrics::OnForceInstallationFinished,
+                     base::Unretained(this)));
   if (tracker_->IsComplete())
     OnForceInstallationFinished();
   else

@@ -37,8 +37,9 @@ class FrameSequenceTrackerTest : public testing::Test {
 
   FrameSequenceTrackerTest()
       : compositor_frame_reporting_controller_(
-            std::make_unique<CompositorFrameReportingController>()),
-        collection_(/* is_single_threaded=*/false,
+            std::make_unique<CompositorFrameReportingController>(
+                /*should_report_metrics=*/true)),
+        collection_(/*is_single_threaded=*/false,
                     compositor_frame_reporting_controller_.get()) {
     collection_.StartSequence(FrameSequenceTrackerType::kTouchScroll);
     tracker_ = collection_.GetTrackerForTesting(

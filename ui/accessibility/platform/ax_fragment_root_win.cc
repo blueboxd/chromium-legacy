@@ -93,11 +93,9 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   //
   // IRawElementProviderFragmentRoot methods.
   //
-
-  // x and y are in pixels, in screen coordinates.
   IFACEMETHODIMP ElementProviderFromPoint(
-      double x,
-      double y,
+      double screen_physical_pixel_x,
+      double screen_physical_pixel_y,
       IRawElementProviderFragment** element_provider) override {
     UIA_VALIDATE_CALL_1_ARG(element_provider);
 
@@ -109,7 +107,8 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
     AXPlatformNode* node_to_test = this;
     do {
       gfx::NativeViewAccessible test_result =
-          node_to_test->GetDelegate()->HitTestSync(x, y);
+          node_to_test->GetDelegate()->HitTestSync(screen_physical_pixel_x,
+                                                   screen_physical_pixel_y);
       if (test_result != nullptr && test_result != hit_element) {
         hit_element = test_result;
         node_to_test = AXPlatformNode::FromNativeViewAccessible(test_result);

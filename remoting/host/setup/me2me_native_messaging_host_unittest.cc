@@ -317,8 +317,8 @@ void Me2MeNativeMessagingHostTest::SetUp() {
   // Arrange to run |task_environment_| until no components depend on it.
   host_task_runner_ = new AutoThreadTaskRunner(
       host_thread_->task_runner(),
-      base::Bind(&Me2MeNativeMessagingHostTest::ExitTest,
-                 base::Unretained(this)));
+      base::BindOnce(&Me2MeNativeMessagingHostTest::ExitTest,
+                     base::Unretained(this)));
 
   host_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Me2MeNativeMessagingHostTest::StartHost,
@@ -356,8 +356,9 @@ void Me2MeNativeMessagingHostTest::StartHost() {
 
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
-          host_task_runner_, base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
-                                        base::Unretained(this))));
+          host_task_runner_,
+          base::BindOnce(&Me2MeNativeMessagingHostTest::StopHost,
+                         base::Unretained(this))));
 
   std::unique_ptr<remoting::Me2MeNativeMessagingHost> host(
       new Me2MeNativeMessagingHost(false, 0, std::move(context),

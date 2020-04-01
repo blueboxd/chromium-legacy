@@ -69,7 +69,7 @@ std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log) {
   return net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
-      std::move(proxy_config_service), net_log, /*quick_check_enabled=*/true);
+      std::move(proxy_config_service), /*quick_check_enabled=*/true, net_log);
 }
 
 std::string CreateDefaultUserAgent(const std::string& partial_user_agent) {

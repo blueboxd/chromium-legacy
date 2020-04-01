@@ -166,7 +166,10 @@ gfx::Rect TestAXNodeWrapper::GetBoundsRect(
     const AXClippingBehavior clipping_behavior,
     AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case AXCoordinateSystem::kScreen: {
+    case AXCoordinateSystem::kScreenPhysicalPixels:
+      // For unit testing purposes, assume a device scale factor of 1 and fall
+      // through.
+    case AXCoordinateSystem::kScreenDIPs: {
       // We could optionally add clipping here if ever needed.
       gfx::RectF bounds = GetLocation();
       bounds.Offset(g_offset);
@@ -194,7 +197,10 @@ gfx::Rect TestAXNodeWrapper::GetInnerTextRangeBoundsRect(
     const AXClippingBehavior clipping_behavior,
     AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case AXCoordinateSystem::kScreen: {
+    case AXCoordinateSystem::kScreenPhysicalPixels:
+    // For unit testing purposes, assume a device scale factor of 1 and fall
+    // through.
+    case AXCoordinateSystem::kScreenDIPs: {
       gfx::RectF bounds = GetLocation();
       // This implementation currently only deals with text node that has role
       // kInlineTextBox and kStaticText.
@@ -236,7 +242,10 @@ gfx::Rect TestAXNodeWrapper::GetHypertextRangeBoundsRect(
     const AXClippingBehavior clipping_behavior,
     AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case AXCoordinateSystem::kScreen: {
+    case AXCoordinateSystem::kScreenPhysicalPixels:
+    // For unit testing purposes, assume a device scale factor of 1 and fall
+    // through.
+    case AXCoordinateSystem::kScreenDIPs: {
       // Ignoring start, len, and clipped, as there's no clean way to map these
       // via unit tests.
       gfx::RectF bounds = GetLocation();
@@ -276,10 +285,13 @@ TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
   return this;
 }
 
-gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) const {
+gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(
+    int screen_physical_pixel_x,
+    int screen_physical_pixel_y) const {
   const TestAXNodeWrapper* wrapper =
       const_cast<TestAXNodeWrapper*>(this)->HitTestSyncInternal(
-          x / g_scale_factor, y / g_scale_factor);
+          screen_physical_pixel_x / g_scale_factor,
+          screen_physical_pixel_y / g_scale_factor);
   return wrapper ? wrapper->ax_platform_node()->GetNativeViewAccessible()
                  : nullptr;
 }

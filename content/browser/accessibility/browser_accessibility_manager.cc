@@ -878,18 +878,19 @@ void BrowserAccessibilityManager::ClearAccessibilityFocus(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::HitTest(const gfx::Point& point) const {
+void BrowserAccessibilityManager::HitTest(const gfx::Point& page_point) const {
   if (!delegate_)
     return;
 
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kHitTest;
-  action_data.target_point = point;
+  action_data.target_point = page_point;
   action_data.hit_test_event_to_fire = ax::mojom::Event::kHover;
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-gfx::Rect BrowserAccessibilityManager::GetViewBounds() const {
+gfx::Rect BrowserAccessibilityManager::GetViewBoundsInScreenCoordinates()
+    const {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   if (delegate)
     return delegate->AccessibilityGetViewBounds();
@@ -1459,7 +1460,7 @@ void BrowserAccessibilityManager::UseCustomDeviceScaleFactorForTesting(
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
-    const gfx::Point& screen_point) const {
+    const gfx::Point& physical_pixel_point) const {
   // TODO(crbug.com/1061323): By starting the hit test on the root frame,
   // it allows for the possibility that we don't return a descendant as the
   // hit test result, but AXPlatformNodeDelegate says that it's only supposed
@@ -1467,23 +1468,26 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   // Unchecked it can even lead to an infinite loop.
   BrowserAccessibilityManager* root_manager = GetRootManager();
   if (root_manager && root_manager != this)
-    return root_manager->CachingAsyncHitTest(screen_point);
+    return root_manager->CachingAsyncHitTest(physical_pixel_point);
 
-  gfx::Point scaled_point =
+  gfx::Point blink_screen_point =
       IsUseZoomForDSFEnabled()
-          ? ScaleToRoundedPoint(screen_point, device_scale_factor())
-          : screen_point;
+          ? physical_pixel_point
+          : ScaleToRoundedPoint(physical_pixel_point,
+                                1.0 / device_scale_factor());
+
+  gfx::Rect screen_view_bounds = GetViewBoundsInScreenCoordinates();
 
   if (delegate_) {
     // This triggers an asynchronous request to compute the true object that's
-    // under |scaled_point|.
-    HitTest(scaled_point - GetViewBounds().OffsetFromOrigin());
+    // under the point.
+    HitTest(blink_screen_point - screen_view_bounds.OffsetFromOrigin());
 
     // Unfortunately we still have to return an answer synchronously because
     // the APIs were designed that way. The best case scenario is that the
     // screen point is within the bounds of the last result we got from a
     // call to AccessibilityHitTest - in that case, we can return that object!
-    if (last_hover_bounds_.Contains(scaled_point)) {
+    if (last_hover_bounds_.Contains(blink_screen_point)) {
       BrowserAccessibilityManager* manager =
           BrowserAccessibilityManager::FromID(last_hover_ax_tree_id_);
       if (manager) {
@@ -1500,7 +1504,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   // more complicated layouts. The hope is that if the user is moving the
   // mouse, this fallback will only be used transiently, and the asynchronous
   // result will be used for the next call.
-  return GetRoot()->ApproximateHitTest(screen_point);
+  return GetRoot()->ApproximateHitTest(blink_screen_point);
 }
 
 void BrowserAccessibilityManager::CacheHitTestResult(

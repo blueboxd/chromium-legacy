@@ -2912,8 +2912,27 @@ if (enable_java_templates) {
           _target_label = get_label_info(_dep, "label_no_toolchain")
           if (filter_exclude([ _target_label ], _java_lib_patterns) == [] &&
               filter_exclude([ _target_label ], _java_lib_exceptions) != []) {
-            # This is a java dep, so replace it with its header.
+            # This is a java dep, so replace it.
             deps += [ "${_target_label}__header" ]
+          } else {
+            deps += [ _dep ]
+          }
+        }
+      }
+    }
+  }
+
+  template("java_impl_group") {
+    forward_variables_from(invoker, [ "testonly" ])
+    group(target_name) {
+      if (defined(invoker.deps)) {
+        deps = []
+        foreach(_dep, invoker.deps) {
+          _target_label = get_label_info(_dep, "label_no_toolchain")
+          if (filter_exclude([ _target_label ], _java_lib_patterns) == [] &&
+              filter_exclude([ _target_label ], _java_lib_exceptions) != []) {
+            # This is a java dep, so replace it.
+            deps += [ "${_target_label}__impl" ]
           } else {
             deps += [ _dep ]
           }
@@ -3193,6 +3212,7 @@ if (enable_java_templates) {
     _public_deps = []
     _accumulated_deps = []
     _java_header_deps = []
+    _java_impl_deps = []
     _java_full_deps = []
     if (defined(invoker.deps)) {
       foreach(_dep, invoker.deps) {
@@ -3201,6 +3221,7 @@ if (enable_java_templates) {
             filter_exclude([ _target_label ], _java_lib_exceptions) != []) {
           # This is a java dep, so replace it with its header.
           _java_header_deps += [ "${_target_label}__header" ]
+          _java_impl_deps += [ "${_target_label}__impl" ]
           _java_full_deps += [ _dep ]
         } else {
           # Not a java header dep, so no need to replace it with its header.
@@ -3220,6 +3241,8 @@ if (enable_java_templates) {
           [ "//build/android/buildhooks:build_hooks_android_java" ]
       _java_header_deps +=
           [ "//build/android/buildhooks:build_hooks_android_java__header" ]
+      _java_impl_deps +=
+          [ "//build/android/buildhooks:build_hooks_android_java__impl" ]
     }
 
     if (_supports_android &&
@@ -3228,6 +3251,8 @@ if (enable_java_templates) {
       _java_full_deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
       _java_header_deps +=
           [ "//third_party/bazel/desugar:desugar_runtime_java__header" ]
+      _java_impl_deps +=
+          [ "//third_party/bazel/desugar:desugar_runtime_java__impl" ]
     }
 
     # Don't enable coverage or lint unless the target has some non-generated
@@ -3256,8 +3281,9 @@ if (enable_java_templates) {
             !invoker.jacoco_never_instrument && _jacoco_instrument
       }
       if (_jacoco_instrument) {
-        _java_header_deps += [ "//third_party/jacoco:jacocoagent_java__header" ]
         _java_full_deps += [ "//third_party/jacoco:jacocoagent_java" ]
+        _java_header_deps += [ "//third_party/jacoco:jacocoagent_java__header" ]
+        _java_impl_deps += [ "//third_party/jacoco:jacocoagent_java__impl" ]
       }
     }
 
@@ -3386,8 +3412,10 @@ if (enable_java_templates) {
 
     # Don't need to depend on the apk-under-test to be packaged.
     if (defined(invoker.apk_under_test)) {
-      _java_full_deps += [ "${invoker.apk_under_test}__java" ]
+      # No need to add to _java_full_deps since that is only used for
+      # write_build_config.
       _java_header_deps += [ "${invoker.apk_under_test}__java__header" ]
+      _java_impl_deps += [ "${invoker.apk_under_test}__java__impl" ]
     }
     if (defined(invoker.android_manifest_dep)) {
       _accumulated_deps += [ invoker.android_manifest_dep ]
@@ -3542,6 +3570,9 @@ if (enable_java_templates) {
 
     if (defined(_final_jar_path)) {
       if (_is_system_library) {
+        # These deps are only needed for the process_java_prebuilt template.
+        not_needed([ "_java_impl_deps" ])
+
         _copy_system_library_target_name = "${target_name}__copy_system_library"
 
         # Use copy_ex rather than copy to ensure that we copy symlink targets
@@ -3576,7 +3607,7 @@ if (enable_java_templates) {
             java_sources_file = _java_sources_file
           }
           output_jar_path = _final_jar_path
-          deps = _java_full_deps + _accumulated_deps +
+          deps = _java_impl_deps + _accumulated_deps +
                  [ ":$_build_config_target_name" ]
           if (_has_sources) {
             deps += [ ":$_compile_java_target" ]
@@ -3644,16 +3675,24 @@ if (enable_java_templates) {
       _public_deps += [ ":${target_name}__java_binary_script" ]
     }
 
+    # The __impl target contains all non-analysis steps for this template.
+    # Having this separated out from the main target (which contains analysis
+    # steps) allows analysis steps for this target to be run concurrently with
+    # the non-analysis steps of other targets that depend on this one.
+    group("${target_name}__impl") {
+      public_deps = _public_deps
+    }
+
     group(target_name) {
       forward_variables_from(invoker,
                              [
                                "assert_no_deps",
                                "data",
-                               "deps",
                                "data_deps",
+                               "deps",
                                "visibility",
                              ])
-      public_deps = _public_deps
+      public_deps = [ ":${target_name}__impl" ]
       if (defined(_analysis_public_deps)) {
         if (!defined(data_deps)) {
           data_deps = []

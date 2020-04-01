@@ -38,7 +38,7 @@ class CC_EXPORT CompositorFrameReportingController {
     kNumPipelineStages
   };
 
-  CompositorFrameReportingController();
+  explicit CompositorFrameReportingController(bool should_report_metrics);
   virtual ~CompositorFrameReportingController();
 
   CompositorFrameReportingController(
@@ -97,6 +97,7 @@ class CC_EXPORT CompositorFrameReportingController {
   std::unique_ptr<CompositorFrameReporter> RestoreReporterAtBeginImpl(
       const viz::BeginFrameId& id);
 
+  const bool should_report_metrics_;
   viz::BeginFrameId last_submitted_frame_id_;
 
   bool next_activate_has_invalidation_ = false;

@@ -41,18 +41,6 @@
   padding-inline-end: 16px;
 }
 
-#finalAccessibilityLink {
-  color: var(--google-blue-600);
-}
-
-#finalAccessibilityLinkContainer {
-  left: 0;
-  padding: 10px;
-  position: absolute;
-  right: 0;
-  text-align: center;
-}
-
 #finalAccessibilityPage oobe-a11y-option {
   border-top: var(--oobe-a11y-dialog-list-item-border);
   min-height: 64px;
@@ -60,8 +48,4 @@
 
 #finalAccessibilityPage oobe-a11y-option:last-of-type {
   border-bottom: var(--oobe-a11y-dialog-list-item-border);
-}
-
-#marketing-bottom-buttons {
-  position: relative;
 }

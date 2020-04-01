@@ -275,7 +275,7 @@ TEST_F(NotificationPermissionContextTest, WebNotificationsTopLevelOriginOnly) {
   ContentSetting result = CONTENT_SETTING_DEFAULT;
   context.DecidePermission(web_contents(), fake_id, requesting_origin,
                            embedding_origin, true /* user_gesture */,
-                           base::Bind(&StoreContentSetting, &result));
+                           base::BindOnce(&StoreContentSetting, &result));
 
   ASSERT_EQ(result, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_ASK,

@@ -133,9 +133,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   gfx::Rect GetUnclippedScreenBoundsRect(
       AXOffscreenResult* offscreen_result = nullptr) const;
 
-  // Do a *synchronous* hit test of the given location in global screen
-  // coordinates, and the node within this node's subtree (inclusive) that's
-  // hit, if any.
+  // Do a *synchronous* hit test of the given location in global screen physical
+  // pixel coordinates, and the node within this node's subtree (inclusive)
+  // that's hit, if any.
   //
   // If the result is anything other than this object or NULL, it will be
   // hit tested again recursively - that allows hit testing to work across
@@ -144,7 +144,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   //
   // This function is mainly used by accessibility debugging software.
   // Platforms with touch accessibility use a different asynchronous interface.
-  gfx::NativeViewAccessible HitTestSync(int x, int y) const override;
+  gfx::NativeViewAccessible HitTestSync(
+      int screen_physical_pixel_x,
+      int screen_physical_pixel_y) const override;
 
   // Return the node within this node's subtree (inclusive) that currently
   // has focus.

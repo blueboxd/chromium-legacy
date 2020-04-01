@@ -18,6 +18,7 @@
 #include "absl/base/config.h"
 #include "absl/base/internal/endian.h"
 #include "absl/base/internal/raw_logging.h"
+#include "absl/base/macros.h"
 #include "absl/container/fixed_array.h"
 #include "absl/strings/cord_test_helpers.h"
 #include "absl/strings/str_cat.h"
@@ -1626,4 +1627,24 @@ TEST(Cord, SmallBufferAssignFromOwnData) {
           << "pos = " << pos << "; count = " << count;
     }
   }
+}
+
+TEST(CordDeathTest, Hardening) {
+  absl::Cord cord("hello");
+  // These statement should abort the program in all builds modes.
+  EXPECT_DEATH_IF_SUPPORTED(cord.RemovePrefix(6), "");
+  EXPECT_DEATH_IF_SUPPORTED(cord.RemoveSuffix(6), "");
+
+  bool test_hardening = false;
+  ABSL_HARDENING_ASSERT([&]() {
+    // This only runs when ABSL_HARDENING_ASSERT is active.
+    test_hardening = true;
+    return true;
+  }());
+  if (!test_hardening) return;
+
+  EXPECT_DEATH_IF_SUPPORTED(cord[5], "");
+  EXPECT_DEATH_IF_SUPPORTED(*cord.chunk_end(), "");
+  EXPECT_DEATH_IF_SUPPORTED(static_cast<void>(cord.chunk_end()->empty()), "");
+  EXPECT_DEATH_IF_SUPPORTED(++cord.chunk_end(), "");
 }

@@ -22,5 +22,6 @@ blink_core_sources("geometry") {
     "dom_rect_list.h",
     "dom_rect_read_only.cc",
     "dom_rect_read_only.h",
+    "geometry_util.h",
   ]
 }

@@ -23,6 +23,9 @@ class DisplayObserver;
 // A utility class for getting various info about screen size, displays,
 // cursor position, etc.
 //
+// Also, can notify DisplayObservers about global workspace changes. The
+// availability of that functionality depends on a platform.
+//
 // Note that this class does not represent an individual display connected to a
 // computer -- see the Display class for that. A single Screen object exists
 // regardless of the number of connected displays.
@@ -106,6 +109,11 @@ class DISPLAY_EXPORT Screen {
 
   virtual void SetPanelRotationForTesting(int64_t display_id,
                                           Display::Rotation rotation);
+
+  // Depending on a platform, a client can listen to global workspace changes
+  // by implementing and setting self as a DisplayObserver. It is also possible
+  // to get current workspace through the GetCurrentWorkspace method.
+  virtual std::string GetCurrentWorkspace();
 
  private:
   static gfx::NativeWindow GetWindowForView(gfx::NativeView view);

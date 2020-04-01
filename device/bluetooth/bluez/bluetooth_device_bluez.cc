@@ -458,10 +458,10 @@ void BluetoothDeviceBlueZ::GetConnectionInfo(
   // currently connected.
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetConnInfo(
       object_path_,
-      base::Bind(&BluetoothDeviceBlueZ::OnGetConnInfo,
-                 weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&BluetoothDeviceBlueZ::OnGetConnInfoError,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&BluetoothDeviceBlueZ::OnGetConnInfo,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      base::BindOnce(&BluetoothDeviceBlueZ::OnGetConnInfoError,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BluetoothDeviceBlueZ::SetConnectionLatency(
@@ -499,10 +499,10 @@ void BluetoothDeviceBlueZ::SetConnectionLatency(
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient();
   client->SetLEConnectionParameters(
       object_path_, connection_parameters,
-      base::Bind(&BluetoothDeviceBlueZ::OnSetLEConnectionParameters,
-                 weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&BluetoothDeviceBlueZ::OnSetLEConnectionParametersError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothDeviceBlueZ::OnSetLEConnectionParameters,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      base::BindOnce(&BluetoothDeviceBlueZ::OnSetLEConnectionParametersError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothDeviceBlueZ::Connect(
@@ -556,11 +556,11 @@ void BluetoothDeviceBlueZ::Connect(
 
     bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Pair(
         object_path_,
-        base::Bind(&BluetoothDeviceBlueZ::OnPairDuringConnect,
-                   weak_ptr_factory_.GetWeakPtr(), dupe_callback,
-                   dupe_error_callback),
-        base::Bind(&BluetoothDeviceBlueZ::OnPairDuringConnectError,
-                   weak_ptr_factory_.GetWeakPtr(), dupe_error_callback));
+        base::BindOnce(&BluetoothDeviceBlueZ::OnPairDuringConnect,
+                       weak_ptr_factory_.GetWeakPtr(), dupe_callback,
+                       dupe_error_callback),
+        base::BindOnce(&BluetoothDeviceBlueZ::OnPairDuringConnectError,
+                       weak_ptr_factory_.GetWeakPtr(), dupe_error_callback));
   }
 }
 
@@ -625,8 +625,8 @@ void BluetoothDeviceBlueZ::CancelPairing() {
                          << "Sending explicit cancel";
     bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->CancelPairing(
         object_path_, base::DoNothing(),
-        base::Bind(&BluetoothDeviceBlueZ::OnCancelPairingError,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothDeviceBlueZ::OnCancelPairingError,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Since there is no callback to this method it's possible that the pairing
@@ -641,10 +641,10 @@ void BluetoothDeviceBlueZ::Disconnect(const base::Closure& callback,
   BLUETOOTH_LOG(EVENT) << object_path_.value() << ": Disconnecting";
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Disconnect(
       object_path_,
-      base::Bind(&BluetoothDeviceBlueZ::OnDisconnect,
-                 weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&BluetoothDeviceBlueZ::OnDisconnectError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothDeviceBlueZ::OnDisconnect,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      base::BindOnce(&BluetoothDeviceBlueZ::OnDisconnectError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothDeviceBlueZ::Forget(const base::Closure& callback,
@@ -652,8 +652,8 @@ void BluetoothDeviceBlueZ::Forget(const base::Closure& callback,
   BLUETOOTH_LOG(EVENT) << object_path_.value() << ": Removing device";
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->RemoveDevice(
       adapter()->object_path(), object_path_, callback,
-      base::Bind(&BluetoothDeviceBlueZ::OnForgetError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothDeviceBlueZ::OnForgetError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothDeviceBlueZ::ConnectToService(
@@ -694,8 +694,8 @@ void BluetoothDeviceBlueZ::GetServiceRecords(
     const GetServiceRecordsErrorCallback& error_callback) {
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetServiceRecords(
       object_path_, callback,
-      base::Bind(&BluetoothDeviceBlueZ::OnGetServiceRecordsError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothDeviceBlueZ::OnGetServiceRecordsError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 #if defined(OS_CHROMEOS)
@@ -704,8 +704,8 @@ void BluetoothDeviceBlueZ::ExecuteWrite(
     const ExecuteWriteErrorCallback& error_callback) {
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ExecuteWrite(
       object_path_, callback,
-      base::Bind(&BluetoothDeviceBlueZ::OnExecuteWriteError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothDeviceBlueZ::OnExecuteWriteError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothDeviceBlueZ::AbortWrite(
@@ -713,8 +713,8 @@ void BluetoothDeviceBlueZ::AbortWrite(
     const AbortWriteErrorCallback& error_callback) {
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AbortWrite(
       object_path_, callback,
-      base::Bind(&BluetoothDeviceBlueZ::OnAbortWriteError,
-                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+      base::BindOnce(&BluetoothDeviceBlueZ::OnAbortWriteError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 #endif
 
@@ -1076,8 +1076,8 @@ void BluetoothDeviceBlueZ::SetTrusted() {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothDeviceClient()
       ->GetProperties(object_path_)
-      ->trusted.Set(true, base::Bind(&BluetoothDeviceBlueZ::OnSetTrusted,
-                                     weak_ptr_factory_.GetWeakPtr()));
+      ->trusted.Set(true, base::BindOnce(&BluetoothDeviceBlueZ::OnSetTrusted,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothDeviceBlueZ::OnSetTrusted(bool success) {
@@ -1114,10 +1114,10 @@ void BluetoothDeviceBlueZ::OnForgetError(const ErrorCallback& error_callback,
 
 void BluetoothDeviceBlueZ::UnpauseDiscovery() {
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->UnpauseDiscovery(
-      adapter()->object_path(), base::Bind([]() {
+      adapter()->object_path(), base::BindOnce([]() {
         BLUETOOTH_LOG(EVENT) << "Successfully un-paused discovery";
       }),
-      base::Bind(
+      base::BindOnce(
           [](const std::string& error_name, const std::string& error_message) {
             BLUETOOTH_LOG(EVENT) << "Failed to un-pause discovery";
           }));

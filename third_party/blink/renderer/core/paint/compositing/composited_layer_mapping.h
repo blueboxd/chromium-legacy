@@ -100,12 +100,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const PaintLayer* compositing_container,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
 
-  // Update whether background paints onto scrolling contents layer.
-  // Returns (through the reference params) what invalidations are needed.
-  void UpdateBackgroundPaintsOntoScrollingContentsLayer(
-      bool& invalidate_graphics_layer,
-      bool& invalidate_scrolling_contents_layer);
-
   // Update whether layer needs blending.
   void UpdateContentsOpaque();
 
@@ -257,27 +251,29 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool AdjustForCompositedScrolling(const GraphicsLayer*,
                                     IntSize& offset) const;
 
+  bool DrawsBackgroundOntoContentLayer() const {
+    return draws_background_onto_content_layer_;
+  }
+
+ private:
   // Returns true for layers with scrollable overflow which have a background
   // that can be painted into the composited scrolling contents layer (i.e.
   // the background can scroll with the content). When the background is also
   // opaque this allows us to composite the scroller even on low DPI as we can
   // draw with subpixel anti-aliasing.
   bool BackgroundPaintsOntoScrollingContentsLayer() const {
-    return background_paints_onto_scrolling_contents_layer_;
+    return GetLayoutObject().GetBackgroundPaintLocation() &
+           kBackgroundPaintInScrollingContents;
   }
 
   // Returns true if the background paints onto the main graphics layer.
   // In some situations, we may paint background on both the main graphics layer
   // and the scrolling contents layer.
   bool BackgroundPaintsOntoGraphicsLayer() const {
-    return background_paints_onto_graphics_layer_;
+    return GetLayoutObject().GetBackgroundPaintLocation() &
+           kBackgroundPaintInGraphicsLayer;
   }
 
-  bool DrawsBackgroundOntoContentLayer() const {
-    return draws_background_onto_content_layer_;
-  }
-
- private:
   IntRect RecomputeInterestRect(const GraphicsLayer*) const;
   static bool InterestRectChangedEnoughToRepaint(
       const IntRect& previous_interest_rect,
@@ -483,15 +479,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   unsigned pending_update_scope_ : 2;
 
   unsigned scrolling_contents_are_empty_ : 1;
-
-  // Keep track of whether the background is painted onto the scrolling contents
-  // layer for invalidations.
-  unsigned background_paints_onto_scrolling_contents_layer_ : 1;
-
-  // Solid color border boxes may be painted into both the scrolling contents
-  // layer and the graphics layer because the scrolling contents layer is
-  // clipped by the padding box.
-  unsigned background_paints_onto_graphics_layer_ : 1;
 
   bool draws_background_onto_content_layer_;
 

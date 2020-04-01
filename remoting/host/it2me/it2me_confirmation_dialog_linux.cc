@@ -75,9 +75,9 @@ void It2MeConfirmationDialogLinux::Show(const std::string& remote_user_email,
   CreateWindow(remote_user_email);
 
   dialog_timer_.Start(FROM_HERE, kDialogTimeout,
-                      base::Bind(&It2MeConfirmationDialogLinux::OnResponse,
-                                 base::Unretained(this),
-                                 /*dialog=*/nullptr, GTK_RESPONSE_NONE));
+                      base::BindOnce(&It2MeConfirmationDialogLinux::OnResponse,
+                                     base::Unretained(this),
+                                     /*dialog=*/nullptr, GTK_RESPONSE_NONE));
 }
 
 void It2MeConfirmationDialogLinux::Hide() {

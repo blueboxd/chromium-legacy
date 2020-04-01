@@ -484,7 +484,7 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForReverseRelation(
 SAFEARRAY* AXPlatformNodeWin::CreateClickablePointArray() {
   SAFEARRAY* clickable_point_array = SafeArrayCreateVector(VT_R8, 0, 2);
   gfx::Point center = GetDelegate()
-                          ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                          ->GetBoundsRect(AXCoordinateSystem::kScreenDIPs,
                                           AXClippingBehavior::kUnclipped)
                           .CenterPoint();
 
@@ -505,7 +505,7 @@ gfx::Vector2d AXPlatformNodeWin::CalculateUIAScrollPoint(
     return {};
 
   const gfx::Rect bounds = GetDelegate()->GetBoundsRect(
-      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+      AXCoordinateSystem::kScreenDIPs, AXClippingBehavior::kClipped);
   const int large_horizontal_change = bounds.width();
   const int large_vertical_change = bounds.height();
 
@@ -741,15 +741,15 @@ bool AXPlatformNodeWin::IsValidUiaRelationTarget(
 // IAccessible implementation.
 //
 
-IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG x_left,
-                                             LONG y_top,
+IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG screen_physical_pixel_x,
+                                             LONG screen_physical_pixel_y,
                                              VARIANT* child) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_HIT_TEST);
   COM_OBJECT_VALIDATE_1_ARG(child);
 
-  gfx::Point point(x_left, y_top);
+  gfx::Point point(screen_physical_pixel_x, screen_physical_pixel_y);
   if (!GetDelegate()
-           ->GetBoundsRect(AXCoordinateSystem::kScreen,
+           ->GetBoundsRect(AXCoordinateSystem::kScreenPhysicalPixels,
                            AXClippingBehavior::kClipped)
            .Contains(point)) {
     // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
@@ -760,7 +760,8 @@ IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG x_left,
   AXPlatformNode* current_result = this;
   while (true) {
     gfx::NativeViewAccessible hit_child =
-        current_result->GetDelegate()->HitTestSync(x_left, y_top);
+        current_result->GetDelegate()->HitTestSync(screen_physical_pixel_x,
+                                                   screen_physical_pixel_y);
     if (!hit_child) {
       child->vt = VT_EMPTY;
       return S_FALSE;
@@ -830,20 +831,21 @@ IFACEMETHODIMP AXPlatformNodeWin::accDoDefaultAction(VARIANT var_id) {
   return E_FAIL;
 }
 
-IFACEMETHODIMP AXPlatformNodeWin::accLocation(LONG* x_left,
-                                              LONG* y_top,
+IFACEMETHODIMP AXPlatformNodeWin::accLocation(LONG* physical_pixel_left,
+                                              LONG* physical_pixel_top,
                                               LONG* width,
                                               LONG* height,
                                               VARIANT var_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_LOCATION);
   AXPlatformNodeWin* target;
-  COM_OBJECT_VALIDATE_VAR_ID_4_ARGS_AND_GET_TARGET(var_id, x_left, y_top, width,
-                                                   height, target);
+  COM_OBJECT_VALIDATE_VAR_ID_4_ARGS_AND_GET_TARGET(
+      var_id, physical_pixel_left, physical_pixel_top, width, height, target);
 
   gfx::Rect bounds = target->GetDelegate()->GetBoundsRect(
-      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
-  *x_left = bounds.x();
-  *y_top = bounds.y();
+      AXCoordinateSystem::kScreenPhysicalPixels,
+      AXClippingBehavior::kUnclipped);
+  *physical_pixel_left = bounds.x();
+  *physical_pixel_top = bounds.y();
   *width = bounds.width();
   *height = bounds.height();
 
@@ -1550,7 +1552,7 @@ IFACEMETHODIMP AXPlatformNodeWin::scrollToPoint(
     if (GetParent()) {
       AXPlatformNodeBase* base = FromNativeViewAccessible(GetParent());
       scroll_to += base->GetDelegate()
-                       ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                       ->GetBoundsRect(AXCoordinateSystem::kScreenDIPs,
                                        AXClippingBehavior::kUnclipped)
                        .OffsetFromOrigin();
     }
@@ -2005,7 +2007,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_HorizontalViewSize(double* result) {
   }
 
   gfx::RectF clipped_bounds(GetDelegate()->GetBoundsRect(
-      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped));
+      AXCoordinateSystem::kScreenDIPs, AXClippingBehavior::kClipped));
   float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
   float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
   float total_width = clipped_bounds.width() + x_max - x_min;
@@ -2039,7 +2041,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
   }
 
   gfx::RectF clipped_bounds(GetDelegate()->GetBoundsRect(
-      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped));
+      AXCoordinateSystem::kScreenDIPs, AXClippingBehavior::kClipped));
   float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
   float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
   float total_height = clipped_bounds.height() + y_max - y_min;
@@ -3552,7 +3554,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_offsetAtPoint(
        i < text_length; ++i) {
     gfx::Rect char_bounds =
         hit_child->GetDelegate()->GetInnerTextRangeBoundsRect(
-            i, i + 1, AXCoordinateSystem::kScreen,
+            i, i + 1, AXCoordinateSystem::kScreenDIPs,
             AXClippingBehavior::kUnclipped);
     if (char_bounds.Contains(x, y)) {
       *offset = i;
@@ -3899,16 +3901,17 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_BoundingRectangle(
-    UiaRect* bounding_rectangle) {
+    UiaRect* screen_physical_pixel_bounds) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_BOUNDINGRECTANGLE);
-  UIA_VALIDATE_CALL_1_ARG(bounding_rectangle);
+  UIA_VALIDATE_CALL_1_ARG(screen_physical_pixel_bounds);
 
-  gfx::Rect bounds = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
-                                              AXClippingBehavior::kUnclipped);
-  bounding_rectangle->left = bounds.x();
-  bounding_rectangle->top = bounds.y();
-  bounding_rectangle->width = bounds.width();
-  bounding_rectangle->height = bounds.height();
+  gfx::Rect bounds =
+      delegate_->GetBoundsRect(AXCoordinateSystem::kScreenPhysicalPixels,
+                               AXClippingBehavior::kUnclipped);
+  screen_physical_pixel_bounds->left = bounds.x();
+  screen_physical_pixel_bounds->top = bounds.y();
+  screen_physical_pixel_bounds->width = bounds.width();
+  screen_physical_pixel_bounds->height = bounds.height();
   return S_OK;
 }
 

@@ -1150,7 +1150,7 @@ TEST_F(CompositedLayerMappingTest,
 
   const auto* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            container->GetBackgroundPaintLocation());
+            container->ComputeBackgroundPaintLocationIfComposited());
 
   // We currently don't use composited scrolling when the container has a
   // border-radius so even though we can paint the background onto the scrolling
@@ -1158,7 +1158,8 @@ TEST_F(CompositedLayerMappingTest,
   // this case.
   const auto* mapping = container->Layer()->GetCompositedLayerMapping();
   EXPECT_FALSE(mapping->HasScrollingLayer());
-  EXPECT_FALSE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+            container->GetBackgroundPaintLocation());
 }
 
 TEST_F(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {

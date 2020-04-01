@@ -10,11 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/flat_set.h"
 #include "base/json/json_parser.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/values.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
 #include "components/schema_org/schema_org_property_configurations.h"
@@ -51,14 +49,6 @@ using improved::mojom::Property;
 using improved::mojom::PropertyPtr;
 using improved::mojom::Values;
 using improved::mojom::ValuesPtr;
-
-bool IsSupportedType(const std::string& type) {
-  static const base::NoDestructor<base::flat_set<base::StringPiece>>
-      kSupportedTypes(base::flat_set<base::StringPiece>(
-          {entity::kVideoObject, entity::kMovie, entity::kTVEpisode,
-           entity::kTVSeason, entity::kTVSeries, entity::kDataFeed}));
-  return kSupportedTypes->find(type) != kSupportedTypes->end();
-}
 
 void ExtractEntity(const base::DictionaryValue&, Entity*, int recursion_level);
 
@@ -112,11 +102,13 @@ bool ParseStringValue(const std::string& property_type,
     }
   }
   if (prop_config.boolean) {
-    if (value == "https://schema.org/True" || value == "true") {
+    if (value == "https://schema.org/True" ||
+        value == "http://schema.org/True" || value == "true") {
       values->bool_values.push_back(true);
       return true;
     }
-    if (value == "https://schema.org/False" || value == "false") {
+    if (value == "https://schema.org/False" ||
+        value == "http://schema.org/False" || value == "false") {
       values->bool_values.push_back(false);
       return true;
     }
@@ -265,9 +257,20 @@ void ExtractEntity(const base::DictionaryValue& val,
   }
 }
 
+}  // namespace
+
+Extractor::Extractor(base::flat_set<base::StringPiece> supported_entity_types)
+    : supported_types_(supported_entity_types) {}
+
+Extractor::~Extractor() = default;
+
+bool Extractor::IsSupportedType(const std::string& type) {
+  return supported_types_.find(type) != supported_types_.end();
+}
+
 // Extract a JSONObject which corresponds to a single (possibly nested)
 // entity.
-EntityPtr ExtractTopLevelEntity(const base::DictionaryValue& val) {
+EntityPtr Extractor::ExtractTopLevelEntity(const base::DictionaryValue& val) {
   EntityPtr entity = Entity::New();
   std::string type;
   val.GetString(kJSONLDKeyType, &type);
@@ -277,8 +280,6 @@ EntityPtr ExtractTopLevelEntity(const base::DictionaryValue& val) {
   ExtractEntity(val, entity.get(), 0);
   return entity;
 }
-
-}  // namespace
 
 EntityPtr Extractor::Extract(const std::string& content) {
   base::Optional<base::Value> value(base::JSONReader::Read(content));

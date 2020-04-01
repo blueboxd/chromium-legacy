@@ -232,8 +232,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndAllowMic) {
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -261,8 +261,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndAllowCam) {
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
@@ -290,8 +290,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndBlockMic) {
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -320,8 +320,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndBlockCam) {
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
@@ -352,8 +352,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -388,8 +388,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -427,8 +427,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -466,8 +466,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -505,8 +505,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
   EXPECT_TRUE(GetContentSettings()->IsContentBlocked(
@@ -520,8 +520,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
   RequestPermissions(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
   EXPECT_FALSE(GetContentSettings()->IsContentBlocked(
@@ -554,8 +554,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
   EXPECT_FALSE(GetContentSettings()->IsContentBlocked(
@@ -589,8 +589,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
   EXPECT_TRUE(GetContentSettings()->IsContentBlocked(
@@ -704,8 +704,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
     }
     RequestPermissions(
         GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-        base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                   base::Unretained(this)));
+        base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                       base::Unretained(this)));
 
     ASSERT_LE(prompt_factory()->TotalRequestCount(), 2);
     ASSERT_EQ(
@@ -735,8 +735,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   InitWithUrl(GURL(chrome::kChromeUIVersionURL));
   RequestPermissions(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
@@ -758,8 +758,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   ASSERT_EQ(2, prompt_factory()->TotalRequestCount());
   ASSERT_TRUE(prompt_factory()->RequestTypeSeen(
       permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
@@ -777,8 +777,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   prompt_factory()->ResetCounts();
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
   ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
@@ -799,8 +799,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       GetWebContents(),
       CreateRequestWithType(example_audio_id(), example_video_id(),
                             blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
   ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
@@ -825,8 +825,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
 
   RequestPermissions(
       nullptr, request,
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
   ASSERT_EQ(blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
@@ -858,8 +858,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
   RequestPermissions(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
@@ -893,8 +893,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   request.render_frame_id = child_frame->GetRoutingID();
   RequestPermissions(
       GetWebContents(), request,
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
@@ -930,8 +930,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   request.render_frame_id = child_frame->GetRoutingID();
   RequestPermissions(
       GetWebContents(), request,
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                     base::Unretained(this)));
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 

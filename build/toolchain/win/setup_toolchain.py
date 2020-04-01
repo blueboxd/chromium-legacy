@@ -158,11 +158,6 @@ def _LoadToolchainEnv(cpu, sdk_dir, target_store):
     if (target_store):
       args.append(['store'])
     variables = _LoadEnvFromBat(args)
-    # Check for faulty 14.25 version of system headers (see crbug.com/1058860).
-    if "14.25" in _ExtractImportantEnvironment(variables)["LIB"]:
-      # If detected, switch back to 14.24.
-      args.append(["-vcvars_ver=14.24"])
-      variables = _LoadEnvFromBat(args)
   return _ExtractImportantEnvironment(variables)
 
 

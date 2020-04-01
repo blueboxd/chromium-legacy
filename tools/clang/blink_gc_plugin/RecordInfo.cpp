@@ -656,9 +656,10 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
 
   TemplateArgs args;
 
-  if (Config::IsRefPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
+  if (Config::IsRefOrWeakPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
     if (Edge* ptr = CreateEdge(args[0]))
-      return new RefPtr(ptr);
+      return new RefPtr(
+          ptr, Config::IsRefPtr(info->name()) ? Edge::kStrong : Edge::kWeak);
     return 0;
   }
 

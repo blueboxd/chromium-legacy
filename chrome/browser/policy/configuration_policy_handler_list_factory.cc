@@ -70,6 +70,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
+#include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/security_state/core/security_state_pref_names.h"
@@ -175,9 +176,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kSafeBrowsingEnabled,
     prefs::kSafeBrowsingEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kSafeBrowsingEnhancedProtection,
-    prefs::kSafeBrowsingEnhanced,
     base::Value::Type::BOOLEAN },
   { key::kSafeBrowsingForTrustedSourcesEnabled,
     prefs::kSafeBrowsingForTrustedSourcesEnabled,
@@ -1360,6 +1358,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<JavascriptPolicyHandler>());
   handlers->AddHandler(std::make_unique<NetworkPredictionPolicyHandler>());
   handlers->AddHandler(std::make_unique<RestoreOnStartupPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<safe_browsing::SafeBrowsingPolicyHandler>());
   handlers->AddHandler(std::make_unique<syncer::SyncPolicyHandler>());
   handlers->AddHandler(std::make_unique<StringMappingListPolicyHandler>(
       key::kEnableDeprecatedWebPlatformFeatures,

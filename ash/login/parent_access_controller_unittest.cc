@@ -60,8 +60,8 @@ class ParentAccessControllerTest : public LoginTestBase {
     validation_time_ = base::Time::Now();
     controller_->ShowWidget(
         account_id_,
-        base::BindRepeating(&ParentAccessControllerTest::OnFinished,
-                            base::Unretained(this)),
+        base::BindOnce(&ParentAccessControllerTest::OnFinished,
+                       base::Unretained(this)),
         reason, false, validation_time_);
     view_ =
         PinRequestWidget::TestApi(PinRequestWidget::Get()).pin_request_view();

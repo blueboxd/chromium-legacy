@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 
 #include "absl/base/call_once.h"
 #include "absl/base/config.h"
@@ -40,9 +41,6 @@ namespace absl {
 ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 
-template <typename T>
-class Flag;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Flag value type operations, eg., parsing, copying, etc. are provided
 // by function specific to that type with a signature matching FlagOpFn.
@@ -53,50 +51,17 @@ enum class FlagOp {
   kCopy,
   kCopyConstruct,
   kSizeof,
-  kStaticTypeId,
+  kFastTypeId,
+  kRuntimeTypeId,
   kParse,
   kUnparse,
+  kValueOffset,
 };
 using FlagOpFn = void* (*)(FlagOp, const void*, void*, void*);
 
-// Flag value specific operations routine.
+// Forward declaration for Flag value specific operations.
 template <typename T>
-void* FlagOps(FlagOp op, const void* v1, void* v2, void* v3) {
-  switch (op) {
-    case FlagOp::kDelete:
-      delete static_cast<const T*>(v1);
-      return nullptr;
-    case FlagOp::kClone:
-      return new T(*static_cast<const T*>(v1));
-    case FlagOp::kCopy:
-      *static_cast<T*>(v2) = *static_cast<const T*>(v1);
-      return nullptr;
-    case FlagOp::kCopyConstruct:
-      new (v2) T(*static_cast<const T*>(v1));
-      return nullptr;
-    case FlagOp::kSizeof:
-      return reinterpret_cast<void*>(sizeof(T));
-    case FlagOp::kStaticTypeId:
-      return reinterpret_cast<void*>(&FlagStaticTypeIdGen<T>);
-    case FlagOp::kParse: {
-      // Initialize the temporary instance of type T based on current value in
-      // destination (which is going to be flag's default value).
-      T temp(*static_cast<T*>(v2));
-      if (!absl::ParseFlag<T>(*static_cast<const absl::string_view*>(v1), &temp,
-                              static_cast<std::string*>(v3))) {
-        return nullptr;
-      }
-      *static_cast<T*>(v2) = std::move(temp);
-      return v2;
-    }
-    case FlagOp::kUnparse:
-      *static_cast<std::string*>(v2) =
-          absl::UnparseFlag<T>(*static_cast<const T*>(v1));
-      return nullptr;
-    default:
-      return nullptr;
-  }
-}
+void* FlagOps(FlagOp op, const void* v1, void* v2, void* v3);
 
 // Deletes memory interpreting obj as flag value type pointer.
 inline void Delete(FlagOpFn op, const void* obj) {
@@ -133,41 +98,36 @@ inline size_t Sizeof(FlagOpFn op) {
   return static_cast<size_t>(reinterpret_cast<intptr_t>(
       op(FlagOp::kSizeof, nullptr, nullptr, nullptr)));
 }
-// Returns static type id coresponding to the value type.
-inline FlagStaticTypeId StaticTypeId(FlagOpFn op) {
-  return reinterpret_cast<FlagStaticTypeId>(
-      op(FlagOp::kStaticTypeId, nullptr, nullptr, nullptr));
+// Returns fast type id coresponding to the value type.
+inline FlagFastTypeId FastTypeId(FlagOpFn op) {
+  return reinterpret_cast<FlagFastTypeId>(
+      op(FlagOp::kFastTypeId, nullptr, nullptr, nullptr));
+}
+// Returns fast type id coresponding to the value type.
+inline const std::type_info* RuntimeTypeId(FlagOpFn op) {
+  return reinterpret_cast<const std::type_info*>(
+      op(FlagOp::kRuntimeTypeId, nullptr, nullptr, nullptr));
+}
+// Returns offset of the field value_ from the field impl_ inside of
+// absl::Flag<T> data. Given FlagImpl pointer p you can get the
+// location of the corresponding value as:
+//      reinterpret_cast<char*>(p) + ValueOffset().
+inline ptrdiff_t ValueOffset(FlagOpFn op) {
+  // This sequence of casts reverses the sequence from
+  // `flags_internal::FlagOps()`
+  return static_cast<ptrdiff_t>(reinterpret_cast<intptr_t>(
+      op(FlagOp::kValueOffset, nullptr, nullptr, nullptr)));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Persistent state of the flag data.
-
+// Returns an address of RTTI's typeid(T).
 template <typename T>
-class FlagState : public flags_internal::FlagStateInterface {
- public:
-  FlagState(Flag<T>* flag, T&& cur, bool modified, bool on_command_line,
-            int64_t counter)
-      : flag_(flag),
-        cur_value_(std::move(cur)),
-        modified_(modified),
-        on_command_line_(on_command_line),
-        counter_(counter) {}
-
-  ~FlagState() override = default;
-
- private:
-  friend class Flag<T>;
-
-  // Restores the flag to the saved state.
-  void Restore() const override;
-
-  // Flag and saved flag data.
-  Flag<T>* flag_;
-  T cur_value_;
-  bool modified_;
-  bool on_command_line_;
-  int64_t counter_;
-};
+inline const std::type_info* GenRuntimeTypeId() {
+#if defined(ABSL_FLAGS_INTERNAL_HAS_RTTI)
+  return &typeid(T);
+#else
+  return nullptr;
+#endif
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Flag help auxiliary structs.
@@ -263,6 +223,10 @@ using FlagUseOneWordStorage = std::integral_constant<
 struct alignas(16) AlignedTwoWords {
   int64_t first;
   int64_t second;
+
+  bool IsInitialized() const {
+    return first != flags_internal::UninitializedFlagValue();
+  }
 };
 
 template <typename T>
@@ -272,8 +236,14 @@ using FlagUseTwoWordsStorage = std::integral_constant<
 #else
 // This is actually unused and only here to avoid ifdefs in other palces.
 struct AlignedTwoWords {
-  constexpr AlignedTwoWords() = default;
-  constexpr AlignedTwoWords(int64_t, int64_t) {}
+  constexpr AlignedTwoWords() noexcept : dummy() {}
+  constexpr AlignedTwoWords(int64_t, int64_t) noexcept : dummy() {}
+  char dummy;
+
+  bool IsInitialized() const {
+    std::abort();
+    return true;
+  }
 };
 
 // This trait should be type dependent, otherwise SFINAE below will fail
@@ -293,23 +263,70 @@ enum class FlagValueStorageKind : uint8_t {
   kTwoWordsAtomic = 2
 };
 
-union FlagValue {
-  constexpr explicit FlagValue(int64_t v) : one_word_atomic(v) {}
+template <typename T>
+static constexpr FlagValueStorageKind StorageKind() {
+  return FlagUseHeapStorage<T>::value
+             ? FlagValueStorageKind::kHeapAllocated
+             : FlagUseOneWordStorage<T>::value
+                   ? FlagValueStorageKind::kOneWordAtomic
+                   : FlagUseTwoWordsStorage<T>::value
+                         ? FlagValueStorageKind::kTwoWordsAtomic
+                         : FlagValueStorageKind::kHeapAllocated;
+}
 
-  template <typename T>
-  static constexpr FlagValueStorageKind Kind() {
-    return FlagUseHeapStorage<T>::value
-               ? FlagValueStorageKind::kHeapAllocated
-               : FlagUseOneWordStorage<T>::value
-                     ? FlagValueStorageKind::kOneWordAtomic
-                     : FlagUseTwoWordsStorage<T>::value
-                           ? FlagValueStorageKind::kTwoWordsAtomic
-                           : FlagValueStorageKind::kHeapAllocated;
+struct FlagHeapAllocatedValue {
+  using value_type = void*;
+
+  value_type value;
+};
+
+struct FlagOneWordValue {
+  using value_type = std::atomic<int64_t>;
+  constexpr FlagOneWordValue() : value(UninitializedFlagValue()) {}
+
+  value_type value;
+};
+
+struct FlagTwoWordsValue {
+  using value_type = std::atomic<AlignedTwoWords>;
+  constexpr FlagTwoWordsValue()
+      : value(AlignedTwoWords{UninitializedFlagValue(), 0}) {}
+
+  value_type value;
+};
+
+template <typename T,
+          FlagValueStorageKind Kind = flags_internal::StorageKind<T>()>
+struct FlagValue;
+
+template <typename T>
+struct FlagValue<T, FlagValueStorageKind::kHeapAllocated>
+    : FlagHeapAllocatedValue {
+  bool Get(T*) const { return false; }
+};
+
+template <typename T>
+struct FlagValue<T, FlagValueStorageKind::kOneWordAtomic> : FlagOneWordValue {
+  bool Get(T* dst) const {
+    int64_t one_word_val = value.load(std::memory_order_acquire);
+    if (ABSL_PREDICT_FALSE(one_word_val == UninitializedFlagValue())) {
+      return false;
+    }
+    std::memcpy(dst, static_cast<const void*>(&one_word_val), sizeof(T));
+    return true;
   }
+};
 
-  void* dynamic;
-  std::atomic<int64_t> one_word_atomic;
-  std::atomic<flags_internal::AlignedTwoWords> two_words_atomic;
+template <typename T>
+struct FlagValue<T, FlagValueStorageKind::kTwoWordsAtomic> : FlagTwoWordsValue {
+  bool Get(T* dst) const {
+    AlignedTwoWords two_words_val = value.load(std::memory_order_acquire);
+    if (ABSL_PREDICT_FALSE(!two_words_val.IsInitialized())) {
+      return false;
+    }
+    std::memcpy(dst, static_cast<const void*>(&two_words_val), sizeof(T));
+    return true;
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -332,13 +349,15 @@ struct FlagCallback {
 struct DynValueDeleter {
   explicit DynValueDeleter(FlagOpFn op_arg = nullptr) : op(op_arg) {}
   void operator()(void* ptr) const {
-    if (op != nullptr) Delete(op, ptr);
+    if (op != nullptr) flags_internal::Delete(op, ptr);
   }
 
   FlagOpFn op;
 };
 
-class FlagImpl {
+class FlagState;
+
+class FlagImpl final : public flags_internal::CommandLineFlag {
  public:
   constexpr FlagImpl(const char* name, const char* filename, FlagOpFn op,
                      FlagHelpArg help, FlagValueStorageKind value_kind,
@@ -355,83 +374,33 @@ class FlagImpl {
         counter_(0),
         callback_(nullptr),
         default_value_(default_value_gen),
-        value_(flags_internal::UninitializedFlagValue()),
         data_guard_{} {}
 
   // Constant access methods
-  absl::string_view Name() const;
-  std::string Filename() const;
-  std::string Help() const;
-  bool IsModified() const ABSL_LOCKS_EXCLUDED(*DataGuard());
-  bool IsSpecifiedOnCommandLine() const ABSL_LOCKS_EXCLUDED(*DataGuard());
-  std::string DefaultValue() const ABSL_LOCKS_EXCLUDED(*DataGuard());
-  std::string CurrentValue() const ABSL_LOCKS_EXCLUDED(*DataGuard());
-  void Read(void* dst) const ABSL_LOCKS_EXCLUDED(*DataGuard());
-
-  template <typename T, typename std::enable_if<FlagUseHeapStorage<T>::value,
-                                                int>::type = 0>
-  void Get(T* dst) const {
-    Read(dst);
-  }
-  template <typename T, typename std::enable_if<FlagUseOneWordStorage<T>::value,
-                                                int>::type = 0>
-  void Get(T* dst) const {
-    int64_t one_word_val =
-        value_.one_word_atomic.load(std::memory_order_acquire);
-    if (ABSL_PREDICT_FALSE(one_word_val == UninitializedFlagValue())) {
-      DataGuard();  // Make sure flag initialized
-      one_word_val = value_.one_word_atomic.load(std::memory_order_acquire);
-    }
-    std::memcpy(dst, static_cast<const void*>(&one_word_val), sizeof(T));
-  }
-  template <typename T, typename std::enable_if<
-                            FlagUseTwoWordsStorage<T>::value, int>::type = 0>
-  void Get(T* dst) const {
-    DataGuard();  // Make sure flag initialized
-    const auto two_words_val =
-        value_.two_words_atomic.load(std::memory_order_acquire);
-    std::memcpy(dst, &two_words_val, sizeof(T));
-  }
+  void Read(void* dst) const override ABSL_LOCKS_EXCLUDED(*DataGuard());
 
   // Mutating access methods
   void Write(const void* src) ABSL_LOCKS_EXCLUDED(*DataGuard());
-  bool SetFromString(absl::string_view value, FlagSettingMode set_mode,
-                     ValueSource source, std::string* err)
-      ABSL_LOCKS_EXCLUDED(*DataGuard());
 
   // Interfaces to operate on callbacks.
   void SetCallback(const FlagCallbackFunc mutation_callback)
       ABSL_LOCKS_EXCLUDED(*DataGuard());
   void InvokeCallback() const ABSL_EXCLUSIVE_LOCKS_REQUIRED(*DataGuard());
 
-  // Interfaces to save/restore mutable flag data
-  template <typename T>
-  std::unique_ptr<FlagStateInterface> SaveState(Flag<T>* flag) const
-      ABSL_LOCKS_EXCLUDED(*DataGuard()) {
-    T&& cur_value = flag->Get();
-    absl::MutexLock l(DataGuard());
-
-    return absl::make_unique<FlagState<T>>(
-        flag, std::move(cur_value), modified_, on_command_line_, counter_);
-  }
-  bool RestoreState(const void* value, bool modified, bool on_command_line,
-                    int64_t counter) ABSL_LOCKS_EXCLUDED(*DataGuard());
-
-  // Value validation interfaces.
-  void CheckDefaultValueParsingRoundtrip() const
-      ABSL_LOCKS_EXCLUDED(*DataGuard());
-  bool ValidateInputValue(absl::string_view value) const
-      ABSL_LOCKS_EXCLUDED(*DataGuard());
-
   // Used in read/write operations to validate source/target has correct type.
   // For example if flag is declared as absl::Flag<int> FLAGS_foo, a call to
   // absl::GetFlag(FLAGS_foo) validates that the type of FLAGS_foo is indeed
   // int. To do that we pass the "assumed" type id (which is deduced from type
-  // int) as an argument `op`, which is in turn is validated against the type id
-  // stored in flag object by flag definition statement.
-  void AssertValidType(FlagStaticTypeId type_id) const;
+  // int) as an argument `type_id`, which is in turn is validated against the
+  // type id stored in flag object by flag definition statement.
+  void AssertValidType(FlagFastTypeId type_id,
+                       const std::type_info* (*gen_rtti)()) const;
 
  private:
+  template <typename T>
+  friend class Flag;
+  friend class FlagState;
+
   // Ensures that `data_guard_` is initialized and returns it.
   absl::Mutex* DataGuard() const ABSL_LOCK_RETURNED((absl::Mutex*)&data_guard_);
   // Returns heap allocated value of type T initialized with default value.
@@ -439,6 +408,25 @@ class FlagImpl {
       ABSL_EXCLUSIVE_LOCKS_REQUIRED(*DataGuard());
   // Flag initialization called via absl::call_once.
   void Init();
+
+  // Offset value access methods. One per storage kind. These methods to not
+  // respect const correctness, so be very carefull using them.
+
+  // This is a shared helper routine which encapsulates most of the magic. Since
+  // it is only used inside the three routines below, which are defined in
+  // flag.cc, we can define it in that file as well.
+  template <typename StorageT>
+  typename StorageT::value_type& OffsetValue() const;
+  // This is an accessor for a value stored in heap allocated storage.
+  // Returns a mutable reference to a pointer to allow vlaue mutation.
+  void*& HeapAllocatedValue() const;
+  // This is an accessor for a value stored as one word atomic. Returns a
+  // mutable reference to an atomic value.
+  std::atomic<int64_t>& OneWordValue() const;
+  // This is an accessor for a value stored as two words atomic. Returns a
+  // mutable reference to an atomic value.
+  std::atomic<AlignedTwoWords>& TwoWordsValue() const;
+
   // Attempts to parse supplied `value` string. If parsing is successful,
   // returns new value. Otherwise returns nullptr.
   std::unique_ptr<void, DynValueDeleter> TryParse(absl::string_view value,
@@ -457,6 +445,37 @@ class FlagImpl {
       ABSL_EXCLUSIVE_LOCKS_REQUIRED(*DataGuard()) {
     return static_cast<FlagDefaultKind>(def_kind_);
   }
+
+  // CommandLineFlag interface implementation
+  absl::string_view Name() const override;
+  std::string Filename() const override;
+  absl::string_view Typename() const override;
+  std::string Help() const override;
+  FlagFastTypeId TypeId() const override;
+  bool IsModified() const override ABSL_LOCKS_EXCLUDED(*DataGuard());
+  bool IsSpecifiedOnCommandLine() const override
+      ABSL_LOCKS_EXCLUDED(*DataGuard());
+  std::string DefaultValue() const override ABSL_LOCKS_EXCLUDED(*DataGuard());
+  std::string CurrentValue() const override ABSL_LOCKS_EXCLUDED(*DataGuard());
+  bool ValidateInputValue(absl::string_view value) const override
+      ABSL_LOCKS_EXCLUDED(*DataGuard());
+  void CheckDefaultValueParsingRoundtrip() const override
+      ABSL_LOCKS_EXCLUDED(*DataGuard());
+
+  // Interfaces to save and restore flags to/from persistent state.
+  // Returns current flag state or nullptr if flag does not support
+  // saving and restoring a state.
+  std::unique_ptr<FlagStateInterface> SaveState() override
+      ABSL_LOCKS_EXCLUDED(*DataGuard());
+
+  // Restores the flag state to the supplied state object. If there is
+  // nothing to restore returns false. Otherwise returns true.
+  bool RestoreState(const FlagState& flag_state)
+      ABSL_LOCKS_EXCLUDED(*DataGuard());
+
+  bool ParseFrom(absl::string_view value, FlagSettingMode set_mode,
+                 ValueSource source, std::string* error) override
+      ABSL_LOCKS_EXCLUDED(*DataGuard());
 
   // Immutable flag's state.
 
@@ -505,13 +524,6 @@ class FlagImpl {
   // these two cases.
   FlagDefaultSrc default_value_;
 
-  // Atomically mutable flag's state
-
-  // Flag's value. This can be either the atomically stored small value or
-  // pointer to the heap allocated dynamic value. value_storage_kind_ is used
-  // to distinguish these cases.
-  FlagValue value_;
-
   // This is reserved space for an absl::Mutex to guard flag data. It will be
   // initialized in FlagImpl::Init via placement new.
   // We can't use "absl::Mutex data_guard_", since this class is not literal.
@@ -527,12 +539,13 @@ class FlagImpl {
 // flag reflection handle interface.
 
 template <typename T>
-class Flag final : public flags_internal::CommandLineFlag {
+class Flag {
  public:
   constexpr Flag(const char* name, const char* filename, const FlagHelpArg help,
                  const FlagDfltGenFunc default_value_gen)
-      : impl_(name, filename, &FlagOps<T>, help, FlagValue::Kind<T>(),
-              default_value_gen) {}
+      : impl_(name, filename, &FlagOps<T>, help,
+              flags_internal::StorageKind<T>(), default_value_gen),
+        value_() {}
 
   T Get() const {
     // See implementation notes in CommandLineFlag::Get().
@@ -544,14 +557,14 @@ class Flag final : public flags_internal::CommandLineFlag {
     U u;
 
 #if !defined(NDEBUG)
-    impl_.AssertValidType(&flags_internal::FlagStaticTypeIdGen<T>);
+    impl_.AssertValidType(base_internal::FastTypeId<T>(), &GenRuntimeTypeId<T>);
 #endif
 
-    impl_.Get(&u.value);
+    if (!value_.Get(&u.value)) impl_.Read(&u.value);
     return std::move(u.value);
   }
   void Set(const T& v) {
-    impl_.AssertValidType(&flags_internal::FlagStaticTypeIdGen<T>);
+    impl_.AssertValidType(base_internal::FastTypeId<T>(), &GenRuntimeTypeId<T>);
     impl_.Write(&v);
   }
   void SetCallback(const FlagCallbackFunc mutation_callback) {
@@ -559,60 +572,79 @@ class Flag final : public flags_internal::CommandLineFlag {
   }
 
   // CommandLineFlag interface
-  absl::string_view Name() const override { return impl_.Name(); }
-  std::string Filename() const override { return impl_.Filename(); }
-  absl::string_view Typename() const override { return ""; }
-  std::string Help() const override { return impl_.Help(); }
-  bool IsModified() const override { return impl_.IsModified(); }
-  bool IsSpecifiedOnCommandLine() const override {
+  absl::string_view Name() const { return impl_.Name(); }
+  std::string Filename() const { return impl_.Filename(); }
+  absl::string_view Typename() const { return ""; }
+  std::string Help() const { return impl_.Help(); }
+  bool IsModified() const { return impl_.IsModified(); }
+  bool IsSpecifiedOnCommandLine() const {
     return impl_.IsSpecifiedOnCommandLine();
   }
-  std::string DefaultValue() const override { return impl_.DefaultValue(); }
-  std::string CurrentValue() const override { return impl_.CurrentValue(); }
-  bool ValidateInputValue(absl::string_view value) const override {
-    return impl_.ValidateInputValue(value);
-  }
-
-  // Interfaces to save and restore flags to/from persistent state.
-  // Returns current flag state or nullptr if flag does not support
-  // saving and restoring a state.
-  std::unique_ptr<FlagStateInterface> SaveState() override {
-    return impl_.SaveState(this);
-  }
-
-  // Restores the flag state to the supplied state object. If there is
-  // nothing to restore returns false. Otherwise returns true.
-  bool RestoreState(const FlagState<T>& flag_state) {
-    return impl_.RestoreState(&flag_state.cur_value_, flag_state.modified_,
-                              flag_state.on_command_line_, flag_state.counter_);
-  }
-  bool SetFromString(absl::string_view value, FlagSettingMode set_mode,
-                     ValueSource source, std::string* error) override {
-    return impl_.SetFromString(value, set_mode, source, error);
-  }
-  void CheckDefaultValueParsingRoundtrip() const override {
-    impl_.CheckDefaultValueParsingRoundtrip();
-  }
+  std::string DefaultValue() const { return impl_.DefaultValue(); }
+  std::string CurrentValue() const { return impl_.CurrentValue(); }
 
  private:
-  friend class FlagState<T>;
-
-  void Read(void* dst) const override { impl_.Read(dst); }
-  FlagStaticTypeId TypeId() const override { return &FlagStaticTypeIdGen<T>; }
+  template <typename U, bool do_register>
+  friend class FlagRegistrar;
 
   // Flag's data
+  // The implementation depends on value_ field to be placed exactly after the
+  // impl_ field, so that impl_ can figure out the offset to the value and
+  // access it.
   FlagImpl impl_;
+  FlagValue<T> value_;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of Flag value specific operations routine.
 template <typename T>
-void FlagState<T>::Restore() const {
-  if (flag_->RestoreState(*this)) {
-    ABSL_INTERNAL_LOG(INFO,
-                      absl::StrCat("Restore saved value of ", flag_->Name(),
-                                   " to: ", flag_->CurrentValue()));
+void* FlagOps(FlagOp op, const void* v1, void* v2, void* v3) {
+  switch (op) {
+    case FlagOp::kDelete:
+      delete static_cast<const T*>(v1);
+      return nullptr;
+    case FlagOp::kClone:
+      return new T(*static_cast<const T*>(v1));
+    case FlagOp::kCopy:
+      *static_cast<T*>(v2) = *static_cast<const T*>(v1);
+      return nullptr;
+    case FlagOp::kCopyConstruct:
+      new (v2) T(*static_cast<const T*>(v1));
+      return nullptr;
+    case FlagOp::kSizeof:
+      return reinterpret_cast<void*>(static_cast<uintptr_t>(sizeof(T)));
+    case FlagOp::kFastTypeId:
+      return const_cast<void*>(base_internal::FastTypeId<T>());
+    case FlagOp::kRuntimeTypeId:
+      return const_cast<std::type_info*>(GenRuntimeTypeId<T>());
+    case FlagOp::kParse: {
+      // Initialize the temporary instance of type T based on current value in
+      // destination (which is going to be flag's default value).
+      T temp(*static_cast<T*>(v2));
+      if (!absl::ParseFlag<T>(*static_cast<const absl::string_view*>(v1), &temp,
+                              static_cast<std::string*>(v3))) {
+        return nullptr;
+      }
+      *static_cast<T*>(v2) = std::move(temp);
+      return v2;
+    }
+    case FlagOp::kUnparse:
+      *static_cast<std::string*>(v2) =
+          absl::UnparseFlag<T>(*static_cast<const T*>(v1));
+      return nullptr;
+    case FlagOp::kValueOffset: {
+      // Round sizeof(FlagImp) to a multiple of alignof(FlagValue<T>) to get the
+      // offset of the data.
+      ptrdiff_t round_to = alignof(FlagValue<T>);
+      ptrdiff_t offset =
+          (sizeof(FlagImpl) + round_to - 1) / round_to * round_to;
+      return reinterpret_cast<void*>(offset);
+    }
   }
+  return nullptr;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 // This class facilitates Flag object registration and tail expression-based
 // flag definition, for example:
 // ABSL_FLAG(int, foo, 42, "Foo help").OnUpdate(NotifyFooWatcher);
@@ -620,7 +652,7 @@ template <typename T, bool do_register>
 class FlagRegistrar {
  public:
   explicit FlagRegistrar(Flag<T>* flag) : flag_(flag) {
-    if (do_register) flags_internal::RegisterCommandLineFlag(flag_);
+    if (do_register) flags_internal::RegisterCommandLineFlag(&flag_->impl_);
   }
 
   FlagRegistrar& OnUpdate(FlagCallbackFunc cb) && {
@@ -647,7 +679,7 @@ T* MakeFromDefaultValue(T t) {
 
 template <typename T>
 T* MakeFromDefaultValue(EmptyBraces) {
-  return new T;
+  return new T{};
 }
 
 }  // namespace flags_internal

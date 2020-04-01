@@ -253,8 +253,9 @@ void ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry(
 void ExternalRegistryLoader::OnRegistryKeyChanged(base::win::RegKey* key) {
   // |OnRegistryKeyChanged| is removed as an observer when the ChangeCallback is
   // called, so we need to re-register.
-  key->StartWatching(base::Bind(&ExternalRegistryLoader::OnRegistryKeyChanged,
-                                base::Unretained(this), base::Unretained(key)));
+  key->StartWatching(
+      base::BindOnce(&ExternalRegistryLoader::OnRegistryKeyChanged,
+                     base::Unretained(this), base::Unretained(key)));
 
   GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,

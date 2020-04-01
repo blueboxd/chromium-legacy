@@ -376,9 +376,10 @@ gfx::Rect ViewAXPlatformNodeDelegate::GetBoundsRect(
     const ui::AXClippingBehavior clipping_behavior,
     ui::AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case ui::AXCoordinateSystem::kScreen:
+    case ui::AXCoordinateSystem::kScreenDIPs:
       // We could optionally add clipping here if ever needed.
       return view()->GetBoundsInScreen();
+    case ui::AXCoordinateSystem::kScreenPhysicalPixels:
     case ui::AXCoordinateSystem::kRootFrame:
     case ui::AXCoordinateSystem::kFrame:
       NOTIMPLEMENTED();
@@ -386,8 +387,9 @@ gfx::Rect ViewAXPlatformNodeDelegate::GetBoundsRect(
   }
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
-                                                                  int y) const {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(
+    int screen_physical_pixel_x,
+    int screen_physical_pixel_y) const {
   if (!view() || !view()->GetWidget())
     return nullptr;
 
@@ -400,19 +402,19 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
     scale_factor = ui::GetScaleFactorForNativeView(native_view);
     scale_factor = scale_factor <= 0 ? 1.0 : scale_factor;
   }
-  x /= scale_factor;
-  y /= scale_factor;
+  int screen_dips_x = screen_physical_pixel_x / scale_factor;
+  int screen_dips_y = screen_physical_pixel_y / scale_factor;
 
   // Search child widgets first, since they're on top in the z-order.
   for (Widget* child_widget : GetChildWidgets().child_widgets) {
     View* child_root_view = child_widget->GetRootView();
-    gfx::Point point(x, y);
+    gfx::Point point(screen_dips_x, screen_dips_y);
     View::ConvertPointFromScreen(child_root_view, &point);
     if (child_root_view->HitTestPoint(point))
       return child_root_view->GetNativeViewAccessible();
   }
 
-  gfx::Point point(x, y);
+  gfx::Point point(screen_dips_x, screen_dips_y);
   View::ConvertPointFromScreen(view(), &point);
   if (!view()->HitTestPoint(point))
     return nullptr;

@@ -1106,9 +1106,9 @@ ExtensionFunction::ResponseAction DownloadsDownloadFunction::Run() {
                                                       options.body->size()));
   }
 
-  download_params->set_callback(base::Bind(
-      &DownloadsDownloadFunction::OnStarted, this,
-      creator_suggested_filename, options.conflict_action));
+  download_params->set_callback(
+      base::BindOnce(&DownloadsDownloadFunction::OnStarted, this,
+                     creator_suggested_filename, options.conflict_action));
   // Prevent login prompts for 401/407 responses.
   download_params->set_do_not_prompt_for_login(true);
   download_params->set_download_source(download::DownloadSource::EXTENSION_API);
@@ -1313,7 +1313,7 @@ ExtensionFunction::ResponseAction DownloadsRemoveFileFunction::Run() {
     return RespondNow(Error(error));
   RecordApiFunctions(DOWNLOADS_FUNCTION_REMOVE_FILE);
   download_item->DeleteFile(
-      base::Bind(&DownloadsRemoveFileFunction::Done, this));
+      base::BindOnce(&DownloadsRemoveFileFunction::Done, this));
   return RespondLater();
 }
 

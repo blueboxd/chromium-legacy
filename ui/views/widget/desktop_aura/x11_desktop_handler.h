@@ -18,7 +18,6 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_handler_observer.h"
 
 namespace ui {
 class XScopedEventSelector;
@@ -40,13 +39,6 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::XEventDispatcher,
   // been created.
   static X11DesktopHandler* get_dont_create();
 
-  // Adds/removes X11DesktopHandlerObservers.
-  void AddObserver(X11DesktopHandlerObserver* observer);
-  void RemoveObserver(X11DesktopHandlerObserver* observer);
-
-  // Gets the current workspace ID.
-  std::string GetWorkspace();
-
   // ui::XEventDispatcher
   bool DispatchXEvent(XEvent* event) override;
 
@@ -62,9 +54,6 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::XEventDispatcher,
   // managed by Chrome.
   void OnWindowCreatedOrDestroyed(int event_type, XID window);
 
-  // Makes a round trip to the X server to get the current workspace.
-  bool UpdateWorkspace();
-
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
 
@@ -73,10 +62,6 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::XEventDispatcher,
 
   // Events selected on x_root_window_.
   std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;
-
-  base::ObserverList<X11DesktopHandlerObserver>::Unchecked observers_;
-
-  std::string workspace_;
 
   DISALLOW_COPY_AND_ASSIGN(X11DesktopHandler);
 };

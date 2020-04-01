@@ -509,10 +509,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   TransformationMatrix CurrentTransform() const;
   TransformationMatrix RenderableTransform(GlobalPaintFlags) const;
 
-  // Get the perspective transform, which is applied to transformed sublayers.
-  // Returns true if the layer has a -webkit-perspective.
-  // Note that this transform does not have the perspective-origin baked in.
-  TransformationMatrix PerspectiveTransform() const;
   FloatPoint PerspectiveOrigin() const;
   bool Preserves3D() const {
     return GetLayoutObject().StyleRef().Preserves3D();
@@ -980,24 +976,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const PhysicalOffset* offset_from_root = nullptr,
       const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset()) const;
-
-  enum TransparencyClipBoxBehavior {
-    kPaintingTransparencyClipBox,
-    kHitTestingTransparencyClipBox
-  };
-
-  enum TransparencyClipBoxMode {
-    kDescendantsOfTransparencyClipBox,
-    kRootOfTransparencyClipBox
-  };
-
-  static PhysicalRect TransparencyClipBox(
-      const PaintLayer*,
-      const PaintLayer* root_layer,
-      TransparencyClipBoxBehavior transparency_behavior,
-      TransparencyClipBoxMode transparency_mode,
-      const PhysicalOffset& sub_pixel_accumulation,
-      GlobalPaintFlags = kGlobalPaintNormalPhase);
 
   bool SelfNeedsRepaint() const { return self_needs_repaint_; }
   bool DescendantNeedsRepaint() const { return descendant_needs_repaint_; }

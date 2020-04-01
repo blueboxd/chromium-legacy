@@ -156,6 +156,9 @@ HRESULT GetMachineGuid(base::string16* machine_guid);
 // Sets  HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid registry for testing.
 HRESULT SetMachineGuidForTesting(const base::string16& machine_guid);
 
+// Set corresponding registry entry that would make GCPW as the default
+// credential provider.
+HRESULT MakeGcpwDefaultCP();
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_REG_UTILS_H_

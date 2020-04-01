@@ -2504,90 +2504,10 @@ TEST_F(NetworkContextTest, ProxyLookupWithNetworkIsolationKey) {
             proxy_resolver_factory.network_isolation_key());
 }
 
-// Test mojom::ProxyResolver that completes calls to GetProxyForUrl() with a
-// DIRECT "proxy". It additionally emits a script error on line 42 for every
-// call to GetProxyForUrl().
-class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
- public:
-  MockMojoProxyResolver() {}
-
- private:
-  // Overridden from proxy_resolver::mojom::ProxyResolver:
-  void GetProxyForUrl(
-      const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
-      mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverRequestClient>
-          pending_client) override {
-    // Report a Javascript error and then complete the request successfully,
-    // having chosen DIRECT connections.
-    mojo::Remote<proxy_resolver::mojom::ProxyResolverRequestClient> client(
-        std::move(pending_client));
-    client->OnError(42, "Failed: FindProxyForURL(url=" + url.spec() + ")");
-
-    net::ProxyInfo result;
-    result.UseDirect();
-
-    client->ReportResult(net::OK, result);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(MockMojoProxyResolver);
-};
-
-// Test mojom::ProxyResolverFactory implementation that successfully completes
-// any CreateResolver() requests, and binds the request to a new
-// MockMojoProxyResolver.
-class MockMojoProxyResolverFactory
-    : public proxy_resolver::mojom::ProxyResolverFactory {
- public:
-  MockMojoProxyResolverFactory() {}
-
-  // Binds and returns a mock ProxyResolverFactory whose lifetime is bound to
-  // the message pipe.
-  static mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
-  Create() {
-    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory> remote;
-    mojo::MakeSelfOwnedReceiver(
-        std::make_unique<MockMojoProxyResolverFactory>(),
-        remote.InitWithNewPipeAndPassReceiver());
-    return remote;
-  }
-
- private:
-  void CreateResolver(
-      const std::string& pac_url,
-      mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver> receiver,
-      mojo::PendingRemote<
-          proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
-          pending_client) override {
-    // Bind |receiver| to a new MockMojoProxyResolver, and return success.
-    mojo::MakeSelfOwnedReceiver(std::make_unique<MockMojoProxyResolver>(),
-                                std::move(receiver));
-
-    mojo::Remote<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
-        client(std::move(pending_client));
-    client->ReportResult(net::OK);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(MockMojoProxyResolverFactory);
-};
-
 TEST_F(NetworkContextTest, PacQuickCheck) {
   // Check the default value.
-  // Note that unless we explicitly create a proxy resolver factory, the code
-  // will assume that we should use a system proxy resolver (i.e. use system
-  // APIs to resolve a proxy). This isn't supported on all platforms. On
-  // unsupported platforms, we'd simply ignore the PAC quick check input and
-  // default to false.
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-#if defined(OS_CHROMEOS)
-  context_params->dhcp_wpad_url_client =
-      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
-          std::string());
-#endif  // defined(OS_CHROMEOS)
-  context_params->proxy_resolver_factory =
-      MockMojoProxyResolverFactory::Create();
   std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(std::move(context_params));
+      CreateContextWithParams(CreateContextParams());
   net::ConfiguredProxyResolutionService* proxy_resolution_service = nullptr;
   ASSERT_TRUE(
       network_context->url_request_context()
@@ -2596,14 +2516,7 @@ TEST_F(NetworkContextTest, PacQuickCheck) {
   EXPECT_TRUE(proxy_resolution_service->quick_check_enabled_for_testing());
 
   // Explicitly enable.
-  context_params = CreateContextParams();
-#if defined(OS_CHROMEOS)
-  context_params->dhcp_wpad_url_client =
-      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
-          std::string());
-#endif  // defined(OS_CHROMEOS)
-  context_params->proxy_resolver_factory =
-      MockMojoProxyResolverFactory::Create();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->pac_quick_check_enabled = true;
   network_context = CreateContextWithParams(std::move(context_params));
   proxy_resolution_service = nullptr;
@@ -2615,13 +2528,6 @@ TEST_F(NetworkContextTest, PacQuickCheck) {
 
   // Explicitly disable.
   context_params = CreateContextParams();
-#if defined(OS_CHROMEOS)
-  context_params->dhcp_wpad_url_client =
-      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
-          std::string());
-#endif  // defined(OS_CHROMEOS)
-  context_params->proxy_resolver_factory =
-      MockMojoProxyResolverFactory::Create();
   context_params->pac_quick_check_enabled = false;
   network_context = CreateContextWithParams(std::move(context_params));
   proxy_resolution_service = nullptr;
@@ -4784,6 +4690,73 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotNotifiedOfUnreachableError) {
   EXPECT_EQ(0u, request_errors.size());
   EXPECT_EQ(0u, pac_errors.size());
 }
+
+// Test mojom::ProxyResolver that completes calls to GetProxyForUrl() with a
+// DIRECT "proxy". It additionally emits a script error on line 42 for every
+// call to GetProxyForUrl().
+class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
+ public:
+  MockMojoProxyResolver() {}
+
+ private:
+  // Overridden from proxy_resolver::mojom::ProxyResolver:
+  void GetProxyForUrl(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverRequestClient>
+          pending_client) override {
+    // Report a Javascript error and then complete the request successfully,
+    // having chosen DIRECT connections.
+    mojo::Remote<proxy_resolver::mojom::ProxyResolverRequestClient> client(
+        std::move(pending_client));
+    client->OnError(42, "Failed: FindProxyForURL(url=" + url.spec() + ")");
+
+    net::ProxyInfo result;
+    result.UseDirect();
+
+    client->ReportResult(net::OK, result);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MockMojoProxyResolver);
+};
+
+// Test mojom::ProxyResolverFactory implementation that successfully completes
+// any CreateResolver() requests, and binds the request to a new
+// MockMojoProxyResolver.
+class MockMojoProxyResolverFactory
+    : public proxy_resolver::mojom::ProxyResolverFactory {
+ public:
+  MockMojoProxyResolverFactory() {}
+
+  // Binds and returns a mock ProxyResolverFactory whose lifetime is bound to
+  // the message pipe.
+  static mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+  Create() {
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory> remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<MockMojoProxyResolverFactory>(),
+        remote.InitWithNewPipeAndPassReceiver());
+    return remote;
+  }
+
+ private:
+  void CreateResolver(
+      const std::string& pac_url,
+      mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver> receiver,
+      mojo::PendingRemote<
+          proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+          pending_client) override {
+    // Bind |receiver| to a new MockMojoProxyResolver, and return success.
+    mojo::MakeSelfOwnedReceiver(std::make_unique<MockMojoProxyResolver>(),
+                                std::move(receiver));
+
+    mojo::Remote<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+        client(std::move(pending_client));
+    client->ReportResult(net::OK);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MockMojoProxyResolverFactory);
+};
 
 // Tests that when a ProxyErrorClient is provided to NetworkContextParams, this
 // client's OnPACScriptError() method is called whenever the PAC script throws

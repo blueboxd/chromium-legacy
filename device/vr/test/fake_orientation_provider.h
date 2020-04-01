@@ -5,13 +5,14 @@
 #ifndef DEVICE_VR_TEST_FAKE_ORIENTATION_PROVIDER_H_
 #define DEVICE_VR_TEST_FAKE_ORIENTATION_PROVIDER_H_
 
+#include "device/vr/vr_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 
 namespace device {
 
-class FakeOrientationSensor : public mojom::Sensor {
+class DEVICE_VR_EXPORT FakeOrientationSensor : public mojom::Sensor {
  public:
   FakeOrientationSensor(mojo::PendingReceiver<mojom::Sensor> receiver);
   ~FakeOrientationSensor() override;

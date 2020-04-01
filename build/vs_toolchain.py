@@ -320,21 +320,11 @@ def FindVCComponentRoot(component):
   vc_component_msvc_contents = os.listdir(vc_component_msvc_root)
   # Select the most recent toolchain if there are several.
   _SortByHighestVersionNumberFirst(vc_component_msvc_contents)
-  acceptable_msvc_version_found = False
   for directory in vc_component_msvc_contents:
-    if directory.startswith('14.25'):
-      print(
-          "Warning: known issue affecting the headers distributed with VC version {}."
-          .format(directory))
-      print("See https://crbug.com/1063424 for details.")
-      continue
-    acceptable_msvc_version_found = True
     if not os.path.isdir(os.path.join(vc_component_msvc_root, directory)):
       continue
     if re.match(r'14\.\d+\.\d+', directory):
       return os.path.join(vc_component_msvc_root, directory)
-  if not acceptable_msvc_version_found:
-    raise Exception("Unable to find a suitable VC version.")
   raise Exception('Unable to find the VC %s directory.' % component)
 
 

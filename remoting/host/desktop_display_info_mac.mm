@@ -22,13 +22,13 @@ void DesktopDisplayInfo::LoadCurrentDisplayInfo() {
   int main_display_height = 0;
 
   for (NSUInteger i = 0; i < [screens count]; ++i) {
-    DisplayGeometry info;
+    std::unique_ptr<DisplayGeometry> info(new DisplayGeometry());
 
     NSScreen* screen = [screens objectAtIndex:i];
     NSDictionary* device = [screen deviceDescription];
     CGDirectDisplayID id = static_cast<CGDirectDisplayID>(
         [[device objectForKey:@"NSScreenNumber"] intValue]);
-    info.id = id;
+    info->id = id;
 
     float dsf = 1.0f;
     if ([screen respondsToSelector:@selector(backingScaleFactor)])
@@ -42,21 +42,21 @@ void DesktopDisplayInfo::LoadCurrentDisplayInfo() {
     if (i == 0) {
       DCHECK(x == 0);
       DCHECK(y == 0);
-      info.is_default = true;
+      info->is_default = true;
       main_display_height = height;
     } else {
-      info.is_default = false;
+      info->is_default = false;
     }
 
-    info.x = x;
+    info->x = x;
     // Convert origin from lower left to upper left (based on main display).
-    info.y = main_display_height - y - height;
-    info.width = bounds.size.width;
-    info.height = height;
-    info.dpi = (int)(kDefaultScreenDpi * dsf);
-    info.bpp = 24;
+    info->y = main_display_height - y - height;
+    info->width = bounds.size.width;
+    info->height = height;
+    info->dpi = (int)(kDefaultScreenDpi * dsf);
+    info->bpp = 24;
 
-    displays_.push_back(info);
+    displays_.push_back(std::move(info));
   }
 }
 

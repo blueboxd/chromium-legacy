@@ -77,18 +77,16 @@
           </cr-lottie>
         </div>
       </div>
-      <div slot="bottom-buttons" class="layout horizontal end-justified"
-          id="marketing-bottom-buttons">
-        <div hidden="[[!isA11ySettingsButtonVisible_]]"
-            id="finalAccessibilityLinkContainer">
-          <a class="oobe-local-link"
-              id="finalAccessibilityLink" on-tap="onToggleAccessibilityPage_">
-            [[i18nDynamic(locale, 'marketingOptInA11yLinkLabel')]]
-          </a>
-        </div>
+      <div slot="bottom-buttons" class="layout horizontal justified">
+        <oobe-welcome-secondary-button
+            id="marketing-opt-in-accessibility-button"
+            on-tap="onToggleAccessibilityPage_"
+            icon1x="marketing-opt-in-32:accessibility"
+            icon2x="marketing-opt-in-64:accessibility"
+            text-key="marketingOptInA11yButtonLabel">
+        </oobe-welcome-secondary-button>
         <oobe-text-button on-tap="onAllSet_" class="focus-on-show"
             inverse text-key="marketingOptInScreenAllSet"
-            hidden="[[!allSetButtonVisible_]]"
             id="marketing-opt-in-next-button">
         </oobe-text-button>
       </div>

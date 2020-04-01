@@ -29,6 +29,8 @@ class DISPLAY_EXPORT DisplayChangeNotifier {
   void NotifyDisplaysChanged(const std::vector<Display>& old_displays,
                              const std::vector<Display>& new_displays);
 
+  void NotifyCurrentWorkspaceChanged(const std::string& workspace);
+
  private:
   // The observers that need to be notified when a display is modified, added
   // or removed.

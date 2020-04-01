@@ -227,6 +227,7 @@ void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
 void WindowPerformance::Trace(Visitor* visitor) {
   visitor->Trace(event_timings_);
   visitor->Trace(first_pointer_down_event_timing_);
+  visitor->Trace(event_counts_);
   visitor->Trace(navigation_);
   visitor->Trace(timing_);
   Performance::Trace(visitor);
@@ -341,6 +342,9 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   if (!GetFrame())
     return;
 
+  if (!event_counts_)
+    event_counts_ = MakeGarbageCollected<EventCounts>();
+  event_counts_->Add(event_type);
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
@@ -438,6 +442,13 @@ void WindowPerformance::AddLayoutShiftValue(double value,
   if (HasObserverFor(PerformanceEntry::kLayoutShift))
     NotifyObserversOfEntry(*entry);
   AddLayoutShiftBuffer(*entry);
+}
+
+EventCounts* WindowPerformance::eventCounts() {
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
+  if (!event_counts_)
+    event_counts_ = MakeGarbageCollected<EventCounts>();
+  return event_counts_;
 }
 
 void WindowPerformance::OnLargestContentfulPaintUpdated(

@@ -61,7 +61,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   IFACEMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
                                    VARIANT* value) override;
   IFACEMETHODIMP
-  GetBoundingRectangles(SAFEARRAY** rectangles) override;
+  GetBoundingRectangles(SAFEARRAY** screen_physical_pixel_rectangles) override;
   IFACEMETHODIMP
   GetEnclosingElement(IRawElementProviderSimple** element) override;
   IFACEMETHODIMP GetText(int max_count, BSTR* text) override;
@@ -88,7 +88,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   friend class AXPlatformNodeTextRangeProviderTest;
   friend class AXPlatformNodeTextProviderTest;
-  friend class AXRangeScreenRectDelegateImpl;
+  friend class AXRangePhysicalPixelRectDelegate;
 
   static bool AtStartOfLinePredicate(const AXPositionInstance& position);
   static bool AtEndOfLinePredicate(const AXPositionInstance& position);

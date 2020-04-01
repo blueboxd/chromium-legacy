@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
             iframe_browser_accessibility->GetRole());
 
   gfx::Rect iframe_screen_bounds = iframe_browser_accessibility->GetBoundsRect(
-      ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kUnclipped);
+      ui::AXCoordinateSystem::kScreenDIPs, ui::AXClippingBehavior::kUnclipped);
 
   AccessibilityNotificationWaiter location_changed_waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
   location_changed_waiter.WaitForNotification();
 
   gfx::Rect bounds = browser_accessibility->GetBoundsRect(
-      ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kUnclipped);
+      ui::AXCoordinateSystem::kScreenDIPs, ui::AXClippingBehavior::kUnclipped);
   ASSERT_EQ(iframe_screen_bounds.y(), bounds.y());
 }
 

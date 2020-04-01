@@ -387,8 +387,8 @@ class TableViewTest : public ViewsTestBase {
 
       ui::AXOffscreenResult offscreen_result = ui::AXOffscreenResult();
       gfx::Rect row_custom_bounds = row->GetBoundsRect(
-          ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kUnclipped,
-          &offscreen_result);
+          ui::AXCoordinateSystem::kScreenDIPs,
+          ui::AXClippingBehavior::kUnclipped, &offscreen_result);
       EXPECT_EQ(row_custom_bounds, expected_bounds[row_index][0]);
 
       EXPECT_EQ(row->children().size(), expected_bounds[row_index].size() - 1U);
@@ -408,8 +408,8 @@ class TableViewTest : public ViewsTestBase {
         // entry is the row's bounds.
         const int expected_bounds_index = cell_index + 1;
         gfx::Rect cell_custom_bounds = cell->GetBoundsRect(
-            ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kUnclipped,
-            &offscreen_result);
+            ui::AXCoordinateSystem::kScreenDIPs,
+            ui::AXClippingBehavior::kUnclipped, &offscreen_result);
         EXPECT_EQ(cell_custom_bounds,
                   expected_bounds[row_index][expected_bounds_index]);
       }

@@ -96,14 +96,15 @@ void DesktopMediaPickerController::ShowPickerDialog() {
     return;
   }
 
-  picker_->Show(params_, std::move(source_lists_),
-                base::Bind(&DesktopMediaPickerController::OnPickerDialogResults,
-                           // A weak pointer is used here, because although
-                           // |picker_| can't outlive this object, it can
-                           // schedule this callback to be invoked
-                           // asynchronously after it has potentially been
-                           // destroyed.
-                           weak_factory_.GetWeakPtr(), std::string()));
+  picker_->Show(
+      params_, std::move(source_lists_),
+      base::BindOnce(&DesktopMediaPickerController::OnPickerDialogResults,
+                     // A weak pointer is used here, because although
+                     // |picker_| can't outlive this object, it can
+                     // schedule this callback to be invoked
+                     // asynchronously after it has potentially been
+                     // destroyed.
+                     weak_factory_.GetWeakPtr(), std::string()));
 }
 
 void DesktopMediaPickerController::OnPickerDialogResults(

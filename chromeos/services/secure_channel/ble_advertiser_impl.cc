@@ -274,7 +274,7 @@ void BleAdvertiserImpl::AddActiveAdvertisementRequest(size_t index_to_add) {
   timer->Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kNumSecondsPerAdvertisementTimeslot),
-      base::Bind(
+      base::BindOnce(
           &BleAdvertiserImpl::StopAdvertisementRequestAndUpdateActiveRequests,
           base::Unretained(this), index_to_add,
           false /* replaced_by_higher_priority_advertisement */,

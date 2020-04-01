@@ -201,6 +201,18 @@ struct LiveDetails {
   mojo_base.mojom.Time? end_time;
 };
 
+// The result of checking an item against the Safe Search API.
+enum SafeSearchResult {
+  // We haven't checked this item against the API.
+  kUnknown,
+
+  // We checked this item and it was classified as safe.
+  kSafe,
+
+  // We checked this item and it was classified as unsafe (e.g. adult).
+  kUnsafe,
+};
+
 // The Media Feed Item is an individual item stored in a Media Feed. It
 // represents a single recommendation such as a video or TV show.
 // https://wicg.github.io/media-feeds/index.html#media-feed-item
@@ -258,6 +270,9 @@ struct MediaFeedItem {
 
   // The images for the feed item.
   array<media_session.mojom.MediaImage> images;
+
+  // The result of safe search checking this media item.
+  SafeSearchResult safe_search_result;
 };
 
 // MediaFeedStore allows the Media Feeds WebUI to access data from the Media

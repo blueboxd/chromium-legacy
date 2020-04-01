@@ -212,9 +212,9 @@ void ForwardNotificationOperationOnUiThread(
 
   g_browser_process->profile_manager()->LoadProfile(
       profile_id, is_incognito,
-      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
-                 operation, notification_type, origin, notification_id,
-                 action_index, base::nullopt /* reply */, by_user));
+      base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
+                     operation, notification_type, origin, notification_id,
+                     action_index, base::nullopt /* reply */, by_user));
 }
 
 class ResourceFile {
@@ -511,20 +511,20 @@ class NotificationPlatformBridgeLinuxImpl
     DCHECK(!connect_signals_in_progress_);
     connect_signals_in_progress_ = true;
     connected_signals_barrier_ = base::BarrierClosure(
-        2, base::Bind(&NotificationPlatformBridgeLinuxImpl::
-                          OnConnectionInitializationFinishedOnTaskRunner,
-                      this, ConnectionInitializationStatusCode::SUCCESS));
+        2, base::BindOnce(&NotificationPlatformBridgeLinuxImpl::
+                              OnConnectionInitializationFinishedOnTaskRunner,
+                          this, ConnectionInitializationStatusCode::SUCCESS));
     notification_proxy_->ConnectToSignal(
         kFreedesktopNotificationsName, kSignalActionInvoked,
         base::Bind(&NotificationPlatformBridgeLinuxImpl::OnActionInvoked, this),
-        base::Bind(&NotificationPlatformBridgeLinuxImpl::OnSignalConnected,
-                   this));
+        base::BindOnce(&NotificationPlatformBridgeLinuxImpl::OnSignalConnected,
+                       this));
     notification_proxy_->ConnectToSignal(
         kFreedesktopNotificationsName, kSignalNotificationClosed,
         base::Bind(&NotificationPlatformBridgeLinuxImpl::OnNotificationClosed,
                    this),
-        base::Bind(&NotificationPlatformBridgeLinuxImpl::OnSignalConnected,
-                   this));
+        base::BindOnce(&NotificationPlatformBridgeLinuxImpl::OnSignalConnected,
+                       this));
   }
 
   void CleanUpOnTaskRunner() {

@@ -14,6 +14,7 @@
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 
 namespace credential_provider {
@@ -47,6 +48,15 @@ namespace {
 constexpr wchar_t kAccountPicturesRootRegKey[] =
     L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AccountPicture\\Users";
 constexpr wchar_t kImageRegKey[] = L"Image";
+
+// Registry entry that controls whether GCPW is the default
+// Credential Provider or not.
+constexpr wchar_t kMakeGcpwDefaultCredProvider[] = L"set_gcpw_as_default_cp";
+// Windows OS defined registry entry used to configure the
+// default credential provider CLSID.
+constexpr wchar_t kDefaultCredProviderPath[] =
+    L"Software\\Policies\\Microsoft\\Windows\\System";
+constexpr wchar_t kDefaultCredProviderKey[] = L"DefaultCredentialProvider";
 
 HRESULT SetMachineRegDWORD(const base::string16& key_name,
                            const base::string16& name,
@@ -95,6 +105,15 @@ base::string16 GetAccountPictureRegPathForUSer(const base::string16& user_sid) {
 }
 
 }  // namespace
+
+HRESULT MakeGcpwDefaultCP() {
+  if (GetGlobalFlagOrDefault(kMakeGcpwDefaultCredProvider, 1))
+    return SetMachineRegString(
+        kDefaultCredProviderPath, kDefaultCredProviderKey,
+        base::win::String16FromGUID(CLSID_GaiaCredentialProvider));
+
+  return S_OK;
+}
 
 HRESULT GetMachineRegDWORD(const base::string16& key_name,
                            const base::string16& name,

@@ -329,11 +329,6 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewResize) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetLayoutView().GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
-    EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
-    EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
-  }
 
   // Resize the content.
   GetDocument().View()->SetTracksRasterInvalidations(true);
@@ -364,11 +359,6 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetLayoutView().GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
-    EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
-    EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
-  }
 
   // Resize the content.
   GetDocument().View()->SetTracksRasterInvalidations(true);
@@ -414,6 +404,10 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
               content->GetLayoutObject()->ContainerForPaintInvalidation());
   }
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            content->GetLayoutObject()
+                ->View()
+                ->ComputeBackgroundPaintLocationIfComposited());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             content->GetLayoutObject()->View()->GetBackgroundPaintLocation());
 
   // Resize the content.
@@ -430,11 +424,7 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   UpdateAllLifecyclePhasesForTest();
   // The iframe doesn't have anything visible by itself, so we only issue
   // raster invalidation for the frame contents.
-  const auto* iframe_layout_view = content->GetLayoutObject()->View();
-  const auto* client = RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-                           ? &iframe_layout_view->GetScrollableArea()
-                                  ->GetScrollingBackgroundDisplayItemClient()
-                           : iframe_layout_view;
+  const auto* client = content->GetLayoutObject()->View();
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
                   client, client->DebugName(), IntRect(0, 100, 100, 100),
@@ -489,7 +479,6 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   UpdateAllLifecyclePhasesForTest();
   Element* iframe = GetDocument().getElementById("iframe");
   Element* content = ChildDocument().getElementById("content");
-  LayoutView* frame_layout_view = content->GetLayoutObject()->View();
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetLayoutView(),
               content->GetLayoutObject()->ContainerForPaintInvalidation());
@@ -499,28 +488,11 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksRasterInvalidations(true);
   content->setAttribute(html_names::kStyleAttr, "height: 500px");
   UpdateAllLifecyclePhasesForTest();
-  const auto* client = RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-                           ? &frame_layout_view->GetScrollableArea()
-                                  ->GetScrollingBackgroundDisplayItemClient()
-                           : frame_layout_view;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // The duplication is because we invalidated both the old visual rect and
-    // the new visual rect of the scrolling background display item which
-    // changed size, and then both mapped to the same rect in the layer.
-    EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
-                UnorderedElementsAre(
-                    RasterInvalidationInfo{
-                        client, client->DebugName(), IntRect(0, 0, 100, 100),
-                        PaintInvalidationReason::kBackground},
-                    RasterInvalidationInfo{
-                        client, client->DebugName(), IntRect(0, 0, 100, 100),
-                        PaintInvalidationReason::kBackground}));
-  } else {
-    EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
-                UnorderedElementsAre(RasterInvalidationInfo{
-                    client, client->DebugName(), IntRect(0, 0, 100, 100),
-                    PaintInvalidationReason::kBackground}));
-  }
+  const auto* client = content->GetLayoutObject()->View();
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  client, client->DebugName(), IntRect(0, 0, 100, 100),
+                  PaintInvalidationReason::kBackground}));
   GetDocument().View()->SetTracksRasterInvalidations(false);
 
   // Resize the iframe.
@@ -542,6 +514,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(html_names::kClassAttr,
                        "solid composited scroll local-attachment border");
+  UpdateAllLifecyclePhasesForTest();
   target->setInnerHTML(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
@@ -551,11 +524,6 @@ TEST_P(PaintAndRasterInvalidationTest,
   auto* target_obj = ToLayoutBoxModelObject(target->GetLayoutObject());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             target_obj->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
-    EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
-    EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
-  }
 
   auto container_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
@@ -640,11 +608,6 @@ TEST_P(PaintAndRasterInvalidationTest,
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             target_obj->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
-    EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
-    EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
-  }
 
   // No invalidation on the container layer.
   EXPECT_FALSE(container_raster_invalidation_tracking()->HasInvalidations());
@@ -686,7 +649,10 @@ TEST_P(PaintAndRasterInvalidationTest,
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(&GetLayoutView(), object->ContainerForPaintInvalidation());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            ToLayoutBoxModelObject(object)->GetBackgroundPaintLocation());
+            ToLayoutBoxModelObject(object)
+                ->ComputeBackgroundPaintLocationIfComposited());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+            object->GetBackgroundPaintLocation());
 
   // Resize the content.
   GetDocument().View()->SetTracksRasterInvalidations(true);
@@ -729,11 +695,6 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
   EXPECT_EQ(
       kBackgroundPaintInScrollingContents | kBackgroundPaintInGraphicsLayer,
       target_object->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    const auto* mapping = target_object->Layer()->GetCompositedLayerMapping();
-    EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
-    EXPECT_TRUE(mapping->BackgroundPaintsOntoGraphicsLayer());
-  }
 
   const auto* contents_raster_invalidation_tracking =
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()

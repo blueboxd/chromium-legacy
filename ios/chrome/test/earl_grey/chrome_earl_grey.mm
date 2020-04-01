@@ -621,6 +621,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface stopSync];
 }
 
+- (void)addUserDemographicsToSyncServerWithBirthYear:(int)birthYear
+                                              gender:(int)gender {
+  [ChromeEarlGreyAppInterface
+      addUserDemographicsToSyncServerWithBirthYear:birthYear
+                                            gender:gender];
+}
+
 - (void)clearAutofillProfileWithGUID:(const std::string&)UTF8GUID {
   NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
   [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:GUID];
@@ -845,6 +852,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (BOOL)isAutofillCompanyNameEnabled {
   return [ChromeEarlGreyAppInterface isAutofillCompanyNameEnabled];
+}
+
+- (BOOL)isDemographicMetricsReportingEnabled {
+  return [ChromeEarlGreyAppInterface isDemographicMetricsReportingEnabled];
 }
 
 - (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch {

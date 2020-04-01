@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 
@@ -21,6 +22,9 @@ class CORE_EXPORT CSSTransition : public Animation {
                 const PropertyHandle& transition_property);
 
   bool IsCSSTransition() const final { return true; }
+
+  void ClearOwningElement() final { owning_element_ = nullptr; }
+  Element* OwningElement() const override { return owning_element_; }
 
   AtomicString transitionProperty() const;
   const CSSProperty& TransitionCSSProperty() const {
@@ -37,6 +41,10 @@ class CORE_EXPORT CSSTransition : public Animation {
   // display:none must update the play state.
   // https://drafts.csswg.org/css-transitions-2/#requirements-on-pending-style-changes
   String playState() const override;
+  void Trace(blink::Visitor* visitor) override {
+    Animation::Trace(visitor);
+    visitor->Trace(owning_element_);
+  }
 
  protected:
   AnimationEffect::EventDelegate* CreateEventDelegate(
@@ -45,8 +53,11 @@ class CORE_EXPORT CSSTransition : public Animation {
 
  private:
   PropertyHandle transition_property_;
+  // The owning element of a transition refers to the element or pseudo-element
+  // to which the transition-property property was applied that generated the
+  // animation.
+  Member<Element> owning_element_;
 };
-
 template <>
 struct DowncastTraits<CSSTransition> {
   static bool AllowFrom(const Animation& animation) {

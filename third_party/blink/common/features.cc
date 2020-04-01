@@ -494,5 +494,7 @@ const base::Feature kFlexNG{"FlexNG", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAppCache{"AppCache", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

@@ -168,16 +168,17 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   if (blink::IsScreenCaptureMediaType(request.video_type)) {
     ScreenCaptureInfoBarDelegateAndroid::Create(
         web_contents, request,
-        base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-                   base::Unretained(this), web_contents, request_id));
+        base::BindOnce(
+            &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
+            base::Unretained(this), web_contents, request_id));
     return;
   }
 #endif
 
   MediaStreamDevicesController::RequestPermissions(
-      request,
-      base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-                 base::Unretained(this), web_contents, request_id));
+      request, base::BindOnce(
+                   &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
+                   base::Unretained(this), web_contents, request_id));
 }
 
 void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(

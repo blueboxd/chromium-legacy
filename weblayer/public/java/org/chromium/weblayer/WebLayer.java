@@ -200,7 +200,7 @@ public class WebLayer {
      *
      * @return the supported version, or -1 if WebLayer is not available.
      */
-    public static int getSupportedMajorVersion(Context context) {
+    public static int getSupportedMajorVersion(@NonNull Context context) {
         ThreadCheck.ensureOnUiThread();
         context = context.getApplicationContext();
         return getWebLayerLoader(context).getMajorVersion();
@@ -227,7 +227,8 @@ public class WebLayer {
      * string such as "79.0.3945.0", while {@link getSupportedMajorVersion} will only return the
      * major version integer (79 in the example).
      */
-    public static String getSupportedFullVersion(Context context) {
+    @NonNull
+    public static String getSupportedFullVersion(@NonNull Context context) {
         ThreadCheck.ensureOnUiThread();
         context = context.getApplicationContext();
         return getWebLayerLoader(context).getVersion();
@@ -237,6 +238,7 @@ public class WebLayer {
      * Returns the Chrome version this client was built at. This will return a full version string
      * such as "79.0.3945.0".
      */
+    @NonNull
     public static String getVersion() {
         ThreadCheck.ensureOnUiThread();
         return WebLayerClientVersionConstants.PRODUCT_VERSION;
@@ -277,14 +279,11 @@ public class WebLayer {
                 }
                 Class factoryClass = remoteClassLoader.loadClass(
                         "org.chromium.weblayer_private.WebLayerFactoryImpl");
-                // NOTE: the 20 comes from the previous scheme of incrementing versioning. It must
-                // remain at 20 for Chrome version 79.
-                // TODO(https://crbug.com/1031830): change 20 to -1 when tip of tree is at 83.
                 mFactory = IWebLayerFactory.Stub.asInterface(
                         (IBinder) factoryClass
                                 .getMethod("create", String.class, int.class, int.class)
                                 .invoke(null, WebLayerClientVersionConstants.PRODUCT_VERSION,
-                                        WebLayerClientVersionConstants.PRODUCT_MAJOR_VERSION, 20));
+                                        WebLayerClientVersionConstants.PRODUCT_MAJOR_VERSION, -1));
                 available = mFactory.isClientSupported();
                 majorVersion = mFactory.getImplementationMajorVersion();
                 version = mFactory.getImplementationVersion();
@@ -496,6 +495,7 @@ public class WebLayer {
      *
      * @since 81
      */
+    @NonNull
     public static Fragment createBrowserFragment(
             @Nullable String profileName, @Nullable String persistenceId) {
         ThreadCheck.ensureOnUiThread();

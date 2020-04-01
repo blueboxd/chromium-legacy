@@ -29,6 +29,10 @@ std::ostream& operator<<(std::ostream& out, LoadStreamStatus value) {
       return out << "kNoResponseBody";
     case LoadStreamStatus::kProtoTranslationFailed:
       return out << "kProtoTranslationFailed";
+    case LoadStreamStatus::kDataInStoreIsStale:
+      return out << "kDataInStoreIsStale";
+    case LoadStreamStatus::kDataInStoreIsStaleTimestampInFuture:
+      return out << "kDataInStoreIsStaleTimestampInFuture";
   }
 #else
   return out << (static_cast<int>(value));

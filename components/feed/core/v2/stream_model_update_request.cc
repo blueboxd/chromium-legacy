@@ -14,6 +14,7 @@
 #include "components/feed/core/proto/v2/wire/payload_metadata.pb.h"
 #include "components/feed/core/proto/v2/wire/stream_structure.pb.h"
 #include "components/feed/core/proto/v2/wire/token.pb.h"
+#include "components/feed/core/v2/proto_util.h"
 
 namespace feed {
 
@@ -208,7 +209,8 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
 
 std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
     feedwire::Response response,
-    base::TimeDelta response_time) {
+    base::TimeDelta response_time,
+    base::Time current_time) {
   if (response.response_version() != feedwire::Response::FEED_RESPONSE)
     return nullptr;
 
@@ -242,10 +244,11 @@ std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
     *result->stream_data.mutable_shared_state_id() =
         result->shared_states.front().content_id();
   }
-
+  feedstore::SetLastAddedTime(current_time, &result->stream_data);
   result->server_response_time =
       feed_response->feed_response_metadata().response_time_ms();
   result->response_time = response_time;
+
   return result;
 }
 

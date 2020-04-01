@@ -455,6 +455,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Rectangle encompassing the scroll corner and resizer rect.
   IntRect ScrollCornerAndResizerRect() const;
 
+  // This also updates main thread scrolling reasons and the LayoutBox's
+  // background paint location.
   bool ComputeNeedsCompositedScrolling(
       bool force_prefer_compositing_to_lcd_text);
 
@@ -679,6 +681,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool HasNonCompositedStickyDescendants() const;
 
   IntSize PixelSnappedBorderBoxSize() const;
+
+  using BackgroundPaintLocation = uint8_t;
+  bool ComputeNeedsCompositedScrollingInternal(
+      BackgroundPaintLocation background_paint_location_if_composited,
+      bool force_prefer_compositing_to_lcd_text);
 
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will

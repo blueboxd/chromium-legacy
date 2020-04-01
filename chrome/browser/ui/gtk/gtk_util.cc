@@ -32,13 +32,6 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
-#if defined(USE_X11)
-#include <gdk/gdkx.h>
-
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
-#include "ui/gfx/x/x11_types.h"                             // nogncheck
-#endif
-
 WEAK_GTK_FN(gtk_widget_path_iter_set_object_name);
 WEAK_GTK_FN(gtk_widget_path_iter_set_state);
 

@@ -391,10 +391,10 @@ void HostBackendDelegateImpl::OnSetHostNetworkRequestFinished(
   if (failed_request_was_to_set_pending_host ||
       failed_request_was_to_remove_pending_host) {
     NotifyBackendRequestFailed();
-    timer_->Start(FROM_HERE,
-                  base::TimeDelta::FromMinutes(kNumMinutesBetweenRetries),
-                  base::Bind(&HostBackendDelegateImpl::AttemptNetworkRequest,
-                             base::Unretained(this), true /* is_retry */));
+    timer_->Start(
+        FROM_HERE, base::TimeDelta::FromMinutes(kNumMinutesBetweenRetries),
+        base::BindOnce(&HostBackendDelegateImpl::AttemptNetworkRequest,
+                       base::Unretained(this), true /* is_retry */));
   }
 }
 

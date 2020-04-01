@@ -678,9 +678,8 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
     params->set_referrer_policy(
         content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
   }
-  params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted,
-                                  this,
-                                  extension_id));
+  params->set_callback(base::BindOnce(&WebstoreInstaller::OnDownloadStarted,
+                                      this, extension_id));
   params->set_download_source(download::DownloadSource::EXTENSION_INSTALLER);
   download_manager->DownloadUrl(std::move(params));
 }

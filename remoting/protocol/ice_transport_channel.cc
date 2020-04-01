@@ -137,7 +137,7 @@ void IceTransportChannel::NotifyConnected() {
   // Create P2PDatagramSocket adapter for the P2PTransportChannel.
   std::unique_ptr<TransportChannelSocketAdapter> socket(
       new TransportChannelSocketAdapter(channel_.get()));
-  socket->SetOnDestroyedCallback(base::Bind(
+  socket->SetOnDestroyedCallback(base::BindOnce(
       &IceTransportChannel::OnChannelDestroyed, base::Unretained(this)));
   std::move(callback_).Run(std::move(socket));
 }

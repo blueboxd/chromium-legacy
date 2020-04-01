@@ -55,7 +55,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_property_changed_from_property_trees_(false),
       may_contain_video_(false),
       contents_opaque_(false),
-      use_parent_backface_visibility_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
@@ -371,7 +370,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->contents_opaque_ = contents_opaque_;
   layer->may_contain_video_ = may_contain_video_;
-  layer->use_parent_backface_visibility_ = use_parent_backface_visibility_;
   layer->should_check_backface_visibility_ = should_check_backface_visibility_;
   layer->draws_content_ = draws_content_;
   layer->hit_testable_ = hit_testable_;

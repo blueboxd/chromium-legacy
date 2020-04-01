@@ -233,9 +233,9 @@ void WebrtcVideoStream::OnCaptureResult(
 
   if (encoder_) {
     current_frame_stats_->encode_started_time = base::TimeTicks::Now();
-    encoder_->Encode(
-        std::move(frame), frame_params,
-        base::Bind(&WebrtcVideoStream::OnFrameEncoded, base::Unretained(this)));
+    encoder_->Encode(std::move(frame), frame_params,
+                     base::BindOnce(&WebrtcVideoStream::OnFrameEncoded,
+                                    base::Unretained(this)));
   }
 }
 

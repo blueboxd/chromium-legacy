@@ -3689,7 +3689,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   BrowserAccessibilityManager* manager = _owner->manager();
   gfx::Point screen_point(point.x, point.y);
-  screen_point += manager->GetViewBounds().OffsetFromOrigin();
+  screen_point +=
+      manager->GetViewBoundsInScreenCoordinates().OffsetFromOrigin();
 
   BrowserAccessibility* hit = manager->CachingAsyncHitTest(screen_point);
   if (!hit)

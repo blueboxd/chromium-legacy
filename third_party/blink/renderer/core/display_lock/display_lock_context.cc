@@ -383,14 +383,10 @@ void DisplayLockContext::CommitForActivationWithSignal(
 
   RecordActivationReason(document_, reason);
 
-  // TODO(vmpstr): This should eventually never unlock, but each reason needs to
-  // be tested and considered, so this is being done in parts.
-  if (reason == DisplayLockActivationReason::kScrollIntoView ||
-      reason == DisplayLockActivationReason::kScriptFocus ||
-      reason == DisplayLockActivationReason::kUserFocus)
-    return;
-
-  Unlock();
+  // TODO(vmpstr): This should be removed after find-in-page doesn't rely on
+  // this.
+  if (reason == DisplayLockActivationReason::kFindInPage)
+    Unlock();
 }
 
 void DisplayLockContext::NotifyIsIntersectingViewport() {

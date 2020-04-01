@@ -42,6 +42,9 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
     // The timeout (in seconds) to wait for the decoding.
     private static final long WAIT_TIMEOUT_SECONDS = 5L;
 
+    // The base test file path.
+    private static final String TEST_FILE_PATH = "chrome/test/data/android/photo_picker/";
+
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -198,10 +201,9 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
         String video1 = "noogler.mp4";
         String video2 = "noogler2.mp4";
         String jpg1 = "blue100x100.jpg";
-        String filePath = "chrome/test/data/android/photo_picker/";
-        File file1 = new File(UrlUtils.getIsolatedTestFilePath(filePath + video1));
-        File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + video2));
-        File file3 = new File(UrlUtils.getIsolatedTestFilePath(filePath + jpg1));
+        File file1 = new File(UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + video1));
+        File file2 = new File(UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + video2));
+        File file3 = new File(UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + jpg1));
 
         decodeImage(host, Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 10,
                 /*fullWidth=*/false, this);
@@ -262,9 +264,8 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
 
         String video1 = "noogler.mp4"; // 1920 x 1080 video.
         String jpg1 = "blue100x100.jpg";
-        String filePath = "chrome/test/data/android/photo_picker/";
-        File file1 = new File(UrlUtils.getIsolatedTestFilePath(filePath + video1));
-        File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + jpg1));
+        File file1 = new File(UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + video1));
+        File file2 = new File(UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + jpg1));
 
         // Thumbnail photo. 100 x 100 -> 10 x 10.
         decodeImage(host, Uri.fromFile(file2), PickerBitmap.TileTypes.PICTURE, 10,
@@ -343,10 +344,9 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
         String green = "green100x100.jpg";
         String yellow = "yellow100x100.jpg";
         String red = "red100x100.jpg";
-        String filePath = "chrome/test/data/android/photo_picker/";
-        String greenPath = UrlUtils.getIsolatedTestFilePath(filePath + green);
-        String yellowPath = UrlUtils.getIsolatedTestFilePath(filePath + yellow);
-        String redPath = UrlUtils.getIsolatedTestFilePath(filePath + red);
+        String greenPath = UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + green);
+        String yellowPath = UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + yellow);
+        String redPath = UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + red);
 
         decodeImage(host, Uri.fromFile(new File(greenPath)), PickerBitmap.TileTypes.PICTURE, 10,
                 /*fullWidth=*/false, this);
@@ -366,6 +366,37 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
         // multiple simultaneous decoding requests are started) should not fire.
         waitForThumbnailDecode();
         Assert.assertEquals(yellowPath, mLastDecodedPath);
+
+        host.unbind(mContext);
+    }
+
+    @Test
+    @LargeTest
+    public void testNoConnectionFailureMode() throws Throwable {
+        DecoderServiceHost host = new DecoderServiceHost(this, mContext);
+
+        // Try decoding without a connection to the decoder.
+        String green = "green100x100.jpg";
+        String greenPath = UrlUtils.getIsolatedTestFilePath(TEST_FILE_PATH + green);
+        decodeImage(host, Uri.fromFile(new File(greenPath)), PickerBitmap.TileTypes.PICTURE, 10,
+                /*fullWidth=*/false, this);
+        Assert.assertEquals(greenPath, mLastDecodedPath);
+        Assert.assertEquals(null, mLastInitialFrame);
+    }
+
+    @Test
+    @LargeTest
+    public void testFileNotFoundFailureMode() throws Throwable {
+        DecoderServiceHost host = new DecoderServiceHost(this, mContext);
+        host.bind(mContext);
+        waitForDecoder();
+
+        // Try decoding a file that doesn't exist.
+        String noPath = "/nonexistentpath/nonexistentfile";
+        decodeImage(host, Uri.fromFile(new File(noPath)), PickerBitmap.TileTypes.PICTURE, 10,
+                /*fullWidth=*/false, this);
+        Assert.assertEquals(noPath, mLastDecodedPath);
+        Assert.assertEquals(null, mLastInitialFrame);
 
         host.unbind(mContext);
     }

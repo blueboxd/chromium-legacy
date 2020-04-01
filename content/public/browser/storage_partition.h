@@ -272,6 +272,8 @@ class CONTENT_EXPORT StoragePartition {
   static void SetDefaultQuotaSettingsForTesting(
       const storage::QuotaSettings* settings);
 
+  static bool IsAppCacheEnabled();
+
  protected:
   virtual ~StoragePartition() {}
 };

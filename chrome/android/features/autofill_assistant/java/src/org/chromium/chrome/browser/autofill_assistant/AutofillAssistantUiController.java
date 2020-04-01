@@ -137,8 +137,10 @@ class AutofillAssistantUiController {
                             // later.
                             safeNativeSetVisible(false);
                         } else if (tab.getWebContents() == mWebContents) {
-                            // The original tab was re-selected. Show it again
+                            // The original tab was re-selected. Show it again and force an
+                            // expansion on the bottom sheet.
                             safeNativeSetVisible(true);
+                            showContentAndExpandBottomSheet();
                         } else {
                             // A new tab was selected. If Autofill Assistant is running on it,
                             // attach the UI to that other instance, otherwise destroy the UI.

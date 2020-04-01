@@ -13,7 +13,6 @@
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_management_policy.h"
-#include "extensions/common/feature_switch.h"
 
 namespace extensions {
 class Extension;
@@ -71,10 +70,6 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   // Disable extension install verification.
   extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;
-
-  // Used to enable the error console.
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
-      error_console_override_;
 
   std::unique_ptr<extensions::ScopedTestDialogAutoConfirm>
       uninstall_auto_confirm_;

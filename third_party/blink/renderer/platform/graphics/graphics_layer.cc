@@ -447,7 +447,6 @@ void GraphicsLayer::SetContentsTo(scoped_refptr<cc::Layer> layer,
   if (layer) {
     if (contents_layer_ != layer) {
       contents_layer_ = std::move(layer);
-      contents_layer_->SetUseParentBackfaceVisibility(true);
       // It is necessary to call SetDrawsContent() as soon as we receive the new
       // contents_layer, for the correctness of early exit conditions in
       // SetDrawsContent() and SetContentsVisible().

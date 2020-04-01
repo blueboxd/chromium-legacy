@@ -168,9 +168,9 @@ void CaptureScheduler::ScheduleNextCapture() {
   delay = std::max(base::TimeDelta(), delay - (tick_clock_->NowTicks() -
                                                last_capture_started_time_));
 
-  capture_timer_->Start(
-      FROM_HERE, delay,
-      base::Bind(&CaptureScheduler::CaptureNextFrame, base::Unretained(this)));
+  capture_timer_->Start(FROM_HERE, delay,
+                        base::BindOnce(&CaptureScheduler::CaptureNextFrame,
+                                       base::Unretained(this)));
 }
 
 void CaptureScheduler::CaptureNextFrame() {

@@ -190,8 +190,10 @@
       <if expr="is_win or is_macosx or desktop_linux">
         <include name="IDR_SIGNIN_EMAIL_CONFIRMATION_HTML" file="resources\signin\signin_email_confirmation\signin_email_confirmation.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_SIGNIN_EMAIL_CONFIRMATION_APP_JS" file="${root_gen_dir}\chrome\browser\resources\signin\signin_email_confirmation\signin_email_confirmation_app.js" use_base_dir="false" preprocess="true" type="BINDATA" />
-        <include name="IDR_SIGNIN_ERROR_HTML" file="resources\signin\signin_error\signin_error.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_SIGNIN_ERROR_HTML" file="resources\signin\signin_error\signin_error.html" type="BINDATA" />
         <include name="IDR_SIGNIN_ERROR_JS" file="resources\signin\signin_error\signin_error.js" type="BINDATA" />
+        <include name="IDR_SIGNIN_ERROR_APP_HTML" file="resources\signin\signin_error\signin_error_app.html" preprocess="true" type="BINDATA" />
+        <include name="IDR_SIGNIN_ERROR_APP_JS" file="resources\signin\signin_error\signin_error_app.js" type="BINDATA" />
       </if>
       <include name="IDR_USB_ENUMERATION_OPTIONS_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_enumeration_options.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_DEVICE_MANAGER_CLIENT_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_manager_client.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />

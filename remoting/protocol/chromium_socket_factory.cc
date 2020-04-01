@@ -314,11 +314,10 @@ void UdpPacketSocket::DoSend() {
       reinterpret_cast<uint8_t*>(packet.data->data()), packet.data->size(),
       packet.options.packet_time_params,
       (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
-  int result = socket_->SendTo(
-      packet.data.get(),
-      packet.data->size(),
-      packet.address,
-      base::Bind(&UdpPacketSocket::OnSendCompleted, base::Unretained(this)));
+  int result =
+      socket_->SendTo(packet.data.get(), packet.data->size(), packet.address,
+                      base::BindOnce(&UdpPacketSocket::OnSendCompleted,
+                                     base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
@@ -364,11 +363,10 @@ void UdpPacketSocket::DoRead() {
   int result = 0;
   while (result >= 0) {
     receive_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReceiveBufferSize);
-    result = socket_->RecvFrom(
-        receive_buffer_.get(),
-        kReceiveBufferSize,
-        &receive_address_,
-        base::Bind(&UdpPacketSocket::OnReadCompleted, base::Unretained(this)));
+    result = socket_->RecvFrom(receive_buffer_.get(), kReceiveBufferSize,
+                               &receive_address_,
+                               base::BindOnce(&UdpPacketSocket::OnReadCompleted,
+                                              base::Unretained(this)));
     HandleReadResult(result);
   }
 }

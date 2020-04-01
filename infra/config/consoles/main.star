@@ -259,11 +259,6 @@ luci.console_view(
             short_name = 'x64',
         ),
         luci.console_view_entry(
-            builder = 'ci/fuchsia-x64-dbg',
-            category = 'chromium.linux|fuchsia|x64',
-            short_name = 'dbg',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Deterministic Fuchsia (dbg)',
             category = 'chromium.linux|fuchsia|x64',
             short_name = 'det',

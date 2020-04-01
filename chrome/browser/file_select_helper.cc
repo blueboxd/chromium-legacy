@@ -628,12 +628,13 @@ void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
   GURL requestor_url = params->requestor;
   sb_service->download_protection_service()->CheckPPAPIDownloadRequest(
       requestor_url,
-      render_frame_host_? render_frame_host_->GetLastCommittedURL() : GURL(),
-      WebContents::FromRenderFrameHost(render_frame_host_),
-      default_file_path, alternate_extensions, profile_,
-      base::Bind(&InterpretSafeBrowsingVerdict,
-                 base::Bind(&FileSelectHelper::ProceedWithSafeBrowsingVerdict,
-                            this, default_file_path, base::Passed(&params))));
+      render_frame_host_ ? render_frame_host_->GetLastCommittedURL() : GURL(),
+      WebContents::FromRenderFrameHost(render_frame_host_), default_file_path,
+      alternate_extensions, profile_,
+      base::BindOnce(
+          &InterpretSafeBrowsingVerdict,
+          base::Bind(&FileSelectHelper::ProceedWithSafeBrowsingVerdict, this,
+                     default_file_path, base::Passed(&params))));
 #endif
 }
 

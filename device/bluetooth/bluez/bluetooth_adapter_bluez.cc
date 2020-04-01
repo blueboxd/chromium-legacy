@@ -352,9 +352,9 @@ void BluetoothAdapterBlueZ::SetName(const std::string& name,
       ->GetBluetoothAdapterClient()
       ->GetProperties(object_path_)
       ->alias.Set(
-          name,
-          base::Bind(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          name, base::BindOnce(
+                    &BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
+                    weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
 }
 
 bool BluetoothAdapterBlueZ::IsInitialized() const {
@@ -393,8 +393,9 @@ void BluetoothAdapterBlueZ::SetPowered(bool powered,
       ->GetProperties(object_path_)
       ->powered.Set(
           powered,
-          base::Bind(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), callback,
+                         error_callback));
 }
 
 bool BluetoothAdapterBlueZ::IsDiscoverable() const {
@@ -425,8 +426,9 @@ void BluetoothAdapterBlueZ::SetDiscoverable(
       ->GetProperties(object_path_)
       ->discoverable.Set(
           discoverable,
-          base::Bind(&BluetoothAdapterBlueZ::OnSetDiscoverable,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::OnSetDiscoverable,
+                         weak_ptr_factory_.GetWeakPtr(), callback,
+                         error_callback));
 }
 
 uint32_t BluetoothAdapterBlueZ::GetDiscoverableTimeout() const {
@@ -559,7 +561,7 @@ void BluetoothAdapterBlueZ::SetAdvertisingInterval(
       ->GetBluetoothLEAdvertisingManagerClient()
       ->SetAdvertisingInterval(
           object_path_, min_ms, max_ms, callback,
-          base::Bind(&SetIntervalErrorCallbackConnector, error_callback));
+          base::BindOnce(&SetIntervalErrorCallbackConnector, error_callback));
 }
 
 void BluetoothAdapterBlueZ::ResetAdvertising(
@@ -568,9 +570,9 @@ void BluetoothAdapterBlueZ::ResetAdvertising(
   DCHECK(bluez::BluezDBusManager::Get());
   bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
-      ->ResetAdvertising(
-          object_path_, callback,
-          base::Bind(&ResetAdvertisingErrorCallbackConnector, error_callback));
+      ->ResetAdvertising(object_path_, callback,
+                         base::BindOnce(&ResetAdvertisingErrorCallbackConnector,
+                                        error_callback));
 }
 
 device::BluetoothLocalGattService* BluetoothAdapterBlueZ::GetGattService(
@@ -985,8 +987,8 @@ void BluetoothAdapterBlueZ::CreateServiceRecord(
       ->GetBluetoothAdapterClient()
       ->CreateServiceRecord(
           object_path_, record, callback,
-          base::Bind(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
+                         weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothAdapterBlueZ::RemoveServiceRecord(
@@ -997,8 +999,8 @@ void BluetoothAdapterBlueZ::RemoveServiceRecord(
       ->GetBluetoothAdapterClient()
       ->RemoveServiceRecord(
           object_path_, handle, callback,
-          base::Bind(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
+                         weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 BluetoothDeviceBlueZ* BluetoothAdapterBlueZ::GetDeviceWithPath(
@@ -1481,9 +1483,9 @@ void BluetoothAdapterBlueZ::OnSetDiscoverable(
       ->GetBluetoothAdapterClient()
       ->GetProperties(object_path_)
       ->discoverable_timeout.Set(
-          0,
-          base::Bind(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          0, base::BindOnce(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
+                            weak_ptr_factory_.GetWeakPtr(), callback,
+                            error_callback));
 }
 
 void BluetoothAdapterBlueZ::OnPropertyChangeCompleted(
@@ -1569,7 +1571,7 @@ void BluetoothAdapterBlueZ::StartScanWithFilter(
   // This is the first request to start device discovery.
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->StartDiscovery(
       object_path_,
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterBlueZ::OnStartDiscovery,
           weak_ptr_factory_.GetWeakPtr(),
           base::BindRepeating(copyable_callback, /*is_error=*/false,
@@ -1605,7 +1607,7 @@ void BluetoothAdapterBlueZ::StopScan(DiscoverySessionResultCallback callback) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->StopDiscovery(
       object_path_,
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterBlueZ::OnStopDiscovery,
           weak_ptr_factory_.GetWeakPtr(),
           base::BindRepeating(copyable_callback, /*is_error=*/false,
@@ -1664,9 +1666,9 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
       ->GetBluetoothAdapterClient()
       ->SetDiscoveryFilter(
           object_path_, dbus_discovery_filter,
-          base::BindRepeating(&BluetoothAdapterBlueZ::OnSetDiscoveryFilter,
-                              weak_ptr_factory_.GetWeakPtr(), callback,
-                              copyable_error_callback),
+          base::BindOnce(&BluetoothAdapterBlueZ::OnSetDiscoveryFilter,
+                         weak_ptr_factory_.GetWeakPtr(), callback,
+                         copyable_error_callback),
           base::BindOnce(&BluetoothAdapterBlueZ::OnSetDiscoveryFilterError,
                          weak_ptr_factory_.GetWeakPtr(), callback,
                          copyable_error_callback));
@@ -1744,9 +1746,9 @@ void BluetoothAdapterBlueZ::OnPreSetDiscoveryFilter(
       base::AdaptCallbackForRepeating(std::move(error_callback));
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->StartDiscovery(
       object_path_,
-      base::BindRepeating(&BluetoothAdapterBlueZ::OnStartDiscovery,
-                          weak_ptr_factory_.GetWeakPtr(), callback,
-                          copyable_error_callback),
+      base::BindOnce(&BluetoothAdapterBlueZ::OnStartDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     copyable_error_callback),
       base::BindOnce(&BluetoothAdapterBlueZ::OnStartDiscoveryError,
                      weak_ptr_factory_.GetWeakPtr(), callback,
                      copyable_error_callback));

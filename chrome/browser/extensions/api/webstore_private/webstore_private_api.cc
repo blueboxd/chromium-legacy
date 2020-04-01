@@ -432,9 +432,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   if (install_status == kBlockedByPolicy) {
     ShowBlockedByPolicyDialog(
         dummy_extension_.get(), icon_, web_contents,
-        base::BindRepeating(&WebstorePrivateBeginInstallWithManifest3Function::
-                                OnBlockByPolicyPromptDone,
-                            this));
+        base::BindOnce(&WebstorePrivateBeginInstallWithManifest3Function::
+                           OnBlockByPolicyPromptDone,
+                       this));
     return;
   }
 

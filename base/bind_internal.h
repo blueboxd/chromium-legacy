@@ -505,6 +505,40 @@ struct FunctorTraits<R (Receiver::*)(Args...) const> {
   }
 };
 
+#if defined(OS_WIN) && !defined(ARCH_CPU_64_BITS)
+
+// For __stdcall methods.
+template <typename R, typename Receiver, typename... Args>
+struct FunctorTraits<R (__stdcall Receiver::*)(Args...)> {
+  using RunType = R(Receiver*, Args...);
+  static constexpr bool is_method = true;
+  static constexpr bool is_nullable = true;
+
+  template <typename Method, typename ReceiverPtr, typename... RunArgs>
+  static R Invoke(Method method,
+                  ReceiverPtr&& receiver_ptr,
+                  RunArgs&&... args) {
+    return ((*receiver_ptr).*method)(std::forward<RunArgs>(args)...);
+  }
+};
+
+// For __stdcall const methods.
+template <typename R, typename Receiver, typename... Args>
+struct FunctorTraits<R (__stdcall Receiver::*)(Args...) const> {
+  using RunType = R(const Receiver*, Args...);
+  static constexpr bool is_method = true;
+  static constexpr bool is_nullable = true;
+
+  template <typename Method, typename ReceiverPtr, typename... RunArgs>
+  static R Invoke(Method method,
+                  ReceiverPtr&& receiver_ptr,
+                  RunArgs&&... args) {
+    return ((*receiver_ptr).*method)(std::forward<RunArgs>(args)...);
+  }
+};
+
+#endif  // defined(OS_WIN) && !defined(ARCH_CPU_64_BITS)
+
 #ifdef __cpp_noexcept_function_type
 // noexcept makes a distinct function type in C++17.
 // I.e. `void(*)()` and `void(*)() noexcept` are same in pre-C++17, and

@@ -68,8 +68,8 @@ void UnzipHelper::UnzipImpl(const base::FilePath& image_path,
   OnOpenSuccess(out_image_path);
 
   zip_reader_->ExtractCurrentEntryToFilePathAsync(
-      out_image_path, base::Bind(&UnzipHelper::OnComplete, this),
-      base::Bind(&UnzipHelper::OnError, this, error::kUnzipGenericError),
+      out_image_path, base::BindOnce(&UnzipHelper::OnComplete, this),
+      base::BindOnce(&UnzipHelper::OnError, this, error::kUnzipGenericError),
       base::Bind(&UnzipHelper::OnProgress, this, entry_info->original_size()));
 }
 

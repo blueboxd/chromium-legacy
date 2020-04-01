@@ -26,12 +26,10 @@ namespace chromeos {
 
 MarketingOptInScreen::MarketingOptInScreen(
     MarketingOptInScreenView* view,
-    bool is_fullscreen,
     const base::RepeatingClosure& exit_callback)
     : BaseScreen(MarketingOptInScreenView::kScreenId,
                  OobeScreenPriority::DEFAULT),
       view_(view),
-      is_fullscreen_(is_fullscreen),
       exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
@@ -39,40 +37,6 @@ MarketingOptInScreen::MarketingOptInScreen(
 
 MarketingOptInScreen::~MarketingOptInScreen() {
   view_->Bind(nullptr);
-
-  ClearLoginShelfGestureHandler();
-}
-
-void MarketingOptInScreen::OnShelfConfigUpdated() {
-  UpdateShelfGestureHandlingState();
-}
-
-void MarketingOptInScreen::UpdateShelfGestureHandlingState() {
-  const bool allow_shelf_gestures =
-      is_fullscreen_ && !ash::ShelfConfig::Get()->shelf_controls_shown() &&
-      !accessibility_page_shown_;
-  if (allow_shelf_gestures == handling_shelf_gestures_)
-    return;
-
-  if (!allow_shelf_gestures) {
-    // handling_shelf_gestures_ will be reset in
-    // OnShelfGestureDetectionStopped(), which is called when the handler is
-    // cleared.
-    ash::LoginScreen::Get()->ClearLoginShelfGestureHandler();
-    return;
-  }
-
-  handling_shelf_gestures_ =
-      ash::LoginScreen::Get()->SetLoginShelfGestureHandler(
-          l10n_util::GetStringUTF16(
-              IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SWIPE_FROM_SHELF_LABEL),
-          base::BindRepeating(&MarketingOptInScreen::HandleFlingFromShelf,
-                              weak_factory_.GetWeakPtr()),
-          base::BindOnce(&MarketingOptInScreen::OnShelfGestureDetectionStopped,
-                         weak_factory_.GetWeakPtr()));
-
-  if (handling_shelf_gestures_)
-    view_->UpdateAllSetButtonVisibility(false /*visible*/);
 }
 
 void MarketingOptInScreen::ShowImpl() {
@@ -104,22 +68,9 @@ void MarketingOptInScreen::ShowImpl() {
   }
 
   active_ = true;
-  accessibility_page_shown_ = false;
 
   view_->Show();
   prefs->SetBoolean(prefs::kOobeMarketingOptInScreenFinished, true);
-
-  shelf_config_observer_.Add(ash::ShelfConfig::Get());
-  UpdateShelfGestureHandlingState();
-
-  // Make sure the screen next button visibility is properly initialized.
-  view_->UpdateAllSetButtonVisibility(!handling_shelf_gestures_ /*visible*/);
-
-  // Only show the link for accessibility settings if the gesture navigation
-  // screen was shown. This button gets shown when the login shelf gesture
-  // gets enabled.
-  view_->UpdateA11ySettingsButtonVisibility(
-      !did_skip_gesture_navigation_screen || handling_shelf_gestures_);
 
   view_->UpdateA11yShelfNavigationButtonToggle(prefs->GetBoolean(
       ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
@@ -140,11 +91,8 @@ void MarketingOptInScreen::HideImpl() {
     return;
 
   active_ = false;
-  shelf_config_observer_.RemoveAll();
   active_user_pref_change_registrar_.reset();
   view_->Hide();
-
-  ClearLoginShelfGestureHandler();
 }
 
 void MarketingOptInScreen::OnAllSet(bool play_communications_opt_in,
@@ -153,42 +101,13 @@ void MarketingOptInScreen::OnAllSet(bool play_communications_opt_in,
   ExitScreen();
 }
 
-void MarketingOptInScreen::OnAccessibilityPageVisibilityChanged(bool shown) {
-  accessibility_page_shown_ = shown;
-  UpdateShelfGestureHandlingState();
-}
-
-void MarketingOptInScreen::HandleFlingFromShelf() {
-  ExitScreen();
-}
-
-void MarketingOptInScreen::OnShelfGestureDetectionStopped() {
-  // This is called whenever the shelf gesture handler is cleared - ignore the
-  // callback if |handling_shelf_gestures_| was reset before clearing the
-  // gesture handler.
-  if (!handling_shelf_gestures_)
-    return;
-
-  handling_shelf_gestures_ = false;
-  view_->UpdateAllSetButtonVisibility(true /*visible*/);
-}
-
 void MarketingOptInScreen::ExitScreen() {
   if (!active_)
     return;
 
   active_ = false;
-  ClearLoginShelfGestureHandler();
 
   exit_callback_.Run();
-}
-
-void MarketingOptInScreen::ClearLoginShelfGestureHandler() {
-  if (!handling_shelf_gestures_)
-    return;
-
-  handling_shelf_gestures_ = false;
-  ash::LoginScreen::Get()->ClearLoginShelfGestureHandler();
 }
 
 void MarketingOptInScreen::OnA11yShelfNavigationButtonPrefChanged() {

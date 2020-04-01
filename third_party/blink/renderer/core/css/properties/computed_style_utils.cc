@@ -289,8 +289,15 @@ const CSSValue* ComputedStyleUtils::BackgroundPositionXOrWebkitMaskPositionX(
     const FillLayer* curr_layer) {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (; curr_layer; curr_layer = curr_layer->Next()) {
-    list->Append(
-        *ZoomAdjustedPixelValueForLength(curr_layer->PositionX(), style));
+    const Length& from_edge = curr_layer->PositionX();
+    if (curr_layer->BackgroundXOrigin() == BackgroundEdgeOrigin::kRight) {
+      // TODO(crbug.com/610627): This should use two-value syntax once the
+      // parser accepts it.
+      list->Append(*ZoomAdjustedPixelValueForLength(
+          from_edge.SubtractFromOneHundredPercent(), style));
+    } else {
+      list->Append(*ZoomAdjustedPixelValueForLength(from_edge, style));
+    }
   }
   return list;
 }
@@ -300,8 +307,15 @@ const CSSValue* ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
     const FillLayer* curr_layer) {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (; curr_layer; curr_layer = curr_layer->Next()) {
-    list->Append(
-        *ZoomAdjustedPixelValueForLength(curr_layer->PositionY(), style));
+    const Length& from_edge = curr_layer->PositionY();
+    if (curr_layer->BackgroundYOrigin() == BackgroundEdgeOrigin::kBottom) {
+      // TODO(crbug.com/610627): This should use two-value syntax once the
+      // parser accepts it.
+      list->Append(*ZoomAdjustedPixelValueForLength(
+          from_edge.SubtractFromOneHundredPercent(), style));
+    } else {
+      list->Append(*ZoomAdjustedPixelValueForLength(from_edge, style));
+    }
   }
   return list;
 }

@@ -490,9 +490,9 @@ void MediaEngagementContentsObserver::UpdatePlayerTimer(
     new_timer->Start(
         FROM_HERE,
         MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
-        base::Bind(&MediaEngagementContentsObserver::
-                       OnSignificantMediaPlaybackTimeForPlayer,
-                   base::Unretained(this), id));
+        base::BindOnce(&MediaEngagementContentsObserver::
+                           OnSignificantMediaPlaybackTimeForPlayer,
+                       base::Unretained(this), id));
 
     audible_row->second.second = std::move(new_timer);
   } else if (audible_row->second.second) {
@@ -522,9 +522,9 @@ void MediaEngagementContentsObserver::UpdatePageTimer() {
     playback_timer_.Start(
         FROM_HERE,
         MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
-        base::Bind(&MediaEngagementContentsObserver::
-                       OnSignificantMediaPlaybackTimeForPage,
-                   base::Unretained(this)));
+        base::BindOnce(&MediaEngagementContentsObserver::
+                           OnSignificantMediaPlaybackTimeForPage,
+                       base::Unretained(this)));
   } else {
     if (!playback_timer_.IsRunning())
       return;
@@ -556,9 +556,9 @@ void MediaEngagementContentsObserver::UpdateAudioContextTimer() {
     audio_context_timer_.Start(
         FROM_HERE,
         MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
-        base::Bind(&MediaEngagementContentsObserver::
-                       OnSignificantAudioContextPlaybackTimeForPage,
-                   base::Unretained(this)));
+        base::BindOnce(&MediaEngagementContentsObserver::
+                           OnSignificantAudioContextPlaybackTimeForPage,
+                       base::Unretained(this)));
   } else if (audio_context_timer_.IsRunning()) {
     audio_context_timer_.Stop();
   }

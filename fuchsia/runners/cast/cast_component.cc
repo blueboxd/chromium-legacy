@@ -69,7 +69,8 @@ void CastComponent::StartComponent() {
   OnRewriteRulesReceived(std::move(initial_rewrite_rules_));
 
   frame()->SetMediaSessionId(media_session_id_);
-  frame()->SetEnableInput(false);
+  frame()->ConfigureInputTypes(fuchsia::web::InputTypes::ALL,
+                               fuchsia::web::AllowInputState::DENY);
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());
   api_bindings_client_->AttachToFrame(

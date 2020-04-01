@@ -186,6 +186,12 @@ class ExtensionHost : public DeferredStartRenderHost,
   // Whether CreateRenderViewNow was called before the extension was ready.
   bool is_render_view_creation_pending_;
 
+  // Whether NOTIFICATION_EXTENSION_HOST_CREATED has been already delivered
+  // (since it is triggered by RenderViewReady which happens not only for the
+  // very first RenderViewHost, but also can happen when swapping RenderViewHost
+  // for another one).
+  bool has_creation_notification_already_fired_ = false;
+
   // Whether the ExtensionHost has finished loading some content at least once.
   // There may be subsequent loads - such as reloads and navigations - and this
   // will not affect its value (it will remain true).

@@ -92,7 +92,7 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
     auth_handler_->CreateSecurityKeyConnection();
 
     ASSERT_TRUE(file_thread_.task_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&RunUntilIdle), run_loop_->QuitClosure()));
+        FROM_HERE, base::BindOnce(&RunUntilIdle), run_loop_->QuitClosure()));
     run_loop_->Run();
     run_loop_.reset(new base::RunLoop);
 

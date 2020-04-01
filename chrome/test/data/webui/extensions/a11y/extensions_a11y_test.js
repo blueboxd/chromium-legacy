@@ -220,7 +220,6 @@ CrExtensionsErrorConsoleA11yTest =
   /** @override */
   testGenPreamble() {
     GEN('  SetDevModeEnabled(true);');
-    GEN('  EnableErrorConsole();');
     GEN('  InstallErrorsExtension();');
   }
 

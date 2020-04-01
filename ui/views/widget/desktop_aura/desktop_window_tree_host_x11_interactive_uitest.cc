@@ -247,9 +247,12 @@ TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
   // EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
   //           widget->GetInputMethod()->GetTextInputType());
 
-  widget->Activate();
+  // Waiter should be created before widget->Activate is called. Otherwise,
+  // there is a race, and waiter might not be able to set property changes mask
+  // on time and miss the events.
   ActivationWaiter waiter(
       widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  widget->Activate();
   waiter.Wait();
 
   EXPECT_TRUE(widget->IsActive());

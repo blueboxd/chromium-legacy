@@ -41,6 +41,8 @@ bool operator<(const DateProto& value_a, const DateProto& value_b);
 // Intended for debugging.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value);
 std::ostream& operator<<(std::ostream& out,
+                         const ValueReferenceProto& reference);
+std::ostream& operator<<(std::ostream& out,
                          const ModelProto::ModelValue& value);
 std::ostream& operator<<(std::ostream& out, const UserActionProto& value);
 std::ostream& operator<<(std::ostream& out, const DateProto& value);

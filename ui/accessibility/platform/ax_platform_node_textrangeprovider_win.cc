@@ -52,9 +52,9 @@
 
 namespace ui {
 
-class AXRangeScreenRectDelegateImpl : public AXRangeScreenRectDelegate {
+class AXRangePhysicalPixelRectDelegate : public AXRangeRectDelegate {
  public:
-  AXRangeScreenRectDelegateImpl(AXPlatformNodeTextRangeProviderWin* host)
+  AXRangePhysicalPixelRectDelegate(AXPlatformNodeTextRangeProviderWin* host)
       : host_(host) {}
 
   gfx::Rect GetInnerTextRangeBoundsRect(
@@ -66,7 +66,7 @@ class AXRangeScreenRectDelegateImpl : public AXRangeScreenRectDelegate {
     AXPlatformNodeDelegate* delegate = host_->GetDelegate(tree_id, node_id);
     DCHECK(delegate);
     return delegate->GetInnerTextRangeBoundsRect(
-        start_offset, end_offset, ui::AXCoordinateSystem::kScreen,
+        start_offset, end_offset, ui::AXCoordinateSystem::kScreenPhysicalPixels,
         ui::AXClippingBehavior::kClipped, offscreen_result);
   }
 
@@ -75,9 +75,9 @@ class AXRangeScreenRectDelegateImpl : public AXRangeScreenRectDelegate {
                           AXOffscreenResult* offscreen_result) override {
     AXPlatformNodeDelegate* delegate = host_->GetDelegate(tree_id, node_id);
     DCHECK(delegate);
-    return delegate->GetBoundsRect(ui::AXCoordinateSystem::kScreen,
-                                   ui::AXClippingBehavior::kClipped,
-                                   offscreen_result);
+    return delegate->GetBoundsRect(
+        ui::AXCoordinateSystem::kScreenPhysicalPixels,
+        ui::AXClippingBehavior::kClipped, offscreen_result);
   }
 
  private:
@@ -509,14 +509,14 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
 }
 
 HRESULT AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
-    SAFEARRAY** rectangles) {
+    SAFEARRAY** screen_physical_pixel_rectangles) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETBOUNDINGRECTANGLES);
-  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(rectangles);
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(screen_physical_pixel_rectangles);
 
-  *rectangles = nullptr;
+  *screen_physical_pixel_rectangles = nullptr;
   AXNodeRange range(start_->Clone(), end_->Clone());
-  AXRangeScreenRectDelegateImpl rect_delegate(this);
-  std::vector<gfx::Rect> rects = range.GetScreenRects(&rect_delegate);
+  AXRangePhysicalPixelRectDelegate rect_delegate(this);
+  std::vector<gfx::Rect> rects = range.GetRects(&rect_delegate);
 
   // 4 array items per rect: left, top, width, height
   SAFEARRAY* safe_array = SafeArrayCreateVector(
@@ -548,7 +548,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
     }
   }
 
-  *rectangles = safe_array;
+  *screen_physical_pixel_rectangles = safe_array;
   return S_OK;
 }
 
@@ -853,7 +853,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ScrollIntoView(BOOL align_to_top) {
   }
 
   const gfx::Rect root_screen_bounds = root_delegate->GetBoundsRect(
-      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
+      AXCoordinateSystem::kScreenDIPs, AXClippingBehavior::kUnclipped);
   UIA_VALIDATE_BOUNDS(root_screen_bounds);
   target_point += root_screen_bounds.OffsetFromOrigin();
 

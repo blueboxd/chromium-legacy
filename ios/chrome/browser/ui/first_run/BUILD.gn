@@ -7,7 +7,6 @@ source_set("first_run") {
   sources = [
     "first_run_chrome_signin_view_controller.h",
     "first_run_chrome_signin_view_controller.mm",
-    "first_run_histograms.h",
     "first_run_util.h",
     "first_run_util.mm",
     "orientation_limiting_navigation_controller.h",

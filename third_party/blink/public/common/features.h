@@ -165,6 +165,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kFlexNG;
 
 BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
 
+BLINK_COMMON_EXPORT extern const base::Feature kAppCache;
+
 }  // namespace features
 }  // namespace blink
 

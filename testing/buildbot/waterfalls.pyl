@@ -737,6 +737,17 @@
         'use_swarming': True,
         'os_type': 'android',
       },
+      'android-pie-x86-rel': {
+        'mixins': [
+          'pie-x86-emulator',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_pie_rel_gtests',
+        }
+      },
     },
   },
   {
@@ -803,17 +814,6 @@
         'test_suites': {
           'gtest_tests': 'android_lollipop_marshmallow_gtests',
           'isolated_scripts': 'marshmallow_pie_isolated_scripts_with_proguard',
-        }
-      },
-      'android-pie-x86-fyi-rel': {
-        'mixins': [
-          'pie-x86-emulator',
-          'linux-xenial',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_pie_rel_gtests',
         }
       },
     },
@@ -2088,7 +2088,7 @@
       },
       'linux-upload-perfetto': {
         'test_suites': {
-          'gtest_tests': 'upload_perfetto',
+          'isolated_scripts': 'upload_perfetto',
         },
         'use_swarming': False,
       },

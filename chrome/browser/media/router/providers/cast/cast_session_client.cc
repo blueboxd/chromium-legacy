@@ -104,8 +104,8 @@ void CastSessionClientImpl::OnMessage(
 
   GetDataDecoder().ParseJson(
       message->get_message(),
-      base::BindRepeating(&CastSessionClientImpl::HandleParsedClientMessage,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CastSessionClientImpl::HandleParsedClientMessage,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CastSessionClientImpl::DidClose(PresentationConnectionCloseReason reason) {

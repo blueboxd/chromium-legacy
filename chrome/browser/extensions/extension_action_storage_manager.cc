@@ -219,11 +219,9 @@ void ExtensionActionStorageManager::OnExtensionLoaded(
   StateStore* store = GetStateStore();
   if (store) {
     store->GetExtensionValue(
-        extension->id(),
-        kBrowserActionStorageKey,
-        base::Bind(&ExtensionActionStorageManager::ReadFromStorage,
-                   weak_factory_.GetWeakPtr(),
-                   extension->id()));
+        extension->id(), kBrowserActionStorageKey,
+        base::BindOnce(&ExtensionActionStorageManager::ReadFromStorage,
+                       weak_factory_.GetWeakPtr(), extension->id()));
   }
 }
 

@@ -333,9 +333,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void SetHomeLauncherAnimationCallbackForTesting(
       HomeLauncherAnimationCallback callback);
 
-  void RecordShelfAppLaunched(
-      base::Optional<AppListViewState> recorded_app_list_view_state,
-      base::Optional<bool> home_launcher_shown);
+  void RecordShelfAppLaunched();
 
   // Updates which container the launcher window should be in.
   void UpdateLauncherContainer(
@@ -350,6 +348,10 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // Returns the parent window of the applist for a |display_id|.
   aura::Window* GetContainerForDisplayId(
       base::Optional<int64_t> display_id = base::nullopt);
+
+  // Methods for recording the state of the app list before it changes in order
+  // to record metrics.
+  void RecordAppListState();
 
  private:
   // HomeScreenDelegate:
@@ -443,6 +445,16 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // A callback that can be registered by a test to wait for the home launcher
   // visibility animation to finish. Should only be used in tablet mode.
   HomeLauncherAnimationCallback home_launcher_animation_callback_;
+
+  // The AppListViewState at the moment it was recorded, used to record app
+  // launching metrics. This allows an accurate AppListViewState to be recorded
+  // before AppListViewState changes.
+  base::Optional<AppListViewState> recorded_app_list_view_state_;
+
+  // Whether the applist was shown at the moment it was recorded, used to record
+  // app launching metrics. This is recorded because AppList visibility can
+  // change before the metric is recorded.
+  base::Optional<bool> recorded_app_list_visibility_;
 
   // ScopedClosureRunner which while in scope keeps background blur in home
   // screen (in particular, apps container suggestion chips background)

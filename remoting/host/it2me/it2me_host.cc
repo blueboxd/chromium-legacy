@@ -272,8 +272,8 @@ void It2MeHost::OnClientDisconnected(const std::string& jid) {
 }
 
 ValidationCallback It2MeHost::GetValidationCallbackForTesting() {
-  return base::Bind(&It2MeHost::ValidateConnectionDetails,
-                    base::Unretained(this));
+  return base::BindOnce(&It2MeHost::ValidateConnectionDetails,
+                        base::Unretained(this));
 }
 
 void It2MeHost::OnPolicyUpdate(
@@ -463,8 +463,8 @@ void It2MeHost::OnReceivedSupportID(const std::string& support_id,
   std::unique_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::It2MeHostAuthenticatorFactory(
           local_certificate, host_key_pair_, access_code_hash,
-          base::Bind(&It2MeHost::ValidateConnectionDetails,
-                     base::Unretained(this))));
+          base::BindOnce(&It2MeHost::ValidateConnectionDetails,
+                         base::Unretained(this))));
   host_->SetAuthenticatorFactory(std::move(factory));
 
   // Pass the Access Code to the script object before changing state.

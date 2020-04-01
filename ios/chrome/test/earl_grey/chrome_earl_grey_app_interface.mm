@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/metrics/demographic_metrics_provider.h"
 #include "components/prefs/pref_service.h"
 #import "components/ukm/ios/features.h"
 #include "components/variations/variations_associated_data.h"
@@ -425,27 +426,6 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return [web_state->GetWebViewProxy() bounds].size;
 }
 
-#pragma mark - Sync Utilities (EG2)
-
-+ (void)clearAutofillProfileWithGUID:(NSString*)GUID {
-  std::string utfGUID = base::SysNSStringToUTF8(GUID);
-  chrome_test_util::ClearAutofillProfile(utfGUID);
-}
-
-+ (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
-                               autofillProfileName:(NSString*)fullName {
-  std::string utfGUID = base::SysNSStringToUTF8(GUID);
-  std::string utfFullName = base::SysNSStringToUTF8(fullName);
-  chrome_test_util::AddAutofillProfileToFakeSyncServer(utfGUID, utfFullName);
-}
-
-+ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
-                     autofillProfileName:(NSString*)fullName {
-  std::string utfGUID = base::SysNSStringToUTF8(GUID);
-  std::string utfFullName = base::SysNSStringToUTF8(fullName);
-  return chrome_test_util::IsAutofillProfilePresent(utfGUID, utfFullName);
-}
-
 #pragma mark - Bookmarks Utilities (EG2)
 
 + (NSError*)waitForBookmarksToFinishinLoading {
@@ -482,26 +462,25 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 }
 
 + (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title {
-  chrome_test_util::InjectBookmarkOnFakeSyncServer(
-      base::SysNSStringToUTF8(URL), base::SysNSStringToUTF8(title));
+  chrome_test_util::AddBookmarkToFakeSyncServer(base::SysNSStringToUTF8(URL),
+                                                base::SysNSStringToUTF8(title));
 }
 
 + (void)addFakeSyncServerLegacyBookmarkWithURL:(NSString*)URL
                                          title:(NSString*)title
                      originator_client_item_id:
                          (NSString*)originator_client_item_id {
-  chrome_test_util::InjectLegacyBookmarkOnFakeSyncServer(
+  chrome_test_util::AddLegacyBookmarkToFakeSyncServer(
       base::SysNSStringToUTF8(URL), base::SysNSStringToUTF8(title),
       base::SysNSStringToUTF8(originator_client_item_id));
 }
 
 + (void)addFakeSyncServerTypedURL:(NSString*)URL {
-  chrome_test_util::InjectTypedURLOnFakeSyncServer(
-      base::SysNSStringToUTF8(URL));
+  chrome_test_util::AddTypedURLToFakeSyncServer(base::SysNSStringToUTF8(URL));
 }
 
 + (void)addHistoryServiceTypedURL:(NSString*)URL {
-  chrome_test_util::AddTypedURLOnClient(GURL(base::SysNSStringToUTF8(URL)));
+  chrome_test_util::AddTypedURLToClient(GURL(base::SysNSStringToUTF8(URL)));
 }
 
 + (void)deleteHistoryServiceTypedURL:(NSString*)URL {
@@ -519,6 +498,30 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 
 + (void)triggerSyncCycleForType:(syncer::ModelType)type {
   chrome_test_util::TriggerSyncCycle(type);
+}
+
++ (void)addUserDemographicsToSyncServerWithBirthYear:(int)birthYear
+                                              gender:(int)gender {
+  chrome_test_util::AddUserDemographicsToSyncServer(birthYear, gender);
+}
+
++ (void)clearAutofillProfileWithGUID:(NSString*)GUID {
+  std::string utfGUID = base::SysNSStringToUTF8(GUID);
+  chrome_test_util::ClearAutofillProfile(utfGUID);
+}
+
++ (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
+                               autofillProfileName:(NSString*)fullName {
+  std::string utfGUID = base::SysNSStringToUTF8(GUID);
+  std::string utfFullName = base::SysNSStringToUTF8(fullName);
+  chrome_test_util::AddAutofillProfileToFakeSyncServer(utfGUID, utfFullName);
+}
+
++ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
+                     autofillProfileName:(NSString*)fullName {
+  std::string utfGUID = base::SysNSStringToUTF8(GUID);
+  std::string utfFullName = base::SysNSStringToUTF8(fullName);
+  return chrome_test_util::IsAutofillProfilePresent(utfGUID, utfFullName);
 }
 
 + (void)deleteAutofillProfileFromFakeSyncServerWithGUID:(NSString*)GUID {
@@ -689,6 +692,11 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 + (BOOL)isAutofillCompanyNameEnabled {
   return base::FeatureList::IsEnabled(
       autofill::features::kAutofillEnableCompanyName);
+}
+
++ (BOOL)isDemographicMetricsReportingEnabled {
+  return base::FeatureList::IsEnabled(
+      metrics::DemographicMetricsProvider::kDemographicMetricsReporting);
 }
 
 + (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch {

@@ -1252,9 +1252,9 @@ class DeviceSyncServiceTest
     if (!manager) {
       device_sync_->SetSoftwareFeatureState(
           public_key, software_feature, enabled, is_exclusive,
-          base::Bind(&DeviceSyncServiceTest::
-                         OnSetSoftwareFeatureStateCompletedSynchronously,
-                     base::Unretained(this), run_loop.QuitClosure()));
+          base::BindOnce(&DeviceSyncServiceTest::
+                             OnSetSoftwareFeatureStateCompletedSynchronously,
+                         base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
       return;
     }
@@ -1265,8 +1265,9 @@ class DeviceSyncServiceTest
 
     device_sync_->SetSoftwareFeatureState(
         public_key, software_feature, enabled, is_exclusive,
-        base::Bind(&DeviceSyncServiceTest::OnSetSoftwareFeatureStateCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &DeviceSyncServiceTest::OnSetSoftwareFeatureStateCompleted,
+            base::Unretained(this)));
     run_loop.Run();
 
     fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
@@ -1295,9 +1296,9 @@ class DeviceSyncServiceTest
     if (!manager) {
       device_sync_->FindEligibleDevices(
           software_feature,
-          base::Bind(&DeviceSyncServiceTest::
-                         OnFindEligibleDevicesCompletedSynchronously,
-                     base::Unretained(this), run_loop.QuitClosure()));
+          base::BindOnce(&DeviceSyncServiceTest::
+                             OnFindEligibleDevicesCompletedSynchronously,
+                         base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
       return;
     }
@@ -1308,8 +1309,8 @@ class DeviceSyncServiceTest
 
     device_sync_->FindEligibleDevices(
         software_feature,
-        base::Bind(&DeviceSyncServiceTest::OnFindEligibleDevicesCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceSyncServiceTest::OnFindEligibleDevicesCompleted,
+                       base::Unretained(this)));
     run_loop.Run();
 
     fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
@@ -1326,7 +1327,7 @@ class DeviceSyncServiceTest
     if (!fake_device_notifier()) {
       device_sync_->NotifyDevices(
           device_instance_ids, target_service, feature,
-          base::Bind(
+          base::BindOnce(
               &DeviceSyncServiceTest::OnNotifyDevicesCompletedSynchronously,
               base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
@@ -1337,8 +1338,8 @@ class DeviceSyncServiceTest
     fake_device_notifier()->set_delegate(&delegate);
     device_sync_->NotifyDevices(
         device_instance_ids, target_service, feature,
-        base::Bind(&DeviceSyncServiceTest::OnNotifyDevicesCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceSyncServiceTest::OnNotifyDevicesCompleted,
+                       base::Unretained(this)));
     run_loop.Run();
     fake_device_notifier()->set_delegate(nullptr);
   }
@@ -1370,7 +1371,7 @@ class DeviceSyncServiceTest
     if (!manager) {
       device_sync_->SetFeatureStatus(
           device_instance_id, software_feature, status_change,
-          base::Bind(
+          base::BindOnce(
               &DeviceSyncServiceTest::OnSetFeatureStatusCompletedSynchronously,
               base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
@@ -1383,8 +1384,8 @@ class DeviceSyncServiceTest
 
     device_sync_->SetFeatureStatus(
         device_instance_id, software_feature, status_change,
-        base::Bind(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
+                       base::Unretained(this)));
     run_loop.Run();
 
     fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
@@ -1402,7 +1403,7 @@ class DeviceSyncServiceTest
     if (!fake_feature_status_setter()) {
       device_sync_->SetFeatureStatus(
           device_instance_id, software_feature, status_change,
-          base::Bind(
+          base::BindOnce(
               &DeviceSyncServiceTest::OnSetFeatureStatusCompletedSynchronously,
               base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
@@ -1413,8 +1414,8 @@ class DeviceSyncServiceTest
     fake_feature_status_setter()->set_delegate(&delegate);
     device_sync_->SetFeatureStatus(
         device_instance_id, software_feature, status_change,
-        base::Bind(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
+                       base::Unretained(this)));
     run_loop.Run();
 
     fake_feature_status_setter()->set_delegate(nullptr);

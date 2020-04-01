@@ -150,6 +150,7 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
       "shown_count INTEGER,"
       "clicked INTEGER, "
       "images BLOB, "
+      "safe_search_result INTEGER DEFAULT 0, "
       "CONSTRAINT fk_feed "
       "FOREIGN KEY (feed_id) "
       "REFERENCES mediaFeed(id) "
@@ -185,8 +186,8 @@ bool MediaHistoryFeedItemsTable::SaveItem(
       "action_status, genre, duration_s, is_live, live_start_time_s, "
       "live_end_time_s, shown_count, clicked, author, action, "
       "interaction_counters, content_rating, identifiers, tv_episode, "
-      "play_next_candidate, images) VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      "play_next_candidate, images, safe_search_result) VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
   statement.BindInt64(0, feed_id);
   statement.BindInt64(1, static_cast<int>(item->type));
@@ -329,6 +330,8 @@ bool MediaHistoryFeedItemsTable::SaveItem(
     statement.BindNull(20);
   }
 
+  statement.BindInt64(21, static_cast<int>(item->safe_search_result));
+
   return statement.Run();
 }
 
@@ -355,7 +358,7 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
       "action_status, genre, duration_s, is_live, live_start_time_s, "
       "live_end_time_s, shown_count, clicked, author, action, "
       "interaction_counters, content_rating, identifiers, tv_episode, "
-      "play_next_candidate, images FROM "
+      "play_next_candidate, images, safe_search_result FROM "
       "mediaFeedItem WHERE feed_id = ?"));
 
   statement.BindInt64(0, feed_id);
@@ -370,6 +373,9 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
     item->action_status =
         static_cast<media_feeds::mojom::MediaFeedItemActionStatus>(
             statement.ColumnInt64(4));
+    item->safe_search_result =
+        static_cast<media_feeds::mojom::SafeSearchResult>(
+            statement.ColumnInt64(20));
 
     if (!IsKnownEnumValue(item->type)) {
       base::UmaHistogramEnumeration(kFeedItemReadResultHistogramName,
@@ -380,6 +386,12 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
     if (!IsKnownEnumValue(item->action_status)) {
       base::UmaHistogramEnumeration(kFeedItemReadResultHistogramName,
                                     FeedItemReadResult::kBadActionStatus);
+      continue;
+    }
+
+    if (!IsKnownEnumValue(item->safe_search_result)) {
+      base::UmaHistogramEnumeration(kFeedItemReadResultHistogramName,
+                                    FeedItemReadResult::kBadSafeSearchResult);
       continue;
     }
 

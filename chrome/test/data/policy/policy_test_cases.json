@@ -640,13 +640,16 @@
     ]
   },
 
-  "SafeBrowsingEnhancedProtection": {
+  "SafeBrowsingProtectionLevel": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "policy_pref_mapping_test": [
       {
-        "policies": { "SafeBrowsingEnhancedProtection": false },
-        "prefs": { "safebrowsing.enhanced": {} }
+        "policies": { "SafeBrowsingProtectionLevel": 2 },
+        "prefs": {
+          "safebrowsing.enabled": { "value": true },
+          "safebrowsing.enhanced": { "value": true }
+        }
       }
     ]
   },

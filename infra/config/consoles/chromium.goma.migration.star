@@ -767,7 +767,7 @@ luci.console_view(
             short_name = 'arm64',
         ),
         luci.console_view_entry(
-            builder = 'ci/android-pie-x86-fyi-rel',
+            builder = 'ci/android-pie-x86-rel',
             category = 'week15b|android|pie',
             short_name = 'x86',
         ),

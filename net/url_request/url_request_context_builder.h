@@ -326,8 +326,7 @@ class NET_EXPORT URLRequestContextBuilder {
       URLRequestContext* url_request_context,
       HostResolver* host_resolver,
       NetworkDelegate* network_delegate,
-      NetLog* net_log,
-      bool pac_quick_check_enabled);
+      NetLog* net_log);
 
  private:
   std::string name_;

@@ -284,6 +284,7 @@ absl_cc_test(
     absl::raw_logging_internal
     absl::random_random
     absl::random_distributions
+    absl::strings_internal
     gmock_main
 )
 
@@ -577,6 +578,7 @@ absl_cc_test(
     absl::strings
     absl::base
     absl::config
+    absl::core_headers
     absl::endian
     absl::raw_logging_internal
     absl::fixed_array

@@ -119,9 +119,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   virtual bool IsCSSAnimation() const { return false; }
   virtual bool IsCSSTransition() const { return false; }
-  virtual Element* OwningElemnt() const { return nullptr; }
+  virtual Element* OwningElement() const { return nullptr; }
   virtual void ClearOwningElement() {}
-  bool IsOwned() const { return !OwningElemnt(); }
+  bool IsOwned() const { return OwningElement(); }
 
   // Returns whether the animation is finished.
   bool Update(TimingUpdateReason);

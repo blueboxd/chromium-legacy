@@ -1177,8 +1177,8 @@ void DeveloperPrivateLoadUnpackedFunction::OnLoadComplete(
 
   GetManifestError(
       error, file_path,
-      base::Bind(&DeveloperPrivateLoadUnpackedFunction::OnGotManifestError,
-                 this));
+      base::BindOnce(&DeveloperPrivateLoadUnpackedFunction::OnGotManifestError,
+                     this));
 }
 
 void DeveloperPrivateLoadUnpackedFunction::OnGotManifestError(
@@ -1540,10 +1540,9 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
     target_path = target_path.Append(file_list[i].name);
 
     context_->operation_runner()->CreateSnapshotFile(
-        url,
-        base::Bind(&DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback,
-            this,
-            target_path));
+        url, base::BindOnce(
+                 &DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback,
+                 this, target_path));
   }
 
   if (!has_more) {

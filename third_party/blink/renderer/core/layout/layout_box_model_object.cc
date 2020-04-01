@@ -96,7 +96,8 @@ bool LayoutBoxModelObject::UsesCompositedScrolling() const {
          Layer()->GetScrollableArea()->UsesCompositedScrolling();
 }
 
-BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
+BackgroundPaintLocation
+LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited(
     uint32_t* main_thread_scrolling_reasons) const {
   bool may_have_scrolling_layers_without_scrolling = IsA<LayoutView>(this);
   const auto* scrollable_area = GetScrollableArea();
@@ -540,6 +541,7 @@ void LayoutBoxModelObject::DestroyLayer() {
   // Removing a layer may affect existence of the LocalBorderBoxProperties, so
   // we need to ensure that we update paint properties.
   SetNeedsPaintPropertyUpdate();
+  SetBackgroundPaintLocation(kBackgroundPaintInGraphicsLayer);
 }
 
 bool LayoutBoxModelObject::HasSelfPaintingLayer() const {

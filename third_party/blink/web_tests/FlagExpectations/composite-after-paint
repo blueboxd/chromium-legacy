@@ -78,9 +78,6 @@ paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 # No composited scrolling for overflow:hidden (on marquee).
 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 
-# We paint the iframe's content background in the scrolling layer, causing invalidation on scroll.
-paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
-
 # Extra layers for non-fast scrolling areas.
 compositing/overflow/textarea-scroll-touch.html [ Failure ]
 

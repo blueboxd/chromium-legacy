@@ -83,7 +83,8 @@ message SetModelValueProto {
   // The model identifier to write to.
   optional string model_identifier = 1;
   // The value to write.
-  optional ValueProto value = 2;
+  optional ValueReferenceProto value = 3;
+  reserved 2;
 }
 
 // Computes a value and stores the result to |result_model_identifier|.
@@ -109,31 +110,33 @@ message ComputeValueProto {
 
 // Performs a logical AND on all specified values.
 message BooleanAndProto {
-  // The model identifiers to logically AND. All identifiers must point to
-  // boolean ValueProtos.
-  repeated string model_identifiers = 1;
+  // The values to logically AND. All values must be single booleans.
+  repeated ValueReferenceProto values = 2;
+  reserved 1;
 }
 
 // Performs a logical OR on all specified values.
 message BooleanOrProto {
-  // The model identifiers to logically OR. All identifiers must point to
-  // boolean ValueProtos.
-  repeated string model_identifiers = 1;
+  // The values to logically OR. All values must be single booleans.
+  repeated ValueReferenceProto values = 2;
+  reserved 1;
 }
 
 // Performs a logical NOT on the specified value.
 message BooleanNotProto {
-  // The model identifier to logically invert. Must point to a boolean value.
-  optional string model_identifier = 1;
+  // The value to logically invert. Must be a single boolean.
+  optional ValueReferenceProto value = 2;
+  reserved 1;
 }
 
 // Creates a string representation of the specified value.
 message ToStringProto {
-  // The model identifier to stringify.
-  optional string model_identifier = 1;
+  // The value to stringify.
+  optional ValueReferenceProto value = 3;
 
   // Optional format options.
   oneof format_options { DateFormatProto date_format = 2; }
+  reserved 1;
 }
 
 // A format string for a date, such as "EEE, MMM d". See
@@ -156,19 +159,21 @@ message ValueComparisonProto {
   }
 
   // The first value to compare.
-  optional string model_identifier_a = 1;
+  optional ValueReferenceProto value_a = 4;
   // The second value to compare.
-  optional string model_identifier_b = 2;
+  optional ValueReferenceProto value_b = 5;
   // The comparison mode.
   optional Mode mode = 3;
+
+  reserved 1, 2;
 }
 
-// Computes the sum of two single integers.
+// Computes the sum of all input integers.
 message IntegerSumProto {
-  // The first model identifier. Must point to an integer value.
-  optional string model_identifier_a = 1;
-  // The second model identifier. Must point to an integer value.
-  optional string model_identifier_b = 2;
+  // The values to sum. All values must be single integers.
+  repeated ValueReferenceProto values = 3;
+
+  reserved 1, 2;
 }
 
 // Displays a standard info popup.
@@ -187,12 +192,12 @@ message ShowListPopupProto {
     DISABLED = 1;
     ENABLED = 2;
   }
-  // The item names to show in the list. Must be a list of strings.
-  optional string item_names_model_identifier = 1;
+  // The item names to show in the list. Must be a StringList.
+  optional ValueReferenceProto item_names = 6;
   // Optional, must be the same length as the list stored at
   // |items_list_model_identifier| if specified. Will default to ENABLED for all
   // items if not specified. Must be a list of int32 |ItemType| if specified.
-  optional string item_types_model_identifier = 2;
+  optional ValueReferenceProto item_types = 7;
   // The indices of the selected items (both input and output). Must be a list
   // of integers.
   optional string selected_item_indices_model_identifier = 3;
@@ -201,14 +206,17 @@ message ShowListPopupProto {
   // Optional output model identifier to store the names of the selected items
   // in a StringList.
   optional string selected_item_names_model_identifier = 5;
+
+  reserved 1, 2;
 }
 
 // Sets the list of available user actions. User actions are either direct
 // actions performed via assistant and/or chips that users can tap.
 message SetUserActionsProto {
-  // The model identifier containing the user actions. Must point to a
-  // UserActionList value.
-  optional string model_identifier = 1;
+  // The user actions to set. Must contain a UserActionList value.
+  optional ValueReferenceProto user_actions = 2;
+
+  reserved 1;
 }
 
 // Enables or disables a single user action. Modifies the value in-place.
@@ -217,9 +225,11 @@ message ToggleUserActionProto {
   optional string user_actions_model_identifier = 1;
   // The identifier of the specific user action to modify.
   optional string user_action_identifier = 2;
-  // Whether the user action should be enabled or disabled. Should point to a
-  // single boolean.
-  optional string enabled_model_identifier = 3;
+  // Whether the user action should be enabled or disabled. Should be a single
+  // boolean.
+  optional ValueReferenceProto enabled = 4;
+
+  reserved 3;
 }
 
 // Ends the generic Ui action (this is usually tied to a chip).
@@ -235,24 +245,25 @@ message EndActionProto {
 // Displays a calendar popup that lets the user select a date.
 message ShowCalendarPopupProto {
   // The date model identifier (both input and output). Must point to a single
-  // DateList. If not set, the calendar will default to the current date.
+  // Date. If not set, the calendar will default to the current date.
   optional string date_model_identifier = 1;
-  // The model identifier for the minimum allowed date. Must point to a single
-  // DateList.
-  optional string min_date_model_identifier = 2;
-  // The model identifier for the minimum allowed date. Must point to a single
-  // DateList.
-  optional string max_date_model_identifier = 3;
+  // The minimum allowed date. Must point to a single Date.
+  optional ValueReferenceProto min_date = 4;
+  // The maximum allowed date. Must point to a single Date.
+  optional ValueReferenceProto max_date = 5;
+
+  reserved 2, 3;
 }
 
 // Modifies the displayed text of a text view or a text input view.
 message SetTextProto {
-  // The model identifier containing the text to set. Must point to a single
-  // string.
-  optional string model_identifier = 1;
+  // The text to set. Must be a single string.
+  optional ValueReferenceProto text = 3;
   // The text view to modify. Must point to a text view or a text input
   // view.
   optional string view_identifier = 2;
+
+  reserved 1;
 }
 
 // Modifies a view's visibiliy.
@@ -260,7 +271,8 @@ message SetViewVisibilityProto {
   // The view to modify.
   optional string view_identifier = 1;
 
-  // The model identifier containing the visibility flag. Must point to a single
-  // bool.
-  optional string model_identifier = 2;
+  // The visibility flag. Must be a single boolean.
+  optional ValueReferenceProto visible = 3;
+
+  reserved 2;
 }

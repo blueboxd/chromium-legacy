@@ -250,9 +250,9 @@ void HostVerifierImpl::StartRetryTimer(const base::Time& time_to_fire) {
   base::Time now = clock_->Now();
   DCHECK(now < time_to_fire);
 
-  retry_timer_->Start(
-      FROM_HERE, time_to_fire - now /* delay */,
-      base::Bind(&HostVerifierImpl::UpdateRetryState, base::Unretained(this)));
+  retry_timer_->Start(FROM_HERE, time_to_fire - now /* delay */,
+                      base::BindOnce(&HostVerifierImpl::UpdateRetryState,
+                                     base::Unretained(this)));
 }
 
 void HostVerifierImpl::AttemptHostVerification() {
@@ -308,9 +308,9 @@ void HostVerifierImpl::OnFindEligibleDevicesResult(
   // receive this message (see https://crbug.com/913816). Thus, schedule a sync
   // after the phone has had enough time to enable its features. Note that this
   // sync is canceled if the Chromebook does receive the push message.
-  sync_timer_->Start(
-      FROM_HERE, kSyncDelay,
-      base::Bind(&HostVerifierImpl::OnSyncTimerFired, base::Unretained(this)));
+  sync_timer_->Start(FROM_HERE, kSyncDelay,
+                     base::BindOnce(&HostVerifierImpl::OnSyncTimerFired,
+                                    base::Unretained(this)));
 }
 
 void HostVerifierImpl::OnNotifyDevicesFinished(
@@ -328,9 +328,9 @@ void HostVerifierImpl::OnNotifyDevicesFinished(
   // receive this message (see https://crbug.com/913816). Thus, schedule a sync
   // after the phone has had enough time to enable its features. Note that this
   // sync is canceled if the Chromebook does receive the push message.
-  sync_timer_->Start(
-      FROM_HERE, kSyncDelay,
-      base::Bind(&HostVerifierImpl::OnSyncTimerFired, base::Unretained(this)));
+  sync_timer_->Start(FROM_HERE, kSyncDelay,
+                     base::BindOnce(&HostVerifierImpl::OnSyncTimerFired,
+                                    base::Unretained(this)));
 }
 
 void HostVerifierImpl::OnSyncTimerFired() {

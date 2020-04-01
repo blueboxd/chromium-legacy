@@ -80,7 +80,7 @@ class AutoConnectNotifierTest : public AshTestBase {
 
   void SuccessfullyJoinWifiNetwork() {
     chromeos::ShillServiceClient::Get()->Connect(
-        dbus::ObjectPath(kTestServicePath), base::BindRepeating([]() {}),
+        dbus::ObjectPath(kTestServicePath), base::BindOnce([]() {}),
         chromeos::ShillServiceClient::ErrorCallback());
     base::RunLoop().RunUntilIdle();
   }

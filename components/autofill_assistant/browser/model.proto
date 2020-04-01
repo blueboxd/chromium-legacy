@@ -31,6 +31,13 @@ message ValueProto {
   }
 }
 
+message ValueReferenceProto {
+  oneof kind {
+    ValueProto value = 1;
+    string model_identifier = 2;
+  }
+}
+
 message StringList {
   repeated string values = 1;
 }

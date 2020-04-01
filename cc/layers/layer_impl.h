@@ -184,13 +184,6 @@ class CC_EXPORT LayerImpl {
 
   bool Is3dSorted() const { return GetSortingContextId() != 0; }
 
-  void SetUseParentBackfaceVisibility(bool use) {
-    use_parent_backface_visibility_ = use;
-  }
-  bool use_parent_backface_visibility() const {
-    return use_parent_backface_visibility_;
-  }
-
   void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility) {
     should_check_backface_visibility_ = should_check_backface_visibility;
   }
@@ -489,7 +482,6 @@ class CC_EXPORT LayerImpl {
 
   bool may_contain_video_ : 1;
   bool contents_opaque_ : 1;
-  bool use_parent_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;

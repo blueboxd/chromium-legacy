@@ -45,7 +45,7 @@ constexpr AXNode::AXID PARAGRAPH_ID = 14;
 constexpr AXNode::AXID STATIC_TEXT3_ID = 15;
 constexpr AXNode::AXID INLINE_BOX3_ID = 16;
 
-class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
+class TestAXRangeScreenRectDelegate : public AXRangeRectDelegate {
  public:
   explicit TestAXRangeScreenRectDelegate(TestAXTreeManager* tree_manager)
       : tree_manager_(tree_manager) {}
@@ -71,7 +71,7 @@ class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
     TestAXNodeWrapper* wrapper =
         TestAXNodeWrapper::GetOrCreate(tree_manager_->GetTree(), node);
     return wrapper->GetInnerTextRangeBoundsRect(
-        start_offset, end_offset, AXCoordinateSystem::kScreen,
+        start_offset, end_offset, AXCoordinateSystem::kScreenDIPs,
         AXClippingBehavior::kClipped, offscreen_result);
   }
 
@@ -87,7 +87,7 @@ class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
 
     TestAXNodeWrapper* wrapper =
         TestAXNodeWrapper::GetOrCreate(tree_manager_->GetTree(), node);
-    return wrapper->GetBoundsRect(AXCoordinateSystem::kScreen,
+    return wrapper->GetBoundsRect(AXCoordinateSystem::kScreenDIPs,
                                   AXClippingBehavior::kClipped,
                                   offscreen_result);
   }
@@ -1149,7 +1149,7 @@ TEST_F(AXRangeTest, GetTextWithList) {
             backward_range.GetText(AXTextConcatenationBehavior::kAsInnerText));
 }
 
-TEST_F(AXRangeTest, GetScreenRects) {
+TEST_F(AXRangeTest, GetRects) {
   TestAXRangeScreenRectDelegate delegate(this);
 
   // Setting up ax ranges for testing.
@@ -1206,14 +1206,14 @@ TEST_F(AXRangeTest, GetScreenRects) {
   // empty anchor whose start and end positions are the same.
   TestPositionRange button_range(button->Clone(), button->Clone());
   std::vector<gfx::Rect> expected_screen_rects = {gfx::Rect(20, 20, 100, 30)};
-  EXPECT_THAT(button_range.GetScreenRects(&delegate),
+  EXPECT_THAT(button_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Since a check box is not visible to the text representation, it spans an
   // empty anchor whose start and end positions are the same.
   TestPositionRange check_box1_range(check_box1->Clone(), check_box1->Clone());
   expected_screen_rects = {gfx::Rect(120, 20, 30, 30)};
-  EXPECT_THAT(check_box1_range.GetScreenRects(&delegate),
+  EXPECT_THAT(check_box1_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding boxes of the button and both checkboxes.
@@ -1222,7 +1222,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   expected_screen_rects = {gfx::Rect(20, 20, 100, 30),
                            gfx::Rect(120, 20, 30, 30),
                            gfx::Rect(150, 20, 30, 30)};
-  EXPECT_THAT(button_check_box2_range.GetScreenRects(&delegate),
+  EXPECT_THAT(button_check_box2_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 1, its whole range.
@@ -1231,7 +1231,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   // |-----------|
   TestPositionRange line1_whole_range(line1_start->Clone(), line1_end->Clone());
   expected_screen_rects = {gfx::Rect(20, 50, 30, 30)};
-  EXPECT_THAT(line1_whole_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line1_whole_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 1, its first half range.
@@ -1241,7 +1241,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   TestPositionRange line1_first_half_range(line1_start->Clone(),
                                            line1_middle->Clone());
   expected_screen_rects = {gfx::Rect(20, 50, 15, 30)};
-  EXPECT_THAT(line1_first_half_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line1_first_half_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 1, its second half range.
@@ -1251,7 +1251,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   TestPositionRange line1_second_half_range(line1_middle->Clone(),
                                             line1_end->Clone());
   expected_screen_rects = {gfx::Rect(35, 50, 15, 30)};
-  EXPECT_THAT(line1_second_half_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line1_second_half_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 1, its mid range.
@@ -1261,7 +1261,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   TestPositionRange line1_mid_range(line1_second_char->Clone(),
                                     line1_second_to_last_char->Clone());
   expected_screen_rects = {gfx::Rect(25, 50, 20, 30)};
-  EXPECT_THAT(line1_mid_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line1_mid_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 2, its whole range.
@@ -1270,7 +1270,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   // |-----------|
   TestPositionRange line2_whole_range(line2_start->Clone(), line2_end->Clone());
   expected_screen_rects = {gfx::Rect(20, 80, 42, 30)};
-  EXPECT_THAT(line2_whole_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line2_whole_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 2, its first half range.
@@ -1280,7 +1280,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   TestPositionRange line2_first_half_range(line2_start->Clone(),
                                            line2_middle->Clone());
   expected_screen_rects = {gfx::Rect(20, 80, 21, 30)};
-  EXPECT_THAT(line2_first_half_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line2_first_half_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 2, its second half range.
@@ -1290,7 +1290,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   TestPositionRange line2_second_half_range(line2_middle->Clone(),
                                             line2_end->Clone());
   expected_screen_rects = {gfx::Rect(41, 80, 21, 30)};
-  EXPECT_THAT(line2_second_half_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line2_second_half_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding box of text line 2, its mid range.
@@ -1300,7 +1300,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   TestPositionRange line2_mid_range(line2_second_char->Clone(),
                                     line2_second_to_last_char->Clone());
   expected_screen_rects = {gfx::Rect(27, 80, 28, 30)};
-  EXPECT_THAT(line2_mid_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line2_mid_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding boxes of text line 1 and line 2, the entire range.
@@ -1310,7 +1310,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
                                             line2_end->Clone());
   expected_screen_rects = {gfx::Rect(20, 50, 30, 30),
                            gfx::Rect(20, 80, 42, 30)};
-  EXPECT_THAT(line1_line2_whole_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line1_line2_whole_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding boxes of the range that spans from the middle of text
@@ -1321,7 +1321,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
                                           line2_middle->Clone());
   expected_screen_rects = {gfx::Rect(35, 50, 15, 30),
                            gfx::Rect(20, 80, 21, 30)};
-  EXPECT_THAT(line1_line2_mid_range.GetScreenRects(&delegate),
+  EXPECT_THAT(line1_line2_mid_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding boxes of the range that spans from the checkbox 2
@@ -1333,7 +1333,7 @@ TEST_F(AXRangeTest, GetScreenRects) {
   expected_screen_rects = {gfx::Rect(150, 20, 30, 30),
                            gfx::Rect(20, 50, 30, 30),
                            gfx::Rect(20, 80, 21, 30)};
-  EXPECT_THAT(check_box2_line2_mid_range.GetScreenRects(&delegate),
+  EXPECT_THAT(check_box2_line2_mid_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Retrieving bounding boxes of the range spanning the entire document.
@@ -1344,11 +1344,11 @@ TEST_F(AXRangeTest, GetScreenRects) {
       gfx::Rect(20, 20, 100, 30), gfx::Rect(120, 20, 30, 30),
       gfx::Rect(150, 20, 30, 30), gfx::Rect(20, 50, 30, 30),
       gfx::Rect(20, 80, 42, 30),  gfx::Rect(20, 110, 50, 30)};
-  EXPECT_THAT(entire_test_range.GetScreenRects(&delegate),
+  EXPECT_THAT(entire_test_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 }
 
-TEST_F(AXRangeTest, GetScreenRectsOffscreen) {
+TEST_F(AXRangeTest, GetRectsOffscreen) {
   // Set up root node bounds/viewport size  to {0, 50, 800x60}, so that only
   // some text will be onscreen the rest will be offscreen.
   AXNodeData old_root_node_data = GetRootAsAXNode()->data();
@@ -1384,7 +1384,7 @@ TEST_F(AXRangeTest, GetScreenRectsOffscreen) {
   TestPositionRange entire_test_range(button->Clone(), after_line_end->Clone());
   std::vector<gfx::Rect> expected_screen_rects = {gfx::Rect(20, 50, 30, 30),
                                                   gfx::Rect(20, 80, 42, 30)};
-  EXPECT_THAT(entire_test_range.GetScreenRects(&delegate),
+  EXPECT_THAT(entire_test_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 
   // Reset the root node bounds/viewport size back to {0, 0, 800x600}, and
@@ -1394,7 +1394,7 @@ TEST_F(AXRangeTest, GetScreenRectsOffscreen) {
       gfx::Rect(20, 20, 100, 30), gfx::Rect(120, 20, 30, 30),
       gfx::Rect(150, 20, 30, 30), gfx::Rect(20, 50, 30, 30),
       gfx::Rect(20, 80, 42, 30),  gfx::Rect(20, 110, 50, 30)};
-  EXPECT_THAT(entire_test_range.GetScreenRects(&delegate),
+  EXPECT_THAT(entire_test_range.GetRects(&delegate),
               testing::ContainerEq(expected_screen_rects));
 }
 

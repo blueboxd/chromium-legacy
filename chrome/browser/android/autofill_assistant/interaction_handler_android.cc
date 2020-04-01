@@ -76,8 +76,8 @@ CreateInteractionCallbackFromProto(
     base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   switch (proto.kind_case()) {
     case CallbackProto::kSetValue:
-      if (proto.set_value().model_identifier().empty()) {
-        VLOG(1) << "Error creating SetValue interaction: model_identifier "
+      if (!proto.set_value().has_value()) {
+        VLOG(1) << "Error creating SetValue interaction: value "
                    "not set";
         return base::nullopt;
       }
@@ -91,9 +91,9 @@ CreateInteractionCallbackFromProto(
                               proto.show_info_popup().info_popup(), jcontext));
     }
     case CallbackProto::kShowListPopup:
-      if (proto.show_list_popup().item_names_model_identifier().empty()) {
+      if (!proto.show_list_popup().has_item_names()) {
         VLOG(1) << "Error creating ShowListPopup interaction: "
-                   "items_list_model_identifier not set";
+                   "item_names not set";
         return base::nullopt;
       }
       if (proto.show_list_popup()
@@ -118,9 +118,9 @@ CreateInteractionCallbackFromProto(
                               basic_interactions->GetWeakPtr(),
                               proto.compute_value()));
     case CallbackProto::kSetUserActions:
-      if (proto.set_user_actions().model_identifier().empty()) {
+      if (!proto.set_user_actions().has_user_actions()) {
         VLOG(1) << "Error creating SetUserActions interaction: "
-                   "model_identifier not set";
+                   "user_actions not set";
         return base::nullopt;
       }
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
@@ -145,9 +145,9 @@ CreateInteractionCallbackFromProto(
                               proto.show_calendar_popup(), jcontext,
                               jdelegate));
     case CallbackProto::kSetText:
-      if (proto.set_text().model_identifier().empty()) {
+      if (!proto.set_text().has_text()) {
         VLOG(1) << "Error creating SetText interaction: "
-                   "model_identifier not set";
+                   "text not set";
         return base::nullopt;
       }
       if (proto.set_text().view_identifier().empty()) {
@@ -170,9 +170,9 @@ CreateInteractionCallbackFromProto(
                    "user_action_identifier not set";
         return base::nullopt;
       }
-      if (proto.toggle_user_action().enabled_model_identifier().empty()) {
+      if (!proto.toggle_user_action().has_enabled()) {
         VLOG(1) << "Error creating ToggleUserAction interaction: "
-                   "enabled_model_identifier not set";
+                   "enabled not set";
         return base::nullopt;
       }
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
@@ -185,9 +185,9 @@ CreateInteractionCallbackFromProto(
                    "view_identifier not set";
         return base::nullopt;
       }
-      if (proto.set_view_visibility().model_identifier().empty()) {
+      if (!proto.set_view_visibility().has_visible()) {
         VLOG(1) << "Error creating SetViewVisibility interaction: "
-                   "model_identifier not set";
+                   "visible not set";
         return base::nullopt;
       }
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(

@@ -12,20 +12,22 @@
         android:id="@+id/security_button"
         tools:ignore="ContentDescription"
         android:background="@android:color/transparent"
+        android:color="@color/modern_grey_900"
         android:layout_gravity="center_vertical"
         android:layout_height="@dimen/security_status_icon_size"
         android:layout_width="@dimen/security_status_icon_size"
         android:scaleType="center"
-        android:paddingEnd="@dimen/security_status_icon_padding"
         app:tint="@color/default_icon_color_tint_list"/>
 
     <TextView
         android:id="@+id/url_text"
+        android:textColor="@color/modern_grey_900"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_gravity="center_vertical"
         android:maxLines="1"
-        android:paddingEnd="@dimen/url_text_edge_padding"/>
+        android:paddingEnd="@dimen/url_text_edge_padding"
+        android:paddingStart="@dimen/url_text_edge_padding"/>
 
 </merge>

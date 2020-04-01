@@ -73,28 +73,6 @@ class MarketingOptInScreenTest : public OobeBaseTest {
     run_loop.Run();
   }
 
-  void SimulateFlingFromShelf() {
-    aura::Window* oobe_window = LoginDisplayHost::default_host()
-                                    ->GetOobeWebContents()
-                                    ->GetTopLevelNativeWindow();
-    display::Screen* const screen = display::Screen::GetScreen();
-    const display::Display display =
-        screen->GetDisplayNearestWindow(oobe_window);
-
-    // Start at the center of the expected shelf bounds.
-    const int shelf_size = ash::ShelfConfig::Get()->shelf_size();
-    const gfx::Point start =
-        gfx::Point(display.bounds().x() + display.bounds().width() / 2,
-                   display.bounds().bottom() - shelf_size / 2);
-    // Swipe upwards.
-    const gfx::Point end = start + gfx::Vector2d(0, -shelf_size);
-    const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(10);
-    const int kNumScrollSteps = 4;
-    ui::test::EventGenerator event_generator(oobe_window->GetRootWindow());
-    event_generator.GestureScrollSequence(start, end, kTimeDelta,
-                                          kNumScrollSteps);
-  }
-
  private:
   void HandleScreenExit() {
     ASSERT_FALSE(screen_exited_);
@@ -137,115 +115,24 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, MarketingTogglesHidden) {
       {"marketing-opt-in", "marketing-opt-in-toggle-2"});
 }
 
-// Tests that fling from shelf exits the screen in tablet mode.
-IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, FlingFromShelfInTabletMode) {
-  ShowMarketingOptInScreen();
-  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
-
-  ASSERT_TRUE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-  SimulateFlingFromShelf();
-
-  WaitForScreenExit();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-}
-
-// Tests that fling from shelf is not enabled in tablet mode if shelf
-// navigation buttons are forced by the accessibility setting to show the
-// buttons.
-IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest,
-                       ShelfButtonsEnabledInTabletMode) {
-  ShowMarketingOptInScreen();
-  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
-
-  ASSERT_TRUE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
-  // If the setting to always show shelf navigation buttons is enabled, the
-  // shelf gesture detection should be disabled on the screen, and the user
-  // should be able to use "next" button to exit the screen.
-  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
-      ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, true);
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
-  test::OobeJS()
-      .CreateVisibilityWaiter(
-          true, {"marketing-opt-in", "marketing-opt-in-next-button"})
-      ->Wait();
-  test::OobeJS().TapOnPath(
-      {"marketing-opt-in", "marketing-opt-in-next-button"});
-
-  WaitForScreenExit();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-}
-
-// Tests that login shelf does not have fling handler in clamshell, and that
-// the user can exit the screen using a button in the OOBE screen to exit the
-// screen.
-IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest,
-                       ExitScreenUsingButtonInClamshell) {
-  ShowMarketingOptInScreen();
-  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
-  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
-
-  // When not in tablet mode, the shelf gesture detection should be disabled,
-  // and the user should be able to exit the screen using "next" button in the
-  // screen.
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-  test::OobeJS()
-      .CreateVisibilityWaiter(
-          true, {"marketing-opt-in", "marketing-opt-in-next-button"})
-      ->Wait();
-  test::OobeJS().TapOnPath(
-      {"marketing-opt-in", "marketing-opt-in-next-button"});
-
-  WaitForScreenExit();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-}
-
-// Tests that enabling tablet mode while on the screen will enable login shelf
-// gestures as well.
-IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest,
-                       FlingFromGestureEnabledOnTabletModeEnter) {
-  ShowMarketingOptInScreen();
-  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
-  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
-
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-  test::OobeJS()
-      .CreateVisibilityWaiter(
-          true, {"marketing-opt-in", "marketing-opt-in-next-button"})
-      ->Wait();
-
-  // Enter tablet mode and verify shelf gesture detection gets re-enabled.
-  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
-  ASSERT_TRUE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
-  SimulateFlingFromShelf();
-  WaitForScreenExit();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-}
-
 // Tests that the user can enable shelf navigation buttons in tablet mode from
 // the screen.
 IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, EnableShelfNavigationButtons) {
   ShowMarketingOptInScreen();
   OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
 
-  EXPECT_TRUE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
   // Tap on accessibility settings link, and wait for the accessibility settings
   // UI to show up.
   test::OobeJS()
-      .CreateVisibilityWaiter(true,
-                              {"marketing-opt-in", "finalAccessibilityLink"})
+      .CreateVisibilityWaiter(
+          true, {"marketing-opt-in", "marketing-opt-in-accessibility-button"})
       ->Wait();
-  test::OobeJS().TapLinkOnPath({"marketing-opt-in", "finalAccessibilityLink"});
+  test::OobeJS().ClickOnPath(
+      {"marketing-opt-in", "marketing-opt-in-accessibility-button"});
   test::OobeJS()
       .CreateVisibilityWaiter(true,
                               {"marketing-opt-in", "finalAccessibilityPage"})
       ->Wait();
-
-  // Swipe from shelf should be disabled on this page.
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
 
   // Tap the shelf navigation buttons in tablet mode toggle.
   test::OobeJS()
@@ -254,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, EnableShelfNavigationButtons) {
   test::OobeJS().ClickOnPath(
       {"marketing-opt-in", "a11yNavButtonToggle", "button"});
 
-  // Go back to the first screen, and verify the 'all set button' is shown now.
+  // Go back to the first screen.
   test::OobeJS().TapOnPath(
       {"marketing-opt-in", "final-accessibility-back-button"});
 
@@ -262,9 +149,6 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, EnableShelfNavigationButtons) {
       .CreateVisibilityWaiter(
           true, {"marketing-opt-in", "marketingOptInOverviewDialog"})
       ->Wait();
-
-  // Verify that swipe gesture is still disabled.
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
 
   // Tapping the next button exits the screen.
   test::OobeJS().ExpectVisiblePath(
@@ -283,66 +167,23 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, ExitScreenFromA11yPage) {
   ShowMarketingOptInScreen();
   OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
 
-  EXPECT_TRUE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
   // Tap on accessibility settings link, and wait for the accessibility settings
   // UI to show up.
   test::OobeJS()
-      .CreateVisibilityWaiter(true,
-                              {"marketing-opt-in", "finalAccessibilityLink"})
+      .CreateVisibilityWaiter(
+          true, {"marketing-opt-in", "marketing-opt-in-accessibility-button"})
       ->Wait();
-  test::OobeJS().TapLinkOnPath({"marketing-opt-in", "finalAccessibilityLink"});
+  test::OobeJS().ClickOnPath(
+      {"marketing-opt-in", "marketing-opt-in-accessibility-button"});
   test::OobeJS()
       .CreateVisibilityWaiter(true,
                               {"marketing-opt-in", "finalAccessibilityPage"})
       ->Wait();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
 
   // Tapping the next button exits the screen.
   test::OobeJS().TapOnPath(
       {"marketing-opt-in", "final-accessibility-next-button"});
   WaitForScreenExit();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-}
-
-// Tests that the swipe from shelf gets re-enabled when coming back from
-// accessibility settings page (if the shelf navigation toggle was not toggled).
-IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest,
-                       SwipeFromShelfAfterReturnFromA11yPage) {
-  ShowMarketingOptInScreen();
-  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
-
-  EXPECT_TRUE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
-  // Tap on accessibility settings link, and wait for the accessibility settings
-  // UI to show up.
-  test::OobeJS()
-      .CreateVisibilityWaiter(true,
-                              {"marketing-opt-in", "finalAccessibilityLink"})
-      ->Wait();
-  test::OobeJS().TapLinkOnPath({"marketing-opt-in", "finalAccessibilityLink"});
-  test::OobeJS()
-      .CreateVisibilityWaiter(true,
-                              {"marketing-opt-in", "finalAccessibilityPage"})
-      ->Wait();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
-  // Tapping back button to go back to the initial page.
-  test::OobeJS().TapOnPath(
-      {"marketing-opt-in", "final-accessibility-back-button"});
-
-  test::OobeJS()
-      .CreateVisibilityWaiter(
-          true, {"marketing-opt-in", "marketingOptInOverviewDialog"})
-      ->Wait();
-
-  // Verify that swipe gesture is enabled.
-  EXPECT_TRUE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
-
-  // Swipe from shelf to exit the screen.
-  SimulateFlingFromShelf();
-  WaitForScreenExit();
-  EXPECT_FALSE(ash::ShelfTestApi().HasLoginShelfGestureHandler());
 }
 
 }  // namespace chromeos

@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
   install_static::ScopedInstallDetails scoped_install_details;
 #endif
 
-  return base::LaunchUnitTests(
-      argc, argv, base::Bind(&content::UnitTestTestSuite::Run,
-                             base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(argc, argv,
+                               base::BindOnce(&content::UnitTestTestSuite::Run,
+                                              base::Unretained(&test_suite)));
 }

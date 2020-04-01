@@ -92,6 +92,8 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('item->play_next_candidate->identifiers.push_back(');
     GEN('  media_feeds::mojom::Identifier::New(');
     GEN('    media_feeds::mojom::Identifier::Type::kPartnerId, "TEST4"));');
+    GEN('item->safe_search_result =');
+    GEN('  media_feeds::mojom::SafeSearchResult::kSafe;');
     GEN('media_session::MediaImage image1;');
     GEN('image1.src = GURL("https://www.example.org/image1.png");');
     GEN('item->images.push_back(image1);');
@@ -175,7 +177,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
             'Action Status', 'Action URL', 'Action Start Time (secs)',
             'Interaction Counters', 'Content Ratings', 'Genre', 'Live Details',
             'TV Episode', 'Play Next Candidate', 'Identifiers', 'Shown Count',
-            'Clicked', 'Images'
+            'Clicked', 'Images', 'Safe Search Result'
           ],
           feedItemsHeaders.map(x => x.textContent.trim()));
 
@@ -218,6 +220,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
       assertEquals(
           'https://www.example.org/image1.pnghttps://www.example.org/image2.png',
           feedItemsContents.childNodes[17].textContent.trim());
+      assertEquals('Safe', feedItemsContents.childNodes[18].textContent.trim());
     });
   });
 

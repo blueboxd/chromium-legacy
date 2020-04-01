@@ -96,9 +96,9 @@ void EligibleHostDevicesProviderImpl::UpdateEligibleDevicesSet() {
 
   if (base::FeatureList::IsEnabled(
           features::kCryptAuthV2DeviceActivityStatus)) {
-    device_sync_client_->GetDevicesActivityStatus(
-        base::Bind(&EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus,
-                   base::Unretained(this)));
+    device_sync_client_->GetDevicesActivityStatus(base::BindOnce(
+        &EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus,
+        base::Unretained(this)));
   }
 }
 

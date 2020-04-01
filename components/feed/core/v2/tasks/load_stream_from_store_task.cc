@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/time/clock.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/feed_store.h"
+#include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
@@ -22,8 +25,12 @@ LoadStreamFromStoreTask::Result& LoadStreamFromStoreTask::Result::operator=(
 
 LoadStreamFromStoreTask::LoadStreamFromStoreTask(
     FeedStore* store,
+    const base::Clock* clock,
+    UserClass user_class,
     base::OnceCallback<void(Result)> callback)
     : store_(store),
+      clock_(clock),
+      user_class_(user_class),
       result_callback_(std::move(callback)),
       update_request_(std::make_unique<StreamModelUpdateRequest>()) {}
 
@@ -44,8 +51,19 @@ void LoadStreamFromStoreTask::LoadStreamDone(
     Complete(LoadStreamStatus::kNoStreamDataInStore);
     return;
   }
-  // TODO(harringtond): Add other failure cases:
-  // - Is the content stale?
+  if (!ignore_staleness_) {
+    const base::TimeDelta content_age =
+        clock_->Now() - feedstore::GetLastAddedTime(result.stream_data);
+    if (content_age < base::TimeDelta()) {
+      Complete(LoadStreamStatus::kDataInStoreIsStaleTimestampInFuture);
+      return;
+    } else if (ShouldWaitForNewContent(user_class_, true, content_age)) {
+      Complete(LoadStreamStatus::kDataInStoreIsStale);
+      return;
+    }
+  }
+
+  // TODO(harringtond): Add other failure cases?
 
   std::vector<ContentId> referenced_content_ids;
   for (const feedstore::StreamStructureSet& structure_set :

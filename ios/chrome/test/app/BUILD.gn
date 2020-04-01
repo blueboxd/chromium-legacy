@@ -44,6 +44,7 @@ source_set("test_support") {
     "//components/metrics",
     "//components/prefs",
     "//components/signin/public/base",
+    "//components/sync/base",
     "//components/sync/test/fake_server",
     "//components/sync_device_info",
     "//google_apis",

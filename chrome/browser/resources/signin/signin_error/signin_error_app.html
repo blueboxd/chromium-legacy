@@ -1,0 +1,98 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="signin_shared_old_css.html">
+
+<dom-module id="signin-error-app">
+  <template>
+    <style include="signin-dialog-shared">
+      .details {
+        line-height: 20px;
+        margin-bottom: 8px;
+        margin-top: 16px;
+        padding: 0 24px;
+      }
+
+      #normal-error-message > p {
+        margin-bottom: 0;
+      }
+
+      #closeButton {
+        margin-inline-start: 8px;
+      }
+
+      #profile-blocking-error-message {
+        margin-top: 30px;
+      }
+
+      #profile-blocking-error-message > div {
+        align-items: center;
+        display: flex;
+        margin-top: 1em;
+      }
+
+      iron-icon {
+        color: var(--cr-secondary-text-color);
+        flex-shrink: 0;
+        height: var(--cr-icon-size);
+        margin-inline-end: 16px;
+        width: var(--cr-icon-size);
+      }
+
+<if expr="is_macosx or is_linux">
+      #closeButton {
+        margin-inline-end: 8px;
+        margin-inline-start: 0;
+      }
+</if>
+    </style>
+    <div class="container">
+      <div class="top-title-bar">$i18n{signinErrorTitle}</div>
+      <div id="normal-error-message" class="details"
+          hidden="[[hideNormalError_]]">
+        <p>$i18nRaw{signinErrorMessage}</p>
+        <a id="learnMoreLink" href="#" on-click="onLearnMore_"
+               hidden="[[isSystemProfile_]]">
+          $i18nRaw{signinErrorLearnMore}
+        </a>
+      </div>
+      <div id="profile-blocking-error-message" class="details"
+          hidden="[[hideProfileBlockingErrors_.0]]">
+        <div hidden="[[hideProfileBlockingErrors_.1]]">
+          <iron-icon icon="cr:domain"></iron-icon>
+          <span>$i18n{profileBlockedMessage}</span>
+        </div>
+        <div hidden="[[hideProfileBlockingErrors_.2]]">
+          <iron-icon icon="cr:info"></iron-icon>
+          <span>$i18n{profileBlockedAddPersonSuggestion}</span>
+        </div>
+        <div hidden="[[hideProfileBlockingErrors_.3]]">
+          <iron-icon icon="cr:info"></iron-icon>
+          <span>$i18n{profileBlockedRemoveProfileSuggestion}</span>
+        </div>
+      </div>
+      <div class="action-container">
+        <cr-button class="action-button" id="switchButton"
+            hidden="[[switchButtonUnavailable_]]"
+            on-click="onSwitchToExistingProfile_">
+          $i18n{signinErrorSwitchLabel}
+        </cr-button>
+        <cr-button id="closeButton"
+            hidden="[[switchButtonUnavailable_]]"
+            on-click="onConfirm_">
+          $i18n{signinErrorCloseLabel}
+        </cr-button>
+        <cr-button id="confirmButton" hidden="[[!switchButtonUnavailable_]]"
+            on-click="onConfirm_">
+          $i18n{signinErrorOkLabel}
+        </cr-button>
+      </div>
+    </div>
+  </template>
+  <script src="signin_error_app.js"></script>
+</dom-module>

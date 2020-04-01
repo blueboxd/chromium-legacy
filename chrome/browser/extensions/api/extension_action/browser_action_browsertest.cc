@@ -38,7 +38,7 @@ void WaitForStateStore(Profile* profile, const std::string& extension_id) {
       new content::MessageLoopRunner;
   ExtensionSystem::Get(profile)->state_store()->GetExtensionValue(
       extension_id, kBrowserActionStorageKey,
-      base::Bind(&QuitMessageLoop, base::RetainedRef(runner)));
+      base::BindOnce(&QuitMessageLoop, base::RetainedRef(runner)));
   runner->Run();
 }
 

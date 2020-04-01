@@ -1133,6 +1133,9 @@ if (enable_java_templates) {
     java_header_group("${target_name}__header") {
       forward_variables_from(invoker, [ "deps" ])
     }
+    java_impl_group("${target_name}__impl") {
+      forward_variables_from(invoker, [ "deps" ])
+    }
     group(target_name) {
       forward_variables_from(invoker, "*")
       if (!defined(deps)) {

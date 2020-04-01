@@ -128,7 +128,6 @@ source_set("unit_tests") {
   sources = [
     "CRUILabel+AttributeUtils_unittest.mm",
     "core_text_util_unittest.mm",
-    "dynamic_type_util_unittest.mm",
     "force_touch_long_press_gesture_recognizer_unittest.mm",
     "label_link_controller_unittest.mm",
     "label_observer_unittest.mm",

@@ -99,7 +99,7 @@ void BluetoothAdvertisementBlueZ::Register(
       ->GetBluetoothLEAdvertisingManagerClient()
       ->RegisterAdvertisement(
           adapter_path_, provider_->object_path(), success_callback,
-          base::Bind(&RegisterErrorCallbackConnector, error_callback));
+          base::BindOnce(&RegisterErrorCallbackConnector, error_callback));
 }
 
 BluetoothAdvertisementBlueZ::~BluetoothAdvertisementBlueZ() {
@@ -122,7 +122,7 @@ void BluetoothAdvertisementBlueZ::Unregister(
       ->GetBluetoothLEAdvertisingManagerClient()
       ->UnregisterAdvertisement(
           adapter_path_, provider_->object_path(), success_callback,
-          base::Bind(&UnregisterErrorCallbackConnector, error_callback));
+          base::BindOnce(&UnregisterErrorCallbackConnector, error_callback));
   provider_.reset();
 }
 

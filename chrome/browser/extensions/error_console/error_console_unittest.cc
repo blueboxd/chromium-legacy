@@ -24,7 +24,6 @@
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,10 +40,6 @@ class ErrorConsoleUnitTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    // Errors are only kept if we have the FeatureSwitch and have Developer Mode
-    // enabled.
-    FeatureSwitch::error_console()->SetOverrideValue(
-        FeatureSwitch::OVERRIDE_ENABLED);
     profile_.reset(new TestingProfile);
     profile_->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
     error_console_ = ErrorConsole::Get(profile_.get());

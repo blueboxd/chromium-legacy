@@ -39,9 +39,10 @@ void PairingHostAuthenticator::Initialize(
   using_paired_secret_ = true;
   waiting_for_paired_secret_ = true;
   pairing_registry_->GetPairing(
-      client_id, base::Bind(&PairingHostAuthenticator::InitializeWithPairing,
-                            weak_factory_.GetWeakPtr(), preferred_initial_state,
-                            base::Passed(std::move(resume_callback))));
+      client_id,
+      base::BindOnce(&PairingHostAuthenticator::InitializeWithPairing,
+                     weak_factory_.GetWeakPtr(), preferred_initial_state,
+                     base::Passed(std::move(resume_callback))));
 }
 
 PairingHostAuthenticator::~PairingHostAuthenticator() = default;

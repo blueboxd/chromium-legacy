@@ -2202,11 +2202,11 @@ TEST_F(AppListPresenterDelegateTest, TapAutoHideShelfWithAppListOpened) {
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
-  // Test that tapping the auto-hidden shelf keeps the app list and shelf
-  // visible.
+  // Test that tapping the auto-hidden shelf keeps shelf visible but dismiss the
+  // app list.
   generator->GestureTapAt(
       shelf->GetShelfViewForTesting()->GetBoundsInScreen().CenterPoint());
-  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 

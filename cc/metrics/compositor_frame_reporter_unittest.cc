@@ -33,7 +33,8 @@ class CompositorFrameReporterTest : public testing::Test {
             &active_trackers,
             viz::BeginFrameId(),
             base::TimeTicks() + base::TimeDelta::FromMilliseconds(16),
-            nullptr)) {
+            nullptr,
+            /*should_report_metrics=*/true)) {
     AdvanceNowByMs(1);
   }
 

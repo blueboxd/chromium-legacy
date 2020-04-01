@@ -5,14 +5,58 @@
 import("//build/config/android/rules.gni")
 
 android_resources("chrome_tabs_client_example_apk_resources") {
-  resource_dirs = [ "src/Application/src/main/res" ]
+  sources = [
+    "src/Application/src/main/res/anim/slide_in_left.xml",
+    "src/Application/src/main/res/anim/slide_in_right.xml",
+    "src/Application/src/main/res/anim/slide_out_left.xml",
+    "src/Application/src/main/res/anim/slide_out_right.xml",
+    "src/Application/src/main/res/drawable-hdpi/ic_arrow_back.png",
+    "src/Application/src/main/res/drawable-hdpi/ic_launcher.png",
+    "src/Application/src/main/res/drawable-hdpi/ic_notification_icon.png",
+    "src/Application/src/main/res/drawable-hdpi/ic_play.png",
+    "src/Application/src/main/res/drawable-hdpi/ic_share.png",
+    "src/Application/src/main/res/drawable-hdpi/ic_stop.png",
+    "src/Application/src/main/res/drawable-mdpi/ic_arrow_back.png",
+    "src/Application/src/main/res/drawable-mdpi/ic_launcher.png",
+    "src/Application/src/main/res/drawable-mdpi/ic_notification_icon.png",
+    "src/Application/src/main/res/drawable-mdpi/ic_play.png",
+    "src/Application/src/main/res/drawable-mdpi/ic_share.png",
+    "src/Application/src/main/res/drawable-mdpi/ic_stop.png",
+    "src/Application/src/main/res/drawable-xhdpi/ic_arrow_back.png",
+    "src/Application/src/main/res/drawable-xhdpi/ic_launcher.png",
+    "src/Application/src/main/res/drawable-xhdpi/ic_notification_icon.png",
+    "src/Application/src/main/res/drawable-xhdpi/ic_play.png",
+    "src/Application/src/main/res/drawable-xhdpi/ic_share.png",
+    "src/Application/src/main/res/drawable-xhdpi/ic_stop.png",
+    "src/Application/src/main/res/drawable-xxhdpi/cover.jpg",
+    "src/Application/src/main/res/drawable-xxhdpi/ic_arrow_back.png",
+    "src/Application/src/main/res/drawable-xxhdpi/ic_launcher.png",
+    "src/Application/src/main/res/drawable-xxhdpi/ic_notification_icon.png",
+    "src/Application/src/main/res/drawable-xxhdpi/ic_play.png",
+    "src/Application/src/main/res/drawable-xxhdpi/ic_share.png",
+    "src/Application/src/main/res/drawable-xxhdpi/ic_stop.png",
+    "src/Application/src/main/res/drawable-xxxhdpi/ic_arrow_back.png",
+    "src/Application/src/main/res/drawable-xxxhdpi/ic_launcher.png",
+    "src/Application/src/main/res/drawable-xxxhdpi/ic_share.png",
+    "src/Application/src/main/res/layout/main.xml",
+    "src/Application/src/main/res/layout/remote_view.xml",
+    "src/Application/src/main/res/raw/amazing_grace.mp3",
+    "src/Application/src/main/res/values/strings.xml",
+  ]
   android_manifest = "src/Application/src/main/AndroidManifest.xml"
   custom_package = "org.chromium.customtabsclient"
   deps = [ "//third_party/android_deps:android_support_v7_appcompat_java" ]
 }
 
 android_resources("custom_tabs_support_resources") {
-  resource_dirs = [ "src/customtabs/res" ]
+  sources = [
+    "src/customtabs/res/layout/browser_actions_context_menu_page.xml",
+    "src/customtabs/res/layout/browser_actions_context_menu_row.xml",
+    "src/customtabs/res/values/colors.xml",
+    "src/customtabs/res/values/dimens.xml",
+    "src/customtabs/res/values/strings.xml",
+    "src/customtabs/res/xml/image_share_filepaths.xml",
+  ]
   android_manifest = "src/customtabs/AndroidManifest.xml"
   custom_package = "android.support.customtabs"
 }

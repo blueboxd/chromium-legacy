@@ -40,24 +40,24 @@ class BasicInteractionsTest : public testing::Test {
 
 TEST_F(BasicInteractionsTest, SetValue) {
   SetModelValueProto proto;
-  *proto.mutable_value() = SimpleValue(std::string("success"));
+  *proto.mutable_value()->mutable_value() = SimpleValue(std::string("success"));
 
   // Model identifier not set.
   EXPECT_FALSE(basic_interactions_.SetValue(proto));
 
   proto.set_model_identifier("output");
   EXPECT_TRUE(basic_interactions_.SetValue(proto));
-  EXPECT_EQ(user_model_.GetValue("output"), proto.value());
+  EXPECT_EQ(user_model_.GetValue("output"), proto.value().value());
 }
 
 TEST_F(BasicInteractionsTest, ComputeValueBooleanAnd) {
   ComputeValueProto proto;
-  proto.mutable_boolean_and()->add_model_identifiers("value_1");
-  proto.mutable_boolean_and()->add_model_identifiers("value_2");
-  proto.mutable_boolean_and()->add_model_identifiers("value_3");
+  proto.mutable_boolean_and()->add_values()->set_model_identifier("value_1");
+  *proto.mutable_boolean_and()->add_values()->mutable_value() =
+      SimpleValue(true);
+  proto.mutable_boolean_and()->add_values()->set_model_identifier("value_3");
 
   user_model_.SetValue("value_1", SimpleValue(true));
-  user_model_.SetValue("value_2", SimpleValue(true));
   user_model_.SetValue("value_3", SimpleValue(false));
 
   // Result model identifier not set.
@@ -79,19 +79,19 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanAnd) {
   ValueProto multi_bool;
   multi_bool.mutable_booleans()->add_values(true);
   multi_bool.mutable_booleans()->add_values(false);
-  user_model_.SetValue("value_2", multi_bool);
+  user_model_.SetValue("value_3", multi_bool);
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
 }
 
 TEST_F(BasicInteractionsTest, ComputeValueBooleanOr) {
   ComputeValueProto proto;
-  proto.mutable_boolean_or()->add_model_identifiers("value_1");
-  proto.mutable_boolean_or()->add_model_identifiers("value_2");
-  proto.mutable_boolean_or()->add_model_identifiers("value_3");
+  proto.mutable_boolean_or()->add_values()->set_model_identifier("value_1");
+  proto.mutable_boolean_or()->add_values()->set_model_identifier("value_2");
+  *proto.mutable_boolean_or()->add_values()->mutable_value() =
+      SimpleValue(false);
 
   user_model_.SetValue("value_1", SimpleValue(false));
   user_model_.SetValue("value_2", SimpleValue(false));
-  user_model_.SetValue("value_3", SimpleValue(false));
 
   // Result model identifier not set.
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
@@ -118,7 +118,7 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanOr) {
 
 TEST_F(BasicInteractionsTest, ComputeValueBooleanNot) {
   ComputeValueProto proto;
-  proto.mutable_boolean_not()->set_model_identifier("value");
+  proto.mutable_boolean_not()->mutable_value()->set_model_identifier("value");
   user_model_.SetValue("value", SimpleValue(false));
 
   // Result model identifier not set.
@@ -145,7 +145,7 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanNot) {
 
 TEST_F(BasicInteractionsTest, ComputeValueToString) {
   ComputeValueProto proto;
-  proto.mutable_to_string()->set_model_identifier("value");
+  proto.mutable_to_string()->mutable_value()->set_model_identifier("value");
   user_model_.SetValue("value", SimpleValue(1));
 
   // Result model identifier not set.
@@ -209,9 +209,9 @@ TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
 
   // Missing fields.
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
-  proto.mutable_integer_sum()->set_model_identifier_a("value_a");
+  proto.mutable_integer_sum()->add_values()->set_model_identifier("value_a");
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
-  proto.mutable_integer_sum()->set_model_identifier_b("value_b");
+  proto.mutable_integer_sum()->add_values()->set_model_identifier("value_b");
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
   proto.set_result_model_identifier("result");
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
@@ -231,8 +231,9 @@ TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
 
   user_model_.SetValue("value_a", SimpleValue(-1));
   user_model_.SetValue("value_b", SimpleValue(5));
+  *proto.mutable_integer_sum()->add_values()->mutable_value() = SimpleValue(3);
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
-  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(4));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(7));
 }
 
 TEST_F(BasicInteractionsTest, EndActionWithoutCallbackFails) {
@@ -262,9 +263,11 @@ TEST_F(BasicInteractionsTest, ComputeValueCompare) {
 
   // Fields are missing.
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
-  proto.mutable_comparison()->set_model_identifier_a("value_a");
+  proto.mutable_comparison()->mutable_value_a()->set_model_identifier(
+      "value_a");
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
-  proto.mutable_comparison()->set_model_identifier_b("value_b");
+  proto.mutable_comparison()->mutable_value_b()->set_model_identifier(
+      "value_b");
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
   proto.set_result_model_identifier("result");
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
@@ -371,7 +374,7 @@ TEST_F(BasicInteractionsTest, ToggleUserAction) {
   EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
   proto.set_user_actions_model_identifier("chips");
   EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
-  proto.set_enabled_model_identifier("enabled");
+  proto.mutable_enabled()->set_model_identifier("enabled");
   EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
   proto.set_user_action_identifier("done_identifier");
   EXPECT_TRUE(basic_interactions_.ToggleUserAction(proto));

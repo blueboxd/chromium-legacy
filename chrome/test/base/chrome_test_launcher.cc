@@ -222,7 +222,7 @@ int LaunchChromeTests(size_t parallel_jobs,
       switches::kUtilityProcess) {
     network_service_test_helper =
         std::make_unique<content::NetworkServiceTestHelper>();
-    ChromeContentUtilityClient::SetNetworkBinderCreationCallback(base::Bind(
+    ChromeContentUtilityClient::SetNetworkBinderCreationCallback(base::BindOnce(
         [](content::NetworkServiceTestHelper* helper,
            service_manager::BinderRegistry* registry) {
           helper->RegisterNetworkBinders(registry);

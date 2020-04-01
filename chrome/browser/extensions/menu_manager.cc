@@ -859,11 +859,9 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
 void MenuManager::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   if (store_ && BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    store_->GetExtensionValue(
-        extension->id(),
-        kContextMenusKey,
-        base::Bind(
-            &MenuManager::ReadFromStorage, AsWeakPtr(), extension->id()));
+    store_->GetExtensionValue(extension->id(), kContextMenusKey,
+                              base::BindOnce(&MenuManager::ReadFromStorage,
+                                             AsWeakPtr(), extension->id()));
   }
 
   if (extension->from_bookmark() && UrlHandlers::GetUrlHandlers(extension)) {

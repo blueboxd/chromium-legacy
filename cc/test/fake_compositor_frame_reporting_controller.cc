@@ -12,8 +12,8 @@
 namespace cc {
 base::TimeDelta INTERVAL = base::TimeDelta::FromMilliseconds(16);
 
-FakeCompositorFrameReportingController::
-    FakeCompositorFrameReportingController() = default;
+FakeCompositorFrameReportingController::FakeCompositorFrameReportingController()
+    : CompositorFrameReportingController(/*should_report_metrics=*/true) {}
 
 void FakeCompositorFrameReportingController::WillBeginMainFrame(
     const viz::BeginFrameArgs& args) {

@@ -368,8 +368,8 @@ MediaControllerImpl::GetMediaSessionController() {
       media_session_controller_remote_.BindNewPipeAndPassReceiver());
 
   media_session_controller_remote_.set_disconnect_handler(
-      base::BindRepeating(&MediaControllerImpl::OnMediaSessionControllerError,
-                          base::Unretained(this)));
+      base::BindOnce(&MediaControllerImpl::OnMediaSessionControllerError,
+                     base::Unretained(this)));
 
   BindMediaControllerObserver();
 

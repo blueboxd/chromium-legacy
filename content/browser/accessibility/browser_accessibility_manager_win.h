@@ -47,7 +47,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void UserIsReloading() override;
   BrowserAccessibility* GetFocus() const override;
   bool CanFireEvents() const override;
-  gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetViewBoundsInScreenCoordinates() const override;
 
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,

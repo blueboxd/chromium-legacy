@@ -73,11 +73,9 @@ struct MatchGURLHash {
 };
 
 // static
-size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
+size_t AutocompleteResult::GetMaxMatches() {
 #if (defined(OS_ANDROID))
   constexpr size_t kDefaultMaxAutocompleteMatches = 5;
-  if (is_zero_suggest)
-    return kDefaultMaxAutocompleteMatches;
 #elif defined(OS_IOS)  // !defined(OS_ANDROID)
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
 #else                  // !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -586,7 +584,7 @@ size_t AutocompleteResult::CalculateNumMatches(
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
-  size_t max_matches_by_policy = GetMaxMatches(input_from_omnibox_focus);
+  size_t max_matches_by_policy = GetMaxMatches();
   size_t num_matches = 0;
   while (num_matches < matches.size() &&
          comparing_object.GetDemotedRelevance(matches[num_matches]) > 0) {

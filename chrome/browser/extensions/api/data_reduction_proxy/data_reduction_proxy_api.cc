@@ -39,7 +39,7 @@ DataReductionProxyGetDataUsageFunction::Run() {
           browser_context());
   settings->data_reduction_proxy_service()
       ->compression_stats()
-      ->GetHistoricalDataUsage(base::Bind(
+      ->GetHistoricalDataUsage(base::BindOnce(
           &DataReductionProxyGetDataUsageFunction::ReplyWithDataUsage, this));
   return RespondLater();
 }

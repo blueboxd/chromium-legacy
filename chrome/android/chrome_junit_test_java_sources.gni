@@ -180,6 +180,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/password_manager/settings/TimedCallbackDelayerTest.java",
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactTest.java",
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/photo_picker/PickerBitmapViewTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/PrefServiceBridgeTest.java",
   "junit/src/org/chromium/chrome/browser/privacy/settings/PrivacyPreferencesManagerTest.java",
   "junit/src/org/chromium/chrome/browser/search_engines/SearchEngineChoiceMetricsTest.java",

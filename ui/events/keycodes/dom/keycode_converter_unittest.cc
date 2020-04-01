@@ -172,6 +172,10 @@ TEST(KeycodeConverter, DomCode) {
       EXPECT_STREQ(entry->code,
                    ui::KeycodeConverter::DomCodeToCodeString(code));
     }
+    ui::DomCode code =
+        ui::KeycodeConverter::NativeKeycodeToDomCode(entry->native_keycode);
+    EXPECT_EQ(entry->native_keycode,
+              ui::KeycodeConverter::DomCodeToNativeKeycode(code));
   }
 }
 

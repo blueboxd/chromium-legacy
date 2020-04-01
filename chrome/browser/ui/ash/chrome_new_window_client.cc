@@ -114,9 +114,9 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::NETWORKSTYPEVPN, chrome::kVPNSettingsSubPage},
      {ChromePage::PLUGINVMDETAILS, chrome::kPluginVmDetailsSubPage},
      {ChromePage::PLUGINVMSHAREDPATHS, chrome::kPluginVmSharedPathsSubPage},
+     {ChromePage::OSRESET, chrome::kOsResetSubPage},
      {ChromePage::POINTEROVERLAY, chrome::kPointerOverlaySubPage},
      {ChromePage::POWER, chrome::kPowerSubPage},
-     {ChromePage::RESET, chrome::kResetSubPage},
      {ChromePage::SMARTLOCKSETTINGS, chrome::kSmartLockSettingsSubPage},
      {ChromePage::STORAGE, chrome::kStorageSubPage},
      {ChromePage::STYLUS, chrome::kStylusSubPage},
@@ -134,6 +134,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*>
         {ChromePage::ONSTARTUP, chrome::kOnStartupSubPage},
         {ChromePage::PASSWORDS, chrome::kPasswordManagerSubPage},
         {ChromePage::PRIVACY, chrome::kPrivacySubPage},
+        {ChromePage::RESET, chrome::kResetSubPage},
         {ChromePage::SEARCH, chrome::kSearchSubPage},
         {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage}};
 

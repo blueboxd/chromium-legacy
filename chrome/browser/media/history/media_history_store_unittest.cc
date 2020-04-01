@@ -673,6 +673,7 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->play_next_candidate->action->url = GURL("https://www.example.com");
       item->play_next_candidate->identifiers.push_back(CreateIdentifier(
           media_feeds::mojom::Identifier::Type::kTMSId, "TEST4"));
+      item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnknown;
 
       {
         media_session::MediaImage image;
@@ -698,6 +699,7 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
           media_feeds::mojom::MediaFeedItemActionStatus::kActive;
       item->author = media_feeds::mojom::Author::New();
       item->author->name = "Media Site";
+      item->safe_search_result = media_feeds::mojom::SafeSearchResult::kSafe;
       items.push_back(std::move(item));
     }
 
@@ -708,6 +710,7 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
       item->live = media_feeds::mojom::LiveDetails::New();
+      item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnsafe;
       items.push_back(std::move(item));
     }
 
@@ -727,6 +730,7 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->is_family_friendly = false;
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kActive;
+      item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnknown;
       items.push_back(std::move(item));
     }
 
@@ -1329,6 +1333,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckImageMax) {
   auto item = media_feeds::mojom::MediaFeedItem::New();
   item->name = base::ASCIIToUTF16("The Movie");
   item->type = media_feeds::mojom::MediaFeedItemType::kMovie;
+  item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnknown;
 
   {
     media_session::MediaImage image;
@@ -1382,6 +1387,44 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckImageMax) {
       EXPECT_TRUE(items.empty());
     } else {
       EXPECT_EQ(5u, items[0]->images.size());
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest,
+       StoreMediaFeedFetchResult_DefaultSafeSearchResult) {
+  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+
+  auto item = media_feeds::mojom::MediaFeedItem::New();
+  item->name = base::ASCIIToUTF16("The Movie");
+  item->type = media_feeds::mojom::MediaFeedItemType::kMovie;
+
+  std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
+  items.push_back(std::move(item));
+
+  service()->StoreMediaFeedFetchResult(
+      feed_id, std::move(items), media_feeds::mojom::FetchResult::kSuccess,
+      base::Time::Now(), GetExpectedLogos(), kExpectedDisplayName);
+  WaitForDB();
+
+  {
+    // The item should set a default safe search result.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnknown,
+                items[0]->safe_search_result);
     }
 
     // The OTR service should have the same data.

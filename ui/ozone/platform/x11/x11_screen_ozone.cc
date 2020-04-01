@@ -173,6 +173,10 @@ void X11ScreenOzone::RemoveObserver(display::DisplayObserver* observer) {
   x11_display_manager_->RemoveObserver(observer);
 }
 
+std::string X11ScreenOzone::GetCurrentWorkspace() {
+  return x11_display_manager_->GetCurrentWorkspace();
+}
+
 bool X11ScreenOzone::DispatchXEvent(XEvent* xev) {
   return x11_display_manager_->ProcessEvent(xev);
 }

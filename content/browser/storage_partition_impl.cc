@@ -102,6 +102,7 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_settings.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -2692,6 +2693,10 @@ void StoragePartitionImpl::
 void StoragePartition::SetDefaultQuotaSettingsForTesting(
     const storage::QuotaSettings* settings) {
   g_test_quota_settings = settings;
+}
+
+bool StoragePartition::IsAppCacheEnabled() {
+  return base::FeatureList::IsEnabled(blink::features::kAppCache);
 }
 
 }  // namespace content

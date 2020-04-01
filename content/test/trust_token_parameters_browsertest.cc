@@ -113,4 +113,39 @@ IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
       expected_params_and_serialization.params));
 }
 
+IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
+                       PopulatesResourceRequestViaXhr) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  network::TrustTokenParametersAndSerialization
+      expected_params_and_serialization =
+          network::SerializeTrustTokenParametersAndConstructExpectation(
+              GetParam());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL trust_token_url(embedded_test_server()->GetURL("/title2.html"));
+
+  URLLoaderMonitor monitor({trust_token_url});
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  EXPECT_TRUE(
+      ExecJs(shell(),
+             base::StringPrintf(
+                 JsReplace("let request = new XMLHttpRequest();"
+                           "request.open($1, $2);"
+                           "request.setTrustToken(%s);"
+                           "request.send();",
+                           "GET", trust_token_url)
+                     .c_str(),
+                 expected_params_and_serialization.serialized_params.c_str())));
+
+  monitor.WaitForUrls();
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(trust_token_url);
+  ASSERT_TRUE(request);
+  EXPECT_TRUE(request->trust_token_params.as_ptr().Equals(
+      expected_params_and_serialization.params));
+}
+
 }  // namespace content

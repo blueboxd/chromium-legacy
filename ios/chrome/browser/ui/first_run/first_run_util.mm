@@ -19,7 +19,6 @@
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #include "ios/chrome/browser/first_run/first_run_metrics.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/ui/first_run/first_run_histograms.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -99,17 +98,6 @@ void FinishFirstRun(ChromeBrowserState* browserState,
 
   // Display the sync errors infobar.
   DisplaySyncErrors(browserState, web_state, presenter);
-}
-
-void RecordProductTourTimingMetrics(NSString* timer_name,
-                                    base::TimeTicks start_time) {
-  base::TimeDelta delta = base::TimeTicks::Now() - start_time;
-  NSString* histogramName =
-      [NSString stringWithFormat:@"ProductTour.IOSScreens%@", timer_name];
-  UMA_HISTOGRAM_CUSTOM_TIMES_FIRST_RUN(base::SysNSStringToUTF8(histogramName),
-                                       delta,
-                                       base::TimeDelta::FromMilliseconds(10),
-                                       base::TimeDelta::FromMinutes(3), 50);
 }
 
 void FirstRunDismissed() {

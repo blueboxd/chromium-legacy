@@ -105,8 +105,8 @@ class SandboxedRarAnalyzerTest : public testing::Test {
         : next_closure_(next_closure), results_(results) {}
 
     SandboxedRarAnalyzer::ResultCallback GetCallback() {
-      return base::BindRepeating(&ResultsGetter::ResultsCallback,
-                                 base::Unretained(this));
+      return base::BindOnce(&ResultsGetter::ResultsCallback,
+                            base::Unretained(this));
     }
 
    private:

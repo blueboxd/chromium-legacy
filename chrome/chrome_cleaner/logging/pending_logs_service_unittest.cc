@@ -101,8 +101,8 @@ class PendingLogsServiceTest : public testing::Test {
     PendingLogsService pending_logs_service;
     pending_logs_service.RetryNextPendingLogsUpload(
         TEST_PRODUCT_SHORTNAME_STRING,
-        base::BindRepeating(&PendingLogsServiceTest::LogsUploadCallback,
-                            base::Unretained(this), run_loop.QuitClosure()),
+        base::BindOnce(&PendingLogsServiceTest::LogsUploadCallback,
+                       base::Unretained(this), run_loop.QuitClosure()),
         registry_logger_.get());
     run_loop.Run();
 
@@ -227,8 +227,8 @@ TEST_F(PendingLogsServiceTest, UploadPendingLogs) {
   base::RunLoop run_loop;
   pending_logs_service.RetryNextPendingLogsUpload(
       TEST_PRODUCT_SHORTNAME_STRING,
-      base::BindRepeating(&PendingLogsServiceTest::LogsUploadCallback,
-                          base::Unretained(this), run_loop.QuitClosure()),
+      base::BindOnce(&PendingLogsServiceTest::LogsUploadCallback,
+                     base::Unretained(this), run_loop.QuitClosure()),
       registry_logger_.get());
   run_loop.Run();
 

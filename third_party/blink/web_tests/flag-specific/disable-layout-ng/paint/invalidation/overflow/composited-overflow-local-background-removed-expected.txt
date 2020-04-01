@@ -9,9 +9,6 @@
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
       "bounds": [200, 200],
-      "invalidations": [
-        [0, 0, 200, 200]
-      ],
       "transform": 1
     },
     {

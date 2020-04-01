@@ -148,9 +148,9 @@ class AdbClientSocketTest : public testing::Test {
     buffer->SetCapacity(initial_capacity);
     int result = adb_socket.socket_->Read(
         buffer.get(), initial_capacity,
-        base::Bind(&AdbClientSocket::ReadUntilEOF,
-                   base::Unretained(&adb_socket), parse_callback.Get(),
-                   response_callback.Get(), buffer));
+        base::BindOnce(&AdbClientSocket::ReadUntilEOF,
+                       base::Unretained(&adb_socket), parse_callback.Get(),
+                       response_callback.Get(), buffer));
     if (result != net::ERR_IO_PENDING) {
       adb_socket.ReadUntilEOF(parse_callback.Get(), response_callback.Get(),
                               buffer, result);

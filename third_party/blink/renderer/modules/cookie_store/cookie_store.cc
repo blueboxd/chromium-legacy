@@ -105,6 +105,17 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
     domain = cookie_url_host;
   }
 
+  String path = options->path();
+  if (!path.IsEmpty()) {
+    if (!path.StartsWith("/")) {
+      exception_state.ThrowTypeError("Cookie path must start with \"/\"");
+      return base::nullopt;
+    }
+    if (!path.EndsWith("/")) {
+      path = path + String("/");
+    }
+  }
+
   // Although the Cookie Store API spec always defaults the "secure" cookie
   // attribute to true, we only default to true on cryptographically secure
   // origins, where only secure cookies may be written, and to false otherwise,
@@ -145,7 +156,7 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
   }
 
   return CanonicalCookie::Create(
-      name, value, domain, options->path(), base::Time() /*creation*/, expires,
+      name, value, domain, path, base::Time() /*creation*/, expires,
       base::Time() /*last_access*/, secure, false /*http_only*/, same_site,
       CanonicalCookie::kDefaultPriority, source_scheme_enum);
 }

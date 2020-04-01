@@ -222,9 +222,9 @@ void AssistantScreenContextController::RequestScreenshot(
 
   ui::GrabLayerSnapshotAsync(
       root_layer, source_rect,
-      base::BindRepeating(&EncodeScreenshotAndRunCallback,
-                          base::Passed(std::move(callback)),
-                          base::Passed(std::move(layer_owner))));
+      base::BindOnce(&EncodeScreenshotAndRunCallback,
+                     base::Passed(std::move(callback)),
+                     base::Passed(std::move(layer_owner))));
 }
 
 void AssistantScreenContextController::OnAssistantControllerConstructed() {

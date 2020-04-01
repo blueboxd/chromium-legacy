@@ -290,9 +290,10 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
 
   target_capture_time = std::max(target_capture_time, now);
 
-  capture_timer_.Start(FROM_HERE, target_capture_time - now,
-                       base::Bind(&WebrtcFrameSchedulerSimple::CaptureNextFrame,
-                                  base::Unretained(this)));
+  capture_timer_.Start(
+      FROM_HERE, target_capture_time - now,
+      base::BindOnce(&WebrtcFrameSchedulerSimple::CaptureNextFrame,
+                     base::Unretained(this)));
 }
 
 void WebrtcFrameSchedulerSimple::CaptureNextFrame() {

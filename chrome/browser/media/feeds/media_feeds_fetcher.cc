@@ -6,6 +6,7 @@
 
 #include "components/schema_org/common/metadata.mojom.h"
 #include "components/schema_org/extractor.h"
+#include "components/schema_org/schema_org_entity_names.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -16,7 +17,8 @@ namespace media_feeds {
 
 MediaFeedsFetcher::MediaFeedsFetcher(
     scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory) {}
+    : url_loader_factory_(url_loader_factory),
+      extractor_({schema_org::entity::kDataFeed}) {}
 
 MediaFeedsFetcher::~MediaFeedsFetcher() = default;
 
@@ -107,7 +109,7 @@ void MediaFeedsFetcher::OnURLFetchComplete(
 
   // Parse the received data.
   schema_org::improved::mojom::EntityPtr parsed_entity =
-      schema_org::Extractor::Extract(*feed_data);
+      extractor_.Extract(*feed_data);
 
   if (!parsed_entity) {
     std::move(callback).Run(nullptr, Status::kInvalidFeedData);

@@ -1055,8 +1055,6 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
 
 // Test developerPrivate.deleteExtensionErrors.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
-  FeatureSwitch::ScopedOverride error_console_override(
-      FeatureSwitch::error_console(), true);
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   const Extension* extension = LoadSimpleExtension();
 

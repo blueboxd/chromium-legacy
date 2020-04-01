@@ -182,6 +182,12 @@ TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
   // Verify that query in omnibox is turned off.
   delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
+
+  // Also test that HTTP elisions are prevented.
+  delegate()->SetURL(GURL("http://www.google.com/search?q=foo+query+unelide"));
+  EXPECT_EQ(base::ASCIIToUTF16(
+                "http://www.google.com/search?q=foo+query+unelide/TestSuffix"),
+            model()->GetURLForDisplay());
 }
 
 TEST_F(LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {

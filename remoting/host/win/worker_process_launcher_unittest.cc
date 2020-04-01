@@ -193,8 +193,8 @@ WorkerProcessLauncherTest::~WorkerProcessLauncherTest() {
 void WorkerProcessLauncherTest::SetUp() {
   task_runner_ = new AutoThreadTaskRunner(
       task_environment_.GetMainThreadTaskRunner(),
-      base::Bind(&WorkerProcessLauncherTest::QuitMainMessageLoop,
-                 base::Unretained(this)));
+      base::BindOnce(&WorkerProcessLauncherTest::QuitMainMessageLoop,
+                     base::Unretained(this)));
 
   // Set up process launcher delegate
   launcher_delegate_.reset(new MockProcessLauncherDelegate());

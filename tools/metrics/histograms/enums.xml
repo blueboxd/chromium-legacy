@@ -42791,6 +42791,7 @@ Called by update_use_counter_css.py.-->
   <int value="8" label="Bad tv episode"/>
   <int value="9" label="Bad play next candidate"/>
   <int value="10" label="Bad images"/>
+  <int value="11" label="Bad safe search result"/>
 </enum>
 
 <enum name="MediaFeedReadResult">

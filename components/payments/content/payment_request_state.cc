@@ -86,10 +86,10 @@ PaymentRequestState::PaymentRequestState(
   PopulateProfileCache();
 
   // |web_contents_| is null in unit tests.
-  PaymentAppServiceFactory::GetForContext(
-      web_contents_ ? web_contents_->GetBrowserContext() : nullptr)
-      ->Create(weak_ptr_factory_.GetWeakPtr(),
-               &number_of_payment_app_factories_);
+  PaymentAppService* service = PaymentAppServiceFactory::GetForContext(
+      web_contents_ ? web_contents_->GetBrowserContext() : nullptr);
+  number_of_payment_app_factories_ = service->GetNumberOfFactories();
+  service->Create(weak_ptr_factory_.GetWeakPtr());
 
   spec_->AddObserver(this);
 }

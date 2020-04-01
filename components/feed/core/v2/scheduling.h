@@ -16,16 +16,15 @@ constexpr base::TimeDelta kSuppressRefreshDuration =
 // The following should be true:
 // - At most one fetch is attempted per T.
 // - Content is considered stale if time since last fetch is > T. We'll prefer
-//   to refresh stale content before showing it. See LoadRefreshBehavior.
+//   to refresh stale content before showing it.
 // - For TriggerType::kFixedTimer, T is the time between scheduled fetches.
 base::TimeDelta GetUserClassTriggerThreshold(UserClass user_class,
                                              TriggerType trigger);
 
-// Determines which LoadRefreshBehavior should be used when refreshing the
-// stream.
-LoadRefreshBehavior DetermineLoadRefreshBehavior(UserClass user_class,
-                                                 bool has_content,
-                                                 base::TimeDelta content_age);
+// Returns whether we should wait for new content before showing stream content.
+bool ShouldWaitForNewContent(UserClass user_class,
+                             bool has_content,
+                             base::TimeDelta content_age);
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_CORE_V2_SCHEDULING_H_

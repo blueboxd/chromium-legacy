@@ -483,9 +483,9 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
 
   favicon_service->GetFaviconImageForPageURL(
       launch_url,
-      base::Bind(&ChromeAppForLinkDelegate::OnFaviconForApp,
-                 base::Unretained(delegate), base::RetainedRef(function),
-                 context, title, launch_url),
+      base::BindOnce(&ChromeAppForLinkDelegate::OnFaviconForApp,
+                     base::Unretained(delegate), base::RetainedRef(function),
+                     context, title, launch_url),
       &delegate->cancelable_task_tracker_);
 
   return std::unique_ptr<extensions::AppForLinkDelegate>(delegate);

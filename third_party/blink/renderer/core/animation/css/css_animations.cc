@@ -637,6 +637,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         !animation->Limited()) {
       retargeted_compositor_transitions.insert(property);
     }
+    animation->ClearOwningElement();
     animation->cancel();
     // after cancelation, transitions must be downgraded or they'll fail
     // to be considered when retriggering themselves. This can happen if

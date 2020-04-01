@@ -229,10 +229,10 @@ void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
   PA_LOG(INFO) << "Creating GATT connection with " << GetDeviceInfoLogString()
                << ".";
   bluetooth_device->CreateGattConnection(
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyWeaveClientConnection::OnGattConnectionCreated,
           weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyWeaveClientConnection::OnCreateGattConnectionError,
           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -612,11 +612,12 @@ void BluetoothLowEnergyWeaveClientConnection::StartNotifySession() {
   PA_LOG(INFO) << "Starting notification session for "
                << GetDeviceInfoLogString() << ".";
   characteristic->StartNotifySession(
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted,
           weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted(
@@ -693,12 +694,12 @@ void BluetoothLowEnergyWeaveClientConnection::SendPendingWriteRequest() {
 
   characteristic->WriteRemoteCharacteristic(
       pending_write_request_->value,
-      base::Bind(&BluetoothLowEnergyWeaveClientConnection::
-                     OnRemoteCharacteristicWritten,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothLowEnergyWeaveClientConnection::
-                     OnWriteRemoteCharacteristicError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothLowEnergyWeaveClientConnection::
+                         OnRemoteCharacteristicWritten,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&BluetoothLowEnergyWeaveClientConnection::
+                         OnWriteRemoteCharacteristicError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {

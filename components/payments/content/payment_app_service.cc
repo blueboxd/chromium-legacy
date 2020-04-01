@@ -21,10 +21,12 @@ PaymentAppService::PaymentAppService() {
 
 PaymentAppService::~PaymentAppService() = default;
 
+size_t PaymentAppService::GetNumberOfFactories() const {
+  return factories_.size();
+}
+
 void PaymentAppService::Create(
-    base::WeakPtr<PaymentAppFactory::Delegate> delegate,
-    size_t* number_of_payment_app_factories) {
-  *number_of_payment_app_factories = factories_.size();
+    base::WeakPtr<PaymentAppFactory::Delegate> delegate) {
   for (const auto& factory : factories_) {
     factory->Create(delegate);
   }

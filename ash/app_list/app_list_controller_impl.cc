@@ -1054,13 +1054,13 @@ void AppListControllerImpl::SetHomeLauncherAnimationCallbackForTesting(
   home_launcher_animation_callback_ = std::move(callback);
 }
 
-void AppListControllerImpl::RecordShelfAppLaunched(
-    base::Optional<AppListViewState> recorded_app_list_view_state,
-    base::Optional<bool> recorded_home_launcher_shown) {
+void AppListControllerImpl::RecordShelfAppLaunched() {
   RecordAppListAppLaunched(
       AppListLaunchedFrom::kLaunchedFromShelf,
-      recorded_app_list_view_state.value_or(GetAppListViewState()),
-      IsTabletMode(), recorded_home_launcher_shown.value_or(last_visible_));
+      recorded_app_list_view_state_.value_or(GetAppListViewState()),
+      IsTabletMode(), recorded_app_list_visibility_.value_or(last_visible_));
+  recorded_app_list_view_state_ = base::nullopt;
+  recorded_app_list_visibility_ = base::nullopt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1764,6 +1764,11 @@ void AppListControllerImpl::UpdateTrackedAppWindow() {
   tracked_app_window_ = top_window;
   if (tracked_app_window_)
     tracked_app_window_->AddObserver(this);
+}
+
+void AppListControllerImpl::RecordAppListState() {
+  recorded_app_list_view_state_ = GetAppListViewState();
+  recorded_app_list_visibility_ = last_visible_;
 }
 
 }  // namespace ash

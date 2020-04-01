@@ -250,18 +250,20 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
       !switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
     const aura::Window* status_window =
         shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
-    // Don't dismiss the auto-hide shelf if event happened in status area. Then
-    // the event can still be propagated to the status area tray to open the
-    // corresponding tray bubble.
-    base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
-    if (status_window && status_window->Contains(target))
-      auto_hide_lock.emplace(shelf);
-
-    // Keep the app list open if the event happened in the shelf area.
     const aura::Window* hotseat_window =
         shelf->hotseat_widget()->GetNativeWindow();
-    if (!hotseat_window || !hotseat_window->Contains(target))
-      presenter_->Dismiss(event->time_stamp());
+    // Don't dismiss the auto-hide shelf if event happened in status area or the
+    // hotseat. Then the event can still be propagated.
+    base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
+    if ((status_window && status_window->Contains(target)) ||
+        (hotseat_window && hotseat_window->Contains(target))) {
+      auto_hide_lock.emplace(shelf);
+    }
+    // Record the current AppListViewState to be used later for metrics. The
+    // AppListViewState will change on app launch, so this will record the
+    // AppListViewState before the app was launched.
+    controller_->RecordAppListState();
+    presenter_->Dismiss(event->time_stamp());
   }
 }
 

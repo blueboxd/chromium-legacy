@@ -140,16 +140,6 @@ void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
       ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
-void LogCountHttpMigratedPasswords(int count) {
-  base::UmaHistogramCounts100("PasswordManager.HttpPasswordMigrationCount",
-                              count);
-}
-
-void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode) {
-  base::UmaHistogramEnumeration("PasswordManager.HttpPasswordMigrationMode",
-                                mode, HTTP_PASSWORD_MIGRATION_MODE_COUNT);
-}
-
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,
                                    CredentialMediationRequirement mediation) {
   switch (mediation) {

@@ -81,7 +81,7 @@ class DummyRTCRtpSenderPlatform : public RTCRtpSenderPlatform {
     return std::unique_ptr<webrtc::RtpParameters>();
   }
   void SetParameters(Vector<webrtc::RtpEncodingParameters>,
-                     webrtc::DegradationPreference,
+                     absl::optional<webrtc::DegradationPreference>,
                      RTCVoidRequest*) override {}
   void GetStats(RTCStatsReportCallback,
                 const Vector<webrtc::NonStandardGroupId>&) override {}

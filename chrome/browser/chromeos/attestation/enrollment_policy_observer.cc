@@ -152,9 +152,8 @@ void EnrollmentPolicyObserver::HandleEnrollmentId(
                     " obtained is empty.";
   }
   policy_client_->UploadEnterpriseEnrollmentId(
-      enrollment_id,
-      base::BindRepeating(&EnrollmentPolicyObserver::OnUploadComplete,
-                          weak_factory_.GetWeakPtr(), enrollment_id));
+      enrollment_id, base::BindOnce(&EnrollmentPolicyObserver::OnUploadComplete,
+                                    weak_factory_.GetWeakPtr(), enrollment_id));
 }
 
 void EnrollmentPolicyObserver::RescheduleGetEnrollmentId() {

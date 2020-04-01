@@ -29,7 +29,7 @@ enum class AXTextConcatenationBehavior {
   kAsTextContent
 };
 
-class AXRangeScreenRectDelegate {
+class AXRangeRectDelegate {
  public:
   virtual gfx::Rect GetInnerTextRangeBoundsRect(
       AXTreeID tree_id,
@@ -364,10 +364,10 @@ class AXRange {
     return range_text;
   }
 
-  // Appends rects in screen coordinates of all anchor nodes that span between
-  // anchor_ and focus_. Rects outside of the viewport are skipped.
-  std::vector<gfx::Rect> GetScreenRects(
-      AXRangeScreenRectDelegate* delegate) const {
+  // Appends rects of all anchor nodes that span between anchor_ and focus_.
+  // Rects outside of the viewport are skipped.
+  // Coordinate system is determined by the passed-in delegate.
+  std::vector<gfx::Rect> GetRects(AXRangeRectDelegate* delegate) const {
     std::vector<gfx::Rect> rects;
 
     for (const AXRange& leaf_text_range : *this) {

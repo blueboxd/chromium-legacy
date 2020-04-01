@@ -421,8 +421,8 @@ class LoginAuthUserView::FingerprintView : public views::View {
       reset_state_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kResetToDefaultIconDelayMs),
-          base::BindRepeating(&FingerprintView::DisplayCurrentState,
-                              base::Unretained(this)));
+          base::BindOnce(&FingerprintView::DisplayCurrentState,
+                         base::Unretained(this)));
 
       FireAlert();
     }

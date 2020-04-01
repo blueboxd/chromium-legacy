@@ -375,10 +375,9 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids) {
     GetGCMDriver()->Register(
-        app_id,
-        sender_ids,
-        base::Bind(&ExtensionGCMAppHandlerTest::RegisterCompleted,
-                   base::Unretained(this)));
+        app_id, sender_ids,
+        base::BindOnce(&ExtensionGCMAppHandlerTest::RegisterCompleted,
+                       base::Unretained(this)));
   }
 
   void RegisterCompleted(const std::string& registration_id,

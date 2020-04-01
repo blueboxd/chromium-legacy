@@ -97,9 +97,9 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
       api_epkp::ChallengeMachineKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   chromeos::attestation::TpmChallengeKeyCallback callback =
-      base::Bind(&EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::
-                     OnChallengedKey,
-                 this);
+      base::BindOnce(&EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::
+                         OnChallengedKey,
+                     this);
 
   std::string challenge;
   if (!base::Base64Decode(params->challenge, &challenge)) {
@@ -143,7 +143,7 @@ EnterprisePlatformKeysPrivateChallengeUserKeyFunction::Run() {
   std::unique_ptr<api_epkp::ChallengeUserKey::Params> params(
       api_epkp::ChallengeUserKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  chromeos::attestation::TpmChallengeKeyCallback callback = base::Bind(
+  chromeos::attestation::TpmChallengeKeyCallback callback = base::BindOnce(
       &EnterprisePlatformKeysPrivateChallengeUserKeyFunction::OnChallengedKey,
       this);
 

@@ -21,6 +21,7 @@
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "crypto/sha2.h"
@@ -161,6 +162,9 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
     base::DictionaryValue& params) {
   const GaiaUrls* const gaia_urls = GaiaUrls::GetInstance();
   params.SetKey("clientId", base::Value(gaia_urls->oauth2_chrome_client_id()));
+  params.SetKey(
+      "platformVersion",
+      base::Value(version_loader::GetVersion(version_loader::VERSION_SHORT)));
 
   const GURL& url = gaia_urls->embedded_setup_chromeos_url(2U);
   params.SetKey("gaiaPath", base::Value(url.path().substr(1)));

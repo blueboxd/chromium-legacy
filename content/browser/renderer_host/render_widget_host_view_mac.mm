@@ -1701,6 +1701,10 @@ void RenderWidgetHostViewMac::LookUpDictionaryOverlayAtPoint(
   if (!widget_host)
     return;
 
+  // For popups, do not support QuickLook.
+  if (popup_parent_host_view_)
+    return;
+
   int32_t target_widget_process_id = widget_host->GetProcess()->GetID();
   int32_t target_widget_routing_id = widget_host->GetRoutingID();
   TextInputClientMac::GetInstance()->GetStringAtPoint(

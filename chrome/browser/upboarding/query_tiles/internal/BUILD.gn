@@ -11,6 +11,8 @@ source_set("internal") {
   sources = [
     "cached_image_loader.cc",
     "cached_image_loader.h",
+    "config.cc",
+    "config.h",
     "image_data_store.cc",
     "image_data_store.h",
     "image_decoder.cc",

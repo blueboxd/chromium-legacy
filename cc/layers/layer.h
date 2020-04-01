@@ -491,17 +491,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return inputs_.double_sided; }
 
-  // Set or get if SetDoubleSided() for this layer should be ignored and
-  // inherited directly from this layer's parent instead. Used to attach this
-  // layer's backface visibility to the value of its parent.
-  //
-  // Note that should_check_backface_visibility() is the final computed value
-  // for back face visibility, which is only for internal use.
-  void SetUseParentBackfaceVisibility(bool use);
-  bool use_parent_backface_visibility() const {
-    return inputs_.use_parent_backface_visibility;
-  }
-
   // When true the layer may contribute to the compositor's output. When false,
   // it does not. This property does not apply to children of the layer, they
   // may contribute while this layer does not. The layer itself will determine
@@ -724,7 +713,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Internal to property tree construction. Set if the layer should not be
   // shown when its back face is visible to the user. This is a derived value
-  // from SetDoubleSided() and SetUseParentBackfaceVisibility().
+  // from SetDoubleSided().
   void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility);
   bool should_check_backface_visibility() const {
     return should_check_backface_visibility_;
@@ -860,7 +849,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool is_drawable : 1;
 
     bool double_sided : 1;
-    bool use_parent_backface_visibility : 1;
 
     // Indicates that this layer is a scrollbar.
     bool is_scrollbar : 1;

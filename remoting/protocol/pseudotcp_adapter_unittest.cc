@@ -253,9 +253,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
       input_buffer_->set_offset(input_buffer_->capacity() - kMessageSize);
 
       result = host_socket_->Read(
-          input_buffer_.get(),
-          kMessageSize,
-          base::Bind(&TCPChannelTester::OnRead, base::Unretained(this)));
+          input_buffer_.get(), kMessageSize,
+          base::BindOnce(&TCPChannelTester::OnRead, base::Unretained(this)));
       HandleReadResult(result);
     };
   }

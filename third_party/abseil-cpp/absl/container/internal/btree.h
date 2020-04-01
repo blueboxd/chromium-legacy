@@ -776,9 +776,6 @@ class btree_node {
   // delimiting key in the parent node onto itself.
   void merge(btree_node *src, allocator_type *alloc);
 
-  // Swaps the contents of `this` and `other`.
-  void swap(btree_node *other, allocator_type *alloc);
-
   // Node allocation/deletion routines.
   void init_leaf(btree_node *parent, int max_count) {
     set_parent(parent);
@@ -818,6 +815,14 @@ class btree_node {
   void value_destroy(const size_type i, allocator_type *alloc) {
     params_type::destroy(alloc, slot(i));
     absl::container_internal::SanitizerPoisonObject(slot(i));
+  }
+
+  // Transfers value from slot `src_i` in `src` to slot `dest_i` in `this`.
+  void transfer(const size_type dest_i, const size_type src_i, btree_node *src,
+                allocator_type *alloc) {
+    absl::container_internal::SanitizerUnpoisonObject(slot(dest_i));
+    params_type::transfer(alloc, slot(dest_i), src->slot(src_i));
+    absl::container_internal::SanitizerPoisonObject(src->slot(src_i));
   }
 
   // Move n values starting at value i in this node into the values starting at
@@ -932,8 +937,13 @@ struct btree_iterator {
   }
 
   // Accessors for the key/value the iterator is pointing at.
-  reference operator*() const { return node->value(position); }
-  pointer operator->() const { return &node->value(position); }
+  reference operator*() const {
+    ABSL_HARDENING_ASSERT(node != nullptr);
+    ABSL_HARDENING_ASSERT(node->start() <= position);
+    ABSL_HARDENING_ASSERT(node->finish() > position);
+    return node->value(position);
+  }
+  pointer operator->() const { return &operator*(); }
 
   btree_iterator &operator++() {
     increment();
@@ -1752,54 +1762,6 @@ void btree_node<P>::merge(btree_node *src, allocator_type *alloc) {
   parent()->remove_value(position(), alloc);
 }
 
-template <typename P>
-void btree_node<P>::swap(btree_node *other, allocator_type *alloc) {
-  using std::swap;
-  assert(leaf() == other->leaf());
-
-  // Determine which is the smaller/larger node.
-  btree_node *smaller = this, *larger = other;
-  if (smaller->count() > larger->count()) {
-    swap(smaller, larger);
-  }
-
-  // Swap the values.
-  for (slot_type *a = smaller->start_slot(), *b = larger->start_slot(),
-                 *end = smaller->finish_slot();
-       a != end; ++a, ++b) {
-    params_type::swap(alloc, a, b);
-  }
-
-  // Move values that can't be swapped.
-  const size_type to_move = larger->count() - smaller->count();
-  larger->uninitialized_move_n(to_move, smaller->finish(), smaller->finish(),
-                               smaller, alloc);
-  larger->value_destroy_n(smaller->finish(), to_move, alloc);
-
-  if (!leaf()) {
-    // Swap the child pointers.
-    std::swap_ranges(&smaller->mutable_child(smaller->start()),
-                     &smaller->mutable_child(smaller->finish() + 1),
-                     &larger->mutable_child(larger->start()));
-    // Update swapped children's parent pointers.
-    int i = smaller->start();
-    int j = larger->start();
-    for (; i <= smaller->finish(); ++i, ++j) {
-      smaller->child(i)->set_parent(smaller);
-      larger->child(j)->set_parent(larger);
-    }
-    // Move the child pointers that couldn't be swapped.
-    for (; j <= larger->finish(); ++i, ++j) {
-      smaller->init_child(i, larger->child(j));
-      larger->clear_child(j);
-    }
-  }
-
-  // Swap the `finish`s.
-  // TODO(ezb): with floating storage, will also need to swap starts.
-  swap(mutable_finish(), other->mutable_finish());
-}
-
 ////
 // btree_iterator methods
 template <typename N, typename R, typename P>
@@ -1812,6 +1774,7 @@ void btree_iterator<N, R, P>::increment_slow() {
       position = node->position();
       node = node->parent();
     }
+    // TODO(ezb): assert we aren't incrementing end() instead of handling.
     if (position == node->finish()) {
       *this = save;
     }
@@ -1835,6 +1798,7 @@ void btree_iterator<N, R, P>::decrement_slow() {
       position = node->position() - 1;
       node = node->parent();
     }
+    // TODO(ezb): assert we aren't decrementing begin() instead of handling.
     if (position < node->start()) {
       *this = save;
     }
@@ -2492,6 +2456,7 @@ inline auto btree<P>::internal_emplace(iterator iter, Args &&... args)
     ++iter.position;
   }
   const int max_count = iter.node->max_count();
+  allocator_type *alloc = mutable_allocator();
   if (iter.node->count() == max_count) {
     // Make room in the leaf for the new item.
     if (max_count < kNodeValues) {
@@ -2500,15 +2465,21 @@ inline auto btree<P>::internal_emplace(iterator iter, Args &&... args)
       assert(iter.node == root());
       iter.node =
           new_leaf_root_node((std::min<int>)(kNodeValues, 2 * max_count));
-      iter.node->swap(root(), mutable_allocator());
-      delete_leaf_node(root());
-      mutable_root() = rightmost_ = iter.node;
+      // Transfer the values from the old root to the new root.
+      node_type *old_root = root();
+      node_type *new_root = iter.node;
+      for (int i = old_root->start(), f = old_root->finish(); i < f; ++i) {
+        new_root->transfer(i, i, old_root, alloc);
+      }
+      new_root->set_finish(old_root->finish());
+      old_root->set_finish(old_root->start());
+      delete_leaf_node(old_root);
+      mutable_root() = rightmost_ = new_root;
     } else {
       rebalance_or_split(&iter);
     }
   }
-  iter.node->emplace_value(iter.position, mutable_allocator(),
-                           std::forward<Args>(args)...);
+  iter.node->emplace_value(iter.position, alloc, std::forward<Args>(args)...);
   ++size_;
   return iter;
 }

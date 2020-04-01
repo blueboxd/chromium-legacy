@@ -201,9 +201,8 @@ void DialMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
                                               const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetDataDecoder().ParseJson(
-      message,
-      base::BindRepeating(&DialMediaRouteProvider::HandleParsedRouteMessage,
-                          weak_ptr_factory_.GetWeakPtr(), media_route_id));
+      message, base::BindOnce(&DialMediaRouteProvider::HandleParsedRouteMessage,
+                              weak_ptr_factory_.GetWeakPtr(), media_route_id));
 }
 
 void DialMediaRouteProvider::HandleParsedRouteMessage(

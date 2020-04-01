@@ -17,6 +17,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -483,13 +484,13 @@ BrowserAccessibility::GetHtmlAttributes() const {
 
 gfx::Rect BrowserAccessibility::GetClippedScreenBoundsRect(
     ui::AXOffscreenResult* offscreen_result) const {
-  return GetBoundsRect(ui::AXCoordinateSystem::kScreen,
+  return GetBoundsRect(ui::AXCoordinateSystem::kScreenDIPs,
                        ui::AXClippingBehavior::kClipped, offscreen_result);
 }
 
 gfx::Rect BrowserAccessibility::GetUnclippedScreenBoundsRect(
     ui::AXOffscreenResult* offscreen_result) const {
-  return GetBoundsRect(ui::AXCoordinateSystem::kScreen,
+  return GetBoundsRect(ui::AXCoordinateSystem::kScreenDIPs,
                        ui::AXClippingBehavior::kUnclipped, offscreen_result);
 }
 
@@ -525,7 +526,7 @@ gfx::Rect BrowserAccessibility::GetUnclippedScreenInnerTextRangeBoundsRect(
     const int end_offset,
     ui::AXOffscreenResult* offscreen_result) const {
   return GetInnerTextRangeBoundsRect(
-      start_offset, end_offset, ui::AXCoordinateSystem::kScreen,
+      start_offset, end_offset, ui::AXCoordinateSystem::kScreenDIPs,
       ui::AXClippingBehavior::kUnclipped, offscreen_result);
 }
 
@@ -568,22 +569,32 @@ gfx::Rect BrowserAccessibility::GetHypertextRangeBoundsRect(
       effective_end_offset > static_cast<int>(text_str.size()))
     return gfx::Rect();
 
-  switch (coordinate_system) {
-    case ui::AXCoordinateSystem::kScreen: {
-      gfx::Rect bounds = GetRootFrameHypertextRangeBoundsRect(
-          effective_start_offset, effective_end_offset - effective_start_offset,
-          clipping_behavior, offscreen_result);
-      bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
-      return bounds;
-    }
-    case ui::AXCoordinateSystem::kRootFrame:
-      return GetRootFrameHypertextRangeBoundsRect(
-          effective_start_offset, effective_end_offset - effective_start_offset,
-          clipping_behavior, offscreen_result);
-    case ui::AXCoordinateSystem::kFrame:
-      NOTIMPLEMENTED();
-      return gfx::Rect();
+  if (coordinate_system == ui::AXCoordinateSystem::kFrame) {
+    NOTIMPLEMENTED();
+    return gfx::Rect();
   }
+
+  // Obtain bounds in root frame coordinates.
+  gfx::Rect bounds = GetRootFrameHypertextRangeBoundsRect(
+      effective_start_offset, effective_end_offset - effective_start_offset,
+      clipping_behavior, offscreen_result);
+
+  if (coordinate_system == ui::AXCoordinateSystem::kScreenDIPs ||
+      coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels) {
+    // Convert to screen coordinates.
+    bounds.Offset(
+        manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
+  }
+
+  if (coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels) {
+    // Convert to physical pixels.
+    if (!IsUseZoomForDSFEnabled()) {
+      bounds =
+          gfx::ScaleToEnclosingRect(bounds, manager()->device_scale_factor());
+    }
+  }
+
+  return bounds;
 }
 
 gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
@@ -696,7 +707,8 @@ gfx::Rect BrowserAccessibility::GetScreenHypertextRangeBoundsRect(
 
   // Adjust the bounds by the top left corner of the containing view's bounds
   // in screen coordinates.
-  bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
+  bounds.Offset(
+      manager_->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
 
   return bounds;
 }
@@ -890,7 +902,7 @@ base::string16 BrowserAccessibility::GetValue() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
-    const gfx::Point& point) {
+    const gfx::Point& blink_screen_point) {
   // The best result found that's a child of this object.
   BrowserAccessibility* child_result = nullptr;
   // The best result that's an indirect descendant like grandchild, etc.
@@ -908,8 +920,9 @@ BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
     if (child->GetRole() == ax::mojom::Role::kColumn)
       continue;
 
-    if (child->GetClippedScreenBoundsRect().Contains(point)) {
-      BrowserAccessibility* result = child->ApproximateHitTest(point);
+    if (child->GetClippedScreenBoundsRect().Contains(blink_screen_point)) {
+      BrowserAccessibility* result =
+          child->ApproximateHitTest(blink_screen_point);
       if (result == child && !child_result)
         child_result = result;
       if (result != child && !descendant_result)
@@ -1260,8 +1273,14 @@ gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
     node = root->PlatformGetParent();
   }
 
-  if (coordinate_system == ui::AXCoordinateSystem::kScreen)
-    bounds.Offset(manager()->GetViewBounds().OffsetFromOrigin());
+  if (coordinate_system == ui::AXCoordinateSystem::kScreenDIPs ||
+      coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels) {
+    bounds.Offset(
+        manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
+    if (coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels &&
+        !IsUseZoomForDSFEnabled())
+      bounds.Scale(manager()->device_scale_factor());
+  }
 
   if (offscreen_result) {
     *offscreen_result = offscreen ? ui::AXOffscreenResult::kOffscreen
@@ -1657,12 +1676,13 @@ BrowserAccessibility::ChildrenEnd() {
   return std::make_unique<PlatformChildIterator>(PlatformChildrenEnd());
 }
 
-gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x,
-                                                            int y) const {
+gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(
+    int physical_pixel_x,
+    int physical_pixel_y) const {
   if (!instance_active())
     return nullptr;
-  BrowserAccessibility* accessible =
-      manager_->CachingAsyncHitTest(gfx::Point(x, y));
+  BrowserAccessibility* accessible = manager_->CachingAsyncHitTest(
+      gfx::Point(physical_pixel_x, physical_pixel_y));
   if (!accessible)
     return nullptr;
 

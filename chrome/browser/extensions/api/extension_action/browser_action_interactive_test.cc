@@ -886,19 +886,13 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupInteractiveTest,
 
 // Tests that an extension pop-up cannot be navigated to a page
 // in another extension.
-//
-// TODO(lukasza): https://crbug.com/1066287: Enable the two tests below after
-// fixing ExtensionHost to ensure that NOTIFICATION_EXTENSION_HOST_CREATED fires
-// at most once - otherwise the test assertion below would fail in
-// TearDownOnMainThread:
-//    EXPECT_EQ(host_watcher_->created(), host_watcher_->destroyed());
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupInteractiveTest,
-                       DISABLED_PageInOtherExtension_Get) {
+                       PageInOtherExtension_Get) {
   GURL other_extension_url = other_extension().GetResourceURL("other.html");
   TestPopupNavigationViaGet(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
 }
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupInteractiveTest,
-                       DISABLED_PageInOtherExtension_Post) {
+                       PageInOtherExtension_Post) {
   GURL other_extension_url = other_extension().GetResourceURL("other.html");
   TestPopupNavigationViaPost(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
 }

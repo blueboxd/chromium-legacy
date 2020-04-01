@@ -296,12 +296,12 @@ Example usage:
 --passthrough`
 
 If, for some reason, the local run code is unable to determine what the git
-revision is, simply pass '--build-revision aabbccdd'. Note that `aabbccdd` must
+revision is, simply pass `--git-revision aabbccdd`. Note that `aabbccdd` must
 be replaced with an actual Chromium src revision (typically whatever revision
 origin/master is currently synced to) in order for the tests to work. This can
 be done automatically using:
 ``run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run
---passthrough --build-revision `git rev-parse origin/master` ``
+--passthrough --git-revision `git rev-parse origin/master` ``
 
 ## Running Binaries from the Bots Locally
 

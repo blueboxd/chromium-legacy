@@ -115,9 +115,8 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   // Load schemas when the extension system is ready. It might be ready now.
   ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE,
-      base::Bind(&ExtensionTracker::OnExtensionsReady,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ExtensionTracker::OnExtensionsReady,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void ManagedValueStoreCache::ExtensionTracker::OnExtensionWillBeInstalled(

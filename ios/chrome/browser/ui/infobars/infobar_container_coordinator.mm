@@ -220,7 +220,7 @@
   // doing so might cause undefined behavior since no badge was added.
   if (infobarCoordinator.hasBadge)
     infobarCoordinator.badgeDelegate = self.mediator;
-  infobarCoordinator.browserState = self.browser->GetBrowserState();
+  infobarCoordinator.browser = self.browser;
   infobarCoordinator.webState =
       self.browser->GetWebStateList()->GetActiveWebState();
   infobarCoordinator.baseViewController = self.baseViewController;

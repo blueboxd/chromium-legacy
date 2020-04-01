@@ -38,8 +38,8 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/display/screen.h"
 #endif
 
 namespace {
@@ -218,9 +218,10 @@ const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
 
 void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
-#if defined(USE_X11)
-  BrowserList::MoveBrowsersInWorkspaceToFront(
-      views::X11DesktopHandler::get()->GetWorkspace());
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  auto workspace = display::Screen::GetScreen()->GetCurrentWorkspace();
+  BrowserList::MoveBrowsersInWorkspaceToFront(workspace.empty() ? GetWorkspace()
+                                                                : workspace);
 #endif
   Widget::OnNativeWidgetWorkspaceChanged();
 }

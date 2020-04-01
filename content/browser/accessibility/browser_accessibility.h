@@ -275,7 +275,17 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // positioning, so BrowserAccessibilityManager::CachingAsyncHitTest
   // should be used instead, which falls back on calling ApproximateHitTest
   // automatically.
-  BrowserAccessibility* ApproximateHitTest(const gfx::Point& screen_point);
+  //
+  // Note that unlike BrowserAccessibilityManager::CachingAsyncHitTest, this
+  // method takes a parameter in Blink's definition of screen coordinates.
+  // This is so that the scale factor is consistent with what we receive from
+  // Blink and store in the AX tree.
+  // Blink screen coordinates are 1:1 with physical pixels if use-zoom-for-dsf
+  // is disabled; they're physical pixels divided by device scale factor if
+  // use-zoom-for-dsf is disabled. For more information see:
+  // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+  BrowserAccessibility* ApproximateHitTest(
+      const gfx::Point& blink_screen_point);
 
   // Marks this object for deletion, releases our reference to it, and
   // nulls out the pointer to the underlying AXNode.  May not delete
@@ -506,7 +516,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result = nullptr) const override;
-  gfx::NativeViewAccessible HitTestSync(int x, int y) const override;
+  gfx::NativeViewAccessible HitTestSync(int physical_pixel_x,
+                                        int physical_pixel_y) const override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   ui::AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,

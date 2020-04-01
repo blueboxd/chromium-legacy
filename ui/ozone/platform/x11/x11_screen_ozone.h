@@ -45,6 +45,7 @@ class X11ScreenOzone : public PlatformScreen,
       const gfx::Rect& match_rect) const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
+  std::string GetCurrentWorkspace() override;
 
   // Overridden from ui::XEventDispatcher:
   bool DispatchXEvent(XEvent* event) override;

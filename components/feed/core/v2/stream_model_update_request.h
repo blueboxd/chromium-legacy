@@ -66,7 +66,8 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
 
 std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
     feedwire::Response response,
-    base::TimeDelta response_time);
+    base::TimeDelta response_time,
+    base::Time current_time);
 
 }  // namespace feed
 

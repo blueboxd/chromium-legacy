@@ -176,10 +176,6 @@ ChromeBroadcaster* FullscreenControllerImpl::broadcaster() {
 }
 
 void FullscreenControllerImpl::SetWebStateList(WebStateList* web_state_list) {
-  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser())
-    // If FullscreenController is Browser-scoped, then WebStateList observation
-    // should last the entire lifetime of the Browser.
-    return;
   web_state_list_observer_.SetWebStateList(web_state_list);
 }
 

@@ -128,8 +128,8 @@ void AnimatedRoundedImageView::UpdateAnimationFrame() {
     // Schedule next frame update.
     update_frame_timer_.Start(
         FROM_HERE, frames_[active_frame_].duration,
-        base::BindRepeating(&AnimatedRoundedImageView::UpdateAnimationFrame,
-                            base::Unretained(this)));
+        base::BindOnce(&AnimatedRoundedImageView::UpdateAnimationFrame,
+                       base::Unretained(this)));
   }
 }
 

@@ -142,6 +142,19 @@ class MediaFeedsTableDelegate {
           td.textContent = 'Completed';
           break;
       }
+    } else if (key == 'safeSearchResult') {
+      // Format a SafeSearchResult.
+      switch (parseInt(data, 10)) {
+        case mediaFeeds.mojom.SafeSearchResult.kUnknown:
+          td.textContent = 'Unknown';
+          break;
+        case mediaFeeds.mojom.SafeSearchResult.kSafe:
+          td.textContent = 'Safe';
+          break;
+        case mediaFeeds.mojom.SafeSearchResult.kUnsafe:
+          td.textContent = 'Unsafe';
+          break;
+      }
     } else if (key == 'startTime') {
       // Format a start time.
       td.textContent =
@@ -257,7 +270,7 @@ class MediaFeedsTableDelegate {
         sortKey === 'userStatus' || sortKey === 'lastFetchResult' ||
         sortKey === 'fetchFailedCount' || sortKey === 'lastFetchItemCount' ||
         sortKey === 'lastFetchPlayNextCount' ||
-        sortKey === 'lastFetchContentTypes') {
+        sortKey === 'lastFetchContentTypes' || sortKey === 'safeSearchResult') {
       return val1 > val2 ? 1 : -1;
     } else if (
         sortKey === 'lastDiscoveryTime' || sortKey === 'lastFetchTime' ||

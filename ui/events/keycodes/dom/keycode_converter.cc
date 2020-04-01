@@ -93,10 +93,8 @@ int KeycodeConverter::InvalidNativeKeycode() {
 // static
 DomCode KeycodeConverter::NativeKeycodeToDomCode(int native_keycode) {
   for (auto& mapping : kDomCodeMappings) {
-    if (mapping.native_keycode == native_keycode) {
-      if (mapping.code != nullptr)
-        return static_cast<DomCode>(mapping.usb_keycode);
-    }
+    if (mapping.native_keycode == native_keycode)
+      return static_cast<DomCode>(mapping.usb_keycode);
   }
   return DomCode::NONE;
 }

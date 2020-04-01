@@ -416,6 +416,10 @@ void ExtensionHost::AddNewContents(WebContents* source,
 }
 
 void ExtensionHost::RenderViewReady() {
+  if (has_creation_notification_already_fired_)
+    return;
+  has_creation_notification_already_fired_ = true;
+
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::Source<BrowserContext>(browser_context_),

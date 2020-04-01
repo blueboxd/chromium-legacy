@@ -97,12 +97,6 @@ void ExtensionSettingsUIBrowserTest::SetAutoConfirmUninstall() {
           extensions::ScopedTestDialogAutoConfirm::ACCEPT);
 }
 
-void ExtensionSettingsUIBrowserTest::EnableErrorConsole() {
-  error_console_override_ =
-      std::make_unique<extensions::FeatureSwitch::ScopedOverride>(
-          extensions::FeatureSwitch::error_console(), true);
-}
-
 void ExtensionSettingsUIBrowserTest::SetDevModeEnabled(bool enabled) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kExtensionsUIDeveloperMode, enabled);

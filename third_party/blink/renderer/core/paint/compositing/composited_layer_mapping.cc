@@ -190,8 +190,6 @@ CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     : owning_layer_(layer),
       pending_update_scope_(kGraphicsLayerUpdateNone),
       scrolling_contents_are_empty_(false),
-      background_paints_onto_scrolling_contents_layer_(false),
-      background_paints_onto_graphics_layer_(false),
       draws_background_onto_content_layer_(false) {
   CreatePrimaryGraphicsLayer();
 }
@@ -260,40 +258,6 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
   graphics_layer_->SetHitTestable(true);
 }
 
-void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(
-    bool& invalidate_graphics_layer,
-    bool& invalidate_scrolling_contents_layer) {
-  invalidate_graphics_layer = false;
-  invalidate_scrolling_contents_layer = false;
-  // We can only paint the background onto the scrolling contents layer if
-  // it would be visually correct and we are using composited scrolling meaning
-  // we have a scrolling contents layer to paint it into.
-  BackgroundPaintLocation paint_location =
-      GetLayoutObject().GetBackgroundPaintLocation();
-  bool should_paint_onto_scrolling_contents_layer =
-      paint_location & kBackgroundPaintInScrollingContents &&
-      owning_layer_.GetScrollableArea()->UsesCompositedScrolling();
-  if (should_paint_onto_scrolling_contents_layer !=
-      BackgroundPaintsOntoScrollingContentsLayer()) {
-    background_paints_onto_scrolling_contents_layer_ =
-        should_paint_onto_scrolling_contents_layer;
-    // The scrolling contents layer needs to be updated for changed
-    // m_backgroundPaintsOntoScrollingContentsLayer.
-    if (HasScrollingLayer())
-      invalidate_scrolling_contents_layer = true;
-  }
-  bool should_paint_onto_graphics_layer =
-      !background_paints_onto_scrolling_contents_layer_ ||
-      paint_location & kBackgroundPaintInGraphicsLayer;
-  if (should_paint_onto_graphics_layer !=
-      !!background_paints_onto_graphics_layer_) {
-    background_paints_onto_graphics_layer_ = should_paint_onto_graphics_layer;
-    // The graphics layer needs to be updated for changed
-    // m_backgroundPaintsOntoGraphicsLayer.
-    invalidate_graphics_layer = true;
-  }
-}
-
 void CompositedLayerMapping::UpdateContentsOpaque() {
   // If there is a foreground layer, children paint into that layer and
   // not graphics_layer_, and so don't contribute to the opaqueness of the
@@ -322,40 +286,35 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
     // TODO(crbug.com/705019): Contents could be opaque, but that cannot be
     // determined from the main thread. Or can it?
     graphics_layer_->SetContentsOpaque(false);
-  } else {
-    // For non-root layers, background is painted by the scrolling contents
-    // layer if all backgrounds are background attachment local, otherwise
-    // background is painted by the primary graphics layer.
-    if (HasScrollingLayer() &&
-        background_paints_onto_scrolling_contents_layer_) {
-      // Backgrounds painted onto the foreground are clipped by the padding box
-      // rect.
-      // TODO(flackr): This should actually check the entire overflow rect
-      // within the scrolling contents layer but since we currently only trigger
-      // this for solid color backgrounds the answer will be the same.
-      scrolling_contents_layer_->SetContentsOpaque(
-          owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-              ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect(),
-              should_check_children));
+  } else if (BackgroundPaintsOntoScrollingContentsLayer()) {
+    DCHECK(HasScrollingLayer());
+    // Backgrounds painted onto the foreground are clipped by the padding box
+    // rect.
+    // TODO(flackr): This should actually check the entire overflow rect
+    // within the scrolling contents layer but since we currently only trigger
+    // this for solid color backgrounds the answer will be the same.
+    scrolling_contents_layer_->SetContentsOpaque(
+        owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
+            ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect(),
+            should_check_children));
 
-      if (GetLayoutObject().GetBackgroundPaintLocation() &
-          kBackgroundPaintInGraphicsLayer) {
-        graphics_layer_->SetContentsOpaque(
-            owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-                CompositedBounds(), should_check_children));
-      } else {
-        // If we only paint the background onto the scrolling contents layer we
-        // are going to leave a hole in the m_graphicsLayer where the background
-        // is so it is not opaque.
-        graphics_layer_->SetContentsOpaque(false);
-      }
-    } else {
-      if (HasScrollingLayer())
-        scrolling_contents_layer_->SetContentsOpaque(false);
+    if (BackgroundPaintsOntoGraphicsLayer()) {
       graphics_layer_->SetContentsOpaque(
           owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
               CompositedBounds(), should_check_children));
+    } else {
+      // If we only paint the background onto the scrolling contents layer we
+      // are going to leave a hole in the m_graphicsLayer where the background
+      // is so it is not opaque.
+      graphics_layer_->SetContentsOpaque(false);
     }
+  } else {
+    DCHECK(BackgroundPaintsOntoGraphicsLayer());
+    if (HasScrollingLayer())
+      scrolling_contents_layer_->SetContentsOpaque(false);
+    graphics_layer_->SetContentsOpaque(
+        owning_layer_.BackgroundIsKnownToBeOpaqueInRect(CompositedBounds(),
+                                                        should_check_children));
   }
 }
 
@@ -763,22 +722,7 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
 
   UpdateContentsRect();
   UpdateBackgroundColor();
-
-  bool invalidate_graphics_layer;
-  bool invalidate_scrolling_contents_layer;
-  UpdateBackgroundPaintsOntoScrollingContentsLayer(
-      invalidate_graphics_layer, invalidate_scrolling_contents_layer);
-
-  // This depends on background_paints_onto_graphics_layer_.
   UpdateDrawsContentAndPaintsHitTest();
-
-  // These invalidations need to happen after
-  // |UpdateDrawsContentAndPaintsHitTest|.
-  if (invalidate_graphics_layer)
-    graphics_layer_->SetNeedsDisplay();
-  if (invalidate_scrolling_contents_layer)
-    scrolling_contents_layer_->SetNeedsDisplay();
-
   UpdateElementId();
   UpdateContentsOpaque();
   UpdateRasterizationPolicy();
@@ -1546,7 +1490,7 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
 
   if (layout_object.GetNode() && layout_object.GetNode()->IsDocumentNode()) {
     if (owning_layer_.NeedsCompositedScrolling())
-      return background_paints_onto_graphics_layer_;
+      return BackgroundPaintsOntoGraphicsLayer();
 
     // Look to see if the root object has a non-simple background
     LayoutObject* root_object =
@@ -2166,10 +2110,10 @@ void CompositedLayerMapping::PaintContents(
       graphics_layer == mask_layer_.get() ||
       graphics_layer == scrolling_contents_layer_.get() ||
       graphics_layer == decoration_outline_layer_.get()) {
-    if (background_paints_onto_scrolling_contents_layer_) {
+    if (BackgroundPaintsOntoScrollingContentsLayer()) {
       if (graphics_layer == scrolling_contents_layer_.get())
         paint_layer_flags &= ~kPaintLayerPaintingSkipRootBackground;
-      else if (!background_paints_onto_graphics_layer_)
+      else if (!BackgroundPaintsOntoGraphicsLayer())
         paint_layer_flags |= kPaintLayerPaintingSkipRootBackground;
     }
 

@@ -36,6 +36,7 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom.h"
@@ -293,11 +294,13 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   DCHECK(insertion_result.second);
   SharedWorkerHost* host = insertion_result.first->get();
 
-  auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
-      appcache_service_.get(), worker_process_host->GetID());
-  base::WeakPtr<AppCacheHost> appcache_host =
-      appcache_handle->host()->GetWeakPtr();
-  host->SetAppCacheHandle(std::move(appcache_handle));
+  base::WeakPtr<AppCacheHost> appcache_host;
+  if (base::FeatureList::IsEnabled(blink::features::kAppCache)) {
+    auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
+        appcache_service_.get(), worker_process_host->GetID());
+    appcache_host = appcache_handle->host()->GetWeakPtr();
+    host->SetAppCacheHandle(std::move(appcache_handle));
+  }
 
   auto service_worker_handle =
       std::make_unique<ServiceWorkerMainResourceHandle>(

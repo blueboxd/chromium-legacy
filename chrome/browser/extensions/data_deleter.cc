@@ -90,7 +90,7 @@ void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
   if (AppIsolationInfo::HasIsolatedStorage(extension)) {
     BrowserContext::AsyncObliterateStoragePartition(
         profile, util::GetPartitionDomainForExtension(extension),
-        base::Bind(
+        base::BindOnce(
             &OnNeedsToGarbageCollectIsolatedStorage,
             ExtensionSystem::Get(profile)->extension_service()->AsWeakPtr()));
   } else {

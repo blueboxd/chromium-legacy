@@ -5,6 +5,5 @@
 
 <resources>
     <dimen name="security_status_icon_size">18dp</dimen>
-    <dimen name="security_status_icon_padding">5dp</dimen>
-    <dimen name="url_text_edge_padding">8dp</dimen>
+    <dimen name="url_text_edge_padding">5dp</dimen>
 </resources>

@@ -237,8 +237,8 @@ TEST_F(ExtensionWebUITest, TestFaviconAlwaysAvailable) {
   base::RunLoop run_loop;
   ExtensionWebUI::GetFaviconForURL(
       profile_.get(), kExtensionManifestURL,
-      base::BindRepeating(set_favicon_results, &favicon_results,
-                          run_loop.QuitClosure()));
+      base::BindOnce(set_favicon_results, &favicon_results,
+                     run_loop.QuitClosure()));
 
   run_loop.Run();
   EXPECT_FALSE(favicon_results.empty());

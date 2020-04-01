@@ -9,39 +9,73 @@
 
 #include "base/compiler_specific.h"
 
-// MetricsAppInterface contains the app-side
-// implementation for helpers. These helpers are compiled into
-// the app binary and can be called from either app or test code.
+namespace syncher {
+
+// Constant for timeout while waiting for asynchronous sync and UKM operations.
+const NSTimeInterval kSyncUKMOperationsTimeout = 10.0;
+
+}  // namespace syncher
+
+// MetricsAppInterface contains the app-side implementation for helpers. These
+// helpers are compiled into the app binary and can be called from either app or
+// test code.
 @interface MetricsAppInterface : NSObject
 
 // Enable/Disable the metrics in the app for test.
 // |overrideMetricsAndCrashReportingForTesting| must be called before setting
-// the value
+// the value.
 // |stopOverridingMetricsAndCrashReportingForTesting| must be called at the end
 // of the test for cleanup.
-// |setMetricsAndCrashReportingForTesting:| can be called to set to
-// enable/disable metrics. It returns whether metrics were previously enabled.
+// |setMetricsAndCrashReportingForTesting:| can be called to enable/disable
+// metrics. It returns whether metrics were previously enabled.
 + (void)overrideMetricsAndCrashReportingForTesting;
 + (void)stopOverridingMetricsAndCrashReportingForTesting;
 + (BOOL)setMetricsAndCrashReportingForTesting:(BOOL)enabled;
 
-// Returns whether the UKM recording is |enabled|.
+// TODO(crbug.com/1066297): Refactor to remove duplicate code.
+// Returns whether UKM recording is |enabled|.
 + (BOOL)checkUKMRecordingEnabled:(BOOL)enabled;
 
+// Returns YES if the ReportUserNoisedUserBirthYearAndGender feature is enabled.
++ (BOOL)isReportUserNoisedUserBirthYearAndGenderEnabled WARN_UNUSED_RESULT;
+
+// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Returns the current UKM client ID.
 + (uint64_t)UKMClientID;
 
+// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Checks whether a sourceID is registered for UKM.
 + (BOOL)UKMHasDummySource:(int64_t)sourceId;
 
+// TODO(crbug.com/1066297): Refactor to remove duplicate code.
 // Adds a new sourceID for UKM.
 + (void)UKMRecordDummySource:(int64_t)sourceId;
 
-// Creates a chrome_test_util::HistogramTester that will record every histograms
+// TODO(crbug.com/1066297): Refactor to remove duplicate code.
+// Sets the network time to approximately now.
++ (void)setNetworkTimeForTesting;
+
+// TODO(crbug.com/1066297): Refactor to remove duplicate code.
+// If new data are available, creates a UKM Report and stores it in the
+// UKM service's UnsentLogStore.
++ (void)buildAndStoreUKMLog;
+
+// TODO(crbug.com/1066297): Refactor to remove duplicate code.
+// Returns YES if the UKM service has logs to send.
++ (BOOL)hasUnsentLogs;
+
+// Returns YES if the UKM service's report has the expected year and gender.
+// Gender corresponds to the options in UserDemographicsProto::Gender.
++ (BOOL)UKMReportHasBirthYear:(int)year gender:(int)gender;
+
+// Returns YES if the UKM service's report has user demographics.
++ (BOOL)UKMReportHasUserDemographics;
+
+// Creates a chrome_test_util::HistogramTester that will record every histogram
 // sent during test.
 + (NSError*)setupHistogramTester WARN_UNUSED_RESULT;
 
-// Released the chrome_test_util::HistogramTester.
+// Releases the chrome_test_util::HistogramTester.
 + (NSError*)releaseHistogramTester WARN_UNUSED_RESULT;
 
 // We don't know the values of the samples, but we know how many there are.

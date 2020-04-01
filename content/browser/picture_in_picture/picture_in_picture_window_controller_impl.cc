@@ -314,7 +314,9 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
   }
 
   if (media_player_id_.has_value()) {
-    active_session_->Shutdown();
+    if (active_session_)
+      active_session_->Shutdown();
+
     active_session_ = nullptr;
     media_player_id_.reset();
   }

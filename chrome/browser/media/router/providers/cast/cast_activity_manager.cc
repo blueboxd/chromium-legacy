@@ -554,9 +554,9 @@ const MediaRoute* CastActivityManager::FindMirroringRouteForTab(
 void CastActivityManager::SendRouteMessage(const std::string& media_route_id,
                                            const std::string& message) {
   GetDataDecoder().ParseJson(
-      message, base::BindRepeating(&CastActivityManager::SendRouteJsonMessage,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   media_route_id, message));
+      message,
+      base::BindOnce(&CastActivityManager::SendRouteJsonMessage,
+                     weak_ptr_factory_.GetWeakPtr(), media_route_id, message));
 }
 
 void CastActivityManager::SendRouteJsonMessage(

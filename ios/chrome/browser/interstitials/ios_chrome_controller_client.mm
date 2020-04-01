@@ -32,7 +32,11 @@ IOSChromeControllerClient::IOSChromeControllerClient(
   web_state_->AddObserver(this);
 }
 
-IOSChromeControllerClient::~IOSChromeControllerClient() {}
+IOSChromeControllerClient::~IOSChromeControllerClient() {
+  if (web_state_) {
+    web_state_->RemoveObserver(this);
+  }
+}
 
 void IOSChromeControllerClient::SetWebInterstitial(
     web::WebInterstitial* web_interstitial) {

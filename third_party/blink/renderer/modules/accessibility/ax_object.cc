@@ -3401,15 +3401,17 @@ bool AXObject::InternalSetAccessibilityFocusAction() {
 
 bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   Node* node = GetNode();
-  if (!node)
+  if (!node || !node->isConnected())
     return false;
-  if (Element* locked_ancestor =
-          DisplayLockUtilities::NearestLockedInclusiveAncestor(*node)) {
-    locked_ancestor->ActivateDisplayLockIfNeeded(
-        DisplayLockActivationReason::kAccessibility);
-  }
+
+  // Node might not have a LayoutObject due to the fact that it is in a locked
+  // subtree. Force the update to create the LayoutObject (and update position
+  // information) for this node.
+  DisplayLockUtilities::ScopedChainForcedUpdate scoped_force_update(node);
+  GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kDisplayLock);
+
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object || !node->isConnected())
+  if (!layout_object)
     return false;
   PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   layout_object->ScrollRectToVisible(

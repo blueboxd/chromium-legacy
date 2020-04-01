@@ -3578,12 +3578,6 @@ jumbo_static_library("ui") {
             deps += [ "//ui/ozone" ]
           }
         }
-        if (use_x11) {
-          sources += [
-            "views/chrome_browser_main_extra_parts_views_linux_x11.cc",
-            "views/chrome_browser_main_extra_parts_views_linux_x11.h",
-          ]
-        }
       }
     }
 

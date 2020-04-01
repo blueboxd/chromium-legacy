@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "components/autofill/android/form_data_android.h"
 #include "components/autofill/android/jni_headers/AutofillProvider_jni.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -103,7 +104,10 @@ void AutofillProviderAndroid::StartNewSession(AutofillHandlerProxy* handler,
   if (obj.is_null())
     return;
 
-  form_ = std::make_unique<FormDataAndroid>(form);
+  form_ = std::make_unique<FormDataAndroid>(
+      form, base::BindRepeating(
+                &AutofillDriver::TransformBoundingBoxToViewportCoordinates,
+                base::Unretained(handler->driver())));
 
   size_t index;
   if (!form_->GetFieldIndex(field, &index)) {

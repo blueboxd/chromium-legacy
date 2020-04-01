@@ -127,7 +127,7 @@ cr.define('settings', function() {
     // Reset
     if (loadTimeData.valueExists('allowPowerwash') &&
         loadTimeData.getBoolean('allowPowerwash')) {
-      r.RESET = r.ADVANCED.createSection('/reset', 'reset');
+      r.OS_RESET = r.ADVANCED.createSection('/osReset', 'osReset');
     }
 
     const showAppManagement = loadTimeData.valueExists('showAppManagement') &&

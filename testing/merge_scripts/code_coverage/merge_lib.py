@@ -280,9 +280,12 @@ def merge_profiles(input_dir,
       profile_output_file_path=output_file,
       profdata_tool_path=profdata_tool_path)
 
-  # Remove inputs, as they won't be needed and they can be pretty large.
-  for input_file in profile_input_file_paths:
-    os.remove(input_file)
+  # Remove inputs when merging profraws as they won't be needed and they can be
+  # pretty large. If the inputs are profdata files, do not remove them as they
+  # might be used again for multiple test types coverage.
+  if input_extension == '.profraw':
+    for input_file in profile_input_file_paths:
+      os.remove(input_file)
 
   return invalid_profraw_files + invalid_profdata_files, counter_overflows
 

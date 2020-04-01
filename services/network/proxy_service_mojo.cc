@@ -26,7 +26,6 @@ CreateConfiguredProxyResolutionServiceUsingMojoFactory(
     std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher,
     net::HostResolver* host_resolver,
     net::NetLog* net_log,
-    bool pac_quick_check_enabled,
     net::NetworkDelegate* network_delegate) {
   DCHECK(proxy_config_service);
   DCHECK(pac_file_fetcher);
@@ -42,7 +41,7 @@ CreateConfiguredProxyResolutionServiceUsingMojoFactory(
                                   network_delegate,
                                   base::ThreadTaskRunnerHandle::Get()),
               net_log),
-          net_log, pac_quick_check_enabled));
+          net_log));
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
   proxy_resolution_service->SetPacFileFetchers(

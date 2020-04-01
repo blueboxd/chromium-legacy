@@ -161,14 +161,17 @@ class RawPtr : public PtrEdge {
 
 class RefPtr : public PtrEdge {
  public:
-  explicit RefPtr(Edge* ptr) : PtrEdge(ptr) { }
+  RefPtr(Edge* ptr, LivenessKind kind) : PtrEdge(ptr), kind_(kind) {}
   bool IsRefPtr() override { return true; }
-  LivenessKind Kind() override { return kStrong; }
+  LivenessKind Kind() override { return kind_; }
   bool NeedsFinalization() override { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) override {
     return TracingStatus::Illegal();
   }
   void Accept(EdgeVisitor* visitor) override { visitor->VisitRefPtr(this); }
+
+ private:
+  LivenessKind kind_;
 };
 
 class UniquePtr : public PtrEdge {

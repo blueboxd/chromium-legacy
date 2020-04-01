@@ -24,6 +24,7 @@
 
 #include "absl/base/config.h"
 #include "absl/base/port.h"
+#include "absl/meta/type_traits.h"
 #include "absl/strings/internal/str_format/output.h"
 #include "absl/strings/string_view.h"
 
@@ -154,8 +155,7 @@ enum class FormatConversionChar : uint8_t {
     d, i, o, u, x, X,        // int
     f, F, e, E, g, G, a, A,  // float
     n, p,                    // misc
-    kNone,
-    none = kNone
+    kNone
 };
 // clang-format on
 
@@ -287,11 +287,6 @@ class FormatConversionSpec {
   // negative value.
   int precision() const { return precision_; }
 
-  // Deprecated (use has_x_flag() instead).
-  Flags flags() const { return flags_; }
-  // Deprecated
-  FormatConversionChar conv() const { return conversion_char(); }
-
  private:
   friend struct str_format_internal::FormatConversionSpecImplFriend;
   FormatConversionChar conv_ = FormatConversionChar::kNone;
@@ -343,15 +338,7 @@ enum class FormatConversionCharSet : uint64_t {
   kFloating = a | e | f | g | A | E | F | G,
   kNumeric = kIntegral | kFloating,
   kString = s,
-  kPointer = p,
-
-  // The following are deprecated
-  star = kStar,
-  integral = kIntegral,
-  floating = kFloating,
-  numeric = kNumeric,
-  string = kString,
-  pointer = kPointer
+  kPointer = p
 };
 
 // Type safe OR operator.
@@ -365,10 +352,21 @@ constexpr FormatConversionCharSet operator|(FormatConversionCharSet a,
                                  static_cast<uint64_t>(b));
 }
 
+// Overloaded conversion functions to support absl::ParsedFormat.
 // Get a conversion with a single character in it.
-constexpr FormatConversionCharSet ConversionCharToConv(char c) {
-  return FormatConversionCharSet(FormatConversionCharToConvValue(c));
+constexpr FormatConversionCharSet ToFormatConversionCharSet(char c) {
+  return static_cast<FormatConversionCharSet>(
+      FormatConversionCharToConvValue(c));
 }
+
+// Get a conversion with a single character in it.
+constexpr FormatConversionCharSet ToFormatConversionCharSet(
+    FormatConversionCharSet c) {
+  return c;
+}
+
+template <typename T>
+void ToFormatConversionCharSet(T) = delete;
 
 // Checks whether `c` exists in `set`.
 constexpr bool Contains(FormatConversionCharSet set, char c) {

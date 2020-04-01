@@ -132,8 +132,10 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
 std::unique_ptr<StreamModelUpdateRequest>
 FeedStream::WireResponseTranslator::TranslateWireResponse(
     feedwire::Response response,
-    base::TimeDelta response_time) {
-  return ::feed::TranslateWireResponse(std::move(response), response_time);
+    base::TimeDelta response_time,
+    base::Time current_time) {
+  return ::feed::TranslateWireResponse(std::move(response), response_time,
+                                       current_time);
 }
 
 FeedStream::FeedStream(
@@ -156,7 +158,7 @@ FeedStream::FeedStream(
       tick_clock_(tick_clock),
       background_task_runner_(background_task_runner),
       task_queue_(this),
-      user_classifier_(profile_prefs, clock),
+      user_classifier_(std::make_unique<UserClassifier>(profile_prefs, clock)),
       refresh_throttler_(profile_prefs, clock) {
   // TODO(harringtond): Use these members.
   static WireResponseTranslator default_translator;
@@ -248,7 +250,7 @@ bool FeedStream::RejectEphemeralChange(EphemeralChangeId id) {
 }
 
 UserClass FeedStream::GetUserClass() {
-  return user_classifier_.GetUserClass();
+  return user_classifier_->GetUserClass();
 }
 
 base::Time FeedStream::GetLastFetchTime() {
@@ -275,6 +277,11 @@ void FeedStream::OnTaskQueueIsIdle() {
 void FeedStream::SetIdleCallbackForTesting(
     base::RepeatingClosure idle_callback) {
   idle_callback_ = idle_callback;
+}
+
+void FeedStream::SetUserClassifierForTesting(
+    std::unique_ptr<UserClassifier> user_classifier) {
+  user_classifier_ = std::move(user_classifier);
 }
 
 void FeedStream::OnStoreChange(const StreamModel::StoreUpdate& update) {

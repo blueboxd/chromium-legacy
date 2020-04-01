@@ -212,9 +212,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
       const AXClippingBehavior clipping_behavior,
       AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
-  // Do a *synchronous* hit test of the given location in global screen
-  // coordinates, and the node within this node's subtree (inclusive) that's
-  // hit, if any.
+  // Do a *synchronous* hit test of the given location in global screen physical
+  // pixel coordinates, and the node within this node's subtree (inclusive)
+  // that's hit, if any.
   //
   // If the result is anything other than this object or NULL, it will be
   // hit tested again recursively - that allows hit testing to work across
@@ -223,7 +223,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   //
   // This function is mainly used by accessibility debugging software.
   // Platforms with touch accessibility use a different asynchronous interface.
-  virtual gfx::NativeViewAccessible HitTestSync(int x, int y) const = 0;
+  virtual gfx::NativeViewAccessible HitTestSync(
+      int screen_physical_pixel_x,
+      int screen_physical_pixel_y) const = 0;
 
   // Return the node within this node's subtree (inclusive) that currently has
   // focus, or return nullptr if this subtree is not connected to the top

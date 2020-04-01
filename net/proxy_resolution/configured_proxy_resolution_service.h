@@ -105,8 +105,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   ConfiguredProxyResolutionService(
       std::unique_ptr<ProxyConfigService> config_service,
       std::unique_ptr<ProxyResolverFactory> resolver_factory,
-      NetLog* net_log,
-      bool quick_check_enabled);
+      NetLog* net_log);
 
   ~ConfiguredProxyResolutionService() override;
 
@@ -185,8 +184,8 @@ class NET_EXPORT ConfiguredProxyResolutionService
   static std::unique_ptr<ConfiguredProxyResolutionService>
   CreateUsingSystemProxyResolver(
       std::unique_ptr<ProxyConfigService> proxy_config_service,
-      NetLog* net_log,
-      bool quick_check_enabled);
+      bool quick_check_enabled,
+      NetLog* net_log);
 
   // Creates a ConfiguredProxyResolutionService without support for proxy
   // autoconfig.
@@ -248,6 +247,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   // ConfiguredProxyResolutionService.
   static std::unique_ptr<PacPollPolicy> CreateDefaultPacPollPolicy();
 
+  void set_quick_check_enabled(bool value) { quick_check_enabled_ = value; }
   bool quick_check_enabled_for_testing() const { return quick_check_enabled_; }
 
  private:

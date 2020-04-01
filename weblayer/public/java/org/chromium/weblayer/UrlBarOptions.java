@@ -6,6 +6,8 @@ package org.chromium.weblayer;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 /**
  * Class containing options to tweak the URL bar.
  */
@@ -39,6 +41,7 @@ public final class UrlBarOptions {
          * @param textSize The desired size of the URL bar text in scalable pixels.
          * The default is 14.0F and the minimum allowed size is 5.0F.
          */
+        @NonNull
         public Builder setTextSizeSP(float textSize) {
             mOptions.putFloat(URL_TEXT_SIZE, textSize);
             return this;
@@ -47,6 +50,7 @@ public final class UrlBarOptions {
         /**
          * Builds a UrlBarOptions object.
          */
+        @NonNull
         public UrlBarOptions build() {
             return new UrlBarOptions(this);
         }

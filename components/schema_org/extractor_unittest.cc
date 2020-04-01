@@ -10,6 +10,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
+#include "components/schema_org/schema_org_entity_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace schema_org {
@@ -23,11 +24,11 @@ using improved::mojom::ValuesPtr;
 
 class SchemaOrgExtractorTest : public testing::Test {
  public:
-  SchemaOrgExtractorTest() = default;
+  SchemaOrgExtractorTest() : extractor_({entity::kVideoObject}) {}
 
  protected:
   EntityPtr Extract(const std::string& text) {
-    return Extractor::Extract(text);
+    return extractor_.Extract(text);
   }
 
   PropertyPtr CreateStringProperty(const std::string& name,
@@ -48,6 +49,9 @@ class SchemaOrgExtractorTest : public testing::Test {
   PropertyPtr CreateUrlProperty(const std::string& name, const GURL& url);
 
   PropertyPtr CreateEntityProperty(const std::string& name, EntityPtr value);
+
+ private:
+  Extractor extractor_;
 };
 
 PropertyPtr SchemaOrgExtractorTest::CreateStringProperty(

@@ -168,13 +168,18 @@ luci.console_view(
         ),
         luci.console_view_entry(
             builder = 'ci/android-arm64-proguard-rel',
-            category = 'builder_tester',
+            category = 'builder_tester|arm64',
             short_name = 'M proguard',
         ),
         luci.console_view_entry(
             builder = 'ci/android-10-arm64-rel',
-            category = 'builder_tester',
+            category = 'builder_tester|arm64',
             short_name = '10',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-pie-x86-rel',
+            category = 'builder_tester|x86',
+            short_name = 'P',
         ),
         luci.console_view_entry(
             builder = 'ci/android-kitkat-arm-rel',

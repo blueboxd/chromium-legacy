@@ -243,6 +243,10 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = 'android-pie-x86-rel',
+)
+
+ci.android_builder(
     name = 'android-10-arm64-rel',
 )
 
@@ -269,9 +273,11 @@ ci.android_fyi_builder(
     triggered_by = [],
 )
 
+# TODO(hypan): remove this once there is no associated disabled tests
 ci.android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
     goma_jobs=goma.jobs.J150,
+    schedule = 'triggered',  # triggered manually via Scheduler UI
 )
 
 
@@ -1602,6 +1608,11 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = 'Network Service Linux',
+)
+
+ci.linux_builder(
+    name = 'fuchsia-x64-dbg',
+    notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(

@@ -423,14 +423,16 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   //
 
   // Retrieves the child element or child object at a given point on the screen.
-  IFACEMETHODIMP accHitTest(LONG x_left, LONG y_top, VARIANT* child) override;
+  IFACEMETHODIMP accHitTest(LONG screen_physical_pixel_x,
+                            LONG screen_physical_pixel_y,
+                            VARIANT* child) override;
 
   // Performs the object's default action.
   IFACEMETHODIMP accDoDefaultAction(VARIANT var_id) override;
 
   // Retrieves the specified object's current screen location.
-  IFACEMETHODIMP accLocation(LONG* x_left,
-                             LONG* y_top,
+  IFACEMETHODIMP accLocation(LONG* physical_pixel_left,
+                             LONG* physical_pixel_top,
                              LONG* width,
                              LONG* height,
                              VARIANT var_id) override;
@@ -990,7 +992,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       NavigateDirection direction,
       IRawElementProviderFragment** element_provider) override;
   IFACEMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
-  IFACEMETHODIMP get_BoundingRectangle(UiaRect* bounding_rectangle) override;
+  IFACEMETHODIMP get_BoundingRectangle(
+      UiaRect* screen_physical_pixel_bounds) override;
   IFACEMETHODIMP GetEmbeddedFragmentRoots(
       SAFEARRAY** embedded_fragment_roots) override;
   IFACEMETHODIMP SetFocus() override;

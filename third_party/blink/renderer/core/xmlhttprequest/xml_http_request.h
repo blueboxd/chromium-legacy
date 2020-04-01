@@ -27,10 +27,12 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/document_parser_client.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/fetch/trust_token.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_event_target.h"
@@ -140,6 +142,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void setRequestHeader(const AtomicString& name,
                         const AtomicString& value,
                         ExceptionState&);
+  void setTrustToken(const TrustToken*, ExceptionState&);
   void overrideMimeType(const AtomicString& override, ExceptionState&);
   String getAllResponseHeaders() const;
   const AtomicString& getResponseHeader(const AtomicString&) const;
@@ -299,6 +302,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
       blob_url_loader_factory_;
   AtomicString method_;
   HTTPHeaderMap request_headers_;
+  network::mojom::blink::TrustTokenParamsPtr trust_token_params_;
   // Not converted to ASCII lowercase. Must be lowered later or compared
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;

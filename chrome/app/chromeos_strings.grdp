@@ -890,8 +890,8 @@
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SWIPE_FROM_SHELF_LABEL" desc="The label shown in Chrome OS system shelf above a drag handle UI on the last dialog in the set of screens displayed to the user on the first login to the Chrome OS device. The label informs the user that swiping up from the shelf will start the session.">
     Swipe up to get started
   </message>
-  <message name="IDS_MARKETING_OPT_IN_ACCESSIBILITY_SETTINGS_LINK" desc="The label of the accessibility settings link which appears at the bottom of the last OOBE dialog shown to the user on the first login. Clicking the link will show a screen that allows the user to change certain accessibility settings.">
-    Accessibility settings for navigation
+  <message name="IDS_MARKETING_OPT_IN_ACCESSIBILITY_BUTTON_LABEL" desc="The label of the button which appears at the bottom left of the last OOBE dialog shown to the user on the first login. Clicking the button will show a screen that allows the user to change certain accessibility settings.">
+    Accessibility
   </message>
   <message name="IDS_MARKETING_OPT_IN_ACCESSIBILITY_TITLE" desc="The title of the accessibility page that is part of the the marketing opt in dialog screen, the last OOBE screen shown to the user on their first login to the Chrome OS device. The accessibility page will allow the user to change certain accessibility settings.">
     Accessibility settings

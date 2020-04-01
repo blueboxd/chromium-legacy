@@ -298,8 +298,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
       delay_timer_->Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kInitialBackspaceDelayMs),
-          base::BindRepeating(&BackspacePinButton::DispatchPress,
-                              base::Unretained(this), nullptr));
+          base::BindOnce(&BackspacePinButton::DispatchPress,
+                         base::Unretained(this), nullptr));
 
       if (event)
         event->SetHandled();

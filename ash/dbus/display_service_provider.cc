@@ -84,32 +84,32 @@ void DisplayServiceProvider::Start(
       chromeos::kDisplayServiceSetPowerMethod,
       base::BindRepeating(&DisplayServiceProvider::SetDisplayPower,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   exported_object->ExportMethod(
       chromeos::kDisplayServiceInterface,
       chromeos::kDisplayServiceSetSoftwareDimmingMethod,
       base::BindRepeating(&DisplayServiceProvider::SetDisplaySoftwareDimming,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   exported_object->ExportMethod(
       chromeos::kDisplayServiceInterface,
       chromeos::kDisplayServiceTakeOwnershipMethod,
       base::BindRepeating(&DisplayServiceProvider::TakeDisplayOwnership,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   exported_object->ExportMethod(
       chromeos::kDisplayServiceInterface,
       chromeos::kDisplayServiceReleaseOwnershipMethod,
       base::BindRepeating(&DisplayServiceProvider::ReleaseDisplayOwnership,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DisplayServiceProvider::SetDisplayPower(

@@ -9,12 +9,15 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
 
 // Functions that help build a feedstore::StreamStructure for testing.
 namespace feed {
 struct StreamModelUpdateRequest;
+
+extern const base::Time kTestTimeEpoch;
 
 ContentId MakeContentId(ContentId::Type type,
                         std::string content_domain,
@@ -46,7 +49,8 @@ feedstore::Record MakeRecord(feedstore::StreamData stream_data);
 // |-Cluster 1
 //    |-Content 1
 std::vector<feedstore::DataOperation> MakeTypicalStreamOperations();
-std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState();
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
+    base::Time last_added_time = kTestTimeEpoch);
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_CORE_V2_TEST_STREAM_BUILDER_H_

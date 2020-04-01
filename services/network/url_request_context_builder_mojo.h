@@ -59,8 +59,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
       net::URLRequestContext* url_request_context,
       net::HostResolver* host_resolver,
       net::NetworkDelegate* network_delegate,
-      net::NetLog* net_log,
-      bool pac_quick_check_enabled) override;
+      net::NetLog* net_log) override;
 
   std::unique_ptr<net::DhcpPacFileFetcher> CreateDhcpPacFileFetcher(
       net::URLRequestContext* context);

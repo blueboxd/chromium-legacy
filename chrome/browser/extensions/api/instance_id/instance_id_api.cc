@@ -86,7 +86,7 @@ InstanceIDGetIDFunction::~InstanceIDGetIDFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDGetIDFunction::DoWork() {
   GetInstanceID()->GetID(
-      base::Bind(&InstanceIDGetIDFunction::GetIDCompleted, this));
+      base::BindOnce(&InstanceIDGetIDFunction::GetIDCompleted, this));
   return RespondLater();
 }
 
@@ -99,9 +99,8 @@ InstanceIDGetCreationTimeFunction::InstanceIDGetCreationTimeFunction() {}
 InstanceIDGetCreationTimeFunction::~InstanceIDGetCreationTimeFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDGetCreationTimeFunction::DoWork() {
-  GetInstanceID()->GetCreationTime(
-      base::Bind(&InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted,
-                 this));
+  GetInstanceID()->GetCreationTime(base::BindOnce(
+      &InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted, this));
   return RespondLater();
 }
 
@@ -132,7 +131,7 @@ ExtensionFunction::ResponseAction InstanceIDGetTokenFunction::DoWork() {
       params->get_token_params.scope, /*time_to_live=*/base::TimeDelta(),
       options,
       /*flags=*/{},
-      base::Bind(&InstanceIDGetTokenFunction::GetTokenCompleted, this));
+      base::BindOnce(&InstanceIDGetTokenFunction::GetTokenCompleted, this));
 
   return RespondLater();
 }
@@ -158,7 +157,8 @@ ExtensionFunction::ResponseAction InstanceIDDeleteTokenFunction::DoWork() {
   GetInstanceID()->DeleteToken(
       params->delete_token_params.authorized_entity,
       params->delete_token_params.scope,
-      base::Bind(&InstanceIDDeleteTokenFunction::DeleteTokenCompleted, this));
+      base::BindOnce(&InstanceIDDeleteTokenFunction::DeleteTokenCompleted,
+                     this));
 
   return RespondLater();
 }
@@ -177,7 +177,7 @@ InstanceIDDeleteIDFunction::~InstanceIDDeleteIDFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDDeleteIDFunction::DoWork() {
   GetInstanceID()->DeleteID(
-      base::Bind(&InstanceIDDeleteIDFunction::DeleteIDCompleted, this));
+      base::BindOnce(&InstanceIDDeleteIDFunction::DeleteIDCompleted, this));
 
   return RespondLater();
 }

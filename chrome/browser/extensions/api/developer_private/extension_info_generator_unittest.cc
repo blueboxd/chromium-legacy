@@ -35,7 +35,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -230,9 +229,6 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 
 // Test some of the basic fields.
 TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
-  // Enable error console for testing.
-  FeatureSwitch::ScopedOverride error_console_override(
-      FeatureSwitch::error_console(), true);
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
 
   const char kName[] = "extension name";

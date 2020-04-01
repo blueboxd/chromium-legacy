@@ -23,7 +23,10 @@ ManagePasswordsIconViews::ManagePasswordsIconViews(
     : PageActionIconView(updater,
                          IDC_MANAGE_PASSWORDS_FOR_PAGE,
                          icon_label_bubble_delegate,
-                         page_action_icon_delegate) {}
+                         page_action_icon_delegate) {
+  // Password icon should not be mirrored in RTL.
+  image()->EnableCanvasFlippingForRTLUI(false);
+}
 
 ManagePasswordsIconViews::~ManagePasswordsIconViews() = default;
 

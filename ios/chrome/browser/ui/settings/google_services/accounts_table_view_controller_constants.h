@@ -13,6 +13,8 @@ extern NSString* const kSettingsAccountsTableViewId;
 extern NSString* const kSettingsAccountsTableViewAddAccountCellId;
 // The accessibility identifier of the signout cell.
 extern NSString* const kSettingsAccountsTableViewSignoutCellId;
+// The accessibility identifier of the signout and clear data cell.
+extern NSString* const kSettingsAccountsTableViewSignoutAndClearDataCellId;
 // The accessibility identifier of the sync account cell.
 extern NSString* const kSettingsAccountsTableViewSyncCellId;
 

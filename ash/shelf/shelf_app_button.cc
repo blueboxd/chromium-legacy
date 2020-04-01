@@ -722,13 +722,13 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
         AddState(STATE_HOVERED);
         drag_timer_.Start(
             FROM_HERE, base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
-            base::BindRepeating(&ShelfAppButton::OnTouchDragTimer,
-                                base::Unretained(this)));
+            base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
+                           base::Unretained(this)));
         ripple_activation_timer_.Start(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(kInkDropRippleActivationTimeMs),
-            base::BindRepeating(&ShelfAppButton::OnRippleTimer,
-                                base::Unretained(this)));
+            base::BindOnce(&ShelfAppButton::OnRippleTimer,
+                           base::Unretained(this)));
         GetInkDrop()->AnimateToState(views::InkDropState::ACTION_PENDING);
         event->SetHandled();
       }

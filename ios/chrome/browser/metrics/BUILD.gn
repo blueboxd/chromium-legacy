@@ -228,6 +228,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "demographics_egtest.mm",
     "tab_usage_recorder_egtest.mm",
     "ukm_egtest.mm",
   ]
@@ -239,6 +240,7 @@ source_set("eg_tests") {
     "//base/test:test_support",
     "//components/browser_sync",
     "//components/metrics",
+    "//components/metrics:demographic_metrics_provider",
     "//components/metrics_services_manager",
     "//components/strings",
     "//components/ukm",
@@ -283,6 +285,7 @@ source_set("eg2_tests") {
   ]
   testonly = true
   sources = [
+    "demographics_egtest.mm",
     "tab_usage_recorder_egtest.mm",
     "ukm_egtest.mm",
   ]
@@ -290,7 +293,9 @@ source_set("eg2_tests") {
     ":eg_test_support+eg2",
     ":tab_usage_recorder_metrics",
     "//base/test:test_support",
+    "//components/metrics:demographic_metrics_provider",
     "//components/strings:components_strings_grit",
+    "//components/ukm",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/test:eg_test_support+eg2",
@@ -316,11 +321,15 @@ source_set("test_support") {
     ":metrics",
     "//base",
     "//base/test:test_support",
+    "//components/metrics",
     "//components/metrics_services_manager",
+    "//components/network_time",
+    "//components/sync/base",
     "//components/ukm",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/main",
@@ -333,6 +342,10 @@ source_set("test_support") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//net:test_support",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//third_party/metrics_proto",
+
+    #TODO(crbug.com/1066297): Remove the below line.
+    "//third_party/zlib/google:compression_utils",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -365,15 +378,20 @@ source_set("eg_app_support+eg2") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/metrics",
     "//components/metrics_services_manager",
-    "//components/metrics_services_manager:metrics_services_manager",
+    "//components/network_time",
+    "//components/sync/base",
     "//components/ukm",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/test/app:test_support",
     "//ios/testing:nserror_support",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//third_party/metrics_proto",
+    "//third_party/zlib/google:compression_utils",
   ]
 }
 

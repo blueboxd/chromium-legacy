@@ -357,53 +357,53 @@ generate_tests(assert_throws, [
 
 var detailNames = ['total', 'displayItems.0', 'shippingOptions.0', 'modifiers.0.total', 'modifiers.0.additionalDisplayItems.0'];
 for (var i in detailNames) {
-    generate_tests(assert_throws, [
+    generate_tests(assert_throws_js, [
         // Invalid currency code formats.
-        ['Undefined currency code in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Undefined currency code in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'currency': undefined}), {requestShipping: true})
         }],
 
         // Invalid amount formats.
-        ['Invalid amount "-" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "-" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '-'}), {requestShipping: true})
         }],
-        ['Invalid amount "notdigits" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "notdigits" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': 'notdigits'}), {requestShipping: true})
         }],
-        ['Invalid amount "ALSONOTDIGITS" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "ALSONOTDIGITS" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': 'ALSONOTDIGITS'}), {requestShipping: true})
         }],
-        ['Invalid amount "10." in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "10." in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '10.'}), {requestShipping: true})
         }],
-        ['Invalid amount ".99" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount ".99" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '.99'}), {requestShipping: true})
         }],
-        ['Invalid amount "-10." in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "-10." in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '-10.'}), {requestShipping: true})
         }],
-        ['Invalid amount "-.99" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "-.99" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '-.99'}), {requestShipping: true})
         }],
-        ['Invalid amount "10-" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "10-" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '10-'}), {requestShipping: true})
         }],
-        ['Invalid amount "1-0" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "1-0" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '1-0'}), {requestShipping: true})
         }],
-        ['Invalid amount "1.0.0" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "1.0.0" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '1.0.0'}), {requestShipping: true})
         }],
-        ['Invalid amount "1/3" in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Invalid amount "1/3" in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': '1/3'}), {requestShipping: true})
         }],
-        ['Empty amount in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Empty amount in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': ''}), {requestShipping: true})
         }],
-        ['Null amount in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Null amount in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': null}), {requestShipping: true})
         }],
-        ['Undefined amount in ' + detailNames[i] + ' should throw', new TypeError(), function() {
+        ['Undefined amount in ' + detailNames[i] + ' should throw', TypeError, function() {
             new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails(detailNames[i], {'value': undefined}), {requestShipping: true})
         }],
     ]);

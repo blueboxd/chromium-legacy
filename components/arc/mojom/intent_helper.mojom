@@ -173,8 +173,9 @@ enum ChromePage {
   AMBIENTMODE,
   PLUGINVMDETAILS,
   PLUGINVMSHAREDPATHS,
+  OSRESET,
 
-  LAST = PLUGINVMSHAREDPATHS,
+  LAST = OSRESET,
 };
 
 // Describes an unique chrome app.

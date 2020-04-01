@@ -276,7 +276,7 @@ class BluetoothBlueZTest : public testing::Test {
 
   // Call to fill the adapter_ member with a BluetoothAdapter instance.
   void GetAdapter() {
-    adapter_ = new BluetoothAdapterBlueZ(base::Bind(
+    adapter_ = new BluetoothAdapterBlueZ(base::BindOnce(
         &BluetoothBlueZTest::AdapterCallback, base::Unretained(this)));
     base::RunLoop().Run();
     ASSERT_TRUE(adapter_.get() != nullptr);
@@ -297,8 +297,8 @@ class BluetoothBlueZTest : public testing::Test {
 
     adapter_->SetPowered(true, GetCallback(), GetErrorCallback());
     adapter_->StartDiscoverySession(
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
     base::RunLoop().Run();
     ASSERT_EQ(2, callback_count_);
@@ -691,8 +691,8 @@ TEST_F(BluetoothBlueZTest, StopDiscovery) {
 
   adapter_->SetPowered(true, GetCallback(), GetErrorCallback());
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   base::RunLoop().Run();
   EXPECT_EQ(2, callback_count_);
@@ -727,8 +727,8 @@ TEST_F(BluetoothBlueZTest, Discovery) {
 
   adapter_->SetPowered(true, GetCallback(), GetErrorCallback());
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   base::RunLoop().Run();
   EXPECT_EQ(2, callback_count_);
@@ -764,8 +764,8 @@ TEST_F(BluetoothBlueZTest, PoweredAndDiscovering) {
   GetAdapter();
   adapter_->SetPowered(true, GetCallback(), GetErrorCallback());
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   base::RunLoop().Run();
   EXPECT_EQ(2, callback_count_);
@@ -887,8 +887,8 @@ TEST_F(BluetoothBlueZTest, StopAndStartDiscoverySimultaneously) {
   // StartDiscoverySession pending.
   base::RunLoop start_loop_2;
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallbackWithClosure,
-                 base::Unretained(this), start_loop_2.QuitClosure()),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallbackWithClosure,
+                     base::Unretained(this), start_loop_2.QuitClosure()),
       GetErrorCallback());
 
   // Run loop waiting for DiscoveryChanged to be called in the observer
@@ -923,8 +923,8 @@ TEST_F(BluetoothBlueZTest, MultipleDiscoverySessions) {
   // Request device discovery 3 times.
   for (int i = 0; i < 3; i++) {
     adapter_->StartDiscoverySession(
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
   }
 
@@ -955,8 +955,8 @@ TEST_F(BluetoothBlueZTest, MultipleDiscoverySessions) {
   // Request device discovery 3 times.
   for (int i = 0; i < 3; i++) {
     adapter_->StartDiscoverySession(
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
   }
 
@@ -1005,8 +1005,8 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // Request device discovery 3 times.
   for (int i = 0; i < 3; i++) {
     adapter_->StartDiscoverySession(
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
   }
 
@@ -1043,8 +1043,8 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
       GetCallback(),
-      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
@@ -1060,8 +1060,8 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // It should be possible to successfully start discovery.
   for (int i = 0; i < 2; i++) {
     adapter_->StartDiscoverySession(
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
   }
 
@@ -1108,8 +1108,8 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // application other than us. Starting and stopping discovery will succeed
   // but it won't cause the discovery state to change.
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   // Run the loop, as there should have been a D-Bus call.
   base::RunLoop().Run();
@@ -1129,8 +1129,8 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
 
   // Start discovery again.
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   // Run the loop, as there should have been a D-Bus call.
   base::RunLoop().Run();
@@ -1148,8 +1148,8 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
       GetCallback(),
-      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(5, observer.discovering_changed_count());
   EXPECT_EQ(9, callback_count_);
@@ -1186,8 +1186,8 @@ TEST_F(BluetoothBlueZTest, InvalidatedDiscoverySessions) {
   // Request device discovery 3 times.
   for (int i = 0; i < 3; i++) {
     adapter_->StartDiscoverySession(
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
     // Run loop every time as we are calling dbus on every session start.
     base::RunLoop().Run();
@@ -1227,8 +1227,8 @@ TEST_F(BluetoothBlueZTest, InvalidatedDiscoverySessions) {
   fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
       GetCallback(),
-      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
@@ -1256,8 +1256,8 @@ TEST_F(BluetoothBlueZTest, StartDiscoverySession) {
 
   // Request a new discovery session.
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   base::RunLoop().Run();
   EXPECT_EQ(1, observer.discovering_changed_count());
@@ -1272,8 +1272,8 @@ TEST_F(BluetoothBlueZTest, StartDiscoverySession) {
   // in turn will destroy the previous session. Adapter should still be
   // discovering and the reference count should be 1.
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   base::RunLoop().Run();
   EXPECT_EQ(1, observer.discovering_changed_count());
@@ -1286,8 +1286,8 @@ TEST_F(BluetoothBlueZTest, StartDiscoverySession) {
 
   // Request a new session.
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   base::RunLoop().Run();
   EXPECT_EQ(1, observer.discovering_changed_count());
@@ -1342,9 +1342,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscovery) {
   auto* comparison_filter_holder = discovery_filter.get();
   adapter_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1402,9 +1403,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryFail) {
 
   adapter_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -1465,9 +1467,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
 
     adapter_->StartDiscoverySessionWithFilter(
         std::move(discovery_filter),
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                       base::Unretained(this)));
 
     base::RunLoop().Run();
 
@@ -1590,9 +1593,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
 
     adapter_->StartDiscoverySessionWithFilter(
         std::move(discovery_filter),
-        base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                       base::Unretained(this)));
 
     base::RunLoop().Run();
 
@@ -1665,9 +1669,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
 
   adapter_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -1688,9 +1693,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
 
   adapter_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -1716,9 +1722,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
 
   adapter_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter3),
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -1734,9 +1741,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
 
   // start additionally classic scan
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -3537,8 +3545,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairRequestPinCode) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPinCodePath),
-      true, GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                      base::Unretained(this)));
+      true, GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.request_pincode_count_);
@@ -3590,8 +3599,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairConfirmPasskey) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath),
-      true, GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                      base::Unretained(this)));
+      true, GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.confirm_passkey_count_);
@@ -3644,8 +3654,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairRequestPasskey) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath),
-      true, GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                      base::Unretained(this)));
+      true, GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.request_passkey_count_);
@@ -3698,8 +3709,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairJustWorks) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath), true,
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.authorize_pairing_count_);
@@ -3748,8 +3760,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairRequestPinCodeWithoutDelegate) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPinCodePath),
-      true, GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                      base::Unretained(this)));
+      true, GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -3787,8 +3800,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairConfirmPasskeyWithoutDelegate) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath),
-      true, GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                      base::Unretained(this)));
+      true, GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -3826,8 +3840,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairRequestPasskeyWithoutDelegate) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath),
-      true, GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                      base::Unretained(this)));
+      true, GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -3865,8 +3880,9 @@ TEST_F(BluetoothBlueZTest, IncomingPairJustWorksWithoutDelegate) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath), true,
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().Run();
 
@@ -3907,8 +3923,9 @@ TEST_F(BluetoothBlueZTest, RemovePairingDelegateDuringPairing) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath),
-      true, GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                      base::Unretained(this)));
+      true, GetCallback(),
+      base::BindOnce(&BluetoothBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.request_passkey_count_);
@@ -4054,8 +4071,8 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   adapter_->SetPowered(true, GetCallback(), GetErrorCallback());
   adapter_->SetDiscoverable(true, GetCallback(), GetErrorCallback());
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   base::RunLoop().Run();
   ASSERT_EQ(3, callback_count_);
@@ -4192,8 +4209,8 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   EXPECT_EQ(1, error_callback_count_--) << "OnPropertyChangeCompleted error";
 
   adapter_bluez->StartDiscoverySession(
-      base::BindRepeating(&BluetoothBlueZTest::DiscoverySessionCallback,
-                          base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   EXPECT_EQ(0, callback_count_) << "AddDiscoverySession error";
   EXPECT_EQ(1, error_callback_count_--) << "AddDiscoverySession error";
@@ -4233,8 +4250,8 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   // From BluetoothAdapater:
 
   adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothBlueZTest::DiscoverySessionCallback,
-                 base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                     base::Unretained(this)),
       GetErrorCallback());
   EXPECT_EQ(0, callback_count_) << "StartDiscoverySession error";
   EXPECT_EQ(1, error_callback_count_--) << "StartDiscoverySession error";
@@ -4260,7 +4277,7 @@ TEST_F(BluetoothBlueZTest, StartDiscovery_DiscoveringStopped_StartAgain) {
             [&](std::unique_ptr<BluetoothDiscoverySession> session) {
               loop.Quit();
             }),
-        base::BindRepeating([]() {
+        base::BindOnce([]() {
           ADD_FAILURE() << "Unexpected discovery session start error.";
         }));
     loop.Run();
@@ -4273,7 +4290,7 @@ TEST_F(BluetoothBlueZTest, StartDiscovery_DiscoveringStopped_StartAgain) {
             [&](std::unique_ptr<BluetoothDiscoverySession> session) {
               loop.Quit();
             }),
-        base::BindRepeating([]() {
+        base::BindOnce([]() {
           ADD_FAILURE() << "Unexpected discovery session start error.";
         }));
     loop.Run();
@@ -4289,8 +4306,8 @@ TEST_F(BluetoothBlueZTest, Shutdown_OnStartDiscovery) {
 
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
     adapter_bluez->StartDiscoverySession(
-        base::BindRepeating(&BluetoothBlueZTest::DiscoverySessionCallback,
-                            base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
   }
   adapter_->Shutdown();
@@ -4309,8 +4326,8 @@ TEST_F(BluetoothBlueZTest, Shutdown_OnStartDiscoveryError) {
 
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
     adapter_bluez->StartDiscoverySession(
-        base::BindRepeating(&BluetoothBlueZTest::DiscoverySessionCallback,
-                            base::Unretained(this)),
+        base::BindOnce(&BluetoothBlueZTest::DiscoverySessionCallback,
+                       base::Unretained(this)),
         GetErrorCallback());
   }
   adapter_->Shutdown();
@@ -4327,10 +4344,9 @@ TEST_F(BluetoothBlueZTest, StartDiscoveryError_ThenStartAgain) {
   {
     base::RunLoop loop;
     adapter_->StartDiscoverySession(
-        base::BindRepeating(
-            [](std::unique_ptr<BluetoothDiscoverySession> session) {
-              ADD_FAILURE() << "Unexpected discovery session start success.";
-            }),
+        base::BindOnce([](std::unique_ptr<BluetoothDiscoverySession> session) {
+          ADD_FAILURE() << "Unexpected discovery session start success.";
+        }),
         loop.QuitClosure());
     loop.Run();
   }
@@ -4342,7 +4358,7 @@ TEST_F(BluetoothBlueZTest, StartDiscoveryError_ThenStartAgain) {
             [&](std::unique_ptr<BluetoothDiscoverySession> session) {
               loop.Quit();
             }),
-        base::BindRepeating([]() {
+        base::BindOnce([]() {
           ADD_FAILURE() << "Unexpected discovery session start error.";
         }));
     loop.Run();

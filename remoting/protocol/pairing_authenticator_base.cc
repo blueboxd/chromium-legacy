@@ -59,10 +59,10 @@ void PairingAuthenticatorBase::ProcessMessage(
     spake2_authenticator_.reset();
     CreateSpakeAuthenticatorWithPin(
         WAITING_MESSAGE,
-        base::Bind(&PairingAuthenticatorBase::ProcessMessage,
-                   weak_factory_.GetWeakPtr(),
-                   base::Owned(new jingle_xmpp::XmlElement(*message)),
-                   base::Passed(std::move(resume_callback))));
+        base::BindOnce(&PairingAuthenticatorBase::ProcessMessage,
+                       weak_factory_.GetWeakPtr(),
+                       base::Owned(new jingle_xmpp::XmlElement(*message)),
+                       base::Passed(std::move(resume_callback))));
     return;
   }
 
@@ -72,9 +72,9 @@ void PairingAuthenticatorBase::ProcessMessage(
   // to the peer and retrying with the PIN.
   spake2_authenticator_->ProcessMessage(
       message,
-      base::Bind(&PairingAuthenticatorBase::CheckForFailedSpakeExchange,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(resume_callback))));
+      base::BindOnce(&PairingAuthenticatorBase::CheckForFailedSpakeExchange,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(std::move(resume_callback))));
 }
 
 std::unique_ptr<jingle_xmpp::XmlElement> PairingAuthenticatorBase::GetNextMessage() {

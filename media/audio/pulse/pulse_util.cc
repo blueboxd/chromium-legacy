@@ -33,9 +33,11 @@ namespace pulse {
 namespace {
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-static const char kBrowserDisplayName[] = "google-chrome";
+constexpr char kBrowserDisplayName[] = "google-chrome";
+#define PRODUCT_STRING "Google Chrome"
 #else
-static const char kBrowserDisplayName[] = "chromium-browser";
+constexpr char kBrowserDisplayName[] = "chromium-browser";
+#define PRODUCT_STRING "Chromium"
 #endif
 
 #if defined(DLOPEN_PULSEAUDIO)
@@ -208,7 +210,8 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
     return false;
 
   pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(pa_mainloop);
-  pa_context* pa_context = pa_context_new(pa_mainloop_api, "Chrome input");
+  pa_context* pa_context =
+      pa_context_new(pa_mainloop_api, PRODUCT_STRING " input");
   if (!pa_context) {
     pa_threaded_mainloop_free(pa_mainloop);
     return false;
@@ -483,8 +486,8 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   RETURN_ON_FAILURE(*mainloop, "Failed to create PulseAudio main loop.");
 
   pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(*mainloop);
-  *context = pa_context_new(pa_mainloop_api,
-                            app_name.empty() ? "Chromium" : app_name.c_str());
+  *context = pa_context_new(
+      pa_mainloop_api, app_name.empty() ? PRODUCT_STRING : app_name.c_str());
   RETURN_ON_FAILURE(*context, "Failed to create PulseAudio context.");
 
   // A state callback must be set before calling pa_threaded_mainloop_lock() or

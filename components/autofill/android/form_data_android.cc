@@ -19,8 +19,12 @@ using base::android::ScopedJavaLocalRef;
 
 namespace autofill {
 
-FormDataAndroid::FormDataAndroid(const FormData& form)
-    : form_(form), index_(0) {}
+FormDataAndroid::FormDataAndroid(const FormData& form,
+                                 const TransformCallback& callback)
+    : form_(form), index_(0) {
+  for (FormFieldData& field : form_.fields)
+    field.bounds = callback.Run(field.bounds);
+}
 
 FormDataAndroid::~FormDataAndroid() {
   JNIEnv* env = AttachCurrentThread();

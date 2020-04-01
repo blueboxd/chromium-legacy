@@ -254,10 +254,9 @@ void TrayNetworkStateModel::OnGetVirtualNetworks(
 void TrayNetworkStateModel::NotifyNetworkListChanged() {
   if (timer_.IsRunning())
     return;
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(update_frequency_),
-      base::BindRepeating(&TrayNetworkStateModel::SendNetworkListChanged,
-                          base::Unretained(this)));
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(update_frequency_),
+               base::BindOnce(&TrayNetworkStateModel::SendNetworkListChanged,
+                              base::Unretained(this)));
 }
 
 void TrayNetworkStateModel::NotifyVpnProvidersChanged() {

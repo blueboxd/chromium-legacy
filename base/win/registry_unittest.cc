@@ -371,7 +371,7 @@ TEST_F(RegistryTest, ChangeCallback) {
             key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
 
   ASSERT_TRUE(key.StartWatching(
-      BindRepeating(&TestChangeDelegate::OnKeyChanged, Unretained(&delegate))));
+      BindOnce(&TestChangeDelegate::OnKeyChanged, Unretained(&delegate))));
   EXPECT_FALSE(delegate.WasCalled());
 
   // Make some change.
@@ -389,7 +389,7 @@ TEST_F(RegistryTest, ChangeCallback) {
   EXPECT_FALSE(delegate.WasCalled());
 
   ASSERT_TRUE(key.StartWatching(
-      BindRepeating(&TestChangeDelegate::OnKeyChanged, Unretained(&delegate))));
+      BindOnce(&TestChangeDelegate::OnKeyChanged, Unretained(&delegate))));
 
   // Change something else.
   EXPECT_EQ(ERROR_SUCCESS, key2.WriteValue(L"name2", L"data2"));
@@ -397,7 +397,7 @@ TEST_F(RegistryTest, ChangeCallback) {
   ASSERT_TRUE(delegate.WasCalled());
 
   ASSERT_TRUE(key.StartWatching(
-      BindRepeating(&TestChangeDelegate::OnKeyChanged, Unretained(&delegate))));
+      BindOnce(&TestChangeDelegate::OnKeyChanged, Unretained(&delegate))));
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(delegate.WasCalled());
 }

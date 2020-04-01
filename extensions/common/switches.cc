@@ -35,10 +35,6 @@ const char kEnableExperimentalExtensionApis[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Allows the ErrorConsole to collect runtime and manifest errors, and display
-// them in the chrome:extensions page.
-const char kErrorConsole[] = "error-console";
-
 // Marks a renderer as extension process.
 const char kExtensionProcess[] = "extension-process";
 

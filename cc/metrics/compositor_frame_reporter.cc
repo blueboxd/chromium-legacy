@@ -202,8 +202,10 @@ CompositorFrameReporter::CompositorFrameReporter(
     const base::flat_set<FrameSequenceTrackerType>* active_trackers,
     const viz::BeginFrameId& id,
     const base::TimeTicks frame_deadline,
-    LatencyUkmReporter* latency_ukm_reporter)
+    LatencyUkmReporter* latency_ukm_reporter,
+    bool should_report_metrics)
     : frame_id_(id),
+      should_report_metrics_(should_report_metrics),
       active_trackers_(active_trackers),
       latency_ukm_reporter_(latency_ukm_reporter),
       frame_deadline_(frame_deadline) {}
@@ -216,7 +218,8 @@ CompositorFrameReporter::CopyReporterAtBeginImplStage() const {
       !did_finish_impl_frame())
     return nullptr;
   auto new_reporter = std::make_unique<CompositorFrameReporter>(
-      active_trackers_, frame_id_, frame_deadline_, latency_ukm_reporter_);
+      active_trackers_, frame_id_, frame_deadline_, latency_ukm_reporter_,
+      should_report_metrics_);
   new_reporter->did_finish_impl_frame_ = did_finish_impl_frame_;
   new_reporter->impl_frame_finish_time_ = impl_frame_finish_time_;
   new_reporter->current_stage_.stage_type =
@@ -282,6 +285,10 @@ void CompositorFrameReporter::OnAbortBeginMainFrame(base::TimeTicks timestamp) {
   impl_frame_finish_time_ = timestamp;
   // impl_frame_finish_time_ can be used for the end of BeginMain to Commit
   // stage
+}
+
+void CompositorFrameReporter::OnDidNotProduceFrame() {
+  did_not_produce_frame_ = true;
 }
 
 void CompositorFrameReporter::SetBlinkBreakdown(
@@ -354,7 +361,7 @@ void CompositorFrameReporter::TerminateReporter() {
   ReportAllTraceEvents(termination_status_str);
 
   // Only report compositor latency histograms if the frame was produced.
-  if (report_compositor_latency) {
+  if (should_report_metrics_ && report_compositor_latency) {
     DCHECK(stage_history_.size());
     DCHECK_EQ(SumOfStageHistory(), stage_history_.back().end_time -
                                        stage_history_.front().start_time);

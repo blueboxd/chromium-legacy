@@ -930,4 +930,31 @@ TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedBySmartBubble) {
            kNoSavedCredentialsAndBlacklistedBySmartBubble});
 }
 
+TEST(PasswordFormMetricsRecorder, FilledPasswordMatchesSavedUsername) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "A filled password matches a saved username",
+       .fields = {{.value = "secret",
+                   .automatically_filled = true,
+                   .is_password = true}},
+       .saved_usernames = {"secret"},
+       .saved_passwords = {"secret"},
+
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+TEST(PasswordFormMetricsRecorder, FilledValueMatchesSavedUsernameAndPassword) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging =
+           "A filled value matches a saved username and password. Field is "
+           "likely not a password field",
+       .fields = {{.value = "secret", .automatically_filled = true},
+                  {.value = "password", .automatically_filled = true}},
+       .saved_usernames = {"secret"},
+       .saved_passwords = {"secret", "password"},
+
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
 }  // namespace password_manager

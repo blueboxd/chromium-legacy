@@ -1,4 +1,4 @@
 This module implements the
-[Async Cookies API](https://github.com/WICG/async-cookies-api). The
+[Cookie Store API](https://github.com/WICG/cookie-store). The
 implementation is under active development, and its progress is tracked in
-[this OWP Launch bug](https://crbug.com/729800
+[this OWP Launch bug](https://crbug.com/729800)

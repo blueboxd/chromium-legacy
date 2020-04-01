@@ -3542,8 +3542,8 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
 
 void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {
   touch_timer_.Start(FROM_HERE, kTouchLongPressTimeout,
-                     base::BindRepeating(&PDFiumEngine::HandleLongPress,
-                                         base::Unretained(this), evt));
+                     base::BindOnce(&PDFiumEngine::HandleLongPress,
+                                    base::Unretained(this), evt));
 }
 
 void PDFiumEngine::KillTouchTimer() {

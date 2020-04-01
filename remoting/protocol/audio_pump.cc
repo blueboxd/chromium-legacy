@@ -256,8 +256,8 @@ void AudioPump::SendAudioPacket(std::unique_ptr<AudioPacket> packet, int size) {
   DCHECK(packet);
 
   audio_stub_->ProcessAudioPacket(
-      std::move(packet),
-      base::Bind(&AudioPump::OnPacketSent, weak_factory_.GetWeakPtr(), size));
+      std::move(packet), base::BindOnce(&AudioPump::OnPacketSent,
+                                        weak_factory_.GetWeakPtr(), size));
 }
 
 void AudioPump::OnPacketSent(int size) {

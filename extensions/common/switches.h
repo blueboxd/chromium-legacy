@@ -18,7 +18,6 @@ extern const char kDisableExtensionsHttpThrottling[];
 extern const char kEmbeddedExtensionOptions[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableBLEAdvertising[];
-extern const char kErrorConsole[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsOnChromeURLs[];
 extern const char kForceDevModeHighlighting[];

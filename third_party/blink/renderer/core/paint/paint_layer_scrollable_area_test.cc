@@ -911,20 +911,17 @@ TEST_P(PaintLayerScrollableAreaTest,
   auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
   auto* scrollable_area = scroller->GetScrollableArea();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            scroller->ComputeBackgroundPaintLocationIfComposited());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             scroller->GetBackgroundPaintLocation());
 
   // Programmatically changing the scroll offset.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
                                    mojom::blink::ScrollType::kProgrammatic);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // No invalidation because the background paints into scrolling contents.
-    EXPECT_FALSE(scroller->ShouldDoFullPaintInvalidation());
-    EXPECT_FALSE(scroller->BackgroundNeedsFullPaintInvalidation());
-  } else {
-    // Full invalidation because there is no separate scrolling contents layer.
-    EXPECT_TRUE(scroller->ShouldDoFullPaintInvalidation());
-    EXPECT_TRUE(scroller->BackgroundNeedsFullPaintInvalidation());
-  }
+  // Full invalidation because there is no separate scrolling contents layer.
+  EXPECT_TRUE(scroller->ShouldDoFullPaintInvalidation());
+  EXPECT_TRUE(scroller->BackgroundNeedsFullPaintInvalidation());
+
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
@@ -953,7 +950,9 @@ TEST_P(PaintLayerScrollableAreaTest,
   auto* scrollable_area = scroller->GetScrollableArea();
   EXPECT_EQ(
       kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
-      scroller->GetBackgroundPaintLocation());
+      scroller->ComputeBackgroundPaintLocationIfComposited());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+            scroller->GetBackgroundPaintLocation());
 
   // Programmatically changing the scroll offset.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
@@ -1045,6 +1044,8 @@ TEST_P(PaintLayerScrollableAreaTest,
   auto* fixed_background_div =
       ToLayoutBox(GetLayoutObjectByElementId("fixed-background"));
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            fixed_background_div->ComputeBackgroundPaintLocationIfComposited());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             fixed_background_div->GetBackgroundPaintLocation());
   auto* div_scrollable_area = fixed_background_div->GetScrollableArea();
   auto* view_scrollable_area = GetLayoutView().GetScrollableArea();

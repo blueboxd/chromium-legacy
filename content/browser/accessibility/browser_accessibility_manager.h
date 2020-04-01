@@ -245,7 +245,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void DoDefaultAction(const BrowserAccessibility& node);
   void GetImageData(const BrowserAccessibility& node,
                     const gfx::Size& max_size);
-  void HitTest(const gfx::Point& point) const;
+  // See third_party/blink/renderer/core/layout/hit_test_location.h for
+  // information on hit test coordinates expected by Blink.
+  void HitTest(const gfx::Point& page_point) const;
   void Increment(const BrowserAccessibility& node);
   void LoadInlineTextBoxes(const BrowserAccessibility& node);
   void ScrollToMakeVisible(
@@ -270,7 +272,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void SignalEndOfTest();
 
   // Retrieve the bounds of the parent View in screen coordinates.
-  virtual gfx::Rect GetViewBounds() const;
+  virtual gfx::Rect GetViewBoundsInScreenCoordinates() const;
 
   // Fire an event telling native assistive technology to move focus to the
   // given find in page result.
@@ -449,10 +451,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // Use a custom device scale factor for testing.
   void UseCustomDeviceScaleFactorForTesting(float device_scale_factor);
 
-  // Given a point in screen coordinates, trigger an asynchronous hit test
-  // but return the best possible match instantly.
+  // Given a point in physical pixel coordinates, trigger an asynchronous hit
+  // test but return the best possible match instantly.
   BrowserAccessibility* CachingAsyncHitTest(
-      const gfx::Point& screen_point) const;
+      const gfx::Point& physical_pixel_point) const;
 
   // Called in response to a hover event, caches the result for the next
   // call to CachingAsyncHitTest().

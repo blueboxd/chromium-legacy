@@ -7,7 +7,13 @@
 
 #include <string>
 
+#include "base/time/time.h"
+
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
+
+namespace feedstore {
+class StreamData;
+}
 
 // Helper functions/classes for dealing with feed proto messages.
 
@@ -27,5 +33,12 @@ class ContentIdCompareFunctor {
 };
 
 }  // namespace feed
+
+namespace feedstore {
+
+void SetLastAddedTime(base::Time t, feedstore::StreamData* data);
+base::Time GetLastAddedTime(const feedstore::StreamData& data);
+
+}  // namespace feedstore
 
 #endif  // COMPONENTS_FEED_CORE_V2_PROTO_UTIL_H_

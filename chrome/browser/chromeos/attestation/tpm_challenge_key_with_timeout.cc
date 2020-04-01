@@ -28,10 +28,10 @@ void TpmChallengeKeyWithTimeout::BuildResponse(
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TpmChallengeKeyWithTimeout::ResolveCallback,
-                 weak_factory_.GetWeakPtr(),
-                 TpmChallengeKeyResult::MakeError(
-                     TpmChallengeKeyResultCode::kTimeoutError)),
+      base::BindOnce(&TpmChallengeKeyWithTimeout::ResolveCallback,
+                     weak_factory_.GetWeakPtr(),
+                     TpmChallengeKeyResult::MakeError(
+                         TpmChallengeKeyResultCode::kTimeoutError)),
       timeout);
 
   challenger_ = TpmChallengeKeyFactory::Create();

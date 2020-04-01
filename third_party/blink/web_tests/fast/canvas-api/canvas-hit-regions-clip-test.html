@@ -115,9 +115,9 @@ coroutine(function*() {
     [ 'clip5', yield clickOrTouch(100, 50), 'clip' ],
   ]);
 
-  generate_tests(assert_throws, [
-    [ 'no pixel test1', { name : 'NotSupportedError' }, no_pixel_test1 ],
-    [ 'no pixel test2', { name : 'NotSupportedError' }, no_pixel_test2 ],
+  generate_tests(assert_throws_dom, [
+    [ 'no pixel test1', 'NotSupportedError', no_pixel_test1 ],
+    [ 'no pixel test2', 'NotSupportedError', no_pixel_test2 ],
   ]);
 
   done();

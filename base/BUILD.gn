@@ -3600,6 +3600,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/AnimationFrameTimeHistogramTest.java",
       "android/junit/src/org/chromium/base/ApplicationStatusTest.java",
       "android/junit/src/org/chromium/base/DiscardableReferencePoolTest.java",
+      "android/junit/src/org/chromium/base/FileUtilsTest.java",
       "android/junit/src/org/chromium/base/LifetimeAssertTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
       "android/junit/src/org/chromium/base/NonThreadSafeTest.java",

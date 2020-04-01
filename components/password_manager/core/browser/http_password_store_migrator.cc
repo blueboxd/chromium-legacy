@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -97,8 +98,8 @@ void HttpPasswordStoreMigrator::OnGetPasswordStoreResults(
 
 void HttpPasswordStoreMigrator::OnHSTSQueryResult(HSTSResult is_hsts) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  mode_ =
-      (is_hsts == HSTSResult::kYes) ? MigrationMode::MOVE : MigrationMode::COPY;
+  mode_ = (is_hsts == HSTSResult::kYes) ? HttpPasswordMigrationMode::kMove
+                                        : HttpPasswordMigrationMode::kCopy;
   got_hsts_query_result_ = true;
 
   if (is_hsts == HSTSResult::kYes)
@@ -122,18 +123,17 @@ void HttpPasswordStoreMigrator::ProcessPasswordStoreResults() {
         HttpPasswordStoreMigrator::MigrateHttpFormToHttps(*form);
     client_->GetProfilePasswordStore()->AddLogin(new_form);
 
-    if (mode_ == MigrationMode::MOVE)
+    if (mode_ == HttpPasswordMigrationMode::kMove)
       client_->GetProfilePasswordStore()->RemoveLogin(*form);
     *form = std::move(new_form);
   }
 
+  // Only log data if there was at least one migrated password.
   if (!results_.empty()) {
-    // Only log data if there was at least one migrated password.
-    metrics_util::LogCountHttpMigratedPasswords(results_.size());
-    metrics_util::LogHttpPasswordMigrationMode(
-        mode_ == MigrationMode::MOVE
-            ? metrics_util::HTTP_PASSWORD_MIGRATION_MODE_MOVE
-            : metrics_util::HTTP_PASSWORD_MIGRATION_MODE_COPY);
+    base::UmaHistogramCounts100("PasswordManager.HttpPasswordMigrationCount",
+                                results_.size());
+    base::UmaHistogramEnumeration("PasswordManager.HttpPasswordMigrationMode",
+                                  mode_);
   }
 
   if (consumer_)

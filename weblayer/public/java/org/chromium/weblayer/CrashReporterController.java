@@ -91,7 +91,7 @@ public class CrashReporterController {
      *
      * @param localId a crash identifier.
      */
-    public void deleteCrash(String localId) {
+    public void deleteCrash(@NonNull String localId) {
         try {
             mImpl.deleteCrash(localId);
         } catch (RemoteException e) {
@@ -110,7 +110,7 @@ public class CrashReporterController {
      *
      * @param localId a crash identifier.
      */
-    public void uploadCrash(String localId) {
+    public void uploadCrash(@NonNull String localId) {
         try {
             mImpl.uploadCrash(localId);
         } catch (RemoteException e) {

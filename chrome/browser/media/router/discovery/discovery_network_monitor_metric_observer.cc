@@ -81,10 +81,11 @@ void DiscoveryNetworkMonitorMetricObserver::OnNetworksChanged(
     const std::string& network_id) {
   auto now = tick_clock_->NowTicks();
   if (network_id == DiscoveryNetworkMonitor::kNetworkIdDisconnected) {
-    disconnect_timer_.Start(FROM_HERE, kConfirmDisconnectTimeout,
-                            base::Bind(&DiscoveryNetworkMonitorMetricObserver::
-                                           ConfirmDisconnectedToReportMetrics,
-                                       base::Unretained(this), now));
+    disconnect_timer_.Start(
+        FROM_HERE, kConfirmDisconnectTimeout,
+        base::BindOnce(&DiscoveryNetworkMonitorMetricObserver::
+                           ConfirmDisconnectedToReportMetrics,
+                       base::Unretained(this), now));
     return;
   } else if (last_event_time_) {
     metrics_->RecordTimeBetweenNetworkChangeEvents(now - *last_event_time_);

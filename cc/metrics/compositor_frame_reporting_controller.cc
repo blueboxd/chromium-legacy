@@ -17,8 +17,10 @@ using StageType = CompositorFrameReporter::StageType;
 using FrameTerminationStatus = CompositorFrameReporter::FrameTerminationStatus;
 }  // namespace
 
-CompositorFrameReportingController::CompositorFrameReportingController()
-    : latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()) {}
+CompositorFrameReportingController::CompositorFrameReportingController(
+    bool should_report_metrics)
+    : should_report_metrics_(should_report_metrics),
+      latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()) {}
 
 CompositorFrameReportingController::~CompositorFrameReportingController() {
   base::TimeTicks now = Now();
@@ -62,7 +64,8 @@ void CompositorFrameReportingController::WillBeginImplFrame(
   std::unique_ptr<CompositorFrameReporter> reporter =
       std::make_unique<CompositorFrameReporter>(
           &active_trackers_, args.frame_id,
-          args.frame_time + (args.interval * 1.5), latency_ukm_reporter_.get());
+          args.frame_time + (args.interval * 1.5), latency_ukm_reporter_.get(),
+          should_report_metrics_);
   reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                        begin_time);
   reporters_[PipelineStage::kBeginImplFrame] = std::move(reporter);
@@ -89,7 +92,7 @@ void CompositorFrameReportingController::WillBeginMainFrame(
         std::make_unique<CompositorFrameReporter>(
             &active_trackers_, args.frame_id,
             args.frame_time + (args.interval * 1.5),
-            latency_ukm_reporter_.get());
+            latency_ukm_reporter_.get(), should_report_metrics_);
     reporter->StartStage(StageType::kSendBeginMainFrameToCommit, Now());
     reporters_[PipelineStage::kBeginMainFrame] = std::move(reporter);
   }
@@ -200,8 +203,14 @@ void CompositorFrameReportingController::DidNotProduceFrame(
     const viz::BeginFrameId& id) {
   for (auto& stage_reporter : reporters_) {
     if (stage_reporter && stage_reporter->frame_id_ == id) {
-      stage_reporter->TerminateFrame(
-          FrameTerminationStatus::kDidNotProduceFrame, Now());
+      // The reporter will be flagged and terminated when replaced by another
+      // reporter. The reporter is not terminated immediately here because it
+      // can still end up producing a frame afterwards. For example, if the
+      // compositor does not have any updates, and the main-thread takes too
+      // long, then DidNotProduceFrame() is called for the reporter in the
+      // BeginMain stage, but the main-thread can make updates, which can be
+      // submitted with the next frame.
+      stage_reporter->OnDidNotProduceFrame();
       return;
     }
   }
@@ -259,8 +268,12 @@ void CompositorFrameReportingController::AdvanceReporterStage(
     PipelineStage start,
     PipelineStage target) {
   if (reporters_[target]) {
-    reporters_[target]->TerminateFrame(
-        FrameTerminationStatus::kReplacedByNewReporter, Now());
+    if (reporters_[target]->did_not_produce_frame())
+      reporters_[target]->TerminateFrame(
+          FrameTerminationStatus::kDidNotProduceFrame, Now());
+    else
+      reporters_[target]->TerminateFrame(
+          FrameTerminationStatus::kReplacedByNewReporter, Now());
   }
   reporters_[target] = std::move(reporters_[start]);
 }

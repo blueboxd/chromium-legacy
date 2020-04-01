@@ -233,10 +233,10 @@ void DialServiceImpl::DialSocket::SendOneRequest(
   }
 
   is_writing_ = true;
-  int result =
-      socket_->SendTo(send_buffer.get(), send_buffer->size(), send_address,
-                      base::Bind(&DialServiceImpl::DialSocket::OnSocketWrite,
-                                 base::Unretained(this), send_buffer->size()));
+  int result = socket_->SendTo(
+      send_buffer.get(), send_buffer->size(), send_address,
+      base::BindOnce(&DialServiceImpl::DialSocket::OnSocketWrite,
+                     base::Unretained(this), send_buffer->size()));
   bool result_ok = CheckResult("SendTo", result);
   if (result_ok && result > 0) {
     // Synchronous write.
@@ -301,8 +301,8 @@ bool DialServiceImpl::DialSocket::ReadSocket() {
     is_reading_ = true;
     result = socket_->RecvFrom(
         recv_buffer_.get(), kDialRecvBufferSize, &recv_address_,
-        base::Bind(&DialServiceImpl::DialSocket::OnSocketRead,
-                   base::Unretained(this)));
+        base::BindOnce(&DialServiceImpl::DialSocket::OnSocketRead,
+                       base::Unretained(this)));
     result_ok = CheckResult("RecvFrom", result);
     if (result != net::ERR_IO_PENDING)
       is_reading_ = false;

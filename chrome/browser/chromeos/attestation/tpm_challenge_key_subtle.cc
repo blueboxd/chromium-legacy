@@ -300,10 +300,9 @@ void TpmChallengeKeySubtleImpl::GetDeviceAttestationEnabled(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CrosSettings* settings = CrosSettings::Get();
-  CrosSettingsProvider::TrustedStatus status =
-      settings->PrepareTrustedValues(base::BindRepeating(
-          &TpmChallengeKeySubtleImpl::GetDeviceAttestationEnabled,
-          weak_factory_.GetWeakPtr(), callback));
+  CrosSettingsProvider::TrustedStatus status = settings->PrepareTrustedValues(
+      base::BindOnce(&TpmChallengeKeySubtleImpl::GetDeviceAttestationEnabled,
+                     weak_factory_.GetWeakPtr(), callback));
 
   bool value = false;
   switch (status) {
@@ -369,8 +368,8 @@ void TpmChallengeKeySubtleImpl::IsAttestationPreparedCallback(
         std::string(),  // Not used.
         true,           // Force a new key to be generated.
         key_name_for_spkac_,
-        base::BindRepeating(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
-                            weak_factory_.GetWeakPtr()));
+        base::BindOnce(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -379,8 +378,8 @@ void TpmChallengeKeySubtleImpl::IsAttestationPreparedCallback(
       key_type_,
       cryptohome::CreateAccountIdentifierFromAccountId(GetAccountId()),
       key_name_,
-      base::BindRepeating(&TpmChallengeKeySubtleImpl::DoesKeyExistCallback,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&TpmChallengeKeySubtleImpl::DoesKeyExistCallback,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void TpmChallengeKeySubtleImpl::PrepareKeyErrorHandlerCallback(
@@ -453,8 +452,8 @@ void TpmChallengeKeySubtleImpl::AskForUserConsentCallback(bool result) {
       std::string(),  // Not used.
       true,           // Force a new key to be generated.
       key_name_,
-      base::BindRepeating(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void TpmChallengeKeySubtleImpl::GetCertificateCallback(
@@ -513,8 +512,8 @@ void TpmChallengeKeySubtleImpl::StartSignChallengeStep(
           include_signed_public_key ? CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY
                                     : CHALLENGE_OPTION_NONE,
           challenge, key_name_for_spkac_,
-          base::BindRepeating(&TpmChallengeKeySubtleImpl::SignChallengeCallback,
-                              weak_factory_.GetWeakPtr()));
+          base::BindOnce(&TpmChallengeKeySubtleImpl::SignChallengeCallback,
+                         weak_factory_.GetWeakPtr()));
 }
 
 void TpmChallengeKeySubtleImpl::SignChallengeCallback(
@@ -541,8 +540,8 @@ void TpmChallengeKeySubtleImpl::StartRegisterKeyStep(
   cryptohome::AsyncMethodCaller::GetInstance()->TpmAttestationRegisterKey(
       key_type_, cryptohome::Identification(GetAccountId()),
       GetKeyNameForRegister(),
-      base::BindRepeating(&TpmChallengeKeySubtleImpl::RegisterKeyCallback,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&TpmChallengeKeySubtleImpl::RegisterKeyCallback,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void TpmChallengeKeySubtleImpl::RegisterKeyCallback(

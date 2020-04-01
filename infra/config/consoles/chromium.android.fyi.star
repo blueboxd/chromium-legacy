@@ -34,6 +34,7 @@ luci.console_view(
             category = 'emulator|M|x86',
             short_name = 'rel',
         ),
+        # TODO(hypan): remove this once there is no associaled disabled tests
         luci.console_view_entry(
             builder = 'ci/android-pie-x86-fyi-rel',
             category = 'emulator|P|x86',

@@ -149,8 +149,8 @@ void ResizingHostObserver::SetScreenResolution(
   if (now < next_allowed_resize) {
     deferred_resize_timer_.Start(
         FROM_HERE, next_allowed_resize - now,
-        base::Bind(&ResizingHostObserver::SetScreenResolution,
-                   weak_factory_.GetWeakPtr(), resolution));
+        base::BindOnce(&ResizingHostObserver::SetScreenResolution,
+                       weak_factory_.GetWeakPtr(), resolution));
     return;
   }
 

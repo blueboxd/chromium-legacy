@@ -281,3 +281,24 @@ absl_source_set("scoped_set_env") {
   visibility = []
   visibility += [ "../*" ]
 }
+
+absl_source_set("strerror") {
+  sources = ["internal/strerror.cc"]
+  public = ["internal/strerror.h"]
+  deps = [
+    ":config",
+    ":core_headers",
+    ":errno_saver",
+  ]
+  visibility = []
+  visibility += [ "../*" ]
+}
+
+absl_source_set("fast_type_id") {
+  public = ["internal/fast_type_id.h"]
+  deps = [
+    ":config",
+  ]
+  visibility = []
+  visibility += [ "../*" ]
+}

@@ -50,7 +50,9 @@ class DownloadResponse : public net::test_server::BasicHttpResponse {
   }
 
  private:
-  // Sends "0" |count| times.
+  // Sends "0" |count| times using 1KB blocks. Using blocks with smaller size is
+  // performance inefficient and can cause unnecessary delays especially when
+  // multiple tests run in parallel on a single machine.
   static void Send(const net::test_server::SendBytesCallback& send,
                    net::test_server::SendCompleteCallback done,
                    int count) {
@@ -59,10 +61,13 @@ class DownloadResponse : public net::test_server::BasicHttpResponse {
       return;
     }
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(send, "0",
-                                  base::BindOnce(&DownloadResponse::Send, send,
-                                                 std::move(done), count - 1)));
+    const int block_size = std::min(count, 1000);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(send, std::string(block_size, 0),
+                       base::BindOnce(&DownloadResponse::Send, send,
+                                      std::move(done), count - block_size)),
+        base::TimeDelta::FromMilliseconds(100));
   }
 
   int length_ = 0;

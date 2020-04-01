@@ -169,11 +169,12 @@ void SecurityKeyAuthHandlerPosix::CreateSecurityKeyConnection() {
   // that task has completed, the main thread will be called back and we will
   // resume setting up our security key auth socket there.
   file_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(base::IgnoreResult(&base::DeleteFile),
-                            g_security_key_socket_name.Get(),
-                            /*recursive=*/false),
-      base::Bind(&SecurityKeyAuthHandlerPosix::CreateSocket,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                     g_security_key_socket_name.Get(),
+                     /*recursive=*/false),
+      base::BindOnce(&SecurityKeyAuthHandlerPosix::CreateSocket,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SecurityKeyAuthHandlerPosix::CreateSocket() {
@@ -238,8 +239,8 @@ void SecurityKeyAuthHandlerPosix::SetRequestTimeoutForTest(
 void SecurityKeyAuthHandlerPosix::DoAccept() {
   DCHECK(thread_checker_.CalledOnValidThread());
   int result = auth_socket_->Accept(
-      &accept_socket_, base::Bind(&SecurityKeyAuthHandlerPosix::OnAccepted,
-                                  base::Unretained(this)));
+      &accept_socket_, base::BindOnce(&SecurityKeyAuthHandlerPosix::OnAccepted,
+                                      base::Unretained(this)));
   if (result != net::ERR_IO_PENDING) {
     OnAccepted(result);
   }

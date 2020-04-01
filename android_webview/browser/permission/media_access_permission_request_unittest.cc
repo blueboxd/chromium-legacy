@@ -60,8 +60,8 @@ class MediaAccessPermissionRequestTest : public testing::Test {
     std::unique_ptr<TestMediaAccessPermissionRequest> permission_request;
     permission_request.reset(new TestMediaAccessPermissionRequest(
         request,
-        base::BindRepeating(&MediaAccessPermissionRequestTest::Callback,
-                            base::Unretained(this)),
+        base::BindOnce(&MediaAccessPermissionRequestTest::Callback,
+                       base::Unretained(this)),
         audio_devices, video_devices));
     return permission_request;
   }

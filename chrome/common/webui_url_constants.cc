@@ -379,6 +379,7 @@ const char kPasswordManagerSubPage[] = "passwords";
 const char kPaymentsSubPage[] = "payments";
 const char kPrintingSettingsSubPage[] = "printing";
 const char kPrivacySubPage[] = "privacy";
+const char kResetSubPage[] = "reset";
 const char kResetProfileSettingsSubPage[] = "resetProfileSettings";
 const char kSearchSubPage[] = "search";
 const char kSearchEnginesSubPage[] = "searchEngines";
@@ -423,11 +424,11 @@ const char kMultideviceSubPage[] = "multidevice";
 const char kNativePrintingSettingsSubPage[] = "cupsPrinters";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kNetworksSubPage[] = "networks";
+const char kOsResetSubPage[] = "osReset";
 const char kPluginVmDetailsSubPage[] = "pluginVm/details";
 const char kPluginVmSharedPathsSubPage[] = "pluginVm/sharedPaths";
 const char kPointerOverlaySubPage[] = "pointer-overlay";
 const char kPowerSubPage[] = "power";
-const char kResetSubPage[] = "reset";
 const char kSmartLockSettingsSubPage[] = "multidevice/features/smartLock";
 const char kSmbSharesSubPage[] = "smbShares";
 const char kStorageSubPage[] = "storage";
@@ -480,10 +481,9 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kNetworksSubPage,
       kPluginVmDetailsSubPage,
       kPluginVmSharedPathsSubPage,
+      kOsResetSubPage,
       kPointerOverlaySubPage,
       kPowerSubPage,
-      // reset is both an OS and browser sub page, but prefer the OS version
-      kResetSubPage,
       kSmartLockSettingsSubPage,
       kSmbSharesSubPage,
       kStorageSubPage,

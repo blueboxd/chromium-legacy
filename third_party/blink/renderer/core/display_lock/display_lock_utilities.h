@@ -19,7 +19,7 @@ class CORE_EXPORT DisplayLockUtilities {
  public:
   // This class forces updates on display locks from the given node up the
   // ancestor chain until the local frame root.
-  class ScopedChainForcedUpdate {
+  class CORE_EXPORT ScopedChainForcedUpdate {
     DISALLOW_COPY_AND_ASSIGN(ScopedChainForcedUpdate);
 
    public:

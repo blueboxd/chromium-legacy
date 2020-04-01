@@ -598,7 +598,6 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<MarketingOptInScreen>(
       oobe_ui->GetView<MarketingOptInScreenHandler>(),
-      oobe_ui->display_type() == OobeUI::kOobeDisplay /*is_fullscreen*/,
       base::BindRepeating(&WizardController::OnMarketingOptInScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<PackagedLicenseScreen>(

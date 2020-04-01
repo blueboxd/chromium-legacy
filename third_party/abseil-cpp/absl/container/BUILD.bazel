@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(
     "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
@@ -74,6 +74,7 @@ cc_test(
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
         ":fixed_array",
+        "//absl/base:config",
         "//absl/base:exception_testing",
         "//absl/hash:hash_testing",
         "//absl/memory",
@@ -153,6 +154,7 @@ cc_test(
         ":counting_allocator",
         ":inlined_vector",
         ":test_instance_tracker",
+        "//absl/base:config",
         "//absl/base:core_headers",
         "//absl/base:exception_testing",
         "//absl/base:raw_logging_internal",
@@ -364,6 +366,7 @@ cc_library(
     linkopts = ABSL_DEFAULT_LINKOPTS,
     deps = [
         "//absl/memory",
+        "//absl/meta:type_traits",
         "//absl/utility",
     ],
 )
@@ -376,6 +379,7 @@ cc_test(
     tags = NOTEST_TAGS_NONMOBILE,
     deps = [
         ":container_memory",
+        ":test_instance_tracker",
         "//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

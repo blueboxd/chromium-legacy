@@ -7,6 +7,8 @@ package org.chromium.weblayer;
 import android.os.RemoteException;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -31,7 +33,8 @@ public class UrlBarController {
      * @param options The options provided to tweak the URL bar display.
      * @since 82
      */
-    public View createUrlBarView(UrlBarOptions options) {
+    @NonNull
+    public View createUrlBarView(@NonNull UrlBarOptions options) {
         ThreadCheck.ensureOnUiThread();
         if (WebLayer.getSupportedMajorVersionInternal() < 82) {
             throw new UnsupportedOperationException();

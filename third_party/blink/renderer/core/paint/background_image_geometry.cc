@@ -43,22 +43,8 @@ bool FixedBackgroundPaintsInLocalCoordinates(
   if (!view)
     return false;
 
-  // TODO(wangxianzhu): For CAP, inline this function into
-  // FixedBackgroundPaintsInLocalCoordinates().
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return view->GetBackgroundPaintLocation() !=
-           kBackgroundPaintInScrollingContents;
-  }
-
-  if (global_paint_flags & kGlobalPaintFlattenCompositingLayers)
-    return false;
-
-  PaintLayer* root_layer = view->Layer();
-  if (!root_layer || root_layer->GetCompositingState() == kNotComposited)
-    return false;
-
-  CompositedLayerMapping* mapping = root_layer->GetCompositedLayerMapping();
-  return !mapping->BackgroundPaintsOntoScrollingContentsLayer();
+  return !(view->GetBackgroundPaintLocation() &
+           kBackgroundPaintInScrollingContents);
 }
 
 LayoutPoint AccumulatedScrollOffsetForFixedBackground(
@@ -405,15 +391,8 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
   // The LayoutView is the only object that can paint a fixed background into
   // its scrolling contents layer, so it gets a special adjustment here.
   if (auto* layout_view = DynamicTo<LayoutView>(obj)) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      DCHECK_EQ(obj.GetBackgroundPaintLocation(),
-                kBackgroundPaintInScrollingContents);
+    if (obj.GetBackgroundPaintLocation() & kBackgroundPaintInScrollingContents)
       rect.SetLocation(LayoutPoint(layout_view->ScrolledContentOffset()));
-    } else if (auto* mapping = obj.Layer()->GetCompositedLayerMapping()) {
-      if (mapping->BackgroundPaintsOntoScrollingContentsLayer()) {
-        rect.SetLocation(LayoutPoint(layout_view->ScrolledContentOffset()));
-      }
-    }
   }
 
   rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));

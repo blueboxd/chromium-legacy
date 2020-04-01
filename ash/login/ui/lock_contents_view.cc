@@ -676,8 +676,8 @@ void LockContentsView::ShowParentAccessDialog() {
 
   Shell::Get()->parent_access_controller()->ShowWidget(
       account_id,
-      base::BindRepeating(&LockContentsView::OnParentAccessValidationFinished,
-                          weak_ptr_factory_.GetWeakPtr(), account_id),
+      base::BindOnce(&LockContentsView::OnParentAccessValidationFinished,
+                     weak_ptr_factory_.GetWeakPtr(), account_id),
       ParentAccessRequestReason::kUnlockTimeLimits, false, base::Time::Now());
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
 }

@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/menu_button"
-        android:paddingStart="2dp">
+        android:paddingStart="5dp">
 
         <EditText
             android:id="@+id/editable_url_view"

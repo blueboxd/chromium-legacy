@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
 
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
@@ -14,7 +15,11 @@ CSSTransition::CSSTransition(ExecutionContext* execution_context,
                              AnimationEffect* content,
                              const PropertyHandle& transition_property)
     : Animation(execution_context, timeline, content),
-      transition_property_(transition_property) {}
+      transition_property_(transition_property) {
+  // The owning_element does not always equal to the target element of an
+  // animation.
+  owning_element_ = To<KeyframeEffect>(effect())->target();
+}
 
 AtomicString CSSTransition::transitionProperty() const {
   return transition_property_.GetCSSPropertyName().ToAtomicString();

@@ -61,6 +61,12 @@ class Config {
 
   static bool IsRefPtr(llvm::StringRef name) { return name == "scoped_refptr"; }
 
+  static bool IsWeakPtr(llvm::StringRef name) { return name == "WeakPtr"; }
+
+  static bool IsRefOrWeakPtr(llvm::StringRef name) {
+    return IsRefPtr(name) || IsWeakPtr(name);
+  }
+
   static bool IsUniquePtr(llvm::StringRef name) {
     return name == "unique_ptr";
   }

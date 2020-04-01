@@ -132,8 +132,8 @@ void BleScannerImpl::EnsureDiscoverySessionActive() {
   is_initializing_discovery_session_ = true;
 
   ble_synchronizer_->StartDiscoverySession(
-      base::Bind(&BleScannerImpl::OnDiscoverySessionStarted,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&BleScannerImpl::OnDiscoverySessionStarted,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BleScannerImpl::OnStartDiscoverySessionError,
                  weak_ptr_factory_.GetWeakPtr()));
 }

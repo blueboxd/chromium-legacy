@@ -281,7 +281,8 @@ webrtc::Priority PriorityToEnum(const WTF::String& priority) {
   return result;
 }
 
-std::tuple<Vector<webrtc::RtpEncodingParameters>, webrtc::DegradationPreference>
+std::tuple<Vector<webrtc::RtpEncodingParameters>,
+           absl::optional<webrtc::DegradationPreference>>
 ToRtpParameters(const RTCRtpSendParameters* parameters) {
   Vector<webrtc::RtpEncodingParameters> encodings;
   if (parameters->hasEncodings()) {
@@ -292,8 +293,22 @@ ToRtpParameters(const RTCRtpSendParameters* parameters) {
     }
   }
 
-  webrtc::DegradationPreference degradation_preference =
-      webrtc::DegradationPreference::BALANCED;
+  absl::optional<webrtc::DegradationPreference> degradation_preference;
+
+  if (parameters->hasDegradationPreference()) {
+    if (parameters->degradationPreference() == "balanced") {
+      degradation_preference = webrtc::DegradationPreference::BALANCED;
+    } else if (parameters->degradationPreference() == "maintain-framerate") {
+      degradation_preference =
+          webrtc::DegradationPreference::MAINTAIN_FRAMERATE;
+    } else if (parameters->degradationPreference() == "maintain-resolution") {
+      degradation_preference =
+          webrtc::DegradationPreference::MAINTAIN_RESOLUTION;
+    } else {
+      NOTREACHED();
+    }
+  }
+
   return std::make_tuple(encodings, degradation_preference);
 }
 
@@ -417,12 +432,28 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
 
 RTCRtpSendParameters* RTCRtpSender::getParameters() {
   RTCRtpSendParameters* parameters = RTCRtpSendParameters::Create();
-  // TODO(orphis): Forward missing field: degradationPreference
   std::unique_ptr<webrtc::RtpParameters> webrtc_parameters =
       sender_->GetParameters();
 
   parameters->setTransactionId(webrtc_parameters->transaction_id.c_str());
 
+  if (webrtc_parameters->degradation_preference.has_value()) {
+    WTF::String degradation_preference_str;
+    switch (webrtc_parameters->degradation_preference.value()) {
+      case webrtc::DegradationPreference::MAINTAIN_FRAMERATE:
+        degradation_preference_str = "maintain-framerate";
+        break;
+      case webrtc::DegradationPreference::MAINTAIN_RESOLUTION:
+        degradation_preference_str = "maintain-resolution";
+        break;
+      case webrtc::DegradationPreference::BALANCED:
+        degradation_preference_str = "balanced";
+        break;
+      default:
+        NOTREACHED();
+    }
+    parameters->setDegradationPreference(degradation_preference_str);
+  }
   RTCRtcpParameters* rtcp = RTCRtcpParameters::Create();
   rtcp->setCname(webrtc_parameters->rtcp.cname.c_str());
   rtcp->setReducedSize(webrtc_parameters->rtcp.reduced_size);
@@ -515,7 +546,7 @@ ScriptPromise RTCRtpSender::setParameters(
   // native layer without having to transform all the other read-only
   // parameters.
   Vector<webrtc::RtpEncodingParameters> encodings;
-  webrtc::DegradationPreference degradation_preference;
+  absl::optional<webrtc::DegradationPreference> degradation_preference;
   std::tie(encodings, degradation_preference) = ToRtpParameters(parameters);
 
   auto* request = MakeGarbageCollected<SetParametersRequest>(resolver, this);

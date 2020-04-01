@@ -180,9 +180,8 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
 
   GetDataDecoder().ParseJson(
       message->json_format_data,
-      base::BindRepeating(&MirroringActivityRecord::HandleParseJsonResult,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          route().media_route_id()));
+      base::BindOnce(&MirroringActivityRecord::HandleParseJsonResult,
+                     weak_ptr_factory_.GetWeakPtr(), route().media_route_id()));
 }
 
 void MirroringActivityRecord::OnAppMessage(

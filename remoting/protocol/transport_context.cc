@@ -127,7 +127,7 @@ void TransportContext::EnsureFreshIceConfig() {
         break;
     }
     ice_config_request_[relay_mode_] = std::move(request);
-    ice_config_request_[relay_mode_]->Send(base::Bind(
+    ice_config_request_[relay_mode_]->Send(base::BindOnce(
         &TransportContext::OnIceConfig, base::Unretained(this), relay_mode_));
   }
 }

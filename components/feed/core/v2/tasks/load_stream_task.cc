@@ -7,7 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/client_info.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_request.pb.h"
@@ -37,7 +39,7 @@ void LoadStreamTask::Run() {
   }
 
   load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
-      stream_->GetStore(),
+      stream_->GetStore(), stream_->GetClock(), stream_->GetUserClass(),
       base::BindOnce(&LoadStreamTask::LoadFromStoreComplete, GetWeakPtr()));
   load_from_store_task_->Execute(base::DoNothing());
 }
@@ -83,11 +85,16 @@ void LoadStreamTask::QueryRequestComplete(
 
   std::unique_ptr<StreamModelUpdateRequest> update_request =
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
-          *result.response_body, base::TimeTicks::Now() - fetch_start_time_);
+          *result.response_body, base::TimeTicks::Now() - fetch_start_time_,
+          stream_->GetClock()->Now());
   if (!update_request) {
     Done(LoadStreamStatus::kProtoTranslationFailed);
     return;
   }
+
+  stream_->GetStore()->SaveFullStream(
+      std::make_unique<StreamModelUpdateRequest>(*update_request),
+      base::DoNothing());
 
   auto model = std::make_unique<StreamModel>();
   model->Update(std::move(update_request));

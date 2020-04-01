@@ -22,14 +22,36 @@ static_library("safe_browsing_prefs") {
   ]
 }
 
+source_set("safe_browsing_policy_handler") {
+  sources = [
+    "safe_browsing_policy_handler.cc",
+    "safe_browsing_policy_handler.h",
+  ]
+
+  deps = [
+    ":safe_browsing_prefs",
+    "//base:base",
+    "//components/policy:generated",
+    "//components/policy/core/browser",
+    "//components/prefs",
+    "//components/strings:components_strings_grit",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
-  sources = [ "safe_browsing_prefs_unittest.cc" ]
+  sources = [
+    "safe_browsing_policy_handler_unittest.cc",
+    "safe_browsing_prefs_unittest.cc",
+  ]
   deps = [
+    ":safe_browsing_policy_handler",
     ":safe_browsing_prefs",
     ":test_support",
     "//base:base",
     "//base/test:test_support",
+    "//components/policy/core/browser:browser",
+    "//components/policy/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/safe_browsing/core:features",
     "//testing/gtest",

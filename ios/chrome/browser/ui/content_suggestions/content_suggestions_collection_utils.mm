@@ -12,11 +12,11 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/components/ui_util/dynamic_type_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -71,7 +71,7 @@ CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
     return topInset;
   return topInset + kDoodleTopMarginOther +
          AlignValueToPixel(kDoodleScaledTopMarginOther *
-                           SystemSuggestedFontSizeMultiplier());
+                           ui_util::SystemSuggestedFontSizeMultiplier());
 }
 
 CGFloat searchFieldTopMargin() {

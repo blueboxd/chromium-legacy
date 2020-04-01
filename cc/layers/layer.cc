@@ -80,7 +80,6 @@ Layer::Inputs::Inputs(int layer_id)
       contents_opaque(false),
       is_drawable(false),
       double_sided(true),
-      use_parent_backface_visibility(false),
       is_scrollbar(false),
       has_will_change_transform_hint(false),
       background_color(0) {}
@@ -1253,14 +1252,6 @@ std::string Layer::ToString() const {
       effect_tree_index(), scroll_tree_index(), transform_tree_index());
 }
 
-void Layer::SetUseParentBackfaceVisibility(bool use) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.use_parent_backface_visibility == use)
-    return;
-  inputs_.use_parent_backface_visibility = use;
-  SetNeedsPushProperties();
-}
-
 void Layer::SetShouldCheckBackfaceVisibility(
     bool should_check_backface_visibility) {
   if (should_check_backface_visibility_ == should_check_backface_visibility)
@@ -1344,7 +1335,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetWheelEventHandlerRegion(Region());
   }
   layer->SetContentsOpaque(inputs_.contents_opaque);
-  layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
   layer->UpdateScrollable();

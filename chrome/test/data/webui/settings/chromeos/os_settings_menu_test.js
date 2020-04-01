@@ -10,7 +10,7 @@ function setupRouter() {
     ADVANCED: new settings.Route('/advanced'),
   };
   routes.BLUETOOTH = routes.BASIC.createSection('/bluetooth', 'bluetooth');
-  routes.RESET = routes.ADVANCED.createSection('/reset', 'reset');
+  routes.RESET = routes.ADVANCED.createSection('/osReset', 'osReset');
 
   settings.Router.resetInstanceForTesting(new settings.Router(routes));
   settings.routes = routes;
@@ -90,13 +90,13 @@ suite('OSSettingsMenuReset', function() {
   test('openResetSection', function() {
     const selector = settingsMenu.$.subMenu;
     const path = new window.URL(selector.selected).pathname;
-    assertEquals('/reset', path);
+    assertEquals('/osReset', path);
   });
 
   test('navigateToAnotherSection', function() {
     const selector = settingsMenu.$.subMenu;
     let path = new window.URL(selector.selected).pathname;
-    assertEquals('/reset', path);
+    assertEquals('/osReset', path);
 
     settings.Router.getInstance().navigateTo(settings.routes.BLUETOOTH, '');
     Polymer.dom.flush();
@@ -108,7 +108,7 @@ suite('OSSettingsMenuReset', function() {
   test('navigateToBasic', function() {
     const selector = settingsMenu.$.subMenu;
     const path = new window.URL(selector.selected).pathname;
-    assertEquals('/reset', path);
+    assertEquals('/osReset', path);
 
     settings.Router.getInstance().navigateTo(settings.routes.BASIC, '');
     Polymer.dom.flush();

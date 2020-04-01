@@ -519,6 +519,7 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
   views::Button* button = shortcut_features_container_->AddChildView(
       std::make_unique<CircularImageButton>(this, icon, text,
                                             /*show_border=*/true));
+  button->EnableCanvasFlippingForRTLUI(false);
 
   RegisterClickAction(button, std::move(action));
 }

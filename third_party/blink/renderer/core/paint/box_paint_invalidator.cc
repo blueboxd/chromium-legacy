@@ -184,27 +184,14 @@ bool BoxPaintInvalidator::BackgroundGeometryDependsOnLayoutOverflowRect() {
 bool BoxPaintInvalidator::BackgroundPaintsOntoScrollingContentsLayer() {
   if (!HasEffectiveBackground())
     return false;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return box_.GetBackgroundPaintLocation() &
-           kBackgroundPaintInScrollingContents;
-  }
-  if (!box_.HasLayer())
-    return false;
-  if (auto* mapping = box_.Layer()->GetCompositedLayerMapping())
-    return mapping->BackgroundPaintsOntoScrollingContentsLayer();
-  return false;
+  return box_.GetBackgroundPaintLocation() &
+         kBackgroundPaintInScrollingContents;
 }
 
 bool BoxPaintInvalidator::BackgroundPaintsOntoMainGraphicsLayer() {
   if (!HasEffectiveBackground())
     return false;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return box_.GetBackgroundPaintLocation() & kBackgroundPaintInGraphicsLayer;
-  if (!box_.HasLayer())
-    return true;
-  if (auto* mapping = box_.Layer()->GetCompositedLayerMapping())
-    return mapping->BackgroundPaintsOntoGraphicsLayer();
-  return true;
+  return box_.GetBackgroundPaintLocation() & kBackgroundPaintInGraphicsLayer;
 }
 
 bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
@@ -288,16 +275,6 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
 BoxPaintInvalidator::BackgroundInvalidationType
 BoxPaintInvalidator::ComputeBackgroundInvalidation(
     bool& should_invalidate_all_layers) {
-  // Need to fully invalidate the background on all layers if background paint
-  // location changed.
-  auto new_background_location = box_.GetBackgroundPaintLocation();
-  if (new_background_location != box_.PreviousBackgroundPaintLocation()) {
-    should_invalidate_all_layers = true;
-    box_.GetMutableForPainting().SetPreviousBackgroundPaintLocation(
-        new_background_location);
-    return BackgroundInvalidationType::kFull;
-  }
-
   // If background changed, we may paint the background on different graphics
   // layer, so we need to fully invalidate the background on all layers.
   if (box_.BackgroundNeedsFullPaintInvalidation()) {

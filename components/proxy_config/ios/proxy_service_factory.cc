@@ -54,6 +54,6 @@ ProxyServiceFactory::CreateProxyResolutionService(
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
       net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
-          std::move(proxy_config_service), net_log, quick_check_enabled));
+          std::move(proxy_config_service), quick_check_enabled, net_log));
   return proxy_resolution_service;
 }

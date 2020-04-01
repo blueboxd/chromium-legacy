@@ -18,6 +18,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
@@ -575,13 +576,23 @@ bool BrowserAccessibilityManagerWin::CanFireEvents() const {
          GetDelegateFromRootManager()->AccessibilityGetAcceleratedWidget();
 }
 
-gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() const {
+gfx::Rect BrowserAccessibilityManagerWin::GetViewBoundsInScreenCoordinates()
+    const {
   // We have to take the device scale factor into account on Windows.
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   if (delegate) {
     gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
-    if (device_scale_factor() > 0.0 && device_scale_factor() != 1.0)
+
+    // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+    // The bounds returned by the delegate are always in device-independent
+    // pixels (DIPs), meaning physical pixels divided by device scale factor
+    // (DSF). However, if UseZoomForDSF is enabled, then Blink does not apply
+    // DSF when going from physical to screen pixels. In that case, we need to
+    // multiply DSF back in to get to Blink's notion of "screen pixels."
+    if (IsUseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
+        device_scale_factor() != 1.0) {
       bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
+    }
     return bounds;
   }
   return gfx::Rect();

@@ -155,8 +155,8 @@ void ServiceClient::Core::RegisterHost(
 
   directory_service_client_.RegisterHost(
       host_id, host_name, public_key, host_client_id, oauth_access_token,
-      base::Bind(&ServiceClient::Core::OnRegisterHostResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&ServiceClient::Core::OnRegisterHostResponse,
+                     base::Unretained(this)));
 }
 
 void ServiceClient::Core::DeleteHost(const std::string& host_id,
@@ -169,8 +169,8 @@ void ServiceClient::Core::DeleteHost(const std::string& host_id,
 
   directory_service_client_.DeleteHost(
       host_id, oauth_access_token,
-      base::Bind(&ServiceClient::Core::OnDeleteHostResponse,
-                 base::Unretained(this)));
+      base::BindOnce(&ServiceClient::Core::OnDeleteHostResponse,
+                     base::Unretained(this)));
 }
 
 void ServiceClient::Core::OnRegisterHostResponse(

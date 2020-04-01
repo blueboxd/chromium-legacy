@@ -119,7 +119,7 @@ void EnrollmentCertificateUploaderImpl::GetCertificate() {
       std::string(),     // Not used.
       false,             // Do not force a new key to be generated.
       std::string(),     // Leave key name empty to generate a default name.
-      base::BindRepeating(
+      base::BindOnce(
           [](const base::RepeatingCallback<void(const std::string&)> on_success,
              const base::RepeatingCallback<void(AttestationStatus)> on_failure,
              const base::Location& from_here, AttestationStatus status,
@@ -140,8 +140,8 @@ void EnrollmentCertificateUploaderImpl::UploadCertificate(
     const std::string& pem_certificate_chain) {
   policy_client_->UploadEnterpriseEnrollmentCertificate(
       pem_certificate_chain,
-      base::BindRepeating(&EnrollmentCertificateUploaderImpl::OnUploadComplete,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&EnrollmentCertificateUploaderImpl::OnUploadComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void EnrollmentCertificateUploaderImpl::OnUploadComplete(bool status) {

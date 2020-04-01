@@ -172,10 +172,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 // TabSwitcher object -- the tab grid.
 @property(nonatomic, strong) id<TabSwitcher> tabSwitcher;
 
-// True if First Run UI (terms of service & sync sign-in) is being presented
-// in a modal dialog.
-@property(nonatomic, assign) BOOL presentingFirstRunUI;
-
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
 // browser has started up to the FOREGROUND stage.
@@ -458,7 +454,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 // Initializes the first run UI and presents it to the user.
 - (void)showFirstRunUI {
   // Register for the first run dismissal notification to reset
-  // |self.presentingFirstRunUI| flag;
+  // |sceneState.presentingFirstRunUI| flag;
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(handleFirstRunUIWillFinish)
@@ -481,15 +477,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   navController.modalPresentationStyle = UIModalPresentationFullScreen;
   CGRect appFrame = [[UIScreen mainScreen] bounds];
   [[navController view] setFrame:appFrame];
-  self.presentingFirstRunUI = YES;
+  self.sceneState.presentingFirstRunUI = YES;
   [self.mainInterface.viewController presentViewController:navController
                                                   animated:NO
                                                 completion:nil];
 }
 
 - (void)handleFirstRunUIWillFinish {
-  DCHECK(self.presentingFirstRunUI);
-  self.presentingFirstRunUI = NO;
+  DCHECK(self.sceneState.presentingFirstRunUI);
+  self.sceneState.presentingFirstRunUI = NO;
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
                 name:kChromeFirstRunUIWillFinishNotification
@@ -503,7 +499,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // Don't show promos if first run is shown.  (Note:  This flag is only YES
   // while the first run UI is visible.  However, as this function is called
   // immediately after the UI is shown, it's a safe check.)
-  if (self.presentingFirstRunUI)
+  if (self.sceneState.presentingFirstRunUI)
     return;
   // Don't show promos in Incognito mode.
   if (self.currentInterface == self.incognitoInterface)

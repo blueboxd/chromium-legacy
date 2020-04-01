@@ -57,11 +57,6 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
     format_types |= url_formatter::kFormatUrlTrimAfterHost;
   }
 
-  // Early exit to prevent elision of URLs when relevant extension is enabled.
-  if (delegate_->ShouldPreventElision()) {
-    return GetFormattedURL(format_types);
-  }
-
 #if defined(OS_IOS)
   format_types |= url_formatter::kFormatUrlTrimAfterHost;
 #endif
@@ -82,6 +77,13 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
     url_formatter::FormatUrlTypes format_types) const {
   if (!ShouldDisplayURL())
     return base::string16{};
+
+  // Reset |format_types| to prevent elision of URLs when relevant extension or
+  // pref is enabled.
+  if (delegate_->ShouldPreventElision()) {
+    format_types = url_formatter::kFormatUrlOmitDefaults &
+                   ~url_formatter::kFormatUrlOmitHTTP;
+  }
 
   GURL url(GetURL());
   // Special handling for dom-distiller:. Instead of showing internal reader

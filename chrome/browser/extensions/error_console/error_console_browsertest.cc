@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -27,7 +26,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -203,16 +201,6 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
     // or by a manifest/loading warning).
     ACTION_NONE
   };
-
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    // We need to enable the ErrorConsole FeatureSwitch in order to collect
-    // errors. This should be enabled on any channel <= Dev, but let's make
-    // sure (in case a test is running on, e.g., a beta channel).
-    FeatureSwitch::error_console()->SetOverrideValue(
-        FeatureSwitch::OVERRIDE_ENABLED);
-  }
 
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();

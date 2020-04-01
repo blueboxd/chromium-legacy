@@ -667,9 +667,15 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
 
   LoadURL("https://example.com/");
   main_resource.Complete("<iframe id=frame sandbox src=iframe.html></iframe>");
-  frame_resource.Complete(
-      "<style> html { background-image: linear-gradient(red, blue); "
-      "background-attachment: fixed; } </style>");
+  frame_resource.Complete(R"HTML(
+    <style>
+      html {
+        background-image: linear-gradient(red, blue);
+        background-attachment: fixed;
+        will-change: transform;
+      }
+    </style>
+  )HTML");
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
@@ -710,6 +716,9 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   CompositeFrame();
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
+  // This CompositeFrame handles the visual update scheduled when we unthrottle
+  // the iframe.
+  CompositeFrame();
   // The fixed background in the throttled sub frame should be considered.
   EXPECT_TRUE(frame_element->contentDocument()
                   ->View()

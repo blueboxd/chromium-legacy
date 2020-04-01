@@ -18,7 +18,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
+#include "ios/components/ui_util/dynamic_type_util.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
@@ -222,8 +222,8 @@ bool FontSizeTabHelper::CurrentPageSupportsTextZoom() const {
 
 int FontSizeTabHelper::GetFontSize() const {
   // Multiply by 100 as the web property needs a percentage.
-  return SystemSuggestedFontSizeMultiplier() * GetCurrentUserZoomMultiplier() *
-         100;
+  return ui_util::SystemSuggestedFontSizeMultiplier() *
+         GetCurrentUserZoomMultiplier() * 100;
 }
 
 void FontSizeTabHelper::WebStateDestroyed(web::WebState* web_state) {

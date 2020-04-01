@@ -39,6 +39,8 @@ public class ExternalNavigationTest {
             "link_with_intent_to_chrome_in_same_tab.html";
     private static final String LINK_WITH_INTENT_TO_CHROME_IN_NEW_TAB_FILE =
             "link_with_intent_to_chrome_in_new_tab.html";
+    private static final String PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE =
+            "page_that_intents_to_chrome_on_load.html";
 
     // The test server handles "echo" with a response containing "Echo" :).
     private final String mTestServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
@@ -48,6 +50,11 @@ public class ExternalNavigationTest {
     private final String mNonResolvableIntentWithFallbackUrl =
             "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.missing.app;S.browser_fallback_url="
             + android.net.Uri.encode(mTestServerSiteUrl) + ";end";
+    private final String mRedirectToIntentToChromeURL =
+            mActivityTestRule.getTestServer().getURL("/server-redirect?" + INTENT_TO_CHROME_URL);
+    private final String mNonResolvableIntentWithFallbackUrlThatLaunchesIntent =
+            "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.missing.app;S.browser_fallback_url="
+            + android.net.Uri.encode(mRedirectToIntentToChromeURL) + ";end";
 
     private class IntentInterceptor implements InstrumentationActivity.IntentInterceptor {
         public Intent mLastIntent;
@@ -120,12 +127,10 @@ public class ExternalNavigationTest {
         IntentInterceptor intentInterceptor = new IntentInterceptor();
         activity.setIntentInterceptor(intentInterceptor);
 
-        String url = mActivityTestRule.getTestServer().getURL(
-                "/server-redirect?" + INTENT_TO_CHROME_URL);
-
         Tab tab = mActivityTestRule.getActivity().getTab();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.getNavigationController().navigate(Uri.parse(mRedirectToIntentToChromeURL));
+        });
 
         intentInterceptor.waitForIntent();
 
@@ -304,5 +309,74 @@ public class ExternalNavigationTest {
 
         // The current URL should now be the fallback URL.
         Assert.assertEquals(mTestServerSiteUrl, mActivityTestRule.getCurrentDisplayUrl());
+    }
+
+    /**
+     * Tests that a navigation that redirects to an external intent that can't be handled but has a
+     * fallback URL that launches an intent that *can* be handled results in the launching of the
+     * second intent.
+     * |url| is a URL that redirects to an unhandleable intent but has a fallback URL that redirects
+     * to a handleable intent.
+     * Tests that a navigation to |url| launches the handleable intent.
+     * TODO(crbug.com/1031465): Disallow such fallback intent launches by sharing Chrome's
+     * RedirectHandler impl, at which point this should fail and be updated to verify that the
+     * intent is blocked.
+     */
+    @Test
+    @SmallTest
+    public void
+    testNonHandledExternalIntentWithFallbackUrlThatLaunchesIntentAfterRedirectLaunchesFallbackIntent()
+            throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestServer().getURL(
+                "/server-redirect?" + mNonResolvableIntentWithFallbackUrlThatLaunchesIntent);
+
+        Tab tab = mActivityTestRule.getActivity().getTab();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
+
+        intentInterceptor.waitForIntent();
+
+        // The current URL should not have changed, and the intent should have been launched.
+        Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
+        Intent intent = intentInterceptor.mLastIntent;
+        Assert.assertNotNull(intent);
+        Assert.assertEquals("com.android.chrome", intent.getPackage());
+        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
+        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
+                intent.getDataString());
+    }
+
+    /**
+     * Tests that going to a page that loads an intent that can be handled in onload() results in
+     * the external intent being launched.
+     * TODO(crbug.com/1031465): Disallow such intent launches by sharing Chrome's RedirectHandler
+     * impl, at which point this should fail and be updated to verify that the intent is blocked.
+     */
+    @Test
+    @SmallTest
+    public void testExternalIntentLaunchedViaOnLoad() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        String url = mActivityTestRule.getTestDataURL(PAGE_THAT_INTENTS_TO_CHROME_ON_LOAD_FILE);
+
+        mActivityTestRule.navigateAndWait(url);
+
+        intentInterceptor.waitForIntent();
+
+        // The current URL should not have changed, and the intent should have been launched.
+        Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
+        Intent intent = intentInterceptor.mLastIntent;
+        Assert.assertNotNull(intent);
+        Assert.assertEquals("com.android.chrome", intent.getPackage());
+        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
+        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
+                intent.getDataString());
     }
 }

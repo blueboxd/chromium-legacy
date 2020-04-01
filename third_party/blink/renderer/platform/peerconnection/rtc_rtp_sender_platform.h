@@ -49,7 +49,7 @@ class PLATFORM_EXPORT RTCRtpSenderPlatform {
   virtual std::unique_ptr<RtcDtmfSenderHandler> GetDtmfSender() const = 0;
   virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;
   virtual void SetParameters(Vector<webrtc::RtpEncodingParameters>,
-                             webrtc::DegradationPreference,
+                             absl::optional<webrtc::DegradationPreference>,
                              RTCVoidRequest*) = 0;
   virtual void GetStats(RTCStatsReportCallback,
                         const Vector<webrtc::NonStandardGroupId>&) = 0;

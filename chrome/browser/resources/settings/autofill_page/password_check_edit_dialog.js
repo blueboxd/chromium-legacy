@@ -39,6 +39,7 @@ Polymer({
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
     this.$.dialog.showModal();
+    cr.ui.focusWithoutInk(this.$.cancel);
   },
 
   /** Closes the dialog. */

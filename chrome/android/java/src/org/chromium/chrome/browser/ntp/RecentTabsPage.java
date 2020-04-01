@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.os.SystemClock;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -20,7 +19,6 @@ import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
@@ -67,13 +65,6 @@ public class RecentTabsPage
      * Whether {@link #mView} is attached to the application window.
      */
     private boolean mIsAttachedToWindow;
-
-    /**
-     * The time, whichever is most recent, that the page:
-     * - Moved to the foreground
-     * - Became visible
-     */
-    private long mForegroundTimeMs;
 
     /**
      * Constructor returns an instance of RecentTabsPage.
@@ -132,11 +123,7 @@ public class RecentTabsPage
 
         mInForeground = inForeground;
         if (mInForeground) {
-            mForegroundTimeMs = SystemClock.elapsedRealtime();
             mRecentTabsManager.recordRecentTabMetrics();
-        } else {
-            RecordHistogram.recordLongTimesHistogram("NewTabPage.RecentTabsPage.TimeVisibleAndroid",
-                    SystemClock.elapsedRealtime() - mForegroundTimeMs);
         }
     }
 

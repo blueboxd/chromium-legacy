@@ -5596,30 +5596,6 @@
         "name": "v8.runtime_stats.top_25/https://www.youtube.com/watch?v=_kZsOISarzg"
     },
     {
-        "duration": "3.3975144354166667E-4",
-        "name": "wasm/AsmJsZenGarden"
-    },
-    {
-        "duration": "15.685649274410771",
-        "name": "wasm/WasmSpaceBuggy"
-    },
-    {
-        "duration": "65.75625318518516",
-        "name": "wasm/WasmStylizedRenderer"
-    },
-    {
-        "duration": "55.867687333333336",
-        "name": "wasm/WasmSunTemple"
-    },
-    {
-        "duration": "21.503581095959596",
-        "name": "wasm/WasmTanks"
-    },
-    {
-        "duration": "64.70462446127945",
-        "name": "wasm/WasmZenGarden"
-    },
-    {
         "duration": "63.42066826262625",
         "name": "webrtc/10s_datachannel_transfer"
     },

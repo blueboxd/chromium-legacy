@@ -122,7 +122,7 @@ Animation::AnimationClassPriority AnimationPriority(
   // https://drafts.csswg.org/css-animations-2/#animation-composite-order and
   // https://drafts.csswg.org/css-transitions-2/#animation-composite-order
   Animation::AnimationClassPriority priority;
-  if (animation.IsCSSTransition())
+  if (animation.IsCSSTransition() && animation.IsOwned())
     priority = Animation::AnimationClassPriority::kCssTransitionPriority;
   else if (animation.IsCSSAnimation() && animation.IsOwned())
     priority = Animation::AnimationClassPriority::kCssAnimationPriority;

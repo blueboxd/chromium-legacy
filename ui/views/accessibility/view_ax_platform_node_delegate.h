@@ -65,7 +65,9 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result) const override;
-  gfx::NativeViewAccessible HitTestSync(int x, int y) const override;
+  gfx::NativeViewAccessible HitTestSync(
+      int screen_physical_pixel_x,
+      int screen_physical_pixel_y) const override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   ui::AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,

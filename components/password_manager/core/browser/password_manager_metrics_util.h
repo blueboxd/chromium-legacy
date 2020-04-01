@@ -224,13 +224,6 @@ enum class CredentialManagerGetResult {
   kMaxValue = kAutoSignIn,
 };
 
-// Metrics: "PasswordManager.HttpPasswordMigrationMode"
-enum HttpPasswordMigrationMode {
-  HTTP_PASSWORD_MIGRATION_MODE_MOVE,
-  HTTP_PASSWORD_MIGRATION_MODE_COPY,
-  HTTP_PASSWORD_MIGRATION_MODE_COUNT
-};
-
 enum PasswordReusePasswordFieldDetected {
   NO_PASSWORD_FIELD,
   HAS_PASSWORD_FIELD,
@@ -511,12 +504,6 @@ void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
 // Log a user action on showing the account chooser for one or many accounts.
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
-
-// Logs number of passwords migrated from HTTP to HTTPS.
-void LogCountHttpMigratedPasswords(int count);
-
-// Logs mode of HTTP password migration.
-void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode);
 
 // Log the result of navigator.credentials.get.
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,

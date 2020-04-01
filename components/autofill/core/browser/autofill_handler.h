@@ -142,6 +142,8 @@ class AutofillHandler {
   // Returns the present form structures seen by Autofill handler.
   const FormStructureMap& form_structures() const { return form_structures_; }
 
+  AutofillDriver* driver() { return driver_; }
+
 #if defined(UNIT_TEST)
   // A public wrapper that calls |mutable_form_structures| for testing purposes
   // only.
@@ -212,8 +214,6 @@ class AutofillHandler {
                  FormStructure** parsed_form_structure);
 
   bool value_from_dynamic_change_form_ = false;
-
-  AutofillDriver* driver() { return driver_; }
 
   FormStructureMap* mutable_form_structures() { return &form_structures_; }
 

@@ -14,6 +14,10 @@
 #include "components/feed/core/v2/feed_store.h"
 #include "components/offline_pages/task/task.h"
 
+namespace base {
+class Clock;
+}
+
 namespace feed {
 struct StreamModelUpdateRequest;
 
@@ -30,10 +34,14 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
   };
 
   LoadStreamFromStoreTask(FeedStore* store,
+                          const base::Clock* clock,
+                          UserClass user_class,
                           base::OnceCallback<void(Result)> callback);
   ~LoadStreamFromStoreTask() override;
   LoadStreamFromStoreTask(const LoadStreamFromStoreTask&) = delete;
   LoadStreamFromStoreTask& operator=(const LoadStreamFromStoreTask&) = delete;
+
+  void IgnoreStalenessForTesting() { ignore_staleness_ = true; }
 
  private:
   void Run() override;
@@ -48,6 +56,9 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
   }
 
   FeedStore* store_;  // Unowned.
+  const base::Clock* clock_;
+  UserClass user_class_;
+  bool ignore_staleness_ = false;
   base::OnceCallback<void(Result)> result_callback_;
 
   std::unique_ptr<StreamModelUpdateRequest> update_request_;

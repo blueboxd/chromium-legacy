@@ -309,10 +309,6 @@ const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
 const char kMiddleNameRe[] =
     "middle.*name|mname|middle$"
     "|apellido.?materno|lastlastname";  // es
-
-// TODO(crbug.com/928851): Revisit "morada" from pt-PT as it means address and
-// not "last name", and "surename" in pt-PT as it's not Portuguese (or any
-// language?).
 const char kLastNameRe[] =
     "last.*name|lname|surname|last$|secondname|family.*name"
     "|nachname"                            // de-DE
@@ -320,7 +316,7 @@ const char kLastNameRe[] =
     "|famille|^nom(?!bre)"                 // fr-FR
     "|cognome"                             // it-IT
     "|姓"                                  // ja-JP
-    "|morada|apelidos|surename|sobrenome"  // pt-BR, pt-PT
+    "|apelidos|surename|sobrenome"         // pt-BR, pt-PT
     "|Фамилия"                             // ru
     "|نام.*خانوادگی"                       // fa
     "|उपनाम"                               // hi

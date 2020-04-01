@@ -143,7 +143,9 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result) const override;
-  gfx::NativeViewAccessible HitTestSync(int x, int y) const override;
+  gfx::NativeViewAccessible HitTestSync(
+      int screen_physical_pixel_x,
+      int screen_physical_pixel_y) const override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;

@@ -29,7 +29,7 @@ public abstract class TabCallback {
      * Triggered when a context menu should be displayed.
      * Added in M82.
      */
-    public void showContextMenu(ContextMenuParams params) {}
+    public void showContextMenu(@NonNull ContextMenuParams params) {}
 
     /**
      * Triggered when a tab's contents have been rendered inactive due to a modal overlay, or active

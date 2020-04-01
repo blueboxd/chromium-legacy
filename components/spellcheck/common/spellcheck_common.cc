@@ -133,6 +133,9 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
       {"en-GB", "-9-0"},
       {"en-US", "-9-0"},
       {"fa-IR", "-9-0"},
+
+      // March 2020: Update uk-UA dictionary from upstream.
+      {"uk-UA", "-4-0"},
   };
 
   // Generate the bdict file name using default version string or special

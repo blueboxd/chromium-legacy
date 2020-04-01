@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
+
+const base::Time kTestTimeEpoch = base::Time::UnixEpoch();
 
 ContentId MakeContentId(ContentId::Type type,
                         std::string content_domain,
@@ -143,7 +146,8 @@ std::vector<feedstore::DataOperation> MakeTypicalStreamOperations() {
   };
 }
 
-std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState() {
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
+    base::Time last_added_time) {
   auto initial_update = std::make_unique<StreamModelUpdateRequest>();
   initial_update->source =
       StreamModelUpdateRequest::Source::kInitialLoadFromStore;
@@ -159,6 +163,7 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState() {
   initial_update->shared_states.push_back(MakeSharedState(0));
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
   *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(0);
+  SetLastAddedTime(last_added_time, &initial_update->stream_data);
   return initial_update;
 }
 

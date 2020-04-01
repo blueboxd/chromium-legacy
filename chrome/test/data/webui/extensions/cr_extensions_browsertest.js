@@ -761,7 +761,6 @@ var CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
   /** @override */
   testGenPreamble() {
     GEN('  SetDevModeEnabled(true);');
-    GEN('  EnableErrorConsole();');
     GEN('  InstallErrorsExtension();');
   }
 

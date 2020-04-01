@@ -28,7 +28,6 @@
                                    completion:(ProceduralBlock)completion;
 
 // Testing only.
-- (BOOL)presentingFirstRunUI;
 - (void)showFirstRunUI;
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher;
 - (id<TabSwitcher>)tabSwitcher;

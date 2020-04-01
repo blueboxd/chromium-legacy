@@ -255,7 +255,7 @@ test("vr_android_unittests") {
     "//base/test:test_support",
     "//chrome/browser",
     "//components/translate/core/language_detection:language_detection",
-    "//device/vr:fakes",
+    "//device/vr:vr_fakes",
     "//device/vr/public/mojom",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",

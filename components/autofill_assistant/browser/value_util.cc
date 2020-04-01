@@ -205,6 +205,18 @@ std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
   return out;
 }
 
+std::ostream& operator<<(std::ostream& out,
+                         const ValueReferenceProto& reference) {
+  switch (reference.kind_case()) {
+    case ValueReferenceProto::kValue:
+      return out << reference.value();
+    case ValueReferenceProto::kModelIdentifier:
+      return out << reference.model_identifier();
+    case ValueReferenceProto::KIND_NOT_SET:
+      return out;
+  }
+}
+
 // Intended for debugging.  Writes a string representation of |value| to |out|.
 std::ostream& operator<<(std::ostream& out,
                          const ModelProto::ModelValue& value) {

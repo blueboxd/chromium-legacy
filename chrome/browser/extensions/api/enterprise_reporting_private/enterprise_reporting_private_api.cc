@@ -121,7 +121,7 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::Run() {
 
   cloud_policy_client_->UploadChromeDesktopReport(
       std::move(request),
-      base::BindRepeating(
+      base::BindOnce(
           &EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
               OnReportUploaded,
           this));

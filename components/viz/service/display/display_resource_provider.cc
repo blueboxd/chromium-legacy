@@ -21,6 +21,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gl/trace_util.h"
 
@@ -117,7 +118,7 @@ bool DisplayResourceProvider::OnMemoryDump(
     if (resource.transferable.is_software)
       backing_memory_allocated = !!resource.shared_bitmap;
     else
-      backing_memory_allocated = !!resource.gl_id;
+      backing_memory_allocated = resource.gl_id != 0 || resource.image_context;
 
     if (!backing_memory_allocated) {
       // Don't log unallocated resources - they have no backing memory.
@@ -144,28 +145,23 @@ bool DisplayResourceProvider::OnMemoryDump(
 
     // Resources may be shared across processes and require a shared GUID to
     // prevent double counting the memory.
-    base::trace_event::MemoryAllocatorDumpGuid guid;
-    base::UnguessableToken shared_memory_guid;
-    if (resource.transferable.is_software) {
-      shared_memory_guid = resource.shared_bitmap_tracing_guid;
-    } else {
-      guid = gl::GetGLTextureClientGUIDForTracing(
-          compositor_context_provider_->ContextSupport()
-              ->ShareGroupTracingGUID(),
-          resource.gl_id);
-    }
-
-    DCHECK(!shared_memory_guid.is_empty() || !guid.empty());
 
     // The client that owns the resource will use a higher importance (2), and
     // the GPU service will use a lower one (0).
-    const int importance = 1;
-    if (!shared_memory_guid.is_empty()) {
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
-                                           importance);
+    constexpr int kImportance = 1;
+
+    if (resource.transferable.is_software) {
+      pmd->CreateSharedMemoryOwnershipEdge(
+          dump->guid(), resource.shared_bitmap_tracing_guid, kImportance);
     } else {
+      // Shared ownership edges for legacy mailboxes aren't supported.
+      if (!resource.transferable.mailbox_holder.mailbox.IsSharedImage())
+        continue;
+
+      auto guid = GetSharedImageGUIDForTracing(
+          resource.transferable.mailbox_holder.mailbox);
       pmd->CreateSharedGlobalAllocatorDump(guid);
-      pmd->AddOwnershipEdge(dump->guid(), guid, importance);
+      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
     }
   }
 

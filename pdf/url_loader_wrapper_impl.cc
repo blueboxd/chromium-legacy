@@ -184,8 +184,8 @@ void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
   buffer_size_ = buffer_size;
   read_starter_.Start(
       FROM_HERE, kReadDelayMs,
-      base::BindRepeating(&URLLoaderWrapperImpl::ReadResponseBodyImpl,
-                          base::Unretained(this)));
+      base::BindOnce(&URLLoaderWrapperImpl::ReadResponseBodyImpl,
+                     base::Unretained(this)));
 }
 
 void URLLoaderWrapperImpl::ReadResponseBodyImpl() {

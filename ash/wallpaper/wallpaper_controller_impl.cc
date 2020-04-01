@@ -1347,8 +1347,8 @@ void WallpaperControllerImpl::OnDisplayConfigurationChanged() {
     GetInternalDisplayCompositorLock();
     timer_.Start(
         FROM_HERE, wallpaper_reload_delay_,
-        base::BindRepeating(&WallpaperControllerImpl::ReloadWallpaper,
-                            weak_factory_.GetWeakPtr(), /*clear_cache=*/false));
+        base::BindOnce(&WallpaperControllerImpl::ReloadWallpaper,
+                       weak_factory_.GetWeakPtr(), /*clear_cache=*/false));
   }
 }
 
@@ -2034,9 +2034,8 @@ bool WallpaperControllerImpl::ShouldSetDevicePolicyWallpaper() const {
 void WallpaperControllerImpl::SetDevicePolicyWallpaper() {
   DCHECK(ShouldSetDevicePolicyWallpaper());
   ReadAndDecodeWallpaper(
-      base::BindRepeating(
-          &WallpaperControllerImpl::OnDevicePolicyWallpaperDecoded,
-          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&WallpaperControllerImpl::OnDevicePolicyWallpaperDecoded,
+                     weak_factory_.GetWeakPtr()),
       sequenced_task_runner_.get(), device_policy_wallpaper_path_);
 }
 

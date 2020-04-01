@@ -283,7 +283,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
             std::make_unique<NetStreamSocketAdapter>(std::move(socket)));
     net::SSLServerSocket* raw_server_socket = server_socket.get();
     socket_ = std::move(server_socket);
-    result = raw_server_socket->Handshake(base::Bind(
+    result = raw_server_socket->Handshake(base::BindOnce(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
 #endif
   } else {
@@ -329,7 +329,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
             host_and_port, ssl_config);
 #endif
 
-    result = socket_->Connect(base::Bind(
+    result = socket_->Connect(base::BindOnce(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
   }
 
@@ -382,8 +382,8 @@ void SslHmacChannelAuthenticator::WriteAuthenticationBytes(
   while (true) {
     int result = socket_->Write(
         auth_write_buf_.get(), auth_write_buf_->BytesRemaining(),
-        base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesWritten,
-                   base::Unretained(this)),
+        base::BindOnce(&SslHmacChannelAuthenticator::OnAuthBytesWritten,
+                       base::Unretained(this)),
         kTrafficAnnotation);
     if (result == net::ERR_IO_PENDING)
       break;
@@ -420,11 +420,10 @@ bool SslHmacChannelAuthenticator::HandleAuthBytesWritten(
 
 void SslHmacChannelAuthenticator::ReadAuthenticationBytes() {
   while (true) {
-    int result =
-        socket_->Read(auth_read_buf_.get(),
-                      auth_read_buf_->RemainingCapacity(),
-                      base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesRead,
-                                 base::Unretained(this)));
+    int result = socket_->Read(
+        auth_read_buf_.get(), auth_read_buf_->RemainingCapacity(),
+        base::BindOnce(&SslHmacChannelAuthenticator::OnAuthBytesRead,
+                       base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       break;
     if (!HandleAuthBytesRead(result))

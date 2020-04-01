@@ -170,7 +170,7 @@ void MediaStreamDevicesController::RequestPermissions(
   permission_manager->RequestPermissions(
       content_settings_types, rfh, request.security_origin,
       request.user_gesture,
-      base::Bind(
+      base::BindOnce(
           &MediaStreamDevicesController::RequestAndroidPermissionsIfNeeded,
           web_contents, base::Passed(&controller), will_prompt_for_audio,
           will_prompt_for_video));

@@ -646,7 +646,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #pragma mark - StartupInformation implementation.
 
 - (BOOL)isPresentingFirstRunUI {
-  return self.sceneController.presentingFirstRunUI;
+  BOOL isPresentingFirstRunUI = NO;
+  for (SceneState* scene in self.appState.connectedScenes) {
+    isPresentingFirstRunUI &= scene.presentingFirstRunUI;
+  }
+
+  return isPresentingFirstRunUI;
 }
 
 - (FirstUserActionRecorder*)firstUserActionRecorder {

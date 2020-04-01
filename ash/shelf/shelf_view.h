@@ -611,16 +611,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Used to call SpeedUpDragScrolling.
   base::OneShotTimer speed_up_drag_scrolling_;
 
-  // The AppListViewState recorded before a button press, used to record app
-  // launching metrics. This allows an accurate AppListViewState to be recorded
-  // before AppListViewState changes.
-  AppListViewState recorded_app_list_view_state_;
-
-  // Whether the applist was shown before a button press, used to record app
-  // launching metrics. This is recorded because AppList visibility can change
-  // before the metric is recorded.
-  bool app_list_visibility_before_app_launch_ = false;
-
   // Whether this view should focus its last focusable child (instead of its
   // first) when focused.
   bool default_last_focusable_child_ = false;

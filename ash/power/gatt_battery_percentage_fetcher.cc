@@ -145,10 +145,10 @@ void GattBatteryPercentageFetcher::SetAdapterAndStartFetching(
   DCHECK(!connection_);
   // TODO(crbug/1007780): This function should take OnceCallbacks.
   device->CreateGattConnection(
-      base::BindRepeating(&GattBatteryPercentageFetcher::OnGattConnected,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&GattBatteryPercentageFetcher::OnGattConnectError,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GattBatteryPercentageFetcher::OnGattConnected,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&GattBatteryPercentageFetcher::OnGattConnectError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GattBatteryPercentageFetcher::OnGattConnected(

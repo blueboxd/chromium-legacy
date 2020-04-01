@@ -82,6 +82,7 @@
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/device_form_factor.h"
@@ -487,7 +488,8 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
 
   prefs.remote_fonts_enabled =
       !command_line.HasSwitch(switches::kDisableRemoteFonts);
-  prefs.application_cache_enabled = true;
+  prefs.application_cache_enabled =
+      base::FeatureList::IsEnabled(blink::features::kAppCache);
   prefs.local_storage_enabled =
       !command_line.HasSwitch(switches::kDisableLocalStorage);
   prefs.databases_enabled =

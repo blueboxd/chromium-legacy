@@ -40,14 +40,11 @@
           '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
           '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
           '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
-          '--git-revision', '${got_revision}',
         ],
-        'precommit_args': [
-          '--gerrit-issue', '${patch_issue}',
-          '--gerrit-patchset', '${patch_set}',
-          '--buildbucket-id', '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gold-service-account'],
         'swarming': {
           'shards': 4,
         },
@@ -193,23 +190,13 @@
         'name': 'android_webview_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
         'telemetry_test_name': 'pixel',
       },
     },
@@ -2193,47 +2180,27 @@
         'name': 'gl_renderer_maps_pixel_tests',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
       },
       'pixel': {
         'name': 'gl_renderer_pixel_skia_gold_tests',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
       },
       'screenshot_sync': {
         'name': 'gl_renderer_screenshot_sync_tests',
@@ -2316,24 +2283,14 @@
         'name': 'egl_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
         'telemetry_test_name': 'pixel',
       },
     },
@@ -2364,24 +2321,14 @@
         'name': 'maps_pixel_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
       },
       'screenshot_sync': {
         'args': [
@@ -2393,24 +2340,14 @@
         'name': 'skia_renderer_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
         'telemetry_test_name': 'pixel',
       },
     },
@@ -2438,24 +2375,14 @@
         'name': 'vulkan_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
         'telemetry_test_name': 'pixel',
       },
     },
@@ -2476,45 +2403,25 @@
         'name': 'maps_pixel_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
       },
       'pixel_skia': {
         'name': 'pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--build-revision',
-          '${got_revision}',
           '--test-machine-name',
           '${buildername}',
         ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
         ],
-        'mixins': ['chrome-gpu-gold-service-account'],
         'telemetry_test_name': 'pixel',
       },
       'screenshot_sync': {
@@ -3259,7 +3166,6 @@
       'pixel_browser_tests': {
         'name': 'pixel_browser_tests',
         'args': [
-          '--build-revision=${got_revision}',
           '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
           '--browser-ui-tests-verify-pixels',
           # Do not allow retry or it will break the bulk approval process.
@@ -3269,14 +3175,12 @@
           '--test-launcher-retry-limit=0',
           '--enable-pixel-output-in-tests',
         ],
-        'precommit_args': [
-          '--issue=${patch_issue}',
-          '--patchset=${patch_set}',
-          '--jobid=${buildbucket_build_id}',
-        ],
         'experiment_percentage': 100,
         'test': 'browser_tests',
-        'mixins': ['chrome-gold-service-account'],
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
       },
     },
 

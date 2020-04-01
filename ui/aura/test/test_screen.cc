@@ -168,6 +168,10 @@ display::Display TestScreen::GetDisplayNearestWindow(
   return GetPrimaryDisplay();
 }
 
+std::string TestScreen::GetCurrentWorkspace() {
+  return {};
+}
+
 TestScreen::TestScreen(const gfx::Rect& screen_bounds) {
   static int64_t synthesized_display_id = 2000;
   display::Display display(synthesized_display_id++);

@@ -23,7 +23,7 @@ enum class AggregationType {
 class CC_EXPORT ThroughputUkmReporter {
  public:
   explicit ThroughputUkmReporter(UkmManager* ukm_manager);
-  ~ThroughputUkmReporter() = default;
+  ~ThroughputUkmReporter();
 
   ThroughputUkmReporter(const ThroughputUkmReporter&) = delete;
   ThroughputUkmReporter& operator=(const ThroughputUkmReporter&) = delete;
@@ -40,7 +40,8 @@ class CC_EXPORT ThroughputUkmReporter {
   // Sampling control. We sample the event here to not throttle the UKM system.
   // Currently, the same sampling rate is applied to all existing trackers. We
   // might want to iterate on this based on the collected data.
-  uint32_t samples_to_next_event_ = 0;
+  uint32_t samples_to_next_event_[static_cast<int>(
+      FrameSequenceTrackerType::kMaxType)] = {0};
   uint32_t samples_for_aggregated_report_ = 0;
 
   // This is pointing to the LayerTreeHostImpl::ukm_manager_, which is

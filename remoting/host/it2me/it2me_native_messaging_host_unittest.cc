@@ -283,8 +283,8 @@ void It2MeNativeMessagingHostTest::SetUp() {
 
   host_task_runner_ = new AutoThreadTaskRunner(
       host_thread_->task_runner(),
-      base::Bind(&It2MeNativeMessagingHostTest::ExitTest,
-                 base::Unretained(this)));
+      base::BindOnce(&It2MeNativeMessagingHostTest::ExitTest,
+                     base::Unretained(this)));
 
   host_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&It2MeNativeMessagingHostTest::StartHost,

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <UIKit/UIKit.h>
+
 #import "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -24,6 +27,7 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
@@ -40,8 +44,48 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
   return ButtonWithAccessibilityLabel(fakeIdentity.userEmail);
 }
 
+// Returns a matcher for when there are no bookmarks saved.
 id<GREYMatcher> NoBookmarksLabel() {
   return grey_text(l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL));
+}
+
+// Returns a matcher for the button to sign out and clear data.
+id<GREYMatcher> SignOutAndClearDataButton() {
+  return grey_accessibilityID(
+      kSettingsAccountsTableViewSignoutAndClearDataCellId);
+}
+
+// Opens the list of accounts and taps the sign out button, |buttonMatcher|.
+void SignOut(id<GREYMatcher> buttonMatcher, int labelID) {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+  [ChromeEarlGreyUI tapAccountsMenuButton:buttonMatcher];
+
+  // Both of the Buttons on the screen have the same label and traits. We need
+  // to match with the Button that does not have an accessibility label as this
+  // is the one created by the ActionSheetCoordinator.
+  [[EarlGrey selectElementWithMatcher:grey_allOf(ButtonWithAccessibilityLabelId(
+                                                     labelID),
+                                                 grey_not(buttonMatcher), nil)]
+      performAction:grey_tap()];
+
+  // Wait until the user is signed out.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGreyUtils checkSignedOut];
+}
+
+// Signs out of account using the sign out button.
+void SignOut() {
+  SignOut(SignOutAccountsButton(),
+          IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
+}
+
+// Signs out of account using the sign out and clear data button.
+void SignOutAndClearData() {
+  SignOut(SignOutAndClearDataButton(),
+          IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE);
 }
 }
 
@@ -193,8 +237,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
                                      withTitle:@"cats"];
 
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationNonManagedUser];
+  SignOut();
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];
@@ -219,8 +262,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
                                      withTitle:@"cats"];
 
-  [SigninEarlGreyUI signOutWithSignOutConfirmation:
-                        SignOutConfirmationNonManagedUserWithClearedData];
+  SignOutAndClearData();
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];
@@ -244,8 +286,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
                                      withTitle:@"cats"];
 
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationManagedUser];
+  SignOutAndClearData();
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];
@@ -275,8 +316,12 @@ id<GREYMatcher> NoBookmarksLabel() {
 
   // Open the "Disconnect Account" dialog, then tap "Cancel".
   [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
-      performAction:grey_tap()];
+  // Note that the iPad does not provide a CANCEL button by design. Click
+  // anywhere on the screen to exit.
+  [[[EarlGrey
+      selectElementWithMatcher:grey_anyOf(chrome_test_util::CancelButton(),
+                                          SignOutAccountsButton(), nil)]
+      atIndex:1] performAction:grey_tap()];
 
   // Check that Account Settings screen is open and |fakeIdentity| is signed in.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::

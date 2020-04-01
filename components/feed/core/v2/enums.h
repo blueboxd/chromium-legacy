@@ -11,19 +11,6 @@
 
 namespace feed {
 
-// Describes the behavior for attempting to refresh (over the network) while
-// loading the feed.
-enum class LoadRefreshBehavior {
-  // Wait for feed refresh before showing the result.
-  kWaitForRefresh,
-  // Load what is available locally, begin the refresh, and populate results
-  // below the fold when they are received.
-  kRefreshInline,
-  // Wait a limited amount of time for the network fetch. If the fetch doesn't
-  // complete in time, just show the user what's available locally.
-  kLimitedWaitForRefresh,
-};
-
 enum class LoadStreamStatus {
   // Loading was not attempted.
   kNoStatus = 0,
@@ -35,6 +22,10 @@ enum class LoadStreamStatus {
   kNoResponseBody = 6,
   // TODO(harringtond): Let's add more specific errors here.
   kProtoTranslationFailed = 7,
+  kDataInStoreIsStale = 8,
+  // The timestamp for stored data is in the future, so we're treating stored
+  // data as it it is stale.
+  kDataInStoreIsStaleTimestampInFuture = 9,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

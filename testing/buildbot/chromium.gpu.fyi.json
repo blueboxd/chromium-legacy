@@ -3804,10 +3804,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3816,11 +3816,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -3849,10 +3849,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3861,11 +3861,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -4336,10 +4336,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4348,11 +4348,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -4381,10 +4381,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4393,11 +4393,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -4619,10 +4619,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4631,11 +4631,11 @@
         },
         "name": "android_webview_pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -4852,10 +4852,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4864,11 +4864,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -4896,10 +4896,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4908,11 +4908,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -5439,10 +5439,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -5451,11 +5451,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -5484,10 +5484,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -5496,11 +5496,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -6049,10 +6049,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6061,11 +6061,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -6094,10 +6094,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6106,11 +6106,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -6612,10 +6612,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6624,11 +6624,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -6657,10 +6657,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6669,11 +6669,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -6805,10 +6805,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6817,11 +6817,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -6957,10 +6957,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6969,11 +6969,11 @@
         },
         "name": "egl_pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -7056,10 +7056,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7068,11 +7068,11 @@
         },
         "name": "vulkan_pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -7571,10 +7571,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7583,11 +7583,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -7614,10 +7614,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7626,11 +7626,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -8346,10 +8346,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8358,11 +8358,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -8390,10 +8390,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8402,11 +8402,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -8925,10 +8925,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8937,11 +8937,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -8968,10 +8968,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8980,11 +8980,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -9542,10 +9542,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9554,11 +9554,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -9586,10 +9586,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9598,11 +9598,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -10183,10 +10183,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10195,11 +10195,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -10226,10 +10226,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10238,11 +10238,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -10700,10 +10700,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10712,11 +10712,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -10815,10 +10815,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10827,11 +10827,11 @@
         },
         "name": "skia_renderer_pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -10902,10 +10902,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10914,11 +10914,11 @@
         },
         "name": "vulkan_pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -11135,10 +11135,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11147,11 +11147,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -11250,10 +11250,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11262,11 +11262,11 @@
         },
         "name": "skia_renderer_pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -11337,10 +11337,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11349,11 +11349,11 @@
         },
         "name": "vulkan_pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -12055,10 +12055,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12067,11 +12067,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -12097,10 +12097,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12109,11 +12109,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -12739,10 +12739,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12751,11 +12751,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -12787,10 +12787,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12799,11 +12799,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -13415,10 +13415,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -13427,11 +13427,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -13457,10 +13457,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -13469,11 +13469,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -14065,10 +14065,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14077,11 +14077,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -14109,10 +14109,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14121,11 +14121,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -14607,10 +14607,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14619,11 +14619,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -14651,10 +14651,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14663,11 +14663,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -15144,10 +15144,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15156,11 +15156,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -15188,10 +15188,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15200,11 +15200,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -15840,10 +15840,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15852,11 +15852,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -15884,10 +15884,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15896,11 +15896,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -16600,10 +16600,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -16612,11 +16612,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -16644,10 +16644,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -16656,11 +16656,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -19740,10 +19740,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19752,11 +19752,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -19783,10 +19783,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19795,11 +19795,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -20553,10 +20553,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20565,11 +20565,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -20597,10 +20597,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20609,11 +20609,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -21428,10 +21428,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -21440,11 +21440,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -21472,10 +21472,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -21484,11 +21484,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -22231,10 +22231,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -22243,11 +22243,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -22274,10 +22274,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -22286,11 +22286,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -23166,10 +23166,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -23178,11 +23178,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -23210,10 +23210,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -23222,11 +23222,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -24084,10 +24084,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -24096,11 +24096,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -24128,10 +24128,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -24140,11 +24140,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -25133,10 +25133,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -25145,11 +25145,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -25225,10 +25225,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -25237,11 +25237,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -25866,10 +25866,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --disable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -25878,11 +25878,11 @@
         },
         "name": "gl_renderer_maps_pixel_tests",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -25909,10 +25909,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --disable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -25921,11 +25921,11 @@
         },
         "name": "gl_renderer_pixel_skia_gold_tests",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -27301,10 +27301,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -27313,11 +27313,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -27393,10 +27393,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -27405,11 +27405,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -28420,10 +28420,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -28432,11 +28432,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -28464,10 +28464,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -28476,11 +28476,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -29099,10 +29099,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -29111,11 +29111,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -29143,10 +29143,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -29155,11 +29155,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -29997,10 +29997,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -30009,11 +30009,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -30050,10 +30050,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -30062,11 +30062,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -31068,10 +31068,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -31080,11 +31080,11 @@
         },
         "name": "maps_pixel_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
@@ -31121,10 +31121,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--build-revision",
-          "${got_revision}",
           "--test-machine-name",
-          "${buildername}"
+          "${buildername}",
+          "--git-revision",
+          "${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -31133,11 +31133,11 @@
         },
         "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--review-patch-issue",
+          "--gerrit-issue",
           "${patch_issue}",
-          "--review-patch-set",
+          "--gerrit-patchset",
           "${patch_set}",
-          "--buildbucket-build-id",
+          "--buildbucket-id",
           "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,

@@ -119,8 +119,7 @@ public class IncognitoCookieControlsManager
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (mEnforcement == CookieControlsEnforcement.NO_ENFORCEMENT
-                && (buttonView.getId() == R.id.cookie_controls_card_toggle)) {
+        if (isChecked != mChecked && (buttonView.getId() == R.id.cookie_controls_card_toggle)) {
             mServiceBridge.handleCookieControlsToggleChanged(isChecked);
         }
     }

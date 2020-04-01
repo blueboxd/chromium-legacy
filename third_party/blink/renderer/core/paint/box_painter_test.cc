@@ -209,11 +209,6 @@ TEST_P(BoxPainterTest, ScrollHitTestOrderWithLocalBackgroundAttachment) {
 }
 
 TEST_P(BoxPainterTest, ScrollHitTestProperties) {
-  // This test depends on the CompositeAfterPaint behavior of painting solid
-  // color backgrounds into both the non-scrolled and scrolled spaces.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -239,15 +234,14 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
   // scrolled contents.
   EXPECT_EQ(
       kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
-      container.GetBackgroundPaintLocation());
+      container.ComputeBackgroundPaintLocationIfComposited());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+            container.GetBackgroundPaintLocation());
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
       ElementsAre(
           IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
           IsSameId(&container, kBackgroundType),
-          IsSameId(&container.GetScrollableArea()
-                        ->GetScrollingBackgroundDisplayItemClient(),
-                   kBackgroundType),
           IsSameId(&child, kBackgroundType)));
 
   HitTestData scroll_hit_test_data;
@@ -271,9 +265,10 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
                        PaintChunk::Id(container, DisplayItem::kScrollHitTest),
                        container.FirstFragment().LocalBorderBoxProperties(),
                        &scroll_hit_test_data, IntRect(0, 0, 200, 200)),
-          IsPaintChunk(2, 4,
-                       PaintChunk::Id(container, kScrollingBackgroundChunkType),
-                       scrolling_contents_properties)));
+          IsPaintChunk(
+              2, 3,
+              PaintChunk::Id(container, kClippedContentsBackgroundChunkType),
+              scrolling_contents_properties)));
 
   // We always create scroll node for the root layer.
   const auto& root_transform = paint_chunks[0].properties.Transform();

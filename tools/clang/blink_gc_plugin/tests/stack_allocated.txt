@@ -23,7 +23,7 @@ class DerivedHeapObject2 : public HeapObject {
 ./stack_allocated.h:43:3: warning: [blink-gc] Garbage collected class 'DerivedHeapObject2' is not permitted to override its new operator.
   STACK_ALLOCATED();
   ^
-./heap/stubs.h:182:5: note: expanded from macro 'STACK_ALLOCATED'
+./heap/stubs.h:189:5: note: expanded from macro 'STACK_ALLOCATED'
     __attribute__((annotate("blink_stack_allocated")))      \
     ^
 stack_allocated.cpp:12:1: warning: [blink-gc] Class 'AnonStackObject' contains invalid fields.

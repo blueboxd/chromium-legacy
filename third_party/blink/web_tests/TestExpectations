@@ -322,45 +322,24 @@ wpt_internal/webgpu/* [ Skip ]
 
 crbug.com/1018273 [ Mac ] compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-inner.html [ Failure ]
 
+# Fails due to lack of support for image orientation in tiling shaders.
+crbug.com/1066634 external/wpt/css/css-images/image-orientation/image-orientation-background-properties.html [ Failure ]
+
 # Fail due to lack of fuzzy matching on Linux, Win and Mac platforms for WPT. The pixels in the pre-rotated reference
 # images do not exactly match the exif rotated images, probably due to jpeg decoding/encoding issues. Maybe
 # adjusting the image size to a multiple of 8 would fix this (so all jpeg blocks are solid color).
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-default.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic1.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-content-images.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic1.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-image-document.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-none-image-document.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic2.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic2.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-none-content-images.html [ Failure ]
-crbug.com/997202 [ Linux ] external/wpt/css/css-images/image-orientation/image-orientation-none.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-default.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic1.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-content-images.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic1.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-image-document.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-none-image-document.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic2.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic2.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-none-content-images.html [ Failure ]
-crbug.com/997202 [ Mac ] external/wpt/css/css-images/image-orientation/image-orientation-none.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-default.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic1.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-content-images.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic1.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-image-document.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-none-image-document.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic2.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic2.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-none-content-images.html [ Failure ]
-crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-orientation-none.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-default.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic1.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-content-images.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic1.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-embedded-content.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-none-image-document.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic2.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-dynamic2.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-none-content-images.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-none.html [ Failure ]
 
 crbug.com/1042453 [ Win ] external/wpt/css/filter-effects/idlharness.any.html [ Timeout Pass ]
 crbug.com/1042453 [ Mac ] external/wpt/css/filter-effects/idlharness.any.html [ Timeout Pass ]
@@ -2304,6 +2283,10 @@ crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-loose-hyphens-
 crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-normal-hyphens-002.html [ Failure ]
 crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-strict-hyphens-002.html [ Failure ]
 
+# Link event firing
+crbug.com/922618 external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
+crbug.com/922618 external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
+
 # Sheriff 2020-02-06
 # Flaking on Linux Leak
 crbug.com/1049599 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Pass Failure Timeout ]
@@ -3136,12 +3119,6 @@ crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ 
 crbug.com/626703 [ Mac10.13 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/screen-capture/getdisplaymedia.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/readable-byte-streams/construct-byob-request.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
@@ -6657,6 +6634,3 @@ crbug.com/1065335 [ Win ] fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ 
 # Sheriff 2020-04-01
 crbug.com/1066122 virtual/threaded-no-composited-antialiasing/animations/events/animation-iteration-event.html [ Pass Failure ]
 crbug.com/1066732 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Pass Failure ]
-
-# TODO(danakj): Rebaseline for Mac 10.14
-crbug.com/1066392 [ Mac ] virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]

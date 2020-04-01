@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
@@ -108,15 +109,25 @@ UsernamePasswordsState CalculateUsernamePasswordsState(
     bool automatically_filled =
         field.properties_mask & FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
 
-    if (saved_usernames.count(value)) {
+    // The typed `value` could appear in `saved_usernames`, `saved_passwords`,
+    // or both. In the last case we use the control type of the form as a
+    // tie-break, if this is `password`, the user likely typed a password,
+    // otherwise a username.
+    bool is_possibly_saved_username = base::Contains(saved_usernames, value);
+    bool is_possibly_saved_password = base::Contains(saved_passwords, value);
+    bool field_has_password_type = field.form_control_type == "password";
+
+    if (is_possibly_saved_username &&
+        (!is_possibly_saved_password || !field_has_password_type)) {
       result.saved_username_typed |= user_typed;
       result.username_manually_filled |= manually_filled;
       result.username_automatically_filled |= automatically_filled;
-    } else if (saved_passwords.count(value)) {
+    } else if (is_possibly_saved_password &&
+               (!is_possibly_saved_username || field_has_password_type)) {
       result.saved_password_typed |= user_typed;
       result.password_manually_filled |= manually_filled;
       result.password_automatically_filled |= automatically_filled;
-    } else if (user_typed && field.form_control_type == "password") {
+    } else if (user_typed && field_has_password_type) {
       result.unknown_password_typed = true;
     }
   }

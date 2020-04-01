@@ -240,7 +240,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());
   EXPECT_TRUE(state.SignalReady(io_thread_.task_runner().get(),
-                                base::Bind(&ShutdownTask, &run_loop)));
+                                base::BindOnce(&ShutdownTask, &run_loop)));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitWhenIdleClosure(),
       TestTimeouts::action_max_timeout());

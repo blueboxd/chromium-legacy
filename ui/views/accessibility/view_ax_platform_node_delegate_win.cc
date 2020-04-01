@@ -93,10 +93,12 @@ gfx::Rect ViewAXPlatformNodeDelegateWin::GetBoundsRect(
     const ui::AXClippingBehavior clipping_behavior,
     ui::AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case ui::AXCoordinateSystem::kScreen:
-      // We could optionally add clipping here if ever needed.
+    case ui::AXCoordinateSystem::kScreenPhysicalPixels:
       return display::win::ScreenWin::DIPToScreenRect(
           HWNDForView(view()), view()->GetBoundsInScreen());
+    case ui::AXCoordinateSystem::kScreenDIPs:
+      // We could optionally add clipping here if ever needed.
+      return view()->GetBoundsInScreen();
     case ui::AXCoordinateSystem::kRootFrame:
     case ui::AXCoordinateSystem::kFrame:
       NOTIMPLEMENTED();

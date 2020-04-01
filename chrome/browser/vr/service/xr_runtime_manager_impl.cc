@@ -12,6 +12,8 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
@@ -107,8 +109,11 @@ XRRuntimeManagerImpl::GetOrCreateInstance() {
     if (arcore_device_provider) {
       providers.emplace_back(std::move(arcore_device_provider));
     } else {
-      // TODO(crbug.com/1050470): Remove this logging after investigation.
+      // TODO(https://crbug.com/1050470): Remove this logging after
+      // investigation.
       LOG(ERROR) << "Could not get ARCoreDeviceProviderFactory";
+      base::RecordAction(base::UserMetricsAction(
+          "XR.ARCoreDeviceProviderFactory.NotInstalled"));
     }
 #endif  // BUILDFLAG(ENABLE_ARCORE)
 #endif  // defined(OS_ANDROID)

@@ -40,6 +40,7 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   display::Display GetPrimaryDisplay() const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
+  std::string GetCurrentWorkspace() override;
 
  private:
   gfx::AcceleratedWidget GetAcceleratedWidgetForWindow(

@@ -6,6 +6,7 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator+subclassing.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -59,7 +60,7 @@
 // Synthesize since readonly property from superclass is changed to readwrite.
 @synthesize baseViewController = _baseViewController;
 // Synthesize since readonly property from superclass is changed to readwrite.
-@synthesize browserState = _browserState;
+@synthesize browser = _browser;
 // Property defined in InfobarUIDelegate.
 @synthesize delegate = _delegate;
 // Property defined in InfobarUIDelegate.
@@ -93,7 +94,7 @@
 
 - (void)presentInfobarBannerAnimated:(BOOL)animated
                           completion:(ProceduralBlock)completion {
-  DCHECK(self.browserState);
+  DCHECK(self.browser);
   DCHECK(self.baseViewController);
   DCHECK(self.bannerViewController);
   DCHECK(self.started);
@@ -112,7 +113,8 @@
   } else {
     _animatedFullscreenDisabler =
         std::make_unique<AnimatedScopedFullscreenDisabler>(
-            FullscreenController::FromBrowserState(self.browserState));
+            FullscreenController::FromBrowserState(
+                self.browser->GetBrowserState()));
   }
   _animatedFullscreenDisabler->StartAnimation();
 

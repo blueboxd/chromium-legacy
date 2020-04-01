@@ -147,7 +147,7 @@ void ExtensionMediaRouteProviderProxy::StopObservingMediaRoutes(
 void ExtensionMediaRouteProviderProxy::StartListeningForRouteMessages(
     const std::string& route_id) {
   request_manager_->RunOrDefer(
-      base::Bind(
+      base::BindOnce(
           &ExtensionMediaRouteProviderProxy::DoStartListeningForRouteMessages,
           weak_factory_.GetWeakPtr(), route_id),
       MediaRouteProviderWakeReason::START_LISTENING_FOR_ROUTE_MESSAGES);

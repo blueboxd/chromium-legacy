@@ -40,8 +40,13 @@ std::unique_ptr<StreamModel> LoadModelFromStore(FeedStore* store) {
   auto complete = [&](LoadStreamFromStoreTask::Result task_result) {
     result = std::move(task_result);
   };
-  LoadStreamFromStoreTask load_task(store,
-                                    base::BindLambdaForTesting(complete));
+  LoadStreamFromStoreTask load_task(
+      store, /*clock=*/nullptr,
+      UserClass::kActiveSuggestionsConsumer,  // Has no effect.
+      base::BindLambdaForTesting(complete));
+  // We want to load the data no matter how stale.
+  load_task.IgnoreStalenessForTesting();
+
   base::RunLoop run_loop;
   load_task.Execute(run_loop.QuitClosure());
   run_loop.Run();
@@ -107,6 +112,24 @@ class TestSurface : public FeedStream::SurfaceInterface {
   base::Optional<feedui::StreamUpdate> update;
 };
 
+class TestUserClassifier : public UserClassifier {
+ public:
+  TestUserClassifier(PrefService* pref_service, const base::Clock* clock)
+      : UserClassifier(pref_service, clock) {}
+  // UserClassifier.
+  UserClass GetUserClass() const override {
+    return overridden_user_class_.value_or(UserClassifier::GetUserClass());
+  }
+
+  // Test use.
+  void OverrideUserClass(UserClass user_class) {
+    overridden_user_class_ = user_class;
+  }
+
+ private:
+  base::Optional<UserClass> overridden_user_class_;
+};
+
 class TestFeedNetwork : public FeedNetwork {
  public:
   // FeedNetwork implementation.
@@ -141,12 +164,13 @@ class TestWireResponseTranslator : public FeedStream::WireResponseTranslator {
  public:
   std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
       feedwire::Response response,
-      base::TimeDelta response_time) override {
+      base::TimeDelta response_time,
+      base::Time current_time) override {
     if (injected_response_) {
       return std::move(injected_response_);
     }
     return FeedStream::WireResponseTranslator::TranslateWireResponse(
-        std::move(response), response_time);
+        std::move(response), response_time, current_time);
   }
   void InjectResponse(std::unique_ptr<StreamModelUpdateRequest> response) {
     injected_response_ = std::move(response);
@@ -193,11 +217,18 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   void SetUp() override {
     feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
     feed::RegisterProfilePrefs(profile_prefs_.registry());
-
+    CHECK_EQ(kTestTimeEpoch, task_environment_.GetMockClock()->Now());
     stream_ = std::make_unique<FeedStream>(
         &refresh_scheduler_, &event_observer_, this, &profile_prefs_, &network_,
-        store_.get(), &clock_, &tick_clock_,
+        store_.get(), task_environment_.GetMockClock(),
+        task_environment_.GetMockTickClock(),
         task_environment_.GetMainThreadTaskRunner());
+
+    // Set the user classifier.
+    auto user_classifier = std::make_unique<TestUserClassifier>(
+        &profile_prefs_, task_environment_.GetMockClock());
+    user_classifier_ = user_classifier.get();
+    stream_->SetUserClassifierForTesting(std::move(user_classifier));
 
     WaitForIdleTaskQueue();  // Wait for any initialization.
 
@@ -242,6 +273,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  TestUserClassifier* user_classifier_;
   TestEventObserver event_observer_;
   TestingPrefServiceSimple profile_prefs_;
   TestFeedNetwork network_;
@@ -252,8 +284,6 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
           leveldb_proto::ProtoDbType::FEED_STREAM_DATABASE,
           /*file_path=*/{},
           task_environment_.GetMainThreadTaskRunner()));
-  base::SimpleTestClock clock_;
-  base::SimpleTestTickClock tick_clock_;
   FakeRefreshTaskScheduler refresh_scheduler_;
   std::unique_ptr<FeedStream> stream_;
 };
@@ -446,11 +476,40 @@ TEST_F(FeedStreamTest, LoadFromNetwork) {
   // Verify the model is filled correctly.
   EXPECT_STRINGS_EQUAL(ModelStateFor(MakeTypicalInitialModelState()),
                        stream_->GetModel()->DumpStateForTesting());
+  // Verify the data was written to the store.
+  EXPECT_STRINGS_EQUAL(ModelStateFor(store_.get()),
+                       ModelStateFor(MakeTypicalInitialModelState()));
+}
+
+TEST_F(FeedStreamTest, LoadFromNetworkBecauseStoreIsStale) {
+  // Fill the store with stream data that is just barely stale, and verify we
+  // fetch new data over the network.
+  user_classifier_->OverrideUserClass(UserClass::kActiveSuggestionsConsumer);
+  store_->SaveFullStream(MakeTypicalInitialModelState(
+
+                             kTestTimeEpoch - base::TimeDelta::FromHours(12) -
+                             base::TimeDelta::FromMinutes(1)),
+                         base::DoNothing());
+
+  // Store is stale, so we should fallback to a network request.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+
+  EXPECT_TRUE(network_.query_request_sent);
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_TRUE(surface.initial_state);
 }
 
 TEST_F(FeedStreamTest, LoadStreamFromStore) {
-  // Fill the store with stream data, and verify it loads.
-  store_->SaveFullStream(MakeTypicalInitialModelState(), base::DoNothing());
+  // Fill the store with stream data that is just barely fresh, and verify it
+  // loads.
+  user_classifier_->OverrideUserClass(UserClass::kActiveSuggestionsConsumer);
+  store_->SaveFullStream(MakeTypicalInitialModelState(
+                             kTestTimeEpoch - base::TimeDelta::FromHours(12) +
+                             base::TimeDelta::FromMinutes(1)),
+                         base::DoNothing());
   TestSurface surface;
   stream_->AttachSurface(&surface);
   WaitForIdleTaskQueue();

@@ -248,7 +248,7 @@ void IntranetRedirectDetector::SetupDnsConfigClient() {
       manager_remote.BindNewPipeAndPassReceiver());
   manager_remote->RequestNotifications(
       dns_config_client_receiver_.BindNewPipeAndPassRemote());
-  dns_config_client_receiver_.set_disconnect_handler(base::BindRepeating(
+  dns_config_client_receiver_.set_disconnect_handler(base::BindOnce(
       &IntranetRedirectDetector::OnDnsConfigClientConnectionError,
       base::Unretained(this)));
 }

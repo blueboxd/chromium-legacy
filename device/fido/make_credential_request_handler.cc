@@ -350,11 +350,14 @@ void MakeCredentialRequestHandler::DispatchRequest(
     // order to create a credential (as specified by CTAP 2.0), even if
     // user-verification is "discouraged". However, if the request is U2F-only
     // then that doesn't apply and UV must be set to discouraged so that the
-    // request can be translated to U2F.
+    // request can be translated to U2F. Platform authenticators are exempted
+    // from this UV enforcement.
     if (authenticator->Options()->user_verification_availability ==
             AuthenticatorSupportedOptions::UserVerificationAvailability::
                 kSupportedAndConfigured &&
-        !request_.is_u2f_only) {
+        !request_.is_u2f_only &&
+        authenticator->AuthenticatorTransport() !=
+            FidoTransportProtocol::kInternal) {
       if (authenticator->Options()->supports_uv_token) {
         authenticator->GetUvToken(
             base::BindOnce(&MakeCredentialRequestHandler::OnHaveUvToken,

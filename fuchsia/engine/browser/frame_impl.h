@@ -21,7 +21,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
-#include "fuchsia/engine/browser/discarding_event_filter.h"
+#include "fuchsia/engine/browser/event_filter.h"
 #include "fuchsia/engine/browser/frame_permission_controller.h"
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
@@ -163,7 +163,8 @@ class FrameImpl : public fuchsia::web::Frame,
       fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener)
       override;
   void SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) override;
-  void SetEnableInput(bool enable_input) override;
+  void ConfigureInputTypes(fuchsia::web::InputTypes types,
+                           fuchsia::web::AllowInputState allow) override;
   void SetPopupFrameCreationListener(
       fidl::InterfaceHandle<fuchsia::web::PopupFrameCreationListener> listener)
       override;
@@ -226,7 +227,6 @@ class FrameImpl : public fuchsia::web::Frame,
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
 
   std::unique_ptr<wm::FocusController> focus_controller_;
-  DiscardingEventFilter discarding_event_filter_;
 
   // Owned via |window_tree_host_|.
   FrameLayoutManager* layout_manager_ = nullptr;
@@ -235,6 +235,7 @@ class FrameImpl : public fuchsia::web::Frame,
   fuchsia::accessibility::semantics::SemanticsManagerPtr
       semantics_manager_for_test_;
 
+  EventFilter event_filter_;
   NavigationControllerImpl navigation_controller_;
   logging::LogSeverity log_level_;
   std::map<uint64_t, OriginScopedScript> before_load_scripts_;

@@ -2311,9 +2311,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.fragment_.SetSelectionVisualRect(r);
     }
 
-    void SetPreviousBackgroundPaintLocation(BackgroundPaintLocation location) {
-      layout_object_.bitfields_.SetPreviousBackgroundPaintLocation(location);
+    void SetBackgroundPaintLocation(BackgroundPaintLocation location) {
+      layout_object_.SetBackgroundPaintLocation(location);
     }
+
     void UpdatePreviousOutlineMayBeAffectedByDescendants() {
       layout_object_.SetPreviousOutlineMayBeAffectedByDescendants(
           layout_object_.OutlineMayBeAffectedByDescendants());
@@ -2431,8 +2432,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool CompositedScrollsWithRespectTo(
       const LayoutBoxModelObject& paint_invalidation_container) const;
 
-  BackgroundPaintLocation PreviousBackgroundPaintLocation() const {
-    return bitfields_.PreviousBackgroundPaintLocation();
+  BackgroundPaintLocation GetBackgroundPaintLocation() const {
+    return bitfields_.GetBackgroundPaintLocation();
+  }
+  void SetBackgroundPaintLocation(BackgroundPaintLocation location) {
+    if (GetBackgroundPaintLocation() != location) {
+      SetBackgroundNeedsFullPaintInvalidation();
+      bitfields_.SetBackgroundPaintLocation(location);
+    }
   }
 
   bool IsBackgroundAttachmentFixedObject() const {
@@ -2922,7 +2929,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
               static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)),
-          previous_background_paint_location_(0) {}
+          background_paint_location_(kBackgroundPaintInGraphicsLayer) {}
 
     // Self needs layout for style means that this layout object is marked for a
     // full layout. This is the default layout but it is expensive as it
@@ -3191,8 +3198,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     unsigned subtree_paint_property_update_reasons_
         : kSubtreePaintPropertyUpdateReasonsBitfieldWidth;
 
-    // BackgroundPaintLocation of previous paint invalidation.
-    unsigned previous_background_paint_location_ : 2;
+    // Updated during CompositingUpdate in pre-CompositeAfterPaint, or PrePaint
+    // in CompositeAfterPaint.
+    unsigned background_paint_location_ : 2;  // BackgroundPaintLocation.
 
    public:
     bool IsOutOfFlowPositioned() const {
@@ -3259,15 +3267,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone);
     }
 
-    ALWAYS_INLINE BackgroundPaintLocation
-    PreviousBackgroundPaintLocation() const {
-      return static_cast<BackgroundPaintLocation>(
-          previous_background_paint_location_);
+    ALWAYS_INLINE BackgroundPaintLocation GetBackgroundPaintLocation() const {
+      return static_cast<BackgroundPaintLocation>(background_paint_location_);
     }
-    ALWAYS_INLINE void SetPreviousBackgroundPaintLocation(
+    ALWAYS_INLINE void SetBackgroundPaintLocation(
         BackgroundPaintLocation location) {
-      previous_background_paint_location_ = static_cast<unsigned>(location);
-      DCHECK_EQ(location, PreviousBackgroundPaintLocation());
+      background_paint_location_ = static_cast<unsigned>(location);
+      DCHECK_EQ(location, GetBackgroundPaintLocation());
     }
   };
 

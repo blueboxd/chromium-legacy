@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         browser()->profile(),
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile1->GetOffTheRecordProfile(),
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile1,
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile2->GetOffTheRecordProfile(),
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile2,
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

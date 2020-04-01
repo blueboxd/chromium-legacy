@@ -41,7 +41,7 @@ void BackoffTimer::SetTimerForTest(std::unique_ptr<base::OneShotTimer> timer) {
 void BackoffTimer::StartTimer() {
   timer_->Start(
       posted_from_, backoff_entry_->GetTimeUntilRelease(),
-      base::Bind(&BackoffTimer::OnTimerFired, base::Unretained(this)));
+      base::BindOnce(&BackoffTimer::OnTimerFired, base::Unretained(this)));
 }
 
 void BackoffTimer::OnTimerFired() {

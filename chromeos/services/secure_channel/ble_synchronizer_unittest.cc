@@ -324,8 +324,9 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
 
   void StartDiscoverySession() {
     synchronizer_->StartDiscoverySession(
-        base::Bind(&SecureChannelBleSynchronizerTest::OnDiscoverySessionStarted,
-                   base::Unretained(this)),
+        base::BindOnce(
+            &SecureChannelBleSynchronizerTest::OnDiscoverySessionStarted,
+            base::Unretained(this)),
         base::Bind(
             &SecureChannelBleSynchronizerTest::OnErrorStartingDiscoverySession,
             base::Unretained(this)));

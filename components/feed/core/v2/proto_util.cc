@@ -8,6 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/feed/core/proto/v2/store.pb.h"
 
 namespace feed {
 
@@ -34,3 +35,15 @@ bool CompareContentId(const feedwire::ContentId& a,
 }
 
 }  // namespace feed
+
+namespace feedstore {
+void SetLastAddedTime(base::Time t, feedstore::StreamData* data) {
+  data->set_last_added_time_millis(
+      (t - base::Time::UnixEpoch()).InMilliseconds());
+}
+
+base::Time GetLastAddedTime(const feedstore::StreamData& data) {
+  return base::Time::UnixEpoch() +
+         base::TimeDelta::FromMilliseconds(data.last_added_time_millis());
+}
+}  // namespace feedstore

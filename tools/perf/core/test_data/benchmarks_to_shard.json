@@ -2160,18 +2160,6 @@
     "name": "v8.runtime_stats.top_25"
   }, 
   {
-    "repeat": 3, 
-    "stories": [
-      "AsmJsZenGarden", 
-      "WasmSpaceBuggy", 
-      "WasmStylizedRenderer", 
-      "WasmSunTemple", 
-      "WasmTanks", 
-      "WasmZenGarden"
-    ], 
-    "name": "wasm"
-  }, 
-  {
     "repeat": 1, 
     "stories": [
       "10s_datachannel_transfer", 

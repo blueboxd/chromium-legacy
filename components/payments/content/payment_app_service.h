@@ -22,14 +22,13 @@ class PaymentAppService : public KeyedService {
   PaymentAppService();
   ~PaymentAppService() override;
 
-  // Sets |number_of_payment_app_factories| to the number of payment app
-  // factories, which is the number of times that
-  // |delegate->OnDoneCreatingPaymentApps()| will be called. The value is passed
-  // in as out-param instead of being returned, so it can be set before any
-  // factory can call OnDoneCreatingPaymentApps(), which can happen for
-  // factories that execute synchronously, e.g., AutofillPaymentAppFactory.
-  void Create(base::WeakPtr<PaymentAppFactory::Delegate> delegate,
-              size_t* number_of_payment_app_factories);
+  // Returns the number of payment app factories, which is the number of times
+  // that |delegate->OnDoneCreatingPaymentApps()| will be called as a result of
+  // Create().
+  size_t GetNumberOfFactories() const;
+
+  // Create payment apps for |delegate|.
+  void Create(base::WeakPtr<PaymentAppFactory::Delegate> delegate);
 
  private:
   std::vector<std::unique_ptr<PaymentAppFactory>> factories_;

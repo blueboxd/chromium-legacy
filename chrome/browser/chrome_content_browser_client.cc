@@ -484,11 +484,7 @@
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#if defined(USE_X11)
-#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux_x11.h"
-#else
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
-#endif  // USE_X11
 #endif
 
 #if defined(USE_OZONE)
@@ -1262,11 +1258,7 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
     // which they are added.
 #if defined(TOOLKIT_VIEWS)
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#if defined(USE_X11)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinuxX11());
-#else
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinux());
-#endif  // USE_X11
 #else
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 #endif

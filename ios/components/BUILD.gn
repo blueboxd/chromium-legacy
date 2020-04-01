@@ -25,6 +25,7 @@ test("ios_components_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//ios/components/io_thread:unit_tests",
+    "//ios/components/ui_util:unit_tests",
   ]
 
   assert_no_deps = ios_assert_no_deps

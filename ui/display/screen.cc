@@ -82,4 +82,9 @@ void Screen::SetPanelRotationForTesting(int64_t display_id,
   DCHECK(false);
 }
 
+std::string Screen::GetCurrentWorkspace() {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return {};
+}
+
 }  // namespace display

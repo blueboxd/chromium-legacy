@@ -490,11 +490,6 @@ test("vr_common_unittests") {
     "vr_geometry_util_unittest.cc",
   ]
 
-  # TODO(mthiesse, crbug.com/769373): The dependency on device/vr:fakes requires
-  # some workarounds for tests, since we are static-linking to the fakes instead
-  # of loading them from a dll on Windows.
-  defines = [ "DEVICE_VR_IMPLEMENTATION" ]
-
   deps = [
     ":vr_test_support",
     "//chrome/browser",
@@ -595,7 +590,7 @@ source_set("vr_test_support") {
     "//ui/gfx:test_support",
 
     # TODO(mthiesse, crbug.com/769373): Remove dependency on device/vr:fakes.
-    "//device/vr:fakes",
+    "//device/vr:vr_fakes",
 
     # TODO(cjgrant): Figure out why including //ui/android:ui_java here
     # doesn't propagate to individual test executable targets.

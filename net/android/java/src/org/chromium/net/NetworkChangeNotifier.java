@@ -75,7 +75,8 @@ public class NetworkChangeNotifier {
         return sInstance != null;
     }
 
-    static void resetInstanceForTests(NetworkChangeNotifier notifier) {
+    @VisibleForTesting
+    public static void resetInstanceForTests(NetworkChangeNotifier notifier) {
         sInstance = notifier;
     }
 

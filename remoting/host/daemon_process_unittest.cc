@@ -165,7 +165,8 @@ DaemonProcessTest::~DaemonProcessTest() = default;
 void DaemonProcessTest::SetUp() {
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
       task_environment_.GetMainThreadTaskRunner(),
-      base::Bind(&DaemonProcessTest::QuitMessageLoop, base::Unretained(this)));
+      base::BindOnce(&DaemonProcessTest::QuitMessageLoop,
+                     base::Unretained(this)));
   daemon_process_.reset(
       new MockDaemonProcess(task_runner, task_runner,
                             base::Bind(&DaemonProcessTest::DeleteDaemonProcess,

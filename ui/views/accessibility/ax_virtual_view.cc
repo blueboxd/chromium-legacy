@@ -303,10 +303,11 @@ gfx::Rect AXVirtualView::GetBoundsRect(
     const ui::AXClippingBehavior clipping_behavior,
     ui::AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case ui::AXCoordinateSystem::kScreen:
+    case ui::AXCoordinateSystem::kScreenDIPs:
       // We could optionally add clipping here if ever needed.
       // TODO(nektar): Implement bounds that are relative to the parent.
       return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
+    case ui::AXCoordinateSystem::kScreenPhysicalPixels:
     case ui::AXCoordinateSystem::kRootFrame:
     case ui::AXCoordinateSystem::kFrame:
       NOTIMPLEMENTED();
@@ -314,9 +315,12 @@ gfx::Rect AXVirtualView::GetBoundsRect(
   }
 }
 
-gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) const {
-  if (custom_data_.relative_bounds.bounds.Contains(static_cast<float>(x),
-                                                   static_cast<float>(y))) {
+gfx::NativeViewAccessible AXVirtualView::HitTestSync(
+    int screen_physical_pixel_x,
+    int screen_physical_pixel_y) const {
+  if (custom_data_.relative_bounds.bounds.Contains(
+          static_cast<float>(screen_physical_pixel_x),
+          static_cast<float>(screen_physical_pixel_y))) {
     if (!IsIgnored())
       return GetNativeObject();
   }
@@ -325,7 +329,8 @@ gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) const {
   // AXVirtualView's HitTestSync is a recursive function that will return the
   // deepest child, since it does not support relative bounds.
   for (const std::unique_ptr<AXVirtualView>& child : children_) {
-    gfx::NativeViewAccessible result = child->HitTestSync(x, y);
+    gfx::NativeViewAccessible result =
+        child->HitTestSync(screen_physical_pixel_x, screen_physical_pixel_y);
     if (result)
       return result;
   }
@@ -403,7 +408,7 @@ bool AXVirtualView::HandleAccessibleAction(
   switch (action_data.action) {
     case ax::mojom::Action::kShowContextMenu: {
       const gfx::Rect screen_bounds = GetBoundsRect(
-          ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kClipped,
+          ui::AXCoordinateSystem::kScreenDIPs, ui::AXClippingBehavior::kClipped,
           nullptr /* offscreen_result */);
       if (!screen_bounds.IsEmpty()) {
         GetOwnerView()->ShowContextMenu(screen_bounds.CenterPoint(),

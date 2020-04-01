@@ -115,7 +115,7 @@ class NetworkCheckerImpl : public NetworkChecker {
       return false;
     }
     base::ScopedClosureRunner close_event(
-        base::BindRepeating(base::IgnoreResult(&::CloseHandle), event));
+        base::BindOnce(base::IgnoreResult(&::CloseHandle), event));
 
     OVERLAPPED overlapped = {0};
     overlapped.hEvent = event;
@@ -126,7 +126,7 @@ class NetworkCheckerImpl : public NetworkChecker {
       PLOG(ERROR) << "Error in NotifyAddrChange (" << ret << ")";
       return false;
     }
-    base::ScopedClosureRunner cancel_ip_change_notify(base::BindRepeating(
+    base::ScopedClosureRunner cancel_ip_change_notify(base::BindOnce(
         base::IgnoreResult(&::CancelIPChangeNotify), &overlapped));
 
     // NotifyAddrChange will only notify when there are address changes to the
@@ -275,9 +275,8 @@ SafeBrowsingReporter::SafeBrowsingReporter(
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindRepeating(&SafeBrowsingReporter::UploadWithRetry,
-                          base::Owned(this), serialized_report,
-                          traffic_annotation));
+      base::BindOnce(&SafeBrowsingReporter::UploadWithRetry, base::Owned(this),
+                     serialized_report, traffic_annotation));
 }
 
 void SafeBrowsingReporter::UploadWithRetry(
@@ -299,8 +298,8 @@ void SafeBrowsingReporter::UploadWithRetry(
   LOG(INFO) << "Calling done_callback_ with result: "
             << static_cast<int>(result);
   done_callback_runner_->PostTask(
-      FROM_HERE, base::BindRepeating(done_callback_, result, serialized_report,
-                                     base::Passed(&response)));
+      FROM_HERE, base::BindOnce(done_callback_, result, serialized_report,
+                                base::Passed(&response)));
 }
 
 SafeBrowsingReporter::Result SafeBrowsingReporter::PerformUploadWithRetries(

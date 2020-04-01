@@ -24,7 +24,7 @@ class CORE_EXPORT CSSAnimation : public Animation {
   bool IsCSSAnimation() const final { return true; }
 
   void ClearOwningElement() final { owning_element_ = nullptr; }
-  Element* OwningElement() const { return owning_element_; }
+  Element* OwningElement() const override { return owning_element_; }
 
   const String& animationName() const { return animation_name_; }
 

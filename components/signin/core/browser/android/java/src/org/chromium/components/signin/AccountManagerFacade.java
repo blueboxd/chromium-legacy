@@ -98,14 +98,6 @@ public class AccountManagerFacade {
     }
 
     /**
-     * Gets the AccountManagerFacade instance.
-     * TODO(https://crbug.com/1063851): This method should be removed after the change in clank
-     */
-    public static AccountManagerFacade get() {
-        return AccountManagerFacadeProvider.getInstance();
-    }
-
-    /**
      * Adds an observer to receive accounts change notifications.
      * @param observer the observer to add.
      */

@@ -69,8 +69,10 @@ class LocalFrameClientImplTest : public testing::Test {
   void TearDown() override {
     // Tearing down the WebView by resetting the helper will call
     // UserAgentOverride() in order to store the information for detached
-    // requests.
-    EXPECT_CALL(WebLocalFrameClient(), UserAgentOverride());
+    // requests.  This will happen twice since UserAgentOverride() is called
+    // for UserAgentMetadata() saving as well.
+    EXPECT_CALL(WebLocalFrameClient(), UserAgentOverride())
+        .WillRepeatedly(Return(WebString()));
     helper_.Reset();
   }
 

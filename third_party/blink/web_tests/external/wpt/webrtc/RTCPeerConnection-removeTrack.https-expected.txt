@@ -12,5 +12,6 @@ PASS Calling removeTrack with currentDirection sendonly should set direction to 
 PASS Calling removeTrack with currentDirection recvonly should not change direction
 PASS Calling removeTrack with currentDirection inactive should not change direction
 FAIL Calling removeTrack on a stopped transceiver should be a no-op promise_test: Unhandled rejection with value: object "TypeError: pc.getTransceivers(...)[0].stop is not a function"
+PASS Calling removeTrack on a null track should have no effect
 Harness: the test ran to completion.
 

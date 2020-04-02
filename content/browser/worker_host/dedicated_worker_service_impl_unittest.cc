@@ -50,7 +50,8 @@ class MockDedicatedWorker
     } else {
       factory_->CreateWorkerHost(
           browser_interface_broker_.BindNewPipeAndPassReceiver(),
-          remote_host_.BindNewPipeAndPassReceiver());
+          remote_host_.BindNewPipeAndPassReceiver(),
+          base::BindOnce([](const network::CrossOriginEmbedderPolicy&) {}));
     }
   }
 

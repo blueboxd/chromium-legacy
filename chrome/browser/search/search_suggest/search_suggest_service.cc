@@ -102,16 +102,13 @@ bool SearchSuggestService::IsEnabled() {
   if (base::FeatureList::IsEnabled(ntp_features::kSearchSuggestChips))
     return true;
 
-  return !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
-         !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox) &&
-         !(base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestions) &&
-           (!OmniboxFieldTrial::GetZeroSuggestVariants(
-                 metrics::OmniboxEventProto::NTP_REALBOX)
-                 .empty() ||
-            !OmniboxFieldTrial::GetZeroSuggestVariants(
-                 metrics::OmniboxEventProto::
-                     INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS)
-                 .empty()));
+  return OmniboxFieldTrial::GetZeroSuggestVariants(
+             metrics::OmniboxEventProto::NTP_REALBOX)
+             .empty() &&
+         OmniboxFieldTrial::GetZeroSuggestVariants(
+             metrics::OmniboxEventProto::
+                 INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS)
+             .empty();
 }
 
 SearchSuggestService::SearchSuggestService(

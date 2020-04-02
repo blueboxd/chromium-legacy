@@ -40,7 +40,6 @@ class PrefMetricsService : public KeyedService {
     KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* profile) const override;
     bool ServiceIsCreatedWithBrowserContext() const override;
-    bool ServiceIsNULLWhileTesting() const override;
     content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const override;
   };

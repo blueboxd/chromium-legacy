@@ -55,7 +55,8 @@ class SESSIONS_EXPORT SessionTabHelper
   static SessionID IdForWindowContainingTab(const content::WebContents* tab);
 
   // content::WebContentsObserver:
-  void UserAgentOverrideSet(const std::string& user_agent) override;
+  void UserAgentOverrideSet(
+      const blink::UserAgentOverride& ua_override) override;
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
   void NavigationListPruned(

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -128,7 +129,9 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object_data,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-      network::mojom::CredentialsMode);
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none =
+          RejectCoepUnsafeNone(false));
 
   // Posts a task to the worker thread to close the global scope and terminate
   // the underlying thread. This task may be blocked by JavaScript execution on
@@ -341,7 +344,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-      network::mojom::CredentialsMode);
+      network::mojom::CredentialsMode,
+      bool reject_coep_unsafe_none);
 
   // PrepareForShutdownOnWorkerThread() notifies that the context will be
   // destroyed, discards queued tasks to prevent running further tasks, and

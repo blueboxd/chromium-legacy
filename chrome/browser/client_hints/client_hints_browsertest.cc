@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -28,6 +29,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -445,6 +447,14 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return main_frame_ua_full_version_observed_;
   }
 
+  const std::string& main_frame_ua_mobile_observed() const {
+    return main_frame_ua_mobile_observed_;
+  }
+
+  const std::string& main_frame_ua_platform_observed() const {
+    return main_frame_ua_platform_observed_;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::string intercept_iframe_resource_;
@@ -514,6 +524,15 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return std::move(http_response);
   }
 
+  static std::string UpdateHeaderObservation(
+      const net::test_server::HttpRequest& request,
+      const std::string& header) {
+    if (request.headers.find(header) != request.headers.end())
+      return request.headers.find(header)->second;
+    else
+      return "";
+  }
+
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     bool is_main_frame_navigation =
@@ -525,15 +544,13 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     }
 
     if (is_main_frame_navigation) {
-      if (request.headers.find("sec-ch-ua") != request.headers.end())
-        main_frame_ua_observed_ = request.headers.find("sec-ch-ua")->second;
-
-      if (request.headers.find("sec-ch-ua-full-version") !=
-          request.headers.end())
-        main_frame_ua_full_version_observed_ =
-            request.headers.find("sec-ch-ua-full-version")->second;
-      else
-        main_frame_ua_full_version_observed_.clear();
+      main_frame_ua_observed_ = UpdateHeaderObservation(request, "sec-ch-ua");
+      main_frame_ua_full_version_observed_ =
+          UpdateHeaderObservation(request, "sec-ch-ua-full-version");
+      main_frame_ua_mobile_observed_ =
+          UpdateHeaderObservation(request, "sec-ch-ua-mobile");
+      main_frame_ua_platform_observed_ =
+          UpdateHeaderObservation(request, "sec-ch-ua-platform");
 
       VerifyClientHintsReceived(expect_client_hints_on_main_frame_, request);
       if (expect_client_hints_on_main_frame_) {
@@ -736,6 +753,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 
   std::string main_frame_ua_observed_;
   std::string main_frame_ua_full_version_observed_;
+  std::string main_frame_ua_mobile_observed_;
+  std::string main_frame_ua_platform_observed_;
 
   double main_frame_dpr_observed_ = -1;
   double main_frame_viewport_width_observed_ = -1;
@@ -964,6 +983,85 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
   std::string expected_full_version = "\"" + ua.full_version + "\"";
   EXPECT_EQ(main_frame_ua_observed(), expected_ua);
   EXPECT_EQ(main_frame_ua_full_version_observed(), expected_full_version);
+}
+
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UAHintsTabletMode) {
+  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
+                               : accept_ch_with_lifetime_url();
+
+  blink::UserAgentMetadata ua = ::GetUserAgentMetadata();
+
+  // First request: only minimal hints, no tablet override.
+  SetClientHintExpectationsOnMainFrame(false);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+  std::string expected_ua =
+      "\"" + ua.brand + "\"; v=\"" + ua.major_version + "\"";
+  EXPECT_EQ(main_frame_ua_observed(), expected_ua);
+  EXPECT_EQ(main_frame_ua_full_version_observed(), "");
+  EXPECT_EQ(main_frame_ua_mobile_observed(), "?0");
+  EXPECT_EQ(main_frame_ua_platform_observed(), "");
+
+  // Second request: table override, all hints.
+  chrome::ToggleRequestTabletSite(browser());
+  SetClientHintExpectationsOnMainFrame(true);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+  EXPECT_EQ(main_frame_ua_observed(), expected_ua);
+  std::string expected_full_version = "\"" + ua.full_version + "\"";
+  EXPECT_EQ(main_frame_ua_full_version_observed(), expected_full_version);
+  EXPECT_EQ(main_frame_ua_mobile_observed(), "?1");
+  EXPECT_EQ(main_frame_ua_platform_observed(), "\"Android\"");
+}
+
+// TODO(morlovich): Move this into WebContentsImplBrowserTest once things are
+// refactored enough that UA client hints actually work in content/
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const std::string kHeaderPath = std::string("/echoheader?") +
+                                  net::HttpRequestHeaders::kUserAgent +
+                                  "&sec-ch-ua&sec-ch-ua-mobile";
+  const GURL kUrl(embedded_test_server()->GetURL(kHeaderPath));
+
+  web_contents->SetUserAgentOverride(
+      blink::UserAgentOverride::UserAgentOnly("foo"), false);
+  // Not enabled first.
+  ui_test_utils::NavigateToURL(browser(), kUrl);
+  std::string header_value;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  EXPECT_EQ(std::string::npos, header_value.find("foo")) << header_value;
+
+  // Actually turn it on.
+  web_contents->GetController()
+      .GetLastCommittedEntry()
+      ->SetIsOverridingUserAgent(true);
+
+  ui_test_utils::NavigateToURL(browser(), kUrl);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  // Since no value was provided for client hints, they are not sent.
+  EXPECT_EQ("foo\nNone\nNone", header_value);
+
+  // Now actually provide values for the hints.
+  blink::UserAgentOverride ua_override;
+  ua_override.ua_string_override = "foobar";
+  ua_override.ua_metadata_override.emplace();
+  ua_override.ua_metadata_override->mobile = true;
+  ua_override.ua_metadata_override->brand = "Foobarnator";
+  ua_override.ua_metadata_override->major_version = "3.14";
+  web_contents->SetUserAgentOverride(ua_override, false);
+  ui_test_utils::NavigateToURL(browser(), kUrl);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  EXPECT_EQ("foobar\n\"Foobarnator\"; v=\"3.14\"\n?1", header_value);
 }
 
 void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,

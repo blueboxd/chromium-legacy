@@ -11,6 +11,19 @@
 
 namespace blink {
 
+namespace {
+
+bool AddTo(CascadeMap& map,
+           const CSSPropertyName& name,
+           CascadePriority priority) {
+  CascadePriority before = map.At(name);
+  map.Add(name, priority);
+  CascadePriority after = map.At(name);
+  return before != after;
+}
+
+}  // namespace
+
 TEST(CascadeMapTest, Empty) {
   CascadeMap map;
   EXPECT_FALSE(map.Find(CSSPropertyName(AtomicString("--x"))));
@@ -26,14 +39,14 @@ TEST(CascadeMapTest, AddCustom) {
   CSSPropertyName x(AtomicString("--x"));
   CSSPropertyName y(AtomicString("--y"));
 
-  EXPECT_TRUE(map.Add(x, user));
-  EXPECT_TRUE(map.Add(x, author));
-  EXPECT_FALSE(map.Add(x, author));
+  EXPECT_TRUE(AddTo(map, x, user));
+  EXPECT_TRUE(AddTo(map, x, author));
+  EXPECT_FALSE(AddTo(map, x, author));
   ASSERT_TRUE(map.Find(x));
   EXPECT_EQ(author, *map.Find(x));
 
   EXPECT_FALSE(map.Find(y));
-  EXPECT_TRUE(map.Add(y, user));
+  EXPECT_TRUE(AddTo(map, y, user));
 
   // --x should be unchanged.
   ASSERT_TRUE(map.Find(x));
@@ -51,14 +64,14 @@ TEST(CascadeMapTest, AddNative) {
   CSSPropertyName color(CSSPropertyID::kColor);
   CSSPropertyName display(CSSPropertyID::kDisplay);
 
-  EXPECT_TRUE(map.Add(color, user));
-  EXPECT_TRUE(map.Add(color, author));
-  EXPECT_FALSE(map.Add(color, author));
+  EXPECT_TRUE(AddTo(map, color, user));
+  EXPECT_TRUE(AddTo(map, color, author));
+  EXPECT_FALSE(AddTo(map, color, author));
   ASSERT_TRUE(map.Find(color));
   EXPECT_EQ(author, *map.Find(color));
 
   EXPECT_FALSE(map.Find(display));
-  EXPECT_TRUE(map.Add(display, user));
+  EXPECT_TRUE(AddTo(map, display, user));
 
   // color should be unchanged.
   ASSERT_TRUE(map.Find(color));
@@ -75,7 +88,7 @@ TEST(CascadeMapTest, FindAndMutateCustom) {
   CascadePriority author(CascadeOrigin::kAuthor);
   CSSPropertyName x(AtomicString("--x"));
 
-  EXPECT_TRUE(map.Add(x, user));
+  EXPECT_TRUE(AddTo(map, x, user));
 
   CascadePriority* p = map.Find(x);
   ASSERT_TRUE(p);
@@ -83,7 +96,7 @@ TEST(CascadeMapTest, FindAndMutateCustom) {
 
   *p = author;
 
-  EXPECT_FALSE(map.Add(x, author));
+  EXPECT_FALSE(AddTo(map, x, author));
   ASSERT_TRUE(map.Find(x));
   EXPECT_EQ(author, *map.Find(x));
 }
@@ -94,7 +107,7 @@ TEST(CascadeMapTest, FindAndMutateNative) {
   CascadePriority author(CascadeOrigin::kAuthor);
   CSSPropertyName color(CSSPropertyID::kColor);
 
-  EXPECT_TRUE(map.Add(color, user));
+  EXPECT_TRUE(AddTo(map, color, user));
 
   CascadePriority* p = map.Find(color);
   ASSERT_TRUE(p);
@@ -102,7 +115,7 @@ TEST(CascadeMapTest, FindAndMutateNative) {
 
   *p = author;
 
-  EXPECT_FALSE(map.Add(color, author));
+  EXPECT_FALSE(AddTo(map, color, author));
   ASSERT_TRUE(map.Find(color));
   EXPECT_EQ(author, *map.Find(color));
 }
@@ -115,10 +128,10 @@ TEST(CascadeMapTest, AtCustom) {
 
   EXPECT_EQ(CascadePriority(), map.At(x));
 
-  EXPECT_TRUE(map.Add(x, user));
+  EXPECT_TRUE(AddTo(map, x, user));
   EXPECT_EQ(user, map.At(x));
 
-  EXPECT_TRUE(map.Add(x, author));
+  EXPECT_TRUE(AddTo(map, x, author));
   EXPECT_EQ(author, map.At(x));
 }
 
@@ -130,10 +143,10 @@ TEST(CascadeMapTest, AtNative) {
 
   EXPECT_EQ(CascadePriority(), map.At(color));
 
-  EXPECT_TRUE(map.Add(color, user));
+  EXPECT_TRUE(AddTo(map, color, user));
   EXPECT_EQ(user, map.At(color));
 
-  EXPECT_TRUE(map.Add(color, author));
+  EXPECT_TRUE(AddTo(map, color, author));
   EXPECT_EQ(author, map.At(color));
 }
 

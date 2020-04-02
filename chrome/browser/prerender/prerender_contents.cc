@@ -275,9 +275,9 @@ void PrerenderContents::StartPrerendering(
       this, content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       content::Source<WebContents>(prerender_contents_.get()));
 
-  // Transfer over the user agent override.
-  prerender_contents_.get()->SetUserAgentOverride(
-      prerender_manager_->config().user_agent_override, false);
+  // Reset UA override.
+  prerender_contents_.get()->SetUserAgentOverride(blink::UserAgentOverride(),
+                                                  false);
 
   content::NavigationController::LoadURLParams load_url_params(
       prerender_url_);
@@ -293,8 +293,6 @@ void PrerenderContents::StartPrerendering(
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED);
   }
   load_url_params.override_user_agent =
-      prerender_manager_->config().is_overriding_user_agent ?
-      content::NavigationController::UA_OVERRIDE_TRUE :
       content::NavigationController::UA_OVERRIDE_FALSE;
   prerender_contents_.get()->GetController().LoadURLWithParams(load_url_params);
 }

@@ -207,7 +207,9 @@ class LockManager::LockRequestImpl final
 };
 
 LockManager::LockManager(ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context) {}
+    : ExecutionContextLifecycleObserver(context),
+      service_(context),
+      observer_(context) {}
 
 ScriptPromise LockManager::request(ScriptState* script_state,
                                    const String& name,
@@ -421,6 +423,8 @@ void LockManager::Trace(Visitor* visitor) {
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(pending_requests_);
   visitor->Trace(held_locks_);
+  visitor->Trace(service_);
+  visitor->Trace(observer_);
 }
 
 void LockManager::ContextDestroyed() {

@@ -9,7 +9,8 @@ public_headers = [
 ]
 traits_headers =
     [ "//third_party/blink/public/common/user_agent/user_agent_mojom_traits.h" ]
-sources = [
-  "//third_party/blink/common/user_agent/user_agent_mojom_traits.cc",
+sources = [ "//third_party/blink/common/user_agent/user_agent_mojom_traits.cc" ]
+type_mappings = [
+  "blink.mojom.UserAgentMetadata=::blink::UserAgentMetadata",
+  "blink.mojom.UserAgentOverride=::blink::UserAgentOverride",
 ]
-type_mappings = [ "blink.mojom.UserAgentMetadata=::blink::UserAgentMetadata" ]

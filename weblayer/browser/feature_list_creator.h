@@ -40,6 +40,9 @@ class FeatureListCreator {
   // initialization necessary prior to running the main message loop.
   void PerformPreMainMessageLoopStartup();
 
+  // Calls through to the VariationService.
+  void OnBrowserFragmentStarted();
+
   PrefService* local_state() const { return local_state_.get(); }
 
  private:
@@ -52,6 +55,9 @@ class FeatureListCreator {
   std::unique_ptr<variations::VariationsService> variations_service_;
 
   WebLayerFieldTrials weblayer_field_trials_;
+
+  // Set to true the first time OnBrowserFragmentStarted() is called.
+  bool has_browser_fragment_started_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureListCreator);
 };

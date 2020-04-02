@@ -20,6 +20,8 @@ static_library("sync_bookmarks") {
     "bookmark_specifics_conversions.h",
     "bookmark_sync_service.cc",
     "bookmark_sync_service.h",
+    "switches.cc",
+    "switches.h",
     "synced_bookmark_tracker.cc",
     "synced_bookmark_tracker.h",
   ]

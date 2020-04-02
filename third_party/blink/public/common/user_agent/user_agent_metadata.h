@@ -7,10 +7,13 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 
+// Note: if changing this, see also
+// content/public/common/common_param_traits_macros.h
 struct BLINK_COMMON_EXPORT UserAgentMetadata {
   std::string brand;
   std::string full_version;
@@ -21,6 +24,37 @@ struct BLINK_COMMON_EXPORT UserAgentMetadata {
   std::string model;
   bool mobile = false;
 };
+
+// Used when customizing the sent User-Agent and Sec-CH-UA-* for
+// features like "request desktop site", which override those from defaults
+// for some individual navigations. WebContents::SetUserAgentOverride()
+// is the main entry point used for the functionality.
+//
+// Like above, this has legacy IPC traits in
+// content/public/common/common_param_traits_macros.h
+struct BLINK_COMMON_EXPORT UserAgentOverride {
+  // Helper which sets only UA, no client hints.
+  static UserAgentOverride UserAgentOnly(const std::string& ua) {
+    UserAgentOverride result;
+    result.ua_string_override = ua;
+    return result;
+  }
+
+  // Empty |ua_string_override| means no override;
+  // |ua_metadata_override| must also be null in that case.
+  std::string ua_string_override;
+
+  // Non-nullopt if custom values for user agent client hint properties
+  // should be used. If this is null, and |ua_string_override| is non-empty,
+  // no UA client hints will be sent.
+  base::Optional<UserAgentMetadata> ua_metadata_override;
+};
+
+bool BLINK_COMMON_EXPORT operator==(const UserAgentMetadata& a,
+                                    const UserAgentMetadata& b);
+
+bool BLINK_COMMON_EXPORT operator==(const UserAgentOverride& a,
+                                    const UserAgentOverride& b);
 
 }  // namespace blink
 

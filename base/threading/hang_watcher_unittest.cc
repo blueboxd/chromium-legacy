@@ -121,7 +121,8 @@ class HangWatcherTest : public testing::Test {
   std::unique_ptr<HangWatcher> hang_watcher_;
 
   // Used exclusively for MOCK_TIME. No tasks will be run on the environment.
-  test::TaskEnvironment task_environment_{
+  // Single threaded to avoid ThreadPool WorkerThreads registering.
+  test::SingleThreadTaskEnvironment task_environment_{
       test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   // Used to unblock the monitored thread. Signaled from the test main thread.

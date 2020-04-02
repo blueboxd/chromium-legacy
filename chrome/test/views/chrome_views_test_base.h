@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_VIEWS_CHROME_VIEWS_TEST_BASE_H_
 #define CHROME_TEST_VIEWS_CHROME_VIEWS_TEST_BASE_H_
 
+#include "build/build_config.h"
 #include "ui/views/test/views_test_base.h"
 
 // A base class for Chrome views unit tests. Changes the dependencies when they
@@ -18,6 +19,9 @@ class ChromeViewsTestBase : public views::ViewsTestBase {
 
   // views::ViewsTestBase:
   void SetUp() override;
+#if defined(OS_CHROMEOS)
+  void TearDown() override;
+#endif
 };
 
 #endif  // CHROME_TEST_VIEWS_CHROME_VIEWS_TEST_BASE_H_

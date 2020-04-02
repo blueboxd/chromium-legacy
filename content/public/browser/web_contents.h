@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
@@ -55,6 +56,7 @@ namespace mojom {
 class RendererPreferences;
 }
 struct Manifest;
+struct UserAgentOverride;
 }  // namespace blink
 
 namespace base {
@@ -385,9 +387,9 @@ class WebContents : public PageNavigator,
   // Allows overriding the user agent used for NavigationEntries it owns.
   // |override_in_new_tabs| is set when we are overriding user agent for new
   // tabs.
-  virtual void SetUserAgentOverride(const std::string& override,
+  virtual void SetUserAgentOverride(const blink::UserAgentOverride& ua_override,
                                     bool override_in_new_tabs) = 0;
-  virtual const std::string& GetUserAgentOverride() = 0;
+  virtual const blink::UserAgentOverride& GetUserAgentOverride() = 0;
 
   // Set the accessibility mode so that accessibility events are forwarded
   // to each WebContentsObserver.

@@ -546,6 +546,11 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowBaseSyncPrimitivesOutsideBlockingScope);
 };
 
+// Allow base-sync-primitives in tests, doesn't require explicit friend'ing like
+// ScopedAllowBaseSyncPrimitives-types aimed at production do.
+// Note: For WaitableEvents in the test logic, base::TestWaitableEvent is
+// exposed as a convenience to avoid the need for
+// ScopedAllowBaseSyncPrimitivesForTesting.
 class BASE_EXPORT ScopedAllowBaseSyncPrimitivesForTesting {
  public:
   ScopedAllowBaseSyncPrimitivesForTesting() EMPTY_BODY_IF_DCHECK_IS_OFF;

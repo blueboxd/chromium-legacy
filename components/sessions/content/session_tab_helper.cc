@@ -64,10 +64,13 @@ SessionID SessionTabHelper::IdForWindowContainingTab(
                             : SessionID::InvalidValue();
 }
 
-void SessionTabHelper::UserAgentOverrideSet(const std::string& user_agent) {
+void SessionTabHelper::UserAgentOverrideSet(
+    const blink::UserAgentOverride& ua_override) {
+  // TODO(https://crbug.com/1061917): handle |ua_override.ua_metadata_override|.
   SessionTabHelperDelegate* delegate = GetDelegate();
   if (delegate) {
-    delegate->SetTabUserAgentOverride(window_id(), session_id(), user_agent);
+    delegate->SetTabUserAgentOverride(window_id(), session_id(),
+                                      ua_override.ua_string_override);
   }
 }
 

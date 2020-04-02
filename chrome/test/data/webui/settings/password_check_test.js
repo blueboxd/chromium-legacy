@@ -947,11 +947,11 @@ cr.define('settings_passwords_check', function() {
       validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
 
       leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
-          'three.com', 'test2', 'PHISHED', 3, 3));
+          'three.com', 'test2', 'PHISHED', 3, 6));
       leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
-          'four.com', 'test1', 'LEAKED', 4, 5));
+          'four.com', 'test1', 'LEAKED', 4, 4));
       leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
-          'five.com', 'test0', 'LEAKED', 5, 4));
+          'five.com', 'test0', 'LEAKED', 5, 5));
       checkPasswordSection.updateCompromisedPasswordList(
           shuffleArray(leakedPasswords));
       Polymer.dom.flush();
@@ -959,7 +959,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test verifies that deleting and adding works as it should
-    test('deleteComrpomisedCredemtials', function() {
+    test('deleteCompromisedCredemtials', function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'PHISHED', 0, 0),
@@ -988,18 +988,44 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies sorting. Phished passwords always shown above leaked even
     // if they are older
-    test('deleteComrpomisedCredemtials', function() {
+    test('sortCompromisedCredentials', function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
-            'one.com', 'test5', 'PHISHED', 0, 1),
+            'one.com', 'test6', 'PHISHED', 6, 3),
         autofill_test_util.makeCompromisedCredential(
-            'two.com', 'test4', 'PHISHED_AND_LEAKED', 1, 0),
+            'two.com', 'test5', 'PHISHED_AND_LEAKED', 5, 4),
         autofill_test_util.makeCompromisedCredential(
-            'three.com', 'test3', 'LEAKED', 2, 4),
+            'three.com', 'test4', 'PHISHED', 4, 5),
         autofill_test_util.makeCompromisedCredential(
-            'four.com', 'test2', 'LEAKED', 3, 3),
+            'four.com', 'test3', 'LEAKED', 3, 0),
         autofill_test_util.makeCompromisedCredential(
-            'five.com', 'test1', 'LEAKED', 4, 2),
+            'five.com', 'test2', 'LEAKED', 2, 1),
+        autofill_test_util.makeCompromisedCredential(
+            'six.com', 'test1', 'LEAKED', 1, 2),
+      ];
+      const checkPasswordSection = createCheckPasswordSection();
+      checkPasswordSection.updateCompromisedPasswordList(
+          shuffleArray(leakedPasswords));
+      Polymer.dom.flush();
+      validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
+    });
+
+    // Test verifies sorting by username in case compromise type, compromise
+    // time and origin are equal.
+    test('sortCompromisedCredentialsByUsername', function() {
+      const leakedPasswords = [
+        autofill_test_util.makeCompromisedCredential(
+            'example.com', 'test0', 'LEAKED', 0, 1),
+        autofill_test_util.makeCompromisedCredential(
+            'example.com', 'test1', 'LEAKED', 1, 1),
+        autofill_test_util.makeCompromisedCredential(
+            'example.com', 'test2', 'LEAKED', 2, 1),
+        autofill_test_util.makeCompromisedCredential(
+            'example.com', 'test3', 'LEAKED', 3, 1),
+        autofill_test_util.makeCompromisedCredential(
+            'example.com', 'test4', 'LEAKED', 4, 1),
+        autofill_test_util.makeCompromisedCredential(
+            'example.com', 'test5', 'LEAKED', 5, 1),
       ];
       const checkPasswordSection = createCheckPasswordSection();
       checkPasswordSection.updateCompromisedPasswordList(

@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/i18n/rtl.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
@@ -581,8 +583,15 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Asks the embedder if a specific user agent should be used. Non-empty
   // strings indicate an override should be used. Otherwise,
-  // Platform::current()->userAgent() will be called to provide one.
+  // Platform::current()->UserAgent() will be called to provide one.
   virtual WebString UserAgentOverride() { return WebString(); }
+
+  // Asks the embedder what values to send for User Agent client hints
+  // (or nullopt if none).  Used only when UserAgentOverride() is non-empty;
+  // Platform::current()->UserAgentMetadata() is used otherwise.
+  virtual base::Optional<UserAgentMetadata> UserAgentMetadataOverride() {
+    return base::nullopt;
+  }
 
   // Do not track ----------------------------------------------------
 

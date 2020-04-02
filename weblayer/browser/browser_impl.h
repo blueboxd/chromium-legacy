@@ -85,6 +85,8 @@ class BrowserImpl : public Browser {
       const base::android::JavaParamRef<jbyteArray>&
           j_minimal_persistence_state);
   void WebPreferencesChanged(JNIEnv* env);
+  void OnFragmentStart(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& caller);
 #endif
 
   // Used in tests to specify a non-default max (0 means use the default).

@@ -44,7 +44,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       mojom::ScriptType script_type,
       const String& global_scope_name,
       const String& user_agent,
-      const UserAgentMetadata& ua_metadata,
+      const base::Optional<UserAgentMetadata>& ua_metadata,
       scoped_refptr<WebWorkerFetchContext>,
       const Vector<CSPHeaderAndType>& outside_content_security_policy_headers,
       network::mojom::ReferrerPolicy referrer_policy,

@@ -28,8 +28,8 @@ views::LinuxUI* BuildLinuxUI() {
   views::LinuxUI* linux_ui = nullptr;
   // GtkUi is the only LinuxUI implementation for now.
 #if BUILDFLAG(USE_GTK)
-  DCHECK(ui::GtkUiDelegate::instance());
-  linux_ui = BuildGtkUi(ui::GtkUiDelegate::instance());
+  if (ui::GtkUiDelegate::instance())
+    linux_ui = BuildGtkUi(ui::GtkUiDelegate::instance());
 #endif
   return linux_ui;
 }

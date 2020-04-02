@@ -151,18 +151,6 @@ TEST_F(SearchSuggestServiceTest, IsEnabled) {
     EXPECT_TRUE(SearchSuggestService::IsEnabled());
   }
   {
-    // Enabling omnibox::kZeroSuggestionsOnNTP disables the service.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures({omnibox::kZeroSuggestionsOnNTP}, {});
-    EXPECT_FALSE(SearchSuggestService::IsEnabled());
-  }
-  {
-    // Enabling omnibox::kZeroSuggestionsOnNTPRealbox disables the service.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures({omnibox::kZeroSuggestionsOnNTPRealbox}, {});
-    EXPECT_FALSE(SearchSuggestService::IsEnabled());
-  }
-  {
     // Enabling omnibox::kOnFocusSuggestions for SERP does not disable the
     // service.
     base::test::ScopedFeatureList feature_list;
@@ -194,6 +182,13 @@ TEST_F(SearchSuggestServiceTest, IsEnabled) {
     feature_list.InitWithFeaturesAndParameters(
         {{omnibox::kOnFocusSuggestions, feature_params}}, {});
     EXPECT_FALSE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Disabling omnibox::kNewSearchFeatures does not disable the service.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeaturesAndParameters({},
+                                               {omnibox::kNewSearchFeatures});
+    EXPECT_TRUE(SearchSuggestService::IsEnabled());
   }
   {
     // Disabling ntp_features::kSearchSuggestChips does not disable the service.

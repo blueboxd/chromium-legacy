@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
@@ -103,7 +104,8 @@ class CORE_EXPORT DedicatedWorker final
       const KURL& script_url,
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space,
-      const String& source_code);
+      const String& source_code,
+      RejectCoepUnsafeNone reject_coep_unsafe_none);
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
       const KURL& script_url,
       network::mojom::ReferrerPolicy,
@@ -111,6 +113,11 @@ class CORE_EXPORT DedicatedWorker final
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
   // May return nullptr.
   std::unique_ptr<WebContentSettingsClient> CreateWebContentSettingsClient();
+
+  void OnHostCreated(
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          blob_url_loader_factory,
+      const network::CrossOriginEmbedderPolicy& parent_coep);
 
   // Callbacks for |classic_script_loader_|.
   void OnResponse();

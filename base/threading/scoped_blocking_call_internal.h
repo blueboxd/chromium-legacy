@@ -44,20 +44,6 @@ BASE_EXPORT void SetBlockingObserverForCurrentThread(
 
 BASE_EXPORT void ClearBlockingObserverForCurrentThread();
 
-// Unregisters the |blocking_observer| on the current thread within its scope.
-// Used in ThreadPool tests to prevent calls to //base sync primitives from
-// affecting the thread pool capacity.
-class BASE_EXPORT ScopedClearBlockingObserverForTesting {
- public:
-  ScopedClearBlockingObserverForTesting();
-  ~ScopedClearBlockingObserverForTesting();
-
- private:
-  BlockingObserver* const blocking_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedClearBlockingObserverForTesting);
-};
-
 // Common implementation class for both ScopedBlockingCall and
 // ScopedBlockingCallWithBaseSyncPrimitives without assertions.
 class BASE_EXPORT UncheckedScopedBlockingCall {

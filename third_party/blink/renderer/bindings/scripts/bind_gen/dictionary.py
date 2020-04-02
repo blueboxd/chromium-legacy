@@ -94,6 +94,9 @@ def bind_member_iteration_local_vars(code_node):
         SymbolNode(
             "member_names", "const auto* ${member_names} = "
             "GetV8MemberNames(${isolate}).data();"),
+        SymbolNode(
+            "is_in_secure_context", "const bool ${is_in_secure_context} = "
+            "${execution_context}->IsSecureContext();"),
     ]
 
     # Execution context
@@ -109,7 +112,60 @@ def bind_member_iteration_local_vars(code_node):
     code_node.register_code_symbols(local_vars)
 
 
-def make_dict_member_get_def(cg_context):
+def _make_include_headers(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    dictionary = cg_context.dictionary
+
+    header_includes = set()
+    source_includes = set()
+
+    if dictionary.inherited:
+        header_includes.add(
+            PathManager(dictionary.inherited).api_path(ext="h"))
+    else:
+        header_includes.add(
+            "third_party/blink/renderer/platform/bindings/dictionary_base.h")
+
+    header_includes.update([
+        component_export_header(dictionary.components[0]),
+        "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h",
+        "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h",
+        "v8/include/v8.h",
+    ])
+    source_includes.update([
+        "third_party/blink/renderer/platform/bindings/exception_messages.h",
+        "third_party/blink/renderer/platform/bindings/exception_state.h",
+        "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h",
+        "third_party/blink/renderer/platform/heap/visitor.h",
+    ])
+
+    header_includes.update(
+        collect_include_headers_of_idl_types(
+            [member.idl_type for member in dictionary.own_members]))
+
+    return header_includes, source_includes
+
+
+def _make_forward_declarations(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    dictionary = cg_context.dictionary
+
+    header_class_fwd_decls = set([
+        "ExceptionState",
+        "Visitor",
+    ])
+    header_struct_fwd_decls = set()
+
+    source_class_fwd_decls = set()
+    source_struct_fwd_decls = set()
+
+    return (header_class_fwd_decls, header_struct_fwd_decls,
+            source_class_fwd_decls, source_struct_fwd_decls)
+
+
+def make_dict_member_get(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     member = cg_context.dict_member
@@ -117,51 +173,58 @@ def make_dict_member_get_def(cg_context):
     name = blink_member_name.get_api
     blink_type = blink_type_info(member.idl_type)
 
+    decls = ListNode()
+    defs = ListNode()
+
+    func_def = CxxFuncDefNode(
+        name=name,
+        arg_decls=[],
+        return_type=blink_type.const_ref_t,
+        const=True)
+    decls.append(func_def)
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    func_def.body.extend([
+        TextNode(_format("DCHECK({}());", blink_member_name.has_api)),
+        TextNode(_format("return {};", blink_member_name.value_var)),
+    ])
+
     if blink_type.ref_t != blink_type.const_ref_t:
         func_def = CxxFuncDefNode(
             name=name, arg_decls=[], return_type=blink_type.ref_t)
+        decls.append(func_def)
         func_def.set_base_template_vars(cg_context.template_bindings())
         func_def.body.extend([
             TextNode(_format("DCHECK({}());", blink_member_name.has_api)),
             TextNode(_format("return {};", blink_member_name.value_var)),
         ])
-    else:
-        func_def = None
 
-    const_func_def = CxxFuncDefNode(
-        name=name,
-        arg_decls=[],
-        return_type=blink_type.const_ref_t,
-        const=True)
-    const_func_def.set_base_template_vars(cg_context.template_bindings())
-    const_func_def.body.extend([
-        TextNode(_format("DCHECK({}());", blink_member_name.has_api)),
-        TextNode(_format("return {};", blink_member_name.value_var)),
-    ])
-
-    return ListNode([func_def, const_func_def])
+    return decls, defs
 
 
-def make_dict_member_has_def(cg_context):
+def make_dict_member_has(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     member = cg_context.dict_member
+
+    decls = ListNode()
+    defs = ListNode()
 
     func_def = CxxFuncDefNode(
         name=_blink_member_name(member).has_api,
         arg_decls=[],
         return_type="bool",
         const=True)
+    decls.append(func_def)
     func_def.set_base_template_vars(cg_context.template_bindings())
     body = func_def.body
 
     _1 = _member_presence_expr(member)
     body.append(TextNode(_format("return {_1};", _1=_1)))
 
-    return func_def
+    return decls, defs
 
 
-def make_dict_member_set_def(cg_context):
+def make_dict_member_set(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
@@ -171,7 +234,7 @@ def make_dict_member_set_def(cg_context):
     real_type = member.idl_type.unwrap(typedef=True)
     type_info = blink_type_info(real_type)
 
-    decls = ListNode()  # Includes inline definitions.
+    decls = ListNode()
     defs = ListNode()
 
     template_func_def = CxxFuncDefNode(
@@ -223,14 +286,10 @@ def make_dict_member_set_def(cg_context):
     return decls, defs
 
 
-def make_dict_member_defs(cg_context):
+def make_dict_member_vars(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     member = cg_context.dict_member
-
-    get_def = make_dict_member_get_def(cg_context)
-    has_def = make_dict_member_has_def(cg_context)
-    set_decls, set_defs = make_dict_member_set_def(cg_context)
 
     default_value_initializer = ""
     if member.default_value:
@@ -251,8 +310,7 @@ def make_dict_member_defs(cg_context):
     else:
         presense_var_def = None
 
-    return (get_def, has_def, set_decls, set_defs, value_var_def,
-            presense_var_def)
+    return value_var_def, presense_var_def
 
 
 def make_get_v8_dict_member_names_func(cg_context):
@@ -708,47 +766,37 @@ def generate_dictionary(dictionary):
     member_value_var_defs = ListNode()
     member_presense_var_defs = ListNode()
     for member in cg_context.dictionary.own_members:
-        (member_get_decls, member_has_decls, member_set_decls, member_set_defs,
-         member_value_var, member_presense_var) = make_dict_member_defs(
-             cg_context.make_copy(dict_member=member))
+        member_context = cg_context.make_copy(dict_member=member)
+        get_decls, get_defs = make_dict_member_get(member_context)
+        has_decls, has_defs = make_dict_member_has(member_context)
+        set_decls, set_defs = make_dict_member_set(member_context)
+        value_var_def, presense_var_def = make_dict_member_vars(member_context)
         member_accessor_decls.extend([
             TextNode(""),
-            member_get_decls,
-            member_has_decls,
-            member_set_decls,
+            get_decls,
+            has_decls,
+            set_decls,
         ])
         member_accessor_defs.extend([
             TextNode(""),
-            member_set_defs,
+            get_defs,
+            has_defs,
+            set_defs,
         ])
-        member_value_var_defs.append(member_value_var)
-        member_presense_var_defs.append(member_presense_var)
+        member_value_var_defs.append(value_var_def)
+        member_presense_var_defs.append(presense_var_def)
 
     # Header part (copyright, include directives, and forward declarations)
-    if dictionary.inherited:
-        base_class_header = PathManager(dictionary.inherited).api_path(ext="h")
-    else:
-        base_class_header = (
-            "third_party/blink/renderer/platform/bindings/dictionary_base.h")
-    header_node.accumulator.add_include_headers(
-        collect_include_headers_of_idl_types(
-            [member.idl_type for member in dictionary.own_members]))
-    header_node.accumulator.add_include_headers([
-        base_class_header,
-        component_export_header(component),
-        "v8/include/v8.h",
-    ])
-    header_node.accumulator.add_class_decls([
-        "ExceptionState",
-        "Visitor",
-    ])
-    source_node.accumulator.add_include_headers([
-        "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h",
-        "third_party/blink/renderer/platform/bindings/exception_messages.h",
-        "third_party/blink/renderer/platform/bindings/exception_state.h",
-        "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h",
-        "third_party/blink/renderer/platform/heap/visitor.h",
-    ])
+    header_includes, source_includes = _make_include_headers(cg_context)
+    header_node.accumulator.add_include_headers(header_includes)
+    source_node.accumulator.add_include_headers(source_includes)
+
+    (header_class_fwd_decls, header_struct_fwd_decls, source_class_fwd_decls,
+     source_struct_fwd_decls) = _make_forward_declarations(cg_context)
+    header_node.accumulator.add_class_decls(header_class_fwd_decls)
+    header_node.accumulator.add_struct_decls(header_struct_fwd_decls)
+    source_node.accumulator.add_class_decls(source_class_fwd_decls)
+    source_node.accumulator.add_struct_decls(source_struct_fwd_decls)
 
     header_node.extend([
         make_copyright_header(),

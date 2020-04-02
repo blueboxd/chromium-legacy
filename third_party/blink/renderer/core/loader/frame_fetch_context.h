@@ -166,7 +166,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   WebContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
-  UserAgentMetadata GetUserAgentMetadata() const;
+  base::Optional<UserAgentMetadata> GetUserAgentMetadata() const;
   const ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
 

@@ -52,6 +52,23 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentMetadataDataView,
                    ::blink::UserAgentMetadata* out);
 };
 
+template <>
+struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentOverrideDataView,
+                                        ::blink::UserAgentOverride> {
+  static const std::string& ua_string_override(
+      const ::blink::UserAgentOverride& data) {
+    return data.ua_string_override;
+  }
+
+  static const base::Optional<::blink::UserAgentMetadata> ua_metadata_override(
+      const ::blink::UserAgentOverride& data) {
+    return data.ua_metadata_override;
+  }
+
+  static bool Read(blink::mojom::UserAgentOverrideDataView,
+                   ::blink::UserAgentOverride* out);
+};
+
 }  // namespace mojo
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_USER_AGENT_USER_AGENT_MOJOM_TRAITS_H_

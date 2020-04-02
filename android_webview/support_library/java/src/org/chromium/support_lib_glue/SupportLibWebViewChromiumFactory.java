@@ -76,7 +76,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.WEB_VIEW_RENDERER_CLIENT_BASIC_USAGE,
                     Features.MULTI_PROCESS_QUERY,
                     Features.FORCE_DARK,
-                    Features.FORCE_DARK_BEHAVIOR + Features.DEV_SUFFIX,
+                    Features.FORCE_DARK_BEHAVIOR,
                     Features.WEB_MESSAGE_LISTENER,
                     Features.SET_SUPPORT_LIBRARY_VERSION + Features.DEV_SUFFIX,
             };

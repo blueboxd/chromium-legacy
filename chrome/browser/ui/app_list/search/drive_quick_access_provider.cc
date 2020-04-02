@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_chip_result.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_result.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -26,8 +27,6 @@ namespace app_list {
 namespace {
 
 constexpr int kMaxItems = 5;
-
-constexpr base::TimeDelta kInitialFetchDelay = base::TimeDelta::FromSeconds(10);
 
 // Error codes returned by the Drive QuickAccess API call. These values persist
 // to logs. Entries should not be renumbered and numeric values should never be
@@ -95,33 +94,34 @@ std::vector<drive::QuickAccessItem> FilterResults(
 
 }  // namespace
 
-DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
+DriveQuickAccessProvider::DriveQuickAccessProvider(
+    Profile* profile,
+    SearchController* search_controller)
     : profile_(profile),
       drive_service_(
-          drive::DriveIntegrationServiceFactory::GetForProfile(profile)) {
+          drive::DriveIntegrationServiceFactory::GetForProfile(profile)),
+      search_controller_(search_controller) {
   DCHECK(profile_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  // Do an initial fetch of results from the Drive QuickAccess API. We cannot do
-  // this immediately, because the fetch requires that DriveFS is mounted, which
-  // takes a few seconds after login. So delay for |kInitialFetchDelay| seconds.
-  //
-  // TODO(crbug.com/1034842): Using a delay is not as robust as waiting on a
-  // signal that the Drive API is ready to use. We should change this once that
-  // signal available.
-  base::PostDelayedTask(
-      FROM_HERE,
-      {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&DriveQuickAccessProvider::GetQuickAccessItems,
-                     weak_factory_.GetWeakPtr()),
-      kInitialFetchDelay);
+  if (drive_service_)
+    drive_service_->AddObserver(this);
 }
 
 DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;
+
+void DriveQuickAccessProvider::OnFileSystemMounted() {
+  // Warm up the result cache by fetching results from the Drive QuickAccess API
+  // as soon as DriveFS is mounted. This ensures the first use of the launcher
+  // displays Drive results. This is called on login, and when resuming from
+  // sleep.
+  GetQuickAccessItems(base::BindOnce(&SearchController::Start,
+                                     base::Unretained(search_controller_),
+                                     base::string16()));
+}
 
 void DriveQuickAccessProvider::Start(const base::string16& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -146,7 +146,7 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
   UMA_HISTOGRAM_BOOLEAN("Apps.AppList.DriveQuickAccessProvider.CacheEmpty",
                         results_cache_.empty());
   if (results_cache_.empty()) {
-    GetQuickAccessItems();
+    GetQuickAccessItems(base::DoNothing());
     return;
   }
 
@@ -169,10 +169,11 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
 
 void DriveQuickAccessProvider::AppListShown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetQuickAccessItems();
+  GetQuickAccessItems(base::DoNothing());
 }
 
-void DriveQuickAccessProvider::GetQuickAccessItems() {
+void DriveQuickAccessProvider::GetQuickAccessItems(
+    base::OnceCallback<void()> on_done) {
   LogDriveFSMounted(drive_service_);
   if (!drive_service_)
     return;
@@ -184,10 +185,11 @@ void DriveQuickAccessProvider::GetQuickAccessItems() {
   drive_service_->GetQuickAccessItems(
       kMaxItems,
       base::BindOnce(&DriveQuickAccessProvider::OnGetQuickAccessItems,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
 void DriveQuickAccessProvider::OnGetQuickAccessItems(
+    base::OnceCallback<void()> on_done,
     drive::FileError error,
     std::vector<drive::QuickAccessItem> drive_results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -217,11 +219,12 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
         task_runner_.get(), FROM_HERE,
         base::BindOnce(&FilterResults, drive_service_, drive_results),
         base::BindOnce(&DriveQuickAccessProvider::SetResultsCache,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(), std::move(on_done)));
   }
 }
 
 void DriveQuickAccessProvider::SetResultsCache(
+    base::OnceCallback<void()> on_done,
     const std::vector<drive::QuickAccessItem>& drive_results) {
   // Rescale items between 0 and 1
   double hi = drive_results[0].confidence;
@@ -235,6 +238,7 @@ void DriveQuickAccessProvider::SetResultsCache(
   }
 
   results_cache_ = std::move(drive_results);
+  std::move(on_done).Run();
 }
 
 }  // namespace app_list

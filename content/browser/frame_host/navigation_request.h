@@ -935,6 +935,7 @@ class CONTENT_EXPORT NavigationRequest
   bool is_view_source_;
   int bindings_;
   int nav_entry_id_ = 0;
+  bool entry_overrides_ua_ = false;
 
   scoped_refptr<SiteInstanceImpl> starting_site_instance_;
 

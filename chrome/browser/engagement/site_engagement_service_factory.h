@@ -32,9 +32,6 @@ class SiteEngagementServiceFactory : public BrowserContextKeyedServiceFactory {
   SiteEngagementServiceFactory();
   ~SiteEngagementServiceFactory() override;
 
-  // KeyedServiceBaseFactory:
-  bool ServiceIsNULLWhileTesting() const override;
-
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;

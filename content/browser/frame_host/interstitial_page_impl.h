@@ -96,7 +96,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
 
   // NavigatorDelegate implementation.
   WebContents* OpenURL(const OpenURLParams& params) override;
-  const std::string& GetUserAgentOverride() override;
+  const blink::UserAgentOverride& GetUserAgentOverride() override;
   bool ShouldOverrideUserAgentInNewTabs() override;
 
   // RenderViewHostDelegate implementation:

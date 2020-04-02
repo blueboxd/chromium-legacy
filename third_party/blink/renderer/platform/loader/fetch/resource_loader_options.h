@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_OPTIONS_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
@@ -71,6 +72,12 @@ enum CacheAwareLoadingEnabled : uint8_t {
   kIsCacheAwareLoadingEnabled
 };
 
+// https://github.com/WICG/cross-origin-embedder-policy/pull/13
+// When true, a response is blocked unless it has
+// cross-origin-embedder-policy: require-corp.
+using RejectCoepUnsafeNone =
+    util::StrongAlias<class RejectCoepUnsafeNoneTag, bool>;
+
 // This class is thread-bound. Do not copy/pass an instance across threads.
 struct PLATFORM_EXPORT ResourceLoaderOptions {
   USING_FAST_MALLOC(ResourceLoaderOptions);
@@ -100,6 +107,9 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
 
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag;
+
+  // TODO(crbug.com/1064920): Remove this once PlzDedicatedWorker ships.
+  RejectCoepUnsafeNone reject_coep_unsafe_none = RejectCoepUnsafeNone(false);
 
   String content_security_policy_nonce;
   IntegrityMetadataSet integrity_metadata;

@@ -487,6 +487,31 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, WorkerSameSiteCookies2) {
   EXPECT_EQ(kNoCookie, GetReceivedCookie("/echoheader?Cookie"));
 }
 
+// Test that an "a.test" nested worker sends "a.test" SameSite cookies, both
+// when requesting the worker script and when fetching other resources.
+IN_PROC_BROWSER_TEST_P(WorkerTest, NestedWorkerSameSiteCookies) {
+  SetSameSiteCookie("a.test");
+  ASSERT_TRUE(NavigateToURL(
+      shell(),
+      ssl_server()->GetURL(
+          "a.test",
+          "/workers/"
+          "create_worker.html?worker_url=fetch_from_nested_worker.js")));
+  EXPECT_EQ(kSameSiteCookie,
+            EvalJs(shell()->web_contents(),
+                   "worker.postMessage({url: '/echoheader?Cookie'}); "
+                   "waitForMessage();"));
+  EXPECT_EQ(kSameSiteCookie,
+            GetReceivedCookie(
+                "/workers/"
+                "create_worker.html?worker_url=fetch_from_nested_worker.js"));
+  EXPECT_EQ(kSameSiteCookie,
+            GetReceivedCookie("/workers/fetch_from_nested_worker.js"));
+  EXPECT_EQ(kSameSiteCookie,
+            GetReceivedCookie("/workers/fetch_from_worker.js"));
+  EXPECT_EQ(kSameSiteCookie, GetReceivedCookie("/echoheader?Cookie"));
+}
+
 // Test that an "a.test" iframe in a "b.test" frame does not send same-site
 // cookies when requesting an "a.test" worker or when that worker requests
 // "a.test" resources.

@@ -116,9 +116,6 @@ void LogMixerUmaHistogram(media::AudioLatency::LatencyType latency, int value) {
           21);
       return;
     case media::AudioLatency::LATENCY_PLAYBACK:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Media.Audio.Render.AudioInputsPerMixer.LatencyPlayback", value, 1,
-          20, 21);
       return;
     default:
       NOTREACHED();

@@ -226,6 +226,9 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
 // static
 std::vector<std::string> OmniboxFieldTrial::GetZeroSuggestVariants(
     OmniboxEventProto::PageClassification page_classification) {
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return {};
+
   // We check all these features for ZeroSuggestVariant because it's not
   // possible to enable multiple features using Finch Forcing groups
   // (omnibox::kOnFocusSuggestions as well as another feature). Therefore, in

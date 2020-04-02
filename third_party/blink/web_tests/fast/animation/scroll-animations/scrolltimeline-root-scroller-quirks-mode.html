@@ -9,11 +9,12 @@ body {
 
 <script src='../../../resources/testharness.js'></script>
 <script src='../../../resources/testharnessreport.js'></script>
+<script src='../../../external/wpt/web-animations/testcommon.js'></script>
 
 <body></body>
 
 <script>
-test(function() {
+promise_test(async t => {
   const scroller = document.scrollingElement;
   // For simplicity, we set the timeRange such that currentTime maps directly to
   // the value scrolled.
@@ -30,6 +31,10 @@ test(function() {
 
   // Now do some scrolling and make sure that the ScrollTimelines update.
   scroller.scrollTop = 50;
+
+  // Wait for new animation frame  which allows the timeline to compute new
+  // current time.
+  await waitForNextFrame();
 
   // Again, dirty style.
   document.body.style.background = '';

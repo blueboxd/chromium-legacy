@@ -114,26 +114,24 @@ cr.define('autofill_test_util', function() {
   }
 
   /**
-   * Creates a new compromised credential. createTime should be in minutes.
+   * Creates a new compromised credential.
    * @param {string=} url
    * @param {string=} username
    * @param {string=} type
    * @param {number=} id
-   * @param {number=} createTime
+   * @param {number=} elapsedMinSinceCompromise
    * @return {chrome.passwordsPrivate.CompromisedCredential}
    * @private
    */
   /* #export */ function makeCompromisedCredential(
-      url, username, type, id, createTime) {
+      url, username, type, id, elapsedMinSinceCompromise) {
     return {
       id: id,
       formattedOrigin: url,
       changePasswordUrl: `http://${url}/`,
       username: username,
-      elapsedTimeSinceCompromise:
-          (Math.floor(Math.random() * 60)).toString() + ' min ago',
-      // Converting minutes to milliseconds.
-      compromiseTime: createTime * 60000,
+      elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
+      compromiseTime: Date.now() - (elapsedMinSinceCompromise * 60000),
       compromiseType: type,
     };
   }

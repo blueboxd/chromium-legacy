@@ -23,15 +23,16 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/test_utils.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/test_waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -298,19 +299,13 @@ TEST_P(ThreadPoolTaskTrackerTest, WillPostAndRunBeforeShutdown) {
 TEST_P(ThreadPoolTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
   // Create a task that signals |task_running| and blocks until |task_barrier|
   // is signaled.
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::AUTOMATIC,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent task_barrier(WaitableEvent::ResetPolicy::AUTOMATIC,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
-  Task blocked_task(
-      FROM_HERE,
-      BindOnce(
-          [](WaitableEvent* task_running, WaitableEvent* task_barrier) {
-            task_running->Signal();
-            test::WaitWithoutBlockingObserver(task_barrier);
-          },
-          Unretained(&task_running), Unretained(&task_barrier)),
-      TimeDelta());
+  TestWaitableEvent task_running;
+  TestWaitableEvent task_barrier;
+  Task blocked_task(FROM_HERE, BindLambdaForTesting([&]() {
+                      task_running.Signal();
+                      task_barrier.Wait();
+                    }),
+                    TimeDelta());
 
   // Inform |task_tracker_| that |blocked_task| will be posted.
   auto sequence =
@@ -670,9 +665,9 @@ TEST_P(ThreadPoolTaskTrackerTest, FlushAsyncForTestingPendingUndelayedTask) {
       WillPostTaskAndQueueTaskSource(std::move(undelayed_task), {GetParam()});
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs.
-  WaitableEvent event;
+  TestWaitableEvent event;
   tracker_.FlushAsyncForTesting(
-      BindOnce(&WaitableEvent::Signal, Unretained(&event)));
+      BindOnce(&TestWaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(event.IsSignaled());
 
@@ -714,9 +709,9 @@ TEST_P(ThreadPoolTaskTrackerTest, PostTaskDuringFlushAsyncForTesting) {
       WillPostTaskAndQueueTaskSource(std::move(undelayed_task), {GetParam()});
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs.
-  WaitableEvent event;
+  TestWaitableEvent event;
   tracker_.FlushAsyncForTesting(
-      BindOnce(&WaitableEvent::Signal, Unretained(&event)));
+      BindOnce(&TestWaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(event.IsSignaled());
 
@@ -778,9 +773,9 @@ TEST_P(ThreadPoolTaskTrackerTest, RunDelayedTaskDuringFlushAsyncForTesting) {
       WillPostTaskAndQueueTaskSource(std::move(undelayed_task), {GetParam()});
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs.
-  WaitableEvent event;
+  TestWaitableEvent event;
   tracker_.FlushAsyncForTesting(
-      BindOnce(&WaitableEvent::Signal, Unretained(&event)));
+      BindOnce(&TestWaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(event.IsSignaled());
 
@@ -871,9 +866,9 @@ TEST_P(ThreadPoolTaskTrackerTest, ShutdownDuringFlushAsyncForTesting) {
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs or
   // shutdown completes.
-  WaitableEvent event;
+  TestWaitableEvent event;
   tracker_.FlushAsyncForTesting(
-      BindOnce(&WaitableEvent::Signal, Unretained(&event)));
+      BindOnce(&TestWaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(event.IsSignaled());
 

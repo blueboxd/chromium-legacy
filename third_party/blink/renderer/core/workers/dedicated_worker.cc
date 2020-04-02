@@ -201,8 +201,26 @@ void DedicatedWorker::Start() {
     return;
   }
 
-  factory_client_->CreateWorkerHostDeprecated();
+  mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+      blob_url_loader_factory;
+  if (script_request_url_.ProtocolIs("blob")) {
+    GetExecutionContext()->GetPublicURLManager().Resolve(
+        script_request_url_,
+        blob_url_loader_factory.InitWithNewPipeAndPassReceiver());
+  }
+  factory_client_->CreateWorkerHostDeprecated(
+      WTF::Bind(&DedicatedWorker::OnHostCreated, WrapWeakPersistent(this),
+                std::move(blob_url_loader_factory)));
+}
 
+void DedicatedWorker::OnHostCreated(
+    mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+        blob_url_loader_factory,
+    const network::CrossOriginEmbedderPolicy& parent_coep) {
+  DCHECK(!base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
+  const RejectCoepUnsafeNone reject_coep_unsafe_none(
+      parent_coep.value ==
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
   if (options_->type() == "classic") {
     // Legacy code path (to be deprecated, see https://crbug.com/835717):
     // A worker thread will start after scripts are fetched on the current
@@ -215,7 +233,8 @@ void DedicatedWorker::Start() {
         network::mojom::RequestMode::kSameOrigin,
         network::mojom::CredentialsMode::kSameOrigin,
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
-        WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)));
+        WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)),
+        reject_coep_unsafe_none, std::move(blob_url_loader_factory));
     return;
   }
   if (options_->type() == "module") {
@@ -223,7 +242,7 @@ void DedicatedWorker::Start() {
     // worker thread.
     ContinueStart(script_request_url_, network::mojom::ReferrerPolicy::kDefault,
                   base::nullopt /* response_address_space */,
-                  String() /* source_code */);
+                  String() /* source_code */, reject_coep_unsafe_none);
     return;
   }
   NOTREACHED() << "Invalid type: " << options_->type();
@@ -285,7 +304,7 @@ void DedicatedWorker::OnScriptLoadStarted() {
   // worker thread.
   ContinueStart(script_request_url_, network::mojom::ReferrerPolicy::kDefault,
                 base::nullopt /* response_address_space */,
-                String() /* source_code */);
+                String() /* source_code */, RejectCoepUnsafeNone(false));
 }
 
 void DedicatedWorker::OnScriptLoadStartFailed() {
@@ -341,7 +360,8 @@ void DedicatedWorker::OnFinished() {
                                          script_response_url));
     ContinueStart(script_response_url, referrer_policy,
                   classic_script_loader_->ResponseAddressSpace(),
-                  classic_script_loader_->SourceText());
+                  classic_script_loader_->SourceText(),
+                  RejectCoepUnsafeNone(false));
     probe::ScriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
                           classic_script_loader_->SourceText());
@@ -353,12 +373,13 @@ void DedicatedWorker::ContinueStart(
     const KURL& script_url,
     network::mojom::ReferrerPolicy referrer_policy,
     base::Optional<network::mojom::IPAddressSpace> response_address_space,
-    const String& source_code) {
+    const String& source_code,
+    RejectCoepUnsafeNone reject_coep_unsafe_none) {
   context_proxy_->StartWorkerGlobalScope(
       CreateGlobalScopeCreationParams(script_url, referrer_policy,
                                       response_address_space),
       options_, script_url, *outside_fetch_client_settings_object_,
-      v8_stack_trace_id_, source_code);
+      v8_stack_trace_id_, source_code, reject_coep_unsafe_none);
 }
 
 std::unique_ptr<GlobalScopeCreationParams>
@@ -373,7 +394,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
     auto* frame = document->GetFrame();
     if (frame) {
       parent_devtools_token = frame->GetDevToolsFrameToken();
-      ua_metadata = frame->Loader().UserAgentMetadata();
+      ua_metadata = frame->Loader().UserAgentMetadata().value_or(
+          blink::UserAgentMetadata());
     }
     settings = std::make_unique<WorkerSettings>(document->GetSettings());
   } else {

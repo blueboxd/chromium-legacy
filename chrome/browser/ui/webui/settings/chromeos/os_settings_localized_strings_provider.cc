@@ -567,6 +567,8 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_ACCOUNT_MANAGER_EDUCATION_ACCOUNT},
       {"removeAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL},
       {"addAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL},
+      {"addSchoolAccountLabel",
+       IDS_SETTINGS_ACCOUNT_MANAGER_ADD_SCHOOL_ACCOUNT_LABEL},
       {"accountManagerSecondaryAccountsDisabledText",
        IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT},
       {"accountManagerSecondaryAccountsDisabledChildText",

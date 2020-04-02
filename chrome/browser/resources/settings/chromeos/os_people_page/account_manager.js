@@ -42,6 +42,18 @@ Polymer({
         return loadTimeData.getBoolean('isChild');
       },
     },
+
+    /**
+     * @return {boolean} True if secondary account sign-ins are allowed, false
+     *    otherwise.
+     * @private
+     */
+    isSecondaryGoogleAccountSigninAllowed_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('secondaryGoogleAccountSigninAllowed');
+      },
+    }
   },
 
   /** @private {?settings.AccountManagerBrowserProxy} */
@@ -69,24 +81,27 @@ Polymer({
   },
 
   /**
-   * @return {boolean} True if secondary account sign-ins are allowed, false
-   *    otherwise.
-   * @private
-   */
-  isSecondaryGoogleAccountSigninAllowed_() {
-    return loadTimeData.getBoolean('secondaryGoogleAccountSigninAllowed');
-  },
-
-  /**
    * @return {string} account manager description text.
    * @private
    */
   getAccountManagerDescription_() {
-    if (this.isChildUser_ &&
+    if (this.isChildUser_ && this.isSecondaryGoogleAccountSigninAllowed_ &&
         loadTimeData.getBoolean('isEduCoexistenceEnabled')) {
       return loadTimeData.getString('accountManagerChildDescription');
     }
     return loadTimeData.getString('accountManagerDescription');
+  },
+
+  /**
+   * @return {string} account manager 'add account' label.
+   * @private
+   */
+  getAddAccountLabel_() {
+    if (this.isChildUser_ && this.isSecondaryGoogleAccountSigninAllowed_ &&
+        loadTimeData.getBoolean('isEduCoexistenceEnabled')) {
+      return loadTimeData.getString('addSchoolAccountLabel');
+    }
+    return loadTimeData.getString('addAccountLabel');
   },
 
   /**

@@ -48,13 +48,4 @@ BrowserContext* DisplaySourceConnectionDelegateFactory::GetBrowserContextToUse(
   return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
-bool DisplaySourceConnectionDelegateFactory::
-    ServiceIsCreatedWithBrowserContext() const {
-  return false;
-}
-
-bool DisplaySourceConnectionDelegateFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 }  // namespace extensions

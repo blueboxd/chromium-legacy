@@ -818,8 +818,12 @@ String LocalFrameClientImpl::UserAgent() {
   return user_agent_;
 }
 
-blink::UserAgentMetadata LocalFrameClientImpl::UserAgentMetadata() {
-  // TODO(mkwst): Support devtools override.
+base::Optional<UserAgentMetadata> LocalFrameClientImpl::UserAgentMetadata() {
+  bool ua_override_on = web_frame_->Client() &&
+                        !web_frame_->Client()->UserAgentOverride().IsEmpty();
+  if (ua_override_on)
+    return web_frame_->Client()->UserAgentMetadataOverride();
+
   if (user_agent_metadata_.brand.empty())
     user_agent_metadata_ = Platform::Current()->UserAgentMetadata();
   return user_agent_metadata_;

@@ -406,6 +406,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
     }
     case UserSigninIntentSignin: {
       DCHECK(self.baseViewController);
+      self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
       [self.baseViewController presentViewController:self.viewController
                                             animated:YES
                                           completion:nil];

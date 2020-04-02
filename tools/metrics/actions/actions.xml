@@ -18698,6 +18698,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SafetyCheck.Started">
+  <owner>rainhard@chromium.org</owner>
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <description>User started a browser safety check in settings.</description>

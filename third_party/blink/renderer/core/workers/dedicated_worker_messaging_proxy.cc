@@ -47,7 +47,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id,
-    const String& source_code) {
+    const String& source_code,
+    RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate()) {
     // Worker.terminate() could be called from JS before the thread was
@@ -93,7 +94,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
             *GetExecutionContext());
     GetWorkerThread()->FetchAndRunModuleScript(
         script_url, outside_settings_object.CopyData(),
-        resource_timing_notifier, *credentials_mode);
+        resource_timing_notifier, *credentials_mode, reject_coep_unsafe_none);
   } else {
     NOTREACHED();
   }

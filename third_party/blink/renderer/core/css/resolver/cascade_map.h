@@ -34,9 +34,7 @@ class CORE_EXPORT CascadeMap {
   CascadePriority* Find(const CSSPropertyName&);
   // Adds an an entry to the map if the incoming priority is greater than or
   // equal to the current priority for the same name.
-  //
-  // Returns true if added, false otherwise.
-  bool Add(const CSSPropertyName&, CascadePriority);
+  void Add(const CSSPropertyName&, CascadePriority);
   // Added properties with CSSPropertyPriority::kHighPropertyPriority cause the
   // corresponding high_priority_-bit to be set. This provides a fast way to
   // check which high-priority properties have been added (if any).

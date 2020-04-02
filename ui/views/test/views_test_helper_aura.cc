@@ -5,6 +5,7 @@
 #include "ui/views/test/views_test_helper_aura.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/aura/window.h"
 #include "ui/views/test/test_views_delegate.h"
 
@@ -12,6 +13,7 @@ namespace views {
 
 namespace {
 
+ViewsTestHelperAura::AuraTestHelperFactory g_helper_factory = nullptr;
 ViewsTestHelperAura::TestViewsDelegateFactory g_delegate_factory = nullptr;
 
 }  // namespace
@@ -22,7 +24,9 @@ std::unique_ptr<ViewsTestHelper> ViewsTestHelper::Create() {
 }
 
 ViewsTestHelperAura::ViewsTestHelperAura() {
-  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
+  aura_test_helper_ = g_helper_factory
+                          ? (*g_helper_factory)()
+                          : std::make_unique<aura::test::AuraTestHelper>();
 }
 
 ViewsTestHelperAura::~ViewsTestHelperAura() {
@@ -39,7 +43,15 @@ ViewsTestHelperAura::~ViewsTestHelperAura() {
   //
   // So, although it shouldn't matter for this helper, check for unclosed
   // windows to complain about faulty tests early.
-#if DCHECK_IS_ON()
+  //
+  // This is not done on ChromeOS, where depending on the AuraTestHelper
+  // subclass, the root window may be owned by the Shell and contain various
+  // automatically-created container Windows that are never destroyed until
+  // Shell deletion.  In theory we could attempt to check whether remaining
+  // children were these sorts of things and not warn, but doing so while
+  // avoiding layering violations is challenging, and since this is just a
+  // convenience check anyway, skip it.
+#if DCHECK_IS_ON() && !defined(OS_CHROMEOS)
   gfx::NativeWindow root_window = GetContext();
   if (root_window) {
     DCHECK(root_window->children().empty())
@@ -62,6 +74,13 @@ void ViewsTestHelperAura::SetUp() {
 
 gfx::NativeWindow ViewsTestHelperAura::GetContext() {
   return aura_test_helper_->GetContext();
+}
+
+// static
+void ViewsTestHelperAura::SetAuraTestHelperFactory(
+    AuraTestHelperFactory factory) {
+  DCHECK_NE(g_helper_factory == nullptr, factory == nullptr);
+  g_helper_factory = factory;
 }
 
 // static

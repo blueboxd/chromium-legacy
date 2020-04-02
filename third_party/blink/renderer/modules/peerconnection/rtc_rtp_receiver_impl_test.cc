@@ -60,6 +60,7 @@ class RTCRtpReceiverImplTest : public ::testing::Test {
 
   std::unique_ptr<RTCRtpReceiverImpl> CreateReceiver(
       scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track,
+      bool force_encoded_audio_insertable_streams = false,
       bool force_encoded_video_insertable_streams = false) {
     std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
         track_ref;
@@ -79,6 +80,7 @@ class RTCRtpReceiverImplTest : public ::testing::Test {
     state.Initialize();
     return std::make_unique<RTCRtpReceiverImpl>(
         peer_connection_.get(), std::move(state),
+        force_encoded_audio_insertable_streams,
         force_encoded_video_insertable_streams);
   }
 
@@ -119,6 +121,7 @@ TEST_F(RTCRtpReceiverImplTest, CreateReceiver) {
   EXPECT_FALSE(receiver_->Track().IsNull());
   EXPECT_EQ(receiver_->Track().Id().Utf8(), webrtc_track->id());
   EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
+  EXPECT_FALSE(receiver_->GetEncodedAudioStreamTransformer());
   EXPECT_FALSE(receiver_->GetEncodedVideoStreamTransformer());
 }
 
@@ -168,11 +171,13 @@ TEST_F(RTCRtpReceiverImplTest, GetStats) {
   EXPECT_EQ(stats->Timestamp(), 1.234);
 }
 
-TEST_F(RTCRtpReceiverImplTest, CreateReceiverWithInsertableStream) {
+TEST_F(RTCRtpReceiverImplTest, CreateReceiverWithInsertableStreams) {
   scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
       blink::MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track,
+                             /*force_encoded_audio_insertable_streams=*/true,
                              /*force_encoded_video_insertable_streams=*/true);
+  EXPECT_TRUE(receiver_->GetEncodedAudioStreamTransformer());
   EXPECT_TRUE(receiver_->GetEncodedVideoStreamTransformer());
 }
 

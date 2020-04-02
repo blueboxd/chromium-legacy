@@ -13,6 +13,7 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/system/sys_info.h"
 #include "chrome/android/test_support_jni_headers/ServicificationBackgroundService_jni.h"
+#include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "components/metrics/persistent_system_profile.h"
 #include "components/variations/active_field_trials.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
@@ -106,4 +107,10 @@ JNI_ServicificationBackgroundService_TestPersistentHistogramsOnDiskSystemProfile
   }
 
   return true;
+}
+
+// Returns whether a background session has started.
+jboolean JNI_ServicificationBackgroundService_IsBackgroundSessionStart(
+    JNIEnv* env) {
+  return UmaSessionStats::IsBackgroundSessionStartForTesting();
 }

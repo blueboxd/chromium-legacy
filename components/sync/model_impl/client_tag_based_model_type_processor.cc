@@ -148,6 +148,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     }
     ClearMetadataAndResetState();
     model_type_state = entity_tracker_->model_type_state();
+    model_type_state.set_cache_guid(activation_request_.cache_guid);
 
     // The model is still ready to sync (with the same |bridge_|) - replay
     // the initialization.
@@ -174,6 +175,9 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     OnFullUpdateReceived(model_type_state_sync_done, UpdateResponseDataList());
     DCHECK(IsTrackingMetadata());
   }
+
+  DCHECK_EQ(entity_tracker_->model_type_state().cache_guid(),
+            activation_request_.cache_guid);
 
   auto activation_response = std::make_unique<DataTypeActivationResponse>();
   activation_response->model_type_state = entity_tracker_->model_type_state();

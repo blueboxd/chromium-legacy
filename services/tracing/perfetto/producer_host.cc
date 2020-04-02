@@ -41,6 +41,11 @@ bool ProducerHost::Initialize(
   producer_client_.Bind(std::move(producer_client));
 
   auto shm = std::make_unique<MojoSharedMemory>(std::move(shared_memory));
+  // We may fail to map the buffer provided by the ProducerClient.
+  if (!shm->start()) {
+    return false;
+  }
+
   size_t shm_size = shm->size();
   MojoSharedMemory* shm_raw = shm.get();
 

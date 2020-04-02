@@ -81,7 +81,6 @@ SafetyCheckHandler::~SafetyCheckHandler() = default;
 
 void SafetyCheckHandler::PerformSafetyCheck() {
   AllowJavascript();
-  base::RecordAction(base::UserMetricsAction("SafetyCheck.Started"));
 
   if (!version_updater_) {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
@@ -247,7 +246,8 @@ void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
   event.SetStringKey(kDisplayString, GetStringForUpdates(update_status));
   FireWebUIListener(kUpdatesEvent, event);
   if (update_status != UpdateStatus::kChecking) {
-    base::UmaHistogramEnumeration("SafetyCheck.UpdatesResult", update_status);
+    base::UmaHistogramEnumeration("Settings.SafetyCheck.UpdatesResult",
+                                  update_status);
   }
 }
 
@@ -258,7 +258,8 @@ void SafetyCheckHandler::OnSafeBrowsingCheckResult(
   event.SetStringKey(kDisplayString, GetStringForSafeBrowsing(status));
   FireWebUIListener(kSafeBrowsingEvent, event);
   if (status != SafeBrowsingStatus::kChecking) {
-    base::UmaHistogramEnumeration("SafetyCheck.SafeBrowsingResult", status);
+    base::UmaHistogramEnumeration("Settings.SafetyCheck.SafeBrowsingResult",
+                                  status);
   }
 }
 
@@ -279,7 +280,8 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
                      GetStringForPasswords(status, compromised, done, total));
   FireWebUIListener(kPasswordsEvent, event);
   if (status != PasswordsStatus::kChecking) {
-    base::UmaHistogramEnumeration("SafetyCheck.PasswordsResult", status);
+    base::UmaHistogramEnumeration("Settings.SafetyCheck.PasswordsResult",
+                                  status);
   }
 }
 
@@ -303,7 +305,8 @@ void SafetyCheckHandler::OnExtensionsCheckResult(
                                             reenabled_user, reenabled_admin));
   FireWebUIListener(kExtensionsEvent, event);
   if (status != ExtensionsStatus::kChecking) {
-    base::UmaHistogramEnumeration("SafetyCheck.ExtensionsResult", status);
+    base::UmaHistogramEnumeration("Settings.SafetyCheck.ExtensionsResult",
+                                  status);
   }
 }
 

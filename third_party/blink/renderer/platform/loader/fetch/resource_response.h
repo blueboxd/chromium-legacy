@@ -33,6 +33,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -467,6 +468,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetWasInPrefetchCache(bool was_in_prefetch_cache) {
     was_in_prefetch_cache_ = was_in_prefetch_cache;
   }
+
+  network::mojom::CrossOriginEmbedderPolicyValue GetCrossOriginEmbedderPolicy()
+      const;
 
  private:
   void UpdateHeaderParsedState(const AtomicString& name);

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_audio_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_video_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
@@ -185,6 +186,7 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpSenderState state,
+      bool force_encoded_audio_insertable_streams,
       bool force_encoded_video_insertable_streams)
       : native_peer_connection_(std::move(native_peer_connection)),
         track_map_(std::move(track_map)),
@@ -194,11 +196,17 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
         state_(std::move(state)) {
     DCHECK(track_map_);
     DCHECK(state_.is_initialized());
+    if (force_encoded_audio_insertable_streams) {
+      encoded_audio_transformer_ =
+          std::make_unique<RTCEncodedAudioStreamTransformer>(main_task_runner_);
+      webrtc_sender_->SetEncoderToPacketizerFrameTransformer(
+          encoded_audio_transformer_->Delegate());
+    }
     if (force_encoded_video_insertable_streams) {
-      transformer_ =
+      encoded_video_transformer_ =
           std::make_unique<RTCEncodedVideoStreamTransformer>(main_task_runner_);
       webrtc_sender_->SetEncoderToPacketizerFrameTransformer(
-          transformer_->Delegate());
+          encoded_video_transformer_->Delegate());
     }
   }
 
@@ -316,8 +324,12 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
                             WrapRefCounted(this), stream_ids));
   }
 
+  RTCEncodedAudioStreamTransformer* GetEncodedAudioStreamTransformer() const {
+    return encoded_audio_transformer_.get();
+  }
+
   RTCEncodedVideoStreamTransformer* GetEncodedVideoStreamTransformer() const {
-    return transformer_.get();
+    return encoded_video_transformer_.get();
   }
 
  private:
@@ -406,7 +418,8 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   const scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender_;
-  std::unique_ptr<RTCEncodedVideoStreamTransformer> transformer_;
+  std::unique_ptr<RTCEncodedAudioStreamTransformer> encoded_audio_transformer_;
+  std::unique_ptr<RTCEncodedVideoStreamTransformer> encoded_video_transformer_;
   RtpSenderState state_;
   webrtc::RtpParameters parameters_;
 };
@@ -436,11 +449,13 @@ RTCRtpSenderImpl::RTCRtpSenderImpl(
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
     RtpSenderState state,
+    bool force_encoded_audio_insertable_streams,
     bool force_encoded_video_insertable_streams)
     : internal_(base::MakeRefCounted<RTCRtpSenderInternal>(
           std::move(native_peer_connection),
           std::move(track_map),
           std::move(state),
+          force_encoded_audio_insertable_streams,
           force_encoded_video_insertable_streams)) {}
 
 RTCRtpSenderImpl::RTCRtpSenderImpl(const RTCRtpSenderImpl& other)
@@ -536,6 +551,11 @@ void RTCRtpSenderImpl::ReplaceTrack(blink::WebMediaStreamTrack with_track,
 bool RTCRtpSenderImpl::RemoveFromPeerConnection(
     webrtc::PeerConnectionInterface* pc) {
   return internal_->RemoveFromPeerConnection(pc);
+}
+
+RTCEncodedAudioStreamTransformer*
+RTCRtpSenderImpl::GetEncodedAudioStreamTransformer() const {
+  return internal_->GetEncodedAudioStreamTransformer();
 }
 
 RTCEncodedVideoStreamTransformer*

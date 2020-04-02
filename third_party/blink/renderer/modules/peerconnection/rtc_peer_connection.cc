@@ -2590,6 +2590,7 @@ RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
     // Create new sender (with empty stream set).
     sender = MakeGarbageCollected<RTCRtpSender>(
         this, std::move(web_sender), kind, track, MediaStreamVector(),
+        force_encoded_audio_insertable_streams(),
         force_encoded_video_insertable_streams());
     rtp_senders_.push_back(sender);
   } else {
@@ -2624,6 +2625,7 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
     // Create new receiver.
     receiver = MakeGarbageCollected<RTCRtpReceiver>(
         this, std::move(platform_receiver), track, MediaStreamVector(),
+        force_encoded_audio_insertable_streams(),
         force_encoded_video_insertable_streams());
     // Receiving tracks should be muted by default. SetReadyState() propagates
     // the related state changes to ensure it is muted on all layers. It also
@@ -2924,6 +2926,7 @@ void RTCPeerConnection::DidAddReceiverPlanB(
   DCHECK(FindReceiver(*platform_receiver) == rtp_receivers_.end());
   RTCRtpReceiver* rtp_receiver = MakeGarbageCollected<RTCRtpReceiver>(
       this, std::move(platform_receiver), track, streams,
+      force_encoded_audio_insertable_streams(),
       force_encoded_video_insertable_streams());
   rtp_receivers_.push_back(rtp_receiver);
   ScheduleDispatchEvent(MakeGarbageCollected<RTCTrackEvent>(

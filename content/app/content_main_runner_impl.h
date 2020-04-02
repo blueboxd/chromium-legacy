@@ -58,7 +58,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
   bool is_browser_main_loop_started_ = false;
 
-  std::unique_ptr<base::HangWatcher> hang_watcher_;
+  // The hang watcher is leaked to make sure it survives all watched threads.
+  base::HangWatcher* hang_watcher_;
+
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
   std::unique_ptr<StartupDataImpl> startup_data_;

@@ -753,6 +753,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebMediaStreamDeviceObserver* MediaStreamDeviceObserver() override;
   blink::WebEncryptedMediaClient* EncryptedMediaClient() override;
   blink::WebString UserAgentOverride() override;
+  base::Optional<blink::UserAgentMetadata> UserAgentMetadataOverride() override;
   blink::WebString DoNotTrackValue() override;
   mojom::RendererAudioInputStreamFactory* GetAudioInputStreamFactory();
   bool AllowContentInitiatedDataUrlNavigations(
@@ -1239,6 +1240,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void PrepareFrameForCommit(
       const GURL& url,
       const mojom::CommitNavigationParams& commit_params);
+
+  // Returns true if UA (and UA client hints) overrides in renderer preferences
+  // should be used.
+  bool ShouldUseUserAgentOverride() const;
 
   // Updates the state when asked to commit a history navigation.  Sets
   // |item_for_history_navigation| and |load_type| to the appropriate values for

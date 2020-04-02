@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
@@ -76,7 +77,8 @@ interface DedicatedWorkerHostFactory {
   CreateWorkerHost(
       pending_receiver<blink.mojom.BrowserInterfaceBroker>
           browser_interface_broker,
-      pending_receiver<DedicatedWorkerHost> host);
+      pending_receiver<DedicatedWorkerHost> host) =>
+    (network.mojom.CrossOriginEmbedderPolicy parent_coep);
 
   // PlzDedicatedWorker:
   // The factory client should call this instead of CreateWorkerHost() when

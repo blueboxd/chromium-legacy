@@ -76,7 +76,8 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::CredentialsMode) override;
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none) override;
 
   // shared_worker_global_scope.idl
   const String name() const;

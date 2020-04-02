@@ -699,7 +699,9 @@ void SessionService::BuildCommandsForTab(
         sessions::CreateSetTabExtensionAppIDCommand(session_id, app_id));
   }
 
-  const std::string& ua_override = tab->GetUserAgentOverride();
+  // TODO(https://crbug.com/1061917: handle ua_metadata_override as well.
+  const std::string& ua_override =
+      tab->GetUserAgentOverride().ua_string_override;
   if (!ua_override.empty()) {
     command_storage_manager_->AppendRebuildCommand(
         sessions::CreateSetTabUserAgentOverrideCommand(session_id,

@@ -46,13 +46,4 @@ KeyedService* PasswordsPrivateDelegateFactory::BuildServiceInstanceFor(
   return new PasswordsPrivateDelegateImpl(static_cast<Profile*>(profile));
 }
 
-bool PasswordsPrivateDelegateFactory::
-    ServiceIsCreatedWithBrowserContext() const {
-  return false;
-}
-
-bool PasswordsPrivateDelegateFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 }  // namespace extensions

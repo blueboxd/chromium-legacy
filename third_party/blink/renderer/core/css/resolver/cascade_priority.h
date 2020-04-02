@@ -87,6 +87,7 @@ class CORE_EXPORT CascadePriority {
   bool operator>=(const CascadePriority& o) const { return bits_ >= o.bits_; }
   bool operator<(const CascadePriority& o) const { return bits_ < o.bits_; }
   bool operator==(const CascadePriority& o) const { return bits_ == o.bits_; }
+  bool operator!=(const CascadePriority& o) const { return bits_ != o.bits_; }
 
  private:
   friend class StyleCascade;

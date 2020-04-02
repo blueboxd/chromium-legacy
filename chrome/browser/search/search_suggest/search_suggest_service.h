@@ -29,10 +29,10 @@ class IdentityManager;
 class SearchSuggestService : public KeyedService {
  public:
   // Search suggestions should be disabled when on-focus zero-prefix suggestions
-  // are displaying in the NTP. Returns false if omnibox::kZeroSuggestionsOnNTP
-  // or omnibox::kZeroSuggestionsOnNTPRealboxkNtpRealbox are enabled; or
-  // omnibox::kOnFocusSuggestions is enabled and configured to show suggestions
-  // of some type in the NTP Omnibox or Realbox.
+  // are displaying in the NTP. So this returns false if either the NTP_REALBOX
+  // or INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS zero-suggest variants are
+  // enabled. Search suggestions can still be forced on regardless of
+  // zero-suggest state by enabling ntp_features::kSearchSuggestChips.
   static bool IsEnabled();
 
   SearchSuggestService(Profile* profile,

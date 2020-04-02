@@ -43,10 +43,6 @@ SiteEngagementServiceFactory::SiteEngagementServiceFactory()
 SiteEngagementServiceFactory::~SiteEngagementServiceFactory() {
 }
 
-bool SiteEngagementServiceFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 KeyedService* SiteEngagementServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new SiteEngagementService(static_cast<Profile*>(profile));

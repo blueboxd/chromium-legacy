@@ -69,7 +69,10 @@ void ProcessRestoreCommands(
     std::vector<std::unique_ptr<content::NavigationEntry>> entries =
         sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
             session_tab.navigations, browser_context);
-    web_contents->SetUserAgentOverride(session_tab.user_agent_override, false);
+    // TODO(https://crbug.com/1061917): handle UA client hints override.
+    web_contents->SetUserAgentOverride(blink::UserAgentOverride::UserAgentOnly(
+                                           session_tab.user_agent_override),
+                                       false);
     // CURRENT_SESSION matches what clank does. On the desktop, we should
     // use a different type.
     web_contents->GetController().Restore(selected_navigation_index,
@@ -116,7 +119,9 @@ BuildCommandsForTabConfiguration(const SessionID& browser_session_id,
   result.push_back(sessions::CreateLastActiveTimeCommand(
       tab_id, tab->web_contents()->GetLastActiveTime()));
 
-  const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();
+  // TODO(https://crbug.com/1061917): handle UA client hints override.
+  const std::string& ua_override =
+      tab->web_contents()->GetUserAgentOverride().ua_string_override;
   if (!ua_override.empty()) {
     result.push_back(
         sessions::CreateSetTabUserAgentOverrideCommand(tab_id, ua_override));

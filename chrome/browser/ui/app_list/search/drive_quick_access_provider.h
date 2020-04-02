@@ -20,26 +20,37 @@ class Profile;
 
 namespace app_list {
 
+class SearchController;
+
 // DriveQuickAccessProvider dispatches queries to extensions and fetches the
 // results from them via chrome.launcherSearchProvider API.
-class DriveQuickAccessProvider : public SearchProvider {
+class DriveQuickAccessProvider : public SearchProvider,
+                                 public drive::DriveIntegrationServiceObserver {
  public:
-  explicit DriveQuickAccessProvider(Profile* profile);
+  DriveQuickAccessProvider(Profile* profile,
+                           SearchController* search_controller);
   ~DriveQuickAccessProvider() override;
 
   // SearchProvider:
   void Start(const base::string16& query) override;
   void AppListShown() override;
 
+  // drive::DriveIntegrationServiceObserver:
+  void OnFileSystemMounted() override;
+
  private:
-  void GetQuickAccessItems();
-  void OnGetQuickAccessItems(drive::FileError error,
+  void GetQuickAccessItems(base::OnceCallback<void()> on_done);
+  void OnGetQuickAccessItems(base::OnceCallback<void()> on_done,
+                             drive::FileError error,
                              std::vector<drive::QuickAccessItem> drive_results);
   void SetResultsCache(
+      base::OnceCallback<void()> on_done,
       const std::vector<drive::QuickAccessItem>& drive_results);
 
   Profile* const profile_;
   drive::DriveIntegrationService* const drive_service_;
+  SearchController* const search_controller_;
+
   // Stores the last-returned results from the QuickAccess API.
   std::vector<drive::QuickAccessItem> results_cache_;
 

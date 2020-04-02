@@ -123,6 +123,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
+#include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "net/android/network_change_notifier_factory_android.h"
@@ -583,6 +584,10 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
     if (record)
       startup_data_->RecordCoreSystemProfile();
   }
+
+#if defined(OS_ANDROID)
+  UmaSessionStats::OnStartup();
+#endif
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {

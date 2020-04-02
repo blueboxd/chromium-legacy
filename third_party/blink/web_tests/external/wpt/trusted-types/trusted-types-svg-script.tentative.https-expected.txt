@@ -1,0 +1,17 @@
+This is a testharness.js-based test.
+PASS Assign String to SVGScriptElement.innerHTML.
+FAIL Assign TrustedScript to SVGScriptElement.innerHTML. Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.
+PASS Modify SVGScriptElement via DOM manipulation.
+PASS Assign string to SVGScriptElement.href.baseVal.
+PASS Assign TrustedScriptURL to SVGScriptElement.href.baseVal.
+PASS Assign string to non-attached SVGScriptElement.href via setAttribute.
+PASS Assign TrustedScriptURL to non-attached SVGScriptElement.href via setAttribute.
+PASS Assign string to attached SVGScriptElement.href via setAttribute.
+PASS Assign TrustedScriptURL to attached SVGScriptElement.href via setAttribute.
+PASS Setup default policy
+FAIL Assign String to SVGScriptElement.innerHTML w/ default policy. Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment and no 'default' policy for 'TrustedHTML' has been defined.
+PASS Assign string to SVGScriptElement.href.baseVal  w/ default policy.
+PASS Assign string to non-attached SVGScriptElement.href via setAttribute w/ default policy.
+PASS Assign string to attached SVGScriptElement.href via setAttribute w/ default policy.
+Harness: the test ran to completion.
+

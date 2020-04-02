@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_storage_control_impl.h"
 
+#include "base/containers/span.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -11,6 +12,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
 
@@ -19,6 +21,36 @@ namespace content {
 using DatabaseStatus = storage::mojom::ServiceWorkerDatabaseStatus;
 using FindRegistrationResult =
     storage::mojom::ServiceWorkerFindRegistrationResultPtr;
+
+namespace {
+
+int WriteResponseHead(storage::mojom::ServiceWorkerResourceWriter* writer,
+                      network::mojom::URLResponseHeadPtr response_head) {
+  int return_value;
+  base::RunLoop loop;
+  writer->WriteResponseHead(std::move(response_head),
+                            base::BindLambdaForTesting([&](int result) {
+                              return_value = result;
+                              loop.Quit();
+                            }));
+  loop.Run();
+  return return_value;
+}
+
+int WriteResponseData(storage::mojom::ServiceWorkerResourceWriter* writer,
+                      mojo_base::BigBuffer data) {
+  int return_value;
+  base::RunLoop loop;
+  writer->WriteData(std::move(data),
+                    base::BindLambdaForTesting([&](int result) {
+                      return_value = result;
+                      loop.Quit();
+                    }));
+  loop.Run();
+  return return_value;
+}
+
+}  // namespace
 
 class ServiceWorkerStorageControlImplTest : public testing::Test {
  public:
@@ -117,6 +149,26 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
               loop.Quit();
             }));
     loop.Run();
+  }
+
+  int64_t GetNewResourceId() {
+    int64_t return_value;
+    base::RunLoop loop;
+    storage()->GetNewResourceId(
+        base::BindLambdaForTesting([&](int64_t resource_id) {
+          return_value = resource_id;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter>
+  CreateNewResourceWriter() {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+    storage()->CreateResourceWriter(GetNewResourceId(),
+                                    writer.BindNewPipeAndPassReceiver());
+    return writer;
   }
 
  private:
@@ -223,6 +275,40 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndDeleteRegistration) {
     result = FindRegistrationForId(kRegistrationId, kScope.GetOrigin());
     EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
   }
+}
+
+// Tests that writing a service worker script succeeds.
+TEST_F(ServiceWorkerStorageControlImplTest, WriteResource) {
+  LazyInitializeForTest();
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer =
+      CreateNewResourceWriter();
+
+  // Write a response head.
+  {
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(
+            "HTTP/1.1 200 OK\n"
+            "Content-Type: application/javascript\n"));
+    response_head->headers->GetMimeType(&response_head->mime_type);
+
+    int result = WriteResponseHead(writer.get(), std::move(response_head));
+    ASSERT_GT(result, 0);
+  }
+
+  // Write content.
+  {
+    const std::string kData("/* script body */");
+    mojo_base::BigBuffer data(base::as_bytes(base::make_span(kData)));
+    int data_size = data.size();
+
+    int result = WriteResponseData(writer.get(), std::move(data));
+    ASSERT_EQ(data_size, result);
+  }
+
+  // TODO(crbug.com/1055677): Read the resource and check the response head and
+  // content.
 }
 
 }  // namespace content

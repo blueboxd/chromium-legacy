@@ -20,9 +20,9 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_bookmarks/switches.h"
 #include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 

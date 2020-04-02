@@ -202,12 +202,6 @@ content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(
   return context;
 }
 
-// Due to the dependency on SyncService, this cannot be instantiated before
-// the profile is fully initialized.
-bool SharingServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  return false;
-}
-
 bool SharingServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

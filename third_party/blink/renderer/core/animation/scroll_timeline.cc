@@ -142,8 +142,7 @@ ScrollTimeline::ScrollTimeline(Document* document,
       orientation_(orientation),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
-      time_range_(time_range),
-      in_lifecycle_update_(false) {
+      time_range_(time_range) {
   if (resolved_scroll_source_) {
     ScrollTimelineSet& set = GetScrollTimelineSet();
     if (!set.Contains(resolved_scroll_source_)) {
@@ -153,41 +152,15 @@ ScrollTimeline::ScrollTimeline(Document* document,
     auto it = set.find(resolved_scroll_source_);
     it->value.insert(this);
   }
-  if (document_) {
-    if (auto* local_frame_view = document_->View())
-      local_frame_view->RegisterForLifecycleNotifications(this);
-  }
   SnapshotState();
 }
 
 bool ScrollTimeline::IsActive() const {
-  DCHECK(!IsSnapshottingAllowed() ||
-         (phase_and_time_snapshotted_ == ComputeCurrentPhaseAndTime()));
   return phase_and_time_snapshotted_.phase != TimelinePhase::kInactive;
 }
 
 void ScrollTimeline::Invalidate() {
-  if (!IsSnapshottingAllowed())
-    return;
-  if (phase_and_time_snapshotted_ == ComputeCurrentPhaseAndTime())
-    return;
-  SnapshotState();
-  for (Animation* animation : animations_needing_update_)
-    animation->SetOutdated();
-}
-
-bool ScrollTimeline::IsSnapshottingAllowed() const {
-  return !in_lifecycle_update_;
-}
-
-void ScrollTimeline::WillStartLifecycleUpdate(const LocalFrameView&) {
-  DCHECK(!in_lifecycle_update_);
-  in_lifecycle_update_ = true;
-}
-void ScrollTimeline::DidFinishLifecycleUpdate(const LocalFrameView&) {
-  DCHECK(in_lifecycle_update_);
-  in_lifecycle_update_ = false;
-  Invalidate();
+  ScheduleNextService();
 }
 
 bool ScrollTimeline::ComputeIsActive() const {
@@ -199,8 +172,6 @@ bool ScrollTimeline::ComputeIsActive() const {
 }
 
 AnimationTimeline::PhaseAndTime ScrollTimeline::CurrentPhaseAndTime() {
-  DCHECK(!IsSnapshottingAllowed() ||
-         phase_and_time_snapshotted_ == ComputeCurrentPhaseAndTime());
   return phase_and_time_snapshotted_;
 }
 
@@ -256,6 +227,13 @@ AnimationTimeline::PhaseAndTime ScrollTimeline::ComputeCurrentPhaseAndTime()
 base::Optional<base::TimeDelta>
 ScrollTimeline::InitialStartTimeForAnimations() {
   return base::TimeDelta();
+}
+
+void ScrollTimeline::ServiceAnimations(TimingUpdateReason reason) {
+  // Snapshot timeline state once at top of animation frame.
+  if (reason == kTimingUpdateForAnimationFrame)
+    SnapshotState();
+  AnimationTimeline::ServiceAnimations(reason);
 }
 
 void ScrollTimeline::ScheduleNextService() {

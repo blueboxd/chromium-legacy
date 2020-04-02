@@ -1221,8 +1221,9 @@ String FrameLoader::UserAgent() const {
   return user_agent;
 }
 
-blink::UserAgentMetadata FrameLoader::UserAgentMetadata() const {
-  // TODO(mkwst): Support overrides.
+base::Optional<blink::UserAgentMetadata> FrameLoader::UserAgentMetadata()
+    const {
+  // TODO(mkwst): Support overrides probes for devtools support.
   return Client()->UserAgentMetadata();
 }
 

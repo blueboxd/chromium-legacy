@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/common/content_features.h"
@@ -413,6 +414,7 @@ void AddNavigationRequestClientHintsHeaders(
     BrowserContext* context,
     bool javascript_enabled,
     ClientHintsControllerDelegate* delegate,
+    bool is_ua_override_on,
     FrameTreeNode* frame_tree_node) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
@@ -506,8 +508,23 @@ void AddNavigationRequestClientHintsHeaders(
     AddLangHeader(headers, delegate);
   }
 
-  if (UserAgentClientHintEnabled()) {
-    blink::UserAgentMetadata ua = delegate->GetUserAgentMetadata();
+  base::Optional<blink::UserAgentMetadata> ch_ua_override;
+  bool disable_ua_ch_due_to_custom_ua = false;
+  if (is_ua_override_on) {
+    NavigatorDelegate* nav_delegate =
+        frame_tree_node->navigator()->GetDelegate();
+    ch_ua_override =
+        nav_delegate ? nav_delegate->GetUserAgentOverride().ua_metadata_override
+                     : base::nullopt;
+    // If a custom UA override is set, but no value is provided for UA client
+    // hints, disable them.
+    disable_ua_ch_due_to_custom_ua = !ch_ua_override.has_value();
+  }
+
+  if (UserAgentClientHintEnabled() && !disable_ua_ch_due_to_custom_ua) {
+    blink::UserAgentMetadata ua = ch_ua_override.has_value()
+                                      ? std::move(ch_ua_override.value())
+                                      : delegate->GetUserAgentMetadata();
 
     // The `Sec-CH-UA` client hint is attached to all outgoing requests. The
     // opt-in controls the header's value, not its presence. This is

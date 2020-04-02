@@ -51,6 +51,9 @@ const base::Feature kDoodleNotifier{"DoodleNotifier",
 const base::Feature kWebUI{"NtpWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsRealboxEnabled() {
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return false;
+
   return base::FeatureList::IsEnabled(kRealbox) ||
          base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox) ||
          (base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestions) &&

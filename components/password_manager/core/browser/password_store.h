@@ -95,7 +95,7 @@ class PasswordStore : protected PasswordStoreSync,
 
   class DatabaseCompromisedCredentialsObserver {
     // An interface used to notify clients (observers) of this object that the
-    // list of comrpomised crendentials in the password store has changed.
+    // list of compromised credentials in the password store has changed.
     // Register the observer via
     // PasswordStore::AddDatabaseCompromisedCredentialsObserver.
    public:

@@ -41,6 +41,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
@@ -973,6 +974,18 @@ void ResourceLoader::DidReceiveResponseInternal(
           CheckResponseNosniff(request_context, nosniffed_response)) {
     HandleError(ResourceError::CancelledDueToAccessCheckError(
         response.CurrentRequestUrl(), blocked_reason.value()));
+    return;
+  }
+
+  // https://wicg.github.io/cross-origin-embedder-policy/#integration-html
+  // TODO(crbug.com/1064920): Remove this once PlzDedicatedWorker ships.
+  if (options.reject_coep_unsafe_none &&
+      response.GetCrossOriginEmbedderPolicy() !=
+          network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp &&
+      !response.CurrentRequestUrl().ProtocolIsData() &&
+      !response.CurrentRequestUrl().ProtocolIs("blob")) {
+    DCHECK(!base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
+    HandleError(ResourceError::Failure(response.CurrentRequestUrl()));
     return;
   }
 

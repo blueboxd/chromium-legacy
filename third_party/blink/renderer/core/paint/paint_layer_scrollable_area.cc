@@ -712,6 +712,7 @@ IntSize PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
 }
 
 void PaintLayerScrollableArea::VisibleSizeChanged() {
+  InvalidateScrollTimeline();
   ShowNonMacOverlayScrollbars();
 }
 
@@ -822,7 +823,6 @@ void PaintLayerScrollableArea::ScrollbarVisibilityChanged() {
   // Paint properties need to be updated, because clip rects
   // are affected by overlay scrollbars.
   layer_->GetLayoutObject().SetNeedsPaintPropertyUpdate();
-  InvalidateScrollTimeline();
 
   // TODO(chrishr): this should be able to be removed.
   layer_->ClearClipRects();

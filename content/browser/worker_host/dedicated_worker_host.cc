@@ -568,13 +568,16 @@ class DedicatedWorkerHostFactoryImpl final
   void CreateWorkerHost(
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver,
-      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver)
-      override {
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver,
+      base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
+          callback) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       mojo::ReportBadMessage("DWH_INVALID_WORKER_CREATION");
       return;
     }
+
+    std::move(callback).Run(cross_origin_embedder_policy_);
 
     auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
     if (!worker_process_host ||

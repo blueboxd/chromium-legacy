@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
@@ -16,6 +15,8 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -74,8 +75,12 @@ class LockManager final : public ScriptWrappable,
   HeapHashSet<Member<LockRequestImpl>> pending_requests_;
   HeapHashSet<Member<Lock>> held_locks_;
 
-  mojo::Remote<mojom::blink::LockManager> service_;
-  mojo::Remote<mojom::blink::FeatureObserver> observer_;
+  HeapMojoRemote<mojom::blink::LockManager,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      service_;
+  HeapMojoRemote<mojom::blink::FeatureObserver,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      observer_;
 
   base::Optional<bool> cached_allowed_;
 

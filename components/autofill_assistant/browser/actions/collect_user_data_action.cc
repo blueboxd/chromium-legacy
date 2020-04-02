@@ -626,6 +626,18 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
     }
   }
 
+  // Clear previously selected info, if requested.
+  if (proto_.collect_user_data().clear_previous_credit_card_selection()) {
+    user_data->selected_card_.reset();
+  }
+  if (proto_.collect_user_data().clear_previous_login_selection()) {
+    user_data->selected_login_.reset();
+  }
+  for (const auto& profile_name :
+       proto_.collect_user_data().clear_previous_profile_selection()) {
+    user_data->selected_addresses_.erase(profile_name);
+  }
+
   // Add available profiles and start listening.
   delegate_->GetPersonalDataManager()->AddObserver(this);
   UpdatePersonalDataManagerProfiles(user_data);

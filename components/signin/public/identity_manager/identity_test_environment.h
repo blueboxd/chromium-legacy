@@ -109,6 +109,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   // Removes any refresh token for the primary account, if present. Blocks until
   // the refresh token is removed.
+  // NOTE: Call EnableRemovalOfExtendedAccountInfo() before this if the test
+  // expects IdentityManager::Observer::OnExtendedAccountInfoRemoved() to fire.
   void RemoveRefreshTokenForPrimaryAccount();
 
   // Makes the primary account available for the given email address, generating
@@ -162,6 +164,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Removes any refresh token that is present for the given account. Blocks
   // until the refresh token is removed.
   // NOTE: See disclaimer at top of file re: direct usage.
+  // NOTE: Call EnableRemovalOfExtendedAccountInfo() before this if the test
+  // expects IdentityManager::Observer::OnExtendedAccountInfoRemoved() to fire.
   void RemoveRefreshTokenForAccount(const CoreAccountId& account_id);
 
   // Updates the persistent auth error set on |account_id| which must be a known

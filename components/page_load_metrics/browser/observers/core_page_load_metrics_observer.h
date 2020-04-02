@@ -174,7 +174,6 @@ class CorePageLoadMetricsObserver
                                  int behavior_flags) override;
 
  private:
-  void TrackPossibleClickBurst(const blink::WebInputEvent& event);
   void RecordTimingHistograms(
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
   void RecordByteAndResourceHistograms(

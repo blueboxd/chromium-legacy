@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+// See UserAgentMetadata in
+// third_party/blink/public/common/user_agent/user_agent_metadata.h
 struct UserAgentMetadata {
   string brand;
   string full_version;
@@ -13,4 +15,11 @@ struct UserAgentMetadata {
   string architecture;
   string model;
   bool mobile;
+};
+
+// See UserAgentOverride in
+// third_party/blink/public/common/user_agent/user_agent_metadata.h
+struct UserAgentOverride {
+  string ua_string_override;
+  UserAgentMetadata? ua_metadata_override;
 };

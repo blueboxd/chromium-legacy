@@ -30,6 +30,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/scope_set.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -65,6 +66,10 @@ const char* const kExtensionsIdentityAPIOAuthConsumerName =
 
 bool IsBrowserSigninAllowed(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
+}
+
+std::string GetOAuth2MintTokenFlowVersion() {
+  return version_info::GetMajorVersionNumber();
 }
 
 }  // namespace
@@ -139,7 +144,8 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   if (gaia_id.empty()) {
     gaia_id = IdentityAPI::GetFactoryInstance()
                   ->Get(GetProfile())
-                  ->GetGaiaIdForExtension(token_key_.extension_id);
+                  ->GetGaiaIdForExtension(token_key_.extension_id)
+                  .value_or("");
   }
 
   // From here on out, results must be returned asynchronously.
@@ -322,7 +328,6 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
   IdentityAPI* id_api =
       extensions::IdentityAPI::GetFactoryInstance()->Get(GetProfile());
   id_api->EraseAllCachedTokens();
-  id_api->EraseAllGaiaIds();
 
   // If the signin flow fails, don't display the login prompt again.
   should_prompt_for_signin_ = false;
@@ -573,14 +578,6 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
 
 void IdentityGetAuthTokenFunction::OnRemoteConsentSuccess(
     const RemoteConsentResolutionData& resolution_data) {
-  if (!base::FeatureList::IsEnabled(switches::kOAuthRemoteConsent)) {
-    // Fallback to the issue advice flow.
-    // TODO(https://crbug.com/1026237): Remove the fallback after making sure
-    // that the new flow works correctly.
-    OnIssueAdviceSuccess(IssueAdviceInfo());
-    return;
-  }
-
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnRemoteConsentSuccess",
                                       this);
 
@@ -932,12 +929,12 @@ IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
   std::string signin_scoped_device_id =
       GetSigninScopedDeviceIdForProfile(GetProfile());
   auto mint_token_flow = std::make_unique<OAuth2MintTokenFlow>(
-      this,
-      OAuth2MintTokenFlow::Parameters(
-          extension()->id(), oauth2_client_id_,
-          std::vector<std::string>(token_key_.scopes.begin(),
-                                   token_key_.scopes.end()),
-          signin_scoped_device_id, consent_result_, gaia_mint_token_mode_));
+      this, OAuth2MintTokenFlow::Parameters(
+                extension()->id(), oauth2_client_id_,
+                std::vector<std::string>(token_key_.scopes.begin(),
+                                         token_key_.scopes.end()),
+                signin_scoped_device_id, consent_result_,
+                GetOAuth2MintTokenFlowVersion(), gaia_mint_token_mode_));
   return mint_token_flow;
 }
 

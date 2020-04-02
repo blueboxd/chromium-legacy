@@ -175,7 +175,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         controller->AddGroup(kMaxDriveQuickAccessResults, 1.0, 0.0);
     controller->AddProvider(
         drive_quick_access_group_id,
-        std::make_unique<DriveQuickAccessProvider>(profile));
+        std::make_unique<DriveQuickAccessProvider>(profile, controller.get()));
   }
 
   return controller;

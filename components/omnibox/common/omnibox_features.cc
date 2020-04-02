@@ -239,6 +239,11 @@ const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate{
 const base::Feature kOmniboxDemoteByType{"OmniboxDemoteByType",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// A special flag, enabled by default, that can be used to disable all new
+// search features (e.g. zero suggest).
+const base::Feature kNewSearchFeatures{"OmniboxNewSearchFeatures",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
 // This feature's main job is to contain some field trial parameters such as:
 //  - "ZeroSuggestVariant" configures the per-page-classification mode of

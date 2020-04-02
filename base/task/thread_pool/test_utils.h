@@ -148,8 +148,6 @@ scoped_refptr<SequencedTaskRunner> CreatePooledSequencedTaskRunner(
     const TaskTraits& traits,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate);
 
-void WaitWithoutBlockingObserver(WaitableEvent* event);
-
 RegisteredTaskSource QueueAndRunTaskSource(
     TaskTracker* task_tracker,
     scoped_refptr<TaskSource> task_source);

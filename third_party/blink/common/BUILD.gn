@@ -118,6 +118,7 @@ jumbo_source_set("common") {
     "service_worker/service_worker_type_converters.cc",
     "service_worker/service_worker_utils.cc",
     "thread_safe_browser_interface_broker_proxy.cc",
+    "user_agent/user_agent_metadata.cc",
     "web_package/signed_exchange_consts.cc",
     "web_package/web_package_request_matcher.cc",
   ]

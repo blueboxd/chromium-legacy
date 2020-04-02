@@ -22,6 +22,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -437,7 +438,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void WebContentsDestroyed() {}
 
   // Called when the user agent override for a WebContents has been changed.
-  virtual void UserAgentOverrideSet(const std::string& user_agent) {}
+  virtual void UserAgentOverrideSet(
+      const blink::UserAgentOverride& ua_override) {}
 
   // Invoked when new blink::mojom::FaviconURLPtr candidates are received from
   // the renderer process. If the instance is created after the page is loaded,

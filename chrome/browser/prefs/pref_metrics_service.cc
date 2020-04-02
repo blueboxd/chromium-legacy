@@ -142,10 +142,6 @@ bool PrefMetricsService::Factory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
-bool PrefMetricsService::Factory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 content::BrowserContext* PrefMetricsService::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);

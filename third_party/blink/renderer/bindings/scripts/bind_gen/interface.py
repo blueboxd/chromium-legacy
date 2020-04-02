@@ -262,7 +262,8 @@ def bind_callback_local_vars(code_node, cg_context):
     ])
 
     is_receiver_context = (cg_context.member_like
-                           and not cg_context.member_like.is_static)
+                           and not cg_context.member_like.is_static
+                           and not cg_context.constructor)
 
     # creation_context
     pattern = "const v8::Local<v8::Context>& ${creation_context} = {_1};"
@@ -288,6 +289,15 @@ def bind_callback_local_vars(code_node, cg_context):
             "third_party/blink/renderer/core/execution_context/execution_context.h"
         ]))
     local_vars.append(node)
+
+    # execution_context_of_document_tree
+    pattern = "ExecutionContext* ${execution_context_of_document_tree} = {_1};"
+    if is_receiver_context:
+        _1 = "bindings::ExecutionContextFromV8Wrappable(${blink_receiver})"
+    else:
+        _1 = "${execution_context}"  # of the current context
+    text = _format(pattern, _1=_1)
+    local_vars.append(S("execution_context_of_document_tree", text))
 
     # exception_state_context_type
     pattern = (

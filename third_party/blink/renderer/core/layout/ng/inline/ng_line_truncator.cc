@@ -238,6 +238,8 @@ LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
   if (initial_index_left == kNotFound)
     return line_width;
   DCHECK_NE(initial_index_right, kNotFound);
+  DCHECK(line[initial_index_left].HasInFlowFragment());
+  DCHECK(line[initial_index_right].HasInFlowFragment());
 
   // line[]:
   //     s s s p f f p f f s s
@@ -276,14 +278,12 @@ LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
         index_left, index_left == initial_index_left, available_width_left,
         TextDirection::kLtr, line_box, box_states);
     if (new_index == kDidNotAddChild) {
+      DCHECK_GT(index_left, initial_index_left);
       DCHECK_GT(index_left, 0u);
       wtf_size_t i = index_left;
-      for (; i > 0; --i) {
-        if (line[i - 1].HasInFlowFragment())
-          break;
-        DCHECK(line[i - 1].IsPlaceholder());
-      }
-      PlaceEllipsisNextTo(line_box, &line[i - 1]);
+      while (!line[--i].HasInFlowFragment())
+        DCHECK(line[i].IsPlaceholder());
+      PlaceEllipsisNextTo(line_box, &line[i]);
       available_width_right += available_width_left;
     } else {
       PlaceEllipsisNextTo(line_box, &line[new_index]);
@@ -329,12 +329,10 @@ LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
                           line[index_right].inline_size - available_width_right,
                           TextDirection::kRtl, line_box, box_states);
     if (new_index == kDidNotAddChild) {
-      wtf_size_t i = index_right + 1;
-      for (; i < line.size(); ++i) {
-        if (line[i].HasInFlowFragment())
-          break;
+      DCHECK_LT(index_right, initial_index_right);
+      wtf_size_t i = index_right;
+      while (!line[++i].HasInFlowFragment())
         DCHECK(line[i].IsPlaceholder());
-      }
       PlaceEllipsisNextTo(line_box, &line[i]);
       available_width_left += available_width_right;
     } else {

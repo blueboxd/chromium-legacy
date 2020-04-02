@@ -41,10 +41,6 @@ KeyedService* WebAppMetricsFactory::BuildServiceInstanceFor(
   return new WebAppMetrics(profile);
 }
 
-bool WebAppMetricsFactory::ServiceIsCreatedWithBrowserContext() const {
-  return false;
-}
-
 content::BrowserContext* WebAppMetricsFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return GetBrowserContextForWebAppMetrics(context);

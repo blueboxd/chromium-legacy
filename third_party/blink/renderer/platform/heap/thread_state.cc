@@ -1130,7 +1130,7 @@ void ThreadState::InvokePreFinalizers() {
 
   // Call the prefinalizers in the opposite order to their registration.
   //
-  // LinkedHashSet does not support modification during iteration, so
+  // Deque does not support modification during iteration, so
   // copy items first.
   //
   // The prefinalizer callback wrapper returns |true| when its associated

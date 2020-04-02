@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.TaskParams;
 
@@ -127,6 +128,16 @@ public final class ServicificationBackgroundServiceTest {
         ServicificationBackgroundService.assertOnlyServiceManagerStarted();
 
         mServicificationBackgroundService.assertPersistentHistogramsOnDiskSystemProfile();
+        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ServicificationStartup"})
+    public void testBackgroundSessionStart() {
+        startServiceAndWaitForNative(mServicificationBackgroundService);
+
+        mServicificationBackgroundService.assertBackgroundSessionStart();
         ServicificationBackgroundService.assertOnlyServiceManagerStarted();
     }
 

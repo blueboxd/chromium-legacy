@@ -191,8 +191,12 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                     hide();
                 }
             } else if (AssistantModel.ALLOW_TALKBACK_ON_WEBSITE == propertyKey) {
-                controller.setIsObscuringAllTabs(
-                        tabObscuringHandler, !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE));
+                // Calling |setIsObscuringAllTabs| with the state it's already in triggers an
+                // assertion in |BottomSheetController|.
+                boolean shouldBeObscuring = !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE);
+                if (shouldBeObscuring != tabObscuringHandler.areAllTabsObscured()) {
+                    controller.setIsObscuringAllTabs(tabObscuringHandler, shouldBeObscuring);
+                }
             } else if (AssistantModel.WEB_CONTENTS == propertyKey) {
                 mWebContents = model.get(AssistantModel.WEB_CONTENTS);
             }

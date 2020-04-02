@@ -44,10 +44,6 @@ KeyedService* AppLoadServiceFactory::BuildServiceInstanceFor(
   return new AppLoadService(context);
 }
 
-bool AppLoadServiceFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 bool AppLoadServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }

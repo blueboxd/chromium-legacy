@@ -779,7 +779,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
-  ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_TRUE(web_contents->GetUserAgentOverride().ua_string_override.empty());
   ASSERT_TRUE(tab_content);
   ASSERT_EQ(url2, tab_content->GetURL());
 
@@ -798,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
-  ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_TRUE(web_contents->GetUserAgentOverride().ua_string_override.empty());
   ASSERT_TRUE(tab_content);
   ASSERT_EQ(url2, tab_content->GetURL());
 
@@ -820,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   ASSERT_EQ(1, new_browser->tab_strip_model()->count());
   web_contents = new_browser->tab_strip_model()->GetWebContentsAt(0);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
-  ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_TRUE(web_contents->GetUserAgentOverride().ua_string_override.empty());
   ASSERT_TRUE(tab_content);
   ASSERT_EQ(url2, tab_content->GetURL());
 }
@@ -882,8 +882,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   ASSERT_EQ(url2, web_contents_2->GetURL());
 
   // Check user agent override state.
-  ASSERT_TRUE(web_contents_1->GetUserAgentOverride().empty());
-  ASSERT_TRUE(web_contents_2->GetUserAgentOverride().empty());
+  ASSERT_TRUE(
+      web_contents_1->GetUserAgentOverride().ua_string_override.empty());
+  ASSERT_TRUE(
+      web_contents_2->GetUserAgentOverride().ua_string_override.empty());
 
   content::NavigationEntry* entry =
       web_contents_1->GetController().GetLastCommittedEntry();
@@ -1486,8 +1488,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
   // Create a tab with an overridden user agent.
   ui_test_utils::NavigateToURL(browser(), url1_);
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+  // TODO(https://crbug.com/1061917): cover UA client hints override.
   browser()->tab_strip_model()->GetWebContentsAt(0)->SetUserAgentOverride(
-      "override", false);
+      blink::UserAgentOverride::UserAgentOnly("override"), false);
 
   // Create a tab without an overridden user agent.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -1502,12 +1505,14 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
   ASSERT_EQ(1, new_browser->tab_strip_model()->active_index());
 
   // Confirm that the user agent overrides are properly set.
-  EXPECT_EQ("override",
-            new_browser->tab_strip_model()->GetWebContentsAt(0)->
-                GetUserAgentOverride());
-  EXPECT_EQ("",
-            new_browser->tab_strip_model()->GetWebContentsAt(1)->
-                GetUserAgentOverride());
+  EXPECT_EQ("override", new_browser->tab_strip_model()
+                            ->GetWebContentsAt(0)
+                            ->GetUserAgentOverride()
+                            .ua_string_override);
+  EXPECT_EQ("", new_browser->tab_strip_model()
+                    ->GetWebContentsAt(1)
+                    ->GetUserAgentOverride()
+                    .ua_string_override);
 }
 
 // Regression test for crbug.com/125958. When restoring a pinned selected tab in

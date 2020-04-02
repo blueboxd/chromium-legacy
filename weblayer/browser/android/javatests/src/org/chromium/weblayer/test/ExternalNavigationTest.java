@@ -32,9 +32,29 @@ public class ExternalNavigationTest {
             new InstrumentationActivityTestRule();
 
     private static final String ABOUT_BLANK_URL = "about:blank";
-    private static final String INTENT_TO_CHROME_URL =
-            "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end";
-    private static final String NON_RESOLVABLE_INTENT_URL = "intent://garbage;end";
+    private static final String INTENT_TO_CHROME_DATA_CONTENT =
+            "play.google.com/store/apps/details?id=com.facebook.katana/";
+    private static final String INTENT_TO_CHROME_SCHEME = "https";
+    private static final String INTENT_TO_CHROME_DATA_STRING =
+            INTENT_TO_CHROME_SCHEME + "://" + INTENT_TO_CHROME_DATA_CONTENT;
+    private static final String INTENT_TO_CHROME_ACTION = "android.intent.action.VIEW";
+    private static final String INTENT_TO_CHROME_PACKAGE = "com.android.chrome";
+
+    // An intent that opens Chrome to view a specified URL. Note that the "end" is left off to allow
+    // appending extras when constructing URLs.
+    private static final String INTENT_TO_CHROME = "intent://" + INTENT_TO_CHROME_DATA_CONTENT
+            + "#Intent;scheme=" + INTENT_TO_CHROME_SCHEME + ";action=" + INTENT_TO_CHROME_ACTION
+            + ";package=" + INTENT_TO_CHROME_PACKAGE + ";";
+    private static final String INTENT_TO_CHROME_URL = INTENT_TO_CHROME + "end";
+
+    // An intent URL that gets rejected as malformed.
+    private static final String MALFORMED_INTENT_URL = "intent://garbage;end";
+
+    // An intent that is properly formed but wishes to open an app that is not present on the
+    // device. Note that the "end" is left off to allow appending extras when constructing URLs.
+    private static final String NON_RESOLVABLE_INTENT =
+            "intent://dummy.com/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.missing.app;";
+
     private static final String LINK_WITH_INTENT_TO_CHROME_IN_SAME_TAB_FILE =
             "link_with_intent_to_chrome_in_same_tab.html";
     private static final String LINK_WITH_INTENT_TO_CHROME_IN_NEW_TAB_FILE =
@@ -44,16 +64,18 @@ public class ExternalNavigationTest {
 
     // The test server handles "echo" with a response containing "Echo" :).
     private final String mTestServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
+
+    private final String mTestServerSiteFallbackUrlExtra =
+            "S.browser_fallback_url=" + android.net.Uri.encode(mTestServerSiteUrl) + ";";
     private final String mIntentToChromeWithFallbackUrl =
-            "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;S.browser_fallback_url="
-            + android.net.Uri.encode(mTestServerSiteUrl) + ";end";
+            INTENT_TO_CHROME + mTestServerSiteFallbackUrlExtra + "end";
     private final String mNonResolvableIntentWithFallbackUrl =
-            "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.missing.app;S.browser_fallback_url="
-            + android.net.Uri.encode(mTestServerSiteUrl) + ";end";
+            NON_RESOLVABLE_INTENT + mTestServerSiteFallbackUrlExtra + "end";
+
     private final String mRedirectToIntentToChromeURL =
             mActivityTestRule.getTestServer().getURL("/server-redirect?" + INTENT_TO_CHROME_URL);
     private final String mNonResolvableIntentWithFallbackUrlThatLaunchesIntent =
-            "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.missing.app;S.browser_fallback_url="
+            NON_RESOLVABLE_INTENT + "S.browser_fallback_url="
             + android.net.Uri.encode(mRedirectToIntentToChromeURL) + ";end";
 
     private class IntentInterceptor implements InstrumentationActivity.IntentInterceptor {
@@ -138,10 +160,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals("com.android.chrome", intent.getPackage());
-        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
-        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
-                intent.getDataString());
+        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -171,10 +192,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals("com.android.chrome", intent.getPackage());
-        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
-        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
-                intent.getDataString());
+        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -208,10 +228,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(url, mActivityTestRule.getLastCommittedUrlInTab(tab));
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals("com.android.chrome", intent.getPackage());
-        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
-        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
-                intent.getDataString());
+        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
 
         // A new tab should have been created whose URL is that of the intent.
         Browser browser = mActivityTestRule.getActivity().getBrowser();
@@ -245,10 +264,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals("com.android.chrome", intent.getPackage());
-        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
-        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
-                intent.getDataString());
+        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -263,13 +281,13 @@ public class ExternalNavigationTest {
         activity.setIntentInterceptor(intentInterceptor);
 
         String url = mActivityTestRule.getTestServer().getURL(
-                "/server-redirect?" + NON_RESOLVABLE_INTENT_URL);
+                "/server-redirect?" + MALFORMED_INTENT_URL);
 
         Tab tab = mActivityTestRule.getActivity().getTab();
 
         // Note that this navigation will not result in a paint.
         NavigationWaiter waiter = new NavigationWaiter(
-                NON_RESOLVABLE_INTENT_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
+                MALFORMED_INTENT_URL, tab, /*expectFailure=*/true, /*waitForPaint=*/false);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
@@ -345,10 +363,9 @@ public class ExternalNavigationTest {
         Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals("com.android.chrome", intent.getPackage());
-        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
-        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
-                intent.getDataString());
+        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
     }
 
     /**
@@ -374,9 +391,8 @@ public class ExternalNavigationTest {
         Assert.assertEquals(url, mActivityTestRule.getCurrentDisplayUrl());
         Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
-        Assert.assertEquals("com.android.chrome", intent.getPackage());
-        Assert.assertEquals("android.intent.action.VIEW", intent.getAction());
-        Assert.assertEquals("https://play.google.com/store/apps/details?id=com.facebook.katana/",
-                intent.getDataString());
+        Assert.assertEquals(INTENT_TO_CHROME_PACKAGE, intent.getPackage());
+        Assert.assertEquals(INTENT_TO_CHROME_ACTION, intent.getAction());
+        Assert.assertEquals(INTENT_TO_CHROME_DATA_STRING, intent.getDataString());
     }
 }

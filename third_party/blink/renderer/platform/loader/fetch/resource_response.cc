@@ -31,6 +31,7 @@
 #include <memory>
 #include <string>
 
+#include "net/http/structured_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -487,6 +488,19 @@ void ResourceResponse::SetEncodedBodyLength(int64_t value) {
 
 void ResourceResponse::SetDecodedBodyLength(int64_t value) {
   decoded_body_length_ = value;
+}
+
+network::mojom::CrossOriginEmbedderPolicyValue
+ResourceResponse::GetCrossOriginEmbedderPolicy() const {
+  static constexpr char kHeaderName[] = "cross-origin-embedder-policy";
+  const std::string value = HttpHeaderField(kHeaderName).Utf8();
+  using Item = net::structured_headers::Item;
+  const auto item = net::structured_headers::ParseItem(value);
+  if (!item || item->item.Type() != Item::kTokenType ||
+      item->item.GetString() != "require-corp") {
+    return network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  }
+  return network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
 }
 
 STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersionUnknown,

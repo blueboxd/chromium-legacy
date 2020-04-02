@@ -271,7 +271,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void LoadProgressChanged(double progress) final;
   void DocumentOnLoadCompletedInMainFrame() final;
   void RenderProcessGone(base::TerminationStatus status) final;
-  void UserAgentOverrideSet(const std::string& user_agent) final;
+  void UserAgentOverrideSet(const blink::UserAgentOverride& ua_override) final;
   void FrameNameChanged(content::RenderFrameHost* render_frame_host,
                         const std::string& name) final;
   void OnAudioStateChanged(bool audible) final;

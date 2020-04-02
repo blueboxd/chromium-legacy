@@ -308,6 +308,8 @@ TEST_F(MultiStorePasswordSaveManagerTest,
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager()->IsNewLogin());
+  // An update prompt should be shown.
+  EXPECT_TRUE(password_save_manager()->IsPasswordUpdate());
 
   EXPECT_CALL(*mock_profile_form_saver(), Update(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Update(_, _, _));
@@ -331,6 +333,8 @@ TEST_F(MultiStorePasswordSaveManagerTest,
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager()->IsNewLogin());
+  // An update prompt should be shown.
+  EXPECT_TRUE(password_save_manager()->IsPasswordUpdate());
 
   EXPECT_CALL(*mock_profile_form_saver(), Update(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Update(_, _, _));
@@ -339,7 +343,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
-       UpdateBothStoresIfCredentialsExistInBothStoreOnly) {
+       UpdateBothStoresIfCredentialsExistInBothStores) {
   SetAccountStoreEnabled(/*is_enabled=*/true);
 
   PasswordForm saved_match_in_profile_store(saved_match_);
@@ -357,6 +361,8 @@ TEST_F(MultiStorePasswordSaveManagerTest,
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager()->IsNewLogin());
+  // An update prompt should be shown.
+  EXPECT_TRUE(password_save_manager()->IsPasswordUpdate());
 
   EXPECT_CALL(*mock_profile_form_saver(), Update(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Update(_, _, _));

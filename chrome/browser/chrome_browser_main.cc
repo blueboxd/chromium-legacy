@@ -181,7 +181,6 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -531,8 +530,6 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
 
 #if defined(OS_ANDROID)
-  UmaSessionStats::OnStartup();
-
   // Android updates the metrics service dynamically depending on whether the
   // application is in the foreground or not. Do not start here unless
   // kUmaBackgroundSessions is enabled.

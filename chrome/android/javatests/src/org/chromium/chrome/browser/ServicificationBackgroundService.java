@@ -106,5 +106,10 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
         Assert.assertTrue(nativeTestPersistentHistogramsOnDiskSystemProfile());
     }
 
+    public void assertBackgroundSessionStart() {
+        Assert.assertTrue(nativeIsBackgroundSessionStart());
+    }
+
     private static native boolean nativeTestPersistentHistogramsOnDiskSystemProfile();
+    private static native boolean nativeIsBackgroundSessionStart();
 }

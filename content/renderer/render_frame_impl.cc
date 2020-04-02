@@ -4951,9 +4951,27 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::EncryptedMediaClient() {
 }
 
 blink::WebString RenderFrameImpl::UserAgentOverride() {
+  if (ShouldUseUserAgentOverride()) {
+    return WebString::FromUTF8(render_view_->renderer_preferences_
+                                   .user_agent_override.ua_string_override);
+  }
+  return blink::WebString();
+}
+
+base::Optional<blink::UserAgentMetadata>
+RenderFrameImpl::UserAgentMetadataOverride() {
+  if (ShouldUseUserAgentOverride()) {
+    return render_view_->renderer_preferences_.user_agent_override
+        .ua_metadata_override;
+  }
+  return base::nullopt;
+}
+
+bool RenderFrameImpl::ShouldUseUserAgentOverride() const {
   if (!render_view_->GetWebView() || !render_view_->GetWebView()->MainFrame() ||
-      render_view_->renderer_preferences_.user_agent_override.empty()) {
-    return blink::WebString();
+      render_view_->renderer_preferences_.user_agent_override.ua_string_override
+          .empty()) {
+    return false;
   }
 
   // TODO(nasko): When the top-level frame is remote, there is no
@@ -4961,7 +4979,7 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
   // Temporarily return early and fix properly as part of
   // https://crbug.com/426555.
   if (render_view_->GetWebView()->MainFrame()->IsWebRemoteFrame())
-    return blink::WebString();
+    return false;
   WebLocalFrame* main_frame =
       render_view_->GetWebView()->MainFrame()->ToWebLocalFrame();
 
@@ -4970,10 +4988,7 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
       document_loader
           ? InternalDocumentStateData::FromDocumentLoader(document_loader)
           : nullptr;
-  if (internal_data && internal_data->is_overriding_user_agent())
-    return WebString::FromUTF8(
-        render_view_->renderer_preferences_.user_agent_override);
-  return blink::WebString();
+  return internal_data && internal_data->is_overriding_user_agent();
 }
 
 blink::WebString RenderFrameImpl::DoNotTrackValue() {

@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "components/base32/base32.h"
 #include "content/public/browser/browser_context.h"
+#include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/persistence/minimal_browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
@@ -192,6 +193,15 @@ void BrowserImpl::WebPreferencesChanged(JNIEnv* env) {
     tab_impl->WebPreferencesChanged();
   }
 }
+
+void BrowserImpl::OnFragmentStart(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller) {
+  // FeatureListCreator is created before any Browsers.
+  DCHECK(FeatureListCreator::GetInstance());
+  FeatureListCreator::GetInstance()->OnBrowserFragmentStarted();
+}
+
 #endif
 
 std::vector<uint8_t> BrowserImpl::GetMinimalPersistenceState(

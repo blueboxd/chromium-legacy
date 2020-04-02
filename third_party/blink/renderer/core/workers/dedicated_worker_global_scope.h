@@ -100,7 +100,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::CredentialsMode) override;
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none) override;
   bool IsOffMainThreadScriptFetchDisabled() override;
 
   // Called by the bindings (dedicated_worker_global_scope.idl).
@@ -116,6 +117,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
+  RejectCoepUnsafeNone ShouldRejectCoepUnsafeNoneTopModuleScript()
+      const override {
+    return reject_coep_unsafe_none_;
+  }
+
   // Called by the Oilpan.
   void Trace(Visitor*) override;
 
@@ -128,6 +134,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
+  RejectCoepUnsafeNone reject_coep_unsafe_none_ = RejectCoepUnsafeNone(false);
 };
 
 template <>

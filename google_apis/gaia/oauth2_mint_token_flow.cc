@@ -40,12 +40,10 @@ const char kOAuth2IssueTokenBodyFormat[] =
     "&response_type=%s"
     "&scope=%s"
     "&client_id=%s"
-    "&origin=%s";
-// TODO(pavely): lib_ver is passed to differentiate IssueToken requests from
-// different code locations. Remove once device_id mismatch is understood.
-// (crbug.com/481596)
+    "&origin=%s"
+    "&lib_ver=%s";
 const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
-    "&device_id=%s&device_type=chrome&lib_ver=extension";
+    "&device_id=%s&device_type=chrome";
 const char kOAuth2IssueTokenBodyFormatConsentResultAddendum[] =
     "&consent_result=%s";
 const char kIssueAdviceKey[] = "issueAdvice";
@@ -148,12 +146,14 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     const std::vector<std::string>& scopes_arg,
     const std::string& device_id,
     const std::string& consent_result,
+    const std::string& version,
     Mode mode_arg)
     : extension_id(eid),
       client_id(cid),
       scopes(scopes_arg),
       device_id(device_id),
       consent_result(consent_result),
+      version(version),
       mode(mode_arg) {}
 
 OAuth2MintTokenFlow::Parameters::Parameters(const Parameters& other) = default;
@@ -215,10 +215,11 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
       kOAuth2IssueTokenBodyFormat,
       net::EscapeUrlEncodedData(force_value, true).c_str(),
       net::EscapeUrlEncodedData(response_type_value, true).c_str(),
-      net::EscapeUrlEncodedData(
-          base::JoinString(parameters_.scopes, " "), true).c_str(),
+      net::EscapeUrlEncodedData(base::JoinString(parameters_.scopes, " "), true)
+          .c_str(),
       net::EscapeUrlEncodedData(parameters_.client_id, true).c_str(),
-      net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str());
+      net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str(),
+      net::EscapeUrlEncodedData(parameters_.version, true).c_str());
   if (!parameters_.device_id.empty()) {
     body.append(base::StringPrintf(
         kOAuth2IssueTokenBodyFormatDeviceIdAddendum,

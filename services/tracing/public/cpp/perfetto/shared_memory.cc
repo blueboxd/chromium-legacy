@@ -27,11 +27,9 @@ MojoSharedMemory::MojoSharedMemory(size_t size) {
 MojoSharedMemory::MojoSharedMemory(mojo::ScopedSharedBufferHandle shared_memory)
     : shared_buffer_(std::move(shared_memory)) {
   mapping_ = shared_buffer_->Map(shared_buffer_->GetSize());
-  // After we map the producer-provided SMB in the service, we pass it to
-  // perfetto::TracingServiceImpl::ConnectProducer(), which expects a valid
-  // mapping. CHECK here as it may otherwise lead to crashes further down the
-  // line.
-  CHECK(mapping_);
+  // DCHECK rather than CHECK as we handle SMB mapping failures in ProducerHost
+  // on release builds.
+  DCHECK(mapping_);
 }
 
 MojoSharedMemory::~MojoSharedMemory() = default;

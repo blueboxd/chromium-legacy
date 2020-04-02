@@ -82,13 +82,4 @@ BrowserContext* NetworkingPrivateDelegateFactory::GetBrowserContextToUse(
   return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
-bool NetworkingPrivateDelegateFactory::ServiceIsCreatedWithBrowserContext()
-    const {
-  return false;
-}
-
-bool NetworkingPrivateDelegateFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 }  // namespace extensions

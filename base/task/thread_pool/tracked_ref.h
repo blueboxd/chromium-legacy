@@ -34,8 +34,7 @@ namespace internal {
 //
 // TrackedRefFactory only makes sense to use on types that are always leaked in
 // production but need to be torn down in tests (blocking destruction is
-// impractical in production -- ref. ScopedAllowBaseSyncPrimitivesForTesting
-// below).
+// impractical in production).
 //
 // Why would we ever need such a thing? In thread_pool there is a clear
 // ownership hierarchy with mostly single owners and little refcounting. In

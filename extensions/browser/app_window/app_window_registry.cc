@@ -240,10 +240,6 @@ bool AppWindowRegistry::Factory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
-bool AppWindowRegistry::Factory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 content::BrowserContext* AppWindowRegistry::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return ExtensionsBrowserClient::Get()->GetOriginalContext(context);

@@ -396,6 +396,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public void onFragmentStart() {
         mFragmentStarted = true;
+        BrowserImplJni.get().onFragmentStart(mNativeBrowser, this);
         updateAllTabs();
         checkPasswordEchoEnabled();
     }
@@ -468,5 +469,6 @@ public class BrowserImpl extends IBrowser.Stub {
         void restoreStateIfNecessary(long nativeBrowserImpl, BrowserImpl browser,
                 String persistenceId, byte[] persistenceCryptoKey, byte[] minimalPersistenceState);
         void webPreferencesChanged(long nativeBrowserImpl);
+        void onFragmentStart(long nativeBrowserImpl, BrowserImpl caller);
     }
 }

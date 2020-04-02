@@ -47,6 +47,10 @@ extern const base::Feature kDebounceDocumentProvider;
 extern const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate;
 extern const base::Feature kOmniboxDemoteByType;
 
+// A special flag, enabled by default, that can be used to disable all new
+// search features (e.g. zero suggest).
+extern const base::Feature kNewSearchFeatures;
+
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kZeroSuggestionsOnNTP;

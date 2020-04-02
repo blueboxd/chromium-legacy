@@ -1344,7 +1344,7 @@ message PopupListSectionProto {
 
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-// Next: 27
+// Next: 31
 message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
@@ -1425,7 +1425,21 @@ message CollectUserDataProto {
   optional string info_section_text = 24;
   // Optional. If specified, the continue button will only be enabled if the
   // boolean at this location is true (and everything else is valid too).
-  optional string additional_model_identifier_to_check = 26;
+  optional string additional_model_identifier_to_check = 27;
+  // Clears any previously selected credit card. The client will revert to
+  // default-selecting the card instead. NOTE: When clearing the credit card
+  // selection, the billing address should also be cleared!
+  optional bool clear_previous_credit_card_selection = 28;
+  // Clears the previously selected login option, if any. The client will revert
+  // to default-selecting the login option instead.
+  optional bool clear_previous_login_selection = 29;
+  // The names of the selected profiles to clear. Should be a subset of
+  // {billing_address_name, shipping_address_name,
+  // contact_details.contact_details_name}. NOTE: when clearing the billing
+  // address, the selected credit card should also be cleared!
+  repeated string clear_previous_profile_selection = 30;
+
+  reserved 26;
 }
 
 // Stop Autofill Assistant.

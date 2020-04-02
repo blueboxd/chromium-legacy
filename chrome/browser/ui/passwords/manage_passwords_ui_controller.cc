@@ -285,7 +285,10 @@ void ManagePasswordsUIController::OnCredentialLeak(
 void ManagePasswordsUIController::NotifyUnsyncedCredentialsWillBeDeleted(
     const std::vector<autofill::PasswordForm>& unsynced_credentials) {
   passwords_data_.ProcessUnsyncedCredentialsWillBeDeleted(unsynced_credentials);
-  // TODO(crbug.com/1060132): Update the bubble after the state is set.
+  DCHECK(GetState() ==
+         password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE);
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnLoginsChanged(

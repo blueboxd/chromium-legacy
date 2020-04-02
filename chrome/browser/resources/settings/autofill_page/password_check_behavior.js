@@ -119,17 +119,17 @@
       if (isPhished(lhs) != isPhished(rhs)) {
         return isPhished(lhs) ? -1 : 1;
       }
-      // Get compromiseTime in minutes.
-      const rhsTime = Math.trunc(rhs.compromiseTime / 60000);
-      const lhsTime = Math.trunc(lhs.compromiseTime / 60000);
 
-      // Sort by time only if compromiseTimes in minutes are different.
-      if (rhsTime != lhsTime) {
-        return rhsTime - lhsTime;
+      // Sort by time only if the displayed elapsed time since compromise is
+      // different.
+      if (lhs.elapsedTimeSinceCompromise != rhs.elapsedTimeSinceCompromise) {
+        return rhs.compromiseTime - lhs.compromiseTime;
       }
 
-      // Otherwise sort by origin.
-      return lhs.formattedOrigin.localeCompare(rhs.formattedOrigin);
+      // Otherwise sort by origin, or by username in case the origin is the
+      // same.
+      return lhs.formattedOrigin.localeCompare(rhs.formattedOrigin) ||
+          lhs.username.localeCompare(rhs.username);
     });
     resultList.push(...addedResults);
     this.leakedPasswords = resultList;

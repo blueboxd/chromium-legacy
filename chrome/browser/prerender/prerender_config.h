@@ -51,12 +51,6 @@ struct Config {
   // The default tab bounds used as the prerenderer tab size when the active tab
   // cannot be accessed.
   gfx::Rect default_tab_bounds;
-
-  // User agent being used as an override for the WebContents.
-  std::string user_agent_override;
-
-  // Is the user agent being overridden for this NavigationEntry?
-  bool is_overriding_user_agent;
 };
 
 }  // namespace prerender

@@ -423,29 +423,9 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
   return {true, V8String(context->GetIsolate(), stringified_source)};
 }
 
-namespace {
-
-// Check whether a given |context| have some CSP or TrustedType policies to be
-// checked before evaluating a string.
-bool ShouldCheckEval(v8::Local<v8::Context> v8_context) {
-  ExecutionContext* context = ToExecutionContext(v8_context);
-  if (!context)
-    return false;
-
-  ContentSecurityPolicy* policy = context->GetContentSecurityPolicyForWorld();
-  if (!policy)
-    return false;
-
-  return policy->ShouldCheckEval();
-}
-}  // namespace
-
 static v8::ModifyCodeGenerationFromStringsResult
 CodeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context,
                                         v8::Local<v8::Value> source) {
-  if (!ShouldCheckEval(context))
-    return {/* allowed */ true, /* modified source */ {}};
-
   // With Trusted Types, we always run the TT check first because of reporting,
   // and because a default policy might want to stringify or modify the original
   // source. When TT enforcement is disabled, codegen is always allowed, and we

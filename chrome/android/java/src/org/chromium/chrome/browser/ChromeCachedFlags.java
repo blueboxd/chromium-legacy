@@ -72,6 +72,8 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
+                TabUiFeatureUtilities.ENABLE_SEARCH_CHIP,
+                TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
                 TabUiFeatureUtilities.ZOOMING_MIN_SDK,
                 TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,

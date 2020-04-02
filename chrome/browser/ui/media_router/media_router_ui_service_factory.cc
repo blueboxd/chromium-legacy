@@ -50,13 +50,11 @@ KeyedService* MediaRouterUIServiceFactory::BuildServiceInstanceFor(
   return new MediaRouterUIService(Profile::FromBrowserContext(context));
 }
 
-bool MediaRouterUIServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 #if !defined(OS_ANDROID)
+bool MediaRouterUIServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
-#else
-  return false;
-#endif
 }
+#endif
 
 bool MediaRouterUIServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;

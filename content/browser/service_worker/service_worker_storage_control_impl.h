@@ -9,6 +9,7 @@
 
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 
@@ -51,6 +52,11 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   void DeleteRegistration(int64_t registration_id,
                           const GURL& origin,
                           DeleteRegistrationCallback callback) override;
+  void GetNewResourceId(GetNewResourceIdCallback callback) override;
+  void CreateResourceWriter(
+      int64_t resource_id,
+      mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceWriter> writer)
+      override;
 
   const std::unique_ptr<ServiceWorkerStorage> storage_;
 };

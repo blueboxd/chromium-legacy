@@ -61,14 +61,6 @@ const base::Feature kSyncUSSNigori{"SyncUSSNigori",
 const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables updating a BookmarkNode's GUID by replacing the node itself.
-const base::Feature kUpdateBookmarkGUIDWithNodeReplacement{
-    "UpdateGUIDWithNodeReplacement", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the GUID-aware merge algorithm.
-const base::Feature kMergeBookmarksUsingGUIDs{
-    "MergeBookmarksUsingGUIDs", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSyncDeviceInfoInTransportMode{
     "SyncDeviceInfoInTransportMode", base::FEATURE_DISABLED_BY_DEFAULT};
 

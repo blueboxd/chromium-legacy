@@ -335,9 +335,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   base::Optional<SkColor> GetThemeColor() override;
   WebUI* GetWebUI() override;
   WebUI* GetCommittedWebUI() override;
-  void SetUserAgentOverride(const std::string& override,
+  void SetUserAgentOverride(const blink::UserAgentOverride& ua_override,
                             bool override_in_new_tabs) override;
-  const std::string& GetUserAgentOverride() override;
+  const blink::UserAgentOverride& GetUserAgentOverride() override;
   bool ShouldOverrideUserAgentInNewTabs() override;
   void EnableWebContentsOnlyAccessibilityMode() override;
   bool IsWebContentsOnlyAccessibilityModeForTesting() override;

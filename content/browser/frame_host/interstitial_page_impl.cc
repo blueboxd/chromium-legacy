@@ -62,6 +62,15 @@ using blink::WebDragOperationsMask;
 
 namespace content {
 
+namespace {
+
+const blink::UserAgentOverride& NoUAOverride() {
+  static const base::NoDestructor<blink::UserAgentOverride> no_ua_override;
+  return *no_ua_override;
+}
+
+}  // namespace
+
 class InterstitialPageImpl::InterstitialPageRVHDelegateView
     : public RenderViewHostDelegateView {
  public:
@@ -534,8 +543,8 @@ WebContents* InterstitialPageImpl::OpenURL(const OpenURLParams& params) {
   return nullptr;
 }
 
-const std::string& InterstitialPageImpl::GetUserAgentOverride() {
-  return base::EmptyString();
+const blink::UserAgentOverride& InterstitialPageImpl::GetUserAgentOverride() {
+  return NoUAOverride();
 }
 
 bool InterstitialPageImpl::ShouldOverrideUserAgentInNewTabs() {

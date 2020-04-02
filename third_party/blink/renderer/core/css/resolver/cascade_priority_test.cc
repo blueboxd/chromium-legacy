@@ -57,6 +57,14 @@ TEST(CascadePriorityTest, OriginOperators) {
 
   for (CascadePriority priority : priority)
     EXPECT_EQ(priority, priority);
+
+  for (size_t i = 0; i < priority.size(); ++i) {
+    for (size_t j = 0; j < priority.size(); ++j) {
+      if (i == j)
+        continue;
+      EXPECT_NE(priority[i], priority[j]);
+    }
+  }
 }
 
 TEST(CascadePriorityTest, OriginImportance) {

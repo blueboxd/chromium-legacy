@@ -214,8 +214,7 @@ void ManagePasswordsState::ProcessLoginsChanged(
 void ManagePasswordsState::ProcessUnsyncedCredentialsWillBeDeleted(
     const std::vector<autofill::PasswordForm>& unsynced_credentials) {
   unsynced_credentials_ = unsynced_credentials;
-  // TODO(crbug.com/1060132): Set the state to trigger the corresponding
-  // recovery bubble.
+  SetState(password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE);
 }
 
 void ManagePasswordsState::ChooseCredential(const PasswordForm* form) {

@@ -37,8 +37,6 @@ class UnifiedConsentServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* profile) const override;
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  bool ServiceIsNULLWhileTesting() const override;
-  bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentServiceFactory);
 };

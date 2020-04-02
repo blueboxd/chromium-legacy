@@ -122,7 +122,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::CredentialsMode) override;
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none) override;
   void Dispose() override;
   InstalledScriptsManager* GetInstalledScriptsManager() override;
 

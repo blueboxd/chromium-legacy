@@ -14,6 +14,8 @@ namespace views {
 
 class ViewsTestHelperAura : public ViewsTestHelper {
  public:
+  using AuraTestHelperFactory =
+      std::unique_ptr<aura::test::AuraTestHelper> (*)();
   using TestViewsDelegateFactory = std::unique_ptr<TestViewsDelegate> (*)();
 
   ViewsTestHelperAura();
@@ -25,6 +27,10 @@ class ViewsTestHelperAura : public ViewsTestHelper {
   std::unique_ptr<TestViewsDelegate> GetFallbackTestViewsDelegate() override;
   void SetUp() override;
   gfx::NativeWindow GetContext() override;
+
+  // Provides a way for test bases to customize what test helper will be used
+  // for |aura_test_helper_|.
+  static void SetAuraTestHelperFactory(AuraTestHelperFactory factory);
 
   // Provides a way for test helpers to customize what delegate will be used
   // if one is not provided by the test/framework.

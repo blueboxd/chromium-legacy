@@ -49,11 +49,7 @@ class CORE_EXPORT DocumentAnimations final
 
   void AddTimeline(AnimationTimeline&);
   void UpdateAnimationTimingForAnimationFrame();
-  // Use post_layout=true when this method is called to verify if animations
-  // are up to date after layout.
-  // Layout changes to a scroller may produce outdated scroll animations.
-  // If post_layout is true, scroll linked animations skip verification.
-  bool NeedsAnimationTimingUpdate(bool post_layout = false);
+  bool NeedsAnimationTimingUpdate();
   void UpdateAnimationTimingIfNeeded();
   void GetAnimationsTargetingTreeScope(HeapVector<Member<Animation>>&,
                                        const TreeScope&);

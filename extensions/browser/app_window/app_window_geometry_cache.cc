@@ -277,10 +277,6 @@ KeyedService* AppWindowGeometryCache::Factory::BuildServiceInstanceFor(
   return new AppWindowGeometryCache(context, ExtensionPrefs::Get(context));
 }
 
-bool AppWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 content::BrowserContext*
 AppWindowGeometryCache::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {

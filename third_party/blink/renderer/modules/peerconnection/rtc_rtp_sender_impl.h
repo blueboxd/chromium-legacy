@@ -23,6 +23,7 @@
 
 namespace blink {
 
+class RTCEncodedAudioStreamTransformer;
 class RTCEncodedVideoStreamTransformer;
 
 // This class represents the state of a sender; a snapshot of what a
@@ -123,6 +124,7 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpSenderState state,
+      bool force_encoded_audio_insertable_streams,
       bool force_encoded_video_insertable_streams);
   RTCRtpSenderImpl(const RTCRtpSenderImpl& other);
   ~RTCRtpSenderImpl() override;
@@ -148,6 +150,8 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
   void GetStats(RTCStatsReportCallback,
                 const Vector<webrtc::NonStandardGroupId>&) override;
   void SetStreams(const Vector<String>& stream_ids) override;
+  RTCEncodedAudioStreamTransformer* GetEncodedAudioStreamTransformer()
+      const override;
   RTCEncodedVideoStreamTransformer* GetEncodedVideoStreamTransformer()
       const override;
 

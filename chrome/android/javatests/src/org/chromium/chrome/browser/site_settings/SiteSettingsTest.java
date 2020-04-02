@@ -599,9 +599,6 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     @Policies.Add({ @Policies.Item(key = "BlockThirdPartyCookies", string = "true") })
-    @DisabledTest(
-            message =
-                    "TODO(eokoyomon): See if it possible to support BlockThirdPartyCookies policy on android.")
     public void
     testBlockThirdPartyCookiesManagedTrue() throws Exception {
         checkDefaultCookiesSettingManaged(false);
@@ -629,9 +626,6 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     @Policies.Add({ @Policies.Item(key = "BlockThirdPartyCookies", string = "false") })
-    @DisabledTest(
-            message =
-                    "TODO(eokoyomon): See if it possible to support BlockThirdPartyCookies policy on android.")
     public void
     testBlockThirdPartyCookiesManagedFalse() throws Exception {
         checkDefaultCookiesSettingManaged(false);
@@ -663,9 +657,6 @@ public class SiteSettingsTest {
         @Policies.Item(key = "DefaultCookiesSetting", string = "1")
         , @Policies.Item(key = "BlockThirdPartyCookies", string = "false")
     })
-    @DisabledTest(
-            message =
-                    "TODO(eokoyomon): See if it possible to support BlockThirdPartyCookies policy on android.")
     public void
     testAllCookieSettingsManaged() throws Exception {
         checkDefaultCookiesSettingManaged(true);

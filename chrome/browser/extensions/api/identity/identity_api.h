@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/extensions/api/identity/extension_token_key.h"
@@ -88,7 +89,6 @@ class IdentityAPI : public BrowserContextKeyedAPI,
                     public signin::IdentityManager::Observer {
  public:
   using CachedTokens = std::map<ExtensionTokenKey, IdentityTokenCacheValue>;
-  using CachedGaiaIds = std::map<std::string, std::string>;
   using OnSetConsentResultSignature = void(const std::string&,
                                            const std::string&);
 
@@ -108,11 +108,16 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   const CachedTokens& GetAllCachedTokens();
 
   // GAIA id cache.
-  // TODO(https://crbug.com/1026237): migrate storage to the user preferences.
   void SetGaiaIdForExtension(const std::string& extension_id,
                              const std::string& gaia_id);
-  const std::string& GetGaiaIdForExtension(const std::string& extension_id);
-  void EraseAllGaiaIds();
+  // Returns |base::nullopt| if no GAIA id is saved for |extension_id|.
+  // Otherwise, returns GAIA id previously saved via SetGaiaIdForExtension().
+  base::Optional<std::string> GetGaiaIdForExtension(
+      const std::string& extension_id);
+  void EraseGaiaIdForExtension(const std::string& extension_id);
+  // If refresh tokens have been loaded, erases GAIA ids of accounts that are no
+  // longer signed in to Chrome for all extensions.
+  void EraseStaleGaiaIdsForAllExtensions();
 
   // Consent result.
   void SetConsentResult(const std::string& result,
@@ -143,12 +148,20 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
  private:
   friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
+  friend class IdentityAPITest;
 
   // BrowserContextKeyedAPI:
   static const char* service_name() { return "IdentityAPI"; }
   static const bool kServiceIsNULLWhileTesting = true;
 
+  // This constructor allows to mock keyed services in tests.
+  IdentityAPI(Profile* profile,
+              signin::IdentityManager* identity_manager,
+              ExtensionPrefs* extension_prefs,
+              EventRouter* event_router);
+
   // signin::IdentityManager::Observer:
+  void OnRefreshTokensLoaded() override;
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
   // NOTE: This class must listen for this callback rather than
@@ -160,10 +173,13 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   void FireOnAccountSignInChanged(const std::string& gaia_id,
                                   bool is_signed_in);
 
-  Profile* profile_;
+  Profile* const profile_;
+  signin::IdentityManager* const identity_manager_;
+  ExtensionPrefs* const extension_prefs_;
+  EventRouter* const event_router_;
+
   IdentityMintRequestQueue mint_queue_;
   CachedTokens token_cache_;
-  CachedGaiaIds gaia_id_cache_;
 
   OnSignInChangedCallback on_signin_changed_callback_for_testing_;
 

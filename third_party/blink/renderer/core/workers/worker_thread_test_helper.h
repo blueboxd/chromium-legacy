@@ -93,7 +93,8 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::CredentialsMode) override {
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none) override {
     NOTREACHED();
   }
   bool IsOffMainThreadScriptFetchDisabled() override { return true; }

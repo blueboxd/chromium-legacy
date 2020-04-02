@@ -120,7 +120,7 @@
     </div>
 
     <div id="settings-box-user-message" class="settings-box first user-message"
-        hidden="[[isSecondaryGoogleAccountSigninAllowed_()]]">
+        hidden="[[isSecondaryGoogleAccountSigninAllowed_]]">
       <cr-policy-pref-indicator class="secondary-accounts-policy-indicator"
           pref=
           "[[prefs.account_manager.secondary_google_account_signin_allowed]]">
@@ -134,10 +134,11 @@
       <div id="account-list-header" class="flex">
         <h2>$i18n{accountListHeader}</h2>
       </div>
-      <cr-button disabled="[[!isSecondaryGoogleAccountSigninAllowed_()]]"
+      <cr-button disabled="[[!isSecondaryGoogleAccountSigninAllowed_]]"
           id="add-account-button" on-tap="addAccount_">
         <div id="add-account-icon"></div>
-        $i18n{addAccountLabel}
+        [[getAddAccountLabel_(isChildUser_,
+            isSecondaryGoogleAccountSigninAllowed_)]]
       </cr-button>
     </div>
 

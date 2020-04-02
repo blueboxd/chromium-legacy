@@ -9,10 +9,12 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/bookmark_model_metadata.pb.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
+#include "components/sync_bookmarks/switches.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
 namespace sync_bookmarks {
@@ -47,6 +49,17 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
         syncer::ProtoTimeToTime(metadata->modification_time());
     if (!metadata->is_deleted()) {
       const bookmarks::BookmarkNode* node = entity->bookmark_node();
+      // Skip current entity if its favicon is not loaded yet. It will be
+      // committed once the favicon is loaded in
+      // BookmarkModelObserverImpl::BookmarkNodeFaviconChanged.
+      if (!node->is_folder() && !node->is_favicon_loaded() &&
+          !node->is_permanent_node() &&
+          base::FeatureList::IsEnabled(
+              switches::kSyncDoNotCommitBookmarksWithoutFavicon)) {
+        // Force the favicon to be loaded.
+        bookmark_model_->GetFavicon(node);
+        continue;
+      }
       DCHECK(node);
       const bookmarks::BookmarkNode* parent = node->parent();
       const SyncedBookmarkTracker::Entity* parent_entity =

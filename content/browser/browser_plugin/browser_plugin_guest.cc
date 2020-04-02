@@ -175,7 +175,8 @@ void BrowserPluginGuest::InitInternal(WebContentsImpl* owner_web_contents) {
 
   blink::mojom::RendererPreferences* renderer_prefs =
       GetWebContents()->GetMutableRendererPrefs();
-  std::string guest_user_agent_override = renderer_prefs->user_agent_override;
+  blink::UserAgentOverride guest_user_agent_override =
+      renderer_prefs->user_agent_override;
   // Copy renderer preferences (and nothing else) from the embedder's
   // WebContents to the guest.
   //
@@ -183,7 +184,7 @@ void BrowserPluginGuest::InitInternal(WebContentsImpl* owner_web_contents) {
   // values for caret blinking interval, colors related to selection and
   // focus.
   *renderer_prefs = *owner_web_contents_->GetMutableRendererPrefs();
-  renderer_prefs->user_agent_override = guest_user_agent_override;
+  renderer_prefs->user_agent_override = std::move(guest_user_agent_override);
 
   // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
   // navigations still continue to function inside the app.

@@ -1045,11 +1045,15 @@ NavigationRequest::NavigationRequest(
       pending_entry_ref_ = controller->ReferencePendingEntry();
   }
 
+  entry_overrides_ua_ = (entry && entry->GetIsOverridingUserAgent());
+  bool is_overriding_ua =
+      commit_params_->is_overriding_user_agent || entry_overrides_ua_;
   std::string user_agent_override;
-  if (commit_params_->is_overriding_user_agent ||
-      (entry && entry->GetIsOverridingUserAgent())) {
-    user_agent_override =
-        frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
+  if (is_overriding_ua) {
+    user_agent_override = frame_tree_node_->navigator()
+                              ->GetDelegate()
+                              ->GetUserAgentOverride()
+                              .ua_string_override;
   }
 
   net::HttpRequestHeaders headers;
@@ -1067,7 +1071,8 @@ NavigationRequest::NavigationRequest(
           render_view_host->GetWebkitPreferences().javascript_enabled;
       AddNavigationRequestClientHintsHeaders(
           common_params_->url, &client_hints_headers, browser_context,
-          javascript_enabled, client_hints_delegate, frame_tree_node_);
+          javascript_enabled, client_hints_delegate, is_overriding_ua,
+          frame_tree_node_);
       headers.MergeFrom(client_hints_headers);
     }
 
@@ -2439,7 +2444,9 @@ void NavigationRequest::OnRedirectChecksComplete(
         render_view_host->GetWebkitPreferences().javascript_enabled;
     AddNavigationRequestClientHintsHeaders(
         common_params_->url, &client_hints_extra_headers, browser_context,
-        javascript_enabled, client_hints_delegate, frame_tree_node_);
+        javascript_enabled, client_hints_delegate,
+        commit_params_->is_overriding_user_agent || entry_overrides_ua_,
+        frame_tree_node_);
     modified_headers.MergeFrom(client_hints_extra_headers);
   }
 

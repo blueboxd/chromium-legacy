@@ -49,6 +49,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -66,7 +67,7 @@ public class NavigateTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    private static final String HTTP_SCHEME = "http://";
+    private static final String HTTPS_SCHEME = "https://";
     private static final String NEW_TAB_PAGE = "chrome-native://newtab/";
 
     private EmbeddedTestServer mTestServer;
@@ -74,7 +75,8 @@ public class NavigateTest {
     @Before
     public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getContext(), ServerCertificate.CERT_OK);
     }
 
     @After
@@ -147,8 +149,8 @@ public class NavigateTest {
      * @return the expected contents of the location bar after navigating to url.
      */
     private String expectedLocation(String url) {
-        Assert.assertTrue(url.startsWith(HTTP_SCHEME));
-        return url.replaceFirst(HTTP_SCHEME, "");
+        Assert.assertTrue("url was:" + url, url.startsWith(HTTPS_SCHEME));
+        return url.replaceFirst(HTTPS_SCHEME, "");
     }
 
     /**
@@ -276,6 +278,42 @@ public class NavigateTest {
                         .getWebContents()
                         .getNavigationController()
                         .getUseDesktopUserAgent());
+    }
+
+    /**
+     * Test 'Request Desktop Site' option properly affects UA client hints
+     */
+    @Test
+    @MediumTest
+    @Feature({"Navigation"})
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint"})
+    // TODO(https://crbug.com/928669) Remove switch when UA-CH-* launched.
+    public void testRequestDesktopSiteClientHints() throws Exception {
+        String url1 = mTestServer.getURL(
+                "/set-header?Accept-CH: ua-arch,ua-platform,ua-model&Accept-CH-Lifetime: 86400");
+        String url2 = mTestServer.getURL(
+                "/echoheader?sec-ch-ua-arch&sec-ch-ua-mobile&sec-ch-ua-model&sec-ch-ua-platform");
+
+        navigateAndObserve(url1, url1);
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
+                                true /* useDesktop */, true /* reloadOnChange */));
+        ChromeTabUtils.waitForTabPageLoaded(tab, url1);
+
+        navigateAndObserve(url2, url2);
+        ChromeTabUtils.waitForTabPageLoaded(tab, url2);
+        String content = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                tab.getWebContents(), "document.body.textContent");
+        // Note: |content| is JSON, hence lots of escaping.
+        Assert.assertEquals("Proper headers",
+                "\"\\\"x86_64\\\"\\n"
+                        + "?0\\n"
+                        + "\\\"\\\"\\n"
+                        + "\\\"Linux\\\"\"",
+                content);
     }
 
     /**

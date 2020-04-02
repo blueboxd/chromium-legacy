@@ -83,7 +83,12 @@ UserAgentMetadata Navigator::GetUserAgentMetadata() const {
   if (!GetFrame() || !GetFrame()->GetPage())
     return blink::UserAgentMetadata();
 
-  return GetFrame()->Loader().UserAgentMetadata();
+  base::Optional<UserAgentMetadata> maybe_ua_metadata =
+      GetFrame()->Loader().UserAgentMetadata();
+  if (maybe_ua_metadata.has_value())
+    return maybe_ua_metadata.value();
+  else
+    return blink::UserAgentMetadata();
 }
 
 bool Navigator::cookieEnabled() const {

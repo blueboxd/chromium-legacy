@@ -94,7 +94,7 @@ void RecordAccountMetrics(Profile* profile) {
   if (!g_browser_process->profile_manager()
            ->GetProfileAttributesStorage()
            .GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
-    // This can happen if the profile is deleted.
+    // This can happen if the profile is deleted / for guest profile.
     return;
   }
 

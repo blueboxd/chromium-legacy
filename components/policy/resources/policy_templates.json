@@ -4527,7 +4527,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:10-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:10-', 'chrome_os:11-', 'android:83-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,

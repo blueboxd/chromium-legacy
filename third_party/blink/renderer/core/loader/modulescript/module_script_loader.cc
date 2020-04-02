@@ -143,6 +143,9 @@ void ModuleScriptLoader::FetchInternal(
   // https://fetch.spec.whatwg.org/#concept-request-initiator
   options.initiator_info.name = g_empty_atom;
 
+  // TODO(crbug.com/1064920): Remove this once PlzDedicatedWorker ships.
+  options.reject_coep_unsafe_none = options_.GetRejectCoepUnsafeNone();
+
   if (level == ModuleGraphLevel::kDependentModuleFetch) {
     options.initiator_info.imported_module_referrer =
         module_request.ReferrerString();

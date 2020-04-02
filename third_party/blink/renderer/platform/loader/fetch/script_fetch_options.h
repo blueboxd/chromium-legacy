@@ -48,14 +48,17 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
                      ParserDisposition parser_state,
                      network::mojom::CredentialsMode credentials_mode,
                      network::mojom::ReferrerPolicy referrer_policy,
-                     mojom::FetchImportanceMode importance)
+                     mojom::FetchImportanceMode importance,
+                     RejectCoepUnsafeNone reject_coep_unsafe_none =
+                         RejectCoepUnsafeNone(false))
       : nonce_(nonce),
         integrity_metadata_(integrity_metadata),
         integrity_attribute_(integrity_attribute),
         parser_state_(parser_state),
         credentials_mode_(credentials_mode),
         referrer_policy_(referrer_policy),
-        importance_(importance) {}
+        importance_(importance),
+        reject_coep_unsafe_none_(reject_coep_unsafe_none) {}
   ~ScriptFetchOptions() = default;
 
   const String& Nonce() const { return nonce_; }
@@ -73,6 +76,9 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
     return referrer_policy_;
   }
   mojom::FetchImportanceMode Importance() const { return importance_; }
+  RejectCoepUnsafeNone GetRejectCoepUnsafeNone() const {
+    return reject_coep_unsafe_none_;
+  }
 
   // https://html.spec.whatwg.org/C/#fetch-a-classic-script
   // Steps 1 and 3.
@@ -104,6 +110,13 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   // https://github.com/whatwg/html/issues/3670 for some discussion on adding an
   // "importance" member to the script fetch options struct.
   const mojom::FetchImportanceMode importance_;
+
+  // True when we should reject a response with COEP: none.
+  // https://wicg.github.io/cross-origin-embedder-policy/#integration-html
+  // This is for dedicated workers.
+  // TODO(crbug.com/1064920): Remove this once PlzDedicatedWorker ships.
+  const RejectCoepUnsafeNone reject_coep_unsafe_none_ =
+      RejectCoepUnsafeNone(false);
 };
 
 }  // namespace blink

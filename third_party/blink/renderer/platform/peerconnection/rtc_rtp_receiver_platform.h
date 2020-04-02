@@ -18,9 +18,10 @@
 
 namespace blink {
 
+class RTCEncodedAudioStreamTransformer;
+class RTCEncodedVideoStreamTransformer;
 class RTCRtpSource;
 class WebMediaStreamTrack;
-class RTCEncodedVideoStreamTransformer;
 
 // Implementations of this interface keep the corresponding WebRTC-layer
 // receiver alive through reference counting. Multiple |RTCRtpReceiverPlatform|s
@@ -47,6 +48,10 @@ class PLATFORM_EXPORT RTCRtpReceiverPlatform {
   virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;
   virtual void SetJitterBufferMinimumDelay(
       base::Optional<double> delay_seconds) = 0;
+  virtual RTCEncodedAudioStreamTransformer* GetEncodedAudioStreamTransformer()
+      const {
+    return nullptr;
+  }
   virtual RTCEncodedVideoStreamTransformer* GetEncodedVideoStreamTransformer()
       const {
     return nullptr;

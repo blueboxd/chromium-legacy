@@ -335,29 +335,23 @@
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_DESCRIPTION" desc="Explanation of the passwords bulk check feature found within the password settings.">
     Keep your passwords safe from data breaches and other security issues
   </message>
-  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_INTERRUPTED_TOO_MANY_PASSWORDS" desc="Error message when the password check was started and found some results but can't be completed since the user saved too many passwords.">
-    Chrome couldn't check all of your passwords because there are too many.
-  </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_OFFLINE" desc="Error message when the password check can't be completed because the user is offline.">
-    Chrome can't check your passwords. Try checking your internet connection.
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> can't check your passwords. Try checking your internet connection.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_SIGNED_OUT" desc="Error message when the password check can't be completed because the user is not signed in.">
-    Chrome can check your passwords when you sign in with your Google Account.
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> can check your passwords when you sign in with your Google Account.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_NO_PASSWORDS" desc="Error message when the password check can't be completed since no passwords could be checked.">
-    No saved passwords. Chrome can check your passwords when you save them.
-  </message>
-  <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_TOO_MANY_PASSWORDS" desc="Error message when the password check can't be completed since the user saved too many passwords.">
-    Chrome can't check your passwords because there are too many.
+    No saved passwords. <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> can check your passwords when you save them.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT_GOOGLE_ACCOUNT" desc="Error message when the password check can't be completed since the user hit the quota limit, but the user is able to check their passwords in their Google account.">
-    Chrome can't check your passwords. Try again tomorrow or <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>check passwords in your Google Account<ph name="END_LINK">&lt;/a&gt;</ph>.
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> can't check your passwords. Try again tomorrow or <ph name="BEGIN_LINK">&lt;a href="$2" target="_blank"&gt;</ph>check passwords in your Google Account<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT" desc="Error message when the password check can't be completed since the user hit the quota limit.">
-    Chrome can't check your passwords. Try again tomorrow.
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> can't check your passwords. Try again tomorrow.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_GENERIC" desc="Error message when the password check can't be completed for an unspecified reason.">
-    Chrome can't check your passwords.
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> can't check your passwords.
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT" desc="Number of compromised passwords present in the database">
     {COUNT, plural,
@@ -402,7 +396,7 @@
     Entered on deceptive site and found in data breach
   </message>
   <message name="IDS_SETTINGS_NO_COMPROMISED_CREDENTIALS_LABEL" desc="Label which is shown when there were no compromised passwords detected.">
-    Chrome will notify you when you sign in with a compromised password
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> will notify you when you sign in with a compromised password
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_SHOW" desc="Action menu item for a row which displays a compromised password. The password value, which is initialy obfuscated, will be show in plain text.">
     Show password
@@ -420,7 +414,7 @@
     Remove password?
   </message>
   <message name="IDS_SETTINGS_REMOVE_COMPROMISED_PASSWORD_CONFIRMATION_DESCRIPTION" desc="Compromised password remove dialog conformation description">
-    Removing this password will not delete your account on <ph name="DOMAIN">$1<ex>airbnb.com</ex></ph>. Change your password or delete your account on <ph name="DOMAIN">$1<ex>airbnb.com</ex></ph> to keep it safe from others.
+    Removing this password will not delete your account on <ph name="DOMAIN">$1<ex>airbnb.com</ex></ph>. Change your password or delete your account on <ph name="DOMAIN_LINK">$2<ex>&lt;a href="https://airbnb.com" target="_blank"&gt;airbnb.com&lt;/a&gt;</ex></ph> to keep it safe from others.
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_TITLE" desc="The title for a dialog, which allows a user to edit a password, which have been found to be compromised. This dialog includes other details, such as username and website.">
     Edit password

@@ -1890,5 +1890,95 @@ TEST_F(CollectUserDataActionTest, GenericUiModelWritesToProtoResult) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(CollectUserDataActionTest, ClearUserDataIfRequested) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillCreditCardEnabled)
+      .WillByDefault(Return(true));
+  ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
+      .WillByDefault(Return(true));
+  ON_CALL(mock_personal_data_manager_, ShouldSuggestServerCards)
+      .WillByDefault(Return(true));
+
+  autofill::AutofillProfile address_a;
+  autofill::test::SetProfileInfo(&address_a, "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "Baker Street 221b",
+                                 "", "London", "", "WC2N 5DU", "UK", "+44");
+  autofill::AutofillProfile address_b;
+  autofill::test::SetProfileInfo(
+      &address_b, "Berta", "", "West", "berta.west@gmail.com", "",
+      "Baker Street 221b", "", "London", "", "WC2N 5DU", "UK", "+44");
+
+  ON_CALL(mock_personal_data_manager_, GetProfileByGUID("card_a"))
+      .WillByDefault(Return(&address_a));
+  ON_CALL(mock_personal_data_manager_, GetProfileByGUID("card_b"))
+      .WillByDefault(Return(&address_b));
+
+  autofill::CreditCard card_a;
+  autofill::test::SetCreditCardInfo(&card_a, "Adam West", "4111111111111111",
+                                    "1", "2050",
+                                    /* billing_address_id= */ "card_a");
+
+  autofill::CreditCard card_b;
+  autofill::test::SetCreditCardInfo(&card_b, "Berta West", "4111111111111111",
+                                    "1", "2050",
+                                    /* billing_address_id= */ "card_b");
+
+  ON_CALL(mock_personal_data_manager_, GetCreditCards())
+      .WillByDefault(
+          Return(std::vector<autofill::CreditCard*>({&card_a, &card_b})));
+
+  ON_CALL(mock_personal_data_manager_, GetProfiles)
+      .WillByDefault(Return(
+          std::vector<autofill::AutofillProfile*>({&address_a, &address_b})));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            EXPECT_EQ(user_data_.selected_card_->Compare(card_a), 0);
+            EXPECT_EQ(
+                user_data_.selected_addresses_["billing"]->Compare(address_a),
+                0);
+            EXPECT_EQ(
+                user_data_.selected_addresses_["contact"]->Compare(address_a),
+                0);
+            EXPECT_EQ(
+                user_data_.selected_addresses_["shipping"]->Compare(address_a),
+                0);
+            EXPECT_EQ(user_data_.selected_login_, base::nullopt);
+
+            // Do not call the callback. We're only interested in the state.
+          }));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->set_request_payment_method(true);
+  collect_user_data->set_billing_address_name("billing");
+  collect_user_data->set_shipping_address_name("shipping");
+  collect_user_data->mutable_contact_details()->set_request_payer_name(true);
+  collect_user_data->mutable_contact_details()->set_contact_details_name(
+      "contact");
+  collect_user_data->set_request_terms_and_conditions(false);
+  collect_user_data->add_supported_basic_card_networks("visa");
+  collect_user_data->set_clear_previous_credit_card_selection(true);
+  collect_user_data->set_clear_previous_login_selection(true);
+  collect_user_data->add_clear_previous_profile_selection("billing");
+  collect_user_data->add_clear_previous_profile_selection("contact");
+  collect_user_data->add_clear_previous_profile_selection("shipping");
+
+  // Set previous user data to the second card/profile. If clear works
+  // correctly, the action should default to the first card/profile.
+  user_data_.selected_card_ = std::make_unique<autofill::CreditCard>(card_b);
+  user_data_.selected_addresses_["billing"] =
+      std::make_unique<autofill::AutofillProfile>(address_b);
+  user_data_.selected_addresses_["contact"] =
+      std::make_unique<autofill::AutofillProfile>(address_b);
+  user_data_.selected_addresses_["shipping"] =
+      std::make_unique<autofill::AutofillProfile>(address_b);
+  user_data_.selected_login_ =
+      WebsiteLoginFetcher::Login(GURL("http://www.example.com"), "username");
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

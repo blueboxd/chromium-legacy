@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -101,6 +102,14 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // Returns nullptr if this global scope is a WorkletGlobalScope
   virtual WorkerNavigator* navigator() const { return nullptr; }
+
+  // Returns true when we should reject a response without
+  // cross-origin-embedder-policy: require-corp.
+  // TODO(crbug.com/1064920): Remove this once PlzDedicatedWorker ships.
+  virtual RejectCoepUnsafeNone ShouldRejectCoepUnsafeNoneTopModuleScript()
+      const {
+    return RejectCoepUnsafeNone(false);
+  }
 
   // Returns the resource fetcher for subresources (a.k.a. inside settings
   // resource fetcher). See core/workers/README.md for details.

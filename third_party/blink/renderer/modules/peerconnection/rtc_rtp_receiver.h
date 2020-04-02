@@ -23,6 +23,8 @@
 
 namespace blink {
 class RTCDtlsTransport;
+class RTCEncodedAudioUnderlyingSource;
+class RTCEncodedAudioUnderlyingSink;
 class RTCEncodedVideoUnderlyingSource;
 class RTCEncodedVideoUnderlyingSink;
 class RTCInsertableStreams;
@@ -40,6 +42,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
                  std::unique_ptr<RTCRtpReceiverPlatform>,
                  MediaStreamTrack*,
                  MediaStreamVector,
+                 bool force_encoded_audio_insertable_streams,
                  bool force_encoded_video_insertable_streams);
 
   static RTCRtpCapabilities* getCapabilities(const String& kind);
@@ -72,11 +75,17 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
  private:
   void SetContributingSourcesNeedsUpdating();
+  void RegisterEncodedAudioStreamCallback();
+  void UnregisterEncodedAudioStreamCallback();
+  void InitializeEncodedAudioStreams(ScriptState*);
+  void OnAudioFrameFromDepacketizer(
+      std::unique_ptr<webrtc::TransformableFrameInterface> encoded_audio_frame);
   void RegisterEncodedVideoStreamCallback();
   void UnregisterEncodedVideoStreamCallback();
   void InitializeEncodedVideoStreams(ScriptState*);
-  void OnFrameFromDepacketizer(
-      std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame);
+  void OnVideoFrameFromDepacketizer(
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface>
+          encoded_video_frame);
 
   Member<RTCPeerConnection> pc_;
   std::unique_ptr<RTCRtpReceiverPlatform> receiver_;
@@ -95,7 +104,14 @@ class RTCRtpReceiver final : public ScriptWrappable {
   // means default value must be used.
   base::Optional<double> playout_delay_hint_;
 
-  // Insertable Streams support
+  // Insertable Streams support for audio
+  bool force_encoded_audio_insertable_streams_;
+  Member<RTCEncodedAudioUnderlyingSource>
+      audio_from_depacketizer_underlying_source_;
+  Member<RTCEncodedAudioUnderlyingSink> audio_to_decoder_underlying_sink_;
+  Member<RTCInsertableStreams> encoded_audio_streams_;
+
+  // Insertable Streams support for video
   bool force_encoded_video_insertable_streams_;
   Member<RTCEncodedVideoUnderlyingSource>
       video_from_depacketizer_underlying_source_;

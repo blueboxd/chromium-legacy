@@ -188,7 +188,10 @@ public class BluetoothChooserDialog
     @VisibleForTesting
     void show() {
         // Emphasize the origin.
-        Profile profile = Profile.getLastUsedProfile();
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        Profile profile = Profile.getLastUsedRegularProfile();
         SpannableString origin = new SpannableString(mOrigin);
 
         assert mActivity instanceof ChromeBaseAppCompatActivity;

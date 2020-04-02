@@ -155,9 +155,14 @@ ScriptPromise Permissions::requestAll(
   return promise;
 }
 
+void Permissions::Trace(Visitor* visitor) {
+  visitor->Trace(service_);
+  ScriptWrappable::Trace(visitor);
+}
+
 PermissionService* Permissions::GetService(
     ExecutionContext* execution_context) {
-  if (!service_) {
+  if (!service_.is_bound()) {
     ConnectToPermissionService(
         execution_context,
         service_.BindNewPipeAndPassReceiver(

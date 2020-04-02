@@ -231,7 +231,8 @@ void WorkerThread::FetchAndRunModuleScript(
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object_data,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-    network::mojom::CredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode,
+    RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
@@ -240,7 +241,7 @@ void WorkerThread::FetchAndRunModuleScript(
           CrossThreadUnretained(this), script_url,
           WTF::Passed(std::move(outside_settings_object_data)),
           WrapCrossThreadPersistent(outside_resource_timing_notifier),
-          credentials_mode));
+          credentials_mode, reject_coep_unsafe_none.value()));
 }
 
 void WorkerThread::Pause() {
@@ -657,7 +658,8 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-    network::mojom::CredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode,
+    bool reject_coep_unsafe_none) {
   if (!outside_resource_timing_notifier) {
     outside_resource_timing_notifier =
         MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
@@ -670,7 +672,8 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
           script_url,
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
-          *outside_resource_timing_notifier, credentials_mode);
+          *outside_resource_timing_notifier, credentials_mode,
+          RejectCoepUnsafeNone(reject_coep_unsafe_none));
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {

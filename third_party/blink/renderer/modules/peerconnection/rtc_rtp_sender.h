@@ -25,6 +25,8 @@ class ExceptionState;
 class MediaStreamTrack;
 class RTCDtlsTransport;
 class RTCDTMFSender;
+class RTCEncodedAudioUnderlyingSink;
+class RTCEncodedAudioUnderlyingSource;
 class RTCEncodedVideoUnderlyingSink;
 class RTCEncodedVideoUnderlyingSource;
 class RTCInsertableStreams;
@@ -52,6 +54,7 @@ class RTCRtpSender final : public ScriptWrappable {
                String kind,
                MediaStreamTrack*,
                MediaStreamVector streams,
+               bool force_encoded_audio_insertable_streams,
                bool force_encoded_video_insertable_streams);
 
   MediaStreamTrack* track();
@@ -83,10 +86,16 @@ class RTCRtpSender final : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  private:
+  void RegisterEncodedAudioStreamCallback();
+  void UnregisterEncodedAudioStreamCallback();
+  void InitializeEncodedAudioStreams(ScriptState*);
+  void OnAudioFrameFromEncoder(
+      std::unique_ptr<webrtc::TransformableFrameInterface> frame);
+
   void RegisterEncodedVideoStreamCallback();
   void UnregisterEncodedVideoStreamCallback();
   void InitializeEncodedVideoStreams(ScriptState*);
-  void OnFrameFromEncoder(
+  void OnVideoFrameFromEncoder(
       std::unique_ptr<webrtc::TransformableVideoFrameInterface> frame);
 
   Member<RTCPeerConnection> pc_;
@@ -101,7 +110,13 @@ class RTCRtpSender final : public ScriptWrappable {
   Member<RTCRtpSendParameters> last_returned_parameters_;
   Member<RTCRtpTransceiver> transceiver_;
 
-  // Insertable Streams support
+  // Insertable Streams audio support
+  bool force_encoded_audio_insertable_streams_;
+  Member<RTCEncodedAudioUnderlyingSource> audio_from_encoder_underlying_source_;
+  Member<RTCEncodedAudioUnderlyingSink> audio_to_packetizer_underlying_sink_;
+  Member<RTCInsertableStreams> encoded_audio_streams_;
+
+  // Insertable Streams video support
   bool force_encoded_video_insertable_streams_;
   Member<RTCEncodedVideoUnderlyingSource> video_from_encoder_underlying_source_;
   Member<RTCEncodedVideoUnderlyingSink> video_to_packetizer_underlying_sink_;

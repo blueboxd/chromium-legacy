@@ -228,7 +228,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
               const ClientHintsPreferences& client_hints_preferences,
               float device_pixel_ratio,
               const String& user_agent,
-              const UserAgentMetadata& user_agent_metadata,
+              const base::Optional<UserAgentMetadata>& user_agent_metadata,
               bool is_svg_image_chrome_client)
       : url(url),
         parent_security_origin(std::move(parent_security_origin)),
@@ -249,7 +249,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
-  const UserAgentMetadata user_agent_metadata;
+  const base::Optional<UserAgentMetadata> user_agent_metadata;
   const bool is_svg_image_chrome_client;
 
   void Trace(Visitor* visitor) { visitor->Trace(content_security_policy); }
@@ -544,12 +544,16 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   // eligible for client hints (e.g. secure transport, JavaScript enabled).
   //
   // https://github.com/WICG/ua-client-hints
-  blink::UserAgentMetadata ua = GetUserAgentMetadata();
-  if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
+  //
+  // One exception, however, is that a custom UA is sometimes set without
+  // specifying accomponying client hints, in which case we disable sending
+  // them.
+  base::Optional<UserAgentMetadata> ua = GetUserAgentMetadata();
+  if (RuntimeEnabledFeatures::UserAgentClientHintEnabled() && ua.has_value()) {
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::blink::WebClientHintsType::kUA)],
-        AddBrandVersionQuotes(ua.brand, ua.major_version));
+        AddBrandVersionQuotes(ua->brand, ua->major_version));
 
     // We also send Sec-CH-UA-Mobile to all hints. It is a one-bit header
     // identifying if the browser has opted for a "mobile" experience
@@ -558,7 +562,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::blink::WebClientHintsType::kUAMobile)],
-        ua.mobile ? "?1" : "?0");
+        ua->mobile ? "?1" : "?0");
   }
 
   // If the frame is detached, then don't send any hints other than UA.
@@ -693,7 +697,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             ->SerializeLanguagesForClientHintHeader());
   }
 
-  if (ShouldSendClientHint(
+  if (ua.has_value() &&
+      ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           mojom::blink::WebClientHintsType::kUAArch,
           mojom::blink::FeaturePolicyFeature::kClientHintUAArch,
@@ -701,10 +706,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::blink::WebClientHintsType::kUAArch)],
-        AddQuotes(ua.architecture));
+        AddQuotes(ua->architecture));
   }
 
-  if (ShouldSendClientHint(
+  if (ua.has_value() &&
+      ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           mojom::blink::WebClientHintsType::kUAPlatform,
           mojom::blink::FeaturePolicyFeature::kClientHintUAPlatform,
@@ -712,10 +718,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::blink::WebClientHintsType::kUAPlatform)],
-        AddBrandVersionQuotes(ua.platform, ua.platform_version));
+        AddBrandVersionQuotes(ua->platform, ua->platform_version));
   }
 
-  if (ShouldSendClientHint(
+  if (ua.has_value() &&
+      ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           mojom::blink::WebClientHintsType::kUAModel,
           mojom::blink::FeaturePolicyFeature::kClientHintUAModel,
@@ -723,10 +730,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::blink::WebClientHintsType::kUAModel)],
-        AddQuotes(ua.model));
+        AddQuotes(ua->model));
   }
 
-  if (ShouldSendClientHint(
+  if (ua.has_value() &&
+      ShouldSendClientHint(
           ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
           mojom::blink::WebClientHintsType::kUAFullVersion,
           mojom::blink::FeaturePolicyFeature::kClientHintUAFullVersion,
@@ -734,7 +742,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::blink::WebClientHintsType::kUAFullVersion)],
-        AddQuotes(ua.full_version));
+        AddQuotes(ua->full_version));
   }
 }
 
@@ -962,7 +970,8 @@ String FrameFetchContext::GetUserAgent() const {
   return GetFrame()->Loader().UserAgent();
 }
 
-UserAgentMetadata FrameFetchContext::GetUserAgentMetadata() const {
+base::Optional<UserAgentMetadata> FrameFetchContext::GetUserAgentMetadata()
+    const {
   if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->user_agent_metadata;
   return GetLocalFrameClient()->UserAgentMetadata();

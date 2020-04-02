@@ -196,6 +196,12 @@ void UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(
       trial_name, group_name_hashes);
 }
 
+bool UmaSessionStats::IsBackgroundSessionStartForTesting() {
+  return !GetInstance()
+              ->session_time_tracker_.background_session_start_time()
+              .is_null();
+}
+
 void UmaSessionStats::ProvideCurrentSessionData() {
   // We record Session.Background.TotalDuration here to ensure each UMA log
   // containing a background session contains this histogram.

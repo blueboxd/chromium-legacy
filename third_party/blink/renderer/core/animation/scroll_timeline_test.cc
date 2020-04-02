@@ -22,6 +22,14 @@ class ScrollTimelineTest : public RenderingTest {
     EnableCompositing();
     RenderingTest::SetUp();
   }
+
+ public:
+  void SimulateFrame() {
+    // Advance time by 100 ms.
+    auto new_time = GetAnimationClock().CurrentTime() +
+                    base::TimeDelta::FromMilliseconds(100);
+    GetPage().Animator().ServiceScriptedAnimations(new_time);
+  }
 };
 
 class TestScrollTimeline : public ScrollTimeline {
@@ -110,6 +118,9 @@ TEST_F(ScrollTimelineTest,
   bool current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 5),
                                    mojom::blink::ScrollType::kProgrammatic);
+  // Simulate a new animation frame  which allows the timeline to compute new
+  // current time.
+  SimulateFrame();
   double current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(current_time, 0);
@@ -118,6 +129,7 @@ TEST_F(ScrollTimelineTest,
   current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(current_time, 0);
@@ -126,6 +138,7 @@ TEST_F(ScrollTimelineTest,
   current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(current_time, 50);
@@ -134,6 +147,7 @@ TEST_F(ScrollTimelineTest,
   current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 90),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(current_time, time_range.GetAsDouble());
@@ -142,6 +156,7 @@ TEST_F(ScrollTimelineTest,
   current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(current_time, time_range.GetAsDouble());
@@ -180,6 +195,9 @@ TEST_F(ScrollTimelineTest,
   bool current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
+  // Simulate a new animation frame  which allows the timeline to compute new
+  // current time.
+  SimulateFrame();
   double current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(0, current_time);
@@ -188,6 +206,7 @@ TEST_F(ScrollTimelineTest,
   current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 60),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(0, current_time);
@@ -196,6 +215,7 @@ TEST_F(ScrollTimelineTest,
   current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
   EXPECT_EQ(time_range.GetAsDouble(), current_time);
@@ -234,18 +254,24 @@ TEST_F(ScrollTimelineTest, PhasesAreCorrectWhenUsingOffsets) {
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
                                    mojom::blink::ScrollType::kProgrammatic);
+  // Simulate a new animation frame  which allows the timeline to compute new
+  // current phase and time.
+  SimulateFrame();
   EXPECT_EQ(scroll_timeline->phase(), "active");
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   EXPECT_EQ(scroll_timeline->phase(), "active");
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 90),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   EXPECT_EQ(scroll_timeline->phase(), "after");
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrame();
   EXPECT_EQ(scroll_timeline->phase(), "after");
 }
 
@@ -469,18 +495,16 @@ TEST_F(ScrollTimelineTest, CurrentTimeUpdateAfterNewAnimationFrame) {
   double time_before = scroll_timeline->currentTime(current_time_is_null);
   ASSERT_FALSE(current_time_is_null);
 
-  scroll_timeline->WillStartLifecycleUpdate(*GetDocument().View());
   scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
                                    mojom::blink::ScrollType::kProgrammatic);
   // Verify that the current time didn't change before there is a new animation
   // frame.
   EXPECT_EQ(time_before, scroll_timeline->currentTime(current_time_is_null));
   ASSERT_FALSE(current_time_is_null);
-  scroll_timeline->DidFinishLifecycleUpdate(*GetDocument().View());
 
   // Simulate a new animation frame  which allows the timeline to compute a new
   // current time.
-  GetPage().Animator().ServiceScriptedAnimations(base::TimeTicks::Now());
+  SimulateFrame();
 
   // Verify that current time did change in the new animation frame.
   EXPECT_NE(time_before, scroll_timeline->currentTime(current_time_is_null));

@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/can_run_policy_test.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
@@ -19,6 +18,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/test_waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
@@ -184,8 +184,8 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTest,
 // Regression test for https://crbug.com/829786
 TEST_F(PooledSingleThreadTaskRunnerManagerTest,
        ContinueOnShutdownDoesNotBlockBlockShutdown) {
-  WaitableEvent task_has_started;
-  WaitableEvent task_can_continue;
+  TestWaitableEvent task_has_started;
+  TestWaitableEvent task_can_continue;
 
   // Post a CONTINUE_ON_SHUTDOWN task that waits on
   // |task_can_continue| to a shared SingleThreadTaskRunner.
@@ -193,16 +193,10 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTest,
       ->CreateSingleThreadTaskRunner(
           {TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE, base::BindOnce(
-                                [](WaitableEvent* task_has_started,
-                                   WaitableEvent* task_can_continue) {
-                                  task_has_started->Signal();
-                                  ScopedAllowBaseSyncPrimitivesForTesting
-                                      allow_base_sync_primitives;
-                                  task_can_continue->Wait();
-                                },
-                                Unretained(&task_has_started),
-                                Unretained(&task_can_continue)));
+      ->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                   task_has_started.Signal();
+                   task_can_continue.Wait();
+                 }));
 
   task_has_started.Wait();
 
@@ -271,7 +265,7 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PrioritySetCorrectly) {
   // Shutting down can cause priorities to get raised. This means we have to use
   // events to determine when a task is run.
   for (auto& test_case : test_cases) {
-    WaitableEvent event;
+    TestWaitableEvent event;
     CreateTaskRunner(test_case.traits)
         ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                      EXPECT_EQ(test_case.expected_thread_priority,
@@ -344,7 +338,7 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, ThreadNamesSet) {
        foreground_blocking}};
 
   for (auto& test_case : test_cases) {
-    WaitableEvent event;
+    TestWaitableEvent event;
     CreateTaskRunner(test_case.traits)
         ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                      EXPECT_THAT(PlatformThread::GetName(),
@@ -364,13 +358,13 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostTaskAfterShutdown) {
 
 // Verify that a Task runs shortly after its delay expires.
 TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::AUTOMATIC);
+  TestWaitableEvent task_ran(WaitableEvent::ResetPolicy::AUTOMATIC);
   auto task_runner = CreateTaskRunner();
 
   // Wait until the task runner is up and running to make sure the test below is
   // solely timing the delayed task, not bringing up a physical thread.
   task_runner->PostTask(
-      FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
+      FROM_HERE, BindOnce(&TestWaitableEvent::Signal, Unretained(&task_ran)));
   task_ran.Wait();
   ASSERT_TRUE(!task_ran.IsSignaled());
 
@@ -378,7 +372,7 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
   // Post a task with a short delay.
   const TimeTicks start_time = TimeTicks::Now();
   EXPECT_TRUE(task_runner->PostDelayedTask(
-      FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
+      FROM_HERE, BindOnce(&TestWaitableEvent::Signal, Unretained(&task_ran)),
       TestTimeouts::tiny_timeout()));
 
   // Wait until the task runs.
@@ -451,7 +445,7 @@ class CallJoinFromDifferentThread : public SimpleThread {
 
  private:
   PooledSingleThreadTaskRunnerManager* const manager_to_join_;
-  WaitableEvent run_started_event_;
+  TestWaitableEvent run_started_event_;
 
   DISALLOW_COPY_AND_ASSIGN(CallJoinFromDifferentThread);
 };
@@ -477,8 +471,8 @@ class PooledSingleThreadTaskRunnerManagerJoinTest
 TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
   // Exercises the codepath where the workers are unavailable for unregistration
   // because of a Join call.
-  WaitableEvent task_running;
-  WaitableEvent task_blocking;
+  TestWaitableEvent task_running;
+  TestWaitableEvent task_blocking;
 
   {
     auto task_runner =
@@ -487,9 +481,10 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
             SingleThreadTaskRunnerThreadMode::DEDICATED);
     EXPECT_TRUE(task_runner->PostTask(
         FROM_HERE,
-        BindOnce(&WaitableEvent::Signal, Unretained(&task_running))));
+        BindOnce(&TestWaitableEvent::Signal, Unretained(&task_running))));
     EXPECT_TRUE(task_runner->PostTask(
-        FROM_HERE, BindOnce(&WaitableEvent::Wait, Unretained(&task_blocking))));
+        FROM_HERE,
+        BindOnce(&TestWaitableEvent::Wait, Unretained(&task_blocking))));
   }
 
   task_running.Wait();
@@ -505,8 +500,8 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest,
        ConcurrentJoinExtraSkippedTask) {
   // Tests to make sure that tasks are properly cleaned up at Join, allowing
   // SingleThreadTaskRunners to unregister themselves.
-  WaitableEvent task_running;
-  WaitableEvent task_blocking;
+  TestWaitableEvent task_running;
+  TestWaitableEvent task_blocking;
 
   {
     auto task_runner =
@@ -515,9 +510,10 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest,
             SingleThreadTaskRunnerThreadMode::DEDICATED);
     EXPECT_TRUE(task_runner->PostTask(
         FROM_HERE,
-        BindOnce(&WaitableEvent::Signal, Unretained(&task_running))));
+        BindOnce(&TestWaitableEvent::Signal, Unretained(&task_running))));
     EXPECT_TRUE(task_runner->PostTask(
-        FROM_HERE, BindOnce(&WaitableEvent::Wait, Unretained(&task_blocking))));
+        FROM_HERE,
+        BindOnce(&TestWaitableEvent::Wait, Unretained(&task_blocking))));
     EXPECT_TRUE(task_runner->PostTask(FROM_HERE, DoNothing()));
   }
 
@@ -662,19 +658,19 @@ class PooledSingleThreadTaskRunnerManagerStartTest
 // Verify that a task posted before Start() doesn't run until Start() is called.
 TEST_F(PooledSingleThreadTaskRunnerManagerStartTest, PostTaskBeforeStart) {
   AtomicFlag manager_started;
-  WaitableEvent task_finished;
+  TestWaitableEvent task_finished;
   single_thread_task_runner_manager_
       ->CreateSingleThreadTaskRunner(
           {}, SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(
-          FROM_HERE,
-          BindOnce(
-              [](WaitableEvent* task_finished, AtomicFlag* manager_started) {
-                // The task should not run before Start().
-                EXPECT_TRUE(manager_started->IsSet());
-                task_finished->Signal();
-              },
-              Unretained(&task_finished), Unretained(&manager_started)));
+      ->PostTask(FROM_HERE,
+                 BindOnce(
+                     [](TestWaitableEvent* task_finished,
+                        AtomicFlag* manager_started) {
+                       // The task should not run before Start().
+                       EXPECT_TRUE(manager_started->IsSet());
+                       task_finished->Signal();
+                     },
+                     Unretained(&task_finished), Unretained(&manager_started)));
 
   // Wait a little bit to make sure that the task doesn't run before start.
   // Note: This test won't catch a case where the task runs between setting

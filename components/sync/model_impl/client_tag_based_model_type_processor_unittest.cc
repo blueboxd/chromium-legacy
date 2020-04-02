@@ -2297,7 +2297,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
   ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
 
-  OnSyncStarting();
+  OnSyncStarting("DefaultAuthenticatedAccountId", "TestCacheGuid");
 
   // Model should still be ready to sync.
   ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
@@ -2306,6 +2306,10 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // Upon a mismatch, metadata should have been cleared.
   EXPECT_EQ(0U, db()->metadata_count());
   EXPECT_FALSE(type_processor()->IsTrackingMetadata());
+  // Initial update.
+  worker()->UpdateFromServer();
+  EXPECT_TRUE(type_processor()->IsTrackingMetadata());
+  EXPECT_EQ("TestCacheGuid", type_processor()->TrackedCacheGuid());
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,

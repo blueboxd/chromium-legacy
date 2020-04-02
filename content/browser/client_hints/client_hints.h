@@ -35,6 +35,7 @@ CONTENT_EXPORT void AddNavigationRequestClientHintsHeaders(
     BrowserContext* context,
     bool javascript_enabled,
     ClientHintsControllerDelegate* delegate,
+    bool is_ua_override_on,
     FrameTreeNode*);
 
 }  // namespace content

@@ -165,7 +165,9 @@ void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::CredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode,
+    RejectCoepUnsafeNone reject_coep_unsafe_none) {
+  DCHECK(!reject_coep_unsafe_none);
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
   auto context_type = mojom::RequestContextType::SHARED_WORKER;

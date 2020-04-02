@@ -206,6 +206,7 @@ class BreadCrumb extends HTMLElement {
     this.onclick = this.onClicked_.bind(this);
     this.onblur = this.closeMenu_.bind(this);
 
+    this.addEventListener('tabkeyclose', this.onTabkeyClose_.bind(this));
     this.addEventListener('close', this.onblur);
   }
 
@@ -375,6 +376,25 @@ class BreadCrumb extends HTMLElement {
   onKeydown_(event) {
     if (event.key === ' ' || event.key === 'Enter') {
       this.onClicked_(event);
+    }
+  }
+
+  /**
+   * Handles the custom 'tabkeyclose' event, that indicates a 'Tab' key event
+   * has returned focus to button[elider] while closing its drop-down menu.
+   *
+   * Moves the focus to the left or right of the button[elider] based on that
+   * 'Tab' key event's shiftKey state.  There is always a visible <button> to
+   * the left or right of button[elider].
+   *
+   * @param {Event} event
+   * @private
+   */
+  onTabkeyClose_(event) {
+    if (!event.detail.shiftKey) {
+      this.shadowRoot.querySelector(':focus ~ button:not([hidden])').focus();
+    } else {  // button#first is left of the button[elider].
+      this.shadowRoot.querySelector('#first').focus();
     }
   }
 

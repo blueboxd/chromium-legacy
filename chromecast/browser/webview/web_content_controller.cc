@@ -414,7 +414,9 @@ void WebContentController::HandleUpdateSettings(
 
   if (request.has_user_agent() &&
       request.user_agent().type_case() == webview::UserAgent::kValue) {
-    contents->SetUserAgentOverride(request.user_agent().value(), true);
+    contents->SetUserAgentOverride(
+        blink::UserAgentOverride::UserAgentOnly(request.user_agent().value()),
+        true);
   }
 }
 

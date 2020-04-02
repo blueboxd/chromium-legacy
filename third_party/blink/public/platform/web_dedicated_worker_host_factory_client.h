@@ -16,6 +16,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace network {
+struct CrossOriginEmbedderPolicy;
+}
+
 namespace blink {
 
 class WebURL;
@@ -30,7 +34,9 @@ class WebDedicatedWorkerHostFactoryClient {
   // Requests the creation of DedicatedWorkerHost in the browser process.
   // For non-PlzDedicatedWorker. This will be removed once PlzDedicatedWorker is
   // enabled by default.
-  virtual void CreateWorkerHostDeprecated() = 0;
+  virtual void CreateWorkerHostDeprecated(
+      base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
+          callback) = 0;
   // For PlzDedicatedWorker.
   virtual void CreateWorkerHost(
       const blink::WebURL& script_url,

@@ -53,8 +53,4 @@ bool AutofillPrivateEventRouterFactory::
   return true;
 }
 
-bool AutofillPrivateEventRouterFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
 }  // namespace extensions

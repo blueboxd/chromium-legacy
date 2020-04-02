@@ -58,8 +58,6 @@ class NetworkingPrivateDelegateFactory
       content::BrowserContext* browser_context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  bool ServiceIsCreatedWithBrowserContext() const override;
-  bool ServiceIsNULLWhileTesting() const override;
 
   std::unique_ptr<UIDelegateFactory> ui_factory_;
 

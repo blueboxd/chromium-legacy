@@ -214,6 +214,13 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
   }
 
+  void SimulateFrameForScrollAnimations() {
+    // Advance time by 100 ms.
+    auto new_time = GetAnimationClock().CurrentTime() +
+                    base::TimeDelta::FromMilliseconds(100);
+    GetPage().Animator().ServiceScriptedAnimations(new_time);
+  }
+
   Persistent<DocumentTimeline> timeline;
   Persistent<Animation> animation;
 
@@ -1450,6 +1457,7 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   // Verify current time after scroll.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40),
                                    mojom::blink::ScrollType::kProgrammatic);
+  SimulateFrameForScrollAnimations();
   EXPECT_EQ(40, scroll_animation->currentTime(is_null));
   EXPECT_FALSE(is_null);
 }

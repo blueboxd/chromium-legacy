@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -150,6 +151,7 @@
 namespace {
 
 const char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
+const char kChPlatformOverrideForTabletSite[] = "Android";
 
 translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
     ShowTranslateBubbleResult result) {
@@ -1410,9 +1412,15 @@ void SetAndroidOsForTabletSite(content::WebContents* current_tab) {
     entry->SetIsOverridingUserAgent(true);
     std::string product =
         version_info::GetProductNameAndVersionForUserAgent() + " Mobile";
-    current_tab->SetUserAgentOverride(content::BuildUserAgentFromOSAndProduct(
-                                          kOsOverrideForTabletSite, product),
-                                      false);
+    blink::UserAgentOverride ua_override;
+    ua_override.ua_string_override = content::BuildUserAgentFromOSAndProduct(
+        kOsOverrideForTabletSite, product);
+    ua_override.ua_metadata_override = GetUserAgentMetadata();
+    ua_override.ua_metadata_override->mobile = true;
+    ua_override.ua_metadata_override->platform =
+        kChPlatformOverrideForTabletSite;
+    ua_override.ua_metadata_override->platform_version = std::string();
+    current_tab->SetUserAgentOverride(ua_override, false);
   }
 }
 

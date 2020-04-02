@@ -32,15 +32,13 @@ CascadePriority* CascadeMap::Find(const CSSPropertyName& name) {
   return reinterpret_cast<CascadePriority*>(native_properties_) + index;
 }
 
-bool CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
+void CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
   if (name.IsCustomProperty()) {
     DCHECK_NE(CascadeOrigin::kUserAgent, priority.GetOrigin());
     auto result = custom_properties_.insert(name, priority);
-    if (result.is_new_entry || result.stored_value->value < priority) {
+    if (result.is_new_entry || result.stored_value->value < priority)
       result.stored_value->value = priority;
-      return true;
-    }
-    return false;
+    return;
   }
   CSSPropertyID id = name.Id();
   size_t index = static_cast<size_t>(id);
@@ -60,9 +58,7 @@ bool CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
         std::is_trivially_destructible<CascadePriority>::value,
         "~CascadePriority is never called on these CascadePriority objects");
     new (p) CascadePriority(priority);
-    return true;
   }
-  return false;
 }
 
 void CascadeMap::Reset() {

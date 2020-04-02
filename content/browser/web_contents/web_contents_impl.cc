@@ -1283,14 +1283,18 @@ WebUI* WebContentsImpl::GetCommittedWebUI() {
   return frame_tree_.root()->current_frame_host()->web_ui();
 }
 
-void WebContentsImpl::SetUserAgentOverride(const std::string& override,
-                                           bool override_in_new_tabs) {
-  if (GetUserAgentOverride() == override)
+void WebContentsImpl::SetUserAgentOverride(
+    const blink::UserAgentOverride& ua_override,
+    bool override_in_new_tabs) {
+  DCHECK(!ua_override.ua_metadata_override.has_value() ||
+         !ua_override.ua_string_override.empty());
+
+  if (GetUserAgentOverride() == ua_override)
     return;
 
   should_override_user_agent_in_new_tabs_ = override_in_new_tabs;
 
-  renderer_preferences_.user_agent_override = override;
+  renderer_preferences_.user_agent_override = ua_override;
 
   // Send the new override string to all renderers in the current page.
   SyncRendererPrefs();
@@ -1302,10 +1306,10 @@ void WebContentsImpl::SetUserAgentOverride(const std::string& override,
     controller_.Reload(ReloadType::BYPASSING_CACHE, true);
 
   for (auto& observer : observers_)
-    observer.UserAgentOverrideSet(override);
+    observer.UserAgentOverrideSet(ua_override);
 }
 
-const std::string& WebContentsImpl::GetUserAgentOverride() {
+const blink::UserAgentOverride& WebContentsImpl::GetUserAgentOverride() {
   return renderer_preferences_.user_agent_override;
 }
 

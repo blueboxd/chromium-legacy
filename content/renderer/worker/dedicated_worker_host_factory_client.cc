@@ -31,13 +31,15 @@ DedicatedWorkerHostFactoryClient::DedicatedWorkerHostFactoryClient(
 
 DedicatedWorkerHostFactoryClient::~DedicatedWorkerHostFactoryClient() = default;
 
-void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated() {
+void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
+    base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
+        callback) {
   DCHECK(!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   factory_->CreateWorkerHost(
       browser_interface_broker.InitWithNewPipeAndPassReceiver(),
-      remote_host_.BindNewPipeAndPassReceiver());
+      remote_host_.BindNewPipeAndPassReceiver(), std::move(callback));
   OnWorkerHostCreated(std::move(browser_interface_broker));
 }
 

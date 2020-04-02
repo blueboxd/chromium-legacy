@@ -5,6 +5,8 @@
 module storage.mojom;
 
 import "components/services/storage/public/mojom/service_worker_database.mojom";
+import "mojo/public/mojom/base/big_buffer.mojom";
+import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/url.mojom";
 
 // Conveys a result of finding a registration. If a registration is found,
@@ -26,6 +28,15 @@ enum ServiceWorkerStorageOriginState {
   kKeep,
   // No registrations exist for the origin. It can be deleted.
   kDelete,
+};
+
+// An interface that writes a service worker script (resource) to storage.
+interface ServiceWorkerResourceWriter {
+  // Writes the response head to storage.
+  WriteResponseHead(network.mojom.URLResponseHead response_head)
+      => (int32 status);
+  // Write the content of the resource to storage.
+  WriteData(mojo_base.mojom.BigBuffer data) => (int32 status);
 };
 
 // Controls the state of service worker storage within a partition. This is a
@@ -57,4 +68,13 @@ interface ServiceWorkerStorageControl {
   DeleteRegistration(int64 registration_id, url.mojom.Url origin) =>
       (ServiceWorkerDatabaseStatus status,
        ServiceWorkerStorageOriginState origin_state);
+
+  // Returns a new resource id which is guaranteed to be unique in the storage.
+  // Returns blink::mojom::kInvalidServiceWorkerResourceId if the storage
+  // is disabled.
+  GetNewResourceId() => (int64 resource_id);
+
+  // Creates a resource writer for the given |resource_id|.
+  CreateResourceWriter(int64 resource_id,
+                       pending_receiver<ServiceWorkerResourceWriter> writer);
 };

@@ -270,6 +270,22 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
                           gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
 
+IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentMetadata)
+  IPC_STRUCT_TRAITS_MEMBER(brand)
+  IPC_STRUCT_TRAITS_MEMBER(full_version)
+  IPC_STRUCT_TRAITS_MEMBER(major_version)
+  IPC_STRUCT_TRAITS_MEMBER(platform)
+  IPC_STRUCT_TRAITS_MEMBER(platform_version)
+  IPC_STRUCT_TRAITS_MEMBER(architecture)
+  IPC_STRUCT_TRAITS_MEMBER(model)
+  IPC_STRUCT_TRAITS_MEMBER(mobile)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentOverride)
+  IPC_STRUCT_TRAITS_MEMBER(ua_string_override)
+  IPC_STRUCT_TRAITS_MEMBER(ua_metadata_override)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(blink::mojom::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
   IPC_STRUCT_TRAITS_MEMBER(should_antialias_text)

@@ -106,6 +106,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   bool is_url() const { return type_ == URL; }
 
   bool is_favicon_loaded() const { return favicon_state_ == LOADED_FAVICON; }
+  bool is_favicon_loading() const { return favicon_state_ == LOADING_FAVICON; }
 
   // Accessor method for controlling the visibility of a bookmark node/sub-tree.
   // Note that visibility is not propagated down the tree hierarchy so if a

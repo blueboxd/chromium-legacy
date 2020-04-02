@@ -38,17 +38,6 @@ void ClearBlockingObserverForCurrentThread() {
   tls_blocking_observer.Get().Set(nullptr);
 }
 
-ScopedClearBlockingObserverForTesting::ScopedClearBlockingObserverForTesting()
-    : blocking_observer_(tls_blocking_observer.Get().Get()) {
-  tls_blocking_observer.Get().Set(nullptr);
-}
-
-ScopedClearBlockingObserverForTesting::
-    ~ScopedClearBlockingObserverForTesting() {
-  DCHECK(!tls_blocking_observer.Get().Get());
-  tls_blocking_observer.Get().Set(blocking_observer_);
-}
-
 UncheckedScopedBlockingCall::UncheckedScopedBlockingCall(
     const Location& from_here,
     BlockingType blocking_type)

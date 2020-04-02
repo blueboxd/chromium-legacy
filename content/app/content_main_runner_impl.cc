@@ -21,6 +21,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -927,8 +928,9 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     // The hang watcher needs to be started once the feature list is available
     // but before the IO thread is started.
     if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
-      hang_watcher_ = std::make_unique<base::HangWatcher>(
+      hang_watcher_ = new base::HangWatcher(
           base::BindRepeating((&base::HangWatcher::RecordHang)));
+      ANNOTATE_LEAKING_OBJECT_PTR(hang_watcher_);
     }
 
     if (GetContentClient()->browser()->ShouldCreateThreadPool()) {

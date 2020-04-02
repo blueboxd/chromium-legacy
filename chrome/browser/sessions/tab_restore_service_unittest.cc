@@ -226,7 +226,9 @@ TEST_F(TabRestoreServiceImplTest, Basic) {
   NavigateToIndex(1);
 
   // And check again, but set the user agent override this time.
-  web_contents()->SetUserAgentOverride(user_agent_override_, false);
+  // TODO(https://crbug.com/1061917): cover UA client hints override.
+  web_contents()->SetUserAgentOverride(
+      blink::UserAgentOverride::UserAgentOnly(user_agent_override_), false);
   service_->CreateHistoricalTab(live_tab(), -1);
 
   // There should be two entries now.

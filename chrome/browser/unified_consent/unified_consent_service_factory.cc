@@ -89,11 +89,3 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
       pref_service, IdentityManagerFactory::GetForProfile(profile),
       sync_service, GetSyncedServicePrefNames());
 }
-
-bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
-bool UnifiedConsentServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  return false;
-}

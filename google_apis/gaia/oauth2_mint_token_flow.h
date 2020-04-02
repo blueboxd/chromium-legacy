@@ -113,6 +113,7 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
                const std::vector<std::string>& scopes_arg,
                const std::string& device_id,
                const std::string& consent_result,
+               const std::string& version,
                Mode mode_arg);
     Parameters(const Parameters& other);
     ~Parameters();
@@ -122,6 +123,7 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
     std::vector<std::string> scopes;
     std::string device_id;
     std::string consent_result;
+    std::string version;
     Mode mode;
   };
 

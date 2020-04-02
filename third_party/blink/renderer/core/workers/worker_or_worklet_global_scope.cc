@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -474,6 +475,14 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   String integrity_attribute;
   // parser metadata is "not-parser-inserted,
   ParserDisposition parser_state = kNotParserInserted;
+
+  RejectCoepUnsafeNone reject_coep_unsafe_none(false);
+  if (ShouldRejectCoepUnsafeNoneTopModuleScript() &&
+      destination == network::mojom::RequestDestination::kWorker) {
+    DCHECK(!base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
+    reject_coep_unsafe_none = RejectCoepUnsafeNone(true);
+  }
+
   // credentials mode is credentials mode, and referrer policy is the empty
   // string."
   // TODO(domfarolino): Module worker scripts are fetched with kImportanceAuto.
@@ -481,10 +490,10 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   // worker script tree" sets the script fetch options struct's "importance" to
   // "auto". See https://github.com/whatwg/html/issues/3670 and
   // https://crbug.com/821464.
-  ScriptFetchOptions options(nonce, IntegrityMetadataSet(), integrity_attribute,
-                             parser_state, credentials_mode,
-                             network::mojom::ReferrerPolicy::kDefault,
-                             mojom::FetchImportanceMode::kImportanceAuto);
+  ScriptFetchOptions options(
+      nonce, IntegrityMetadataSet(), integrity_attribute, parser_state,
+      credentials_mode, network::mojom::ReferrerPolicy::kDefault,
+      mojom::FetchImportanceMode::kImportanceAuto, reject_coep_unsafe_none);
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."

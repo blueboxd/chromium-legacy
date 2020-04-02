@@ -301,6 +301,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(CupsPrintersBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     CupsPrintersBrowserProxy: CupsPrintersBrowserProxy,
     CupsPrintersBrowserProxyImpl: CupsPrintersBrowserProxyImpl,

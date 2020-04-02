@@ -136,7 +136,7 @@ class TaskEnvironment::TestTaskTracker
   ConditionVariable can_run_tasks_cv_ GUARDED_BY(lock_);
 
   // Signaled when a task is completed.
-  ConditionVariable task_completed_ GUARDED_BY(lock_);
+  ConditionVariable task_completed_cv_ GUARDED_BY(lock_);
 
   // Number of tasks that are currently running.
   int num_tasks_running_ GUARDED_BY(lock_) = 0;
@@ -731,7 +731,12 @@ void TaskEnvironment::RemoveDestructionObserver(DestructionObserver* observer) {
 TaskEnvironment::TestTaskTracker::TestTaskTracker()
     : internal::ThreadPoolImpl::TaskTrackerImpl(std::string()),
       can_run_tasks_cv_(&lock_),
-      task_completed_(&lock_) {}
+      task_completed_cv_(&lock_) {
+  // Consider threads blocked on these as idle (avoids instantiating
+  // ScopedBlockingCalls and confusing some //base internals tests).
+  can_run_tasks_cv_.declare_only_used_while_idle();
+  task_completed_cv_.declare_only_used_while_idle();
+}
 
 bool TaskEnvironment::TestTaskTracker::AllowRunTasks() {
   AutoLock auto_lock(lock_);
@@ -754,7 +759,7 @@ bool TaskEnvironment::TestTaskTracker::DisallowRunTasks() {
     // Attempt to wait a bit so that the caller doesn't busy-loop with the same
     // set of pending work. A short wait is required to avoid deadlock
     // scenarios. See DisallowRunTasks()'s declaration for more details.
-    task_completed_.TimedWait(TimeDelta::FromMilliseconds(1));
+    task_completed_cv_.TimedWait(TimeDelta::FromMilliseconds(1));
     return false;
   }
 
@@ -800,7 +805,7 @@ void TaskEnvironment::TestTaskTracker::RunTask(internal::Task task,
 
     --num_tasks_running_;
 
-    task_completed_.Broadcast();
+    task_completed_cv_.Broadcast();
   }
 }
 

@@ -28,7 +28,7 @@ import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -123,8 +123,8 @@ public class AddExceptionPreference
                 (CheckBox) view.findViewById(R.id.third_parties_exception_checkbox);
 
         if (!mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                || !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList
+                || !ContentSettingsFeatureList.isEnabled(
+                        ContentSettingsFeatureList
                                 .IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING)) {
             thirdPartyExceptionsBox.setVisibility(View.GONE);
             thirdPartyExceptionsBox.setChecked(false);

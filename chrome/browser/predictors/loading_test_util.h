@@ -14,6 +14,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/sessions/core/session_id.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
@@ -60,8 +61,10 @@ RedirectData CreateRedirectData(const std::string& primary_key,
 OriginData CreateOriginData(const std::string& host,
                             uint64_t last_visit_time = 0);
 
-NavigationID CreateNavigationID(SessionID tab_id,
-                                const std::string& main_frame_url);
+NavigationID CreateNavigationID(
+    SessionID tab_id,
+    const std::string& main_frame_url,
+    ukm::SourceId ukm_source_id = ukm::kInvalidSourceId);
 
 PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
@@ -114,6 +117,8 @@ bool operator==(const OriginStat& lhs, const OriginStat& rhs);
 bool operator==(const PreconnectRequest& lhs, const PreconnectRequest& rhs);
 bool operator==(const PreconnectPrediction& lhs,
                 const PreconnectPrediction& rhs);
+bool operator==(const OptimizationGuidePrediction& lhs,
+                const OptimizationGuidePrediction& rhs);
 
 }  // namespace predictors
 

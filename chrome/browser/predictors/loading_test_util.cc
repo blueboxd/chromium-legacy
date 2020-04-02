@@ -82,9 +82,11 @@ OriginData CreateOriginData(const std::string& host, uint64_t last_visit_time) {
 }
 
 NavigationID CreateNavigationID(SessionID tab_id,
-                                const std::string& main_frame_url) {
+                                const std::string& main_frame_url,
+                                ukm::SourceId ukm_source_id) {
   NavigationID navigation_id;
   navigation_id.tab_id = tab_id;
+  navigation_id.ukm_source_id = ukm_source_id;
   navigation_id.main_frame_url = GURL(main_frame_url);
   navigation_id.creation_time = base::TimeTicks::Now();
   return navigation_id;
@@ -94,11 +96,12 @@ PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
     const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos) {
-  GURL main_frame_gurl(main_frame_url);
-  PageRequestSummary summary(main_frame_gurl);
+  NavigationID navigation_id;
+  navigation_id.main_frame_url = GURL(main_frame_url);
+  PageRequestSummary summary(navigation_id);
   summary.initial_url = GURL(initial_url);
   for (const auto& resource_load_info : resource_load_infos)
-    summary.UpdateOrAddToOrigins(*resource_load_info);
+    summary.UpdateOrAddResource(*resource_load_info);
   return summary;
 }
 
@@ -257,8 +260,8 @@ bool operator==(const RedirectStat& lhs, const RedirectStat& rhs) {
 
 bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs) {
   return lhs.main_frame_url == rhs.main_frame_url &&
-         lhs.initial_url == rhs.initial_url &&
-         lhs.origins == rhs.origins;
+         lhs.initial_url == rhs.initial_url && lhs.origins == rhs.origins &&
+         lhs.subresource_urls == rhs.subresource_urls;
 }
 
 bool operator==(const OriginRequestSummary& lhs,
@@ -301,6 +304,13 @@ bool operator==(const PreconnectPrediction& lhs,
                 const PreconnectPrediction& rhs) {
   return lhs.is_redirected == rhs.is_redirected && lhs.host == rhs.host &&
          lhs.requests == rhs.requests;
+}
+
+bool operator==(const OptimizationGuidePrediction& lhs,
+                const OptimizationGuidePrediction& rhs) {
+  return lhs.decision == rhs.decision &&
+         lhs.preconnect_prediction == rhs.preconnect_prediction &&
+         lhs.predicted_subresources == rhs.predicted_subresources;
 }
 
 }  // namespace predictors

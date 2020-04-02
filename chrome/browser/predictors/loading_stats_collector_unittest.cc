@@ -11,9 +11,11 @@
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/network_isolation_key.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -49,6 +51,7 @@ class LoadingStatsCollectorTest : public testing::Test {
   std::unique_ptr<StrictMock<MockResourcePrefetchPredictor>> mock_predictor_;
   std::unique_ptr<LoadingStatsCollector> stats_collector_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
 
 LoadingStatsCollectorTest::LoadingStatsCollectorTest() = default;
@@ -65,6 +68,7 @@ void LoadingStatsCollectorTest::SetUp() {
   stats_collector_ =
       std::make_unique<LoadingStatsCollector>(mock_predictor_.get(), config);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
+  ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   content::RunAllTasksUntilIdle();
 }
 
@@ -99,7 +103,7 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
       static_cast<int>(expected_status), 1);
 }
 
-TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
+TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallMetrics) {
   const std::string main_frame_url = "http://google.com/?query=cats";
   auto gen = [](int index) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", index);
@@ -142,10 +146,39 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
       "LoadingPredictor.PreconnectLearningPrecision.OptimizationGuide", 0);
   histogram_tester_->ExpectTotalCount(
       "LoadingPredictor.PreconnectLearningCount.OptimizationGuide", 0);
+
+  auto entries = ukm_recorder_->GetEntriesByName(
+      ukm::builders::LoadingPredictor::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::LoadingPredictor::kLocalPredictionOriginsName, 4);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kLocalPredictionCorrectlyPredictedOriginsName,
+      2);
+  // Make sure optimization guide metrics are not recorded.
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kOptimizationGuidePredictionDecisionName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kOptimizationGuidePredictionOriginsName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kOptimizationGuidePredictionCorrectlyPredictedOriginsName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kOptimizationGuidePredictionSubresourcesName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kOptimizationGuidePredictionCorrectlyPredictedSubresourcesName));
 }
 
 TEST_F(LoadingStatsCollectorTest,
-       TestPreconnectPrecisionRecallHistogramsWithOptimizationGuide) {
+       TestPreconnectPrecisionRecallMetricsWithOptimizationGuide) {
   const std::string main_frame_url = "http://google.com/?query=cats";
   auto gen = [](int index) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", index);
@@ -157,7 +190,11 @@ TEST_F(LoadingStatsCollectorTest,
       .WillOnce(DoAll(SetArgPointee<1>(local_prediction), Return(false)));
 
   // Optimization Guide predicts 4 origins: 2 useful, 2 useless.
-  base::Optional<PreconnectPrediction> optimization_guide_prediction =
+  base::Optional<OptimizationGuidePrediction> optimization_guide_prediction =
+      OptimizationGuidePrediction();
+  optimization_guide_prediction->decision =
+      optimization_guide::OptimizationGuideDecision::kTrue;
+  optimization_guide_prediction->preconnect_prediction =
       CreatePreconnectPrediction(
           GURL(main_frame_url).host(), false,
           {{url::Origin::Create(GURL(main_frame_url)), 1,
@@ -165,6 +202,8 @@ TEST_F(LoadingStatsCollectorTest,
            {url::Origin::Create(GURL(gen(1))), 1, net::NetworkIsolationKey()},
            {url::Origin::Create(GURL(gen(2))), 1, net::NetworkIsolationKey()},
            {url::Origin::Create(GURL(gen(3))), 0, net::NetworkIsolationKey()}});
+  optimization_guide_prediction->predicted_subresources = {
+      GURL(gen(1)), GURL(gen(2)), GURL(gen(3)), GURL(gen(4))};
 
   // Simulate a page load with 2 resources, one we know, one we don't, plus we
   // know the main frame origin.
@@ -192,6 +231,42 @@ TEST_F(LoadingStatsCollectorTest,
       "LoadingPredictor.PreconnectLearningPrecision.Navigation", 0);
   histogram_tester_->ExpectTotalCount(
       "LoadingPredictor.PreconnectLearningCount.Navigation", 0);
+
+  auto entries = ukm_recorder_->GetEntriesByName(
+      ukm::builders::LoadingPredictor::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::kOptimizationGuidePredictionDecisionName,
+      static_cast<int64_t>(
+          optimization_guide::OptimizationGuideDecision::kTrue));
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::kOptimizationGuidePredictionOriginsName,
+      4);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kOptimizationGuidePredictionCorrectlyPredictedOriginsName,
+      2);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kOptimizationGuidePredictionSubresourcesName,
+      4);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kOptimizationGuidePredictionCorrectlyPredictedSubresourcesName,
+      1);
+  // Make sure local metrics are not recorded since there was not a local
+  // prediction.
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::kLocalPredictionOriginsName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kLocalPredictionCorrectlyPredictedOriginsName));
 }
 
 TEST_F(LoadingStatsCollectorTest, TestRedirectStatusNoRedirect) {

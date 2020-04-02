@@ -21,6 +21,19 @@ enum class TooltipType {
   kInAppToHome,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. These values enumerate the reasons a
+// contextual nudge may be hidden.
+enum class DismissNudgeReason {
+  kOther = 0,
+  kPerformedGesture = 1,
+  kTap = 2,
+  kSwitchToClamshell = 3,
+  kExitToHomeScreen = 4,
+  kTimeout = 5,
+  kMaxValue = kTimeout,
+};
+
 // Maximum number of times a user can be shown a contextual nudge if the user
 // hasn't performed the gesture |kSuccessLimit| times successfully.
 constexpr int kNotificationLimit = 3;
@@ -79,12 +92,25 @@ ASH_EXPORT void SetDragHandleNudgeDisabledForHiddenShelf(bool nudge_disabled);
 // visible before HandleNudgeShown gets called).
 ASH_EXPORT void SetBackGestureNudgeShowing(bool showing);
 
+//  Handles metrics tracking the nudge being dismissed.
+ASH_EXPORT void LogNudgeDismissedMetrics(TooltipType type,
+                                         DismissNudgeReason reason);
+
 // Resets all user prefs related to contextual tooltips.
 ASH_EXPORT void ClearPrefs();
 
 ASH_EXPORT void OverrideClockForTesting(base::Clock* test_clock);
 
 ASH_EXPORT void ClearClockOverrideForTesting();
+
+// Reset the dictionary tracking metrics for each TooltipType.
+ASH_EXPORT void ClearStatusTrackerTableForTesting();
+
+// Checks whether the tracker for |type| is tracking user gestures.
+ASH_EXPORT bool CanRecordGesturePerformedMetricForTesting(TooltipType type);
+
+// Checks whether the tracker for |type| is tracking tooltip visibility.
+ASH_EXPORT bool CanRecordNudgeHiddenMetricForTesting(TooltipType type);
 
 }  // namespace contextual_tooltip
 

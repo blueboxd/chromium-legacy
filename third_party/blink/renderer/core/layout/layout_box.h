@@ -955,6 +955,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetInlineBoxWrapper(InlineBox*);
   void DeleteLineBoxWrapper();
 
+  bool HasInlineFragments() const final;
   NGPaintFragment* FirstInlineFragment() const final;
   void SetFirstInlineFragment(NGPaintFragment*) final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;

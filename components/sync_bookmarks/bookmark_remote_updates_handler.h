@@ -98,6 +98,10 @@ class BookmarkRemoteUpdatesHandler {
   // from |bookmark_tracker_|.
   void RemoveEntityAndChildrenFromTracker(const bookmarks::BookmarkNode* node);
 
+  void ReuploadEntityIfNeeded(
+      const sync_pb::BookmarkSpecifics& specifics,
+      const SyncedBookmarkTracker::Entity* tracked_entity);
+
   bookmarks::BookmarkModel* const bookmark_model_;
   favicon::FaviconService* const favicon_service_;
   SyncedBookmarkTracker* const bookmark_tracker_;

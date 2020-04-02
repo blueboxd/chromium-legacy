@@ -31,19 +31,28 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer {
 
   virtual ~PerfettoProducer();
 
-  // Setup the shared memory buffer for startup tracing. Returns false on
-  // failure.
-  virtual bool SetupStartupTracing() = 0;
+  // Setup the shared memory buffer and data sources for startup tracing.
+  // Returns false on failure. Can be called on any thread.
+  bool SetupStartupTracing(const base::trace_event::TraceConfig&,
+                           bool privacy_filtering_enabled);
+
+  // Schedules the startup tracing timeout if active.
+  void OnThreadPoolAvailable();
 
   // See SharedMemoryArbiter::CreateStartupTraceWriter.
   std::unique_ptr<perfetto::TraceWriter> CreateStartupTraceWriter(
-      uint32_t startup_session_id);
+      uint16_t target_buffer_reservation_id);
 
   // See SharedMemoryArbiter::BindStartupTargetBuffer. Should be called on the
   // producer's task runner.
   virtual void BindStartupTargetBuffer(
-      uint32_t startup_session_id,
+      uint16_t target_buffer_reservation_id,
       perfetto::BufferID startup_target_buffer);
+
+  // See SharedMemoryArbiter::AbortStartupTracingForReservation. Should be
+  // called on the producer's task runner.
+  virtual void AbortStartupTracingForReservation(
+      uint16_t target_buffer_reservation_id);
 
   // Used by the DataSource implementations to create TraceWriters
   // for writing their protobufs, and respond to flushes.
@@ -75,8 +84,31 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer {
   static void DeleteSoonForTesting(
       std::unique_ptr<PerfettoProducer> perfetto_producer);
 
+  // In tests, PerfettoProducers may leak between tests, but their task sequence
+  // may become invalid (e.g. TaskEnvironment is destroyed). This resets the
+  // PerfettoProducer's sequence checker, so that it can later be rebound to a
+  // new test's sequence. Note that this only resets the producer's sequence
+  // checker - and there may be other sequence checkers elsewhere, e.g. in
+  // PosixSystemProducer's socket (which would fail on disconnect if the system
+  // producer's sequence is reset while it is connected).
+  void ResetSequenceForTesting();
+
+  void set_startup_tracing_timeout_for_testing(base::TimeDelta timeout) {
+    startup_tracing_timeout_ = timeout;
+  }
+
  protected:
   friend class MockProducerHost;
+
+  // May be called on any thread.
+  virtual bool SetupSharedMemoryForStartupTracing() = 0;
+
+  // The PerfettoProducer subclass should call this once the startup tracing
+  // session was taken over by the tracing service.
+  // TODO(eseckler): Consider refactoring this into e.g. a delegate interface.
+  void OnStartupTracingComplete();
+
+  bool IsStartupTracingActive();
 
   // TODO(oysteine): Find a good compromise between performance and
   // data granularity (mainly relevant to running with small buffer sizes
@@ -92,8 +124,26 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer {
 
   PerfettoTaskRunner* task_runner();
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
  private:
+  void MaybeScheduleStartupTracingTimeout();
+  void OnStartupTracingTimeout();
+
+  // If a startup tracing session is not taken over by the service after this
+  // delay, the startup session will be aborted and its data lost. This is to
+  // catch situations where e.g. a subprocess is spawned with startup tracing
+  // flags, but the tracing session got disabled in the service while it was
+  // initializing (in which case, the tracing service will not tell the
+  // subprocess to start tracing after it connects).
+  base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(60);
+
   PerfettoTaskRunner* const task_runner_;
+
+  std::atomic<bool> startup_tracing_active_{false};
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<PerfettoProducer> weak_ptr_factory_{this};
 };
 }  // namespace tracing
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_PERFETTO_PRODUCER_H_

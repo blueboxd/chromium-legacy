@@ -187,4 +187,17 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             }
         }
     }
+
+    /** @return The package name of the Trusted Web Activity. */
+    public String getTwaPackage() {
+        return mClientPackageNameProvider.get();
+    }
+
+    /**
+     * @return Whether the app is running in the "Trusted Web Activity" mode, where the
+     *         TWA-specific UI is shown.
+     */
+    public boolean isInTwaMode() {
+        return mInTwaMode;
+    }
 }

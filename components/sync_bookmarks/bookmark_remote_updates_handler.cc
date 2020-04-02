@@ -501,10 +501,12 @@ BookmarkRemoteUpdatesHandler::ProcessCreate(
                                 bookmark_tracker_),
           update_entity.is_folder, bookmark_model_, favicon_service_);
   DCHECK(bookmark_node);
-  return bookmark_tracker_->Add(
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
       bookmark_node, update_entity.id, update.response_version,
       update_entity.creation_time, update_entity.unique_position,
       update_entity.specifics);
+  ReuploadEntityIfNeeded(update_entity.specifics.bookmark(), entity);
+  return entity;
 }
 
 void BookmarkRemoteUpdatesHandler::ProcessUpdate(
@@ -560,6 +562,7 @@ void BookmarkRemoteUpdatesHandler::ProcessUpdate(
   }
   ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
                     bookmark_tracker_, favicon_service_);
+  ReuploadEntityIfNeeded(update_entity.specifics.bookmark(), tracked_entity);
 }
 
 void BookmarkRemoteUpdatesHandler::ProcessDelete(
@@ -676,14 +679,14 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
 
     // The changes are identical so there isn't a real conflict.
     DLOG(WARNING) << "Conflict: CHANGES_MATCH";
-    return;
+  } else {
+    // Conflict where data don't match and no remote deletion, and hence server
+    // wins. Update the model from server data.
+    DLOG(WARNING) << "Conflict: USE_REMOTE";
+    ApplyRemoteUpdate(update, tracked_entity, new_parent_entity,
+                      bookmark_model_, bookmark_tracker_, favicon_service_);
   }
-
-  // Conflict where data don't match and no remote deletion, and hence server
-  // wins. Update the model from server data.
-  DLOG(WARNING) << "Conflict: USE_REMOTE";
-  ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
-                    bookmark_tracker_, favicon_service_);
+  ReuploadEntityIfNeeded(update_entity.specifics.bookmark(), tracked_entity);
 }
 
 void BookmarkRemoteUpdatesHandler::RemoveEntityAndChildrenFromTracker(
@@ -705,6 +708,15 @@ const bookmarks::BookmarkNode* BookmarkRemoteUpdatesHandler::GetParentNode(
     return nullptr;
   }
   return parent_entity->bookmark_node();
+}
+
+void BookmarkRemoteUpdatesHandler::ReuploadEntityIfNeeded(
+    const sync_pb::BookmarkSpecifics& specifics,
+    const SyncedBookmarkTracker::Entity* tracked_entity) {
+  if (!IsFullTitleReuploadNeeded(specifics)) {
+    return;
+  }
+  bookmark_tracker_->IncrementSequenceNumber(tracked_entity);
 }
 
 }  // namespace sync_bookmarks

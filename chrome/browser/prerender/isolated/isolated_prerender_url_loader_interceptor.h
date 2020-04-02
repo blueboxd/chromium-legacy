@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/availability/availability_prober.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
@@ -56,6 +57,10 @@ class IsolatedPrerenderURLLoaderInterceptor
 
   // Called when the probe finishes with |success|.
   void OnProbeComplete(base::OnceClosure on_success_callback, bool success);
+
+  // Notifies the Tab Helper about the usage of a prefetched resource.
+  void NotifyPrefetchUsage(
+      IsolatedPrerenderTabHelper::PrefetchUsage usage) const;
 
   // Used to get the current WebContents.
   const int frame_tree_node_id_;

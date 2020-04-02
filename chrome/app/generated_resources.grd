@@ -2544,9 +2544,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_BLOCKED_DOWNLOAD_UNBLOCK" desc="Radio button to unblock automatic downloads">
         Always allow <ph name="HOST">$1<ex>example.com</ex></ph> to download multiple files
       </message>
-      <message name="IDS_BLOCKED_DOWNLOADS_LINK" desc="Link to downloads section of content blocking management dialog, displayed in bubble when a page tries to download files automatically.">
-        Manage download settings...
-      </message>
       <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="Title for the page action when automatic downloads were allowed">
         This site downloaded multiple files automatically
       </message>
@@ -2574,9 +2571,6 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_ACCESSED_COOKIES_MESSAGE" desc="Tooltip and bubble info header text when a page wrote cookies or other site data.">
         This page set cookies.
-      </message>
-      <message name="IDS_BLOCKED_COOKIES_LINK" desc="Link to cookie section of content blocking management dialog, displayed in bubble when a page tries to write cookies or other site data.">
-        Manage cookie blocking...
       </message>
       <message name="IDS_BLOCKED_COOKIES_INFO" desc="Info link to a dialog showing the blocked/allowed cookies, displayed in bubble when a page tries to write cookies or other site data.">
         Show cookies and other site data...
@@ -2616,9 +2610,6 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION" desc="Radio button choice to continue blocking a site from showing popups and redirects, displayed in bubble when a page tries to display popups or redirects.">
         Continue blocking
-      </message>
-      <message name="IDS_BLOCKED_POPUPS_LINK" desc="Link to popups section of content blocking management dialog, displayed in bubble when a page tries to display popups.">
-        Manage pop-up blocking...
       </message>
       <message name="IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_ALLOW" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page tries to access microphone and camera.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone
@@ -4889,25 +4880,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <!-- End of Sync Promo strings for Desktop Identity Consistency. -->
 
-      <!-- Desktop iOS promotion. -->
-      <if expr="is_win">
-        <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
-          Sync this password to your iPhone
-        </message>
-        <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
-          Get this password on your iPhone
-        </message>
-        <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
-          Share this password with your iPhone
-        </message>
-        <message name="IDS_DESKTOP_TO_IOS_PROMO_SEND_TO_PHONE" desc="The title of the send to phone button in the bubble promoting Chrome for iphone.">
-          Send to phone
-        </message>
-        <message name="IDS_DESKTOP_TO_IOS_PROMO_NO_THANKS" desc="The title of the No Thanks button in the bubble promoting Chrome for iPhone.">
-          No thanks
-        </message>
-      </if>
-
       <!-- Preview Stale Page UI -->
       <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES" desc="The desciption stating how old a preview version of a page is in minutes. This is shown on the UI notifying the user that a preview page has been shown. The number of minutes will always be at least two so 'minutes' should be translated in the plural.">
          Updated <ph name="MINUTES">$1<ex>30</ex></ph> min ago
@@ -6152,9 +6124,6 @@ the Bookmarks menu.">
           {NUM_POPUPS,plural,=1{Pop-up blocked} other{# pop-ups blocked}}
         </message>
       </if>
-      <message name="IDS_HANDLERS_BUBBLE_MANAGE_LINK" desc="Link on the register protocol handler bubble that opens up the Content Settings management dialog.">
-        Manage handler settings...
-      </message>
 
       <message name="IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL" desc="Label for zoom level list entry for Chrome error pages.">
         (Chrome error pages)
@@ -7114,17 +7083,6 @@ the Bookmarks menu.">
       <message name="IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies for session only was created.">
         Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> will be cleared on exit
       </message>
-      <if expr="is_macosx">
-        <message name="IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies were created.">
-          Cookies from multiple sites allowed.
-        </message>
-        <message name="IDS_COLLECTED_COOKIES_MULTIPLE_BLOCK_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to block cookies were created.">
-          Cookies from multiple sites blocked.
-        </message>
-        <message name="IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies for session only were created.">
-          Cookies from multiple sites will be cleared on exit.
-        </message>
-      </if>
       <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL" desc="The label in a tabbed pane that holds the UI controls for the cookies allowed while loading the page.">
         Allowed
       </message>
@@ -7277,23 +7235,6 @@ the Bookmarks menu.">
       <message name="IDS_COOKIES_COOKIE_NONESELECTED" desc="Field value when no cookie is selected">
         no cookie selected
       </message>
-      <if expr="is_macosx">
-        <message name="IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL" desc="The label of the Local Storage key being set">
-          Key:
-        </message>
-        <message name="IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL" desc="The label of the Local Storage value being set">
-          Value:
-        </message>
-      </if>
-      <message name="IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
-        Origin:
-      </message>
-      <message name="IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL" desc="The Local Storage Size on disk label">
-        Size on disk:
-      </message>
-      <message name="IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL" desc="The Local Storage Last modified label">
-        Last modified:
-      </message>
       <message name="IDS_COOKIES_COOKIES" desc="Label for folder under which a list of cookies appear">
         Cookies
       </message>
@@ -7303,14 +7244,6 @@ the Bookmarks menu.">
       <message name="IDS_COOKIES_APPLICATION_CACHE" desc="The text shown when there is an Application Cache (name of an HTML standard) in the Cookies table">
         Application cache
       </message>
-      <message name="IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL" desc="The Manifest label (manifest is a URL specified by the application cache)">
-        Manifest:
-      </message>
-      <if expr="is_macosx">
-        <message name="IDS_COOKIES_SIZE_LABEL" desc="The Size label, to indicate how much space is taken by a database or application cache">
-          Size:
-        </message>
-      </if>
       <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of an HTML standard) are displayed">
         Web databases
       </message>
@@ -7337,9 +7270,6 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_COOKIES_FILE_SYSTEM_USAGE_NONE" desc="Value displayed when no file system of a particular type exists.">
         None
-      </message>
-      <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
-        Last accessed:
       </message>
       <message name="IDS_COOKIES_SERVICE_WORKER" desc="The text shown when there is data for Service Workers within an origin (name of a Web standard) in the Cookies table">
         Service Workers
@@ -8753,9 +8683,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_GEOLOCATION_BUBBLE_CLEAR_LINK" desc="Link on the geolocation bubble that resets the list of allowed and blocked sites.">
         Clear these settings for future visits
       </message>
-      <message name="IDS_GEOLOCATION_BUBBLE_MANAGE_LINK" desc="Link on the geolocation bubble that opens up the Content Settings management dialog.">
-        Manage location settings...
-      </message>
       <message name="IDS_GEOLOCATION_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use geolocation.">
         This page is tracking your location.
       </message>
@@ -8782,9 +8709,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MIDI_SYSEX_BUBBLE_CLEAR_LINK" desc="Link on the MIDI bubble that resets the list of allowed and blocked sites.">
         Clear these settings for future visits
       </message>
-      <message name="IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK" desc="Link on the MIDI bubble that opens up the Content Settings management dialog.">
-        Manage MIDI settings...
-      </message>
 
       <!-- Protocol Handler -->
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
@@ -8792,9 +8716,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Media Stream -->
-      <message name="IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK" desc="Link on the media (camera and microphone) bubble that opens up the Content Settings management dialog for media settings.">
-        Manage media settings...
-      </message>
       <message name="IDS_MICROPHONE_CAMERA_ALLOWED" desc="Status text that is used as location bar icon tooltip text and as media settings bubble status text when a page is allowed to use the camera and microphone.">
         This page is accessing your camera and microphone.
       </message>
@@ -9551,7 +9472,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Command unavailable. Press control-N to open a new window.
         </message>
         <message name="IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED" desc="The accessible text read when the user enters window overview mode in Ash.">
-          Entered window overview mode. Press tab to navigate.
+          Entered window overview mode. Swipe to navigate, or press tab if using a keyboard.
         </message>
         <message name="IDS_A11Y_ALERT_WORKSPACE_FULLSCREEN_STATE_ENTERED" desc="The accessible text read when the current workspace state changes to fullscreen, which means the window in current workspace is fullcreen.">
           Entered full screen

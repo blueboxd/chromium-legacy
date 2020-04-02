@@ -7,6 +7,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -165,6 +166,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -541,6 +543,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -917,6 +920,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -1184,6 +1188,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -1471,6 +1476,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -1529,6 +1535,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -1931,6 +1938,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -2400,6 +2408,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -2908,6 +2917,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -3382,6 +3392,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -4524,6 +4535,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -5627,6 +5639,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -7971,6 +7984,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -8595,6 +8609,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -9200,6 +9215,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -9825,6 +9841,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -11722,6 +11739,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -12334,6 +12352,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -13056,6 +13075,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -13706,6 +13726,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -14248,6 +14269,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -14757,6 +14779,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -15453,6 +15476,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -16259,6 +16283,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -16850,6 +16875,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -17080,6 +17106,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -17359,6 +17386,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -17598,6 +17626,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -17855,6 +17884,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -18046,6 +18076,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -18544,6 +18575,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -19273,6 +19305,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -20011,6 +20044,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -21709,6 +21743,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -22624,6 +22659,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -23571,6 +23607,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -24431,6 +24468,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -26599,6 +26637,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -27802,6 +27841,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -27984,6 +28024,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -28635,6 +28676,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -29380,6 +29422,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -30451,6 +30494,7 @@
         "args": [
           "--test-launcher-retry-limit=0",
           "--test-launcher-batch-limit=256",
+          "--gtest_filter=-*Vulkan_SwiftShader*",
           "--use-gpu-in-tests"
         ],
         "merge": {

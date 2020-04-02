@@ -382,11 +382,6 @@ void DisplayLockContext::CommitForActivationWithSignal(
   }
 
   RecordActivationReason(document_, reason);
-
-  // TODO(vmpstr): This should be removed after find-in-page doesn't rely on
-  // this.
-  if (reason == DisplayLockActivationReason::kFindInPage)
-    Unlock();
 }
 
 void DisplayLockContext::NotifyIsIntersectingViewport() {

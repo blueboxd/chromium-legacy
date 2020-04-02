@@ -19,7 +19,12 @@ cast_source_set("crash_storage") {
       "fuchsia/cast_crash_storage_impl_fuchsia.h",
     ]
 
-    deps = [ "//base" ]
+    deps = [
+      "//base",
+      "//chromecast/crash/fuchsia",
+    ]
+
+    public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.feedback" ]
   } else {
     sources += [
       "cast_crash_storage.cc",
@@ -106,8 +111,20 @@ if (!is_fuchsia) {
   }
 }
 
-if (is_linux) {
-  test("cast_crash_unittests") {
+test("cast_crash_unittests") {
+  if (is_fuchsia) {
+    sources = [ "fuchsia/cast_crash_storage_impl_fuchsia_unittest.cc" ]
+
+    deps = [
+      ":crash_storage",
+      "//base",
+      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//chromecast/crash/fuchsia",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  } else if (is_linux) {
     sources = [
       "cast_crashdump_uploader_unittest.cc",
       "linux/dummy_minidump_generator_unittest.cc",

@@ -176,15 +176,15 @@ void LayoutInline::SetFirstInlineFragmentItemIndex(wtf_size_t index) {
   // first_fragment_item_index_ = index;
 }
 
-bool LayoutInline::IsEmpty() const {
+bool LayoutInline::HasInlineFragments() const {
   if (!IsInLayoutNGInlineFormattingContext())
-    return !FirstLineBox();
+    return FirstLineBox();
   if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return !first_paint_fragment_;
+    return first_paint_fragment_;
   // TODO(yosin): We should use |first_fragment_item_index_|.
   NGInlineCursor cursor;
   cursor.MoveTo(*this);
-  return !cursor;
+  return cursor;
 }
 
 void LayoutInline::InLayoutNGInlineFormattingContextWillChange(bool new_value) {

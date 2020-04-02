@@ -550,7 +550,12 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
 
     ClientTreeNode* client_child = ClientTreeNodeById(new_child_id);
     if (client_child && client_child->parent != client_node) {
-      DVLOG(1) << "Reparenting detected";
+      DVLOG(1) << "Illegal reparenting detected";
+#if defined(ADDRESS_SANITIZER)
+      // Wrapping this in ADDRESS_SANITIZER will cause it to run on
+      // clusterfuzz, which should help us narrow down the issue.
+      NOTREACHED() << "Illegal reparenting detected";
+#endif
       Reset();
       return false;
     }

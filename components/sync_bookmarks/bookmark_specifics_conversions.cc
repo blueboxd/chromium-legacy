@@ -185,6 +185,14 @@ std::string FullTitleToLegacyCanonicalizedTitle(const std::string& node_title) {
   return specifics_title;
 }
 
+bool IsFullTitleReuploadNeeded(const sync_pb::BookmarkSpecifics& specifics) {
+  if (specifics.has_full_title()) {
+    return false;
+  }
+  return base::FeatureList::IsEnabled(
+      switches::kSyncReuploadBookmarkFullTitles);
+}
+
 sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
     const bookmarks::BookmarkNode* node,
     bookmarks::BookmarkModel* model,

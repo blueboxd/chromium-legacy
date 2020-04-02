@@ -275,9 +275,13 @@ void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
   }
 
   // Record fetch latency metrics.
-  if (hints_fetch_latency().has_value()) {
-    builder.SetNavigationHintsFetchRequestLatency(
-        hints_fetch_latency()->InMilliseconds());
+  if (hints_fetch_start_.has_value()) {
+    if (hints_fetch_latency().has_value()) {
+      builder.SetNavigationHintsFetchRequestLatency(
+          hints_fetch_latency()->InMilliseconds());
+    } else {
+      builder.SetNavigationHintsFetchRequestLatency(INT64_MAX);
+    }
     did_record_metric = true;
   }
 

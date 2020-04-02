@@ -90,7 +90,7 @@ MediaServiceThrottler::MediaServiceThrottler()
       crash_listener_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   // base::Unretained is safe because the MediaServiceThrottler is supposed to
   // live until the process dies.
-  release_crash_listener_cb_ = base::Bind(
+  release_crash_listener_cb_ = base::BindRepeating(
       &MediaServiceThrottler::ReleaseCrashListener, base::Unretained(this));
   EnsureCrashListenerStarted();
 }

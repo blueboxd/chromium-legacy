@@ -847,7 +847,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2135787500304447609">&amp;Reprendre</translation>
 <translation id="2136372518715274136">Entrez le nouveau mot de passe</translation>
 <translation id="2136476978468204130">La phrase de passe entrée est incorrecte</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Les témoins sont bloqués.}=1{Les témoins sont bloqués, avec 1 exception}one{Les témoins sont bloqués, avec {COUNT} exception}other{Les témoins sont bloqués, avec {COUNT} exceptions}}</translation>
 <translation id="2138398485845393913">Connexion à l'appareil « <ph name="DEVICE_NAME" /> » toujours en cours…</translation>
 <translation id="2139545522194199494">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, géré par votre administrateur, connexion</translation>
 <translation id="2139919072249842737">Bouton de configuration</translation>
@@ -1207,7 +1206,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2586672484245266891">Veuillez entrer une URL plus courte</translation>
 <translation id="2587922766792651800">Délai dépassé</translation>
 <translation id="2588636910004461974">Appareils appartenant à <ph name="VENDOR_NAME" /></translation>
-<translation id="2593594315333286814">Paramètres d'accessibilité pour la navigation</translation>
 <translation id="2594999711683503743">Effectuez une recherche sur Google ou entrez une adresse URL</translation>
 <translation id="2602501489742255173">Glissez votre doigt vers le haut pour commencer</translation>
 <translation id="2603115962224169880">Nettoyer l'ordinateur</translation>
@@ -1672,14 +1670,14 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3208640652501208439">Les ressources pour le travail scolaire pourraient ne pas être accessible ni ne se charger automatiquement
     Votre enfant pourrait ne pas avoir accès aux éléments suivants :
     <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />Applications et extensions installées par l'école
-      <ph name="LIST_ITEM" />Favoris provenant d'un Chromebook appartenant à l'école
+      <ph name="LIST_ITEM" />Les applications et les extensions installées par l'école
+      <ph name="LIST_ITEM" />Les favoris provenant d'un Chromebook appartenant à l'école
       <ph name="LIST_ITEM" />Les mots de passe à remplissage automatique pour les sites éducatifs
     <ph name="END_LIST" />
     Pour profiter d'une expérience scolaire optimale, votre enfant devrait effectuer les actions suivantes :
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />Se déconnecter de son compte géré par Family Link
-      <ph name="OLIST_ITEM" />Se connecter avec son compte G Suite for Educationà l'écran de connexion. Prenez note, cependant, que les politiques de l'école, y compris les paramètres d'applications et d'accès, auront préséance sur vos fonctionnalités de supervision Family Link (par exemple, les administrateurs de l'école peuvent autoriser l'accès à YouTube si nécessaire pour les devoirs, le temps d'utilisation des écrans pourrait ne pas être applicable, etc.)
+      <ph name="OLIST_ITEM" />Se connecter avec son compte G Suite for Education à l'écran de connexion. Prenez note, cependant, que les politiques de l'école, y compris les paramètres d'applications et d'accès, auront préséance sur vos fonctionnalités de supervision Family Link (par exemple, les administrateurs de l'école peuvent autoriser l'accès à YouTube si nécessaire pour les devoirs, le temps d'utilisation des écrans pourrait ne pas être applicable, etc.)
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Non confirmé</translation>
 <translation id="32101887417650595">Impossible de se connecter à l'imprimante</translation>
@@ -2217,7 +2215,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3873423927483480833">Afficher les NIP</translation>
 <translation id="3873915545594852654">Un problème avec ARC++ s'est produit.</translation>
 <translation id="3879748587602334249">Gestionnaire de téléchargement</translation>
-<translation id="3881321138433527084">La navigation sécurisée est désactivée. Pour naviguer en toute sécurité sur le Web, activez-la.</translation>
 <translation id="3882165008614329320">Vidéo existante de la caméra ou du fichier</translation>
 <translation id="3886446263141354045">Votre demande d'accès à ce site a été envoyée à <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Prendre des notes avec <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -5395,7 +5392,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8186609076106987817">Le serveur n'a pas trouvé le fichier.</translation>
 <translation id="8188389033983459049">Vérifiez les paramètres de votre appareil et activez cette option pour continuer</translation>
 <translation id="8190193592390505034">Connexion à <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">Vérifier dans le compte Google.</translation>
 <translation id="8191230140820435481">Gérer vos applications, vos extensions et vos thèmes</translation>
 <translation id="8195027750202970175">Taille sur le disque</translation>
 <translation id="8198323535106903877">Nous allons installer ces <ph name="NUMBER_OF_APPS" /> applications pour vous</translation>

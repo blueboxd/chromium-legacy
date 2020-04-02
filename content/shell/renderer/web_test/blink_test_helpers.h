@@ -7,10 +7,6 @@
 
 #include "third_party/blink/public/platform/web_url.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace test_runner {
 struct TestPreferences;
 }
@@ -23,12 +19,6 @@ struct WebPreferences;
 // settings from the TestRunner library which are relevant for web tests.
 void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
                                       WebPreferences* to);
-
-// Applies settings that differ between web tests and regular mode.
-void ApplyWebTestDefaultPreferences(WebPreferences* prefs);
-
-// The build directory of the Blink checkout.
-base::FilePath GetBuildDirectory();
 
 // Replaces file:///tmp/web_tests/ with the actual path to the
 // web_tests directory, or rewrite URLs generated from absolute

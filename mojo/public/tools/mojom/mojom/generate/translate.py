@@ -292,12 +292,15 @@ def _Struct(module, parsed_struct):
             lambda enum: _Enum(module, enum, struct),
             _ElemsOfType(parsed_struct.body, ast.Enum,
                          parsed_struct.mojom_name)))
-    struct.constants = map(
-        lambda constant: _Constant(module, constant, struct),
-        _ElemsOfType(parsed_struct.body, ast.Const, parsed_struct.mojom_name))
+    struct.constants = list(
+        map(
+            lambda constant: _Constant(module, constant, struct),
+            _ElemsOfType(parsed_struct.body, ast.Const,
+                         parsed_struct.mojom_name)))
     # Stash fields parsed_struct here temporarily.
     struct.fields_data = _ElemsOfType(parsed_struct.body, ast.StructField,
                                       parsed_struct.mojom_name)
+
   struct.attributes = _AttributeListToDict(parsed_struct.attribute_list)
 
   # Enforce that a [Native] attribute is set to make native-only struct
@@ -446,9 +449,9 @@ def _Interface(module, parsed_iface):
   interface.enums = list(
       map(lambda enum: _Enum(module, enum, interface),
           _ElemsOfType(parsed_iface.body, ast.Enum, parsed_iface.mojom_name)))
-  interface.constants = map(
-      lambda constant: _Constant(module, constant, interface),
-      _ElemsOfType(parsed_iface.body, ast.Const, parsed_iface.mojom_name))
+  interface.constants = list(
+      map(lambda constant: _Constant(module, constant, interface),
+          _ElemsOfType(parsed_iface.body, ast.Const, parsed_iface.mojom_name)))
   # Stash methods parsed_iface here temporarily.
   interface.methods_data = _ElemsOfType(parsed_iface.body, ast.Method,
                                         parsed_iface.mojom_name)

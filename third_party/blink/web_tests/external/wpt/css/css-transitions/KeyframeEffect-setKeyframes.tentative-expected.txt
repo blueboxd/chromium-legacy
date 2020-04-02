@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-FAIL Keyframes set using setKeyframes() are reflected in computed style for a running transition Failed to execute 'setKeyframes' on 'KeyframeEffect': Calling setKeyframes on CSS Transitions is not yet supported
-FAIL A transition with replaced keyframes still returns the original transitionProperty Failed to execute 'setKeyframes' on 'KeyframeEffect': Calling setKeyframes on CSS Transitions is not yet supported
-FAIL A transition with no keyframes still returns the original transitionProperty Failed to execute 'setKeyframes' on 'KeyframeEffect': Calling setKeyframes on CSS Transitions is not yet supported
-FAIL A transition with replaced keyframes still exhibits the regular transition reversing behavior Failed to execute 'setKeyframes' on 'KeyframeEffect': Calling setKeyframes on CSS Transitions is not yet supported
-FAIL A transition with no keyframes still exhibits the regular transition reversing behavior Failed to execute 'setKeyframes' on 'KeyframeEffect': Calling setKeyframes on CSS Transitions is not yet supported
+PASS Keyframes set using setKeyframes() are reflected in computed style for a running transition
+PASS A transition with replaced keyframes still returns the original transitionProperty
+PASS A transition with no keyframes still returns the original transitionProperty
+FAIL A transition with replaced keyframes still exhibits the regular transition reversing behavior Cannot read property 'effect' of undefined
+FAIL A transition with no keyframes still exhibits the regular transition reversing behavior Cannot read property 'effect' of undefined
 Harness: the test ran to completion.
 

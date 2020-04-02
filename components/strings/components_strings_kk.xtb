@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">Журнал</translation>
 <translation id="1645368109819982629">Қолдау көрсетілмейтін протокол</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome бұл режимде беттің оқылуын жеңілдетті. Chrome бастапқы бетті қауіпсіз байланыс арқылы алды.</translation>
 <translation id="1656489000284462475">Алып кету</translation>
 <translation id="1662550410081243962">Төлеу әдістерін сақтау және толтыру</translation>
 <translation id="1663943134801823270">Карталар мен мекенжайлар Chrome браузерінен алынған. Оларды <ph name="BEGIN_LINK" />Параметрлер<ph name="END_LINK" /> бөлімінде басқара аласыз.</translation>
@@ -566,6 +567,7 @@
 <translation id="342781501876943858">Chromium басқа сайттарда пайдаланылған құпия сөзіңізді қайта орнатуды ұсынады.</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates серверінің бір немесе бірнеше URI үлгісі жарамсыз және пайдаланылмайды.</translation>
 <translation id="3431636764301398940">Карта мәліметтерін осы құрылғыда сақтау</translation>
+<translation id="3432601291244612633">Бетті жабу</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Бұл құрылғының иесі динозаврлар ойынын өшірді.</translation>
 <translation id="3447884698081792621">Сертификатты көрсету (шығарушы: <ph name="ISSUER" />)</translation>
@@ -872,6 +874,7 @@
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> құрылғыңыздың орналасқан жер деректерін пайдаланғысы келеді</translation>
 <translation id="4736825316280949806">Chromium браузерін қайта іске қосу</translation>
+<translation id="4737121147659370456">Әкімші браузерден Chrome Enterprise Connectors қызметін қосты. Бұл коннекторлар кейбір деректеріңізді пайдалануы мүмкін.</translation>
 <translation id="473775607612524610">Жаңарту</translation>
 <translation id="4738601419177586157">Ұсынылатын сұрау: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Құпия сөздерді басқару...</translation>
@@ -1211,6 +1214,8 @@
 <translation id="610911394827799129"><ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> бетінде Google есептік жазбасымен шолу тарихының басқа да үлгілері болуы мүмкін.</translation>
 <translation id="6116338172782435947">Буферге көшірілетін мәтіндер мен кескіндерді көру</translation>
 <translation id="6120179357481664955">UPI идентификаторы сақталсын ба?</translation>
+<translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
+<translation id="6135641591018127088">Күрделі құпия сөз жасау үшін Google есептік жазбаңызды пайдаланыңыз.</translation>
 <translation id="6146055958333702838">Барлық кабельдерді тексеріп, пайдаланып отырған кез
     келген роутерлерді, модемдерді немесе басқа желі құрылғыларын қайта жүктеңіз.</translation>
 <translation id="614940544461990577">Орындап көріңіз:</translation>
@@ -1256,6 +1261,7 @@
 <translation id="6328639280570009161">Желілік болжамды өшіруге әрекет ету</translation>
 <translation id="6328784461820205019">"Байланыс қорғалмаған" немесе "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" немесе "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" немесе "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" немесе "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" немесе "SSL сертификатының қатесі"</translation>
 <translation id="6328786501058569169">Бұл – жалған сайт</translation>
+<translation id="6333334544069706521">Google есептік жазбаңызда сақталған құпия сөздерді пайдаланыңыз.</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> аз орын босатады .Кейбір сайттар келесі кіргенде баяуырақ жүктелуі мүмкін.</translation>
 <translation id="6337534724793800597">Атауы бойынша сүзгі саясаттары</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Жоқ}=1{1 құпия сөз (<ph name="DOMAIN_LIST" />, синхрондалды)}=2{2 құпия сөз (<ph name="DOMAIN_LIST" />, синхрондалды)}other{# құпия сөз (<ph name="DOMAIN_LIST" />, синхрондалды)}}</translation>
@@ -1301,6 +1307,7 @@
 <translation id="6521745193039995384">Қосылмаған</translation>
 <translation id="6529602333819889595">Жоюды &amp;қайталау</translation>
 <translation id="6534179046333460208">Physical Web ұсыныстары</translation>
+<translation id="6543609420755597723">Әкімшіге Chrome Enterprise Connectors арқылы жалауша қойған қауіпсіздікке қатысты әрекет туралы деректер жіберіңіз. Мұндай деректерге сіз ашатын беттердің URL мекенжайлары, файл атаулары немесе метадеректер, құрылғы мен Chrome браузеріне кіретін пайдаланушы аты жатуы мүмкін.</translation>
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
 <translation id="6547208576736763147">Сол жағын екі рет тесу</translation>
 <translation id="6554795675067793129">Есептік жазбаңызды <ph name="ENROLLMENT_DOMAIN" /> басқарады.</translation>
@@ -1366,6 +1373,7 @@
 <translation id="6874604403660855544">&amp;Қайта қосу</translation>
 <translation id="6884662655240309489">Өлшемі: 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome бұл режимде беттің оқылуын жеңілдетті. Chrome бастапқы бетті қауіпті байланыс арқылы алды.</translation>
 <translation id="6891596781022320156">Саясат деңгейіне қолдау көрсетілмеген.</translation>
 <translation id="6895330447102777224">Картаңыз расталды</translation>
 <translation id="6897140037006041989">Пайдаланушы агенті</translation>
@@ -1594,6 +1602,7 @@
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791196057686275387">Қабаттау</translation>
 <translation id="7791543448312431591">Қосу</translation>
+<translation id="7798389633136518089">Саясатты бұлт қызметі орнатпағандықтан, еленбейді</translation>
 <translation id="7800304661137206267">Байланыс хабар аутентификациясы мен негізгі ауыстыру жүйесі ретіндегі <ph name="KX" /> үшін <ph name="CIPHER" /> көмегімен <ph name="MAC" /> арқылы шифрланған.</translation>
 <translation id="7802523362929240268">Сайт заңды</translation>
 <translation id="780301667611848630">Жоқ, рақмет</translation>
@@ -1729,6 +1738,7 @@
 <translation id="8371889962595521444">Арнаулы түбірлік сертификаттар</translation>
 <translation id="8380941800586852976">Қауіпті</translation>
 <translation id="8381674639488873545">Бұл ақылар сізге білдіртпей бір рет не бірнеше қайтара алынуы мүмкін. <ph name="BEGIN_LINK" />Бәрібір көрсету<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> браузеріңізден Chrome Enterprise Connectors қызметін қосты. Бұл коннекторлар кейбір деректеріңізді пайдалануы мүмкін.</translation>
 <translation id="8412145213513410671">Бұзылу (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Бірдей құпия фразаны екі рет енгізу керек.</translation>
 <translation id="8416694386774425977">Желі конфигурациясы жарамсыз және импорттау мүмкін емес.

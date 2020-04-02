@@ -247,8 +247,8 @@ MockCdm* MockCdmFactory::GetCreatedCdm() {
 }
 
 void MockCdmFactory::SetBeforeCreationCB(
-    const base::Closure& before_creation_cb) {
-  before_creation_cb_ = before_creation_cb;
+    base::RepeatingClosure before_creation_cb) {
+  before_creation_cb_ = std::move(before_creation_cb);
 }
 
 MockStreamParser::MockStreamParser() = default;

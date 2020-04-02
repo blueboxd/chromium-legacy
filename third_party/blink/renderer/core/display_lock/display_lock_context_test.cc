@@ -301,13 +301,16 @@ TEST_F(DisplayLockContextTest,
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
     <style>
+    .spacer {
+      height: 10000px;
+    }
     #container {
       width: 100px;
       height: 100px;
       contain: style layout paint;
     }
     </style>
-    <body><div id="container">testing</div></body>
+    <body><div class=spacer></div><div id="container">testing</div></body>
   )HTML");
 
   const String search_text = "testing";
@@ -328,7 +331,8 @@ TEST_F(DisplayLockContextTest,
   // Check if we can still get the same result with the same query.
   Find(search_text, client);
   EXPECT_EQ(1, client.Count());
-  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_GT(GetDocument().scrollingElement()->scrollTop(), 1000);
 }
 
 TEST_F(DisplayLockContextTest,
@@ -471,7 +475,7 @@ TEST_F(DisplayLockContextTest, FindInPageWithChangedContent) {
   client.SetFrame(LocalMainFrame());
   Find("testing", client);
   EXPECT_EQ(3, client.Count());
-  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
 }
 
 TEST_F(DisplayLockContextTest, FindInPageWithNoMatchesWontUnlock) {
@@ -548,18 +552,14 @@ TEST_F(DisplayLockContextTest,
   EXPECT_EQ(2, client.Count());
   EXPECT_EQ(1, client.ActiveIndex());
 
-  // #container should be unlocked, since the match is inside that
-  // element ("testing1" inside the div).
-  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
-  // Since the active match isn't located within other locked elements
-  // they need to stay locked.
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(nested_non_activatable->GetDisplayLockContext()->IsLocked());
 }
 
 TEST_F(DisplayLockContextTest,
-       NestedActivatableLockedElementIsUnlockedByFindInPage) {
+       NestedActivatableLockedElementIsNotUnlockedByFindInPage) {
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
     <body>
@@ -588,8 +588,8 @@ TEST_F(DisplayLockContextTest,
   EXPECT_EQ(1, client.Count());
   EXPECT_EQ(1, client.ActiveIndex());
 
-  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(child->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(child->GetDisplayLockContext()->IsLocked());
 }
 
 TEST_F(DisplayLockContextTest,
@@ -633,12 +633,16 @@ TEST_F(DisplayLockContextTest,
   EXPECT_EQ(2, client.Count());
   EXPECT_EQ(1, client.ActiveIndex());
   EXPECT_EQ(text_rect(div_one), client.ActiveMatchRect());
+  // Pretend that the event unlocked the element.
+  CommitElement(*div_one);
 
   // Going forward from #one would go to #three.
   Find(search_text, client, true /* find_next */);
   EXPECT_EQ(2, client.Count());
   EXPECT_EQ(2, client.ActiveIndex());
   EXPECT_EQ(text_rect(div_three), client.ActiveMatchRect());
+  // Pretend that the event unlocked the element.
+  CommitElement(*div_three);
 
   // Going backwards from #three would go to #one.
   client.Reset();

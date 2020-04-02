@@ -181,17 +181,6 @@
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 giờ. Tần
       suất nhỏ nhất được phép là 60 giây.</translation>
 <translation id="1204263402976895730">Đã bật máy in dành cho doanh nghiệp</translation>
-<translation id="1216890727647348501">Bật tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
-
-      Nếu bạn bật tùy chọn cài đặt này, thì tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn sẽ luôn hoạt động.
-
-      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn sẽ không bao giờ hoạt động.
-
-      Nếu bạn đặt chính sách này thành bắt buộc, thì người dùng sẽ không thể thay đổi hoặc ghi đè tùy chọn cài đặt "Bật tính năng bảo vệ chống lừa đảo trực tuyến và phần mềm độc hại" trong <ph name="PRODUCT_NAME" />.
-
-      Nếu bạn không đặt chính sách này, thì tính năng Bảo vệ tăng cường của chế độ Duyệt web an toàn sẽ tắt theo mặc định nhưng người dùng có thể bật tính năng này.
-
-      Để biết thêm thông tin về dịch vụ Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.</translation>
 <translation id="1216919699175573511">Bật tính năng hỗ trợ cho Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Chỉ định xem thiết bị có phải khôi phục về phiên bản do <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> đặt không nếu đã chạy phiên bản mới hơn.
 
@@ -285,7 +274,6 @@
           Khi bạn không đặt chính sách này, thì hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Báo cáo trạng thái cập nhật hệ điều hành</translation>
-<translation id="1388918874748125262">Bật tính năng Bảo vệ tăng cường chế độ Duyệt web an toàn</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1404043648050567997">Dịch vụ Duyệt web an toàn hiển thị một trang cảnh báo khi người dùng truy cập các trang web bị gắn cờ là có thể độc hại. Khi bạn bật mục cài đặt này, người dùng sẽ không thể tiếp tục truy cập vào trang web độc hại từ trang cảnh báo đó.
@@ -300,19 +288,6 @@
 <translation id="1426170570389588560">Đặt khoảng thời gian tính bằng ngày để lưu trữ siêu dữ liệu về lệnh in</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
-<translation id="1431272318313028342">Bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi tùy chọn cài đặt này.
-
-      Nếu bạn bật tùy chọn cài đặt này thì tính năng Duyệt web an toàn luôn hoạt động.
-
-      Nếu bạn tắt tùy chọn cài đặt này thì tính năng Duyệt web an toàn sẽ không bao giờ hoạt động.
-
-      Nếu bạn bật hoặc tắt tùy chọn cài đặt này, thì người dùng không thể thay đổi hoặc ghi đè tùy chọn cài đặt "Bảo vệ khỏi lừa đảo và phần mềm độc hại" trong <ph name="PRODUCT_NAME" />.
-
-      Nếu bạn không đặt chính sách này, thì tùy chọn cài đặt này sẽ được bật nhưng người dùng có thể thay đổi.
-
-      Bạn có thể xem trang web https://developers.google.com/safe-browsing để biết thêm thông tin về tính năng Duyệt web an toàn.
-
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
 <translation id="1438739959477268107">Cài đặt tạo khóa mặc định</translation>
 <translation id="1455804070656338445">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho giao thức HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến URL này để thay đổi mật khẩu của họ sau khi thấy cảnh báo trên trình duyệt.

@@ -24,6 +24,7 @@ def _all_function_likes(ir_map):
                               IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.NAMESPACE)
     for ir in irs:
         accumulated.extend(ir.constructors)
+        accumulated.extend(ir.named_constructors)
         accumulated.extend(ir.operations)
     accumulated.extend(ir_map.irs_of_kinds(IRMap.IR.Kind.CALLBACK_FUNCTION))
     return accumulated

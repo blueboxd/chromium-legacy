@@ -56,6 +56,7 @@ cr.define('settings', function() {
     getRecorder().recordSettingChange();
   }
 
+  // #cr_define_end
   return {
     setUserActionRecorderForTesting,
     recordPageFocus,

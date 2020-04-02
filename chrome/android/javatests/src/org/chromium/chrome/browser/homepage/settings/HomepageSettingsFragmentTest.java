@@ -19,10 +19,10 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -318,8 +318,7 @@ public class HomepageSettingsFragmentTest {
     @SmallTest
     @Feature({"Homepage"})
     public void testStartUp_DefaultToPartner() {
-        String origPartnerHomepage = PartnerBrowserCustomizations.getHomePageUrl();
-        PartnerBrowserCustomizations.setHomepageForTests(TEST_URL_FOO);
+        PartnerBrowserCustomizations.getInstance().setHomepageForTests(TEST_URL_FOO);
         mHomepageTestRule.useDefaultHomepageForTest();
 
         launchSettingsActivity();
@@ -342,7 +341,7 @@ public class HomepageSettingsFragmentTest {
                 HomepageManager.getInstance().getHomepageLocationType());
 
         // Reset partner provided information
-        PartnerBrowserCustomizations.setHomepageForTests(origPartnerHomepage);
+        PartnerBrowserCustomizations.destroy();
     }
 
     @Test

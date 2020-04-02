@@ -20,13 +20,16 @@ class TransformableVideoFrameInterface;
 namespace blink {
 
 class DOMArrayBuffer;
+class RTCEncodedVideoFrameDelegate;
 
 class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   explicit RTCEncodedVideoFrame(
-      std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate);
+      std::unique_ptr<webrtc::TransformableVideoFrameInterface> webrtc_frame);
+  explicit RTCEncodedVideoFrame(
+      scoped_refptr<RTCEncodedVideoFrameDelegate> delegate);
 
   // rtc_encoded_video_frame.idl implementation.
   String type() const;
@@ -38,17 +41,19 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   uint32_t synchronizationSource() const;
   String toString() const;
 
-  // Internal API
-  bool HasDelegate() { return !!delegate_; }
+  scoped_refptr<RTCEncodedVideoFrameDelegate> Delegate() const;
+  void SyncDelegate() const;
+
   // Returns and transfers ownership of the internal WebRTC frame
-  // backing this RTCEncodedVideoFrame, leaving the RTCEncodedVideoFrame
-  // without a delegate WebRTC frame.
-  std::unique_ptr<webrtc::TransformableVideoFrameInterface> PassDelegate();
+  // backing this RTCEncodedVideoFrame, neutering all RTCEncodedVideoFrames
+  // backed by that internal WebRTC frame.
+  std::unique_ptr<webrtc::TransformableVideoFrameInterface> PassWebRtcFrame();
 
   void Trace(Visitor*) override;
 
  private:
-  std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate_;
+  const scoped_refptr<RTCEncodedVideoFrameDelegate> delegate_;
+
   // Exposes encoded frame data from |delegate_|.
   mutable Member<DOMArrayBuffer> frame_data_;
   // Exposes additional data from |delegate_|.

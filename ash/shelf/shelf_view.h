@@ -630,6 +630,15 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   std::unique_ptr<FadeInAnimationDelegate> fade_in_animation_delegate_;
 
+  // The animation metrics reporter for icon move animation.
+  std::unique_ptr<ui::AnimationMetricsReporter> move_animation_reporter_;
+
+  // The animation metrics reporter for icon fade-in animation.
+  std::unique_ptr<ui::AnimationMetricsReporter> fade_in_animation_reporter_;
+
+  // The animation metrics reporter for icon fade-out animation.
+  std::unique_ptr<ui::AnimationMetricsReporter> fade_out_animation_reporter_;
+
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);

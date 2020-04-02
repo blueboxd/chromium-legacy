@@ -1391,6 +1391,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // this is the root of an inline formatting context, laid out by LayoutNG.
   virtual const NGPaintFragment* PaintFragment() const { return nullptr; }
 
+  // Return true if |this| produces one or more inline fragments, including
+  // whitespace-only text fragments.
+  virtual bool HasInlineFragments() const { return false; }
+
   // Paint/Physical fragments are not in sync with LayoutObject tree until it is
   // laid out. For inline, it needs to check if the containing block is
   // layout-clean. crbug.com/963103

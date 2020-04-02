@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -19,7 +20,9 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.List;
 
@@ -32,8 +35,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     private final String mComponentName;
     private final TabListCoordinator mTabListCoordinator;
     private final TabGridDialogMediator mMediator;
-    private final PropertyModel mToolbarPropertyModel;
-    private final TabGridPanelToolbarCoordinator mToolbarCoordinator;
+    private final PropertyModel mModel;
+    private final PropertyModelChangeProcessor mModelChangeProcessor;
     private final TabGridDialogParent mParentLayout;
 
     private TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
@@ -49,14 +52,14 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         mComponentName = animationSourceViewProvider == null ? "TabGridDialogFromStrip"
                                                              : "TabGridDialogInSwitcher";
 
-        mToolbarPropertyModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
+        mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
         mContainerView = containerView;
 
         mParentLayout = new TabGridDialogParent(context, containerView);
 
-        mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
-                tabModelSelector, tabCreatorManager, resetHandler, animationSourceViewProvider,
-                shareDelegateSupplier, mComponentName);
+        mMediator = new TabGridDialogMediator(context, this, mModel, tabModelSelector,
+                tabCreatorManager, resetHandler, animationSourceViewProvider, shareDelegateSupplier,
+                mComponentName);
 
         // TODO(crbug.com/1031349) : Remove the inline mode logic here, make the constructor to take
         // in a mode parameter instead.
@@ -69,8 +72,17 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                 false, gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
                 TabProperties.UiType.CLOSABLE, null, containerView, false, mComponentName);
         TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
-        mToolbarCoordinator = new TabGridPanelToolbarCoordinator(
-                context, recyclerView, mToolbarPropertyModel, mParentLayout);
+
+        TabGroupUiToolbarView toolbarView =
+                (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
+                        R.layout.bottom_tab_grid_toolbar, recyclerView, false);
+        toolbarView.setupDialogToolbarLayout();
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            toolbarView.hideTabGroupsContinuationWidgets();
+        }
+        mModelChangeProcessor = PropertyModelChangeProcessor.create(mModel,
+                new TabGridPanelViewBinder.ViewHolder(toolbarView, recyclerView, mParentLayout),
+                TabGridPanelViewBinder::bind);
     }
 
     public void initWithNative(Context context, TabModelSelector tabModelSelector,
@@ -99,13 +111,10 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     public void destroy() {
         mTabListCoordinator.destroy();
         mMediator.destroy();
-        mToolbarCoordinator.destroy();
         mParentLayout.destroy();
+        mModelChangeProcessor.destroy();
         if (mTabSelectionEditorCoordinator != null) {
             mTabSelectionEditorCoordinator.destroy();
-        }
-        if (mToolbarCoordinator != null) {
-            mToolbarCoordinator.destroy();
         }
     }
 

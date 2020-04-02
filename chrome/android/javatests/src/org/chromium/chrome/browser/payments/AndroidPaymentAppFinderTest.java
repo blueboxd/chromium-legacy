@@ -1181,6 +1181,55 @@ public class AndroidPaymentAppFinderTest
                 mPaymentApps.get(0).getInstrumentMethodNames().contains("tokenized-card"));
     }
 
+    /**
+     * Test BobPay with https://bobpay.com/webpay payment method name, and supported delegations
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testPaymentAppWithSupportedDelegations() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://bobpay.com/webpay");
+        String[] supportedDelegations = {
+                "shippingAddress", "payerName", "payerEmail", "payerPhone"};
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                supportedDelegations, /*signature=*/"01020304050607080900");
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
+
+        // Verify supported delegations
+        Assert.assertTrue(mPaymentApps.get(0).handlesShippingAddress());
+        Assert.assertTrue(mPaymentApps.get(0).handlesPayerName());
+        Assert.assertTrue(mPaymentApps.get(0).handlesPayerEmail());
+        Assert.assertTrue(mPaymentApps.get(0).handlesPayerPhone());
+    }
+
+    /**
+     * Test that Chrome should not crash because of invalid supported delegations
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testPaymentAppWithInavalidDelegationValue() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://bobpay.com/webpay");
+        String[] invalidDelegations = {"invalidDelegation"};
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                invalidDelegations, /*signature=*/"01020304050607080900");
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
+
+        // Verify that invalid delegation values are ignored.
+        Assert.assertFalse(mPaymentApps.get(0).handlesShippingAddress());
+        Assert.assertFalse(mPaymentApps.get(0).handlesPayerName());
+        Assert.assertFalse(mPaymentApps.get(0).handlesPayerEmail());
+        Assert.assertFalse(mPaymentApps.get(0).handlesPayerPhone());
+    }
+
     private void findApps(Set<String> methodNames) throws Throwable {
         ignorePaymentMethodIdentifierAndFindApps(
                 /*ignoredPaymentMethodIdentifier=*/null, methodNames);

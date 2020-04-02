@@ -38,6 +38,13 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static HTMLOptionElement* CreateForJSConstructor(
+      Document& document,
+      const String& data,
+      ExceptionState& exception_state) {
+    return CreateForJSConstructor(document, data, AtomicString(), false, false,
+                                  exception_state);
+  }
   static HTMLOptionElement* CreateForJSConstructor(Document&,
                                                    const String& data,
                                                    const AtomicString& value,

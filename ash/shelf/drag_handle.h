@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/contextual_nudge.h"
+#include "ash/shelf/contextual_nudge_status_tracker.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
@@ -48,9 +49,7 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Immediately begins the animation to return the drag handle back to its
   // original position and hide the tooltip.
-  // |hidden_by_tap| - Whether the nudge is being hidden as a result of the user
-  // tapping the nudge.
-  void HideDragHandleNudge(bool hidden_by_tap);
+  void HideDragHandleNudge(contextual_tooltip::DismissNudgeReason context);
 
   // Called when the window drag from shelf starts or ends. The drag handle
   // contextual nudge will remain visible while the gesture is in progress.

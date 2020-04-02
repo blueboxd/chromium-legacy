@@ -139,9 +139,9 @@ bool ScrollbarThemeAura::SupportsDragSnapBack() const {
 // is true for at least GTK and QT apps).
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   return false;
-#endif
-
+#else
   return true;
+#endif
 }
 
 int ScrollbarThemeAura::ScrollbarThickness(ScrollbarControlSize control_size) {

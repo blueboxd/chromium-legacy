@@ -2087,6 +2087,7 @@
         },
       },
       'linux-upload-perfetto': {
+        'additional_compile_targets': [ 'trace_processor_shell' ],
         'test_suites': {
           'isolated_scripts': 'upload_perfetto',
         },
@@ -2133,8 +2134,9 @@
         },
       },
       'mac-upload-perfetto': {
+        'additional_compile_targets': [ 'trace_processor_shell' ],
         'test_suites': {
-          'gtest_tests': 'upload_perfetto',
+          'isolated_scripts': 'upload_perfetto',
         },
         'use_swarming': False,
       },
@@ -2245,8 +2247,9 @@
         }
       },
       'win-upload-perfetto': {
+        'additional_compile_targets': [ 'trace_processor_shell' ],
         'test_suites': {
-          'gtest_tests': 'upload_perfetto',
+          'isolated_scripts': 'upload_perfetto',
         },
         'use_swarming': False,
       },

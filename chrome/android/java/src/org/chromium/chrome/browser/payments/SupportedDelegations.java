@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.browser.payments;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.base.Log;
+
 /**
  * This class represents the supported delegations of a service worker based payment app.
  */
 public class SupportedDelegations {
+    private static final String TAG = "SupportedDelegations";
     private final boolean mShippingAddress;
     private final boolean mPayerName;
     private final boolean mPayerPhone;
@@ -41,5 +46,45 @@ public class SupportedDelegations {
 
     public boolean getPayerEmail() {
         return mPayerEmail;
+    }
+
+    public static SupportedDelegations createFromStringArray(
+            @Nullable String[] supportedDelegationsNames) throws IllegalArgumentException {
+        if (supportedDelegationsNames == null || supportedDelegationsNames.length == 0) {
+            return new SupportedDelegations();
+        }
+
+        boolean shippingAddress = false;
+        boolean payerName = false;
+        boolean payerPhone = false;
+        boolean payerEmail = false;
+
+        // At most check the first 4 elements since there are only 4 different valid delegation
+        // types.
+        final int cappedArraySize =
+                Math.min(supportedDelegationsNames.length, /*MAX_DELEGATION_SIZE =*/4);
+        for (int i = 0; i < cappedArraySize; i++) {
+            if (supportedDelegationsNames[i] == null) {
+                Log.e(TAG,
+                        "null is an invalid delegation value. Only [\"shippingAddress\", "
+                                + "\"payerName\", \"payerPhone\", \"payerEmail\"] values "
+                                + "are possible.");
+            } else if (supportedDelegationsNames[i].equals("shippingAddress")) {
+                shippingAddress = true;
+            } else if (supportedDelegationsNames[i].equals("payerName")) {
+                payerName = true;
+            } else if (supportedDelegationsNames[i].equals("payerPhone")) {
+                payerPhone = true;
+            } else if (supportedDelegationsNames[i].equals("payerEmail")) {
+                payerEmail = true;
+            } else {
+                Log.e(TAG,
+                        "\"%s\" is an invalid delegation value. Only [\"shippingAddress\", "
+                                + "\"payerName\", \"payerPhone\", \"payerEmail\"] values are "
+                                + "possible.",
+                        supportedDelegationsNames[i]);
+            }
+        }
+        return new SupportedDelegations(shippingAddress, payerName, payerPhone, payerEmail);
     }
 }

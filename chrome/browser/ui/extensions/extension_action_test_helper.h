@@ -70,9 +70,6 @@ class ExtensionActionTestHelper {
   // Returns whether a browser action popup is being shown currently.
   virtual bool HasPopup() = 0;
 
-  // Returns the size of the current browser action popup.
-  virtual gfx::Size GetPopupSize() = 0;
-
   // Hides the given popup and returns whether the hide was successful.
   virtual bool HidePopup() = 0;
 

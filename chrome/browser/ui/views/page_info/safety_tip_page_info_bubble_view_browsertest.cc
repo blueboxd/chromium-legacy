@@ -184,7 +184,8 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             {{security_state::features::kSafetyTipUI,
               {{"topsites", "false"},
                {"editdistance", "false"},
-               {"editdistance_siteengagement", "false"}}}},
+               {"editdistance_siteengagement", "false"},
+               {"targetembedding", "false"}}}},
             {});
         break;
       case UIStatus::kEnabledWithAllFeatures:
@@ -192,7 +193,8 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             {{security_state::features::kSafetyTipUI,
               {{"topsites", "true"},
                {"editdistance", "true"},
-               {"editdistance_siteengagement", "true"}}}},
+               {"editdistance_siteengagement", "true"},
+               {"targetembedding", "true"}}}},
             {});
     }
 
@@ -670,6 +672,26 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   const GURL kNavigatedUrl = GetURL("goooglé.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
+}
+
+// Tests that Safety Tips trigger (or not) on lookalike domains with embedded
+// targets when enabled, and not otherwise.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggersOnTargetEmbedding) {
+  // This domain has google.com embedded.
+  const GURL kNavigatedUrl = GetURL("test-googlé.gov-site.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ReputationWebContentsObserver* rep_observer =
+      ReputationWebContentsObserver::FromWebContents(contents);
+  base::RunLoop loop;
+  rep_observer->RegisterReputationCheckCallbackForTesting(loop.QuitClosure());
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  loop.Run();
   EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
 }
 

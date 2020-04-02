@@ -27,7 +27,7 @@ promise_test(() => {
           markDirtyCounter++;
         }
 
-        if (focusCounter == 1 && markDirtyCounter == 0) {
+        if (focusCounter == 1 && markDirtyCounter == 1) {
           resolve();
         }
       });
@@ -41,7 +41,6 @@ promise_test(() => {
     eventSender.keyDown('ArrowDown');
     return promise;
   });
-
 }, 'Tests if typing an arrow key dispatches |Focus| and |MarkDirty| a11y events.');
 
 </script>

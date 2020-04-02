@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Центар за известување</translation>
 <translation id="1195412055398077112">прескенирање</translation>
 <translation id="119944043368869598">Избриши ги сите</translation>
+<translation id="1199716647557067911">Дали сигурно сакате да го исклучите пристапот со прекинувачи?</translation>
 <translation id="1247372569136754018">Микрофон (внатрешен)</translation>
 <translation id="1252999807265626933">Се полни од <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво е времето?</translation>
@@ -431,6 +432,7 @@
 <translation id="6537924328260219877">Јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, батерија на телефонот: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Емитување на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Прашајте го администраторот</translation>
+<translation id="6584550827717945790">Исклучете го пристапот со прекинувачи</translation>
 <translation id="6585808820553845416">Сесијата ќе заврши во <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, управувана од администраторот</translation>
 <translation id="6614169507485700968">Вклучен е екранот за приватност</translation>

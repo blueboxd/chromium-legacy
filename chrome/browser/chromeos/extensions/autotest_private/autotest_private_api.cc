@@ -117,6 +117,7 @@
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -1970,10 +1971,13 @@ AutotestPrivateGetPrinterListFunction::AutotestPrivateGetPrinterListFunction()
 
 AutotestPrivateGetPrinterListFunction::
     ~AutotestPrivateGetPrinterListFunction() {
-  printers_manager_->RemoveObserver(this);
+  DCHECK(!printers_manager_);
 }
 
 ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
+  // |printers_manager_| should be created on UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   DVLOG(1) << "AutotestPrivateGetPrinterListFunction";
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -1990,21 +1994,43 @@ ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
   return RespondLater();
 }
 
+void AutotestPrivateGetPrinterListFunction::DestroyPrintersManager() {
+  // |printers_manager_| should be destroyed on UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!printers_manager_)
+    return;
+
+  printers_manager_->RemoveObserver(this);
+  printers_manager_.reset();
+}
+
 void AutotestPrivateGetPrinterListFunction::RespondWithTimeoutError() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   if (did_respond())
     return;
+
+  DestroyPrintersManager();
   Respond(
       Error("Timeout occurred before Enterprise printers were initialized"));
 }
 
 void AutotestPrivateGetPrinterListFunction::RespondWithSuccess() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   if (did_respond())
     return;
-  Respond(OneArgument(std::move(results_)));
+
   timeout_timer_.AbandonAndStop();
+  DestroyPrintersManager();
+  Respond(OneArgument(std::move(results_)));
 }
 
 void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
+  // |printers_manager_| should call this on UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   constexpr PrinterClass kClassesToFetch[] = {
       PrinterClass::kEnterprise,
       PrinterClass::kSaved,
@@ -2023,9 +2049,10 @@ void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
       results_->Append(std::move(result));
     }
   }
-  // We have to respond in separate task, because it will cause a destruction of
-  // CupsPrintersManager
-  PostTask(
+  // We have to respond in separate task on the same thread, because it will
+  // cause a destruction of CupsPrintersManager which needs to happen after
+  // we return and on the same thread.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&AutotestPrivateGetPrinterListFunction::RespondWithSuccess,
                      this));

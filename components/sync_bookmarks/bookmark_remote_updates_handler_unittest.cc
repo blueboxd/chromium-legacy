@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -22,6 +23,7 @@
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/protocol/unique_position.pb.h"
 #include "components/sync_bookmarks/bookmark_model_merger.h"
+#include "components/sync_bookmarks/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1518,6 +1520,127 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
   EXPECT_THAT(bookmark_bar_node->children().front()->GetTitle(),
               Eq(ASCIIToUTF16(kNewRemoteTitle)));
+}
+
+TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
+       ShouldIncrementSequenceNumberOnConflict) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncReuploadBookmarkFullTitles);
+
+  const std::string kId = "id";
+  const std::string kGuid = base::GenerateGUID();
+  const std::string kTitle = "title";
+  const std::string kNewTitle = "New title";
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId,
+      /*parent_id=*/kBookmarkBarId,
+      /*guid=*/kGuid,
+      /*title=*/kTitle,
+      /*is_deletion=*/false,
+      /*version=*/0,
+      /*unique_position=*/
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix())));
+  updates.back().entity.specifics.mutable_bookmark()->clear_full_title();
+
+  {
+    BookmarkRemoteUpdatesHandler updates_handler(bookmark_model(),
+                                                 favicon_service(), tracker());
+    updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
+  }
+
+  const SyncedBookmarkTracker::Entity* entity =
+      tracker()->GetEntityForSyncId(kId);
+  ASSERT_THAT(entity, NotNull());
+  EXPECT_TRUE(entity->IsUnsynced());
+
+  // Check reupload on conflict with new title.
+  updates.back()
+      .entity.specifics.mutable_bookmark()
+      ->set_legacy_canonicalized_title(kNewTitle);
+  updates.back().response_version++;
+  {
+    BookmarkRemoteUpdatesHandler updates_handler(bookmark_model(),
+                                                 favicon_service(), tracker());
+    updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
+  }
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  ASSERT_EQ(1u, bookmark_bar_node->children().size());
+  const bookmarks::BookmarkNode* node =
+      bookmark_bar_node->children().front().get();
+  EXPECT_EQ(base::UTF16ToUTF8(node->GetTitle()), kNewTitle);
+  EXPECT_TRUE(entity->IsUnsynced());
+
+  // Check reupload on conflict when specifics matches.
+  updates.back().response_version++;
+  {
+    BookmarkRemoteUpdatesHandler updates_handler(bookmark_model(),
+                                                 favicon_service(), tracker());
+    updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
+  }
+  ASSERT_EQ(1u, bookmark_bar_node->children().size());
+  EXPECT_EQ(bookmark_bar_node->children().front().get(), node);
+  EXPECT_EQ(base::UTF16ToUTF8(node->GetTitle()), kNewTitle);
+  EXPECT_TRUE(entity->IsUnsynced());
+}
+
+TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
+       ShouldIncrementSequenceNumberOnUpdate) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncReuploadBookmarkFullTitles);
+
+  const std::string kId = "id";
+  const std::string kGuid = base::GenerateGUID();
+  const std::string kTitle = "title";
+  const std::string kRemoteTitle = "New title";
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId,
+      /*parent_id=*/kBookmarkBarId,
+      /*guid=*/kGuid,
+      /*title=*/kTitle,
+      /*is_deletion=*/false,
+      /*version=*/0,
+      /*unique_position=*/
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix())));
+  updates.back().entity.specifics.mutable_bookmark()->set_full_title(kTitle);
+
+  {
+    BookmarkRemoteUpdatesHandler updates_handler(bookmark_model(),
+                                                 favicon_service(), tracker());
+    updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
+  }
+
+  const SyncedBookmarkTracker::Entity* entity =
+      tracker()->GetEntityForSyncId(kId);
+  ASSERT_THAT(entity, NotNull());
+  ASSERT_FALSE(entity->IsUnsynced());
+
+  // Check reupload on conflict.
+  updates.back()
+      .entity.specifics.mutable_bookmark()
+      ->set_legacy_canonicalized_title(kRemoteTitle);
+  updates.back().entity.specifics.mutable_bookmark()->clear_full_title();
+  updates.back().response_version++;
+  {
+    BookmarkRemoteUpdatesHandler updates_handler(bookmark_model(),
+                                                 favicon_service(), tracker());
+    updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
+  }
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  ASSERT_EQ(1u, bookmark_bar_node->children().size());
+  const bookmarks::BookmarkNode* node =
+      bookmark_bar_node->children().front().get();
+  EXPECT_EQ(node->GetTitle(), base::UTF8ToUTF16(kRemoteTitle));
+  EXPECT_TRUE(entity->IsUnsynced());
 }
 
 }  // namespace

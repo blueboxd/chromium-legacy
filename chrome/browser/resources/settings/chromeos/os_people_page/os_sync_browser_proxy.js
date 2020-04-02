@@ -79,6 +79,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(OsSyncBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     OsSyncBrowserProxy,
     OsSyncBrowserProxyImpl,

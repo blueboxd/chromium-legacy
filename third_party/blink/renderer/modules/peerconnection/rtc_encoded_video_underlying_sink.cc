@@ -48,7 +48,8 @@ ScriptPromise RTCEncodedVideoUnderlyingSink::write(
     return ScriptPromise();
   }
 
-  transformer_callback_.Run()->SendFrameToSink(encoded_frame->PassDelegate());
+  transformer_callback_.Run()->SendFrameToSink(
+      encoded_frame->PassWebRtcFrame());
   return ScriptPromise::CastUndefined(script_state);
 }
 

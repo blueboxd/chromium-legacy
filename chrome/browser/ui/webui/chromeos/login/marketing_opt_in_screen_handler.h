@@ -61,8 +61,7 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   void GetAdditionalParameters(base::DictionaryValue* parameters) override;
 
   // WebUI event handlers.
-  void HandleAllSet(bool play_communications_opt_in,
-                    bool tips_communications_opt_in);
+  void HandleOnGetStarted(bool chromebook_email_opt_in);
   void HandleSetA11yNavigationButtonsEnabled(bool enabled);
 
   MarketingOptInScreen* screen_ = nullptr;

@@ -570,45 +570,68 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, DestroyHWNDDoesNotCrash) {
 }
 #endif  // OS_WIN
 
-// TODO(lukasza): https://crbug.com/1021172: Enable the test below after fixing
-// issues it has accumulated over the long time it was kept disabled.  In
-// particular, the GetPopupSize below may crash (dereferencing nullptr after
-// failing to find the right native widget) or return a wrong size (including
-// window borders if operating on the native window instead of the native
-// widget).
-IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
-                       DISABLED_BrowserActionPopup) {
+class MainFrameSizeWaiter : public content::WebContentsObserver {
+ public:
+  MainFrameSizeWaiter(content::WebContents* web_contents,
+                      const gfx::Size& size_to_wait_for)
+      : content::WebContentsObserver(web_contents),
+        size_to_wait_for_(size_to_wait_for) {}
+
+  void Wait() {
+    if (current_size() != size_to_wait_for_)
+      run_loop_.Run();
+  }
+
+ private:
+  gfx::Size current_size() {
+    return web_contents()->GetContainerBounds().size();
+  }
+
+  void MainFrameWasResized(bool width_changed) override {
+    if (current_size() == size_to_wait_for_)
+      run_loop_.Quit();
+  }
+
+  gfx::Size size_to_wait_for_;
+  base::RunLoop run_loop_;
+};
+
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, BrowserActionPopup) {
+  if (!ShouldRunPopupTest())
+    return;
+
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("browser_action/popup")));
-  std::unique_ptr<ExtensionActionTestHelper> actions_bar =
-      ExtensionActionTestHelper::Create(browser());
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  // The extension's popup's size grows by |growFactor| each click.
-  const int growFactor = 500;
+  // The extension's popup's size grows by |kGrowFactor| each click.
+  const int kGrowFactor = 500;
+  std::unique_ptr<ExtensionActionTestHelper> actions_bar =
+      ExtensionActionTestHelper::Create(browser());
   gfx::Size minSize = actions_bar->GetMinPopupSize();
-  gfx::Size middleSize = gfx::Size(growFactor, growFactor);
+  gfx::Size middleSize = gfx::Size(kGrowFactor, kGrowFactor);
   gfx::Size maxSize = actions_bar->GetMaxPopupSize();
 
   // Ensure that two clicks will exceed the maximum allowed size.
-  ASSERT_GT(minSize.height() + growFactor * 2, maxSize.height());
-  ASSERT_GT(minSize.width() + growFactor * 2, maxSize.width());
+  ASSERT_GT(minSize.height() + kGrowFactor * 2, maxSize.height());
+  ASSERT_GT(minSize.width() + kGrowFactor * 2, maxSize.width());
 
   // Simulate a click on the browser action and verify the size of the resulting
-  // popup.  The first one tries to be 0x0, so it should be the min values.
-  ASSERT_TRUE(OpenPopupViaToolbar());
-  EXPECT_EQ(minSize, actions_bar->GetPopupSize());
-  EXPECT_TRUE(actions_bar->HidePopup());
+  // popup.
+  const gfx::Size kExpectedSizes[] = {minSize, middleSize, maxSize};
+  for (size_t i = 0; i < base::size(kExpectedSizes); i++) {
+    const gfx::Size& kExpectedSize = kExpectedSizes[i];
+    SCOPED_TRACE(testing::Message()
+                 << "Test #" << i << ": size = " << kExpectedSize.ToString());
 
-  ASSERT_TRUE(OpenPopupViaToolbar());
-  EXPECT_EQ(middleSize, actions_bar->GetPopupSize());
-  EXPECT_TRUE(actions_bar->HidePopup());
-
-  // One more time, but this time it should be constrained by the max values.
-  ASSERT_TRUE(OpenPopupViaToolbar());
-  EXPECT_EQ(maxSize, actions_bar->GetPopupSize());
-  EXPECT_TRUE(actions_bar->HidePopup());
+    content::WebContentsAddedObserver popup_observer;
+    actions_bar->Press(0);
+    content::WebContents* popup = popup_observer.GetWebContents();
+    MainFrameSizeWaiter(popup, kExpectedSize).Wait();
+    EXPECT_EQ(kExpectedSize, popup->GetContainerBounds().size());
+    ASSERT_TRUE(actions_bar->HidePopup());
+  }
 }
 
 // Test that a browser action popup can download data URLs. See

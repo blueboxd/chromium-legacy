@@ -69,7 +69,6 @@ class BackgroundTracingActiveScenario::TracingSession {
                                base::OnceClosure on_failure) = 0;
   virtual void AbortScenario(
       const base::RepeatingClosure& on_abort_callback) = 0;
-  virtual bool did_setup_startup_tracing() const = 0;
 };
 
 class PerfettoTracingSession
@@ -87,9 +86,9 @@ class PerfettoTracingSession
     // Perfetto-related deadlocks are resolved and we also handle concurrent
     // system tracing for startup tracing.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
-      did_setup_startup_tracing_ = tracing::SetupStartupTracingForProcess(
-          /*privacy_filtering_enabled=*/true,
-          /*enable_sampler_profiler=*/false);
+      tracing::EnableStartupTracingForProcess(
+          chrome_config,
+          /*privacy_filtering_enabled=*/true);
     }
 #endif
 
@@ -135,10 +134,6 @@ class PerfettoTracingSession
     }
     on_abort_callback_ = on_abort_callback;
     tracing_session_host_->DisableTracing();
-  }
-
-  bool did_setup_startup_tracing() const override {
-    return did_setup_startup_tracing_;
   }
 
   // mojo::DataPipeDrainer::Client implementation:
@@ -202,7 +197,6 @@ class PerfettoTracingSession
   std::unique_ptr<std::string> raw_data_;
   bool has_finished_read_buffers_ = false;
   bool has_finished_receiving_data_ = false;
-  bool did_setup_startup_tracing_ = false;
   bool is_tracing_disabled_ = false;
   base::OnceClosure on_abort_callback_;
 };
@@ -218,9 +212,9 @@ class LegacyTracingSession
     // Perfetto-related deadlocks are resolved and we also handle concurrent
     // system tracing for startup tracing.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
-      did_setup_startup_tracing_ = tracing::SetupStartupTracingForProcess(
-          /*privacy_filtering_enabled=*/false,
-          /*enable_sampler_profiler=*/false);
+      tracing::EnableStartupTracingForProcess(
+          chrome_config,
+          /*privacy_filtering_enabled=*/false);
     }
 #endif
 
@@ -284,13 +278,8 @@ class LegacyTracingSession
     }
   }
 
-  bool did_setup_startup_tracing() const override {
-    return did_setup_startup_tracing_;
-  }
-
  private:
   BackgroundTracingActiveScenario* const parent_scenario_;
-  bool did_setup_startup_tracing_ = false;
 };
 
 BackgroundTracingActiveScenario::BackgroundTracingActiveScenario(
@@ -390,22 +379,6 @@ bool BackgroundTracingActiveScenario::StartTracing() {
     tracing_session_ =
         std::make_unique<LegacyTracingSession>(this, chrome_config);
   }
-
-// TODO(crbug.com/941318): Re-enable startup tracing for Perfetto backend on
-// Android once all Perfetto-related deadlocks are resolved.
-#if !defined(OS_ANDROID)
-  if (tracing_session_->did_setup_startup_tracing()) {
-    TraceConfig chrome_config_for_trace_log(chrome_config);
-    // Perfetto backend configures buffer sizes when tracing is started in the
-    // service (see perfetto_config.cc). Zero them out here for TraceLog to
-    // avoid DCHECKs in TraceConfig::Merge.
-    chrome_config_for_trace_log.SetTraceBufferSizeInKb(0);
-    chrome_config_for_trace_log.SetTraceBufferSizeInEvents(0);
-
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        chrome_config_for_trace_log, modes);
-  }
-#endif  // !defined(OS_ANDROID)
 
   SetState(State::kTracing);
   BackgroundTracingManagerImpl::RecordMetric(Metrics::RECORDING_ENABLED);

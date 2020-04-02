@@ -1674,6 +1674,7 @@
           # http://crbug.com/669196
           '--test-launcher-retry-limit=0',
           '--test-launcher-batch-limit=256',
+          '--gtest_filter=-*Vulkan_SwiftShader*',
         ],
         'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
@@ -2847,7 +2848,8 @@
       'aura_unittests': {},
       'gpu_unittests': {},
       'ui_touch_selection_unittests': {},
-      'views_unittests': {}
+      'views_unittests': {},
+      'viz_unittests': {},
     },
 
     'linux_ozone_x11_only_gtests': {

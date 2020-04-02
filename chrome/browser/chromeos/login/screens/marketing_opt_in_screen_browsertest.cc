@@ -88,31 +88,11 @@ class MarketingOptInScreenTest : public OobeBaseTest {
 
 // Tests that marketing opt in toggles are hidden by default (as the command
 // line switch to show marketing opt in is not set).
-IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, MarketingTogglesHidden) {
+IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, MarketingToggleVisible) {
   ShowMarketingOptInScreen();
   OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
-  test::OobeJS().ExpectHiddenPath(
+  test::OobeJS().ExpectVisiblePath(
       {"marketing-opt-in", "marketing-opt-in-subtitle"});
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggle-1"});
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggle-2"});
-
-  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-subtitle"});
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggle-1"});
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggle-2"});
-
-  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-subtitle"});
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggle-1"});
-  test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggle-2"});
 }
 
 // Tests that the user can enable shelf navigation buttons in tablet mode from

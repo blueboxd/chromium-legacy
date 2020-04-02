@@ -348,6 +348,99 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 
+TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
+  text_runs_.emplace_back(kFirstRunMultiLine);
+  text_runs_.emplace_back(kSecondRunMultiLine);
+  text_runs_.emplace_back(kThirdRunMultiLine);
+  text_runs_.emplace_back(kFourthRunMultiLine);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  {
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    link.url = kChromiumTestUrl;
+    link.text_run_index = 0;
+    link.text_run_count = 3;
+    page_objects_.links.push_back(std::move(link));
+  }
+
+  {
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.bounds = PP_MakeFloatRectFromXYWH(1.0f, 2.0f, 5.0f, 6.0f);
+    link.url = kChromiumTestUrl;
+    link.text_run_index = 1;
+    link.text_run_count = 2;
+    page_objects_.links.push_back(std::move(link));
+  }
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Link
+   * ++++++ Link
+   * ++++++ Static Text
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(1u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  const std::vector<ui::AXNode*>& child_nodes = paragraph_node->children();
+  ASSERT_EQ(3u, child_nodes.size());
+
+  ui::AXNode* link_node = child_nodes[0];
+  ASSERT_TRUE(link_node);
+  EXPECT_EQ(kChromiumTestUrl,
+            link_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl));
+  EXPECT_EQ(ax::mojom::Role::kLink, link_node->data().role);
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            link_node->data().relative_bounds.bounds);
+  ASSERT_EQ(1u, link_node->children().size());
+
+  link_node = child_nodes[1];
+  ASSERT_TRUE(link_node);
+  EXPECT_EQ(kChromiumTestUrl,
+            link_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl));
+  EXPECT_EQ(ax::mojom::Role::kLink, link_node->data().role);
+  EXPECT_EQ(gfx::RectF(1.0f, 2.0f, 5.0f, 6.0f),
+            link_node->data().relative_bounds.bounds);
+  ASSERT_EQ(1u, link_node->children().size());
+
+  ui::AXNode* static_text_node = child_nodes[2];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+}
+
 TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   // Enable feature flag
   base::test::ScopedFeatureList scoped_feature_list;

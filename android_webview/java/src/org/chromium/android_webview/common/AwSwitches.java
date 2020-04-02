@@ -16,6 +16,10 @@ public final class AwSwitches {
     // useful for identifying WebViews in an Android application.
     public static final String HIGHLIGHT_ALL_WEBVIEWS = "highlight-all-webviews";
 
+    // WebView will log additional debugging information to logcat, such as variations and
+    // commandline state.
+    public static final String WEBVIEW_VERBOSE_LOGGING = "webview-verbose-logging";
+
     // Allow mirroring JS console messages to system logs. This is the default behavior on
     // debuggable devices (userdebug or eng), so there is no reason for a user to specify this
     // explicitly. Native switch kWebViewLogJsConsoleMessages.

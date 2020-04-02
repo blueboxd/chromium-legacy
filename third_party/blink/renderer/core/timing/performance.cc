@@ -525,6 +525,7 @@ mojom::blink::ResourceTimingInfoPtr Performance::GenerateResourceTiming(
                        : nullptr;
   result->response_end = info.LoadResponseEnd();
   result->context_type = info.ContextType();
+  result->request_destination = info.RequestDestination();
 
   bool response_tainting_not_basic = false;
   bool tainted_origin_flag = false;

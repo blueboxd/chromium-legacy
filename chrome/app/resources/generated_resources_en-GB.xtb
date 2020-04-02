@@ -728,6 +728,7 @@
 <translation id="1956390763342388273">This will upload all files from '<ph name="FOLDER_PATH" />'. Only do this if you trust the site.</translation>
 <translation id="1962233722219655970">This page uses a Native Client app that doesn't work on your computer.</translation>
 <translation id="1963227389609234879">Remove All</translation>
+<translation id="1963976881984600709">Standard protection</translation>
 <translation id="1965624977906726414">Has no special permissions.</translation>
 <translation id="1969654639948595766">WebRTC text logs (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1970368523891847084">Video mode entered</translation>
@@ -808,6 +809,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2082187087049518845">Group tab</translation>
 <translation id="2087822576218954668">Print: <ph name="PRINT_NAME" /></translation>
 <translation id="2088690981887365033">VPN network</translation>
+<translation id="208928984520943006">To get to the home screen at any time, swipe up from the bottom.</translation>
 <translation id="2089566709556890888">Browse safely with Google Chrome</translation>
 <translation id="2089795179672254991">Ask when a site wants to see text and images copied to the clipboard (recommended)</translation>
 <translation id="2090165459409185032">To recover your account information, go to: google.com/accounts/recovery</translation>
@@ -847,7 +849,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2135787500304447609">&amp;Resume</translation>
 <translation id="2136372518715274136">Enter new password</translation>
 <translation id="2136476978468204130">The passphrase you entered is incorrect</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Cookies are blocked.}=1{Cookies are blocked – 1 exception}other{Cookies are blocked – {COUNT} exceptions}}</translation>
 <translation id="2138398485845393913">Connection to '<ph name="DEVICE_NAME" />' still in progress</translation>
 <translation id="2139545522194199494">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, signal strength <ph name="SIGNAL_STRENGTH" />%, managed by your administrator, connect</translation>
 <translation id="2139919072249842737">Set up button</translation>
@@ -999,6 +1000,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2326931316514688470">&amp;Reload app</translation>
 <translation id="2327492829706409234">Enable app</translation>
 <translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
+<translation id="2330607597130465898">No protection</translation>
 <translation id="2332131598580221120">View in store</translation>
 <translation id="2332192922827071008">Open preferences</translation>
 <translation id="2332742915001411729">Reset to default</translation>
@@ -1206,7 +1208,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2586672484245266891">Please enter a shorter URL</translation>
 <translation id="2587922766792651800">Timed out</translation>
 <translation id="2588636910004461974">Devices from <ph name="VENDOR_NAME" /></translation>
-<translation id="2593594315333286814">Accessibility settings for navigation</translation>
 <translation id="2594999711683503743">Search Google or type URL</translation>
 <translation id="2602501489742255173">Swipe up to get started</translation>
 <translation id="2603115962224169880">Clean up computer</translation>
@@ -1643,6 +1644,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3159493096109238499">Beige</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (hardware-backed)</translation>
 <translation id="3161522574479303604">All languages</translation>
+<translation id="3162899666601560689">Sites can use cookies to improve your browsing experience, for example to keep you signed in or to remember items in your shopping basket</translation>
 <translation id="3163201441334626963">Unknown product <ph name="PRODUCT_ID" /> from vendor <ph name="VENDOR_ID" /></translation>
 <translation id="3164329792803560526">Sharing this tab to <ph name="APP_NAME" /></translation>
 <translation id="3165390001037658081">Some operators might block this feature.</translation>
@@ -1828,6 +1830,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3424969259347320884">Describe What you Were Doing When the Tab Crashed</translation>
 <translation id="3427092606871434483">Allow (default)</translation>
 <translation id="3428419049384081277">You're signed in!</translation>
+<translation id="3428747202529429621">Keeps you safe on Chrome and may be used to improve your security in other Google apps when you are signed in</translation>
 <translation id="3429275422858276529">Bookmark this page to easily find it later</translation>
 <translation id="3432227430032737297">Remove all shown</translation>
 <translation id="3432757130254800023">Send audio and video to displays on the local network</translation>
@@ -1889,6 +1892,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3492788708641132712">Sync isn’t working. Try signing in again.</translation>
 <translation id="3493486281776271508">Internet connection required</translation>
 <translation id="3493881266323043047">Validity</translation>
+<translation id="3494155060718700400">Does not protect you against dangerous websites, downloads and extensions (not recommended). You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.</translation>
 <translation id="3494769164076977169">Ask when a site tries to download files automatically after the first file (recommended)</translation>
 <translation id="3495660573538963482">Google Assistant settings</translation>
 <translation id="3496213124478423963">Zoom Out</translation>
@@ -2135,6 +2139,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3784472333786002075">Cookies are files created by websites. There are two types of cookies: first-party cookies are created by the site that you visit. The site is shown on the address bar. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the website that you visit.</translation>
 <translation id="3785308913036335955">Show Apps Shortcut</translation>
 <translation id="3785727820640310185">Saved passwords for this site</translation>
+<translation id="3788301286821743879">The kiosk application could not be launched.</translation>
 <translation id="3788401245189148511">It could:</translation>
 <translation id="3789841737615482174">Install</translation>
 <translation id="379082410132524484">Your card has expired</translation>
@@ -2216,7 +2221,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3873423927483480833">Show PINs</translation>
 <translation id="3873915545594852654">A problem with ARC++ occurred.</translation>
 <translation id="3879748587602334249">Download manager</translation>
-<translation id="3881321138433527084">Safe Browsing is off. To stay safe on the web, turn it on.</translation>
 <translation id="3882165008614329320">Existing video from camera or file</translation>
 <translation id="3886446263141354045">Your request to access this site has been sent to <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Taking notes with <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2228,6 +2232,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895090224522145010">Kerberos username</translation>
 <translation id="389589731200570180">Share with guests</translation>
+<translation id="3898327728850887246"><ph name="SITE_NAME" /> wants to: <ph name="FIRST_PERMISSION" /> and <ph name="SECOND_PERMISSION" /></translation>
 <translation id="389901847090970821">Select keyboard</translation>
 <translation id="3899879303189199559">Offline for more than a year</translation>
 <translation id="3900789207771372462">Some extensions can see your browsing activity – including personal information.</translation>
@@ -2490,6 +2495,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="425573743389990240">Battery Discharge Rate in Watts (Negative value means battery is charging)</translation>
 <translation id="4256316378292851214">Sa&amp;ve Video As...</translation>
 <translation id="4258348331913189841">File System</translation>
+<translation id="4260182282978351200"><ph name="FILE_NAME" /> may be dangerous. Send to Google Advanced Protection for scanning? Press Shift + F6 to cycle to the downloads bar area.</translation>
 <translation id="4263223596040212967">Check your keyboard layout and try again.</translation>
 <translation id="4263757076580287579">Printer registration has been cancelled.</translation>
 <translation id="426564820080660648">To check for updates, please use Ethernet, Wi-Fi or mobile data.</translation>
@@ -3414,6 +3420,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5558125320634132440">This site is blocked because it may have mature content</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
 <translation id="55601339223879446">Adjust the boundaries of your desktop within the display</translation>
+<translation id="5561162485081632007">Detects and warns you about dangerous events when they happen</translation>
 <translation id="5562781907504170924">This tab is connected to a Bluetooth device.</translation>
 <translation id="556321030400250233">local or shared file</translation>
 <translation id="5563234215388768762">Search Google or type a URL</translation>
@@ -4395,6 +4402,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6897363604023044284">Choose sites to clear</translation>
 <translation id="6898440773573063262">Kiosk applications can now be configured to auto-launch on this device.</translation>
 <translation id="6900284862687837908">Background App: <ph name="BACKGROUND_APP_URL" /></translation>
+<translation id="6900532703269623216">Enhanced protection</translation>
 <translation id="6900651018461749106">Sign in again to update <ph name="USER_EMAIL" /></translation>
 <translation id="6902066522699286937">Voice to preview</translation>
 <translation id="6902336033320348843">Section not supported: <ph name="ERROR_LINE" /></translation>
@@ -4874,6 +4882,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7531779363494549572">Go to Settings &gt; Apps &amp; notifications &gt; Notifications.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> is not responding. Select 'Force close' to close the app.</translation>
 <translation id="7536333565791380193">Advanced security</translation>
+<translation id="7537451260744431038">Sites can't use cookies to improve your browsing experience, for example to keep you signed in or to remember items in your shopping basket</translation>
 <translation id="7539856059004947393">Bluetooth security key</translation>
 <translation id="7540972813190816353">An error occurred while checking for updates: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> with <ph name="APP_NAME" /> app</translation>
@@ -4984,6 +4993,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7690294790491645610">Confirm new password</translation>
 <translation id="7690378713476594306">Choose from list</translation>
 <translation id="7690853182226561458">Add &amp;folder...</translation>
+<translation id="7691073721729883399">The cryptohome for the kiosk application could not be mounted.</translation>
 <translation id="7691077781194517083">Can’t reset this security key. Error <ph name="ERROR_CODE" />.</translation>
 <translation id="7696063401938172191">On your '<ph name="PHONE_NAME" />':</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 item in bookmark list}other{# items in bookmark list}}</translation>
@@ -5395,7 +5405,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8186609076106987817">The server could not find the file.</translation>
 <translation id="8188389033983459049">Check your device settings and turn it on to continue</translation>
 <translation id="8190193592390505034">Connecting to <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">Check in Google Account.</translation>
 <translation id="8191230140820435481">Manage your apps, extensions, and themes</translation>
 <translation id="8195027750202970175">Size on disk</translation>
 <translation id="8198323535106903877">We'll install those <ph name="NUMBER_OF_APPS" /> apps for you</translation>
@@ -5725,6 +5734,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8645920082661222035">Predicts and warns you about dangerous events before they happen</translation>
 <translation id="8647834505253004544">Not a valid web address</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> or <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8648544143274677280"><ph name="SITE_NAME" /> wants to: <ph name="FIRST_PERMISSION" />, <ph name="SECOND_PERMISSION" /> and more</translation>
 <translation id="8650543407998814195">Although you can no longer access your old profile, you can still remove it.</translation>
 <translation id="8651585100578802546">Force Reload This Page</translation>
 <translation id="8652400352452647993">Pack extension error</translation>
@@ -5765,6 +5775,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8688672835843460752">Available</translation>
 <translation id="8691418731028620688">Connect Wi-Fi</translation>
 <translation id="8695825812785969222">Open &amp;Location...</translation>
+<translation id="8697157817349091421">Chrome can't check your passwords. Try again tomorrow or <ph name="BEGIN_LINK" />check passwords in your Google Account<ph name="END_LINK" />.</translation>
 <translation id="8698269656364382265">To return to the previous screen, swipe from the left side.</translation>
 <translation id="869884720829132584">Applications menu</translation>
 <translation id="869891660844655955">Expiry date</translation>
@@ -5795,6 +5806,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8726206820263995930">Error when fetching policy settings from the server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8727154974495727220">When your <ph name="DEVICE_TYPE" /> is set up, press the Assistant button or say "Ok Google" to get help at any time. Go to Assistant settings to make changes.</translation>
 <translation id="8730621377337864115">Done</translation>
+<translation id="8731629443331803108"><ph name="SITE_NAME" /> wants to: <ph name="PERMISSION" /></translation>
 <translation id="8731787661154643562">Port number</translation>
 <translation id="8731851055419582926">Checked passwords</translation>
 <translation id="8732030010853991079">Use this extension by clicking on this icon.</translation>
@@ -5946,6 +5958,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8895454554629927345">Bookmark list</translation>
 <translation id="8896022254727357590">PIN must be at least four characters</translation>
 <translation id="8898786835233784856">Select Next Tab</translation>
+<translation id="8898822736010347272">Sends URLs of some pages that you visit, limited system information and some page content to Google, to help discover new threats and protect everyone on the web.</translation>
 <translation id="8898840733695078011">Signal strength</translation>
 <translation id="8899851313684471736">Open link in new &amp;window</translation>
 <translation id="8902667442496790482">Open Select to Speak settings</translation>
@@ -6196,6 +6209,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="957960681186851048">This site attempted to download multiple files automatically</translation>
 <translation id="9580706199804957">Couldn’t connect with Google services</translation>
 <translation id="960719561871045870">Operator code</translation>
+<translation id="96080156868846968">Being scanned</translation>
 <translation id="960987915827980018">About 1 hour left</translation>
 <translation id="962802172452141067">Bookmark folder tree</translation>
 <translation id="964057662886721376">Some extensions can slow you down – especially ones that you didn't mean to install.</translation>

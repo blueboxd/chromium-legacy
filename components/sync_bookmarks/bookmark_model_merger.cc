@@ -422,10 +422,14 @@ void BookmarkModelMerger::MergeSubtree(
     const bookmarks::BookmarkNode* local_subtree_root,
     const RemoteTreeNode& remote_node) {
   const EntityData& remote_update_entity = remote_node.entity();
-  bookmark_tracker_->Add(
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
       local_subtree_root, remote_update_entity.id,
       remote_node.response_version(), remote_update_entity.creation_time,
       remote_update_entity.unique_position, remote_update_entity.specifics);
+  if (!local_subtree_root->is_permanent_node() &&
+      IsFullTitleReuploadNeeded(remote_update_entity.specifics.bookmark())) {
+    bookmark_tracker_->IncrementSequenceNumber(entity);
+  }
 
   // If there are remote child updates, try to match them.
   for (size_t remote_index = 0; remote_index < remote_node.children().size();
@@ -568,10 +572,13 @@ void BookmarkModelMerger::ProcessRemoteCreation(
                                       remote_update_entity.is_folder,
                                       bookmark_model_, favicon_service_);
   DCHECK(bookmark_node);
-  bookmark_tracker_->Add(bookmark_node, remote_update_entity.id,
-                         remote_node.response_version(),
-                         remote_update_entity.creation_time,
-                         remote_update_entity.unique_position, specifics);
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
+      bookmark_node, remote_update_entity.id, remote_node.response_version(),
+      remote_update_entity.creation_time, remote_update_entity.unique_position,
+      specifics);
+  if (IsFullTitleReuploadNeeded(specifics.bookmark())) {
+    bookmark_tracker_->IncrementSequenceNumber(entity);
+  }
 
   // Recursively, match by GUID or, if not possible, create local node for all
   // child remote nodes.

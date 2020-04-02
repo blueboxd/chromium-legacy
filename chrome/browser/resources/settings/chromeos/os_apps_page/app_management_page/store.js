@@ -18,6 +18,7 @@ cr.define('app_management', function() {
 
   cr.addSingletonGetter(Store);
 
+  // #cr_define_end
   return {
     Store: Store,
   };

@@ -377,28 +377,18 @@ cast_test_group("cast_tests") {
       gtest_excludes = [ "*" ]
     } else if (target_os == "linux" && !is_cast_desktop_build) {
       # Run net_unittests first to avoid random failures due to slow python startup
-      # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
-      # timeout to 90s from 45s to allow it to pass (b/19821476)
       # PacFileFetcherImplTest.HttpMimeType is flaking (b/19848784)
       # Running a batch of net_unittests has high overhead. Run tests in batches of 50 to reduce number of batches (b/23156294).
       gtest_excludes = [ "PacFileFetcherImplTest.HttpMimeType" ]
-      args = [
-        "--test-launcher-timeout=90000",
-        "--test-launcher-batch-limit=50",
-      ]
+      args = [ "--test-launcher-batch-limit=50" ]
     } else if (is_cast_desktop_build || target_os == "android") {
-      # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
-      # timeout to 90s from 45s to allow it to pass (b/19821476) (b/29415636).
       # CTLogVerifierTest.VerifiesValidConsistencyProofsFromReferenceGenerator
       # times out occasionally, paricularly on the CQ bots; disable to reduce
       # CQ flakiness (crbug/598406) (b/29415636).
       # Running a batch of net_unittests has high overhead, so
       # run tests in batches of 25 to reduce number of batches (b/23156294).
       gtest_excludes = [ "CTLogVerifierTest.VerifiesValidConsistencyProofsFromReferenceGenerator" ]
-      args = [
-        "--test-launcher-timeout=90000",
-        "--test-launcher-batch-limit=25",
-      ]
+      args = [ "--test-launcher-batch-limit=25" ]
     }
   }
   filters += [ net_unittests_filter ]

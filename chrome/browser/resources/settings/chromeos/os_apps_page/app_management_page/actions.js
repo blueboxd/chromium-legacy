@@ -60,6 +60,7 @@ cr.define('app_management.actions', function() {
   }
 
 
+  // #cr_define_end
   return {
     addApp: addApp,
     changeApp: changeApp,

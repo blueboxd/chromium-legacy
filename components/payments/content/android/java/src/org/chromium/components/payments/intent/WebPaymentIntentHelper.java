@@ -13,11 +13,15 @@ import android.util.JsonWriter;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.components.payments.Address;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentCurrencyAmount;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentDetailsModifier;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentItem;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentMethodData;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentOptions;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentShippingOption;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -45,6 +49,13 @@ public class WebPaymentIntentHelper {
     public static final String EXTRA_TOP_CERTIFICATE_CHAIN = "topLevelCertificateChain";
     public static final String EXTRA_TOP_ORIGIN = "topLevelOrigin";
     public static final String EXTRA_TOTAL = "total";
+    public static final String EXTRA_PAYMENT_OPTIONS = "paymentOptions";
+    public static final String EXTRA_SHIPPING_OPTIONS = "shippingOptions";
+    public static final String EXTRA_SHIPPING_OPTION_ID = "shippingOptionId";
+    public static final String EXTRA_SHIPPING_OPTION_LABEL = "label";
+    public static final String EXTRA_SHIPPING_OPTION_SELECTED = "selected";
+    public static final String EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY = "amountCurrency";
+    public static final String EXTRA_SHIPPING_OPTION_AMOUNT_VALUE = "amountValue";
 
     // Deprecated parameters sent to the payment app for backward compatibility.
     public static final String EXTRA_DEPRECATED_CERTIFICATE_CHAIN = "certificateChain";
@@ -60,6 +71,22 @@ public class WebPaymentIntentHelper {
     public static final String EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS = "instrumentDetails";
     public static final String EXTRA_RESPONSE_DETAILS = "details";
     public static final String EXTRA_RESPONSE_METHOD_NAME = "methodName";
+    public static final String EXTRA_RESPONSE_PAYER_NAME = "payerName";
+    public static final String EXTRA_RESPONSE_PAYER_EMAIL = "payerEmail";
+    public static final String EXTRA_RESPONSE_PAYER_PHONE = "payerPhone";
+
+    // Shipping address parsable and its fields, used in payment response and shippingAddressChange.
+    public static final String EXTRA_SHIPPING_ADDRESS = "shippingAddress";
+    public static final String EXTRA_ADDRESS_COUNTRY = "country";
+    public static final String EXTRA_ADDRESS_LINES = "addressLines";
+    public static final String EXTRA_ADDRESS_REGION = "region";
+    public static final String EXTRA_ADDRESS_CITY = "city";
+    public static final String EXTRA_ADDRESS_DEPENDENT_LOCALITY = "dependentLocality";
+    public static final String EXTRA_ADDRESS_POSTAL_CODE = "postalCode";
+    public static final String EXTRA_ADDRESS_SORTING_CODE = "sortingCode";
+    public static final String EXTRA_ADDRESS_ORGANIZATION = "organization";
+    public static final String EXTRA_ADDRESS_RECIPIENT = "recipient";
+    public static final String EXTRA_ADDRESS_PHONE = "phone";
 
     private static final String EMPTY_JSON_DATA = "{}";
 
@@ -74,19 +101,23 @@ public class WebPaymentIntentHelper {
         /**
          * @param methodName The method name parsed from the intent response.
          * @param details The instrument details parsed from the intent response.
+         * @param payerData The payer data parsed from the intent response.
          */
-        void onPaymentSuccess(String methodName, String details);
+        void onPaymentSuccess(String methodName, String details, PayerData payerData);
     }
 
     /**
      * Parse the Payment Intent response.
      * @param resultCode Result code of the requested intent.
      * @param data The intent response data.
+     * @param requestedPaymentOptions The merchant required payment options. This is used to
+     *          populate relevant fields in payerData.
      * @param errorCallback Callback to handle parsing errors. Invoked synchronously.
      * @param successCallback Callback to receive the parsed data. Invoked synchronously.
      **/
     public static void parsePaymentResponse(int resultCode, Intent data,
-            PaymentErrorCallback errorCallback, PaymentSuccessCallback successCallback) {
+            PaymentOptions requestedPaymentOptions, PaymentErrorCallback errorCallback,
+            PaymentSuccessCallback successCallback) {
         if (data == null) {
             errorCallback.onPaymentError(ErrorStrings.MISSING_INTENT_DATA);
         } else if (data.getExtras() == null) {
@@ -97,6 +128,8 @@ public class WebPaymentIntentHelper {
             errorCallback.onPaymentError(String.format(
                     Locale.US, ErrorStrings.UNRECOGNIZED_ACTIVITY_RESULT, resultCode));
         } else {
+            // TODO(https://crbug.com/1026667): Validate presence of required fields and call
+            // errorCallback to make error handling consistent with Desktop.
             String details = data.getExtras().getString(EXTRA_RESPONSE_DETAILS);
             if (details == null) {
                 details = data.getExtras().getString(EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS);
@@ -104,10 +137,41 @@ public class WebPaymentIntentHelper {
             if (details == null) details = EMPTY_JSON_DATA;
             String methodName = data.getExtras().getString(EXTRA_RESPONSE_METHOD_NAME);
             if (methodName == null) methodName = "";
-            // TODO(crbug.com/1026667): Support payer data delegation for native apps instead of
-            // returning empty PayerData.
+
+            PayerData payerData;
+            if (requestedPaymentOptions != null) {
+                // Create payer data based on requested payment options.
+                Address shippingAddress = !requestedPaymentOptions.requestShipping
+                        ? new Address()
+                        : new Address(getStringOrEmpty(data, EXTRA_ADDRESS_COUNTRY),
+                                data.getExtras().getStringArray(EXTRA_ADDRESS_LINES),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_REGION),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_CITY),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_DEPENDENT_LOCALITY),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_POSTAL_CODE),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_SORTING_CODE),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_ORGANIZATION),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_RECIPIENT),
+                                getStringOrEmpty(data, EXTRA_ADDRESS_PHONE));
+                payerData = new PayerData(requestedPaymentOptions.requestPayerName
+                                ? data.getExtras().getString(EXTRA_RESPONSE_PAYER_NAME)
+                                : "",
+                        requestedPaymentOptions.requestPayerPhone
+                                ? data.getExtras().getString(EXTRA_RESPONSE_PAYER_PHONE)
+                                : "",
+                        requestedPaymentOptions.requestPayerEmail
+                                ? data.getExtras().getString(EXTRA_RESPONSE_PAYER_EMAIL)
+                                : "",
+                        shippingAddress,
+                        requestedPaymentOptions.requestShipping
+                                ? data.getExtras().getString(EXTRA_SHIPPING_OPTION_ID)
+                                : "");
+            } else {
+                payerData = new PayerData();
+            }
+
             successCallback.onPaymentSuccess(
-                    /*methodName=*/methodName, /*details=*/details);
+                    /*methodName=*/methodName, /*details=*/details, payerData);
         }
     }
 
@@ -127,7 +191,7 @@ public class WebPaymentIntentHelper {
      *         PaymentRequest. Only non-empty string is allowed.
      * @param certificateChain The site certificate chain of the merchant. Can be null for
      *         localhost or local file, which are secure contexts without SSL. Each byte array
-     * cannot be null.
+     *         cannot be null.
      * @param methodDataMap The payment-method specific data for all applicable payment methods,
      *         e.g., whether the app should be invoked in test or production, a merchant identifier,
      *         or a public key. The map and its values cannot be null. The map should have at
@@ -135,21 +199,26 @@ public class WebPaymentIntentHelper {
      * @param total The total amount. Cannot be null..
      * @param displayItems The shopping cart items. OK to be null.
      * @param modifiers The relevant payment details modifiers. OK to be null.
+     * @param paymentOptions The relevant merchant requested payment options. OK to be null.
+     * @param shippingOptions Merchant specified available shipping options. Should be non-empty
+     *          when paymentOptions.requestShipping is true.
      * @return The intent to invoke the payment app.
      */
     public static Intent createPayIntent(String packageName, String activityName, String id,
             String merchantName, String schemelessOrigin, String schemelessIframeOrigin,
             @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             PaymentItem total, @Nullable List<PaymentItem> displayItems,
-            @Nullable Map<String, PaymentDetailsModifier> modifiers) {
+            @Nullable Map<String, PaymentDetailsModifier> modifiers,
+            @Nullable PaymentOptions paymentOptions,
+            @Nullable List<PaymentShippingOption> shippingOptions) {
         Intent payIntent = new Intent();
         checkStringNotEmpty(activityName, "activityName");
         checkStringNotEmpty(packageName, "packageName");
         payIntent.setClassName(packageName, activityName);
         payIntent.setAction(ACTION_PAY);
-        payIntent.putExtras(
-                buildPayIntentExtras(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
-                        certificateChain, methodDataMap, total, displayItems, modifiers));
+        payIntent.putExtras(buildPayIntentExtras(id, merchantName, schemelessOrigin,
+                schemelessIframeOrigin, certificateChain, methodDataMap, total, displayItems,
+                modifiers, paymentOptions, shippingOptions));
         return payIntent;
     }
 
@@ -186,7 +255,9 @@ public class WebPaymentIntentHelper {
         checkNotEmpty(methodDataMap, "methodDataMap");
         isReadyToPayIntent.putExtras(buildExtras(/*id=*/null,
                 /*merchantName=*/null, schemelessOrigin, schemelessIframeOrigin, certificateChain,
-                methodDataMap, /*total=*/null, /*displayItems=*/null, /*modifiers=*/null));
+                methodDataMap, /*total=*/null, /*displayItems=*/null, /*modifiers=*/null,
+                /*paymentOptions=*/null,
+                /*shippingOptions=*/null));
         return isReadyToPayIntent;
     }
 
@@ -209,7 +280,9 @@ public class WebPaymentIntentHelper {
             String schemelessOrigin, String schemelessIframeOrigin,
             @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             PaymentItem total, @Nullable List<PaymentItem> displayItems,
-            @Nullable Map<String, PaymentDetailsModifier> modifiers) {
+            @Nullable Map<String, PaymentDetailsModifier> modifiers,
+            @Nullable PaymentOptions paymentOptions,
+            @Nullable List<PaymentShippingOption> shippingOptions) {
         // The following checks follow the order of the parameters.
         checkStringNotEmpty(id, "id");
         checkNotNull(merchantName, "merchantName");
@@ -225,8 +298,16 @@ public class WebPaymentIntentHelper {
         // displayItems is ok to be null, left unchecked here.
         // modifiers is ok to be null, left unchecked here.
 
+        // shippingOptions should not be null when shipping is requested.
+        if (paymentOptions != null && paymentOptions.requestShipping
+                && (shippingOptions == null || shippingOptions.isEmpty())) {
+            throw new IllegalArgumentException(
+                    "shippingOptions should not be null or empty when shipping is requested.");
+        }
+
         return buildExtras(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
-                certificateChain, methodDataMap, total, displayItems, modifiers);
+                certificateChain, methodDataMap, total, displayItems, modifiers, paymentOptions,
+                shippingOptions);
     }
 
     // id, merchantName, total are ok to be null only for {@link #createIsReadyToPayIntent}.
@@ -234,7 +315,9 @@ public class WebPaymentIntentHelper {
             String schemelessOrigin, String schemelessIframeOrigin,
             @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             @Nullable PaymentItem total, @Nullable List<PaymentItem> displayItems,
-            @Nullable Map<String, PaymentDetailsModifier> modifiers) {
+            @Nullable Map<String, PaymentDetailsModifier> modifiers,
+            @Nullable PaymentOptions paymentOptions,
+            @Nullable List<PaymentShippingOption> shippingOptions) {
         Bundle extras = new Bundle();
 
         if (id != null) extras.putString(EXTRA_PAYMENT_REQUEST_ID, id);
@@ -271,6 +354,16 @@ public class WebPaymentIntentHelper {
             String serializedTotalAmount = serializeTotalAmount(total.amount);
             extras.putString(EXTRA_TOTAL,
                     serializedTotalAmount == null ? EMPTY_JSON_DATA : serializedTotalAmount);
+        }
+
+        if (paymentOptions != null) {
+            extras.putStringArrayList(EXTRA_PAYMENT_OPTIONS, paymentOptions.asStringArrayList());
+        }
+
+        // ShippingOptions are populated only when shipping is requested.
+        if (paymentOptions != null && paymentOptions.requestShipping) {
+            Parcelable[] serializedShippingOptionList = buildShippingOptionList(shippingOptions);
+            extras.putParcelableArray(EXTRA_SHIPPING_OPTIONS, serializedShippingOptionList);
         }
 
         return addDeprecatedExtras(id, schemelessOrigin, schemelessIframeOrigin,
@@ -315,6 +408,22 @@ public class WebPaymentIntentHelper {
             checkNotNull(certificateChain[i], "certificateChain[" + i + "]");
             bundle.putByteArray(EXTRA_CERTIFICATE, certificateChain[i]);
             result[i] = bundle;
+        }
+        return result;
+    }
+
+    private static Parcelable[] buildShippingOptionList(
+            List<PaymentShippingOption> shippingOptions) {
+        Parcelable[] result = new Parcelable[shippingOptions.size()];
+        int index = 0;
+        for (PaymentShippingOption option : shippingOptions) {
+            Bundle bundle = new Bundle();
+            bundle.putString(EXTRA_SHIPPING_OPTION_ID, option.id);
+            bundle.putString(EXTRA_SHIPPING_OPTION_LABEL, option.label);
+            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY, option.amountCurrency);
+            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_VALUE, option.amountValue);
+            bundle.putBoolean(EXTRA_SHIPPING_OPTION_SELECTED, option.selected);
+            result[index++] = bundle;
         }
         return result;
     }
@@ -430,5 +539,9 @@ public class WebPaymentIntentHelper {
 
         json.endObject();
         // }}}
+    }
+
+    private static String getStringOrEmpty(Intent data, String key) {
+        return data.getExtras().getString(key, /*defaultValue =*/"");
     }
 }

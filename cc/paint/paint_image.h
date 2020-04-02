@@ -240,7 +240,6 @@ class CC_PAINT_EXPORT PaintImage {
     return reset_animation_sequence_id_;
   }
   DecodingMode decoding_mode() const { return decoding_mode_; }
-  PaintImage::ContentId content_id() const { return content_id_; }
 
   // TODO(vmpstr): Don't get the SkImage here if you don't need to.
   uint32_t unique_id() const {
@@ -281,6 +280,8 @@ class CC_PAINT_EXPORT PaintImage {
 
   // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;
+
+  PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const;
 
   // Returns the metadata for each frame of a multi-frame image. Should only be
   // used with animated images.

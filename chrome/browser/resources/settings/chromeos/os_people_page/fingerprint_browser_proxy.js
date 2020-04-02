@@ -156,6 +156,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(FingerprintBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     FingerprintAttempt,
     FingerprintBrowserProxy,

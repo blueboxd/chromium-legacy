@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">Det finns inga objekt</translation>
 <translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valda</translation>
-<translation id="1727016672946926483">Dela som QR-kod</translation>
 <translation id="1740468249224277719">Tryck snabbt två gånger här om du vill installera.</translation>
 <translation id="1746815479209538200">Öppna en ny flik om du vill använda internet.</translation>
 <translation id="1752547299766512813">Spara lösenord</translation>
@@ -486,7 +485,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="734758817008927353">Alternativ för att spara kort</translation>
 <translation id="7348502496356775519">Bokmärke</translation>
 <translation id="7383797227493018512">Läslista</translation>
-<translation id="7392048574806661116">Logga ut och radera synkroniserad data</translation>
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> olästa artiklar.</translation>
 <translation id="7425346204213733349">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>

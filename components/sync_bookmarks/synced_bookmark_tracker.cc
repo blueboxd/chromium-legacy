@@ -21,6 +21,7 @@
 #include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
+#include "components/sync_bookmarks/switches.h"
 #include "ui/base/models/tree_node_iterator.h"
 
 namespace sync_bookmarks {
@@ -151,8 +152,8 @@ size_t SyncedBookmarkTracker::Entity::EstimateMemoryUsage() const {
 std::unique_ptr<SyncedBookmarkTracker> SyncedBookmarkTracker::CreateEmpty(
     sync_pb::ModelTypeState model_type_state) {
   // base::WrapUnique() used because the constructor is private.
-  auto tracker =
-      base::WrapUnique(new SyncedBookmarkTracker(std::move(model_type_state)));
+  auto tracker = base::WrapUnique(new SyncedBookmarkTracker(
+      std::move(model_type_state), /*bookmarks_full_title_reuploaded=*/false));
   return tracker;
 }
 
@@ -167,8 +168,12 @@ SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
     return nullptr;
   }
 
-  auto tracker =
-      CreateEmpty(std::move(*model_metadata.mutable_model_type_state()));
+  const bool bookmarks_full_title_reuploaded =
+      model_metadata.bookmarks_full_title_reuploaded();
+
+  auto tracker = base::WrapUnique(new SyncedBookmarkTracker(
+      std::move(*model_metadata.mutable_model_type_state()),
+      bookmarks_full_title_reuploaded));
 
   const CorruptionReason corruption_reason =
       tracker->InitEntitiesFromModelAndMetadata(model,
@@ -180,6 +185,8 @@ SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
   if (corruption_reason != CorruptionReason::NO_CORRUPTION) {
     return nullptr;
   }
+
+  tracker->ReuploadBookmarksOnLoadIfNeeded();
 
   return tracker;
 }
@@ -327,6 +334,8 @@ void SyncedBookmarkTracker::IncrementSequenceNumber(const Entity* entity) {
 sync_pb::BookmarkModelMetadata
 SyncedBookmarkTracker::BuildBookmarkModelMetadata() const {
   sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.set_bookmarks_full_title_reuploaded(
+      bookmarks_full_title_reuploaded_);
   for (const std::pair<const std::string, std::unique_ptr<Entity>>& pair :
        sync_id_to_entities_map_) {
     DCHECK(pair.second) << " for ID " << pair.first;
@@ -413,8 +422,10 @@ SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
 }
 
 SyncedBookmarkTracker::SyncedBookmarkTracker(
-    sync_pb::ModelTypeState model_type_state)
-    : model_type_state_(std::move(model_type_state)) {}
+    sync_pb::ModelTypeState model_type_state,
+    bool bookmarks_full_title_reuploaded)
+    : model_type_state_(std::move(model_type_state)),
+      bookmarks_full_title_reuploaded_(bookmarks_full_title_reuploaded) {}
 
 SyncedBookmarkTracker::CorruptionReason
 SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
@@ -576,6 +587,26 @@ SyncedBookmarkTracker::ReorderUnsyncedEntitiesExceptDeletions(
     TraverseAndAppend(node, &ordered_entities);
   }
   return ordered_entities;
+}
+
+void SyncedBookmarkTracker::ReuploadBookmarksOnLoadIfNeeded() {
+  if (bookmarks_full_title_reuploaded_ ||
+      !base::FeatureList::IsEnabled(
+          switches::kSyncReuploadBookmarkFullTitles)) {
+    return;
+  }
+  for (const auto& sync_id_and_entity : sync_id_to_entities_map_) {
+    const SyncedBookmarkTracker::Entity* entity =
+        sync_id_and_entity.second.get();
+    if (entity->IsUnsynced() || entity->metadata()->is_deleted()) {
+      continue;
+    }
+    if (entity->bookmark_node()->is_permanent_node()) {
+      continue;
+    }
+    IncrementSequenceNumber(entity);
+  }
+  bookmarks_full_title_reuploaded_ = true;
 }
 
 void SyncedBookmarkTracker::TraverseAndAppend(

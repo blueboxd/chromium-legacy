@@ -413,18 +413,13 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   return results;
 }
 
-bool LayoutText::HasTextBoxes() const {
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+bool LayoutText::HasInlineFragments() const {
     if (IsInLayoutNGInlineFormattingContext()) {
       NGInlineCursor cursor;
       cursor.MoveTo(*this);
       return cursor.IsNotNull();
     }
 
-    // When legacy is forced, IsInLayoutNGInlineFormattingContext is false,
-    // and we fall back to normal HasTextBox
-    return FirstTextBox();
-  }
   return FirstTextBox();
 }
 

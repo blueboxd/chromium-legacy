@@ -16,6 +16,7 @@
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -354,11 +355,13 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
  public:
   void SetUp() override {
     DeepScanningRequestTest::SetUp();
-    SetUpReporting();
-  }
 
-  void SetUpReporting() {
     client_ = std::make_unique<policy::MockCloudPolicyClient>();
+
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
+        ->SetTestingFactory(
+            profile_,
+            base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->SetCloudPolicyClientForTesting(client_.get());
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
@@ -366,6 +369,7 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
             download_protection_service_.GetFakeBinaryUploadService());
     download_protection_service_.GetFakeBinaryUploadService()
         ->SetAuthForTesting(true);
+
     TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
         prefs::kUnsafeEventsReportingEnabled, true);
   }

@@ -9,6 +9,10 @@
 
 namespace base {
 class CommandLine;
+
+namespace trace_event {
+class TraceConfig;
+}  // namespace trace_event
 }  // namespace base
 
 namespace tracing {
@@ -28,15 +32,16 @@ bool COMPONENT_EXPORT(TRACING_CPP) IsTracingInitialized();
 // earlier and from fewer places again.
 void COMPONENT_EXPORT(TRACING_CPP) EnableStartupTracingIfNeeded();
 
-// Prepare ProducerClient and trace event and/or sampler profiler data sources
-// for startup tracing with chrome's tracing service. Returns false on failure.
-// Note that TraceLog still needs to be enabled separately.
+// Enable startup tracing for the current process with the provided config. Sets
+// up ProducerClient and trace event and/or sampler profiler data sources, and
+// enables TraceLog. The caller should also instruct Chrome's tracing service to
+// start tracing, once the service is connected. Returns false on failure.
 //
 // TODO(eseckler): Figure out what startup tracing APIs should look like with
 // the client lib.
 bool COMPONENT_EXPORT(TRACING_CPP)
-    SetupStartupTracingForProcess(bool privacy_filtering_enabled,
-                                  bool enable_sampler_profiler);
+    EnableStartupTracingForProcess(const base::trace_event::TraceConfig&,
+                                   bool privacy_filtering_enabled);
 
 // Initialize tracing components that require task runners. Will switch
 // IsTracingInitialized() to return true.

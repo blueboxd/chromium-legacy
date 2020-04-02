@@ -328,7 +328,7 @@ target(link_target_type, "gles2_sources") {
       "//gpu/vulkan",
     ]
 
-    if (is_linux || is_fuchsia || is_android) {
+    if (is_linux || is_fuchsia || is_android || is_win) {
       sources += [
         "external_vk_image_backing.cc",
         "external_vk_image_backing.h",

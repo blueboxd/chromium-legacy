@@ -18,6 +18,10 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame_delegate.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
 
 namespace blink {
 
@@ -65,6 +69,10 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
         return nullptr;
       return MakeGarbageCollected<RTCCertificate>(std::move(certificate));
     }
+    case kRTCEncodedAudioFrameTag:
+      return ReadRTCEncodedAudioFrame();
+    case kRTCEncodedVideoFrameTag:
+      return ReadRTCEncodedVideoFrame();
     default:
       break;
   }
@@ -367,6 +375,54 @@ V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
       return nullptr;
     }
   }
+}
+
+RTCEncodedAudioFrame*
+V8ScriptValueDeserializerForModules::ReadRTCEncodedAudioFrame() {
+  if (!RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    return nullptr;
+  }
+
+  uint32_t index;
+  if (!ReadUint32(&index))
+    return nullptr;
+
+  const auto* attachment =
+      GetSerializedScriptValue()
+          ->GetAttachmentIfExists<RTCEncodedAudioFramesAttachment>();
+  if (!attachment)
+    return nullptr;
+
+  const auto& frames = attachment->EncodedAudioFrames();
+  if (index >= frames.size())
+    return nullptr;
+
+  return MakeGarbageCollected<RTCEncodedAudioFrame>(frames[index]);
+}
+
+RTCEncodedVideoFrame*
+V8ScriptValueDeserializerForModules::ReadRTCEncodedVideoFrame() {
+  if (!RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    return nullptr;
+  }
+
+  uint32_t index;
+  if (!ReadUint32(&index))
+    return nullptr;
+
+  const auto* attachment =
+      GetSerializedScriptValue()
+          ->GetAttachmentIfExists<RTCEncodedVideoFramesAttachment>();
+  if (!attachment)
+    return nullptr;
+
+  const auto& frames = attachment->EncodedVideoFrames();
+  if (index >= frames.size())
+    return nullptr;
+
+  return MakeGarbageCollected<RTCEncodedVideoFrame>(frames[index]);
 }
 
 }  // namespace blink

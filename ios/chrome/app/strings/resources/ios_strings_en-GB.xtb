@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">No items</translation>
 <translation id="1692118695553449118">Sync is on</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selected</translation>
-<translation id="1727016672946926483">Share as QR code</translation>
 <translation id="1740468249224277719">Double tap to install.</translation>
 <translation id="1746815479209538200">To browse the web, add a new tab.</translation>
 <translation id="1752547299766512813">Save Passwords</translation>
@@ -486,7 +485,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="734758817008927353">Options to save card</translation>
 <translation id="7348502496356775519">Bookmark</translation>
 <translation id="7383797227493018512">Reading List</translation>
-<translation id="7392048574806661116">Sign out and clear synced data</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> unread articles.</translation>
 <translation id="7425346204213733349">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account.</translation>

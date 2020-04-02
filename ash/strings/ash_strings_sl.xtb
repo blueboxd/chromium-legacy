@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Središče za obvestila</translation>
 <translation id="1195412055398077112">upodabljanje čez rob zaslona</translation>
 <translation id="119944043368869598">Izbriši vse</translation>
+<translation id="1199716647557067911">Ali ste prepričani, da želite izklopiti stikalni dostop?</translation>
 <translation id="1247372569136754018">Mikrofon (vgrajeni)</translation>
 <translation id="1252999807265626933">Polnjenje iz: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Kakšno je vreme?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Moč signala je <ph name="SIGNAL_STRENGTH" />, stanje baterije telefona je <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Predvajanje v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Vprašajte skrbnika</translation>
+<translation id="6584550827717945790">Izklop stikalnega dostopa</translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" />, upravlja ga vaš skrbnik</translation>
 <translation id="6614169507485700968">Zaslon za zasebnost je vklopljen</translation>

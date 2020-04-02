@@ -623,6 +623,13 @@
     // auto
     // none
 
+    // text-underline-position
+    // auto
+    "from-font",
+    // under
+    // left
+    // right
+
     //
     // word-break
     //

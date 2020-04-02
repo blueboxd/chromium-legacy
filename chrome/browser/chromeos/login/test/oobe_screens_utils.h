@@ -26,6 +26,7 @@ void WaitForEulaScreen();
 void TapEulaAccept();
 void WaitForSyncConsentScreen();
 void ExitScreenSyncConsent();
+void WaitForLastScreenAndTapGetStarted();
 
 }  // namespace test
 }  // namespace chromeos

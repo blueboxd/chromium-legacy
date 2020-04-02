@@ -591,8 +591,8 @@ bool KeyboardEventManager::CurrentCapsLockState() {
 }
 
 WebInputEvent::Modifiers KeyboardEventManager::GetCurrentModifierState() {
-  unsigned modifiers = 0;
 #if defined(OS_MACOSX)
+  unsigned modifiers = 0;
   UInt32 current_modifiers = GetCurrentKeyModifiers();
   if (current_modifiers & ::shiftKey)
     modifiers |= WebInputEvent::kShiftKey;
@@ -602,11 +602,11 @@ WebInputEvent::Modifiers KeyboardEventManager::GetCurrentModifierState() {
     modifiers |= WebInputEvent::kAltKey;
   if (current_modifiers & ::cmdKey)
     modifiers |= WebInputEvent::kMetaKey;
+  return static_cast<WebInputEvent::Modifiers>(modifiers);
 #else
   // TODO(crbug.com/538289): Implement on other platforms.
   return static_cast<WebInputEvent::Modifiers>(0);
 #endif
-  return static_cast<WebInputEvent::Modifiers>(modifiers);
 }
 
 }  // namespace blink

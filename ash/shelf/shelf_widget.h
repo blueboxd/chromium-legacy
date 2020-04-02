@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
+#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
@@ -173,7 +174,7 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   void ScheduleShowDragHandleNudge();
 
   // Starts the animation to hide the drag handle nudge.
-  void HideDragHandleNudge();
+  void HideDragHandleNudge(contextual_tooltip::DismissNudgeReason context);
 
   // Sets opacity of login shelf buttons to be consistent with shelf icons.
   void SetLoginShelfButtonOpacity(float target_opacity);

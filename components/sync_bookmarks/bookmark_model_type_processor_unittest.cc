@@ -229,6 +229,14 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
     return &schedule_save_closure_;
   }
 
+  sync_pb::BookmarkModelMetadata BuildBookmarkModelMetadataWithoutFullTitles() {
+    base::test::ScopedFeatureList features;
+    features.InitAndDisableFeature(switches::kSyncReuploadBookmarkFullTitles);
+    sync_pb::BookmarkModelMetadata model_metadata =
+        processor()->GetTrackerForTest()->BuildBookmarkModelMetadata();
+    return model_metadata;
+  }
+
  private:
   base::test::TaskEnvironment task_environment_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
@@ -670,6 +678,48 @@ TEST_F(BookmarkModelTypeProcessorTest,
   EXPECT_CALL(callback, Run(_));
   processor()->GetLocalChanges(/*max_entities=*/10, callback.Get());
   EXPECT_FALSE(callback_result.empty());
+}
+
+TEST_F(BookmarkModelTypeProcessorTest, ShouldReuploadLegacyBookmarksOnStart) {
+  const std::string kNodeId = "node_id";
+  const std::string kTitle = "title";
+  const std::string kUrl = "http://www.url.com";
+
+  std::vector<BookmarkInfo> bookmarks = {
+      {kNodeId, kTitle, kUrl, kBookmarkBarId, /*server_tag=*/std::string()}};
+
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
+  InitWithSyncedBookmarks(bookmarks, processor());
+
+  sync_pb::BookmarkModelMetadata model_metadata =
+      BuildBookmarkModelMetadataWithoutFullTitles();
+  // Ensure that bookmark is legacy.
+  ASSERT_FALSE(model_metadata.bookmarks_full_title_reuploaded());
+  ASSERT_TRUE(processor()
+                  ->GetTrackerForTest()
+                  ->GetEntitiesWithLocalChanges(/*max_entries=*/1)
+                  .empty());
+
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(switches::kSyncReuploadBookmarkFullTitles);
+  BookmarkModelTypeProcessor new_processor(bookmark_undo_service());
+
+  std::string metadata_str;
+  model_metadata.SerializeToString(&metadata_str);
+  new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
+                                 bookmark_model());
+
+  // Check that all entities are unsynced now and metadata is marked as
+  // reuploaded.
+  const size_t entities_count =
+      processor()->GetTrackerForTest()->GetAllEntities().size();
+  EXPECT_EQ(1u, new_processor.GetTrackerForTest()
+                    ->GetEntitiesWithLocalChanges(entities_count)
+                    .size());
+  EXPECT_TRUE(new_processor.GetTrackerForTest()
+                  ->BuildBookmarkModelMetadata()
+                  .bookmarks_full_title_reuploaded());
 }
 
 }  // namespace

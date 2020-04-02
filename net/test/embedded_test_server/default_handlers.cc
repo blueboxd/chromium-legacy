@@ -4,8 +4,6 @@
 
 #include "net/test/embedded_test_server/default_handlers.h"
 
-#include <stdlib.h>
-
 #include <ctime>
 #include <map>
 #include <memory>
@@ -19,7 +17,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/format_macros.h"
 #include "base/hash/md5.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -220,27 +217,6 @@ std::unique_ptr<HttpResponse> HandleSetInvalidCookie(
   http_response->AddCustomHeader("Set-Cookie", "\x01");
 
   http_response->set_content("TEST");
-  return http_response;
-}
-
-// /set-many-cookies?N
-// Sets N cookies in the response.
-std::unique_ptr<HttpResponse> HandleSetManyCookies(const HttpRequest& request) {
-  std::string content;
-
-  GURL request_url = request.GetURL();
-  size_t num = 0;
-  if (request_url.has_query())
-    num = std::atoi(request_url.query().c_str());
-
-  auto http_response = std::make_unique<BasicHttpResponse>();
-  http_response->set_content_type("text/html");
-  for (size_t i = 0; i < num; ++i) {
-    http_response->AddCustomHeader("Set-Cookie", "a=");
-  }
-
-  http_response->set_content(
-      base::StringPrintf("%" PRIuS " cookies were sent", num));
   return http_response;
 }
 
@@ -822,8 +798,6 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
       PREFIXED_HANDLER("/set-cookie", &HandleSetCookie));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/set-invalid-cookie", &HandleSetInvalidCookie));
-  server->RegisterDefaultHandler(
-      PREFIXED_HANDLER("/set-many-cookies", &HandleSetManyCookies));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/expect-and-set-cookie", &HandleExpectAndSetCookie));
   server->RegisterDefaultHandler(

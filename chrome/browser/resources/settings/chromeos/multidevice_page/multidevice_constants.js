@@ -74,6 +74,7 @@ cr.define('settings', function() {
    */
   let MultiDevicePageContentData;
 
+  // #cr_define_end
   return {
     MultiDeviceSettingsMode,
     MultiDeviceFeature,

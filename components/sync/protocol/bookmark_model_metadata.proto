@@ -31,4 +31,12 @@ message BookmarkModelMetadata {
 
   // A set of all bookmarks metadata.
   repeated BookmarkMetadata bookmarks_metadata = 2;
+
+  // Indicates whether the reupload of bookmarks has been triggered such that
+  // they include the full title, which means that their sequence number has
+  // been increased (independently of whether the commit has succeeded or even
+  // started).
+  // TODO(crbug.com/1066962): remove this code when most of bookmarks are
+  // reuploaded.
+  optional bool bookmarks_full_title_reuploaded = 3;
 }

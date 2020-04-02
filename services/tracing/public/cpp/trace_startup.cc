@@ -14,7 +14,6 @@
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/system_producer.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
-#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -25,26 +24,6 @@ namespace {
 
 using base::trace_event::TraceConfig;
 using base::trace_event::TraceLog;
-
-bool SetupStartupTracing(PerfettoProducer* producer,
-                         bool privacy_filtering_enabled,
-                         bool enable_sampler_profiler) {
-  // TODO(eseckler): This should really go through PerfettoTracedProcess
-  // somehow, so that the "correct" producer gets to take over the session.
-
-  if (!producer->SetupStartupTracing()) {
-    LOG(ERROR) << "Failed to setup startup tracing for this process";
-    return false;
-  }
-
-  TraceEventDataSource::GetInstance()->SetupStartupTracing(
-      producer, privacy_filtering_enabled);
-
-  if (enable_sampler_profiler)
-    TracingSamplerProfiler::SetupStartupTracing();
-
-  return true;
-}
 
 }  // namespace
 
@@ -69,29 +48,14 @@ void EnableStartupTracingIfNeeded() {
 
   // Ensure TraceLog is initialized first.
   // https://crbug.com/764357
-  auto* trace_log = TraceLog::GetInstance();
+  TraceLog::GetInstance();
   auto* startup_config = TraceStartupConfig::GetInstance();
 
   if (startup_config->IsEnabled()) {
+    // Ensure that data sources are created and registered.
+    TraceEventAgent::GetInstance();
+
     TraceConfig trace_config = startup_config->GetTraceConfig();
-
-    // Make sure we only record whitelisted arguments even during early startup
-    // tracing if the config specifies argument filtering.
-    if (trace_config.IsArgumentFilterEnabled() &&
-        base::trace_event::TraceLog::GetInstance()
-            ->GetArgumentFilterPredicate()
-            .is_null()) {
-      base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-          base::BindRepeating(&IsTraceEventArgsWhitelisted));
-      base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
-          base::BindRepeating(&IsMetadataWhitelisted));
-    }
-
-    // Perfetto backend configures buffer sizes when tracing is started in the
-    // service (see perfetto_config.cc). Zero them out here to avoid DCHECKs
-    // in TraceConfig::Merge.
-    trace_config.SetTraceBufferSizeInKb(0);
-    trace_config.SetTraceBufferSizeInEvents(0);
 
     PerfettoProducer* producer =
         PerfettoTracedProcess::Get()->producer_client();
@@ -105,27 +69,19 @@ void EnableStartupTracingIfNeeded() {
             TraceStartupConfig::SessionOwner::kBackgroundTracing ||
         command_line.HasSwitch(switches::kTraceStartupEnablePrivacyFiltering);
 
-    bool enable_sampler_profiler = trace_config.IsCategoryGroupEnabled(
-        TRACE_DISABLED_BY_DEFAULT("cpu_profiler"));
-
-    if (!SetupStartupTracing(producer, privacy_filtering_enabled,
-                             enable_sampler_profiler)) {
+    if (!PerfettoTracedProcess::Get()->SetupStartupTracing(
+            producer, trace_config, privacy_filtering_enabled)) {
       startup_config->SetDisabled();
-      return;
     }
-
-    uint8_t modes = TraceLog::RECORDING_MODE;
-    if (!trace_config.event_filters().empty())
-      modes |= TraceLog::FILTERING_MODE;
-    trace_log->SetEnabled(trace_config, modes);
   }
 }
 
-bool SetupStartupTracingForProcess(bool privacy_filtering_enabled,
-                                   bool enable_sampler_profiler) {
-  return SetupStartupTracing(PerfettoTracedProcess::Get()->producer_client(),
-                             privacy_filtering_enabled,
-                             enable_sampler_profiler);
+bool EnableStartupTracingForProcess(
+    const base::trace_event::TraceConfig& trace_config,
+    bool privacy_filtering_enabled) {
+  return PerfettoTracedProcess::Get()->SetupStartupTracing(
+      PerfettoTracedProcess::Get()->producer_client(), trace_config,
+      privacy_filtering_enabled);
 }
 
 void InitTracingPostThreadPoolStartAndFeatureList() {
@@ -137,10 +93,11 @@ void InitTracingPostThreadPoolStartAndFeatureList() {
   // after M78 release has been cut (since we'll verify in the rollout of M78).
   CHECK(base::ThreadPoolInstance::Get());
   CHECK(base::FeatureList::GetInstance());
-  // Below are the things tracing must do once per process.
-  TraceEventDataSource::GetInstance()->OnTaskSchedulerAvailable();
+
+  PerfettoTracedProcess::Get()->OnThreadPoolAvailable();
+
   if (ShouldSetupSystemTracing()) {
-    // We have to ensure that we register all the data sources we care about.
+    // Ensure that data sources are created and registered.
     TraceEventAgent::GetInstance();
     // Connect to system service if available (currently a no-op except on
     // Posix). Has to happen on the producer's sequence, as all communication

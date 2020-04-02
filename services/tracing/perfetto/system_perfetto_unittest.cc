@@ -19,6 +19,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/trace_event/trace_config.h"
 #include "build/build_config.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
@@ -727,7 +728,9 @@ TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
       local_data_source_disabled_runloop.QuitClosure());
 
   // Setup startup tracing for local producer.
-  CHECK((*local_producer)->SetupStartupTracing());
+  CHECK((*local_producer)
+            ->SetupStartupTracing(base::trace_event::TraceConfig(),
+                                  /*privacy_filtering_enabled=*/false));
 
   // Attempt to start a system tracing session. Because startup tracing is
   // already active, the system producer shouldn't activate yet.

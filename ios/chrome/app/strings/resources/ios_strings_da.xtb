@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">Ingen elementer</translation>
 <translation id="1692118695553449118">Synkronisering er slået til</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valgt</translation>
-<translation id="1727016672946926483">Del som QR-kode</translation>
 <translation id="1740468249224277719">Tryk to gange for at installere.</translation>
 <translation id="1746815479209538200">Tilføj en ny fane for at surfe på nettet.</translation>
 <translation id="1752547299766512813">Gem adgangskoder</translation>
@@ -486,7 +485,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="734758817008927353">Valgmuligheder for at gemme kort</translation>
 <translation id="7348502496356775519">Tilføj bogmærke</translation>
 <translation id="7383797227493018512">Læseliste</translation>
-<translation id="7392048574806661116">Log ud, og ryd synkroniserede data</translation>
 <translation id="7400418766976504921">Webadresse</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> ulæste artikler.</translation>
 <translation id="7425346204213733349">Ændringer af dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto.</translation>

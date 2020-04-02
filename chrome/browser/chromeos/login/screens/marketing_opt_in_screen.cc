@@ -11,11 +11,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -42,35 +44,17 @@ MarketingOptInScreen::~MarketingOptInScreen() {
 void MarketingOptInScreen::ShowImpl() {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
 
-  const bool did_skip_gesture_navigation_screen =
-      !prefs->GetBoolean(ash::prefs::kGestureEducationNotificationShown);
-
-  // Always skip the screen if it is a public session or non-regular ephemeral
-  // user login. Also skip the screen if clamshell mode is active.
-  // TODO(mmourgos): Enable this screen for clamshell mode.
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
-      did_skip_gesture_navigation_screen) {
-    exit_callback_.Run();
-    return;
-  }
-
   // Skip the screen if:
   //   1) the feature is disabled, or
-  //   2) the screen has been shown for this user
-  //    AND
-  //   3) the hide shelf controls in tablet mode feature is disabled.
-  if ((!base::CommandLine::ForCurrentProcess()->HasSwitch(
-           chromeos::switches::kEnableMarketingOptInScreen) ||
-       prefs->GetBoolean(prefs::kOobeMarketingOptInScreenFinished)) &&
-      !ash::features::IsHideShelfControlsInTabletModeEnabled()) {
+  //   2) it is a public session or non-regular ephemeral user login
+  if (!base::FeatureList::IsEnabled(features::kOobeMarketingScreen) ||
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     exit_callback_.Run();
     return;
   }
 
   active_ = true;
-
   view_->Show();
-  prefs->SetBoolean(prefs::kOobeMarketingOptInScreenFinished, true);
 
   view_->UpdateA11yShelfNavigationButtonToggle(prefs->GetBoolean(
       ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled));
@@ -95,9 +79,9 @@ void MarketingOptInScreen::HideImpl() {
   view_->Hide();
 }
 
-void MarketingOptInScreen::OnAllSet(bool play_communications_opt_in,
-                                    bool tips_communications_opt_in) {
-  // TODO(https://crbug.com/852557)
+void MarketingOptInScreen::OnGetStarted(bool chromebook_email_opt_in) {
+  // Call Chromebook Email Service API
+  // TODO(https://crbug.com/1056672)
   ExitScreen();
 }
 

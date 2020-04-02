@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
@@ -328,8 +329,8 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
   net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  SystemNetworkContextManager::GetStubResolverConfig(
-      g_browser_process->local_state(), &insecure_stub_resolver_enabled,
+  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
+      &insecure_stub_resolver_enabled,
       &secure_dns_mode, &dns_over_https_servers);
 
   // If the DNS mode is SECURE, captive portal login tabs should be opened in

@@ -51,11 +51,14 @@ public final class DownloadImpl extends IDownload.Stub {
             "org.chromium.weblayer.downloads.NOTIFICATION_LOCATION";
     static final String EXTRA_NOTIFICATION_MIME_TYPE =
             "org.chromium.weblayer.downloads.NOTIFICATION_MIME_TYPE";
+    static final String EXTRA_NOTIFICATION_PROFILE =
+            "org.chromium.weblayer.downloads.NOTIFICATION_PROFILE";
     static final String PREF_NEXT_NOTIFICATION_ID =
             "org.chromium.weblayer.downloads.notification_next_id";
     private static final String CHANNEL_ID = "org.chromium.weblayer.downloads.channel";
     private static final String TAG = "DownloadImpl";
 
+    private final String mProfileName;
     private final IDownloadCallbackClient mClient;
     private final IClientDownload mClientDownload;
     // WARNING: DownloadImpl may outlive the native side, in which case this member is set to 0.
@@ -67,7 +70,8 @@ public final class DownloadImpl extends IDownload.Stub {
     private static boolean sCreatedChannel = false;
     private static final HashMap<Integer, DownloadImpl> sMap = new HashMap<Integer, DownloadImpl>();
 
-    public static void forwardIntent(Context context, Intent intent) {
+    public static void forwardIntent(
+            Context context, Intent intent, ProfileManager profileManager) {
         if (intent.getAction().equals(OPEN_INTENT)) {
             String location = intent.getStringExtra(EXTRA_NOTIFICATION_LOCATION);
             if (TextUtils.isEmpty(location)) {
@@ -96,6 +100,17 @@ public final class DownloadImpl extends IDownload.Stub {
             return;
         }
 
+        String profileName = intent.getStringExtra(EXTRA_NOTIFICATION_PROFILE);
+
+        ProfileImpl profile = profileManager.getProfile(profileName);
+        if (!profile.areDownloadsInitialized()) {
+            profile.addDownloadNotificationIntent(intent);
+        } else {
+            handleIntent(intent);
+        }
+    }
+
+    public static void handleIntent(Intent intent) {
         int id = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1);
         DownloadImpl download = sMap.get(id);
         if (download == null) {
@@ -131,14 +146,20 @@ public final class DownloadImpl extends IDownload.Stub {
         return nextId;
     }
 
-    public DownloadImpl(IDownloadCallbackClient client, long nativeDownloadImpl, int id) {
+    public DownloadImpl(
+            String profileName, IDownloadCallbackClient client, long nativeDownloadImpl, int id) {
+        mProfileName = profileName;
         mClient = client;
         mNativeDownloadImpl = nativeDownloadImpl;
         mNotificationId = id;
-        try {
-            mClientDownload = client.createClientDownload(this);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
+        if (mClient == null) {
+            mClientDownload = null;
+        } else {
+            try {
+                mClientDownload = mClient.createClientDownload(this);
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
         }
         DownloadImplJni.get().setJavaDownload(mNativeDownloadImpl, DownloadImpl.this);
     }
@@ -305,6 +326,7 @@ public final class DownloadImpl extends IDownload.Stub {
         Intent deleteIntent = createIntent();
         deleteIntent.setAction(DELETE_INTENT);
         deleteIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
+        deleteIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
         PendingIntent deletePendingIntent = PendingIntent.getBroadcast(
                 ContextUtils.getApplicationContext(), mNotificationId, deleteIntent, 0);
 
@@ -383,6 +405,7 @@ public final class DownloadImpl extends IDownload.Stub {
             Intent openIntent = createIntent();
             openIntent.setAction(OPEN_INTENT);
             openIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
+            openIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             openIntent.putExtra(EXTRA_NOTIFICATION_LOCATION, getLocation());
             openIntent.putExtra(EXTRA_NOTIFICATION_MIME_TYPE, getMimeType());
             PendingIntent openPendingIntent = PendingIntent.getBroadcast(
@@ -402,6 +425,7 @@ public final class DownloadImpl extends IDownload.Stub {
             Intent pauseIntent = createIntent();
             pauseIntent.setAction(PAUSE_INTENT);
             pauseIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
+            pauseIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             PendingIntent pausePendingIntent = PendingIntent.getBroadcast(
                     ContextUtils.getApplicationContext(), mNotificationId, pauseIntent, 0);
             mBuilder.addAction(0 /* no icon */, "Pause", pausePendingIntent)
@@ -410,6 +434,7 @@ public final class DownloadImpl extends IDownload.Stub {
             Intent resumeIntent = createIntent();
             resumeIntent.setAction(RESUME_INTENT);
             resumeIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
+            resumeIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             PendingIntent resumePendingIntent = PendingIntent.getBroadcast(
                     ContextUtils.getApplicationContext(), mNotificationId, resumeIntent, 0);
             mBuilder.addAction(0 /* no icon */, "Resume", resumePendingIntent)
@@ -420,6 +445,7 @@ public final class DownloadImpl extends IDownload.Stub {
             Intent cancelIntent = createIntent();
             cancelIntent.setAction(CANCEL_INTENT);
             cancelIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
+            cancelIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             PendingIntent cancelPendingIntent = PendingIntent.getBroadcast(
                     ContextUtils.getApplicationContext(), mNotificationId, cancelIntent, 0);
             mBuilder.addAction(0 /* no icon */, "Cancel", cancelPendingIntent);

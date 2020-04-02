@@ -23,7 +23,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 // A view wrapper class that owns the ExtensionsToolbarContainer.
 // This is used when we don't have a "real" browser window, because the
@@ -142,12 +141,6 @@ gfx::NativeView ExtensionsMenuTestUtil::GetPopupNativeView() {
 
 bool ExtensionsMenuTestUtil::HasPopup() {
   return !!GetPopupNativeView();
-}
-
-gfx::Size ExtensionsMenuTestUtil::GetPopupSize() {
-  gfx::NativeView popup = GetPopupNativeView();
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(popup);
-  return widget->GetWindowBoundsInScreen().size();
 }
 
 bool ExtensionsMenuTestUtil::HidePopup() {

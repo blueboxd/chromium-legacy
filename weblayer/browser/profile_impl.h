@@ -43,6 +43,11 @@ class ProfileImpl : public Profile {
 
   content::BrowserContext* GetBrowserContext();
 
+  // Called when the download subsystem has finished initializing. By this point
+  // information about downloads that were interrupted by a previous crash would
+  // be available.
+  void DownloadsInitialized();
+
   // Path data is stored at, empty if off-the-record.
   const base::FilePath& data_path() const { return data_path_; }
   DownloadDelegate* download_delegate() { return download_delegate_; }
@@ -58,7 +63,9 @@ class ProfileImpl : public Profile {
   CookieManager* GetCookieManager() override;
 
 #if defined(OS_ANDROID)
-  ProfileImpl(JNIEnv* env, const base::android::JavaParamRef<jstring>& path);
+  ProfileImpl(JNIEnv* env,
+              const base::android::JavaParamRef<jstring>& path,
+              const base::android::JavaParamRef<jobject>& java_profile);
 
   jboolean DeleteDataFromDisk(
       JNIEnv* env,
@@ -73,6 +80,7 @@ class ProfileImpl : public Profile {
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& directory);
   jlong GetCookieManager(JNIEnv* env);
+  void EnsureBrowserContextInitialized(JNIEnv* env);
 #endif
 
   void IncrementBrowserImplCount();
@@ -106,6 +114,10 @@ class ProfileImpl : public Profile {
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
 
   size_t num_browser_impl_ = 0u;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> java_profile_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

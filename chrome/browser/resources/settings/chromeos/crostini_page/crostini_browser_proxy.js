@@ -262,6 +262,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(CrostiniBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     CrostiniBrowserProxy: CrostiniBrowserProxy,
     CrostiniBrowserProxyImpl: CrostiniBrowserProxyImpl,

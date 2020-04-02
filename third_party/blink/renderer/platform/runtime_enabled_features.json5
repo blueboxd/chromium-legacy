@@ -1734,6 +1734,10 @@
       status: "experimental",
     },
     {
+      name: "UnderlineOffsetThickness",
+      status: "test",
+    },
+    {
       name: "UnifiedPointerCaptureInBlink",
       status: "stable",
     },

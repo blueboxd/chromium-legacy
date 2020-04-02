@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+img {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+</style>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/overlay-interstitial-ad-testharness.js"></script>
+</head>
+<body>
+
+<img></img>
+
+<script>
+if (window.testRunner) {
+  // Inject a subresource filter to mark 'alpha.png' as a would be disallowed resource.
+  testRunner.setDisallowedSubresourcePathSuffixes(["alpha.png"], false /* block_subresources */);
+}
+
+async_test(t => {
+    document.getElementsByTagName("img")[0].src = "resources/alpha.png";
+    verifyInterstitialUseCounterAfter1500ms(t, true);
+}, "Test UseCounter for overlay-interstitial-ad when the image has fixed position.");
+</script>
+</body>
+</html>

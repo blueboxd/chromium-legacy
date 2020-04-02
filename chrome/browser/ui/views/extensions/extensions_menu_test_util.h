@@ -35,7 +35,6 @@ class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
   std::string GetTooltip(int index) override;
   gfx::NativeView GetPopupNativeView() override;
   bool HasPopup() override;
-  gfx::Size GetPopupSize() override;
   bool HidePopup() override;
   bool ActionButtonWantsToRun(size_t index) override;
   void SetWidth(int width) override;

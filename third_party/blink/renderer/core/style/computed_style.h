@@ -729,8 +729,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // outline-offset
   int OutlineOffset() const {
-    if (OutlineStyle() == EBorderStyle::kNone)
-      return 0;
     return OutlineOffsetInternal();
   }
 

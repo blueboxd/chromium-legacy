@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
@@ -67,6 +68,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
     private CustomTabActivityTabController mTabController;
+    private TrustedWebActivityCoordinator mTwaCoordinator;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
@@ -382,9 +384,27 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         component.resolveCustomTabIncognitoManager();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
-            component.resolveTrustedWebActivityCoordinator();
+            mTwaCoordinator = component.resolveTrustedWebActivityCoordinator();
         }
 
         return component;
+    }
+
+    /**
+     * @return The package name of the Trusted Web Activity, if the activity is a TWA; null
+     * otherwise.
+     */
+    @Nullable
+    public String getTwaPackage() {
+        return mTwaCoordinator == null ? null : mTwaCoordinator.getTwaPackage();
+    }
+
+    /**
+     * @return Whether the app is running in the "Trusted Web Activity" mode, where the TWA-specific
+     *         UI is shown.
+     */
+    @Nullable
+    public Boolean isInTwaMode() {
+        return mTwaCoordinator == null ? false : mTwaCoordinator.isInTwaMode();
     }
 }

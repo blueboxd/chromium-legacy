@@ -97,6 +97,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void AttachTextBox(InlineTextBox*);
   void RemoveTextBox(InlineTextBox*);
 
+  bool HasInlineFragments() const final;
   NGPaintFragment* FirstInlineFragment() const final;
   void SetFirstInlineFragment(NGPaintFragment*) final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
@@ -217,10 +218,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // returns first-letter part of |InlineTextBox| instead of remaining part.
   InlineTextBox* FirstTextBox() const { return TextBoxes().First(); }
   InlineTextBox* LastTextBox() const { return TextBoxes().Last(); }
-
-  // True if we have inline text box children which implies rendered text (or
-  // whitespace) output.
-  bool HasTextBoxes() const;
 
   // TODO(layoutng) Legacy-only implementation of HasTextBoxes.
   // All callers should call HasTextBoxes instead, and take NG into account.

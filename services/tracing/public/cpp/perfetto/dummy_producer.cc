@@ -27,9 +27,6 @@ void DummyProducer::ClearIncrementalState(
     size_t num_data_sources) {}
 
 // PerfettoProducer implementation.
-bool DummyProducer::SetupStartupTracing() {
-  return false;
-}
 perfetto::SharedMemoryArbiter* DummyProducer::MaybeSharedMemoryArbiter() {
   return nullptr;
 }
@@ -38,6 +35,9 @@ bool DummyProducer::IsTracingActive() {
 }
 void DummyProducer::NewDataSourceAdded(
     const PerfettoTracedProcess::DataSourceBase* const data_source) {}
+bool DummyProducer::SetupSharedMemoryForStartupTracing() {
+  return false;
+}
 
 // SystemProducer implementation.
 void DummyProducer::ConnectToSystemService() {}
@@ -49,6 +49,5 @@ void DummyProducer::DisconnectWithReply(
 bool DummyProducer::IsDummySystemProducerForTesting() {
   return true;
 }
-void DummyProducer::ResetSequenceForTesting() {}
 
 }  // namespace tracing

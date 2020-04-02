@@ -187,7 +187,7 @@ bool DstBufferSizeHasOverflow(const ImageBitmap::ParsedOptions& options) {
   return false;
 }
 
-SkImageInfo GetSkImageInfo(const scoped_refptr<StaticBitmapImage>& input) {
+SkImageInfo GetSkImageInfo(const scoped_refptr<Image>& input) {
   auto image = input->PaintImageForCurrentFrame().GetSkImage();
   return SkImageInfo::Make(image->width(), image->height(), image->colorType(),
                            image->alphaType(), image->refColorSpace());
@@ -595,12 +595,17 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
-  // Attempt to get raw unpremultiplied image data, executed only when
-  // skia_image is premultiplied.
-  scoped_refptr<StaticBitmapImage> static_input;
-  sk_sp<SkImage> skia_image = input->PaintImageForCurrentFrame().GetSkImage();
-  if (!skia_image->isOpaque() && input->Data() &&
-      skia_image->alphaType() == kPremul_SkAlphaType) {
+  cc::PaintImage paint_image = input->PaintImageForCurrentFrame();
+  if (!paint_image)
+    return;
+
+  DCHECK(!paint_image.IsTextureBacked());
+  if (input->IsBitmapImage()) {
+    // A BitmapImage indicates that this is a coded backed image.
+    if (!input->Data())
+      return;
+
+    DCHECK(paint_image.IsLazyGenerated());
     const bool data_complete = true;
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
         input->Data(), data_complete,
@@ -610,32 +615,33 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
         parsed_options.has_color_space_conversion ? ColorBehavior::Tag()
                                                   : ColorBehavior::Ignore(),
         ImageDecoder::OverrideAllowDecodeToYuv::kDeny));
-    if (!decoder)
-      return;
-    skia_image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
+    auto skia_image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
     if (!skia_image)
       return;
 
-    // In the case where the source image is lazy-decoded, image_ may not be in
-    // a decoded state, we trigger it here.
-    SkPixmap pixmap;
-    if (!skia_image->peekPixels(&pixmap)) {
-      sk_sp<SkSurface> surface = SkSurface::MakeRaster(
-          GetSkImageInfo(UnacceleratedStaticBitmapImage::Create(skia_image)));
-      SkPaint paint;
-      paint.setBlendMode(SkBlendMode::kSrc);
-      surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
-      skia_image = surface->makeImageSnapshot();
-      if (!skia_image)
-        return;
-    }
-    static_input = UnacceleratedStaticBitmapImage::Create(
-        skia_image, input->CurrentFrameOrientation());
-  } else {
-    static_input = UnacceleratedStaticBitmapImage::Create(
-        input->PaintImageForCurrentFrame(), input->CurrentFrameOrientation());
+    paint_image = PaintImageBuilder::WithDefault()
+                      .set_id(paint_image.stable_id())
+                      .set_image(std::move(skia_image),
+                                 paint_image.GetContentIdForFrame(0u))
+                      .TakePaintImage();
+  } else if (paint_image.IsLazyGenerated()) {
+    // Other Image types can still produce lazy generated images (for example
+    // SVGs).
+    SkBitmap bitmap;
+    SkImageInfo image_info = GetSkImageInfo(input);
+    bitmap.allocPixels(image_info, image_info.minRowBytes());
+    if (!paint_image.GetSkImage()->readPixels(bitmap.pixmap(), 0, 0))
+      return;
+
+    paint_image = PaintImageBuilder::WithDefault()
+                      .set_id(paint_image.stable_id())
+                      .set_image(SkImage::MakeFromBitmap(bitmap),
+                                 paint_image.GetContentIdForFrame(0u))
+                      .TakePaintImage();
   }
 
+  auto static_input = UnacceleratedStaticBitmapImage::Create(
+      std::move(paint_image), input->CurrentFrameOrientation());
   image_ = CropImageAndApplyColorSpaceConversion(std::move(static_input),
                                                  parsed_options);
   if (!image_)

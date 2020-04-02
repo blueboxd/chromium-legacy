@@ -60,6 +60,7 @@ class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate,
   void OnDownloadCreated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
   void OnDownloadDropped(content::DownloadManager* manager) override;
+  void OnManagerInitialized() override;
 
   // download::DownloadItem::Observer implementation:
   void OnDownloadUpdated(download::DownloadItem* item) override;

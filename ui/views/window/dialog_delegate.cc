@@ -62,12 +62,14 @@ bool DialogDelegate::CanSupportCustomFrame(gfx::NativeView parent) {
 #if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
   // The new style doesn't support unparented dialogs on Linux desktop.
   return parent != nullptr;
-#elif defined(OS_WIN)
+#else
+#if defined(OS_WIN)
   // The new style doesn't support unparented dialogs on Windows Classic themes.
   if (!ui::win::IsAeroGlassEnabled())
     return parent != nullptr;
 #endif
   return true;
+#endif
 }
 
 // static

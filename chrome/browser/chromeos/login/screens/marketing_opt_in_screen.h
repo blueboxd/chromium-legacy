@@ -23,9 +23,8 @@ class MarketingOptInScreen : public BaseScreen {
                        const base::RepeatingClosure& exit_callback);
   ~MarketingOptInScreen() override;
 
-  // On "All set" button pressed.
-  void OnAllSet(bool play_communications_opt_in,
-                bool tips_communications_opt_in);
+  // On "Get Started" button pressed.
+  void OnGetStarted(bool chromebook_email_opt_in);
 
   void set_exit_callback_for_testing(
       const base::RepeatingClosure& exit_callback) {

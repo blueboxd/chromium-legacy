@@ -467,6 +467,9 @@ extern const char kEnableResourceLoadingHintsDescription[];
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];
 
+extern const char kEnableSyncTrustedVaultName[];
+extern const char kEnableSyncTrustedVaultDescription[];
+
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 
@@ -1098,6 +1101,9 @@ extern const char kTabGroupsDescription[];
 
 extern const char kTabGroupsCollapseName[];
 extern const char kTabGroupsCollapseDescription[];
+
+extern const char kTabGroupsFeedbackName[];
+extern const char kTabGroupsFeedbackDescription[];
 
 extern const char kTabHoverCardsName[];
 extern const char kTabHoverCardsDescription[];

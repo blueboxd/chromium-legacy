@@ -28,7 +28,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
@@ -46,6 +45,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
@@ -67,7 +67,7 @@ import java.util.concurrent.Callable;
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
-@EnableFeatures(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)
+@EnableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
 public class SiteSettingsTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -251,8 +251,9 @@ public class SiteSettingsTest {
             }
 
             private boolean improvedControlsEnabled() {
-                return ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING);
+                return ContentSettingsFeatureList.isEnabled(
+                        ContentSettingsFeatureList
+                                .IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING);
             }
         });
     }
@@ -395,7 +396,7 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisableFeatures(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)
+    @DisableFeatures(ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)
     public void testThirdPartyCookieToggleGetsDisabledOld() {
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
@@ -465,7 +466,8 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     // Todo(eokoyomon) figure out how to set and test third party cookie setting in this test
-    // @EnableFeatures(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING)
+    // @EnableFeatures(
+    //         ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING)
     public void testSiteExceptionCookiesBlocked() throws Exception {
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);

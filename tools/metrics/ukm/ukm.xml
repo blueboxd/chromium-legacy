@@ -4875,6 +4875,76 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="LoadingPredictor" singular="true">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Metrics that reflect the accuracy of the predictions used by the Loading
+    Predictor. This event will be recorded once per page load on
+    DocumentOnLoadCompletedInMainFrame().
+  </summary>
+  <metric name="LocalPredictionCorrectlyPredictedOrigins">
+    <summary>
+      The number of subresource origins that were correctly predicted by the
+      local prediction database. This will be recorded if there is a prediction
+      available in the local prediction database and does not necessarily mean
+      that the prediction was used. If more than 100 subresource origins were
+      correctly predicted, this will be capped at 100.
+    </summary>
+  </metric>
+  <metric name="LocalPredictionOrigins">
+    <summary>
+      The number of subresource origins that were predicted locally. This will
+      be recorded if there is a prediction available in the local prediction
+      database and does not necessarily mean that the prediction was used. If
+      more than 100 subresource origins were predicted, this will be capped at
+      100.
+    </summary>
+  </metric>
+  <metric name="OptimizationGuidePredictionCorrectlyPredictedOrigins">
+    <summary>
+      The number of subresource origins that were correctly predicted by the
+      Optimization Guide. This will be recorded if the Optimization Guide was
+      consulted for the page load and the Optimization Guide had a prediction
+      for it. If more than 100 subresource origins were correctly predicted,
+      this will be capped at 100.
+    </summary>
+  </metric>
+  <metric name="OptimizationGuidePredictionCorrectlyPredictedSubresources">
+    <summary>
+      The number of subresources that were correctly predicted by the
+      Optimization Guide. This will be recorded if the Optimization Guide was
+      consulted for the page load and the Optimization Guide had a prediction
+      for it. If more than 100 subresources were predicted, this will be capped
+      at 100.
+    </summary>
+  </metric>
+  <metric name="OptimizationGuidePredictionDecision"
+      enum="OptimizationGuideOptimizationGuideDecision">
+    <summary>
+      The decision coming from the Optimization Guide for whether there was a
+      prediction available for the Page Load. This will be recorded if the
+      Optimization Guide was consulted for the page load.
+    </summary>
+  </metric>
+  <metric name="OptimizationGuidePredictionOrigins">
+    <summary>
+      The number of subresource origins that were predicted by the Optimization
+      Guide. This will be recorded if the Optimization Guide was consulted for
+      the page load and the Optimization Guide had a prediction for it. If more
+      than 100 subresource origins were predicted, this will be capped at 100.
+    </summary>
+  </metric>
+  <metric name="OptimizationGuidePredictionSubresources">
+    <summary>
+      The number of subresources that were predicted by the Optimization Guide.
+      This will be recorded if the Optimization Guide was consulted for the page
+      load and the Optimization Guide had a prediction for it. If more than 100
+      subresources were predicted, this will be capped at 100.
+    </summary>
+  </metric>
+</event>
+
 <event name="LocalNetworkRequests">
   <owner>uthakore@chromium.org</owner>
   <owner>invernizzi@chromium.org</owner>
@@ -6906,7 +6976,8 @@ be describing additional metrics about the same event.
     <summary>
       The duration (in milliseconds) for how long it took from the request to go
       out to when it was usable on the client. Only recorded if a fetch was
-      initiated for the navigation and the fetch was successful.
+      initiated for the navigation. Will be recorded as INT64_MAX if the request
+      did not complete successfully.
     </summary>
   </metric>
   <metric name="NavigationHostCovered"
@@ -8677,6 +8748,38 @@ be describing additional metrics about the same event.
       A boolean indicating if any mainpage request in the redirect chain or
       committed request had cookies set on it. Only set when a query result was
       received from the cookie manager before event recording.
+    </summary>
+  </metric>
+  <metric name="ordered_eligible_pages_bitmask">
+    <summary>
+      Which links on the Google Search Page were eligible to be prefetched where
+      the Nth-LSB is set if the Nth page is eligible.
+    </summary>
+  </metric>
+  <metric name="prefetch_attempted_count">
+    <summary>
+      The number of pages on the Google Search Result Page that were attempted
+      to be prefetched.
+    </summary>
+  </metric>
+  <metric name="prefetch_eligible_count">
+    <summary>
+      The number of pages on the Google Search Result page that were eligible to
+      be prefetched.
+    </summary>
+  </metric>
+  <metric name="prefetch_successful_count">
+    <summary>
+      The number of pages on the Google Search Result Page that were
+      successfully prefetched.
+    </summary>
+  </metric>
+  <metric name="prefetch_usage">
+    <summary>
+      This enum records if a cached prefetch page was used, and its probe
+      status, when the user navigates off the Google Search Result Page. Not set
+      if there was no prefetch. Values: Prefetch used, no probe = 0. Prefetch
+      used, successful probe = 1. Prefetch not used, failed probe = 2.
     </summary>
   </metric>
 </event>

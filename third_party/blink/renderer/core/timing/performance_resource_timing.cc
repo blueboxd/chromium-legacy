@@ -72,6 +72,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       last_redirect_end_time_(info.last_redirect_end_time),
       response_end_(info.response_end),
       context_type_(info.context_type),
+      request_destination_(info.request_destination),
       transfer_size_(info.transfer_size),
       encoded_body_size_(info.encoded_body_size),
       decoded_body_size_(info.decoded_body_size),
@@ -96,6 +97,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
       context_type_(mojom::RequestContextType::HYPERLINK),
+      request_destination_(network::mojom::RequestDestination::kDocument),
       is_secure_context_(is_secure_context),
       server_timing_(std::move(server_timing)),
       worker_timing_receiver_(this, mojo::NullReceiver()) {}
@@ -148,6 +150,7 @@ AtomicString PerformanceResourceTiming::ConnectionInfo() const {
 
 namespace {
 bool IsDocumentDestination(mojom::blink::RequestContextType context_type) {
+  // TODO(crbug.com/889751) : Need to change using RequestDestination
   return context_type == mojom::blink::RequestContextType::IFRAME ||
          context_type == mojom::blink::RequestContextType::FRAME ||
          context_type == mojom::blink::RequestContextType::FORM ||

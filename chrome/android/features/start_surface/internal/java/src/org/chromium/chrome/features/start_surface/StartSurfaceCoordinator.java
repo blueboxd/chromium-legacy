@@ -11,6 +11,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
@@ -207,8 +208,13 @@ public class StartSurfaceCoordinator implements StartSurface {
         allProperties.addAll(Arrays.asList(StartSurfaceProperties.ALL_KEYS));
         mPropertyModel = new PropertyModel(allProperties);
 
-        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
-                mPropertyModel, mSurfaceMode == SurfaceMode.SINGLE_PANE, !excludeMVTiles);
+        int tabSwitcherType = mSurfaceMode == SurfaceMode.SINGLE_PANE ? TabSwitcherType.CAROUSEL
+                                                                      : TabSwitcherType.GRID;
+        if (StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue()) {
+            tabSwitcherType = TabSwitcherType.SINGLE;
+        }
+        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
+                mActivity, mPropertyModel, tabSwitcherType, !excludeMVTiles);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
 
         mTasksSurfacePropertyModelChangeProcessor =
@@ -240,7 +246,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
         mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, propertyModel, false, false);
+                mActivity, propertyModel, TabSwitcherType.GRID, false);
         mSecondaryTasksSurface.onFinishNativeInitialization(
                 mActivity, mActivity.getToolbarManager().getFakeboxDelegate());
         mSecondaryTasksSurface.initialize();

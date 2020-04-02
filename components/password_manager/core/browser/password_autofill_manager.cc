@@ -57,6 +57,8 @@ namespace password_manager {
 
 namespace {
 
+using IsLoading = autofill::Suggestion::IsLoading;
+
 constexpr base::char16 kPasswordReplacementChar = 0x2022;
 
 // Returns |username| unless it is empty. For an empty |username| returns a
@@ -195,6 +197,11 @@ void MaybeAppendManualFallback(syncer::SyncService* sync_service,
   autofill::Suggestion suggestion(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS));
   suggestion.frontend_id = autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY;
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    // The UI code will pick up an icon from the resources based on the string.
+    suggestion.icon = "settingsIcon";
+  }
   suggestions->push_back(std::move(suggestion));
 }
 
@@ -213,6 +220,7 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN;
+  suggestion.icon = CreateStoreIcon(/*uses_account_store=*/true);
   return suggestion;
 }
 
@@ -222,12 +230,7 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
       IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORED_GENERATION));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE;
-  return suggestion;
-}
-
-autofill::Suggestion CreateLoadingSpinner() {
-  autofill::Suggestion suggestion;
-  suggestion.frontend_id = autofill::POPUP_ITEM_ID_LOADING_SPINNER;
+  suggestion.icon = CreateStoreIcon(/*uses_account_store=*/true);
   return suggestion;
 }
 
@@ -249,43 +252,24 @@ bool AreSuggestionForPasswordField(
                      });
 }
 
-std::vector<autofill::Suggestion> ReplaceUnlockButtonWithLoadingIndicator(
+std::vector<autofill::Suggestion> SetUnlockLoadingState(
     base::span<const autofill::Suggestion> suggestions,
-    autofill::PopupItemId unlock_item) {
+    autofill::PopupItemId unlock_item,
+    IsLoading is_loading) {
   DCHECK(
       unlock_item == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
       unlock_item ==
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
   std::vector<autofill::Suggestion> new_suggestions;
-  new_suggestions.push_back(CreateLoadingSpinner());
-  std::copy_if(suggestions.begin(), suggestions.end(),
-               std::back_inserter(new_suggestions),
-               [unlock_item](const autofill::Suggestion& suggestion) {
-                 return suggestion.frontend_id != unlock_item;
-               });
-  return new_suggestions;
-}
-
-std::vector<autofill::Suggestion> ReplaceLoaderWithUnlock(
-    base::span<const autofill::Suggestion> suggestions,
-    autofill::PopupItemId unlock_item) {
-  std::vector<autofill::Suggestion> new_suggestions;
   new_suggestions.reserve(suggestions.size());
-  for (const auto& suggestion : suggestions) {
-    if (suggestion.frontend_id != autofill::POPUP_ITEM_ID_LOADING_SPINNER)
-      new_suggestions.push_back(suggestion);
-  }
-  switch (unlock_item) {
-    case autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE:
-      new_suggestions.push_back(
-          CreateEntryToOptInToAccountStorageThenGenerate());
-      break;
-    case autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN:
-      new_suggestions.push_back(CreateEntryToOptInToAccountStorageThenFill());
-      break;
-    default:
-      NOTREACHED();
-  }
+  std::copy(suggestions.begin(), suggestions.end(),
+            std::back_inserter(new_suggestions));
+  auto unlock_iter =
+      std::find_if(new_suggestions.begin(), new_suggestions.end(),
+                   [unlock_item](const autofill::Suggestion& suggestion) {
+                     return suggestion.frontend_id == unlock_item;
+                   });
+  unlock_iter->is_loading = is_loading;
   return new_suggestions;
 }
 
@@ -342,8 +326,8 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
       identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
   if (account_id.empty())
     return;
-  UpdatePopup(ReplaceUnlockButtonWithLoadingIndicator(
-      autofill_client_->GetPopupSuggestions(), unlock_item));
+  UpdatePopup(SetUnlockLoadingState(autofill_client_->GetPopupSuggestions(),
+                                    unlock_item, IsLoading(true)));
   autofill_client_->PinPopupView();
   password_client_->TriggerReauthForAccount(
       account_id,
@@ -698,8 +682,8 @@ void PasswordAutofillManager::OnUnlockReauthCompleted(
     }
     return;
   }
-  UpdatePopup(ReplaceLoaderWithUnlock(autofill_client_->GetPopupSuggestions(),
-                                      unlock_item));
+  UpdatePopup(SetUnlockLoadingState(autofill_client_->GetPopupSuggestions(),
+                                    unlock_item, IsLoading(false)));
 }
 
 }  //  namespace password_manager

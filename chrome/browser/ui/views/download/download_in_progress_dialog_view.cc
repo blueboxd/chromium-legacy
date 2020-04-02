@@ -55,6 +55,8 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
       base::BindOnce(run_callback, base::Unretained(this), true));
   DialogDelegate::SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
+  DialogDelegate::SetCloseCallback(
+      base::BindOnce(run_callback, base::Unretained(this), false));
 
   int message_id = 0;
   switch (dialog_type) {
@@ -83,7 +85,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::DOWNLOAD_IN_PROGRESS);
 }
 
-DownloadInProgressDialogView::~DownloadInProgressDialogView() {}
+DownloadInProgressDialogView::~DownloadInProgressDialogView() = default;
 
 gfx::Size DownloadInProgressDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -104,3 +106,7 @@ base::string16 DownloadInProgressDialogView::GetWindowTitle() const {
   return l10n_util::GetPluralStringFUTF16(IDS_ABANDON_DOWNLOAD_DIALOG_TITLE,
                                           download_count_);
 }
+
+BEGIN_METADATA(DownloadInProgressDialogView)
+METADATA_PARENT_CLASS(views::DialogDelegateView);
+END_METADATA()

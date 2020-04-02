@@ -232,12 +232,11 @@ void CompositorFrameReportingController::DidNotProduceFrame(
 
 void CompositorFrameReportingController::OnFinishImplFrame(
     const viz::BeginFrameId& id) {
-  if (reporters_[PipelineStage::kBeginImplFrame]) {
-    DCHECK_EQ(reporters_[PipelineStage::kBeginImplFrame]->frame_id_, id);
-    reporters_[PipelineStage::kBeginImplFrame]->OnFinishImplFrame(Now());
-  } else if (reporters_[PipelineStage::kBeginMainFrame]) {
-    DCHECK_EQ(reporters_[PipelineStage::kBeginMainFrame]->frame_id_, id);
-    reporters_[PipelineStage::kBeginMainFrame]->OnFinishImplFrame(Now());
+  for (auto& reporter : reporters_) {
+    if (reporter && reporter->frame_id_ == id) {
+      reporter->OnFinishImplFrame(Now());
+      return;
+    }
   }
 }
 

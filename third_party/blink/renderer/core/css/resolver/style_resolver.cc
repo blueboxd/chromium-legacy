@@ -138,8 +138,9 @@ bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style) {
   // the fact that we have a base computed style when DCHECKs are enabled, and
   // call ValidateBaseComputedStyle() to check that the optimization was sound.
   return true;
-#endif  // !DCHECK_IS_ON()
+#else
   return !base_computed_style;
+#endif  // !DCHECK_IS_ON()
 }
 
 // Compare the base computed style with the one we compute to validate that the

@@ -55,6 +55,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(PluginVmBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     PluginVmBrowserProxy: PluginVmBrowserProxy,
     PluginVmBrowserProxyImpl: PluginVmBrowserProxyImpl,

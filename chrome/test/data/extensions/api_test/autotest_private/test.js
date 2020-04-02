@@ -145,26 +145,6 @@ var defaultTests = [
       });
     });
   },
-  function getHistogramExists() {
-    // Request an arbitrary histogram that is reported once at startup and seems
-    // unlikely to go away.
-    chrome.autotestPrivate.getHistogram(
-        "Startup.BrowserProcessImpl_PreMainMessageLoopRunTime",
-        chrome.test.callbackPass(function(histogram) {
-          chrome.test.assertEq(typeof histogram, 'object');
-          chrome.test.assertEq(histogram.buckets.length, 1);
-          chrome.test.assertEq(histogram.buckets[0].count, 1);
-          chrome.test.assertTrue(histogram.sum <= histogram.buckets[0].max);
-          chrome.test.assertTrue(histogram.sum >= histogram.buckets[0].min);
-          chrome.test.assertTrue(
-              histogram.buckets[0].max > histogram.buckets[0].min);
-        }));
-  },
-  function getHistogramMissing() {
-    chrome.autotestPrivate.getHistogram(
-        'Foo.Nonexistent',
-        chrome.test.callbackFail('Histogram Foo.Nonexistent not found'));
-  },
   // This test verifies that Play Store window is not shown by default but
   // Chrome is shown.
   function isAppShown() {
@@ -244,29 +224,33 @@ var defaultTests = [
       chrome.test.succeed();
     });
   },
+  // The state dumped in Assistant API error message is AssistantAllowedState
+  // defined in ash/public/mojom/assistant_state_controller.mojom.
+  // 3 is DISALLOWED_BY_NONPRIMARY_USER from IsAssistantAllowedForProfile when
+  // running under test without setting up a primary account.
   function setAssistantEnabled() {
     chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Assistant not allowed - state: 3'));
   },
   function sendAssistantTextQuery() {
     chrome.autotestPrivate.sendAssistantTextQuery(
         'what time is it?' /* query */,
         1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Assistant not allowed - state: 3'));
   },
   function waitForAssistantQueryStatus() {
     chrome.autotestPrivate.waitForAssistantQueryStatus(10 /* timeout_s */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Assistant not allowed - state: 3'));
   },
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,
         true /* value */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Assistant not allowed - state: 3'));
   },
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.
@@ -749,11 +733,19 @@ var defaultTests = [
                 closeWindow,
                 function(success) {
                   chrome.test.assertTrue(success);
-                  chrome.autotestPrivate.getAppWindowList(function(list) {
-                    chrome.test.assertEq(1, list.length);
-                    chrome.test.assertNoLastError();
-                    chrome.test.succeed();
-                  });
+                  // Actual window close might happen sometime later after the
+                  // accelerator. So keep trying until window count drops to 1.
+                  var timer = window.setInterval(() => {
+                    chrome.autotestPrivate.getAppWindowList(function(list) {
+                      chrome.test.assertNoLastError();
+
+                      if (list.length != 1)
+                        return;
+
+                      window.clearInterval(timer);
+                      chrome.test.succeed();
+                    });
+                  }, 100);
                 });
           });
         });

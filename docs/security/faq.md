@@ -692,7 +692,3 @@ No. PDF files have some powerful capabilities including invoking printing or
 posting form data. To mitigate abuse of these capabiliies, such as beaconing
 upon document open, we require interaction with the document (a "user gesture")
 before allowing their use.
-
-## TODO
-
-*    https://dev.chromium.org/Home/chromium-security/client-identification-mechanisms

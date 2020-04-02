@@ -81,6 +81,11 @@ PreconnectPrediction::PreconnectPrediction(
     const PreconnectPrediction& prediction) = default;
 PreconnectPrediction::~PreconnectPrediction() = default;
 
+OptimizationGuidePrediction::OptimizationGuidePrediction() = default;
+OptimizationGuidePrediction::OptimizationGuidePrediction(
+    const OptimizationGuidePrediction& prediction) = default;
+OptimizationGuidePrediction::~OptimizationGuidePrediction() = default;
+
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor static functions.
 

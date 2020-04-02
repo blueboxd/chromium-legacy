@@ -104,9 +104,10 @@ bool ShouldShowImprovedUserConsentForCreditCardSave() {
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // The new user consent UI is fully launched on MacOS, Windows and Linux.
   return true;
-#endif
+#else
   // Chrome OS does not have the new UI.
   return false;
+#endif
 }
 
 }  // namespace features

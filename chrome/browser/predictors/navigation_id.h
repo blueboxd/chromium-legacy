@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -23,6 +24,7 @@ struct NavigationID {
   NavigationID();
   explicit NavigationID(content::WebContents* web_contents);
   NavigationID(content::WebContents* web_contents,
+               ukm::SourceId ukm_source_id,
                const GURL& main_frame_url,
                const base::TimeTicks& creation_time);
   NavigationID(const NavigationID& other);
@@ -35,6 +37,7 @@ struct NavigationID {
   bool is_valid() const;
 
   SessionID tab_id;
+  ukm::SourceId ukm_source_id;
   GURL main_frame_url;
 
   // NOTE: Even though we store the creation time here, it is not used during

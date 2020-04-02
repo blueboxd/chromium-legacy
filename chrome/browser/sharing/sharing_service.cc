@@ -56,11 +56,11 @@ SharingMessageSender::DelegateType GetSendDelegateType(
   // logic once we wrap up the experiment and e.g. only send messages over a
   // certain size via WebRTC.
   return SharingMessageSender::DelegateType::kWebRtc;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
-
+#else
   // Only FCM is supported for non desktop OS.
   return SharingMessageSender::DelegateType::kFCM;
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 }
 
 }  // namespace

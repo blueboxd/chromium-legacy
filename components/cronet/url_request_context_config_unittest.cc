@@ -68,6 +68,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   options.SetPath(
       {"QUIC", "set_quic_flags"},
       base::Value(
+          "FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count=5,"
           "FLAGS_quic_reloadable_flag_quic_enable_version_t050=true,"
           "FLAGS_quic_reloadable_flag_quic_enable_version_draft_27=true"));
   options.SetPath({"AsyncDNS", "enable"}, base::Value(true));
@@ -141,6 +142,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_TRUE(base::JSONWriter::Write(options, &options_json));
 
   // Initialize QUIC flags set by the config.
+  FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count = 0;
   FLAGS_quic_reloadable_flag_quic_enable_version_t050 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_draft_27 = false;
 
@@ -193,6 +195,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   quic_connection_options.push_back(quic::kREJ);
   EXPECT_EQ(quic_connection_options, quic_params->connection_options);
 
+  EXPECT_EQ(FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count, 5);
   EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_t050);
   EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_27);
 

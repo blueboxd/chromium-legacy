@@ -29,15 +29,30 @@
       }
 
       iron-collapse {
-        margin-inline-end: var(--cr-section-indent-width);
-        margin-inline-start: var(--cr-section-indent-width);
+        margin-inline-end: 0;
+        margin-inline-start: calc(var(--cr-radio-button-label-spacing, 20px)
+            + var(--cr-radio-button-size));
+      }
+
+      .disc-wrapper {
+        margin-inline-end: var(--cr-radio-button-label-spacing, 20px);
       }
 
       .separator {
         margin-inline-end: 0;
+        min-height: calc(var(--settings-collapse-toggle-min-height, 48px) / 2);
+      }
+
+      #borderWrapper {
+        align-items: center;
+        border-top: var(--settings-collapse-separator-line);
+        display: flex;
+        min-height: var(--settings-collapse-toggle-min-height);
+        width: 100%;
       }
 
       #labelWrapper {
+        --cr-radio-button-label-spacing: 0;
         padding-bottom: 6px;
         padding-top: 6px;
       }
@@ -59,24 +74,26 @@
         <div class="disc-border"></div>
         <div class="disc"></div>
       </div>
-      <div id="labelWrapper">
-        <div id="label" aria-hidden="true">
-          [[label]]
-          <slot name="label"></slot>
+      <div id="borderWrapper">
+        <div id="labelWrapper">
+          <div id="label" aria-hidden="true">
+            [[label]]
+            <slot name="label"></slot>
+          </div>
+          <div hidden$="[[!subLabel]]" class="secondary">
+            [[subLabel]]
+            <slot name="sub-label"></slot>
+          </div>
         </div>
-        <div hidden$="[[!subLabel]]" class="secondary">
-          [[subLabel]]
-          <slot name="sub-label"></slot>
-        </div>
+        <cr-policy-indicator id="policyIndicator"
+            on-click="onIndicatorClick_"
+            on-aria-label="[[label]]"
+            indicator-type="[[policyIndicatorType]]">
+        </cr-policy-indicator>
+        <div hidden$="[[noCollapse]]" class="separator"></div>
+        <cr-expand-button hidden$="[[noCollapse]]" expanded="{{expanded}}">
+        </cr-expand-button>
       </div>
-      <cr-policy-indicator id="policyIndicator"
-          on-click="onIndicatorClick_"
-          on-aria-label="[[label]]"
-          indicator-type="[[policyIndicatorType]]">
-      </cr-policy-indicator>
-      <div hidden$="[[noCollapse]]" class="separator"></div>
-      <cr-expand-button hidden$="[[noCollapse]]" expanded="{{expanded}}">
-      </cr-expand-button>
     </div>
 
     <iron-collapse opened="[[expanded]]">

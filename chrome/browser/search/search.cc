@@ -159,8 +159,9 @@ bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
 bool ShouldShowLocalNewTab(Profile* profile) {
 #if !defined(OS_ANDROID)
   return DefaultSearchProviderIsGoogle(profile);
-#endif
+#else
   return false;
+#endif
 }
 
 // Used to look up the URL to use for the New Tab page. Also tracks how we

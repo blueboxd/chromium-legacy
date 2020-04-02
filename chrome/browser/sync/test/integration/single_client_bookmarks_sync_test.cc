@@ -24,6 +24,8 @@
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
+#include "components/sync_bookmarks/switches.h"
+#include "content/public/test/test_launcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
@@ -97,6 +99,24 @@ void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
         base::UTF16ToUTF8(it->title)));
   }
 }
+
+class SingleClientBookmarksSyncTestWithEnabledReuploadRemoteBookmarks
+    : public SingleClientBookmarksSyncTest {
+ public:
+  SingleClientBookmarksSyncTestWithEnabledReuploadRemoteBookmarks() {
+    feature_list_.InitAndEnableFeature(
+        switches::kSyncReuploadBookmarkFullTitles);
+  }
+};
+
+class SingleClientBookmarksSyncTestWithEnabledReuploadPreexistingBookmarks
+    : public SingleClientBookmarksSyncTest {
+ public:
+  SingleClientBookmarksSyncTestWithEnabledReuploadPreexistingBookmarks() {
+    feature_list_.InitWithFeatureState(
+        switches::kSyncReuploadBookmarkFullTitles, !content::IsPreTest());
+  }
+};
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -1117,7 +1137,165 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
 }
 
+IN_PROC_BROWSER_TEST_P(
+    SingleClientBookmarksSyncTestWithEnabledReuploadRemoteBookmarks,
+    ShouldReuploadFullTitleAfterInitialMerge) {
+  ASSERT_TRUE(SetupClients());
+
+  const std::string title = "Title";
+
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  std::unique_ptr<syncer::LoopbackServerEntity> remote_folder =
+      bookmark_builder.BuildFolder(/*is_legacy=*/false);
+  const std::string new_guid = remote_folder->GetSpecifics().bookmark().guid();
+  ASSERT_FALSE(remote_folder->GetSpecifics().bookmark().has_full_title());
+  fake_server_->InjectEntity(std::move(remote_folder));
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+
+  const std::vector<sync_pb::SyncEntity> server_bookmarks =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  ASSERT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1u, server_bookmarks.size());
+
+  EXPECT_TRUE(server_bookmarks.front().specifics().bookmark().has_full_title());
+}
+
+// This test looks similar to
+// ShouldReuploadFullTitleAfterRestartOnIncrementalChange, but current test
+// initiates reupload after restart only (before restart the entity is in synced
+// state).
+IN_PROC_BROWSER_TEST_P(
+    SingleClientBookmarksSyncTestWithEnabledReuploadPreexistingBookmarks,
+    PRE_ShouldReuploadFullTitleForOldClients) {
+  // Prepare legacy bookmark without full_title field in specifics and store it
+  // locally.
+  ASSERT_TRUE(SetupSync());
+
+  const std::string title = "Title";
+  const GURL url = GURL("http://www.foo.com");
+
+  // Make an incremental remote creation of bookmark without full_title.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  std::unique_ptr<syncer::LoopbackServerEntity> remote_folder =
+      bookmark_builder.BuildBookmark(url, /*is_legacy=*/false);
+  const std::string new_guid = remote_folder->GetSpecifics().bookmark().guid();
+
+  // Makr sure that server-side specifics doesn't have full title.
+  remote_folder->GetSpecifics().mutable_bookmark()->clear_full_title();
+  fake_server_->InjectEntity(std::move(remote_folder));
+
+  ASSERT_TRUE(BookmarksTitleChecker(kSingleProfileIndex, title,
+                                    /*expected_count=*/1)
+                  .Wait());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SingleClientBookmarksSyncTestWithEnabledReuploadPreexistingBookmarks,
+    ShouldReuploadFullTitleForOldClients) {
+  // This test checks that the legacy bookmark which was stored locally will
+  // imply reupload to the server when reupload feature is enabled.
+  ASSERT_EQ(
+      1u,
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS).size());
+  const int64_t old_server_version =
+      GetFakeServer()
+          ->GetSyncEntitiesByModelType(syncer::BOOKMARKS)
+          .front()
+          .version();
+  ASSERT_TRUE(SetupClients());
+#if defined(OS_CHROMEOS)
+  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // to get a non-empty refresh token on startup.
+  GetClient(0)->SignInPrimaryAccount();
+#endif  // defined(OS_CHROMEOS)
+  ASSERT_TRUE(GetClient(kSingleProfileIndex)->AwaitEngineInitialization());
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+  ASSERT_GT(GetFakeServer()
+                ->GetSyncEntitiesByModelType(syncer::BOOKMARKS)
+                .front()
+                .version(),
+            old_server_version);
+
+  const std::string title = "Title";
+  const std::vector<sync_pb::SyncEntity> server_bookmarks =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1u, server_bookmarks.size());
+  EXPECT_TRUE(server_bookmarks.front().specifics().bookmark().has_full_title());
+}
+
+// TODO(rushans): add the same test as before with favicons.
+
+IN_PROC_BROWSER_TEST_P(
+    SingleClientBookmarksSyncTestWithEnabledReuploadRemoteBookmarks,
+    PRE_ShouldReuploadFullTitleAfterRestartOnIncrementalChange) {
+  ASSERT_TRUE(SetupSync());
+
+  const std::string title = "Title";
+  const GURL url = GURL("http://www.foo.com");
+
+  // Make an incremental remote creation of bookmark.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  std::unique_ptr<syncer::LoopbackServerEntity> remote_folder =
+      bookmark_builder.BuildBookmark(url, /*is_legacy=*/false);
+  const std::string new_guid = remote_folder->GetSpecifics().bookmark().guid();
+  ASSERT_FALSE(remote_folder->GetSpecifics().bookmark().has_full_title());
+  fake_server_->InjectEntity(std::move(remote_folder));
+
+  ASSERT_TRUE(BookmarksTitleChecker(kSingleProfileIndex, title,
+                                    /*expected_count=*/1)
+                  .Wait());
+
+  // Check that the full title was not uploaded to the server yet.
+  const std::vector<sync_pb::SyncEntity> server_bookmarks =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  ASSERT_EQ(1u, server_bookmarks.size());
+  EXPECT_FALSE(
+      server_bookmarks.front().specifics().bookmark().has_full_title());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SingleClientBookmarksSyncTestWithEnabledReuploadRemoteBookmarks,
+    ShouldReuploadFullTitleAfterRestartOnIncrementalChange) {
+  ASSERT_TRUE(SetupClients());
+#if defined(OS_CHROMEOS)
+  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // to get a non-empty refresh token on startup.
+  GetClient(0)->SignInPrimaryAccount();
+#endif  // defined(OS_CHROMEOS)
+  ASSERT_TRUE(GetClient(kSingleProfileIndex)->AwaitEngineInitialization());
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+
+  const std::string title = "Title";
+  const std::vector<sync_pb::SyncEntity> server_bookmarks =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1u, server_bookmarks.size());
+  EXPECT_TRUE(server_bookmarks.front().specifics().bookmark().has_full_title());
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          SingleClientBookmarksSyncTest,
                          ::testing::Values(false, true));
+// TODO(crbug.com/1067191): remove feature toggle.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SingleClientBookmarksSyncTestWithEnabledReuploadRemoteBookmarks,
+    ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SingleClientBookmarksSyncTestWithEnabledReuploadPreexistingBookmarks,
+    ::testing::Values(false, true));
+
 }  // namespace

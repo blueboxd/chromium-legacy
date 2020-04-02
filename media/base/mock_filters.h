@@ -650,14 +650,14 @@ class MockCdmFactory : public CdmFactory {
   MockCdm* GetCreatedCdm();
 
   // Provide a callback to be called before the CDM is created and returned.
-  void SetBeforeCreationCB(const base::Closure& before_creation_cb);
+  void SetBeforeCreationCB(base::RepeatingClosure before_creation_cb);
 
  private:
   // Reference to the created CDM.
   scoped_refptr<MockCdm> created_cdm_;
 
   // Callback to be used before Create() successfully calls |cdm_created_cb|.
-  base::Closure before_creation_cb_;
+  base::RepeatingClosure before_creation_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCdmFactory);
 };

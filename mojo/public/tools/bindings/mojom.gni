@@ -65,9 +65,8 @@ enable_scrambled_message_ids =
 
 _mojom_tools_root = "//mojo/public/tools"
 _mojom_library_root = "$_mojom_tools_root/mojom/mojom"
-mojom_generator_root = "$_mojom_tools_root/bindings"
-mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
-mojom_generator_sources = [
+mojom_parser_script = "$_mojom_tools_root/mojom/mojom_parser.py"
+mojom_parser_sources = [
   "$_mojom_library_root/__init__.py",
   "$_mojom_library_root/error.py",
   "$_mojom_library_root/generate/__init__.py",
@@ -81,12 +80,18 @@ mojom_generator_sources = [
   "$_mojom_library_root/parse/ast.py",
   "$_mojom_library_root/parse/lexer.py",
   "$_mojom_library_root/parse/parser.py",
-  "$mojom_generator_root/generators/mojom_cpp_generator.py",
-  "$mojom_generator_root/generators/mojom_java_generator.py",
-  "$mojom_generator_root/generators/mojom_js_generator.py",
-  "$mojom_generator_root/generators/mojom_ts_generator.py",
-  "$mojom_generator_script",
 ]
+
+mojom_generator_root = "$_mojom_tools_root/bindings"
+mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
+mojom_generator_sources =
+    mojom_parser_sources + [
+      "$mojom_generator_root/generators/mojom_cpp_generator.py",
+      "$mojom_generator_root/generators/mojom_java_generator.py",
+      "$mojom_generator_root/generators/mojom_js_generator.py",
+      "$mojom_generator_root/generators/mojom_ts_generator.py",
+      "$mojom_generator_script",
+    ]
 
 if (enable_scrambled_message_ids) {
   declare_args() {
@@ -600,8 +605,22 @@ template("mojom") {
       (!defined(invoker.enable_fuzzing) || invoker.enable_fuzzing) &&
       enable_ipc_fuzzer && (!defined(invoker.testonly) || !invoker.testonly)
 
-  if (sources_list != []) {
-    parser_target_name = "${target_name}__parser"
+  parser_target_name = "${target_name}__parser"
+  parser_deps = []
+  foreach(dep, all_deps) {
+    _label = get_label_info(dep, "label_no_toolchain")
+    parser_deps += [ "${_label}__parser" ]
+  }
+  if (defined(invoker.parser_deps)) {
+    parser_deps += invoker.parser_deps
+  }
+  if (sources_list == []) {
+    # Even without sources we generate a parser target to at least forward
+    # other parser dependencies.
+    group(parser_target_name) {
+      public_deps = parser_deps
+    }
+  } else {
     enabled_features = []
     if (defined(invoker.enabled_features)) {
       enabled_features += invoker.enabled_features
@@ -626,54 +645,43 @@ template("mojom") {
     }
 
     action(parser_target_name) {
-      script = mojom_generator_script
-      inputs = mojom_generator_sources + jinja2_sources
+      script = mojom_parser_script
+      inputs = mojom_parser_sources
       sources = sources_list
-      if (defined(invoker.parser_deps)) {
-        deps = invoker.parser_deps
-      }
+      deps = parser_deps
       outputs = []
-      filelist = []
-      foreach(source, sources_list) {
-        filelist += [ rebase_path(source, root_build_dir) ]
-      }
       foreach(base_path, output_file_base_paths) {
-        filename = get_path_info(base_path, "name")
+        filename = get_path_info(base_path, "file")
         dirname = get_path_info(base_path, "dir")
-        outputs += [ "$root_gen_dir/$dirname/$filename.p" ]
+        outputs += [ "$root_gen_dir/$dirname/${filename}-module" ]
       }
 
+      filelist = []
+      foreach(source, sources_list) {
+        filelist += [ rebase_path(source) ]
+      }
       response_file_contents = filelist
 
       args = [
-        "-o",
-        rebase_path(root_gen_dir, root_build_dir),
-        "parse",
-        "--filelist={{response_file_name}}",
-        "-d",
-        rebase_path("//", root_build_dir),
+        # Resolve relative input mojom paths against both the root src dir and
+        # the root gen dir.
+        "--input-root",
+        rebase_path("//"),
+        "--input-root",
+        rebase_path(root_gen_dir),
+
+        "--output-root",
+        rebase_path(root_gen_dir),
+
+        "--mojom-file-list={{response_file_name}}",
       ]
+
       foreach(enabled_feature, enabled_features) {
         args += [
-          "--enable_feature",
+          "--enable-feature",
           enabled_feature,
         ]
       }
-    }
-  }
-
-  parsed_target_name = "${target_name}__parsed"
-  group(parsed_target_name) {
-    public_deps = []
-    if (sources_list != []) {
-      public_deps += [ ":$parser_target_name" ]
-    }
-    foreach(d, all_deps) {
-      # Resolve the name, so that a target //mojo/something becomes
-      # //mojo/something:something and we can append the parsed
-      # suffix to get the mojom dependency name.
-      full_name = get_label_info("$d", "label_no_toolchain")
-      public_deps += [ "${full_name}__parsed" ]
     }
   }
 
@@ -687,7 +695,7 @@ template("mojom") {
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = sources_list
-      deps = [ ":$parsed_target_name" ]
+      deps = [ ":$parser_target_name" ]
       if (defined(invoker.parser_deps)) {
         deps += invoker.parser_deps
       }
@@ -789,7 +797,7 @@ template("mojom") {
       inputs = mojom_generator_sources + jinja2_sources
       sources = sources_list
       deps = [
-        ":$parsed_target_name",
+        ":$parser_target_name",
         "//mojo/public/tools/bindings:precompile_templates",
       ]
       if (defined(invoker.parser_deps)) {
@@ -829,7 +837,7 @@ template("mojom") {
       inputs = mojom_generator_sources + jinja2_sources
       sources = sources_list
       deps = [
-               ":$parsed_target_name",
+               ":$parser_target_name",
                "//mojo/public/tools/bindings:precompile_templates",
              ] + verify_deps_target_names
       if (defined(invoker.parser_deps)) {
@@ -1089,7 +1097,7 @@ template("mojom") {
         inputs = mojom_generator_sources + jinja2_sources
         sources = sources_list
         deps = [
-                 ":$parsed_target_name",
+                 ":$parser_target_name",
                  ":$type_mappings_target_name",
                  "//mojo/public/tools/bindings:precompile_templates",
                ] + verify_deps_target_names
@@ -1430,7 +1438,7 @@ template("mojom") {
           inputs = mojom_generator_sources + jinja2_sources
           sources = sources_list
           deps = [
-                   ":$parsed_target_name",
+                   ":$parser_target_name",
                    ":$type_mappings_target_name",
                    "//mojo/public/tools/bindings:precompile_templates",
                  ] + verify_deps_target_names
@@ -1527,7 +1535,7 @@ template("mojom") {
         inputs = mojom_generator_sources + jinja2_sources
         sources = sources_list
         deps = [
-                 ":$parsed_target_name",
+                 ":$parser_target_name",
                  "//mojo/public/tools/bindings:precompile_templates",
                ] + verify_deps_target_names
         if (defined(invoker.parser_deps)) {
@@ -1691,7 +1699,7 @@ template("mojom") {
       inputs = mojom_generator_sources + jinja2_sources
       sources = sources_list
       deps = [
-               ":$parsed_target_name",
+               ":$parser_target_name",
                "//mojo/public/tools/bindings:precompile_templates",
              ] + verify_deps_target_names
       outputs = ts_outputs

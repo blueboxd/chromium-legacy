@@ -170,6 +170,7 @@
 <translation id="1644574205037202324">ប្រវត្តិ</translation>
 <translation id="1645368109819982629">ប្រូតូកូលមិនគាំទ្រ</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">Chrome បានសម្រួលទំព័រនេះ ដើម្បី​ឱ្យងាយស្រួលអានជាងមុន។ Chrome បានទាញយក​ទំព័រដើម​តាមរយៈការតភ្ជាប់ដែលមានសុវត្ថិភាព។</translation>
 <translation id="1656489000284462475">ទទួល</translation>
 <translation id="1662550410081243962">រក្សាទុក និងបំពេញ​វិធីបង់ប្រាក់</translation>
 <translation id="1663943134801823270">បណ្ណ និងអាសយដ្ឋានគឺបានមកពី Chrome ។ អ្នកអាចគ្រប់គ្រងពួកវាបាននៅក្នុង <ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />។</translation>
@@ -570,6 +571,7 @@
 <translation id="342781501876943858">Chromium ណែនាំឱ្យ​កំណត់​ពាក្យសម្ងាត់​របស់អ្នក​ឡើងវិញ ប្រសិនបើ​អ្នកបាន​ប្រើ​វាម្តងទៀត​នៅលើ​ទំព័រផ្សេង​។</translation>
 <translation id="3428151540071562330">URI ទម្រង់គំរូ​ម៉ាស៊ីនមេ DnsOverHttpsTemplates មួយ ឬច្រើន​គឺ​មិន​ត្រឹមត្រូវ​ទេ ហើយនឹង​មិន​ត្រូវបាន​ប្រើប្រាស់​ឡើយ​។</translation>
 <translation id="3431636764301398940">រក្សាទុកកាតនេះទៅក្នុងឧបករណ៍នេះ</translation>
+<translation id="3432601291244612633">បិទទំព័រ</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">ម្ចាស់ឧបករណ៍នេះបានបិទហ្គេមដាយណូស័រ។</translation>
 <translation id="3447884698081792621">បង្ហាញវិញ្ញាបនបត្រ (ចេញដោយ <ph name="ISSUER" />)</translation>
@@ -877,6 +879,7 @@
 <translation id="4731967714531604179">Prc2 (ស្រោម​សំបុត្រ)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> ចង់ប្រើ​ទីតាំង​ឧបករណ៍​របស់អ្នក</translation>
 <translation id="4736825316280949806">ចាប់ផ្តើម Chromium ឡើងវិញ</translation>
+<translation id="4737121147659370456">អ្នកគ្រប់គ្រងរបស់អ្នកបានបើកកម្មវិធីភ្ជាប់ Chrome Enterprise នៅលើ​កម្មវិធីរុករកតាមអ៊ីនធឺណិតរបស់អ្នក។ កម្មវិធីភ្ជាប់ទាំងនេះមានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួនរបស់អ្នក។</translation>
 <translation id="473775607612524610">ធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="4738601419177586157">ការណែនាំ​ការស្វែងរក <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">គ្រប់គ្រង​ពាក្យ​សម្ងាត់…</translation>
@@ -1216,6 +1219,8 @@
 <translation id="610911394827799129">គណនី Google របស់អ្នកអាចមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតនៅក្នុង <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
 <translation id="6116338172782435947">មើល​អត្ថបទ និង​រូបភាព​ដែល​បានចម្លង​ទៅ​អង្គ​ចងចាំ</translation>
 <translation id="6120179357481664955">ចងចាំ​លេខសម្គាល់ UPI របស់អ្នក​ដែរទេ​?</translation>
+<translation id="6124432979022149706">កម្មវិធីភ្ជាប់ Chrome Enterprise</translation>
+<translation id="6135641591018127088">ប្រើគណនី Google របស់អ្នក ដើម្បីបង្កើតពាក្យសម្ងាត់ខ្លាំង</translation>
 <translation id="6146055958333702838">ពិនិត្យខ្សែបណ្តាញ បិទបើករ៉ោតទ័រ ម៉ូឌែម ឬឧបករណ៍បណ្តាញផ្សេងទៀត
     ដែលអ្នកកំពុងប្រើប្រាស់។</translation>
 <translation id="614940544461990577">សាកល្បង៖</translation>
@@ -1261,6 +1266,7 @@
 <translation id="6328639280570009161">សាកល្បងការបិទដំណើរការការព្យាករណ៍បណ្តាញ</translation>
 <translation id="6328784461820205019">"ការតភ្ជាប់របស់អ្នកមិនមានលក្ខណៈឯកជន" ឬ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ឬ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ឬ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ឬ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ឬ "វិញ្ញាបនបត្រ SSL មាន​បញ្ហា"</translation>
 <translation id="6328786501058569169">ទំព័រនេះមានការបោកប្រាស់</translation>
+<translation id="6333334544069706521">ប្រើពាក្យសម្ងាត់ដែលរក្សាទុកនៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="6337133576188860026">បង្កើន​ទំហំផ្ទុក​តិចជាង <ph name="SIZE" /> ។ ទំព័រ​មួយចំនួន​អាចផ្ទុក​យឺតជាងមុន នៅពេលដែលអ្នក​ចូល​លើកក្រោយ។</translation>
 <translation id="6337534724793800597">ត្រងគោលការណ៍តាមឈ្មោះ</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{គ្មាន}=1{ពាក្យសម្ងាត់ 1 (សម្រាប់ <ph name="DOMAIN_LIST" />, បាន​ធ្វើសមកាលកម្ម)}=2{ពាក្យសម្ងាត់ 2 (សម្រាប់ <ph name="DOMAIN_LIST" />, បាន​ធ្វើសមកាលកម្ម)}other{ពាក្យសម្ងាត់ # (សម្រាប់ <ph name="DOMAIN_LIST" />, បាន​ធ្វើសមកាលកម្ម)}}</translation>
@@ -1306,6 +1312,7 @@
 <translation id="6521745193039995384">មិន​សកម្ម</translation>
 <translation id="6529602333819889595">ធ្វើការលុបវិញ</translation>
 <translation id="6534179046333460208">ការផ្តល់យោបល់ Physical Web</translation>
+<translation id="6543609420755597723">ចែករំលែក​ទិន្នន័យ​អំពី​ព្រឹត្តិការណ៍​ទាក់ទងនឹង​សុវត្ថិភាព​ដែលកម្មវិធីភ្ជាប់ Chrome Enterprise បាន​រាយការណ៍ទៅ​អ្នកគ្រប់គ្រង​របស់អ្នក​។ នេះអាចរួមបញ្ចូល URL របស់ទំព័រដែលអ្នកចូលមើល ឈ្មោះឯកសារ ឬទិន្នន័យ​មេតា និងឈ្មោះអ្នកប្រើប្រាស់ ដែលអ្នកប្រើ​ ដើម្បីចូលឧបករណ៍របស់អ្នក និង Chrome។</translation>
 <translation id="6545864417968258051">ការស្កេនប៊្លូធូស</translation>
 <translation id="6547208576736763147">ចោះ​ពីររន្ធ​ខាងឆ្វេង</translation>
 <translation id="6554795675067793129">គណនី​របស់​អ្នក​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់ <ph name="ENROLLMENT_DOMAIN" /> ។</translation>
@@ -1371,6 +1378,7 @@
 <translation id="6874604403660855544">ធ្វើការបន្ថែមវិញ</translation>
 <translation id="6884662655240309489">ទំហំ 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">Chrome បានសម្រួលទំព័រនេះ ដើម្បី​ឱ្យងាយស្រួលអានជាងមុន។ Chrome បានទាញយក​ទំព័រដើម​តាមរយៈការតភ្ជាប់ដែលគ្មានសុវត្ថិភាព។</translation>
 <translation id="6891596781022320156">កម្រិតគោលការណ៍មិនត្រូវបានគាំទ្រទេ។</translation>
 <translation id="6895330447102777224">កាតរបស់អ្នកបានបញ្ជាក់រួចហើយ</translation>
 <translation id="6897140037006041989">ភ្នាក់ងារអ្នកប្រើ</translation>
@@ -1600,6 +1608,7 @@
 <translation id="777702478322588152">អាណាខេត្ត</translation>
 <translation id="7791196057686275387">ចងរមូរ</translation>
 <translation id="7791543448312431591">បន្ថែម</translation>
+<translation id="7798389633136518089">មិនអើពើ ដោយសារ​គោលការណ៍មិនត្រូវបានកំណត់ដោយ​ប្រភព​ពពកទេ។</translation>
 <translation id="7800304661137206267">ការភ្ជាប់ត្រូវបានអ៊ីនគ្រីប ដោយប្រើ <ph name="CIPHER" /> ជាមួយ <ph name="MAC" /> សម្រាប់ការសម្គាល់អត្តសញ្ញាណសារ និង <ph name="KX" /> ជាយន្តការផ្តោះប្តូរសោ។</translation>
 <translation id="7802523362929240268">ទំព័រ​ស្របច្បាប់</translation>
 <translation id="780301667611848630">ទេ អរគុណ</translation>
@@ -1735,6 +1744,7 @@
 <translation id="8371889962595521444">វិញ្ញាបនបត្រគោល​ផ្ទាល់ខ្លួន</translation>
 <translation id="8380941800586852976">គ្រោះថ្នាក់</translation>
 <translation id="8381674639488873545">ការគិតថ្លៃទាំងនេះ​អាច​ជាការគិតថ្លៃមួយលើក ឬបន្តបន្ទាប់ ហើយអាច​នឹងមិន​ច្បាស់លាស់នោះទេ។ <ph name="BEGIN_LINK" />បង្ហាញចុះ​មិនអីទេ<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> បានបើក​កម្មវិធីភ្ជាប់ Chrome Enterprise នៅលើ​កម្មវិធី​រុករក​តាមអ៊ីនធឺណិតរបស់អ្នក។ កម្មវិធីភ្ជាប់ទាំងនេះមានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួនរបស់អ្នក។</translation>
 <translation id="8412145213513410671">គាំង (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">អ្នកត្រូវបញ្ចូលឃ្លាសម្ងាត់ពីរដង។</translation>
 <translation id="8416694386774425977">ការ​កំណត់​រចនា​សម្ព័ន្ធ​បណ្ដាញមិន​ត្រឹមត្រូវទេ និងមិនអាចនាំ​ចូល​បានឡើយ។

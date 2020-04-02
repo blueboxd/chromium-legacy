@@ -118,9 +118,9 @@ public class TabGroupUiToolbarView extends FrameLayout {
     }
 
     /**
-     * Setup the toolbar layout base on the component it belongs to.
+     * Setup the toolbar layout for TabGridDialog.
      */
-    void setupToolbarLayout() {
+    void setupDialogToolbarLayout() {
         Context context = getContext();
         mLeftButton.setImageResource(org.chromium.chrome.R.drawable.ic_arrow_back_24dp);
         int topicMargin =

@@ -38,6 +38,7 @@ cr.define('parental_controls', function() {
 
   cr.addSingletonGetter(BrowserProxyImpl);
 
+  // #cr_define_end
   return {
     BrowserProxy: BrowserProxy,
     BrowserProxyImpl: BrowserProxyImpl,

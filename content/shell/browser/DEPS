@@ -13,8 +13,6 @@ include_rules = [
   # the ShellMainDelegate should inject it as appropriate.
   "+content/shell/browser/web_test",
   "+content/shell/common/web_test/web_test_switches.h",
-  "+content/shell/renderer/web_test",
-  "+content/shell/test_runner/web_test_delegate.h",
 ]
 
 specific_include_rules = {

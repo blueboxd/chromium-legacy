@@ -86,18 +86,6 @@ class TracingSamplerProfilerDataSource
     profiler->StopTracing();
   }
 
-  void SetupStartupTracing() {
-    base::AutoLock lock(lock_);
-    if (is_started_) {
-      return;
-    }
-    is_startup_tracing_ = true;
-    for (auto* profiler : profilers_) {
-      // Enable filtering for startup tracing always to be safe.
-      profiler->StartTracing(nullptr, /*should_enable_filtering=*/true);
-    }
-  }
-
   // PerfettoTracedProcess::DataSourceBase implementation, called by
   // ProducerClient.
   void StartTracing(
@@ -135,6 +123,37 @@ class TracingSamplerProfilerDataSource
 
   void Flush(base::RepeatingClosure flush_complete_callback) override {
     flush_complete_callback.Run();
+  }
+
+  void SetupStartupTracing(PerfettoProducer* producer,
+                           const base::trace_event::TraceConfig& trace_config,
+                           bool privacy_filtering_enabled) override {
+    bool enable_sampler_profiler = trace_config.IsCategoryGroupEnabled(
+        TRACE_DISABLED_BY_DEFAULT("cpu_profiler"));
+    if (!enable_sampler_profiler)
+      return;
+
+    base::AutoLock lock(lock_);
+    if (is_started_) {
+      return;
+    }
+    is_startup_tracing_ = true;
+    for (auto* profiler : profilers_) {
+      // Enable filtering for startup tracing always to be safe.
+      profiler->StartTracing(nullptr, /*should_enable_filtering=*/true);
+    }
+  }
+
+  void AbortStartupTracing() override {
+    base::AutoLock lock(lock_);
+    if (!is_startup_tracing_) {
+      return;
+    }
+    for (auto* profiler : profilers_) {
+      // Enable filtering for startup tracing always to be safe.
+      profiler->StartTracing(nullptr, /*should_enable_filtering=*/true);
+    }
+    is_startup_tracing_ = false;
   }
 
   void ClearIncrementalState() override {
@@ -510,8 +529,12 @@ void TracingSamplerProfiler::StartTracingForTesting(
 }
 
 // static
-void TracingSamplerProfiler::SetupStartupTracing() {
-  TracingSamplerProfilerDataSource::Get()->SetupStartupTracing();
+void TracingSamplerProfiler::SetupStartupTracingForTesting() {
+  base::trace_event::TraceConfig config(
+      TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+      base::trace_event::TraceRecordMode::RECORD_UNTIL_FULL);
+  TracingSamplerProfilerDataSource::Get()->SetupStartupTracing(
+      /*producer=*/nullptr, config, /*privacy_filtering_enabled=*/false);
 }
 
 // static

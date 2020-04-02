@@ -20,12 +20,16 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.payments.Address;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentCurrencyAmount;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentDetailsModifier;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentItem;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentMethodData;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentOptions;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentShippingOption;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +51,7 @@ public class WebPaymentIntentHelperTest {
     private String mErrorString;
     private String mDetails;
     private String mMethodName;
+    private PayerData mPayerData;
 
     // Test the happy path of createPayIntent and verify the non-deprecated extras.
     @Test
@@ -73,10 +78,18 @@ public class WebPaymentIntentHelperTest {
 
         byte[][] certificateChain = new byte[][] {{0}};
 
+        PaymentOptions paymentOptions = new PaymentOptions(/*requestPayerName=*/true,
+                /*requestPayerEmail=*/true,
+                /*requestPayerPhone=*/true, /*requestShipping=*/true, /*shippingType=*/"delivery");
+
+        List<PaymentShippingOption> shippingOptions = new ArrayList<PaymentShippingOption>();
+        shippingOptions.add(new PaymentShippingOption(
+                "shippingId", "Free shipping", "USD", "0", /*selected=*/true));
+
         Intent intent = WebPaymentIntentHelper.createPayIntent("package.name", "activity.name",
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", certificateChain, methodDataMap, total, displayItems,
-                modifiers);
+                modifiers, paymentOptions, shippingOptions);
         Assert.assertEquals(WebPaymentIntentHelper.ACTION_PAY, intent.getAction());
         Assert.assertEquals("package.name", intent.getComponent().getPackageName());
         Assert.assertEquals("activity.name", intent.getComponent().getClassName());
@@ -117,6 +130,26 @@ public class WebPaymentIntentHelperTest {
                 expectedSerializedModifiers, bundle.get(WebPaymentIntentHelper.EXTRA_MODIFIERS));
         Assert.assertEquals("{\"currency\":\"CAD\",\"value\":\"200\"}",
                 bundle.get(WebPaymentIntentHelper.EXTRA_TOTAL));
+
+        Assert.assertEquals(bundle.getStringArrayList(WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS),
+                paymentOptions.asStringArrayList());
+
+        Parcelable[] expectedShippingOptions =
+                bundle.getParcelableArray(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTIONS);
+        Assert.assertEquals(1, expectedShippingOptions.length);
+        Bundle shippingOption = (Bundle) expectedShippingOptions[0];
+        Assert.assertEquals("shippingId",
+                shippingOption.getString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID));
+        Assert.assertEquals("Free shipping",
+                shippingOption.getString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_LABEL));
+        Assert.assertEquals("USD",
+                shippingOption.getString(
+                        WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY));
+        Assert.assertEquals("0",
+                shippingOption.getString(
+                        WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_AMOUNT_VALUE));
+        Assert.assertTrue(
+                shippingOption.getBoolean(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_SELECTED));
     }
 
     // Test the happy path of createPayIntent and verify the deprecated extras.
@@ -144,7 +177,7 @@ public class WebPaymentIntentHelperTest {
         Intent intent = WebPaymentIntentHelper.createPayIntent("package.name", "activity.name",
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", certificateChain, methodDataMap, total, displayItems,
-                modifiers);
+                modifiers, /*paymentOptions=*/null, /*shippingOptions=*/null);
         Bundle bundle = intent.getExtras();
         Assert.assertNotNull(bundle);
 
@@ -194,7 +227,7 @@ public class WebPaymentIntentHelperTest {
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -214,7 +247,7 @@ public class WebPaymentIntentHelperTest {
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -234,7 +267,7 @@ public class WebPaymentIntentHelperTest {
                 /*id=*/null, "merchant.name", "schemeless.origin", "schemeless.iframe.origin",
                 /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -254,7 +287,7 @@ public class WebPaymentIntentHelperTest {
                 /*id=*/"", "merchant.name", "schemeless.origin", "schemeless.iframe.origin",
                 /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -274,7 +307,7 @@ public class WebPaymentIntentHelperTest {
                 /*merchantName=*/null, "schemeless.origin", "schemeless.iframe.origin",
                 /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -292,7 +325,7 @@ public class WebPaymentIntentHelperTest {
                         /*merchantName=*/"", "schemeless.origin", "schemeless.iframe.origin",
                         /*certificateChain=*/null, methodDataMap, total,
                         /*displayItems=*/null,
-                        /*modifiers=*/null);
+                        /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -312,7 +345,7 @@ public class WebPaymentIntentHelperTest {
                 "merchant.name", /*schemelessOrigin=*/null, "schemeless.iframe.origin",
                 /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -332,7 +365,7 @@ public class WebPaymentIntentHelperTest {
                 "merchant.name", /*schemelessOrigin=*/"", "schemeless.iframe.origin",
                 /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -352,7 +385,7 @@ public class WebPaymentIntentHelperTest {
                 "merchant.name", "schemeless.origin",
                 /*schemelessIframeOrigin=*/null, /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -372,7 +405,7 @@ public class WebPaymentIntentHelperTest {
                 "merchant.name", "schemeless.origin",
                 /*schemelessIframeOrigin=*/"", /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -394,7 +427,7 @@ public class WebPaymentIntentHelperTest {
                 "merchant.name", "schemeless.origin", "schemeless.iframe.origin", certificateChain,
                 methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     // Verify that a null value in methodDataMap would trigger an exception.
@@ -414,7 +447,7 @@ public class WebPaymentIntentHelperTest {
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     // Verify that a null methodDataMap would trigger an exception.
@@ -432,7 +465,7 @@ public class WebPaymentIntentHelperTest {
                 "schemeless.iframe.origin", /*certificateChain=*/null, /*methodDataMap=*/null,
                 total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     // Verify that an empty methodDataMap would trigger an exception.
@@ -451,7 +484,7 @@ public class WebPaymentIntentHelperTest {
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     @Test
@@ -472,7 +505,7 @@ public class WebPaymentIntentHelperTest {
                 /*certificateChain=*/null, methodDataMap,
                 /*total=*/null,
                 /*displayItems=*/null,
-                /*modifiers=*/null);
+                /*modifiers=*/null, /*paymentOptions=*/null, /*shippingOptions=*/null);
     }
 
     // Verify that a null value in the modifier map would trigger an exception.
@@ -496,7 +529,8 @@ public class WebPaymentIntentHelperTest {
         WebPaymentIntentHelper.createPayIntent("package.name", "activity.name",
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", /*certificateChain=*/null, methodDataMap, total,
-                /*displayItems=*/null, modifiers);
+                /*displayItems=*/null, modifiers, /*paymentOptions=*/null,
+                /*shippingOptions=*/null);
     }
 
     @Test
@@ -505,9 +539,10 @@ public class WebPaymentIntentHelperTest {
     public void parsePaymentResponseMissingIntentDataTest() throws Throwable {
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, /*intent=*/null,
+                /*requestedPaymentOptions=*/null,
                 (errorString)
                         -> mErrorString = errorString,
-                (methodName, details) -> Assert.fail("Parsing should fail."));
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
         Assert.assertEquals(ErrorStrings.MISSING_INTENT_DATA, mErrorString);
     }
 
@@ -518,9 +553,10 @@ public class WebPaymentIntentHelperTest {
         Intent intent = new Intent();
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                /*requestedPaymentOptions=*/null,
                 (errorString)
                         -> mErrorString = errorString,
-                (methodName, details) -> Assert.fail("Parsing should fail."));
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
         Assert.assertEquals(ErrorStrings.MISSING_INTENT_EXTRAS, mErrorString);
     }
 
@@ -532,9 +568,10 @@ public class WebPaymentIntentHelperTest {
         intent.putExtras(new Bundle());
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_CANCELED, intent,
+                /*requestedPaymentOptions=*/null,
                 (errorString)
                         -> mErrorString = errorString,
-                (methodName, details) -> Assert.fail("Parsing should fail."));
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
         Assert.assertEquals(ErrorStrings.RESULT_CANCELED, mErrorString);
     }
 
@@ -546,9 +583,10 @@ public class WebPaymentIntentHelperTest {
         intent.putExtras(new Bundle());
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(/*resultCode=*/123, intent,
+                /*requestedPaymentOptions=*/null,
                 (errorString)
                         -> mErrorString = errorString,
-                (methodName, details) -> Assert.fail("Parsing should fail."));
+                (methodName, details, payerData) -> Assert.fail("Parsing should fail."));
         Assert.assertEquals(
                 String.format(Locale.US, ErrorStrings.UNRECOGNIZED_ACTIVITY_RESULT, 123),
                 mErrorString);
@@ -562,15 +600,53 @@ public class WebPaymentIntentHelperTest {
         Bundle extras = new Bundle();
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_DETAILS, "\"key\":\"value\"}");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_METHOD_NAME, "maxPay");
+        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_COUNTRY, "Canada");
+        String[] addressLine = {"111 Richmond Street West"};
+        extras.putStringArray(WebPaymentIntentHelper.EXTRA_ADDRESS_LINES, addressLine);
+        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_REGION, "Ontario");
+        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_CITY, "Toronto");
+        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_POSTAL_CODE, "M5H2G4");
+        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_RECIPIENT, "John Smith");
+        extras.putString(WebPaymentIntentHelper.EXTRA_ADDRESS_PHONE, "4169158200");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME, "John Smith");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE, "4169158200");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL, "JohnSmith@google.com");
+        extras.putString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID, "shippingId");
         intent.putExtras(extras);
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
-                (errorString) -> Assert.fail("Parsing should succeed."), (methodName, details) -> {
+                /*requestedPaymentOptions=*/
+                new PaymentOptions(/*requestPayerName=*/true, /*requestPayerEmail=*/true,
+                        /*requestPayerPhone=*/true, /*requestShipping=*/true,
+                        /*shippingType=*/"shipping"),
+                (errorString)
+                        -> Assert.fail("Parsing should succeed."),
+                (methodName, details, payerData) -> {
                     mMethodName = methodName;
                     mDetails = details;
+                    mPayerData = payerData;
                 });
         Assert.assertEquals("maxPay", mMethodName);
         Assert.assertEquals("\"key\":\"value\"}", mDetails);
+
+        // Verify payer's data.
+        Assert.assertEquals("John Smith", mPayerData.payerName);
+        Assert.assertEquals("4169158200", mPayerData.payerPhone);
+        Assert.assertEquals("JohnSmith@google.com", mPayerData.payerEmail);
+        Address address = mPayerData.shippingAddress;
+        Assert.assertEquals("Canada", address.country);
+        Assert.assertEquals(1, address.addressLine.length);
+        Assert.assertEquals("111 Richmond Street West", address.addressLine[0]);
+        Assert.assertEquals("Ontario", address.region);
+        Assert.assertEquals("Toronto", address.city);
+        Assert.assertEquals("", address.dependentLocality);
+        Assert.assertEquals("M5H2G4", address.postalCode);
+        Assert.assertEquals("", address.sortingCode);
+        Assert.assertEquals("", address.organization);
+        Assert.assertEquals("John Smith", address.recipient);
+        Assert.assertEquals("4169158200", address.phone);
+
+        Assert.assertEquals("shippingId", mPayerData.selectedShippingOptionId);
     }
 
     @Test
@@ -585,7 +661,10 @@ public class WebPaymentIntentHelperTest {
         intent.putExtras(extras);
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
-                (errorString) -> Assert.fail("Parsing should succeed."), (methodName, details) -> {
+                /*requestedPaymentOptions=*/null,
+                (errorString)
+                        -> Assert.fail("Parsing should succeed."),
+                (methodName, details, payerData) -> {
                     mMethodName = methodName;
                     mDetails = details;
                 });

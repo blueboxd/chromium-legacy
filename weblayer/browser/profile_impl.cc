@@ -222,6 +222,13 @@ content::BrowserContext* ProfileImpl::GetBrowserContext() {
   return browser_context_.get();
 }
 
+void ProfileImpl::DownloadsInitialized() {
+#if defined(OS_ANDROID)
+  return Java_ProfileImpl_downloadsInitialized(
+      base::android::AttachCurrentThread(), java_profile_);
+#endif
+}
+
 bool ProfileImpl::DeleteDataFromDisk(base::OnceClosure done_callback) {
   if (num_browser_impl_ > 0)
     return false;
@@ -309,14 +316,19 @@ std::unique_ptr<Profile> Profile::Create(const std::string& name) {
 }
 
 #if defined(OS_ANDROID)
-ProfileImpl::ProfileImpl(JNIEnv* env,
-                         const base::android::JavaParamRef<jstring>& name)
-    : ProfileImpl(ConvertJavaStringToUTF8(env, name)) {}
+ProfileImpl::ProfileImpl(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& name,
+    const base::android::JavaParamRef<jobject>& java_profile)
+    : ProfileImpl(ConvertJavaStringToUTF8(env, name)) {
+  java_profile_ = java_profile;
+}
 
 static jlong JNI_ProfileImpl_CreateProfile(
     JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& name) {
-  return reinterpret_cast<jlong>(new ProfileImpl(env, name));
+    const base::android::JavaParamRef<jstring>& name,
+    const base::android::JavaParamRef<jobject>& java_profile) {
+  return reinterpret_cast<jlong>(new ProfileImpl(env, name, java_profile));
 }
 
 static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {
@@ -377,6 +389,9 @@ jlong ProfileImpl::GetCookieManager(JNIEnv* env) {
   return reinterpret_cast<jlong>(GetCookieManager());
 }
 
+void ProfileImpl::EnsureBrowserContextInitialized(JNIEnv* env) {
+  content::BrowserContext::GetDownloadManager(GetBrowserContext());
+}
 #endif  // OS_ANDROID
 
 void ProfileImpl::IncrementBrowserImplCount() {

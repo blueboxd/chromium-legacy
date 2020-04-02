@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
@@ -139,6 +140,12 @@ void SkipToEnrollmentOnRecovery() {
 
 void WaitForEnrollmentScreen() {
   WaitFor(EnrollmentScreenView::kScreenId);
+}
+
+void WaitForLastScreenAndTapGetStarted() {
+  WaitFor(MarketingOptInScreenView::kScreenId);
+  test::OobeJS().TapOnPath(
+      {"marketing-opt-in", "marketing-opt-in-next-button"});
 }
 
 void WaitForEulaScreen() {

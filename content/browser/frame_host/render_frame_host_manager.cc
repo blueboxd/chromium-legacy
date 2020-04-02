@@ -2446,7 +2446,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->common_params().transition,
       request->state() >= NavigationRequest::CANCELING, is_reload,
       request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
-      request->WasServerRedirect(), cross_origin_policy_swap);
+      request->WasServerRedirect(),
+      request->require_coop_browsing_instance_swap());
 
   // If the NavigationRequest's dest_site_instance was present but incorrect,
   // then ensure no sensitive state is kept on the request. This can happen for

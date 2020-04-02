@@ -92,7 +92,7 @@ class MojoCdmTest : public ::testing::Test {
       if (expected_result == CONNECTION_ERROR_DURING) {
         // Create() will be successful, so provide a callback that will break
         // the connection before returning the CDM.
-        cdm_factory_.SetBeforeCreationCB(base::Bind(
+        cdm_factory_.SetBeforeCreationCB(base::BindRepeating(
             &MojoCdmTest::ForceConnectionError, base::Unretained(this)));
       }
     }

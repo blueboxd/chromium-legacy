@@ -83,17 +83,8 @@ void ProducerClient::BindInProcessSharedMemoryArbiter(
   arbiter->BindToProducerEndpoint(producer_endpoint, task_runner);
 }
 
-bool ProducerClient::SetupStartupTracing() {
-  base::AutoLock lock(lock_);
-  if (!InitSharedMemoryIfNeededLocked()) {
-    return false;
-  }
-  startup_tracing_active_ = true;
-  return true;
-}
-
 void ProducerClient::BindStartupTargetBuffer(
-    uint32_t startup_session_id,
+    uint16_t target_buffer_reservation_id,
     perfetto::BufferID startup_target_buffer) {
   // While we should be called on the ProducerClient's task runner, it's
   // possible that the SMA lives on a different sequence (when in process).
@@ -101,13 +92,31 @@ void ProducerClient::BindStartupTargetBuffer(
       !in_process_arbiter_task_runner_->RunsTasksOnCurrentThread()) {
     // |this| is never destroyed, except in tests.
     in_process_arbiter_task_runner_->GetOrCreateTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProducerClient::BindStartupTargetBuffer,
-                                  base::Unretained(this), startup_session_id,
-                                  startup_target_buffer));
+        FROM_HERE,
+        base::BindOnce(&ProducerClient::BindStartupTargetBuffer,
+                       base::Unretained(this), target_buffer_reservation_id,
+                       startup_target_buffer));
     return;
   }
-  PerfettoProducer::BindStartupTargetBuffer(startup_session_id,
-                                            startup_target_buffer);
+  MaybeSharedMemoryArbiter()->BindStartupTargetBuffer(
+      target_buffer_reservation_id, startup_target_buffer);
+}
+
+void ProducerClient::AbortStartupTracingForReservation(
+    uint16_t target_buffer_reservation_id) {
+  // While we should be called on the ProducerClient's task runner, it's
+  // possible that the SMA lives on a different sequence (when in process).
+  if (in_process_arbiter_task_runner_ &&
+      !in_process_arbiter_task_runner_->RunsTasksOnCurrentThread()) {
+    // |this| is never destroyed, except in tests.
+    in_process_arbiter_task_runner_->GetOrCreateTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ProducerClient::AbortStartupTracingForReservation,
+                       base::Unretained(this), target_buffer_reservation_id));
+    return;
+  }
+  MaybeSharedMemoryArbiter()->AbortStartupTracingForReservation(
+      target_buffer_reservation_id);
 }
 
 perfetto::SharedMemoryArbiter* ProducerClient::MaybeSharedMemoryArbiter() {
@@ -119,6 +128,7 @@ perfetto::SharedMemoryArbiter* ProducerClient::MaybeSharedMemoryArbiter() {
 
 void ProducerClient::NewDataSourceAdded(
     const PerfettoTracedProcess::DataSourceBase* const data_source) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!producer_host_) {
     return;
   }
@@ -145,9 +155,8 @@ void ProducerClient::NewDataSourceAdded(
 }
 
 bool ProducerClient::IsTracingActive() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock lock(lock_);
-  return data_sources_tracing_ > 0 || startup_tracing_active_;
+  return data_sources_tracing_ > 0 || IsStartupTracingActive();
 }
 
 void ProducerClient::OnTracingStart() {
@@ -178,7 +187,13 @@ void ProducerClient::StartDataSource(
   // TODO(oysteine): Support concurrent tracing sessions.
   for (auto* data_source : PerfettoTracedProcess::Get()->data_sources()) {
     if (data_source->name() == data_source_config.name()) {
-      ++data_sources_tracing_;
+      {
+        base::AutoLock lock(lock_);
+        ++data_sources_tracing_;
+      }
+      // Now that a data source is active, mark the startup tracing session as
+      // taken over by the service.
+      OnStartupTracingComplete();
       // ProducerClient should never be denied permission to start, but it will
       // only start tracing once the callback passed below is called.
       bool result = PerfettoTracedProcess::Get()->CanStartTracing(
@@ -196,12 +211,6 @@ void ProducerClient::StartDataSource(
                 DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
                 data_source->StartTracingWithID(id, weak_ptr.get(),
                                                 data_source_config);
-
-                // Starting TraceEventDataSource takes over startup tracing.
-                if (data_source->name() == mojom::kTraceEventDataSourceName) {
-                  base::AutoLock lock(weak_ptr->lock_);
-                  weak_ptr->startup_tracing_active_ = false;
-                }
 
                 // TODO(eseckler): Consider plumbing this callback through
                 // |data_source|.
@@ -226,10 +235,11 @@ void ProducerClient::StopDataSource(uint64_t id,
           [](base::WeakPtr<ProducerClient> weak_ptr,
              StopDataSourceCallback callback, uint64_t id) {
             std::move(callback).Run();
-            if (weak_ptr) {
-              DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
-              --weak_ptr->data_sources_tracing_;
-            }
+            if (!weak_ptr)
+              return;
+            DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
+            base::AutoLock lock(weak_ptr->lock_);
+            --weak_ptr->data_sources_tracing_;
           },
           weak_ptr_factory_.GetWeakPtr(), std::move(callback), id));
       return;
@@ -355,10 +365,6 @@ void ProducerClient::BindClientAndHostPipesForTesting(
                      std::move(producer_host_remote)));
 }
 
-void ProducerClient::ResetSequenceForTesting() {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
 perfetto::SharedMemory* ProducerClient::shared_memory_for_testing() {
   base::AutoLock lock(lock_);
   // |shared_memory_| is never destroyed except in tests, thus OK to return a
@@ -368,10 +374,6 @@ perfetto::SharedMemory* ProducerClient::shared_memory_for_testing() {
 
 bool ProducerClient::InitSharedMemoryIfNeeded() {
   base::AutoLock lock(lock_);
-  return InitSharedMemoryIfNeededLocked();
-}
-
-bool ProducerClient::InitSharedMemoryIfNeededLocked() {
   if (shared_memory_) {
     return true;
   }
@@ -392,6 +394,10 @@ bool ProducerClient::InitSharedMemoryIfNeededLocked() {
   shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateUnboundInstance(
       shared_memory_.get(), kSMBPageSizeBytes);
   return true;
+}
+
+bool ProducerClient::SetupSharedMemoryForStartupTracing() {
+  return InitSharedMemoryIfNeeded();
 }
 
 // The Mojo binding should run on the same sequence as the one we get

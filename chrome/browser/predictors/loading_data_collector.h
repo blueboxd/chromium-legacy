@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/navigation_id.h"
@@ -20,7 +21,7 @@
 namespace predictors {
 
 class LoadingStatsCollector;
-struct PreconnectPrediction;
+struct OptimizationGuidePrediction;
 class ResourcePrefetchPredictor;
 
 // Data collected for origin-based prediction, for a single origin during a
@@ -38,12 +39,13 @@ struct OriginRequestSummary {
 
 // Stores the data learned from a single navigation.
 struct PageRequestSummary {
-  explicit PageRequestSummary(const GURL& main_frame_url);
+  explicit PageRequestSummary(const NavigationID& navigation_id);
   PageRequestSummary(const PageRequestSummary& other);
   ~PageRequestSummary();
-  void UpdateOrAddToOrigins(
+  void UpdateOrAddResource(
       const blink::mojom::ResourceLoadInfo& resource_load_info);
 
+  ukm::SourceId ukm_source_id;
   GURL main_frame_url;
   GURL initial_url;
   base::TimeTicks first_contentful_paint;
@@ -51,6 +53,9 @@ struct PageRequestSummary {
   // Map of origin -> OriginRequestSummary. Only one instance of each origin
   // is kept per navigation, but the summary is updated several times.
   std::map<url::Origin, OriginRequestSummary> origins;
+
+  // Set of seen resource URLs.
+  base::flat_set<GURL> subresource_urls;
 
  private:
   void UpdateOrAddToOrigins(
@@ -84,8 +89,8 @@ class LoadingDataCollector {
   // up to this point are the only ones considered.
   virtual void RecordMainFrameLoadComplete(
       const NavigationID& navigation_id,
-      const base::Optional<PreconnectPrediction>&
-          optimization_guide_preconnect_prediction);
+      const base::Optional<OptimizationGuidePrediction>&
+          optimization_guide_prediction);
 
   // Called after the main frame's first contentful paint.
   virtual void RecordFirstContentfulPaint(

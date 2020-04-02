@@ -35,7 +35,6 @@
 #include "content/shell/browser/web_test/web_test_browser_main_platform_support.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"

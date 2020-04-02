@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -313,8 +314,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (TableViewItem*)experimentalSignOutItem {
-  TableViewDetailTextItem* item =
-      [[TableViewDetailTextItem alloc] initWithType:ItemTypeSignOut];
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeSignOut];
   item.text =
       l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   item.textColor = [UIColor colorNamed:kBlueColor];
@@ -324,8 +325,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (TableViewItem*)experimentalSignOutAndClearDataItem {
-  TableViewDetailTextItem* item = [[TableViewDetailTextItem alloc]
-      initWithType:ItemTypeSignOutAndClearData];
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeSignOutAndClearData];
   item.text = l10n_util::GetNSString(
       IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE);
   item.textColor = [UIColor colorNamed:kRedColor];
@@ -352,19 +353,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self showAccountDetails:item.chromeIdentity];
       break;
     }
-    case ItemTypeAddAccount:
+    case ItemTypeAddAccount: {
       [self showAddAccount];
       break;
-    case ItemTypeSignOut:
+    }
+    case ItemTypeSignOut: {
       if (base::FeatureList::IsEnabled(kClearSyncedData)) {
-        [self showSignOutWithClearData:NO];
+        UIView* itemView =
+            [[tableView cellForRowAtIndexPath:indexPath] contentView];
+        [self showSignOutWithClearData:NO itemView:itemView];
       } else {
         [self showSignOut];
       }
       break;
-    case ItemTypeSignOutAndClearData:
-      [self showSignOutWithClearData:YES];
+    }
+    case ItemTypeSignOutAndClearData: {
+      UIView* itemView =
+          [[tableView cellForRowAtIndexPath:indexPath] contentView];
+      [self showSignOutWithClearData:YES itemView:itemView];
       break;
+    }
     default:
       break;
   }
@@ -426,7 +434,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
           ->PresentAccountDetailsController(identity, self, /*animated=*/YES);
 }
 
-- (void)showSignOutWithClearData:(BOOL)forceClearData {
+- (void)showSignOutWithClearData:(BOOL)forceClearData
+                        itemView:(UIView*)itemView {
   NSString* alertMessage = nil;
   NSString* signOutTitle = nil;
   UIAlertActionStyle actionStyle = UIAlertActionStyleDefault;
@@ -449,8 +458,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[ActionSheetCoordinator alloc] initWithBaseViewController:self
                                                            title:nil
                                                          message:alertMessage
-                                                            rect:self.view.frame
-                                                            view:self.view];
+                                                            rect:itemView.frame
+                                                            view:itemView];
 
   __weak AccountsTableViewController* weakSelf = self;
   [_alertCoordinator

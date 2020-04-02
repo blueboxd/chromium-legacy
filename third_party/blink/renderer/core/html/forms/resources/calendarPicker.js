@@ -1753,10 +1753,17 @@ ListCell.prototype.setSelected = function(selected) {
   if (this._selected === selected)
     return;
   this._selected = selected;
-  if (this._selected)
+  if (this._selected) {
     this.element.classList.add('selected');
-  else
+    if (global.params.isFormControlsRefreshEnabled) {
+      this.element.setAttribute('aria-selected', true);
+    }
+  } else {
     this.element.classList.remove('selected');
+    if (global.params.isFormControlsRefreshEnabled) {
+      this.element.setAttribute('aria-selected', false);
+    }
+  }
 };
 
 /**
@@ -2866,6 +2873,7 @@ YearListView.prototype.prepareNewCell = function(row) {
                                                                      'false');
     }
     cell.monthButtons[i].setAttribute('aria-label', month.toLocaleString());
+    cell.monthButtons[i].setAttribute('aria-selected', false);
   }
   if (!global.params.isFormControlsRefreshEnabled && this.highlightedMonth &&
       row === this.highlightedMonth.year - 1) {
@@ -2881,6 +2889,10 @@ YearListView.prototype.prepareNewCell = function(row) {
   if (this._selectedMonth && (this._selectedMonth.year - 1) === row) {
     var monthButton = cell.monthButtons[this._selectedMonth.month];
     monthButton.classList.add(YearListCell.ClassNameSelected);
+    if (global.params.isFormControlsRefreshEnabled) {
+      this.element.setAttribute('aria-activedescendant', monthButton.id);
+      monthButton.setAttribute('aria-selected', true);
+    }
   }
   const todayMonth = Month.createFromToday();
   if ((todayMonth.year - 1) === row) {
@@ -3040,6 +3052,7 @@ YearListView.prototype.setSelectedMonth = function(month) {
   var oldMonthButton = this.buttonForMonth(this._selectedMonth);
   if (oldMonthButton) {
     oldMonthButton.classList.remove(YearListCell.ClassNameSelected);
+    oldMonthButton.setAttribute('aria-selected', false);
   }
 
   this._selectedMonth = month;
@@ -3047,6 +3060,8 @@ YearListView.prototype.setSelectedMonth = function(month) {
   var newMonthButton = this.buttonForMonth(this._selectedMonth);
   if (newMonthButton) {
     newMonthButton.classList.add(YearListCell.ClassNameSelected);
+    this.element.setAttribute('aria-activedescendant', newMonthButton.id);
+    newMonthButton.setAttribute('aria-selected', true);
   }
 };
 
@@ -4267,9 +4282,13 @@ CalendarTableView.prototype.updateCells = function() {
     var dayCell = this._dayCells[dayString];
     var day = dayCell.day;
     dayCell.setIsToday(Day.createFromToday().equals(day));
-    dayCell.setSelected(
-        day >= firstDayInSelection && day <= lastDayInSelection);
-    if (!global.params.isFormControlsRefreshEnabled) {
+    var isSelected = (day >= firstDayInSelection && day <= lastDayInSelection);
+    dayCell.setSelected(isSelected);
+    if (global.params.isFormControlsRefreshEnabled) {
+      if (isSelected && firstDayInSelection == lastDayInSelection) {
+        activeCell = dayCell;
+      }
+    } else {
       var isHighlighted =
           day >= firstDayInHighlight && day <= lastDayInHighlight;
       dayCell.setHighlighted(isHighlighted);
@@ -4289,8 +4308,13 @@ CalendarTableView.prototype.updateCells = function() {
     for (var weekString in this._weekNumberCells) {
       var weekNumberCell = this._weekNumberCells[weekString];
       var week = weekNumberCell.week;
-      weekNumberCell.setSelected(selection && selection.equals(week));
-      if (!global.params.isFormControlsRefreshEnabled) {
+      var isSelected = (selection && selection.equals(week));
+      weekNumberCell.setSelected(isSelected);
+      if (global.params.isFormControlsRefreshEnabled) {
+        if (isSelected) {
+          activeCell = weekNumberCell;
+        }
+      } else {
         var isWeekHighlighted = highlight && highlight.equals(week);
         weekNumberCell.setHighlighted(isWeekHighlighted);
         if (isWeekHighlighted)

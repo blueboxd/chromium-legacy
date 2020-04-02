@@ -20,6 +20,7 @@ class TransformableFrameInterface;
 namespace blink {
 
 class DOMArrayBuffer;
+class RTCEncodedAudioFrameDelegate;
 
 class MODULES_EXPORT RTCEncodedAudioFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -29,6 +30,8 @@ class MODULES_EXPORT RTCEncodedAudioFrame final : public ScriptWrappable {
       std::unique_ptr<webrtc::TransformableFrameInterface> webrtc_frame);
   explicit RTCEncodedAudioFrame(
       std::unique_ptr<webrtc::TransformableAudioFrameInterface> webrtc_frame);
+  explicit RTCEncodedAudioFrame(
+      scoped_refptr<RTCEncodedAudioFrameDelegate> delegate);
 
   // rtc_encoded_audio_frame.idl implementation.
   uint64_t timestamp() const;
@@ -39,17 +42,20 @@ class MODULES_EXPORT RTCEncodedAudioFrame final : public ScriptWrappable {
   Vector<uint32_t> contributingSources() const;
   String toString() const;
 
+  scoped_refptr<RTCEncodedAudioFrameDelegate> Delegate() const;
+  void SyncDelegate() const;
+
   // Returns and transfers ownership of the internal WebRTC frame
-  // backing this RTCEncodedVideoFrame, leaving the RTCEncodedVideoFrame
-  // without a delegate WebRTC frame.
-  std::unique_ptr<webrtc::TransformableFrameInterface> PassDelegate();
+  // backing this RTCEncodedAudioFrame, neutering all RTCEncodedAudioFrames
+  // backed by that internal WebRTC frame.
+  std::unique_ptr<webrtc::TransformableFrameInterface> PassWebRtcFrame();
 
   void Trace(Visitor*) override;
 
  private:
-  mutable Member<DOMArrayBuffer> frame_data_;
+  scoped_refptr<RTCEncodedAudioFrameDelegate> delegate_;
   Vector<uint32_t> contributing_sources_;
-  std::unique_ptr<webrtc::TransformableFrameInterface> webrtc_frame_;
+  mutable Member<DOMArrayBuffer> frame_data_;
 };
 
 }  // namespace blink

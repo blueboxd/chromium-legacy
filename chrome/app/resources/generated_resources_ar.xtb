@@ -119,7 +119,7 @@
 <translation id="1153636665119721804">‏برنامج الحماية المتقدّمة من Google</translation>
 <translation id="1161575384898972166">يُرجى تسجيل الدخول إلى <ph name="TOKEN_NAME" /> لتصدير شهادة العميل.</translation>
 <translation id="1163931534039071049">عرض م&amp;صدر الإطار</translation>
-<translation id="1164674268730883318">‏هل تريد إيقاف تفعيل Smart Lock لـ <ph name="DEVICE_TYPE" />؟</translation>
+<translation id="1164674268730883318">‏هل تريد إيقاف Smart Lock لـ <ph name="DEVICE_TYPE" />؟</translation>
 <translation id="1164891049599601209">تم إدخالها على موقع إلكتروني مريب.</translation>
 <translation id="1164899421101904659">إدخال مفتاح فتح قفل رقم التعريف الشخصي</translation>
 <translation id="1165039591588034296">خطأ</translation>
@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">&amp;استئناف</translation>
 <translation id="2136372518715274136">أدخل كلمة المرور الجديدة</translation>
 <translation id="2136476978468204130">عبارة المرور التي أدخلتها غير صحيحة</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{تم حظر ملفات تعريف الارتباط.}=1{تم حظر ملفات تعريف الارتباط باستثناء ملف واحد.}two{تم حظر ملفات تعريف الارتباط باستثناء ملفَّين ({COUNT}).}few{تم حظر ملفات تعريف الارتباط باستثناء {COUNT} ملفات.}many{تم حظر ملفات تعريف الارتباط باستثناء {COUNT} ملفًا.}other{تم حظر ملفات تعريف الارتباط باستثناء {COUNT} ملف.}}</translation>
 <translation id="2138398485845393913">لا يزال الاتصال بالجهاز "<ph name="DEVICE_NAME" />" قيد التقدُّم</translation>
 <translation id="2139545522194199494">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، يديرها المشرف، الاتصال</translation>
 <translation id="2139919072249842737">زر الإعداد</translation>
@@ -1206,7 +1205,6 @@
 <translation id="2586672484245266891">‏يُرجى إدخال عنوان URL أقصر.</translation>
 <translation id="2587922766792651800">انتهت المهلة</translation>
 <translation id="2588636910004461974">أجهزة من <ph name="VENDOR_NAME" /></translation>
-<translation id="2593594315333286814">إعدادات إمكانية الوصول الخاصة بالتنقّل</translation>
 <translation id="2594999711683503743">‏البحث في Google أو كتابة عنوان URL</translation>
 <translation id="2602501489742255173">مرِّر سريعًا للأعلى للبدء.</translation>
 <translation id="2603115962224169880">إزالة البرامج الضارة من جهاز الكمبيوتر</translation>
@@ -1668,8 +1666,8 @@
 <translation id="3202173864863109533">تم كتم صوت علامة التبويب.</translation>
 <translation id="3208321278970793882">التطبيق</translation>
 <translation id="3208584281581115441">التحقّق الآن</translation>
-<translation id="3208640652501208439">‏قد يتعذّر تحميل مصادر للأعمال المدرسية تلقائيًا أو توفّرها.
-وقد لا يتمكن طفلك من الوصول إلى ما يلي:
+<translation id="3208640652501208439">‏مصادر الأعمال المدرسية قد لا تكون متوفرة أو لم يتم تحميلها تلقائيًا.
+    قد لا يتمكّن طفلك من الوصول إلى ما يلي:
 <ph name="BEGIN_LIST" />
 <ph name="LIST_ITEM" />التطبيقات والإضافات التي ثبّتتها المدرسة
 <ph name="LIST_ITEM" />الإشارات المرجعية من جهاز Chromebook الخاص بالمدرسة
@@ -1678,7 +1676,7 @@
 للاستفادة من التجربة المدرسية الكاملة على هذا الجهاز، يجب على طفلك إجراء ما يلي:
 <ph name="BEGIN_OLIST" />
 <ph name="OLIST_ITEM" />تسجيل الخروج من حسابه المُدار من خلال Family Link
-<ph name="OLIST_ITEM" />تسجيل الدخول باستخدام حساب "G Suite للتعليم" على شاشة تسجيل الدخول. ومع ذلك، يُرجى ملاحظة أن هذا يعني أن سياسات المدرسة بما في ذلك إعدادات الوصول للموقع الإلكتروني والتطبيق ستكون لها الأولوية على ميزات إشراف Family Link (على سبيل المثال قد يسمح مشرفو المدرسة بالوصول إلى YouTube إذا كان ضروريًا للواجب المنزلي، وعدم تحديد وقت للشاشة، وغيرها).
+<ph name="OLIST_ITEM" />تسجيل الدخول باستخدام حساب "G Suite للتعليم" على شاشة تسجيل الدخول. ويُرجى ملاحظة أن هذا يعني أن سياسات المدرسة التي تتضمّن إعدادات الوصول للمواقع الإلكترونية والتطبيقات ستكون لها الأولوية على ميزات إشراف Family Link (على سبيل المثال، قد يسمح مشرفو المدرسة بالوصول إلى YouTube إذا كان ضروريًا لأداء الواجبات المنزلية، ولن يتم فرض قيود على وقت النظر إلى الشاشة وما إلى ذلك).
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">لم يتم تأكيده</translation>
 <translation id="32101887417650595">يتعذّر الاتصال بالطباعة</translation>
@@ -1758,7 +1756,7 @@
 <translation id="3312424061798279731">اللغات التي تم تفعيلها</translation>
 <translation id="3313622045786997898">قيمة توقيع الشهادة</translation>
 <translation id="3315158641124845231">إخفاء <ph name="PRODUCT_NAME" /></translation>
-<translation id="3317284582048881482">معلومات حساب المدرسة للوالدَين</translation>
+<translation id="3317284582048881482">معلومات عن حساب المدرسة للوالدَين</translation>
 <translation id="3317459757438853210">طباعة على الجانبين</translation>
 <translation id="3317678681329786349">تم حظر استخدام الكاميرا والميكروفون</translation>
 <translation id="3319048459796106952">نافذة &amp; جديدة للتصفح المتخفي</translation>
@@ -1879,6 +1877,7 @@
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="3479685872808224578">تعذّر العثور على خادم الطباعة. يُرجى التحقّق من العنوان وإعادة المحاولة.</translation>
 <translation id="3481268647794498892">جارٍ الفتح في <ph name="ALTERNATIVE_BROWSER_NAME" /> خلال <ph name="COUNTDOWN_SECONDS" /> ثانية</translation>
+<translation id="3482719661246593752">بإمكان <ph name="ORIGIN" /> عرض الملفات التالية:</translation>
 <translation id="3484273680291419129">جارٍ إزالة البرامج الضارة...</translation>
 <translation id="3484869148456018791">الحصول على شهادة جديدة</translation>
 <translation id="3487007233252413104">وظيفة مجهولة</translation>
@@ -1941,6 +1940,7 @@
 <translation id="3564848315152754834">‏مفتاح أمان USB</translation>
 <translation id="3566721612727112615">لم تتم إضافة أي مواقع</translation>
 <translation id="3569382839528428029">هل تريد من <ph name="APP_NAME" /> مشاركة شاشتك؟</translation>
+<translation id="3569682580018832495">بإمكان <ph name="ORIGIN" /> عرض الملفات والمجلدات التالية:</translation>
 <translation id="3571734092741541777">إعداد</translation>
 <translation id="3574210789297084292">تسجيل الدخول</translation>
 <translation id="3574917942258583917">هل تريد الخروج من وضع التصفح المتخفي على أي حال؟</translation>
@@ -1950,6 +1950,7 @@
 <translation id="3578594933904494462">تجري مشاركة محتوى علامة التبويب هذه.</translation>
 <translation id="357886715122934472">‏يريد &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; مشاركة طابعة &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; مع مجموعة تمتلكها: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. في حال موافقتك، سيتمكن جميع أعضاء المجموعة من الطباعة بهذه الطابعة.</translation>
 <translation id="357889014807611375">‏شبكة Wi-Fi ذات السعة المحدودة</translation>
+<translation id="3582057310199111521">تم إدخال كلمة المرور على موقع إلكتروني مريب وتبيّن أنها مستخدَمة في عملية اختراق البيانات.</translation>
 <translation id="3584169441612580296">التعرّف على الصور، والموسيقى، والوسائط الأخرى من الكمبيوتر وتغييرها</translation>
 <translation id="3586806079541226322">يتعذّر فتح هذا الملف</translation>
 <translation id="3586931643579894722">إخفاء التفاصيل</translation>
@@ -2062,7 +2063,7 @@
 <translation id="3706463572498736864">عدد الصفحات في كل جدول بيانات</translation>
 <translation id="370649949373421643">‏تفعيل Wi-Fi</translation>
 <translation id="370665806235115550">جارٍ التحميل...</translation>
-<translation id="3709244229496787112">تم إيقاف تفعيل المتصفح قبل انتهاء التنزيل.</translation>
+<translation id="3709244229496787112">تم إيقاف المتصفح قبل انتهاء التنزيل.</translation>
 <translation id="3711931198657368127">ل&amp;صق والانتقال إلى <ph name="URL" /></translation>
 <translation id="3711945201266135623">تم العثور على <ph name="NUM_PRINTERS" /> طابعة من خادم الطباعة.</translation>
 <translation id="3712050472459130149">مطلوب تحديث الحساب</translation>
@@ -2213,7 +2214,6 @@
 <translation id="3873423927483480833">إظهار أرقام التعريف الشخصية</translation>
 <translation id="3873915545594852654">‏حدثت مشكلة في "وقت تشغيل التطبيقات في Chrome (ARC++)".</translation>
 <translation id="3879748587602334249">تطبيق إدارة التنزيل</translation>
-<translation id="3881321138433527084">تم إيقاف التصفّح الآمن. للحفاظ على أمانك على الإنترنت، عليك تفعيله.</translation>
 <translation id="3882165008614329320">الفيديو الحالي من الكاميرا أو الملف</translation>
 <translation id="3886446263141354045">تمّ إرسال طلبك للدخول إلى هذا الموقع إلى <ph name="NAME" /></translation>
 <translation id="3888550877729210209">تسجيل الملاحظات من خلال <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -3079,6 +3079,7 @@
 <translation id="5117930984404104619">‏مراقبة سلوك الإضافات الأخرى، بما في ذلك عناوين URL التي تم الانتقال إليها</translation>
 <translation id="5119173345047096771">موزيلا فايرفوكس</translation>
 <translation id="5121130586824819730">القرص الصلب ممتلئ. يُرجى الحفظ في مكان آخر أو توفير مساحة أكبر على القرص الصلب.</translation>
+<translation id="5122384452788334261">‏مساحة التخزين على الجهاز منخفضة. يُنصَح بتوفير <ph name="RECOMMENDED_SPACE" /> على الأقل من المساحة الخالية لاستخدام Plugin VM. لتوفير مساحة، يمكنك حذف الملفات من مساحة تخزين الجهاز.</translation>
 <translation id="5123433949759960244">كرة السلة</translation>
 <translation id="5125751979347152379">‏عنوان URL غير صالح.</translation>
 <translation id="5126611267288187364">عرض التغييرات</translation>
@@ -3292,7 +3293,7 @@
 <translation id="5423829801105537712">التدقيق الإملائي الأساسي</translation>
 <translation id="5423849171846380976">نشطة</translation>
 <translation id="5425042808445046667">متابعة التنزيل</translation>
-<translation id="5425722269016440406">‏يجب أن تكون متصلاً بالإنترنت لإيقاف تفعيل Smart Lock لأن هذا الإعداد متزامن مع هاتفك وأجهزة أخرى. يُرجى الاتصال بإحدى الشبكات أولاً.</translation>
+<translation id="5425722269016440406">‏يجب أن تكون متصلاً بالإنترنت لإيقاف Smart Lock لأن هذا الإعداد متزامن مع هاتفك وأجهزة أخرى. يُرجى الاتصال بإحدى الشبكات أولاً.</translation>
 <translation id="5425863515030416387">تسجيل الدخول بسهولة على جميع الأجهزة</translation>
 <translation id="5427278936122846523">الترجمة دومًا</translation>
 <translation id="5427459444770871191">تدوير &amp;في اتجاه عقارب الساعة</translation>
@@ -3895,7 +3896,7 @@
 <translation id="6209908325007204267">‏يتضمّن جهازك "ترقية Chrome Enterprise"، ولكن اسم المستخدم الخاص بك غير مرتبط بحساب مؤسسة. يُرجى إنشاء حساب مؤسسة من خلال الانتقال إلى g.co/ChromeEnterpriseAccount على جهاز ثانوي.</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: المزامنة لا تعمل</translation>
 <translation id="6212039847102026977">عرض خصائص الشبكة المتقدمة</translation>
-<translation id="6212168817037875041">إيقاف تفعيل الشاشة</translation>
+<translation id="6212168817037875041">إيقاف الشاشة</translation>
 <translation id="6212752530110374741">إرسال الرابط عبر البريد الإلكتروني</translation>
 <translation id="6216696360484424239">تسجيل الدخول تلقائيًا</translation>
 <translation id="6218058416316985984">جهاز <ph name="DEVICE_TYPE" /> غير متّصل بالإنترنت. يُرجى الاتصال بالإنترنت وإعادة المحاولة.</translation>
@@ -4094,7 +4095,7 @@
 <translation id="6472804939621540371">سيؤدي هذا الإجراء إلى محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="SITE_GROUP_NAME" />، والمواقع الإلكترونية والتطبيقات المثبّتة ضمن هذه المجموعة.</translation>
 <translation id="6472893788822429178">عرض زر الصفحة الرئيسية</translation>
 <translation id="6473842110411557830">‏صورة توضيحية لـ Powerwash</translation>
-<translation id="6474498546677193336">‏تعذّر إلغاء المشاركة بسبب استخدام تطبيق لهذا الملف. سيتم إلغاء مشاركة الملف عند إيقاف تفعيل Linux.</translation>
+<translation id="6474498546677193336">‏تعذّر إلغاء المشاركة بسبب استخدام تطبيق لهذا الملف. سيتم إلغاء مشاركة الملف عند إيقاف Linux.</translation>
 <translation id="6474884162850599008">‏إلغاء ربط حساب Google Drive</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> يود أن يشارك محتوى شاشتك. اختر ما ترغب في مشاركته.</translation>
 <translation id="6478248366783946499">هل تريد الاحتفاظ بالملف الضار؟</translation>
@@ -5155,7 +5156,7 @@
 <translation id="7889565820482017512">حجم شاشة العرض</translation>
 <translation id="7892963120252479610">سيكون بإمكان <ph name="ORIGIN" /> عرض الملفات في <ph name="FOLDERNAME" /> حتى تغلق علامة التبويب هذه.</translation>
 <translation id="7893008570150657497">الوصول إلى الصور والموسيقى والوسائط الأخرى من جهاز الكمبيوتر</translation>
-<translation id="7893153962594818789">تم إيقاف تفعيل البلوتوث في جهاز <ph name="DEVICE_TYPE" /> هذا. أدخل كلمة مرورك، وشغّل البلوتوث.</translation>
+<translation id="7893153962594818789">تم إيقاف البلوتوث في جهاز <ph name="DEVICE_TYPE" /> هذا. أدخل كلمة مرورك، وشغّل البلوتوث.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (التلقائي)</translation>
 <translation id="7897900149154324287">في المستقبل، تأكد من إخراج الجهاز القابل للإزالة في تطبيق الملفات قبل فصله؛ وإلا قد تفقد بيانات.</translation>
 <translation id="7898627924844766532">البقاء مثبتًا في شريط الأدوات</translation>
@@ -5176,6 +5177,7 @@
 <translation id="7915471803647590281">يُرجى إخبارنا بما يحدث قبل إرسال التعليقات.</translation>
 <translation id="7918257978052780342">تسجيل</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> ثوانٍ</translation>
+<translation id="7920363873148656176">بإمكان <ph name="ORIGIN" /> عرض الملف <ph name="FILENAME" />.</translation>
 <translation id="7924358170328001543">خطأ في إعادة توجيه المنفذ</translation>
 <translation id="792514962475806987">مستوى التكبير الذي تم إرساؤه:</translation>
 <translation id="7925247922861151263">‏تعذّر فحص AAA</translation>
@@ -5339,6 +5341,7 @@
 <translation id="8118488170956489476">تعمل مؤسستك على <ph name="BEGIN_LINK" />إدارة متصفِّحك<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">إدارة عمليات التنزيل</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /> و<ph name="RECENT_PERMISSIONS_CHANGE_1" /> و<ph name="RECENT_PERMISSIONS_CHANGE_2" /> والمزيد</translation>
+<translation id="8120715633374652536">‏مساحة التخزين على الجهاز منخفضة. يجب توفّر <ph name="MINIMUM_SPACE" /> على الأقل من المساحة الخالية لاستخدام Plugin VM، ويُنصَح بأن تكون المساحة الخالية أكثر من <ph name="RECOMMENDED_SPACE" />. لتوفير مساحة، يمكنك حذف الملفات من مساحة تخزين الجهاز.</translation>
 <translation id="8123590694679414600">‏تم ترميز بياناتك باستخدام عبارة مرور المزامنة في
           <ph name="TIME" />. لا يتضمّن ذلك طرق الدفع والعناوين من Google Pay.</translation>
 <translation id="81238879832906896">زهرة صفراء وبيضاء</translation>
@@ -5388,7 +5391,6 @@
 <translation id="8186609076106987817">تعذر على الخادم العثور على الملف.</translation>
 <translation id="8188389033983459049">التحقُّق من إعدادات جهازك وتفعيلها للاستمرار</translation>
 <translation id="8190193592390505034">جارٍ الاتصال بـ <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">‏إجراء عملية التحقّق في حساب Google</translation>
 <translation id="8191230140820435481">إدارة التطبيقات والإضافات والمظاهر</translation>
 <translation id="8195027750202970175">الحجم على القرص</translation>
 <translation id="8198323535106903877">سنعمل على تثبيت <ph name="NUMBER_OF_APPS" /> من هذه التطبيقات من أجلك</translation>
@@ -6060,7 +6062,7 @@
 <translation id="9055636786322918818">‏فرض ترميز RC4: يؤدي استخدام هذا الخيار إلى زيادة المخاطر، لأن رموز RC4 غير آمنة.</translation>
 <translation id="9056810968620647706">لم يتم العثور على نتائج مطابقة.</translation>
 <translation id="9057354806206861646">تعديل الجدول الزمني</translation>
-<translation id="9058976525724291037">‏يريد طفلك إضافة "حساب Google" آخر إلى هذا الجهاز. وغير مسموح بإضافة حسابات سوى حسابات "G Suite للتعليم" إلى الأجهزة التي تُدار من خلال Family Link.</translation>
+<translation id="9058976525724291037">‏يريد طفلك إضافة حساب Google آخر إلى هذا الجهاز. لا يُسمح بإضافة حسابات إلا حسابات "G Suite للتعليم" على الأجهزة المُدراة من خلال Family Link.</translation>
 <translation id="9062065967472365419">مفاجأة</translation>
 <translation id="9062468308252555888">14 ضعفًا</translation>
 <translation id="9063208415146866933">خطأ من السطر رقم <ph name="ERROR_LINE_START" /> إلى <ph name="ERROR_LINE_END" /></translation>
@@ -6171,7 +6173,7 @@
 <translation id="934244546219308557">تسمية هذه المجموعة</translation>
 <translation id="934503638756687833">‏ستتم أيضًا إزالة العناصر غير المدرجة هنا إذا لزم الأمر. يمكنك الاطلاع على مزيد من المعلومات عن &lt;a href="<ph name="URL" />"&gt;الحماية من البرامج غير المرغوب فيها&lt;/a&gt; في المستند التقني لخصوصية Chrome.</translation>
 <translation id="935490618240037774">‏ستتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google لكي يتسنّى لك استخدامها على جميع أجهزتك.</translation>
-<translation id="935854577147268200">‏تم تعديل إعدادات Smart Lock على هاتفك. يمكنك إدخال كلمة مرورك لتحديث هذه الإعدادات. وفي المرة القادمة، سيفتح هاتفك قفل جهاز <ph name="DEVICE_TYPE" />. ويمكنك إيقاف تفعيل Smart Lock في "الإعدادات".</translation>
+<translation id="935854577147268200">‏تم تعديل إعدادات Smart Lock على هاتفك. يمكنك إدخال كلمة مرورك لتحديث هذه الإعدادات. وفي المرة القادمة، سيفتح هاتفك قفل جهاز <ph name="DEVICE_TYPE" />. ويمكنك إيقاف Smart Lock في "الإعدادات".</translation>
 <translation id="93610034168535821">مساحة التخزين المستخدمة من قِبل المواقع الإلكترونية:</translation>
 <translation id="936801553271523408">بيانات تشخيص النظام</translation>
 <translation id="93766956588638423">إصلاح الإضافة</translation>

@@ -73,7 +73,6 @@
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/test/storage_partition_test_helpers.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/cpp/features.h"
@@ -216,6 +215,64 @@ void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
   SkIRect rect;  // Bounding rect
   rect.setXYWH(wr.x, wr.y, wr.width, wr.height);
   canvas.drawIRect(rect, flags);
+}
+
+// Applies settings that differ between web tests and regular mode. Some
+// of the defaults are controlled via command line flags which are
+// automatically set for web tests.
+void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  prefs->allow_universal_access_from_file_urls = false;
+  prefs->dom_paste_enabled = true;
+  prefs->javascript_can_access_clipboard = true;
+  prefs->xslt_enabled = true;
+  prefs->application_cache_enabled = true;
+  prefs->tabs_to_links = false;
+  prefs->hyperlink_auditing_enabled = false;
+  prefs->allow_running_insecure_content = false;
+  prefs->disable_reading_from_canvas = false;
+  prefs->strict_mixed_content_checking = false;
+  prefs->strict_powerful_feature_restrictions = false;
+  prefs->webgl_errors_to_console_enabled = false;
+  prefs->enable_scroll_animator =
+      !command_line.HasSwitch(switches::kDisableSmoothScrolling);
+  prefs->minimum_logical_font_size = 9;
+  prefs->accelerated_2d_canvas_enabled =
+      command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
+  prefs->smart_insert_delete_enabled = true;
+  prefs->viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
+  prefs->default_minimum_page_scale_factor = 1.f;
+  prefs->default_maximum_page_scale_factor = 4.f;
+  prefs->presentation_receiver =
+      command_line.HasSwitch(switches::kForcePresentationReceiverForTesting);
+  prefs->translate_service_available = true;
+
+#if defined(OS_MACOSX)
+  prefs->editing_behavior = EDITING_BEHAVIOR_MAC;
+#else
+  prefs->editing_behavior = EDITING_BEHAVIOR_WIN;
+#endif
+
+#if defined(OS_MACOSX)
+  prefs->cursive_font_family_map[kCommonScript] =
+      base::ASCIIToUTF16("Apple Chancery");
+  prefs->fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Papyrus");
+  prefs->serif_font_family_map[kCommonScript] = base::ASCIIToUTF16("Times");
+  prefs->standard_font_family_map[kCommonScript] = base::ASCIIToUTF16("Times");
+#else
+  prefs->cursive_font_family_map[kCommonScript] =
+      base::ASCIIToUTF16("Comic Sans MS");
+  prefs->fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Impact");
+  prefs->serif_font_family_map[kCommonScript] =
+      base::ASCIIToUTF16("times new roman");
+  prefs->standard_font_family_map[kCommonScript] =
+      base::ASCIIToUTF16("times new roman");
+#endif
+  prefs->fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier");
+  prefs->sans_serif_font_family_map[kCommonScript] =
+      base::ASCIIToUTF16("Helvetica");
 }
 
 }  // namespace

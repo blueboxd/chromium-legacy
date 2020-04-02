@@ -61,11 +61,21 @@ source_set("web_test_common") {
   ]
 }
 
-jumbo_static_library("content_shell_lib") {
+# This component provides a ContentMainDelegate for Content Shell and derived
+# applications. This delegate is the central place that creates interfaces for
+# each type of process (browser, renderer, etc). This implementation of
+# ContentMainDelegate will create either production or test-based
+# implementations.
+#
+# This component needs to be linked into every process in a Content Shell-based
+# application that wants to use ShellMainDelegate.
+#
+# TODO(danakj): This component will depend on {renderer,browser}/web_test. The
+# content_shell_lib component will not, to avoid circular deps, as web_test
+# inherits from things in content_shell_lib.
+static_library("content_shell_app") {
   testonly = true
   sources = [
-    "android/shell_manager.cc",
-    "android/shell_manager.h",
     "app/paths_mac.h",
     "app/paths_mac.mm",
     "app/shell_crash_reporter_client.cc",
@@ -74,6 +84,29 @@ jumbo_static_library("content_shell_lib") {
     "app/shell_main_delegate.h",
     "app/shell_main_delegate_mac.h",
     "app/shell_main_delegate_mac.mm",
+  ]
+  deps = [
+    ":content_shell_lib",
+    "//content/public/app:both",
+    "//v8",
+  ]
+  if (!is_fuchsia) {
+    deps += [
+      "//components/crash/core/app",
+      "//components/crash/core/app:test_support",
+    ]
+  }
+  defines = [
+    "CONTENT_SHELL_VERSION=\"$content_shell_version\"",
+    "CONTENT_SHELL_MAJOR_VERSION=\"$content_shell_major_version\"",
+  ]
+}
+
+static_library("content_shell_lib") {
+  testonly = true
+  sources = [
+    "android/shell_manager.cc",
+    "android/shell_manager.h",
     "browser/renderer_host/shell_render_widget_host_view_mac_delegate.h",
     "browser/renderer_host/shell_render_widget_host_view_mac_delegate.mm",
     "browser/shell.cc",
@@ -568,7 +601,7 @@ if (is_android) {
       ":content_shell_resources_bundle_data",
     ]
     info_plist_target = ":content_shell_plist"
-    data_deps = [ ":content_shell_lib" ]
+    data_deps = [ ":content_shell_app" ]
   }
 } else {
   executable("content_shell") {
@@ -583,9 +616,10 @@ if (is_android) {
     defines = []
 
     deps = [
-      ":content_shell_lib",
+      ":content_shell_app",
       ":pak",
       "//build/win:default_exe_manifest",
+      "//content/public/app:both",
     ]
 
     data_deps = [
@@ -594,7 +628,10 @@ if (is_android) {
     ]
 
     if (is_win) {
-      deps += [ "//sandbox" ]
+      deps += [
+        "//base",
+        "//sandbox",
+      ]
       if (win_console_app) {
         defines += [ "WIN_CONSOLE_APP" ]
       } else {
@@ -719,12 +756,14 @@ if (is_mac) {
       "app/shell_content_main.h",
     ]
 
-    public_deps = [ ":content_shell_lib" ]
     deps = [
       ":content_shell_angle_library",
+      ":content_shell_app",
       ":content_shell_framework_helpers",
       ":content_shell_framework_resources",
       ":content_shell_swiftshader_library",
+      "//content/public/app:both",
+      "//content/public/common",
       "//third_party/icu:icudata",
     ]
 

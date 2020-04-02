@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Centrum oznámení</translation>
 <translation id="1195412055398077112">přesah obrazu</translation>
 <translation id="119944043368869598">Vymazat vše</translation>
+<translation id="1199716647557067911">Opravdu chcete přístup pomocí přepínačů vypnout?</translation>
 <translation id="1247372569136754018">Mikrofon (interní)</translation>
 <translation id="1252999807265626933">Zdroj nabíjení: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Jaké je počasí?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Síla signálu: <ph name="SIGNAL_STRENGTH" />, baterie telefonu: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Odesílání do zařízení <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Zeptejte se administrátora</translation>
+<translation id="6584550827717945790">Vypnutí přístupu pomocí přepínačů</translation>
 <translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" />, spravováno administrátorem</translation>
 <translation id="6614169507485700968">Obrazovka ochrany soukromí je zapnutá</translation>

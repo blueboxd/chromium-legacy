@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">விருப்பத்தேர்வு: பயன்பாட்டு புள்ளிவிவரங்களையும், சிதைவு அறிக்கைகளையும் Google க்கு தானாகவே அனுப்புவதன் மூலம் Chromium ஐ இன்னும் சிறந்ததாக்க உதவுக.</translation>
 <translation id="2910007522516064972">&amp;Chromium அறிமுகம்</translation>
 <translation id="2977470724722393594">Chromium புதுப்பித்த நிலையில் உள்ளது</translation>
+<translation id="2983934633046890458">Chromium கடவுச்சொற்களைத் திருத்த முயல்கிறது.</translation>
 <translation id="3032706164202344641">Chromiumமால் உங்கள் கடவுச்சொற்களைச் சரிபார்க்க முடியவில்லை. பிறகு முயலவும்.</translation>
 <translation id="3032787606318309379">Chromium இல் சேர்க்கிறது...</translation>
 <translation id="3068515742935458733">சிதைவு அறிக்கைகளையும் <ph name="UMA_LINK" /> உம் Google க்கு அனுப்புவதன் மூலம் Chromium ஐ மேலும் சிறப்பானதாக்க உதவவும்</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">Chromium OS ஆல் இந்தப் பக்கத்தைத் திறக்க முடியாது.</translation>
 <translation id="5480860683791598150">இந்தத் தளத்துடன் இருப்பிடத்தைப் பகிர Chromiumமுக்கு உங்கள் இருப்பிடத்திற்கான அணுகல் தேவை</translation>
 <translation id="549669000822060376">சமீபத்திய முறைமை புதுப்பிப்புகளை Chromium நிறுவும் வரை காத்திருக்கவும்.</translation>
+<translation id="5496810170689441661">Chromium கடவுச்சொற்களைத் திருத்த முயல்கிறது. இதை அனுமதிக்க உங்கள் Windows கடவுச்சொல்லை உள்ளிடவும்.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromiumமிற்கான புதுப்பிப்பு உள்ளது}=1{Chromiumமிற்கான புதுப்பிப்பு உள்ளது}other{Chromiumமிற்கான புதுப்பிப்பு வந்து # நாட்களாகிறது}}</translation>
 <translation id="5631814766731275228">Chromium பெயர் மற்றும் படம்</translation>
 <translation id="5634636535844844681">Windows 7 அல்லது அதற்குப் பிந்தைய பதிப்புகளில் மட்டுமே Chromium இயங்கும்.</translation>

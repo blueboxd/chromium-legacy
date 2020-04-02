@@ -144,6 +144,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책이 설정되지 않으면 로그인 화면이 처음 표시될 때 음성 피드백이 사용되지 않습니다. 사용자는 언제든지 음성 피드백을 사용 설정하거나 사용 중지할 수 있으며 로그인 화면에서 음성 피드백의 상태가 사용자 간에 유지됩니다.
 
           참고: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
+<translation id="1128717055763152639">차단 가능한(능동) 혼합 콘텐츠(HTTPS 사이트의 HTTP 콘텐츠) 표시를 허용하고 선택적으로 차단 가능한 혼합 콘텐츠 업그레이드를 사용 중지할 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠는 차단되고 선택적으로 차단 가능한 혼합 콘텐츠는 업그레이드되며 사용자는 예외를 설정해 특정 사이트에서 혼합 콘텐츠를 허용할 수 있습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="1128903365609589950"><ph name="PRODUCT_NAME" />이(가) 캐시된 파일을 디스크에 저장할 때 사용할 디렉터리를 설정합니다.
 
       이 정책을 설정하면 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉터리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉터리나 다른 목적으로 사용되는 디렉터리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉터리의 콘텐츠를 관리하기 때문입니다.
@@ -180,17 +185,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
 <translation id="1204263402976895730">사용 설정된 엔터프라이즈 프린터</translation>
-<translation id="1216890727647348501"><ph name="PRODUCT_NAME" />의 세이프 브라우징 향상된 보호 기능을 사용 설정하고 사용자가 이 설정을 변경하지 못하게 차단합니다.
-
-      설정이 사용되면 세이프 브라우징 향상된 보호 기능이 항상 활성화됩니다.
-
-      사용 중지하면 세이프 브라우징 향상된 보호 기능이 활성화되지 않습니다.
-
-      정책을 필수로 설정하면 사용자가 <ph name="PRODUCT_NAME" />에서 '피싱 및 멀웨어 차단 사용' 설정을 변경하거나 재정의할 수 없습니다.
-
-      설정하지 않으면 세이프 브라우징 향상된 보호 기능이 기본적으로 비활성화되지만 사용자가 활성화할 수 있습니다.
-
-      https://developers.google.com/safe-browsing에서 세이프 브라우징에 관해 자세히 알아보세요.</translation>
 <translation id="1216919699175573511">서명된 HTTP 교환(SXG) 지원 사용 설정</translation>
 <translation id="1219695476179627719">기기가 이미 이후 버전을 실행하는 경우 기기를 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />에 설정된 버전으로 롤백할지 여부를 지정합니다.
 
@@ -277,6 +271,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 중지할 경우 Google 어시스턴트가 화면 컨텍스트에 액세스할 수 없습니다.
       설정하지 않으면 Google 어시스턴트가 화면 컨텍스트에 액세스하도록 허용할지 사용자가 결정할 수 있습니다.</translation>
 <translation id="1376119291123231789">고급 배터리 충전 모드를 사용 설정합니다.</translation>
+<translation id="1376298389964661475">알림 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultNotificationsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="1377134027840513298">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
           이 정책은 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 및 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 정책과 같이 더 구체적인 정책의 대체 값을 제공합니다. 더 구체적인 정책이 설정되지 않은 경우 이 정책에 설정된 대체 값이 사용됩니다.
@@ -284,7 +283,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 설정되지 않아도 더 구체적인 정책 사용에 영향을 주지 않습니다.</translation>
 <translation id="1384459581748403878">참고: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS 업데이트 상태 보고</translation>
-<translation id="1388918874748125262">세이프 브라우징 향상된 보호 기능 사용</translation>
 <translation id="1393485621820363363">사용 설정된 엔터프라이즈 기기 프린터</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
 <translation id="1404043648050567997">세이프 브라우징 서비스는 사용자가 악성 사이트로 신고된 사이트를 탐색할 때 경고 페이지를 표시합니다. 이 설정을 사용하면 사용자가 경고 페이지가 표시된 악성 사이트를 탐색하지 않게 됩니다.
@@ -299,19 +297,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1426170570389588560">인쇄 작업 메타데이터의 저장 기간(일) 설정</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1427655258943162134">프록시 서버의 주소 또는 URL</translation>
-<translation id="1431272318313028342"><ph name="PRODUCT_NAME" />의 세이프 브라우징 기능을 사용 설정하고 사용자가 이 설정을 변경하지 못하게 차단합니다.
-
-      이 설정이 사용되면 세이프 브라우징이 항상 활성화됩니다.
-
-      이 설정이 사용 중지되면 세이프 브라우징이 활성화되지 않습니다.
-
-      이 설정이 사용 또는 사용 중지되면 사용자가 <ph name="PRODUCT_NAME" />의 '피싱 및 멀웨어 보호 사용' 설정을 변경하거나 재정의할 수 없습니다.
-
-이 정책이 설정되지 않으면 이 정책을 사용하도록 설정되지만 사용자가 설정을 변경할 수 있습니다.
-
-      https://developers.google.com/safe-browsing에서 세이프 브라우징을 자세히 알아보세요.
-
-      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴트에서만 사용할 수 있습니다.</translation>
 <translation id="1435659902881071157">기기 수준 네트워크 설정</translation>
 <translation id="1438739959477268107">기본 키 생성 설정</translation>
 <translation id="1455804070656338445">비밀번호 변경 URL(HTTP 및 HTTPS 체계만 해당)을 구성합니다. 브라우저에 경고가 표시된 후 사용자가 비밀번호를 변경하도록 비밀번호 보호 서비스에서 사용자를 이 URL로 안내합니다.
@@ -350,6 +335,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1474273443907024088">TLS False Start 사용 안함</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">백라이트 정보 보고</translation>
+<translation id="1497640071678474358">팝업 열기가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultPopupsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="1502843533062797703">타사 소프트웨어 삽입 차단 사용</translation>
 <translation id="1507382822467487898">
           기기에 도크가 연결되었을 때 어떤 미디어 액세스 컨트롤(MAC) 주소가 사용될지 설정합니다.
@@ -506,7 +496,19 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책은 <ph name="PRODUCT_OS_NAME" />에서 서비스 약관을 다운로드할 수 있는 URL로 설정되어야 합니다. 서비스 약관은 일반 텍스트여야 하며 MIME 유형 text/plain으로 제공됩니다. 마크업은 허용되지 않습니다.</translation>
 <translation id="1750315445671978749">모든 다운로드 차단</translation>
+<translation id="1757544636315644531">이미지 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultImagesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          이전에는 이 정책이 Android에서 사용되도록 잘못 설정되었으나 이 기능이 Android에서 완전히 지원된 적은 없습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="1767673020408652620">검색창이 0 상태일 때 앱 추천을 사용 설정합니다.</translation>
+<translation id="1777842213242723063"><ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultPluginsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="1781356041596378058">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 true로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 false로 설정하거나 설정하지 않은 채로 두는 경우 Android 설정 앱에서 빌드 번호를 7번 탭하면 개발자 옵션에 액세스할 수 있습니다.</translation>
 <translation id="1793346220873697538">기본적으로 PIN 인쇄를 사용하지 않습니다.</translation>
 <translation id="1797233582739332495">사용자에게 재실행이 필요하다는 메시지를 반복하여 표시</translation>
@@ -924,6 +926,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       정책이 True로 설정되어 있으면 외부 프로토콜 확인이 표시될 때 사용자가 나중에 확인 메시지 없이 프로토콜을 '항상 열도록' 선택할 수 있습니다.
 
       False로 설정되어 있거나 설정되어 있지 않으면 '항상 열기' 체크박스가 표시되지 않고 외부 프로토콜이 호출될 때마다 사용자에게 메시지가 표시됩니다.</translation>
+<translation id="2406820201690307634">이미지 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultImagesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          이전에는 이 정책이 Android에서 사용되도록 잘못 설정되었으나 이 기능이 Android에서 완전히 지원된 적은 없습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="2411817661175306360">비밀번호 보호 경고가 꺼짐</translation>
 <translation id="2411919772666155530">이 사이트에서 알림 차단</translation>
 <translation id="2413022450179356125">개인정보 보호 화면 기능을 사용/사용 중지합니다.
@@ -1048,6 +1057,11 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       이 정책이 구성되지 않거나 '사이트에 성인용 콘텐츠 필터링을 적용하지 않음'으로 설정되면 사이트가 필터링되지 않습니다.
 
       이 정책이 '최상위 사이트(삽입된 iframe 제외)에 성인용 콘텐츠 필터링을 적용함'으로 설정되면 음란물 사이트로 분류된 사이트는 필터링됩니다.</translation>
+<translation id="2484356232170636726">자바스크립트 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultJavaScriptSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="2486371469462493753">등록된 URL 목록의 경우 인증서 투명성 요구사항을 시행하지 않도록 사용 중지합니다.
 
       이 정책은 지정된 URL의 경우 호스트 이름의 인증서가 인증서 투명성을 통해 공개되지 않아도 되도록 허용합니다. 이 정책은 올바르게 공개되지 않아 신뢰받지 못했을 인증서도 계속 사용될 수 있도록 허용하지만, 해당 호스트 이름으로 잘못 발급된 인증서가 있을 경우 이를 감지하기 어렵습니다.
@@ -1405,6 +1419,15 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="2959898425599642200">프록시 우회 규칙</translation>
 <translation id="2960128438010718932">신규 업데이트를 적용하기 위한 스테이징 일정</translation>
 <translation id="2960691910306063964">원격 액세스 호스트에서 PIN을 사용하지 않는 인증을 사용 또는 사용 중지합니다.</translation>
+<translation id="2969797921412053304">이 정책은 로그인 화면의 SAML 절차가 진행되는 동안 기기 ID의 원격 증명을 사용할 수 있는 액세스 권한이 부여되는 URL을 지정합니다.
+
+      특히 URL이 이 정책을 통해 제공되는 패턴 중 하나와 일치하는 경우 원격 증명 자격 확인에 대한 응답을 포함하는 HTTP 헤더를 받을 수 있도록 허용하여 기기 ID 및 상태를 증명합니다.
+
+      정책이 설정되지 않거나 빈 목록으로 설정되어 있는 경우 어떠한 URL도 로그인 화면에서 원격 증명을 사용하도록 허용되지 않습니다.
+
+      URL에는 HTTPS 스키마(예: 'https://example.com')가 있어야 합니다.
+
+      올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="2987155890997901449">ARC 사용</translation>
 <translation id="2987227569419001736">Web Bluetooth API 사용 조정</translation>
 <translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 사용 설정된 메모 앱을 허용 목록에 추가</translation>
@@ -1535,7 +1558,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       설정하지 않으면 홈페이지를 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="3219421230122020860">시크릿 모드 사용 가능</translation>
 <translation id="3220624000494482595">키오스크 앱이 Android 앱인 경우 이 정책이 <ph name="TRUE" />로 설정되더라도 <ph name="PRODUCT_OS_NAME" /> 버전을 제어할 수 없습니다.</translation>
-<translation id="322359555555487980"><ph name="PRODUCT_OS_NAME" />에서 변형 제공 여부 결정</translation>
+<translation id="322359555555487980"><ph name="PRODUCT_OS_NAME" />에서의 변형 사용 가능 여부 결정</translation>
 <translation id="3236046242843493070">확장 프로그램, 앱, 사용자 스크립트 설치 등을 허용하는 URL 패턴</translation>
 <translation id="3240609035816615922">프린터 설정 액세스 정책</translation>
 <translation id="3240655340884151271">도크의 내장 NIC MAC 주소</translation>
@@ -1582,6 +1605,11 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       하지만 이러한 알림은 SAML 로그인 절차 중에 SAML ID 공급업체에서 기기로 비밀번호 만료 정보를 전송한 경우에만 표시됩니다.
 
       이 정책을 설정하면 사용자는 변경하거나 재정의할 수 없습니다.</translation>
+<translation id="3312835062252480209">키 생성 사용이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenAllowedForUrls'에 있는 경우 정책이 이 예외를 무시합니다.
+
+          이 정책을 설정하지 않으면 'DefaultKeygenSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="3327195598110816609">전송 지연 안함</translation>
 <translation id="332771718998993005"><ph name="PRODUCT_NAME" /> 전송 대상으로 알릴 이름을 설정하세요.
 
@@ -1813,6 +1841,18 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
         이 정책은 데스크톱에서 시스템 범위 클라우드 정책 등록에 사용되며 Windows의 경우 Registry 또는 GPO, Mac의 경우 plist, Linux의 경우 JSON 정책 파일에 의해 설정될 수 있습니다.</translation>
 <translation id="3660562134618097814">로그인 중 SAML IdP 쿠키 전송</translation>
+<translation id="3684866411224031107"><ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultPluginsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
+<translation id="3688225008199664446">사용자에게 USB 기기 액세스 권한 부여를 요청하지 못하도록 차단된 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultWebUsbGuardSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          정책의 URL 패턴은 WebUsbAskForUrls를 통해 설정된 패턴과 충돌해서는 안 됩니다. URL이 두 정책과 모두 일치할 때 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="3701121231485832347"><ph name="MS_AD_NAME" /> 관리 <ph name="PRODUCT_OS_NAME" /> 기기에 대한 설정을 제어합니다.</translation>
 <translation id="3702518095257671450">원격 증명</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" />(한 줄 입력란은 지원 중단되었으며 삭제될 예정입니다. 아래의 여러 줄 입력란을 사용해 주세요.)</translation>
@@ -2443,6 +2483,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       '강제 사용'이 선택되어 있으면 페이지가 시크릿 모드로만 열릴 수 있습니다. '강제 사용'은 Android-on-Chrome에서는 작동하지 않습니다.</translation>
 <translation id="4600786265870346112">큰 커서 사용</translation>
 <translation id="4604931264910482931">기본 메시지 차단 목록 설정</translation>
+<translation id="4614701085541180174">사이트에서 인증서를 요청하는 경우 SAML 플로를 호스팅하는 프레임의 로그인 화면에서 클라이언트 인증서가 자동으로 선택되는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다. 예를 들어 SAML IdP에 제시될 기기 수준 인증서를 구성하는 데 사용할 수 있습니다.
+
+      이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="JSON_DICTIONARY_EXAMPLE" />인 경우 추가로 CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발행된 클라이언트 인증서만 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
+
+      이 정책이 설정되지 않으면 어떠한 사이트에서도 자동으로 선택되지 않습니다.
+
+      올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" />에서 메타 태그 검사 건너뛰기</translation>
 <translation id="4625915093043961294">확장 프로그램 설치 허용목록 설정</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" />이(가) 목록에 있는 콘텐츠 유형을 처리하도록 허용</translation>
@@ -2568,6 +2615,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       보고되지 않습니다. True로 설정되면 OS 업데이트 정보가 보고됩니다.</translation>
 <translation id="4858735034935305895">전체 화면 모드 허용</translation>
 <translation id="4861767323695239729">사용자 세션에서 허용되는 입력 수단을 구성합니다.</translation>
+<translation id="4869603341164509842">이 목록의 패턴을 요청 URL의 보안 출처와 비교합니다.  일치하는 항목이 확인되면 메시지를 표시하지 않고 동영상 캡처 기기에 액세스 권한을 부여합니다.
+
+      올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.
+
+      참고: 버전 45 이하에서는 키오스크 모드에서만 이 정책이 지원됩니다.</translation>
 <translation id="487460824085252184">사용자의 동의를 구하지 않고 자동으로 이전합니다.</translation>
 <translation id="4874982543810021567">이 사이트에서 WebUSB 차단</translation>
 <translation id="4876805738539874299">최대 SSL 버전 사용 설정됨</translation>
@@ -2695,6 +2747,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책을 0으로 설정하면 기기 계정 비밀번호가 변경되지 않습니다.
 
       클라이언트가 오랜 기간 동안 오프라인 상태를 유지하는 경우 비밀번호가 지정된 일수보다 오래 변경되지 않을 수도 있습니다.</translation>
+<translation id="5101600510268095939">차단 가능한(능동) 혼합 콘텐츠(HTTPS 사이트의 HTTP 콘텐츠) 표시를 차단하고 선택적으로 차단 가능한(수동) 혼합 콘텐츠를 업그레이드할 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠는 차단되고 선택적으로 차단 가능한 혼합 콘텐츠는 업그레이드되지만 사용자는 예외를 설정하여 특정 사이트에서 혼합 콘텐츠를 허용할 수 있습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="510196893779239086">이 정책은 마지막 탭이 다른 브라우저로 전환되었을 때 Chrome을 완전히 종료할지 결정합니다.
 
       이 정책을 설정하지 않거나 true로 설정하면 다른 브라우저로 전환한 후 Chrome이 최소 하나의 탭을 열어둡니다.
@@ -2901,6 +2958,15 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           이 정책을 'False'로 설정하면 사용자가 콘텐츠를 기기로 전송할 수 없게 됩니다. 반면에 'True'로 설정하면 사용자가 콘텐츠를 전송할 수 있습니다. 이 정책을 설정하지 않으면 사용자가 콘텐츠를 등록된 Chrome OS 기기로 전송할 수 없지만, 등록되지 않은 기기로는 전송할 수 있습니다.</translation>
 <translation id="5323200200131319468">로그인 화면에서 음성 피드백 사용 설정</translation>
+<translation id="532668836479219203">브라우저의 로그인 동작을 제어하는 정책입니다. 이 정책을 사용하면 사용자가 자신의 계정으로 <ph name="PRODUCT_NAME" />에 로그인하고 Chrome 동기화와 같은 계정 관련 서비스를 사용하도록 허용할지 결정할 수 있습니다.
+
+      정책을 '브라우저 로그인 사용 중지'로 설정하면 사용자가 브라우저에 로그인하여 계정 기반 서비스를 사용할 수 없습니다. 이 경우 Chrome 동기화와 같은 브라우저 수준의 기능을 사용할 수 없으며, 이러한 기능이 제공되지도 않습니다. 사용자가 로그인되어 있는 상태에서 정책이 '사용 중지'로 설정되면 다음번에 Chrome을 실행할 때 사용자가 로그아웃됩니다. 이때 북마크, 비밀번호 등 사용자의 로컬 프로필 데이터는 삭제되지 않습니다. Gmail과 같은 Google 웹 서비스의 경우 계속해서 로그인하여 사용할 수 있습니다.
+
+      정책을 '브라우저 로그인 사용'으로 설정하면 사용자가 브라우저에 로그인할 수 있으며, Gmail과 같은 Google 웹 서비스에 로그인하면 브라우저에도 자동으로 로그인됩니다. 브라우저에 로그인되었다는 것은 사용자의 계정 정보가 브라우저에 보관된다는 의미입니다. 하지만 그렇다고 해서 Chrome 동기화가 기본적으로 사용 설정되지는 않습니다. 사용자가 해당 기능을 이용하려면 별도로 선택해야 합니다. 이 정책을 사용 설정하면 브라우저 로그인을 허용하는 설정을 사용자가 사용 중지할 수 없습니다. Chrome 동기화의 사용 가능 여부를 제어하려면 'SyncDisabled' 정책을 사용하세요.
+
+      정책을 '브라우저 로그인 강제 사용'으로 설정하면 사용자에게 계정 선택 대화상자가 표시되며, 계정을 선택하여 로그인해야 브라우저를 사용할 수 있습니다. 관리 계정의 경우 이 설정을 통해 계정과 관련된 정책을 적용 및 시행할 수 있습니다. 도메인 관리자가 동기화를 사용 중지하거나 'SyncDisabled' 정책으로 동기화가 사용 중지되지 않은 이상 계정에서 Chrome 동기화가 기본적으로 사용 설정됩니다. 또한 BrowserGuestModeEnabled의 기본값은 False로 설정됩니다. 이 정책을 사용 설정하면 로그인되지 않은 기존 프로필은 잠겨서 액세스할 수 없게 됩니다. 자세한 내용은 다음 고객센터 도움말을 참조하세요. https://support.google.com/chrome/a/answer/7572556. 이 옵션은 Linux 및 Android를 지원하지 않으며, Linux 및 Android를 사용할 경우 '브라우저 로그인 사용'으로 대체됩니다.
+
+      정책을 설정하지 않으면 사용자가 브라우저 로그인 옵션을 사용할지 결정하고 필요에 따라 사용할 수 있습니다.</translation>
 <translation id="532848608876725157">안전하지 않은 대체를 포함하여 DNS-over-HTTPS 사용</translation>
 <translation id="5329007337159326804">경고: 최대 TLS 버전 정책이 <ph name="PRODUCT_NAME" /> 버전 75쯤에서 완전히 삭제됩니다(2019년 6월경).
 
@@ -3311,6 +3377,17 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       https://example.com/some/path와 같은 URL은 example.com과 같은 U2F appID로만 일치합니다. example.com과 같은 도메인은 webauthn RP ID로만 일치합니다. 따라서 특정 사이트의 U2F 및 Webauthn API를 모두 처리하려면 appID URL과 도메인 모두 나열되어야 합니다.</translation>
 <translation id="5836064773277134605">원격 액세스 호스트에서 사용되는 UDP 포트 범위 제한</translation>
+<translation id="5844300486330234296">자동재생을 항상 사용 설정할 URL 패턴의 허용 목록을 관리합니다.
+
+      자동재생을 활성화하면 <ph name="PRODUCT_NAME" />에서 동영상이 사용자 동의 없이 오디오 콘텐츠와 함께 자동재생될 수 있습니다.
+
+      AutoplayAllowed 정책을 True로 설정하면 이 정책은 아무 효과가 없습니다.
+
+      AutoplayAllowed 정책이 False로 설정된 경우 정책에 설정된 URL 패턴은 계속해서 자동재생이 허용됩니다.
+
+      <ph name="PRODUCT_NAME" />이(가) 실행 중일 때 정책이 변경되면 새로 열린 탭에만 정책이 적용됩니다. 따라서 일부 탭에서는 이전 동작이 유지될 수 있습니다.
+
+      올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="5855010364142818361">이 정책은 Internet Explorer에서 Chrome 명령줄 매개변수를 제어합니다.
 
       Internet Explorer의 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
@@ -3573,6 +3650,17 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책을 'false'로 설정하면 사용자가 경고 페이지를 클릭하여 탐색할 수 없습니다.</translation>
 <translation id="6319198883324703402">첫 번째 사용자 재실행 알림 시간을 설정합니다.</translation>
 <translation id="6342187235303612558">사용자가 현재 DLP 또는 멀웨어 검사에서 지원되지 않는 파일을 업로드 또는 다운로드하지 못하게 합니다.</translation>
+<translation id="6348718801326095108">다음의 URL 패턴과 일치하는 페이지에서 설정된 쿠키는 현재 세션으로 제한됩니다. 즉, 브라우저가 종료되면 쿠키가 삭제됩니다.
+
+          여기에서 지정된 패턴에 해당하지 않는 URL에서, 또는 이 정책이 설정되지 않은 경우 모든 URL에서 'DefaultCookiesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 사용됩니다.
+
+          <ph name="PRODUCT_NAME" />이(가) '백그라운드 모드'에서 실행 중인 경우 마지막 브라우저 창이 닫혀도 세션이 종료되지 않으며 브라우저가 열려 있는 동안에는 활성화되어 있습니다. 이 작업 설정을 자세히 알아보려면 'BackgroundModeEnabled' 정책을 참조하세요.
+
+          'CookiesAllowedForUrls' 및 'CookiesBlockedForUrls'정책도 참조하시기 바랍니다. 이 세 정책 간에 충돌하는 URL 패턴이 없어야 합니다. 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.
+
+          'RestoreOnStartup' 정책이 이전 세션의 URL을 복원하도록 설정되어 있는 경우 이 정책은 적용되지 않으며 해당 사이트의 쿠키는 영구 저장됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="6352543686437322588">일정 시간이 지난 뒤 자동으로 로그인할 기기 로컬 계정입니다.
 
       이 정책이 설정되어 있으면 로그인 화면에서 사용자 활동 없이 일정 시간이 경과한 뒤에 지정된 세션이 자동으로 로그인됩니다. 사전에 기기 로컬 계정이 구성되어 있어야 합니다(|DeviceLocalAccounts| 참조).
@@ -3597,6 +3685,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책이 false로 설정된 경우 사용자 목록이 보고되지 않습니다.</translation>
 <translation id="638668187106406971">업로드 시 민감한 정보 보호 규칙 위반 여부 검사</translation>
 <translation id="6394350458541421998">이 정책은 <ph name="PRODUCT_OS_NAME" /> 버전 29를 기준으로 지원 중단되었습니다. 대신 PresentationScreenDimDelayScale 정책을 사용해 주시기 바랍니다.</translation>
+<translation id="6394657112569857636">쿠키 설정이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultCookiesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          'CookiesAllowedForUrls' 및 'CookiesSessionOnlyForUrls' 정책도 참조하세요. 이 세 정책 간에 충돌하는 URL 패턴이 없어야 합니다. 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="6399242659768117666">확장 프로그램 및 플러그인 정보 보고 여부를 제어하는 정책입니다.
 
       이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 확장 프로그램 및 플러그인 데이터가 수집됩니다.
@@ -3697,6 +3792,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6544897973797372144">정책이 True로 설정되어 있고 ChromeOsReleaseChannel 정책이 지정되지 않은 경우 등록된 도메인의 사용자가 기기의 배포 채널을 변경할 수 있도록 허용됩니다. 정책이 false로 설정되어 있으면 마지막에 설정한 채널을 기기가 사용합니다.
 
       사용자가 선택한 채널은 ChromeOsReleaseChannel 정책이 무시할 수 있지만 정책 채널이 기기에 설치된 채널보다 더 안정적인 경우 더 안정적인 채널이 기기에 설치된 채널보다 더 많아질 때 채널이 전환됩니다.</translation>
+<translation id="6548795012081567926">쿠키 설정이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultCookiesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          'CookiesBlockedForUrls' 및 'CookiesSessionOnlyForUrls' 정책도 참조하세요. 이 세 정책 간에 충돌하는 URL 패턴이 없어야 합니다. 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="6553143066970470539">화면 밝기 퍼센트</translation>
 <translation id="6559057113164934677">카메라 및 마이크에 대한 모든 사이트의 액세스 허용 안함</translation>
 <translation id="6561396069801924653">작업 표시줄 메뉴에 접근성 옵션 표시</translation>
@@ -3796,6 +3898,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       사용 중지(False로 설정)되면 <ph name="PRODUCT_NAME" />에서 전체 탭 콘텐츠를 표시하여 사용자에게 제품 정보를 제공할 수 없습니다.
 
       이 설정은 사용자가 <ph name="PRODUCT_NAME" />에 로그인하는 시작 페이지의 표시를 제어하며, 이를 기본 브라우저로 선택할지 또는 제품 기능을 사용자에게 알릴지 선택할 수 있습니다.</translation>
+<translation id="6764421313777250384">알림 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultNotificationsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="6766216162565713893">사이트에서 사용자에게 근처 블루투스 기기에 대한 액세스 권한을 부여할 것인지 묻도록 허용합니다.</translation>
 <translation id="6770454900105963262">활성 키오스크 세션에 관한 정보 보고</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
@@ -4246,6 +4353,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7485730741952775732">이 정책이 설정되면 원격 액세스 호스트가 연결 수락을 위해 이 URL을 사용하여 원격 액세스 클라이언트가 전송한 인증 토큰을 인증합니다. RemoteAccessHostTokenUrl과 함께 사용되어야 합니다.
 
           이 기능은 현재 서버 측에서 사용 중지되어 있습니다.</translation>
+<translation id="7490270439948288519">팝업 열기가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultPopupsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="749556411189861380">등록된 기기의 OS 및 펌웨어 버전을 보고합니다.
 
       이 정책을 설정하지 않거나 True로 설정하면 등록된 기기에서 주기적으로 OS 및 펌웨어 버전을 보고합니다. 이 설정을 False로 설정하면 버전 정보가 보고되지 않습니다.</translation>
@@ -4275,6 +4387,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입된 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴스에만 사용할 수 있습니다.</translation>
 <translation id="7511361072385293666">이 정책이 true로 설정되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 QUIC 프로토콜 사용이 허용됩니다.
       이 정책이 false로 설정되면 QUIC 프로토콜 사용이 차단됩니다.</translation>
+<translation id="7515572751689937649">자바스크립트 실행이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultJavaScriptSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="7517845714620372896">화면 밝기 퍼센트를 지정합니다.
           이 정책이 설정되면 초기 화면 밝기가 정책 값으로 조정되지만 나중에 사용자가 변경할 수 있습니다. 자동 밝기 기능은 사용 중지됩니다.
           이 정책이 설정되지 않으면 사용자 화면 컨트롤 및 자동 밝기 기능은 아무런 영향을 받지 않습니다.
@@ -4588,9 +4705,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="8053580360728293758">기본 컬러 인쇄 모드를 재정의합니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="8057841287222359526">사용 중지할 <ph name="PRODUCT_OS_NAME" /> 기능 목록을 설정할 수 있습니다.
 
-      사용 중지된 기능은 사용자가 UI에서 액세스할 수 없으며 '관리자가 사용 중지함'이라는 메시지를 표시합니다.
+      사용 중지된 기능의 경우 사용자가 UI에서 액세스할 수 없으며 '관리자가 사용 중지함'이라는 메시지가 표시됩니다.
 
-      정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />의 모든 기능이 기본적으로 사용 설정되며 사용자가 모든 기능을 사용할 수 있습니다.</translation>
+      정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />의 모든 기능이 기본적으로 사용 설정되며 사용자가 기능을 모두 사용할 수 있습니다.</translation>
 <translation id="8059164285174960932">원격 액세스 클라이언트가 인증 토큰을 확보해야 하는 URL</translation>
 <translation id="806523868782250975">관리 북마크 목록을 설정합니다.
 
@@ -4759,6 +4876,11 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8331479227794770304">고정키 사용</translation>
 <translation id="8339420913453596618">2단계 인증 사용 안함</translation>
 <translation id="8344454543174932833">처음 실행 시 기본 브라우저에서 북마크 가져오기</translation>
+<translation id="8351446723835838047">키 생성 사용이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenBlockedForUrls'에 있는 경우 이 예외를 무시합니다.
+
+          이 정책을 설정하지 않으면 'DefaultKeygenSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="8357681633047935212">사용자 세션의 길이를 제한합니다.</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API를 2008년 9월 2일까지 사용하도록 설정</translation>
 <translation id="8367209241899435947">Windows에서 Chrome 정리도구 사용 설정</translation>
@@ -4974,6 +5096,13 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
           이 정책을 설정하지 않으면 서버가 인트라넷에 있는 경우 <ph name="PRODUCT_NAME" />이(가) 감지하여 IWA 요청에만 응답합니다. 서버가 인트라넷으로 감지된 경우 <ph name="PRODUCT_NAME" />이(가) IWA 요청을 무시합니다.</translation>
 <translation id="8656110680728938054">텍스트 읽어주기 사용</translation>
+<translation id="8659729040032759711">사용자에게 USB 기기 액세스 권한 부여를 요청하도록 허용된 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
+
+          이 정책을 설정하지 않으면 'DefaultWebUsbGuardSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
+
+          정책의 URL 패턴은 WebUsbBlockedForUrls를 통해 설정된 패턴과 충돌해서는 안 됩니다. URL이 두 정책과 모두 일치할 때 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.
+
+          올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="8661297125441579970">데이터 이전 및 ARC를 허용하지 않습니다.</translation>
 <translation id="8672321184841719703">자동 업데이트 버전 타겟팅</translation>
 <translation id="867410340948518937">U2F(범용 2차 요소)</translation>
@@ -5118,6 +5247,11 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
           정책이 설정되지 않으면 처음에는 로그인 화면에서 자동 클릭이 사용되지 않지만 나중에 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
 <translation id="8876188741456358123">기본 양면 인쇄 모드를 재정의합니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
+<translation id="8878850056189891727">이 목록의 패턴을 요청 URL의 보안 출처와 비교합니다.  일치하는 항목이 확인되면 메시지를 표시하지 않고 오디오 캡처 기기에 액세스 권한을 부여합니다.
+
+      올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.
+
+      참고: 버전 45 이하에서는 키오스크 모드에서만 이 정책이 지원됩니다.</translation>
 <translation id="8882006618241293596">이 사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 차단</translation>
 <translation id="8906768759089290519">게스트 모드 사용</translation>
 <translation id="8908294717014659003">미디어 캡쳐 장치에 대한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 미디어 캡쳐 장치에 대해 액세스를 기본적으로 허용하거나 웹사이트가 액세스하려고 할 때마다 확인하도록 설정할 수도 있습니다.

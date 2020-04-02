@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -48,8 +49,8 @@ void GetStubResolverConfig(
         dns_over_https_servers) {
   dns_over_https_servers->reset();
 
-  SystemNetworkContextManager::GetStubResolverConfig(
-      g_browser_process->local_state(), insecure_stub_resolver_enabled,
+  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
+      insecure_stub_resolver_enabled,
       secure_dns_mode, dns_over_https_servers);
 }
 

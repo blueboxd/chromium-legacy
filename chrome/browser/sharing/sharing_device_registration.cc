@@ -331,19 +331,18 @@ bool SharingDeviceRegistration::IsRemoteCopySupported() const {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   return base::FeatureList::IsEnabled(kRemoteCopyReceiver);
-#endif
-
+#else
   return false;
+#endif
 }
 
 bool SharingDeviceRegistration::IsPeerConnectionSupported() const {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   return base::FeatureList::IsEnabled(kSharingPeerConnectionReceiver);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
-
+#else
   return false;
+#endif
 }
 
 void SharingDeviceRegistration::SetEnabledFeaturesForTesting(

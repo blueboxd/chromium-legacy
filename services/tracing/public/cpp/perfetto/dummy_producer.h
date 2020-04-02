@@ -32,7 +32,6 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
       size_t num_data_sources) override;
 
   // PerfettoProducer implementation.
-  bool SetupStartupTracing() override;
   perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   bool IsTracingActive() override;
   void NewDataSourceAdded(
@@ -43,7 +42,10 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
   void ActivateTriggers(const std::vector<std::string>& triggers) override;
   void DisconnectWithReply(base::OnceClosure on_disconnect_complete) override;
   bool IsDummySystemProducerForTesting() override;
-  void ResetSequenceForTesting() override;
+
+ protected:
+  // perfetto::Producer implementation.
+  bool SetupSharedMemoryForStartupTracing() override;
 };
 }  // namespace tracing
 

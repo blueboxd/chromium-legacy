@@ -2975,26 +2975,6 @@ class URLRequestTestHTTP : public URLRequestTest {
     delete[] uploadBytes;
   }
 
-  bool DoManyCookiesRequest(int num_cookies) {
-    TestDelegate d;
-    std::unique_ptr<URLRequest> r(default_context().CreateFirstPartyRequest(
-        test_server_.GetURL("/set-many-cookies?" +
-                            base::NumberToString(num_cookies)),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    if (d.request_status() != OK) {
-      EXPECT_EQ(ERR_RESPONSE_HEADERS_TOO_BIG, d.request_status());
-      return false;
-    }
-
-    return true;
-  }
-
   HttpTestServer* http_test_server() { return &test_server_; }
 
  private:
@@ -3700,48 +3680,6 @@ TEST_F(URLRequestTestHTTP, GetTest_NoCache) {
 
     // TODO(eroman): Add back the NetLog tests...
   }
-}
-
-// This test has the server send a large number of cookies to the client.
-// To ensure that no number of cookies causes a crash, a galloping binary
-// search is used to estimate that maximum number of cookies that are accepted
-// by the browser. Beyond the maximum number, the request will fail with
-// ERR_RESPONSE_HEADERS_TOO_BIG.
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
-// http://crbug.com/177916
-#define MAYBE_GetTest_ManyCookies DISABLED_GetTest_ManyCookies
-#else
-#define MAYBE_GetTest_ManyCookies GetTest_ManyCookies
-#endif  // defined(OS_WIN)
-TEST_F(URLRequestTestHTTP, MAYBE_GetTest_ManyCookies) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  int lower_bound = 0;
-  int upper_bound = 1;
-
-  // Double the number of cookies until the response header limits are
-  // exceeded.
-  while (DoManyCookiesRequest(upper_bound)) {
-    lower_bound = upper_bound;
-    upper_bound *= 2;
-    ASSERT_LT(upper_bound, 1000000);
-  }
-
-  int tolerance = static_cast<int>(upper_bound * 0.005);
-  if (tolerance < 2)
-    tolerance = 2;
-
-  // Perform a binary search to find the highest possible number of cookies,
-  // within the desired tolerance.
-  while (upper_bound - lower_bound >= tolerance) {
-    int num_cookies = (lower_bound + upper_bound) / 2;
-
-    if (DoManyCookiesRequest(num_cookies))
-      lower_bound = num_cookies;
-    else
-      upper_bound = num_cookies;
-  }
-  // Success: the test did not crash.
 }
 
 TEST_F(URLRequestTestHTTP, GetTest) {

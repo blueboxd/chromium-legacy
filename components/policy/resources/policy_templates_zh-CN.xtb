@@ -166,17 +166,6 @@
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
 <translation id="1204263402976895730">已启用企业打印机</translation>
-<translation id="1216890727647348501">启用 <ph name="PRODUCT_NAME" /> 的安全浏览增强型保护功能，并禁止用户更改此设置。
-
-      如果您启用了此设置，安全浏览增强型保护功能将一直处于启用状态。
-
-      如果您停用了此设置，安全浏览增强型保护功能将一直处于停用状态。
-
-      如果您将此政策设为强制性要求，用户便无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖“启用针对网上诱骗和恶意软件的防护功能”设置。
-
-      如果未设置此政策，安全浏览增强型保护功能会默认处于停用状态，但用户可以启用它。
-
-      要详细了解“安全浏览”服务，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="1216919699175573511">启用 Signed HTTP Exchange (SXG) 支持</translation>
 <translation id="1219695476179627719">指定是否要将已在运行较新版本的设备回滚到 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所设定的版本。
 
@@ -269,7 +258,6 @@
           如果未设置此政策，更具体政策的行为不会受到影响。</translation>
 <translation id="1384459581748403878">参考页面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">报告操作系统更新状态</translation>
-<translation id="1388918874748125262">启用安全浏览增强型保护功能</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
 <translation id="1404043648050567997">当用户转到被标记为可能存在恶意内容的网站时，安全浏览服务会显示警告页面。如果您启用了此设置，用户在看到警告页面后将无法再继续访问相应的恶意网站。
@@ -284,15 +272,6 @@
 <translation id="1426170570389588560">设置打印任务元数据的存储时间段（天）</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
-<translation id="1431272318313028342">启用 <ph name="PRODUCT_NAME" /> 的安全浏览功能，并禁止用户更改此设置。
-
-      如果您启用了此设置，安全浏览功能将一直处于启用状态。如果您停用了此设置，安全浏览功能将一直处于停用状态。如果您启用或停用了此设置，用户将无法更改或覆盖 <ph name="PRODUCT_NAME" /> 中的“启用针对网上诱骗和恶意软件的防护功能”设置。
-
-      如果此政策未设置，安全浏览功能将会处于启用状态，但用户可以自行更改。
-
-      要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。
-
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1455804070656338445">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当浏览器显示警告后，密码保护服务即会将用户转到此网址，以便其更改密码。

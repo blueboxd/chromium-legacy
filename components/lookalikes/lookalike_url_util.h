@@ -25,10 +25,11 @@ enum class LookalikeUrlMatchType {
   kSiteEngagement = 2,
   kEditDistance = 3,
   kEditDistanceSiteEngagement = 4,
+  kTargetEmbedding = 5,
 
   // Append new items to the end of the list above; do not modify or replace
   // existing values. Comment out obsolete items.
-  kMaxValue = kEditDistanceSiteEngagement,
+  kMaxValue = kTargetEmbedding,
 };
 
 // Used for UKM. There is only a single LookalikeUrlBlockingPageUserAction per
@@ -54,13 +55,17 @@ enum class NavigationSuggestionEvent {
   kMatchSiteEngagement = 4,
   kMatchEditDistance = 5,
   kMatchEditDistanceSiteEngagement = 6,
+  kMatchTargetEmbedding = 7,
 
   // Append new items to the end of the list above; do not modify or
   // replace existing values. Comment out obsolete items.
-  kMaxValue = kMatchEditDistanceSiteEngagement,
+  kMaxValue = kMatchTargetEmbedding,
 };
 
 struct DomainInfo {
+  // The full ASCII hostname, used in detecting target embedding. For
+  // "https://www.google.com/mail" this will be "www.google.com".
+  const std::string hostname;
   // eTLD+1, used for skeleton and edit distance comparison. Must be ASCII.
   // Empty for non-unique domains, localhost or sites whose eTLD+1 is empty.
   const std::string domain_and_registry;
@@ -75,7 +80,8 @@ struct DomainInfo {
   // Skeletons of domain_and_registry field.
   const url_formatter::Skeletons skeletons;
 
-  DomainInfo(const std::string& arg_domain_and_registry,
+  DomainInfo(const std::string& arg_hostname,
+             const std::string& arg_domain_and_registry,
              const std::string& arg_domain_without_registry,
              const url_formatter::IDNConversionResult& arg_idn_result,
              const url_formatter::Skeletons& arg_skeletons);
@@ -127,7 +133,10 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type);
 // example-googlé.com-site.com where the embedded target is google.com. In
 // addition to these examples, this function also detects domains embedded with
 // alternate TLDs, if the TLD is included in |important_tlds| (e.g. google.edu
-// instead of google.com in the above examples.)
+// instead of google.com in the example URLs above.). To reduce false positives,
+// we exclude cases where the eTLD of the possibly-unsafe domain contains more
+// than just the TLD of the embedded domain. For instance, we exclude
+// foo-google.co.uk.
 bool IsTargetEmbeddingLookalike(const GURL& url,
                                 const std::set<std::string>& important_tlds,
                                 GURL* safe_url);

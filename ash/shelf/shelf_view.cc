@@ -40,6 +40,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
@@ -94,6 +95,19 @@ constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
 // items.
 constexpr int kSeparatorSize = 20;
 constexpr int kSeparatorThickness = 1;
+
+constexpr char kShelfIconMoveAnimationHistogram[] =
+    "Ash.ShelfIcon.AnimationSmoothness.Move";
+constexpr char kShelfIconFadeInAnimationHistogram[] =
+    "Ash.ShelfIcon.AnimationSmoothness.FadeIn";
+constexpr char kShelfIconFadeOutAnimationHistogram[] =
+    "Ash.ShelfIcon.AnimationSmoothness.FadeOut";
+
+enum class IconAnimationType {
+  kMoveAnimation,
+  kFadeInAnimation,
+  kFadeOutAnimation
+};
 
 // Helper to check if tablet mode is enabled.
 bool IsTabletModeEnabled() {
@@ -173,6 +187,33 @@ class ShelfFocusSearch : public views::FocusSearch {
   ShelfView* shelf_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfFocusSearch);
+};
+
+class IconAnimationMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  explicit IconAnimationMetricsReporter(IconAnimationType type) : type_(type) {}
+  IconAnimationMetricsReporter(const IconAnimationMetricsReporter&) = delete;
+  IconAnimationMetricsReporter& operator=(const IconAnimationMetricsReporter&) =
+      delete;
+  ~IconAnimationMetricsReporter() override = default;
+
+ private:
+  void Report(int value) override {
+    switch (type_) {
+      case IconAnimationType::kMoveAnimation:
+        base::UmaHistogramPercentage(kShelfIconMoveAnimationHistogram, value);
+        break;
+      case IconAnimationType::kFadeInAnimation:
+        base::UmaHistogramPercentage(kShelfIconFadeInAnimationHistogram, value);
+        break;
+      case IconAnimationType::kFadeOutAnimation:
+        base::UmaHistogramPercentage(kShelfIconFadeOutAnimationHistogram,
+                                     value);
+        break;
+    }
+  }
+
+  IconAnimationType type_ = IconAnimationType::kMoveAnimation;
 };
 
 // Returns the id of the display on which |view| is shown.
@@ -318,6 +359,13 @@ int ShelfView::GetSizeOfAppIcons(int count) {
 }
 
 void ShelfView::Init() {
+  move_animation_reporter_ = std::make_unique<IconAnimationMetricsReporter>(
+      IconAnimationType::kMoveAnimation);
+  fade_in_animation_reporter_ = std::make_unique<IconAnimationMetricsReporter>(
+      IconAnimationType::kFadeInAnimation);
+  fade_out_animation_reporter_ = std::make_unique<IconAnimationMetricsReporter>(
+      IconAnimationType::kFadeOutAnimation);
+
   separator_ = new views::Separator();
   separator_->SetColor(kSeparatorColor);
   separator_->SetPreferredHeight(kSeparatorSize);
@@ -1188,6 +1236,7 @@ void ShelfView::OnTabletModeChanged() {
 
 void ShelfView::AnimateToIdealBounds() {
   CalculateIdealBounds();
+  bounds_animator_->SetAnimationMetricsReporter(move_animation_reporter_.get());
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
     View* view = view_model_->view_at(i);
@@ -1210,6 +1259,8 @@ void ShelfView::FadeIn(views::View* view) {
   fade_in_animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   fade_in_animation_settings.AddObserver(fade_in_animation_delegate_.get());
+  fade_in_animation_settings.SetAnimationMetricsReporter(
+      fade_in_animation_reporter_.get());
   view->layer()->SetOpacity(1.f);
 }
 
@@ -1760,6 +1811,8 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
 
     // The first animation fades out the view. When done we'll animate the rest
     // of the views to their target location.
+    bounds_animator_->SetAnimationMetricsReporter(
+        fade_out_animation_reporter_.get());
     bounds_animator_->AnimateViewTo(view.get(), view->bounds());
     bounds_animator_->SetAnimationDelegate(
         view.get(), std::unique_ptr<gfx::AnimationDelegate>(

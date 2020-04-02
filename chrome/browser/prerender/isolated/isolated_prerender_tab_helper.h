@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -24,6 +25,7 @@
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
+class IsolatedPrerenderPageLoadMetricsObserver;
 class Profile;
 
 namespace net {
@@ -43,9 +45,16 @@ class IsolatedPrerenderTabHelper
  public:
   ~IsolatedPrerenderTabHelper() override;
 
-  // Simple container for several metrics which pertain to prefetching actions
-  // on a Google SRP.
-  struct PrefetchMetrics {
+  // A key to identify prefetching likely events to PLM.
+  static const void* PrefetchingLikelyEventKey();
+
+  // Container for several metrics which pertain to prefetching actions
+  // on a Google SRP. RefCounted to allow TabHelper's friend classes to monitor
+  // metrics without needing a callback for every event.
+  class PrefetchMetrics : public base::RefCounted<PrefetchMetrics> {
+   public:
+    PrefetchMetrics();
+
     // This bitmask keeps track each eligible page's placement in the original
     // navigation prediction. The Nth-LSB is set if the Nth predicted page is
     // eligible. Pages are in descending order of likelihood of user clicking.
@@ -56,23 +65,45 @@ class IsolatedPrerenderTabHelper
     // then the resulting bitmask will be
     //
     //   0b1101.
-    int64_t ordered_eligible_pages_bitmask = 0;
+    int64_t ordered_eligible_pages_bitmask_ = 0;
 
     // The number of SRP links that were eligible to be prefetched.
-    size_t prefetch_eligible_count = 0;
+    size_t prefetch_eligible_count_ = 0;
 
     // The number of eligible prefetches that were attempted.
-    size_t prefetch_attempted_count = 0;
+    size_t prefetch_attempted_count_ = 0;
 
     // The number of attempted prefetches that were successful (net error was OK
     // and HTTP response code was 2XX).
-    size_t prefetch_successful_count = 0;
+    size_t prefetch_successful_count_ = 0;
 
     // The total number of redirects encountered during all prefetches.
-    size_t prefetch_total_redirect_count = 0;
+    size_t prefetch_total_redirect_count_ = 0;
+
+   private:
+    friend class base::RefCounted<PrefetchMetrics>;
+    ~PrefetchMetrics();
   };
 
-  const PrefetchMetrics& metrics() const { return page_->metrics_; }
+  const PrefetchMetrics& metrics() const { return *(page_->metrics_); }
+
+  // What actions the URL Interveptor class may take if it attempts to intercept
+  // a page load.
+  enum class PrefetchUsage {
+    // The interceptor used a prefetch.
+    kPrefetchUsed = 0,
+
+    // The interceptor used a prefetch after successfully probing the origin.
+    kPrefetchUsedProbeSuccess = 1,
+
+    // The interceptor was not able to use an available prefetch because the
+    // origin probe failed.
+    kPrefetchNotUsedProbeFailed = 2,
+  };
+
+  base::Optional<PrefetchUsage> prefetch_usage() const {
+    return prefetch_usage_;
+  }
 
   void CallHandlePrefetchResponseForTesting(
       const GURL& url,
@@ -91,12 +122,17 @@ class IsolatedPrerenderTabHelper
   std::unique_ptr<PrefetchedMainframeResponseContainer> TakePrefetchResponse(
       const GURL& url);
 
+  // Used by the URL Loader Interceptor to notify this class of a usage of a
+  // prefetch.
+  void OnPrefetchUsage(PrefetchUsage usage);
+
  protected:
   // Exposed for testing.
   explicit IsolatedPrerenderTabHelper(content::WebContents* web_contents);
   virtual network::mojom::URLLoaderFactory* GetURLLoaderFactory();
 
  private:
+  friend class IsolatedPrerenderPageLoadMetricsObserver;
   friend class content::WebContentsUserData<IsolatedPrerenderTabHelper>;
 
   // Owns all per-pageload state in the tab helper so that new navigations only
@@ -107,7 +143,7 @@ class IsolatedPrerenderTabHelper
     ~CurrentPageLoad();
 
     // The metrics pertaining to prefetching actions on a Google SRP page.
-    PrefetchMetrics metrics_;
+    scoped_refptr<PrefetchMetrics> metrics_;
 
     // A map of all predicted URLs to their original placement in the ordered
     // prediction.
@@ -180,6 +216,9 @@ class IsolatedPrerenderTabHelper
 
   // Owns all members which need to be reset on a new page load.
   std::unique_ptr<CurrentPageLoad> page_;
+
+  // Set if the current page load was loaded from a previous prefetched page.
+  base::Optional<PrefetchUsage> prefetch_usage_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -19,13 +19,15 @@ enum class AssistiveType {
   kPersonalAddress = 2,
   kPersonalPhoneNumber = 3,
   kPersonalName = 4,
-  kMaxValue = kPersonalName,
+  kEmoji = 5,
+  kMaxValue = kEmoji,
 };
 
 enum class SuggestionStatus {
   kNotHandled = 0,
   kAccept = 1,
   kDismiss = 2,
+  kBrowsing = 3,
 };
 
 }  // namespace chromeos

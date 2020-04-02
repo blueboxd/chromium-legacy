@@ -1026,8 +1026,11 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
   // This must be logged after spawning the process as the policy
   // memory is not committed until the target process is attached to
   // the sandbox policy. Max is kPolMemSize from sandbox_policy_base.cc.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Process.Sandbox.PolicyGlobalSize",
-                              policy->GetPolicyGlobalSize(), 16, 14 * 4096, 50);
+  if (result == sandbox::SBOX_ALL_OK) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Process.Sandbox.PolicyGlobalSizeOnSuccess",
+                                policy->GetPolicyGlobalSize(), 16, 14 * 4096,
+                                50);
+  }
 
   base::win::ScopedProcessInformation target(temp_process_info);
 

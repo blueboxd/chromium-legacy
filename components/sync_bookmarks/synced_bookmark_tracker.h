@@ -275,7 +275,8 @@ class SyncedBookmarkTracker {
     kMaxValue = BOOKMARK_GUID_MISMATCH
   };
 
-  explicit SyncedBookmarkTracker(sync_pb::ModelTypeState model_type_state);
+  SyncedBookmarkTracker(sync_pb::ModelTypeState model_type_state,
+                        bool bookmarks_full_title_reuploaded);
 
   // Add entities to |this| tracker based on the content of |*model| and
   // |model_metadata|. Validates the integrity of |*model| and |model_metadata|
@@ -293,6 +294,16 @@ class SyncedBookmarkTracker {
   // creation/update is before child creation/update. Returns the ordered list.
   std::vector<const Entity*> ReorderUnsyncedEntitiesExceptDeletions(
       const std::vector<const Entity*>& entities) const;
+
+  // This method is used to mark all entities except permanent nodes as
+  // unsynced. This will cause reuploading of all bookmarks. This reupload
+  // should be initiated only when the |bookmarks_full_title_reuploaded| field
+  // in BookmarksMetadata is false. This field is used to prevent reuploading
+  // after each browser restart. It is set to true in
+  // BuildBookmarkModelMetadata.
+  // TODO(crbug.com/1066962): remove this code when most of bookmarks are
+  // reuploaded.
+  void ReuploadBookmarksOnLoadIfNeeded();
 
   // Recursive method that starting from |node| appends all corresponding
   // entities with updates in top-down order to |ordered_entities|.
@@ -318,6 +329,12 @@ class SyncedBookmarkTracker {
 
   // The model metadata (progress marker, initial sync done, etc).
   sync_pb::ModelTypeState model_type_state_;
+
+  // This field contains the value of
+  // BookmarksMetadata::bookmarks_full_title_reuploaded.
+  // TODO(crbug.com/1066962): remove this code when most of bookmarks are
+  // reuploaded.
+  bool bookmarks_full_title_reuploaded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SyncedBookmarkTracker);
 };

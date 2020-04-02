@@ -742,8 +742,9 @@ void OobeInteractiveUITest::PerformSessionSignInSteps(
   if (test_setup()->is_tablet() &&
       test_setup()->hide_shelf_controls_in_tablet_mode()) {
     HandleGestureNavigationScreen();
-    HandleMarketingOptInScreen();
   }
+
+  HandleMarketingOptInScreen();
 }
 
 void OobeInteractiveUITest::SimpleEndToEnd() {

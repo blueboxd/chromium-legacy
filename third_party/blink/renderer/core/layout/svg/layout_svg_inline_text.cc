@@ -151,7 +151,7 @@ bool LayoutSVGInlineText::CharacterStartsNewTextChunk(int position) const {
 
 PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
     const PhysicalOffset& point) const {
-  if (!HasTextBoxes() || !TextLength())
+  if (!HasInlineFragments() || !TextLength())
     return CreatePositionWithAffinity(0);
 
   DCHECK(scaling_factor_);

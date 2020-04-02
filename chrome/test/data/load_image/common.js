@@ -9,10 +9,14 @@ function checkImage() {
 function imageLoadedPromise(img_element) {
   return new Promise((resolve, reject) => {
     if (img_element.complete && img_element.src) {
-      resolve(true);
+      // Treat the image as failed based on its dimension.
+      resolve(img_element.naturalHeight > 0);
     } else {
       img_element.addEventListener('load', () => {
         resolve(true);
+      });
+      img_element.addEventListener('error', () => {
+        resolve(false);
       });
     }
   });

@@ -109,8 +109,9 @@ ThreadInstructionCount ThreadInstructionCount::Now() {
       << "Short reads of small size from kernel memory is not expected. If "
          "this fails, use HANDLE_EINTR.";
   return ThreadInstructionCount(instructions);
-#endif  // defined(OS_LINUX)
+#else
   return ThreadInstructionCount();
+#endif  // defined(OS_LINUX)
 }
 
 }  // namespace trace_event

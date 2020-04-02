@@ -25,6 +25,7 @@ shared_library("libcontent_shell_content_view") {
   deps = [
     ":content_shell_jni_headers",
     "//components/crash/content/browser",
+    "//content/shell:content_shell_app",
     "//content/shell:content_shell_lib",
     "//content/shell:pak",
     "//media",
@@ -50,6 +51,7 @@ shared_library("libcontent_native_test") {
     "//base",
     "//base:base_javatests_lib",
     "//content/public/test/android:content_native_test_support",
+    "//content/shell:content_shell_app",
     "//content/shell:content_shell_lib",
   ]
 

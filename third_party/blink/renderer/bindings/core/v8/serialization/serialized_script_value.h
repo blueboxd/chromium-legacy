@@ -269,12 +269,40 @@ class CORE_EXPORT SerializedScriptValue
 
   bool IsLockedToAgentCluster() const {
     return !wasm_modules_.IsEmpty() ||
-           !shared_array_buffers_contents_.IsEmpty();
+           !shared_array_buffers_contents_.IsEmpty() ||
+           std::any_of(attachments_.begin(), attachments_.end(),
+                       [](const auto& entry) {
+                         return entry.value->IsLockedToAgentCluster();
+                       });
   }
 
   // Returns true after serializing script values that remote origins cannot
   // access.
   bool IsOriginCheckRequired() const;
+
+  // Derive from Attachments to define collections of objects to serialize in
+  // modules. They can be registered using GetOrCreateAttachment().
+  class Attachment {
+   public:
+    virtual ~Attachment() = default;
+    virtual bool IsLockedToAgentCluster() const = 0;
+  };
+
+  template <typename T>
+  T* GetOrCreateAttachment() {
+    auto result = attachments_.insert(&T::kAttachmentKey, std::unique_ptr<T>());
+    if (!result.stored_value->value)
+      result.stored_value->value = std::make_unique<T>();
+    return static_cast<T*>(result.stored_value->value.get());
+  }
+
+  template <typename T>
+  const T* GetAttachmentIfExists() const {
+    auto it = attachments_.find(&T::kAttachmentKey);
+    if (it == attachments_.end())
+      return nullptr;
+    return static_cast<T*>(it->value.get());
+  }
 
  private:
   friend class ScriptValueSerializer;
@@ -344,6 +372,7 @@ class CORE_EXPORT SerializedScriptValue
   MojoScopedHandleArray mojo_handles_;
   SharedArrayBufferContentsArray shared_array_buffers_contents_;
   NativeFileSystemTokensArray native_file_system_tokens_;
+  HashMap<const void* const*, std::unique_ptr<Attachment>> attachments_;
 
   bool has_registered_external_allocation_;
 #if DCHECK_IS_ON()

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -12,9 +13,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/autofill/autofill_popup_view_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -182,16 +183,35 @@ void AutofillPopupBaseView::UpdateClipPath() {
   SetClipPath(clip_path);
 }
 
+gfx::Rect AutofillPopupBaseView::GetWindowBounds() const {
+// The call to FindBrowserWithWindow will fail on Android, so we use
+// platform-specific calls.
+#if defined(OS_ANDROID)
+  return delegate()->container_view()->GetWindowAndroid()->bounds();
+#else
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
+      delegate()->container_view());
+  if (widget)
+    return widget->GetWindowBoundsInScreen();
+
+  // If the browser is null, simply return an empty rect. The most common reason
+  // to end up here is that the NativeView has been destroyed externally, which
+  // can happen at any time. This happens fairly commonly on Windows (e.g., at
+  // shutdown) in particular.
+  return gfx::Rect();
+#endif
+}
+
 void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
-  gfx::Size size = GetPreferredSize();
+  gfx::Size preferred_size = GetPreferredSize();
+
   // When a bubble border is shown, the contents area (inside the shadow) is
   // supposed to be aligned with input element boundaries.
   gfx::Rect element_bounds = gfx::ToEnclosingRect(delegate()->element_bounds());
   element_bounds.Inset(/*horizontal=*/0, /*vertical=*/-kElementBorderPadding);
 
-  gfx::Rect popup_bounds = PopupViewCommon().CalculatePopupBounds(
-      size.width(), size.height(), element_bounds, delegate()->container_view(),
-      delegate()->IsRTL());
+  gfx::Rect popup_bounds = CalculatePopupBounds(
+      preferred_size, GetWindowBounds(), element_bounds, delegate()->IsRTL());
   // Account for the scroll view's border so that the content has enough space.
   popup_bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
   GetWidget()->SetBounds(popup_bounds);

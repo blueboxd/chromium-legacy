@@ -4,6 +4,10 @@
 
 package org.chromium.components.payments.intent;
 
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+
 /**
  * The types that corresponds to the types in org.chromium.payments.mojom. The fields of these types
  * are the subset of those in the mojom types. The subset is minimally selected based on the need of
@@ -54,6 +58,58 @@ public final class WebPaymentIntentHelperType {
         public PaymentMethodData(String supportedMethod, String stringifiedData) {
             this.supportedMethod = supportedMethod;
             this.stringifiedData = stringifiedData;
+        }
+    }
+
+    /** The class that mirrors mojom.PaymentShippingOption. */
+    public static final class PaymentShippingOption {
+        public final String id;
+        public final String label;
+        public final String amountCurrency;
+        public final String amountValue;
+        public final boolean selected;
+        public PaymentShippingOption(String id, String label, String amountCurrency,
+                String amountValue, boolean selected) {
+            this.id = id;
+            this.label = label;
+            this.amountCurrency = amountCurrency;
+            this.amountValue = amountValue;
+            this.selected = selected;
+        }
+    }
+
+    /** The class that mirrors mojom.PaymentOptions. */
+    public static final class PaymentOptions {
+        public final boolean requestPayerName;
+        public final boolean requestPayerEmail;
+        public final boolean requestPayerPhone;
+        public final boolean requestShipping;
+        public final String shippingType;
+
+        public PaymentOptions(boolean requestPayerName, boolean requestPayerEmail,
+                boolean requestPayerPhone, boolean requestShipping, @Nullable String shippingType) {
+            this.requestPayerName = requestPayerName;
+            this.requestPayerEmail = requestPayerEmail;
+            this.requestPayerPhone = requestPayerPhone;
+            this.requestShipping = requestShipping;
+            this.shippingType = shippingType;
+        }
+
+        /**
+         * @return an ArrayList of stringified payment options. This should be an ArrayList vs a
+         *         List since the |Bundle.putStringArrayList()| function used for populating
+         *         "paymentOptions" in "Pay" intents accepts ArrayLists.
+         */
+        public ArrayList<String> asStringArrayList() {
+            ArrayList<String> paymentOptionList = new ArrayList<>();
+            if (requestPayerName) paymentOptionList.add("requestPayerName");
+            if (requestPayerEmail) paymentOptionList.add("requestPayerEmail");
+            if (requestPayerPhone) paymentOptionList.add("requestPayerPhone");
+            if (requestShipping) {
+                paymentOptionList.add("requestShipping");
+                paymentOptionList.add(shippingType);
+            }
+            return paymentOptionList;
         }
     }
 }

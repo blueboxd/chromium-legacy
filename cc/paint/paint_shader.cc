@@ -395,7 +395,7 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
     decoded_paint_image =
         PaintImageBuilder::WithDefault()
             .set_id(image_.stable_id())
-            .set_image(std::move(sk_image), image_.content_id())
+            .set_image(std::move(sk_image), image_.GetContentIdForFrame(0u))
             .TakePaintImage();
   }
 

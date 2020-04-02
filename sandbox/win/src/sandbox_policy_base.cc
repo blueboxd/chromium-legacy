@@ -509,7 +509,9 @@ PSID PolicyBase::GetLowBoxSid() const {
 
 size_t PolicyBase::GetPolicyGlobalSize() const {
   // TODO(1059129) remove when Process.Sandbox.PolicyGlobalSize expires.
-  return policy_maker_->GetPolicyGlobalSize();
+  if (policy_maker_)
+    return policy_maker_->GetPolicyGlobalSize();
+  return 0;
 }
 
 ResultCode PolicyBase::AddTarget(TargetProcess* target) {

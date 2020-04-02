@@ -267,13 +267,15 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
       // If the AV1 decoder is enabled, or if we're on Q or later, yes.
 #if BUILDFLAG(ENABLE_AV1_DECODER)
       return IsColorSpaceSupported(type.color_space);
-#elif defined(OS_ANDROID)
+#else
+#if defined(OS_ANDROID)
       if (base::android::BuildInfo::GetInstance()->is_at_least_q() &&
           IsColorSpaceSupported(type.color_space)) {
         return true;
       }
 #endif
       return false;
+#endif
 
     case kCodecVP9:
       // Color management required for HDR to not look terrible.

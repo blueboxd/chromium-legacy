@@ -502,7 +502,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
 
   sm_.Call([this]() { (PerformAcceleratorAction(ash::TOGGLE_OVERVIEW)); });
 
-  sm_.ExpectSpeech("Entered window overview mode. Press tab to navigate.");
+  sm_.ExpectSpeech(
+      "Entered window overview mode. Swipe to navigate, or press tab if using "
+      "a keyboard.");
 
   sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
   sm_.ExpectSpeechPattern(

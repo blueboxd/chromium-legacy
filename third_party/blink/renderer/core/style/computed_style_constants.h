@@ -179,12 +179,13 @@ inline Containment& operator|=(Containment& a, Containment b) {
   return a = a | b;
 }
 
-static const size_t kTextUnderlinePositionBits = 3;
+static const size_t kTextUnderlinePositionBits = 4;
 enum TextUnderlinePosition {
   kTextUnderlinePositionAuto = 0x0,
-  kTextUnderlinePositionUnder = 0x1,
-  kTextUnderlinePositionLeft = 0x2,
-  kTextUnderlinePositionRight = 0x4
+  kTextUnderlinePositionFromFont = 0x1,
+  kTextUnderlinePositionUnder = 0x2,
+  kTextUnderlinePositionLeft = 0x4,
+  kTextUnderlinePositionRight = 0x8
 };
 inline TextUnderlinePosition operator|(TextUnderlinePosition a,
                                        TextUnderlinePosition b) {

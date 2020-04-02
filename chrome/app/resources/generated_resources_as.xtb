@@ -844,7 +844,6 @@
 <translation id="2135787500304447609">&amp;ৰখোৱাৰ পৰা আৰম্ভ কৰক</translation>
 <translation id="2136372518715274136">নতুন পাছৱৰ্ড দিয়ক</translation>
 <translation id="2136476978468204130">আপুনি দিয়া পাছফ্রেজটো ভুল</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{কুকিসমূহ অৱৰোধ কৰা হৈছে।}=1{কুকিসমূহ অৱৰোধ কৰা হৈছে, ১ টা ব্যতিক্ৰম}one{কুকিসমূহ অৱৰোধ কৰা হৈছে, {COUNT} টা ব্যতিক্ৰম}other{কুকিসমূহ অৱৰোধ কৰা হৈছে, {COUNT} টা ব্যতিক্ৰম}}</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />"ৰ সৈতে সংযোগ কৰাৰ প্ৰক্ৰিয়া এতিয়াও চলি আছে</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />টা নেটৱৰ্কৰ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে, সংযোগ কৰক</translation>
 <translation id="2139919072249842737">ছেট আপ বুটাম</translation>
@@ -1203,7 +1202,6 @@
 <translation id="2586672484245266891">অনুগ্ৰহ কৰি এটি চুটি URL দিয়ক</translation>
 <translation id="2587922766792651800">সময় উকলিছে</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" />ৰ ডিভাইচসমূহ</translation>
-<translation id="2593594315333286814">নেভিগেশ্বনৰ বাবে সাধ্য সুবিধাৰ ছেটিংসমূহ</translation>
 <translation id="2594999711683503743">Googleত সন্ধান কৰক বা URL টাইপ কৰক</translation>
 <translation id="2602501489742255173">আৰম্ভ কৰিবলৈ ওপৰলৈ ছোৱাইপ কৰক</translation>
 <translation id="2603115962224169880">কম্পিউটাৰৰ ডেটা মচক</translation>
@@ -2210,7 +2208,6 @@
 <translation id="3873423927483480833">পিনসমূহ দেখুৱাওক</translation>
 <translation id="3873915545594852654">ARC++ৰ ক্ষেত্ৰত এটা সমস্যাই দেখা দিছে।</translation>
 <translation id="3879748587602334249">ডাউনল’ড মেনেজাৰ</translation>
-<translation id="3881321138433527084">সুৰক্ষিত ব্ৰাউজিং অফ আছে। ৱেবত সুৰক্ষিত হৈ থাকিবলৈ এইটো অন কৰক।</translation>
 <translation id="3882165008614329320">কেমেৰা অথবা ফাইলৰ পৰা ইতিমধ্যে থকা ভিডিঅ’</translation>
 <translation id="3886446263141354045">এই ছাইটটো এক্সেছ কৰিবলৈ আপুনি কৰা অনুৰোধ <ph name="NAME" />লৈ পঠিওৱা হৈছে</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" />ৰ জৰিয়তে টোকা লৈ থকা হৈছে</translation>
@@ -5373,7 +5370,6 @@
 <translation id="8186609076106987817">ছাৰ্ভাৰে ফাইলটো বিচাৰি নাপালে।</translation>
 <translation id="8188389033983459049">আপোনাৰ ডিভাইচৰ ছেটিংসমূহ পৰীক্ষা কৰক আৰু অব্যাহত ৰাখিবলৈ ব্লুটুথ অন কৰক</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" />ৰ সৈতে সংযোগ কৰি থকা হৈছে</translation>
-<translation id="8190310225494289459">Google একাউণ্টত পৰা পৰীক্ষা কৰক।</translation>
 <translation id="8191230140820435481">আপোনাৰ এপ্‌, এক্সটেনশ্বন ,আৰু থীম পৰিচালনা কৰক</translation>
 <translation id="8195027750202970175">ডিস্কত থকা ঠাই</translation>
 <translation id="8198323535106903877">আমি আপোনাৰ বাবে সেই <ph name="NUMBER_OF_APPS" />টা এপ্‌ ইনষ্টল কৰিম</translation>

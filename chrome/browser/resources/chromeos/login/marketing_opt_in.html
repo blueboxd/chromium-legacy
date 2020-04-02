@@ -40,7 +40,7 @@
       </hd-iron-icon>
       <div slot="subtitle" id="marketing-opt-in-subtitle"
           hidden="[[!marketingOptInEnabled_]]">
-        [[i18nRecursive(locale, 'marketingOptInScreenSubtitle', 'productName')]]
+        [[i18nDynamic(locale, 'marketingOptInScreenSubtitle')]]
       </div>
       <div slot="subtitle" id="marketing-opt-in-subtitle"
           hidden="[[marketingOptInEnabled_]]">
@@ -49,24 +49,11 @@
       <div slot="footer" class="layout vertical flex">
         <div class="marketing-option layout horizontal center"
             hidden="[[!marketingOptInEnabled_]]"
-            id="marketing-opt-in-toggle-1">
-          <hd-iron-icon icon1x="oobe-32:checkmark" icon2x="oobe-64:checkmark">
-          </hd-iron-icon>
-          <div id="playUpdatesOptionLabel" class="flex">
-            [[i18nDynamic(locale, 'marketingOptInGetPlayUpdates')]]
-          </div>
-          <cr-toggle id="playUpdatesOption" checked
-              aria-labelledby="usageStatsLabel">
-          </cr-toggle>
-        </div>
-        <div class="marketing-option layout horizontal center"
-            hidden="[[!marketingOptInEnabled_]]"
-            id="marketing-opt-in-toggle-2">
-          <hd-iron-icon icon1x="oobe-32:checkmark" icon2x="oobe-64:checkmark">
+            id="marketing-opt-in-toggle">
+          <hd-iron-icon icon1x="oobe-32:chromebook" icon2x="oobe-64:chromebook">
           </hd-iron-icon>
           <div id="chromebookUpdatesOptionLabel" class="flex">
-            [[i18nRecursive(locale, 'marketingOptInGetChromebookUpdates',
-                            'productName')]]
+            [[i18nDynamic(locale, 'marketingOptInGetChromebookUpdates')]]
           </div>
           <cr-toggle id="chromebookUpdatesOption" checked
               aria-labelledby="chromebookUpdatesOption">
@@ -85,7 +72,7 @@
             icon2x="marketing-opt-in-64:accessibility"
             text-key="marketingOptInA11yButtonLabel">
         </oobe-welcome-secondary-button>
-        <oobe-text-button on-tap="onAllSet_" class="focus-on-show"
+        <oobe-text-button on-tap="onGetStarted_" class="focus-on-show"
             inverse text-key="marketingOptInScreenAllSet"
             id="marketing-opt-in-next-button">
         </oobe-text-button>
@@ -117,7 +104,7 @@
       <div slot="bottom-buttons" class="layout horizontal justified">
         <oobe-back-button on-tap="onToggleAccessibilityPage_"
             id="final-accessibility-back-button"></oobe-back-button>
-        <oobe-text-button on-tap="onAllSet_" class="focus-on-show"
+        <oobe-text-button on-tap="onGetStarted_" class="focus-on-show"
             id="final-accessibility-next-button" inverse
             text-key="finalA11yPageDoneButtonTitle">
         </oobe-text-button>

@@ -29,24 +29,31 @@ bool IsAssistPersonalInfoEnabled() {
   return base::FeatureList::IsEnabled(chromeos::features::kAssistPersonalInfo);
 }
 
+bool IsEmojiSuggestAdditionEnabled() {
+  return base::FeatureList::IsEnabled(
+      chromeos::features::kEmojiSuggestAddition);
+}
+
 }  // namespace
 
 bool IsAssistiveFeatureEnabled() {
-  return IsAssistPersonalInfoEnabled();
+  return IsAssistPersonalInfoEnabled() || IsEmojiSuggestAdditionEnabled();
 }
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
                                        Profile* profile)
-    : personal_info_suggester_(engine, profile) {}
+    : personal_info_suggester_(engine, profile), emoji_suggester_(engine) {}
 
 void AssistiveSuggester::OnFocus(int context_id) {
   context_id_ = context_id;
   personal_info_suggester_.OnFocus(context_id_);
+  emoji_suggester_.OnFocus(context_id_);
 }
 
 void AssistiveSuggester::OnBlur() {
   context_id_ = -1;
   personal_info_suggester_.OnBlur();
+  emoji_suggester_.OnBlur();
 }
 
 bool AssistiveSuggester::OnKeyEvent(
@@ -122,6 +129,10 @@ void AssistiveSuggester::Suggest(const base::string16& text,
     if (IsAssistPersonalInfoEnabled() &&
         personal_info_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &personal_info_suggester_;
+    } else if (IsEmojiSuggestAdditionEnabled() &&
+               emoji_suggester_.Suggest(text_before_cursor)) {
+      current_suggester_ = &emoji_suggester_;
+      RecordAssistiveCoverage(current_suggester_->GetProposeActionType());
     } else {
       current_suggester_ = nullptr;
     }

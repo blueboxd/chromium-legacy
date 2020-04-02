@@ -2723,6 +2723,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 14,
       'caption': '''Enable Safe Browsing''',

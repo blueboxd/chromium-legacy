@@ -83,8 +83,9 @@ enterprise_reporting_private::SettingValue GetScreenlockSecured() {
   return lock_screen_enabled
              ? enterprise_reporting_private::SETTING_VALUE_ENABLED
              : enterprise_reporting_private::SETTING_VALUE_DISABLED;
-#endif  // defined(USE_GIO)
+#else
   return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
+#endif  // defined(USE_GIO)
 }
 
 // Implements the logic from the native host installation script. First find the

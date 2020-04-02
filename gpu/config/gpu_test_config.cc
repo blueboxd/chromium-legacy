@@ -43,6 +43,7 @@ GPUTestConfig::OS GetCurrentOS() {
     return GPUTestConfig::kOsWin8;
   if (major_version == 10)
     return GPUTestConfig::kOsWin10;
+  return GPUTestConfig::kOsUnknown;
 #elif defined(OS_MACOSX)
   int32_t major_version = 0;
   int32_t minor_version = 0;
@@ -75,12 +76,14 @@ GPUTestConfig::OS GetCurrentOS() {
         return GPUTestConfig::kOsMacCatalina;
     }
   }
+  return GPUTestConfig::kOsUnknown;
 #elif defined(OS_ANDROID)
   return GPUTestConfig::kOsAndroid;
 #elif defined(OS_FUCHSIA)
   return GPUTestConfig::kOsFuchsia;
+#else
+#error "unknown os"
 #endif
-  return GPUTestConfig::kOsUnknown;
 }
 
 }  // namespace anonymous

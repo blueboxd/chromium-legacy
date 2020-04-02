@@ -119,5 +119,6 @@ cr.define('app_management', function() {
 
   cr.addSingletonGetter(BrowserProxy);
 
+  // #cr_define_end
   return {BrowserProxy: BrowserProxy};
 });

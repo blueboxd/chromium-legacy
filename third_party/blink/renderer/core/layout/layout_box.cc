@@ -2463,6 +2463,17 @@ void LayoutBox::DirtyLineBoxes(bool full_layout) {
   }
 }
 
+bool LayoutBox::HasInlineFragments() const {
+  if (!IsInLayoutNGInlineFormattingContext())
+    return inline_box_wrapper_;
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return first_paint_fragment_;
+  // TODO(yosin): We should use |first_fragment_item_index_|.
+  NGInlineCursor cursor;
+  cursor.MoveTo(*this);
+  return cursor;
+}
+
 void LayoutBox::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
   // TODO(yosin): Once we remove |NGPaintFragment|, we should get rid of
@@ -4523,7 +4534,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
 
   const LayoutInline* flow = ToLayoutInline(containing_block);
   // If the containing block is empty, return a height of 0.
-  if (flow->IsEmpty())
+  if (!flow->HasInlineFragments())
     return LayoutUnit();
 
   LayoutUnit height_result;

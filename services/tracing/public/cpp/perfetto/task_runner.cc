@@ -127,6 +127,10 @@ void PerfettoTaskRunner::SetTaskRunner(
 
 scoped_refptr<base::SequencedTaskRunner>
 PerfettoTaskRunner::GetOrCreateTaskRunner() {
+  // TODO(eseckler): This is not really thread-safe. We should probably add a
+  // lock around this. At the moment we can get away without one because this
+  // method is called for the first time on the process's main thread before the
+  // tracing service connects.
   if (!task_runner_) {
     DCHECK(base::ThreadPoolInstance::Get());
     task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(

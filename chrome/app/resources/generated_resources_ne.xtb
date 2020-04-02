@@ -843,7 +843,6 @@
 <translation id="2135787500304447609">पुनः &amp;निरन्तरता दिनुहोस्</translation>
 <translation id="2136372518715274136">नयाँ पासवर्ड प्रविष्टि गर्नुहोस्</translation>
 <translation id="2136476978468204130">तपाईंले प्रविष्ट गर्नुभएको पासफ्रेज गलत छ</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{कुकीहरूमाथि रोक लगाइएको छ।}=1{कुकीहरूमाथि रोक लगाइएको छ, १ अपवाद}other{कुकीहरूमाथि रोक लगाइएको छ, {COUNT} अपवादहरू}}</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />" मा जडान हुने क्रम अझै जारी छ</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /> मध्ये नेटवर्क <ph name="NETWORK_INDEX" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />%, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ, जोड्नुहोस्</translation>
 <translation id="2139919072249842737">सेटअप गर्ने बटन</translation>
@@ -1202,7 +1201,6 @@
 <translation id="2586672484245266891">कृपया कुनै अझ छोटो URL प्रविष्टि गर्नुहोस्</translation>
 <translation id="2587922766792651800">समय सकियो</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> का यन्त्रहरू</translation>
-<translation id="2593594315333286814">नेभिगेसनका पहुँचसम्बन्धी सेटिङ</translation>
 <translation id="2594999711683503743">Google मा खोज्नुहोस् वा URL टाइप गर्नुहोस्</translation>
 <translation id="2602501489742255173">सुरु गर्न माथितिर स्वाइप गर्नुहोस्</translation>
 <translation id="2603115962224169880">कम्प्युटरमा ठाउँ खाली गर्नुहोस्</translation>
@@ -2210,7 +2208,6 @@
 <translation id="3873423927483480833">PIN हरू देखाउनुहोस्</translation>
 <translation id="3873915545594852654">ARC++ सम्बन्धी कुनै समस्या भयो।</translation>
 <translation id="3879748587602334249">डाउनलोड प्रबन्धक</translation>
-<translation id="3881321138433527084">सुरक्षित ब्राउजिङ निष्क्रिय छ। सुरक्षित रूपमा वेबको प्रयोग गर्न उक्त सेवा सक्रिय गर्नुहोस्।</translation>
 <translation id="3882165008614329320">क्यामेरा वा फाइलको विद्यमान भिडियो</translation>
 <translation id="3886446263141354045">यो साइटमाथि पहुँच राख्ने तपाईंको अनुरोध <ph name="NAME" /> लाई पठाइएको छ</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> मार्फत टिपोट लिँदै</translation>
@@ -5383,7 +5380,6 @@
 <translation id="8186609076106987817">सर्भरले फाइल फेला पार्न सकेन।</translation>
 <translation id="8188389033983459049">आफ्नो यन्त्रको सेटिङको जाँच गर्नुहोस् र जारी राख्न यसलाई सक्रिय गर्नुहोस्</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> मा जोडिदैं</translation>
-<translation id="8190310225494289459">Google खातामा जाँच गर्नुहोस्।</translation>
 <translation id="8191230140820435481">आफ्नो एप्स, एक्स्टेन्सनहरू, र थिमहरूलाई व्यवस्थित गर्नुहोस्</translation>
 <translation id="8195027750202970175">डिस्कमा फाइलको आकार</translation>
 <translation id="8198323535106903877">हामी तपाईंको अनुप्रयोगमा ती <ph name="NUMBER_OF_APPS" /> अनुप्रयोगहरू स्थापना गर्ने छौँ</translation>

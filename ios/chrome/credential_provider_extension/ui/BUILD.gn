@@ -20,6 +20,7 @@ source_set("ui") {
     "stale_credentials_view_controller.mm",
   ]
   deps = [
+    "//base",
     "//ios/chrome/common/credential_provider",
     "//ios/chrome/common/credential_provider:ui",
     "//ios/chrome/common/ui/colors",

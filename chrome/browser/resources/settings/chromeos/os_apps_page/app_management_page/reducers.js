@@ -127,6 +127,7 @@ cr.define('app_management', function() {
     };
   }
 
+  // #cr_define_end
   return {
     reduceAction: reduceAction,
     AppState: AppState,

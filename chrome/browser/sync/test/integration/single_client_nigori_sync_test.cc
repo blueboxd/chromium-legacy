@@ -543,8 +543,7 @@ class SingleClientNigoriWithWebApiTest : public SyncTest {
     // datatypes.
     override_features_.InitWithFeatures(
         /*enabled_features=*/{switches::kSyncUSSNigori,
-                              switches::kSyncSupportTrustedVaultPassphrase,
-                              features::kSyncEncryptionKeysWebApi},
+                              switches::kSyncSupportTrustedVaultPassphrase},
         /*disabled_features=*/{});
   }
   ~SingleClientNigoriWithWebApiTest() override = default;

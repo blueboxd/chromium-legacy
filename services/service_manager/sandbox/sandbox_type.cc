@@ -63,7 +63,15 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
                                        SandboxType sandbox_type) {
   switch (sandbox_type) {
     case SandboxType::kNoSandbox:
-      command_line->AppendSwitch(switches::kNoSandbox);
+      if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
+          switches::kUtilityProcess) {
+        DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
+        command_line->AppendSwitchASCII(
+            switches::kServiceSandboxType,
+            StringFromUtilitySandboxType(sandbox_type));
+      } else {
+        command_line->AppendSwitch(switches::kNoSandbox);
+      }
       break;
 #if defined(OS_WIN)
     case SandboxType::kNoSandboxAndElevatedPrivileges:

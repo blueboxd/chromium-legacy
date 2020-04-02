@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/google/core/common/google_util.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -47,6 +48,8 @@
 #include "url/origin.h"
 
 namespace {
+
+const void* const kPrefetchingLikelyEventKey = 0;
 
 base::Optional<base::TimeDelta> GetTotalPrefetchTime(
     network::mojom::URLResponseHead* head) {
@@ -74,10 +77,32 @@ base::Optional<base::TimeDelta> GetPrefetchConnectTime(
   return end - start;
 }
 
+void InformPLMOfLikelyPrefetching(content::WebContents* web_contents) {
+  page_load_metrics::MetricsWebContentsObserver* metrics_web_contents_observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+          web_contents);
+  if (!metrics_web_contents_observer)
+    return;
+
+  metrics_web_contents_observer->BroadcastEventToObservers(
+      IsolatedPrerenderTabHelper::PrefetchingLikelyEventKey());
+}
+
 }  // namespace
 
-IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad() = default;
+IsolatedPrerenderTabHelper::PrefetchMetrics::PrefetchMetrics() = default;
+IsolatedPrerenderTabHelper::PrefetchMetrics::~PrefetchMetrics() = default;
+
+IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad()
+    : metrics_(
+          base::MakeRefCounted<IsolatedPrerenderTabHelper::PrefetchMetrics>()) {
+}
 IsolatedPrerenderTabHelper::CurrentPageLoad::~CurrentPageLoad() = default;
+
+// static
+const void* IsolatedPrerenderTabHelper::PrefetchingLikelyEventKey() {
+  return &kPrefetchingLikelyEventKey;
+}
 
 IsolatedPrerenderTabHelper::IsolatedPrerenderTabHelper(
     content::WebContents* web_contents)
@@ -112,14 +137,22 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
     return;
   }
 
+  // Reset the prefetch usage here instead of with |page_| since this will be
+  // set before commit.
+  prefetch_usage_ = base::nullopt;
+
   // User is navigating, don't bother prefetching further.
   page_->url_loader_.reset();
 
-  if (page_->metrics_.prefetch_attempted_count > 0) {
+  if (page_->metrics_->prefetch_attempted_count_ > 0) {
     UMA_HISTOGRAM_COUNTS_100(
         "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects",
-        page_->metrics_.prefetch_total_redirect_count);
+        page_->metrics_->prefetch_total_redirect_count_);
   }
+}
+
+void IsolatedPrerenderTabHelper::OnPrefetchUsage(PrefetchUsage usage) {
+  prefetch_usage_ = usage;
 }
 
 void IsolatedPrerenderTabHelper::DidFinishNavigation(
@@ -181,7 +214,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   }
 
   if (IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
-      page_->metrics_.prefetch_attempted_count >=
+      page_->metrics_->prefetch_attempted_count_ >=
           IsolatedPrerenderMaximumNumberOfPrefetches().value()) {
     return;
   }
@@ -192,7 +225,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
     return;
   }
 
-  page_->metrics_.prefetch_attempted_count++;
+  page_->metrics_->prefetch_attempted_count_++;
 
   GURL url = page_->urls_to_prefetch_[0];
   page_->urls_to_prefetch_.erase(page_->urls_to_prefetch_.begin());
@@ -236,8 +269,6 @@ void IsolatedPrerenderTabHelper::Prefetch() {
             policy_exception_justification: "Not implemented."
         })");
 
-  // TODO(crbug/1023485): Disallow auth challenges.
-
   page_->url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
 
@@ -259,7 +290,7 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
     std::vector<std::string>* removed_headers) {
   DCHECK(PrefetchingActive());
 
-  page_->metrics_.prefetch_total_redirect_count++;
+  page_->metrics_->prefetch_total_redirect_count_++;
 
   // Run the new URL through all the eligibility checks. In the mean time,
   // continue on with other Prefetches.
@@ -343,7 +374,7 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
       std::make_unique<PrefetchedMainframeResponseContainer>(
           key, std::move(head), std::move(body));
   page_->prefetched_responses_.emplace(url, std::move(response));
-  page_->metrics_.prefetch_successful_count++;
+  page_->metrics_->prefetch_successful_count_++;
 }
 
 void IsolatedPrerenderTabHelper::OnPredictionUpdated(
@@ -390,6 +421,10 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
   if (!google_util::IsGoogleSearchUrl(source_document_url.value())) {
     return;
   }
+
+  // It's very likely we'll prefetch something at this point, so inform PLM to
+  // start tracking metrics.
+  InformPLMOfLikelyPrefetching(web_contents());
 
   // It is possible, since it is not stipulated by the API contract, that the
   // navigation predictor will issue multiple predictions during a single page
@@ -470,7 +505,7 @@ void IsolatedPrerenderTabHelper::OnGotCookieList(
 
   // TODO(robertogden): Consider adding redirect URLs to the front of the list.
   page_->urls_to_prefetch_.push_back(url);
-  page_->metrics_.prefetch_eligible_count++;
+  page_->metrics_->prefetch_eligible_count_++;
 
   // The queried url may not have been part of this page's prediction if it was
   // a redirect (common) or if the cookie query finished after
@@ -482,8 +517,8 @@ void IsolatedPrerenderTabHelper::OnGotCookieList(
         page_->original_prediction_ordering_.find(url)->second;
     // Check that we won't go above the allowable size.
     if (original_prediction_index <
-        sizeof(page_->metrics_.ordered_eligible_pages_bitmask) * 8) {
-      page_->metrics_.ordered_eligible_pages_bitmask |=
+        sizeof(page_->metrics_->ordered_eligible_pages_bitmask_) * 8) {
+      page_->metrics_->ordered_eligible_pages_bitmask_ |=
           1 << original_prediction_index;
     }
   }

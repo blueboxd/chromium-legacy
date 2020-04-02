@@ -258,6 +258,12 @@ void LayerImpl::AppendDebugBorderQuad(
   if (!ShowDebugBorders(DebugBorderType::LAYER))
     return;
 
+  // This is the debug border quad layer size. The mojo serialization will fail
+  // if the area overflows, so just drop this debug border quad in that case to
+  // avoid crashes.
+  if (!quad_rect.size().GetCheckedArea().IsValid())
+    return;
+
   gfx::Rect visible_quad_rect(quad_rect);
   auto* debug_border_quad =
       render_pass->CreateAndAppendDrawQuad<viz::DebugBorderDrawQuad>();

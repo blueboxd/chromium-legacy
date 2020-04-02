@@ -21,16 +21,16 @@ public class Address {
     public final String phone;
 
     public Address() {
-        country = null;
-        addressLine = null;
-        region = null;
-        city = null;
-        dependentLocality = null;
-        postalCode = null;
-        sortingCode = null;
-        organization = null;
-        recipient = null;
-        phone = null;
+        country = "";
+        addressLine = new String[0];
+        region = "";
+        city = "";
+        dependentLocality = "";
+        postalCode = "";
+        sortingCode = "";
+        organization = "";
+        recipient = "";
+        phone = "";
     }
 
     /**

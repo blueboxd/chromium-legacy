@@ -656,6 +656,7 @@ jumbo_static_library("browsertest_support") {
     "//components/network_session_configurator/common:common",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
+    "//content/shell:content_shell_app",
     "//content/shell:content_shell_lib",
     "//gin",
     "//media",
@@ -1377,7 +1378,7 @@ test("content_browsertests") {
     deps += [
       ":android_test_message_pump_support",
       ":content_browsertests_java",
-      "//content/shell:content_shell_lib",
+      "//content/shell:content_shell_app",
       "//content/shell/android:content_shell_assets",
       "//content/shell/android:content_shell_jni_headers",
       "//testing/android/native_test:native_test_support",

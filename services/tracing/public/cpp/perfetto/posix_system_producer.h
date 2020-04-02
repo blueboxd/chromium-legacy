@@ -54,7 +54,6 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   void SetNewSocketForTesting(const char* socket);
 
   // PerfettoProducer implementation.
-  bool SetupStartupTracing() override;
   perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
@@ -73,11 +72,6 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   // traces.
   void DisconnectWithReply(
       base::OnceClosure on_disconnect_complete = base::OnceClosure()) override;
-  // IMPORTANT!! this only resets |sequence_checker_| owned by this class, if
-  // this SystemProducer is connected to a service through the unix socket there
-  // will be additional sequence checkers which will fail if the socket
-  // disconnects.
-  void ResetSequenceForTesting() override;
 
   // perfetto::Producer implementation.
   // Used by the service to start and stop traces.
@@ -97,6 +91,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
       size_t num_data_sources) override;
 
  protected:
+  // PerfettoProducer implementation.
+  bool SetupSharedMemoryForStartupTracing() override;
+
   // Given our current |state_| determine how to properly connect and set up our
   // connection to the service via the named fd socket provided in the
   // constructor. If we succeed OnConnect() will be called, if we fail
@@ -150,7 +147,6 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   uint64_t data_sources_tracing_ = 0;
   // -- End lock-protected members. --
 
-  SEQUENCE_CHECKER(sequence_checker_);
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // and thus must be the last member variable.
   base::WeakPtrFactory<PosixSystemProducer> weak_ptr_factory_{this};

@@ -237,6 +237,7 @@ cr.define('app_management.util', function() {
         histogram, userAction, enumLength);
   }
 
+  // #cr_define_end
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,

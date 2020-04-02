@@ -339,8 +339,11 @@ TEST_F(AXTreeSerializerTest, MaximumSerializedNodeCount) {
   ASSERT_EQ(5u, update.nodes.size());
 }
 
+#if !defined(ADDRESS_SANITIZER)
 // If duplicate ids are encountered, it returns an error and the next
 // update will re-send the entire tree.
+// Test does not work with address sanitizer -- if EXPECT_DEATH is used to
+// catch the "Illegal parenting" NOTREACHED(), an ASAN crash is still generated.
 TEST_F(AXTreeSerializerTest, DuplicateIdsReturnsErrorAndFlushes) {
   // (1 (2 (3 (4) 5)))
   treedata0_.root_id = 1;
@@ -391,6 +394,7 @@ TEST_F(AXTreeSerializerTest, DuplicateIdsReturnsErrorAndFlushes) {
   serializer_->SerializeChanges(tree1_->GetFromId(7), &update);
   ASSERT_EQ(5u, update.nodes.size());
 }
+#endif
 
 // If a tree serializer is reset, that means it doesn't know about
 // the state of the client tree anymore. The safest thing to do in

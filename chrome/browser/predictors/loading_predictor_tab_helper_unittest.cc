@@ -4,20 +4,31 @@
 
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 
+#include "base/test/gmock_callback_support.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_test_util.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
+using ::testing::_;
 using ::testing::ByRef;
+using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Mock;
+using ::testing::NiceMock;
+using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace predictors {
@@ -34,7 +45,7 @@ class MockLoadingDataCollector : public LoadingDataCollector {
                     const blink::mojom::ResourceLoadInfo&));
   MOCK_METHOD2(RecordMainFrameLoadComplete,
                void(const NavigationID&,
-                    const base::Optional<PreconnectPrediction>&));
+                    const base::Optional<OptimizationGuidePrediction>&));
   MOCK_METHOD2(RecordFirstContentfulPaint,
                void(const NavigationID&, const base::TimeTicks&));
 };
@@ -43,20 +54,40 @@ MockLoadingDataCollector::MockLoadingDataCollector(
     const LoadingPredictorConfig& config)
     : LoadingDataCollector(nullptr, nullptr, config) {}
 
+// TODO(crbug/1035698): Migrate to TestOptimizationGuideDecider when provided.
+class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
+ public:
+  explicit MockOptimizationGuideKeyedService(
+      content::BrowserContext* browser_context)
+      : OptimizationGuideKeyedService(browser_context) {}
+  ~MockOptimizationGuideKeyedService() override = default;
+
+  MOCK_METHOD2(
+      RegisterOptimizationTypesAndTargets,
+      void(const std::vector<optimization_guide::proto::OptimizationType>&,
+           const std::vector<optimization_guide::proto::OptimizationTarget>&));
+  MOCK_METHOD3(CanApplyOptimizationAsync,
+               void(content::NavigationHandle*,
+                    optimization_guide::proto::OptimizationType,
+                    optimization_guide::OptimizationGuideDecisionCallback));
+};
+
 class LoadingPredictorTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override;
   void TearDown() override;
 
-  virtual void ExpectRecordNavigation(const std::string& url);
   SessionID GetTabID();
   void NavigateAndCommitInFrame(const std::string& url,
                                 content::RenderFrameHost* rfh);
+  void NavigateAndCommitInMainFrameAndVerifyMetrics(const std::string& url);
 
  protected:
   std::unique_ptr<LoadingPredictor> loading_predictor_;
   // Owned by |loading_predictor_|.
   StrictMock<MockLoadingDataCollector>* mock_collector_;
+  // Owned elsewhere.
+  MockOptimizationGuideKeyedService* mock_optimization_guide_keyed_service_;
   // Owned by |web_contents()|.
   LoadingPredictorTabHelper* tab_helper_;
 };
@@ -64,6 +95,17 @@ class LoadingPredictorTabHelperTest : public ChromeRenderViewHostTestHarness {
 void LoadingPredictorTabHelperTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   CreateSessionServiceTabHelper(web_contents());
+  mock_optimization_guide_keyed_service_ =
+      static_cast<MockOptimizationGuideKeyedService*>(
+          OptimizationGuideKeyedServiceFactory::GetInstance()
+              ->SetTestingFactoryAndUse(
+                  profile(),
+                  base::BindRepeating([](content::BrowserContext* context)
+                                          -> std::unique_ptr<KeyedService> {
+                    return std::make_unique<MockOptimizationGuideKeyedService>(
+                        context);
+                  })));
+
   LoadingPredictorTabHelper::CreateForWebContents(web_contents());
   tab_helper_ = LoadingPredictorTabHelper::FromWebContents(web_contents());
 
@@ -85,13 +127,26 @@ void LoadingPredictorTabHelperTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
-void LoadingPredictorTabHelperTest::ExpectRecordNavigation(
-    const std::string& url) {
-  auto navigation_id = CreateNavigationID(GetTabID(), url);
-  EXPECT_CALL(*mock_collector_, RecordStartNavigation(navigation_id));
+void LoadingPredictorTabHelperTest::
+    NavigateAndCommitInMainFrameAndVerifyMetrics(const std::string& url) {
+  NavigationID start_navigation_id;
+  NavigationID old_finish_navigation_id;
+  NavigationID new_finish_navigation_id;
+  EXPECT_CALL(*mock_collector_, RecordStartNavigation(_))
+      .WillOnce(SaveArg<0>(&start_navigation_id));
   EXPECT_CALL(*mock_collector_,
-              RecordFinishNavigation(navigation_id, navigation_id,
-                                     /* is_error_page */ false));
+              RecordFinishNavigation(_, _,
+                                     /* is_error_page */ false))
+      .WillOnce(DoAll(SaveArg<0>(&old_finish_navigation_id),
+                      SaveArg<1>(&new_finish_navigation_id)));
+
+  NavigateAndCommitInFrame(url, main_rfh());
+
+  auto expected_navigation_id = CreateNavigationID(
+      GetTabID(), url, web_contents()->GetLastCommittedSourceId());
+  EXPECT_EQ(start_navigation_id, expected_navigation_id);
+  EXPECT_EQ(old_finish_navigation_id, expected_navigation_id);
+  EXPECT_EQ(new_finish_navigation_id, expected_navigation_id);
 }
 
 SessionID LoadingPredictorTabHelperTest::GetTabID() {
@@ -114,8 +169,7 @@ void LoadingPredictorTabHelperTest::NavigateAndCommitInFrame(
 // Tests that a main frame navigation is correctly recorded by the
 // LoadingDataCollector.
 TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigation) {
-  ExpectRecordNavigation("http://test.org");
-  NavigateAndCommitInFrame("http://test.org", main_rfh());
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
 }
 
 // Tests that an old and new navigation ids are correctly set if a navigation
@@ -128,24 +182,29 @@ TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationWithRedirects) {
   // TOOO(ahemery): Consider refactoring this to rely on loading events
   // in NavigationSimulator.
   navigation->SetKeepLoading(true);
-  auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
-  EXPECT_CALL(*mock_collector_, RecordStartNavigation(navigation_id));
+  NavigationID start_navigation_id;
+  EXPECT_CALL(*mock_collector_, RecordStartNavigation(_))
+      .WillOnce(SaveArg<0>(&start_navigation_id));
   navigation->Start();
   navigation->Redirect(GURL("http://test2.org"));
   navigation->Redirect(GURL("http://test3.org"));
-  auto new_navigation_id = CreateNavigationID(GetTabID(), "http://test3.org");
+  auto new_navigation_id = start_navigation_id;
+  new_navigation_id.main_frame_url = GURL("http://test3.org");
   EXPECT_CALL(*mock_collector_,
-              RecordFinishNavigation(navigation_id, new_navigation_id,
+              RecordFinishNavigation(start_navigation_id, new_navigation_id,
                                      /* is_error_page */ false));
   navigation->Commit();
+
+  EXPECT_EQ(start_navigation_id,
+            CreateNavigationID(GetTabID(), "http://test.org",
+                               web_contents()->GetLastCommittedSourceId()));
 }
 
 // Tests that a subframe navigation is not recorded.
 TEST_F(LoadingPredictorTabHelperTest, SubframeNavigation) {
   // We need to have a committed main frame navigation before navigating in sub
   // frames.
-  ExpectRecordNavigation("http://test.org");
-  NavigateAndCommitInFrame("http://test.org", main_rfh());
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
 
   auto* subframe =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
@@ -162,20 +221,25 @@ TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationFailed) {
   // a particular set of loading events and fails when extra is present.
   // TOOO(ahemery): Consider refactoring this to rely on loading events
   // in NavigationSimulator.
-  auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
-  EXPECT_CALL(*mock_collector_, RecordStartNavigation(navigation_id));
+  NavigationID navigation_id;
+  EXPECT_CALL(*mock_collector_, RecordStartNavigation(_))
+      .WillOnce(SaveArg<0>(&navigation_id));
+  navigation->Start();
+
   EXPECT_CALL(*mock_collector_,
               RecordFinishNavigation(navigation_id, navigation_id,
                                      /* is_error_page */ true));
-  navigation->Start();
   navigation->Fail(net::ERR_TIMED_OUT);
   navigation->CommitErrorPage();
+
+  EXPECT_EQ(navigation_id,
+            CreateNavigationID(GetTabID(), "http://test.org",
+                               web_contents()->GetLastCommittedSourceId()));
 }
 
 // Tests that a same document navigation is not recorded.
 TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationSameDocument) {
-  ExpectRecordNavigation("http://test.org");
-  NavigateAndCommitInFrame("http://test.org", main_rfh());
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
 
   // Same document navigation shouldn't be recorded.
   content::NavigationSimulator::CreateRendererInitiated(GURL("http://test.org"),
@@ -186,31 +250,32 @@ TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationSameDocument) {
 // Tests that document on load completed is recorded with correct navigation
 // id.
 TEST_F(LoadingPredictorTabHelperTest, DocumentOnLoadCompleted) {
-  ExpectRecordNavigation("http://test.org");
-  NavigateAndCommitInFrame("http://test.org", main_rfh());
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
 
-  // Adding subframe navigation to ensure that the commited main frame url will
+  // Adding subframe navigation to ensure that the committed main frame url will
   // be used.
   auto* subframe =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
   NavigateAndCommitInFrame("http://sub.test.org", subframe);
 
-  auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
-  const base::Optional<PreconnectPrediction>
-      null_optimization_guide_preconnect_prediction;
-  EXPECT_CALL(
-      *mock_collector_,
-      RecordMainFrameLoadComplete(
-          navigation_id, null_optimization_guide_preconnect_prediction));
+  const base::Optional<OptimizationGuidePrediction>
+      null_optimization_guide_prediction;
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(navigation_id,
+                                          null_optimization_guide_prediction));
   tab_helper_->DocumentOnLoadCompletedInMainFrame();
 }
 
 // Tests that a resource load is correctly recorded.
 TEST_F(LoadingPredictorTabHelperTest, ResourceLoadComplete) {
-  ExpectRecordNavigation("http://test.org");
-  NavigateAndCommitInFrame("http://test.org", main_rfh());
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
 
-  auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
   auto resource_load_info = CreateResourceLoadInfo(
       "http://test.org/script.js", network::mojom::RequestDestination::kScript);
   EXPECT_CALL(*mock_collector_,
@@ -222,8 +287,7 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadComplete) {
 
 // Tests that a resource loaded in a subframe is not recorded.
 TEST_F(LoadingPredictorTabHelperTest, ResourceLoadCompleteInSubFrame) {
-  ExpectRecordNavigation("http://test.org");
-  NavigateAndCommitInFrame("http://test.org", main_rfh());
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
 
   auto* subframe =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
@@ -240,10 +304,12 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadCompleteInSubFrame) {
 
 // Tests that a resource load from the memory cache is correctly recorded.
 TEST_F(LoadingPredictorTabHelperTest, LoadResourceFromMemoryCache) {
-  ExpectRecordNavigation("http://test.org");
-  NavigateAndCommitInFrame("http://test.org", main_rfh());
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
 
-  auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
+
   auto resource_load_info = CreateResourceLoadInfo(
       "http://test.org/script.js", network::mojom::RequestDestination::kScript,
       false);
@@ -255,6 +321,131 @@ TEST_F(LoadingPredictorTabHelperTest, LoadResourceFromMemoryCache) {
   tab_helper_->DidLoadResourceFromMemoryCache(
       GURL("http://test.org/script.js"), "application/javascript",
       network::mojom::RequestDestination::kScript);
+}
+
+class LoadingPredictorTabHelperOptimizationGuideDeciderTest
+    : public LoadingPredictorTabHelperTest {
+ public:
+  LoadingPredictorTabHelperOptimizationGuideDeciderTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kLoadingPredictorUseOptimizationGuide,
+         // Need to add otherwise GetForProfile() returns null.
+         optimization_guide::features::kOptimizationHints},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that document on load completed is recorded with correct navigation
+// id and optimization guide prediction.
+TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
+       DocumentOnLoadCompletedOptimizationGuide) {
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::proto::LoadingPredictorMetadata lp_metadata;
+  lp_metadata.add_subresources()->set_url("http://test.org/resource1");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource2");
+  lp_metadata.add_subresources()->set_url("http://other.org/resource3");
+  optimization_metadata.set_loading_predictor_metadata(lp_metadata);
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
+                                base::test::IsNotNullCallback()))
+      .WillOnce(base::test::RunOnceCallback<2>(
+          optimization_guide::OptimizationGuideDecision::kTrue,
+          ByRef(optimization_metadata)));
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
+
+  // Adding subframe navigation to ensure that the committed main frame url will
+  // be used.
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  NavigateAndCommitInFrame("http://sub.test.org", subframe);
+
+  base::Optional<OptimizationGuidePrediction> prediction =
+      OptimizationGuidePrediction();
+  prediction->decision = optimization_guide::OptimizationGuideDecision::kTrue;
+  url::Origin main_frame_origin = url::Origin::Create(GURL("http://test.org"));
+  PreconnectPrediction preconnect_prediction = CreatePreconnectPrediction(
+      "", false,
+      {{url::Origin::Create(GURL("http://test.org")), 1,
+        net::NetworkIsolationKey(main_frame_origin, main_frame_origin)},
+       {url::Origin::Create(GURL("http://other.org")), 1,
+        net::NetworkIsolationKey(main_frame_origin, main_frame_origin)}});
+  prediction->preconnect_prediction = preconnect_prediction;
+  prediction->predicted_subresources = {GURL("http://test.org/resource1"),
+                                        GURL("http://other.org/resource2"),
+                                        GURL("http://other.org/resource3")};
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(navigation_id, prediction));
+  tab_helper_->DocumentOnLoadCompletedInMainFrame();
+}
+
+// Tests that document on load completed is recorded with correct navigation
+// id and optimization guide prediction when the prediction has not arrived.
+TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
+       DocumentOnLoadCompletedOptimizationGuidePredictionHasNotArrived) {
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
+                                base::test::IsNotNullCallback()));
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
+
+  // Adding subframe navigation to ensure that the committed main frame url will
+  // be used.
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  NavigateAndCommitInFrame("http://sub.test.org", subframe);
+
+  base::Optional<OptimizationGuidePrediction> prediction =
+      OptimizationGuidePrediction();
+  prediction->decision =
+      optimization_guide::OptimizationGuideDecision::kUnknown;
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(navigation_id, prediction));
+  tab_helper_->DocumentOnLoadCompletedInMainFrame();
+}
+
+// Tests that document on load completed is recorded with correct navigation
+// id and optimization guide prediction with no prediction..
+TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
+       DocumentOnLoadCompletedOptimizationGuidePredictionArrivedNoPrediction) {
+  // The problem here is that mock_collector_ is a strict mock, which expects
+  // a particular set of loading events and fails when extra is present.
+  // TOOO(ahemery): Consider refactoring this to rely on loading events
+  // in NavigationSimulator.
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
+                                base::test::IsNotNullCallback()))
+      .WillOnce(base::test::RunOnceCallback<2>(
+          optimization_guide::OptimizationGuideDecision::kFalse,
+          ByRef(optimization_metadata)));
+  NavigateAndCommitInMainFrameAndVerifyMetrics("http://test.org");
+  auto navigation_id =
+      CreateNavigationID(GetTabID(), "http://test.org",
+                         web_contents()->GetLastCommittedSourceId());
+
+  // Adding subframe navigation to ensure that the committed main frame url will
+  // be used.
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  NavigateAndCommitInFrame("http://sub.test.org", subframe);
+
+  base::Optional<OptimizationGuidePrediction> prediction =
+      OptimizationGuidePrediction();
+  prediction->decision = optimization_guide::OptimizationGuideDecision::kFalse;
+  EXPECT_CALL(*mock_collector_,
+              RecordMainFrameLoadComplete(navigation_id, prediction));
+  tab_helper_->DocumentOnLoadCompletedInMainFrame();
 }
 
 class TestLoadingDataCollector : public LoadingDataCollector {
@@ -274,8 +465,8 @@ class TestLoadingDataCollector : public LoadingDataCollector {
 
   void RecordMainFrameLoadComplete(
       const NavigationID& navigation_id,
-      const base::Optional<PreconnectPrediction>&
-          optimization_guide_preconnect_prediction) override {}
+      const base::Optional<OptimizationGuidePrediction>&
+          optimization_guide_prediction) override {}
 
   void RecordFirstContentfulPaint(
       const NavigationID& navigation_id,
@@ -303,8 +494,6 @@ class LoadingPredictorTabHelperTestCollectorTest
  public:
   void SetUp() override;
 
-  void ExpectRecordNavigation(const std::string& url) override {}
-
  protected:
   TestLoadingDataCollector* test_collector_;
 };
@@ -329,10 +518,7 @@ void LoadingPredictorTabHelperTestCollectorTest::SetUp() {
 
 // Tests that a resource load is correctly recorded with the correct priority.
 TEST_F(LoadingPredictorTabHelperTestCollectorTest, ResourceLoadComplete) {
-  ExpectRecordNavigation("http://test.org");
   NavigateAndCommitInFrame("http://test.org", main_rfh());
-
-  auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
 
   // Set expected priority to HIGHEST and load a HIGHEST priority resource.
   test_collector_->SetExpectedResourcePriority(net::HIGHEST);

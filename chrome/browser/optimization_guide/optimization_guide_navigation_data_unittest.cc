@@ -918,7 +918,15 @@ TEST(OptimizationGuideNavigationDataTest,
 
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
-  EXPECT_TRUE(entries.empty());
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  EXPECT_TRUE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::
+                 kNavigationHintsFetchRequestLatencyName));
+  ukm_recorder.ExpectEntryMetric(
+      entry,
+      ukm::builders::OptimizationGuide::kNavigationHintsFetchRequestLatencyName,
+      INT64_MAX);
 }
 
 TEST(OptimizationGuideNavigationDataTest,
@@ -936,7 +944,15 @@ TEST(OptimizationGuideNavigationDataTest,
 
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
-  EXPECT_TRUE(entries.empty());
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  EXPECT_TRUE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::
+                 kNavigationHintsFetchRequestLatencyName));
+  ukm_recorder.ExpectEntryMetric(
+      entry,
+      ukm::builders::OptimizationGuide::kNavigationHintsFetchRequestLatencyName,
+      INT64_MAX);
 }
 
 TEST(OptimizationGuideNavigationDataTest,

@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">បន្ត</translation>
 <translation id="2136372518715274136">បញ្ចូល​ពាក្យសម្ងាត់​ថ្មី</translation>
 <translation id="2136476978468204130">ឃ្លាសម្ងាត់​ដែល​អ្នកបាន​បញ្ចូល​គឺមិន​ត្រឹមត្រូវ​ទេ</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{បាន​ទប់ស្កាត់​ខូគី​។}=1{បាន​ទប់ស្កាត់​ខូគី ដោយមាន​ការលើកលែង 1}other{បាន​ទប់ស្កាត់​ខូគី ដោយមាន​ការលើកលែង {COUNT}}}</translation>
 <translation id="2138398485845393913">ការ​តភ្ជាប់​ទៅ "<ph name="DEVICE_NAME" />" កំពុង​ដំណើរការ​នៅ​ឡើយ</translation>
 <translation id="2139545522194199494">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ភ្ជាប់</translation>
 <translation id="2139919072249842737">ប៊ូតុង​រៀបចំ</translation>
@@ -1206,7 +1205,6 @@
 <translation id="2586672484245266891">សូម​បញ្ចូល URL ខ្លីជាង​នេះ</translation>
 <translation id="2587922766792651800">អស់ម៉ោង​ហើយ</translation>
 <translation id="2588636910004461974">ឧបករណ៍​ពី <ph name="VENDOR_NAME" /></translation>
-<translation id="2593594315333286814">ការកំណត់​ភាពងាយស្រួល​សម្រាប់​ការរុករក</translation>
 <translation id="2594999711683503743">ស្វែងរក​តាម Google ឬ​វាយបញ្ចូល URL</translation>
 <translation id="2602501489742255173">អូស​ឡើងលើ ដើម្បី​ចាប់ផ្ដើម</translation>
 <translation id="2603115962224169880">សម្អាត​កុំព្យូទ័រ</translation>
@@ -1678,7 +1676,7 @@
     ដើម្បីទទួលបានបទពិសោធន៍សាលារៀនពេញលេញនៅលើឧបករណ៍នេះ កូនរបស់អ្នកគួរតែ៖
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />ចេញពីគណនីដែលគ្រប់គ្រងដោយ Family Link របស់គេ
-      <ph name="OLIST_ITEM" />ចូលដោយប្រើគណនី G Suite សម្រាប់ការអប់រំរបស់គេនៅលើអេក្រង់ចូល។ ចំណាំ ទោះបីជាយ៉ាងនេះក្ដី ការធ្វើបែបនេះនឹងមានន័យថាគោលការណ៍សាលារៀន រួមទាំងការកំណត់​ការចូលប្រើ​កម្មវិធី និងគេហទំព័រ​ នឹងមានប្រសិទ្ធភាព​លើ​មុខងារ​គ្រប់គ្រង Family Link របស់អ្នក (ឧទាហរណ៍ អ្នក​គ្រប់គ្រងសាលា​រៀនអាចអនុញ្ញាតឱ្យប្រើ YouTube ប្រសិនបើមានភាពចាំបាច់សម្រាប់​កិច្ចការផ្ទះ រយៈពេលប្រើប្រាស់ឧបករណ៍នឹងមិនត្រូវបានអនុវត្តទេ ។ល។)
+      <ph name="OLIST_ITEM" />ចូលដោយប្រើគណនី G Suite សម្រាប់ការអប់រំរបស់គេនៅលើអេក្រង់ចូល។ ទោះបីជាយ៉ាងនេះក្ដី សូមចំណាំថាការធ្វើបែបនេះនឹងមានន័យថាគោលការណ៍សាលារៀន រួមទាំងការកំណត់​ការចូលប្រើ​កម្មវិធី និងគេហទំព័រ​ នឹងមានប្រសិទ្ធភាព​លើ​មុខងារ​គ្រប់គ្រង Family Link របស់អ្នក (ឧទាហរណ៍ អ្នក​គ្រប់គ្រងសាលា​រៀនអាចអនុញ្ញាតឱ្យប្រើ YouTube ប្រសិនបើមានភាពចាំបាច់សម្រាប់​កិច្ចការផ្ទះ រយៈពេលប្រើប្រាស់ឧបករណ៍នឹងមិនត្រូវបានអនុវត្តទេ ។ល។)
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">មិនត្រូវបានអះអាង</translation>
 <translation id="32101887417650595">មិនអាចភ្ជាប់ជាមួយ​ម៉ាស៊ីនបោះពុម្ព​បានទេ</translation>
@@ -1879,6 +1877,7 @@
 <translation id="3479552764303398839">មិនមែនឥឡូវនេះទេ</translation>
 <translation id="3479685872808224578">រកមិនឃើញ​ម៉ាស៊ីនមេបោះពុម្ពទេ។ សូមពិនិត្យអាសយដ្ឋាន រួចព្យាយាមម្តងទៀត។</translation>
 <translation id="3481268647794498892">នឹង​បើក​នៅក្នុង <ph name="ALTERNATIVE_BROWSER_NAME" /> ក្នុងរយៈពេល <ph name="COUNTDOWN_SECONDS" /> វិនាទីទៀត</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> អាច​មើល​ឯកសារ​ខាងក្រោម</translation>
 <translation id="3484273680291419129">កំពុង​លុប​កម្មវិធី​ដែល​បង្កគ្រោះថ្នាក់...</translation>
 <translation id="3484869148456018791">ទទួលយកវិញ្ញាបនប័ត្រថ្មី</translation>
 <translation id="3487007233252413104">មុខងារអនាមិក</translation>
@@ -1941,6 +1940,7 @@
 <translation id="3564848315152754834">សោសុវត្ថិភាព USB</translation>
 <translation id="3566721612727112615">មិនបានបន្ថែមគេហទំព័រទេ</translation>
 <translation id="3569382839528428029">តើអ្នកចង់ឲ្យ <ph name="APP_NAME" /> ចែករំលែកអេក្រង់របស់អ្នកទេ?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> អាចមើល​ថត និងឯកសារខាងក្រោម</translation>
 <translation id="3571734092741541777">តំឡើង</translation>
 <translation id="3574210789297084292">ចូល</translation>
 <translation id="3574917942258583917">នៅ​ចែ​ចង់​ចាកចេញ​ពី​មុខងារ​ឯកជនឬ?</translation>
@@ -1950,6 +1950,7 @@
 <translation id="3578594933904494462">មាតិការបស់ផ្ទាំងនេះកំពុងត្រូវបានចែករំលែក។</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ចង់ចែករំលែកម៉ាស៊ីនបោះពុម្ព &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ជាមួយក្រុមដែលអ្នកគ្រប់គ្រង៖ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;។ ប្រសិនបើអ្នកយល់ព្រម សមាជិកក្រុមទាំងអស់នឹងអាចបោះពុម្ពទៅម៉ាស៊ីនបោះពុម្ពនេះ។</translation>
 <translation id="357889014807611375">Wi-Fi តាមកម្រិត</translation>
+<translation id="3582057310199111521">បានបញ្ចូលនៅលើគេហទំព័របញ្ឆោត និងបានរកឃើញនៅក្នុងការបែកធ្លាយ​ទិន្នន័យ</translation>
 <translation id="3584169441612580296">អាន និងប្តូររូបថត តន្ត្រី និងកំសាន្តផ្សេងទៀតពីកុំព្យូទ័ររបស់អ្នក</translation>
 <translation id="3586806079541226322">មិនអាច​បើក​ឯកសារ​នេះ​បានទេ</translation>
 <translation id="3586931643579894722">លាក់ព័ត៌មានលំអិត</translation>
@@ -2213,7 +2214,6 @@
 <translation id="3873423927483480833">បង្ហាញកូដ PIN</translation>
 <translation id="3873915545594852654">ARC++ មាន​បញ្ហា។</translation>
 <translation id="3879748587602334249">កម្មវិធីគ្រប់គ្រងការ​ទាញ​យក</translation>
-<translation id="3881321138433527084">ការរុករក​ដោយសុវត្ថិភាព​ត្រូវបានបិទ។ ដើម្បីរក្សាសុវត្ថិភាពនៅលើអ៊ីនធឺណិត សូមបើកមុខងារនេះ។</translation>
 <translation id="3882165008614329320">វីដេអូដែល​មានស្រាប់​ពីកាមេរ៉ា ឬឯកសារ</translation>
 <translation id="3886446263141354045">សំណើរបស់អ្នកដើម្បីចូលទៅកាន់ទំព័រនេះត្រូវបានផ្ញើទៅ <ph name="NAME" /></translation>
 <translation id="3888550877729210209">កត់ត្រាចំណាំដោយប្រើ <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -3082,6 +3082,7 @@
 <translation id="5117930984404104619">គ្រប់គ្រងលក្ខណៈកម្មវិធីបន្ថែមដ៏ទៃ ដោយរាប់បញ្ចូលទាំង URLs ដែលអ្នកបានទៅកាន់</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ឧបករណ៍ផ្ទុកទិន្នន័យរបស់អ្នកពេញហើយ។ សូមរក្សាទុកទីតាំងដ៏ទៃ ឬធ្វើឲ្យមានចន្លោះច្រើនជាងនេះនៅក្នុងឧបករណ៍ផ្ទុកទិន្នន័យ។</translation>
+<translation id="5122384452788334261">ឧបករណ៍​របស់អ្នក​ជិតអស់​ទំហំផ្ទុក​ហើយ។ ណែនាំឱ្យ​មានទំហំផ្ទុក​ទំនេរ​យ៉ាងហោចណាស់ <ph name="RECOMMENDED_SPACE" /> ដើម្បី​ប្រើ Plugin VM។ ដើម្បីបង្កើនទំហំផ្ទុក សូមលុបឯកសារពីទំហំផ្ទុក​របស់ឧបករណ៍។</translation>
 <translation id="5123433949759960244">​បាល់បោះ</translation>
 <translation id="5125751979347152379">URL គ្មានសុពលភាព។</translation>
 <translation id="5126611267288187364">មើលការផ្លាស់ប្ដូរ</translation>
@@ -5178,6 +5179,7 @@
 <translation id="7915471803647590281">សូមប្រាប់ពួកយើងអំពីអ្វីដែលកើតឡើងមុនពេលផ្ញើមតិ។</translation>
 <translation id="7918257978052780342">ចុះឈ្មោះ</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />វិ</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> អាចមើល <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">មានបញ្ហា​ក្នុងការ​បញ្ជូន​ច្រកបន្ត</translation>
 <translation id="792514962475806987">កម្រិត​ពង្រីកបង្រួម​នៃ​កែវ​ពង្រីក​ដាក់​ខាង​លើ​បំផុត៖</translation>
 <translation id="7925247922861151263">ការពិនិត្យ AAA បានបរាជ័យ</translation>
@@ -5340,6 +5342,7 @@
 <translation id="8118488170956489476"><ph name="BEGIN_LINK" />កម្មវិធីរុករកតាមអ៊ីនធឺណិត​របស់អ្នក​ត្រូវបានគ្រប់គ្រង<ph name="END_LINK" />ដោយ​ស្ថាប័នរបស់អ្នក</translation>
 <translation id="8118860139461251237">គ្រប់គ្រងការទាញយករបស់អ្នក</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> និង​ច្រើនទៀត</translation>
+<translation id="8120715633374652536">ឧបករណ៍​របស់អ្នក​ជិតអស់​ទំហំផ្ទុក​ហើយ។ តម្រូវឱ្យ​មានទំហំផ្ទុក​ទំនេរ​យ៉ាងហោចណាស់ <ph name="MINIMUM_SPACE" /> ដើម្បី​ប្រើ Plugin VM និងណែនាំឱ្យមានទំហំផ្ទុក​ទំនេរ​​លើសពី <ph name="RECOMMENDED_SPACE" />។ ដើម្បីបង្កើនទំហំផ្ទុក សូមលុបឯកសារពីទំហំផ្ទុក​របស់ឧបករណ៍។</translation>
 <translation id="8123590694679414600">ទិន្នន័យត្រូវបានអ៊ីនគ្រីបដោយប្រើឃ្លាសម្ងាត់សមកាលកម្មរបស់អ្នកនៅថ្ងៃទី
           <ph name="TIME" />។ ការ​អ៊ីនគ្រីបនេះមិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធីបង់ប្រាក់​ពី Google Pay ទេ។</translation>
 <translation id="81238879832906896">ផ្កាពណ៌លឿង និងពណ៌ស</translation>
@@ -5389,7 +5392,6 @@
 <translation id="8186609076106987817">ម៉ាស៊ីនមេមិនអាចស្វែងរកឯកសារទេ។</translation>
 <translation id="8188389033983459049">ពិនិត្យមើល​ការកំណត់​ឧបករណ៍​របស់អ្នក ហើយបើកវា​ដើម្បីបន្ត</translation>
 <translation id="8190193592390505034">កំពុងភ្ជាប់ទៅ <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">ពិនិត្យនៅក្នុងគណនី Google។</translation>
 <translation id="8191230140820435481">គ្រប់គ្រងកម្មវិធី កម្មវិធីបន្ថែម និងធីមរបស់អ្នក</translation>
 <translation id="8195027750202970175">ទំហំផ្ទុករបស់ថាស</translation>
 <translation id="8198323535106903877">យើង​នឹង​ដំឡើង​កម្មវិធីទាំង <ph name="NUMBER_OF_APPS" /> នោះសម្រាប់អ្នក</translation>

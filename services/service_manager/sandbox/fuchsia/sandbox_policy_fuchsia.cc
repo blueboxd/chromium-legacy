@@ -195,6 +195,13 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   base::PathService::Get(base::DIR_ASSETS, &package_root);
   options->paths_to_clone.push_back(package_root);
 
+  // If /config/data/tzdata/icu/ exists then it contains up-to-date timezone
+  // data which should be provided to all sub-processes, for consistency.
+  const auto kIcuTimezoneDataPath = base::FilePath("/config/data/tzdata/icu");
+  static bool icu_timezone_data_exists = base::PathExists(kIcuTimezoneDataPath);
+  if (icu_timezone_data_exists)
+    options->paths_to_clone.push_back(kIcuTimezoneDataPath);
+
   // Clear environmental variables to better isolate the child from
   // this process.
   options->clear_environment = true;

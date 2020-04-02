@@ -844,7 +844,6 @@
 <translation id="2135787500304447609">&amp;പുനരാരംഭിക്കുക</translation>
 <translation id="2136372518715274136">പുതിയ പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="2136476978468204130">നിങ്ങള്‍ നല്‍കിയ പാസ്ഫ്രേസ് തെറ്റാണ്</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{കുക്കികൾ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു.}=1{കുക്കികൾ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു, ഒരു ഒഴിവാക്കൽ}other{കുക്കികൾ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു, {COUNT} ഒഴിവാക്കലുകൾ}}</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />" എന്നതിലേക്കുള്ള കണക്ഷൻ ഇപ്പോഴും പുരോഗതിയിലാണ്</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്, കണക്‌റ്റ് ചെയ്യുക</translation>
 <translation id="2139919072249842737">സജ്ജീകരണ ബട്ടൺ</translation>
@@ -1203,7 +1202,6 @@
 <translation id="2586672484245266891">ദൈർഘ്യം കുറഞ്ഞ URL നൽകുക</translation>
 <translation id="2587922766792651800">ടൈംഔട്ട് ആയി</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" />-ൽ നിന്നുള്ള ഉപകരണങ്ങൾ</translation>
-<translation id="2593594315333286814">നാവിഗേഷനുള്ള ഉപയോഗസഹായി ക്രമീകരണം</translation>
 <translation id="2594999711683503743">Google-ൽ തിരയുക അല്ലെങ്കിൽ URL ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="2602501489742255173">ആരംഭിക്കുന്നതിന് മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="2603115962224169880">നിങ്ങളുടെ കമ്പ്യൂട്ടർ ക്ലീൻ ചെയ്യുക</translation>
@@ -1876,6 +1874,7 @@
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="3479685872808224578">പ്രിന്റ് സെർവർ കണ്ടെത്താനായില്ല. വിലാസം പരിശോധിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3481268647794498892"><ph name="COUNTDOWN_SECONDS" /> സെക്കൻഡിനുള്ളിൽ <ph name="ALTERNATIVE_BROWSER_NAME" />-ൽ തുറക്കുന്നു</translation>
+<translation id="3482719661246593752">ചുവടെയുള്ള ഫയലുകൾ <ph name="ORIGIN" />-ന് കാണാനാവും</translation>
 <translation id="3484273680291419129">ദോഷകരമായ സോഫ്‌റ്റ്‌വയർ നീക്കംചെയ്യുന്നു...</translation>
 <translation id="3484869148456018791">പുതിയ സർട്ടിഫിക്കറ്റ് ലഭ്യമാക്കുക</translation>
 <translation id="3487007233252413104">അജ്ഞാത പ്രവർത്തനം</translation>
@@ -1938,6 +1937,7 @@
 <translation id="3564848315152754834">USB സുരക്ഷാ കീ</translation>
 <translation id="3566721612727112615">സൈറ്റുകൾ ചേർത്തിട്ടില്ല</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> എന്നതിനെ നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നതിന് അനുവദിക്കാൻ താൽപ്പര്യമുണ്ടോ?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" />-ന് ചുവടെയുള്ള ഫയലുകളും ഫോൾഡറുകളും കാണാനാവും</translation>
 <translation id="3571734092741541777">സജ്ജീകരിക്കുക</translation>
 <translation id="3574210789297084292">സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="3574917942258583917">എന്തായാലും, അദൃശ്യ മോഡ് വിടണോ?</translation>
@@ -1947,6 +1947,7 @@
 <translation id="3578594933904494462">ഈ ടാബിന്റെ ഉള്ളടക്കം പങ്കിടുന്നു.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, നിങ്ങൾക്ക് സ്വന്തമായ ഒരു ഗ്രൂപ്പുമായി ഒരു പ്രിന്റർ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; പങ്കിടാൻ താൽപ്പര്യപ്പെടുന്നു: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. നിങ്ങൾ അംഗീകരിക്കുകയാണെങ്കിൽ, ഗ്രൂപ്പിലെ എല്ലാ അംഗങ്ങൾക്കും പ്രിന്ററിൽ പ്രിന്റുചെയ്യാനാവും.</translation>
 <translation id="357889014807611375">മീറ്റർ ചെയ്‌ത വൈഫൈ</translation>
+<translation id="3582057310199111521">വഞ്ചനാപരമായ സൈറ്റിൽ നൽകിയതിനാൽ ഡാറ്റാ ലംഘനത്തിൽ കണ്ടെത്തി</translation>
 <translation id="3584169441612580296">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ നിന്ന് ഫോട്ടോകൾ, സംഗീതം, മറ്റ് മീഡിയ എന്നിവ വായിക്കുക, മാറ്റുക</translation>
 <translation id="3586806079541226322">ഈ ഫയൽ തുറക്കാനാവില്ല</translation>
 <translation id="3586931643579894722">വിശദാംശങ്ങൾ മറയ്‌ക്കുക‍‌</translation>
@@ -2210,7 +2211,6 @@
 <translation id="3873423927483480833">പിന്നുകൾ കാണിക്കുക</translation>
 <translation id="3873915545594852654">ARC++ എന്നതിൽ ഒരു പ്രശ്‌നമുണ്ടായി.</translation>
 <translation id="3879748587602334249">ഡൗൺലോഡ് മാനേജർ</translation>
-<translation id="3881321138433527084">സുരക്ഷിത ബ്രൗസിംഗ് ഓഫാണ്. വെബിൽ സുരക്ഷിതമായി തുടരാൻ, അത് ഓണാക്കുക.</translation>
 <translation id="3882165008614329320">ക്യാമറയിൽ നിന്നോ ഫയലിൽ നിന്നോ ഉള്ള നിലവിലെ വീഡിയോ</translation>
 <translation id="3886446263141354045"><ph name="NAME" /> എന്നയാൾക്ക് ഈ സൈറ്റ് ആക്‌സസ് ചെയ്യാനുള്ള നിങ്ങളുടെ അഭ്യർത്ഥന അയച്ചു</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ഉപയോഗിച്ച് കുറിപ്പുകൾ എടുക്കുന്നു</translation>
@@ -3078,6 +3078,7 @@
 <translation id="5117930984404104619">സന്ദർശിച്ച URL-കൾ അടക്കം വിപുലീകരണങ്ങളുടെ പ്രവർത്തനരീതി നിരീക്ഷിക്കുക</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">നിങ്ങളുടെ ഹാർഡ് ഡിസ്‌ക് നിറഞ്ഞു.  മറ്റൊരു ലൊക്കേഷനിലേക്ക് സംരക്ഷിക്കുകയോ ഹാർഡ് ഡിസ്‌കിൽ കൂടുതൽ ഇടം സൃഷ്‌ടിക്കുകയോ ചെയ്യുക.</translation>
+<translation id="5122384452788334261">നിങ്ങളുടെ ഉപകരണത്തിൽ സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് കുറവാണ്. Plugin VM ഉപയോഗിക്കാൻ കുറഞ്ഞത് <ph name="RECOMMENDED_SPACE" /> ഇടമാണ് ശുപാർശ ചെയ്യുന്നത്. ഇടം സൃഷ്‌ടിക്കാൻ, ഉപകരണ സ്റ്റോറേജിൽ നിന്ന് ഫയലുകൾ ഇല്ലാതാക്കുക.</translation>
 <translation id="5123433949759960244">ബാസ്ക്കറ്റ്ബോൾ</translation>
 <translation id="5125751979347152379">URL അസാധുവാണ്.</translation>
 <translation id="5126611267288187364">മാറ്റങ്ങൾ കാണുക</translation>
@@ -5175,6 +5176,7 @@
 <translation id="7915471803647590281">ഫീഡ്ബാക്ക് അയയ്ക്കുന്നതിന് മുമ്പ് എന്തുസംഭവിക്കുന്നുവെന്ന് ഞങ്ങളോട് ദയവായി പറയുക.</translation>
 <translation id="7918257978052780342">എൻറോൾ ചെയ്യുക</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />സെക്കൻഡ്</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" />-ന് <ph name="FILENAME" /> കാണാനാവും</translation>
 <translation id="7924358170328001543">പോർട്ട് കൈമാറുന്നതിൽ പിശക്</translation>
 <translation id="792514962475806987">ഡോക്ക് ചെയ്‌ത സൂം നില:</translation>
 <translation id="7925247922861151263">AAA പരിശോധന പരാജയപ്പെട്ടു</translation>
@@ -5338,6 +5340,7 @@
 <translation id="8118488170956489476">നിങ്ങളുടെ സ്ഥാപനമാണ് നിങ്ങളുടെ <ph name="BEGIN_LINK" />ബ്രൗസർ മാനേജ് ചെയ്യുന്നത്<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">നിങ്ങളുടെ ഡൗൺലോഡുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" />, എന്നിവയും മറ്റും</translation>
+<translation id="8120715633374652536">നിങ്ങളുടെ ഉപകരണത്തിൽ സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് കുറവാണ്. Plugin VM ഉപയോഗിക്കാൻ കുറഞ്ഞത് <ph name="MINIMUM_SPACE" /> ഇടം ആവശ്യമാണ്, കൂടാതെ <ph name="RECOMMENDED_SPACE" />-യിൽ കൂടുതൽ ഇടമാണ് ശുപാർശ ചെയ്യുന്നത്. ഇടം സൃഷ്‌ടിക്കാൻ, ഉപകരണ സ്റ്റോറേജിൽ നിന്ന് ഫയലുകൾ ഇല്ലാതാക്കുക.</translation>
 <translation id="8123590694679414600"><ph name="TIME" />-ന് നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റ് ചെയ്‌തു.
           Google Pay-ൽ നിന്നുള്ള പേയ്മെന്‍റ് രീതികളും വിലാസങ്ങളും അടങ്ങുന്നില്ല.</translation>
 <translation id="81238879832906896">മഞ്ഞയും വെളുപ്പും നിറത്തിലുള്ള പൂവ്</translation>
@@ -5387,7 +5390,6 @@
 <translation id="8186609076106987817">സെർവറിന് ഫയൽ കണ്ടെത്താൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="8188389033983459049">നിങ്ങളുടെ ഉപകരണ ക്രമീകരണം പരിശോധിച്ച്, തുടരാനായി അത് ഓണാക്കുക</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> ലേക്ക് ബന്ധിപ്പിക്കുന്നു</translation>
-<translation id="8190310225494289459">Google അക്കൗണ്ടിൽ പരിശോധിക്കുക.</translation>
 <translation id="8191230140820435481">നിങ്ങളുടെ അപ്ലിക്കേഷനുകൾ, വിപുലീകരണങ്ങൾ, തീമുകൾ എന്നിവ നിയന്ത്രിക്കുക</translation>
 <translation id="8195027750202970175">ഡിസ്‌കിലെ വലുപ്പം</translation>
 <translation id="8198323535106903877">നിങ്ങൾക്കായി ആ <ph name="NUMBER_OF_APPS" /> ആപ്പുകൾ ഞങ്ങൾ ഇൻസ്‌റ്റാൾ ചെയ്യും</translation>

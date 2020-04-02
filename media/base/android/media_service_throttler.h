@@ -100,8 +100,8 @@ class MEDIA_EXPORT MediaServiceThrottler {
   base::TimeTicks last_schedule_call_;
 
   // Callbacks used to release |crash_listener_| after 60s of inactivity.
-  base::Closure release_crash_listener_cb_;
-  base::CancelableClosure cancelable_release_crash_listener_cb_;
+  base::RepeatingClosure release_crash_listener_cb_;
+  base::CancelableRepeatingClosure cancelable_release_crash_listener_cb_;
 
   // Listens for MediaServer crashes using a watchdog MediaPlayer.
   std::unique_ptr<MediaServerCrashListener> crash_listener_;

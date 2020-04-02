@@ -60,7 +60,7 @@ const base::Feature kUseRealBuffersForPageFlipTest{
 
 // Whether we should split partially occluded quads to reduce overdraw.
 const base::Feature kSplitPartiallyOccludedQuads{
-    "SplitPartiallyOccludedQuads", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SplitPartiallyOccludedQuads", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUsePreferredIntervalForVideo{
     "UsePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};

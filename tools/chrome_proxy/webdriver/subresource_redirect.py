@@ -17,7 +17,7 @@ class SubresourceRedirect(IntegrationTest):
     test_driver.AddChromeArg('--force-fieldtrials=SubresourceRedirect/Enabled')
     test_driver.AddChromeArg(
         '--force-fieldtrial-params='
-        'SubresourceRedirect.Enabled:enable_lite_page_redirect/true')
+        'SubresourceRedirect.Enabled:enable_subresource_server_redirect/true')
     test_driver.EnableChromeFeature('OptimizationHints')
     test_driver.EnableChromeFeature('OptimizationHintsFetching')
     test_driver.EnableChromeFeature(

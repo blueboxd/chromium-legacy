@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 556 tests; 541 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 556 tests; 543 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -375,8 +375,8 @@ PASS outline-color supports animating as color of #RGBa
 PASS outline-color supports animating as color of rgba()
 PASS outline-color supports animating as color of hsla()
 PASS outline-offset (type: length) has testAddition function
-FAIL outline-offset: length assert_equals: The value should be 20px at 0ms expected "20px" but got "0px"
-FAIL outline-offset: length of rem assert_equals: The value should be 20px at 0ms expected "20px" but got "0px"
+PASS outline-offset: length
+PASS outline-offset: length of rem
 PASS outline-style (type: discrete) has testAddition function
 PASS outline-style: "dotted" onto "none"
 PASS outline-style: "none" onto "dotted"

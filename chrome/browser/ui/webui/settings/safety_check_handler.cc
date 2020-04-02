@@ -63,9 +63,12 @@ SafetyCheckHandler::UpdateStatus ConvertToUpdateStatus(
     case VersionUpdater::NEED_PERMISSION_TO_UPDATE:
     case VersionUpdater::NEARLY_UPDATED:
       return SafetyCheckHandler::UpdateStatus::kRelaunch;
-    case VersionUpdater::DISABLED:
     case VersionUpdater::DISABLED_BY_ADMIN:
       return SafetyCheckHandler::UpdateStatus::kDisabledByAdmin;
+    // The disabled state can only be returned on non Chrome-branded browsers.
+    // Since we don't know the actual state of updates, this is the same as a
+    // generic error.
+    case VersionUpdater::DISABLED:
     case VersionUpdater::FAILED:
     case VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED:
       return SafetyCheckHandler::UpdateStatus::kFailed;

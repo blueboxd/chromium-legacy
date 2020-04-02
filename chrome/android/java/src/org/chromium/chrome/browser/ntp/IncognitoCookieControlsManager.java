@@ -11,12 +11,12 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge;
 import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge.CookieControlsServiceObserver;
 import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
+import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 
 /**
@@ -60,8 +60,9 @@ public class IncognitoCookieControlsManager
     public void initialize() {
         if (mIsInitialized) return;
 
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)) {
+        if (ContentSettingsFeatureList.isInitialized()
+                && ContentSettingsFeatureList.isEnabled(
+                        ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS)) {
             mServiceBridge = new CookieControlsServiceBridge(this);
             mShowCard = true;
         }

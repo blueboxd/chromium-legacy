@@ -61,8 +61,7 @@ const int kTransportInfoSendDelayMs = 20;
 // XML namespace for the transport elements.
 const char kTransportNamespace[] = "google:remoting:webrtc";
 
-// Global minimum/maximum bitrates set for the PeerConnection.
-const int kMinBitrateBps = 1e6;  // 1 Mbps.
+// Global maximum bitrate set for the PeerConnection.
 const int kMaxBitrateBps = 1e8;  // 100 Mbps.
 
 // Frequency of polling for RTCStats. Polling is needed because WebRTC native
@@ -812,11 +811,6 @@ void WebrtcTransport::OnStatsDelivered(
   // (~600kbps).
   // Set the global bitrate caps in addition to the VideoSender bitrates. The
   // global caps affect the probing configuration used by b/w estimator.
-  // Setting min bitrate here enables padding.
-  //
-  // TODO(sergeyu): Padding needs to be enabled to workaround b/w estimator not
-  // handling spiky traffic patterns well. This won't be necessary with a
-  // better bandwidth estimator.
   int max_bitrate_bps = MaxBitrateForConnection();
   SetPeerConnectionBitrates(max_bitrate_bps);
   SetSenderBitrates(max_bitrate_bps);
@@ -841,7 +835,6 @@ int WebrtcTransport::MaxBitrateForConnection() {
 
 void WebrtcTransport::SetPeerConnectionBitrates(int max_bitrate_bps) {
   webrtc::BitrateSettings bitrate;
-  bitrate.min_bitrate_bps = kMinBitrateBps;
   bitrate.max_bitrate_bps = max_bitrate_bps;
   peer_connection()->SetBitrate(bitrate);
 }
@@ -867,7 +860,6 @@ void WebrtcTransport::SetSenderBitrates(int max_bitrate_bps) {
                << sender->id();
   }
 
-  parameters.encodings[0].min_bitrate_bps = kMinBitrateBps;
   parameters.encodings[0].max_bitrate_bps = max_bitrate_bps;
   webrtc::RTCError result = sender->SetParameters(parameters);
   DCHECK(result.ok()) << "SetParameters() failed: " << result.message();

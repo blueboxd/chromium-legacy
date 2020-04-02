@@ -3572,24 +3572,169 @@ EVENT_TYPE(COOKIE_INCLUSION_STATUS)
 // HTTP/3 events.
 // -----------------------------------------------------------------------------
 
-// Event emitted when peer created control stream type is received.
-// "stream_id": <The stream id of peer created control stream>
+// Event emitted when locally-initiated HTTP/3 control stream is created.
+//  {
+//    "stream_id": <The stream id of locally created control stream>
+//  }
+EVENT_TYPE(HTTP3_LOCAL_CONTROL_STREAM_CREATED)
+
+// Event emitted when locally-initiated QPACK encoder stream is created.
+//  {
+//    "stream_id": <The stream id of locally created QPACK encoder stream>
+//  }
+EVENT_TYPE(HTTP3_LOCAL_QPACK_ENCODER_STREAM_CREATED)
+
+// Event emitted when locally-initiated QPACK decoder stream is created.
+//  {
+//    "stream_id": <The stream id of locally created QPACK decoder stream>
+//  }
+EVENT_TYPE(HTTP3_LOCAL_QPACK_DECODER_STREAM_CREATED)
+
+// Event emitted when peer created HTTP/3 control stream type is received.
+//  {
+//    "stream_id": <The stream id of peer created control stream>
+//  }
 EVENT_TYPE(HTTP3_PEER_CONTROL_STREAM_CREATED)
 
 // Event emitted when peer created QPACK encoder stream type is received.
-// "stream_id": <The stream id of the peer created QPACK encoder stream>
+//  {
+//    "stream_id": <The stream id of the peer created QPACK encoder stream>
+//  }
 EVENT_TYPE(HTTP3_PEER_QPACK_ENCODER_STREAM_CREATED)
 
 // Event emitted when peer created QPACK decoder stream type is received.
-// "stream_id": <The stream id of the peer created QPACK decoder stream>
+//  {
+//    "stream_id": <The stream id of the peer created QPACK decoder stream>
+//  }
 EVENT_TYPE(HTTP3_PEER_QPACK_DECODER_STREAM_CREATED)
+
+// Event emitted when an HTTP/3 CANCEL_PUSH frame is received.
+//  {
+//    "push_id": <The push_id field of the CANCEL_PUSH frame>
+//  }
+EVENT_TYPE(HTTP3_CANCEL_PUSH_RECEIVED)
 
 // Event emitted when SETTINGS frame is received.
 // A list of settings will be logged by
 // <setting identifier>: <setting value>
 EVENT_TYPE(HTTP3_SETTINGS_RECEIVED)
 
-// EVENT emitted when SETTINGS frame is sent.
+// Event emitted when an HTTP/3 GOAWAY frame is received.
+//  {
+//    "stream_id": <The stream_id field of the GOAWAY frame>
+//  }
+EVENT_TYPE(HTTP3_GOAWAY_RECEIVED)
+
+// Event emitted when an HTTP/3 MAX_PUSH_ID frame is received.
+//  {
+//    "push_id": <The push_id field of the MAX_PUSH_ID frame>
+//  }
+EVENT_TYPE(HTTP3_MAX_PUSH_ID_RECEIVED)
+
+// Event emitted when an HTTP/3 PRIORITY_UPDATE frame is received.
+//  {
+//    "type": <The prioritized element type field of the PRIORITY_UPDATE frame>
+//    "prioritized_element_id": <The prioritized_element_id field of the
+//                               PRIORITY_UPDATE frame>
+//    "priority_field_value": <The priority_field_value field of the
+//                             PRIORITY_UPDATE frame>
+//  }
+EVENT_TYPE(HTTP3_PRIORITY_UPDATE_RECEIVED)
+
+// Event emitted when an HTTP/3 DATA frame header is received.
+//  {
+//    "stream_id": <The ID of the stream on which the DATA frame is received>
+//    "payload_length": <The length of DATA frame payload>
+//  }
+EVENT_TYPE(HTTP3_DATA_FRAME_RECEIVED)
+
+// Event emitted when the receipt of an HTTP/3 HEADERS frame is complete.
+//  {
+//    "stream_id": <The ID of the stream on which the HEADERS frame is received>
+//    "payload_length": <The total number of payload bytes received>
+//  }
+EVENT_TYPE(HTTP3_HEADERS_RECEIVED)
+
+// Event emitted when headers received in an HTTP/3 HEADERS frame are decoded.
+//  {
+//    "stream_id": <The ID of the stream on which the HEADERS frame had been
+//                  received>
+//    "headers": <A dictionary of the decoded headers>
+//  }
+EVENT_TYPE(HTTP3_HEADERS_DECODED)
+
+// Event emitted when the receipt of an HTTP/3 PUSH_PROMISE frame is complete.
+//  {
+//    "stream_id": <The ID of the stream on which the PUSH_PROMISE frame is
+//                  received>
+//    "push_id": <The push_id field of the PUSH_PROMISE frame>
+//  }
+EVENT_TYPE(HTTP3_PUSH_PROMISE_RECEIVED)
+
+// Event emitted when headers received in an HTTP/3 PUSH_PROMISE frame are
+// decoded.
+//  {
+//    "stream_id": <The ID of the stream on which the PUSH_PROMISE frame had
+//                  been received>
+//    "push_id": <The push_id field of the PUSH_PROMISE frame>
+//    "headers": <A dictionary of the decoded headers>
+//  }
+EVENT_TYPE(HTTP3_PUSH_PROMISE_DECODED)
+
+// Event emitted when the frame header of an HTTP/3 frame of unknown type is
+// received.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is received>
+//    "frame_type": <The frame type>
+//    "payload_length": <The length of the frame payload>
+//  }
+EVENT_TYPE(HTTP3_UNKNOWN_FRAME_RECEIVED)
+
+// Event emitted when an HTTP/3 SETTINGS frame is sent.
 // A list of settings will be logged by
 // <setting identifier>: <setting value>
 EVENT_TYPE(HTTP3_SETTINGS_SENT)
+
+// Event emitted when an HTTP/3 GOAWAY frame is sent.
+//  {
+//    "stream_id": <The stream_id field of the GOAWAY frame>
+//  }
+EVENT_TYPE(HTTP3_GOAWAY_SENT)
+
+// Event emitted when an HTTP/3 MAX_PUSH_ID frame is sent.
+//  {
+//    "push_id": <The push_id field of the MAX_PUSH_ID frame>
+//  }
+EVENT_TYPE(HTTP3_MAX_PUSH_ID_SENT)
+
+// Event emitted when an HTTP/3 PRIORITY_UPDATE frame is sent.
+//  {
+//    "type": <The prioritized element type field of the PRIORITY_UPDATE frame>
+//    "prioritized_element_id": <The prioritized_element_id field of the
+//                               PRIORITY_UPDATE frame>
+//    "priority_field_value": <The priority_field_value field of the
+//                             PRIORITY_UPDATE frame>
+//  }
+EVENT_TYPE(HTTP3_PRIORITY_UPDATE_SENT)
+
+// Event emitted when an HTTP/3 DATA frame is sent.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is sent>
+//    "payload_length": <The total payload length of the frame>
+//  }
+EVENT_TYPE(HTTP3_DATA_SENT)
+
+// Event emitted when an HTTP/3 HEADERS frame is sent.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is sent>
+//    "headers": <A dictionary of the headers sent>
+//  }
+EVENT_TYPE(HTTP3_HEADERS_SENT)
+
+// Event emitted when an HTTP/3 PUSH_PROMISE frame is sent.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is sent>
+//    "push_id": <The push_id field of the PUSH_PROMISE frame>
+//    "headers": <A dictionary of the headers sent>
+//  }
+EVENT_TYPE(HTTP3_PUSH_PROMISE_SENT)

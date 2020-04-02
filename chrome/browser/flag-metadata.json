@@ -2008,6 +2008,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "enable-sync-trusted-vault",
+    "owners": [ "mastiz@chromium.org", "//components/sync/OWNERS" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-sync-uss-nigori",
     "owners": [ "mmoskvitin@google.com", "//components/sync/OWNERS" ],
     "expiry_milestone": 83
@@ -3787,6 +3792,11 @@
   },
   {
     "name": "tab-groups-collapse",
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
+    "expiry_milestone": 84
+  },
+  {
+    "name": "tab-groups-feedback",
     "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
     "expiry_milestone": 84
   },

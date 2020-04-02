@@ -136,7 +136,6 @@ class KeyboardAccessoryMediator
             case PopupItemId.ITEM_ID_GENERATE_PASSWORD_ENTRY:
             case PopupItemId.ITEM_ID_SHOW_ACCOUNT_CARDS:
             case PopupItemId.ITEM_ID_AUTOFILL_OPTIONS:
-            case PopupItemId.ITEM_ID_LOADING_SPINNER:
                 return false;
             case PopupItemId.ITEM_ID_AUTOCOMPLETE_ENTRY:
             case PopupItemId.ITEM_ID_PASSWORD_ENTRY:

@@ -170,17 +170,6 @@
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
       是 60 秒。</translation>
 <translation id="1204263402976895730">啟用的企業印表機</translation>
-<translation id="1216890727647348501">啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽強化防護功能，並禁止使用者變更這項設定。
-
-      如果啟用這項設定，系統一律會啟用安全瀏覽強化防護功能。
-
-      如果停用這項設定，系統一律不會啟用安全瀏覽強化防護功能。
-
-      如果將這項政策設為強制套用，使用者即無法變更或覆寫 <ph name="PRODUCT_NAME" /> 中的「啟用網路詐騙和惡意軟體防護功能」設定。
-
-      如果未設定這項政策，系統在預設狀態下會停用安全瀏覽強化防護功能，但使用者可以自行啟用。
-
-      如要進一步瞭解「安全瀏覽」功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="1216919699175573511">啟用 Signed HTTP Exchange (SXG) 支援</translation>
 <translation id="1219695476179627719">指定是否要將已搭載較新版本的裝置復原至 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所設定的版本。
 
@@ -274,7 +263,6 @@
           如果不設定這項政策，內容更具體的政策行為將不會受到影響。</translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">回報作業系統的更新狀態</translation>
-<translation id="1388918874748125262">啟用安全瀏覽強化防護功能</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
 <translation id="1404043648050567997">「安全瀏覽」服務會檢查使用者要瀏覽的網站，如果是已知有惡意攻擊風險的網站，就會顯示警告網頁。如果啟用這項政策，可防止使用者忽略警告而繼續前往惡意網站。
@@ -289,19 +277,6 @@
 <translation id="1426170570389588560">設定儲存列印工作中繼資料的時間範圍 (以天為單位)</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
-<translation id="1431272318313028342">啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽功能，並禁止使用者變更這項設定。
-
-      啟用此設定時，系統一律會開啟安全瀏覽功能。
-
-      停用此設定時，系統一律不會開啟安全瀏覽功能。
-
-      不論你是啟用還是停用這項設定，使用者都無法變更或覆寫 <ph name="PRODUCT_NAME" /> 中的「阻擋釣魚網站及惡意程式」設定。
-
-      如未設定這項政策，安全瀏覽將保持啟用，但使用者可以自行決定是否要予以變更。
-
-      如要進一步瞭解安全瀏覽功能，請參閱 https://developers.google.com/safe-browsing。
-
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="1438739959477268107">預設金鑰產生設定</translation>
 <translation id="1455804070656338445">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。當密碼保護服務偵測到瀏覽器中出現警告訊息後，就會將使用者導向至這個網址，讓他們變更密碼。

@@ -64,6 +64,13 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
   // its not eligible.
   SubresourceRedirectHintsAgent::RedirectResult redirect_result_;
 
+  // Whether this resource was actually redirected to compressed server origin.
+  // This will be true when the redirect was attempted. Will be false when
+  // redirect failed due to neterrors, or redirect was not attempted (but
+  // coverage metrics recorded), or redirect was not needed when the initial URL
+  // itself is compressed origin.
+  bool did_redirect_compressed_origin_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectURLLoaderThrottle);
 };
 

@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildConfig;
 import org.chromium.base.Callback;
 import org.chromium.base.ChildBindingState;
 import org.chromium.base.CollectionUtil;
@@ -237,9 +238,17 @@ public final class ChildProcessLauncherHelperImpl {
                 // We only support sandboxed utility processes now.
                 assert ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType);
 
+                String serviceSandboxType = ContentSwitchUtils.getSwitchValue(
+                        commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE);
+
+                // Non-sandboxed utility processes only supported for non-public Chromecast.
+                if (BuildConfig.IS_CHROMECAST_BRANDING_INTERNAL
+                        && ContentSwitches.NONE_SANDBOX_TYPE.equals(serviceSandboxType)) {
+                    sandboxed = false;
+                }
+
                 // Remove sandbox restriction on network service process.
-                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(ContentSwitchUtils.getSwitchValue(
-                            commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE))) {
+                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(serviceSandboxType)) {
                     sandboxed = false;
                 }
             }

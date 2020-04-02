@@ -73,8 +73,10 @@ DownloadState DownloadImpl::GetState() {
   if (pause_pending_ || (item_->IsPaused() && !resume_pending_))
     return DownloadState::kPaused;
 
-  if (item_->GetState() == download::DownloadItem::IN_PROGRESS)
+  if (resume_pending_ ||
+      item_->GetState() == download::DownloadItem::IN_PROGRESS) {
     return DownloadState::kInProgress;
+  }
 
   return DownloadState::kFailed;
 }

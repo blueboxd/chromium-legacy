@@ -28,6 +28,10 @@ namespace sync_bookmarks {
 // truncating and the appending ' ' in some cases.
 std::string FullTitleToLegacyCanonicalizedTitle(const std::string& node_title);
 
+// Used to decide if entity needs to be reuploaded for each remote change which
+// is true if the proto field for the full title is missing.
+bool IsFullTitleReuploadNeeded(const sync_pb::BookmarkSpecifics& specifics);
+
 // TODO(crbug.com/978430): Remove argument |include_guid| once the client tag
 // hash is required to be populated during sync metadata validation upon
 // startup in SyncedBookmarkTracker::BookmarkModelMatchesMetadata().

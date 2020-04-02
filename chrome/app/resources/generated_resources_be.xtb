@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">&amp;Узнавіць</translation>
 <translation id="2136372518715274136">Увядзіце новы пароль</translation>
 <translation id="2136476978468204130">Уведзена няправільная фраза-пароль</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Файлы cookie заблакіраваны}=1{Файлы cookie заблакіраваны, 1 выключэнне}one{Файлы cookie заблакіраваны, {COUNT} выключэнне}few{Файлы cookie заблакіраваны, {COUNT} выключэнні}many{Файлы cookie заблакіраваны, {COUNT} выключэнняў}other{Файлы cookie заблакіраваны, {COUNT} выключэння}}</translation>
 <translation id="2138398485845393913">Падключэнне да "<ph name="DEVICE_NAME" />" яшчэ працягваецца</translation>
 <translation id="2139545522194199494">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, знаходзіцца пад кіраваннем адміністратара, падключыцца</translation>
 <translation id="2139919072249842737">Кнопка наладкі</translation>
@@ -1206,7 +1205,6 @@
 <translation id="2586672484245266891">Увядзіце карацейшы URL-адрас</translation>
 <translation id="2587922766792651800">Праверка пратэрмінавана</translation>
 <translation id="2588636910004461974">Прылады ад пастаўшчыка "<ph name="VENDOR_NAME" />"</translation>
-<translation id="2593594315333286814">Налады спецыяльных магчымасцей для навігацыі</translation>
 <translation id="2594999711683503743">Увядзіце URL-адрас або пошукавы запыт у Google</translation>
 <translation id="2602501489742255173">Каб пачаць, правядзіце пальцам уверх</translation>
 <translation id="2603115962224169880">Ачыстка камп'ютара</translation>
@@ -1758,7 +1756,7 @@
 <translation id="3312424061798279731">Уключаныя мовы</translation>
 <translation id="3313622045786997898">Значэнне подпісу сертыфіката</translation>
 <translation id="3315158641124845231">Схаваць: <ph name="PRODUCT_NAME" /></translation>
-<translation id="3317284582048881482">Звесткі пра школьны ўліковы запіс для бацькоў</translation>
+<translation id="3317284582048881482">Звесткі пра навучальны ўліковы запіс для бацькоў</translation>
 <translation id="3317459757438853210">Двухбаковы</translation>
 <translation id="3317678681329786349">Камера і мікрафон заблакіраваны</translation>
 <translation id="3319048459796106952">Новае &amp;акно ў рэжыме інкогніта</translation>
@@ -2216,7 +2214,6 @@
 <translation id="3873423927483480833">Паказваць PIN-коды</translation>
 <translation id="3873915545594852654">Узнікла праблема з ARC++.</translation>
 <translation id="3879748587602334249">Менеджар спамповак</translation>
-<translation id="3881321138433527084">"Бяспечны прагляд" выключаны. Каб працаваць у інтэрнэце бяспечна, уключыце гэту функцыю.</translation>
 <translation id="3882165008614329320">Існуючае відэа з камеры або файла</translation>
 <translation id="3886446263141354045">Запыт на доступ да гэтага сайта адпраўлены карыстальніку <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Нататкі ў <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -5394,7 +5391,6 @@
 <translation id="8186609076106987817">Сервер не знайшоў файл.</translation>
 <translation id="8188389033983459049">Каб працягнуць, праверце налады прылады і ўключыце яе</translation>
 <translation id="8190193592390505034">Ідзе падключэнне да правайдара <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">Выканаць праверку на старонцы Уліковага запісу Google.</translation>
 <translation id="8191230140820435481">Кіраваць праграмамі, пашырэннямі і тэмамі</translation>
 <translation id="8195027750202970175">Месца на дыску</translation>
 <translation id="8198323535106903877">Будуць усталяваны гэтыя праграмы (<ph name="NUMBER_OF_APPS" /> шт.)</translation>

@@ -51,6 +51,7 @@ import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SearchUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -930,7 +931,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
 
         if (!(mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                    && ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS))) {
+                    && ContentSettingsFeatureList.isEnabled(
+                            ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS))) {
             screen.removePreference(screen.findPreference(COOKIE_INFO_TEXT_KEY));
         }
 

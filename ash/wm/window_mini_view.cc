@@ -28,13 +28,6 @@ namespace {
 // Foreground label color.
 constexpr SkColor kLabelColor = SK_ColorWHITE;
 
-// Horizontal padding for the label, on both sides.
-constexpr int kHorizontalLabelPaddingDp = 12;
-
-// The size in dp of the window icon shown on the overview window next to the
-// title.
-constexpr gfx::Size kIconSize{24, 24};
-
 // The font delta of the window title.
 constexpr int kLabelFontDelta = 2;
 
@@ -45,6 +38,9 @@ constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
 }  // namespace
 
 WindowMiniView::~WindowMiniView() = default;
+
+constexpr gfx::Size WindowMiniView::kIconSize;
+constexpr int WindowMiniView::kHeaderPaddingDp;
 
 void WindowMiniView::SetBackdropVisibility(bool visible) {
   if (!backdrop_view_ && !visible)
@@ -121,6 +117,11 @@ gfx::Size WindowMiniView::GetPreviewViewSize() const {
   return preview_view_->GetPreferredSize();
 }
 
+gfx::ImageSkia WindowMiniView::ModifyIcon(gfx::ImageSkia* image) const {
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      *image, skia::ImageOperations::RESIZE_BEST, kIconSize);
+}
+
 WindowMiniView::WindowMiniView(aura::Window* source_window)
     : source_window_(source_window) {
   SetPaintToLayer();
@@ -134,9 +135,7 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
   views::BoxLayout* layout =
       header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kHorizontalLabelPaddingDp));
-
-  UpdateIconView();
+          kHeaderPaddingDp));
 
   title_label_ = header_view_->AddChildView(std::make_unique<views::Label>(
       wm::GetTransientRoot(source_window_)->GetTitle()));
@@ -152,6 +151,24 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
       std::make_unique<WmHighlightItemBorder>(kBackdropBorderRoundingDp);
   border_ptr_ = border.get();
   SetBorder(std::move(border));
+}
+
+void WindowMiniView::UpdateIconView() {
+  aura::Window* transient_root = wm::GetTransientRoot(source_window_);
+  // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
+  gfx::ImageSkia* icon = transient_root->GetProperty(aura::client::kAppIconKey);
+  if (!icon || icon->size().IsEmpty())
+    icon = transient_root->GetProperty(aura::client::kWindowIconKey);
+  if (!icon)
+    return;
+
+  if (!icon_view_) {
+    icon_view_ =
+        header_view_->AddChildViewAt(std::make_unique<views::ImageView>(), 0);
+  }
+
+  icon_view_->SetImage(ModifyIcon(icon));
+  icon_view_->SetSize(kIconSize);
 }
 
 gfx::Rect WindowMiniView::GetContentAreaBounds() const {
@@ -201,25 +218,6 @@ void WindowMiniView::OnWindowDestroying(aura::Window* window) {
 
 void WindowMiniView::OnWindowTitleChanged(aura::Window* window) {
   title_label_->SetText(wm::GetTransientRoot(window)->GetTitle());
-}
-
-void WindowMiniView::UpdateIconView() {
-  aura::Window* transient_root = wm::GetTransientRoot(source_window_);
-  // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
-  gfx::ImageSkia* icon = transient_root->GetProperty(aura::client::kAppIconKey);
-  if (!icon || icon->size().IsEmpty())
-    icon = transient_root->GetProperty(aura::client::kWindowIconKey);
-  if (!icon)
-    return;
-
-  if (!icon_view_) {
-    icon_view_ =
-        header_view_->AddChildView(std::make_unique<views::ImageView>());
-    icon_view_->SetSize(kIconSize);
-  }
-
-  icon_view_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
-      *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
 }
 
 }  // namespace ash

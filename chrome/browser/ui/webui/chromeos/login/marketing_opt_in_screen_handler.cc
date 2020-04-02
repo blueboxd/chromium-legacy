@@ -43,15 +43,15 @@ void MarketingOptInScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("marketingOptInScreenTitle",
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_TITLE);
-  builder->Add("marketingOptInScreenSubtitle",
-               IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE);
+  builder->AddF("marketingOptInScreenSubtitle",
+                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE,
+                ui::GetChromeOSDeviceName());
   builder->AddF("marketingOptInScreenSubtitleWithDeviceName",
                 IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE_WITH_DEVICE_NAME,
                 ui::GetChromeOSDeviceName());
-  builder->Add("marketingOptInGetPlayUpdates",
-               IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_PLAY_UPDATES);
-  builder->Add("marketingOptInGetChromebookUpdates",
-               IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES);
+  builder->AddF("marketingOptInGetChromebookUpdates",
+                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES,
+                ui::GetChromeOSDeviceName());
   builder->Add("marketingOptInScreenAllSet",
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_ALL_SET);
   builder->Add("marketingOptInA11yButtonLabel",
@@ -89,8 +89,8 @@ void MarketingOptInScreenHandler::UpdateA11yShelfNavigationButtonToggle(
 void MarketingOptInScreenHandler::Initialize() {}
 
 void MarketingOptInScreenHandler::RegisterMessages() {
-  AddCallback("login.MarketingOptInScreen.allSet",
-              &MarketingOptInScreenHandler::HandleAllSet);
+  AddCallback("login.MarketingOptInScreen.onGetStarted",
+              &MarketingOptInScreenHandler::HandleOnGetStarted);
   AddCallback(
       "login.MarketingOptInScreen.setA11yNavigationButtonsEnabled",
       &MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled);
@@ -98,16 +98,12 @@ void MarketingOptInScreenHandler::RegisterMessages() {
 
 void MarketingOptInScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* parameters) {
-  parameters->SetBoolean("enableMarketingOptIn",
-                         base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             chromeos::switches::kEnableMarketingOptInScreen));
   BaseScreenHandler::GetAdditionalParameters(parameters);
 }
 
-void MarketingOptInScreenHandler::HandleAllSet(
-    bool play_communications_opt_in,
-    bool tips_communications_opt_in) {
-  screen_->OnAllSet(play_communications_opt_in, tips_communications_opt_in);
+void MarketingOptInScreenHandler::HandleOnGetStarted(
+    bool chromebook_email_opt_in) {
+  screen_->OnGetStarted(chromebook_email_opt_in);
 }
 
 void MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled(

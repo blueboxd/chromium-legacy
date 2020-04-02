@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -224,8 +225,8 @@ void DnsProbeServiceImpl::SetUpCurrentConfigRunner() {
   bool insecure_stub_resolver_enabled;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  SystemNetworkContextManager::GetStubResolverConfig(
-      g_browser_process->local_state(), &insecure_stub_resolver_enabled,
+  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
+      &insecure_stub_resolver_enabled,
       &current_config_secure_dns_mode_, &dns_over_https_servers);
 
   net::DnsConfigOverrides current_config_overrides;

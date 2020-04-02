@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -222,12 +224,15 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
       views::CreateEmptyBorder(control_insets));
   menu_items_container->AddChildView(std::move(move_to_new_window_menu_item));
 
-  std::unique_ptr<views::LabelButton> feedback_menu_item = CreateBubbleMenuItem(
-      TAB_GROUP_HEADER_CXMENU_FEEDBACK,
-      l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
-      &button_listener_);
-  feedback_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
-  menu_items_container->AddChildView(std::move(feedback_menu_item));
+  if (base::FeatureList::IsEnabled(features::kTabGroupsFeedback)) {
+    std::unique_ptr<views::LabelButton> feedback_menu_item =
+        CreateBubbleMenuItem(TAB_GROUP_HEADER_CXMENU_FEEDBACK,
+                             l10n_util::GetStringUTF16(
+                                 IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
+                             &button_listener_);
+    feedback_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
+    menu_items_container->AddChildView(std::move(feedback_menu_item));
+  }
 
   views::FlexLayout* menu_layout_manager_ =
       SetLayoutManager(std::make_unique<views::FlexLayout>());

@@ -118,9 +118,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   // Registers the TracingSamplerProfiler as a Perfetto data source
   static void RegisterDataSource();
 
-  static void SetupStartupTracing();
-
   // For tests.
+  static void SetupStartupTracingForTesting();
   static void DeleteOnChildThreadForTesting();
   static void StartTracingForTesting(tracing::PerfettoProducer* producer);
   static void StopTracingForTesting();

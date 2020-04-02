@@ -260,7 +260,7 @@ TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
 
 TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
   auto profiler = TracingSamplerProfiler::CreateOnMainThread();
-  TracingSamplerProfiler::SetupStartupTracing();
+  TracingSamplerProfiler::SetupStartupTracingForTesting();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   auto start_tracing_ts = TRACE_TIME_TICKS_NOW();
@@ -293,7 +293,7 @@ TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
 }
 
 TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
-  TracingSamplerProfiler::SetupStartupTracing();
+  TracingSamplerProfiler::SetupStartupTracingForTesting();
   base::RunLoop().RunUntilIdle();
   auto profiler = TracingSamplerProfiler::CreateOnMainThread();
   WaitForEvents();

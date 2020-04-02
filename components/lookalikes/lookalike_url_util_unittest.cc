@@ -67,7 +67,8 @@ TEST(LookalikeUrlUtilTest, IsEditDistanceAtMostOne) {
 }
 
 TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
-  const std::set<std::string> important_tlds = {"com", "org", "edu", "gov"};
+  const std::set<std::string> important_tlds = {"com", "org", "edu", "gov",
+                                                "co"};
   const struct TargetEmbeddingHeuristicTestCase {
     const GURL url;
     bool should_trigger;

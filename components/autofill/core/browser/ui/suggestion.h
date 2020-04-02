@@ -9,11 +9,14 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "ui/gfx/image/image.h"
 
 namespace autofill {
 
 struct Suggestion {
+  using IsLoading = util::StrongAlias<class IsLoadingTag, bool>;
+
   enum MatchMode {
     PREFIX_MATCH,    // for prefix matched suggestions;
     SUBSTRING_MATCH  // for substring matched suggestions;
@@ -62,6 +65,8 @@ struct Suggestion {
   MatchMode match = PREFIX_MATCH;
   // |value| should be displayed as secondary text.
   bool is_value_secondary = false;
+  // Whether suggestion was interacted with and is now in a loading state.
+  IsLoading is_loading = IsLoading(false);
 };
 
 }  // namespace autofill

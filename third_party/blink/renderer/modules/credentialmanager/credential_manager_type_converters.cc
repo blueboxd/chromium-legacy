@@ -54,6 +54,20 @@ using blink::mojom::blink::PublicKeyCredentialRequestOptionsPtr;
 using blink::mojom::blink::PublicKeyCredentialType;
 using blink::mojom::blink::UserVerificationRequirement;
 
+namespace {
+
+static constexpr int kCoseEs256 = -7;
+static constexpr int kCoseRs256 = -257;
+
+PublicKeyCredentialParametersPtr CreatePublicKeyCredentialParameter(int alg) {
+  auto mojo_parameter = PublicKeyCredentialParameters::New();
+  mojo_parameter->type = PublicKeyCredentialType::PUBLIC_KEY;
+  mojo_parameter->algorithm_identifier = alg;
+  return mojo_parameter;
+}
+
+}  // namespace
+
 // static
 CredentialInfoPtr TypeConverter<CredentialInfoPtr, blink::Credential*>::Convert(
     blink::Credential* credential) {
@@ -391,25 +405,27 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
   }
   mojo_options->challenge = ConvertTo<Vector<uint8_t>>(options->challenge());
 
-  // Step 4 of https://w3c.github.io/webauthn/#createCredential
   if (options->hasTimeout()) {
     mojo_options->timeout =
         base::TimeDelta::FromMilliseconds(options->timeout());
   }
 
-  // Steps 8 and 9 of
-  // https://www.w3.org/TR/2017/WD-webauthn-20170505/#createCredential
+  // Steps 7 and 8 of https://w3c.github.io/webauthn/#sctn-createCredential
   Vector<PublicKeyCredentialParametersPtr> parameters;
-  for (auto& parameter : options->pubKeyCredParams()) {
-    PublicKeyCredentialParametersPtr normalized_parameter =
-        PublicKeyCredentialParameters::From(parameter.Get());
-    if (normalized_parameter) {
-      parameters.push_back(std::move(normalized_parameter));
+  if (options->pubKeyCredParams().size() == 0) {
+    parameters.push_back(CreatePublicKeyCredentialParameter(kCoseEs256));
+    parameters.push_back(CreatePublicKeyCredentialParameter(kCoseRs256));
+  } else {
+    for (auto& parameter : options->pubKeyCredParams()) {
+      PublicKeyCredentialParametersPtr normalized_parameter =
+          PublicKeyCredentialParameters::From(parameter.Get());
+      if (normalized_parameter) {
+        parameters.push_back(std::move(normalized_parameter));
+      }
     }
-  }
-
-  if (parameters.IsEmpty() && options->hasPubKeyCredParams()) {
-    return nullptr;
+    if (parameters.IsEmpty()) {
+      return nullptr;
+    }
   }
 
   mojo_options->public_key_parameters = std::move(parameters);

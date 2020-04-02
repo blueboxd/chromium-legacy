@@ -847,7 +847,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2135787500304447609">&amp;Reanudar</translation>
 <translation id="2136372518715274136">Escribe una contraseña nueva</translation>
 <translation id="2136476978468204130">La frase de contraseña que has introducido no es correcta</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Se han bloqueado las cookies.}=1{Se han bloqueado las cookies (1 excepción)}other{Se han bloqueado las cookies ({COUNT} excepciones)}}</translation>
 <translation id="2138398485845393913">La conexión con "<ph name="DEVICE_NAME" />" sigue en curso</translation>
 <translation id="2139545522194199494">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /> %, gestionada por el administrador, conectar</translation>
 <translation id="2139919072249842737">Botón de configuración</translation>
@@ -1206,7 +1205,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2586672484245266891">Introduce una URL más corta</translation>
 <translation id="2587922766792651800">Tiempo de espera agotado</translation>
 <translation id="2588636910004461974">Dispositivos de <ph name="VENDOR_NAME" /></translation>
-<translation id="2593594315333286814">Ajustes de accesibilidad para navegación</translation>
 <translation id="2594999711683503743">Busca en Google o escribe una URL</translation>
 <translation id="2602501489742255173">Desliza el dedo hacia arriba para empezar</translation>
 <translation id="2603115962224169880">Limpiar ordenador</translation>
@@ -1668,7 +1666,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3202173864863109533">El audio de esta pestaña se está silenciando.</translation>
 <translation id="3208321278970793882">Aplicación</translation>
 <translation id="3208584281581115441">Comprobar ahora</translation>
-<translation id="3208640652501208439">Puede que los recursos para deberes no estén disponibles o no se hayan cargado automáticamente
+<translation id="3208640652501208439">Puede que los recursos para deberes no estén disponibles o no se carguen automáticamente
     Es posible que tu hijo/a no tenga acceso a:
     <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />Aplicaciones y extensiones que haya instalado el centro educativo
@@ -1879,6 +1877,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="3479685872808224578">No se ha podido detectar el servidor de impresión. Revisa la dirección y vuelve a intentarlo.</translation>
 <translation id="3481268647794498892">Se abrirá en <ph name="ALTERNATIVE_BROWSER_NAME" /> dentro de <ph name="COUNTDOWN_SECONDS" /> segundos</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> puede ver los siguientes archivos:</translation>
 <translation id="3484273680291419129">Eliminando software dañino...</translation>
 <translation id="3484869148456018791">Obtener nuevo certificado</translation>
 <translation id="3487007233252413104">función anónima</translation>
@@ -1941,6 +1940,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3564848315152754834">Llave de seguridad USB</translation>
 <translation id="3566721612727112615">No se ha añadido ningún sitio web</translation>
 <translation id="3569382839528428029">¿Quieres que <ph name="APP_NAME" /> comparta tu pantalla?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> puede ver los siguientes archivos y carpetas:</translation>
 <translation id="3571734092741541777">Configurar</translation>
 <translation id="3574210789297084292">iniciar sesión</translation>
 <translation id="3574917942258583917">¿Quieres salir del modo de incógnito de todas formas?</translation>
@@ -1950,6 +1950,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo que te pertenece: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán utilizar esa impresora para imprimir.</translation>
 <translation id="357889014807611375">Wi‑Fi de uso medido</translation>
+<translation id="3582057310199111521">Introducida en un sitio web engañoso y encontrada en una quiebra de seguridad de datos</translation>
 <translation id="3584169441612580296">Leer y modificar fotos, música y otros archivos multimedia de tu ordenador</translation>
 <translation id="3586806079541226322">No se puede abrir el archivo</translation>
 <translation id="3586931643579894722">Ocultar detalles</translation>
@@ -2213,7 +2214,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3873423927483480833">Mostrar PINs</translation>
 <translation id="3873915545594852654">Ha habido un problema con ARC++.</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
-<translation id="3881321138433527084">La Navegación Segura está desactivada. Actívala para mantener la seguridad en la Web.</translation>
 <translation id="3882165008614329320">Vídeo de la cámara o un archivo</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio web se ha enviado a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tomando notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -3081,6 +3081,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5117930984404104619">Controlar el comportamiento de otras extensiones, incluidas las URL visitadas</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda el archivo en otra ubicación o libera espacio en el disco duro.</translation>
+<translation id="5122384452788334261">Queda poco espacio de almacenamiento en el dispositivo. Se recomienda tener al menos <ph name="RECOMMENDED_SPACE" /> de espacio libre para usar Plugin VM. Para liberar espacio, elimina archivos del almacenamiento del dispositivo.</translation>
 <translation id="5123433949759960244">Balón de baloncesto</translation>
 <translation id="5125751979347152379">La URL no es válida.</translation>
 <translation id="5126611267288187364">Ver cambios</translation>
@@ -3135,7 +3136,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5204967432542742771">Escribe tu contraseña</translation>
 <translation id="5206215183583316675">¿Quieres eliminar el certificado <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Error al importar el certificado</translation>
-<translation id="5209307736170827035">Los datos de tu hijo en Classroom estarán protegidos. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
+<translation id="5209307736170827035">Los datos de tu hijo/a en Classroom estarán protegidos. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">No se ha encontrado ningún dispositivo.</translation>
 <translation id="5210990770352357081">No se ha podido desinstalar Plugin VM</translation>
 <translation id="5213481667492808996">Ya puedes usar tu servicio de datos de "<ph name="NAME" />"</translation>
@@ -5176,6 +5177,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7915471803647590281">Debes describir el error.</translation>
 <translation id="7918257978052780342">Registrar</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> puede ver <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">No se ha podido redirigir el puerto</translation>
 <translation id="792514962475806987">Nivel de zoom fijado:</translation>
 <translation id="7925247922861151263">Error de comprobación de AAA</translation>
@@ -5339,6 +5341,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8118488170956489476">Tu organización es la encargada de <ph name="BEGIN_LINK" />gestionar tu navegador<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Gestionar tus descargas</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> y otros permisos</translation>
+<translation id="8120715633374652536">Queda poco espacio de almacenamiento en el dispositivo. Se necesitan al menos <ph name="MINIMUM_SPACE" /> de espacio libre para usar Plugin VM, pero se recomienda tener más de <ph name="RECOMMENDED_SPACE" />. Para liberar espacio, elimina archivos del almacenamiento del dispositivo.</translation>
 <translation id="8123590694679414600">Los datos se cifraron con tu frase de contraseña de sincronización el
           <ph name="TIME" />. El cifrado no incluye los métodos de pago ni las direcciones de Google Pay.</translation>
 <translation id="81238879832906896">Flor blanca y amarilla</translation>
@@ -5388,7 +5391,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8186609076106987817">El servidor no ha podido encontrar el archivo.</translation>
 <translation id="8188389033983459049">Comprueba los ajustes del dispositivo y actívalo para continuar</translation>
 <translation id="8190193592390505034">Conectando con <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">Comprobar en la cuenta de Google.</translation>
 <translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
 <translation id="8195027750202970175">Tamaño en disco</translation>
 <translation id="8198323535106903877">Vamos a instalarte estas <ph name="NUMBER_OF_APPS" /> aplicaciones</translation>

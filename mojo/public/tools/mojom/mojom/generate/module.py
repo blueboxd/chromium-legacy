@@ -12,6 +12,7 @@
 # method = interface.AddMethod('Tat', 0)
 # method.AddParameter('baz', 0, mojom.INT32)
 
+import pickle
 
 # We use our own version of __repr__ when displaying the AST, as the
 # AST currently doesn't capture which nodes are reference (e.g. to
@@ -100,6 +101,19 @@ class Kind(object):
     # Gives us a decent __repr__ for all kinds.
     return self.Repr()
 
+  def __eq__(self, rhs):
+    # pylint: disable=unidiomatic-typecheck
+    return (type(self) == type(rhs)
+            and (self.spec, self.parent_kind) == (rhs.spec, rhs.parent_kind))
+
+  def __hash__(self):
+    # TODO(crbug.com/1060471): Remove this and other __hash__ methods on Kind
+    # and its subclasses. This is to support existing generator code which uses
+    # some primitive Kinds as dict keys. The default hash (object identity)
+    # breaks these dicts when a pickled Module instance is unpickled and used
+    # during a subsequent run of the parser.
+    return hash((self.spec, self.parent_kind))
+
 
 class ReferenceKind(Kind):
   """ReferenceKind represents pointer and handle types.
@@ -172,6 +186,14 @@ class ReferenceKind(Kind):
       self.shared_definition[name] = value
 
     setattr(cls, name, property(Get, Set))
+
+  def __eq__(self, rhs):
+    return (isinstance(rhs, ReferenceKind)
+            and super(ReferenceKind, self).__eq__(rhs)
+            and self.is_nullable == rhs.is_nullable)
+
+  def __hash__(self):
+    return hash((super(ReferenceKind, self).__hash__(), self.is_nullable))
 
 
 # Initialize the set of primitive types. These can be accessed by clients.
@@ -246,10 +268,18 @@ class NamedValue(object):
             (self.parent_kind and
              (self.parent_kind.mojom_name + '.') or "") + self.mojom_name)
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, NamedValue)
+            and (self.parent_kind, self.mojom_name) == (rhs.parent_kind,
+                                                        rhs.mojom_name))
+
 
 class BuiltinValue(object):
   def __init__(self, value):
     self.value = value
+
+  def __eq__(self, rhs):
+    return isinstance(rhs, BuiltinValue) and self.value == rhs.value
 
 
 class ConstantValue(NamedValue):
@@ -289,6 +319,12 @@ class Constant(object):
   def Stylize(self, stylizer):
     self.name = stylizer.StylizeConstant(self.mojom_name)
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Constant)
+            and (self.mojom_name, self.kind, self.value,
+                 self.parent_kind) == (rhs.mojom_name, rhs.kind, rhs.value,
+                                       rhs.parent_kind))
+
 
 class Field(object):
   def __init__(self,
@@ -319,6 +355,12 @@ class Field(object):
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
         if self.attributes else None
+
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Field)
+            and (self.mojom_name, self.kind, self.ordinal, self.default,
+                 self.attributes) == (rhs.mojom_name, rhs.kind, rhs.ordinal,
+                                      rhs.default, rhs.attributes))
 
 
 class StructField(Field):
@@ -401,6 +443,15 @@ class Struct(ReferenceKind):
     for constant in self.constants:
       constant.Stylize(stylizer)
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Struct) and
+            (self.mojom_name, self.native_only, self.fields, self.constants,
+             self.attributes) == (rhs.mojom_name, rhs.native_only, rhs.fields,
+                                  rhs.constants, rhs.attributes))
+
+  def __hash__(self):
+    return id(self)
+
 
 class Union(ReferenceKind):
   """A union of several kinds.
@@ -447,6 +498,14 @@ class Union(ReferenceKind):
     for field in self.fields:
       field.Stylize(stylizer)
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Union) and
+            (self.mojom_name, self.fields,
+             self.attributes) == (rhs.mojom_name, rhs.fields, rhs.attributes))
+
+  def __hash__(self):
+    return id(self)
+
 
 class Array(ReferenceKind):
   """An array.
@@ -483,6 +542,13 @@ class Array(ReferenceKind):
           'length': False,
           'is_nullable': False
       })
+
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Array)
+            and (self.kind, self.length) == (rhs.kind, rhs.length))
+
+  def __hash__(self):
+    return id(self)
 
 
 class Map(ReferenceKind):
@@ -521,6 +587,13 @@ class Map(ReferenceKind):
     else:
       return GenericRepr(self, {'key_kind': True, 'value_kind': True})
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Map) and
+            (self.key_kind, self.value_kind) == (rhs.key_kind, rhs.value_kind))
+
+  def __hash__(self):
+    return id(self)
+
 
 class PendingRemote(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
@@ -535,6 +608,12 @@ class PendingRemote(ReferenceKind):
     else:
       ReferenceKind.__init__(self)
     self.kind = kind
+
+  def __eq__(self, rhs):
+    return isinstance(rhs, PendingRemote) and self.kind == rhs.kind
+
+  def __hash__(self):
+    return id(self)
 
 
 class PendingReceiver(ReferenceKind):
@@ -551,6 +630,12 @@ class PendingReceiver(ReferenceKind):
       ReferenceKind.__init__(self)
     self.kind = kind
 
+  def __eq__(self, rhs):
+    return isinstance(rhs, PendingReceiver) and self.kind == rhs.kind
+
+  def __hash__(self):
+    return id(self)
+
 
 class PendingAssociatedRemote(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
@@ -565,6 +650,12 @@ class PendingAssociatedRemote(ReferenceKind):
     else:
       ReferenceKind.__init__(self)
     self.kind = kind
+
+  def __eq__(self, rhs):
+    return isinstance(rhs, PendingAssociatedRemote) and self.kind == rhs.kind
+
+  def __hash__(self):
+    return id(self)
 
 
 class PendingAssociatedReceiver(ReferenceKind):
@@ -581,6 +672,12 @@ class PendingAssociatedReceiver(ReferenceKind):
       ReferenceKind.__init__(self)
     self.kind = kind
 
+  def __eq__(self, rhs):
+    return isinstance(rhs, PendingAssociatedReceiver) and self.kind == rhs.kind
+
+  def __hash__(self):
+    return id(self)
+
 
 class InterfaceRequest(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
@@ -594,6 +691,12 @@ class InterfaceRequest(ReferenceKind):
     else:
       ReferenceKind.__init__(self)
     self.kind = kind
+
+  def __eq__(self, rhs):
+    return isinstance(rhs, InterfaceRequest) and self.kind == rhs.kind
+
+  def __hash__(self):
+    return id(self)
 
 
 class AssociatedInterfaceRequest(ReferenceKind):
@@ -610,6 +713,12 @@ class AssociatedInterfaceRequest(ReferenceKind):
     else:
       ReferenceKind.__init__(self)
     self.kind = kind.kind if kind is not None else None
+
+  def __eq__(self, rhs):
+    return isinstance(rhs, AssociatedInterfaceRequest) and self.kind == rhs.kind
+
+  def __hash__(self):
+    return id(self)
 
 
 class Parameter(object):
@@ -638,6 +747,12 @@ class Parameter(object):
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
         if self.attributes else None
+
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Parameter)
+            and (self.mojom_name, self.ordinal, self.kind, self.default,
+                 self.attributes) == (rhs.mojom_name, rhs.ordinal, rhs.kind,
+                                      rhs.default, rhs.attributes))
 
 
 class Method(object):
@@ -707,6 +822,13 @@ class Method(object):
     return self.attributes.get(ATTRIBUTE_SYNC) \
         if self.attributes else None
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Method) and
+            (self.mojom_name, self.ordinal, self.parameters,
+             self.response_parameters,
+             self.attributes) == (rhs.mojom_name, rhs.ordinal, rhs.parameters,
+                                  rhs.response_parameters, rhs.attributes))
+
 
 class Interface(ReferenceKind):
   ReferenceKind.AddSharedProperty('mojom_name')
@@ -753,6 +875,15 @@ class Interface(ReferenceKind):
     for constant in self.constants:
       constant.Stylize(stylizer)
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Interface)
+            and (self.mojom_name, self.methods, self.enums, self.constants,
+                 self.attributes) == (rhs.mojom_name, rhs.methods, rhs.enums,
+                                      rhs.constants, rhs.attributes))
+
+  def __hash__(self):
+    return id(self)
+
 
 class AssociatedInterface(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
@@ -767,6 +898,12 @@ class AssociatedInterface(ReferenceKind):
     else:
       ReferenceKind.__init__(self)
     self.kind = kind
+
+  def __eq__(self, rhs):
+    return isinstance(rhs, AssociatedInterface) and self.kind == rhs.kind
+
+  def __hash__(self):
+    return id(self)
 
 
 class EnumField(object):
@@ -788,6 +925,12 @@ class EnumField(object):
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
         if self.attributes else None
+
+  def __eq__(self, rhs):
+    return (isinstance(rhs, EnumField)
+            and (self.mojom_name, self.value, self.attributes,
+                 self.numeric_value) == (rhs.mojom_name, rhs.value,
+                                         rhs.attributes, rhs.numeric_value))
 
 
 class Enum(Kind):
@@ -821,6 +964,16 @@ class Enum(Kind):
     return self.attributes.get(ATTRIBUTE_EXTENSIBLE, False) \
         if self.attributes else False
 
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Enum) and
+            (self.mojom_name, self.native_only, self.fields, self.attributes,
+             self.min_value,
+             self.max_value) == (rhs.mojom_name, rhs.native_only, rhs.fields,
+                                 rhs.attributes, rhs.min_value, rhs.max_value))
+
+  def __hash__(self):
+    return id(self)
+
 
 class Module(object):
   def __init__(self, path=None, mojom_namespace=None, attributes=None):
@@ -840,6 +993,14 @@ class Module(object):
   def __repr__(self):
     # Gives us a decent __repr__ for modules.
     return self.Repr()
+
+  def __eq__(self, rhs):
+    return (isinstance(rhs, Module) and
+            (self.path, self.attributes, self.mojom_namespace, self.imports,
+             self.constants, self.enums, self.structs, self.unions,
+             self.interfaces) == (rhs.path, rhs.attributes, rhs.mojom_namespace,
+                                  rhs.imports, rhs.constants, rhs.enums,
+                                  rhs.structs, rhs.unions, rhs.interfaces))
 
   def Repr(self, as_ref=True):
     if as_ref:
@@ -886,6 +1047,15 @@ class Module(object):
 
     for imported_module in self.imports:
       imported_module.Stylize(stylizer)
+
+  def Dump(self, f):
+    pickle.dump(self, f, 2)
+
+  @classmethod
+  def Load(cls, f):
+    result = pickle.load(f)
+    assert isinstance(result, Module)
+    return result
 
 
 def IsBoolKind(kind):

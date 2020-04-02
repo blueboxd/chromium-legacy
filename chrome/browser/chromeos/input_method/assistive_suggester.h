@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/input_method/emoji_suggester.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
@@ -59,6 +60,7 @@ class AssistiveSuggester {
   bool IsSuggestionShown();
 
   PersonalInfoSuggester personal_info_suggester_;
+  EmojiSuggester emoji_suggester_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;

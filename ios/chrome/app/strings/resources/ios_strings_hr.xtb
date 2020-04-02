@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">Nema stavki</translation>
 <translation id="1692118695553449118">Sinkronizacija je uključena</translation>
 <translation id="1700629756560807968">Broj odabranih oznaka: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="1727016672946926483">Dijeli kao QR kod</translation>
 <translation id="1740468249224277719">Dodirnite dvaput da biste instalirali.</translation>
 <translation id="1746815479209538200">Da biste pregledavali web, dodajte novu karticu.</translation>
 <translation id="1752547299766512813">Spremi zaporke</translation>
@@ -486,7 +485,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="734758817008927353">Opcije spremanja kartice</translation>
 <translation id="7348502496356775519">Označi</translation>
 <translation id="7383797227493018512">Popis za čitanje</translation>
-<translation id="7392048574806661116">Odjava i brisanje sinkroniziranih podataka</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906">Nepročitanih članaka: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="7425346204213733349">Promjene oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši postojeći podaci ostat će pohranjeni na vašem Google računu.</translation>

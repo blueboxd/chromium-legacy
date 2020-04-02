@@ -77,5 +77,6 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(InternetPageBrowserProxyImpl);
 
+  // #cr_define_end
   return {InternetPageBrowserProxy, InternetPageBrowserProxyImpl};
 });

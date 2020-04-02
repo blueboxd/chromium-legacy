@@ -105,6 +105,7 @@
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
@@ -357,7 +358,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SadTabHelper::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(features::kSyncEncryptionKeysWebApi)) {
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncSupportTrustedVaultPassphrase)) {
     SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
   }
   TabDialogs::CreateForWebContents(web_contents);

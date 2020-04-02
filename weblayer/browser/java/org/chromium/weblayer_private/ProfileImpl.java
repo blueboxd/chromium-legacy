@@ -4,12 +4,14 @@
 
 package org.chromium.weblayer_private;
 
+import android.content.Intent;
 import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.interfaces.BrowsingDataType;
@@ -33,7 +35,9 @@ public final class ProfileImpl extends IProfile.Stub {
     private CookieManagerImpl mCookieManager;
     private Runnable mOnDestroyCallback;
     private boolean mBeingDeleted;
+    private boolean mDownloadsInitialized;
     private DownloadCallbackProxy mDownloadCallbackProxy;
+    private List<Intent> mDownloadNotificationIntents = new ArrayList<>();
 
     public static void enumerateAllProfileNames(ValueCallback<String[]> callback) {
         final Callback<String[]> baseCallback = (String[] names) -> callback.onReceiveValue(names);
@@ -45,10 +49,11 @@ public final class ProfileImpl extends IProfile.Stub {
             throw new IllegalArgumentException("Name can only contain words: " + name);
         }
         mName = name;
-        mNativeProfile = ProfileImplJni.get().createProfile(name);
+        mNativeProfile = ProfileImplJni.get().createProfile(name, ProfileImpl.this);
         mCookieManager =
                 new CookieManagerImpl(ProfileImplJni.get().getCookieManager(mNativeProfile));
         mOnDestroyCallback = onDestroyCallback;
+        mDownloadCallbackProxy = new DownloadCallbackProxy(mName, mNativeProfile);
     }
 
     @Override
@@ -108,6 +113,15 @@ public final class ProfileImpl extends IProfile.Stub {
         return mName.isEmpty();
     }
 
+    public boolean areDownloadsInitialized() {
+        return mDownloadsInitialized;
+    }
+
+    public void addDownloadNotificationIntent(Intent intent) {
+        mDownloadNotificationIntents.add(intent);
+        ProfileImplJni.get().ensureBrowserContextInitialized(mNativeProfile);
+    }
+
     @Override
     public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
             long toMillis, @NonNull IObjectWrapper completionCallback) {
@@ -127,17 +141,7 @@ public final class ProfileImpl extends IProfile.Stub {
 
     @Override
     public void setDownloadCallbackClient(IDownloadCallbackClient client) {
-        StrictModeWorkaround.apply();
-        if (client != null) {
-            if (mDownloadCallbackProxy == null) {
-                mDownloadCallbackProxy = new DownloadCallbackProxy(mNativeProfile, client);
-            } else {
-                mDownloadCallbackProxy.setClient(client);
-            }
-        } else if (mDownloadCallbackProxy != null) {
-            mDownloadCallbackProxy.destroy();
-            mDownloadCallbackProxy = null;
-        }
+        mDownloadCallbackProxy.setClient(client);
     }
 
     @Override
@@ -176,15 +180,26 @@ public final class ProfileImpl extends IProfile.Stub {
         return mNativeProfile;
     }
 
+    @CalledByNative
+    public void downloadsInitialized() {
+        mDownloadsInitialized = true;
+
+        for (Intent intent : mDownloadNotificationIntents) {
+            DownloadImpl.handleIntent(intent);
+        }
+        mDownloadNotificationIntents.clear();
+    }
+
     @NativeMethods
     interface Natives {
         void enumerateAllProfileNames(Callback<String[]> callback);
-        long createProfile(String name);
+        long createProfile(String name, ProfileImpl caller);
         void deleteProfile(long profile);
         boolean deleteDataFromDisk(long nativeProfileImpl, Runnable completionCallback);
         void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
                 long fromMillis, long toMillis, Runnable callback);
         void setDownloadDirectory(long nativeProfileImpl, String directory);
         long getCookieManager(long nativeProfileImpl);
+        void ensureBrowserContextInitialized(long nativeProfileImpl);
     }
 }

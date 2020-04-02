@@ -147,23 +147,23 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
   IsolatedPrerenderTabHelper* tab_helper() const { return tab_helper_.get(); }
 
   int64_t ordered_eligible_pages_bitmask() const {
-    return tab_helper_->metrics().ordered_eligible_pages_bitmask;
+    return tab_helper_->metrics().ordered_eligible_pages_bitmask_;
   }
 
   size_t prefetch_eligible_count() const {
-    return tab_helper_->metrics().prefetch_eligible_count;
+    return tab_helper_->metrics().prefetch_eligible_count_;
   }
 
   size_t prefetch_attempted_count() const {
-    return tab_helper_->metrics().prefetch_attempted_count;
+    return tab_helper_->metrics().prefetch_attempted_count_;
   }
 
   size_t prefetch_successful_count() const {
-    return tab_helper_->metrics().prefetch_successful_count;
+    return tab_helper_->metrics().prefetch_successful_count_;
   }
 
   size_t prefetch_total_redirect_count() const {
-    return tab_helper_->metrics().prefetch_total_redirect_count;
+    return tab_helper_->metrics().prefetch_total_redirect_count_;
   }
 
   void VerifyNIK(const net::NetworkIsolationKey& key) {

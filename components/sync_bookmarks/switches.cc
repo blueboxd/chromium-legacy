@@ -18,4 +18,7 @@ const base::Feature kUpdateBookmarkGUIDWithNodeReplacement{
 const base::Feature kMergeBookmarksUsingGUIDs{
     "MergeBookmarksUsingGUIDs", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSyncReuploadBookmarkFullTitles{
+    "SyncReuploadBookmarkFullTitles", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

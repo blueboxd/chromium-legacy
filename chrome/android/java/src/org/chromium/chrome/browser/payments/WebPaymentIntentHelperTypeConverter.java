@@ -12,6 +12,9 @@ import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentShippingOption;
+import org.chromium.payments.mojom.PaymentShippingType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +26,7 @@ import java.util.Map;
  * org.chromium.payments.mojom to their counterparts in WebPaymentIntentHelperType.
  */
 public final class WebPaymentIntentHelperTypeConverter {
+    @Nullable
     public static WebPaymentIntentHelperType.PaymentCurrencyAmount fromMojoPaymentCurrencyAmount(
             @Nullable PaymentCurrencyAmount currencyAmount) {
         if (currencyAmount == null) return null;
@@ -30,6 +34,7 @@ public final class WebPaymentIntentHelperTypeConverter {
                 /*currency=*/currencyAmount.currency, /*value=*/currencyAmount.value);
     }
 
+    @Nullable
     public static WebPaymentIntentHelperType.PaymentItem fromMojoPaymentItem(
             @Nullable PaymentItem item) {
         if (item == null) return null;
@@ -37,6 +42,7 @@ public final class WebPaymentIntentHelperTypeConverter {
                 fromMojoPaymentCurrencyAmount(item.amount));
     }
 
+    @Nullable
     public static WebPaymentIntentHelperType.PaymentDetailsModifier fromMojoPaymentDetailsModifier(
             @Nullable PaymentDetailsModifier detailsModifier) {
         if (detailsModifier == null) return null;
@@ -45,6 +51,7 @@ public final class WebPaymentIntentHelperTypeConverter {
                 fromMojoPaymentMethodData(detailsModifier.methodData));
     }
 
+    @Nullable
     public static WebPaymentIntentHelperType.PaymentMethodData fromMojoPaymentMethodData(
             @Nullable PaymentMethodData methodData) {
         if (methodData == null) return null;
@@ -53,6 +60,7 @@ public final class WebPaymentIntentHelperTypeConverter {
                 /*stringifiedData=*/methodData.stringifiedData);
     }
 
+    @Nullable
     public static Map<String, WebPaymentIntentHelperType.PaymentMethodData>
     fromMojoPaymentMethodDataMap(@Nullable Map<String, PaymentMethodData> methodDataMap) {
         if (methodDataMap == null) return null;
@@ -66,6 +74,7 @@ public final class WebPaymentIntentHelperTypeConverter {
         return compatibleMethodDataMap;
     }
 
+    @Nullable
     public static Map<String, WebPaymentIntentHelperType.PaymentDetailsModifier>
     fromMojoPaymentDetailsModifierMap(@Nullable Map<String, PaymentDetailsModifier> modifiers) {
         if (modifiers == null) return null;
@@ -79,6 +88,7 @@ public final class WebPaymentIntentHelperTypeConverter {
         return compatibleModifiers;
     }
 
+    @Nullable
     public static List<WebPaymentIntentHelperType.PaymentItem> fromMojoPaymentItems(
             @Nullable List<PaymentItem> paymentItems) {
         if (paymentItems == null) return null;
@@ -88,5 +98,51 @@ public final class WebPaymentIntentHelperTypeConverter {
                 -> compatiblePaymentItems.add(
                         WebPaymentIntentHelperTypeConverter.fromMojoPaymentItem(element)));
         return compatiblePaymentItems;
+    }
+
+    @Nullable
+    public static WebPaymentIntentHelperType.PaymentShippingOption fromMojoPaymentShippingOption(
+            @Nullable PaymentShippingOption shippingOption) {
+        if (shippingOption == null) return null;
+        return new WebPaymentIntentHelperType.PaymentShippingOption(shippingOption.id,
+                shippingOption.label, shippingOption.amount.currency, shippingOption.amount.value,
+                shippingOption.selected);
+    }
+
+    @Nullable
+    public static List<WebPaymentIntentHelperType.PaymentShippingOption> fromMojoShippingOptionList(
+            @Nullable List<PaymentShippingOption> shippingOptions) {
+        if (shippingOptions == null) return null;
+        List<WebPaymentIntentHelperType.PaymentShippingOption> shippingOptionList =
+                new ArrayList<>();
+        CollectionUtil.forEach(shippingOptions,
+                element
+                -> shippingOptionList.add(
+                        WebPaymentIntentHelperTypeConverter.fromMojoPaymentShippingOption(
+                                element)));
+        return shippingOptionList;
+    }
+
+    @Nullable
+    public static WebPaymentIntentHelperType.PaymentOptions fromMojoPaymentOptions(
+            @Nullable PaymentOptions paymentOptions) {
+        if (paymentOptions == null) return null;
+        String shippingType = null;
+        if (paymentOptions.requestShipping) {
+            switch (paymentOptions.shippingType) {
+                case PaymentShippingType.SHIPPING:
+                    shippingType = "shipping";
+                    break;
+                case PaymentShippingType.DELIVERY:
+                    shippingType = "delivery";
+                    break;
+                case PaymentShippingType.PICKUP:
+                    shippingType = "pickup";
+                    break;
+            }
+        }
+        return new WebPaymentIntentHelperType.PaymentOptions(paymentOptions.requestPayerName,
+                paymentOptions.requestPayerEmail, paymentOptions.requestPayerPhone,
+                paymentOptions.requestShipping, shippingType);
     }
 }

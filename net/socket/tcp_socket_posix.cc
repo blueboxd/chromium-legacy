@@ -654,8 +654,9 @@ bool TCPSocketPosix::GetEstimatedRoundTripTime(base::TimeDelta* out_rtt) const {
     return false;
   *out_rtt = rtt;
   return true;
-#endif  // defined(TCP_INFO)
+#else
   return false;
+#endif  // defined(TCP_INFO)
 }
 
 }  // namespace net

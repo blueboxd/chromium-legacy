@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/history/core/browser/history_service.h"
@@ -94,6 +95,13 @@ IsolatedPrerenderPageLoadMetricsObserver::OnCommit(
   if (profile->IsOffTheRecord())
     return STOP_OBSERVING;
 
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(
+          navigation_handle->GetWebContents());
+  if (!tab_helper)
+    return STOP_OBSERVING;
+  prefetch_usage_ = tab_helper->prefetch_usage();
+
   data_saver_enabled_at_commit_ = data_reduction_proxy::
       DataReductionProxySettings::IsDataSaverEnabledByUser(
           profile->IsOffTheRecord(), profile->GetPrefs());
@@ -117,6 +125,23 @@ IsolatedPrerenderPageLoadMetricsObserver::OnCommit(
   }
 
   return CONTINUE_OBSERVING;
+}
+
+void IsolatedPrerenderPageLoadMetricsObserver::OnEventOccurred(
+    const void* const event_key) {
+  if (event_key == IsolatedPrerenderTabHelper::PrefetchingLikelyEventKey()) {
+    GetPrefetchMetrics();
+  }
+}
+
+void IsolatedPrerenderPageLoadMetricsObserver::GetPrefetchMetrics() {
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(
+          GetDelegate().GetWebContents());
+  if (!tab_helper)
+    return;
+
+  prefetch_metrics_ = tab_helper->page_->metrics_;
 }
 
 void IsolatedPrerenderPageLoadMetricsObserver::OnOriginLastVisitResult(
@@ -266,6 +291,21 @@ void IsolatedPrerenderPageLoadMetricsObserver::RecordMetrics() {
       std::min(kUkmCssJsBeforeFcpMax, loaded_css_js_from_network_before_fcp_);
   builder.Setcount_css_js_loaded_network_before_fcp(
       ukm_loaded_css_js_from_network_before_fcp);
+
+  if (prefetch_metrics_ && prefetch_metrics_->prefetch_eligible_count_ > 0) {
+    builder.Setordered_eligible_pages_bitmask(
+        prefetch_metrics_->ordered_eligible_pages_bitmask_);
+    builder.Setprefetch_eligible_count(
+        prefetch_metrics_->prefetch_eligible_count_);
+    builder.Setprefetch_attempted_count(
+        prefetch_metrics_->prefetch_attempted_count_);
+    builder.Setprefetch_successful_count(
+        prefetch_metrics_->prefetch_successful_count_);
+  }
+
+  if (prefetch_usage_) {
+    builder.Setprefetch_usage(static_cast<int>(*prefetch_usage_));
+  }
 
   builder.Record(ukm::UkmRecorder::Get());
 }

@@ -139,6 +139,10 @@ class IsolatedPrerenderPageLoadMetricsObserverTest
 
  private:
   void ResetTest() {
+    if (!IsolatedPrerenderTabHelper::FromWebContents(web_contents())) {
+      IsolatedPrerenderTabHelper::CreateForWebContents(web_contents());
+    }
+
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
     timing_.navigation_start = base::Time::FromDoubleT(2);
     timing_.response_start = base::TimeDelta::FromSeconds(3);

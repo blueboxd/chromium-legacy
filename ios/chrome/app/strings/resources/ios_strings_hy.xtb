@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">Տարրեր չկան</translation>
 <translation id="1692118695553449118">Համաժամացումը միացված է</translation>
 <translation id="1700629756560807968">Ընտրվել է <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> էջանիշ</translation>
-<translation id="1727016672946926483">Ուղարկել որպես QR կոդ</translation>
 <translation id="1740468249224277719">Կրկնակի հպեք՝ տեղադրելու համար:</translation>
 <translation id="1746815479209538200">Կայքէջեր այցելելու համար ավելացրեք նոր ներդիր:</translation>
 <translation id="1752547299766512813">Պահել գաղտնաբառերը</translation>
@@ -486,7 +485,6 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="734758817008927353">Քարտը պահելու կարգավորումներ</translation>
 <translation id="7348502496356775519">Էջանիշ</translation>
 <translation id="7383797227493018512">Ընթերցանության ցանկ</translation>
-<translation id="7392048574806661116">Դուրս եկեք հաշվից և մաքրեք համաժամացված տվյալները</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> չընթերցված հոդված</translation>
 <translation id="7425346204213733349">Ձեր էջանիշների, այցելությունների պատմության, գաղտնաբառերի և այլ կարգավորումների փոփոխությունները չեն համաժամացվի ձեր Google հաշվի հետ: Այդուհանդերձ, ձեր առկա տվյալները կպահվեն ձեր Google հաշվում:</translation>

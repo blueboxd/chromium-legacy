@@ -134,6 +134,11 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
           Se questo criterio non viene impostato, la funzione di lettura vocale viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la funzione di lettura vocale in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutti gli utenti.
 
           Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
+<translation id="1128717055763152639">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali gli aggiornamenti dei contenuti misti bloccabili facoltativi verranno disattivati.
+
+          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati; inoltre, gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1128903365609589950">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
 
       Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--disk-cache-dir". Per evitare perdite di dati o altri errori imprevisti, la norma non deve essere impostata su una directory radice del volume o su una directory utilizzata per altri scopi, poiché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
@@ -167,17 +172,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1204263402976895730">Stampanti aziendali attive</translation>
-<translation id="1216890727647348501">Consente di attivare la funzionalità di protezione avanzata di Navigazione sicura in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare l'impostazione.
-
-      Se attivi questa impostazione, la funzionalità di protezione avanzata di Navigazione sicura è sempre attiva.
-
-      Se disattivi questa impostazione, la funzionalità di protezione avanzata di Navigazione sicura non è mai attiva.
-
-      Se imposti questo criterio come obbligatorio, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" di <ph name="PRODUCT_NAME" />.
-
-      Se questo criterio non viene impostato, la funzionalità di protezione avanzata di Navigazione sicura sarà disattivata per impostazione predefinita, ma l'utente potrà attivarla.
-
-      Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.</translation>
 <translation id="1216919699175573511">Attiva il supporto per Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Consente di specificare se il dispositivo deve eseguire il rollback alla versione impostata da <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> nel caso in cui sia già in esecuzione una versione successiva.
 
@@ -263,6 +257,11 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
       Se la norma viene disattivata, l'Assistente Google non potrà accedere al contesto dello schermo.
       Se non viene impostata, gli utenti possono decidere se consentire o meno all'Assistente Google di accedere al contesto dello schermo.</translation>
 <translation id="1376119291123231789">Attiva modalità di ricarica avanzata della batteria</translation>
+<translation id="1376298389964661475">Consente di impostare un elenco di pattern URL che indicano i siti autorizzati a visualizzare notifiche.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultNotificationsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1377134027840513298">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Questo criterio consente di fornire un valore di riserva per i criteri più specifici <ph name="IDLE_ACTION_AC_POLICY_NAME" /> e <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />. Se questo criterio viene impostato, il suo valore viene utilizzato se non viene impostato il rispettivo criterio più specifico.
@@ -270,7 +269,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
           Se questo criterio non viene impostato, il comportamento dei criteri più specifici rimane invariato.</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indica lo stato di aggiornamento del sistema operativo</translation>
-<translation id="1388918874748125262">Attiva protezione avanzata di Navigazione sicura</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
 <translation id="1404043648050567997">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
@@ -285,19 +283,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="1426170570389588560">Imposta il periodo di tempo in giorni per memorizzare i metadati dei processi di stampa</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
-<translation id="1431272318313028342">Consente di attivare la funzione Navigazione sicura di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
-
-      Se attivi questa impostazione, la Navigazione sicura è sempre attiva.
-
-      Se la disattivi, la Navigazione sicura non è mai attiva.
-
-      Se attivi o disattivi l'impostazione, gli utenti non possono modificare o sostituire l'opzione "Attiva protezione contro phishing e malware" in <ph name="PRODUCT_NAME" />.
-
-     Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.
-
-      Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
 <translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
 <translation id="1455804070656338445">Consente di configurare l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL dopo la visualizzazione di un avviso nel browser per modificare la loro password.
@@ -336,6 +321,11 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Segnala informazioni sulla retroilluminazione</translation>
+<translation id="1497640071678474358">Consente di impostare un elenco di pattern URL che specificano i siti nei quali non è consentita l'apertura di popup.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultPopupsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1502843533062797703">Attiva blocco inserimento da software di terze parti</translation>
 <translation id="1507382822467487898">
           Consente di configurare quale indirizzo MAC (media access control) verrà utilizzato quando il dispositivo è inserito in un dock.
@@ -484,7 +474,19 @@ Se questa norma non viene impostata, i Termini di servizio non verranno visualiz
 
 Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" /> possa scaricare i Termini di servizio. I Termini di servizio devono essere in testo normale e pubblicati come testo di tipo MIME/semplice. Il markup non è consentito.</translation>
 <translation id="1750315445671978749">Blocca tutti i download</translation>
+<translation id="1757544636315644531">Consente di impostare un elenco di pattern URL che indicano i siti nei quali è consentita la visualizzazione di immagini.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultImagesSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Tieni presente che in precedenza questo criterio è stato erroneamente abilitato su Android, ma questa funzionalità non è mai stata completamente supportata su Android.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1767673020408652620">Attiva consigli di app a stato nullo della casella di ricerca</translation>
+<translation id="1777842213242723063">Consente di impostare un elenco di pattern URL che specificano i siti nei quali non è consentita l'esecuzione dei plug-in <ph name="FLASH_PLUGIN_NAME" />.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultPluginsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1781356041596378058">Questa norma controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su true, gli utenti non possono accedere alle Opzioni sviluppatore. Se la norma viene impostata su false o non viene impostata, gli utenti possono accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
 <translation id="1793346220873697538">Disattiva la stampa PIN per impostazione predefinita</translation>
 <translation id="1797233582739332495">Mostra un messaggio ricorrente all'utente in cui indica che è necessario un riavvio</translation>
@@ -675,7 +677,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2024476116966025075">Configura il nome di dominio richiesto per i client di accesso remoto</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
-<translation id="2042881179131103248">Configura la fotocamera e la funzionalità delle impostazioni per essere disattivate</translation>
+<translation id="2042881179131103248">Configura la fotocamera e la funzionalità impostazioni da disattivare</translation>
 <translation id="2043749682619281558">Attiva l'evidenziazione del cursore sulla schermata di accesso</translation>
 <translation id="2043770014371753404">Stampanti aziendali disattivate</translation>
 <translation id="2050629715135525072">Controlla la capacità di un utente connesso a un host di accesso remoto di trasferire file dal client all'host e viceversa. Questa norma non si applica alle connessioni di assistenza remota, le quali non supportano il trasferimento di file.
@@ -887,6 +889,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questo criterio viene impostato su true, quando viene mostrato un messaggio di conferma di un protocollo esterno, l'utente può scegliere di "aprire sempre" il protocollo senza ricevere ulteriori messaggi di conferma.
 
       Se questo criterio viene impostato su false o non viene impostato, la casella di controllo "Apri sempre" non viene visualizzata e l'utente riceverà un messaggio ogni volta che viene richiamato un protocollo esterno.</translation>
+<translation id="2406820201690307634">Consente di impostare un elenco di pattern URL che specificano i siti nei quali non è consentita la visualizzazione di immagini.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultImagesSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Tieni presente che in precedenza questo criterio è stato erroneamente abilitato su Android, ma questa funzionalità non è mai stata completamente supportata su Android.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2411817661175306360">L'avviso di protezione tramite password non è attivo</translation>
 <translation id="2411919772666155530">Blocca le notifiche su questi siti</translation>
 <translation id="2413022450179356125">Consente di attivare o disattivare la funzionalità Schermata sulla privacy.
@@ -1011,6 +1020,11 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
       Se questa norma non viene configurata o viene impostata su "Non filtrare i siti di contenuti per adulti", i siti non verranno filtrati.
 
       Se questa norma viene impostata su "Filtra i siti di contenuti per adulti di primo livello", i siti classificati come pornografici verranno filtrati.</translation>
+<translation id="2484356232170636726">Consente di impostare un elenco di pattern URL che specificano i siti nei quali è consentita l'esecuzione di JavaScript.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultJavaScriptSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2486371469462493753">Disattiva l'imposizione dei requisiti di Certificate Transparency per gli URL elencati.
 
       Questa norma consente ai certificati per i nomi host negli URL specificati di non essere resi pubblici tramite Certificate Transparency. Consente ai certificati che altimenti sarebbero considerati inattendibili, in quanto non appropriatamente resi pubblici, di continuare a essere utilizzati. Tuttavia, la norma rende più difficile il rilevamento di certificati emessi in modo scorretto per questi host.
@@ -1358,6 +1372,15 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2959898425599642200">Regole di bypass proxy</translation>
 <translation id="2960128438010718932">Il programma di gestione temporanea per l'applicazione di nuovi aggiornamenti</translation>
 <translation id="2960691910306063964">Consente di attivare o disattivare l'autenticazione senza PIN per gli host di accesso remoto</translation>
+<translation id="2969797921412053304">Questo criterio consente di configurare gli URL a cui verrà concesso l'accesso per usare l'attestazione remota dell'identità del dispositivo durante il flusso SAML nella schermata di accesso.
+
+      Nello specifico, se un URL corrisponde a uno dei pattern specificati tramite questo criterio, l'URL potrà ricevere un'intestazione HTTP contenente una risposta a una richiesta di attestazione remota, che attesta l'identità e lo stato del dispositivo.
+
+      Se questo criterio non viene impostato o se l'elenco viene lasciato vuoto, nessun URL potrà usare l'attestazione remota nella schermata di accesso.
+
+      Gli URL devono avere uno schema HTTPS, ad esempio "https://example.com".
+
+      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
 <translation id="3016255526521614822">Autorizza l'uso di app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1529,6 +1552,11 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Tuttavia, queste notifiche verranno mostrate solo se le informazioni sulla scadenza della password vengono inviate al dispositivo dal Provider di identità SAML durante il flusso di accesso SAML.
 
       Se questo criterio viene impostato, l'utente non può modificarlo o ignorarlo.</translation>
+<translation id="3312835062252480209">Consente di impostare un elenco di pattern URL che specifica i siti non autorizzati a utilizzare la generazione di chiavi. Se un pattern URL è indicato in "KeygenAllowedForUrls", il criterio ha la precedenza su queste eccezioni.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultKeygenSetting" se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3327195598110816609">Non ritardare alcuna consegna</translation>
 <translation id="332771718998993005">Consente di stabilire il nome pubblicizzato come destinazione di <ph name="PRODUCT_NAME" />.
 
@@ -1757,6 +1785,18 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
         Questo criterio viene utilizzato su desktop dalla registrazione con criteri cloud in ambito macchina e può essere impostato tramite il file di criteri registry o GPO su Windows, plist su Mac e JSON su Linux.</translation>
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
+<translation id="3684866411224031107">Consente di impostare un elenco di pattern URL che specificano i siti nei quali è consentita l'esecuzione dei plug-in <ph name="FLASH_PLUGIN_NAME" />.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultPluginsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
+<translation id="3688225008199664446">Consente di impostare un elenco di pattern URL che specificano i siti che non possono richiedere all'utente l'accesso al dispositivo USB.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultWebUsbGuardSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite WebUsbAskForUrls. Non viene specificato quale dei due criteri debba avere precedenza se un URL presenta corrispondenze con entrambe.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3701121231485832347">Consente di gestire le impostazioni specifiche dei dispositivi <ph name="PRODUCT_OS_NAME" /> gestiti da <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702518095257671450">Attestazione da remoto</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Il campo a una sola riga è obsoleto e sarà rimosso a breve. Inizia a usare la casella di testo multiriga qui sotto).</translation>
@@ -2034,6 +2074,15 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="402759845255257575">Non consentire ad alcun sito di eseguire JavaScript</translation>
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
 <translation id="4039085364173654945">Consente di stabilire se per i contenuti secondari di terze parti presenti in una pagina è consentita la visualizzazione di una finestra di dialogo Autorizzazione di base HTTP. Generalmente questa norma non è attiva per tutela dal phishing. Se questa norma non viene impostata, l'impostazione verrà disattivata e per i contenuti secondari di terze parti non potrà essere visualizzata una finestra di dialogo Autorizzazione di base HTTP.</translation>
+<translation id="4044054366426171256">Consente di configurare i nomi di dominio dell'host che verranno imposti sugli host di accesso remoto e impedisce agli utenti di modificarli.
+
+          Se questa impostazione viene attivata e configurata su uno o più domini, gli host possono essere condivisi solo utilizzando gli account registrati su uno dei nomi di dominio specificati.
+
+          Se questa impostazione viene disattivata o non viene configurata o viene configurata su un elenco vuoto, gli host possono essere condivisi utilizzando qualsiasi account.
+
+          Questa impostazione sostituirà RemoteAccessHostDomain, se presente.
+
+          Vedi anche RemoteAccessHostClientDomainList.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
 <translation id="4061590579642538878">Segnala informazioni relative ai rapporti sugli arresti anomali.</translation>
 <translation id="4075675819066819571">Posiziona la shelf sul lato sinistro dello schermo</translation>
@@ -2361,6 +2410,13 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Se viene selezionata l'opzione "Forzata", è possibile aprire le pagine SOLTANTO in Modalità di navigazione in incognito. Tieni presente che l'opzione "Forzata" non funziona per Android-on-Chrome.</translation>
 <translation id="4600786265870346112">Attivazione del puntatore grande</translation>
 <translation id="4604931264910482931">Configura lista nera di messaggi nativi</translation>
+<translation id="4614701085541180174">Consente di specificare un elenco di pattern URL relativi ai siti per i quali viene selezionato automaticamente un certificato client nella schermata di accesso all'interno del frame che ospita il flusso SAML, se il sito richiede un certificato. Un esempio di utilizzo è la configurazione di un certificato a livello di dispositivo da presentare all'IdP SAML.
+
+      Il valore deve essere un array di dizionari JSON sotto forma di stringa. Ogni dizionario deve avere il formato <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dove <ph name="URL_PATTERN_PLACEHOLDER" /> rappresenta un pattern di impostazioni contenuti. <ph name="FILTER_PLACEHOLDER" /> limita la gamma di certificati client che il browser può selezionare automaticamente. Indipendentemente dal filtro, saranno selezionati solo certificati che soddisfano la richiesta di certificato del server. Se <ph name="FILTER_PLACEHOLDER" /> è nel formato <ph name="JSON_DICTIONARY_EXAMPLE" />, vengono inoltre selezionati solo i certificati client emessi da un certificato con valore CommonName uguale a <ph name="ISSUER_CN_PLACEHOLDER" />. Se <ph name="FILTER_PLACEHOLDER" /> rappresenta il dizionario vuoto {}, la selezione dei certificati client non viene limitata ulteriormente.
+
+      Se questo criterio non è impostato, la selezione automatica non avviene per nessun sito.
+
+      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4617338332148204752">Salta il controllo dei metatag in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configura la whitelist per l'installazione delle estensioni</translation>
 <translation id="4632343302005518762">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i tipi di contenuti elencati</translation>
@@ -2485,6 +2541,13 @@ Se la norma non viene impostata, il puntatore grande sarà inizialmente disattiv
       segnalate. Se è impostato su true, le informazioni sull'aggiornamento del sistema operativo verranno segnalate.</translation>
 <translation id="4858735034935305895">Consenti modalità a schermo intero</translation>
 <translation id="4861767323695239729">Configura i metodi di immissione consentiti in una sessione utente</translation>
+<translation id="4869603341164509842">I pattern di questo elenco verranno confrontati con l'origine
+      di sicurezza dell'URL richiedente.  Se viene trovata una corrispondenza, l'accesso ai dispositivi
+      di acquisizione video verrà concesso senza richieste.
+
+      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
+
+      NOTA: fino alla versione 45, questo criterio era supportato soltanto in modalità kiosk.</translation>
 <translation id="487460824085252184">Esegui automaticamente la migrazione senza chiedere il consenso dell'utente</translation>
 <translation id="4874982543810021567">Blocca WebUSB su questi siti</translation>
 <translation id="4876805738539874299">Versione SSL massima abilitata</translation>
@@ -2605,6 +2668,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se la norma è impostata su 0, la modifica della password dell'account del computer è disattivata.
 
       Tieni presente che le password potrebbero durare più a lungo rispetto ai giorni specificati se il client è offline per un periodo più lungo di tempo.</translation>
+<translation id="5101600510268095939">Consente di impostare un elenco di pattern URL che specifica i siti non autorizzati a mostrare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi) e per i quali i contenuti misti bloccabili facoltativi (ossia passivi) verranno aggiornati.
+
+          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati, ma gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="510196893779239086">Questa norma controlla la chiusura completa di Chrome quando l'ultima scheda passa a un altro browser.
 
       Se questa norma non viene impostata o viene impostata su true, Chrome manterrà almeno una scheda aperta dopo il passaggio a un browser alternativo.
@@ -2801,6 +2869,15 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
           Se questa norma viene impostata su False, gli utenti non potranno trasmettere contenuti al proprio dispositivo. Se questa norma viene impostata su True, gli utenti potranno trasmettere contenuti. Se questa norma non viene impostata, gli utenti non potranno trasmettere contenuti a dispositivi Chrome OS registrati, ma potranno trasmetterli a dispositivi non registrati.</translation>
 <translation id="5323200200131319468">Attiva la funzione di lettura vocale nella schermata di accesso</translation>
+<translation id="532668836479219203">Questo criterio consente di stabilire il comportamento di accesso del browser. Ti consente di specificare se l'utente può accedere a <ph name="PRODUCT_NAME" /> con il proprio account e usare i servizi correlati all'account come Sincronizzazione Chrome.
+
+      Se il criterio viene impostato su "Disattiva accesso al browser", l'utente non potrà accedere al browser e usare i servizi basati sull'account. In questo caso, le funzionalità a livello di browser come la Sincronizzazione Chrome non potranno essere usate e non saranno disponibili. Se il criterio viene impostato su "Disattivato" dopo che l'utente ha eseguito l'accesso, l'utente verrà scollegato alla successiva esecuzione di Chrome, ma i dati locali del profilo, come preferiti, password ecc., verranno mantenuti. L'utente potrà comunque accedere e usare i servizi web di Google come Gmail.
+
+      Se il criterio viene impostato su "Attiva accesso al browser", l'utente potrà accedere al browser e verrà collegato automaticamente al browser se accederà a servizi web di Google come Gmail. Se viene eseguito l'accesso al browser, i dati dell'account dell'utente vengono memorizzati dal browser, ma la funzione Sincronizzazione Chrome non viene attivata per impostazione predefinita; per poter utilizzare questa funzione, l'utente deve attivarla separatamente. Se attivi questo criterio, l'utente non potrà disattivare l'impostazione che consente l'accesso al browser. Per gestire la disponibilità della funzione Sincronizzazione Chrome, usa il criterio "SyncDisabled".
+
+      Se il criterio viene impostato su "Forza accesso al browser", all'utente verrà mostrata una finestra di dialogo di selezione dell'account, da cui dovrà scegliere un account a cui accedere per usare il browser. Questa misura garantisce l'applicazione, nell'ambito degli account gestiti, dei criteri associati all'account. La funzione Sincronizzazione Chrome viene attivata per impostazione predefinita per l'account, ad eccezione del caso in cui la sincronizzazione sia stata disattivata dall'amministratore di dominio o tramite il criterio "SyncDisabled". Il valore predefinito del criterio BrowserGuestModeEnabled sarà falso. Tieni presente che i profili esistenti a cui non viene eseguito l'accesso saranno bloccati e inaccessibili dopo l'attivazione di questo criterio. Per ulteriori informazioni, leggi il seguente articolo del Centro assistenza: https://support.google.com/chrome/a/answer/7572556. Questa opzione non supporta Linux e, se utilizzata in tale ambiente, imposterà "Attiva accesso al browser".
+
+      Se questo criterio non è impostato, l'utente potrà decidere se attivare o meno l'opzione di accesso al browser e di usarla in base alle necessità.</translation>
 <translation id="532848608876725157">Attiva DNS over HTTPS con fallback non sicuro</translation>
 <translation id="5329007337159326804">Attenzione: la norma Versione TLS massima verrà interamente rimossa da <ph name="PRODUCT_NAME" /> con la versione 75 (orientativamente giugno 2019).
 
@@ -3199,6 +3276,17 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
+<translation id="5844300486330234296">Controlla la whitelist dei pattern URL su cui è sempre attivata la riproduzione automatica.
+
+      Se la riproduzione automatica è attivata, i video possono essere riprodotti automaticamente (ovvero senza il consenso dell'utente) in <ph name="PRODUCT_NAME" />.
+
+      Se il criterio AutoplayAllowed è impostato su vero, questo criterio non avrà effetto.
+
+      Se il criterio AutoplayAllowed è impostato su falso, i pattern URL configurati in questo criterio potranno ancora essere riprodotti.
+
+      Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e il criterio cambia, sarà applicato solo alle nuove schede aperte. Pertanto alcune schede potrebbero continuare a osservare il comportamento precedente.
+
+      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="5855010364142818361">Questo criterio consente di gestire i parametri della riga di comando per il passaggio a Chrome da Internet Explorer.
 
       Se il componente aggiuntivo "Supporto dei browser precedenti" per Internet Explorer non è installato, questo criterio non viene applicato.
@@ -3454,6 +3542,17 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
 <translation id="6319198883324703402">Imposta il tempo della prima notifica del riavvio per l'utente</translation>
 <translation id="6342187235303612558">Consente di impedire agli utenti di caricare o scaricare file attualmente non supportati per la scansione di DLP o malware.</translation>
+<translation id="6348718801326095108">I cookie impostati da pagine che corrispondono a questi pattern URL saranno limitati alla sessione corrente, vale a dire che verranno eliminati alla chiusura del browser.
+
+          Per gli URL sui domini non previsti dai pattern specificati qui oppure per tutti gli URL se questo criterio non viene impostato, verrà utilizzato il valore predefinito globale del criterio "DefaultCookiesSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Tieni presente che se <ph name="PRODUCT_NAME" /> è in esecuzione in "modalità background", è possibile che la sessione non si chiuda quando viene chiusa l'ultima finestra del browser, ma che rimanga attiva fino alla chiusura del browser. Consulta il criterio "BackgroundModeEnabled" per ulteriori informazioni sulla configurazione di questo comportamento.
+
+          Vedi anche i criteri "CookiesAllowedForUrls" e "CookiesBlockedForUrls". Tieni presente che non ci deve essere conflitto di pattern URL tra questi tre criteri. Non viene specificato quale criterio debba avere la precedenza.
+
+          Se il criterio "RestoreOnStartup" è impostato in modo da ripristinare gli URL delle sessioni precedenti, questo criterio non verrà rispettato e i cookie verranno memorizzati in modo permanente per i siti.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6352543686437322588">Un account locale del dispositivo a cui accedere automaticamente dopo un ritardo.
 
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. L'account locale del dispositivo deve essere già configurato (vedi |DeviceLocalAccounts|).
@@ -3476,6 +3575,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="637934607141010488">Consente di indicare un elenco di utenti del dispositivo che hanno eseguito l'accesso di recente. Se la norma è impostata su False, gli utenti non vengono indicati.</translation>
 <translation id="638668187106406971">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili dei caricamenti</translation>
 <translation id="6394350458541421998">La norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_OS_NAME" />. Utilizza la norma PresentationScreenDimDelayScale.</translation>
+<translation id="6394657112569857636">Consente di impostare un elenco di pattern URL che specificano i siti nei quali non è consentito impostare cookie.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultCookiesSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Vedi anche i criteri "CookiesAllowedForUrls" e "CookiesSessionOnlyForUrls". Tieni presente che non ci deve essere conflitto di pattern URL tra questi tre criteri. Non viene specificato quale criterio debba avere la precedenza.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6399242659768117666">Questo criterio consente di stabilire se segnalare o meno i dati delle estensioni e dei plug-in.
 
       Se questo criterio non viene impostato o viene impostato su True, i dati delle estensioni e dei plug-in vengono raccolti.
@@ -3576,6 +3682,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="6544897973797372144">Se questa norma è impostata su True e non è specificata la norma ChromeOsReleaseChannel, gli utenti del dominio di registrazione avranno la facoltà di modificare il canale della versione del dispositivo. Se questa norma è impostata su False, il dispositivo risulterà bloccato in qualunque canale in cui è stato impostato per ultimo.
 
       Il canale selezionato dall'utente verrà sostituito dalla norma ChromeOsReleaseChannel, ma se il canale della norma è più stabile di quello che è stato installato sul dispositivo, il canale cambierà solo quando la versione del canale più stabile raggiungerà un numero di versione superiore rispetto a quello installato sul dispositivo.</translation>
+<translation id="6548795012081567926">Consente di impostare un elenco di pattern URL che specificano i siti nei quali è consentito impostare i cookie.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultCookiesSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Vedi anche i criteri "CookiesBlockedForUrls" e "CookiesSessionOnlyForUrls". Tieni presente che non ci deve essere conflitto di pattern URL tra questi tre criteri. Non viene specificato quale criterio debba avere la precedenza.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6553143066970470539">Percentuale di luminosità dello schermo</translation>
 <translation id="6559057113164934677">Non consentire ad alcun sito di accedere alla fotocamera e al microfono</translation>
 <translation id="6561396069801924653">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni di sistema</translation>
@@ -3667,6 +3780,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6734521799274931721">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
 <translation id="6757613329154374267">Backup e ripristino attivato</translation>
+<translation id="6758659208493449452">Questo criterio consente di stabilire se gli utenti registrati al programma di protezione avanzata ricevono o meno ulteriori livelli di protezione. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti registrati al programma riceveranno ulteriori livelli di protezione. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità standard per i consumatori.</translation>
 <translation id="6762235610019366960">Ti consente di gestire la presentazione dei contenuti promozionali e/o informativi a scheda intera in <ph name="PRODUCT_NAME" />.
 
       Se la norma non viene configurata o viene attivata (impostata su true), <ph name="PRODUCT_NAME" /> potrebbe mostrare agli utenti i contenuti a scheda intera per fornire informazioni sul prodotto.
@@ -3674,6 +3788,11 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Se viene disattivata (impostata su false), <ph name="PRODUCT_NAME" /> non mostrerà agli utenti i contenuti a scheda intera per fornire informazioni sul prodotto.
 
       Questa impostazione consente di gestire la presentazione delle pagine di benvenuto che consentono agli utenti di accedere a <ph name="PRODUCT_NAME" /> o sceglierlo come browser predefinito oppure che danno agli utenti informazioni sulle funzionalità del prodotto.</translation>
+<translation id="6764421313777250384">Consente di impostare un elenco di pattern URL che indicano i siti non autorizzati a visualizzare notifiche.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultNotificationsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6766216162565713893">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo Bluetooth nelle vicinanze.</translation>
 <translation id="6770454900105963262">Segnala informazioni sulle sessioni kiosk attive</translation>
 <translation id="6786747875388722282">Estensioni</translation>
@@ -4112,6 +4231,11 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7485730741952775732">Se questa norma è impostata, l'host di accesso remoto utilizzerà questo URL per convalidare i token di autenticazione dai client di accesso remoto per accettare connessioni. Deve essere usata insieme a RemoteAccessHostTokenUrl.
 
           Questa funzione è attualmente disattivata lato server.</translation>
+<translation id="7490270439948288519">Consente di impostare un elenco di pattern URL che specificano i siti nei quali è consentita l'apertura di popup.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultPopupsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="749556411189861380">Consente di indicare la versione del sistema operativo e del firmware dei dispositivi registrati. Se questa impostazione non è impostata o viene impostata su True, i dispositivi registrati indicheranno periodicamente la versione del sitema operativo e del firmware. Se l'impostazione viene impostata su False, le informazioni sulla versione non verranno indicate.</translation>
 <translation id="7498946151094347510">Consente di specificare le stampanti non utilizzabili dagli utenti.
 
@@ -4124,6 +4248,15 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
           Se questa norma non è impostata o viene attivata, Google Chrome accetterà i contenuti web pubblicati come Signed HTTP Exchanges.
 
           Se non viene attivata, i contenuti Signed HTTP Exchanges non potranno essere caricati.</translation>
+<translation id="7506758875409719208">Consente di configurare i nomi di dominio client richiesti che verranno imposti ai client di accesso remoto e impedisce agli utenti di modificarli.
+
+          Se questa impostazione viene attivata e configurata su uno o più domini, solo i client di uno dei domini specificati potranno connettersi all'host.
+
+          Se questa impostazione viene disattivata o non viene configurata o viene configurata su un elenco vuoto, viene applicato il criterio predefinito per il tipo di connessione. Per l'assistenza remota, l'impostazione consente ai client di qualsiasi dominio di connettersi all'host; per l'accesso remoto in qualsiasi momento, può connettersi solo il proprietario dell'host.
+
+          Questa impostazione sostituirà RemoteAccessHostClientDomain, se presente.
+
+          Vedi anche RemoteAccessHostDomainList.</translation>
 <translation id="7509496865303347769">Consente di configurare l'URL della home page di <ph name="PRODUCT_NAME" /> predefinito e di impedire agli utenti di modificarlo.
 
           La home page è la pagina che viene aperta facendo clic sul pulsante Home. Sul desktop, le pagine che si aprono all'avvio vengono stabilite dai criteri RestoreOnStartup.
@@ -4139,6 +4272,11 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
           Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="7511361072385293666">Se questa norma viene impostata su true o non viene impostata, l'utilizzo del protocollo QUIC in <ph name="PRODUCT_NAME" /> è consentito.
      Se questa norma viene impostata su false, l'utilizzo del protocollo QUIC non è consentito.</translation>
+<translation id="7515572751689937649">Consente di impostare un elenco di pattern URL che specificano i siti nei quali non è consentita l'esecuzione di JavaScript.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultJavaScriptSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="7517845714620372896">Consente di specificare la percentuale di luminosità dello schermo.
           Se questa norma viene impostata, la luminosità dello schermo iniziale viene regolata in base al valore della norma, ma l'utente potrà cambiare tale valore in un secondo momento. Le funzionalità relative alla luminosità automatica vengono disattivate.
           Se questa norma non viene impostata, i controlli dello schermo dell'utente e le funzionalità di luminosità automatica rimangono invariati.
@@ -4441,7 +4579,7 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 <translation id="8044493735196713914">Indicazione modalità di avvio dispositivo</translation>
 <translation id="8050080920415773384">Stampa nativa</translation>
 <translation id="8053580360728293758">Consente di eseguire l'override della modalità di stampa a colori predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
-<translation id="8057841287222359526">Ti consente di impostare un elenco di funzionalità di <ph name="PRODUCT_OS_NAME" /> da disattivare.
+<translation id="8057841287222359526">Consente di impostare un elenco di funzionalità di <ph name="PRODUCT_OS_NAME" /> da disattivare.
 
       La disattivazione di una qualsiasi di queste funzionalità fa sì che l'utente non possa accedervi dall'interfaccia utente e che la vedrà contrassegnata come "disattivata dall'amministratore".
 
@@ -4612,6 +4750,11 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8331479227794770304">Attiva tasti permanenti</translation>
 <translation id="8339420913453596618">Autenticazione a due fattori disattivata</translation>
 <translation id="8344454543174932833">Importa Preferiti dal browser predefinito alla prima esecuzione</translation>
+<translation id="8351446723835838047">Consente di impostare un elenco di pattern URL che specifica i siti autorizzati a utilizzare la generazione di chiavi. Se un pattern URL è indicato in "KeygenBlockedForUrls", quest'ultimo ha la precedenza su queste eccezioni.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultKeygenSetting" se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8357681633047935212">Limita la durata di una sessione utente</translation>
 <translation id="8359734107661430198">Attiva l'API ExampleDeprecatedFeature valida fino al 02/09/2008</translation>
 <translation id="8367209241899435947">Attiva Chrome Software Cleaner su Windows</translation>
@@ -4811,6 +4954,13 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 
           Se questa norma non viene impostata <ph name="PRODUCT_NAME" /> tenterà di rilevare se sulla Intranet è presente un server e solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, le sue richieste IWA verranno ignorate da <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8656110680728938054">Attiva Seleziona per ascoltare</translation>
+<translation id="8659729040032759711">Consente di impostare un elenco di pattern URL che specificano i siti che possono richiedere all'utente l'accesso al dispositivo USB.
+
+          Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultWebUsbGuardSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
+
+          I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite il criterio WebUsbBlockedForUrls. Non viene specificato quale dei due criteri debba avere precedenza se un URL presenta corrispondenze con entrambe.
+
+          Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Non consentire migrazione dei dati e ARC.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
@@ -4948,6 +5098,13 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 
           Se questo criterio non viene impostato, inizialmente la funzione di clic automatico è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="8876188741456358123">Consente di eseguire l'override della modalità di stampa fronte/retro predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
+<translation id="8878850056189891727">I pattern di questo elenco verranno confrontati con l'origine
+      di sicurezza dell'URL richiedente.  Se viene trovata una corrispondenza, l'accesso ai dispositivi
+      di acquisizione audio verrà concesso senza richieste.
+
+      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
+
+      NOTA: fino alla versione 45, questo criterio era supportato soltanto in modalità kiosk.</translation>
 <translation id="8882006618241293596">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
 <translation id="8906768759089290519">Attiva modalità ospite</translation>
 <translation id="8908294717014659003">Consente di stabilire se i siti web possono accedere ai dispositivi di acquisizione dei contenuti multimediali. L'accesso ai dispositivi di acquisizione dei contenuti multimediali può essere consentito per impostazione predefinita oppure l'utente può visualizzare una richiesta ogni volta che un sito web vuole accedere ai dispositivi di acquisizione dei contenuti multimediali.

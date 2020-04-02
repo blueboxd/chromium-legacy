@@ -22,18 +22,22 @@ NavigationID::NavigationID() : tab_id(SessionID::InvalidValue()) {}
 
 NavigationID::NavigationID(const NavigationID& other)
     : tab_id(other.tab_id),
+      ukm_source_id(other.ukm_source_id),
       main_frame_url(other.main_frame_url),
       creation_time(other.creation_time) {}
 
 NavigationID::NavigationID(content::WebContents* web_contents)
     : tab_id(sessions::SessionTabHelper::IdForTab(web_contents)),
+      ukm_source_id(web_contents->GetLastCommittedSourceId()),
       main_frame_url(web_contents->GetLastCommittedURL()),
       creation_time(base::TimeTicks::Now()) {}
 
 NavigationID::NavigationID(content::WebContents* web_contents,
+                           ukm::SourceId ukm_source_id,
                            const GURL& main_frame_url,
                            const base::TimeTicks& creation_time)
     : tab_id(sessions::SessionTabHelper::IdForTab(web_contents)),
+      ukm_source_id(ukm_source_id),
       main_frame_url(main_frame_url),
       creation_time(creation_time) {}
 
@@ -49,7 +53,8 @@ bool NavigationID::operator<(const NavigationID& rhs) const {
 
 bool NavigationID::operator==(const NavigationID& rhs) const {
   DCHECK(is_valid() && rhs.is_valid());
-  return tab_id == rhs.tab_id && main_frame_url == rhs.main_frame_url;
+  return tab_id == rhs.tab_id && ukm_source_id == rhs.ukm_source_id &&
+         main_frame_url == rhs.main_frame_url;
 }
 
 bool NavigationID::operator!=(const NavigationID& rhs) const {

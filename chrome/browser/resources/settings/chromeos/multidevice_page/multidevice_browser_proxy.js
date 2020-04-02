@@ -129,6 +129,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(MultiDeviceBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     AndroidSmsInfo,
     MultiDeviceBrowserProxy,

@@ -295,6 +295,7 @@ def process_perf_results(output_json,
                          task_output_dir,
                          smoke_test_mode,
                          output_results_dir,
+                         lightweight=False,
                          skip_perf=False):
   """Process perf results.
 
@@ -314,6 +315,11 @@ def process_perf_results(output_json,
       benchmark_upload_result_map: the dictionary that describe which benchmarks
         were successfully uploaded.
   """
+  handle_perf = not lightweight or not skip_perf
+  handle_non_perf = not lightweight or skip_perf
+  logging.info('lightweight mode: %r; handle_perf: %r; handle_non_perf: %r' %
+               (lightweight, handle_perf, handle_non_perf))
+
   begin_time = time.time()
   return_code = 0
   benchmark_upload_result_map = {}
@@ -324,21 +330,22 @@ def process_perf_results(output_json,
   test_results_list = []
   extra_links = {}
 
-  # First, upload benchmarks shard map to logdog and add a page
-  # entry for it in extra_links.
-  if benchmarks_shard_map_file:
-    _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links)
+  if handle_non_perf:
+    # First, upload benchmarks shard map to logdog and add a page
+    # entry for it in extra_links.
+    if benchmarks_shard_map_file:
+      _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links)
 
-  # Second, upload all the benchmark logs to logdog and add a page entry for
-  # those links in extra_links.
-  _handle_perf_logs(benchmark_directory_map, extra_links)
+    # Second, upload all the benchmark logs to logdog and add a page entry for
+    # those links in extra_links.
+    _handle_perf_logs(benchmark_directory_map, extra_links)
 
   # Then try to obtain the list of json test results to merge
   # and determine the status of each benchmark.
   benchmark_enabled_map = _handle_perf_json_test_results(
       benchmark_directory_map, test_results_list)
 
-  if not smoke_test_mode and not skip_perf:
+  if not smoke_test_mode and handle_perf:
     try:
       build_properties = json.loads(build_properties)
       if not configuration_name:
@@ -352,9 +359,10 @@ def process_perf_results(output_json,
       logging.exception('Error handling perf results jsons')
       return_code = 1
 
-  # Finally, merge all test results json, add the extra links and write out to
-  # output location
-  _merge_json_output(output_json, test_results_list, extra_links)
+  if handle_non_perf:
+    # Finally, merge all test results json, add the extra links and write out to
+    # output location
+    _merge_json_output(output_json, test_results_list, extra_links)
 
   end_time = time.time()
   print_duration('Total process_perf_results', begin_time, end_time)
@@ -630,7 +638,16 @@ def main():
   parser.add_argument('--task-output-dir', help=argparse.SUPPRESS)
   parser.add_argument('-o', '--output-json', required=True,
                       help=argparse.SUPPRESS)
-  parser.add_argument('--skip-perf', help=argparse.SUPPRESS)
+  parser.add_argument(
+      '--skip-perf',
+      action='store_true',
+      help='In lightweight mode, this indicates the workflow is from processor,'
+      ' otherwise its value is ignored.')
+  parser.add_argument(
+      '--lightweight',
+      action='store_true',
+      help='Choose the lightweight mode in which the perf result handling'
+      ' is performed on a separate VM.')
   parser.add_argument('json_files', nargs='*', help=argparse.SUPPRESS)
   parser.add_argument('--smoke-test-mode', action='store_true',
                       help='This test should be run in smoke test mode'
@@ -643,7 +660,7 @@ def main():
     return_code, _ = process_perf_results(
         args.output_json, args.configuration_name, args.build_properties,
         args.task_output_dir, args.smoke_test_mode, output_results_dir,
-        args.skip_perf)
+        args.lightweight, args.skip_perf)
     return return_code
   finally:
     shutil.rmtree(output_results_dir)

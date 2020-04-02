@@ -459,10 +459,14 @@ class AutotestPrivateGetPrinterListFunction
  private:
   ~AutotestPrivateGetPrinterListFunction() override;
   ResponseAction Run() override;
+
+  void DestroyPrintersManager();
   void RespondWithTimeoutError();
   void RespondWithSuccess();
+
   // chromeos::CupsPrintersManager::Observer
   void OnEnterprisePrintersInitialized() override;
+
   std::unique_ptr<base::Value> results_;
   std::unique_ptr<chromeos::CupsPrintersManager> printers_manager_;
   base::OneShotTimer timeout_timer_;

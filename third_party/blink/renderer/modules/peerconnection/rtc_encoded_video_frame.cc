@@ -4,46 +4,47 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
 
+#include <utility>
+
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/webrtc/api/frame_transformer_interface.h"
 
 namespace blink {
 
 RTCEncodedVideoFrame::RTCEncodedVideoFrame(
-    std::unique_ptr<webrtc::TransformableVideoFrameInterface> delegate)
+    std::unique_ptr<webrtc::TransformableVideoFrameInterface> webrtc_frame)
+    : delegate_(base::MakeRefCounted<RTCEncodedVideoFrameDelegate>(
+          std::move(webrtc_frame))) {}
+
+RTCEncodedVideoFrame::RTCEncodedVideoFrame(
+    scoped_refptr<RTCEncodedVideoFrameDelegate> delegate)
     : delegate_(std::move(delegate)) {}
 
 String RTCEncodedVideoFrame::type() const {
-  if (!delegate_)
-    return "empty";
-
-  return delegate_->IsKeyFrame() ? "key" : "delta";
+  return delegate_->Type();
 }
 
 uint64_t RTCEncodedVideoFrame::timestamp() const {
-  return delegate_ ? delegate_->GetTimestamp() : 0;
+  return delegate_->Timestamp();
 }
 
 DOMArrayBuffer* RTCEncodedVideoFrame::data() const {
-  if (delegate_ && !frame_data_) {
-    frame_data_ = DOMArrayBuffer::Create(delegate_->GetData().data(),
-                                         delegate_->GetData().size());
-  }
+  if (!frame_data_)
+    frame_data_ = delegate_->CreateDataBuffer();
   return frame_data_;
 }
 
 DOMArrayBuffer* RTCEncodedVideoFrame::additionalData() const {
-  if (delegate_ && !additional_data_) {
-    auto additional_data = delegate_->GetAdditionalData();
-    additional_data_ =
-        DOMArrayBuffer::Create(additional_data.data(), additional_data.size());
-  }
+  if (!additional_data_)
+    additional_data_ = delegate_->CreateAdditionalDataBuffer();
+
   return additional_data_;
 }
 
 uint32_t RTCEncodedVideoFrame::synchronizationSource() const {
-  return delegate_ ? delegate_->GetSsrc() : 0;
+  return delegate_->Ssrc();
 }
 
 void RTCEncodedVideoFrame::setData(DOMArrayBuffer* data) {
@@ -65,15 +66,20 @@ String RTCEncodedVideoFrame::toString() const {
   return sb.ToString();
 }
 
+void RTCEncodedVideoFrame::SyncDelegate() const {
+  delegate_->SetData(frame_data_);
+}
+
+scoped_refptr<RTCEncodedVideoFrameDelegate> RTCEncodedVideoFrame::Delegate()
+    const {
+  SyncDelegate();
+  return delegate_;
+}
+
 std::unique_ptr<webrtc::TransformableVideoFrameInterface>
-RTCEncodedVideoFrame::PassDelegate() {
-  // Sync the delegate data with |frame_data_| if necessary.
-  if (delegate_ && frame_data_) {
-    delegate_->SetData(rtc::ArrayView<const uint8_t>(
-        static_cast<const uint8_t*>(frame_data_->Data()),
-        frame_data_->ByteLengthAsSizeT()));
-  }
-  return std::move(delegate_);
+RTCEncodedVideoFrame::PassWebRtcFrame() {
+  SyncDelegate();
+  return delegate_->PassWebRtcFrame();
 }
 
 void RTCEncodedVideoFrame::Trace(Visitor* visitor) {

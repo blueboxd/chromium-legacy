@@ -1,6 +1,7 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//build/config/dcheck_always_on.gni")
 import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("exported") {
@@ -79,6 +80,10 @@ blink_core_sources("exported") {
     "web_view_impl.cc",
     "web_view_impl.h",
   ]
+
+  if (is_debug || dcheck_always_on) {
+    sources += [ "web_disallow_transition_scope.cc" ]
+  }
 
   deps = [
     "//ui/base/cursor",

@@ -1671,6 +1671,10 @@
     "label": "//chrome/browser/touch_to_fill/android:touch_to_fill_junit_tests",
     "type": "junit_test",
   },
+  "trace_processor_shell": {
+    "label": "//third_party/perfetto/src/trace_processor:trace_processor_shell",
+    "type": "additional_compile_target",
+  },
   "tracing_perftests": {
     "args": [
       "tracing_perftests",

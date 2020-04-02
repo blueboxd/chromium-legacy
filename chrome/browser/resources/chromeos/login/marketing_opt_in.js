@@ -25,9 +25,6 @@ Polymer({
     marketingOptInEnabled_: {
       type: Boolean,
       readOnly: true,
-      value() {
-        return loadTimeData.getBoolean('enableMarketingOptIn');
-      },
     },
   },
 
@@ -60,13 +57,13 @@ Polymer({
    * This is 'on-tap' event handler for 'AcceptAndContinue/Next' buttons.
    * @private
    */
-  onAllSet_() {
+  onGetStarted_() {
     this.$['marketingOptInOverviewDialog']
         .querySelector('.marketing-animation')
         .setPlay(false);
-    chrome.send('login.MarketingOptInScreen.allSet', [
-      this.$.playUpdatesOption.checked, this.$.chromebookUpdatesOption.checked
-    ]);
+    chrome.send(
+        'login.MarketingOptInScreen.onGetStarted',
+        [this.$.chromebookUpdatesOption.checked]);
   },
 
   /**

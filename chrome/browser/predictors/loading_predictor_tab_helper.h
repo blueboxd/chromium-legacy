@@ -79,10 +79,10 @@ class LoadingPredictorTabHelper
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_ =
       nullptr;
 
-  // The optimization guide preconnect prediction for the current navigation. If
-  // set, this will be cleared on |DocumentOnLoadCompletedInMainFrame|..
-  base::Optional<PreconnectPrediction>
-      last_optimization_guide_preconnect_prediction_;
+  // The optimization guide prediction for the current navigation. If set, this
+  // will be cleared on |DocumentOnLoadCompletedInMainFrame|.
+  base::Optional<OptimizationGuidePrediction>
+      last_optimization_guide_prediction_;
 
   // Used to get a weak pointer to |this|.
   base::WeakPtrFactory<LoadingPredictorTabHelper> weak_ptr_factory_{this};

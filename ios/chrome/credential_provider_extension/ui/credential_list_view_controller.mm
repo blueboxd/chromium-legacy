@@ -4,12 +4,69 @@
 
 #import "ios/chrome/credential_provider_extension/ui/credential_list_view_controller.h"
 
+#import "base/mac/foundation_util.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+NSString* kHeaderIdentifier = @"clvcHeader";
+NSString* kCellIdentifier = @"clvcCell";
+
+const CGFloat kHeaderHeight = 70;
+const CGFloat kFallbackIconSize = 24;
+const CGFloat kFallbackRoundedCorner = 3;
+
+// Returns an icon with centered letter from given |string| and some
+// colors computed from the string.
+// TODO(crbug.com/1045454): draw actual icon or default icon.
+UIImage* GetFallbackImageWithStringAndColor(NSString* string) {
+  int hash = string.hash;
+  UIColor* backgroundColor =
+      [UIColor colorWithRed:0.5 + (hash & 0xff) / 510.0
+                      green:0.5 + ((hash >> 8) & 0xff) / 510.0
+                       blue:0.5 + ((hash >> 16) & 0xff) / 510.0
+                      alpha:1.0];
+
+  UIColor* textColor = [UIColor colorWithRed:(hash & 0xff) / 510.0
+                                       green:((hash >> 8) & 0xff) / 510.0
+                                        blue:((hash >> 16) & 0xff) / 510.0
+                                       alpha:1.0];
+
+  CGRect rect = CGRectMake(0, 0, kFallbackIconSize, kFallbackIconSize);
+
+  UIGraphicsBeginImageContext(rect.size);
+  CGContextRef context = UIGraphicsGetCurrentContext();
+  CGContextSetFillColorWithColor(context, [backgroundColor CGColor]);
+  CGContextSetStrokeColorWithColor(context, [textColor CGColor]);
+
+  UIBezierPath* rounded =
+      [UIBezierPath bezierPathWithRoundedRect:rect
+                                 cornerRadius:kFallbackRoundedCorner];
+  [rounded fill];
+
+  UIFont* font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  font = [font fontWithSize:(kFallbackIconSize / 2)];
+  CGRect textRect = CGRectMake(0, (kFallbackIconSize - [font lineHeight]) / 2,
+                               kFallbackIconSize, [font lineHeight]);
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  [paragraphStyle setAlignment:NSTextAlignmentCenter];
+  NSMutableDictionary* attributes = [[NSMutableDictionary alloc] init];
+  [attributes setValue:font forKey:NSFontAttributeName];
+  [attributes setValue:textColor forKey:NSForegroundColorAttributeName];
+  [attributes setValue:paragraphStyle forKey:NSParagraphStyleAttributeName];
+  [[string substringToIndex:1] drawInRect:textRect withAttributes:attributes];
+
+  UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+  return image;
+}
+}
 
 @interface CredentialListViewController () <UITableViewDataSource,
                                             UISearchResultsUpdating>
@@ -25,7 +82,6 @@
 
 @end
 
-// TODO(crbug.com/1045454): Implement this view controller's items.
 @implementation CredentialListViewController
 
 @synthesize delegate;
@@ -47,6 +103,10 @@
   // context. Make this class the presentation context so that the search
   // controller does not present on top of the navigation controller.
   self.definesPresentationContext = YES;
+
+  [self.tableView registerClass:[UITableViewHeaderFooterView class]
+      forHeaderFooterViewReuseIdentifier:kHeaderIdentifier];
+  self.tableView.sectionHeaderHeight = kHeaderHeight;
 }
 
 #pragma mark - CredentialListConsumer
@@ -89,11 +149,12 @@
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+  UITableViewCell* cell =
+      [tableView dequeueReusableCellWithIdentifier:kCellIdentifier];
   if (!cell) {
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
-                                  reuseIdentifier:@"cell"];
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                                  reuseIdentifier:kCellIdentifier];
+    cell.accessoryType = UITableViewCellAccessoryDetailButton;
   }
   id<Credential> credential;
   if ([self isSuggestedPasswordSection:indexPath.section]) {
@@ -101,9 +162,26 @@
   } else {
     credential = self.allPasswords[indexPath.row];
   }
+
+  cell.imageView.image = GetFallbackImageWithStringAndColor(credential.user);
+  cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
   cell.textLabel.text = credential.user;
+  cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   cell.detailTextLabel.text = credential.serviceName;
+  cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   return cell;
+}
+
+#pragma mark - UITableViewDelegate
+
+- (UIView*)tableView:(UITableView*)tableView
+    viewForHeaderInSection:(NSInteger)section {
+  UITableViewHeaderFooterView* view = [self.tableView
+      dequeueReusableHeaderFooterViewWithIdentifier:kHeaderIdentifier];
+  view.textLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+  view.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  return view;
 }
 
 #pragma mark - UISearchResultsUpdating

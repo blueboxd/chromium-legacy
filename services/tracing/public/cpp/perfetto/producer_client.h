@@ -50,10 +50,11 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       PerfettoTaskRunner*);
 
   // PerfettoProducer implementation.
-  bool SetupStartupTracing() override;
   void BindStartupTargetBuffer(
-      uint32_t startup_session_id,
+      uint16_t target_buffer_reservation_id,
       perfetto::BufferID startup_target_buffer) override;
+  void AbortStartupTracingForReservation(
+      uint16_t target_buffer_reservation_id) override;
   perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
@@ -104,12 +105,14 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void BindClientAndHostPipesForTesting(
       mojo::PendingReceiver<mojom::ProducerClient>,
       mojo::PendingRemote<mojom::ProducerHost>);
-  void ResetSequenceForTesting();
   perfetto::SharedMemory* shared_memory_for_testing();
 
  protected:
   // Protected for testing. Returns false if SMB creation failed.
   bool InitSharedMemoryIfNeeded();
+
+  // PerfettoProducer implementation.
+  bool SetupSharedMemoryForStartupTracing() override;
 
  private:
   friend class base::NoDestructor<ProducerClient>;
@@ -120,8 +123,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   // Called after a data source has completed a flush.
   void NotifyDataSourceFlushComplete(perfetto::FlushRequestID id);
-
-  bool InitSharedMemoryIfNeededLocked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   uint32_t data_sources_tracing_ = 0;
   std::unique_ptr<mojo::Receiver<mojom::ProducerClient>> receiver_;
@@ -139,9 +140,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   std::unique_ptr<MojoSharedMemory> shared_memory_ GUARDED_BY(lock_);
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_
       GUARDED_BY(lock_);
-  bool startup_tracing_active_ GUARDED_BY(lock_) = false;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<ProducerClient> weak_ptr_factory_{this};

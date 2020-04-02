@@ -234,6 +234,12 @@ class KeyframeEffectModel final : public KeyframeEffectModelBase {
         keyframes, composite_, default_keyframe_easing_);
   }
 
+  KeyframeEffectModel<StringKeyframe>* CloneAsEmptyStringKeyframeModel() {
+    HeapVector<Member<StringKeyframe>> empty_keyframes;
+    return MakeGarbageCollected<KeyframeEffectModel<StringKeyframe>>(
+        empty_keyframes, composite_, default_keyframe_easing_);
+  }
+
  private:
   bool IsStringKeyframeEffectModel() const override { return false; }
   bool IsTransitionKeyframeEffectModel() const override { return false; }

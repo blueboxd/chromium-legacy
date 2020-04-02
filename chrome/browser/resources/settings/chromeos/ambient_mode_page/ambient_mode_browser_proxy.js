@@ -25,6 +25,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(AmbientModeBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     AmbientModeBrowserProxy: AmbientModeBrowserProxy,
     AmbientModeBrowserProxyImpl: AmbientModeBrowserProxyImpl,

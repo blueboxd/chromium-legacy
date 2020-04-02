@@ -254,7 +254,7 @@ TEST_P(ParameterizedLayoutTextTest, CharacterAfterWhitespaceCollapsing) {
 
   SetBodyInnerHTML("a <span id=target> </span>b");
   layout_text = GetLayoutTextById("target");
-  DCHECK(!layout_text->HasTextBoxes());
+  DCHECK(!layout_text->HasInlineFragments());
   EXPECT_EQ(0, layout_text->FirstCharacterAfterWhitespaceCollapsing());
   EXPECT_EQ(0, layout_text->LastCharacterAfterWhitespaceCollapsing());
 
@@ -270,7 +270,7 @@ TEST_P(ParameterizedLayoutTextTest, CharacterAfterWhitespaceCollapsing) {
   EXPECT_EQ(' ', layout_text->LastCharacterAfterWhitespaceCollapsing());
   layout_text =
       ToLayoutText(GetLayoutObjectByElementId("target")->NextSibling());
-  DCHECK(!layout_text->HasTextBoxes());
+  DCHECK(!layout_text->HasInlineFragments());
   EXPECT_EQ(0, layout_text->FirstCharacterAfterWhitespaceCollapsing());
   EXPECT_EQ(0, layout_text->LastCharacterAfterWhitespaceCollapsing());
 

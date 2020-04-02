@@ -824,7 +824,6 @@ class FeaturePolicyMutationTest : public testing::Test {
 
     return result->feature == feature && result->fallback_value >= max_value &&
            result->opaque_value >= max_value && result->values.empty();
-    return true;
   }
 
   // Returns true if the policy contains a declaration for the feature which
@@ -840,7 +839,6 @@ class FeaturePolicyMutationTest : public testing::Test {
 
     return result->feature == feature && result->fallback_value <= min_value &&
            result->opaque_value <= min_value && result->values.empty();
-    return true;
   }
 
   const PolicyValue min_value = PolicyValue(false);

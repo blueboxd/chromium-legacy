@@ -9,8 +9,8 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.location.LocationUtils;
 
@@ -322,7 +322,8 @@ public class WebsitePreferenceBridge {
      */
     public static boolean requiresFourStateContentSetting(int contentSettingsType) {
         return contentSettingsType == ContentSettingsType.COOKIES
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS);
+                && ContentSettingsFeatureList.isEnabled(
+                        ContentSettingsFeatureList.IMPROVED_COOKIE_CONTROLS);
     }
 
     /**

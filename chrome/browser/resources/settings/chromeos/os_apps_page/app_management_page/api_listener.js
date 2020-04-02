@@ -60,5 +60,6 @@ cr.define('app_management.apiListener', function() {
 
   init();
 
+  // #cr_define_end
   return {};
 });

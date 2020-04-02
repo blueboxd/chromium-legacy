@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">繼續(&amp;R)</translation>
 <translation id="2136372518715274136">輸入新密碼</translation>
 <translation id="2136476978468204130">您輸入的密碼短語不正確</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{已封鎖 Cookie。}=1{已封鎖 Cookie，有 1 個例外情況}other{已封鎖 Cookie，有 {COUNT} 個例外情況}}</translation>
 <translation id="2138398485845393913">仍在連線至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="2139545522194199494">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，由管理員管理，連接</translation>
 <translation id="2139919072249842737">設定按鈕</translation>
@@ -1205,7 +1204,6 @@
 <translation id="2586672484245266891">請輸入較短的網址</translation>
 <translation id="2587922766792651800">已逾時</translation>
 <translation id="2588636910004461974">來自 <ph name="VENDOR_NAME" /> 的裝置</translation>
-<translation id="2593594315333286814">導覽的無障礙功能設定</translation>
 <translation id="2594999711683503743">搜尋 Google 或輸入網址</translation>
 <translation id="2602501489742255173">向上滑動即可開始</translation>
 <translation id="2603115962224169880">清理電腦</translation>
@@ -1877,6 +1875,7 @@
 <translation id="3479552764303398839">略過</translation>
 <translation id="3479685872808224578">偵測不到列印伺服器。請檢查地址，然後再試一次。</translation>
 <translation id="3481268647794498892">將於 <ph name="COUNTDOWN_SECONDS" /> 秒後在 <ph name="ALTERNATIVE_BROWSER_NAME" /> 中開啟</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> 可查看以下檔案</translation>
 <translation id="3484273680291419129">正在移除有害的軟件…</translation>
 <translation id="3484869148456018791">取得新憑證</translation>
 <translation id="3487007233252413104">匿名函數</translation>
@@ -1939,6 +1938,7 @@
 <translation id="3564848315152754834">USB 安全密鑰</translation>
 <translation id="3566721612727112615">沒有新增任何網站</translation>
 <translation id="3569382839528428029">您想讓 <ph name="APP_NAME" /> 共用您的螢幕嗎？</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> 可查看以下檔案和資料夾</translation>
 <translation id="3571734092741541777">設定</translation>
 <translation id="3574210789297084292">登入</translation>
 <translation id="3574917942258583917">仍要結束無痕模式嗎？</translation>
@@ -1948,6 +1948,7 @@
 <translation id="3578594933904494462">正在分享這個分頁的內容。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; 想與您的群組 (<ph name="GROUP_NAME" />) 共用打印機 &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。如果您接受，所有群組成員即可使用這部打印機列印。</translation>
 <translation id="357889014807611375">按用量收費的 Wi-Fi</translation>
+<translation id="3582057310199111521">已在欺詐網站上輸入，並發生資料外洩事件</translation>
 <translation id="3584169441612580296">讀取及變更您電腦中的相片、音樂及其他媒體</translation>
 <translation id="3586806079541226322">無法開啟此檔案</translation>
 <translation id="3586931643579894722">隱藏詳情</translation>
@@ -2211,7 +2212,6 @@
 <translation id="3873423927483480833">顯示 PIN</translation>
 <translation id="3873915545594852654">ARC++ 發生問題。</translation>
 <translation id="3879748587602334249">下載管理員</translation>
-<translation id="3881321138433527084">「安全瀏覽」功能已停用。請啟用此功能以確保網絡安全。</translation>
 <translation id="3882165008614329320">相機或檔案中的現有影片</translation>
 <translation id="3886446263141354045">您想存取此網站的要求已傳送至<ph name="NAME" /></translation>
 <translation id="3888550877729210209">正在使用「<ph name="LOCK_SCREEN_APP_NAME" />」寫筆記</translation>
@@ -3080,6 +3080,7 @@
 <translation id="5117930984404104619">監控其他擴充功能的行為 (包括瀏覽過的網址)</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">您的硬碟已滿。請儲存至其他位置或在硬碟上騰出更多空間。</translation>
+<translation id="5122384452788334261">裝置的儲存空間即將用完。使用 Plugin VM 至少需要 <ph name="RECOMMENDED_SPACE" /> 的可用空間。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="5123433949759960244">籃球</translation>
 <translation id="5125751979347152379">網址無效。</translation>
 <translation id="5126611267288187364">查看變更</translation>
@@ -5175,6 +5176,7 @@
 <translation id="7915471803647590281">請將發生的狀況告訴我們，然後再提供意見反映。</translation>
 <translation id="7918257978052780342">註冊</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> 秒</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> 可查看「<ph name="FILENAME" />」</translation>
 <translation id="7924358170328001543">轉送連接埠時發生錯誤</translation>
 <translation id="792514962475806987">固定放大鏡的縮放等級：</translation>
 <translation id="7925247922861151263">AAA 檢查失敗</translation>
@@ -5338,6 +5340,7 @@
 <translation id="8118488170956489476">您的<ph name="BEGIN_LINK" />瀏覽器由您的組織管理<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">管理下載內容</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />、<ph name="RECENT_PERMISSIONS_CHANGE_1" />、<ph name="RECENT_PERMISSIONS_CHANGE_2" />等權限</translation>
+<translation id="8120715633374652536">裝置的儲存空間即將用完。使用 Plugin VM 至少需要 <ph name="MINIMUM_SPACE" /> 的可用空間，並建議保留 <ph name="RECOMMENDED_SPACE" /> 的可用空間。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="8123590694679414600">系統已於 <ph name="TIME" />使用您的同步密碼短語加密資料。Google Pay 的付款方法和地址不會包括在內。</translation>
 <translation id="81238879832906896">黃色和白色的花</translation>
 <translation id="8124313775439841391">管理 ONC</translation>
@@ -5386,7 +5389,6 @@
 <translation id="8186609076106987817">伺服器無法找到這個檔案。</translation>
 <translation id="8188389033983459049">檢查您的裝置設定並開啟藍牙以繼續</translation>
 <translation id="8190193592390505034">正在連線至 <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">檢查 Google 帳戶。</translation>
 <translation id="8191230140820435481">管理您的應用程式、擴充功能和主題</translation>
 <translation id="8195027750202970175">磁碟大小</translation>
 <translation id="8198323535106903877">我們將為您安裝這 <ph name="NUMBER_OF_APPS" /> 個應用程式</translation>

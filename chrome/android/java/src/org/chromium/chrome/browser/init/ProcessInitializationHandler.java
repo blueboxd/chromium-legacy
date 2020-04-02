@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryDeletionBridge;
+import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.incognito.IncognitoTabLauncher;
@@ -65,7 +66,6 @@ import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -303,15 +303,16 @@ public class ProcessInitializationHandler {
 
                 AfterStartupTaskUtils.setStartupComplete();
 
-                PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
-                    @Override
-                    public void run() {
-                        String homepageUrl = HomepageManager.getHomepageUri();
-                        LaunchMetrics.recordHomePageLaunchMetrics(
-                                HomepageManager.isHomepageEnabled(),
-                                NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
-                    }
-                });
+                PartnerBrowserCustomizations.getInstance().setOnInitializeAsyncFinished(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                String homepageUrl = HomepageManager.getHomepageUri();
+                                LaunchMetrics.recordHomePageLaunchMetrics(
+                                        HomepageManager.isHomepageEnabled(),
+                                        NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
+                            }
+                        });
 
                 PowerMonitor.create();
 

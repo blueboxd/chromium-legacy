@@ -41,6 +41,7 @@ cr.define('app_management', function() {
    */
   const StoreClient = [cr.ui.StoreClient, AppManagementStoreClientImpl];
 
+  // #cr_define_end
   return {
     AppManagementStoreClientImpl: AppManagementStoreClientImpl,
     StoreClient: StoreClient,

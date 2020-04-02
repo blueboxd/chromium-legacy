@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Kennisgewingsentrum</translation>
 <translation id="1195412055398077112">oorskandeer</translation>
 <translation id="119944043368869598">Vee alles uit</translation>
+<translation id="1199716647557067911">Is jy seker jy wil Skakelaartoegang afskakel?</translation>
 <translation id="1247372569136754018">Mikrofoon (intern)</translation>
 <translation id="1252999807265626933">Laai vanaf <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hoe lyk die weer?</translation>
@@ -431,6 +432,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6537924328260219877">Seinsterkte <ph name="SIGNAL_STRENGTH" />, foonbattery <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Saai tans uit na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Vra administrateur</translation>
+<translation id="6584550827717945790">Skakel Skakelaartoegang af</translation>
 <translation id="6585808820553845416">Sessie eindig oor <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="6614169507485700968">Privaatheidskerm is aan</translation>

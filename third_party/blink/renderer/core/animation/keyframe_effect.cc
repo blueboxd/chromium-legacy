@@ -260,22 +260,17 @@ HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
 void KeyframeEffect::setKeyframes(ScriptState* script_state,
                                   const ScriptValue& keyframes,
                                   ExceptionState& exception_state) {
-  // TODO(crbug.com/799061): Support TransitionKeyframeEffectModel. This will
-  // require a lot of work as the setKeyframes API can mutate a transition
-  // Animation into a 'normal' one with multiple properties.
-  if (!Model()->IsStringKeyframeEffectModel()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Calling setKeyframes on CSS Transitions is not yet supported");
-    return;
-  }
-
   StringKeyframeVector new_keyframes = EffectInput::ParseKeyframesArgument(
       target(), keyframes, script_state, exception_state);
   if (exception_state.HadException())
     return;
 
   ignore_css_keyframes_ = true;
+
+  if (auto* model = DynamicTo<TransitionKeyframeEffectModel>(Model()))
+    SetModel(model->CloneAsEmptyStringKeyframeModel());
+
+  DCHECK(Model()->IsStringKeyframeEffectModel());
   SetKeyframes(new_keyframes);
 }
 

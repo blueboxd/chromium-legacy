@@ -22,9 +22,13 @@ source_set("android") {
     "features.cc",
     "features.h",
     "site_settings_feature_list.cc",
+    "storage_info_fetcher.cc",
+    "storage_info_fetcher.h",
   ]
   deps = [
     ":site_settings_jni_headers",
     "//base",
+    "//content/public/browser",
+    "//storage/browser",
   ]
 }

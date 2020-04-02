@@ -13,6 +13,7 @@ include_rules = [
   "+components/browser_ui/util/android",
   "+components/browser_ui/widget/android",
   "+components/content_capture",
+  "+components/content_settings",
   "+components/download",
   "+components/embedder_support/android",
   "+components/external_intents/android",

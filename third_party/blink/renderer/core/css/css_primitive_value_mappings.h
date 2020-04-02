@@ -1957,6 +1957,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(TextUnderlinePosition position)
     case kTextUnderlinePositionAuto:
       value_id_ = CSSValueID::kAuto;
       break;
+    case kTextUnderlinePositionFromFont:
+      value_id_ = CSSValueID::kFromFont;
+      break;
     case kTextUnderlinePositionUnder:
       value_id_ = CSSValueID::kUnder;
       break;
@@ -1974,6 +1977,8 @@ inline TextUnderlinePosition CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueID::kAuto:
       return kTextUnderlinePositionAuto;
+    case CSSValueID::kFromFont:
+      return kTextUnderlinePositionFromFont;
     case CSSValueID::kUnder:
       return kTextUnderlinePositionUnder;
     case CSSValueID::kLeft:

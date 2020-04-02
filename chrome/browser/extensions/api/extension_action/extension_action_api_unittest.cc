@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/extension_test_util.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/test/test_extension_dir.h"
 
@@ -17,7 +21,9 @@ class ExtensionActionAPIUnitTest
     : public ExtensionServiceTestWithInstall,
       public ::testing::WithParamInterface<ActionInfo::Type> {
  public:
-  ExtensionActionAPIUnitTest() {}
+  ExtensionActionAPIUnitTest()
+      : current_channel_(
+            extension_test_util::GetOverrideChannelForActionType(GetParam())) {}
   ~ExtensionActionAPIUnitTest() override {}
 
   const char* GetManifestKey() {
@@ -47,6 +53,8 @@ class ExtensionActionAPIUnitTest
   }
 
  private:
+  std::unique_ptr<ScopedCurrentChannel> current_channel_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionAPIUnitTest);
 };
 

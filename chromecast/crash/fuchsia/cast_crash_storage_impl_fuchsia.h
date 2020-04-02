@@ -5,13 +5,17 @@
 #ifndef CHROMECAST_CRASH_FUCHSIA_CAST_CRASH_STORAGE_IMPL_FUCHSIA_H_
 #define CHROMECAST_CRASH_FUCHSIA_CAST_CRASH_STORAGE_IMPL_FUCHSIA_H_
 
+#include <fuchsia/feedback/cpp/fidl.h>
+#include <lib/sys/cpp/service_directory.h>
+
 #include "chromecast/crash/cast_crash_storage.h"
 
 namespace chromecast {
 
 class CastCrashStorageImplFuchsia : public CastCrashStorage {
  public:
-  CastCrashStorageImplFuchsia();
+  explicit CastCrashStorageImplFuchsia(
+      const sys::ServiceDirectory* incoming_directory);
   ~CastCrashStorageImplFuchsia() final;
   CastCrashStorageImplFuchsia& operator=(const CastCrashStorageImplFuchsia&) =
       delete;
@@ -26,6 +30,12 @@ class CastCrashStorageImplFuchsia : public CastCrashStorage {
   void ClearPreviousApp() final;
   void SetStadiaSessionId(base::StringPiece session_id) final;
   void ClearStadiaSessionId() final;
+
+ private:
+  void UpsertAnnotations(
+      std::vector<fuchsia::feedback::Annotation> annotations);
+
+  const sys::ServiceDirectory* const incoming_directory_;
 };
 
 }  // namespace chromecast

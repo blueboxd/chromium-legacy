@@ -283,6 +283,7 @@ source_set("url_lookup_service_factory") {
 
   deps = [
     ":verdict_cache_manager_factory",
+    "//chrome/common",
     "//components/keyed_service/content",
     "//components/safe_browsing/core/realtime:url_lookup_service",
     "//components/signin/public/identity_manager",

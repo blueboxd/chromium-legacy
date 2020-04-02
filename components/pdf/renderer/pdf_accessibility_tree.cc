@@ -282,6 +282,13 @@ bool IsObjectInTextRun(const std::vector<T>& objects,
           objects[object_index].text_run_index <= text_run_index);
 }
 
+size_t NormalizeTextRunIndex(uint32_t object_end_text_run_index,
+                             size_t current_text_run_index) {
+  return std::max<size_t>(
+      object_end_text_run_index,
+      current_text_run_index ? current_text_run_index - 1 : 0);
+}
+
 bool IsTextRenderModeFill(const PP_TextRenderingMode& mode) {
   switch (mode) {
     case PP_TEXTRENDERINGMODE_FILL:
@@ -567,7 +574,7 @@ void PdfAccessibilityTree::AddPageContent(
           link_node->relative_bounds.bounds);
 
       text_run_index =
-          std::max<size_t>(link_end_text_run_index, text_run_index);
+          NormalizeTextRunIndex(link_end_text_run_index, text_run_index);
     } else if (IsObjectInTextRun(images, current_image_index, text_run_index)) {
       FinishStaticNode(&static_text_node, &static_text);
       // If the |text_run_index| is less than or equal to the image's text run
@@ -604,7 +611,7 @@ void PdfAccessibilityTree::AddPageContent(
           highlight_node->relative_bounds.bounds);
 
       text_run_index =
-          std::max<size_t>(highlight_end_text_run_index, text_run_index);
+          NormalizeTextRunIndex(highlight_end_text_run_index, text_run_index);
     } else if (IsObjectInTextRun(text_fields, current_text_field_index,
                                  text_run_index) &&
                base::FeatureList::IsEnabled(

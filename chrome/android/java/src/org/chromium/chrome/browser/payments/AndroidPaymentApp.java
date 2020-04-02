@@ -18,9 +18,9 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.ErrorStrings;
-import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.intent.IsReadyToPayServiceHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -58,24 +58,30 @@ public class AndroidPaymentApp extends PaymentApp
     @Nullable
     private String mApplicationIdentifierToHide;
     private boolean mBypassIsReadyToPayServiceInTest;
+    private final SupportedDelegations mSupportedDelegations;
+
+    // Set inside launchPaymentApp and used to validate the received response.
+    @Nullable
+    private WebPaymentIntentHelperType.PaymentOptions mPaymentOptions;
 
     /**
      * Builds the point of interaction with a locally installed 3rd party native Android payment
      * app.
      *
-     * @param webContents         The web contents.
-     * @param packageName         The name of the package of the payment app.
-     * @param activity            The name of the payment activity in the payment app.
+     * @param webContents The web contents.
+     * @param packageName The name of the package of the payment app.
+     * @param activity The name of the payment activity in the payment app.
      * @param isReadyToPayService The name of the service that can answer "is ready to pay" query,
-     *                            or null of none.
-     * @param label               The UI label to use for the payment app.
-     * @param icon                The icon to use in UI for the payment app.
-     * @param isIncognito         Whether the user is in incognito mode.
-     * @param appToHide           The identifier of the application that this app can hide.
+     *         or null of none.
+     * @param label The UI label to use for the payment app.
+     * @param icon The icon to use in UI for the payment app.
+     * @param isIncognito Whether the user is in incognito mode.
+     * @param appToHide The identifier of the application that this app can hide.
+     * @param supportedDelegations Delegations which this app can support.
      */
     public AndroidPaymentApp(WebContents webContents, String packageName, String activity,
             @Nullable String isReadyToPayService, String label, Drawable icon, boolean isIncognito,
-            @Nullable String appToHide) {
+            @Nullable String appToHide, SupportedDelegations supportedDelegations) {
         super(packageName, label, null, icon);
         ThreadUtils.assertOnUiThread();
         mHandler = new Handler();
@@ -92,6 +98,7 @@ public class AndroidPaymentApp extends PaymentApp
         mMethodNames = new HashSet<>();
         mIsIncognito = isIncognito;
         mApplicationIdentifierToHide = appToHide;
+        mSupportedDelegations = supportedDelegations;
     }
 
     /** @param methodName A payment method that this app supports, e.g., "https://bobpay.com". */
@@ -175,7 +182,8 @@ public class AndroidPaymentApp extends PaymentApp
         final String schemelessIframeOrigin = removeUrlScheme(iframeOrigin);
         if (!mIsIncognito) {
             launchPaymentApp(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
-                    certificateChain, methodDataMap, total, displayItems, modifiers);
+                    certificateChain, methodDataMap, total, displayItems, modifiers, paymentOptions,
+                    shippingOptions);
             return;
         }
 
@@ -192,13 +200,34 @@ public class AndroidPaymentApp extends PaymentApp
                         (OnClickListener) (dialog, which)
                                 -> launchPaymentApp(id, merchantName, schemelessOrigin,
                                         schemelessIframeOrigin, certificateChain, methodDataMap,
-                                        total, displayItems, modifiers))
+                                        total, displayItems, modifiers, paymentOptions,
+                                        shippingOptions))
                 .setNegativeButton(R.string.cancel,
                         (OnClickListener) (dialog, which)
                                 -> notifyErrorInvokingPaymentApp(ErrorStrings.USER_CANCELLED))
                 .setOnCancelListener(
                         dialog -> notifyErrorInvokingPaymentApp(ErrorStrings.USER_CANCELLED))
                 .show();
+    }
+
+    @Override
+    public boolean handlesShippingAddress() {
+        return mSupportedDelegations.getShippingAddress();
+    }
+
+    @Override
+    public boolean handlesPayerName() {
+        return mSupportedDelegations.getPayerName();
+    }
+
+    @Override
+    public boolean handlesPayerEmail() {
+        return mSupportedDelegations.getPayerEmail();
+    }
+
+    @Override
+    public boolean handlesPayerPhone() {
+        return mSupportedDelegations.getPayerPhone();
     }
 
     private static String removeUrlScheme(String url) {
@@ -208,9 +237,12 @@ public class AndroidPaymentApp extends PaymentApp
     private void launchPaymentApp(String id, String merchantName, String origin,
             String iframeOrigin, byte[][] certificateChain,
             Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
-            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers) {
+            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
+            PaymentOptions paymentOptions, List<PaymentShippingOption> shippingOptions) {
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentDetailsCallback != null;
+        mPaymentOptions =
+                WebPaymentIntentHelperTypeConverter.fromMojoPaymentOptions(paymentOptions);
 
         if (mWebContents.isDestroyed()) {
             notifyErrorInvokingPaymentApp(ErrorStrings.PAYMENT_APP_LAUNCH_FAIL);
@@ -228,7 +260,9 @@ public class AndroidPaymentApp extends PaymentApp
                 WebPaymentIntentHelperTypeConverter.fromMojoPaymentMethodDataMap(methodDataMap),
                 WebPaymentIntentHelperTypeConverter.fromMojoPaymentItem(total),
                 WebPaymentIntentHelperTypeConverter.fromMojoPaymentItems(displayItems),
-                WebPaymentIntentHelperTypeConverter.fromMojoPaymentDetailsModifierMap(modifiers));
+                WebPaymentIntentHelperTypeConverter.fromMojoPaymentDetailsModifierMap(modifiers),
+                mPaymentOptions,
+                WebPaymentIntentHelperTypeConverter.fromMojoShippingOptionList(shippingOptions));
         try {
             if (!window.showIntent(payIntent, this, R.string.payments_android_app_error)) {
                 notifyErrorInvokingPaymentApp(ErrorStrings.PAYMENT_APP_LAUNCH_FAIL);
@@ -247,12 +281,12 @@ public class AndroidPaymentApp extends PaymentApp
     public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
         ThreadUtils.assertOnUiThread();
         window.removeIntentCallback(this);
-        WebPaymentIntentHelper.parsePaymentResponse(resultCode, data,
+        WebPaymentIntentHelper.parsePaymentResponse(resultCode, data, mPaymentOptions,
                 (errorString)
                         -> notifyErrorInvokingPaymentApp(errorString),
-                (methodName, details)
+                (methodName, details, payerData)
                         -> mInstrumentDetailsCallback.onInstrumentDetailsReady(
-                                methodName, details, new PayerData()));
+                                methodName, details, payerData));
         mInstrumentDetailsCallback = null;
     }
 

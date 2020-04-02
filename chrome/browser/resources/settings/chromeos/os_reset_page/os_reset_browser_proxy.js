@@ -33,6 +33,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(OsResetBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     OsResetBrowserProxy: OsResetBrowserProxy,
     OsResetBrowserProxyImpl: OsResetBrowserProxyImpl,

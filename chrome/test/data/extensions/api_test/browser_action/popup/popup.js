@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function notify_pass() {
-  // We should be done.  Let the test harness know.
-  chrome.test.notifyPass();
-}
-
 function run_tests() {
   // Compute the size of the popup.
   var width = 0;
@@ -29,10 +24,6 @@ function run_tests() {
   width += 500;
   localStorage.height = JSON.stringify(height);
   localStorage.width = JSON.stringify(width);
-
-  // Allow for the pop-up resize to happen (asynchronously)
-  // before saying that the test is done.
-  window.setTimeout(notify_pass, 0);
 }
 
 window.addEventListener("load", function() {

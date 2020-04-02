@@ -8,6 +8,8 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.IntDef;
+
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -23,6 +25,9 @@ import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Interface to get access to components concerning tab management.
  * TODO(crbug.com/982018): Move DFM configurations to 'chrome/android/modules/start_surface/'
@@ -30,17 +35,25 @@ import org.chromium.ui.modelutil.PropertyModel;
 @ModuleInterface(module = "tab_management",
         impl = "org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateImpl")
 public interface TabManagementDelegate {
+    @IntDef({TabSwitcherType.GRID, TabSwitcherType.CAROUSEL, TabSwitcherType.SINGLE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TabSwitcherType {
+        int GRID = 0;
+        int CAROUSEL = 1;
+        int SINGLE = 2;
+    }
+
     /**
      * Create the {@link TasksSurface}
      * @param activity The {@link ChromeActivity} that creates this surface.
      * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties} to
      *         communicate with this surface.
-     * @param isTabCarousel Whether show the Tabs in carousel mode.
+     * @param tabSwitcherType The type of the tab switcher to show.
      * @param hasMVTiles whether has MV tiles on the surface.
      * @return The {@link TasksSurface}.
      */
     TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            boolean isTabCarousel, boolean hasMVTiles);
+            @TabSwitcherType int tabSwitcherType, boolean hasMVTiles);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.

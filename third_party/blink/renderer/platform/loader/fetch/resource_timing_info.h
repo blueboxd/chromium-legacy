@@ -51,8 +51,10 @@ class PLATFORM_EXPORT ResourceTimingInfo
   static scoped_refptr<ResourceTimingInfo> Create(
       const AtomicString& type,
       const base::TimeTicks time,
-      mojom::RequestContextType context) {
-    return base::AdoptRef(new ResourceTimingInfo(type, time, context));
+      mojom::RequestContextType context,
+      network::mojom::RequestDestination destination) {
+    return base::AdoptRef(
+        new ResourceTimingInfo(type, time, context, destination));
   }
   base::TimeTicks InitialTime() const { return initial_time_; }
 
@@ -91,6 +93,9 @@ class PLATFORM_EXPORT ResourceTimingInfo
   }
   bool NegativeAllowed() const { return negative_allowed_; }
   mojom::RequestContextType ContextType() const { return context_type_; }
+  network::mojom::RequestDestination RequestDestination() const {
+    return request_destination_;
+  }
 
   void SetWorkerTimingReceiver(
       mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
@@ -106,12 +111,17 @@ class PLATFORM_EXPORT ResourceTimingInfo
  private:
   ResourceTimingInfo(const AtomicString& type,
                      const base::TimeTicks time,
-                     mojom::RequestContextType context_type)
-      : type_(type), initial_time_(time), context_type_(context_type) {}
+                     mojom::RequestContextType context_type,
+                     network::mojom::RequestDestination request_destination)
+      : type_(type),
+        initial_time_(time),
+        context_type_(context_type),
+        request_destination_(request_destination) {}
 
   AtomicString type_;
   base::TimeTicks initial_time_;
   mojom::RequestContextType context_type_;
+  network::mojom::RequestDestination request_destination_;
   base::TimeTicks load_response_end_;
   KURL initial_url_;
   ResourceResponse final_response_;

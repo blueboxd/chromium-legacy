@@ -169,6 +169,7 @@
 <translation id="1644574205037202324">ചരിത്രം</translation>
 <translation id="1645368109819982629">പ്രോട്ടോക്കോൾ പിന്തുണയ്‌ക്കുന്നില്ല</translation>
 <translation id="1652415888492971589">JIS B8</translation>
+<translation id="1656024727720460136">വായന എളുപ്പമാക്കുന്നതിന് Chrome ഈ പേജ് ലളിതമാക്കി. സുരക്ഷിത കണക്ഷനിലൂടെ Chrome ഒറിജിനൽ പേജ് വീണ്ടെടുത്തു.</translation>
 <translation id="1656489000284462475">പിക്കപ്പ്</translation>
 <translation id="1662550410081243962">പേയ്‌മെന്റ് രീതികൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="1663943134801823270">കാർഡുകളും വിലാസങ്ങളും Chrome-ൽ നിന്നുള്ളതാണ്. നിങ്ങൾക്ക് അവ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> മാനേജ് ചെയ്യാം.</translation>
@@ -560,6 +561,7 @@
 <translation id="342781501876943858">മറ്റ് സൈറ്റുകളിൽ നിങ്ങളുടെ പാസ്‌വേഡ് പുനരുപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chromium ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates സെർവർ ടെംപ്ലേറ്റ് URI-കളിൽ ഒന്നോ അതിലധികമോ അസാധുവാണ്, അവ ഉപയോഗിക്കില്ല.</translation>
 <translation id="3431636764301398940">ഈ ഉപകരണത്തിലേക്ക് ഈ കാർഡ് സംരക്ഷിക്കുക</translation>
+<translation id="3432601291244612633">പേജ് അടയ്ക്കുക</translation>
 <translation id="3443726618221119081">ജുറോ-കു-കായ്</translation>
 <translation id="3447661539832366887">ഈ ഉപകരണത്തിന്റെ ഉടമ ദിനോസർ ഗെയിം ഓഫാക്കി.</translation>
 <translation id="3447884698081792621">സർട്ടിഫിക്കറ്റ് (<ph name="ISSUER" /> ഇഷ്യൂ ചെയ്‌തത്) കാണിക്കുക</translation>
@@ -865,6 +867,7 @@
 <translation id="4731967714531604179">Prc2 (എൻവലപ്പ്)</translation>
 <translation id="4733082559415072992">നിങ്ങളുടെ ഉപകരണത്തിന്‍റെ ലൊക്കേഷൻ ഉപയോഗിക്കാൻ <ph name="URL" /> ആഗ്രഹിക്കുന്നു</translation>
 <translation id="4736825316280949806">Chromium റീസ്‌റ്റാർട്ടുചെയ്യുക</translation>
+<translation id="4737121147659370456">നിങ്ങളുടെ അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസറിൽ Chrome എന്റർപ്രൈസ് കണക്റ്ററുകൾ പ്രവർത്തനക്ഷമമാക്കിയിരിക്കുന്നു. ഈ കണക്‌റ്ററുകൾക്ക് നിങ്ങളുടെ ചില ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ട്.</translation>
 <translation id="473775607612524610">അപ്ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="4738601419177586157"><ph name="TEXT" /> തിരയൽ നിർദ്ദേശം</translation>
 <translation id="4742407542027196863">പാസ്‌വേഡുകൾ മാനേജ് ചെയ്യുക…</translation>
@@ -1202,6 +1205,8 @@
 <translation id="610911394827799129">നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="6116338172782435947">ക്ലിപ്പ്‌ബോർഡിലേക്ക് പകർത്തിയിട്ടുള്ള ടെക്‌സ്റ്റും ചിത്രങ്ങളും കാണുക</translation>
 <translation id="6120179357481664955">നിങ്ങളുടെ UPI ഐഡി ഓർമ്മയുണ്ടോ?</translation>
+<translation id="6124432979022149706">Chrome എന്റർപ്രൈസ് കണക്റ്ററുകൾ</translation>
+<translation id="6135641591018127088">ശക്തമായ പാസ്‌വേഡ് സൃഷ്‌ടിക്കാൻ, നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിക്കുക</translation>
 <translation id="6146055958333702838">എല്ലാ കേബിളുകളും പരിശോധിക്കുക ഒപ്പം ഏതെങ്കിലും റൂട്ടറുകൾ, മോഡങ്ങൾ നിങ്ങൾ ഉപയോഗിക്കാനിടയുള്ള
         മറ്റ് നെറ്റ്‌വർക്ക് ഉപകരണങ്ങൾ എന്നിവ റീബൂട്ട് ചെയ്യുക.</translation>
 <translation id="614940544461990577">പരീക്ഷിച്ചുനോക്കൂ:</translation>
@@ -1247,6 +1252,7 @@
 <translation id="6328639280570009161">നെറ്റ്‌വർക്ക് പ്രവചനം പ്രവർത്തനരഹിതമാക്കാൻ ശ്രമിക്കുക</translation>
 <translation id="6328784461820205019">"നിങ്ങളുടെ കണക്ഷൻ സ്വകാര്യമല്ല" അല്ലെങ്കിൽ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" അല്ലെങ്കിൽ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" അല്ലെങ്കിൽ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" അല്ലെങ്കിൽ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" അല്ലെങ്കിൽ "SSL സർട്ടിഫിക്കറ്റ് പിശക്"</translation>
 <translation id="6328786501058569169">ഈ സൈറ്റ് വഞ്ചനാപരമായതാണ്</translation>
+<translation id="6333334544069706521">നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംഭരിച്ചിരിക്കുന്ന പാസ്‌വേഡുകൾ ഉപയോഗിക്കുക</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />-യിൽ കുറഞ്ഞ ഡാറ്റ ലാഭിക്കുന്നു.അടുത്തതവണ നിങ്ങൾ സന്ദർശിക്കുമ്പോൾ ചില സൈറ്റുകൾ ഇതിനേക്കാൾ പതുക്കെ ലോഡാകാം.</translation>
 <translation id="6337534724793800597">പേരിന്‍റെ ക്രമത്തിൽ നയങ്ങൾ ഫിൽട്ടർ ചെയ്യുക</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{ഒന്നുമില്ല}=1{<ph name="DOMAIN_LIST" /> എന്നതിനുള്ള ഒരു പാസ്‌വേഡ് (സമന്വയിപ്പിച്ചത്)}=2{<ph name="DOMAIN_LIST" /> എന്നതിനുള്ള 2 പാസ്‌വേഡുകൾ (സമന്വയിപ്പിച്ചത്)}other{<ph name="DOMAIN_LIST" /> എന്നതിനുള്ള# പാസ്‌വേഡുകൾ (സമന്വയിപ്പിച്ചത്)}}</translation>
@@ -1292,6 +1298,7 @@
 <translation id="6521745193039995384">സജീവമല്ല</translation>
 <translation id="6529602333819889595">&amp;ഇല്ലാതാക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="6534179046333460208">ഫിസിക്കൽ വെബ് നിർദ്ദേശങ്ങൾ</translation>
+<translation id="6543609420755597723">Chrome എന്റർപ്രൈസ് കണക്റ്ററുകൾ ഫ്ലാഗ് ചെയ്ത സുരക്ഷാ ഇവന്റുകളെ കുറിച്ചുള്ള ഡാറ്റ നിങ്ങളുടെ അഡ്‌മിനുമായി പങ്കിടുക. നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ, ഫയലിന്റെ പേരുകൾ അല്ലെങ്കിൽ മെറ്റാഡാറ്റ, ഉപകരണത്തിലേക്കും Chrome-ലേക്കും സൈൻ ഇൻ ചെയ്യാൻ നിങ്ങൾ ഉപയോഗിക്കുന്ന ഉപയോക്തൃനാമം എന്നിവ ഇതിൽ ഉൾപ്പെട്ടേക്കാം.</translation>
 <translation id="6545864417968258051">Bluetooth സ്‌കാനിംഗ്</translation>
 <translation id="6547208576736763147">ഇടതുവശത്ത് ഇരട്ട പഞ്ച് ചെയ്യുക</translation>
 <translation id="6554795675067793129">നിങ്ങളുടെ അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="ENROLLMENT_DOMAIN" /> ആണ്.</translation>
@@ -1357,6 +1364,7 @@
 <translation id="6874604403660855544">&amp;ചേർത്തത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="6884662655240309489">വലുപ്പം 1</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
+<translation id="6888584790432772780">വായന എളുപ്പമാക്കുന്നതിന് Chrome ഈ പേജ് ലളിതമാക്കി. സുരക്ഷിതമല്ലാത്ത കണക്ഷനിലൂടെ Chrome ഒറിജിനൽ പേജ് വീണ്ടെടുത്തു.</translation>
 <translation id="6891596781022320156">നയ നില പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="6895330447102777224">നിങ്ങളുടെ കാർഡ് സ്ഥിരീകരിച്ചു</translation>
 <translation id="6897140037006041989">ഉപയോക്തൃ ഏജന്‍റ്</translation>
@@ -1583,6 +1591,7 @@
 <translation id="777702478322588152">പ്രിഫെക്ച്വര്‍</translation>
 <translation id="7791196057686275387">ബെയ്‌ൽ</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
+<translation id="7798389633136518089">ക്ലൗഡ് ഉറവിടം ഒരു നയം സജ്ജീകരിച്ചിട്ടില്ലാത്തതിനാൽ അവഗണിച്ചു.</translation>
 <translation id="7800304661137206267">സന്ദേശ പരിശോധിച്ചുറപ്പിക്കലിനായി <ph name="KX" /> കീ എക്സേഞ്ച് മെക്കാനിസമായി <ph name="CIPHER" /> ഉപയോഗിച്ച് ഈ കണക്ഷനെ <ph name="MAC" /> എന്നതുമായി എന്‍‌ക്രിപ്റ്റ് ചെയ്തിരിക്കുന്നു.</translation>
 <translation id="7802523362929240268">സൈറ്റ് നിയമാനുസൃതമാണ്</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
@@ -1718,6 +1727,7 @@
 <translation id="8371889962595521444">ഇഷ്‌ടാനുസൃത റൂട്ട് സർട്ടിഫിക്കറ്റുകൾ</translation>
 <translation id="8380941800586852976">അപകടകരമായത്</translation>
 <translation id="8381674639488873545">ഈ നിരക്കുകൾ ഒറ്റത്തവണ അടയ്ക്കുന്നതോ ആവർത്തിക്കുന്നതോ ആവാം, ഒപ്പം വ്യക്തമല്ലായിരിക്കാം. <ph name="BEGIN_LINK" />എന്തായാലും കാണിക്കുക<ph name="END_LINK" /></translation>
+<translation id="8405166164747488837"><ph name="ENROLLMENT_DOMAIN" /> നിങ്ങളുടെ ബ്രൗസറിൽ Chrome എന്റർപ്രൈസ് കണക്റ്ററുകൾ പ്രവർത്തനക്ഷമമാക്കിയിരിക്കുന്നു. ഈ കണക്‌റ്ററുകൾക്ക് നിങ്ങളുടെ ചില ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ട്.</translation>
 <translation id="8412145213513410671">ക്രാഷുകള്‍ <ph name="CRASH_COUNT" /></translation>
 <translation id="8412392972487953978">നിങ്ങള്‍ സമാന പാസ്ഫ്രെയ്സ് രണ്ടുതവണ നല്‍കണം.</translation>
 <translation id="8416694386774425977">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ അസാധുവായതിനാൽ ഇമ്പോർട്ട് ചെയ്യാൻ കഴിഞ്ഞില്ല.

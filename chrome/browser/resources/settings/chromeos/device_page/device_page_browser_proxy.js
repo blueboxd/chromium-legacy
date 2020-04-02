@@ -261,6 +261,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(DevicePageBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     BatteryStatus,
     DevicePageBrowserProxy,

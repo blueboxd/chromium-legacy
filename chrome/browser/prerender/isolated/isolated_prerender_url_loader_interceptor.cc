@@ -12,7 +12,6 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_from_string_url_loader.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -67,6 +66,7 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
                               tentative_resource_request, std::move(prefetch)));
     return;
   }
+  NotifyPrefetchUsage(IsolatedPrerenderTabHelper::PrefetchUsage::kPrefetchUsed);
   InterceptPrefetchedNavigation(tentative_resource_request,
                                 std::move(prefetch));
 }
@@ -90,9 +90,13 @@ void IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete(
     base::OnceClosure on_success_callback,
     bool success) {
   if (success) {
+    NotifyPrefetchUsage(
+        IsolatedPrerenderTabHelper::PrefetchUsage::kPrefetchUsedProbeSuccess);
     std::move(on_success_callback).Run();
     return;
   }
+  NotifyPrefetchUsage(
+      IsolatedPrerenderTabHelper::PrefetchUsage::kPrefetchNotUsedProbeFailed);
   DoNotInterceptNavigation();
 }
 
@@ -182,4 +186,20 @@ IsolatedPrerenderURLLoaderInterceptor::GetPrefetchedResponse(const GURL& url) {
     return nullptr;
 
   return tab_helper->TakePrefetchResponse(url);
+}
+
+void IsolatedPrerenderURLLoaderInterceptor::NotifyPrefetchUsage(
+    IsolatedPrerenderTabHelper::PrefetchUsage usage) const {
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  if (!web_contents) {
+    return;
+  }
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return;
+
+  tab_helper->OnPrefetchUsage(usage);
 }

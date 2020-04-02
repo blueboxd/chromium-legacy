@@ -336,7 +336,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Force a partner customizations refresh if it has yet to be initialized.  This can happen
         // if Chrome is killed and you refocus a previous activity from Android recents, which does
         // not go through ChromeLauncherActivity that would have normally triggered this.
-        mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.isInitialized();
+        mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.getInstance().isInitialized();
 
         CommandLine commandLine = CommandLine.getInstance();
         if (!commandLine.hasSwitch(ChromeSwitches.DISABLE_FULLSCREEN)) {
@@ -1099,9 +1099,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         if (mPartnerBrowserRefreshNeeded) {
             mPartnerBrowserRefreshNeeded = false;
-            PartnerBrowserCustomizations.initializeAsync(getApplicationContext(),
-                    PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
-            PartnerBrowserCustomizations.setOnInitializeAsyncFinished(() -> {
+            PartnerBrowserCustomizations.getInstance().initializeAsync(
+                    getApplicationContext(), PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
+            PartnerBrowserCustomizations.getInstance().setOnInitializeAsyncFinished(() -> {
                 if (PartnerBrowserCustomizations.isIncognitoDisabled()) {
                     terminateIncognitoSession();
                 }

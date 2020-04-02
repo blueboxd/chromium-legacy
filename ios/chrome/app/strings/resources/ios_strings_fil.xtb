@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">Walang mga item</translation>
 <translation id="1692118695553449118">Naka-on ang pag-sync</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ang napili</translation>
-<translation id="1727016672946926483">Ibahagi bilang QR code</translation>
 <translation id="1740468249224277719">I-double tap upang i-install.</translation>
 <translation id="1746815479209538200">Para mag-browse sa web, magdagdag ng bagong tab.</translation>
 <translation id="1752547299766512813">I-save ang Mga Password</translation>
@@ -486,7 +485,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="734758817008927353">Mga opsyon para Mag-save ng Card</translation>
 <translation id="7348502496356775519">Bookmark</translation>
 <translation id="7383797227493018512">Listahan ng Babasahin</translation>
-<translation id="7392048574806661116">Mag-sign Out at I-clear ang Naka-sync na Data</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> (na) hindi pa nababasang artikulo.</translation>
 <translation id="7425346204213733349">Hindi na masi-sync sa Google Account mo ang mga pagbabago sa iyong mga bookmark, history, password, at iba pang setting. Gayunpaman, mananatiling naka-store sa Google account mo ang iyong kasalukuyang data.</translation>

@@ -536,7 +536,8 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
 }
 
 GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    defined(OS_WIN)
   GrVkImageInfo image_info;
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
@@ -569,6 +570,10 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glImportMemoryZirconHandleANGLEFn(
         memory_object, image_info.fAlloc.fSize, GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE,
         vmo.release());
+#elif defined(OS_WIN)
+    // TODO(penghuang): support interop on Windows
+    NOTIMPLEMENTED();
+    return 0;
 #else
 #error Unsupported OS
 #endif
@@ -617,7 +622,8 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     return nullptr;
   }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    defined(OS_WIN)
   if (!texture_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -645,7 +651,7 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
   }
   return std::make_unique<ExternalVkImageGLRepresentation>(
       manager, this, tracker, texture_, texture_->service_id());
-#else  // !defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#else
 #error Unsupported OS
 #endif
 }
@@ -660,7 +666,8 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
     return nullptr;
   }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    defined(OS_WIN)
   if (!texture_passthrough_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -677,7 +684,7 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
 
   return std::make_unique<ExternalVkImageGLPassthroughRepresentation>(
       manager, this, tracker, texture_passthrough_->service_id());
-#else  // !defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#else
 #error Unsupported OS
 #endif
 }

@@ -16,6 +16,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
@@ -42,12 +43,16 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -56,6 +61,8 @@
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_utils.h"
@@ -111,6 +118,31 @@ class TestCustomProxyConfigClient
   base::OnceClosure update_closure_;
 };
 
+class AuthChallengeObserver : public content::NotificationObserver {
+ public:
+  explicit AuthChallengeObserver(content::WebContents* web_contents) {
+    registrar_.Add(this, chrome::NOTIFICATION_AUTH_NEEDED,
+                   content::Source<content::NavigationController>(
+                       &web_contents->GetController()));
+  }
+  ~AuthChallengeObserver() override = default;
+
+  bool GotAuthChallenge() const { return got_auth_challenge_; }
+
+  void Reset() { got_auth_challenge_ = false; }
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    got_auth_challenge_ |= type == chrome::NOTIFICATION_AUTH_NEEDED;
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  bool got_auth_challenge_ = false;
+};
+
 }  // namespace
 
 // Occasional flakes on Windows (https://crbug.com/1045971).
@@ -136,9 +168,9 @@ class IsolatedPrerenderBrowserTest
     proxy_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     proxy_server_->ServeFilesFromSourceDirectory("chrome/test/data");
-    proxy_server_->RegisterRequestMonitor(base::BindRepeating(
-        &IsolatedPrerenderBrowserTest::MonitorProxyResourceRequest,
-        base::Unretained(this)));
+    proxy_server_->RegisterRequestHandler(
+        base::BindRepeating(&IsolatedPrerenderBrowserTest::HandleProxyRequest,
+                            base::Unretained(this)));
     EXPECT_TRUE(proxy_server_->Start());
 
     config_server_ = std::make_unique<net::EmbeddedTestServer>(
@@ -168,6 +200,8 @@ class IsolatedPrerenderBrowserTest
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+
     // Ensure the service gets created before the tests start.
     IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
 
@@ -180,6 +214,7 @@ class IsolatedPrerenderBrowserTest
     InProcessBrowserTest::SetUpCommandLine(cmd);
     // For the proxy.
     cmd->AppendSwitch("ignore-certificate-errors");
+    cmd->AppendSwitch("force-enable-metrics-reporting");
     cmd->AppendSwitchASCII(
         data_reduction_proxy::switches::kDataReductionProxyConfigURL,
         config_server_->base_url().spec());
@@ -268,6 +303,29 @@ class IsolatedPrerenderBrowserTest
     }
   }
 
+  void VerifyUKMEntry(const GURL& url,
+                      const std::string& metric_name,
+                      base::Optional<int64_t> expected_value) {
+    SCOPED_TRACE(metric_name);
+
+    auto entries = ukm_recorder_->GetEntriesByName(
+        ukm::builders::PrefetchProxy::kEntryName);
+    ASSERT_EQ(1U, entries.size());
+
+    const auto* entry = entries.front();
+
+    ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
+
+    const int64_t* value =
+        ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
+    ASSERT_EQ(value != nullptr, expected_value.has_value());
+
+    if (!expected_value.has_value())
+      return;
+
+    EXPECT_EQ(*value, expected_value.value());
+  }
+
   GURL GetProxyURL() const { return proxy_server_->GetURL("proxy.com", "/"); }
 
   GURL GetOriginServerURL(const std::string& path) const {
@@ -287,6 +345,14 @@ class IsolatedPrerenderBrowserTest
     if (request.GetURL().spec().find("favicon") != std::string::npos)
       return nullptr;
 
+    if (request.relative_url == "/auth_challenge") {
+      std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      resp->set_code(net::HTTP_UNAUTHORIZED);
+      resp->AddCustomHeader("www-authenticate", "Basic realm=\"test\"");
+      return resp;
+    }
+
     // If the badprobe origin is being requested, (which has to be checked using
     // the Host header since the request URL is always 127.0.0.1), check if this
     // is a probe request. The probe only requests "/" whereas the navigation
@@ -301,14 +367,25 @@ class IsolatedPrerenderBrowserTest
     return nullptr;
   }
 
-  void MonitorProxyResourceRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleProxyRequest(
       const net::test_server::HttpRequest& request) {
+    if (request.all_headers.find("CONNECT auth_challenge.com:443") !=
+        std::string::npos) {
+      std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      resp->set_code(net::HTTP_UNAUTHORIZED);
+      resp->AddCustomHeader("www-authenticate", "Basic realm=\"test\"");
+      return resp;
+    }
+
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(&IsolatedPrerenderBrowserTest::
                                       MonitorProxyResourceRequestOnUIThread,
                                   base::Unretained(this), request));
+
+    return nullptr;
   }
 
   void MonitorProxyResourceRequestOnUIThread(
@@ -371,6 +448,7 @@ class IsolatedPrerenderBrowserTest
   void OnPrerenderStop(prerender::PrerenderHandle* handle) override {}
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
   std::unique_ptr<net::EmbeddedTestServer> proxy_server_;
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
   std::unique_ptr<net::EmbeddedTestServer> config_server_;
@@ -407,6 +485,37 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   VerifyProxyConfig(std::move(client_config));
 }
 
+IN_PROC_BROWSER_TEST_F(
+    IsolatedPrerenderBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoAuthChallenges_FromProxy)) {
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  WaitForUpdatedCustomProxyConfig();
+
+  std::unique_ptr<AuthChallengeObserver> auth_observer =
+      std::make_unique<AuthChallengeObserver>(GetWebContents());
+
+  // Do a positive test first to make sure we get an auth challenge under these
+  // circumstances.
+  ui_test_utils::NavigateToURL(browser(),
+                               GetOriginServerURL("/auth_challenge"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(auth_observer->GotAuthChallenge());
+
+  // Test that a proxy auth challenge does not show a dialog.
+  auth_observer->Reset();
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {GURL("https://auth_challenge.com/")});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(auth_observer->GotAuthChallenge());
+}
+
+// TODO(crbug/1067300): Add the following tests:
+// * No auth challenge dialog from origin server.
+// * Successfully loaded proxy origin response body.
+
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ConnectProxyEndtoEnd)) {
   SetDataSaverEnabled(true);
@@ -427,8 +536,79 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   // default. Ensure that the request didn't fallback to a direct connection.
   IsolatedPrerenderTabHelper* tab_helper =
       IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
-  EXPECT_EQ(tab_helper->metrics().prefetch_attempted_count, 1U);
-  EXPECT_EQ(tab_helper->metrics().prefetch_successful_count, 0U);
+  EXPECT_EQ(tab_helper->metrics().prefetch_attempted_count_, 1U);
+  EXPECT_EQ(tab_helper->metrics().prefetch_successful_count_, 0U);
+}
+
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(PrefetchingUKM)) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "isolated-prerender-unlimited-prefetches");
+
+  GURL url = GetOriginServerURL("/simple.html");
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), url);
+  WaitForUpdatedCustomProxyConfig();
+
+  base::RunLoop run_loop;
+  on_proxy_request_closure_ = run_loop.QuitClosure();
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {
+                                        GURL("https://testorigin.com/1"),
+                                        GURL("https://testorigin.com/2"),
+                                        GURL("http://not-eligible.com/1"),
+                                        GURL("http://not-eligible.com/2"),
+                                        GURL("http://not-eligible.com/3"),
+                                        GURL("https://testorigin.com/3"),
+                                    });
+  // This run loop will quit when a valid CONNECT request is made to the proxy
+  // server.
+  run_loop.Run();
+
+  // Execute all three eligible requests. This verifies that the metrics refptr
+  // is working without constant update push/poll.
+  base::RunLoop run_loop2;
+  on_proxy_request_closure_ = run_loop2.QuitClosure();
+  run_loop2.Run();
+
+  base::RunLoop run_loop3;
+  on_proxy_request_closure_ = run_loop3.QuitClosure();
+  run_loop3.Run();
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  base::RunLoop().RunUntilIdle();
+
+  // This bit mask records which links were eligible for prefetching with
+  // respect to their order in the navigation prediction. The LSB corresponds to
+  // the first index in the prediction, and is set if that url was eligible.
+  // Given the above URLs, they map to each bit accordingly:
+  //
+  // Note: The only difference between eligible and non-eligible urls is the
+  // scheme.
+  //
+  //  (eligible)                   https://testorigin.com/1
+  //  (eligible)                https://testorigin.com/2  |
+  //  (not eligible)        http://not-eligible.com/1  |  |
+  //  (not eligible)     http://not-eligible.com/2  |  |  |
+  //  (not eligible)  http://not-eligible.com/3  |  |  |  |
+  //  (eligible)    https://testorigin.com/3  |  |  |  |  |
+  //                                       |  |  |  |  |  |
+  //                                       V  V  V  V  V  V
+  // int64_t expected_bitmask =        0b  1  0  0  0  1  1;
+
+  constexpr int64_t expected_bitmask = 0b100011;
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(url, UkmEntry::kordered_eligible_pages_bitmaskName,
+                 expected_bitmask);
+  VerifyUKMEntry(url, UkmEntry::kprefetch_eligible_countName, 3);
+  VerifyUKMEntry(url, UkmEntry::kprefetch_attempted_countName, 3);
+  VerifyUKMEntry(url, UkmEntry::kprefetch_successful_countName, 0);
+
+  // This UKM should not be recorded until the following page load.
+  VerifyUKMEntry(url, UkmEntry::kprefetch_usageName, base::nullopt);
 }
 
 class ProbingEnabledIsolatedPrerenderBrowserTest
@@ -464,6 +644,7 @@ class ProbingDisabledIsolatedPrerenderBrowserTest
 
 IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood)) {
+  SetDataSaverEnabled(true);
   GURL url = GetOriginServerURL("/simple.html");
 
   AddSuccessfulPrefetch(url);
@@ -478,10 +659,21 @@ IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
   // title in the prefetched is "Successful prefetch".
   EXPECT_EQ(base::UTF8ToUTF16("Successful prefetch"),
             GetWebContents()->GetTitle());
+
+  // Navigating triggers UKM to be recorded.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 1 is the value of "prefetch used, probe success". The test does not
+  // reference the enum directly to ensure that casting the enum to an int went
+  // cleanly, and to provide an extra review point if the value should ever
+  // accidentally change in the future, which it never should.
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(url, UkmEntry::kprefetch_usageName, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad)) {
+  SetDataSaverEnabled(true);
   GURL url = GetOriginServerURLWithBadProbe("/simple.html");
 
   AddSuccessfulPrefetch(url);
@@ -492,10 +684,21 @@ IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
   // server directly. If served from the origin test server, the title would be
   // "OK", but the title in the prefetched is "Successful prefetch".
   EXPECT_EQ(base::UTF8ToUTF16("OK"), GetWebContents()->GetTitle());
+
+  // Navigating triggers UKM to be recorded.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 2 is the value of "prefetch not used, probe failed". The test does not
+  // reference the enum directly to ensure that casting the enum to an int went
+  // cleanly, and to provide an extra review point if the value should ever
+  // accidentally change in the future, which it never should.
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(url, UkmEntry::kprefetch_usageName, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(NoProbe)) {
+  SetDataSaverEnabled(true);
   // Use the bad probe url to ensure the probe is not being used.
   GURL url = GetOriginServerURLWithBadProbe("/simple.html");
 
@@ -511,4 +714,14 @@ IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest,
   // title in the prefetched is "Successful prefetch".
   EXPECT_EQ(base::UTF8ToUTF16("Successful prefetch"),
             GetWebContents()->GetTitle());
+
+  // Navigating triggers UKM to be recorded.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 0 is the value of "prefetch used, didn't probe". The test does not
+  // reference the enum directly to ensure that casting the enum to an int went
+  // cleanly, and to provide an extra review point if the value should ever
+  // accidentally change in the future, which it never should.
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(url, UkmEntry::kprefetch_usageName, 0);
 }

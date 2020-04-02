@@ -61,10 +61,13 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // boundaries. Should be overridden together with CreateBorder.
   void UpdateClipPath();
 
+  // Returns the bounds of the containing window in screen space.
+  gfx::Rect GetWindowBounds() const;
+
   // Update size of popup and paint (virtual for testing).
   virtual void DoUpdateBoundsAndRedrawPopup();
 
-  const AutofillPopupViewDelegate* delegate() { return delegate_; }
+  const AutofillPopupViewDelegate* delegate() const { return delegate_; }
 
  private:
   friend class AutofillPopupBaseViewTest;

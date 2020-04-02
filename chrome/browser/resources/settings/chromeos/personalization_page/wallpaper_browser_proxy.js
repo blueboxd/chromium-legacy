@@ -41,6 +41,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(WallpaperBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     WallpaperBrowserProxy: WallpaperBrowserProxy,
     WallpaperBrowserProxyImpl: WallpaperBrowserProxyImpl,

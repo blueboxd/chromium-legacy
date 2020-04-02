@@ -93,15 +93,16 @@ OriginRequestSummary::OriginRequestSummary(const OriginRequestSummary& other) =
     default;
 OriginRequestSummary::~OriginRequestSummary() = default;
 
-PageRequestSummary::PageRequestSummary(const GURL& i_main_frame_url)
-    : main_frame_url(i_main_frame_url),
-      initial_url(i_main_frame_url),
+PageRequestSummary::PageRequestSummary(const NavigationID& navigation_id)
+    : ukm_source_id(navigation_id.ukm_source_id),
+      main_frame_url(navigation_id.main_frame_url),
+      initial_url(navigation_id.main_frame_url),
       first_contentful_paint(base::TimeTicks::Max()) {}
 
 PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
     default;
 
-void PageRequestSummary::UpdateOrAddToOrigins(
+void PageRequestSummary::UpdateOrAddResource(
     const blink::mojom::ResourceLoadInfo& resource_load_info) {
   for (const auto& redirect_info : resource_load_info.redirect_info_chain) {
     UpdateOrAddToOrigins(redirect_info->origin_of_new_url,
@@ -109,6 +110,7 @@ void PageRequestSummary::UpdateOrAddToOrigins(
   }
   UpdateOrAddToOrigins(url::Origin::Create(resource_load_info.final_url),
                        resource_load_info.network_info);
+  subresource_urls.insert(resource_load_info.final_url);
 }
 
 void PageRequestSummary::UpdateOrAddToOrigins(
@@ -152,8 +154,7 @@ void LoadingDataCollector::RecordStartNavigation(
 
   // New empty navigation entry.
   inflight_navigations_.emplace(
-      navigation_id,
-      std::make_unique<PageRequestSummary>(navigation_id.main_frame_url));
+      navigation_id, std::make_unique<PageRequestSummary>(navigation_id));
 }
 
 void LoadingDataCollector::RecordFinishNavigation(
@@ -176,8 +177,7 @@ void LoadingDataCollector::RecordFinishNavigation(
     summary->main_frame_url = new_navigation_id.main_frame_url;
     inflight_navigations_.erase(nav_it);
   } else {
-    summary =
-        std::make_unique<PageRequestSummary>(new_navigation_id.main_frame_url);
+    summary = std::make_unique<PageRequestSummary>(new_navigation_id);
     summary->initial_url = old_navigation_id.main_frame_url;
   }
 
@@ -195,13 +195,13 @@ void LoadingDataCollector::RecordResourceLoadComplete(
     return;
 
   auto& page_request_summary = *nav_it->second;
-  page_request_summary.UpdateOrAddToOrigins(resource_load_info);
+  page_request_summary.UpdateOrAddResource(resource_load_info);
 }
 
 void LoadingDataCollector::RecordMainFrameLoadComplete(
     const NavigationID& navigation_id,
-    const base::Optional<PreconnectPrediction>&
-        optimization_guide_preconnect_prediction) {
+    const base::Optional<OptimizationGuidePrediction>&
+        optimization_guide_prediction) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Initialize |predictor_| no matter whether the |navigation_id| is present in
@@ -219,8 +219,8 @@ void LoadingDataCollector::RecordMainFrameLoadComplete(
   inflight_navigations_.erase(nav_it);
 
   if (stats_collector_) {
-    stats_collector_->RecordPageRequestSummary(
-        *summary, optimization_guide_preconnect_prediction);
+    stats_collector_->RecordPageRequestSummary(*summary,
+                                               optimization_guide_prediction);
   }
 
   if (predictor_)

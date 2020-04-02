@@ -8,6 +8,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/system_network_context_manager.h"
 
 #if defined(OS_ANDROID)
@@ -49,7 +50,7 @@ WebLayerVariationsServiceClient::GetURLLoaderFactory() {
 
 network_time::NetworkTimeTracker*
 WebLayerVariationsServiceClient::GetNetworkTimeTracker() {
-  return nullptr;
+  return BrowserProcess::GetInstance()->GetNetworkTimeTracker();
 }
 
 Channel WebLayerVariationsServiceClient::GetChannel() {

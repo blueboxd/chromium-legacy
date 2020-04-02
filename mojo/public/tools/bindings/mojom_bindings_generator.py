@@ -9,11 +9,6 @@ from __future__ import print_function
 
 import argparse
 
-try:
-  import cPickle as pickle
-except ImportError:
-  import pickle
-
 import hashlib
 import importlib
 import json
@@ -44,11 +39,10 @@ sys.path.insert(
 
 from mojom.error import Error
 import mojom.fileutil as fileutil
+from mojom.generate.module import Module
 from mojom.generate import template_expander
 from mojom.generate import translate
 from mojom.generate.generator import AddComputedData, WriteFile
-from mojom.parse.conditional_features import RemoveDisabledDefinitions
-from mojom.parse.parser import Parse
 
 sys.path.append(
     os.path.join(_GetDirAbove("mojo"), "tools", "diagnosis"))
@@ -104,16 +98,8 @@ class RelativePath(object):
         os.path.abspath(self.path), os.path.abspath(self.root))
 
 
-def FindImportFile(args, rel_dir, file_name, search_rel_dirs):
-  """Finds |file_name| in either |rel_dir| or |search_rel_dirs|. Returns a
-  RelativePath with first file found, or an arbitrary non-existent file
-  otherwise."""
-  for rel_search_dir in [rel_dir] + search_rel_dirs:
-    path = os.path.join(rel_search_dir.path, file_name)
-    if os.path.isfile(path):
-      return RelativePath(path, rel_search_dir.root, args.output_dir)
-  return RelativePath(
-      os.path.join(rel_dir.path, file_name), rel_dir.root, args.output_dir)
+def _GetModulePath(path, output_dir):
+  return os.path.join(output_dir, path.relative_path() + '-module')
 
 
 def ScrambleMethodOrdinals(interfaces, salt):
@@ -154,7 +140,7 @@ def ReadFileContents(filename):
 
 
 class MojomProcessor(object):
-  """Parses mojom files and creates ASTs for them.
+  """Takes parsed mojom modules and generates language bindings from them.
 
   Attributes:
     _processed_files: {Dict[str, mojom.generate.module.Module]} Mapping from
@@ -189,26 +175,9 @@ class MojomProcessor(object):
           MakeImportStackMessage(imported_filename_stack + [rel_filename.path]))
       sys.exit(1)
 
-    tree = _UnpickleAST(_FindPicklePath(rel_filename, args.gen_directories +
-                                        [args.output_dir]))
-    dirname = os.path.dirname(rel_filename.path)
-
-    # Process all our imports first and collect the module object for each.
-    # We use these to generate proper type info.
-    imports = {}
-    for parsed_imp in tree.import_list:
-      rel_import_file = FindImportFile(
-          args, RelativePath(dirname, rel_filename.root, args.output_dir),
-          parsed_imp.import_filename, args.import_directories)
-      imports[parsed_imp.import_filename] = self._GenerateModule(
-          args, remaining_args, generator_modules, rel_import_file,
-          imported_filename_stack + [rel_filename.path])
-
-    # Set the module path as relative to the source root.
-    # Normalize to unix-style path here to keep the generators simpler.
-    module_path = rel_filename.relative_path().replace('\\', '/')
-
-    module = translate.OrderedModule(tree, module_path, imports)
+    module_path = _GetModulePath(rel_filename, args.output_dir)
+    with open(module_path, 'rb') as f:
+      module = Module.Load(f)
 
     if args.scrambled_message_id_salt_paths:
       salt = b''.join(
@@ -278,71 +247,6 @@ def _Generate(args, remaining_args):
   return 0
 
 
-def _FindPicklePath(rel_filename, search_dirs):
-  filename, _ = os.path.splitext(rel_filename.relative_path())
-  pickle_path = filename + '.p'
-  for search_dir in search_dirs:
-    path = os.path.join(search_dir, pickle_path)
-    if os.path.isfile(path):
-      return path
-  raise Exception("%s: Error: Could not find file in %r" %
-                  (pickle_path, search_dirs))
-
-
-def _GetPicklePath(rel_filename, output_dir):
-  filename, _ = os.path.splitext(rel_filename.relative_path())
-  pickle_path = filename + '.p'
-  return os.path.join(output_dir, pickle_path)
-
-
-def _PickleAST(ast, output_file):
-  full_dir = os.path.dirname(output_file)
-  fileutil.EnsureDirectoryExists(full_dir)
-
-  try:
-    WriteFile(pickle.dumps(ast), output_file)
-  except (IOError, pickle.PicklingError) as e:
-    print("%s: Error: %s" % (output_file, str(e)))
-    sys.exit(1)
-
-def _UnpickleAST(input_file):
-  try:
-    with open(input_file, "rb") as f:
-      return pickle.load(f)
-  except (IOError, pickle.UnpicklingError) as e:
-    print("%s: Error: %s" % (input_file, str(e)))
-    sys.exit(1)
-
-
-def _ParseFile(args, rel_filename):
-  try:
-    with open(rel_filename.path) as f:
-      source = f.read()
-  except IOError as e:
-    print("%s: Error: %s" % (rel_filename.path, e.strerror))
-    sys.exit(1)
-
-  try:
-    tree = Parse(source, rel_filename.path)
-    RemoveDisabledDefinitions(tree, args.enabled_features)
-  except Error as e:
-    print("%s: Error: %s" % (rel_filename.path, str(e)))
-    sys.exit(1)
-  _PickleAST(tree, _GetPicklePath(rel_filename, args.output_dir))
-
-
-def _Parse(args, _):
-  fileutil.EnsureDirectoryExists(args.output_dir)
-
-  if args.filelist:
-    with open(args.filelist) as f:
-      args.filename.extend(f.read().split())
-
-  for filename in args.filename:
-    _ParseFile(args, RelativePath(filename, args.depth, args.output_dir))
-  return 0
-
-
 def _Precompile(args, _):
   generator_modules = LoadGenerators(",".join(_BUILTIN_GENERATORS.keys()))
 
@@ -376,11 +280,10 @@ def _VerifyImportDeps(args, __):
 
   for filename in args.filename:
     rel_path = RelativePath(filename, args.depth, args.output_dir)
-    tree = _UnpickleAST(_GetPicklePath(rel_path, args.output_dir))
-
-    mojom_imports = set(
-      parsed_imp.import_filename for parsed_imp in tree.import_list
-      )
+    module_path = _GetModulePath(rel_path, args.output_dir)
+    with open(module_path, 'rb') as f:
+      module = Module.Load(f)
+      mojom_imports = set(imp.path for imp in module.imports)
 
     sources = set()
 
@@ -420,23 +323,6 @@ def main():
       help="output directory for generated files")
 
   subparsers = parser.add_subparsers()
-
-  parse_parser = subparsers.add_parser(
-      "parse", description="Parse mojom to AST and remove disabled definitions."
-                           " Pickle pruned AST into output_dir.")
-  parse_parser.add_argument("filename", nargs="*", help="mojom input file")
-  parse_parser.add_argument("--filelist", help="mojom input file list")
-  parse_parser.add_argument(
-      "-d", "--depth", dest="depth", default=".", help="depth from source root")
-  parse_parser.add_argument(
-      "--enable_feature",
-      dest = "enabled_features",
-      default=[],
-      action="append",
-      help="Controls which definitions guarded by an EnabledIf attribute "
-      "will be enabled. If an EnabledIf attribute does not specify a value "
-      "that matches one of the enabled features, it will be disabled.")
-  parse_parser.set_defaults(func=_Parse)
 
   generate_parser = subparsers.add_parser(
       "generate", description="Generate bindings from mojom files.")

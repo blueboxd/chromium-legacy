@@ -6302,7 +6302,8 @@ const CSSValue* TextTransform::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.TextTransform());
 }
 
-// auto | [ under || [ left | right ] ]
+// https://drafts.csswg.org/css-text-decor-4/#text-underline-position-property
+// auto | [ from-font | under ] || [ left | right ] - default: auto
 const CSSValue* TextUnderlinePosition::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -6310,21 +6311,29 @@ const CSSValue* TextUnderlinePosition::ParseSingleValue(
   if (range.Peek().Id() == CSSValueID::kAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
 
-  CSSIdentifierValue* under_value =
-      css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(range);
+  CSSIdentifierValue* from_font_or_under_value =
+      RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled()
+          ? css_property_parser_helpers::ConsumeIdent<CSSValueID::kFromFont,
+                                                      CSSValueID::kUnder>(range)
+          : css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(
+                range);
   CSSIdentifierValue* left_or_right_value =
       css_property_parser_helpers::ConsumeIdent<CSSValueID::kLeft,
                                                 CSSValueID::kRight>(range);
-  if (left_or_right_value && !under_value) {
-    under_value =
-        css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(range);
+  if (left_or_right_value && !from_font_or_under_value) {
+    from_font_or_under_value =
+        RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled()
+            ? css_property_parser_helpers::ConsumeIdent<CSSValueID::kFromFont,
+                                                        CSSValueID::kUnder>(
+                  range)
+            : css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(
+                  range);
   }
-  if (!under_value && !left_or_right_value) {
+  if (!from_font_or_under_value && !left_or_right_value)
     return nullptr;
-  }
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (under_value)
-    list->Append(*under_value);
+  if (from_font_or_under_value)
+    list->Append(*from_font_or_under_value);
   if (left_or_right_value)
     list->Append(*left_or_right_value);
   return list;
@@ -6338,6 +6347,8 @@ const CSSValue* TextUnderlinePosition::CSSValueFromComputedStyleInternal(
   auto text_underline_position = style.TextUnderlinePosition();
   if (text_underline_position == kTextUnderlinePositionAuto)
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
+  if (text_underline_position == kTextUnderlinePositionFromFont)
+    return CSSIdentifierValue::Create(CSSValueID::kFromFont);
   if (text_underline_position == kTextUnderlinePositionUnder)
     return CSSIdentifierValue::Create(CSSValueID::kUnder);
   if (text_underline_position == kTextUnderlinePositionLeft)
@@ -6346,8 +6357,12 @@ const CSSValue* TextUnderlinePosition::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueID::kRight);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  DCHECK(text_underline_position & kTextUnderlinePositionUnder);
-  list->Append(*CSSIdentifierValue::Create(CSSValueID::kUnder));
+  if (text_underline_position & kTextUnderlinePositionFromFont) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kFromFont));
+  } else {
+    DCHECK(text_underline_position & kTextUnderlinePositionUnder);
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kUnder));
+  }
   if (text_underline_position & kTextUnderlinePositionLeft)
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kLeft));
   if (text_underline_position & kTextUnderlinePositionRight)

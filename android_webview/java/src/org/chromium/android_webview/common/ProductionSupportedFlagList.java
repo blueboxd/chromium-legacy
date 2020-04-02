@@ -27,6 +27,9 @@ public final class ProductionSupportedFlagList {
                     "Highlight the contents (including web contents) of all WebViews with a yellow "
                             + "tint. This is useful for identifying WebViews in an Android "
                             + "application."),
+            Flag.commandLine(AwSwitches.WEBVIEW_VERBOSE_LOGGING,
+                    "WebView will log additional debugging information to logcat, such as "
+                            + "variations and commandline state."),
             Flag.commandLine("show-composited-layer-borders",
                     "Renders a border around compositor layers to help debug and study layer "
                             + "compositing."),

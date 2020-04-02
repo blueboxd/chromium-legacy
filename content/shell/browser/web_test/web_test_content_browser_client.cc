@@ -43,7 +43,6 @@
 #include "content/shell/common/blink_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/test/data/mojo_web_test_helper_test.mojom.h"
 #include "content/test/mock_badge_service.h"
 #include "content/test/mock_clipboard_host.h"

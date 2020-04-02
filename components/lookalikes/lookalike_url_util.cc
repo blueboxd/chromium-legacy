@@ -11,12 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
+#include "components/security_state/core/features.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "components/url_formatter/url_formatter.h"
@@ -26,6 +28,9 @@
 namespace lookalikes {
 
 const char kHistogramName[] = "NavigationSuggestion.Event";
+const base::FeatureParam<std::string> kImportantTlds{
+    &security_state::features::kSafetyTipUI, "targetembedding_important_tlds",
+    "com,edu,org,gov"};
 
 }  // namespace lookalikes
 
@@ -130,19 +135,10 @@ void RecordEvent(NavigationSuggestionEvent event) {
 }
 
 // Returns the parts of the url that are separated by "." or "-" not including
-// the TLD.
-std::vector<base::string16> SplitNonTLDDomainIntoTokens(
-    const base::string16& host) {
-  // Strip off TLD, and split the remaining URL by '-'s and '.'s.
-  // This assumes that the eTLD has only one part (eg. bbc.co.uk -> [bbc, co]).
-  // This increases false positives in ways that we need to investigate, since,
-  // e.g., google.co.uk will be identified as target embedding of google.co if
-  // .co is considered an important TLD.
-  base::string16::size_type last_dot = host.rfind('.');
-  DCHECK_NE(base::string16::npos, last_dot);
-  base::string16 host_without_tld = host.substr(0, last_dot);
-
-  return base::SplitString(host_without_tld, base::ASCIIToUTF16("-."),
+// the eTLD.
+std::vector<base::string16> SplitNoneTLDDomainIntoTokens(
+    const base::string16& host_without_etld) {
+  return base::SplitString(host_without_etld, base::ASCIIToUTF16("-."),
                            base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
@@ -181,11 +177,13 @@ bool IsTopDomainCandidate(const std::set<std::string>& important_tlds,
 
 }  // namespace
 
-DomainInfo::DomainInfo(const std::string& arg_domain_and_registry,
+DomainInfo::DomainInfo(const std::string& arg_hostname,
+                       const std::string& arg_domain_and_registry,
                        const std::string& arg_domain_without_registry,
                        const url_formatter::IDNConversionResult& arg_idn_result,
                        const url_formatter::Skeletons& arg_skeletons)
-    : domain_and_registry(arg_domain_and_registry),
+    : hostname(arg_hostname),
+      domain_and_registry(arg_domain_and_registry),
       domain_without_registry(arg_domain_without_registry),
       idn_result(arg_idn_result),
       skeletons(arg_skeletons) {}
@@ -196,11 +194,11 @@ DomainInfo::DomainInfo(const DomainInfo&) = default;
 
 DomainInfo GetDomainInfo(const GURL& url) {
   if (net::IsLocalhost(url) || net::IsHostnameNonUnique(url.host())) {
-    return DomainInfo(std::string(), std::string(),
+    return DomainInfo(std::string(), std::string(), std::string(),
                       url_formatter::IDNConversionResult(),
                       url_formatter::Skeletons());
   }
-  // Perform all computations on eTLD+1.
+  const std::string hostname = url.host();
   const std::string domain_and_registry = GetETLDPlusOne(url.host());
   const std::string domain_without_registry =
       domain_and_registry.empty()
@@ -210,7 +208,7 @@ DomainInfo GetDomainInfo(const GURL& url) {
 
   // eTLD+1 can be empty for private domains.
   if (domain_and_registry.empty()) {
-    return DomainInfo(domain_and_registry, domain_without_registry,
+    return DomainInfo(hostname, domain_and_registry, domain_without_registry,
                       url_formatter::IDNConversionResult(),
                       url_formatter::Skeletons());
   }
@@ -222,8 +220,8 @@ DomainInfo GetDomainInfo(const GURL& url) {
       url_formatter::UnsafeIDNToUnicodeWithDetails(domain_and_registry);
   const url_formatter::Skeletons skeletons =
       url_formatter::GetSkeletons(idn_result.result);
-  return DomainInfo(domain_and_registry, domain_without_registry, idn_result,
-                    skeletons);
+  return DomainInfo(hostname, domain_and_registry, domain_without_registry,
+                    idn_result, skeletons);
 }
 
 std::string GetETLDPlusOne(const std::string& hostname) {
@@ -327,31 +325,46 @@ bool GetMatchingDomain(const DomainInfo& navigated_domain,
     }
   }
 
-  if (!url_formatter::top_domains::IsEditDistanceCandidate(
+  if (url_formatter::top_domains::IsEditDistanceCandidate(
           navigated_domain.domain_and_registry)) {
-    return false;
+    // If we can't find an exact top domain or an engaged site, try to find an
+    // engaged domain within an edit distance of one.
+    const std::string similar_engaged_domain =
+        GetSimilarDomainFromEngagedSites(navigated_domain, engaged_sites);
+    if (!similar_engaged_domain.empty() &&
+        navigated_domain.domain_and_registry != similar_engaged_domain) {
+      *matched_domain = similar_engaged_domain;
+      *match_type = LookalikeUrlMatchType::kEditDistanceSiteEngagement;
+      return true;
+    }
+
+    // Finally, try to find a top domain within an edit distance of one.
+    const std::string similar_top_domain =
+        GetSimilarDomainFromTop500(navigated_domain);
+    if (!similar_top_domain.empty() &&
+        navigated_domain.domain_and_registry != similar_top_domain) {
+      *matched_domain = similar_top_domain;
+      *match_type = LookalikeUrlMatchType::kEditDistance;
+      return true;
+    }
   }
 
-  // If we can't find an exact top domain or an engaged site, try to find an
-  // engaged domain within an edit distance of one.
-  const std::string similar_engaged_domain =
-      GetSimilarDomainFromEngagedSites(navigated_domain, engaged_sites);
-  if (!similar_engaged_domain.empty() &&
-      navigated_domain.domain_and_registry != similar_engaged_domain) {
-    *matched_domain = similar_engaged_domain;
-    *match_type = LookalikeUrlMatchType::kEditDistanceSiteEngagement;
+  GURL safe_url;
+  std::vector<std::string> important_tlds_list =
+      base::SplitString(lookalikes::kImportantTlds.Get(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::set<std::string> important_tlds(important_tlds_list.begin(),
+                                       important_tlds_list.end());
+  if (IsTargetEmbeddingLookalike(
+          GURL(std::string(url::kHttpsScheme) +
+               std::string(url::kStandardSchemeSeparator) +
+               navigated_domain.hostname),
+          important_tlds, &safe_url)) {
+    *matched_domain = safe_url.host();
+    *match_type = LookalikeUrlMatchType::kTargetEmbedding;
     return true;
   }
 
-  // Finally, try to find a top domain within an edit distance of one.
-  const std::string similar_top_domain =
-      GetSimilarDomainFromTop500(navigated_domain);
-  if (!similar_top_domain.empty() &&
-      navigated_domain.domain_and_registry != similar_top_domain) {
-    *matched_domain = similar_top_domain;
-    *match_type = LookalikeUrlMatchType::kEditDistance;
-    return true;
-  }
   return false;
 }
 
@@ -369,6 +382,9 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
     case LookalikeUrlMatchType::kEditDistanceSiteEngagement:
       RecordEvent(NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement);
       break;
+    case LookalikeUrlMatchType::kTargetEmbedding:
+      RecordEvent(NavigationSuggestionEvent::kMatchTargetEmbedding);
+      break;
     case LookalikeUrlMatchType::kNone:
       break;
   }
@@ -379,12 +395,17 @@ bool IsTargetEmbeddingLookalike(const GURL& url,
                                 GURL* safe_url) {
   DCHECK(url.SchemeIsHTTPOrHTTPS());
 
+  size_t registry_length = net::registry_controlled_domains::GetRegistryLength(
+      url, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   // url.host() will give punycode-encoded hostname, as we need all the unicode
   // characters to stay in the url for further check we convert host to unicode
   base::string16 host =
       url_formatter::UnsafeIDNToUnicodeWithDetails(url.host()).result;
-  const std::vector<base::string16> hostname_tokens_without_tld =
-      SplitNonTLDDomainIntoTokens(host);
+  base::string16 host_without_etld =
+      host.substr(0, host.size() - 1 - registry_length);
+  const std::vector<base::string16> hostname_tokens_without_etld =
+      SplitNoneTLDDomainIntoTokens(host_without_etld);
 
   // When we find a valid TLD, we look backwards to the previous token
   // to see if we can use it to build a top domain.
@@ -397,7 +418,7 @@ bool IsTargetEmbeddingLookalike(const GURL& url,
   // Because of the way this matching is working, we can not identify target
   // embedding attacks on legitimate websites that contain '-' in their names
   // (e.g programme-tv.net).
-  for (const auto& token : hostname_tokens_without_tld) {
+  for (const auto& token : hostname_tokens_without_etld) {
     if (prev_part.empty()) {
       prev_part = token;
       continue;

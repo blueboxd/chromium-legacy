@@ -16,11 +16,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -31,23 +33,26 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/test/native_widget_factory.h"
-#include "ui/views/widget/widget.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 namespace {
 
-class BookmarkBarViewTest : public BrowserWithTestWindowTest {
+class BookmarkBarViewTest : public ChromeViewsTestBase {
  public:
-  BookmarkBarViewTest() {}
+  BookmarkBarViewTest() {
+    Browser::CreateParams params(profile(), true);
+    params.window = &browser_window_;
+    browser_ = std::make_unique<Browser>(params);
 
-  void TearDown() override {
-    test_helper_.reset();
-    bookmark_bar_view_.reset();
-    BrowserWithTestWindowTest::TearDown();
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
+        &profile_,
+        base::BindRepeating(&BookmarkBarViewTest::CreateTemplateURLService));
   }
+
+  TestingProfile* profile() { return &profile_; }
+  Browser* browser() { return browser_.get(); }
 
  protected:
   // Returns a string containing the label of each of the *visible* buttons on
@@ -107,23 +112,16 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   // Creates the model, blocking until it loads, then creates the
   // BookmarkBarView.
   void CreateBookmarkModelAndBookmarkBarView() {
-    profile()->CreateBookmarkModel(true);
+    profile_.CreateBookmarkModel(true);
     WaitForBookmarkModelToLoad();
     CreateBookmarkBarView();
   }
 
-  // BrowserWithTestWindowTest:
-  TestingProfile* CreateProfile() override {
-    TestingProfile* profile = BrowserWithTestWindowTest::CreateProfile();
-    // TemplateURLService is normally NULL during testing. Instant extended
-    // needs this service so set a custom factory function.
-    TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-        profile,
-        base::BindRepeating(&BookmarkBarViewTest::CreateTemplateURLService));
-    return profile;
-  }
-
+  TestingProfile profile_;
+  TestBrowserWindow browser_window_;
+  std::unique_ptr<Browser> browser_;
   std::unique_ptr<BookmarkBarViewTestHelper> test_helper_;
+  // Must be after |profile_| so it is deleted before the bookmark model.
   std::unique_ptr<BookmarkBarView> bookmark_bar_view_;
 
  private:
@@ -165,11 +163,9 @@ TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
 
 // Various assertions around visibility of the overflow_button.
 TEST_F(BookmarkBarViewTest, OverflowVisibility) {
-  profile()->CreateBookmarkModel(true);
-  CreateBookmarkBarView();
+  CreateBookmarkModelAndBookmarkBarView();
   EXPECT_FALSE(test_helper_->overflow_button()->GetVisible());
 
-  WaitForBookmarkModelToLoad();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 
@@ -194,11 +190,9 @@ TEST_F(BookmarkBarViewTest, OverflowVisibility) {
 // Verifies buttons get added correctly when BookmarkBarView is created after
 // the model and the model has nodes.
 TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
-  profile()->CreateBookmarkModel(true);
-  WaitForBookmarkModelToLoad();
+  CreateBookmarkModelAndBookmarkBarView();
   EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  CreateBookmarkBarView();
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   SizeUntilButtonsVisible(1);
@@ -378,23 +372,20 @@ TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
 }
 #endif
 
-TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
+class BookmarkBarViewTooltipTest : public BookmarkBarViewTest {
+ public:
+  void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
+    BookmarkBarViewTest::SetUp();
+  }
+};
+
+TEST_F(BookmarkBarViewTooltipTest, UpdateTooltipText) {
   CreateBookmarkModelAndBookmarkBarView();
   // Create a widget who creates and owns a views::ToolipManager.
-  views::Widget widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-  // On Chrome OS, this always creates a NativeWidgetAura, but it should create
-  // a DesktopNativeWidgetAura for Mash. We can get by without manually creating
-  // it because AshTestViewsDelegate and MusClient will do the right thing
-  // automatically.
-  params.native_widget = CreateNativeWidget(
-      NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, &widget);
-#endif
-  widget.Init(std::move(params));
-  widget.Show();
-  widget.GetRootView()->AddChildView(bookmark_bar_view_.get());
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  widget->Show();
+  widget->SetContentsView(bookmark_bar_view_.get());
 
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   bookmarks::test::AddNodesFromModelString(model, model->bookmark_bar_node(),
@@ -408,8 +399,6 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), button->GetTooltipText(p));
   button->SetText(base::ASCIIToUTF16("new title"));
   EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), button->GetTooltipText(p));
-
-  widget.CloseNow();
 }
 
 }  // namespace

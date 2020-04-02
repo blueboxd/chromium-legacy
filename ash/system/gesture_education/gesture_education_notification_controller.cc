@@ -46,7 +46,9 @@ GestureEducationNotificationController::
 void GestureEducationNotificationController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
   if (!tablet_mode_supported_ ||
-      prefs->GetBoolean(prefs::kGestureEducationNotificationShown)) {
+      prefs->GetBoolean(prefs::kGestureEducationNotificationShown) ||
+      prefs->GetBoolean(
+          prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled)) {
     return;
   }
   GenerateGestureEducationNotification();

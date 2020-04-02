@@ -390,6 +390,11 @@ bool SharedContextState::MakeCurrent(gl::GLSurface* surface, bool needs_gl) {
   if (context_lost_)
     return false;
 
+  if (gr_context_ && gr_context_->abandoned()) {
+    MarkContextLost();
+    return false;
+  }
+
   if (!GrContextIsGL() && !needs_gl)
     return true;
 

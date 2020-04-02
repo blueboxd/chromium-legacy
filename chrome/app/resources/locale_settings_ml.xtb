@@ -60,6 +60,4 @@
 <translation id="IDS_CONTENT_SETTINGS_DIALOG_WIDTH_CHARS">88</translation>
 <translation id="IDS_CONTENT_SETTINGS_DIALOG_HEIGHT_LINES">26</translation>
 <translation id="IDS_CONTENT_SETTINGS_DIALOG_LISTBOX_WIDTH_CHARS">30</translation>
-<translation id="IDS_HELP_APP_DIALOG_WIDTH_PIXELS">720</translation>
-<translation id="IDS_HELP_APP_DIALOG_HEIGHT_PIXELS">405</translation>
 </translationbundle>

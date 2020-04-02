@@ -15,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
-#include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "components/autofill/content/browser/key_press_handler_manager.h"
 #include "components/autofill/core/common/password_form.h"
@@ -186,8 +185,6 @@ class PasswordGenerationPopupControllerImpl
 
   // The state of the generation popup.
   GenerationUIState state_;
-
-  autofill::PopupViewCommon view_common_;
 
   std::unique_ptr<KeyPressRegistrator> key_press_handler_manager_;
 

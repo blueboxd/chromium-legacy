@@ -18,6 +18,8 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -41,6 +43,14 @@ class DnsProbeServiceTest : public testing::Test {
       : callback_called_(false), callback_result_(error_page::DNS_PROBE_MAX) {
     local_state_ = std::make_unique<ScopedTestingLocalState>(
         TestingBrowserProcess::GetGlobal());
+
+    // SystemNetworkContextManager cannot be instantiated here, which normally
+    // owns the StubResolverConfigReader instance, so inject a
+    // StubResolverConfigReader instance here.
+    stub_resolver_config_reader_ =
+        std::make_unique<StubResolverConfigReader>(local_state_->Get());
+    SystemNetworkContextManager::set_stub_resolver_config_reader_for_testing(
+        stub_resolver_config_reader_.get());
   }
 
   void Probe() {
@@ -122,6 +132,7 @@ class DnsProbeServiceTest : public testing::Test {
   std::unique_ptr<FakeDnsConfigChangeManager> dns_config_change_manager_;
   std::unique_ptr<DnsProbeService> service_;
   std::unique_ptr<ScopedTestingLocalState> local_state_;
+  std::unique_ptr<StubResolverConfigReader> stub_resolver_config_reader_;
   bool callback_called_;
   DnsProbeStatus callback_result_;
 };

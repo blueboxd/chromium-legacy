@@ -93,12 +93,6 @@ void PosixSystemProducer::SetNewSocketForTesting(const char* socket) {
   DisconnectWithReply(base::OnceClosure());
 }
 
-bool PosixSystemProducer::SetupStartupTracing() {
-  // TODO(eseckler): Support startup tracing using an unbound SMA.
-  NOTIMPLEMENTED();
-  return false;
-}
-
 perfetto::SharedMemoryArbiter* PosixSystemProducer::MaybeSharedMemoryArbiter() {
   base::AutoLock lock(lock_);
   DCHECK(GetService());
@@ -185,15 +179,6 @@ void PosixSystemProducer::DisconnectWithReply(
     }
   }
   DelayedReconnect();
-}
-
-void PosixSystemProducer::ResetSequenceForTesting() {
-  // DETACH the sequence and then immediately attach it. This is needed in tests
-  // because we might be executing in a TaskEnvironment, but the global
-  // PerfettoTracedProcess (which contains a pointer to PosixSystemProducer)
-  // will leak between tests, but the sequence will no longer be valid.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void PosixSystemProducer::OnConnect() {
@@ -367,6 +352,12 @@ void PosixSystemProducer::ClearIncrementalState(
       data_source->ClearIncrementalState();
     }
   }
+}
+
+bool PosixSystemProducer::SetupSharedMemoryForStartupTracing() {
+  // TODO(eseckler): Support startup tracing using an unbound SMA.
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void PosixSystemProducer::ConnectSocket() {

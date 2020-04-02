@@ -91,6 +91,7 @@
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
@@ -511,7 +512,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kSyncEncryptionKeysWebApi)) {
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncSupportTrustedVaultPassphrase)) {
     SyncEncryptionKeysExtension::Create(render_frame);
   }
 #endif

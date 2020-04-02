@@ -24,7 +24,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/test/test_views.h"
-#include "ui/views/widget/widget.h"
 
 // A helper class that owns an instance of a BrowserActionsContainer; this is
 // used when testing without an associated browser window, or if this is for
@@ -128,12 +127,6 @@ gfx::NativeView ExtensionActionTestHelperViews::GetPopupNativeView() {
 
 bool ExtensionActionTestHelperViews::HasPopup() {
   return GetPopupNativeView() != nullptr;
-}
-
-gfx::Size ExtensionActionTestHelperViews::GetPopupSize() {
-  gfx::NativeView popup = GetPopupNativeView();
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(popup);
-  return widget->GetWindowBoundsInScreen().size();
 }
 
 bool ExtensionActionTestHelperViews::HidePopup() {

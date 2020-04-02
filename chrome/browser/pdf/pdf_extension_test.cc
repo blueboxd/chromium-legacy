@@ -2564,6 +2564,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
   RunTextExtractionTest(FILE_PATH_LITERAL("text-image-link.pdf"));
 }
 
+// Test data of inline text boxes for PDF with overlapping annotations.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       OverlappingAnnots) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("overlapping-annots.pdf"));
+}
+
 class PDFExtensionAccessibilityTreeDumpTest
     : public PDFExtensionTest,
       public ::testing::WithParamInterface<size_t> {

@@ -161,6 +161,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(KerberosAccountsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     KerberosAccount,
     KerberosErrorType,

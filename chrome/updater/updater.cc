@@ -85,11 +85,6 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
     CHECK(false) << "--crash-me was used.";
   }
 
-#if defined(OS_MACOSX)
-  // TODO(crbug.com/1060800) Consider implementing --single-process on macOS.
-  CHECK(!command_line->HasSwitch(kSingleProcessSwitch));
-#endif
-
   if (command_line->HasSwitch(kServerSwitch)) {
     return AppServerInstance()->Run();
   }

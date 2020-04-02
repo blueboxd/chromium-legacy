@@ -128,6 +128,8 @@ class CORE_EXPORT PerformanceResourceTiming
   base::TimeTicks response_end_;
   mojom::RequestContextType context_type_ =
       mojom::RequestContextType::UNSPECIFIED;
+  network::mojom::RequestDestination request_destination_ =
+      network::mojom::RequestDestination::kEmpty;
   uint64_t transfer_size_ = 0;
   uint64_t encoded_body_size_ = 0;
   uint64_t decoded_body_size_ = 0;

@@ -793,6 +793,11 @@ const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
 
+const char kEnableSyncTrustedVaultName[] =
+    "Enable trusted vault sync passphrase type";
+const char kEnableSyncTrustedVaultDescription[] =
+    "Enables the new, experimental passphrase type for sync data";
+
 const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
@@ -1899,6 +1904,11 @@ const char kTabGroupsCollapseName[] = "Tab Groups Collapse";
 const char kTabGroupsCollapseDescription[] =
     "Allows a tab group to be collapsible and expandable, if tab groups are "
     "enabled.";
+
+const char kTabGroupsFeedbackName[] = "Tab Groups Feedback";
+const char kTabGroupsFeedbackDescription[] =
+    "Enables the feedback app to appear in the tab group editor bubble, if tab "
+    "groups are enabled.";
 
 const char kTabHoverCardsName[] = "Tab Hover Cards";
 const char kTabHoverCardsDescription[] =

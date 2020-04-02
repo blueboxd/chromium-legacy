@@ -328,6 +328,10 @@ class CONTENT_EXPORT RenderThreadImpl
         int32_t routing_id,
         scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner);
 
+    // Removes |unfreezable_task_runner| for the task to be executed later.
+    void RemoveListenerUnfreezableTaskRunner(
+        int32_t routing_id);
+
     // Called on the I/O thread.
     // Returns the unfreezable task runner associated with |routing_id|.
     scoped_refptr<base::SingleThreadTaskRunner> GetUnfreezableTaskRunner(

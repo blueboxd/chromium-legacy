@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">Sem itens</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selecionados</translation>
-<translation id="1727016672946926483">Partilhar como um código QR</translation>
 <translation id="1740468249224277719">Toque duas vezes para instalar.</translation>
 <translation id="1746815479209538200">Para navegar na Web, adicione um novo separador.</translation>
 <translation id="1752547299766512813">Guardar Palavras-passe</translation>
@@ -486,7 +485,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="734758817008927353">Opções para guardar o cartão</translation>
 <translation id="7348502496356775519">Adicionar aos marcadores</translation>
 <translation id="7383797227493018512">Lista de leitura</translation>
-<translation id="7392048574806661116">Terminar sessão e limpar dados sincronizados</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> artigos não lidos.</translation>
 <translation id="7425346204213733349">As alterações aos marcadores, ao histórico, às palavras-passe e a outras definições deixam de ser sincronizadas com a Conta Google. Contudo, os dados existentes permanecem armazenados na Conta Google.</translation>

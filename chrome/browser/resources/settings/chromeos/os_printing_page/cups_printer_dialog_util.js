@@ -205,6 +205,7 @@ cr.define('settings.printing', function() {
     });
   }
 
+  // #cr_define_end
   return {
     isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,

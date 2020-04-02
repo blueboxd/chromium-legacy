@@ -299,9 +299,6 @@ public abstract class ChromeFeatureList {
     public static final String HOMEPAGE_SETTINGS_UI_CONVERSION = "HomepageSettingsUIConversion";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     public static final String IMMERSIVE_UI_MODE = "ImmersiveUiMode";
-    public static final String IMPROVED_COOKIE_CONTROLS = "ImprovedCookieControls";
-    public static final String IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING =
-            "ImprovedCookieControlsForThirdPartyCookieBlocking";
     public static final String INLINE_UPDATE_FLOW = "InlineUpdateFlow";
     public static final String INSTALLABLE_AMBIENT_BADGE_INFOBAR = "InstallableAmbientBadgeInfoBar";
     public static final String INSTANT_START = "InstantStart";

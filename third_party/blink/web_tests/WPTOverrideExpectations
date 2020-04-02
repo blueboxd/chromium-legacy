@@ -955,20 +955,6 @@ external/wpt/offscreen-canvas/shadows/2d.shadow.pattern.alpha.html [ Failure Pas
 external/wpt/offscreen-canvas/shadows/2d.shadow.pattern.basic.html [ Failure Pass ]
 external/wpt/offscreen-canvas/shadows/2d.shadow.pattern.transparent.1.html [ Failure Pass ]
 external/wpt/offscreen-canvas/shadows/2d.shadow.pattern.transparent.2.html [ Failure Pass ]
-external/wpt/offscreen-canvas/text/2d.text.measure.actualBoundingBox.html [ Pass ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.actualBoundingBox.worker.html [ Timeout ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.advances.worker.html [ Timeout ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.baselines.html [ Pass ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.baselines.worker.html [ Timeout ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.emHeights.html [ Pass ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.emHeights.worker.html [ Timeout ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.fontBoundingBox.html [ Pass ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.fontBoundingBox.worker.html [ Timeout ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.width.basic.html [ Pass ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.width.basic.worker.html [ Timeout ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.width.empty.worker.html [ Timeout ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.width.space.html [ Pass ] # wpt_subtest_failure
-external/wpt/offscreen-canvas/text/2d.text.measure.width.space.worker.html [ Timeout ] # wpt_subtest_failure
 external/wpt/offscreen-canvas/the-offscreen-canvas/2d.getcontext.extraargs.worker.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.commit.html [ Failure ]
 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.resize.html [ Failure Pass ] # wpt_subtest_failure

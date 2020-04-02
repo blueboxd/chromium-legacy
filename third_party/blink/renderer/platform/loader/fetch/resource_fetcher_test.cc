@@ -314,7 +314,8 @@ TEST_F(ResourceFetcherTest, Vary) {
 TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
   auto info = ResourceTimingInfo::Create(
       fetch_initiator_type_names::kDocument, base::TimeTicks::Now(),
-      mojom::RequestContextType::UNSPECIFIED);
+      mojom::RequestContextType::UNSPECIFIED,
+      network::mojom::RequestDestination::kEmpty);
   info->AddFinalTransferSize(5);
   EXPECT_EQ(info->TransferSize(), static_cast<uint64_t>(5));
   ResourceResponse redirect_response(KURL("https://example.com/original"));

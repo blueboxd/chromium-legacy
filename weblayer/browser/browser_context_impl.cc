@@ -23,6 +23,7 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/public/common/switches.h"
@@ -181,7 +182,10 @@ download::InProgressDownloadManager*
 BrowserContextImpl::RetriveInProgressDownloadManager() {
   // Override this to provide a connection to the wake lock service.
   auto* download_manager = new download::InProgressDownloadManager(
-      nullptr, base::FilePath(), nullptr,
+      nullptr, path_,
+      path_.empty()
+          ? nullptr
+          : GetDefaultStoragePartition(this)->GetProtoDatabaseProvider(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
       base::BindRepeating(&BindWakeLockProvider));

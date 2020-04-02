@@ -18,6 +18,12 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_landmark.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_encoded_audio_frame.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_encoded_video_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame_delegate.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -73,6 +79,28 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteUTF8String(pem.private_key().c_str());
     WriteUTF8String(pem.certificate().c_str());
     return true;
+  }
+  if (wrapper_type_info == V8RTCEncodedAudioFrame::GetWrapperTypeInfo() &&
+      RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    if (IsForStorage()) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "An RTCEncodedAudioFrame cannot be "
+                                        "serialized for storage.");
+      return false;
+    }
+    return WriteRTCEncodedAudioFrame(wrappable->ToImpl<RTCEncodedAudioFrame>());
+  }
+  if (wrapper_type_info == V8RTCEncodedVideoFrame::GetWrapperTypeInfo() &&
+      RuntimeEnabledFeatures::RTCInsertableStreamsEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    if (IsForStorage()) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "An RTCEncodedVideoFrame cannot be "
+                                        "serialized for storage.");
+      return false;
+    }
+    return WriteRTCEncodedVideoFrame(wrappable->ToImpl<RTCEncodedVideoFrame>());
   }
   return false;
 }
@@ -269,6 +297,34 @@ bool V8ScriptValueSerializerForModules::WriteNativeFileSystemHandle(
   WriteTag(tag);
   WriteUTF8String(native_file_system_handle->name());
   WriteUint32(token_index);
+  return true;
+}
+
+bool V8ScriptValueSerializerForModules::WriteRTCEncodedAudioFrame(
+    RTCEncodedAudioFrame* audio_frame) {
+  auto* attachment =
+      GetSerializedScriptValue()
+          ->GetOrCreateAttachment<RTCEncodedAudioFramesAttachment>();
+  auto& frames = attachment->EncodedAudioFrames();
+  frames.push_back(audio_frame->Delegate());
+  const uint32_t index = static_cast<uint32_t>(frames.size() - 1);
+
+  WriteTag(kRTCEncodedAudioFrameTag);
+  WriteUint32(index);
+  return true;
+}
+
+bool V8ScriptValueSerializerForModules::WriteRTCEncodedVideoFrame(
+    RTCEncodedVideoFrame* video_frame) {
+  auto* attachment =
+      GetSerializedScriptValue()
+          ->GetOrCreateAttachment<RTCEncodedVideoFramesAttachment>();
+  auto& frames = attachment->EncodedVideoFrames();
+  frames.push_back(video_frame->Delegate());
+  const uint32_t index = static_cast<uint32_t>(frames.size() - 1);
+
+  WriteTag(kRTCEncodedVideoFrameTag);
+  WriteUint32(index);
   return true;
 }
 

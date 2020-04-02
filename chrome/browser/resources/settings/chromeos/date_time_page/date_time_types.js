@@ -27,5 +27,6 @@ cr.define('settings', function() {
     SEND_ALL_LOCATION_INFO: 3
   };
 
+  // #cr_define_end
   return {TimeZoneAutoDetectPolicyRestriction, TimeZoneAutoDetectMethod};
 });

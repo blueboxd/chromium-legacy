@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentManifestDownloader;
@@ -41,6 +42,8 @@ import java.util.Set;
 public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     private static final String TAG = "PaymentAppFinder";
 
+    private static final String PLAY_STORE_PACKAGE_NAME = "com.android.vending";
+
     /** The maximum number of payment method manifests to download. */
     private static final int MAX_NUMBER_OF_MANIFESTS = 10;
 
@@ -61,6 +64,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             "org.chromium.default_payment_method_name";
 
     /**
+     * Meta data name of an app's supported delegations' list.
+     */
+    /* package */ static final String META_DATA_NAME_OF_SUPPORTED_DELEGATIONS =
+            "org.chromium.payment_supported_delegations";
+
+    /*
      * The ignored payment method identifiers. Payment apps with this payment method identifier are
      * ignored.
      */
@@ -75,6 +84,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     private final PaymentAppFactoryDelegate mDelegate;
     private final PaymentAppFactoryInterface mFactory;
     private final boolean mIsIncognito;
+
+    /**
+     * A map from an app-store app's package name to its billing method. All of the supported
+     * app-store billing method must insert an entry to this map.
+     */
+    private final Map<String, String> mAppStoreBillingMethodMap = new HashMap();
 
     /**
      * A mapping from an Android package name to the payment app with that package name. The apps
@@ -160,6 +175,8 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
 
         mIgnoredMethods.add(MethodStrings.GOOGLE_PLAY_BILLING);
 
+        mAppStoreBillingMethodMap.put(PLAY_STORE_PACKAGE_NAME, MethodStrings.GOOGLE_PLAY_BILLING);
+
         mDownloader = downloader;
         mWebDataService = webDataService;
         mParser = parser;
@@ -168,6 +185,21 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         ChromeActivity activity =
                 ChromeActivity.fromWebContents(mDelegate.getParams().getWebContents());
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
+    }
+
+    private boolean isInTwaInstalledFromAppStore() {
+        ChromeActivity activity =
+                ChromeActivity.fromWebContents(mDelegate.getParams().getWebContents());
+        if (activity == null) return false;
+        if (!(activity instanceof CustomTabActivity)) return false;
+        CustomTabActivity customTabActivity = ((CustomTabActivity) activity);
+        if (!customTabActivity.isInTwaMode()) return false;
+        String twaPackageName = customTabActivity.getTwaPackage();
+        if (twaPackageName == null) return false;
+        String installerPackageName =
+                activity.getPackageManager().getInstallerPackageName(twaPackageName);
+        if (installerPackageName == null) return false;
+        return mAppStoreBillingMethodMap.keySet().contains(installerPackageName);
     }
 
     /**
@@ -211,6 +243,11 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 ServiceInfo service = services.get(i).serviceInfo;
                 mIsReadyToPayServices.put(service.packageName, service.name);
             }
+        }
+
+        if (isInTwaInstalledFromAppStore()) {
+            // TODO(crbug.com/1064740): the finder would special-case the TWA installed from App
+            // Store to return only the app-store app.
         }
 
         // All URI methods for which manifests should be downloaded. For example, if merchant
@@ -566,12 +603,20 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             app = new AndroidPaymentApp(mDelegate.getParams().getWebContents(), packageName,
                     resolveInfo.activityInfo.name, mIsReadyToPayServices.get(packageName),
                     label.toString(), mPackageManagerDelegate.getAppIcon(resolveInfo), mIsIncognito,
-                    webAppIdCanDeduped);
+                    webAppIdCanDeduped, getAppsSupportedDelegations(resolveInfo.activityInfo));
             mValidApps.put(packageName, app);
         }
 
         // The same method may be added multiple times.
         app.addMethodName(methodName);
+    }
+
+    private SupportedDelegations getAppsSupportedDelegations(ActivityInfo activityInfo) {
+        if (activityInfo.metaData == null) return new SupportedDelegations();
+
+        String[] supportedDelegationNames =
+                activityInfo.metaData.getStringArray(META_DATA_NAME_OF_SUPPORTED_DELEGATIONS);
+        return SupportedDelegations.createFromStringArray(supportedDelegationNames);
     }
 
     @Override

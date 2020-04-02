@@ -153,16 +153,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   static base::ThreadLocalBoolean* GetThreadIsInTraceEventTLS();
 
-  // Enables startup tracing. Trace data is locally buffered until connection to
-  // the perfetto service is established. Expects a later call to StartTracing()
-  // to bind to the perfetto service. Should only be called once.
-  void SetupStartupTracing(PerfettoProducer* producer,
-                           bool privacy_filtering_enabled);
-
   // Installs TraceLog overrides for tracing during Chrome startup.
   void RegisterStartupHooks();
-
-  void OnTaskSchedulerAvailable();
 
   // The PerfettoProducer is responsible for calling StopTracing
   // which will clear the stored pointer to it, before it
@@ -176,13 +168,13 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void StopTracing(base::OnceClosure stop_complete_callback) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
   void ClearIncrementalState() override;
+  void SetupStartupTracing(PerfettoProducer* producer,
+                           const base::trace_event::TraceConfig& trace_config,
+                           bool privacy_filtering_enabled) override;
+  void AbortStartupTracing() override;
 
   // Deletes TraceWriter safely on behalf of a ThreadLocalEventSink.
   void ReturnTraceWriter(std::unique_ptr<perfetto::TraceWriter> trace_writer);
-
-  void set_startup_tracing_timeout_for_testing(base::TimeDelta timeout_us) {
-    startup_tracing_timeout_ = timeout_us;
-  }
 
   bool privacy_filtering_enabled() const { return privacy_filtering_enabled_; }
 
@@ -222,7 +214,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   TraceEventDataSource();
   ~TraceEventDataSource() override;
 
-  void StartupTracingTimeoutFired();
   void OnFlushFinished(const scoped_refptr<base::RefCountedString>&,
                        bool has_more_events);
 
@@ -267,7 +258,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   bool disable_interning_ = false;
   base::OnceClosure stop_complete_callback_;
-  base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(60);
 
   // Incremented and accessed atomically but without memory order guarantees.
   static constexpr uint32_t kInvalidSessionID = 0;
@@ -282,7 +272,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   base::Lock lock_;  // Protects subsequent members.
   uint32_t target_buffer_ = 0;
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
-  base::OneShotTimer startup_tracing_timer_;
   bool is_enabled_ = false;
   bool flushing_trace_log_ = false;
   base::OnceClosure flush_complete_task_;

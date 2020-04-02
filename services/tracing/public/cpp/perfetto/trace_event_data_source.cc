@@ -549,8 +549,10 @@ bool TraceEventDataSource::IsEnabled() {
   return is_enabled_;
 }
 
-void TraceEventDataSource::SetupStartupTracing(PerfettoProducer* producer,
-                                               bool privacy_filtering_enabled) {
+void TraceEventDataSource::SetupStartupTracing(
+    PerfettoProducer* producer,
+    const base::trace_event::TraceConfig& trace_config,
+    bool privacy_filtering_enabled) {
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
     // Do not enable startup tracing if trace log is being flushed. The
@@ -575,42 +577,33 @@ void TraceEventDataSource::SetupStartupTracing(PerfettoProducer* producer,
   }
   EmitTrackDescriptor();
   RegisterWithTraceLog();
-  if (base::SequencedTaskRunnerHandle::IsSet()) {
-    OnTaskSchedulerAvailable();
+
+  base::trace_event::TraceConfig config_for_trace_log(trace_config);
+  // Perfetto backend configures buffer sizes when tracing is started in the
+  // service (see perfetto_config.cc). Zero them out here for TraceLog to
+  // avoid DCHECKs in TraceConfig::Merge.
+  config_for_trace_log.SetTraceBufferSizeInKb(0);
+  config_for_trace_log.SetTraceBufferSizeInEvents(0);
+
+  uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
+  if (!trace_config.event_filters().empty()) {
+    modes |= base::trace_event::TraceLog::FILTERING_MODE;
   }
+  base::trace_event::TraceLog::GetInstance()->SetEnabled(trace_config, modes);
 }
 
-void TraceEventDataSource::OnTaskSchedulerAvailable() {
-  CHECK(IsTracingInitialized());
-  {
-    base::AutoLock lock(lock_);
-    if (!IsStartupTracingActive()) {
-      return;
-    }
-  }
-  startup_tracing_timer_.Start(
-      FROM_HERE, startup_tracing_timeout_,
-      base::BindOnce(&TraceEventDataSource::StartupTracingTimeoutFired,
-                     base::Unretained(this)));
-}
-
-void TraceEventDataSource::StartupTracingTimeoutFired() {
-  auto task_runner =
-      PerfettoTracedProcess::Get()->GetTaskRunner()->GetOrCreateTaskRunner();
-  if (!task_runner->RunsTasksInCurrentSequence()) {
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&TraceEventDataSource::StartupTracingTimeoutFired,
-                       base::Unretained(this)));
-    return;
-  }
+void TraceEventDataSource::AbortStartupTracing() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
   std::unique_ptr<perfetto::TraceWriter> trace_writer;
+  PerfettoProducer* producer;
+  uint32_t session_id;
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
     if (!IsStartupTracingActive()) {
       return;
     }
+
+    producer = producer_;
 
     // Prevent recreation of ThreadLocalEventSinks after flush.
     producer_ = nullptr;
@@ -620,11 +613,12 @@ void TraceEventDataSource::StartupTracingTimeoutFired() {
 
     // Increment the session id to make sure that any subsequent tracing session
     // uses fresh trace writers.
-    IncrementSessionIdOrClearStartupFlagWhileLocked();
+    session_id = IncrementSessionIdOrClearStartupFlagWhileLocked();
   }
   if (trace_writer) {
     ReturnTraceWriter(std::move(trace_writer));
   }
+  producer->AbortStartupTracingForReservation(session_id);
   auto* trace_log = base::trace_event::TraceLog::GetInstance();
   trace_log->SetDisabled();
   trace_log->Flush(base::BindRepeating(&TraceEventDataSource::OnFlushFinished,

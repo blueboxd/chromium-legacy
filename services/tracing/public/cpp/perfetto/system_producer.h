@@ -35,7 +35,6 @@ class COMPONENT_EXPORT(TRACING_CPP) SystemProducer : public PerfettoProducer,
       base::OnceClosure on_disconnect_complete) = 0;
 
   virtual bool IsDummySystemProducerForTesting();
-  virtual void ResetSequenceForTesting() = 0;
 };
 }  // namespace tracing
 

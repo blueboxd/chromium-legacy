@@ -192,6 +192,7 @@ cr.define('settings.printing', function() {
 
   cr.addSingletonGetter(CupsPrintersEntryManager);
 
+  // #cr_define_end
   return {
     CupsPrintersEntryManager: CupsPrintersEntryManager,
   };

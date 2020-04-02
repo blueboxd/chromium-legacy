@@ -32,8 +32,8 @@ bool IsImageAd(Element* element) {
   HTMLImageElement* image_element = DynamicTo<HTMLImageElement>(element);
   if (!image_element)
     return false;
-  // TODO(yaoxia): image will be tagged soon.
-  return false;
+
+  return image_element->IsAdRelated();
 }
 
 // An overlay interstitial element shouldn't move with scrolling and should be

@@ -64,6 +64,21 @@
             ]
         }
     ],
+    "AndroidBlockExternalIntentsWithoutGesture": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200323",
+                    "enable_features": [
+                        "IntentBlockExternalFormRedirectsNoGesture"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidBlockIntentNonSafelistedHeaders": [
         {
             "platforms": [
@@ -1454,25 +1469,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ChromeosVideoDecoder"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ClipboardMaximumAge": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "UIClipboardMaximumAge": "600"
-                    },
-                    "enable_features": [
-                        "ClipboardMaximumAge"
                     ]
                 }
             ]
@@ -3677,12 +3673,14 @@
                 {
                     "name": "AndroidExperiments",
                     "params": {
+                        "UIClipboardMaximumAge": "600",
                         "ZeroSuggestVariant:1:*": "Local",
                         "ZeroSuggestVariant:7:*": "Local",
                         "ZeroSuggestVariant:8:*": "Local",
                         "rounded_edges": "true"
                     },
                     "enable_features": [
+                        "ClipboardMaximumAge",
                         "OmniboxDisableInstantExtendedLimit",
                         "OmniboxOnFocusSuggestions"
                     ]
@@ -5482,7 +5480,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "enable_lite_page_redirect": "false"
+                        "enable_subresource_server_redirect": "false"
                     },
                     "enable_features": [
                         "SubresourceRedirect"

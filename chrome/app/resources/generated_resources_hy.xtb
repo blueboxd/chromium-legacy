@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">&amp;Շարունակել</translation>
 <translation id="2136372518715274136">Մուտքագրեք նոր գաղտնաբառը</translation>
 <translation id="2136476978468204130">Ձեր մուտքագրած անցաբառը սխալ է</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Քուքիներն արգելափակված են։}=1{Բոլոր քուքիները՝ բացառությամբ 1-ի, արգելափակված են։}one{Բոլոր քուքիները՝ բացառությամբ {COUNT}-ի, արգելափակված են։}other{Բոլոր քուքիները՝ բացառությամբ {COUNT}-ի, արգելափակված են։}}</translation>
 <translation id="2138398485845393913">Կապի հաստատում «<ph name="DEVICE_NAME" />» սարքի հետ</translation>
 <translation id="2139545522194199494">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կառավարվում է ձեր ադմինիստրատորի կողմից, կապակցում</translation>
 <translation id="2139919072249842737">Կարգավորման կոճակ</translation>
@@ -1206,7 +1205,6 @@
 <translation id="2586672484245266891">Մուտքագրեք ավելի կարճ URL</translation>
 <translation id="2587922766792651800">Ժամանակը սպառվել է</translation>
 <translation id="2588636910004461974">Սարքեր <ph name="VENDOR_NAME" /> մատակարարից</translation>
-<translation id="2593594315333286814">Հատուկ գործառույթների կարգավորումներ՝ նավարկման համար</translation>
 <translation id="2594999711683503743">Որոնեք Google-ում կամ մուտքագրեք հասցեն</translation>
 <translation id="2602501489742255173">Սկսելու համար մատը սահեցրեք վերև</translation>
 <translation id="2603115962224169880">Մաքրեք համակարգիչը</translation>
@@ -2216,7 +2214,6 @@
 <translation id="3873423927483480833">Ցուցադրել PIN կոդերը</translation>
 <translation id="3873915545594852654">Չհաջողվեց գործարկել ARC++ը։</translation>
 <translation id="3879748587602334249">Ներբեռնման կառավարիչ</translation>
-<translation id="3881321138433527084">Անվտանգ դիտարկումն անջատված է։ Միացրեք այն՝ համացանցում ձեր տվյալները պաշտպանելու համար։</translation>
 <translation id="3882165008614329320">Տեսանյութ տեսախցիկից կամ ֆայլից</translation>
 <translation id="3886446263141354045">Այս կայք մուտք գործելու ձեր հարցումն ուղարկվել է <ph name="NAME" />-ին</translation>
 <translation id="3888550877729210209">Կատարեք նշումներ <ph name="LOCK_SCREEN_APP_NAME" />-ի միջոցով</translation>
@@ -5396,7 +5393,6 @@
 <translation id="8186609076106987817">Սերվերը չկարողացավ գտնել ֆայլը:</translation>
 <translation id="8188389033983459049">Շարունակելու համար ստուգեք սարքի կարգավորումները և միացրեք Bluetooth-ը</translation>
 <translation id="8190193592390505034">Կապակցվում է <ph name="PROVIDER_NAME" />-ին</translation>
-<translation id="8190310225494289459">Ստուգել Google հաշվի էջում։</translation>
 <translation id="8191230140820435481">Կառավարել հավելվածները, ընդլայնումները և թեմաները</translation>
 <translation id="8195027750202970175">Սկավառակի տարածքը</translation>
 <translation id="8198323535106903877">Մենք կտեղադրենք այս <ph name="NUMBER_OF_APPS" /> հավելվածը ձեզ համար</translation>

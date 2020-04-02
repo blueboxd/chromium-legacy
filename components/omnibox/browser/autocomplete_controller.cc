@@ -756,14 +756,28 @@ void AutocompleteController::UpdateAssociatedKeywords(
 }
 
 void AutocompleteController::UpdateHeaders(AutocompleteResult* result) {
+  DCHECK(result);
+
   // Set the suggestion group ID to header mapping information.
   result->set_headers_map(zero_suggest_provider_->headers_map());
 
   // Move all grouped matches to the bottom while maintaining the current order.
   std::stable_sort(result->begin(), result->end(),
                    [](const auto& a, const auto& b) {
-                     return !a.suggestion_group_id && b.suggestion_group_id;
+                     return !a.suggestion_group_id.has_value() &&
+                            b.suggestion_group_id.has_value();
                    });
+
+  // Record header data into the additional_info field for chrome://omnibox.
+  for (AutocompleteMatch& match : *result) {
+    if (match.suggestion_group_id.has_value()) {
+      int group_id = match.suggestion_group_id.value();
+      match.RecordAdditionalInfo("suggestion_group_id", group_id);
+      match.RecordAdditionalInfo(
+          "header string",
+          base::UTF16ToUTF8(result->GetHeaderForGroupId(group_id)));
+    }
+  }
 }
 
 void AutocompleteController::UpdateKeywordDescriptions(

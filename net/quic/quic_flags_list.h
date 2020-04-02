@@ -408,3 +408,8 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_copy_sampler_state_from_v1_to_v2,
           false)
+
+// If true, QUIC will enable connection options LRTT+BBQ2 by default.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr_default_exit_startup_on_loss,
+          false)

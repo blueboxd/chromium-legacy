@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/base32/base32.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
@@ -26,6 +27,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
+#include "crypto/sha2.h"
 #include "net/base/escape.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -34,6 +36,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -64,8 +67,9 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 
 class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
  public:
-  explicit SubresourceRedirectBrowserTest(bool enable_lite_page_redirect = true)
-      : enable_lite_page_redirect_(enable_lite_page_redirect),
+  explicit SubresourceRedirectBrowserTest(
+      bool enable_subresource_server_redirect = true)
+      : enable_subresource_server_redirect_(enable_subresource_server_redirect),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         compression_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
@@ -78,11 +82,15 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
 
     // |https_server| setup.
     https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_.RegisterRequestHandler(base::BindRepeating(
+        &SubresourceRedirectBrowserTest::HandleHTTPSServerRequest,
+        base::Unretained(this)));
     ASSERT_TRUE(https_server_.Start());
     https_url_ = https_server_.GetURL("secure.com", "/");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
     // |compression_server| setup.
+    compression_server_.ServeFilesFromSourceDirectory("chrome/test/data");
     compression_server_.RegisterRequestHandler(base::BindRepeating(
         &SubresourceRedirectBrowserTest::HandleCompressionServerRequest,
         base::Unretained(this)));
@@ -92,8 +100,8 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
 
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kSubresourceRedirect,
-          {{"enable_lite_page_redirect",
-            enable_lite_page_redirect_ ? "true" : "false"},
+          {{"enable_subresource_server_redirect",
+            enable_subresource_server_redirect_ ? "true" : "false"},
            {"lite_page_subresource_origin", compression_url_.spec()}}},
          {optimization_guide::features::kOptimizationHints, {}},
          {optimization_guide::features::kRemoteOptimizationGuideFetching, {}}},
@@ -246,6 +254,20 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
         num_images);
   }
 
+  GURL GetSubresourceURLForURL(const std::string& path) {
+    GURL compressed_url = compression_url();
+    std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
+        crypto::SHA256HashString(
+            https_url().scheme() + "://" + https_url().host() + ":" +
+            base::NumberToString(https_url().EffectiveIntPort())),
+        base32::Base32EncodePolicy::OMIT_PADDING));
+    std::string host_str = origin_hash + "." + compressed_url.host();
+    GURL::Replacements replacements;
+    replacements.SetHostStr(host_str);
+    replacements.SetPathStr(path);
+    return compressed_url.ReplaceComponents(replacements);
+  }
+
   GURL http_url() const { return http_url_; }
   GURL https_url() const { return https_url_; }
   GURL compression_url() const { return compression_url_; }
@@ -258,6 +280,7 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     return https_server_.GetURL("secure.com", path);
   }
 
+  void SetHttpsServerImageToFail() { https_server_image_fail_ = true; }
   void SetCompressionServerToFail() { compression_server_fail_ = true; }
 
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
@@ -269,7 +292,17 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
-  // Called by |compression_server_|.
+  // Handles the https server request.
+  std::unique_ptr<net::test_server::HttpResponse> HandleHTTPSServerRequest(
+      const net::test_server::HttpRequest& request) {
+    if (https_server_image_fail_ &&
+        request.GetURL().path() == "/load_image/image.png") {
+      return std::make_unique<net::test_server::RawHttpResponse>("", "");
+    }
+    return nullptr;
+  }
+
+  // Handles the compression server request.
   std::unique_ptr<net::test_server::HttpResponse>
   HandleCompressionServerRequest(const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response =
@@ -285,7 +318,7 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     // that is looking to access image.png will be treated as though it is
     // compressed.  All other redirects will be assumed failures to retrieve the
     // requested resource and return a redirect to private_url_image.png.
-    if (request.GetURL().query().find(
+    if (request_url_.query().find(
             net::EscapeQueryParamValue("/image.png", true /* use_plus */), 0) !=
         std::string::npos) {
       // Serve the correct image file.
@@ -298,11 +331,15 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
         response->set_content(file_contents);
         response->set_code(net::HTTP_OK);
       }
-    } else if (request.GetURL().query().find(
+    } else if (request_url_.query().find(
                    net::EscapeQueryParamValue("/fail_image.png",
                                               true /* use_plus */),
                    0) != std::string::npos) {
       response->set_code(net::HTTP_NOT_FOUND);
+    } else if (base::StartsWith(request_url_.path(), "/load_image/",
+                                base::CompareCase::SENSITIVE)) {
+      // Let the page be served directly
+      return nullptr;
     } else {
       response->set_code(net::HTTP_TEMPORARY_REDIRECT);
       response->AddCustomHeader(
@@ -315,7 +352,7 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 
-  bool enable_lite_page_redirect_ = false;
+  bool enable_subresource_server_redirect_ = false;
 
   GURL compression_url_;
   GURL http_url_;
@@ -328,6 +365,8 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
 
   base::HistogramTester histogram_tester_;
 
+  // Whether the embedded test servers should return failure.
+  bool https_server_image_fail_ = false;
   bool compression_server_fail_ = false;
 
   optimization_guide::testing::TestHintsComponentCreator
@@ -572,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 }
 
 //  This test verifies that the client will utilize the fallback logic if the
-//  server/network fails and returns nothing.
+//  compression server fails and returns nothing.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(FallbackOnServerFailure)) {
   EnableDataSaver(true);
@@ -601,6 +640,73 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(1);
+}
+
+//  This test verifies that the client will utilize the fallback logic if the
+//  compression server and the main https server fails and returns nothing.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(FallbackOnBothServerFailure)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  SetUpPublicImageURLPaths("/load_image/image_delayed_load.html",
+                           {"/load_image/image.png"});
+  SetHttpsServerImageToFail();
+  SetCompressionServerToFail();
+
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(
+      browser(), HttpsURLWithPath("/load_image/image_delayed_load.html"));
+
+  // The image should failed to load, but some redirect metrics are recorded.
+  EXPECT_FALSE(RunScriptExtractBool("checkImage()"));
+  RetryForHistogramUntilCountReached(
+      histogram_tester(),
+      "SubresourceRedirect.CompressionAttempt.ServerResponded", 1);
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ServerResponded", false, 1);
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+
+  // No coverage ukm is recorded, since the image load failed.
+  VerifyCompressibleImageUkm(0);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+}
+
+// This test verifies that accessing the compression server directly will not do
+// any additional redirection.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestDirectCompressionServerPage)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  SetUpPublicImageURLPaths("/load_image/image_delayed_load.html",
+                           {"/load_image/image.png"});
+
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetSubresourceURLForURL("/load_image/image_delayed_load.html"));
+
+  // The image should failed to load, but some redirect
+  // metrics are recorded.
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt."
+      "ServerResponded",
+      0);
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            compression_url().port());
+
+  // The coverage ukm still gets recorded.
+  VerifyCompressibleImageUkm(1);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
 }
 
 IN_PROC_BROWSER_TEST_F(

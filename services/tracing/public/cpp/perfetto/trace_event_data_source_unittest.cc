@@ -240,6 +240,7 @@ class TraceEventDataSourceTest : public testing::Test {
         base::trace_event::TraceLog::GetInstance()->process_name();
     base::trace_event::TraceLog::GetInstance()->set_process_name(kTestProcess);
 
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
     auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
@@ -1473,33 +1474,30 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
       base::SequencedTaskRunnerHandle::Get());
   constexpr char kStartupTestEvent1[] = "startup_registry";
   auto* data_source = TraceEventDataSource::GetInstance();
+  PerfettoTracedProcess::Get()->AddDataSource(data_source);
 
-  // Start startup tracing registry with no timeout. This would cause startup
-  // tracing to abort and flush as soon the current thread can run tasks.
-  data_source->set_startup_tracing_timeout_for_testing(base::TimeDelta());
-  producer_client()->SetupStartupTracing();
-  data_source->SetupStartupTracing(producer_client(),
-                                   /*privacy_filtering_enabled=*/true);
-  base::trace_event::TraceLog::GetInstance()->SetEnabled(
-      base::trace_event::TraceConfig(),
-      base::trace_event::TraceLog::RECORDING_MODE);
+  // Start startup tracing with no timeout. This would cause startup tracing to
+  // abort and flush as soon the current thread can run tasks.
+  producer_client()->set_startup_tracing_timeout_for_testing(base::TimeDelta());
+  producer_client()->SetupStartupTracing(base::trace_event::TraceConfig(),
+                                         /*privacy_filtering_enabled=*/true);
 
-  // The trace event will be added to the startup registry since the abort is
-  // not run yet.
+  // The trace event will be added to the SMB for the (soon to be aborted)
+  // startup tracing session, since the abort didn't run yet.
   TRACE_EVENT_BEGIN0(kCategoryGroup, kStartupTestEvent1);
 
   // Run task on background thread to add trace events while aborting and
   // starting tracing on the data source. This is to test we do not have any
   // crashes when a background thread is trying to create trace writers when
-  // deleting startup registry and setting the producer.
+  // aborting startup tracing and resetting tracing for the next session.
   auto wait_for_start_tracing = std::make_unique<base::WaitableEvent>();
   base::WaitableEvent* wait_ptr = wait_for_start_tracing.get();
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           [](std::unique_ptr<base::WaitableEvent> wait_for_start_tracing) {
-            // This event can be hit anytime before startup registry is
-            // destroyed to tracing started using producer.
+            // This event can be hit anytime before startup tracing is
+            // aborted to after tracing is started using the producer.
             TRACE_EVENT_BEGIN0(kCategoryGroup, "maybe_lost");
             base::ScopedAllowBaseSyncPrimitivesForTesting allow;
             wait_for_start_tracing->Wait();
@@ -1510,8 +1508,8 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
           std::move(wait_for_start_tracing)));
 
   // Let tasks run on this thread, which should abort startup tracing and flush
-  // since we have not added a producer to the data source.
-  data_source->OnTaskSchedulerAvailable();
+  // TraceLog, since the data source hasn't been started by a producer.
+  producer_client()->OnThreadPoolAvailable();
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
 

@@ -844,7 +844,6 @@
 <translation id="2135787500304447609">继续(&amp;R)</translation>
 <translation id="2136372518715274136">输入新密码</translation>
 <translation id="2136476978468204130">您输入的密码不正确</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{已阻止 Cookie。}=1{已阻止 Cookie，但有 1 项例外情况}other{已阻止 Cookie，但有 {COUNT} 项例外情况}}</translation>
 <translation id="2138398485845393913">仍在连接“<ph name="DEVICE_NAME" />”</translation>
 <translation id="2139545522194199494">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，由您的管理员管理，连接</translation>
 <translation id="2139919072249842737">设置按钮</translation>
@@ -1202,7 +1201,6 @@
 <translation id="2586672484245266891">请输入一个较短的网址</translation>
 <translation id="2587922766792651800">已超时</translation>
 <translation id="2588636910004461974">来自<ph name="VENDOR_NAME" />的设备</translation>
-<translation id="2593594315333286814">与导航有关的无障碍设置</translation>
 <translation id="2594999711683503743">使用 Google 执行搜索，或者输入网址</translation>
 <translation id="2602501489742255173">向上滑动即可开始使用</translation>
 <translation id="2603115962224169880">清理计算机</translation>
@@ -1669,12 +1667,12 @@
     <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />访问学校安装的应用和扩展程序
       <ph name="LIST_ITEM" />访问受学校管理的 Chromebook 中的书签
-      <ph name="LIST_ITEM" />在教育网站上使用自动填充密码的功能
+      <ph name="LIST_ITEM" />在教育网站上使用自动填充密码功能
     <ph name="END_LIST" />
     要在此设备上获得完整的学校体验，您的孩子应该：
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />退出通过 Family Link 管理的帐号
-      <ph name="OLIST_ITEM" />在登录屏幕上使用 G Suite 教育版帐号登录。但请注意，这意味着学校政策（包括应用和网站访问权限设置）的效力将会优先于您的 Family Link 监管功能（例如，学校管理员可能会出于家庭作业的需要允许使用 YouTube，不强制执行设备使用时长限制，等等）。
+      <ph name="OLIST_ITEM" />在登录屏幕上使用 G Suite 教育版帐号登录。但请注意，这意味着学校政策（包括应用和网站访问权限设置）的效力将会优先于您的 Family Link 监管功能。例如，学校管理员可能会出于家庭作业的需要允许使用 YouTube，不强制执行设备使用时长限制，等等。
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">未确认</translation>
 <translation id="32101887417650595">无法连接到打印机</translation>
@@ -1941,7 +1939,7 @@
 <translation id="3574210789297084292">登录</translation>
 <translation id="3574917942258583917">仍要退出无痕模式？</translation>
 <translation id="3575121482199441727">允许此网站显示通知</translation>
-<translation id="3575919114596668130">您的 Family Link 家长设置仍然适用。如果您先前已禁用某个应用或网站，则无需再次执行此操作。</translation>
+<translation id="3575919114596668130">您的 Family Link 家长设置仍然适用。如果您之前已屏蔽某个应用或网站，则无需再次执行此操作。</translation>
 <translation id="3576324189521867626">已成功安装</translation>
 <translation id="3578594933904494462">此标签页的内容正在共享中。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;希望与您拥有的以下群组共享打印机&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;：&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;。如果您接受，该群组的所有成员都可以将内容发送到该打印机进行打印。</translation>
@@ -2209,7 +2207,6 @@
 <translation id="3873423927483480833">显示 PIN 码</translation>
 <translation id="3873915545594852654">ARC++ 出问题了。</translation>
 <translation id="3879748587602334249">下载管理器</translation>
-<translation id="3881321138433527084">“安全浏览”功能已关闭。若想安全使用网络，请开启此功能。</translation>
 <translation id="3882165008614329320">来自摄像头或文件的现有视频</translation>
 <translation id="3886446263141354045">系统已将您想访问此网站的请求发送给<ph name="NAME" /></translation>
 <translation id="3888550877729210209">使用“<ph name="LOCK_SCREEN_APP_NAME" />”创建记事</translation>
@@ -3365,7 +3362,7 @@
 <translation id="5511379779384092781">特小</translation>
 <translation id="5511823366942919280">确定要将此设备设为“Shark”吗？</translation>
 <translation id="5512653252560939721">用户证书必须受硬件支持。</translation>
-<translation id="5515923816438946203">选择您的屏幕上显示的内容</translation>
+<translation id="5515923816438946203">选择屏幕上显示的内容</translation>
 <translation id="5517304475148761050">此应用需要获得对 Play 商店的访问权限</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">正在将打印机添加到您的帐号 - 这可能需要一段时间…</translation>
@@ -5383,7 +5380,6 @@
 <translation id="8186609076106987817">服务器找不到该文件。</translation>
 <translation id="8188389033983459049">请检查您的设备设置，并开启蓝牙以继续</translation>
 <translation id="8190193592390505034">正在连接到<ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">在 Google 帐号中检查。</translation>
 <translation id="8191230140820435481">管理您的应用、扩展程序和主题背景</translation>
 <translation id="8195027750202970175">占用的存储空间</translation>
 <translation id="8198323535106903877">我们将为您安装这 <ph name="NUMBER_OF_APPS" /> 款应用</translation>
@@ -6055,7 +6051,7 @@
 <translation id="9055636786322918818">强制执行 RC4 加密。选中此选项会令您面临更大的风险，因为 RC4 加密不安全。</translation>
 <translation id="9056810968620647706">未找到匹配项。</translation>
 <translation id="9057354806206861646">更新时间表</translation>
-<translation id="9058976525724291037">您的孩子想在此设备上再添加一个 Google 帐号。只有 G Suite 教育版帐号可被添加到通过 Family Link 管理的设备。</translation>
+<translation id="9058976525724291037">您的孩子想在此设备上再添加一个 Google 帐号。在通过 Family Link 管理的设备中，只能添加 G Suite 教育版帐号。</translation>
 <translation id="9062065967472365419">随机更换</translation>
 <translation id="9062468308252555888">14 倍</translation>
 <translation id="9063208415146866933">第 <ph name="ERROR_LINE_START" /> 行到第 <ph name="ERROR_LINE_END" /> 行存在错误</translation>

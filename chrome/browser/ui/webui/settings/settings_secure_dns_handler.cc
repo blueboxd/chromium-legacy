@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -24,8 +25,6 @@
 #include "net/dns/public/doh_provider_list.h"
 #include "net/dns/public/util.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using chrome_browser_net::SecureDnsUiManagementMode;
 
 namespace settings {
 
@@ -42,9 +41,9 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  SecureDnsUiManagementMode management_mode;
-  SystemNetworkContextManager::GetStubResolverConfig(
-      g_browser_process->local_state(), &insecure_stub_resolver_enabled,
+  chrome_browser_net::SecureDnsUiManagementMode management_mode;
+  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
+      &insecure_stub_resolver_enabled,
       &secure_dns_mode, &dns_over_https_servers, false /* record_metrics */,
       &management_mode);
 

@@ -16,7 +16,7 @@ import android.widget.EditText;
 import androidx.fragment.app.Fragment;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.url.GURL;

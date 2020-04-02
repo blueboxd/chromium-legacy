@@ -217,7 +217,10 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
   api->glImportSemaphoreZirconHandleANGLEFn(
       gl_semaphore, GL_HANDLE_TYPE_ZIRCON_EVENT_ANGLE, event.release());
   return gl_semaphore;
-#else  // !defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#elif defined(OS_WIN)
+  NOTIMPLEMENTED();
+  return 0;
+#else
 #error Unsupported OS
 #endif
 }

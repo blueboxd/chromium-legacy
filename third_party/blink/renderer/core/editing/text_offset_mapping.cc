@@ -71,8 +71,9 @@ const LayoutBlockFlow& RootInlineContentsContainerOf(
   for (const LayoutBlock* runner = block_flow.ContainingBlock(); runner;
        runner = runner->ContainingBlock()) {
     auto* containing_block_flow = DynamicTo<LayoutBlockFlow>(runner);
-    if (containing_block_flow && runner->ChildrenInline())
-      root_block_flow = containing_block_flow;
+    if (!containing_block_flow || !runner->ChildrenInline())
+      break;
+    root_block_flow = containing_block_flow;
   }
   DCHECK(!root_block_flow->IsAtomicInlineLevel())
       << block_flow << ' ' << root_block_flow;

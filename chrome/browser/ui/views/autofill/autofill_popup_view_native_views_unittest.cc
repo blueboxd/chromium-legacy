@@ -44,6 +44,8 @@ const struct TypeClicks kClickTestCase[] = {
     {autofill::POPUP_ITEM_ID_USERNAME_ENTRY, 1},
     {autofill::POPUP_ITEM_ID_CREATE_HINT, 1},
     {autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 1},
+    {autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN, 1},
+    {autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE, 1},
 };
 
 class TestAXEventObserver : public views::AXEventObserver {
@@ -154,13 +156,12 @@ TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
   CreateAndShowView({autofill::POPUP_ITEM_ID_DATALIST_ENTRY,
                      autofill::POPUP_ITEM_ID_SEPARATOR,
                      autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
-                     autofill::POPUP_ITEM_ID_AUTOFILL_OPTIONS,
-                     autofill::POPUP_ITEM_ID_LOADING_SPINNER});
+                     autofill::POPUP_ITEM_ID_AUTOFILL_OPTIONS});
 
   // Select first item.
   view()->GetRowsForTesting()[0]->SetSelected(true);
 
-  EXPECT_EQ(view()->GetRowsForTesting().size(), 5u);
+  EXPECT_EQ(view()->GetRowsForTesting().size(), 4u);
 
   // Item 0.
   ui::AXNodeData node_data_0;
@@ -197,15 +198,6 @@ TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
   EXPECT_EQ(ax::mojom::Role::kMenuItem, node_data_3.role);
   EXPECT_FALSE(
       node_data_3.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
-
-  // Item 4 (loading spinner).
-  ui::AXNodeData node_data_4;
-  view()->GetRowsForTesting()[1]->GetAccessibleNodeData(&node_data_4);
-  EXPECT_FALSE(node_data_4.HasIntAttribute(ax::mojom::IntAttribute::kPosInSet));
-  EXPECT_FALSE(node_data_4.HasIntAttribute(ax::mojom::IntAttribute::kSetSize));
-  EXPECT_EQ(ax::mojom::Role::kSplitter, node_data_4.role);
-  EXPECT_FALSE(
-      node_data_4.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 }
 
 TEST_F(AutofillPopupViewNativeViewsTest, Gestures) {
@@ -235,11 +227,30 @@ TEST_F(AutofillPopupViewNativeViewsTest, Gestures) {
   view()->GetRowsForTesting()[2]->OnGestureEvent(&tap_cancel);
 }
 
+TEST_F(AutofillPopupViewNativeViewsTest, ClickDisabledEntry) {
+  autofill::Suggestion opt_int_suggestion(
+      "", "", "", autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN);
+  opt_int_suggestion.is_loading = autofill::Suggestion::IsLoading(true);
+  autofill_popup_controller_.set_suggestions({opt_int_suggestion});
+  view_ = std::make_unique<autofill::AutofillPopupViewNativeViews>(
+      &autofill_popup_controller_, widget_.get());
+  widget_->SetContentsView(view_.get());
+  widget_->Show();
+
+  EXPECT_CALL(autofill_popup_controller_, AcceptSuggestion).Times(0);
+
+  gfx::Point inside_point(view()->GetRowsForTesting()[0]->x() + 1,
+                          view()->GetRowsForTesting()[0]->y() + 1);
+  ui::MouseEvent click_mouse_event(
+      ui::ET_MOUSE_PRESSED, inside_point, inside_point, ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON);
+  widget_->OnMouseEvent(&click_mouse_event);
+}
+
 TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
   const TypeClicks& click = GetParam();
   CreateAndShowView({click.id});
-  EXPECT_CALL(autofill_popup_controller_, AcceptSuggestion(::testing::_))
-      .Times(click.click);
+  EXPECT_CALL(autofill_popup_controller_, AcceptSuggestion).Times(click.click);
   gfx::Point center =
       view()->GetRowsForTesting()[0]->GetBoundsInScreen().CenterPoint();
 
@@ -252,9 +263,8 @@ TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
   view()->RemoveAllChildViews(true /* delete_children */);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    AutofillPopupViewNativeViewsForEveryTypeTest,
-    ::testing::ValuesIn(kClickTestCase));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillPopupViewNativeViewsForEveryTypeTest,
+                         ::testing::ValuesIn(kClickTestCase));
 
 }  // namespace

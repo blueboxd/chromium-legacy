@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
@@ -117,17 +118,20 @@ void LoadingPredictorTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Clear out prediction from previous navigation.
-  last_optimization_guide_preconnect_prediction_ = base::nullopt;
-
   if (!predictor_)
     return;
 
   if (!IsHandledNavigation(navigation_handle))
     return;
 
-  auto navigation_id = NavigationID(web_contents(), navigation_handle->GetURL(),
-                                    navigation_handle->NavigationStart());
+  // Clear out prediction from previous navigation.
+  last_optimization_guide_prediction_ = base::nullopt;
+
+  auto navigation_id = NavigationID(
+      web_contents(),
+      ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                             ukm::SourceIdType::NAVIGATION_ID),
+      navigation_handle->GetURL(), navigation_handle->NavigationStart());
   if (!navigation_id.is_valid())
     return;
   current_navigation_id_ = navigation_id;
@@ -137,6 +141,10 @@ void LoadingPredictorTabHelper::DidStartNavigation(
 
   if (!optimization_guide_decider_)
     return;
+
+  last_optimization_guide_prediction_ = OptimizationGuidePrediction();
+  last_optimization_guide_prediction_->decision =
+      optimization_guide::OptimizationGuideDecision::kUnknown;
 
   // We do not have any predictions on device, so consult the optimization
   // guide.
@@ -155,8 +163,11 @@ void LoadingPredictorTabHelper::DidRedirectNavigation(
   if (!IsHandledNavigation(navigation_handle))
     return;
 
-  auto navigation_id = NavigationID(web_contents(), navigation_handle->GetURL(),
-                                    navigation_handle->NavigationStart());
+  auto navigation_id = NavigationID(
+      web_contents(),
+      ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                             ukm::SourceIdType::NAVIGATION_ID),
+      navigation_handle->GetURL(), navigation_handle->NavigationStart());
   if (!navigation_id.is_valid())
     return;
   current_navigation_id_ = navigation_id;
@@ -174,12 +185,17 @@ void LoadingPredictorTabHelper::DidFinishNavigation(
   // Clear out the current navigation since there is not one in flight anymore.
   current_navigation_id_ = NavigationID();
 
-  auto old_navigation_id = NavigationID(
-      web_contents(), navigation_handle->GetRedirectChain().front(),
-      navigation_handle->NavigationStart());
-  auto new_navigation_id =
-      NavigationID(web_contents(), navigation_handle->GetURL(),
+  auto old_navigation_id =
+      NavigationID(web_contents(),
+                   ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                                          ukm::SourceIdType::NAVIGATION_ID),
+                   navigation_handle->GetRedirectChain().front(),
                    navigation_handle->NavigationStart());
+  auto new_navigation_id = NavigationID(
+      web_contents(),
+      ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                             ukm::SourceIdType::NAVIGATION_ID),
+      navigation_handle->GetURL(), navigation_handle->NavigationStart());
   if (!old_navigation_id.is_valid() || !new_navigation_id.is_valid())
     return;
 
@@ -243,7 +259,7 @@ void LoadingPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
     return;
 
   predictor_->loading_data_collector()->RecordMainFrameLoadComplete(
-      navigation_id, last_optimization_guide_preconnect_prediction_);
+      navigation_id, last_optimization_guide_prediction_);
 }
 
 void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
@@ -286,6 +302,9 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
         OptimizationHintsReceiveStatus::kBeforeNavigationFinish);
   }
 
+  DCHECK(last_optimization_guide_prediction_);
+  last_optimization_guide_prediction_->decision = decision;
+
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
     return;
 
@@ -298,11 +317,13 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
   net::NetworkIsolationKey network_isolation_key(main_frame_origin,
                                                  main_frame_origin);
   std::set<url::Origin> predicted_origins;
+  std::vector<GURL> predicted_subresources;
   const auto lp_metadata = metadata.loading_predictor_metadata();
   for (const auto& subresource : lp_metadata->subresources()) {
     GURL subresource_url(subresource.url());
     if (!subresource_url.is_valid())
       continue;
+    predicted_subresources.push_back(subresource_url);
     url::Origin subresource_origin = url::Origin::Create(subresource_url);
     if (predicted_origins.find(subresource_origin) != predicted_origins.end())
       continue;
@@ -310,7 +331,10 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
     prediction.requests.emplace_back(subresource_origin, 1,
                                      network_isolation_key);
   }
-  last_optimization_guide_preconnect_prediction_ = prediction;
+
+  last_optimization_guide_prediction_->preconnect_prediction = prediction;
+  last_optimization_guide_prediction_->predicted_subresources =
+      predicted_subresources;
 
   // Only preconnect if the navigation is still pending and we want to use the
   // predictions to preconnect to subresource origins.

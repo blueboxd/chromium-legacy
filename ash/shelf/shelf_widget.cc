@@ -581,8 +581,9 @@ void ShelfWidget::ScheduleShowDragHandleNudge() {
   delegate_view_->drag_handle()->ScheduleShowDragHandleNudge();
 }
 
-void ShelfWidget::HideDragHandleNudge() {
-  delegate_view_->drag_handle()->HideDragHandleNudge(false /*hidden_by_tap*/);
+void ShelfWidget::HideDragHandleNudge(
+    contextual_tooltip::DismissNudgeReason context) {
+  delegate_view_->drag_handle()->HideDragHandleNudge(context);
 }
 
 void ShelfWidget::SetLoginShelfButtonOpacity(float target_opacity) {

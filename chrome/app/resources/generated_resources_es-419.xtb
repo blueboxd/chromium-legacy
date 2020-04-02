@@ -844,7 +844,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2135787500304447609">&amp;Reanudar</translation>
 <translation id="2136372518715274136">Ingresa la nueva contraseña</translation>
 <translation id="2136476978468204130">La frase de contraseña que ingresaste es incorrecta</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Se bloquearon las cookies.}=1{Se bloquearon las cookies; hay 1 excepción}other{Se bloquearon las cookies; hay {COUNT} excepciones}}</translation>
 <translation id="2138398485845393913">La conexión a "<ph name="DEVICE_NAME" />" sigue en curso</translation>
 <translation id="2139545522194199494">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, administrada por tu administrador, conectar</translation>
 <translation id="2139919072249842737">Botón de configuración</translation>
@@ -1203,7 +1202,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2586672484245266891">Ingresa una URL más corta</translation>
 <translation id="2587922766792651800">Se agotó el tiempo de espera</translation>
 <translation id="2588636910004461974">Dispositivos del proveedor <ph name="VENDOR_NAME" /></translation>
-<translation id="2593594315333286814">Configuración de accesibilidad para la navegación</translation>
 <translation id="2594999711683503743">Buscar en Google o escribir una URL</translation>
 <translation id="2602501489742255173">Desliza hacia arriba para comenzar</translation>
 <translation id="2603115962224169880">Limpiar la computadora</translation>
@@ -1675,7 +1673,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
     Para obtener la experiencia completa de la institución educativa en este dispositivo, tu hijo debe hacer lo siguiente:
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />Salir de la cuenta administrada por Family Link
-      <ph name="OLIST_ITEM" />Acceder con su cuenta de G Suite for Education en la pantalla de acceso Sin embargo, hay que tener en cuenta que las políticas de la institución educativa, incluidas las opciones de configuración de acceso a las apps y sitios web, tendrán precedencia sobre las funciones de supervisión de Family Link (p. ej., los administradores de la institución educativa permitirán el acceso a YouTube si es necesario para realizar una tarea o se eliminarán las limitaciones del tiempo de uso).
+      <ph name="OLIST_ITEM" />Acceder con su cuenta de G Suite for Education en la pantalla de acceso. Sin embargo, hay que tener en cuenta que las políticas de la institución educativa, incluidas las opciones de configuración de acceso a las apps y sitios web, sustituirán las funciones de supervisión de Family Link (p. ej., los administradores de la institución educativa permitirán el acceso a YouTube si es necesario para realizar una tarea o se eliminarán las limitaciones del tiempo de uso).
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Sin confirmar</translation>
 <translation id="32101887417650595">No es posible establecer conexión con la impresora</translation>
@@ -1876,6 +1874,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="3479685872808224578">No se pudo detectar el servidor de impresión. Verifica la dirección y vuelve a intentarlo.</translation>
 <translation id="3481268647794498892">Se abrirá en <ph name="ALTERNATIVE_BROWSER_NAME" /> en <ph name="COUNTDOWN_SECONDS" /> segundos</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> puede ver los siguientes archivos</translation>
 <translation id="3484273680291419129">Quitando software dañino…</translation>
 <translation id="3484869148456018791">Obtener nuevo certificado</translation>
 <translation id="3487007233252413104">función anónima</translation>
@@ -1938,6 +1937,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3564848315152754834">Llave de seguridad USB</translation>
 <translation id="3566721612727112615">No se agregaron sitios</translation>
 <translation id="3569382839528428029">¿Quieres que <ph name="APP_NAME" /> comparta tu pantalla?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> puede ver los siguientes archivos y carpetas</translation>
 <translation id="3571734092741541777">Configurar</translation>
 <translation id="3574210789297084292">acceder</translation>
 <translation id="3574917942258583917">¿Deseas salir del modo de navegación incógnito de todas formas?</translation>
@@ -1947,6 +1947,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo del cual eres propietario: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán usar esa impresora para imprimir.</translation>
 <translation id="357889014807611375">Wi-Fi de uso medido</translation>
+<translation id="3582057310199111521">Se ingresó en un sitio engañoso y se encontró en una violación de la seguridad de los datos</translation>
 <translation id="3584169441612580296">Leer y cambiar fotos, música y otro contenido multimedia desde tu computadora</translation>
 <translation id="3586806079541226322">No se puede abrir este archivo.</translation>
 <translation id="3586931643579894722">Ocultar detalles</translation>
@@ -2210,7 +2211,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3873423927483480833">Muestra los PIN</translation>
 <translation id="3873915545594852654">Hubo un problema con ARC++.</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
-<translation id="3881321138433527084">La Navegación segura está desactivada. Para mantenerte protegido en la Web, activa esta función.</translation>
 <translation id="3882165008614329320">Video existente de la cámara o archivo</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio se envió a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tomar notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -3079,6 +3079,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5117930984404104619">Supervisar el comportamiento de otras extensiones (incluidas las URL visitadas)</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda en otra ubicación o libera espacio en el disco duro.</translation>
+<translation id="5122384452788334261">El dispositivo tiene poco espacio de almacenamiento. Para usar Plugin VM, se recomienda tener <ph name="RECOMMENDED_SPACE" /> de espacio libre como mínimo. Si necesitas liberar espacio, borra archivos del almacenamiento del dispositivo.</translation>
 <translation id="5123433949759960244">Básquet</translation>
 <translation id="5125751979347152379">URL no válido.</translation>
 <translation id="5126611267288187364">Ver cambios</translation>
@@ -5174,6 +5175,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7915471803647590281">Comunícanos lo que está pasando antes de enviarnos tus comentarios</translation>
 <translation id="7918257978052780342">Inscribir</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> puede ver <ph name="FILENAME" /></translation>
 <translation id="7924358170328001543">Se produjo un error al reenviar el puerto</translation>
 <translation id="792514962475806987">Nivel de zoom en vista acoplada:</translation>
 <translation id="7925247922861151263">Falló la verificación de AAA</translation>
@@ -5337,6 +5339,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8118488170956489476">Tu organización <ph name="BEGIN_LINK" />administra el navegador<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Administrar tus descargas</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> y otros permisos</translation>
+<translation id="8120715633374652536">El dispositivo tiene poco espacio de almacenamiento. Para usar Plugin VM, debes tener <ph name="MINIMUM_SPACE" /> de espacio libre como mínimo (se recomienda contar con más de <ph name="RECOMMENDED_SPACE" />). Si necesitas liberar espacio, borra archivos del almacenamiento del dispositivo.</translation>
 <translation id="8123590694679414600">Se encriptaron los datos con tu frase de contraseña de sincronización el
           <ph name="TIME" />. No se incluyen formas de pago ni direcciones de Google Pay.</translation>
 <translation id="81238879832906896">Flor amarilla y blanca</translation>
@@ -5386,7 +5389,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8186609076106987817">El servidor no pudo encontrar el archivo.</translation>
 <translation id="8188389033983459049">Revisa la configuración del dispositivo y activa la conexión Bluetooth para continuar</translation>
 <translation id="8190193592390505034">Estableciendo conexión con <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">Revisa la Cuenta de Google.</translation>
 <translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
 <translation id="8195027750202970175">Tamaño en disco</translation>
 <translation id="8198323535106903877">Instalaremos las <ph name="NUMBER_OF_APPS" /> apps por ti</translation>

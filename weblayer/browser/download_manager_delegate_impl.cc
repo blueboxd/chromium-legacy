@@ -54,6 +54,12 @@ DownloadManagerDelegateImpl::DownloadManagerDelegateImpl(
     content::DownloadManager* download_manager)
     : download_manager_(download_manager) {
   download_manager_->AddObserver(this);
+
+  // WebLayer doesn't use a history DB as the in-progress database maintained by
+  // the download component is enough. However the download code still depends
+  // this notification. TODO(jam): update download code to handle this.
+  download_manager_->PostInitialization(
+      content::DownloadManager::DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB);
 }
 
 DownloadManagerDelegateImpl::~DownloadManagerDelegateImpl() {
@@ -172,6 +178,13 @@ void DownloadManagerDelegateImpl::OnDownloadCreated(
     local_state->SetInteger(kDownloadNextIDPref, next_id);
   }
 
+  if (item->GetLastReason() == download::DOWNLOAD_INTERRUPT_REASON_CRASH &&
+      item->CanResume() &&
+      // Don't automatically resume downloads which were previously paused.
+      !item->IsPaused()) {
+    DownloadImpl::Get(item)->Resume();
+  }
+
   auto* delegate = GetDelegate(item);
   if (delegate)
     delegate->DownloadStarted(DownloadImpl::Get(item));
@@ -181,6 +194,13 @@ void DownloadManagerDelegateImpl::OnDownloadDropped(
     content::DownloadManager* manager) {
   if (download_dropped_callback_)
     download_dropped_callback_.Run();
+}
+
+void DownloadManagerDelegateImpl::OnManagerInitialized() {
+  auto* browser_context_impl =
+      static_cast<BrowserContextImpl*>(download_manager_->GetBrowserContext());
+  auto* profile = browser_context_impl->profile_impl();
+  profile->DownloadsInitialized();
 }
 
 void DownloadManagerDelegateImpl::OnDownloadUpdated(

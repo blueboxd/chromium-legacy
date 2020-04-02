@@ -11,6 +11,7 @@ jumbo_static_library("lookalikes") {
   ]
   deps = [
     "//base",
+    "//components/security_state/core:features",
     "//components/url_formatter",
     "//components/url_formatter/spoof_checks/top_domains:common",
     "//components/url_formatter/spoof_checks/top_domains:top500_domains",

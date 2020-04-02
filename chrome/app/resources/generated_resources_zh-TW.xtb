@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">繼續(&amp;R)</translation>
 <translation id="2136372518715274136">輸入新密碼</translation>
 <translation id="2136476978468204130">你輸入的通關密語不正確</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{已封鎖 Cookie。}=1{已封鎖 Cookie，有 1 個例外狀況}other{已封鎖 Cookie，有 {COUNT} 個例外狀況}}</translation>
 <translation id="2138398485845393913">仍在連線至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="2139545522194199494">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，由系統管理員管理，連線</translation>
 <translation id="2139919072249842737">「設定」按鈕</translation>
@@ -1205,7 +1204,6 @@
 <translation id="2586672484245266891">請輸入較短的網址</translation>
 <translation id="2587922766792651800">作業逾時</translation>
 <translation id="2588636910004461974">來自 <ph name="VENDOR_NAME" /> 的裝置</translation>
-<translation id="2593594315333286814">瀏覽作業適用的無障礙設定</translation>
 <translation id="2594999711683503743">搜尋 Google 或輸入網址</translation>
 <translation id="2602501489742255173">向上滑動即可開始使用</translation>
 <translation id="2603115962224169880">清理電腦</translation>
@@ -1944,7 +1942,7 @@
 <translation id="3574210789297084292">登入</translation>
 <translation id="3574917942258583917">確定要結束無痕模式嗎？</translation>
 <translation id="3575121482199441727">允許這個網站的通知</translation>
-<translation id="3575919114596668130">你的 Family Link 家長設定仍然適用。如果你先前已封鎖某個應用程式或網站，則無須再次封鎖。</translation>
+<translation id="3575919114596668130">您的 Family Link 家長設定仍然適用。如果您先前已封鎖某個應用程式或網站，則無須再次封鎖。</translation>
 <translation id="3576324189521867626">已成功安裝</translation>
 <translation id="3578594933904494462">正在分享這個分頁的內容。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; 想要與你的群組 (<ph name="GROUP_NAME" />) 共用印表機 &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。你接受之後，所有群組成員即可使用這台印表機進行列印工作。</translation>
@@ -2212,7 +2210,6 @@
 <translation id="3873423927483480833">顯示 PIN 碼</translation>
 <translation id="3873915545594852654">ARC++ 發生問題。</translation>
 <translation id="3879748587602334249">下載管理員</translation>
-<translation id="3881321138433527084">安全瀏覽功能已停用。請啟用這項功能，確保上網安全。</translation>
 <translation id="3882165008614329320">相機或檔案中的現有影片</translation>
 <translation id="3886446263141354045">你想存取這個網站的要求已傳送給<ph name="NAME" /></translation>
 <translation id="3888550877729210209">使用「<ph name="LOCK_SCREEN_APP_NAME" />」寫筆記</translation>
@@ -5386,7 +5383,6 @@
 <translation id="8186609076106987817">伺服器找不到檔案。</translation>
 <translation id="8188389033983459049">檢查裝置設定並開啟藍牙功能，以便繼續操作</translation>
 <translation id="8190193592390505034">正在連線至 <ph name="PROVIDER_NAME" /></translation>
-<translation id="8190310225494289459">檢查 Google 帳戶的資安問題。</translation>
 <translation id="8191230140820435481">管理你的應用程式、擴充功能和主題</translation>
 <translation id="8195027750202970175">佔磁碟容量</translation>
 <translation id="8198323535106903877">系統將為你安裝這 <ph name="NUMBER_OF_APPS" /> 個應用程式</translation>

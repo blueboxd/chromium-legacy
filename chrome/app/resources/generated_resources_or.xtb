@@ -843,7 +843,6 @@
 <translation id="2135787500304447609">&amp;ପୁନରାରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="2136372518715274136">ନୂଆ ପାସ୍‌ୱର୍ଡ ଲେଖନ୍ତୁ</translation>
 <translation id="2136476978468204130">ଆପଣ ଲେଖିଥିବା ପାସ୍‌ଫ୍ରେଜ୍‌ ଭୁଲ୍‌ ଅଟେ।</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି।}=1{କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି, 1ଟି ବ୍ୟତିକ୍ରମ}other{କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି, {COUNT}ଟି ବ୍ୟତିକ୍ରମ}}</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />"କୁ ସଂଯୋଗ ଏବେ ମଧ୍ୟ ଅଗ୍ରଗତିରେ ଅଛି</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />% ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="2139919072249842737">ସେଟ୍ ଅପ୍ ବଟନ୍</translation>
@@ -1201,7 +1200,6 @@
 <translation id="2586672484245266891">ଦୟାକରି ଏକ ଛୋଟ URL ଲେଖନ୍ତୁ</translation>
 <translation id="2587922766792651800">ସମୟ ସୀମା ସମାପ୍ତ ହୋଇଛି</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" />ର ଡିଭାଇସ୍‌ଗୁଡ଼ିକ</translation>
-<translation id="2593594315333286814">ନାଭିଗେସନ୍ ପାଇଁ ଆକ୍ସେସିବିଲିଟୀ ସେଟିଂସ୍</translation>
 <translation id="2594999711683503743">Googleରେ ସନ୍ଧାନ କରନ୍ତୁ କିମ୍ବା URL ଟାଇପ୍ କରନ୍ତୁ</translation>
 <translation id="2602501489742255173">ଆରମ୍ଭ କରିବା ପାଇଁ ଉପରକୁ ସ୍ୱାଇପ୍ କରନ୍ତୁ</translation>
 <translation id="2603115962224169880">କମ୍ପ୍ୟୁଟର୍ ଖାଲି କରନ୍ତୁ</translation>
@@ -1673,7 +1671,7 @@
     ଏହି ଡିଭାଇସରେ ସ୍କୁଲର ସମ୍ପୂର୍ଣ୍ଣ ଅନୁଭୂତି ପାଇବାକୁ, ଆପଣଙ୍କ ପିଲା ଏହା କରିବା ଉଚିତ:
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />ତା'ର Family Link ଦ୍ୱାରା ପରିଚାଳିତ ଆକାଉଣ୍ଟରୁ ସାଇନ୍ ଆଉଟ୍ କରିବା
-      <ph name="OLIST_ITEM" />ସାଇନ୍-ଇନ୍ ସ୍କ୍ରିନରେ ତା'ର G Suite for Education ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ସାଇନ୍ ଇନ୍ କରିବା। ଟିପ୍ପଣୀ, ତଥାପି, ଏହା ଦ୍ୱାରା ଏହା ବୁଝାଯିବ ଯେ ଆପ୍ ଏବଂ ୱେବସାଇଟ୍ ଆକ୍ସେସ୍ କରିବା ସେଟିଂସ୍ ସହିତ ସ୍କୁଲର ନୀତିଗୁଡ଼ିକ ଆପଣଙ୍କର Family Link ନିରୀକ୍ଷଣ ଫିଚରଗୁଡ଼ିକରେ ଲାଗୁ ହେବ (ଉଦାହରଣ ସ୍ୱରୂପ, ହୋମୱାର୍କ ପାଇଁ YouTube ଆବଶ୍ୟକ ହେଲେ ସ୍କୁଲର ଆଡମିନିଷ୍ଟ୍ରେଟରମାନେ ତାହାର ଅନୁମତି ଦେଇପାରିବେ, ସ୍କ୍ରିନ୍ ସମୟ ସୀମା ଲାଗୁ କରାଯିବ ନାହିଁ, ଇତ୍ୟାଦି।)
+      <ph name="OLIST_ITEM" />ସାଇନ୍-ଇନ୍ ସ୍କ୍ରିନରେ ତା'ର G Suite for Education ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ସାଇନ୍ ଇନ୍ କରିବା। ଧ୍ୟାନ ଦିଅନ୍ତୁ, ତଥାପି, ଏହା ବୁଝାଯିବ ଯେ ଆପ୍ ଏବଂ ୱେବସାଇଟ୍ ଆକ୍ସେସ୍ କରିବା ସେଟିଂସ୍ ସହିତ ସ୍କୁଲର ନୀତିଗୁଡ଼ିକ ଆପଣଙ୍କ Family Link ନିରୀକ୍ଷଣ ଫିଚରଗୁଡ଼ିକ ଉପରେ ପ୍ରଭାବ ପକାଇବ (ଉଦାହରଣ ସ୍ୱରୂପ, ହୋମୱାର୍କ ପାଇଁ YouTube ଆବଶ୍ୟକ ହେଲେ ସ୍କୁଲ୍ ଆଡମିନିଷ୍ଟ୍ରେଟରମାନେ ତାହାର ଅନୁମତି ଦେଇପାରିବେ, ସ୍କ୍ରିନ୍ ସମୟ ସୀମା ଲାଗୁ କରାଯିବ ନାହିଁ, ଇତ୍ୟାଦି।)
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">ସୁନିଶ୍ଚିତ କରାଯାଇନାହିଁ</translation>
 <translation id="32101887417650595">ପ୍ରିଣ୍ଟର୍ ସହ ସଂଯୋଗ ହୋଇପାରିବ ନାହିଁ</translation>
@@ -2208,7 +2206,6 @@
 <translation id="3873423927483480833">PIN ଦେଖାନ୍ତୁ</translation>
 <translation id="3873915545594852654">ARC++ ସହିତ ଏକ ସମସ୍ୟା ହୋ‍ଇଛି।</translation>
 <translation id="3879748587602334249">ଡାଉନ୍‌ଲୋଡ୍ ପରିଚାଳକ</translation>
-<translation id="3881321138433527084">ସେଫ୍ ବ୍ରାଉଜିଂ ବନ୍ଦ ଅଛି। ୱେବରେ ସୁରକ୍ଷିତ ରହିବା ପାଇଁ ଏହାକୁ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="3882165008614329320">କ୍ୟାମେରା କିମ୍ବା ଫାଇଲ୍‌ରେ ପୂର୍ବରୁ ଥିବା ଭିଡିଓ</translation>
 <translation id="3886446263141354045">ଏହି ସାଇଟ୍‌କୁ ଆକ୍ସେସ୍‌ କରିବାକୁ ଆପଣଙ୍କର ଅନୁରୋଧ <ph name="NAME" />ଙ୍କୁ ପଠାଯାଇଛି</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" />ରୁ ନୋଟ୍‌ ନେବା</translation>
@@ -4571,7 +4568,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />ଏବଂ <ph name="WEBSITE_3" />ରେ ଆପଣଙ୍କର ଡାଟା ପଢ଼ନ୍ତୁ</translation>
 <translation id="713122686776214250">&amp;ପୃଷ୍ଠା ଯୋଗ କରନ୍ତୁ...</translation>
 <translation id="7133578150266914903">ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକ ଏହି ଡିଭାଇସ୍‌କୁ ଫେରାଇ ଆଣୁଛନ୍ତି (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" />ଟି ପାସୱାର୍ଡ ଯାଞ୍ଚ କରାଯାଉଛି...</translation>
+<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" />ଟି ପାସୱାର୍ଡ ଯାଞ୍ଚ କରାଯାଇଛି...</translation>
 <translation id="7134098520442464001">କ୍ଷୁଦ୍ରତର ଟେକ୍ସଟ୍‍ ତିଆରି କରନ୍ତୁ</translation>
 <translation id="7135729336746831607">ବ୍ଲୁଟୁଥ୍ ଚାଲୁ କରିବେ କି?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> ଆପଣଙ୍କୁ ତୁରନ୍ତ ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ଅପଡେଟ୍ କରିବା ପାଇଁ ଆବଶ୍ୟକ କରୁଛି।</translation>
@@ -4919,7 +4916,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="761530003705945209">Google Driveରେ ବ୍ୟାକଅପ୍ ନିଅନ୍ତୁ। ସହଜରେ ଆପଣଙ୍କ ଡାଟା ରିଷ୍ଟୋର୍ କରନ୍ତୁ କିମ୍ୱା ଯେ କୌଣସି ସମୟରେ ଡିଭାଇସ୍ ସ୍ୱିଚ୍ କରନ୍ତୁ। ଆପଣଙ୍କ ବ୍ୟାକଅପ୍ ଆପ୍ ଡାଟା ଅନ୍ତର୍ଭୁକ୍ତ କରେ। ଆପଣଙ୍କ ବ୍ୟାକଅପଗୁଡ଼ିକୁ Googleରେ ଅପଲୋଡ୍ କରାଯାଇଛି ଏବଂ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟ ପାସୱାର୍ଡକୁ ବ୍ୟବହାର କରି ଏନକ୍ରିପ୍ଟ କରାଯାଇଛି।</translation>
 <translation id="7616214729753637086">ଡିଭାଇସ୍‌ର ନାମାଙ୍କନ ହେଉଛି...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" ସହ ସଂଯୋଗ ହେଉଛି</translation>
-<translation id="761763866592998929">ଆମ୍ବିଆଣ୍ଟ ମୋଡ୍</translation>
+<translation id="761763866592998929">ଆମ୍ବିଏଣ୍ଟ ମୋଡ୍</translation>
 <translation id="762068974690945752">ଏଠାରେ ଏକ ସ୍କୁଲ ଆକାଉଣ୍ଟ ଯୋଗ କରନ୍ତୁ କିମ୍ବା ପିଲାର ଆକାଉଣ୍ଟଗୁଡ଼ିକ ପରିଚାଳନା କରନ୍ତୁ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">ଡିଭାଇସ୍‌ କନ୍‍ଫିଗ୍‌ରେସନ୍‌ ସେଭ୍‍ କରିବାରେ ବିଫଳ ହେଲା।</translation>
 <translation id="7622114377921274169">ଚାର୍ଜ ହେଉଛି।</translation>
@@ -5382,7 +5379,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8186609076106987817">ଫାଇଲ୍‌କୁ ସର୍ଭର୍‌ ଖୋଜିପାରିଲା ନାହିଁ।</translation>
 <translation id="8188389033983459049">ନିଜର ଡିଭାଇସ୍ ସେଟିଂସ୍ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ଜାରି ରଖିବାକୁ ଏହାକୁ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> ସହ ସଂଯୋଗ କରାଯାଉଛି</translation>
-<translation id="8190310225494289459">Google ଆକାଉଣ୍ଟରେ ଯାଞ୍ଚ କରନ୍ତୁ।</translation>
 <translation id="8191230140820435481">ନିଜର ଆପ୍ସ, ଏକ୍ସଟେନ୍‌ସନ୍‌ଗୁଡ଼ିକ ଓ ଥିମ୍‍ଗୁଡ଼ିକ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="8195027750202970175">ଡିସ୍କରେ ଆକାର</translation>
 <translation id="8198323535106903877">ଆମେ ଆପଣଙ୍କ ପାଇଁ ସେହି <ph name="NUMBER_OF_APPS" />ଟି ଆପ୍‌ ଇନଷ୍ଟଲ୍‌ କରିବୁ</translation>

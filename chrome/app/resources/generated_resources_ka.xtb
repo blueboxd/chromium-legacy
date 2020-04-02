@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">&amp;გაგრძელება</translation>
 <translation id="2136372518715274136">შეიყვანეთ ახალი პაროლი</translation>
 <translation id="2136476978468204130">თქვენ მიერ შეყვანილი საიდუმლო ფრაზა არასწორია</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{ქუქი-ჩანაწერები დაბლოკილია.}=1{ქუქი-ჩანაწერები დაბლოკილია, 1 გამონაკლისი}other{ქუქი-ჩანაწერები დაბლოკილია, {COUNT} გამონაკლისი}}</translation>
 <translation id="2138398485845393913">„<ph name="DEVICE_NAME" />“-თან დაკავშირება ჯერ კიდევ მიმდინარეობს</translation>
 <translation id="2139545522194199494">ქსელი <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />%, მართავს თქვენი ადმინისტრატორი, დაკავშირება</translation>
 <translation id="2139919072249842737">დაყენების ღილაკი</translation>
@@ -1205,7 +1204,6 @@
 <translation id="2586672484245266891">გთხოვთ, შეიყვანოთ უფრო მოკლე URL.</translation>
 <translation id="2587922766792651800">მოლოდინის დრო ამოიწურა</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" />-ის მოწყობილობები</translation>
-<translation id="2593594315333286814">ნავიგაციასთან დაკავშირებული მარტივი წვდომის პარამეტრები</translation>
 <translation id="2594999711683503743">მოიძიეთ Google-ში, ან აკრიფეთ URL</translation>
 <translation id="2602501489742255173">დასაწყებად გადაფურცლეთ ზემოთ</translation>
 <translation id="2603115962224169880">კომპიუტერის გასუფთავება</translation>
@@ -1878,6 +1876,7 @@
 <translation id="3479552764303398839">ახლა არა</translation>
 <translation id="3479685872808224578">ბეჭდვის სერვერის ამოცნობა ვერ მოხერხდა. გთხოვთ, გადაამოწმოთ მისამართი და ხელახლა ცადოთ.</translation>
 <translation id="3481268647794498892"><ph name="ALTERNATIVE_BROWSER_NAME" />-ში გაიხსნება <ph name="COUNTDOWN_SECONDS" /> წამში</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" />-ს შეუძლია მითითებული ფაილების ნახვა</translation>
 <translation id="3484273680291419129">მიმდინარეობს საზიანო პროგრამული უზრუნველყოფის ამოშლა...</translation>
 <translation id="3484869148456018791">ახალი სერტიფიკატის მიღება</translation>
 <translation id="3487007233252413104">ანონიმური ფუნქცია</translation>
@@ -1940,6 +1939,7 @@
 <translation id="3564848315152754834">USB უსაფრთხოების გასაღები</translation>
 <translation id="3566721612727112615">საიტები არ დამატებულა</translation>
 <translation id="3569382839528428029">გსურთ, რომ <ph name="APP_NAME" />-მა გააზიაროს თქვენი ეკრანი?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" />-ს შეუძლია მითითებული ფაილებისა და საქაღალდეების ნახვა</translation>
 <translation id="3571734092741541777">დაყენება</translation>
 <translation id="3574210789297084292">შესვლა</translation>
 <translation id="3574917942258583917">მაინც გსურთ ინკოგნიტო რეჟიმიდან გასვლა?</translation>
@@ -1949,6 +1949,7 @@
 <translation id="3578594933904494462">ამ ჩანართის შიგთავსი გაზიარებულია.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;-ს სურს გაუზიაროს პრინტერი &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ჯგუფს, რომელსაც ფლობთ: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. თუ დათანხმდებით, ჯგუფის ყველა წევრი შეძლებს პრინტერიდან ამობეჭდვას.</translation>
 <translation id="357889014807611375">ლიმიტირებული Wi-Fi</translation>
+<translation id="3582057310199111521">შეყვანილია შეცდომაში შემყვან საიტზე და დაფიქსირდა პერსონალურ მონაცემთა გაჟონვისას</translation>
 <translation id="3584169441612580296">ფოტოების, მუსიკის და სხვა მედიის თქვენი კომპიუტერიდან წაკითხვა და შეცვლა</translation>
 <translation id="3586806079541226322">ამ ფაილის გახსნა ვერ ხერხდება</translation>
 <translation id="3586931643579894722">დეტალების დამალვა</translation>
@@ -2212,7 +2213,6 @@
 <translation id="3873423927483480833">PIN-კოდების ჩვენება</translation>
 <translation id="3873915545594852654">წარმოიქმნა ARC++-თან დაკავშირებული პრობლემა.</translation>
 <translation id="3879748587602334249">ჩამოტვირთვის მენეჯერი</translation>
-<translation id="3881321138433527084">Safe Browsing გამორთულია. ვების უსაფრთხოდ დასათვალიერებლად ჩართეთ ის.</translation>
 <translation id="3882165008614329320">არსებული ვიდეო კამერიდან ან ფაილიდან</translation>
 <translation id="3886446263141354045">ამ საიტზე წვდომის მოთხოვნა გაეგზავნა <ph name="NAME" />-ს</translation>
 <translation id="3888550877729210209">ჩანიშვნა <ph name="LOCK_SCREEN_APP_NAME" />-ის მეშვეობით</translation>
@@ -3081,6 +3081,7 @@
 <translation id="5117930984404104619">გააკონტროლეთ გაფართოებების მოქმედება გახსნილი URLs-ის ჩათვლით</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">თქვენს ხისტი დისკი სავსეა. გთხოვთ, შეინახოთ სხვა ადგილას ან გაანთავისუფლოთ ადგილი ხისტ დისკზე.</translation>
+<translation id="5122384452788334261">თქვენს მოწყობილობას მეხსიერება ეწურება. Plugin VM-ის გამოსაყენებლად საჭიროა მინიმუმ <ph name="RECOMMENDED_SPACE" /> თავისუფალი მეხსიერება. მეხსიერების გათავისუფლება შეგიძლიათ მოწყობილობიდან ფაილების წაშლით.</translation>
 <translation id="5123433949759960244">კალათბურთის ბურთი</translation>
 <translation id="5125751979347152379">არასწორი URL.</translation>
 <translation id="5126611267288187364">ცვლილებების ნახვა</translation>
@@ -5176,6 +5177,7 @@
 <translation id="7915471803647590281">გთხოვთ გვითხრათ, რა ხდება უკუკავშირის გაგზავნამდე.</translation>
 <translation id="7918257978052780342">რეგისტრაცია</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />წმ</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" />-ს შეუძლია „<ph name="FILENAME" />“-ის ნახვა</translation>
 <translation id="7924358170328001543">პორტის გადამისამართება ვერ მოხერხდა</translation>
 <translation id="792514962475806987">ჩამაგრებული მასშტაბის დონე:</translation>
 <translation id="7925247922861151263">AAA შემოწმება ვერ მოხერხდა</translation>
@@ -5338,6 +5340,7 @@
 <translation id="8118488170956489476">თქვენს <ph name="BEGIN_LINK" />ბრაუზერს მართავს<ph name="END_LINK" /> თქვენი ორგანიზაცია</translation>
 <translation id="8118860139461251237">მართეთ თქვენი ჩამოტვირთვები</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> და სხვა</translation>
+<translation id="8120715633374652536">თქვენს მოწყობილობას მეხსიერება ეწურება. Plugin VM-ის გამოსაყენებლად საჭიროა მინიმუმ <ph name="MINIMUM_SPACE" /> თავისუფალი მეხსიერება, ხოლო რეკომენდებულია — <ph name="RECOMMENDED_SPACE" />. მეხსიერების გათავისუფლება შეგიძლიათ მოწყობილობიდან ფაილების წაშლით.</translation>
 <translation id="8123590694679414600">მონაცემები დაშიფრულია თქვენი სინქრონიზაციის საიდუმლო ფრაზით <ph name="TIME" />-დან. აღნიშნული არ მოიცავს Google Pay-ში შენახულ გადახდის მეთოდებსა და მისამართებს.</translation>
 <translation id="81238879832906896">ყვითელი და თეთრი ყვავილი</translation>
 <translation id="8124313775439841391">იმართება ONC</translation>
@@ -5386,7 +5389,6 @@
 <translation id="8186609076106987817">სერვერმა ვერ იპოვა ფაილი.</translation>
 <translation id="8188389033983459049">გასაგრძელებლად შეამოწმეთ თქვენი მოწყობილობის პარამეტრები და ჩართეთ ის</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" />-თან დაკავშირება</translation>
-<translation id="8190310225494289459">Google ანგარიშში შემოწმება</translation>
 <translation id="8191230140820435481">მართეთ თქვენი პროგრამები, გაფართოებები, და თემები</translation>
 <translation id="8195027750202970175">ზომა დისკზე</translation>
 <translation id="8198323535106903877">ეს <ph name="NUMBER_OF_APPS" /> აპი დაინსტალირდება თქვენთვის</translation>

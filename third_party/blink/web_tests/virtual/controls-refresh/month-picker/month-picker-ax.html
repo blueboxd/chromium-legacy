@@ -12,32 +12,36 @@
 <input type="month" id="month1" value="2000-01">
 
 <script>
-async_test((t) => {
+promise_test((t) => {
+  var month1 = document.getElementById('month1');
+  return openPickerWithPromise(month1).then(() => {
     var markDirtyCounter = 0;
     var focusCounter = 0;
-    accessibilityController.setNotificationListener(function(axnode, type) {
+    let promise = new Promise((resolve, reject) => {
+      accessibilityController.setNotificationListener(function(axnode, type) {
         if (type == 'Focus') {
-            console.log('Focused: ' + accessibilityController.focusedElement.name.replace(/,/g, ''));
-            focusCounter++;
+          console.log('Focused: ' + accessibilityController.focusedElement.name.replace(/,/g, ''));
+          focusCounter++;
         } else if (type == 'MarkDirty') {
-            console.log('Received MarkDirty');
-            markDirtyCounter++;
+          console.log('Received MarkDirty');
+          markDirtyCounter++;
         }
 
-        if (focusCounter == 3 && markDirtyCounter == 1) {
+        if (focusCounter == 1 && markDirtyCounter == 1) {
             assert_equals(month1.value, "2000-05", "Arrow key in month picker should have changed value");
             t.done();
         }
+      });
+
+      // In case of failure, reject the promise so we get some logs instead of timing out.
+      window.setTimeout(() => {
+        reject(`Didn't receive expected events.  Got ${focusCounter} Focus and ${markDirtyCounter} MarkDirty`);
+      }, 1500);
     });
 
-    var month1 = document.getElementById('month1');
-    function test1() {
-        assert_equals(focusCounter, 2, "Expected 2 Focus events from opening popup.");
-        assert_equals(markDirtyCounter, 1, "Expected 1 MarkDirty events from opening popup.");
-        eventSender.keyDown('ArrowDown');
-    }
-
-    openPicker(month1, test1);
+    eventSender.keyDown('ArrowDown');
+    return promise;
+  });
 }, 'Tests if typing an arrow key dispatches |Focus| and |MarkDirty| a11y events.');
 
 </script>

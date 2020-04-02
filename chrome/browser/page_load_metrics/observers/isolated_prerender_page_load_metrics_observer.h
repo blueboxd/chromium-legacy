@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "net/cookies/canonical_cookie.h"
@@ -53,6 +55,10 @@ class IsolatedPrerenderPageLoadMetricsObserver
                       const net::CookieStatusList& cookies,
                       const net::CookieStatusList& excluded_cookies);
 
+  // Sets |prefetch_metrics_| for this page load. Done in a separate method so
+  // that this can be done in an event notification.
+  void GetPrefetchMetrics();
+
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
@@ -71,6 +77,7 @@ class IsolatedPrerenderPageLoadMetricsObserver
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
+  void OnEventOccurred(const void* const event_key) override;
 
   // Whether data saver was enabled for this page load when it committed.
   bool data_saver_enabled_at_commit_ = false;
@@ -98,6 +105,13 @@ class IsolatedPrerenderPageLoadMetricsObserver
   // on the request. Set to false if there were no cookies set. Not set if we
   // didn't get a response from the CookieManager before recording metrics.
   base::Optional<bool> mainframe_had_cookies_;
+
+  // Metrics related to Isolated Prerender prefetching, for plumbing into UKM.
+  scoped_refptr<IsolatedPrerenderTabHelper::PrefetchMetrics> prefetch_metrics_;
+
+  // How the Isolated Prerender Interceptor acted on a page. Not set if it did
+  // nothing.
+  base::Optional<IsolatedPrerenderTabHelper::PrefetchUsage> prefetch_usage_;
 
   // Task tracker for calls for the history service.
   base::CancelableTaskTracker task_tracker_;

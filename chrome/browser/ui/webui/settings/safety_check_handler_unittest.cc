@@ -384,6 +384,24 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Relaunch) {
       SafetyCheckHandler::UpdateStatus::kRelaunch, 1);
 }
 
+TEST_F(SafetyCheckHandlerTest, CheckUpdates_Disabled) {
+  version_updater_->SetReturnedStatus(VersionUpdater::Status::DISABLED);
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kUpdates,
+          static_cast<int>(SafetyCheckHandler::UpdateStatus::kFailed));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(
+      event,
+      "Browser didn't update, something went wrong. <a target=\"_blank\" "
+      "href=\"https://support.google.com/chrome?p=fix_chrome_updates\">Fix "
+      "Browser update problems and failed updates.</a>");
+  histogram_tester_.ExpectBucketCount("Settings.SafetyCheck.UpdatesResult",
+                                      SafetyCheckHandler::UpdateStatus::kFailed,
+                                      1);
+}
+
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_DisabledByAdmin) {
   version_updater_->SetReturnedStatus(
       VersionUpdater::Status::DISABLED_BY_ADMIN);

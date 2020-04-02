@@ -630,6 +630,7 @@ if (!is_ios && !is_fuchsia) {
         "//components/autofill_assistant/browser:proto",
         "//components/download/internal/common:internal_java",
         "//content/public/test/android:android_test_message_pump_support_java",
+        "//content/shell:content_shell_app",
         "//content/test:android_test_message_pump_support",
         "//testing/android/native_test:native_test_support",
       ]

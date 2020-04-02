@@ -5,7 +5,6 @@
 <translation id="1699570257714336246">সম্পূর্ণ তথ্য দেওয়া হয়নি</translation>
 <translation id="1932278019417741381">আপনাকে টাস্কগুলি সম্পূর্ণ করতে সাহায্য করার জন্য, যে যে সাইটে Assistant ব্যবহার করেন সেগুলির কন্টেন্ট ও ইউআরএল, তার সাথে Assistant-এর মাধ্যমে আপনার জমা দেওয়া যেকোনও তথ্য Google-কে পাঠানো হবে। এই তথ্য আপনার Google অ্যাকাউন্টে সেভ করা হতে পারে। আপনি Chrome সেটিংস থেকে Assistant বন্ধ করে দিতে পারেন। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="2203046366315513658">কমান</translation>
-<translation id="3353437022146208653">Google Assistant-এর মাধ্যমে \n শুধুমাত্র কিছু জায়গায় ট্যাপ করেই \n গাড়ি ভাড়া করুন।</translation>
 <translation id="4130750466177569591">আমি সম্মত</translation>
 <translation id="4437727785356380473">Chrome-এ Google অ্যাসিস্ট্যান্ট বন্ধ হয়ে গেছে।</translation>
 <translation id="4517854969512651305">বাড়ান</translation>
@@ -17,6 +16,5 @@
 <translation id="6973932557599545801">আমি সাহায্য করতে পারছি না, নিজের মতো করে এগিয়ে যান।</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="8253702004019660079">Chrome-এ Google অ্যাসিস্ট্যান্ট।</translation>
-<translation id="8323517642730821247">Google Assistant-এর মাধ্যমে \n শুধুমাত্র কিছু জায়গায় ট্যাপ করেই \n সিনেমার টিকিট কাটুন।</translation>
 <translation id="945522503751344254">মতামত জানান</translation>
 </translationbundle>

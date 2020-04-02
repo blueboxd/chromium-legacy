@@ -34,7 +34,8 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/flag_descriptions.h"
-#include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
@@ -117,6 +118,7 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
@@ -1405,6 +1407,11 @@ const FeatureEntry::FeatureParam
         {"exclude_mv_tiles", "true"},
         {"hide_switch_when_no_incognito_tabs", "true"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceSingleTab[] =
+    {{"start_surface_variation", "single"},
+     {"show_last_active_tab_only", "true"},
+     {"hide_switch_when_no_incognito_tabs", "true"}};
+
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
     {"start_surface_variation", "twopanes"}};
 
@@ -1421,6 +1428,8 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface without MV Tiles",
      kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles,
      base::size(kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles), nullptr},
+    {"Single Surface Single Tab", kStartSurfaceAndroid_SingleSurfaceSingleTab,
+     base::size(kStartSurfaceAndroid_SingleSurfaceSingleTab), nullptr},
     {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
      base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr},
     {"Tasks Only", kStartSurfaceAndroid_TasksOnly,
@@ -3359,6 +3368,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsCollapseDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroupsCollapse)},
 
+    {"tab-groups-feedback", flag_descriptions::kTabGroupsFeedbackName,
+     flag_descriptions::kTabGroupsFeedbackDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabGroupsFeedback)},
+
     {"new-tabstrip-animation", flag_descriptions::kNewTabstripAnimationName,
      flag_descriptions::kNewTabstripAnimationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewTabstripAnimation)},
@@ -4616,6 +4629,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(autofill::features::kAutofillTouchToFill)},
 #endif  // defined(OS_ANDROID)
 
+    {"enable-sync-trusted-vault",
+     flag_descriptions::kEnableSyncTrustedVaultName,
+     flag_descriptions::kEnableSyncTrustedVaultDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncSupportTrustedVaultPassphrase)},
+
     {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,
      flag_descriptions::kEnableSyncUSSNigoriDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSNigori)},
@@ -5253,7 +5271,8 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
 #endif  // OS_WIN
 
   if (!strcmp("dns-over-https", entry.internal_name) &&
-      (chrome_browser_net::ShouldDisableDohForManaged() ||
+      (SystemNetworkContextManager::GetStubResolverConfigReader()->
+          ShouldDisableDohForManaged() ||
        features::kDnsOverHttpsShowUiParam.Get())) {
     return true;
   }

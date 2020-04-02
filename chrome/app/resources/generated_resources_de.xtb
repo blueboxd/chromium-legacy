@@ -844,7 +844,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2135787500304447609">&amp;Fortsetzen</translation>
 <translation id="2136372518715274136">Neues Passwort eingeben</translation>
 <translation id="2136476978468204130">Sie haben eine ungültige Passphrase eingegeben</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Cookies sind blockiert.}=1{Cookies sind blockiert, 1 Ausnahme}other{Cookies sind blockiert, {COUNT} Ausnahmen}}</translation>
 <translation id="2138398485845393913">Es wird weiterhin versucht, eine Verbindung zu "<ph name="DEVICE_NAME" />" herzustellen</translation>
 <translation id="2139545522194199494">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /> %, von Ihrem Administrator verwaltet, Verbinden</translation>
 <translation id="2139919072249842737">Schaltfläche zum Einrichten</translation>
@@ -1202,7 +1201,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2586672484245266891">Geben Sie eine kürzere URL ein</translation>
 <translation id="2587922766792651800">Zeitüberschreitung</translation>
 <translation id="2588636910004461974">Geräte von <ph name="VENDOR_NAME" /></translation>
-<translation id="2593594315333286814">Einstellungen für Bedienungshilfen zur Navigation</translation>
 <translation id="2594999711683503743">Bei Google suchen oder URL eingeben</translation>
 <translation id="2602501489742255173">Zum Starten nach oben wischen</translation>
 <translation id="2603115962224169880">Computer bereinigen</translation>
@@ -1674,7 +1672,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
     Ihr Kind sollte Folgendes ausführen, um alle Funktionen auf diesem Gerät nutzen zu können:
     <ph name="BEGIN_OLIST" />
       <ph name="OLIST_ITEM" />Von seinem mit Family Link verwalteten Konto abmelden
-      <ph name="OLIST_ITEM" />Mit seinem G Suite for Education-Konto auf dem Anmeldebildschirm anmelden. Beachten Sie jedoch, dass die Richtlinien der Bildungseinrichtung, wie Zugriffseinstellungen für Apps und Websites, Vorrang vor Ihren Family Link-Funktionen der Elternaufsicht haben. Beispielsweise können Schuladministratoren YouTube erlauben, wenn es für die Hausaufgaben nötig ist, oder die begrenzte Gerätenutzungsdauer wird nicht durchgesetzt.
+      <ph name="OLIST_ITEM" />Mit seinem G Suite for Education-Konto auf dem Anmeldebildschirm anmelden. Beachten Sie jedoch, dass die Richtlinien der Bildungseinrichtung, wie Zugriffseinstellungen für Apps und Websites, dann Vorrang vor Ihren Family Link-Funktionen der Elternaufsicht haben. Beispielsweise können Schuladministratoren YouTube erlauben, wenn es für die Hausaufgaben nötig ist, oder die begrenzte Gerätenutzungsdauer wird nicht durchgesetzt.
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">Nicht bestätigt</translation>
 <translation id="32101887417650595">Keine Verbindung zum Drucker möglich</translation>
@@ -1875,6 +1873,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3479685872808224578">Der Druckerserver wurde nicht erkannt. Prüfen Sie die Adresse und versuchen Sie es noch einmal.</translation>
 <translation id="3481268647794498892">Wird in <ph name="COUNTDOWN_SECONDS" /> Sekunden in <ph name="ALTERNATIVE_BROWSER_NAME" /> geöffnet</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" /> darf die folgenden Dateien aufrufen</translation>
 <translation id="3484273680291419129">Schädliche Software wird entfernt...</translation>
 <translation id="3484869148456018791">Neues Zertifikat anfordern</translation>
 <translation id="3487007233252413104">Anonyme Funktion</translation>
@@ -1937,6 +1936,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3564848315152754834">USB-Sicherheitsschlüssel</translation>
 <translation id="3566721612727112615">Keine Websites hinzugefügt</translation>
 <translation id="3569382839528428029">Soll <ph name="APP_NAME" /> Ihren Bildschirm freigeben?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" /> darf die folgenden Dateien und Ordner aufrufen</translation>
 <translation id="3571734092741541777">Einrichten</translation>
 <translation id="3574210789297084292">Anmelden</translation>
 <translation id="3574917942258583917">Inkognitomodus trotzdem beenden?</translation>
@@ -1946,6 +1946,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3578594933904494462">Der Inhalt dieses Tabs wird geteilt.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; möchte den Drucker &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; für eine Gruppe freigeben, deren Inhaber Sie sind: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Falls Sie zustimmen, können alle Gruppenmitglieder diesen Drucker nutzen.</translation>
 <translation id="357889014807611375">Kostenpflichtiges WLAN</translation>
+<translation id="3582057310199111521">Auf einer betrügerischen Website eingegeben und durch eine Datenpanne preisgegeben</translation>
 <translation id="3584169441612580296">Fotos, Musik und andere Medien auf Ihrem Computer lesen und ändern</translation>
 <translation id="3586806079541226322">Diese Datei kann nicht geöffnet werden</translation>
 <translation id="3586931643579894722">Details ausblenden</translation>
@@ -2209,7 +2210,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3873423927483480833">PINs anzeigen</translation>
 <translation id="3873915545594852654">Ein Problem mit ARC++ ist aufgetreten.</translation>
 <translation id="3879748587602334249">Download-Manager</translation>
-<translation id="3881321138433527084">Safe Browsing ist deaktiviert. Aktivieren Sie die Funktion für einen besseren Schutz im Web.</translation>
 <translation id="3882165008614329320">Vorhandenes Video von der Kamera oder als Datei</translation>
 <translation id="3886446263141354045">Deine Anfrage zum Zugriff auf diese Website wurde an <ph name="NAME" /> gesendet</translation>
 <translation id="3888550877729210209">Notizerstellung mit <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -3078,6 +3078,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5117930984404104619">Verhalten anderer Erweiterungen überwachen, einschließlich besuchter URLs</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ihre Festplatte ist voll. Wählen Sie bitte einen anderen Speicherort aus oder geben Sie Speicherplatz auf der Festplatte frei.</translation>
+<translation id="5122384452788334261">Auf Ihrem Gerät ist nur noch wenig Speicherplatz verfügbar. Zur Verwendung von Plugin VM sind mindestens <ph name="RECOMMENDED_SPACE" /> freier Speicherplatz erforderlich. Löschen Sie Dateien aus dem Gerätespeicher, um Speicherplatz freizugeben.</translation>
 <translation id="5123433949759960244">Basketball</translation>
 <translation id="5125751979347152379">Ungültige URL</translation>
 <translation id="5126611267288187364">Änderungen anzeigen</translation>
@@ -4571,7 +4572,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7131040479572660648">Ihre Daten auf <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> und <ph name="WEBSITE_3" /> lesen</translation>
 <translation id="713122686776214250">&amp;Seite hinzufügen...</translation>
 <translation id="7133578150266914903">Ihr Administrator setzt dieses Gerät zurück (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="7133728868075973271"><ph name="DONE" />/<ph name="TOTAL" /> Passwörtern geprüft…</translation>
+<translation id="7133728868075973271"><ph name="DONE" /> von <ph name="TOTAL" /> Passwörtern geprüft…</translation>
 <translation id="7134098520442464001">Schrift verkleinern</translation>
 <translation id="7135729336746831607">Bluetooth aktivieren?</translation>
 <translation id="7136639886842764730"><ph name="DOMAIN" /> erfordert, dass das <ph name="DEVICE_TYPE" /> sofort aktualisiert wird.</translation>
@@ -5173,6 +5174,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7915471803647590281">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
 <translation id="7918257978052780342">Anmelden</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" /> darf <ph name="FILENAME" /> aufrufen</translation>
 <translation id="7924358170328001543">Fehler bei der Portweiterleitung</translation>
 <translation id="792514962475806987">Zoomstufe für angedockte Lupe:</translation>
 <translation id="7925247922861151263">AAA-Prüfung fehlgeschlagen</translation>
@@ -5336,6 +5338,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8118488170956489476">Ihr Browser wird <ph name="BEGIN_LINK" />von Ihrer Organisation verwaltet<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Downloads verwalten</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> und mehr</translation>
+<translation id="8120715633374652536">Auf Ihrem Gerät ist nur noch wenig Speicherplatz verfügbar. Zur Verwendung von Plugin VM sind mindestens <ph name="MINIMUM_SPACE" /> freier Speicherplatz erforderlich, empfohlen werden über <ph name="RECOMMENDED_SPACE" />. Löschen Sie Dateien aus dem Gerätespeicher, um Speicherplatz freizugeben.</translation>
 <translation id="8123590694679414600">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Davon ausgenommen sind Zahlungsmethoden oder Adressen von Google Pay.</translation>
 <translation id="81238879832906896">Gelbe und weiße Blume</translation>
 <translation id="8124313775439841391">Verwaltete ONC-Eigenschaften</translation>
@@ -5384,7 +5387,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8186609076106987817">Die Datei konnte nicht gefunden werden.</translation>
 <translation id="8188389033983459049">Überprüfen Sie Ihre Geräteeinstellungen und aktivieren Sie Bluetooth, um fortzufahren</translation>
 <translation id="8190193592390505034">Verbindung zu <ph name="PROVIDER_NAME" /> wird hergestellt.</translation>
-<translation id="8190310225494289459">Im Google-Konto prüfen.</translation>
 <translation id="8191230140820435481">Apps, Erweiterungen und Designs verwalten</translation>
 <translation id="8195027750202970175">Dateigröße</translation>
 <translation id="8198323535106903877"><ph name="NUMBER_OF_APPS" /> Apps werden installiert</translation>
@@ -6055,7 +6057,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9053893665344928494">Meine Auswahl merken</translation>
 <translation id="9055636786322918818">RC4-Verschlüsselung durchsetzen. Mit dieser Option ist ein höheres Risiko verbunden, da RC4-Verschlüsselungen nicht sicher sind.</translation>
 <translation id="9056810968620647706">Keine Übereinstimmungen gefunden.</translation>
-<translation id="9057354806206861646">Zeitplan aktualisieren</translation>
+<translation id="9057354806206861646">Aktualisierungszeitplan</translation>
 <translation id="9058976525724291037">Ihr Kind möchte auf diesem Gerät ein weiteres Google-Konto hinzufügen. Zu mit Family Link verwalteten Geräten können nur G Suite for Education-Konten hinzugefügt werden.</translation>
 <translation id="9062065967472365419">Zufällig</translation>
 <translation id="9062468308252555888">14-fach</translation>

@@ -362,6 +362,10 @@ const struct QuicErrorMapping {
      "quic.http_stream_wrong_direction"},
     {quic::QUIC_HTTP_CLOSED_CRITICAL_STREAM,
      "quic.http_closed_critical_stream"},
+    {quic::QUIC_HTTP_MISSING_SETTINGS_FRAME,
+     "quic.http_missing_settings_frame"},
+    {quic::QUIC_HTTP_DUPLICATE_SETTING_IDENTIFIER,
+     "quic.http_duplicate_setting_identifier"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

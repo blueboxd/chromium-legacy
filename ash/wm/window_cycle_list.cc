@@ -159,6 +159,7 @@ class WindowCycleItemView : public WindowMiniView {
     SetShowPreview(/*show=*/true);
     UpdatePreviewRoundedCorners(/*show=*/true);
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    UpdateIconView();
   }
   ~WindowCycleItemView() override = default;
 

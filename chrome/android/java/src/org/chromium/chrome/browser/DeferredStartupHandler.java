@@ -5,12 +5,10 @@
 package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.Looper;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 
 import java.util.LinkedList;
@@ -25,8 +23,7 @@ public class DeferredStartupHandler {
         private static final DeferredStartupHandler INSTANCE = new DeferredStartupHandler();
     }
 
-    private boolean mDeferredStartupCompletedForApp;
-    private final Context mAppContext;
+    private Boolean mDeferredStartupCompletedAllPendingTasks;
 
     private final Queue<Runnable> mDeferredTasks;
 
@@ -47,7 +44,6 @@ public class DeferredStartupHandler {
     private static DeferredStartupHandler sDeferredStartupHandler;
 
     protected DeferredStartupHandler() {
-        mAppContext = ContextUtils.getApplicationContext();
         mDeferredTasks = new LinkedList<>();
     }
 
@@ -57,11 +53,18 @@ public class DeferredStartupHandler {
      * tasks.
      */
     public void queueDeferredTasksOnIdleHandler() {
+        // Ensure only a single IdleHandler is added at any given time.
+        if (mDeferredStartupCompletedAllPendingTasks != null
+                && !mDeferredStartupCompletedAllPendingTasks) {
+            return;
+        }
+        mDeferredStartupCompletedAllPendingTasks = false;
+
         Looper.myQueue().addIdleHandler(() -> {
             Runnable currentTask = mDeferredTasks.poll();
             if (currentTask == null) {
-                if (!mDeferredStartupCompletedForApp) {
-                    mDeferredStartupCompletedForApp = true;
+                if (!mDeferredStartupCompletedAllPendingTasks) {
+                    mDeferredStartupCompletedAllPendingTasks = true;
                 }
                 return false;
             }
@@ -86,6 +89,7 @@ public class DeferredStartupHandler {
      */
     @VisibleForTesting
     public boolean isDeferredStartupCompleteForApp() {
-        return mDeferredStartupCompletedForApp;
+        return mDeferredStartupCompletedAllPendingTasks != null
+                && mDeferredStartupCompletedAllPendingTasks;
     }
 }

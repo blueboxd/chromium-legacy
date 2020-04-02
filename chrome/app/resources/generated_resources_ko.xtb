@@ -847,7 +847,6 @@
 <translation id="2135787500304447609">다시 시작(&amp;R)</translation>
 <translation id="2136372518715274136">새 비밀번호 입력</translation>
 <translation id="2136476978468204130">입력한 암호가 잘못되었습니다.</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{쿠키가 차단됨}=1{쿠키가 차단됨, 예외 1개}other{쿠키가 차단됨, 예외 {COUNT}개}}</translation>
 <translation id="2138398485845393913"><ph name="DEVICE_NAME" />에 연결 중입니다.</translation>
 <translation id="2139545522194199494">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 관리자가 관리함, 연결</translation>
 <translation id="2139919072249842737">설정 버튼</translation>
@@ -1206,7 +1205,6 @@
 <translation id="2586672484245266891">더 짧은 URL을 입력하세요.</translation>
 <translation id="2587922766792651800">타임아웃</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" />의 기기</translation>
-<translation id="2593594315333286814">탐색을 위한 접근성 설정</translation>
 <translation id="2594999711683503743">Google에서 검색하거나 URL을 입력하세요.</translation>
 <translation id="2602501489742255173">위로 스와이프하여 시작하기</translation>
 <translation id="2603115962224169880">컴퓨터 정리</translation>
@@ -1675,10 +1673,10 @@
       <ph name="LIST_ITEM" />학교 Chromebook의 북마크
       <ph name="LIST_ITEM" />교육 사이트의 자동 완성 비밀번호
     <ph name="END_LIST" />
-    기기에서 학교용 환경을 정상적으로 사용하려면 자녀가 다음 작업을 해야 합니다.
+    기기에서 학교용 환경을 정상적으로 사용하려면 자녀가 다음 단계를 따라야 합니다.
     <ph name="BEGIN_OLIST" />
-      <ph name="OLIST_ITEM" />Family Link 관리 계정에서 로그아웃
-      <ph name="OLIST_ITEM" />로그인 화면에서 G Suite for Education 계정으로 로그인 하지만 이렇게 하면 앱 및 웹사이트 액세스 설정을 포함한 학교 정책이 Family Link 감독 기능보다 우선적으로 적용됩니다. 예를 들어, 과제에 필요한 경우 학교 관리자가 YouTube를 허용하거나 기기 사용 시간이 적용되지 않을 수 있습니다.
+      <ph name="OLIST_ITEM" />Family Link 관리 계정에서 로그아웃합니다.
+      <ph name="OLIST_ITEM" />로그인 화면에서 G Suite for Education 계정으로 로그인합니다. 하지만 이렇게 하면 앱 및 웹사이트 액세스 설정을 포함한 학교 정책이 Family Link 감독 기능보다 우선적으로 적용됩니다. 예를 들어, 과제에 필요한 경우 학교 관리자가 YouTube를 허용하거나 기기 사용 시간이 적용되지 않을 수 있습니다.
     <ph name="END_OLIST" /></translation>
 <translation id="3208703785962634733">미확인</translation>
 <translation id="32101887417650595">프린터에 연결할 수 없음</translation>
@@ -1879,6 +1877,7 @@
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3479685872808224578">인쇄 서버를 찾을 수 없습니다. 주소를 확인한 다음 다시 시도해 보세요.</translation>
 <translation id="3481268647794498892"><ph name="COUNTDOWN_SECONDS" />초 후 <ph name="ALTERNATIVE_BROWSER_NAME" />에서 열립니다.</translation>
+<translation id="3482719661246593752"><ph name="ORIGIN" />에서 다음 파일을 볼 수 있습니다.</translation>
 <translation id="3484273680291419129">유해한 소프트웨어 삭제 중...</translation>
 <translation id="3484869148456018791">새로운 인증서 받기</translation>
 <translation id="3487007233252413104">익명의 함수</translation>
@@ -1941,6 +1940,7 @@
 <translation id="3564848315152754834">USB 보안 키</translation>
 <translation id="3566721612727112615">추가된 사이트 없음</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" />에서 내 화면을 공유하도록 허용하시겠습니까?</translation>
+<translation id="3569682580018832495"><ph name="ORIGIN" />에서 다음 파일과 폴더를 볼 수 있습니다.</translation>
 <translation id="3571734092741541777">설정</translation>
 <translation id="3574210789297084292">로그인</translation>
 <translation id="3574917942258583917">시크릿 모드를 종료하시겠습니까?</translation>
@@ -1950,6 +1950,7 @@
 <translation id="3578594933904494462">이 탭의 콘텐츠를 공유 중입니다.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;님이 내가 소유한 그룹(&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;)과의 프린터(&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) 공유를 요청했습니다. 동의하면 모든 그룹 회원이 해당 프린터로 인쇄할 수 있게 됩니다.</translation>
 <translation id="357889014807611375">전송량 제한이 있는 Wi-Fi</translation>
+<translation id="3582057310199111521">사기성 사이트에 입력되었으며 정보 유출이 발견됨</translation>
 <translation id="3584169441612580296">컴퓨터에서 사진, 음악, 기타 미디어 조회 및 변경</translation>
 <translation id="3586806079541226322">파일을 열 수 없음</translation>
 <translation id="3586931643579894722">세부정보 숨기기</translation>
@@ -2213,7 +2214,6 @@
 <translation id="3873423927483480833">PIN 표시</translation>
 <translation id="3873915545594852654">ARC++에 문제가 발생했습니다.</translation>
 <translation id="3879748587602334249">다운로드 관리자</translation>
-<translation id="3881321138433527084">세이프 브라우징이 중지된 상태입니다. 안전한 웹 탐색을 위해 세이프 브라우징을 사용 설정하세요.</translation>
 <translation id="3882165008614329320">카메라 또는 파일의 기존 동영상</translation>
 <translation id="3886446263141354045">사용자의 사이트 액세스 요청이 <ph name="NAME" />님에게 전송되었습니다.</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" />(으)로 메모 작성</translation>
@@ -2780,7 +2780,7 @@
 <translation id="4689235506267737042">데모 환경설정 선택</translation>
 <translation id="4689421377817139245">이 북마크를 내 iPhone에 동기화</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 펌웨어에서 csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon 의 4개 파일을 생성하였습니다. 처음 3개 파일은 레지스터 덤프를 포함하는 바이너리 파일로 Intel에서 개인정보나 기기 식별 정보를 포함하지 않도록 선언되었습니다. 4번째 파일은 Intel 펌웨어의 실행 기록으로 모든 개인정보나 기기 식별 정보가 삭제되었지만 너무 커서 여기에 표시할 수 없습니다. 이러한 4개 파일은 최근에 발생한 기기의 Wi-Fi 문제로 인해 생성되었으며 관련 문제를 해결하기 위해 Intel과 공유됩니다.&gt;</translation>
-<translation id="4691791363716065510">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FILENAME" /> 폴더를 볼 수 있게 됩니다.</translation>
+<translation id="4691791363716065510">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FILENAME" /> 파일을 볼 수 있게 됩니다.</translation>
 <translation id="4692623383562244444">검색엔진</translation>
 <translation id="4693155481716051732">초밥</translation>
 <translation id="4694024090038830733">프린터 구성은 관리자가 처리합니다.</translation>
@@ -3080,6 +3080,7 @@
 <translation id="5117930984404104619">방문한 URL을 포함하여 다른 확장 프로그램의 동작을 모니터링합니다.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">하드 디스크가 가득 찼습니다. 다른 위치에 저장하거나 하드 디스크에 더 많은 공간을 확보하시기 바랍니다.</translation>
+<translation id="5122384452788334261">기기의 저장공간이 부족합니다. Plugin VM을 사용하려면 최소 <ph name="RECOMMENDED_SPACE" />의 여유 공간이 권장됩니다. 여유 공간을 확보하려면 기기에서 파일을 삭제하세요.</translation>
 <translation id="5123433949759960244">농구공</translation>
 <translation id="5125751979347152379">잘못된 URL입니다.</translation>
 <translation id="5126611267288187364">변경사항 보기</translation>
@@ -5175,6 +5176,7 @@
 <translation id="7915471803647590281">의견을 보내기 전에 어떤 문제인지 알려주세요.</translation>
 <translation id="7918257978052780342">등록</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />초</translation>
+<translation id="7920363873148656176"><ph name="ORIGIN" />에서 <ph name="FILENAME" /> 파일을 볼 수 있습니다.</translation>
 <translation id="7924358170328001543">포트 전달 중 오류 발생</translation>
 <translation id="792514962475806987">고정 돋보기 확대/축소 수준:</translation>
 <translation id="7925247922861151263">AAA 확인 실패</translation>
@@ -5338,6 +5340,7 @@
 <translation id="8118488170956489476">조직에서 <ph name="BEGIN_LINK" />관리하는 브라우저<ph name="END_LINK" />입니다.</translation>
 <translation id="8118860139461251237">다운로드 관리</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> 등</translation>
+<translation id="8120715633374652536">기기의 저장공간이 부족합니다. Plugin VM을 사용하려면 최소 <ph name="MINIMUM_SPACE" />의 여유 공간이 필요하며 <ph name="RECOMMENDED_SPACE" /> 이상의 여유 공간이 권장됩니다. 여유 공간을 확보하려면 기기에서 파일을 삭제하세요.</translation>
 <translation id="8123590694679414600"><ph name="TIME" />에 데이터가 동기화 암호로 암호화되었습니다.
           Google Pay의 결제 수단 및 주소는 암호화되지 않습니다.</translation>
 <translation id="81238879832906896">노란색과 흰색 꽃</translation>
@@ -5387,7 +5390,6 @@
 <translation id="8186609076106987817">서버에서 파일을 찾을 수 없습니다.</translation>
 <translation id="8188389033983459049">계속하려면 기기 설정을 확인하고 사용 설정하세요.</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" />에 연결 중</translation>
-<translation id="8190310225494289459">Google 계정에서 확인하세요.</translation>
 <translation id="8191230140820435481">앱, 확장 프로그램 및 테마 관리</translation>
 <translation id="8195027750202970175">디스크에서 차지하는 용량</translation>
 <translation id="8198323535106903877">앱 <ph name="NUMBER_OF_APPS" />개는 자동으로 설치됩니다</translation>

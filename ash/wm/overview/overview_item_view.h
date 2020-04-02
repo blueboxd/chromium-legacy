@@ -65,6 +65,8 @@ class ASH_EXPORT OverviewItemView
   int GetMargin() const override;
   gfx::Rect GetHeaderBounds() const override;
   gfx::Size GetPreviewViewSize() const override;
+  gfx::ImageSkia ModifyIcon(gfx::ImageSkia* image) const override;
+  void Layout() override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;

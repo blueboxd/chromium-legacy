@@ -903,6 +903,7 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
 
 void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
+  unfreezable_message_filter_->RemoveListenerUnfreezableTaskRunner(routing_id);
   GetChannel()->RemoveListenerTaskRunner(routing_id);
 }
 
@@ -2297,6 +2298,14 @@ void RenderThreadImpl::UnfreezableMessageFilter::
   DCHECK(!base::Contains(unfreezable_task_runners_, routing_id));
   unfreezable_task_runners_.emplace(routing_id,
                                     std::move(unfreezable_task_runner));
+}
+
+// Called on the listener thread.
+void RenderThreadImpl::UnfreezableMessageFilter::
+    RemoveListenerUnfreezableTaskRunner(
+        int32_t routing_id) {
+  base::AutoLock lock(unfreezable_task_runners_lock_);
+  unfreezable_task_runners_.erase(routing_id);
 }
 
 // Called on the I/O thread.

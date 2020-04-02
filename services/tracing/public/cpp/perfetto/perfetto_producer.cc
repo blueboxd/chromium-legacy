@@ -23,19 +23,100 @@ PerfettoProducer::PerfettoProducer(PerfettoTaskRunner* task_runner)
 
 PerfettoProducer::~PerfettoProducer() = default;
 
+bool PerfettoProducer::SetupStartupTracing(
+    const base::trace_event::TraceConfig& trace_config,
+    bool privacy_filtering_enabled) {
+  // Abort if we were already startup tracing.
+  if (startup_tracing_active_.exchange(true)) {
+    return false;
+  }
+
+  if (!SetupSharedMemoryForStartupTracing()) {
+    return false;
+  }
+
+  // Tell data sources to enable startup tracing, too.
+  for (auto* ds : PerfettoTracedProcess::Get()->data_sources()) {
+    ds->SetupStartupTracing(this, trace_config, privacy_filtering_enabled);
+  }
+
+  MaybeScheduleStartupTracingTimeout();
+  return true;
+}
+
+void PerfettoProducer::OnThreadPoolAvailable() {
+  MaybeScheduleStartupTracingTimeout();
+}
+
+void PerfettoProducer::MaybeScheduleStartupTracingTimeout() {
+  // We can't schedule the timeout until the thread pool is available. Note that
+  // this method has a benign race in that it's possible that
+  // SetupStartupTracing() is called concurrently to the creation of the task
+  // runner and OnThreadPoolAvailable(). However, the worst that could happen
+  // (assuming calling HasTaskRunner() is thread-safe), is that we could post
+  // the timeout task below twice, the second one of which will become a no-op.
+  if (!IsStartupTracingActive() ||
+      !PerfettoTracedProcess::GetTaskRunner()->HasTaskRunner()) {
+    return;
+  }
+
+  PerfettoTracedProcess::GetTaskRunner()
+      ->GetOrCreateTaskRunner()
+      ->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&PerfettoProducer::OnStartupTracingTimeout,
+                         weak_ptr_factory_.GetWeakPtr()),
+          startup_tracing_timeout_);
+}
+
+void PerfettoProducer::OnStartupTracingTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!IsStartupTracingActive()) {
+    return;
+  }
+
+  LOG(WARNING) << "Startup tracing timed out (tracing service didn't start the "
+                  "session?).";
+
+  for (auto* ds : PerfettoTracedProcess::Get()->data_sources()) {
+    ds->AbortStartupTracing();
+  }
+
+  OnStartupTracingComplete();
+}
+
+void PerfettoProducer::OnStartupTracingComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  startup_tracing_active_.store(false);
+}
+
+bool PerfettoProducer::IsStartupTracingActive() {
+  return startup_tracing_active_.load();
+}
+
 std::unique_ptr<perfetto::TraceWriter>
-PerfettoProducer::CreateStartupTraceWriter(uint32_t startup_session_id) {
+PerfettoProducer::CreateStartupTraceWriter(
+    uint16_t target_buffer_reservation_id) {
   DCHECK(MaybeSharedMemoryArbiter());
   return MaybeSharedMemoryArbiter()->CreateStartupTraceWriter(
-      startup_session_id);
+      target_buffer_reservation_id);
 }
 
 void PerfettoProducer::BindStartupTargetBuffer(
-    uint32_t startup_session_id,
+    uint16_t target_buffer_reservation_id,
     perfetto::BufferID startup_target_buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(MaybeSharedMemoryArbiter());
-  MaybeSharedMemoryArbiter()->BindStartupTargetBuffer(startup_session_id,
-                                                      startup_target_buffer);
+  MaybeSharedMemoryArbiter()->BindStartupTargetBuffer(
+      target_buffer_reservation_id, startup_target_buffer);
+}
+
+void PerfettoProducer::AbortStartupTracingForReservation(
+    uint16_t target_buffer_reservation_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(MaybeSharedMemoryArbiter());
+  MaybeSharedMemoryArbiter()->AbortStartupTracingForReservation(
+      target_buffer_reservation_id);
 }
 
 std::unique_ptr<perfetto::TraceWriter> PerfettoProducer::CreateTraceWriter(
@@ -55,6 +136,10 @@ void PerfettoProducer::DeleteSoonForTesting(
     std::unique_ptr<PerfettoProducer> perfetto_producer) {
   PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
       FROM_HERE, std::move(perfetto_producer));
+}
+
+void PerfettoProducer::ResetSequenceForTesting() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 PerfettoTaskRunner* PerfettoProducer::task_runner() {

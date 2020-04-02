@@ -495,7 +495,7 @@ void BaseRenderingContext2D::CompositedDraw(
   SkMatrix ctm = c->getTotalMatrix();
   c->setMatrix(SkMatrix::I());
   PaintFlags composite_flags;
-  composite_flags.setBlendMode((SkBlendMode)GetState().GlobalComposite());
+  composite_flags.setBlendMode(GetState().GlobalComposite());
   if (GetState().ShouldDrawShadows()) {
     // unroll into two independently composited passes if drawing shadows
     PaintFlags shadow_flags =
@@ -505,10 +505,13 @@ void BaseRenderingContext2D::CompositedDraw(
     if (filter) {
       PaintFlags foreground_flags =
           *GetState().GetFlags(paint_type, kDrawForegroundOnly, image_type);
-      foreground_flags.setImageFilter(sk_make_sp<ComposePaintFilter>(
+      shadow_flags.setImageFilter(sk_make_sp<ComposePaintFilter>(
           sk_make_sp<ComposePaintFilter>(foreground_flags.getImageFilter(),
                                          shadow_flags.getImageFilter()),
           filter));
+      // Saving the shadow layer before setting the matrix, so the shadow offset
+      // does not get modified by the transformation matrix
+      c->saveLayer(nullptr, &shadow_flags);
       c->setMatrix(ctm);
       draw_func(c, &foreground_flags);
     } else {

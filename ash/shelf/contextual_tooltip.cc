@@ -9,7 +9,9 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/contextual_nudge_status_tracker.h"
 #include "ash/shell.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/util/values/values_util.h"
@@ -48,12 +50,12 @@ base::Time GetTime() {
 
 std::string TooltipTypeToString(TooltipType type) {
   switch (type) {
-    case TooltipType::kInAppToHome:
-      return "in_app_to_home";
     case TooltipType::kBackGesture:
       return "back_gesture";
     case TooltipType::kHomeToOverview:
       return "home_to_overview";
+    case TooltipType::kInAppToHome:
+      return "in_app_to_home";
   }
   return "invalid";
 }
@@ -87,6 +89,23 @@ const base::Optional<base::TimeDelta>& GetMinIntervalOverride() {
     min_interval_override = switches::ContextualNudgesInterval();
   }
   return min_interval_override;
+}
+
+using TrackerTable =
+    std::map<TooltipType, std::unique_ptr<ContextualNudgeStatusTracker>>;
+
+TrackerTable& GetStatusTrackerTable() {
+  // Dictionary mapping each nudge to its status tracker.
+  static base::NoDestructor<TrackerTable> status_tracker_table;
+  return *status_tracker_table;
+}
+
+ContextualNudgeStatusTracker* GetStatusTracker(TooltipType type) {
+  if (GetStatusTrackerTable().find(type) == GetStatusTrackerTable().end()) {
+    GetStatusTrackerTable().insert(TrackerTable::value_type(
+        type, std::make_unique<ContextualNudgeStatusTracker>(type)));
+  }
+  return GetStatusTrackerTable().find(type)->second.get();
 }
 
 }  // namespace
@@ -213,12 +232,18 @@ void HandleNudgeShown(PrefService* prefs, TooltipType type) {
   DictionaryPrefUpdate update(prefs, prefs::kContextualTooltips);
   update->SetIntPath(GetPath(type, kShownCount), shown_count + 1);
   update->SetPath(GetPath(type, kLastTimeShown), util::TimeToValue(GetTime()));
+  GetStatusTracker(type)->HandleNudgeShown(base::TimeTicks::Now());
 }
 
 void HandleGesturePerformed(PrefService* prefs, TooltipType type) {
   const int success_count = GetSuccessCount(prefs, type);
   DictionaryPrefUpdate update(prefs, prefs::kContextualTooltips);
   update->SetIntPath(GetPath(type, kSuccessCount), success_count + 1);
+  GetStatusTracker(type)->HandleGesturePerformed(base::TimeTicks::Now());
+}
+
+void LogNudgeDismissedMetrics(TooltipType type, DismissNudgeReason reason) {
+  GetStatusTracker(type)->LogNudgeDismissedMetrics(reason);
 }
 
 void SetDragHandleNudgeDisabledForHiddenShelf(bool nudge_disabled) {
@@ -247,6 +272,18 @@ void OverrideClockForTesting(base::Clock* test_clock) {
 void ClearClockOverrideForTesting() {
   DCHECK(g_clock_override);
   g_clock_override = nullptr;
+}
+
+void ClearStatusTrackerTableForTesting() {
+  GetStatusTrackerTable().clear();
+}
+
+ASH_EXPORT bool CanRecordGesturePerformedMetricForTesting(TooltipType type) {
+  return GetStatusTracker(type)->has_nudge_been_shown();
+}
+
+ASH_EXPORT bool CanRecordNudgeHiddenMetricForTesting(TooltipType type) {
+  return GetStatusTracker(type)->visible();
 }
 
 }  // namespace contextual_tooltip

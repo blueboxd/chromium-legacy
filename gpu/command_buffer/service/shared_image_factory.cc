@@ -28,7 +28,8 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/trace_util.h"
 
-#if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
+#if (defined(USE_X11) || defined(OS_FUCHSIA) || defined(OS_WIN)) && \
+    BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
@@ -95,7 +96,8 @@ SharedImageFactory::SharedImageFactory(
   }
 
   // For X11
-#if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
+#if (defined(USE_X11) || defined(OS_FUCHSIA) || defined(OS_WIN)) && \
+    BUILDFLAG(ENABLE_VULKAN)
   if (using_vulkan_) {
     interop_backing_factory_ =
         std::make_unique<ExternalVkImageFactory>(context_state);

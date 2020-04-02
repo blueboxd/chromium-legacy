@@ -24,6 +24,8 @@ const base::FeatureParam<bool> kEnableLookalikeEditDistance{
 const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
     &security_state::features::kSafetyTipUI, "editdistance_siteengagement",
     true};
+const base::FeatureParam<bool> kEnableLookalikeTargetEmbedding{
+    &security_state::features::kSafetyTipUI, "targetembedding", true};
 
 }  // namespace
 
@@ -62,6 +64,8 @@ bool ShouldTriggerSafetyTipFromLookalike(
       return kEnableLookalikeEditDistance.Get();
     case LookalikeUrlMatchType::kEditDistanceSiteEngagement:
       return kEnableLookalikeEditDistanceSiteEngagement.Get();
+    case LookalikeUrlMatchType::kTargetEmbedding:
+      return kEnableLookalikeTargetEmbedding.Get();
     case LookalikeUrlMatchType::kSiteEngagement:
       // We should only ever reach this case when the
       // kLookalikeUrlNavigationSuggestionsUI feature is disabled. Otherwise, an

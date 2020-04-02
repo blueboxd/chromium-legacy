@@ -14,16 +14,6 @@ class PrefService;
 
 namespace chrome_browser_net {
 
-// Returns true if there are any active machine level policies or if the machine
-// is domain joined. This special logic is used to disable DoH by default for
-// Desktop platforms (the enterprise policy field default_for_enterprise_users
-// only applies to ChromeOS). We don't attempt enterprise detection on Android
-// at this time.
-bool ShouldDisableDohForManaged();
-
-// Returns true if there are parental controls detected on the device.
-bool ShouldDisableDohForParentalControls();
-
 // Implements the whitespace-delimited group syntax for DoH templates.
 std::vector<base::StringPiece> SplitDohTemplateGroup(base::StringPiece group);
 
@@ -45,31 +35,6 @@ enum class SecureDnsUiManagementMode {
   kDisabledManaged,
   // Secure DNS was disabled due to detection of OS-level parental controls.
   kDisabledParentalControls,
-};
-
-// Detailed descriptions of the secure DNS mode. These values are logged to UMA.
-// Entries should not be renumbered and numeric values should never be reused.
-// Please keep in sync with "SecureDnsModeDetails" in
-// src/tools/metrics/histograms/enums.xml.
-enum class SecureDnsModeDetailsForHistogram {
-  // The mode is controlled by the user and is set to 'off'.
-  kOffByUser = 0,
-  // The mode is controlled via enterprise policy and is set to 'off'.
-  kOffByEnterprisePolicy = 1,
-  // Chrome detected a managed environment and forced the mode to 'off'.
-  kOffByDetectedManagedEnvironment = 2,
-  // Chrome detected parental controls and forced the mode to 'off'.
-  kOffByDetectedParentalControls = 3,
-  // The mode is controlled by the user and is set to 'automatic' (the default
-  // mode).
-  kAutomaticByUser = 4,
-  // The mode is controlled via enterprise policy and is set to 'automatic'.
-  kAutomaticByEnterprisePolicy = 5,
-  // The mode is controlled by the user and is set to 'secure'.
-  kSecureByUser = 6,
-  // The mode is controlled via enterprise policy and is set to 'secure'.
-  kSecureByEnterprisePolicy = 7,
-  kMaxValue = kSecureByEnterprisePolicy,
 };
 
 // Registers the backup preference required for the DNS probes setting reset.

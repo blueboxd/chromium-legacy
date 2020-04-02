@@ -34,7 +34,12 @@ public class CookieManager {
         }
     }
 
-    CookieManager(ICookieManager impl) {
+    // Constructor for test mocking.
+    protected CookieManager() {
+        mImpl = null;
+    }
+
+    private CookieManager(ICookieManager impl) {
         mImpl = impl;
     }
 

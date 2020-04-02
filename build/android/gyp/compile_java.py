@@ -624,6 +624,10 @@ def main(argv):
     if not options.warnings_as_errors:
       errorprone_flags.append('-XepAllErrorsAsWarnings')
     javac_args += ['-XDcompilePolicy=simple', ' '.join(errorprone_flags)]
+    # This flag quits errorprone after checks and before code generation, since
+    # we do not need errorprone outputs, this speeds up errorprone by 4 seconds
+    # for chrome_java.
+    javac_args += ['-XDshould-stop.ifNoError=FLOW']
 
   if options.java_version:
     javac_args.extend([

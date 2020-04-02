@@ -15,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
@@ -62,7 +61,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
-#include "net/dns/public/util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
@@ -93,9 +91,6 @@
 #include "extensions/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-using chrome_browser_net::SecureDnsModeDetailsForHistogram;
-using chrome_browser_net::SecureDnsUiManagementMode;
-
 namespace {
 
 constexpr bool kCertificateTransparencyEnabled =
@@ -121,8 +116,8 @@ void OnStubResolverConfigChanged(PrefService* local_state,
   net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  SystemNetworkContextManager::GetStubResolverConfig(
-      local_state, &insecure_stub_resolver_enabled, &secure_dns_mode,
+  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
+      &insecure_stub_resolver_enabled, &secure_dns_mode,
       &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
       insecure_stub_resolver_enabled, secure_dns_mode,
@@ -363,7 +358,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
     : local_state_(local_state),
       ssl_config_service_manager_(
           SSLConfigServiceManager::CreateDefaultManager(local_state_)),
-      proxy_config_monitor_(local_state_) {
+      proxy_config_monitor_(local_state_),
+      stub_resolver_config_reader_(local_state_) {
 #if !defined(OS_ANDROID)
   // QuicAllowed was not part of Android policy.
   const base::Value* value =
@@ -526,101 +522,12 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void SystemNetworkContextManager::GetStubResolverConfig(
-    PrefService* local_state,
-    bool* insecure_stub_resolver_enabled,
-    net::DnsConfig::SecureDnsMode* secure_dns_mode,
-    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-        dns_over_https_servers,
-    bool record_metrics,
-    SecureDnsUiManagementMode* forced_management_mode) {
-  DCHECK(!dns_over_https_servers->has_value());
+StubResolverConfigReader*
+SystemNetworkContextManager::GetStubResolverConfigReader() {
+  if (stub_resolver_config_reader_for_testing_)
+    return stub_resolver_config_reader_for_testing_;
 
-  *insecure_stub_resolver_enabled =
-      local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
-
-  std::string doh_mode;
-  SecureDnsModeDetailsForHistogram mode_details;
-  SecureDnsUiManagementMode forced_management_mode_internal =
-      SecureDnsUiManagementMode::kNoOverride;
-  bool is_managed =
-      local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged();
-  if (!is_managed && chrome_browser_net::ShouldDisableDohForManaged()) {
-    doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-    forced_management_mode_internal =
-        SecureDnsUiManagementMode::kDisabledManaged;
-  } else if (!is_managed &&
-             chrome_browser_net::ShouldDisableDohForParentalControls()) {
-    doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-    forced_management_mode_internal =
-        SecureDnsUiManagementMode::kDisabledParentalControls;
-  } else {
-    doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
-  }
-
-  if (doh_mode == chrome_browser_net::kDnsOverHttpsModeSecure) {
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-    mode_details =
-        is_managed ? SecureDnsModeDetailsForHistogram::kSecureByEnterprisePolicy
-                   : SecureDnsModeDetailsForHistogram::kSecureByUser;
-  } else if (doh_mode == chrome_browser_net::kDnsOverHttpsModeAutomatic) {
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
-    mode_details =
-        is_managed
-            ? SecureDnsModeDetailsForHistogram::kAutomaticByEnterprisePolicy
-            : SecureDnsModeDetailsForHistogram::kAutomaticByUser;
-  } else {
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
-    switch (forced_management_mode_internal) {
-      case SecureDnsUiManagementMode::kNoOverride:
-        mode_details =
-            is_managed
-                ? SecureDnsModeDetailsForHistogram::kOffByEnterprisePolicy
-                : SecureDnsModeDetailsForHistogram::kOffByUser;
-        break;
-      case SecureDnsUiManagementMode::kDisabledManaged:
-        mode_details =
-            SecureDnsModeDetailsForHistogram::kOffByDetectedManagedEnvironment;
-        break;
-      case SecureDnsUiManagementMode::kDisabledParentalControls:
-        mode_details =
-            SecureDnsModeDetailsForHistogram::kOffByDetectedParentalControls;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  if (forced_management_mode)
-    *forced_management_mode = forced_management_mode_internal;
-
-  if (record_metrics) {
-    UMA_HISTOGRAM_ENUMERATION("Net.DNS.DnsConfig.SecureDnsMode", mode_details);
-  }
-
-  std::string doh_templates =
-      local_state->GetString(prefs::kDnsOverHttpsTemplates);
-  std::string server_method;
-  if (!doh_templates.empty() &&
-      *secure_dns_mode != net::DnsConfig::SecureDnsMode::OFF) {
-    for (base::StringPiece server_template :
-         chrome_browser_net::SplitDohTemplateGroup(doh_templates)) {
-      if (!net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
-        continue;
-      }
-
-      if (!dns_over_https_servers->has_value()) {
-        *dns_over_https_servers = base::make_optional<
-            std::vector<network::mojom::DnsOverHttpsServerPtr>>();
-      }
-
-      network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
-          network::mojom::DnsOverHttpsServer::New();
-      dns_over_https_server->server_template = std::string(server_template);
-      dns_over_https_server->use_post = (server_method == "POST");
-      (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
-    }
-  }
+  return &GetInstance()->stub_resolver_config_reader_;
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
@@ -672,9 +579,9 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  GetStubResolverConfig(local_state_, &insecure_stub_resolver_enabled,
-                        &secure_dns_mode, &dns_over_https_servers,
-                        true /* record_metrics */);
+  stub_resolver_config_reader_.GetConfiguration(
+      &insecure_stub_resolver_enabled, &secure_dns_mode,
+      &dns_over_https_servers, true /* record_metrics */);
   content::GetNetworkService()->ConfigureStubHostResolver(
       insecure_stub_resolver_enabled, secure_dns_mode,
       std::move(dns_over_https_servers));
@@ -895,3 +802,7 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
 void SystemNetworkContextManager::UpdateReferrersEnabled() {
   GetContext()->SetEnableReferrers(enable_referrers_.GetValue());
 }
+
+// static
+StubResolverConfigReader*
+SystemNetworkContextManager::stub_resolver_config_reader_for_testing_ = nullptr;

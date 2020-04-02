@@ -68,7 +68,7 @@ class RTCEncodedVideoUnderlyingSinkTest : public testing::Test {
 
   ScriptValue CreateEncodedVideoFrameChunk(ScriptState* script_state) {
     RTCEncodedVideoFrame* frame = MakeGarbageCollected<RTCEncodedVideoFrame>(
-        /*frame_delegate=*/nullptr);
+        std::unique_ptr<webrtc::TransformableVideoFrameInterface>());
     return ScriptValue(script_state->GetIsolate(),
                        ToV8(frame, script_state->GetContext()->Global(),
                             script_state->GetIsolate()));

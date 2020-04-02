@@ -60,9 +60,9 @@ base::MadvFreeSupport ProbePlatformMadvFreeSupport() {
   }
   PCHECK(!munmap(dummy_page, base::GetPageSize()));
   return support;
-#endif
-
+#else
   return base::MadvFreeSupport::kUnsupported;
+#endif
 }
 
 }  // namespace

@@ -1459,6 +1459,10 @@ jumbo_source_set("unit_tests") {
     "xml/xpath_functions_test.cc",
   ]
 
+  if (is_debug || dcheck_always_on) {
+    sources += [ "exported/web_disallow_transition_scope_test.cc" ]
+  }
+
   configs += [
     ":blink_core_pch",
     "//third_party/blink/renderer:config",

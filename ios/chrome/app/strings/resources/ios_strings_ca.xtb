@@ -66,7 +66,6 @@
 <translation id="1690731385917361335">Cap element</translation>
 <translation id="1692118695553449118">La sincronització està activada</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionades</translation>
-<translation id="1727016672946926483">Comparteix com a codi QR</translation>
 <translation id="1740468249224277719">Feu doble toc per instal·lar l'aplicació.</translation>
 <translation id="1746815479209538200">Per navegar pel web, obre una pestanya nova.</translation>
 <translation id="1752547299766512813">Desa les contrasenyes</translation>
@@ -320,7 +319,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
-<translation id="5234764350956374838">Omet</translation>
+<translation id="5234764350956374838">Ignora</translation>
 <translation id="5245322853195994030">Cancel·la la sincronització</translation>
 <translation id="5271549068863921519">Desa la contrasenya</translation>
 <translation id="5300589172476337783">Mostra</translation>
@@ -486,7 +485,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="734758817008927353">Opcions per desar la targeta</translation>
 <translation id="7348502496356775519">Adreça d'interès</translation>
 <translation id="7383797227493018512">Llista de lectura</translation>
-<translation id="7392048574806661116">Tanca la sessió i esborra les dades sincronitzades</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> articles sense llegir.</translation>
 <translation id="7425346204213733349">Els canvis que es facin a les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració es deixaran de sincronitzar amb el Compte de Google. No obstant això, les dades actuals hi continuaran emmagatzemades.</translation>

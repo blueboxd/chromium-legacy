@@ -18,6 +18,7 @@
 <translation id="1190609913194133056">Centar za obaveštenja</translation>
 <translation id="1195412055398077112">ivično područje ekrana</translation>
 <translation id="119944043368869598">Obriši sve</translation>
+<translation id="1199716647557067911">Želite li stvarno da isključite pristup pomoću prekidača?</translation>
 <translation id="1247372569136754018">Mikrofon (interni)</translation>
 <translation id="1252999807265626933">Punjenje iz uređaja <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Kakvo je vreme?</translation>
@@ -430,6 +431,7 @@
 <translation id="6537924328260219877">Jačina signala <ph name="SIGNAL_STRENGTH" />, baterija telefona <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Prebacuje se na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pitajte administratora</translation>
+<translation id="6584550827717945790">Isključite pristup pomoću prekidača</translation>
 <translation id="6585808820553845416">Sesija se završava za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />, upravlja administrator</translation>
 <translation id="6614169507485700968">Ekran za privatnost je uključen</translation>

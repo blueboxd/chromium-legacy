@@ -50,6 +50,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(AndroidAppsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     AndroidAppsBrowserProxy: AndroidAppsBrowserProxy,
     AndroidAppsBrowserProxyImpl: AndroidAppsBrowserProxyImpl,

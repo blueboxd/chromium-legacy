@@ -126,7 +126,7 @@ bool DragHandle::ShowDragHandleNudge() {
     hide_drag_handle_nudge_timer_.Start(
         FROM_HERE, nudge_duration,
         base::BindOnce(&DragHandle::HideDragHandleNudge, base::Unretained(this),
-                       false /*hidden_by_tap*/));
+                       contextual_tooltip::DismissNudgeReason::kTimeout));
   }
   contextual_tooltip::HandleNudgeShown(
       pref, contextual_tooltip::TooltipType::kInAppToHome);
@@ -155,13 +155,17 @@ void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
   layer()->SetOpacity(opacity);
 }
 
-void DragHandle::HideDragHandleNudge(bool hidden_by_tap) {
+void DragHandle::HideDragHandleNudge(
+    contextual_tooltip::DismissNudgeReason context) {
   StopDragHandleNudgeShowTimer();
-
   if (!ShowingNudge())
     return;
+
   hide_drag_handle_nudge_timer_.Stop();
-  HideDragHandleNudgeHelper(hidden_by_tap);
+  HideDragHandleNudgeHelper(/*hidden_by_tap=*/context ==
+                            contextual_tooltip::DismissNudgeReason::kTap);
+  contextual_tooltip::LogNudgeDismissedMetrics(
+      contextual_tooltip::TooltipType::kInAppToHome, context);
   showing_nudge_ = false;
 }
 
@@ -183,7 +187,7 @@ void DragHandle::SetWindowDragFromShelfInProgress(bool gesture_in_progress) {
   if (window_drag_from_shelf_in_progress_) {
     hide_drag_handle_nudge_timer_.Stop();
   } else {
-    HideDragHandleNudge(/*hidden_by_tap=*/false);
+    HideDragHandleNudge(contextual_tooltip::DismissNudgeReason::kOther);
   }
 }
 
@@ -349,8 +353,7 @@ void DragHandle::ScheduleDragHandleTranslationAnimation(
 void DragHandle::HandleTapOnNudge() {
   if (!drag_handle_nudge_)
     return;
-
-  HideDragHandleNudge(true /*hidden_by_tap*/);
+  HideDragHandleNudge(contextual_tooltip::DismissNudgeReason::kTap);
 }
 
 void DragHandle::StopDragHandleNudgeShowTimer() {

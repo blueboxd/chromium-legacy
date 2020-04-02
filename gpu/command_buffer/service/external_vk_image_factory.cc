@@ -4,8 +4,6 @@
 
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 
-#include <unistd.h>
-
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"

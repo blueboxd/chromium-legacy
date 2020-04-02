@@ -193,6 +193,7 @@ cr.define('settings', function() {
   const routes = /** @type {!OsSettingsRoutes} */ (
       settings.Router.getInstance().getRoutes());
 
+  // #cr_define_end
   return {
     buildRouterForTesting: buildRouter,
     routes: routes,

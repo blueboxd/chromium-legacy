@@ -25,8 +25,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/storage/storage_info_fetcher.h"
 #include "chrome/common/pref_names.h"
+#include "components/browser_ui/site_settings/android/storage_info_fetcher.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -756,8 +756,9 @@ static void JNI_WebsitePreferenceBridge_FetchStorageInfo(
     const JavaParamRef<jobject>& java_callback) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
-  auto storage_info_fetcher = base::MakeRefCounted<StorageInfoFetcher>(profile);
-  storage_info_fetcher->FetchStorageInfo(base::Bind(
+  auto storage_info_fetcher =
+      base::MakeRefCounted<browser_ui::StorageInfoFetcher>(profile);
+  storage_info_fetcher->FetchStorageInfo(base::BindOnce(
       &OnStorageInfoReady, ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
@@ -783,11 +784,12 @@ static void JNI_WebsitePreferenceBridge_ClearStorageData(
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string host = ConvertJavaStringToUTF8(env, jhost);
 
-  auto storage_info_fetcher = base::MakeRefCounted<StorageInfoFetcher>(profile);
+  auto storage_info_fetcher =
+      base::MakeRefCounted<browser_ui::StorageInfoFetcher>(profile);
   storage_info_fetcher->ClearStorage(
       host, static_cast<blink::mojom::StorageType>(type),
-      base::Bind(&OnStorageInfoCleared,
-                 ScopedJavaGlobalRef<jobject>(java_callback)));
+      base::BindOnce(&OnStorageInfoCleared,
+                     ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_WebsitePreferenceBridge_ClearCookieData(

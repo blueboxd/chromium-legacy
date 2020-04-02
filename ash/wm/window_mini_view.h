@@ -6,7 +6,6 @@
 #define ASH_WM_WINDOW_MINI_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -28,11 +27,18 @@ class WmHighlightItemBorder;
 class ASH_EXPORT WindowMiniView : public views::View,
                                   public aura::WindowObserver {
  public:
-  static constexpr int kHeaderHeightDp = 40;
-
+  WindowMiniView(const WindowMiniView&) = delete;
+  WindowMiniView& operator=(const WindowMiniView&) = delete;
   ~WindowMiniView() override;
 
-  // Sets the visiblity of |backdrop_view_|. Creates it if it is null.
+  static constexpr int kHeaderHeightDp = 40;
+  // The size in dp of the window icon shown on the alt-tab/overview window next
+  // to the title.
+  static constexpr gfx::Size kIconSize = gfx::Size(24, 24);
+  // Padding between header items.
+  static constexpr int kHeaderPaddingDp = 12;
+
+  // Sets the visibility of |backdrop_view_|. Creates it if it is null.
   void SetBackdropVisibility(bool visible);
 
   // Creates or deletes |preview_view_| as needed.
@@ -46,11 +52,16 @@ class ASH_EXPORT WindowMiniView : public views::View,
 
   views::View* header_view() { return header_view_; }
   views::Label* title_label() const { return title_label_; }
+  views::ImageView* icon_view() { return icon_view_; }
   views::View* backdrop_view() { return backdrop_view_; }
   WindowPreviewView* preview_view() const { return preview_view_; }
 
  protected:
   explicit WindowMiniView(aura::Window* source_window);
+
+  // Updates the icon view by creating it if necessary, and grabbing the correct
+  // image from |source_window_|.
+  void UpdateIconView();
 
   WmHighlightItemBorder* border_ptr() { return border_ptr_; }
 
@@ -62,6 +73,9 @@ class ASH_EXPORT WindowMiniView : public views::View,
   virtual int GetMargin() const;
   virtual gfx::Rect GetHeaderBounds() const;
   virtual gfx::Size GetPreviewViewSize() const;
+  // Allows subclasses to resize/add shadow to the image that will appear as the
+  // icon. Defaults to do resize the image to |kIconSize|.
+  virtual gfx::ImageSkia ModifyIcon(gfx::ImageSkia* image) const;
 
   // views::View:
   void Layout() override;
@@ -75,10 +89,6 @@ class ASH_EXPORT WindowMiniView : public views::View,
   void OnWindowTitleChanged(aura::Window* window) override;
 
  private:
-  // Updates the icon view by creating it if necessary, and grabbing the correct
-  // image from |source_window_|.
-  void UpdateIconView();
-
   // The window this class is meant to be a header for. This class also may
   // optionally show a mirrored view of this window.
   aura::Window* source_window_;
@@ -100,8 +110,6 @@ class ASH_EXPORT WindowMiniView : public views::View,
   WindowPreviewView* preview_view_ = nullptr;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WindowMiniView);
 };
 
 }  // namespace ash

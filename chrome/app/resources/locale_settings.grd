@@ -183,16 +183,6 @@
       </message>
 
       <if expr="chromeos">
-        <!-- The width of the help-app dialog in pixels. -->
-        <message name="IDS_HELP_APP_DIALOG_WIDTH_PIXELS" use_name_for_id="true">
-            710
-        </message>
-
-        <!-- The height of the help-app dialog in pixels. -->
-        <message name="IDS_HELP_APP_DIALOG_HEIGHT_PIXELS" use_name_for_id="true">
-            400
-        </message>
-
         <message name="IDS_FACTORY_RESET_HELP_URL" translateable="false">
           https://support.google.com/chromebook/answer/183084?hl=[GRITLANGCODE]
         </message>

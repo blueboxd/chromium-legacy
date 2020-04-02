@@ -620,10 +620,14 @@ void ShelfLayoutManager::UpdateContextualNudges() {
     } else if (!shelf_widget_->GetDragHandle()->ShowingNudge()) {
       // If the drag handle is not yet shown, HideDragHandleNudge() should
       // cancel any scheduled show requests.
-      shelf_widget_->HideDragHandleNudge();
+      shelf_widget_->HideDragHandleNudge(
+          contextual_tooltip::DismissNudgeReason::kOther);
     }
   } else {
-    shelf_widget_->HideDragHandleNudge();
+    shelf_widget_->HideDragHandleNudge(
+        in_tablet_mode
+            ? contextual_tooltip::DismissNudgeReason::kExitToHomeScreen
+            : contextual_tooltip::DismissNudgeReason::kSwitchToClamshell);
   }
 
   // Create home to overview nudge controller if home to overview nudge is
@@ -644,7 +648,8 @@ void ShelfLayoutManager::HideContextualNudges() {
   if (!ash::features::AreContextualNudgesEnabled())
     return;
 
-  shelf_widget_->HideDragHandleNudge();
+  shelf_widget_->HideDragHandleNudge(
+      contextual_tooltip::DismissNudgeReason::kOther);
 
   if (home_to_overview_nudge_controller_)
     home_to_overview_nudge_controller_->SetNudgeAllowedForCurrentShelf(false);

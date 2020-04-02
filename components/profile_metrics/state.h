@@ -48,6 +48,35 @@ enum class UnconsentedPrimaryAccountType {
   kMaxValue = kSignedOut
 };
 
+// Classification of what gaia names appear or appeared in this profile since
+// the last time gaia cookies got deleted. Thus, this also includes signed-out
+// accounts. In order to protect privacy, only classifies whether multiple
+// distinct gaia names appeared in this profile and if so, whether sync is
+// enabled for one of them. Furthermore, this classification uses a low-entropy
+// hash to detect distinct names. In case of a rare hash collision (less than
+// 0.1% of cases), multiple names get recorded as a single name. Entries should
+// not be renumbered and numeric values should never be reused.
+enum class AllAccountsNames {
+  kLikelySingleName = 0,  // Gets also rare false records due to hash collision.
+  kMultipleNamesWithoutSync = 1,
+  kMultipleNamesWithSync = 2,
+  kMaxValue = kMultipleNamesWithSync
+};
+
+// Classification of what account categories out of {consumer, enterprise}
+// appear or appeared in this profile since the last time gaia cookies got
+// deleted. Thus, this also includes signed-out accounts. If both categories
+// appeared, it also distinguishes whether sync is enabled and for which of
+// them. Entries should not be renumbered and numeric values should never be
+// reused.
+enum class AllAccountsCategories {
+  kSingleCategory = 0,
+  kBothConsumerAndEnterpriseNoSync = 1,
+  kBothConsumerAndEnterpriseSyncingConsumer = 2,
+  kBothConsumerAndEnterpriseSyncingEnterprise = 3,
+  kMaxValue = kBothConsumerAndEnterpriseSyncingEnterprise
+};
+
 // Different types of reporting for profile state. This is used as a histogram
 // suffix.
 enum class StateSuffix {
@@ -76,6 +105,12 @@ void LogProfileAccountType(UnconsentedPrimaryAccountType account_type,
 
 // Records the days since last use of a profile.
 void LogProfileDaysSinceLastUse(int days_since_last_use, StateSuffix suffix);
+
+// Records the state of account names used in multi-login.
+void LogProfileAllAccountsNames(AllAccountsNames names);
+
+// Records the state of account categories used in multi-login.
+void LogProfileAllAccountsCategories(AllAccountsCategories categories);
 
 }  // namespace profile_metrics
 

@@ -52,8 +52,6 @@ class CC_EXPORT EventsMetricsManager {
   // caller.
   std::vector<EventMetrics> TakeSavedEventsMetrics();
 
-  void AppendToSavedEventsMetrics(std::vector<EventMetrics> events_metrics);
-
  private:
   // Current active EventMetrics, if any.
   base::Optional<EventMetrics> active_event_;

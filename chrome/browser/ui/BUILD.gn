@@ -2215,6 +2215,8 @@ jumbo_static_library("ui") {
       "webui/discards/discards_ui.h",
       "webui/discards/graph_dump_impl.cc",
       "webui/discards/graph_dump_impl.h",
+      "webui/discards/site_data_provider_impl.cc",
+      "webui/discards/site_data_provider_impl.h",
       "webui/signin/inline_login_handler.cc",
       "webui/signin/inline_login_handler.h",
       "webui/signin/inline_login_ui.cc",

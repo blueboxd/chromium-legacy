@@ -148,10 +148,6 @@ MemoryInfo* Performance::memory() const {
   return nullptr;
 }
 
-EventCounts* Performance::eventCounts() {
-  return nullptr;
-}
-
 namespace {
 
 bool IsMeasureMemoryAvailable(ScriptState* script_state) {

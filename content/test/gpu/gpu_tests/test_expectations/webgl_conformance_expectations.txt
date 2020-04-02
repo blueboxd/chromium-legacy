@@ -20,7 +20,6 @@
 # ===================================
 # It's expected that not all extensions will be available on all platforms.
 # Having a test listed here is not necessarily a problem.
-[ win vulkan passthrough ] WebglExtension_EXT_float_blend [ Failure ]
 
 # Skip these, rather than expect them to fail, to speed up test
 # execution. The browser is restarted even after expected test
@@ -134,6 +133,9 @@ crbug.com/772037 [ win7 release amd d3d11 passthrough ] conformance/extensions/o
 crbug.com/angleproject/2722 [ vulkan passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
 crbug.com/angleproject/2914 [ vulkan passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 crbug.com/angleproject/2722 [ vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/1063472 [ intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/1063472 [ intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
+crbug.com/1063472 [ intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ Failure ]
 
 ####################
 # Win failures     #
@@ -148,9 +150,6 @@ crbug.com/1023745 [ win intel d3d9 passthrough ] conformance2/textures/image_bit
 crbug.com/854100 [ win intel opengl passthrough intel_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
 crbug.com/angleproject/2909 [ win intel vulkan passthrough intel_lt_26.20.100.7000 ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
 crbug.com/angleproject/2722 [ win intel vulkan passthrough intel_lt_26.20.100.7323 ] conformance/rendering/clipping-wide-points.html [ Failure ]
-crbug.com/1063472 [ win intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/1063472 [ win intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
-crbug.com/1063472 [ win intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ Failure ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.
@@ -366,8 +365,8 @@ crbug.com/928530 [ linux intel mesa_eq_18.0.5 no-passthrough ] conformance/progr
 
 # Linux / Vulkan / Passthrough command decoder
 crbug.com/angleproject/3469 [ linux vulkan passthrough intel ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-crbug.com/1021428 [ linux vulkan passthrough intel ] conformance/rendering/scissor-rect-repeated-rendering.html [ Failure ]
-crbug.com/1021428 [ linux vulkan passthrough intel ] WebglExtension_EXT_float_blend [ Failure ]
+crbug.com/1021428 [ linux vulkan passthrough intel ] conformance/rendering/rendering-sampling-feedback-loop.html [ Failure ]
+crbug.com/1021428 [ linux vulkan passthrough intel ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 crbug.com/1021428 [ linux vulkan passthrough intel ] WebglExtension_WEBGL_depth_texture [ Failure ]
 
 # NVIDIA

@@ -107,7 +107,7 @@ cr.define('settings', function() {
 
     r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
 
-    r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
+    r.OS_ACCESSIBILITY = r.ADVANCED.createSection('/osAccessibility', 'a11y');
 
     if (!loadTimeData.getBoolean('isGuest')) {
       if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
@@ -153,7 +153,7 @@ cr.define('settings', function() {
     r.CUPS_PRINTERS = r.PRINTING.createChild('/cupsPrinters');
 
     r.MANAGE_ACCESSIBILITY =
-        r.ACCESSIBILITY.createChild('/manageAccessibility');
+        r.OS_ACCESSIBILITY.createChild('/manageAccessibility');
     if (loadTimeData.getBoolean('showExperimentalAccessibilitySwitchAccess')) {
       r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
           '/manageAccessibility/switchAccess');

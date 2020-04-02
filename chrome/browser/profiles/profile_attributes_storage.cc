@@ -198,6 +198,9 @@ profile_metrics::UnconsentedPrimaryAccountType GetUnconsentedPrimaryAccountType(
     return profile_metrics::UnconsentedPrimaryAccountType::kSignedOut;
   if (entry->IsChild())
     return profile_metrics::UnconsentedPrimaryAccountType::kChild;
+  // TODO(crbug.com/1060113): Replace this check by
+  // !entry->GetHostedDomain().has_value() in M84 (once the cache gets
+  // reasonably well populated).
   if (policy::BrowserPolicyConnector::IsNonEnterpriseUser(
           base::UTF16ToUTF8(entry->GetUserName()))) {
     return profile_metrics::UnconsentedPrimaryAccountType::kConsumer;

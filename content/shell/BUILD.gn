@@ -48,6 +48,7 @@ source_set("android_shell_descriptors") {
 source_set("web_test_common") {
   testonly = true
   sources = [
+    "common/web_test/web_test_constants.h",
     "common/web_test/web_test_string_util.cc",
     "common/web_test/web_test_string_util.h",
     "common/web_test/web_test_switches.cc",

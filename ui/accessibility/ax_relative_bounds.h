@@ -10,8 +10,8 @@
 #include <memory>
 #include <ostream>
 
+#include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/accessibility/ax_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
@@ -31,7 +31,7 @@ namespace ui {
 // Otherwise, for a node other than the root, the bounds are relative to
 // the root of the tree, and for the root of a tree, the bounds are relative
 // to its immediate containing node.
-struct AX_EXPORT AXRelativeBounds final {
+struct AX_BASE_EXPORT AXRelativeBounds final {
   AXRelativeBounds();
   virtual ~AXRelativeBounds();
 
@@ -57,8 +57,8 @@ struct AX_EXPORT AXRelativeBounds final {
   std::unique_ptr<gfx::Transform> transform;
 };
 
-AX_EXPORT std::ostream& operator<<(std::ostream& stream,
-                                   const AXRelativeBounds& bounds);
+AX_BASE_EXPORT std::ostream& operator<<(std::ostream& stream,
+                                        const AXRelativeBounds& bounds);
 
 }  // namespace ui
 

@@ -42792,6 +42792,7 @@ Called by update_use_counter_css.py.-->
   <int value="9" label="Bad play next candidate"/>
   <int value="10" label="Bad images"/>
   <int value="11" label="Bad safe search result"/>
+  <int value="12" label="Bad genres"/>
 </enum>
 
 <enum name="MediaFeedReadResult">
@@ -47035,6 +47036,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="kVia"/>
 </enum>
 
+<enum name="NetworkServiceCorpResult">
+  <int value="0" label="success"/>
+  <int value="1" label="same-origin violation"/>
+  <int value="2" label="same-origin violation with COEP involvement"/>
+  <int value="3" label="same-site violation"/>
+</enum>
+
 <enum name="NetworkServiceError">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="AAA_FAILED"/>
@@ -48710,6 +48718,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="NTP omnibox tapped."/>
   <int value="3" label="NTP omnibox long-pressed (from paste action)."/>
   <int value="4" label="Accelerator tapped."/>
+  <int value="5" label="Tab switcher omnibox tapped (obsolete)."/>
+  <int value="6" label="Tasks surface fake box tapped."/>
+  <int value="7" label="Tasks surface fake box long pressed."/>
+  <int value="8" label="Default with hardware keyboard."/>
+  <int value="9" label="Search query."/>
+  <int value="10" label="Launched new incognito tab."/>
+  <int value="11" label="Menu or keyboard action."/>
+  <int value="12" label="Unfocus."/>
 </enum>
 
 <enum name="OmniboxInputType">
@@ -53955,6 +53971,19 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Add new user from settings dialog"/>
   <int value="3" label="Add new user from the User Manager"/>
   <int value="4" label="Auto-created after deleting last user"/>
+</enum>
+
+<enum name="ProfileAllAccountsCategories">
+  <int value="0" label="Either consumer or enterprise, not both"/>
+  <int value="1" label="Both consumer and enterprise (no sync)"/>
+  <int value="2" label="Both consumer and enterprise (consumer syncing)"/>
+  <int value="3" label="Both consumer and enterprise (enterprise syncing)"/>
+</enum>
+
+<enum name="ProfileAllAccountsNames">
+  <int value="0" label="At most one name (or a rare hash collision)"/>
+  <int value="1" label="Multiple names (no sync)"/>
+  <int value="2" label="Multiple names (sync enabled for one of them)"/>
 </enum>
 
 <enum name="ProfileAndroidAccountManagementMenu">

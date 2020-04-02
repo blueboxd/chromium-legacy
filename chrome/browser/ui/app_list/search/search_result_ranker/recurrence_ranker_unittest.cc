@@ -267,6 +267,14 @@ TEST_F(RecurrenceRankerTest, RankTopN) {
                /* using_fake_predictor = */ true);
 }
 
+TEST_F(RecurrenceRankerTest, Empty) {
+  auto ranker = MakeSimpleRanker();
+
+  EXPECT_TRUE(ranker->empty());
+  ranker->Record("A");
+  EXPECT_FALSE(ranker->empty());
+}
+
 TEST_F(RecurrenceRankerTest, LoadFromDisk) {
   // Serialise a testing proto.
   RecurrenceRankerProto proto = MakeTestingProto();

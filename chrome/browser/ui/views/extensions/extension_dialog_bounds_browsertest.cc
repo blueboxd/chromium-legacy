@@ -54,16 +54,14 @@ class ExtensionDialogBoundsTest
 
     // Dimensions of a dialog that would be bigger than the remaining display
     // work area when the docked magnifier is enabled.
-    constexpr int kDialogWidth = 1000;
-    constexpr int kDialogHeight = 1000;
-    constexpr int kDialogMinimumWidth = 640;
-    constexpr int kDialogMinimumHeight = 240;
+    ExtensionDialog::InitParams params(1000, 1000);
+    params.is_modal = true;
+    params.min_width = 640;
+    params.min_height = 240;
     auto* dialog = ExtensionDialog::Show(
         extension->url().Resolve("main.html"),
         browser()->window()->GetNativeWindow(), browser()->profile(),
-        nullptr /* web_contents */, true /* is_modal */, kDialogWidth,
-        kDialogHeight, kDialogMinimumWidth, kDialogMinimumHeight,
-        base::string16() /* title */, nullptr /* observer */);
+        nullptr /* web_contents */, nullptr /* observer */, params);
     ASSERT_TRUE(dialog);
     ASSERT_TRUE(init_listener.WaitUntilSatisfied());
   }

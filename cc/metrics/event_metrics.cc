@@ -94,4 +94,15 @@ bool EventMetrics::operator==(const EventMetrics& other) const {
          std::tie(other.type_, other.time_stamp_, other.scroll_input_type_);
 }
 
+// EventMetricsSet
+EventMetricsSet::EventMetricsSet() = default;
+EventMetricsSet::~EventMetricsSet() = default;
+EventMetricsSet::EventMetricsSet(
+    std::vector<EventMetrics> main_thread_event_metrics,
+    std::vector<EventMetrics> impl_thread_event_metrics)
+    : main_event_metrics(std::move(main_thread_event_metrics)),
+      impl_event_metrics(std::move(impl_thread_event_metrics)) {}
+EventMetricsSet::EventMetricsSet(EventMetricsSet&& other) = default;
+EventMetricsSet& EventMetricsSet::operator=(EventMetricsSet&& other) = default;
+
 }  // namespace cc

@@ -9,6 +9,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
+#include "chrome/browser/media/history/media_history_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/common/pref_names.h"
@@ -228,6 +229,25 @@ void MediaHistoryKeyedService::GetURLsInTableForTest(
 void MediaHistoryKeyedService::DiscoverMediaFeed(const GURL& url) {
   if (auto* store = store_->GetForWrite())
     store->DiscoverMediaFeed(url);
+}
+
+MediaHistoryKeyedService::PendingSafeSearchCheck::PendingSafeSearchCheck(
+    int64_t id)
+    : id(id) {}
+
+MediaHistoryKeyedService::PendingSafeSearchCheck::~PendingSafeSearchCheck() =
+    default;
+
+void MediaHistoryKeyedService::GetPendingSafeSearchCheckMediaFeedItems(
+    base::OnceCallback<void(PendingSafeSearchCheckList)> callback) {
+  store_->GetForRead()->GetPendingSafeSearchCheckMediaFeedItems(
+      std::move(callback));
+}
+
+void MediaHistoryKeyedService::StoreMediaFeedItemSafeSearchResults(
+    std::map<int64_t, media_feeds::mojom::SafeSearchResult> results) {
+  if (auto* store = store_->GetForWrite())
+    store->StoreMediaFeedItemSafeSearchResults(results);
 }
 
 void MediaHistoryKeyedService::PostTaskToDBForTest(base::OnceClosure callback) {

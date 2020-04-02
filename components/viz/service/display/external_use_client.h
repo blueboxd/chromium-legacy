@@ -52,18 +52,6 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
     ResourceFormat resource_format() const { return resource_format_; }
     sk_sp<SkColorSpace> color_space() const { return color_space_; }
 
-    // NOTE: This is metadata that should be set to match any factor baked into
-    // the |color_space| of this context. It is theoretically possible that the
-    // context's image could be updated using SkImage::reinterpretColorSpace
-    // if just the scale factor changes across frames. However, to respect the
-    // thread safety rules, a new SDR scale factor currently requires making a
-    // new ImageContext if its image has already been created.
-    float sdr_scale_factor() const { return sdr_scale_factor_; }
-    void set_sdr_scale_factor(float sdr_scale_factor) {
-      DCHECK(!image_);
-      sdr_scale_factor_ = sdr_scale_factor;
-    }
-
     SkAlphaType alpha_type() const { return alpha_type_; }
     void set_alpha_type(SkAlphaType alpha_type) {
       DCHECK(!image_);
@@ -90,11 +78,6 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
     const gfx::Size size_;
     const ResourceFormat resource_format_;
     const sk_sp<SkColorSpace> color_space_;
-    // Records the SDR white level scaling factor applied to |color_space_| when
-    // the ImageContext was made. Since this is already in the SkColorSpace,
-    // this is only used by the DisplayResourceProvider to determine if a cached
-    // ImageContext matches the requested white level.
-    float sdr_scale_factor_ = 1.0f;
 
     SkAlphaType alpha_type_ = kPremul_SkAlphaType;
     GrSurfaceOrigin origin_ = kTopLeft_GrSurfaceOrigin;

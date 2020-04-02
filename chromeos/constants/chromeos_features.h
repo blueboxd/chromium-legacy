@@ -16,6 +16,8 @@ namespace features {
 // being rolled out via Finch, add a comment in the .cc file.
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kAllowScrollSettings;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAmbientModeFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kArcAdbSideloadingFeature;

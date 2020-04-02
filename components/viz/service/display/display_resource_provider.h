@@ -243,7 +243,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // There should be at most one instance of this class per
     // |resource_provider|. Both |resource_provider| and |client| outlive this
     // class.
-    LockSetForExternalUse(DisplayResourceProvider* resourcqe_provider,
+    LockSetForExternalUse(DisplayResourceProvider* resource_provider,
                           ExternalUseClient* client);
     ~LockSetForExternalUse();
 
@@ -254,8 +254,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // Lock a resource for external use. The return value was created by
     // |client| at some point in the past.
     ExternalUseClient::ImageContext* LockResource(ResourceId resource_id,
-                                                  bool is_video_plane = false,
-                                                  float sdr_scale_factor = 1.f);
+                                                  bool is_video_plane);
 
     // Unlock all locked resources with a |sync_token|.  The |sync_token| should
     // be waited on before reusing the resource's backing to ensure that any

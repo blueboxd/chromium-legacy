@@ -51,6 +51,7 @@ class LoginScreenExtensionsLifetimeManager;
 class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
 class NetworkChangeManagerClient;
+class NetworkHealth;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
 class PowerMetricsReporter;
@@ -112,6 +113,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
  private:
   std::unique_ptr<default_app_order::ExternalLoader> app_order_loader_;
+  std::unique_ptr<NetworkHealth> network_health_;
   std::unique_ptr<NetworkPrefStateObserver> network_pref_state_observer_;
   std::unique_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   std::unique_ptr<RendererFreezer> renderer_freezer_;

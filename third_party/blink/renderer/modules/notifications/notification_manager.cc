@@ -47,7 +47,9 @@ NotificationManager* NotificationManager::From(ExecutionContext* context) {
 const char NotificationManager::kSupplementName[] = "NotificationManager";
 
 NotificationManager::NotificationManager(ExecutionContext& context)
-    : Supplement<ExecutionContext>(context) {}
+    : Supplement<ExecutionContext>(context),
+      notification_service_(&context),
+      permission_service_(&context) {}
 
 NotificationManager::~NotificationManager() = default;
 
@@ -69,7 +71,7 @@ ScriptPromise NotificationManager::RequestPermission(
     V8NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     // See https://bit.ly/2S0zRAS for task types
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         context->GetTaskRunner(TaskType::kMiscPlatformAPI);
@@ -227,9 +229,9 @@ void NotificationManager::DidGetNotifications(
   resolver->Resolve(notifications);
 }
 
-const mojo::Remote<mojom::blink::NotificationService>&
+mojom::blink::NotificationService*
 NotificationManager::GetNotificationService() {
-  if (!notification_service_) {
+  if (!notification_service_.is_bound()) {
     // See https://bit.ly/2S0zRAS for task types
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI);
@@ -241,10 +243,12 @@ NotificationManager::GetNotificationService() {
                   WrapWeakPersistent(this)));
   }
 
-  return notification_service_;
+  return notification_service_.get();
 }
 
 void NotificationManager::Trace(Visitor* visitor) {
+  visitor->Trace(notification_service_);
+  visitor->Trace(permission_service_);
   Supplement<ExecutionContext>::Trace(visitor);
 }
 

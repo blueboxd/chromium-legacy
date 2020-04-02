@@ -4,8 +4,11 @@
 
 #include "ash/system/audio/audio_detailed_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/audio/mic_gain_slider_controller.h"
+#include "ash/system/audio/mic_gain_slider_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
@@ -84,6 +87,7 @@ void AudioDetailedView::AddAudioSubHeader(const gfx::VectorIcon& icon,
 void AudioDetailedView::CreateItems() {
   CreateScrollableList();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_AUDIO);
+  mic_gain_controller_ = std::make_unique<MicGainSliderController>();
 }
 
 void AudioDetailedView::UpdateAudioDevices() {
@@ -158,6 +162,9 @@ void AudioDetailedView::UpdateScrollableList() {
     HoverHighlightView* container =
         AddScrollListCheckableItem(GetAudioDeviceName(device), device.active);
     device_map_[container] = device;
+
+    if (features::IsSystemTrayMicGainSettingEnabled())
+      AddScrollListChild(mic_gain_controller_->CreateMicGainSlider(device.id));
   }
 
   scroll_content()->SizeToPreferredSize();

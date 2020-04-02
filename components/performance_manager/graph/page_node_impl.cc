@@ -20,9 +20,10 @@ PageNodeImpl::PageNodeImpl(const WebContentsProxy& contents_proxy,
                            const std::string& browser_context_id,
                            const GURL& visible_url,
                            bool is_visible,
-                           bool is_audible)
+                           bool is_audible,
+                           base::TimeTicks visibility_change_time)
     : contents_proxy_(contents_proxy),
-      visibility_change_time_(base::TimeTicks::Now()),
+      visibility_change_time_(visibility_change_time),
       main_frame_url_(visible_url),
       browser_context_id_(browser_context_id),
       is_visible_(is_visible),

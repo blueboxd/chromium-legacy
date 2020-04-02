@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/fileapi/file_list.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -1819,6 +1820,10 @@ String HTMLInputElement::DefaultToolTip() const {
 
 String HTMLInputElement::FileStatusText() const {
   return input_type_view_->FileStatusText();
+}
+
+bool HTMLInputElement::ShouldApplyMiddleEllipsis() const {
+  return files() && files()->length() <= 1;
 }
 
 bool HTMLInputElement::ShouldAppearIndeterminate() const {

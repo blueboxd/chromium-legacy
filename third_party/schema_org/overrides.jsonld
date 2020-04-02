@@ -1,0 +1,31 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "http://schema.org/CompleteDataFeed",
+      "@type": "rdfs:Class",
+      "rdfs:comment": "A CompleteDataFeed is a DataFeed whose standard representation includes content for every item currently in the feed.",
+      "rdfs:label": "CompleteDataFeed",
+      "rdfs:subClassOf": {
+        "@id": "http://schema.org/DataFeed"
+      }
+    },
+    {
+      "@id": "http://schema.org/target",
+      "@type": "rdf:Property",
+      "http://schema.org/domainIncludes": {
+        "@id": "http://schema.org/Action"
+      },
+      "http://schema.org/rangeIncludes": [
+        {"@id": "http://schema.org/EntryPoint"},
+        {"@id": "http://schema.org/URL"}
+      ],
+      "rdfs:comment": "Indicates a target EntryPoint for an Action.",
+      "rdfs:label": "target"
+    }
+  ]
+}

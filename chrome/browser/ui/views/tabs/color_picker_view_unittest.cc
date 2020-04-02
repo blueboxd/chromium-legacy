@@ -48,10 +48,10 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
     auto color_picker = std::make_unique<ColorPickerView>(
         bubble_view(), kTestColors, tab_groups::TabGroupColorId::kBlue,
         color_selected_callback_.Get());
+    color_picker->SizeToPreferredSize();
     color_picker_ = color_picker.get();
     widget_->SetContentsView(color_picker.release());
-
-    color_picker_->SizeToPreferredSize();
+    widget_->Show();
   }
 
   void TearDown() override {

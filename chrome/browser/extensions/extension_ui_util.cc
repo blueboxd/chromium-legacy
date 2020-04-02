@@ -53,11 +53,6 @@ bool ShouldDisplayInNewTabPage(const Extension* extension,
       !IsBlockedByPolicy(extension, context);
 }
 
-bool ShouldDisplayInExtensionSettings(const Extension* extension,
-                                      content::BrowserContext* context) {
-  return extension->ShouldDisplayInExtensionSettings();
-}
-
 base::string16 GetEnabledExtensionNameForUrl(const GURL& url,
                                              content::BrowserContext* context) {
   if (!url.SchemeIs(extensions::kExtensionScheme))

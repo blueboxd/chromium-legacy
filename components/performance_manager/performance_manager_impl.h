@@ -100,7 +100,8 @@ class PerformanceManagerImpl : public PerformanceManager {
       const std::string& browser_context_id,
       const GURL& visible_url,
       bool is_visible,
-      bool is_audible);
+      bool is_audible,
+      base::TimeTicks visibility_change_time);
   static std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
       RenderProcessHostProxy proxy);
   static std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(

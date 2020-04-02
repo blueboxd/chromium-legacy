@@ -50,9 +50,12 @@ class FrecencyStore {
   // Returns the ID for the given value. If the value is not in the store,
   // return base::nullopt.
   base::Optional<unsigned int> GetId(const std::string& value);
-  // Return all stored value data. This ensures all scores have been correctly
+  // Returns all stored value data. This ensures all scores have been correctly
   // updated, and none of the scores are below the |min_score_| threshold.
   const ScoreTable& GetAll();
+
+  // Returns the number of values in the store.
+  int size() { return values_.size(); }
 
   // Returns the underlying storage data structure. This does not ensure scores
   // are correct, and should not be used for scoring items. However it is

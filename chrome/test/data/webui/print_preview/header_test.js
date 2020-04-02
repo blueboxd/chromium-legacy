@@ -11,9 +11,6 @@ header_test.suiteName = 'HeaderTest';
 /** @enum {string} */
 header_test.TestNames = {
   HeaderPrinterTypes: 'header printer types',
-  HeaderWithDuplex: 'header with duplex',
-  HeaderWithCopies: 'header with copies',
-  HeaderWithNup: 'header with nup',
   HeaderChangesForState: 'header changes for state',
   EnterprisePolicy: 'enterprise policy',
 };
@@ -38,6 +35,7 @@ suite(header_test.suiteName, function() {
         'FooName', DestinationConnectionStatus.ONLINE);
     header.state = State.READY;
     header.managed = false;
+    header.sheetCount = 1;
     fakeDataBind(model, header, 'settings');
     document.body.appendChild(header);
   });
@@ -56,42 +54,16 @@ suite(header_test.suiteName, function() {
   test(assert(header_test.TestNames.HeaderPrinterTypes), function() {
     const summary = header.$$('.summary');
     assertEquals('1 sheet of paper', summary.textContent.trim());
-    header.setSetting('pages', [1, 2, 3]);
+    header.sheetCount = 3;
     assertEquals('3 sheets of paper', summary.textContent.trim());
     setPdfDestination();
     assertEquals('3 pages', summary.textContent.trim());
-    header.setSetting('pages', [1]);
+    header.sheetCount = 1;
     assertEquals('1 page', summary.textContent.trim());
     // Verify the chrome://print case of a zero length document does not show
     // the summary.
-    header.setSetting('pages', []);
+    header.sheetCount = 0;
     assertEquals('', summary.textContent);
-  });
-
-  // Tests that the message is correctly adjusted with a duplex printer.
-  test(assert(header_test.TestNames.HeaderWithDuplex), function() {
-    const summary = header.$$('.summary');
-    assertEquals('1 sheet of paper', summary.textContent.trim());
-    header.setSetting('pages', [1, 2, 3]);
-    assertEquals('3 sheets of paper', summary.textContent.trim());
-    header.setSetting('duplex', true);
-    assertEquals('2 sheets of paper', summary.textContent.trim());
-    header.setSetting('pages', [1, 2]);
-    assertEquals('1 sheet of paper', summary.textContent.trim());
-  });
-
-  // Tests that the message is correctly adjusted with multiple copies.
-  test(assert(header_test.TestNames.HeaderWithCopies), function() {
-    const summary = header.$$('.summary');
-    assertEquals('1 sheet of paper', summary.textContent.trim());
-    header.setSetting('copies', 4);
-    assertEquals('4 sheets of paper', summary.textContent.trim());
-    header.setSetting('duplex', true);
-    assertEquals('4 sheets of paper', summary.textContent.trim());
-    header.setSetting('pages', [1, 2]);
-    assertEquals('4 sheets of paper', summary.textContent.trim());
-    header.setSetting('duplex', false);
-    assertEquals('8 sheets of paper', summary.textContent.trim());
   });
 
   // Tests that the correct message is shown for non-READY states, and that

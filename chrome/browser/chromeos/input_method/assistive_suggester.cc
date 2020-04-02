@@ -37,16 +37,16 @@ bool IsAssistiveFeatureEnabled() {
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
                                        Profile* profile)
-    : personal_info_suggester_(new PersonalInfoSuggester(engine, profile)) {}
+    : personal_info_suggester_(engine, profile) {}
 
 void AssistiveSuggester::OnFocus(int context_id) {
   context_id_ = context_id;
-  personal_info_suggester_->OnFocus(context_id_);
+  personal_info_suggester_.OnFocus(context_id_);
 }
 
 void AssistiveSuggester::OnBlur() {
   context_id_ = -1;
-  personal_info_suggester_->OnBlur();
+  personal_info_suggester_.OnBlur();
 }
 
 bool AssistiveSuggester::OnKeyEvent(
@@ -126,8 +126,8 @@ void AssistiveSuggester::Suggest(const base::string16& text,
     base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
     if (IsAssistPersonalInfoEnabled() &&
-        personal_info_suggester_->Suggest(text_before_cursor)) {
-      current_suggester_ = personal_info_suggester_;
+        personal_info_suggester_.Suggest(text_before_cursor)) {
+      current_suggester_ = &personal_info_suggester_;
     } else {
       current_suggester_ = nullptr;
     }

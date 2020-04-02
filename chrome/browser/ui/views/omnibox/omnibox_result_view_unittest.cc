@@ -60,6 +60,14 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
     // Create a widget and assign bounds to support calls to HitTestPoint.
     widget_ = CreateTestWidget();
 
+    // Install |test_screen_| after superclass setup and widget creation; on Ash
+    // both these require the Screen to work well with the underlying Shell, and
+    // TestScreen has no knowledge of that.
+    test_screen_ = std::make_unique<display::test::TestScreen>();
+    scoped_screen_override_ =
+        std::make_unique<display::test::ScopedScreenOverride>(
+            test_screen_.get());
+
     edit_model_ = std::make_unique<OmniboxEditModel>(
         nullptr, nullptr, std::make_unique<TestOmniboxClient>());
     popup_view_ =
@@ -77,6 +85,8 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
   }
 
   void TearDown() override {
+    scoped_screen_override_.reset();
+    test_screen_.reset();
     widget_.reset();
     ChromeViewsTestBase::TearDown();
   }
@@ -91,7 +101,7 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
                                 int flags,
                                 float x,
                                 float y) {
-    test_screen_.set_cursor_screen_point(gfx::Point(x, y));
+    test_screen_->set_cursor_screen_point(gfx::Point(x, y));
     return ui::MouseEvent(type, gfx::Point(x, y), gfx::Point(),
                           ui::EventTimeForNow(), flags, 0);
   }
@@ -105,8 +115,8 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
   OmniboxResultView* result_view_;
   std::unique_ptr<views::Widget> widget_;
 
-  display::test::TestScreen test_screen_;
-  display::test::ScopedScreenOverride scoped_screen_override_{&test_screen_};
+  std::unique_ptr<display::test::TestScreen> test_screen_;
+  std::unique_ptr<display::test::ScopedScreenOverride> scoped_screen_override_;
 };
 
 TEST_F(OmniboxResultViewTest, MousePressedWithLeftButtonSelectsThisResult) {

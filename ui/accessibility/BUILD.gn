@@ -33,6 +33,41 @@ mojom("ax_constants_mojo") {
   sources = [ "ax_constants.mojom" ]
 }
 
+# A tiny subset of accessibility code that's allowed to be
+# included by Blink. The rule of thumb (for now) is that it's
+# anything platform-neutral (no platform/ directory) that
+# relates to a single accessibility node (no trees, etc.).
+jumbo_component("ax_base") {
+  sources = [
+    "ax_base_export.h",
+    "ax_enum_util.cc",
+    "ax_enum_util.h",
+    "ax_node_data.cc",
+    "ax_node_data.h",
+    "ax_node_text_styles.cc",
+    "ax_node_text_styles.h",
+    "ax_relative_bounds.cc",
+    "ax_relative_bounds.h",
+    "ax_role_properties.cc",
+    "ax_role_properties.h",
+    "ax_text_utils.cc",
+    "ax_text_utils.h",
+  ]
+
+  public_deps = [
+    ":ax_constants_mojo",
+    ":ax_enums_mojo",
+    "//base",
+    "//base:i18n",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/strings",
+  ]
+
+  defines = [ "AX_BASE_IMPLEMENTATION" ]
+}
+
 jumbo_component("accessibility") {
   sources = [
     "accessibility_features.cc",
@@ -48,8 +83,6 @@ jumbo_component("accessibility") {
     "ax_active_popup.h",
     "ax_clipping_behavior.h",
     "ax_coordinate_system.h",
-    "ax_enum_util.cc",
-    "ax_enum_util.h",
     "ax_event.cc",
     "ax_event.h",
     "ax_event_bundle_sink.h",
@@ -63,25 +96,15 @@ jumbo_component("accessibility") {
     "ax_mode_observer.h",
     "ax_node.cc",
     "ax_node.h",
-    "ax_node_data.cc",
-    "ax_node_data.h",
     "ax_node_position.cc",
     "ax_node_position.h",
-    "ax_node_text_styles.cc",
-    "ax_node_text_styles.h",
     "ax_offscreen_result.h",
     "ax_position.h",
     "ax_range.h",
-    "ax_relative_bounds.cc",
-    "ax_relative_bounds.h",
-    "ax_role_properties.cc",
-    "ax_role_properties.h",
     "ax_serializable_tree.cc",
     "ax_serializable_tree.h",
     "ax_table_info.cc",
     "ax_table_info.h",
-    "ax_text_utils.cc",
-    "ax_text_utils.h",
     "ax_tree.cc",
     "ax_tree.h",
     "ax_tree_combiner.cc",
@@ -169,11 +192,12 @@ jumbo_component("accessibility") {
     }
   }
 
-  defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
+  defines = [ "AX_IMPLEMENTATION" ]
 
   deps = [ "//third_party/cld_3/src/src:cld_3" ]
 
   public_deps = [
+    ":ax_base",
     ":ax_constants_mojo",
     ":ax_enums_mojo",
     "//base",

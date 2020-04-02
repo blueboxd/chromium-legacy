@@ -146,9 +146,8 @@ void Scheduler::SetNeedsPrepareTiles() {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidSubmitCompositorFrame(
-    uint32_t frame_token,
-    std::vector<EventMetrics> events_metrics) {
+void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token,
+                                         EventMetricsSet events_metrics) {
   compositor_timing_history_->DidSubmitCompositorFrame(
       frame_token, begin_main_frame_args_.frame_id,
       last_activate_origin_frame_args_.frame_id, std::move(events_metrics));

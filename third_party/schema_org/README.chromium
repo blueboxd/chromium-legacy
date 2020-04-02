@@ -1,7 +1,7 @@
 Name: Schema.org is a collaborative, community activity with a mission to
 create, maintain, and promote schemas for structured data on the Internet.
 Short Name: schema_org
-URL: http://schema.org/version/6.0/schema.jsonld 
+URL: http://schema.org/version/6.0/schema.jsonld
 Version: 6.0
 Date: 20200121
 License: Creative Commons Attribution-ShareAlike 3.0 Unported
@@ -16,4 +16,5 @@ Blink:
 https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/document_metadata/
 
 Local Modifications:
-None.
+The overrides file was created manually and is used to apply schema changes that
+have not yet been released.

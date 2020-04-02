@@ -131,12 +131,16 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   // PaymentAppFactory::Delegate
   content::WebContents* GetWebContents() override;
-  ContentPaymentRequestDelegate* GetPaymentRequestDelegate() override;
-  PaymentRequestSpec* GetSpec() override;
+  ContentPaymentRequestDelegate* GetPaymentRequestDelegate() const override;
+  PaymentRequestSpec* GetSpec() const override;
   const GURL& GetTopOrigin() override;
   const GURL& GetFrameOrigin() override;
   const url::Origin& GetFrameSecurityOrigin() override;
   content::RenderFrameHost* GetInitiatorRenderFrameHost() const override;
+  const std::vector<mojom::PaymentMethodDataPtr>& GetMethodData()
+      const override;
+  scoped_refptr<PaymentManifestWebDataService>
+  GetPaymentManifestWebDataService() const override;
   const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
   bool IsRequestedAutofillDataAvailable() override;
   bool MayCrawlForInstallablePaymentApps() override;
@@ -144,6 +148,11 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
                              int64_t registration_id) override;
   void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
   void OnPaymentAppCreationError(const std::string& error_message) override;
+  bool SkipCreatingNativePaymentApps() const override;
+  void OnCreatingNativePaymentAppsSkipped(
+      const content::PaymentAppProvider::PaymentApps& apps,
+      const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
+          installable_apps) override;
   void OnDoneCreatingPaymentApps() override;
 
   // PaymentResponseHelper::Delegate

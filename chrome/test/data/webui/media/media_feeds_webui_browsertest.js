@@ -38,7 +38,8 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('item->is_family_friendly = true;');
     GEN('item->action_status =');
     GEN('  media_feeds::mojom::MediaFeedItemActionStatus::kPotential;');
-    GEN('item->genre = base::ASCIIToUTF16("test");');
+    GEN('item->genre.push_back("test");');
+    GEN('item->genre.push_back("test2");');
     GEN('item->duration = base::TimeDelta::FromSeconds(30);');
     GEN('item->live = media_feeds::mojom::LiveDetails::New();');
     GEN('item->live->start_time = base::Time::FromDeltaSinceWindowsEpoch(');
@@ -203,7 +204,8 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
       assertEquals(
           'MPAA PG-13, agency TEST2',
           feedItemsContents.childNodes[9].textContent.trim());
-      assertEquals('test', feedItemsContents.childNodes[10].textContent.trim());
+      assertEquals(
+          'test, test2', feedItemsContents.childNodes[10].textContent.trim());
       assertTrue(
           feedItemsContents.childNodes[11].textContent.trim().includes('Live'));
       assertEquals(

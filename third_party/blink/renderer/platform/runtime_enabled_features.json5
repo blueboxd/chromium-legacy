@@ -654,6 +654,7 @@
     },
     {
       name: "EventTiming",
+      origin_trial_feature_name: "EventTiming",
       status: "experimental",
     },
     {
@@ -923,6 +924,11 @@
     {
       name: "LayoutNGFlexBox",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
+      status: "experimental",
+    },
+    {
+      name: "LayoutNGForControls",
+      depends_on: ["LayoutNG"],
       status: "experimental",
     },
     {

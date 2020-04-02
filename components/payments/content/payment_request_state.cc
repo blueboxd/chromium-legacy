@@ -100,12 +100,12 @@ content::WebContents* PaymentRequestState::GetWebContents() {
   return web_contents_;
 }
 
-ContentPaymentRequestDelegate*
-PaymentRequestState::GetPaymentRequestDelegate() {
+ContentPaymentRequestDelegate* PaymentRequestState::GetPaymentRequestDelegate()
+    const {
   return payment_request_delegate_;
 }
 
-PaymentRequestSpec* PaymentRequestState::GetSpec() {
+PaymentRequestSpec* PaymentRequestState::GetSpec() const {
   return spec_;
 }
 
@@ -124,6 +124,16 @@ const url::Origin& PaymentRequestState::GetFrameSecurityOrigin() {
 content::RenderFrameHost* PaymentRequestState::GetInitiatorRenderFrameHost()
     const {
   return initiator_render_frame_host_;
+}
+
+const std::vector<mojom::PaymentMethodDataPtr>&
+PaymentRequestState::GetMethodData() const {
+  return GetSpec()->method_data();
+}
+
+scoped_refptr<PaymentManifestWebDataService>
+PaymentRequestState::GetPaymentManifestWebDataService() const {
+  return GetPaymentRequestDelegate()->GetPaymentManifestWebDataService();
 }
 
 const std::vector<autofill::AutofillProfile*>&
@@ -164,6 +174,17 @@ void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {
 void PaymentRequestState::OnPaymentAppCreationError(
     const std::string& error_message) {
   get_all_payment_apps_error_ = error_message;
+}
+
+bool PaymentRequestState::SkipCreatingNativePaymentApps() const {
+  return false;
+}
+
+void PaymentRequestState::OnCreatingNativePaymentAppsSkipped(
+    const content::PaymentAppProvider::PaymentApps& unused_apps,
+    const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
+        unused_installable_apps) {
+  NOTREACHED();
 }
 
 void PaymentRequestState::OnDoneCreatingPaymentApps() {

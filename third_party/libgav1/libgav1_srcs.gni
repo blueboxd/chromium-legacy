@@ -7,6 +7,7 @@ gav1_common_sources = [
   "//third_party/libgav1/src/src/decoder_impl.cc",
   "//third_party/libgav1/src/src/decoder_impl.h",
   "//third_party/libgav1/src/src/decoder_settings.cc",
+  "//third_party/libgav1/src/src/decoder_state.h",
   "//third_party/libgav1/src/src/film_grain.cc",
   "//third_party/libgav1/src/src/film_grain.h",
   "//third_party/libgav1/src/src/frame_buffer.cc",
@@ -22,8 +23,6 @@ gav1_common_sources = [
   "//third_party/libgav1/src/src/motion_vector.h",
   "//third_party/libgav1/src/src/obu_parser.cc",
   "//third_party/libgav1/src/src/obu_parser.h",
-  "//third_party/libgav1/src/src/post_filter.cc",
-  "//third_party/libgav1/src/src/post_filter.h",
   "//third_party/libgav1/src/src/prediction_mask.cc",
   "//third_party/libgav1/src/src/prediction_mask.h",
   "//third_party/libgav1/src/src/quantizer.cc",
@@ -74,6 +73,8 @@ gav1_dsp_sources = [
   "//third_party/libgav1/src/src/dsp/arm/mask_blend_neon.h",
   "//third_party/libgav1/src/src/dsp/arm/motion_field_projection_neon.cc",
   "//third_party/libgav1/src/src/dsp/arm/motion_field_projection_neon.h",
+  "//third_party/libgav1/src/src/dsp/arm/motion_vector_search_neon.cc",
+  "//third_party/libgav1/src/src/dsp/arm/motion_vector_search_neon.h",
   "//third_party/libgav1/src/src/dsp/arm/obmc_neon.cc",
   "//third_party/libgav1/src/src/dsp/arm/obmc_neon.h",
   "//third_party/libgav1/src/src/dsp/arm/super_res_neon.cc",
@@ -112,6 +113,8 @@ gav1_dsp_sources = [
   "//third_party/libgav1/src/src/dsp/mask_blend.h",
   "//third_party/libgav1/src/src/dsp/motion_field_projection.cc",
   "//third_party/libgav1/src/src/dsp/motion_field_projection.h",
+  "//third_party/libgav1/src/src/dsp/motion_vector_search.cc",
+  "//third_party/libgav1/src/src/dsp/motion_vector_search.h",
   "//third_party/libgav1/src/src/dsp/obmc.cc",
   "//third_party/libgav1/src/src/dsp/obmc.h",
   "//third_party/libgav1/src/src/dsp/super_res.cc",
@@ -122,6 +125,8 @@ gav1_dsp_sources = [
   "//third_party/libgav1/src/src/dsp/weight_mask.h",
   "//third_party/libgav1/src/src/dsp/x86/average_blend_sse4.cc",
   "//third_party/libgav1/src/src/dsp/x86/average_blend_sse4.h",
+  "//third_party/libgav1/src/src/dsp/x86/cdef_sse4.cc",
+  "//third_party/libgav1/src/src/dsp/x86/cdef_sse4.h",
   "//third_party/libgav1/src/src/dsp/x86/common_sse4.h",
   "//third_party/libgav1/src/src/dsp/x86/convolve_sse4.cc",
   "//third_party/libgav1/src/src/dsp/x86/convolve_sse4.h",
@@ -146,6 +151,8 @@ gav1_dsp_sources = [
   "//third_party/libgav1/src/src/dsp/x86/super_res_sse4.cc",
   "//third_party/libgav1/src/src/dsp/x86/super_res_sse4.h",
   "//third_party/libgav1/src/src/dsp/x86/transpose_sse4.h",
+  "//third_party/libgav1/src/src/dsp/x86/warp_sse4.cc",
+  "//third_party/libgav1/src/src/dsp/x86/warp_sse4.h",
   "//third_party/libgav1/src/src/dsp/x86/weight_mask_sse4.cc",
   "//third_party/libgav1/src/src/dsp/x86/weight_mask_sse4.h",
 ]
@@ -158,6 +165,15 @@ gav1_gav1_sources = [
   "//third_party/libgav1/src/src/gav1/status_code.h",
   "//third_party/libgav1/src/src/gav1/symbol_visibility.h",
   "//third_party/libgav1/src/src/gav1/version.h",
+]
+
+gav1_post_filter_sources = [
+  "//third_party/libgav1/src/src/post_filter.h",
+  "//third_party/libgav1/src/src/post_filter/cdef.cc",
+  "//third_party/libgav1/src/src/post_filter/deblock.cc",
+  "//third_party/libgav1/src/src/post_filter/loop_restoration.cc",
+  "//third_party/libgav1/src/src/post_filter/post_filter.cc",
+  "//third_party/libgav1/src/src/post_filter/super_res.cc",
 ]
 
 gav1_tile_sources = [
@@ -186,6 +202,7 @@ gav1_utils_sources = [
   "//third_party/libgav1/src/src/utils/constants.h",
   "//third_party/libgav1/src/src/utils/cpu.cc",
   "//third_party/libgav1/src/src/utils/cpu.h",
+  "//third_party/libgav1/src/src/utils/dynamic_buffer.h",
   "//third_party/libgav1/src/src/utils/entropy_decoder.cc",
   "//third_party/libgav1/src/src/utils/entropy_decoder.h",
   "//third_party/libgav1/src/src/utils/executor.cc",

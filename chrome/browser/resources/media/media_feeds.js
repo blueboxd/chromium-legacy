@@ -198,10 +198,13 @@ class MediaFeedsTableDelegate {
       a.textContent = data.name;
       a.target = '_blank';
       td.appendChild(a);
-    } else if (key == 'name' || key == 'genre') {
+    } else if (key == 'name') {
       // Format a mojo string16.
       td.textContent =
           decodeString16(/** @type {mojoBase.mojom.String16} */ (data));
+    } else if (key == 'genre') {
+      // Format an array of strings.
+      td.textContent = data.join(', ');
     } else if (key == 'live') {
       // Format LiveDetails.
       td.textContent = 'Live';

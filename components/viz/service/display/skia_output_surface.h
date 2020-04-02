@@ -83,7 +83,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   virtual void MakePromiseSkImage(
       ExternalUseClient::ImageContext* image_context) = 0;
 
-  // Make a promise SkImage from the given |contexts| and the |yuv_color_space|.
+  // Make a promise SkImage from the given |contexts| and |image_color_space|.
   // For YUV format, at least three resource contexts should be provided.
   // contexts[0] contains pixels from y panel, contexts[1] contains pixels
   // from u panel, contexts[2] contains pixels from v panel. For NV12 format,
@@ -92,8 +92,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // has_alpha is true, the last item in contexts contains alpha panel.
   virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
       const std::vector<ExternalUseClient::ImageContext*>& contexts,
-      SkYUVColorSpace yuv_color_space,
-      sk_sp<SkColorSpace> dst_color_space,
+      sk_sp<SkColorSpace> image_color_space,
       bool has_alpha) = 0;
 
   // Called if SwapBuffers() will be skipped.

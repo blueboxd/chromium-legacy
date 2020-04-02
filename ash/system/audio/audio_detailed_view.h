@@ -16,6 +16,8 @@ struct VectorIcon;
 }
 
 namespace ash {
+class MicGainSliderController;
+
 namespace tray {
 
 class AudioDetailedView : public TrayDetailedView {
@@ -44,6 +46,7 @@ class AudioDetailedView : public TrayDetailedView {
 
   typedef std::map<views::View*, chromeos::AudioDevice> AudioDeviceMap;
 
+  std::unique_ptr<MicGainSliderController> mic_gain_controller_;
   chromeos::AudioDeviceList output_devices_;
   chromeos::AudioDeviceList input_devices_;
   AudioDeviceMap device_map_;

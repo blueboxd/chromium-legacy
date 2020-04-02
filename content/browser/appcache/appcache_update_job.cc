@@ -130,12 +130,12 @@ ResourceCheck CanUseExistingResource(
   //
   // The logic below is a workaround while a longer-term fix gets developed and
   // deployed. We'll consider all cache entries with invalid times to have been
-  // created on Sun, Jun 16 2019.
+  // created on Tue, Dec 31 2019.
   //
   // TODO(cmp): Add timeline info here.
   bool found_corruption = false;
   static constexpr base::Time::Exploded kInvalidTimePlaceholderExploded = {
-      2019, 7, 0, 7, 0, 0, 0, 0};
+      2019, 12, 2, 31, 0, 0, 0, 0};
   if (request_time.is_null()) {
     bool conversion_succeeded = base::Time::FromUTCExploded(
         kInvalidTimePlaceholderExploded, &request_time);

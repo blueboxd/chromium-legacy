@@ -227,21 +227,30 @@ def main():
         if os.path.exists(os.path.join(path, 'cl.exe')):
           vc_bin_dir = os.path.realpath(path)
           break
+      assert vc_bin_dir, "cl.exe is not found, check if it is installed."
 
       for path in env['LIB'].split(';'):
         if os.path.exists(os.path.join(path, 'msvcrt.lib')):
           vc_lib_path = os.path.realpath(path)
           break
+      assert vc_lib_path, "msvcrt.lib is not found, check if it is installed."
 
       for path in env['LIB'].split(';'):
         if os.path.exists(os.path.join(path, 'atls.lib')):
           vc_lib_atlmfc_path = os.path.realpath(path)
           break
+      if (target_store != True):
+        # Path is assumed to exist for desktop applications.
+        assert vc_lib_atlmfc_path, (
+            "Microsoft.VisualStudio.Component.VC.ATLMFC " +
+            "is not found, check if it is installed.")
 
       for path in env['LIB'].split(';'):
         if os.path.exists(os.path.join(path, 'User32.Lib')):
           vc_lib_um_path = os.path.realpath(path)
           break
+      assert vc_lib_um_path, (
+          "User32.lib is not found, check if it is installed.")
 
       # The separator for INCLUDE here must match the one used in
       # _LoadToolchainEnv() above.
@@ -271,23 +280,16 @@ def main():
         with open(environment_block_name, 'w') as f:
           f.write(env_block)
 
-  assert vc_bin_dir
   print('vc_bin_dir = ' + gn_helpers.ToGNString(vc_bin_dir))
   assert include_I
   print('include_flags_I = ' + gn_helpers.ToGNString(include_I))
   assert include_imsvc
   print('include_flags_imsvc = ' + gn_helpers.ToGNString(include_imsvc))
-  assert vc_lib_path
   print('vc_lib_path = ' + gn_helpers.ToGNString(vc_lib_path))
-  if (target_store != True):
-    # Path is assumed to exist for desktop applications.
-    assert vc_lib_atlmfc_path, ("Microsoft.VisualStudio.Component.VC.ATLMFC " +
-                                "is not found, check if it's installed.")
   # Possible atlmfc library path gets introduced in the future for store thus
   # output result if a result exists.
   if (vc_lib_atlmfc_path != ''):
     print('vc_lib_atlmfc_path = ' + gn_helpers.ToGNString(vc_lib_atlmfc_path))
-  assert vc_lib_um_path
   print('vc_lib_um_path = ' + gn_helpers.ToGNString(vc_lib_um_path))
   print('paths = ' + gn_helpers.ToGNString(env['PATH']))
   assert libpath_flags

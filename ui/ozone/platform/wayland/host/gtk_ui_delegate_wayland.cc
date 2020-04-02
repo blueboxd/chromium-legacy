@@ -43,4 +43,10 @@ bool GtkUiDelegateWayland::SetGdkWindowTransientFor(
   return false;
 }
 
+void GtkUiDelegateWayland::ShowGtkWindow(GtkWindow* window) {
+  // TODO(crbug.com/1008755): Check if gtk_window_present_with_time is needed
+  // here as well, similarly to what is done in X11 impl.
+  gtk_window_present(window);
+}
+
 }  // namespace ui

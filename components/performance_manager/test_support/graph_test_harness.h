@@ -108,9 +108,11 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
       const std::string& browser_context_id = std::string(),
       const GURL& url = GURL(),
       bool is_visible = false,
-      bool is_audible = false) {
+      bool is_audible = false,
+      base::TimeTicks visibility_change_time = base::TimeTicks::Now()) {
     return std::make_unique<PageNodeImpl>(wc_proxy, browser_context_id, url,
-                                          is_visible, is_audible);
+                                          is_visible, is_audible,
+                                          visibility_change_time);
   }
 };
 

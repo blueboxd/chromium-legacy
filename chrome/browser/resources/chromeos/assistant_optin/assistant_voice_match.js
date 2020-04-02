@@ -17,6 +17,12 @@ Polymer({
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   /**
+   * Whether voice match is the first screen of the flow.
+   * @type {boolean}
+   */
+  isFirstScreen: false,
+
+  /**
    * Current recording index.
    * @type {number}
    * @private
@@ -158,6 +164,15 @@ Polymer({
    * Signal from host to show the screen.
    */
   onShow() {
+    if (this.isFirstScreen) {
+      // If voice match is the first screen, slightly delay showing the content
+      // for the lottie animations to load.
+      this.fire('loading');
+      window.setTimeout(function() {
+        this.fire('loaded');
+      }.bind(this), 100);
+    }
+
     chrome.send('login.AssistantOptInFlowScreen.VoiceMatchScreen.screenShown');
     this.$['voice-match-lottie'].setPlay(true);
     this.$['already-setup-lottie'].setPlay(true);

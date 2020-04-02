@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.tab.TabSelectionType.FROM_NEW;
 
+import android.app.Activity;
 import android.content.Context;
 
 import org.junit.Before;
@@ -32,11 +33,13 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Unit tests for OfflinePageUtils.
@@ -55,9 +58,12 @@ public class OfflinePageTabObserverTest {
     @Mock private SnackbarManager mSnackbarManager;
     @Mock private SnackbarController mSnackbarController;
     @Mock
-    private TabImpl mTab;
+    private Tab mTab;
     @Mock
     private OfflinePageUtils.Internal mOfflinePageUtils;
+    @Mock
+    private WindowAndroid mWindowAndroid;
+    private WeakReference<Activity> mActivityRef;
 
     private OfflinePageTabObserver createObserver() {
         OfflinePageTabObserver observer = spy(new OfflinePageTabObserver(
@@ -76,13 +82,16 @@ public class OfflinePageTabObserverTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        mActivityRef = new WeakReference<>(mActivity);
+
         // Setting up a mock tab. These are the values common to most tests, but individual
         // tests might easily overwrite them.
         doReturn(TAB_ID).when(mTab).getId();
         doReturn(TAB_URL).when(mTab).getUrlString();
         doReturn(false).when(mTab).isFrozen();
         doReturn(false).when(mTab).isHidden();
-        doReturn(mActivity).when(mTab).getActivity();
+        doReturn(mWindowAndroid).when(mTab).getWindowAndroid();
+        doReturn(mActivityRef).when(mWindowAndroid).getActivity();
 
         // Setting up mock snackbar manager.
         doNothing().when(mSnackbarManager).dismissSnackbars(eq(mSnackbarController));

@@ -1976,3 +1976,20 @@ class PixelTestPages(object):
         tolerance=tolerance_dc,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
       ]
+
+  @staticmethod
+  def HdrTestPages(base_name):
+    return [
+      PixelTestPage(
+        'pixel_canvas2d.html',
+        base_name + '_Canvas2DRedBoxScrgbLinear',
+        test_rect=[0, 0, 300, 300],
+        browser_args=['--force-color-profile=scrgb-linear']),
+
+      PixelTestPage(
+        'pixel_canvas2d.html',
+        base_name + '_Canvas2DRedBoxHdr10',
+        test_rect=[0, 0, 300, 300],
+        browser_args=['--force-color-profile=hdr10']),
+    ]
+

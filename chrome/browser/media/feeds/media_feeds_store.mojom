@@ -245,7 +245,7 @@ struct MediaFeedItem {
   array<ContentRating> content_ratings;
 
   // The genre of this feed item.
-  mojo_base.mojom.String16? genre;
+  array<string> genre;
 
   // The duration of this feed item.
   mojo_base.mojom.TimeDelta? duration;

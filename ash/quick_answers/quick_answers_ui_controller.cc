@@ -89,10 +89,11 @@ void QuickAnswersUiController::ShowRetry() {
 
 void QuickAnswersUiController::UpdateQuickAnswersBounds(
     const gfx::Rect& anchor_bounds) {
-  if (!quick_answers_view_)
-    return;
+  if (quick_answers_view_)
+    quick_answers_view_->UpdateAnchorViewBounds(anchor_bounds);
 
-  quick_answers_view_->UpdateAnchorViewBounds(anchor_bounds);
+  if (user_consent_view_)
+    user_consent_view_->UpdateAnchorViewBounds(anchor_bounds);
 }
 
 void QuickAnswersUiController::CreateUserConsentView(

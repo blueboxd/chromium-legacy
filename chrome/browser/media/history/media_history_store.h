@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
@@ -155,6 +156,13 @@ class MediaHistoryStore {
       const int64_t feed_id,
       base::OnceCallback<
           void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)> callback);
+
+  void GetPendingSafeSearchCheckMediaFeedItems(
+      base::OnceCallback<
+          void(MediaHistoryKeyedService::PendingSafeSearchCheckList)> callback);
+
+  void StoreMediaFeedItemSafeSearchResults(
+      std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
 

@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.payments.PaymentApp;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentUisShowStateReconciler;
 import org.chromium.chrome.browser.payments.ShippingStrings;
@@ -66,7 +67,8 @@ import java.util.List;
  * The PaymentRequest UI.
  */
 public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.OnClickListener,
-                                         PaymentRequestSection.SectionDelegate {
+                                         PaymentRequestSection.SectionDelegate,
+                                         PauseResumeWithNativeObserver {
     @IntDef({DataType.SHIPPING_ADDRESSES, DataType.SHIPPING_OPTIONS, DataType.CONTACT_DETAILS,
             DataType.PAYMENT_METHODS})
     @Retention(RetentionPolicy.SOURCE)
@@ -1440,4 +1442,18 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
             mDialog.hide();
         }
     }
+
+    // Implement PauseResumeWithNativeObserver:
+    @Override
+    public void onResumeWithNative() {
+        // When users come back from an external activity (e.g., app-picker/webauthn), the PR UI
+        // somehow shows up even though it's set to GONE (crbug.com/1030416 and
+        // crbug.com/1051786). Here we use a workaround to fix it - refresh the dialog window
+        // from time to time to force the visual state to respect its visibility attribute.
+        mDialog.refresh();
+    }
+
+    // Implement PauseResumeWithNativeObserver:
+    @Override
+    public void onPauseWithNative() {}
 }

@@ -2239,6 +2239,24 @@
       'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
   },
+  'views_unittests_wayland': {
+    'modifications': {
+      'Linux Ozone Tester (Wayland)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter',
+        ],
+      },
+    },
+  },
+  'views_unittests_x11': {
+    'modifications': {
+      'Linux Ozone Tester (X11)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',
+        ],
+      },
+    },
+  },
   'viz_unittests': {
     'modifications': {
       'android-marshmallow-x86-fyi-rel': {

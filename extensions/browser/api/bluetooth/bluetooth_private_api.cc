@@ -54,6 +54,21 @@ device::BluetoothTransport GetBluetoothTransport(bt::Transport transport) {
       return device::BLUETOOTH_TRANSPORT_INVALID;
   }
 }
+
+bool IsActualConnectionFailure(bt_private::ConnectResultType result) {
+  DCHECK(result != bt_private::CONNECT_RESULT_TYPE_SUCCESS);
+
+  switch (result) {
+    case bt_private::CONNECT_RESULT_TYPE_INPROGRESS:
+    case bt_private::CONNECT_RESULT_TYPE_AUTHCANCELED:
+    case bt_private::CONNECT_RESULT_TYPE_AUTHREJECTED:
+      // The connection is not a failure if it's still in progress, the user
+      // canceled auth, or the user entered incorrect auth details.
+      return false;
+    default:
+      return true;
+  }
+}
 #endif  // defined(OS_CHROMEOS)
 
 std::string GetListenerId(const EventListenerInfo& details) {
@@ -633,9 +648,15 @@ bool BluetoothPrivateRecordPairingFunction::CreateParams() {
 void BluetoothPrivateRecordPairingFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
 #if defined(OS_CHROMEOS)
-  device::RecordPairingResult(
-      params_->success, GetBluetoothTransport(params_->transport),
-      base::TimeDelta::FromMilliseconds(params_->pairing_duration_ms));
+  bt_private::ConnectResultType result = params_->result;
+  bool success = (result == bt_private::CONNECT_RESULT_TYPE_SUCCESS);
+
+  // Only emit metrics if this is a success or a true connection failure.
+  if (success || IsActualConnectionFailure(result)) {
+    device::RecordPairingResult(
+        success, GetBluetoothTransport(params_->transport),
+        base::TimeDelta::FromMilliseconds(params_->pairing_duration_ms));
+  }
 #endif  // defined(OS_CHROMEOS)
 
   Respond(NoArguments());
@@ -657,8 +678,14 @@ bool BluetoothPrivateRecordReconnectionFunction::CreateParams() {
 void BluetoothPrivateRecordReconnectionFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
 #if defined(OS_CHROMEOS)
-  device::RecordUserInitiatedReconnectionAttemptResult(
-      params_->success, device::BluetoothUiSurface::kSettings);
+  bt_private::ConnectResultType result = params_->result;
+  bool success = (result == bt_private::CONNECT_RESULT_TYPE_SUCCESS);
+
+  // Only emit metrics if this is a success or a true connection failure.
+  if (success || IsActualConnectionFailure(result)) {
+    device::RecordUserInitiatedReconnectionAttemptResult(
+        success, device::BluetoothUiSurface::kSettings);
+  }
 #endif  // defined(OS_CHROMEOS)
 
   Respond(NoArguments());

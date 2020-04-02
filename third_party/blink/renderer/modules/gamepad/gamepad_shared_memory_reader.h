@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace base {
 class ReadOnlySharedMemoryRegion;
@@ -64,7 +65,9 @@ class GamepadSharedMemoryReader
 
   bool ever_interacted_with_ = false;
 
-  HeapMojoReceiver<device::mojom::blink::GamepadObserver> receiver_;
+  HeapMojoReceiver<device::mojom::blink::GamepadObserver,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
   mojo::Remote<device::mojom::blink::GamepadMonitor> gamepad_monitor_remote_;
   blink::GamepadListener* listener_ = nullptr;
 };

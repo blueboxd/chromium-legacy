@@ -97,29 +97,30 @@
           eventSender.mouseUp();
           return;
       }
-      if (keys.length > 1)
-        reject(new Error("No support for a sequence of multiple keys"));
-      let eventSenderKeys = keys;
-      let charCode = keys.charCodeAt(0);
-      // See https://w3c.github.io/webdriver/#keyboard-actions and
-      // EventSender::KeyDown().
-      if (charCode == 0xE004) {
-        eventSenderKeys = "Tab";
-      } else if (charCode == 0xE050) {
-        eventSenderKeys = "ShiftRight";
-      } else if (charCode == 0xE012) {
-        eventSenderKeys = "ArrowLeft";
-      } else if (charCode == 0xE013) {
-        eventSenderKeys = "ArrowUp";
-      } else if (charCode == 0xE014) {
-        eventSenderKeys = "ArrowRight";
-      } else if (charCode == 0xE015) {
-        eventSenderKeys = "ArrowDown";
-      } else if (charCode >= 0xE000 && charCode <= 0xF8FF) {
-        reject(new Error("No support for this code: U+" + charCode.toString(16)));
-      }
       window.requestAnimationFrame(() => {
-        window.eventSender.keyDown(eventSenderKeys);
+        for(var i = 0; i < keys.length; ++i) {
+          let eventSenderKeys = keys[i];
+          let charCode = keys.charCodeAt(i);
+          // See https://w3c.github.io/webdriver/#keyboard-actions and
+          // EventSender::KeyDown().
+          if (charCode == 0xE004) {
+            eventSenderKeys = "Tab";
+          } else if (charCode == 0xE050) {
+            eventSenderKeys = "ShiftRight";
+          } else if (charCode == 0xE012) {
+            eventSenderKeys = "ArrowLeft";
+          } else if (charCode == 0xE013) {
+            eventSenderKeys = "ArrowUp";
+          } else if (charCode == 0xE014) {
+            eventSenderKeys = "ArrowRight";
+          } else if (charCode == 0xE015) {
+            eventSenderKeys = "ArrowDown";
+          } else if (charCode >= 0xE000 && charCode <= 0xF8FF) {
+            reject(new Error("No support for this code: U+" + charCode.toString(16)));
+            return;
+          }
+          window.eventSender.keyDown(eventSenderKeys);
+        }
         resolve();
       });
     });

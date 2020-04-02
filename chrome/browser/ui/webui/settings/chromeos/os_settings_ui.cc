@@ -133,21 +133,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
   InitOSWebUIHandlers(html_source);
 
-  // TODO(https://crbug.com/1063412): Move the block below to
-  // os_settings_localized_strings_provider.cc.
-  static constexpr webui::LocalizedString kScrollStrings[] = {
-      {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
-      {"mouseScrollSpeed", IDS_SETTINGS_MOUSE_SCROLL_SPEED_LABEL},
-      {"mouseScrollAccelerationLabel",
-       IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL},
-      {"touchpadScrollAccelerationLabel",
-       IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
-  };
-  AddLocalizedStringsBulk(html_source, kScrollStrings);
-  html_source->AddBoolean(
-      "allowScrollSettings",
-      base::FeatureList::IsEnabled(::features::kAllowScrollSettings));
-
   // This handler is for chrome://os-settings.
   html_source->AddBoolean("isOSSettings", true);
 

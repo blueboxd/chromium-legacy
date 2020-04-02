@@ -51,7 +51,6 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
@@ -168,8 +167,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // Unordered list of event types we will throttle if multiple events of the given type are sent
     // in quick succession.
-    private Set<Integer> mEventsToThrottle = new HashSet<Integer>(Arrays.asList(
-            AccessibilityEvent.TYPE_VIEW_SCROLLED, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED));
+    // TODO (mschillaci) - No event types added in M83 to disable all throttling.
+    private Set<Integer> mEventsToThrottle = new HashSet<Integer>();
 
     // For events being throttled (see: |mEventsToThrottle|), this array will map the eventType
     // to the last time (long in milliseconds) such an event has been sent.
@@ -181,7 +180,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // This array maps a given virtualViewId to an |AccessibilityNodeInfo| for that view. We use
     // this to update a node quickly rather than building from one scratch each time.
+    // TODO (mschillaci) - Nothing is added to the cache in M83, it is disabled.
     private SparseArray<AccessibilityNodeInfo> mNodeInfoCache = new SparseArray<>();
+
+    // TODO (mschillaci) - Revert this change to re-enable throttling.
+    private Runnable mSendWindowContentChangedRunnable;
+    private static final int WINDOW_CONTENT_CHANGED_DELAY_MS = 500;
 
     /**
      * Create a WebContentsAccessibilityImpl object.
@@ -374,7 +378,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             if (WebContentsAccessibilityImplJni.get().populateAccessibilityNodeInfo(
                         mNativeObj, WebContentsAccessibilityImpl.this, info, virtualViewId)) {
                 // After successfully populating this node, add it to our cache then return.
-                mNodeInfoCache.put(virtualViewId, AccessibilityNodeInfo.obtain(info));
+                // TODO (mschillaci) - Uncomment this line to re-enable caching.
+                // mNodeInfoCache.put(virtualViewId, AccessibilityNodeInfo.obtain(info));
                 return info;
             } else {
                 info.recycle();
@@ -412,7 +417,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     public void setObscuredByAnotherView(boolean isObscured) {
         if (isObscured != mIsObscuredByAnotherView) {
             mIsObscuredByAnotherView = isObscured;
-            sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            // TODO (mschillaci) - Revert this change to re-enable throttling.
+            // sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
         }
     }
 
@@ -791,7 +798,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         // Invalidate the container view, since the chrome accessibility tree is now
         // ready and listed as the child of the container view.
-        sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        // TODO (mschillaci) - Revert this change to re-enable throttling.
+        // sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        sendWindowContentChangedOnView();
 
         // (Re-) focus focused element, since we weren't able to create an
         // AccessibilityNodeInfo for this element before.
@@ -1060,7 +1069,30 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
      */
     @CalledByNative
     private void sendDelayedWindowContentChangedEvent() {
-        sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        // TODO (mschillaci) - Revert this change to re-enable throttling.
+        if (mSendWindowContentChangedRunnable != null) return;
+
+        mSendWindowContentChangedRunnable = new Runnable() {
+            @Override
+            public void run() {
+                sendWindowContentChangedOnView();
+            }
+        };
+
+        mView.postDelayed(mSendWindowContentChangedRunnable, WINDOW_CONTENT_CHANGED_DELAY_MS);
+    }
+
+    private void sendWindowContentChangedOnView() {
+        if (mSendWindowContentChangedRunnable != null) {
+            mView.removeCallbacks(mSendWindowContentChangedRunnable);
+            mSendWindowContentChangedRunnable = null;
+        }
+        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+    }
+
+    private void sendWindowContentChangedOnVirtualView(int virtualViewId) {
+        sendAccessibilityEvent(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        // sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
@@ -1079,6 +1111,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         }
 
         // Check whether this type of event is one we want to throttle, and if not then send it
+        // TODO (mschillaci) - Will always return true until we enable throttling (see line: 171).
         if (!mEventsToThrottle.contains(eventType)) {
             AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
             if (event == null) return;
@@ -1282,9 +1315,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 mNativeObj, WebContentsAccessibilityImpl.this);
         if (rootId != mCurrentRootId) {
             mCurrentRootId = rootId;
-            sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            // TODO (mschillaci) - Revert this change to re-enable throttling.
+            // sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            sendWindowContentChangedOnView();
         } else {
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            // TODO (mschillaci) - Revert this change to re-enable throttling.
+            // sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            sendWindowContentChangedOnVirtualView(id);
         }
     }
 
@@ -1294,7 +1331,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mAccessibilityFocusRect = null;
         mUserHasTouchExplored = false;
         // Invalidate the host, since its child is now gone.
-        sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        // TODO (mschillaci) - Revert this change to re-enable throttling.
+        // sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        sendWindowContentChangedOnView();
     }
 
     @CalledByNative
@@ -1397,6 +1436,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             addAction(node, ACTION_SET_TEXT);
             addAction(node, AccessibilityNodeInfo.ACTION_PASTE);
 
+            if (ACTION_IME_ENTER != 0) {
+                addAction(node, ACTION_IME_ENTER);
+            }
+
             if (hasNonEmptyValue) {
                 addAction(node, AccessibilityNodeInfo.ACTION_SET_SELECTION);
                 addAction(node, AccessibilityNodeInfo.ACTION_CUT);
@@ -1460,10 +1503,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         if (isRangeType) {
             addAction(node, ACTION_SET_PROGRESS);
-        }
-
-        if (isForm && ACTION_IME_ENTER != 0) {
-            addAction(node, ACTION_IME_ENTER);
         }
     }
 

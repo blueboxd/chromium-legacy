@@ -7,18 +7,28 @@
 
 #include <stdint.h>
 
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+
+namespace webrtc {
+class TransformableAudioFrameInterface;
+class TransformableFrameInterface;
+}  // namespace webrtc
 
 namespace blink {
 
 class DOMArrayBuffer;
 
-class RTCEncodedAudioFrame final : public ScriptWrappable {
+class MODULES_EXPORT RTCEncodedAudioFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  RTCEncodedAudioFrame() = default;
+  explicit RTCEncodedAudioFrame(
+      std::unique_ptr<webrtc::TransformableFrameInterface> webrtc_frame);
+  explicit RTCEncodedAudioFrame(
+      std::unique_ptr<webrtc::TransformableAudioFrameInterface> webrtc_frame);
 
   // rtc_encoded_audio_frame.idl implementation.
   uint64_t timestamp() const;
@@ -29,10 +39,17 @@ class RTCEncodedAudioFrame final : public ScriptWrappable {
   Vector<uint32_t> contributingSources() const;
   String toString() const;
 
+  // Returns and transfers ownership of the internal WebRTC frame
+  // backing this RTCEncodedVideoFrame, leaving the RTCEncodedVideoFrame
+  // without a delegate WebRTC frame.
+  std::unique_ptr<webrtc::TransformableFrameInterface> PassDelegate();
+
   void Trace(Visitor*) override;
 
  private:
   mutable Member<DOMArrayBuffer> frame_data_;
+  Vector<uint32_t> contributing_sources_;
+  std::unique_ptr<webrtc::TransformableFrameInterface> webrtc_frame_;
 };
 
 }  // namespace blink

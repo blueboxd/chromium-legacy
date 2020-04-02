@@ -54,6 +54,7 @@ if (enable_libgav1_decoder) {
 
     sources = gav1_common_sources
     sources += gav1_gav1_sources
+    sources += gav1_post_filter_sources
     sources += gav1_tile_sources
   }
 }

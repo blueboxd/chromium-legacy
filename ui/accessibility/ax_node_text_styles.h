@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_base_export.h"
 
 namespace ui {
 
@@ -15,7 +15,7 @@ namespace ui {
 // a snapshot at a given time and is not intended to be held for periods of
 // time. For this reason, it is a move-only class, to encourage deliberate
 // short-term usage.
-struct AX_EXPORT AXNodeTextStyles {
+struct AX_BASE_EXPORT AXNodeTextStyles {
   AXNodeTextStyles();
 
   // Move-only class, explicitly delete copy-construction and assignment

@@ -99,7 +99,7 @@ class CC_EXPORT CompositorTimingHistory {
       uint32_t frame_token,
       const viz::BeginFrameId& current_frame_id,
       const viz::BeginFrameId& last_activated_frame_id,
-      std::vector<EventMetrics> events_metrics);
+      EventMetricsSet events_metrics);
   void DidNotProduceFrame(const viz::BeginFrameId& id);
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,

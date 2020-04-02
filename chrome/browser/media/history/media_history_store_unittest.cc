@@ -599,6 +599,22 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     return out;
   }
 
+  MediaHistoryKeyedService::PendingSafeSearchCheckList
+  GetPendingSafeSearchCheckMediaFeedItemsSync(
+      MediaHistoryKeyedService* service) {
+    base::RunLoop run_loop;
+    MediaHistoryKeyedService::PendingSafeSearchCheckList out;
+
+    service->GetPendingSafeSearchCheckMediaFeedItems(base::BindLambdaForTesting(
+        [&](MediaHistoryKeyedService::PendingSafeSearchCheckList rows) {
+          out = std::move(rows);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return out;
+  }
+
   static media_feeds::mojom::ContentRatingPtr CreateRating(
       const std::string& agency,
       const std::string& value) {
@@ -629,7 +645,7 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->is_family_friendly = true;
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
-      item->genre = base::ASCIIToUTF16("test");
+      item->genre.push_back("test");
       item->duration = base::TimeDelta::FromSeconds(30);
       item->live = media_feeds::mojom::LiveDetails::New();
       item->live->start_time = base::Time::FromDeltaSinceWindowsEpoch(
@@ -640,10 +656,10 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->clicked = true;
       item->author = media_feeds::mojom::Author::New();
       item->author->name = "Media Site";
-      item->author->url = GURL("https://www.example.com");
+      item->author->url = GURL("https://www.example.com/author");
       item->action = media_feeds::mojom::Action::New();
       item->action->start_time = base::TimeDelta::FromSeconds(3);
-      item->action->url = GURL("https://www.example.com");
+      item->action->url = GURL("https://www.example.com/action");
       item->interaction_counters.emplace(
           media_feeds::mojom::InteractionCounterType::kLike, 10000);
       item->interaction_counters.emplace(
@@ -670,7 +686,8 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->play_next_candidate->action = media_feeds::mojom::Action::New();
       item->play_next_candidate->action->start_time =
           base::TimeDelta::FromSeconds(3);
-      item->play_next_candidate->action->url = GURL("https://www.example.com");
+      item->play_next_candidate->action->url =
+          GURL("https://www.example.com/next");
       item->play_next_candidate->identifiers.push_back(CreateIdentifier(
           media_feeds::mojom::Identifier::Type::kTMSId, "TEST4"));
       item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnknown;
@@ -697,6 +714,8 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->name = base::ASCIIToUTF16("The TV Series");
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kActive;
+      item->action = media_feeds::mojom::Action::New();
+      item->action->url = GURL("https://www.example.com/action2");
       item->author = media_feeds::mojom::Author::New();
       item->author->name = "Media Site";
       item->safe_search_result = media_feeds::mojom::SafeSearchResult::kSafe;
@@ -730,6 +749,8 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->is_family_friendly = false;
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kActive;
+      item->action = media_feeds::mojom::Action::New();
+      item->action->url = GURL("https://www.example.com/action-alt");
       item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnknown;
       items.push_back(std::move(item));
     }
@@ -1429,6 +1450,68 @@ TEST_P(MediaHistoryStoreFeedsTest,
 
     // The OTR service should have the same data.
     EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
+  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  service()->DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  const int feed_id_a = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+  const int feed_id_b = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[1]->id;
+
+  service()->StoreMediaFeedFetchResult(
+      feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
+      base::Time::Now(), std::vector<media_session::MediaImage>(),
+      std::string());
+  WaitForDB();
+
+  service()->StoreMediaFeedFetchResult(
+      feed_id_b, GetAltExpectedItems(),
+      media_feeds::mojom::FetchResult::kSuccess, base::Time::Now(),
+      std::vector<media_session::MediaImage>(), std::string());
+  WaitForDB();
+
+  std::map<int64_t, media_feeds::mojom::SafeSearchResult> found_ids;
+
+  {
+    // Media items from all feeds should be in the pending items list.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync(service());
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(pending_items.empty());
+    } else {
+      EXPECT_EQ(2u, pending_items.size());
+
+      std::set<GURL> found_urls;
+      for (auto& item : pending_items) {
+        EXPECT_NE(0, item->id);
+        found_ids.emplace(item->id,
+                          media_feeds::mojom::SafeSearchResult::kSafe);
+
+        for (auto& url : item->urls) {
+          found_urls.insert(url);
+        }
+      }
+
+      std::set<GURL> expected_urls;
+      expected_urls.insert(GURL("https://www.example.com/action"));
+      expected_urls.insert(GURL("https://www.example.com/next"));
+      expected_urls.insert(GURL("https://www.example.com/action-alt"));
+      EXPECT_EQ(expected_urls, found_urls);
+    }
+  }
+
+  service()->StoreMediaFeedItemSafeSearchResults(found_ids);
+  WaitForDB();
+
+  {
+    // The pending item list should be empty.
+    EXPECT_TRUE(GetPendingSafeSearchCheckMediaFeedItemsSync(service()).empty());
   }
 }
 

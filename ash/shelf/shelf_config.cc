@@ -38,18 +38,6 @@ constexpr int kControlButtonsShownReasonCount = 1 << 4;
 // dense shelf will be active.
 const int kDenseShelfScreenSizeThreshold = 600;
 
-// Whether the the shelf control buttons must be shown for accessibility
-// reasons.
-bool ShelfControlsForcedShownForAccessibility() {
-  AccessibilityControllerImpl* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  return accessibility_controller->spoken_feedback_enabled() ||
-         accessibility_controller->autoclick_enabled() ||
-         accessibility_controller->switch_access_enabled() ||
-         accessibility_controller
-             ->tablet_mode_shelf_navigation_buttons_enabled();
-}
-
 // Records the histogram value tracking the reason shelf control buttons are
 // shown in tablet mode.
 void RecordReasonForShowingShelfControls() {
@@ -212,6 +200,15 @@ void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
   DCHECK_NE(is_app_list_visible_, shown);
 
   UpdateConfig(shown /*app_list_visible*/);
+}
+
+bool ShelfConfig::ShelfControlsForcedShownForAccessibility() const {
+  auto* accessibility_controller = Shell::Get()->accessibility_controller();
+  return accessibility_controller->spoken_feedback_enabled() ||
+         accessibility_controller->autoclick_enabled() ||
+         accessibility_controller->switch_access_enabled() ||
+         accessibility_controller
+             ->tablet_mode_shelf_navigation_buttons_enabled();
 }
 
 int ShelfConfig::shelf_size() const {

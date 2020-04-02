@@ -16,8 +16,8 @@
 #include "components/feed/core/common/user_classifier.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/enums.h"
-#include "components/feed/core/v2/master_refresh_throttler.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/request_throttler.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/offline_pages/task/task_queue.h"
@@ -55,6 +55,8 @@ class FeedStream : public FeedStreamApi,
   // Concrete implementation should have no observable effects on the Feed.
   class EventObserver {
    public:
+    virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
+                              LoadStreamStatus final_status) = 0;
     virtual void OnMaybeTriggerRefresh(TriggerType trigger,
                                        bool clear_all_before_refresh) = 0;
     virtual void OnClearAll(base::TimeDelta time_since_last_clear) = 0;
@@ -141,6 +143,11 @@ class FeedStream : public FeedStreamApi,
   // Returns the time of the last content fetch.
   base::Time GetLastFetchTime();
 
+  // Determines if a FeedQuery request can be made. If successful,
+  // returns |LoadStreamStatus::kNoStatus| and acquires throttler quota.
+  // Otherwise returns the reason.
+  LoadStreamStatus ShouldMakeFeedQueryRequest();
+
   // Loads |model|. Should be used for testing in place of typical model
   // loading from network or storage.
   void LoadModelForTesting(std::unique_ptr<StreamModel> model);
@@ -175,11 +182,6 @@ class FeedStream : public FeedStreamApi,
 
   void LoadStreamTaskComplete(LoadStreamTask::Result result);
 
-  // Determines whether or not a fetch should be allowed.
-  // If a fetch is allowed, quota is reserved with the assumption that a fetch
-  // will follow shortly.
-  ShouldRefreshResult ShouldRefresh(TriggerType trigger);
-
   void ClearAll();
 
   // Unowned.
@@ -212,7 +214,7 @@ class FeedStream : public FeedStreamApi,
 
   // Mutable state.
   std::unique_ptr<UserClassifier> user_classifier_;
-  MasterRefreshThrottler refresh_throttler_;
+  RequestThrottler request_throttler_;
   base::TimeTicks suppress_refreshes_until_;
 
   // To allow tests to wait on task queue idle.

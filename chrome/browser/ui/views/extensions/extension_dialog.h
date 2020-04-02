@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
@@ -35,23 +36,32 @@ class ExtensionDialog : public views::DialogDelegate,
                         public content::NotificationObserver,
                         public base::RefCounted<ExtensionDialog> {
  public:
+  struct InitParams {
+    InitParams() = delete;
+    InitParams(int width, int height) : width(width), height(height) {}
+    InitParams(const InitParams& other) = default;
+    ~InitParams() = default;
+
+    // |is_modal| determines whether the dialog is modal to |parent_window|.
+    bool is_modal = false;
+
+    // |width| and |height| are the size of the dialog in pixels.
+    int width = 0;
+    int height = 0;
+    int min_width = 0;
+    int min_height = 0;
+    base::string16 title;
+  };
   // Create and show a dialog with |url| centered over the provided window.
   // |parent_window| is the parent window to which the pop-up will be attached.
   // |profile| is the profile that the extension is registered with.
   // |web_contents| is the tab that spawned the dialog.
-  // |is_modal| determines whether the dialog is modal to |parent_window|.
-  // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url,
                                gfx::NativeWindow parent_window,
                                Profile* profile,
                                content::WebContents* web_contents,
-                               bool is_modal,
-                               int width,
-                               int height,
-                               int min_width,
-                               int min_height,
-                               const base::string16& title,
-                               ExtensionDialogObserver* observer);
+                               ExtensionDialogObserver* observer,
+                               const InitParams& init_params);
 
   // Notifies the dialog that the observer has been destroyed and should not
   // be sent notifications.
@@ -95,11 +105,7 @@ class ExtensionDialog : public views::DialogDelegate,
                   ExtensionDialogObserver* observer);
 
   void InitWindow(gfx::NativeWindow parent_window,
-                  bool is_modal,
-                  int width,
-                  int height,
-                  int min_width,
-                  int min_height);
+                  const InitParams& init_params);
 
   ExtensionViewViews* GetExtensionView() const;
   static ExtensionViewViews* GetExtensionView(

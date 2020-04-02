@@ -14,6 +14,7 @@
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/devicemode.h"
@@ -113,6 +115,10 @@ void TryMigrateToResolveTimezoneByGeolocationMethod(PrefService* prefs) {
           : system::TimeZoneResolverManager::TimeZoneResolveMethod::DISABLED);
   prefs->SetInteger(prefs::kResolveTimezoneByGeolocationMethod,
                     static_cast<int>(method));
+}
+
+bool AreScrollSettingsAllowed() {
+  return base::FeatureList::IsEnabled(features::kAllowScrollSettings);
 }
 
 }  // namespace
@@ -684,60 +690,79 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   }
 
   if (reason != REASON_PREF_CHANGED || pref_name == prefs::kMouseSensitivity) {
-    const int sensitivity = mouse_sensitivity_.GetValue();
-    if (user_is_active)
-      mouse_settings.SetSensitivity(sensitivity);
+    const int sensitivity_int = mouse_sensitivity_.GetValue();
+    if (user_is_active) {
+      mouse_settings.SetSensitivity(sensitivity_int);
+
+      // With the flag off, also set scroll sensitivity (legacy fallback).
+      // TODO(https://crbug.com/836258): Remove check when flag is removed.
+      if (!AreScrollSettingsAllowed())
+        mouse_settings.SetScrollSensitivity(sensitivity_int);
+    }
+    system::PointerSensitivity sensitivity =
+        static_cast<system::PointerSensitivity>(sensitivity_int);
     if (reason == REASON_PREF_CHANGED) {
       UMA_HISTOGRAM_ENUMERATION("Mouse.PointerSensitivity.Changed",
-                                sensitivity,
-                                system::kMaxPointerSensitivity + 1);
+                                sensitivity);
     } else if (reason == REASON_INITIALIZATION) {
       UMA_HISTOGRAM_ENUMERATION("Mouse.PointerSensitivity.Started",
-                                sensitivity,
-                                system::kMaxPointerSensitivity + 1);
+                                sensitivity);
     }
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kMouseScrollSensitivity) {
-    const int sensitivity = mouse_scroll_sensitivity_.GetValue();
+    // With the flag off, use to normal sensitivity (legacy fallback).
+    // TODO(https://crbug.com/836258): Remove check when flag is removed.
+    const int sensitivity_int = AreScrollSettingsAllowed()
+                                    ? mouse_scroll_sensitivity_.GetValue()
+                                    : mouse_sensitivity_.GetValue();
     if (user_is_active)
-      mouse_settings.SetScrollSensitivity(sensitivity);
-    if (reason == REASON_PREF_CHANGED) {
-      UMA_HISTOGRAM_ENUMERATION("Mouse.ScrollSensitivity.Changed", sensitivity,
-                                system::kMaxPointerSensitivity + 1);
-    } else if (reason == REASON_INITIALIZATION) {
-      UMA_HISTOGRAM_ENUMERATION("Mouse.ScrollSensitivity.Started", sensitivity,
-                                system::kMaxPointerSensitivity + 1);
-    }
+      mouse_settings.SetScrollSensitivity(sensitivity_int);
+    system::PointerSensitivity sensitivity =
+        static_cast<system::PointerSensitivity>(sensitivity_int);
+    if (reason == REASON_PREF_CHANGED)
+      UMA_HISTOGRAM_ENUMERATION("Mouse.ScrollSensitivity.Changed", sensitivity);
+    else if (reason == REASON_INITIALIZATION)
+      UMA_HISTOGRAM_ENUMERATION("Mouse.ScrollSensitivity.Started", sensitivity);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kTouchpadSensitivity) {
-    const int sensitivity = touchpad_sensitivity_.GetValue();
-    if (user_is_active)
-      touchpad_settings.SetSensitivity(sensitivity);
+    const int sensitivity_int = touchpad_sensitivity_.GetValue();
+    if (user_is_active) {
+      touchpad_settings.SetSensitivity(sensitivity_int);
+
+      // With the flag off, also set scroll sensitivity (legacy fallback).
+      // TODO(https://crbug.com/836258): Remove check when flag is removed.
+      if (!AreScrollSettingsAllowed())
+        touchpad_settings.SetScrollSensitivity(sensitivity_int);
+    }
+    system::PointerSensitivity sensitivity =
+        static_cast<system::PointerSensitivity>(sensitivity_int);
     if (reason == REASON_PREF_CHANGED) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Changed",
-                                sensitivity,
-                                system::kMaxPointerSensitivity + 1);
+                                sensitivity);
     } else if (reason == REASON_INITIALIZATION) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Started",
-                                sensitivity,
-                                system::kMaxPointerSensitivity + 1);
+                                sensitivity);
     }
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kTouchpadScrollSensitivity) {
-    const int sensitivity = touchpad_scroll_sensitivity_.GetValue();
+    // With the flag off, use normal sensitivity (legacy fallback).
+    // TODO(https://crbug.com/836258): Remove check when flag is removed.
+    const int sensitivity_int = AreScrollSettingsAllowed()
+                                    ? touchpad_scroll_sensitivity_.GetValue()
+                                    : touchpad_sensitivity_.GetValue();
     if (user_is_active)
-      touchpad_settings.SetScrollSensitivity(sensitivity);
+      touchpad_settings.SetScrollSensitivity(sensitivity_int);
+    system::PointerSensitivity sensitivity =
+        static_cast<system::PointerSensitivity>(sensitivity_int);
     if (reason == REASON_PREF_CHANGED) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.ScrollSensitivity.Changed",
-                                sensitivity,
-                                system::kMaxPointerSensitivity + 1);
+                                sensitivity);
     } else if (reason == REASON_INITIALIZATION) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.ScrollSensitivity.Started",
-                                sensitivity,
-                                system::kMaxPointerSensitivity + 1);
+                                sensitivity);
     }
   }
   if (reason != REASON_PREF_CHANGED ||

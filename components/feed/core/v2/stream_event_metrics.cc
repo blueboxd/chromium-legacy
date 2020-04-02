@@ -7,6 +7,11 @@
 
 namespace feed {
 
+void StreamEventMetrics::OnLoadStream(LoadStreamStatus load_from_store_status,
+                                      LoadStreamStatus final_status) {
+  // TODO(harringtond): Add UMA for this, or record it with another histogram.
+}
+
 void StreamEventMetrics::OnMaybeTriggerRefresh(TriggerType trigger,
                                                bool clear_all_before_refresh) {
   // TODO(harringtond): Either add UMA for this or remove it.

@@ -87,6 +87,20 @@ void RecordProfilesState() {
       .RecordProfilesState();
 }
 
+void RecordAccountMetrics(Profile* profile) {
+  DCHECK(profile);
+
+  ProfileAttributesEntry* entry;
+  if (!g_browser_process->profile_manager()
+           ->GetProfileAttributesStorage()
+           .GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+    // This can happen if the profile is deleted.
+    return;
+  }
+
+  entry->RecordAccountMetrics();
+}
+
 }  // namespace
 
 // static
@@ -106,6 +120,7 @@ void ProfileActivityMetricsRecorder::OnBrowserSetLastActive(Browser* browser) {
   Profile* active_profile = browser->profile()->GetOriginalProfile();
 
   RecordBrowserActivation(active_profile);
+  RecordAccountMetrics(active_profile);
 
   if (last_active_profile_ != active_profile) {
     // No-op, if starting a new session (|last_active_profile_| is nullptr).

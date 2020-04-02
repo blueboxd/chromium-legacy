@@ -295,6 +295,19 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
+  if (RuntimeEnabledFeatures::LayoutNGForControlsEnabled()) {
+    return String(R"CSS(
+input[type="file" i] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+}
+
+input[type="file" i]::-webkit-file-upload-button {
+    margin-inline-end: 4px;
+}
+)CSS");
+  }
   return g_empty_string;
 }
 

@@ -93,8 +93,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   SkCanvas* BeginPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
       const std::vector<ImageContext*>& contexts,
-      SkYUVColorSpace yuv_color_space,
-      sk_sp<SkColorSpace> dst_color_space,
+      sk_sp<SkColorSpace> image_color_space,
       bool has_alpha) override;
   void SwapBuffersSkipped() override;
   void ScheduleOutputSurfaceAsOverlay(

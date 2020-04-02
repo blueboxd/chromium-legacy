@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
@@ -22,6 +23,34 @@
 namespace network {
 
 namespace {
+
+// Do not reorder values because we use this in UMA histograms.
+enum class CorpResult {
+  kSuccess = 0,
+  kNotSameOrigin = 1,
+  kNotSameOriginAfterDefaultedToSameOriginByCoep = 2,
+  kNotSameSite = 3,
+  kMaxValue = kNotSameSite,
+};
+
+CorpResult ToCorpResult(const base::Optional<BlockedByResponseReason>& value) {
+  if (!value) {
+    return CorpResult::kSuccess;
+  }
+  switch (*value) {
+    case BlockedByResponseReason::kCoepFrameResourceNeedsCoepHeader:
+    case BlockedByResponseReason::kCoopSandboxedIFrameCannotNavigateToCoopPage:
+      NOTREACHED();
+      return CorpResult::kSuccess;
+    case BlockedByResponseReason::kCorpNotSameOrigin:
+      return CorpResult::kNotSameOrigin;
+    case BlockedByResponseReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+      return CorpResult::kNotSameOriginAfterDefaultedToSameOriginByCoep;
+    case BlockedByResponseReason::kCorpNotSameSite:
+      return CorpResult::kNotSameSite;
+  }
+}
 
 // https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header says:
 // > ABNF:
@@ -188,6 +217,9 @@ base::Optional<BlockedByResponseReason> IsBlockedInternalWithReporting(
     const auto result = IsBlockedInternal(
         policy, request_url, request_initiator, request_mode,
         request_initiator_site_lock, embedder_policy.report_only_value);
+    UMA_HISTOGRAM_ENUMERATION(
+        "NetworkService.CrossOriginResourcePolicy.ReportOnlyResult",
+        ToCorpResult(result));
     if (result == kBlockedDueToCoep ||
         (result.has_value() && request_mode == mojom::RequestMode::kNavigate)) {
       reporter->QueueCorpViolationReport(original_url, /*report_only=*/true);
@@ -202,6 +234,8 @@ base::Optional<BlockedByResponseReason> IsBlockedInternalWithReporting(
   const auto result =
       IsBlockedInternal(policy, request_url, request_initiator, request_mode,
                         request_initiator_site_lock, embedder_policy.value);
+  UMA_HISTOGRAM_ENUMERATION("NetworkService.CrossOriginResourcePolicy.Result",
+                            ToCorpResult(result));
   if (reporter &&
       (result == kBlockedDueToCoep ||
        (result.has_value() && request_mode == mojom::RequestMode::kNavigate))) {

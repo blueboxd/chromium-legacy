@@ -317,6 +317,7 @@ android_library("chrome_java") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/settings/android:java",
+    "//components/browser_ui/site_settings/android:java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/util/android:java",
     "//components/browser_ui/widget/android:java",

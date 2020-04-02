@@ -146,7 +146,7 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
     uint32_t frame_token,
     const viz::BeginFrameId& current_frame_id,
     const viz::BeginFrameId& last_activated_frame_id,
-    std::vector<EventMetrics> events_metrics) {
+    EventMetricsSet events_metrics) {
   // If the last_activated_frame_id from scheduler is the same as
   // last_submitted_frame_id_ in reporting controller, this means that we are
   // submitting the Impl frame. In this case the frame will be submitted if
@@ -194,7 +194,21 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
       std::move(reporters_[PipelineStage::kActivate]);
   submitted_reporter->StartStage(
       StageType::kSubmitCompositorFrameToPresentationCompositorFrame, Now());
-  submitted_reporter->SetEventsMetrics(std::move(events_metrics));
+
+  // TODO(mjzhang): The main and impl vectors are combined to preserve the
+  // current behavior. In a subsequent CL, an impl reporter will also be added
+  // for submission and the two vectors will be kept separate and moved into
+  // their corresponding reporter.
+  std::vector<EventMetrics> combined_event_metrics =
+      std::move(events_metrics.main_event_metrics);
+
+  combined_event_metrics.reserve(combined_event_metrics.size() +
+                                 events_metrics.impl_event_metrics.size());
+  combined_event_metrics.insert(combined_event_metrics.end(),
+                                events_metrics.impl_event_metrics.begin(),
+                                events_metrics.impl_event_metrics.end());
+
+  submitted_reporter->SetEventsMetrics(std::move(combined_event_metrics));
   submitted_compositor_frames_.emplace_back(frame_token,
                                             std::move(submitted_reporter));
 }

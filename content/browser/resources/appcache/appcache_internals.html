@@ -67,6 +67,12 @@
                     <span> Last Update Time: </span>
                     <span jscontent="new Date(lastUpdateTime)"></span>
                   </li>
+                  <li>
+                    <span> Token Expires: </span>
+                    <span jscontent=
+                      "tokenExpires ? new Date(tokenExpires) : '(unset)'">
+                    </span>
+                  </li>
                 </ul>
               </div>
               <div class="appcache-manifest-commands"
@@ -91,13 +97,14 @@
       </div>
 
       <table id="appcache-info-template">
-        <thead>
+        <thead class="appcache-details-header">
           <tr>
             <th>File URL</th>
             <th>Total Size</th>
             <th>Response</th>
             <th>Padding</th>
             <th>Properties</th>
+            <th>Token Expires</th>
           </tr>
         </thead>
         <tbody class="appcache-details"
@@ -112,6 +119,9 @@
             <td jscontent="responseSize"></td>
             <td jscontent="paddingSize"></td>
             <td jscontent="properties"></td>
+            <td class="token-expires" jscontent=
+              "tokenExpires ? new Date(tokenExpires) : '(unset)'">
+            </td>
           </tr>
         </tbody>
       </table>

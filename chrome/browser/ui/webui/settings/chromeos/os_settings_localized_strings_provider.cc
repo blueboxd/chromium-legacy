@@ -971,16 +971,29 @@ void AddDevicePointersStrings(content::WebUIDataSource* html_source) {
       {"touchpadSpeed", IDS_SETTINGS_TOUCHPAD_SPEED_LABEL},
       {"pointerSlow", IDS_SETTINGS_POINTER_SPEED_SLOW_LABEL},
       {"pointerFast", IDS_SETTINGS_POINTER_SPEED_FAST_LABEL},
+      {"mouseScrollSpeed", IDS_SETTINGS_MOUSE_SCROLL_SPEED_LABEL},
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
       {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
       {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
       {"mouseAccelerationLabel", IDS_SETTINGS_MOUSE_ACCELERATION_LABEL},
+      {"mouseScrollAccelerationLabel",
+       IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL},
       {"touchpadAccelerationLabel", IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL},
+      {"touchpadScrollAccelerationLabel",
+       IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
+      {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kPointersStrings);
 
   html_source->AddString("naturalScrollLearnMoreLink",
                          GetHelpUrlWithBoard(chrome::kNaturalScrollHelpURL));
+
+  html_source->AddBoolean(
+      "allowDisableMouseAcceleration",
+      base::FeatureList::IsEnabled(::features::kAllowDisableMouseAcceleration));
+  html_source->AddBoolean(
+      "allowScrollSettings",
+      base::FeatureList::IsEnabled(features::kAllowScrollSettings));
 }
 
 void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
@@ -1140,10 +1153,6 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
-
-  html_source->AddBoolean(
-      "allowDisableMouseAcceleration",
-      base::FeatureList::IsEnabled(::features::kAllowDisableMouseAcceleration));
 }
 
 void AddDeviceStorageStrings(content::WebUIDataSource* html_source) {

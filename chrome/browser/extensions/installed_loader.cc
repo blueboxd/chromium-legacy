@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_set.h"
@@ -543,7 +544,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
     // For incognito and file access, skip anything that doesn't appear in
     // settings. Also, policy-installed (and unpacked of course, checked above)
     // extensions are boring.
-    if (extension->ShouldDisplayInExtensionSettings() &&
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension) &&
         !Manifest::IsPolicyLocation(extension->location())) {
       if (util::CanBeIncognitoEnabled(extension)) {
         if (util::IsIncognitoEnabled(extension->id(), profile))

@@ -9,7 +9,7 @@
 // #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
 // #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
 // #import {createRawSiteException, createDefaultContentSetting,createSiteSettingsPrefs,createContentSettingTypeToValuePair} from 'chrome://test/settings/test_util.m.js';
-// #import {isChildVisible, flushTasks} from 'chrome://test/test_util.m.js';
+// #import {isChildVisible, isVisible, flushTasks} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 suite('CrSettingsCookiesPageTest', function() {
@@ -42,6 +42,12 @@ suite('CrSettingsCookiesPageTest', function() {
 
   /** @type {array<!Element>} */
   let radioButtons;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      improvedCookieControlsEnabled: true,
+    });
+  });
 
   setup(function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
@@ -213,6 +219,9 @@ suite('CrSettingsCookiesPageTest', function() {
     assertTrue(test_util.isChildVisible(page, '#clearOnExit'));
     assertTrue(test_util.isChildVisible(page, '#doNotTrack'));
     assertTrue(test_util.isChildVisible(page, '#networkPrediction'));
+    // Ensure that with the improvedCookieControls flag enabled that the block
+    // third party cookies radio is visible.
+    assertTrue(test_util.isVisible(blockThirdPartyIncognito));
   });
 
   test('NetworkPredictionClickRecorded', async function() {
@@ -344,5 +353,55 @@ suite('CrSettingsCookiesPageTest', function() {
     for (const list of exceptionLists) {
       assertFalse(!!list.readOnlyList);
     }
+  });
+});
+
+suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
+  /** @type {TestSiteSettingsPrefsBrowserProxy} */
+  let siteSettingsBrowserProxy;
+
+  /** @type {SettingsSecurityPageElement} */
+  let page;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      improvedCookieControlsEnabled: false,
+    });
+  });
+
+  setup(function() {
+    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ =
+        siteSettingsBrowserProxy;
+    PolymerTest.clearBody();
+    page = document.createElement('settings-cookies-page');
+    page.prefs = {
+      profile: {
+        cookie_controls_mode: {value: 0},
+        block_third_party_cookies: {value: false},
+      },
+    };
+    document.body.appendChild(page);
+    Polymer.dom.flush();
+  });
+
+  teardown(function() {
+    page.remove();
+  });
+
+  test('BlockThirdPartyRadio_Hidden', function() {
+    assertFalse(test_util.isChildVisible(page, '#blockThirdPartyIncognito'));
+  });
+
+  test('BlockThirdPartyRadio_NotSelected', async function() {
+    // Create a preference state that would select the removed radio button
+    // and ensure the correct radio button is instead selected.
+    page.set(
+        'prefs.profile.cookie_controls_mode.value',
+        settings.CookieControlsMode.INCOGNITO_ONLY);
+    Polymer.dom.flush();
+    await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
+
+    assertTrue(page.$$('#allowAll').checked);
   });
 });

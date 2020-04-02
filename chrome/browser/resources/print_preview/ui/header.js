@@ -37,16 +37,12 @@ Polymer({
     managed: Boolean,
 
     /** @private {number} */
-    sheetCount_: {
-      type: Number,
-      computed: 'computeSheetCount_(' +
-          'settings.pages.*, settings.duplex.*, settings.copies.*)',
-    },
+    sheetCount: Number,
 
     /** @private {?string} */
     summary_: {
       type: String,
-      computed: 'computeSummary_(sheetCount_, state, destination.id)',
+      computed: 'computeSummary_(sheetCount, state, destination.id)',
     },
   },
 
@@ -94,32 +90,20 @@ Polymer({
   },
 
   /**
-   * @return {number} The number of sheets that will be printed.
-   * @private
-   */
-  computeSheetCount_() {
-    let sheets = this.getSettingValue('pages').length;
-    if (this.getSettingValue('duplex')) {
-      sheets = Math.ceil(sheets / 2);
-    }
-    return sheets * /** @type {number} */ (this.getSettingValue('copies'));
-  },
-
-  /**
    * @return {string}
    * @private
    */
   getSheetsSummary_() {
-    if (this.sheetCount_ === 0) {
+    if (this.sheetCount === 0) {
       return '';
     }
 
     const pageOrSheets = this.isPdfOrDrive_() ? 'Page' : 'Sheets';
-    const singularOrPlural = this.sheetCount_ > 1 ? 'Plural' : 'Singular';
+    const singularOrPlural = this.sheetCount > 1 ? 'Plural' : 'Singular';
     const label = loadTimeData.getString(
         `printPreview${pageOrSheets}Label${singularOrPlural}`);
     return loadTimeData.getStringF(
-        'printPreviewSummaryFormatShort', this.sheetCount_.toLocaleString(),
+        'printPreviewSummaryFormatShort', this.sheetCount.toLocaleString(),
         label);
   },
 });

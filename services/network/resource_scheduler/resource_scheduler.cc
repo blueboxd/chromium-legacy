@@ -25,6 +25,7 @@
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
@@ -761,8 +762,9 @@ class ResourceScheduler::Client
         net::HttpServerProperties& http_server_properties =
             *request->url_request()->context()->http_server_properties();
         if (!http_server_properties.SupportsRequestPriority(
-                scheme_host_port,
-                request->url_request()->network_isolation_key())) {
+                scheme_host_port, request->url_request()
+                                      ->isolation_info()
+                                      .network_isolation_key())) {
           attributes |= kAttributeDelayable;
         }
       }
@@ -1065,8 +1067,9 @@ class ResourceScheduler::Client
     bool supports_priority =
         url_request.context()
             ->http_server_properties()
-            ->SupportsRequestPriority(scheme_host_port,
-                                      url_request.network_isolation_key());
+            ->SupportsRequestPriority(
+                scheme_host_port,
+                url_request.isolation_info().network_isolation_key());
 
     if (!priority_delayable) {
       // TODO(willchan): We should really improve this algorithm as described in

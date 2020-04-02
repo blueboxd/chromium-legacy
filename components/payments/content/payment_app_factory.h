@@ -11,7 +11,9 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/service_worker_payment_app_finder.h"
 #include "components/payments/core/payment_app.h"
+#include "content/public/browser/payment_app_provider.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 class GURL;
@@ -31,8 +33,9 @@ class Origin;
 
 namespace payments {
 
-class PaymentRequestSpec;
 class ContentPaymentRequestDelegate;
+class PaymentManifestWebDataService;
+class PaymentRequestSpec;
 
 // Base class for a factory that can create instances of payment apps.
 class PaymentAppFactory {
@@ -42,16 +45,23 @@ class PaymentAppFactory {
     virtual ~Delegate() = default;
 
     virtual content::WebContents* GetWebContents() = 0;
-    virtual ContentPaymentRequestDelegate* GetPaymentRequestDelegate() = 0;
-    virtual PaymentRequestSpec* GetSpec() = 0;
     virtual const GURL& GetTopOrigin() = 0;
     virtual const GURL& GetFrameOrigin() = 0;
     virtual const url::Origin& GetFrameSecurityOrigin() = 0;
     virtual content::RenderFrameHost* GetInitiatorRenderFrameHost() const = 0;
+    virtual const std::vector<mojom::PaymentMethodDataPtr>& GetMethodData()
+        const = 0;
+    virtual scoped_refptr<PaymentManifestWebDataService>
+    GetPaymentManifestWebDataService() const = 0;
+    virtual bool MayCrawlForInstallablePaymentApps() = 0;
+
+    // These parameters are only used to create native payment apps.
     virtual const std::vector<autofill::AutofillProfile*>&
     GetBillingProfiles() = 0;
     virtual bool IsRequestedAutofillDataAvailable() = 0;
-    virtual bool MayCrawlForInstallablePaymentApps() = 0;
+    virtual ContentPaymentRequestDelegate* GetPaymentRequestDelegate()
+        const = 0;
+    virtual PaymentRequestSpec* GetSpec() const = 0;
 
     // Called after an app is installed. Used for just-in-time installable
     // payment handlers, for example.
@@ -65,6 +75,18 @@ class PaymentAppFactory {
     // to download a web app manifest, for example.
     virtual void OnPaymentAppCreationError(
         const std::string& error_message) = 0;
+
+    // Whether the factory should early exit before creating platform-specific
+    // PaymentApp objects. This is used by PaymentAppServiceBridge to skip
+    // creating native PaymentApps, which currently cannot be used over JNI.
+    virtual bool SkipCreatingNativePaymentApps() const = 0;
+
+    // When SkipCreatingNativePaymentApps() is true, this callback is called
+    // when service-worker payment app info is available.
+    virtual void OnCreatingNativePaymentAppsSkipped(
+        const content::PaymentAppProvider::PaymentApps& apps,
+        const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
+            installable_apps) = 0;
 
     // Called when all apps of this factory have been created.
     virtual void OnDoneCreatingPaymentApps() = 0;

@@ -341,6 +341,7 @@ void AppCache::ToResourceInfoVector(
     info.response_size = pair.second.response_size();
     info.padding_size = pair.second.padding_size();
     info.response_id = pair.second.response_id();
+    info.token_expires = pair.second.token_expires();
   }
 }
 

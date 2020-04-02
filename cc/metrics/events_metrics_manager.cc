@@ -54,11 +54,4 @@ std::vector<EventMetrics> EventsMetricsManager::TakeSavedEventsMetrics() {
   return result;
 }
 
-void EventsMetricsManager::AppendToSavedEventsMetrics(
-    std::vector<EventMetrics> events_metrics) {
-  saved_events_.reserve(saved_events_.size() + events_metrics.size());
-  saved_events_.insert(saved_events_.end(), events_metrics.begin(),
-                       events_metrics.end());
-}
-
 }  // namespace cc

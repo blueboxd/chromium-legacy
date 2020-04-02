@@ -56,19 +56,9 @@ void SwitchToRegistrableDomainAndRemovePort(
 
 NetworkIsolationKey::NetworkIsolationKey(const url::Origin& top_frame_origin,
                                          const url::Origin& frame_origin)
-    : use_frame_origin_(base::FeatureList::IsEnabled(
-          net::features::kAppendFrameOriginToNetworkIsolationKey)),
-      top_frame_origin_(top_frame_origin),
-      original_top_frame_origin_(top_frame_origin) {
-  if (use_frame_origin_) {
-    frame_origin_ = frame_origin;
-    original_frame_origin_ = frame_origin;
-  }
-  if (base::FeatureList::IsEnabled(
-          net::features::kUseRegistrableDomainInNetworkIsolationKey)) {
-    ReplaceOriginsWithRegistrableDomains();
-  }
-}
+    : NetworkIsolationKey(top_frame_origin,
+                          frame_origin,
+                          false /* opaque_and_non_transient */) {}
 
 NetworkIsolationKey::NetworkIsolationKey()
     : use_frame_origin_(base::FeatureList::IsEnabled(
@@ -92,9 +82,8 @@ NetworkIsolationKey NetworkIsolationKey::CreateTransient() {
 
 NetworkIsolationKey NetworkIsolationKey::CreateOpaqueAndNonTransient() {
   url::Origin opaque_origin;
-  NetworkIsolationKey key(opaque_origin, opaque_origin);
-  key.opaque_and_non_transient_ = true;
-  return key;
+  return NetworkIsolationKey(opaque_origin, opaque_origin,
+                             true /* opaque_and_non_transient */);
 }
 
 NetworkIsolationKey NetworkIsolationKey::CreateWithNewFrameOrigin(
@@ -147,11 +136,6 @@ bool NetworkIsolationKey::IsTransient() const {
     return false;
   }
   return IsOpaque();
-}
-
-bool NetworkIsolationKey::IsOpaque() const {
-  return top_frame_origin_->opaque() ||
-         (use_frame_origin_ && frame_origin_->opaque());
 }
 
 bool NetworkIsolationKey::ToValue(base::Value* out_value) const {
@@ -239,9 +223,34 @@ bool NetworkIsolationKey::IsEmpty() const {
   return !top_frame_origin_.has_value() && !frame_origin_.has_value();
 }
 
+NetworkIsolationKey::NetworkIsolationKey(const url::Origin& top_frame_origin,
+                                         const url::Origin& frame_origin,
+                                         bool opaque_and_non_transient)
+    : opaque_and_non_transient_(opaque_and_non_transient),
+      use_frame_origin_(base::FeatureList::IsEnabled(
+          net::features::kAppendFrameOriginToNetworkIsolationKey)),
+      top_frame_origin_(top_frame_origin),
+      original_top_frame_origin_(top_frame_origin) {
+  DCHECK(!opaque_and_non_transient || top_frame_origin.opaque());
+  if (use_frame_origin_) {
+    DCHECK(!opaque_and_non_transient || frame_origin.opaque());
+    frame_origin_ = frame_origin;
+    original_frame_origin_ = frame_origin;
+  }
+  if (base::FeatureList::IsEnabled(
+          net::features::kUseRegistrableDomainInNetworkIsolationKey)) {
+    ReplaceOriginsWithRegistrableDomains();
+  }
+}
+
 void NetworkIsolationKey::ReplaceOriginsWithRegistrableDomains() {
   SwitchToRegistrableDomainAndRemovePort(&top_frame_origin_);
   SwitchToRegistrableDomainAndRemovePort(&frame_origin_);
+}
+
+bool NetworkIsolationKey::IsOpaque() const {
+  return top_frame_origin_->opaque() ||
+         (use_frame_origin_ && frame_origin_->opaque());
 }
 
 }  // namespace net

@@ -82,7 +82,7 @@ AutomaticallyConnectProtoFromMojo(
     return sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED;
   }
 
-  return sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED;
+  return sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_DISABLED;
 }
 
 sync_pb::WifiConfigurationSpecifics_IsPreferredOption IsPreferredProtoFromMojo(

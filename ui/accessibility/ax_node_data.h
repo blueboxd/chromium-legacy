@@ -14,8 +14,8 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
+#include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -24,16 +24,16 @@ namespace ui {
 
 // Return true if |attr| should be interpreted as the id of another node
 // in the same tree.
-AX_EXPORT bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr);
+AX_BASE_EXPORT bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr);
 
 // Return true if |attr| should be interpreted as a list of ids of
 // nodes in the same tree.
-AX_EXPORT bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr);
+AX_BASE_EXPORT bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr);
 
 // A compact representation of the accessibility information for a
 // single accessible object, in a form that can be serialized and sent from
 // one process to another.
-struct AX_EXPORT AXNodeData {
+struct AX_BASE_EXPORT AXNodeData {
   AXNodeData();
   virtual ~AXNodeData();
 

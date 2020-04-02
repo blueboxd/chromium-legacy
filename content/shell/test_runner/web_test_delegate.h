@@ -40,8 +40,6 @@ namespace test_runner {
 class WebWidgetTestProxy;
 struct TestPreferences;
 
-constexpr int kDefaultDatabaseQuota = -1;
-
 class WebTestDelegate {
  public:
   virtual ~WebTestDelegate() = default;

@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/appcache/appcache_info.mojom";
@@ -48,6 +49,7 @@ struct AppCacheResourceInfo {
   bool is_foreign;
   bool is_explicit;
   int64 response_id;
+  mojo_base.mojom.Time token_expires;
 };
 
 struct AppCacheErrorDetails {

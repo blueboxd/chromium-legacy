@@ -74,8 +74,7 @@ using arc::mojom::ChromePage;
 namespace {
 
 constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
-    {{ChromePage::ACCESSIBILITY, chrome::kAccessibilitySubPage},
-     {ChromePage::ACCOUNTS, chrome::kAccountSubPage},
+    {{ChromePage::ACCOUNTS, chrome::kAccountSubPage},
      {ChromePage::ACCOUNTMANAGER, chrome::kAccountManagerSubPage},
      {ChromePage::AMBIENTMODE, chrome::kAmbientModeSubPage},
      {ChromePage::ANDROIDAPPSDETAILS, chrome::kAndroidAppsDetailsSubPage},
@@ -114,6 +113,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::NETWORKSTYPEVPN, chrome::kVPNSettingsSubPage},
      {ChromePage::PLUGINVMDETAILS, chrome::kPluginVmDetailsSubPage},
      {ChromePage::PLUGINVMSHAREDPATHS, chrome::kPluginVmSharedPathsSubPage},
+     {ChromePage::OSACCESSIBILITY, chrome::kOsAccessibilitySubPage},
      {ChromePage::OSRESET, chrome::kOsResetSubPage},
      {ChromePage::POINTEROVERLAY, chrome::kPointerOverlaySubPage},
      {ChromePage::POWER, chrome::kPowerSubPage},
@@ -126,6 +126,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
 
 constexpr std::pair<arc::mojom::ChromePage, const char*>
     kBrowserSettingsMapping[] = {
+        {ChromePage::ACCESSIBILITY, chrome::kAccessibilitySubPage},
         {ChromePage::APPEARANCE, chrome::kAppearanceSubPage},
         {ChromePage::AUTOFILL, chrome::kAutofillSubPage},
         {ChromePage::CLEARBROWSERDATA, chrome::kClearBrowserDataSubPage},

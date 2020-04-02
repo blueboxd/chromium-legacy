@@ -62,6 +62,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "login_screen_menu_dropdown.icon",
     "login_screen_enterprise.icon",
     "mic.icon",
+    "muted_microphone.icon",
     "network_badge_captive_portal.icon",
     "network_badge_off.icon",
     "network_badge_roaming.icon",

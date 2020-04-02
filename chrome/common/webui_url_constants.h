@@ -93,9 +93,15 @@ extern const char kChromeUIInterstitialHost[];
 extern const char kChromeUIInterstitialURL[];
 extern const char kChromeUIInterventionsInternalsHost[];
 extern const char kChromeUIInvalidationsHost[];
+
+// |kChromeUIKaleidoscopeHost| and |kChromeUIKaleidoscopeContentHost| are used
+// in the public repo, so are defined here. We only use the URL constants in the
+// internal repo, but they are defined here to be near the host constants.
 extern const char kChromeUIKaleidoscopeHost[];
+extern const char kChromeUIKaleidoscopeURL[];
 extern const char kChromeUIKaleidoscopeContentHost[];
 extern const char kChromeUIKaleidoscopeContentURL[];
+
 extern const char kChromeUIKillHost[];
 extern const char kChromeUILocalStateHost[];
 extern const char kChromeUIManagementHost[];
@@ -315,6 +321,7 @@ extern const char kChromeUITabStripURL[];
 extern const char kChromeUIWebRtcLogsHost[];
 
 // Settings sub-pages.
+extern const char kAccessibilitySubPage[];
 extern const char kAddressesSubPage[];
 extern const char kAppearanceSubPage[];
 extern const char kAutofillSubPage[];
@@ -378,6 +385,7 @@ extern const char kMultideviceSubPage[];
 extern const char kNativePrintingSettingsSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kNetworksSubPage[];
+extern const char kOsAccessibilitySubPage[];
 extern const char kOsResetSubPage[];
 extern const char kPluginVmDetailsSubPage[];
 extern const char kPluginVmSharedPathsSubPage[];

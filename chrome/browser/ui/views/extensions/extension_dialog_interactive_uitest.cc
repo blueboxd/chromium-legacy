@@ -44,10 +44,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, MAYBE_TabFocusLoop) {
 
   // Open ExtensionDialog, whose initial page is the extension's main.html.
   // The main.html contains three buttons.
-  ExtensionDialog* dialog = ExtensionDialog::Show(
-      extension->url().Resolve("main.html"),
-      browser()->window()->GetNativeWindow(), browser()->profile(), nullptr,
-      true, 300, 300, 300, 300, base::string16(), nullptr);
+  ExtensionDialog::InitParams params(300, 300);
+  params.is_modal = true;
+  params.min_width = 300;
+  params.min_height = 300;
+  ExtensionDialog* dialog =
+      ExtensionDialog::Show(extension->url().Resolve("main.html"),
+                            browser()->window()->GetNativeWindow(),
+                            browser()->profile(), nullptr, nullptr, params);
   ASSERT_TRUE(dialog);
   ASSERT_TRUE(init_listener.WaitUntilSatisfied());
 

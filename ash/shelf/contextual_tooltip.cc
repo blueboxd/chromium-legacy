@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/strings/strcat.h"
@@ -103,7 +104,8 @@ bool ShouldShowNudge(PrefService* prefs,
       *recheck_delay = delay;
   };
 
-  if (!features::AreContextualNudgesEnabled()) {
+  if (!features::AreContextualNudgesEnabled() ||
+      ShelfConfig::Get()->ShelfControlsForcedShownForAccessibility()) {
     set_recheck_delay(base::TimeDelta());
     return false;
   }

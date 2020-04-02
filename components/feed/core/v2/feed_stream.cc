@@ -16,6 +16,7 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
@@ -159,11 +160,9 @@ FeedStream::FeedStream(
       background_task_runner_(background_task_runner),
       task_queue_(this),
       user_classifier_(std::make_unique<UserClassifier>(profile_prefs, clock)),
-      refresh_throttler_(profile_prefs, clock) {
-  // TODO(harringtond): Use these members.
+      request_throttler_(profile_prefs, clock) {
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
-  (void)feed_network_;
 
   // Inserting this task first ensures that |store_| is initialized before
   // it is used.
@@ -185,6 +184,21 @@ FeedStream::~FeedStream() = default;
 void FeedStream::TriggerStreamLoad() {
   if (model_monitor_ || model_loading_in_progress_)
     return;
+
+  if (!delegate_->IsEulaAccepted()) {
+    stream_event_observer_->OnLoadStream(
+        LoadStreamStatus::kNoStatus,
+        LoadStreamStatus::kLoadNotAllowedEulaNotAccepted);
+    return;
+  }
+
+  if (!IsArticlesListVisible()) {
+    stream_event_observer_->OnLoadStream(
+        LoadStreamStatus::kNoStatus,
+        LoadStreamStatus::kLoadNotAllowedArticlesListHidden);
+    return;
+  }
+
   model_loading_in_progress_ = true;
   task_queue_.AddTask(std::make_unique<LoadStreamTask>(
       this, base::BindOnce(&FeedStream::LoadStreamTaskComplete,
@@ -192,6 +206,8 @@ void FeedStream::TriggerStreamLoad() {
 }
 
 void FeedStream::LoadStreamTaskComplete(LoadStreamTask::Result result) {
+  stream_event_observer_->OnLoadStream(result.load_from_store_status,
+                                       result.final_status);
   DVLOG(1) << "LoadStreamTaskComplete load_from_store_status="
            << result.load_from_store_status
            << " final_status=" << result.final_status;
@@ -288,21 +304,7 @@ void FeedStream::OnStoreChange(const StreamModel::StoreUpdate& update) {
   store_->WriteOperations(update.sequence_number, update.operations);
 }
 
-// TODO(harringtond): Ensure this function gets test coverage when fetching
-// functionality is added.
-ShouldRefreshResult FeedStream::ShouldRefresh(TriggerType trigger) {
-  if (delegate_->IsOffline()) {
-    return ShouldRefreshResult::kDontRefreshNetworkOffline;
-  }
-
-  if (!delegate_->IsEulaAccepted()) {
-    return ShouldRefreshResult::kDontRefreshEulaNotAccepted;
-  }
-
-  if (!IsArticlesListVisible()) {
-    return ShouldRefreshResult::kDontRefreshArticlesHidden;
-  }
-
+LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest() {
   // TODO(harringtond): |suppress_refreshes_until_| was historically used for
   // privacy purposes after clearing data to make sure sync data made it to the
   // server. I'm not sure we need this now. But also, it was documented as not
@@ -310,24 +312,18 @@ ShouldRefreshResult FeedStream::ShouldRefresh(TriggerType trigger) {
   // I've tried to keep the same functionality as the old feed code, but we
   // should revisit this.
   if (tick_clock_->NowTicks() < suppress_refreshes_until_) {
-    return ShouldRefreshResult::kDontRefreshRefreshSuppressed;
+    return LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete;
   }
 
-  const UserClass user_class = GetUserClass();
-
-  if (clock_->Now() - GetLastFetchTime() <
-      GetUserClassTriggerThreshold(user_class, trigger)) {
-    return ShouldRefreshResult::kDontRefreshNotStale;
+  if (delegate_->IsOffline()) {
+    return LoadStreamStatus::kCannotLoadFromNetworkOffline;
   }
 
-  if (!refresh_throttler_.RequestQuota(user_class)) {
-    return ShouldRefreshResult::kDontRefreshRefreshThrottled;
+  if (!request_throttler_.RequestQuota(NetworkRequestType::kFeedQuery)) {
+    return LoadStreamStatus::kCannotLoadFromNetworkThrottled;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.Scheduler.RefreshTrigger",
-                            trigger);
-
-  return ShouldRefreshResult::kShouldRefresh;
+  return LoadStreamStatus::kNoStatus;
 }
 
 void FeedStream::OnEulaAccepted() {

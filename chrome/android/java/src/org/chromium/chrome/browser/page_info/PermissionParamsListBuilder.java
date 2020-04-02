@@ -18,10 +18,10 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.ContentSettingsResources;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.location.LocationUtils;
@@ -183,7 +183,8 @@ class PermissionParamsListBuilder {
     private boolean shouldShowNotificationsDisabledWarning(PageInfoPermissionEntry permission) {
         return permission.type == ContentSettingsType.NOTIFICATIONS
                 && !NotificationManagerCompat.from(mContext).areNotificationsEnabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.APP_NOTIFICATION_STATUS_MESSAGING);
+                && SiteSettingsFeatureList.isEnabled(
+                        SiteSettingsFeatureList.APP_NOTIFICATION_STATUS_MESSAGING);
     }
 
     private boolean hasAndroidPermission(int contentSettingType) {

@@ -33,8 +33,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "net/base/net_module.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/views/examples/examples_window_with_content.h"
@@ -96,8 +94,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ash_test_helper_->SetUp(std::move(init_params));
 
   window_watcher_ = std::make_unique<WindowWatcher>();
-
-  Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
   Shell::Get()->InitWaylandServer(nullptr);
 

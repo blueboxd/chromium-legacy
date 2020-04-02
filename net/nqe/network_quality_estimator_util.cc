@@ -58,7 +58,7 @@ bool IsRequestForPrivateHost(const URLRequest& request) {
   // reasons, but is needed to maximize the chances of a cache hit.
   return IsPrivateHost(request.context()->host_resolver(),
                        HostPortPair::FromURL(request.url()),
-                       request.network_isolation_key());
+                       request.isolation_info().network_isolation_key());
 }
 
 bool IsPrivateHostForTesting(HostResolver* host_resolver,

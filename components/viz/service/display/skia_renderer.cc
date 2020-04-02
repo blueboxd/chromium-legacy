@@ -559,13 +559,9 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     lock_.emplace(resource_provider, resource_id, alpha_type, origin);
     sk_image_ = lock_->sk_image();
   } else {
-    float sdr_white_level =
-        skia_renderer->current_frame()->display_color_spaces.GetSDRWhiteLevel();
-    float sdr_scale_factor =
-        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel;
     auto* image_context =
         skia_renderer->lock_set_for_external_use_->LockResource(
-            resource_id, /*video_plane=*/false, sdr_scale_factor);
+            resource_id, /*is_video_plane=*/false);
     // |ImageContext::image| provides thread safety: (a) this ImageContext is
     // only accessed by GPU thread after |image| is set and (b) the fields of
     // ImageContext that are accessed by both compositor and GPU thread are no
@@ -585,8 +581,7 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
  public:
   ScopedYUVSkImageBuilder(SkiaRenderer* skia_renderer,
                           const YUVVideoDrawQuad* quad,
-                          sk_sp<SkColorSpace> dst_color_space,
-                          bool has_color_conversion_filter) {
+                          sk_sp<SkColorSpace> dst_color_space) {
     DCHECK(skia_renderer->is_using_ddl());
     DCHECK(IsTextureResource(skia_renderer->resource_provider_,
                              quad->y_plane_resource_id()));
@@ -598,14 +593,6 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
            IsTextureResource(skia_renderer->resource_provider_,
                              quad->a_plane_resource_id()));
 
-    SkYUVColorSpace yuv_color_space;
-    if (has_color_conversion_filter) {
-      yuv_color_space = kIdentity_SkYUVColorSpace;
-    } else {
-      yuv_color_space = kRec601_SkYUVColorSpace;
-      quad->video_color_space.ToSkYUVColorSpace(&yuv_color_space);
-    }
-
     const bool is_i420 =
         quad->u_plane_resource_id() != quad->v_plane_resource_id();
     const bool has_alpha = quad->a_plane_resource_id() != kInvalidResourceId;
@@ -615,25 +602,26 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
     // Skia API ignores the color space information on the individual planes.
     // Dropping them here avoids some LOG spam.
     auto* y_context = skia_renderer->lock_set_for_external_use_->LockResource(
-        quad->y_plane_resource_id(), true /* is_video_plane */);
+        quad->y_plane_resource_id(), /*is_video_plane=*/true);
     contexts.push_back(std::move(y_context));
     auto* u_context = skia_renderer->lock_set_for_external_use_->LockResource(
-        quad->u_plane_resource_id(), true /* is_video_plane */);
+        quad->u_plane_resource_id(), /*is_video_plane=*/true);
     contexts.push_back(std::move(u_context));
     if (is_i420) {
       auto* v_context = skia_renderer->lock_set_for_external_use_->LockResource(
-          quad->v_plane_resource_id(), true /* is_video_plane */);
+          quad->v_plane_resource_id(), /*is_video_plane=*/true);
       contexts.push_back(std::move(v_context));
     }
 
     if (has_alpha) {
       auto* a_context = skia_renderer->lock_set_for_external_use_->LockResource(
-          quad->a_plane_resource_id(), true /* is_video_plane */);
+          quad->a_plane_resource_id(), /*is_video_plane=*/true);
       contexts.push_back(std::move(a_context));
     }
 
+    // Note: YUV to RGB and color conversion is handled by a color filter.
     sk_image_ = skia_renderer->skia_output_surface_->MakePromiseSkImageFromYUV(
-        std::move(contexts), yuv_color_space, dst_color_space, has_alpha);
+        std::move(contexts), dst_color_space, has_alpha);
     LOG_IF(ERROR, !sk_image_) << "Failed to create the promise sk yuva image.";
   }
 
@@ -1660,6 +1648,7 @@ void SkiaRenderer::FlushBatchedQuads() {
   SkPaint paint;
   paint.setFilterQuality(batched_quad_state_.filter_quality);
   paint.setBlendMode(batched_quad_state_.blend_mode);
+
   current_canvas_->experimental_DrawEdgeAAImageSet(
       &batched_quads_.front(), batched_quads_.size(),
       batched_draw_regions_.data(), &batched_cdt_matrices_.front(), &paint,
@@ -1694,30 +1683,14 @@ void SkiaRenderer::DrawColoredQuad(SkColor color,
   // PrepareCanvasForRPDQ will have updated params->opacity and blend_mode to
   // account for the layer applying those effects.
   color = SkColorSetA(color, params->opacity * SkColorGetA(color));
+
   const SkPoint* draw_region =
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
 
-  SkColor4f color4f = SkColor4f::FromColor(color);
-  float sdr_white_level =
-      current_frame()->display_color_spaces.GetSDRWhiteLevel();
-  if (sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
-    // SkColor is always sRGB. Use skcms to linearize, scale, and re-encode
-    const float scale_factor =
-        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel;
-    const auto* srgb_to_linear = skcms_sRGB_TransferFunction();
-    const auto* linear_to_srgb = skcms_sRGB_Inverse_TransferFunction();
-
-    for (int c = 0; c < 3; ++c) {
-      color4f[c] = skcms_TransferFunction_eval(
-          linear_to_srgb, scale_factor * skcms_TransferFunction_eval(
-                                             srgb_to_linear, color4f[c]));
-    }
-  }
-
   current_canvas_->experimental_DrawEdgeAAQuad(
       gfx::RectFToSkRect(params->visible_rect), draw_region,
-      static_cast<SkCanvas::QuadAAFlags>(params->aa_flags), color4f,
-      params->blend_mode);
+      static_cast<SkCanvas::QuadAAFlags>(params->aa_flags),
+      SkColor4f::FromColor(color), params->blend_mode);
 }
 
 void SkiaRenderer::DrawSingleImage(const SkImage* image,
@@ -1791,6 +1764,7 @@ void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeJoin(SkPaint::kMiter_Join);
   paint.setStrokeWidth(quad->width);
+
   current_canvas_->drawPath(path, paint);
 }
 
@@ -2103,13 +2077,8 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   }
 #endif
 
-  sk_sp<SkColorFilter> color_filter =
-      GetColorFilter(src_color_space, dst_color_space, quad->resource_offset,
-                     quad->resource_multiplier);
-
   DCHECK(resource_provider_);
-  ScopedYUVSkImageBuilder builder(
-      this, quad, frame_color_space.ToSkColorSpace(), !!color_filter);
+  ScopedYUVSkImageBuilder builder(this, quad, dst_color_space.ToSkColorSpace());
   const SkImage* image = builder.sk_image();
   if (!image)
     return;
@@ -2117,13 +2086,17 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
       quad->ya_tex_coord_rect, gfx::RectF(quad->rect), params->visible_rect);
 
-  SkPaint paint = params->paint();
-  if (color_filter)
-    paint.setColorFilter(color_filter);
-
   // Use provided, unclipped texture coordinates as the content area, which will
   // force coord clamping unless the geometry was clipped, or they span the
   // entire YUV image.
+  SkPaint paint = params->paint();
+
+  sk_sp<SkColorFilter> color_filter =
+      GetColorFilter(src_color_space, dst_color_space, quad->resource_offset,
+                     quad->resource_multiplier);
+  DCHECK(!paint.getColorFilter());
+  paint.setColorFilter(color_filter);
+
   DrawSingleImage(image, quad->ya_tex_coord_rect, rpdq_params, &paint, params);
 }
 
@@ -2202,14 +2175,10 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
                                                   float resource_offset,
                                                   float resource_multiplier) {
-  gfx::ColorSpace adjusted_src = src;
-  float sdr_white_level =
-      current_frame()->display_color_spaces.GetSDRWhiteLevel();
-  if (src.IsValid() && !src.IsHDR() &&
-      sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
-    adjusted_src = src.GetScaledColorSpace(
-        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
-  }
+  // If the input color space is PQ, and it did not specify a white level,
+  // override it with the frame's white level.
+  gfx::ColorSpace adjusted_src = src.GetWithPQSDRWhiteLevel(
+      current_frame()->display_color_spaces.GetSDRWhiteLevel());
 
   sk_sp<SkRuntimeEffect>& effect = color_filter_cache_[dst][adjusted_src];
   if (!effect) {

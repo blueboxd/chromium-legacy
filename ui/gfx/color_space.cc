@@ -428,7 +428,12 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(TransferID, IEC61966_2_1_HDR)
     PRINT_ENUM_CASE(TransferID, LINEAR_HDR)
     case TransferID::SMPTEST2084:
-      ss << "PQ (SDR white point " << transfer_params_[0] << ")";
+      ss << "PQ (SDR white point ";
+      if (transfer_params_[0] == 0.f)
+        ss << "default " << kDefaultSDRWhiteLevel;
+      else
+        ss << transfer_params_[0];
+      ss << " nits)";
       break;
     case TransferID::CUSTOM: {
       skcms_TransferFunction fn;
@@ -607,11 +612,11 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       transfer_fn = SkNamedTransferFn::kHLG;
       break;
     case TransferID::SMPTEST2084:
-      transfer_fn = SkNamedTransferFn::kPQ;
+      GetPQTransferFunction(&transfer_fn);
       break;
     default:
       if (!GetTransferFunction(&transfer_fn)) {
-        DLOG(ERROR) << "Failed to transfer function for SkColorSpace";
+        DLOG(ERROR) << "Failed to get transfer function for SkColorSpace";
         return nullptr;
       }
       break;
@@ -940,6 +945,23 @@ bool ColorSpace::GetTransferFunction(skcms_TransferFunction* fn) const {
   }
 }
 
+void ColorSpace::GetPQTransferFunction(skcms_TransferFunction* fn) const {
+  DCHECK_EQ(transfer_, TransferID::SMPTEST2084);
+  const float sdr_white_level =
+      transfer_params_[0] == 0.0f ? kDefaultSDRWhiteLevel : transfer_params_[0];
+  // The generic PQ transfer function produces normalized luminance values i.e.
+  // the range 0-1 represents 0-10000 nits for the reference display, but we
+  // want to map 1.0 to |sdr_white_level| nits so we need to scale accordingly.
+  const float w = 10000.0f / sdr_white_level;
+  // Distribute scaling factor W by scaling A and B with X ^ (1/F):
+  // ((A + Bx^C) / (D + Ex^C))^F * W = ((A + Bx^C) / (D + Ex^C) * W^(1/F))^F
+  // See https://crbug.com/1058580#c32 for discussion.
+  *fn = SkNamedTransferFn::kPQ;
+  const float ws = powf(w, 1 / fn->f);
+  fn->a = ws * fn->a;
+  fn->b = ws * fn->b;
+}
+
 bool ColorSpace::GetInverseTransferFunction(skcms_TransferFunction* fn) const {
   if (!GetTransferFunction(fn))
     return false;
@@ -950,7 +972,7 @@ bool ColorSpace::GetInverseTransferFunction(skcms_TransferFunction* fn) const {
 bool ColorSpace::GetPQSDRWhiteLevel(float* sdr_white_level) const {
   if (transfer_ != TransferID::SMPTEST2084)
     return false;
-  if (transfer_params_[0] == 0.f)
+  if (transfer_params_[0] == 0.0f)
     *sdr_white_level = kDefaultSDRWhiteLevel;
   else
     *sdr_white_level = transfer_params_[0];

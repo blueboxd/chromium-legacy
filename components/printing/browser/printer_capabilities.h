@@ -33,12 +33,12 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 // as |device_name| in the PrinterBackend.  The returned dictionary is suitable
 // for passage to the WebUI. The settings are obtained using |print_backend|,
 // which is required.
-// Data from |basic_info|, |additional_papers| and |has_secure_protocol| are
+// Data from |basic_info|, |user_defined_papers| and |has_secure_protocol| are
 // incorporated into the returned dictionary.
 base::Value GetSettingsOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
-    const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
+    PrinterSemanticCapsAndDefaults::Papers user_defined_papers,
     bool has_secure_protocol,
     scoped_refptr<PrintBackend> print_backend);
 

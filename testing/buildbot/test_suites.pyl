@@ -2832,6 +2832,28 @@
       'sandbox_linux_unittests': {},
     },
 
+    'linux_ozone_common_gtests': {
+      'content_unittests': {},
+      'events_unittests': {},
+    },
+
+    'linux_ozone_headless_only_gtests': {
+      'ozone_unittests': {},
+      'services_unittests': {},
+    },
+
+    'linux_ozone_wayland_and_x11_gtests': {
+      'accessibility_unittests': {},
+      'aura_unittests': {},
+      'gpu_unittests': {},
+      'ui_touch_selection_unittests': {},
+      'views_unittests': {}
+    },
+
+    'linux_ozone_x11_only_gtests': {
+      'ozone_x11_unittests': {},
+    },
+
     'linux_specific_chromium_isolated_scripts': {
       'not_site_per_process_blink_web_tests': {
         # not_site_per_process_blink_web_tests provides coverage for
@@ -3098,49 +3120,6 @@
         ],
         'test': 'opus_tests',
       },
-    },
-
-    'ozone_linux_gtests_headless': {
-      'events_unittests': {
-        'experiment_percentage': 100,
-      },
-      'headless_content_unittests': {
-        # TODO(https://crbug.com/106023): Use variants to uniquify the test
-        # name instead of manually prepending "headless_".
-        'test': 'content_unittests',
-      },
-      'ozone_unittests': {},
-      'services_unittests': {},
-    },
-
-    'ozone_linux_gtests_wayland': {
-      'accessibility_unittests': {},
-      'aura_unittests': {},
-      'content_unittests': {},
-      'events_unittests': {},
-      'gpu_unittests': {},
-      'ui_touch_selection_unittests': {},
-      'wayland_views_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter',
-        ],
-        'test': 'views_unittests',
-      }
-    },
-
-    'ozone_linux_gtests_x11': {
-      'accessibility_unittests': {},
-      'aura_unittests': {},
-      'content_unittests': {},
-      'events_unittests': {},
-      'gpu_unittests': {},
-      'ozone_x11_unittests': {},
-      'ui_touch_selection_unittests': {},
-      'views_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',
-        ],
-      }
     },
 
     'performance_smoke_test_isolated_scripts': {
@@ -4775,6 +4754,50 @@
         'variants': [
           'SIM_IPHONE_X_13_3',
           'SIM_IPAD_AIR_2_13_3',
+        ]
+      },
+    },
+
+    'linux_ozone_headless_tests': {
+      'linux_ozone_headless_only_gtests': {
+        'variants': [
+          'OZONE_HEADLESS',
+        ]
+      },
+      'linux_ozone_common_gtests': {
+        'variants': [
+          'OZONE_HEADLESS',
+        ]
+      },
+    },
+
+    'linux_ozone_wayland_tests': {
+      'linux_ozone_wayland_and_x11_gtests': {
+        'variants': [
+          'OZONE_WAYLAND',
+        ]
+      },
+      'linux_ozone_common_gtests': {
+        'variants': [
+          'OZONE_WAYLAND',
+        ]
+      },
+    },
+
+    'linux_ozone_x11_tests': {
+      'linux_ozone_x11_only_gtests': {
+        'variants': [
+          'OZONE_X11',
+        ]
+      },
+      'linux_ozone_wayland_and_x11_gtests': {
+        'variants': [
+          'OZONE_X11',
+        ]
+      },
+      'linux_ozone_common_gtests': {
+        'variants': [
+          'OZONE_X11',
         ]
       },
     },

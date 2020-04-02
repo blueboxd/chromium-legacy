@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/schema_org/common/metadata.mojom.h"
+#include "components/schema_org/schema_org_entity_names.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -123,10 +124,7 @@ TEST_F(MediaFeedsFetcherTest, SucceedsOnBasicFetch) {
 
   schema_org::improved::mojom::EntityPtr expected =
       schema_org::improved::mojom::Entity::New();
-  // TODO(sgbowen): Update this to CompleteDataFeed when this new type is added
-  // to the checked in schema.org file in
-  // //third_party/schema_org/schema.jsonld.
-  expected->type = "DataFeed";
+  expected->type = schema_org::entity::kCompleteDataFeed;
   schema_org::improved::mojom::PropertyPtr property =
       schema_org::improved::mojom::Property::New();
   property->name = "name";
@@ -146,8 +144,8 @@ TEST_F(MediaFeedsFetcherTest, SucceedsOnBasicFetch) {
           }));
 
   WaitForRequest();
-  ASSERT_TRUE(
-      RespondToFetch("{\"@type\":\"DataFeed\",\"name\":\"Media Site\"}"));
+  ASSERT_TRUE(RespondToFetch(
+      "{\"@type\":\"CompleteDataFeed\",\"name\":\"Media Site\"}"));
 
   EXPECT_EQ(out, expected);
 }
@@ -214,7 +212,7 @@ TEST_F(MediaFeedsFetcherTest, ReturnsErrFailedForBadEntityData) {
 
   WaitForRequest();
   ASSERT_TRUE(RespondToFetch(
-      "{\"@type\":\"DataFeed\"\"name\":\"Bad json missing a comma\"}"));
+      "{\"@type\":\"CompleteDataFeed\"\"name\":\"Bad json missing a comma\"}"));
 }
 
 }  // namespace media_feeds

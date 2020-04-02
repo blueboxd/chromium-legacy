@@ -1521,6 +1521,8 @@ String AXLayoutObject::StringValue() const {
   // buttons which will return their name.
   // https://html.spec.whatwg.org/C/#dom-input-value
   if (const auto* input = DynamicTo<HTMLInputElement>(GetNode())) {
+    if (input->type() == input_type_names::kFile)
+      return input->FileStatusText();
     if (input->type() != input_type_names::kButton &&
         input->type() != input_type_names::kCheckbox &&
         input->type() != input_type_names::kImage &&

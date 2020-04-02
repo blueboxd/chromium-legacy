@@ -73,6 +73,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
@@ -756,7 +757,8 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
     chrome::ShowSiteSettings(
         profile_, extensions::AppLaunchInfo::GetFullLaunchURL(extension));
 
-  } else if (extension->ShouldDisplayInExtensionSettings()) {
+  } else if (extensions::ui_util::ShouldDisplayInExtensionSettings(
+                 *extension)) {
     Browser* browser = chrome::FindTabbedBrowser(profile_, false);
     if (!browser) {
       browser = new Browser(Browser::CreateParams(profile_, true));

@@ -11,8 +11,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 
 import org.chromium.ui.base.ViewUtils;
@@ -66,34 +68,44 @@ public class ManagedPreferencesUtils {
     /**
      * @return The resource ID for the Managed By Enterprise icon.
      */
-    public static int getManagedByEnterpriseIconId() {
+    public static @DrawableRes int getManagedByEnterpriseIconId() {
         return R.drawable.controlled_setting_mandatory;
     }
 
     /**
      * @return The resource ID for the Managed by Custodian icon.
      */
-    public static int getManagedByCustodianIconId() {
+    public static @DrawableRes int getManagedByCustodianIconId() {
         return R.drawable.ic_account_child_grey600_36dp;
     }
 
     /**
      * @return The appropriate Drawable based on whether the preference is controlled by a policy or
-     *      a custodian.
+     *         a custodian.
      */
     public static Drawable getManagedIconDrawable(
             @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
-        if (delegate == null) return preference.getIcon();
+        int resId = getManagedIconResId(delegate, preference);
+        return resId == 0 ? preference.getIcon()
+                          : SettingsUtils.getTintedIcon(preference.getContext(), resId);
+    }
+
+    /**
+     * @return The resource ID for the managed icon to show. Returns 0 if no managed icon should be
+     *         shown.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public static int getManagedIconResId(
+            @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
+        if (delegate == null) return 0;
 
         if (delegate.isPreferenceControlledByPolicy(preference)) {
-            return SettingsUtils.getTintedIcon(
-                    preference.getContext(), getManagedByEnterpriseIconId());
+            return getManagedByEnterpriseIconId();
         } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-            return SettingsUtils.getTintedIcon(
-                    preference.getContext(), getManagedByCustodianIconId());
+            return getManagedByCustodianIconId();
         }
 
-        return preference.getIcon();
+        return 0;
     }
 
     /**

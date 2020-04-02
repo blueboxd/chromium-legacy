@@ -79,6 +79,14 @@
   text-align: start;
 }
 
+.appcache-details th {
+  text-align: start;
+}
+
 .appcache-details td {
   width: 80px;
+}
+
+.appcache-details td.token-expires {
+  width: 500px;
 }

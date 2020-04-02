@@ -24,7 +24,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell/toplevel_window.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_screenshot_delegate.h"
@@ -57,11 +56,11 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/touchscreen_device.h"
-#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 using session_manager::SessionState;
@@ -142,32 +141,12 @@ void AshTestBase::SetUp(std::unique_ptr<TestShellDelegate> delegate) {
 
   setup_called_ = true;
 
-  // Clears the saved state so that test doesn't use on the wrong
-  // default state.
-  shell::ToplevelWindow::ClearSavedStateForTest();
-
   AshTestHelper::InitParams params;
   params.start_session = start_session_;
   params.delegate = std::move(delegate);
   params.local_state = local_state();
   ash_test_helper_ = std::make_unique<AshTestHelper>();
   ash_test_helper_->SetUp(std::move(params));
-
-  Shell::GetPrimaryRootWindow()->Show();
-  Shell::GetPrimaryRootWindow()->GetHost()->Show();
-  // Move the mouse cursor to far away so that native events doesn't
-  // interfere test expectations.
-  Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  Shell::Get()->cursor_manager()->EnableMouseEvents();
-
-  // Changing GestureConfiguration shouldn't make tests fail. These values
-  // prevent unexpected events from being generated during tests. Such as
-  // delayed events which create race conditions on slower tests.
-  ui::GestureConfiguration* gesture_config =
-      ui::GestureConfiguration::GetInstance();
-  gesture_config->set_max_touch_down_duration_for_click_in_ms(800);
-  gesture_config->set_long_press_time_in_ms(1000);
-  gesture_config->set_max_touch_move_in_pixels_for_click(5);
 }
 
 void AshTestBase::TearDown() {

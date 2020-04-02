@@ -164,8 +164,7 @@ void FakeSkiaOutputSurface::MakePromiseSkImage(ImageContext* image_context) {
 
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(
     const std::vector<ImageContext*>& contexts,
-    SkYUVColorSpace yuv_color_space,
-    sk_sp<SkColorSpace> dst_color_space,
+    sk_sp<SkColorSpace> image_color_space,
     bool has_alpha) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();

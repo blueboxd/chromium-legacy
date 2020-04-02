@@ -14,6 +14,22 @@
 
 namespace blink {
 
+namespace {
+
+bool IsLeftMostOffset(const ShapeResult& shape_result, unsigned offset) {
+  if (shape_result.Rtl())
+    return offset == shape_result.NumCharacters();
+  return offset == 0;
+}
+
+bool IsRightMostOffset(const ShapeResult& shape_result, unsigned offset) {
+  if (shape_result.Rtl())
+    return offset == 0;
+  return offset == shape_result.NumCharacters();
+}
+
+}  // namespace
+
 NGLineTruncator::NGLineTruncator(const NGLineInfo& line_info)
     : line_style_(&line_info.LineStyle()),
       available_width_(line_info.AvailableWidth() - line_info.TextIndent()),
@@ -44,6 +60,7 @@ LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
     NGLineBoxFragmentBuilder::ChildList* line_box,
     NGLineBoxFragmentBuilder::Child* ellipsized_child) {
   // Create the ellipsis, associating it with the ellipsized child.
+  DCHECK(ellipsized_child->HasInFlowFragment());
   LayoutObject* ellipsized_layout_object =
       ellipsized_child->PhysicalFragment()->GetMutableLayoutObject();
   DCHECK(ellipsized_layout_object);
@@ -73,6 +90,48 @@ LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
                      LogicalOffset{ellipsis_inline_offset, -ellpisis_ascent},
                      ellipsis_width_, 0);
   return ellipsis_inline_offset;
+}
+
+wtf_size_t NGLineTruncator::AddTruncatedChild(
+    wtf_size_t source_index,
+    bool leave_one_character,
+    LayoutUnit position,
+    TextDirection edge,
+    NGLineBoxFragmentBuilder::ChildList* line_box,
+    NGInlineLayoutStateStack* box_states) {
+  NGLineBoxFragmentBuilder::ChildList& line = *line_box;
+
+  scoped_refptr<ShapeResult> shape_result =
+      line[source_index].fragment->TextShapeResult()->CreateShapeResult();
+  unsigned text_offset = shape_result->OffsetToFit(position, edge);
+  if (IsLtr(edge) ? IsLeftMostOffset(*shape_result, text_offset)
+                  : IsRightMostOffset(*shape_result, text_offset)) {
+    if (!leave_one_character)
+      return kDidNotAddChild;
+    text_offset =
+        shape_result->OffsetToFit(shape_result->PositionForOffset(
+                                      IsRtl(edge) == shape_result->Rtl()
+                                          ? 1
+                                          : shape_result->NumCharacters() - 1),
+                                  edge);
+  }
+
+  const auto& fragment = line[source_index].fragment;
+  const bool keep_start = edge == fragment->ResolvedDirection();
+  scoped_refptr<const NGPhysicalTextFragment> truncated_fragment =
+      keep_start ? fragment->TrimText(fragment->StartOffset(),
+                                      fragment->StartOffset() + text_offset)
+                 : fragment->TrimText(fragment->StartOffset() + text_offset,
+                                      fragment->EndOffset());
+  wtf_size_t new_index = line.size();
+  line.AddChild();
+  box_states->ChildInserted(new_index);
+  line[new_index] = line[source_index];
+  line[new_index].inline_size = line_style_->IsHorizontalWritingMode()
+                                    ? truncated_fragment->Size().width
+                                    : truncated_fragment->Size().height;
+  line[new_index].fragment = std::move(truncated_fragment);
+  return new_index;
 }
 
 LayoutUnit NGLineTruncator::TruncateLine(
@@ -141,6 +200,182 @@ LayoutUnit NGLineTruncator::TruncateLine(
   LayoutUnit ellipsis_inline_offset =
       PlaceEllipsisNextTo(line_box, ellipsized_child);
   return std::max(ellipsis_inline_offset + ellipsis_width_, line_width);
+}
+
+// This function was designed to work only with <input type=file>.
+// We assume the line box contains:
+//     (Optional) children without in-flow fragments
+//     Children with in-flow fragments, and
+//     (Optional) children without in-flow fragments
+// in this order, and the children with in-flow fragments have no padding,
+// no border, and no margin.
+// Children with IsPlaceholder() can appear anywhere.
+LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
+    LayoutUnit line_width,
+    NGLineBoxFragmentBuilder::ChildList* line_box,
+    NGInlineLayoutStateStack* box_states) {
+  // Shape the ellipsis and compute its inline size.
+  SetupEllipsis();
+
+  NGLineBoxFragmentBuilder::ChildList& line = *line_box;
+  wtf_size_t initial_index_left = kNotFound;
+  wtf_size_t initial_index_right = kNotFound;
+  for (wtf_size_t i = 0; i < line_box->size(); ++i) {
+    auto& child = line[i];
+    if (!child.fragment && child.IsPlaceholder())
+      continue;
+    if (child.HasOutOfFlowFragment() || !child.fragment ||
+        !child.fragment->TextShapeResult()) {
+      if (initial_index_right != kNotFound)
+        break;
+      continue;
+    }
+    if (initial_index_left == kNotFound)
+      initial_index_left = i;
+    initial_index_right = i;
+  }
+  // There are no truncatable children.
+  if (initial_index_left == kNotFound)
+    return line_width;
+  DCHECK_NE(initial_index_right, kNotFound);
+
+  // line[]:
+  //     s s s p f f p f f s s
+  //             ^       ^
+  // initial_index_left  |
+  //                     initial_index_right
+  //   s: child without in-flow fragment
+  //   p: placeholder child
+  //   f: child with in-flow fragment
+
+  const LayoutUnit static_width_left = line[initial_index_left].InlineOffset();
+  LayoutUnit static_width_right = LayoutUnit(0);
+  for (wtf_size_t i = initial_index_right + 1; i < line.size(); ++i)
+    static_width_right += line[i].inline_size;
+  const LayoutUnit available_width =
+      available_width_ - static_width_left - static_width_right;
+  if (available_width <= ellipsis_width_)
+    return line_width;
+  LayoutUnit available_width_left = (available_width - ellipsis_width_) / 2;
+  LayoutUnit available_width_right = available_width_left;
+
+  // Children for ellipsis and truncated fragments will have index which
+  // is >= new_child_start.
+  const wtf_size_t new_child_start = line.size();
+
+  wtf_size_t index_left = initial_index_left;
+  wtf_size_t index_right = initial_index_right;
+
+  if (IsLtr(line_direction_)) {
+    // Find truncation point at the left, truncate, and add an ellipsis.
+    while (available_width_left >= line[index_left].inline_size)
+      available_width_left -= line[index_left++].inline_size;
+    DCHECK_LE(index_left, index_right);
+    DCHECK(!line[index_left].IsPlaceholder());
+    wtf_size_t new_index = AddTruncatedChild(
+        index_left, index_left == initial_index_left, available_width_left,
+        TextDirection::kLtr, line_box, box_states);
+    if (new_index == kDidNotAddChild) {
+      DCHECK_GT(index_left, 0u);
+      wtf_size_t i = index_left;
+      for (; i > 0; --i) {
+        if (line[i - 1].HasInFlowFragment())
+          break;
+        DCHECK(line[i - 1].IsPlaceholder());
+      }
+      PlaceEllipsisNextTo(line_box, &line[i - 1]);
+      available_width_right += available_width_left;
+    } else {
+      PlaceEllipsisNextTo(line_box, &line[new_index]);
+      available_width_right +=
+          available_width_left - line[new_index].inline_size;
+    }
+
+    // Find truncation point at the right.
+    while (available_width_right >= line[index_right].inline_size)
+      available_width_right -= line[index_right--].inline_size;
+    LayoutUnit new_modified_right_offset =
+        line[line.size() - 1].InlineOffset() + ellipsis_width_;
+    DCHECK_LE(index_left, index_right);
+    DCHECK(!line[index_right].IsPlaceholder());
+    if (available_width_right > 0) {
+      new_index = AddTruncatedChild(
+          index_right, false,
+          line[index_right].inline_size - available_width_right,
+          TextDirection::kRtl, line_box, box_states);
+      if (new_index != kDidNotAddChild) {
+        line[new_index].rect.offset.inline_offset = new_modified_right_offset;
+        new_modified_right_offset += line[new_index].inline_size;
+      }
+    }
+    // Shift unchanged children at the right of the truncated child.
+    // It's ok to modify existing children's offsets because they are not
+    // web-exposed.
+    LayoutUnit offset_diff = line[index_right].InlineOffset() +
+                             line[index_right].inline_size -
+                             new_modified_right_offset;
+    for (wtf_size_t i = index_right + 1; i < new_child_start; ++i)
+      line[i].rect.offset.inline_offset -= offset_diff;
+    line_width -= offset_diff;
+
+  } else {
+    // Find truncation point at the right, truncate, and add an ellipsis.
+    while (available_width_right >= line[index_right].inline_size)
+      available_width_right -= line[index_right--].inline_size;
+    DCHECK_LE(index_left, index_right);
+    DCHECK(!line[index_right].IsPlaceholder());
+    wtf_size_t new_index =
+        AddTruncatedChild(index_right, index_right == initial_index_right,
+                          line[index_right].inline_size - available_width_right,
+                          TextDirection::kRtl, line_box, box_states);
+    if (new_index == kDidNotAddChild) {
+      wtf_size_t i = index_right + 1;
+      for (; i < line.size(); ++i) {
+        if (line[i].HasInFlowFragment())
+          break;
+        DCHECK(line[i].IsPlaceholder());
+      }
+      PlaceEllipsisNextTo(line_box, &line[i]);
+      available_width_left += available_width_right;
+    } else {
+      line[new_index].rect.offset.inline_offset +=
+          line[index_right].inline_size - line[new_index].inline_size;
+      PlaceEllipsisNextTo(line_box, &line[new_index]);
+      available_width_left +=
+          available_width_right - line[new_index].inline_size;
+    }
+    LayoutUnit ellipsis_offset = line[line.size() - 1].InlineOffset();
+
+    // Find truncation point at the left.
+    while (available_width_left >= line[index_left].inline_size)
+      available_width_left -= line[index_left++].inline_size;
+    DCHECK_LE(index_left, index_right);
+    DCHECK(!line[index_left].IsPlaceholder());
+    if (available_width_left > 0) {
+      new_index = AddTruncatedChild(index_left, false, available_width_left,
+                                    TextDirection::kLtr, line_box, box_states);
+      if (new_index != kDidNotAddChild) {
+        line[new_index].rect.offset.inline_offset =
+            ellipsis_offset - line[new_index].inline_size;
+      }
+    }
+
+    // Shift unchanged children at the left of the truncated child.
+    // It's ok to modify existing children's offsets because they are not
+    // web-exposed.
+    LayoutUnit offset_diff =
+        line[line.size() - 1].InlineOffset() - line[index_left].InlineOffset();
+    for (wtf_size_t i = index_left; i > 0; --i)
+      line[i - 1].rect.offset.inline_offset += offset_diff;
+    line_width -= offset_diff;
+  }
+  // Hide left/right truncated children and children between them.
+  for (wtf_size_t i = index_left; i <= index_right; ++i) {
+    if (line[i].HasInFlowFragment())
+      HideChild(&line[i]);
+  }
+
+  return line_width;
 }
 
 // Hide this child from being painted. Leaves a hidden fragment so that layout

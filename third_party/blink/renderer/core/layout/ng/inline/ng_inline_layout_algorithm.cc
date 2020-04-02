@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
@@ -327,8 +328,16 @@ void NGInlineLayoutAlgorithm::CreateLine(
                     line_info->AvailableWidth() - line_info->TextIndent() &&
                 node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) ||
                ShouldTruncateForLineClamp(*line_info))) {
-    inline_size = NGLineTruncator(*line_info)
-                      .TruncateLine(inline_size, &line_box_, box_states_);
+    NGLineTruncator truncator(*line_info);
+    auto* input =
+        DynamicTo<HTMLInputElement>(node_.GetLayoutBlockFlow()->GetNode());
+    if (input && input->ShouldApplyMiddleEllipsis()) {
+      inline_size = truncator.TruncateLineInTheMiddle(inline_size, &line_box_,
+                                                      box_states_);
+    } else {
+      inline_size =
+          truncator.TruncateLine(inline_size, &line_box_, box_states_);
+    }
   }
 
   // Negative margins can make the position negative, but the inline size is

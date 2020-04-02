@@ -8,7 +8,6 @@
  * @typedef {{
  *   ABOUT: !settings.Route,
  *   ABOUT_ABOUT: !settings.Route,
- *   ACCESSIBILITY: !settings.Route,
  *   ACCOUNTS: !settings.Route,
  *   ACCOUNT_MANAGER: !settings.Route,
  *   ADVANCED: !settings.Route,
@@ -53,6 +52,7 @@
  *   MULTIDEVICE: !settings.Route,
  *   MULTIDEVICE_FEATURES: !settings.Route,
  *   NETWORK_DETAIL: !settings.Route,
+ *   OS_ACCESSIBILITY: !settings.Route,
  *   OS_RESET: !settings.Route,
  *   OS_SYNC: !settings.Route,
  *   PEOPLE: !settings.Route,

@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/domain_reliability/monitor.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
@@ -191,9 +192,11 @@ bool NetworkServiceNetworkDelegate::OnCanGetCookies(
       allowed_from_caller &&
       network_context_->cookie_manager()
           ->cookie_settings()
-          .IsCookieAccessAllowed(
-              request.url(), request.site_for_cookies().RepresentativeUrl(),
-              request.network_isolation_key().GetTopFrameOrigin());
+          .IsCookieAccessAllowed(request.url(),
+                                 request.site_for_cookies().RepresentativeUrl(),
+                                 request.isolation_info()
+                                     .network_isolation_key()
+                                     .GetTopFrameOrigin());
 
   if (!allowed)
     return false;
@@ -218,9 +221,9 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
       allowed_from_caller &&
       network_context_->cookie_manager()
           ->cookie_settings()
-          .IsCookieAccessAllowed(
-              request.url(), request.site_for_cookies().RepresentativeUrl(),
-              request.network_isolation_key().GetTopFrameOrigin());
+          .IsCookieAccessAllowed(request.url(),
+                                 request.site_for_cookies().RepresentativeUrl(),
+                                 request.isolation_info().top_frame_origin());
   if (!allowed)
     return false;
   URLLoader* url_loader = URLLoader::ForRequest(request);

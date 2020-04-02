@@ -8,6 +8,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -47,6 +49,8 @@ class PreferencesTest : public LoginManagerTest {
 
     scoped_testing_cros_settings_.device_settings()->Set(
         kDeviceOwner, base::Value(test_users_[0].GetUserEmail()));
+
+    feature_list_.InitAndEnableFeature(features::kAllowScrollSettings);
   }
 
   void SetUpOnMainThread() override {
@@ -140,6 +144,7 @@ class PreferencesTest : public LoginManagerTest {
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   system::InputDeviceSettings::FakeInterface* input_settings_;
   input_method::FakeImeKeyboard* keyboard_;
 

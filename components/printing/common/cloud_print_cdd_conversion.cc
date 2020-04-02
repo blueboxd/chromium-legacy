@@ -58,6 +58,17 @@ printer::TypedValueVendorCapability::ValueType ToCloudValueType(
 }
 #endif  // defined(OS_CHROMEOS)
 
+printer::Media ConvertPaperToMedia(
+    const printing::PrinterSemanticCapsAndDefaults::Paper& paper) {
+  gfx::Size paper_size = paper.size_um;
+  if (paper_size.width() > paper_size.height())
+    paper_size.SetSize(paper_size.height(), paper_size.width());
+  printer::Media new_media(paper.display_name, paper.vendor_id,
+                           paper_size.width(), paper_size.height());
+  new_media.MatchBySize();
+  return new_media;
+}
+
 printer::MediaCapability GetMediaCapabilities(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
   printer::MediaCapability media_capabilities;
@@ -70,12 +81,7 @@ printer::MediaCapability GetMediaCapabilities(
   default_media.MatchBySize();
 
   for (const auto& paper : semantic_info.papers) {
-    gfx::Size paper_size = paper.size_um;
-    if (paper_size.width() > paper_size.height())
-      paper_size.SetSize(paper_size.height(), paper_size.width());
-    printer::Media new_media(paper.display_name, paper.vendor_id,
-                             paper_size.width(), paper_size.height());
-    new_media.MatchBySize();
+    printer::Media new_media = ConvertPaperToMedia(paper);
     if (!new_media.IsValid())
       continue;
 
@@ -90,6 +96,16 @@ printer::MediaCapability GetMediaCapabilities(
   if (!is_default_set && default_media.IsValid())
     media_capabilities.AddDefaultOption(default_media, true);
 
+  // Allow user defined paper sizes to be repeats of existing paper sizes.
+  // Do not allow user defined paper sizes to be the default, for now.
+  // TODO(thestig): Figure out the default paper policy here.
+  for (const auto& paper : semantic_info.user_defined_papers) {
+    printer::Media new_media = ConvertPaperToMedia(paper);
+    if (!new_media.IsValid())
+      continue;
+
+    media_capabilities.AddOption(new_media);
+  }
   return media_capabilities;
 }
 

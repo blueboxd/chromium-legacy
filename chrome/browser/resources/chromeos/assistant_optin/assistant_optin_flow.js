@@ -68,6 +68,7 @@ Polymer({
       case this.FlowType.SPEAKER_ID_ENROLLMENT:
       case this.FlowType.SPEAKER_ID_RETRAIN:
         this.$['value-prop'].hidden = true;
+        this.$['voice-match'].isFirstScreen = true;
         this.showScreen(this.$['voice-match']);
         break;
       default:

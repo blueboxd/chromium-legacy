@@ -284,8 +284,9 @@ class Client {
   class Delegate {
    public:
     virtual ~Delegate() = default;
+    virtual void OnHandshake(Client* client) = 0;
     virtual void MakeCredential(
-        uint64_t client_addr,
+        Client* client,
         const std::string& origin,
         const std::string& rp_id,
         base::span<const uint8_t> challenge,
@@ -294,7 +295,7 @@ class Client {
         base::span<std::vector<uint8_t>> excluded_credential_ids,
         bool resident_key_required) = 0;
     virtual void GetAssertion(
-        uint64_t client_addr,
+        Client* client,
         const std::string& origin,
         const std::string& rp_id,
         base::span<const uint8_t> challenge,
@@ -334,6 +335,8 @@ class Client {
     }
     return fragments;
   }
+
+  uint64_t addr() { return addr_; }
 
  private:
   enum State {
@@ -409,6 +412,7 @@ class Client {
         }
         crypter_ = std::move(handshake_result.value());
         state_ = State::kConnected;
+        delegate_->OnHandshake(this);
         break;
       }
 
@@ -536,7 +540,7 @@ class Client {
             // TODO: plumb the rk flag through once GmsCore supports resident
             // keys. This will require support for optional maps in |Extract|.
             delegate_->MakeCredential(
-                addr_, *make_cred_request.origin, *make_cred_request.rp_id,
+                this, *make_cred_request.origin, *make_cred_request.rp_id,
                 *make_cred_request.challenge, *make_cred_request.user_id,
                 algorithms, excluded_credential_ids,
                 /*resident_key=*/false);
@@ -575,7 +579,7 @@ class Client {
               return false;
             }
 
-            delegate_->GetAssertion(addr_, *get_assertion_request.origin,
+            delegate_->GetAssertion(this, *get_assertion_request.origin,
                                     *get_assertion_request.rp_id,
                                     *get_assertion_request.challenge,
                                     allowed_credential_ids);
@@ -778,7 +782,12 @@ class CableInterface : public Client::Delegate {
         env_, response_fragments ? *response_fragments : kEmptyFragments);
   }
 
-  void MakeCredential(uint64_t client_addr,
+  void OnHandshake(Client* client) override {
+    // TODO: ignore other clients and disconnect them
+    Java_BLEHandler_onHandshake(env_, ble_handler_, client->addr());
+  }
+
+  void MakeCredential(Client* client,
                       const std::string& origin,
                       const std::string& rp_id,
                       base::span<const uint8_t> challenge,
@@ -787,7 +796,8 @@ class CableInterface : public Client::Delegate {
                       base::span<std::vector<uint8_t>> excluded_credential_ids,
                       bool resident_key_required) override {
     Java_BLEHandler_makeCredential(
-        env_, ble_handler_, client_addr, ConvertUTF8ToJavaString(env_, origin),
+        env_, ble_handler_, client->addr(),
+        ConvertUTF8ToJavaString(env_, origin),
         ConvertUTF8ToJavaString(env_, rp_id), ToJavaByteArray(env_, challenge),
         // TODO: Pass full user entity once resident key support is added.
         ToJavaByteArray(env_, user_id), ToJavaIntArray(env_, algorithms),
@@ -796,13 +806,14 @@ class CableInterface : public Client::Delegate {
   }
 
   void GetAssertion(
-      uint64_t client_addr,
+      Client* client,
       const std::string& origin,
       const std::string& rp_id,
       base::span<const uint8_t> challenge,
       base::span<std::vector<uint8_t>> allowed_credential_ids) override {
     Java_BLEHandler_getAssertion(
-        env_, ble_handler_, client_addr, ConvertUTF8ToJavaString(env_, origin),
+        env_, ble_handler_, client->addr(),
+        ConvertUTF8ToJavaString(env_, origin),
         ConvertUTF8ToJavaString(env_, rp_id), ToJavaByteArray(env_, challenge),
         ToJavaArrayOfByteArray(env_, allowed_credential_ids));
   }

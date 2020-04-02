@@ -155,7 +155,7 @@ void FocusManager::ClearNativeFocus() {
 }
 
 bool FocusManager::RotatePaneFocus(Direction direction,
-                                   FocusCycleWrappingBehavior wrap) {
+                                   FocusCycleWrapping wrapping) {
   // Get the list of all accessible panes.
   std::vector<View*> panes;
   widget_->widget_delegate()->GetAccessiblePanes(&panes);
@@ -189,7 +189,8 @@ bool FocusManager::RotatePaneFocus(Direction direction,
     else
       index++;
 
-    if (wrap == kNoWrap && (index >= count || index < 0))
+    if (wrapping == FocusCycleWrapping::kDisabled &&
+        (index >= count || index < 0))
       return false;
     index = (index + count) % count;
 

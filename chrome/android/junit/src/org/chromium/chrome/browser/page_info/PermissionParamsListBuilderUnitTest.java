@@ -35,12 +35,12 @@ import org.robolectric.shadows.ShadowNotificationManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
@@ -128,7 +128,7 @@ public class PermissionParamsListBuilderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)
+    @Features.EnableFeatures(SiteSettingsFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)
     public void appNotificationStatusMessagingWhenNotificationsDisabled() {
         getMutableNotificationManager().setNotificationsEnabled(false);
 
@@ -144,7 +144,7 @@ public class PermissionParamsListBuilderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)
+    @Features.EnableFeatures(SiteSettingsFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)
     public void appNotificationStatusMessagingWhenNotificationsEnabled() {
         getMutableNotificationManager().setNotificationsEnabled(true);
 
@@ -159,7 +159,7 @@ public class PermissionParamsListBuilderUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures(ChromeFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)
+    @Features.DisableFeatures(SiteSettingsFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)
     public void appNotificationStatusMessagingFlagDisabled() {
         getMutableNotificationManager().setNotificationsEnabled(false);
 

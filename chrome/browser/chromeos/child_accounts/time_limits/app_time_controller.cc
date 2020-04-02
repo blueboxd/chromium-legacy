@@ -234,7 +234,7 @@ AppTimeController::AppTimeController(Profile* profile)
       app_registry_(
           std::make_unique<AppActivityRegistry>(app_service_wrapper_.get(),
                                                 this,
-                                                profile)),
+                                                profile->GetPrefs())),
       web_time_activity_provider_(std::make_unique<WebTimeActivityProvider>(
           this,
           app_service_wrapper_.get())) {

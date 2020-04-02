@@ -60,10 +60,10 @@ PrinterList EnumeratePrintersAsync(const std::string& locale) {
 
 base::Value FetchCapabilitiesAsync(const std::string& device_name,
                                    const std::string& locale) {
-  PrinterSemanticCapsAndDefaults::Papers additional_papers;
+  PrinterSemanticCapsAndDefaults::Papers user_defined_papers;
 #if defined(OS_MACOSX)
   if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes))
-    additional_papers = GetMacCustomPaperSizes();
+    user_defined_papers = GetMacCustomPaperSizes();
 #endif
 
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -80,8 +80,8 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name,
   }
 
   return GetSettingsOnBlockingTaskRunner(
-      device_name, basic_info, additional_papers,
-      /* has_secure_protocol */ false, print_backend);
+      device_name, basic_info, std::move(user_defined_papers),
+      /*has_secure_protocol=*/false, print_backend);
 }
 
 std::string GetDefaultPrinterAsync(const std::string& locale) {

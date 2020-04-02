@@ -58,7 +58,7 @@ class AssistiveSuggester {
   // Check if suggestion is being shown.
   bool IsSuggestionShown();
 
-  PersonalInfoSuggester* const personal_info_suggester_;
+  PersonalInfoSuggester personal_info_suggester_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;

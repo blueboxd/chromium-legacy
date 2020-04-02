@@ -30,9 +30,72 @@
 #include "ui/views/controls/menu/menu_host.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
+
+class RenderViewContextMenuViews::SubmenuViewObserver
+    : public views::ViewObserver,
+      public views::WidgetObserver {
+ public:
+  SubmenuViewObserver(RenderViewContextMenuViews* parent,
+                      views::SubmenuView* submenu_view)
+      : parent_(parent), submenu_view_(submenu_view) {
+    observed_submenu_view_.Add(submenu_view);
+    auto* widget = submenu_view_->host();
+    if (widget)
+      observed_submenu_widget_.Add(widget);
+  }
+
+  SubmenuViewObserver(const SubmenuViewObserver&) = delete;
+  SubmenuViewObserver& operator=(const SubmenuViewObserver&) = delete;
+
+  ~SubmenuViewObserver() override = default;
+
+  // ViewObserver:
+  void OnViewIsDeleting(views::View* observed_view) override {
+    // The submenu view is being deleted, make sure the parent no longer
+    // observes it.
+    DCHECK_EQ(submenu_view_, observed_view);
+    parent_->OnSubmenuClosed();
+  }
+
+  void OnViewBoundsChanged(views::View* observed_view) override {
+    DCHECK_EQ(submenu_view_, observed_view);
+    parent_->OnSubmenuViewBoundsChanged(
+        submenu_view_->host()->GetWindowBoundsInScreen());
+  }
+
+  void OnViewAddedToWidget(views::View* observed_view) override {
+    DCHECK_EQ(submenu_view_, observed_view);
+    auto* widget = submenu_view_->host();
+    if (widget)
+      observed_submenu_widget_.Add(widget);
+  }
+
+  // WidgetObserver:
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds_in_screen) override {
+    DCHECK_EQ(submenu_view_->host(), widget);
+    parent_->OnSubmenuViewBoundsChanged(new_bounds_in_screen);
+  }
+
+  void OnWidgetClosing(views::Widget* widget) override {
+    // The widget is being closed, make sure the parent bubble no longer
+    // observes it.
+    DCHECK_EQ(submenu_view_->host(), widget);
+    parent_->OnSubmenuClosed();
+  }
+
+ private:
+  RenderViewContextMenuViews* const parent_;
+  views::SubmenuView* const submenu_view_;
+  ScopedObserver<views::View, views::ViewObserver> observed_submenu_view_{this};
+  ScopedObserver<views::Widget, views::WidgetObserver> observed_submenu_widget_{
+      this};
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, public:
@@ -303,15 +366,17 @@ void RenderViewContextMenuViews::Show() {
   base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
   RunMenuAt(top_level_widget, screen_point, params().source_type);
 
-  for (auto& observer : observers_) {
-    auto* submenu_host = static_cast<ToolkitDelegateViews*>(toolkit_delegate())
-                             ->menu_view()
-                             ->GetSubmenu()
-                             ->host();
-    if (submenu_host) {
-      observer.OnContextMenuShown(params_,
-                                  submenu_host->GetWindowBoundsInScreen());
+  auto* submenu_view = static_cast<ToolkitDelegateViews*>(toolkit_delegate())
+                           ->menu_view()
+                           ->GetSubmenu();
+  if (submenu_view) {
+    for (auto& observer : observers_) {
+      observer.OnContextMenuShown(
+          params_, submenu_view->host()->GetWindowBoundsInScreen());
     }
+
+    submenu_view_observer_ =
+        std::make_unique<SubmenuViewObserver>(this, submenu_view);
   }
 }
 
@@ -330,4 +395,15 @@ aura::Window* RenderViewContextMenuViews::GetActiveNativeView() {
              ? web_contents->GetFullscreenRenderWidgetHostView()
                    ->GetNativeView()
              : web_contents->GetNativeView();
+}
+
+void RenderViewContextMenuViews::OnSubmenuViewBoundsChanged(
+    const gfx::Rect& new_bounds_in_screen) {
+  for (auto& observer : observers_) {
+    observer.OnContextMenuViewBoundsChanged(new_bounds_in_screen);
+  }
+}
+
+void RenderViewContextMenuViews::OnSubmenuClosed() {
+  submenu_view_observer_.reset();
 }

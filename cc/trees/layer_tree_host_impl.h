@@ -335,8 +335,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void RequestBeginFrameForAnimatedImages() override;
   void RequestInvalidationForAnimatedImages() override;
 
-  std::vector<EventMetrics> TakeEventsMetrics();
-  void AppendEventsMetrics(std::vector<EventMetrics> events_metrics);
+  EventMetricsSet TakeEventsMetrics();
+  void AppendEventsMetricsFromMainThread(
+      std::vector<EventMetrics> events_metrics);
 
   base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
 
@@ -1357,6 +1358,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   DeJellyState de_jelly_state_;
 
   EventsMetricsManager events_metrics_manager_;
+
+  // Event metrics that are reported back from the main thread.
+  std::vector<EventMetrics> events_metrics_from_main_thread_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

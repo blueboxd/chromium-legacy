@@ -74,6 +74,9 @@ class RecurrenceRanker {
       int n,
       const std::string& condition = std::string());
 
+  // Returns whether this ranker contains no targets.
+  bool empty() { return targets_->size() == 0; }
+
   // Force saving all model state to disk. If the user is an ephemeral user,
   // this does nothing. This is not necessary in normal operation, as the ranker
   // automatically saves at regular intervals. Example use: syncing to disk

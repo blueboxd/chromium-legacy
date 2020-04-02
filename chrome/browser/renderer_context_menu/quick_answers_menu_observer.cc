@@ -124,7 +124,7 @@ void QuickAnswersMenuObserver::InitMenu(
 
 void QuickAnswersMenuObserver::OnContextMenuShown(
     const content::ContextMenuParams& params,
-    gfx::Rect bounds) {
+    const gfx::Rect& bounds_in_screen) {
   if (!IsRichUiEnabled())
     return;
 
@@ -139,7 +139,13 @@ void QuickAnswersMenuObserver::OnContextMenuShown(
   if (selected_text.empty())
     return;
 
-  quick_answers_controller_->MaybeShowQuickAnswers(bounds, selected_text);
+  quick_answers_controller_->MaybeShowQuickAnswers(bounds_in_screen,
+                                                   selected_text);
+}
+
+void QuickAnswersMenuObserver::OnContextMenuViewBoundsChanged(
+    const gfx::Rect& bounds_in_screen) {
+  quick_answers_controller_->UpdateQuickAnswersAnchorBounds(bounds_in_screen);
 }
 
 void QuickAnswersMenuObserver::OnMenuClosed() {

@@ -173,7 +173,8 @@ cr.define('appcache', function() {
         totalSize: details.totalSize,
         properties: properties,
         fileUrl: details.url,
-        responseId: details.responseId
+        responseId: details.responseId,
+        tokenExpires: details.tokenExpires,
       });
     }
     return simpleVector;

@@ -56,6 +56,22 @@ class CC_EXPORT EventMetrics {
   base::Optional<ScrollInputType> scroll_input_type_;
 };
 
+// Struct storing event metrics from both main and impl threads.
+struct CC_EXPORT EventMetricsSet {
+  EventMetricsSet();
+  ~EventMetricsSet();
+  EventMetricsSet(std::vector<EventMetrics> main_thread_event_metrics,
+                  std::vector<EventMetrics> impl_thread_event_metrics);
+  EventMetricsSet(EventMetricsSet&&);
+  EventMetricsSet& operator=(EventMetricsSet&&);
+
+  EventMetricsSet(const EventMetricsSet&) = delete;
+  EventMetricsSet& operator=(const EventMetricsSet&) = delete;
+
+  std::vector<EventMetrics> main_event_metrics;
+  std::vector<EventMetrics> impl_event_metrics;
+};
+
 }  // namespace cc
 
 #endif  // CC_METRICS_EVENT_METRICS_H_

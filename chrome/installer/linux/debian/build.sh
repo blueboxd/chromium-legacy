@@ -67,22 +67,22 @@ stage_install_debian() {
   stage_install_common
   log_cmd echo "Staging Debian install files in '${STAGEDIR}'..."
   install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/cron"
-  process_template "${BUILDDIR}/installer/common/repo.cron" \
+  process_template "${OUTPUTDIR}/installer/common/repo.cron" \
       "${STAGEDIR}/${INSTALLDIR}/cron/${PACKAGE}"
   chmod 755 "${STAGEDIR}/${INSTALLDIR}/cron/${PACKAGE}"
   pushd "${STAGEDIR}/etc/cron.daily/" > /dev/null
   ln -snf "${INSTALLDIR}/cron/${PACKAGE}" "${PACKAGE}"
   popd > /dev/null
-  process_template "${BUILDDIR}/installer/debian/debian.menu" \
+  process_template "${OUTPUTDIR}/installer/debian/debian.menu" \
     "${STAGEDIR}/usr/share/menu/${PACKAGE}.menu"
   chmod 644 "${STAGEDIR}/usr/share/menu/${PACKAGE}.menu"
-  process_template "${BUILDDIR}/installer/debian/postinst" \
+  process_template "${OUTPUTDIR}/installer/debian/postinst" \
     "${STAGEDIR}/DEBIAN/postinst"
   chmod 755 "${STAGEDIR}/DEBIAN/postinst"
-  process_template "${BUILDDIR}/installer/debian/prerm" \
+  process_template "${OUTPUTDIR}/installer/debian/prerm" \
     "${STAGEDIR}/DEBIAN/prerm"
   chmod 755 "${STAGEDIR}/DEBIAN/prerm"
-  process_template "${BUILDDIR}/installer/debian/postrm" \
+  process_template "${OUTPUTDIR}/installer/debian/postrm" \
     "${STAGEDIR}/DEBIAN/postrm"
   chmod 755 "${STAGEDIR}/DEBIAN/postrm"
 }
@@ -135,10 +135,9 @@ cleanup() {
 }
 
 usage() {
-  echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] -c channel"
-  echo "                      -d branding [-f] [-o 'dir'] -s 'dir' -t target_os"
+  echo "usage: $(basename $0) [-a target_arch] -c channel -d branding"
+  echo "                      [-f] [-o 'dir'] -s 'dir' -t target_os"
   echo "-a arch      deb package architecture"
-  echo "-b dir       build input directory    [${BUILDDIR}]"
   echo "-c channel   the package channel (unstable, beta, stable)"
   echo "-d brand     either chromium or google_chrome"
   echo "-f           indicates that this is an official build"
@@ -178,9 +177,6 @@ process_opts() {
     case $OPTNAME in
       a )
         ARCHITECTURE="$OPTARG"
-        ;;
-      b )
-        BUILDDIR=$(readlink -f "${OPTARG}")
         ;;
       c )
         CHANNEL="$OPTARG"
@@ -229,29 +225,28 @@ OUTPUTDIR="${PWD}"
 # call cleanup() on exit
 trap cleanup 0
 process_opts "$@"
-BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
 IS_OFFICIAL_BUILD=${IS_OFFICIAL_BUILD:=0}
 
-STAGEDIR="${BUILDDIR}/deb-staging-${CHANNEL}"
+STAGEDIR="${OUTPUTDIR}/deb-staging-${CHANNEL}"
 mkdir -p "${STAGEDIR}"
-TMPFILEDIR="${BUILDDIR}/deb-tmp-${CHANNEL}"
+TMPFILEDIR="${OUTPUTDIR}/deb-tmp-${CHANNEL}"
 mkdir -p "${TMPFILEDIR}"
 DEB_CHANGELOG="${TMPFILEDIR}/changelog"
 DEB_FILES="${TMPFILEDIR}/files"
 DEB_CONTROL="${TMPFILEDIR}/control"
 
-source ${BUILDDIR}/installer/common/installer.include
+source ${OUTPUTDIR}/installer/common/installer.include
 
 get_version_info
 VERSIONFULL="${VERSION}-${PACKAGE_RELEASE}"
 
 if [ "$BRANDING" = "google_chrome" ]; then
-  source "${BUILDDIR}/installer/common/google-chrome.info"
+  source "${OUTPUTDIR}/installer/common/google-chrome.info"
 else
-  source "${BUILDDIR}/installer/common/chromium-browser.info"
+  source "${OUTPUTDIR}/installer/common/chromium-browser.info"
 fi
 eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/export \1='\2'/" \
-  "${BUILDDIR}/installer/theme/BRANDING")
+  "${OUTPUTDIR}/installer/theme/BRANDING")
 
 verify_channel
 
@@ -260,7 +255,7 @@ export DEBFULLNAME="${MAINTNAME}"
 export DEBEMAIL="${MAINTMAIL}"
 export ARCHITECTURE="${ARCHITECTURE}"
 
-DEB_COMMON_DEPS="${BUILDDIR}/deb_common.deps"
+DEB_COMMON_DEPS="${OUTPUTDIR}/deb_common.deps"
 COMMON_DEPS=$(sed ':a;N;$!ba;s/\n/, /g' "${DEB_COMMON_DEPS}")
 COMMON_PREDEPS="dpkg (>= 1.14.0)"
 MANUAL_RECOMMENDS="${SCRIPTDIR}/manual_recommends"

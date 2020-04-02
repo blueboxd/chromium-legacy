@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_delegate.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -349,7 +350,8 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example.com"));
-  const NetworkIsolationKey kTestNetworkIsolationKey(kOrigin1, kOrigin1);
+  const IsolationInfo kTestIsolationInfo =
+      IsolationInfo::CreateForInternalRequest(kOrigin1);
 
   Init();
 
@@ -359,7 +361,7 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   std::unique_ptr<URLRequest> request_0 = CreateRequest(
       GURL(UrlFromPath(kKittenPath)), DEFAULT_PRIORITY, &delegate_0);
 
-  request_0->set_network_isolation_key(kTestNetworkIsolationKey);
+  request_0->set_isolation_info(kTestIsolationInfo);
   request_0->Start();
   ASSERT_TRUE(request_0->is_pending());
 
@@ -374,7 +376,7 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   std::unique_ptr<URLRequest> request =
       CreateRequest(GURL(UrlFromPath(kIndexPath)), DEFAULT_PRIORITY, &delegate);
 
-  request->set_network_isolation_key(kTestNetworkIsolationKey);
+  request->set_isolation_info(kTestIsolationInfo);
   request->Start();
   ASSERT_TRUE(request->is_pending());
 
@@ -449,7 +451,8 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
 
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example.com"));
-  const NetworkIsolationKey kTestNetworkIsolationKey(kOrigin1, kOrigin1);
+  const IsolationInfo kTestIsolationInfo =
+      IsolationInfo::CreateForInternalRequest(kOrigin1);
 
   Init();
 
@@ -459,7 +462,7 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   std::unique_ptr<URLRequest> request_0 = CreateRequest(
       GURL(UrlFromPath(kKittenPath)), DEFAULT_PRIORITY, &delegate_0);
 
-  request_0->set_network_isolation_key(kTestNetworkIsolationKey);
+  request_0->set_isolation_info(kTestIsolationInfo);
   request_0->Start();
   ASSERT_TRUE(request_0->is_pending());
 
@@ -474,7 +477,7 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   std::unique_ptr<URLRequest> request_1 = CreateRequest(
       GURL(UrlFromPath(kFaviconPath)), DEFAULT_PRIORITY, &delegate_1);
 
-  request_1->set_network_isolation_key(kTestNetworkIsolationKey);
+  request_1->set_isolation_info(kTestIsolationInfo);
   request_1->Start();
   ASSERT_TRUE(request_1->is_pending());
 
@@ -489,7 +492,7 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   std::unique_ptr<URLRequest> request =
       CreateRequest(GURL(UrlFromPath(kIndexPath)), DEFAULT_PRIORITY, &delegate);
 
-  request->set_network_isolation_key(kTestNetworkIsolationKey);
+  request->set_isolation_info(kTestIsolationInfo);
   request->Start();
   ASSERT_TRUE(request->is_pending());
 

@@ -199,4 +199,50 @@ TEST_F(ChipRankerTest, UnchangedItem) {
                                               HasScore(0.8), HasScore(0.7))));
 }
 
+// With no training, we expect the results list to be: app, app, file, app,
+// file. Note this might be different from what is actually seen on devices,
+// depending on whether apps initially have identical scores.
+TEST_F(ChipRankerTest, DefaultInitialization) {
+  Mixer::SortedResults results = MakeSearchResults(
+      {"app1", "app2", "app3", "file1", "file2"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kInstalledApp, ResultType::kFileChip, ResultType::kFileChip},
+      {8.9, 8.7, 8.5, 0.8, 0.7});
+  ranker_->Rank(&results);
+
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
+                                              HasId("file1"), HasId("app3"),
+                                              HasId("file2"))));
+}
+
+// When files have been trained much more than apps, two files should appear
+// before two apps.
+TEST_F(ChipRankerTest, FilesAboveApps) {
+  Mixer::SortedResults results =
+      MakeSearchResults({"app1", "app2", "file1", "file2"},
+                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
+                         ResultType::kFileChip, ResultType::kFileChip},
+                        {8.9, 8.7, 0.8, 0.7});
+  TrainRanker({"app", "file", "file", "file", "file"});
+
+  ranker_->Rank(&results);
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("file2"),
+                                              HasId("app1"), HasId("app2"))));
+}
+
+// When apps have been trained much more than files, two apps should appear
+// before two files.
+TEST_F(ChipRankerTest, AppsAboveFiles) {
+  Mixer::SortedResults results =
+      MakeSearchResults({"app1", "app2", "file1", "file2"},
+                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
+                         ResultType::kFileChip, ResultType::kFileChip},
+                        {8.9, 8.7, 0.8, 0.7});
+  TrainRanker({"file", "app", "app", "app", "app"});
+
+  ranker_->Rank(&results);
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
+                                              HasId("file1"), HasId("file2"))));
+}
+
 }  // namespace app_list

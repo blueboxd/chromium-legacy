@@ -13,10 +13,16 @@ namespace system {
 
 class InputDeviceSettings;
 
-// Min/max possible sensitivity values; used for both cursor sensitivity and
-// scroll sensitivity.
-const int kMinPointerSensitivity = 1;
-const int kMaxPointerSensitivity = 5;
+// Sensitivity values; used for both cursor sensitivity and scroll sensitivity.
+// Do not change/reuse numbers (used for IPC calls and metrics).
+enum class PointerSensitivity {
+  kLowest = 1,
+  kLow = 2,
+  kMedium = 3,
+  kHigh = 4,
+  kHighest = 5,
+  kMaxValue = kHighest,
+};
 
 // Auxiliary class used to update several touchpad settings at a time. User
 // should set any number of settings and pass object to UpdateTouchpadSettings
@@ -34,10 +40,6 @@ class TouchpadSettings {
   int GetSensitivity() const;
   bool IsSensitivitySet() const;
 
-  void SetScrollSensitivity(int value);
-  int GetScrollSensitivity() const;
-  bool IsScrollSensitivitySet() const;
-
   void SetTapToClick(bool enabled);
   bool GetTapToClick() const;
   bool IsTapToClickSet() const;
@@ -50,13 +52,17 @@ class TouchpadSettings {
   bool GetTapDragging() const;
   bool IsTapDraggingSet() const;
 
+  void SetAcceleration(bool enabled);
+  bool GetAcceleration() const;
+  bool IsAccelerationSet() const;
+
   void SetNaturalScroll(bool enabled);
   bool GetNaturalScroll() const;
   bool IsNaturalScrollSet() const;
 
-  void SetAcceleration(bool enabled);
-  bool GetAcceleration() const;
-  bool IsAccelerationSet() const;
+  void SetScrollSensitivity(int value);
+  int GetScrollSensitivity() const;
+  bool IsScrollSensitivitySet() const;
 
   void SetScrollAcceleration(bool enabled);
   bool GetScrollAcceleration() const;
@@ -71,14 +77,14 @@ class TouchpadSettings {
                     InputDeviceSettings* input_device_settings);
 
  private:
+  base::Optional<bool> acceleration_;
+  base::Optional<bool> natural_scroll_;
   base::Optional<int> sensitivity_;
+  base::Optional<bool> scroll_acceleration_;
   base::Optional<int> scroll_sensitivity_;
+  base::Optional<bool> tap_dragging_;
   base::Optional<bool> tap_to_click_;
   base::Optional<bool> three_finger_click_;
-  base::Optional<bool> tap_dragging_;
-  base::Optional<bool> natural_scroll_;
-  base::Optional<bool> acceleration_;
-  base::Optional<bool> scroll_acceleration_;
 };
 
 // Auxiliary class used to update several mouse settings at a time. User
@@ -97,21 +103,21 @@ class MouseSettings {
   int GetSensitivity() const;
   bool IsSensitivitySet() const;
 
-  void SetScrollSensitivity(int value);
-  int GetScrollSensitivity() const;
-  bool IsScrollSensitivitySet() const;
-
   void SetPrimaryButtonRight(bool right);
   bool GetPrimaryButtonRight() const;
   bool IsPrimaryButtonRightSet() const;
+
+  void SetAcceleration(bool enabled);
+  bool GetAcceleration() const;
+  bool IsAccelerationSet() const;
 
   void SetReverseScroll(bool enabled);
   bool GetReverseScroll() const;
   bool IsReverseScrollSet() const;
 
-  void SetAcceleration(bool enabled);
-  bool GetAcceleration() const;
-  bool IsAccelerationSet() const;
+  void SetScrollSensitivity(int value);
+  int GetScrollSensitivity() const;
+  bool IsScrollSensitivitySet() const;
 
   void SetScrollAcceleration(bool enabled);
   bool GetScrollAcceleration() const;
@@ -126,12 +132,12 @@ class MouseSettings {
                     InputDeviceSettings* input_device_settings);
 
  private:
-  base::Optional<int> sensitivity_;
-  base::Optional<int> scroll_sensitivity_;
+  base::Optional<bool> acceleration_;
   base::Optional<bool> primary_button_right_;
   base::Optional<bool> reverse_scroll_;
-  base::Optional<bool> acceleration_;
   base::Optional<bool> scroll_acceleration_;
+  base::Optional<int> scroll_sensitivity_;
+  base::Optional<int> sensitivity_;
 };
 
 // Interface for configuring input device settings.

@@ -27,36 +27,46 @@ public class TouchCommon {
     /**
      * Starts (synchronously) a drag motion. Normally followed by dragTo() and dragEnd().
      *
+     * @param view The view to dispatch the events to.
+     * @param x X coordinate, in screen coordinates.
+     * @param y Y coordinate, in screen coordinates.
+     * @param downTime When the drag was started, in millis since the epoch.
+     */
+    public static void dragStart(View view, float x, float y, long downTime) {
+        float[] windowXY = screenToWindowCoordinates(view, x, y);
+        float windowX = windowXY[0];
+        float windowY = windowXY[1];
+        MotionEvent event = MotionEvent.obtain(
+                downTime, downTime, MotionEvent.ACTION_DOWN, windowX, windowY, 0);
+        dispatchTouchEvent(view, event);
+    }
+
+    /**
+     * Starts (synchronously) a drag motion. Normally followed by dragTo() and dragEnd().
+     *
      * @activity activity The activity where the touch action is being performed.
      * @param x X coordinate, in screen coordinates.
      * @param y Y coordinate, in screen coordinates.
      * @param downTime When the drag was started, in millis since the epoch.
      */
     public static void dragStart(Activity activity, float x, float y, long downTime) {
-        View root = getRootViewForActivity(activity);
-        float[] windowXY = screenToWindowCoordinates(root, x, y);
-        float windowX = windowXY[0];
-        float windowY = windowXY[1];
-        MotionEvent event = MotionEvent.obtain(
-                downTime, downTime, MotionEvent.ACTION_DOWN, windowX, windowY, 0);
-        dispatchTouchEvent(root, event);
+        dragStart(getRootViewForActivity(activity), x, y, downTime);
     }
 
     /**
      * Drags / moves (synchronously) to the specified coordinates. Normally preceeded by
      * dragStart() and followed by dragEnd()
      *
-     * @activity activity The activity where the touch action is being performed.
+     * @param view The view to dispatch events to.
      * @param fromX X coordinate of the initial touch, in screen coordinates.
-     * @param toX Xcoordinate of the drag destination, in screen coordinates.
+     * @param toX X coordinate of the drag destination, in screen coordinates.
      * @param fromY X coordinate of the initial touch, in screen coordinates.
      * @param toY Y coordinate of the drag destination, in screen coordinates.
      * @param stepCount How many move steps to include in the drag.
      * @param downTime When the drag was started, in millis since the epoch.
      */
-    public static void dragTo(Activity activity, float fromX, float toX, float fromY, float toY,
+    public static void dragTo(View view, float fromX, float toX, float fromY, float toY,
             int stepCount, long downTime) {
-        View rootView = getRootViewForActivity(activity);
         float x = fromX;
         float y = fromY;
         float yStep = (toY - fromY) / stepCount;
@@ -65,18 +75,54 @@ public class TouchCommon {
             y += yStep;
             x += xStep;
             long eventTime = SystemClock.uptimeMillis();
-            float[] windowXY = screenToWindowCoordinates(rootView, x, y);
+            float[] windowXY = screenToWindowCoordinates(view, x, y);
             float windowX = windowXY[0];
             float windowY = windowXY[1];
             MotionEvent event = MotionEvent.obtain(
                     downTime, eventTime, MotionEvent.ACTION_MOVE, windowX, windowY, 0);
-            dispatchTouchEvent(rootView, event);
+            dispatchTouchEvent(view, event);
         }
     }
 
     /**
+     * Drags / moves (synchronously) to the specified coordinates. Normally preceded by
+     * dragStart() and followed by dragEnd()
+     *
+     * @activity activity The activity where the touch action is being performed.
+     * @param fromX X coordinate of the initial touch, in screen coordinates.
+     * @param toX X coordinate of the drag destination, in screen coordinates.
+     * @param fromY X coordinate of the initial touch, in screen coordinates.
+     * @param toY Y coordinate of the drag destination, in screen coordinates.
+     * @param stepCount How many move steps to include in the drag.
+     * @param downTime When the drag was started, in millis since the epoch.
+     */
+    public static void dragTo(Activity activity, float fromX, float toX, float fromY, float toY,
+            int stepCount, long downTime) {
+        dragTo(getRootViewForActivity(activity), fromX, toX, fromY, toY, stepCount, downTime);
+    }
+
+    /**
      * Finishes (synchronously) a drag / move at the specified coordinate.
-     * Normally preceeded by dragStart() and dragTo().
+     * Normally preceded by dragStart() and dragTo().
+     *
+     * @param view The view to dispatch events to.
+     * @param x X coordinate, in screen coordinates.
+     * @param y Y coordinate, in screen coordinates.
+     * @param downTime When the drag was started, in millis since the epoch.
+     */
+    public static void dragEnd(View view, float x, float y, long downTime) {
+        float[] windowXY = screenToWindowCoordinates(view, x, y);
+        float windowX = windowXY[0];
+        float windowY = windowXY[1];
+        long eventTime = SystemClock.uptimeMillis();
+        MotionEvent event =
+                MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, windowX, windowY, 0);
+        dispatchTouchEvent(view, event);
+    }
+
+    /**
+     * Finishes (synchronously) a drag / move at the specified coordinate.
+     * Normally preceded by dragStart() and dragTo().
      *
      * @activity activity The activity where the touch action is being performed.
      * @param x X coordinate, in screen coordinates.
@@ -84,14 +130,7 @@ public class TouchCommon {
      * @param downTime When the drag was started, in millis since the epoch.
      */
     public static void dragEnd(Activity activity, float x, float y, long downTime) {
-        View root = getRootViewForActivity(activity);
-        float[] windowXY = screenToWindowCoordinates(root, x, y);
-        float windowX = windowXY[0];
-        float windowY = windowXY[1];
-        long eventTime = SystemClock.uptimeMillis();
-        MotionEvent event =
-                MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, windowX, windowY, 0);
-        dispatchTouchEvent(root, event);
+        dragEnd(getRootViewForActivity(activity), x, y, downTime);
     }
 
     /**

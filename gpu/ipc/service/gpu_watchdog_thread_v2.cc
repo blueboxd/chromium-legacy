@@ -219,7 +219,7 @@ void GpuWatchdogThreadImplV2::Init() {
       base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
       timeout);
 
-  last_arm_disarm_counter_ = base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  last_arm_disarm_counter_ = ReadArmDisarmCounter();
   watchdog_start_timeticks_ = base::TimeTicks::Now();
   last_on_watchdog_timeout_timeticks_ = watchdog_start_timeticks_;
 
@@ -327,8 +327,7 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask(
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
         timeout);
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
-    last_arm_disarm_counter_ =
-        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+    last_arm_disarm_counter_ = ReadArmDisarmCounter();
 #if defined(OS_WIN)
     if (watched_thread_handle_) {
       last_on_watchdog_timeout_thread_ticks_ = GetWatchedThreadTime();
@@ -406,7 +405,11 @@ void GpuWatchdogThreadImplV2::InProgress() {
 
 bool GpuWatchdogThreadImplV2::IsArmed() {
   // It's an odd number.
-  return base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1;
+  return base::subtle::Release_Load(&arm_disarm_counter_) & 1;
+}
+
+base::subtle::Atomic32 GpuWatchdogThreadImplV2::ReadArmDisarmCounter() {
+  return base::subtle::Release_Load(&arm_disarm_counter_);
 }
 
 // Running on the watchdog thread.
@@ -426,8 +429,7 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
     GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
   }
 
-  base::subtle::Atomic32 arm_disarm_counter =
-      base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  auto arm_disarm_counter = ReadArmDisarmCounter();
   GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeout);
   if (power_resumed_event_)
     num_of_timeout_after_power_resume_++;
@@ -452,8 +454,7 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   // No gpu hang. Continue with another OnWatchdogTimeout task.
   if (no_gpu_hang) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
-    last_arm_disarm_counter_ =
-        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+    last_arm_disarm_counter_ = ReadArmDisarmCounter();
 
     task_runner()->PostDelayedTask(
         FROM_HERE,
@@ -630,8 +631,7 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   crash_keys::num_of_processors.Set(base::NumberToString(num_of_processors_));
 
   // Check the arm_disarm_counter value one more time.
-  base::subtle::Atomic32 last_arm_disarm_counter =
-      base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  auto last_arm_disarm_counter = ReadArmDisarmCounter();
   base::debug::Alias(&last_arm_disarm_counter);
 
   // Deliberately crash the process to create a crash dump.

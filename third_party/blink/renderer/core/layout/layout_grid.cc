@@ -194,7 +194,12 @@ bool LayoutGrid::ExplicitGridDidResize(const ComputedStyle& old_style) const {
 bool LayoutGrid::NamedGridLinesDefinitionDidChange(
     const ComputedStyle& old_style) const {
   return old_style.NamedGridRowLines() != StyleRef().NamedGridRowLines() ||
-         old_style.NamedGridColumnLines() != StyleRef().NamedGridColumnLines();
+         old_style.NamedGridColumnLines() !=
+             StyleRef().NamedGridColumnLines() ||
+         old_style.ImplicitNamedGridRowLines() !=
+             StyleRef().ImplicitNamedGridRowLines() ||
+         old_style.ImplicitNamedGridColumnLines() !=
+             StyleRef().ImplicitNamedGridColumnLines();
 }
 
 void LayoutGrid::ComputeTrackSizesForDefiniteSize(

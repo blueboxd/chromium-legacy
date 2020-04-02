@@ -92,7 +92,12 @@ void NetworkMetadataStore::OnConfigurationModified(
   }
 
   SetPref(guid, kIsFromSync, base::Value(false));
-  SetPref(guid, kLastConnectedTimestampPref, base::Value(0));
+
+  // Only clear last connected if the passphrase changes.  Other settings
+  // (autoconnect, dns, etc.) won't affect the ability to connect to a network.
+  if (set_properties->HasKey(shill::kPassphraseProperty)) {
+    SetPref(guid, kLastConnectedTimestampPref, base::Value(0));
+  }
 }
 
 void NetworkMetadataStore::OnConfigurationRemoved(

@@ -17,6 +17,7 @@ def _RunTestRunnerUnitTests(input_api, output_api):
       # 'iossim_util_test.py',
       'run_test.py',
       'shard_util_test.py',
+      'standard_json_util_test.py',
       'test_apps_test.py',
       # 'test_runner_test.py',
       'wpr_runner_test.py',

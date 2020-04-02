@@ -27,6 +27,10 @@ message ContentRatingSet {
   repeated ContentRating rating = 1;
 };
 
+message GenreSet {
+  repeated string genre = 1;
+}
+
 // A counter for a type of interaction e.g. how many likes or dislikes.
 // https://schema.org/InteractionCounter
 message InteractionCounter {

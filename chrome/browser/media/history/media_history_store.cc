@@ -106,6 +106,12 @@ class MediaHistoryStoreInternal
   std::vector<media_feeds::mojom::MediaFeedItemPtr>
   GetItemsForMediaFeedForDebug(const int64_t feed_id);
 
+  MediaHistoryKeyedService::PendingSafeSearchCheckList
+  GetPendingSafeSearchCheckMediaFeedItems();
+
+  void StoreMediaFeedItemSafeSearchResults(
+      std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
+
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   const base::FilePath db_path_;
   std::unique_ptr<sql::Database> db_;
@@ -675,6 +681,40 @@ MediaHistoryStoreInternal::GetItemsForMediaFeedForDebug(const int64_t feed_id) {
   return feed_items_table_->GetItemsForFeed(feed_id);
 }
 
+MediaHistoryKeyedService::PendingSafeSearchCheckList
+MediaHistoryStoreInternal::GetPendingSafeSearchCheckMediaFeedItems() {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+
+  if (!initialization_successful_ || !feed_items_table_)
+    return MediaHistoryKeyedService::PendingSafeSearchCheckList();
+
+  return feed_items_table_->GetPendingSafeSearchCheckItems();
+}
+
+void MediaHistoryStoreInternal::StoreMediaFeedItemSafeSearchResults(
+    std::map<int64_t, media_feeds::mojom::SafeSearchResult> results) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  if (!feed_items_table_)
+    return;
+
+  for (auto& entry : results) {
+    if (!feed_items_table_->StoreSafeSearchResult(entry.first, entry.second)) {
+      DB()->RollbackTransaction();
+      return;
+    }
+  }
+
+  DB()->CommitTransaction();
+}
+
 const char MediaHistoryStore::kInitResultHistogramName[] =
     "Media.History.Init.Result";
 
@@ -703,6 +743,34 @@ void MediaHistoryStore::SavePlayback(
   db_->db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::SavePlayback, db_,
                                 watch_time));
+}
+
+void MediaHistoryStore::GetPendingSafeSearchCheckMediaFeedItems(
+    base::OnceCallback<
+        void(MediaHistoryKeyedService::PendingSafeSearchCheckList)> callback) {
+  if (!db_->initialization_successful_) {
+    return std::move(callback).Run(
+        MediaHistoryKeyedService::PendingSafeSearchCheckList());
+  }
+
+  base::PostTaskAndReplyWithResult(
+      db_->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(
+          &MediaHistoryStoreInternal::GetPendingSafeSearchCheckMediaFeedItems,
+          db_),
+      std::move(callback));
+}
+
+void MediaHistoryStore::StoreMediaFeedItemSafeSearchResults(
+    std::map<int64_t, media_feeds::mojom::SafeSearchResult> results) {
+  if (!db_->initialization_successful_)
+    return;
+
+  db_->db_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &MediaHistoryStoreInternal::StoreMediaFeedItemSafeSearchResults, db_,
+          results));
 }
 
 scoped_refptr<base::UpdateableSequencedTaskRunner>

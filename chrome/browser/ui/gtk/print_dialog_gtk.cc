@@ -24,16 +24,14 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/ui/gtk/gtk_ui.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/printing_gtk_util.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "ui/aura/window.h"
-
-#if defined(USE_X11)
-#include "ui/events/platform/x11/x11_event_source.h"  // nogncheck
-#endif
+#include "ui/gtk/gtk_ui_delegate.h"
 
 using printing::PageRanges;
 using printing::PrintSettings;
@@ -354,14 +352,7 @@ void PrintDialogGtk::ShowDialog(
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   gtk_widget_show(dialog_);
 
-  // We need to call gtk_window_present after making the widgets visible to make
-  // sure window gets correctly raised and gets focus.
-#if defined(USE_X11)
-  gtk_window_present_with_time(
-      GTK_WINDOW(dialog_), ui::X11EventSource::GetInstance()->GetTimestamp());
-#else
-  gtk_window_present(GTK_WINDOW(dialog_));
-#endif
+  gtk::GtkUi::GetDelegate()->ShowGtkWindow(GTK_WINDOW(dialog_));
 }
 
 void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,

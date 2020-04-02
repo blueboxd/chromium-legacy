@@ -26,11 +26,6 @@ namespace {
 // Width of the contextual nudge.
 constexpr int kBackgroundWidth = 320;
 
-// Colors of the contextual nudge background gradient.
-constexpr SkColor kBackgroundStartColor =
-    SkColorSetA(SK_ColorBLACK, 153);  // 60%
-constexpr SkColor kBackgroundEndColor = SkColorSetARGB(0, 168, 168, 168);
-
 // Radius of the circle in the middle of the contextual nudge.
 constexpr int kCircleRadius = 20;
 
@@ -46,13 +41,25 @@ constexpr int kPaddingBetweenCircleAndLabel = 8;
 // Color of the label.
 constexpr SkColor kLabelColor = gfx::kGoogleGrey200;
 
-// Shadow color and blur for the label.
-constexpr SkColor kLabelShadowColor = SkColorSetARGB(0x66, 0x00, 0x00, 0x00);
-constexpr int kLabelShadowBlur = 1;
+// Color of the label background.
+constexpr SkColor kLabelBackgroundColor = SkColorSetA(SK_ColorBLACK, 0xDE);
 
-// Width and height of the label.
-constexpr int kLabelWidth = 70;
-constexpr int kLabelHeight = 80;
+// Line height of the label.
+constexpr int kLabelLineHeight = 18;
+
+// Corner radius for the label's background.
+constexpr int kLabelCornerRadius = 16;
+
+// Top and bottom inset of the label.
+constexpr int kLabelTopBottomInset = 6;
+
+// Shadow values for the back nudge circle.
+constexpr int kBackNudgeShadowOffsetY1 = 1;
+constexpr int kBackNudgeShadowBlurRadius1 = 2;
+constexpr SkColor kBackNudgeShadowColor1 = SkColorSetA(SK_ColorBLACK, 0x4D);
+constexpr int kBackNudgeShadowOffsetY2 = 2;
+constexpr int kBackNudgeShadowBlurRadius2 = 6;
+constexpr SkColor kBackNudgeShadowColor2 = SkColorSetA(SK_ColorBLACK, 0x26);
 
 // Duration of the pause before sliding in to show the nudge.
 constexpr base::TimeDelta kPauseBeforeShowAnimationDuration =
@@ -70,11 +77,6 @@ constexpr base::TimeDelta kNudgeHideAnimationDuration =
 // the back nudge showing animation is interrupted and should be dismissed.
 constexpr base::TimeDelta kSuggestionDismissDuration =
     base::TimeDelta::FromMilliseconds(100);
-
-// Duration for the animation to fade out the gradient layer when the back nudge
-// showing animation is interrupted and should be dismissed.
-constexpr base::TimeDelta kDarkGradientDismissDuration =
-    base::TimeDelta::FromMilliseconds(200);
 
 // Duration for the animation of the suggestion part of the nudge.
 constexpr base::TimeDelta kSuggestionBounceAnimationDuration =
@@ -119,9 +121,7 @@ class BackGestureContextualNudge::ContextualNudgeView
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
-    gradient_view_ = AddChildView(std::make_unique<GradientView>(this));
     suggestion_view_ = AddChildView(std::make_unique<SuggestionView>(this));
-
     show_timer_.Start(
         FROM_HERE, kPauseBeforeShowAnimationDuration, this,
         &ContextualNudgeView::ScheduleOffScreenToStartPositionAnimation);
@@ -152,7 +152,6 @@ class BackGestureContextualNudge::ContextualNudgeView
       suggestion_view_->layer()->GetAnimator()->AbortAllAnimations();
 
       animation_stage_ = AnimationStage::kFadingOut;
-      gradient_view_->FadeOutForDismiss();
       suggestion_view_->FadeOutForDismiss();
     }
   }
@@ -176,22 +175,19 @@ class BackGestureContextualNudge::ContextualNudgeView
                          public ui::ImplicitAnimationObserver {
    public:
     explicit SuggestionView(ContextualNudgeView* nudge_view)
-        : label_(new views::Label), nudge_view_(nudge_view) {
+        : nudge_view_(nudge_view) {
       SetPaintToLayer();
       layer()->SetFillsBoundsOpaquely(false);
 
+      label_ = AddChildView(std::make_unique<views::Label>());
       label_->SetBackgroundColor(SK_ColorTRANSPARENT);
       label_->SetEnabledColor(kLabelColor);
       label_->SetText(
           l10n_util::GetStringUTF16(IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE));
-      label_->SetMultiLine(true);
       label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+      label_->SetLineHeight(kLabelLineHeight);
       label_->SetFontList(
           gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-      label_->SetShadows(gfx::ShadowValues(
-          1, gfx::ShadowValue(gfx::Vector2d(), kLabelShadowBlur,
-                              kLabelShadowColor)));
-      AddChildView(label_);
     }
     SuggestionView(const SuggestionView&) = delete;
     SuggestionView& operator=(const SuggestionView&) = delete;
@@ -225,6 +221,7 @@ class BackGestureContextualNudge::ContextualNudgeView
       animation.SetTweenType(gfx::Tween::LINEAR);
       animation.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      animation.AddObserver(nudge_view_);
       layer()->SetOpacity(0.f);
     }
 
@@ -233,23 +230,41 @@ class BackGestureContextualNudge::ContextualNudgeView
     void Layout() override {
       const gfx::Rect bounds = GetLocalBounds();
       gfx::Rect label_rect(bounds);
-      label_rect.ClampToCenteredSize(gfx::Size(kLabelWidth, kLabelHeight));
+      label_rect.ClampToCenteredSize(label_->GetPreferredSize());
       label_rect.set_x(bounds.left_center().x() + 2 * kCircleRadius +
-                       kPaddingBetweenCircleAndLabel);
+                       kPaddingBetweenCircleAndLabel + kLabelCornerRadius);
       label_->SetBoundsRect(label_rect);
     }
 
     // views::View:
     void OnPaint(gfx::Canvas* canvas) override {
       // Draw the circle.
-      cc::PaintFlags flags;
-      flags.setAntiAlias(true);
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-      flags.setColor(kCircleColor);
+      cc::PaintFlags circle_flags;
+      circle_flags.setAntiAlias(true);
+      circle_flags.setStyle(cc::PaintFlags::kFill_Style);
+      circle_flags.setColor(kCircleColor);
+      gfx::ShadowValues shadows;
+      shadows.push_back(gfx::ShadowValue(
+          gfx::Vector2d(0, kBackNudgeShadowOffsetY1),
+          kBackNudgeShadowBlurRadius1, kBackNudgeShadowColor1));
+      shadows.push_back(gfx::ShadowValue(
+          gfx::Vector2d(0, kBackNudgeShadowOffsetY2),
+          kBackNudgeShadowBlurRadius2, kBackNudgeShadowColor2));
+      circle_flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
       const gfx::Point left_center = GetLocalBounds().left_center();
       canvas->DrawCircle(
           gfx::Point(left_center.x() + kCircleRadius, left_center.y()),
-          kCircleRadius, flags);
+          kCircleRadius, circle_flags);
+
+      // Draw the black round rectangle around the text.
+      cc::PaintFlags round_rect_flags;
+      round_rect_flags.setStyle(cc::PaintFlags::kFill_Style);
+      round_rect_flags.setAntiAlias(true);
+      round_rect_flags.setColor(kLabelBackgroundColor);
+      gfx::Rect label_bounds(label_->bounds());
+      label_bounds.Inset(/*horizontal=*/-kLabelCornerRadius,
+                         /*vertical=*/-kLabelTopBottomInset);
+      canvas->DrawRoundRect(label_bounds, kLabelCornerRadius, round_rect_flags);
     }
 
     // ui::ImplicitAnimationObserver:
@@ -269,48 +284,6 @@ class BackGestureContextualNudge::ContextualNudgeView
     views::Label* label_ = nullptr;
     int current_animation_times_ = 0;
     ContextualNudgeView* nudge_view_ = nullptr;  // Not owned.
-  };
-
-  // Used to show the gradient layer of the back gesture contextual nudge.
-  class GradientView : public views::View {
-   public:
-    explicit GradientView(ContextualNudgeView* nudge_view)
-        : nudge_view_(nudge_view) {
-      SetPaintToLayer();
-      layer()->SetFillsBoundsOpaquely(false);
-    }
-    GradientView(const GradientView&) = delete;
-    GradientView& operator=(const GradientView&) = delete;
-    ~GradientView() override = default;
-
-    // This is called when the nudge animation is cancelled. The gradient
-    // view will fade out.
-    void FadeOutForDismiss() {
-      ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-      animation.SetTransitionDuration(kDarkGradientDismissDuration);
-      animation.SetTweenType(gfx::Tween::LINEAR);
-      animation.SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      animation.AddObserver(nudge_view_);
-      layer()->SetOpacity(0.f);
-    }
-
-    // views::View:
-    void OnPaint(gfx::Canvas* canvas) override {
-      views::View::OnPaint(canvas);
-
-      // Draw the gradient background.
-      cc::PaintFlags flags;
-      flags.setAntiAlias(true);
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-      flags.setShader(gfx::CreateGradientShader(
-          gfx::Point(), gfx::Point(width(), 0), kBackgroundStartColor,
-          kBackgroundEndColor));
-      canvas->DrawRect(gfx::Rect(size()), flags);
-    }
-
-   private:
-    ContextualNudgeView* nudge_view_ = nullptr;  // Not owned
   };
 
   // Showing contextual nudge from off screen to its start position.
@@ -340,8 +313,6 @@ class BackGestureContextualNudge::ContextualNudgeView
   // views::View:
   void Layout() override {
     gfx::Rect rect = GetLocalBounds();
-    gradient_view_->SetBoundsRect(rect);
-
     rect.ClampToCenteredSize(gfx::Size(kBackgroundWidth, kBackgroundWidth));
     rect.set_x(-kCircleRadius);
     suggestion_view_->SetBoundsRect(rect);
@@ -364,9 +335,6 @@ class BackGestureContextualNudge::ContextualNudgeView
       suggestion_view_->ScheduleBounceAnimation();
     }
   }
-
-  // Owned by views hierarchy.
-  GradientView* gradient_view_ = nullptr;
 
   // Created by ContextualNudgeView. Owned by views hierarchy.
   SuggestionView* suggestion_view_ = nullptr;

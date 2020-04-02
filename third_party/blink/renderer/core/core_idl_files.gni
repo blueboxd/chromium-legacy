@@ -443,7 +443,6 @@ core_idl_files =
                     "svg/svg_unit_types.idl",
                     "svg/svg_use_element.idl",
                     "svg/svg_view_element.idl",
-                    "timing/event_counts.idl",
                     "timing/largest_contentful_paint.idl",
                     "timing/layout_shift.idl",
                     "timing/memory_info.idl",

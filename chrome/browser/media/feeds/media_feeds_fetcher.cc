@@ -18,7 +18,7 @@ namespace media_feeds {
 MediaFeedsFetcher::MediaFeedsFetcher(
     scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
-      extractor_({schema_org::entity::kDataFeed}) {}
+      extractor_({schema_org::entity::kCompleteDataFeed}) {}
 
 MediaFeedsFetcher::~MediaFeedsFetcher() = default;
 

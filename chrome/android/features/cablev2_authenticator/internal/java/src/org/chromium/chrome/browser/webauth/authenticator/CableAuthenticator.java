@@ -57,17 +57,41 @@ class CableAuthenticator {
 
     private final Context mContext;
     private final CableAuthenticatorUI mUi;
+    private final Callback mCallback;
     private final BLEHandler mBleHandler;
 
     private long mClientAddress;
 
+    public enum Result {
+        REGISTER_OK,
+        REGISTER_ERROR,
+        SIGN_OK,
+        SIGN_ERROR,
+        OTHER,
+    }
+
+    // Callbacks notifying the UI of certain CableAuthenticator state changes. These may run on any
+    // thread.
+    public interface Callback {
+        // Invoked when the authenticator has completed a handshake with a client device.
+        void onAuthenticatorConnected();
+        // Invoked when the authenticator has finished. The UI should be dismissed at this point.
+        void onAuthenticatorResult(Result result);
+    }
+
     public CableAuthenticator(Context context, CableAuthenticatorUI ui) {
         mContext = context;
         mUi = ui;
+        mCallback = ui;
         mBleHandler = new BLEHandler(this);
         if (!mBleHandler.start()) {
             // TODO: handle the case where exporting the GATT server fails.
         }
+    }
+
+    public void onHandshake(long client) {
+        // TODO: Ensure only a single client may complete a handshake.
+        mCallback.onAuthenticatorConnected();
     }
 
     public void makeCredential(long clientAddress, String origin, String rpId, byte[] challenge,
@@ -194,25 +218,35 @@ class CableAuthenticator {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onActivityResult " + requestCode + " " + resultCode);
 
+        Result result = Result.OTHER;
         switch (requestCode) {
             case REGISTER_REQUEST_CODE:
-                onRegisterResponse(resultCode, data);
+                if (onRegisterResponse(resultCode, data)) {
+                    result = Result.REGISTER_OK;
+                } else {
+                    result = Result.REGISTER_ERROR;
+                }
                 break;
             case SIGN_REQUEST_CODE:
-                onSignResponse(resultCode, data);
+                if (onSignResponse(resultCode, data)) {
+                    result = Result.SIGN_OK;
+                } else {
+                    result = Result.SIGN_ERROR;
+                }
                 break;
             default:
                 Log.i(TAG, "invalid requestCode: " + requestCode);
                 assert (false);
         }
+        mCallback.onAuthenticatorResult(result);
     }
 
-    public void onRegisterResponse(int resultCode, Intent data) {
+    public boolean onRegisterResponse(int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK || data == null) {
             Log.e(TAG, "Failed with result code" + resultCode);
             mBleHandler.onAuthenticatorAssertionResponse(
                     mClientAddress, CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
-            return;
+            return false;
         }
         Log.e(TAG, "OK.");
 
@@ -237,7 +271,7 @@ class CableAuthenticator {
             }
             mBleHandler.onAuthenticatorAttestationResponse(
                     mClientAddress, CTAP2_ERR_OTHER, null, null);
-            return;
+            return false;
         }
 
         if (!data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)
@@ -245,7 +279,7 @@ class CableAuthenticator {
             Log.e(TAG, "Missing FIDO2_KEY_RESPONSE_EXTRA or FIDO2_KEY_CREDENTIAL_EXTRA");
             mBleHandler.onAuthenticatorAttestationResponse(
                     mClientAddress, CTAP2_ERR_OTHER, null, null);
-            return;
+            return false;
         }
 
         Log.e(TAG, "cred extra");
@@ -256,14 +290,15 @@ class CableAuthenticator {
                         data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA));
         mBleHandler.onAuthenticatorAttestationResponse(mClientAddress, CTAP2_OK,
                 response.getClientDataJSON(), response.getAttestationObject());
+        return true;
     }
 
-    public void onSignResponse(int resultCode, Intent data) {
+    public boolean onSignResponse(int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK || data == null) {
             Log.e(TAG, "Failed with result code" + resultCode);
             mBleHandler.onAuthenticatorAssertionResponse(
                     mClientAddress, CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
-            return;
+            return false;
         }
         Log.e(TAG, "OK.");
 
@@ -288,7 +323,7 @@ class CableAuthenticator {
             }
             mBleHandler.onAuthenticatorAssertionResponse(
                     mClientAddress, ctap_status, null, null, null, null);
-            return;
+            return false;
         }
 
         if (!data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)
@@ -296,7 +331,7 @@ class CableAuthenticator {
             Log.e(TAG, "Missing FIDO2_KEY_RESPONSE_EXTRA or FIDO2_KEY_CREDENTIAL_EXTRA");
             mBleHandler.onAuthenticatorAssertionResponse(
                     mClientAddress, CTAP2_ERR_OTHER, null, null, null, null);
-            return;
+            return false;
         }
 
         Log.e(TAG, "cred extra");
@@ -308,6 +343,7 @@ class CableAuthenticator {
         mBleHandler.onAuthenticatorAssertionResponse(mClientAddress, CTAP2_OK,
                 response.getClientDataJSON(), response.getKeyHandle(),
                 response.getAuthenticatorData(), response.getSignature());
+        return true;
     }
 
     public void onQRCode(String value) {

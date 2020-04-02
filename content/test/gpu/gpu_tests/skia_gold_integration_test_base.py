@@ -102,12 +102,16 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def _AddDefaultArgs(browser_args):
     if not browser_args:
       browser_args = []
+    force_color_profile_arg = [
+        arg for arg in browser_args if arg.startswith('--force-color-profile=')
+    ]
+    if not force_color_profile_arg:
+      browser_args = browser_args + [
+          '--force-color-profile=srgb',
+          '--ensure-forced-color-profile',
+      ]
     # All tests receive the following options.
-    return [
-      '--force-color-profile=srgb',
-      '--ensure-forced-color-profile',
-      '--enable-gpu-benchmarking',
-      '--test-type=gpu'] + browser_args
+    return browser_args + ['--enable-gpu-benchmarking', '--test-type=gpu']
 
   @classmethod
   def StopBrowser(cls):

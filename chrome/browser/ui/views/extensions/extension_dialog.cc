@@ -40,13 +40,8 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
                                        gfx::NativeWindow parent_window,
                                        Profile* profile,
                                        WebContents* web_contents,
-                                       bool is_modal,
-                                       int width,
-                                       int height,
-                                       int min_width,
-                                       int min_height,
-                                       const base::string16& title,
-                                       ExtensionDialogObserver* observer) {
+                                       ExtensionDialogObserver* observer,
+                                       const InitParams& init_params) {
   std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreateDialogHost(url, profile);
   if (!host)
@@ -54,16 +49,16 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
   // Preferred size must be set before views::Widget::CreateWindowWithParent()
   // is called because CreateWindowWithParent() references CanResize().
   ExtensionViewViews* view = GetExtensionView(host.get());
-  view->SetPreferredSize(gfx::Size(width, height));
-  view->set_minimum_size(gfx::Size(min_width, min_height));
+  view->SetPreferredSize(gfx::Size(init_params.width, init_params.height));
+  view->set_minimum_size(
+      gfx::Size(init_params.min_width, init_params.min_height));
   host->SetAssociatedWebContents(web_contents);
 
   DCHECK(parent_window);
   extensions::ExtensionViewHost* host_ptr = host.get();
   ExtensionDialog* dialog = new ExtensionDialog(std::move(host), observer);
-  dialog->set_title(title);
-  dialog->InitWindow(parent_window, is_modal, width, height, min_width,
-                     min_height);
+  dialog->set_title(init_params.title);
+  dialog->InitWindow(parent_window, init_params);
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
@@ -144,8 +139,8 @@ views::View* ExtensionDialog::GetContentsView() {
 }
 
 void ExtensionDialog::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   switch (type) {
     case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
       // Avoid potential overdraw by removing the temporary background after
@@ -199,15 +194,12 @@ ExtensionDialog::ExtensionDialog(
 }
 
 void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
-                                 bool is_modal,
-                                 int width,
-                                 int height,
-                                 int min_width,
-                                 int min_height) {
+                                 const InitParams& init_params) {
   views::Widget* window =
-      is_modal ? constrained_window::CreateBrowserModalDialogViews(this, parent)
-               : views::DialogDelegate::CreateDialogWidget(
-                     this, nullptr /* context */, nullptr /* parent */);
+      init_params.is_modal
+          ? constrained_window::CreateBrowserModalDialogViews(this, parent)
+          : views::DialogDelegate::CreateDialogWidget(
+                this, nullptr /* context */, nullptr /* parent */);
 
   // Center the window over the parent browser window or the screen.
   gfx::Rect screen_rect =
@@ -215,16 +207,16 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   gfx::Rect bounds = parent ? views::Widget::GetWidgetForNativeWindow(parent)
                                   ->GetWindowBoundsInScreen()
                             : screen_rect;
-  bounds.ClampToCenteredSize({width, height});
+  bounds.ClampToCenteredSize({init_params.width, init_params.height});
 
   // Make sure bounds is larger than {min_width, min_height}.
-  if (bounds.width() < min_width) {
-    bounds.set_x(bounds.x() + (bounds.width() - min_width) / 2);
-    bounds.set_width(min_width);
+  if (bounds.width() < init_params.min_width) {
+    bounds.set_x(bounds.x() + (bounds.width() - init_params.min_width) / 2);
+    bounds.set_width(init_params.min_width);
   }
-  if (bounds.height() < min_height) {
-    bounds.set_y(bounds.y() + (bounds.height() - min_height) / 2);
-    bounds.set_height(min_height);
+  if (bounds.height() < init_params.min_height) {
+    bounds.set_y(bounds.y() + (bounds.height() - init_params.min_height) / 2);
+    bounds.set_height(init_params.min_height);
   }
 
   // Make sure bounds is still on screen.

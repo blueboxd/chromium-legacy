@@ -33,8 +33,8 @@ class NET_EXPORT NetworkIsolationKey {
  public:
   // Full constructor.  When a request is initiated by the top frame, it must
   // also populate the |frame_origin| parameter when calling this constructor.
-  explicit NetworkIsolationKey(const url::Origin& top_frame_origin,
-                               const url::Origin& frame_origin);
+  NetworkIsolationKey(const url::Origin& top_frame_origin,
+                      const url::Origin& frame_origin);
 
   // Construct an empty key.
   NetworkIsolationKey();
@@ -139,10 +139,16 @@ class NET_EXPORT NetworkIsolationKey {
       WARN_UNUSED_RESULT;
 
  private:
+  // These classes need to be able to set |opaque_and_non_transient_|
+  friend class IsolationInfo;
   friend struct mojo::StructTraits<network::mojom::NetworkIsolationKeyDataView,
                                    net::NetworkIsolationKey>;
   FRIEND_TEST_ALL_PREFIXES(NetworkIsolationKeyWithFrameOriginTest,
                            UseRegistrableDomain);
+
+  NetworkIsolationKey(const url::Origin& top_frame_origin,
+                      const url::Origin& frame_origin,
+                      bool opaque_and_non_transient);
 
   void ReplaceOriginsWithRegistrableDomains();
 

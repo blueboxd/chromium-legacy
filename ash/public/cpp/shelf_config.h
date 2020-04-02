@@ -59,6 +59,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // AppListControllerObserver:
   void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;
 
+  // Whether the shelf control buttons must be shown for accessibility
+  // reasons.
+  bool ShelfControlsForcedShownForAccessibility() const;
+
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
   int shelf_size() const;

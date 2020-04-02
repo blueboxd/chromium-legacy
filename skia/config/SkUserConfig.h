@@ -195,20 +195,10 @@ SK_API void SkDebugf_FileLine(const char* file,
 #   define SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAP_SCALE
 #endif
 
-// Remove this after we fixed all the issues related to the new SDF algorithm
-// (https://codereview.chromium.org/1643143002)
-#ifndef SK_USE_LEGACY_DISTANCE_FIELDS
-#define SK_USE_LEGACY_DISTANCE_FIELDS
-#endif
-
 // For now, Chrome should only attempt to reduce opList splitting when recording
 // DDLs
 #ifndef SK_DISABLE_REDUCE_OPLIST_SPLITTING
 #define SK_DISABLE_REDUCE_OPLIST_SPLITTING
-#endif
-
-#ifndef SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
-#define SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #endif
 
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
@@ -218,15 +208,8 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-// We're turning this off indefinitely,
-// until we can figure out some fundamental problems with its approach.
-//
-// See chromium:913223, skia:6886.
-#define SK_DISABLE_DAA
-
 // Staging for lowp::bilerp_clamp_8888, and for planned misc. others.
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
-#define SK_DISABLE_NEXT_BATCH_OF_LOWP_STAGES
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

@@ -236,6 +236,58 @@ TEST_CONFIG_BUCKET = """\
 }
 """
 
+# Same as previous config but with fake_debug_builder
+# and fake_simplechrome_builder configs swapped
+TEST_CONFIG_BUCKET_2 = """\
+{
+  'public_artifact_builders': {},
+  'buckets': {
+    'ci': {
+      'fake_builder': 'rel_bot',
+      'fake_debug_builder': 'cros_chrome_sdk',
+      'fake_simplechrome_builder': 'debug_goma',
+      'fake_args_bot': '//build/args/bots/fake_master/fake_args_bot.gn',
+      'fake_multi_phase': { 'phase_1': 'phase_1', 'phase_2': 'phase_2'},
+      'fake_args_file': 'args_file_goma',
+    }
+  },
+  'configs': {
+    'args_file_goma': ['args_file', 'goma'],
+    'cros_chrome_sdk': ['cros_chrome_sdk'],
+    'rel_bot': ['rel', 'goma', 'fake_feature1'],
+    'debug_goma': ['debug', 'goma'],
+    'phase_1': ['phase_1'],
+    'phase_2': ['phase_2'],
+  },
+  'mixins': {
+    'cros_chrome_sdk': {
+      'cros_passthrough': True,
+    },
+    'fake_feature1': {
+      'gn_args': 'enable_doom_melon=true',
+    },
+    'goma': {
+      'gn_args': 'use_goma=true',
+    },
+    'args_file': {
+      'args_file': '//build/args/fake.gn',
+    },
+    'phase_1': {
+      'gn_args': 'phase=1',
+    },
+    'phase_2': {
+      'gn_args': 'phase=2',
+    },
+    'rel': {
+      'gn_args': 'is_debug=false',
+    },
+    'debug': {
+      'gn_args': 'is_debug=true',
+    },
+  },
+}
+"""
+
 TEST_BAD_CONFIG = """\
 {
   'configs': {
@@ -955,6 +1007,12 @@ class UnitTest(unittest.TestCase):
   def test_validate(self):
     mbw = self.fake_mbw()
     self.check(['validate'], mbw=mbw, ret=0)
+
+  def test_validate_inconsistent(self):
+    mbw = self.fake_mbw()
+    mbw.files[mbw.default_config_bucket] = TEST_CONFIG_BUCKET_2
+    self.check(['validate'], mbw=mbw, ret=1)
+    self.assertIn('mb_config_buckets.pyl doesn\'t match', mbw.out)
 
   def test_bad_validate(self):
     mbw = self.fake_mbw()

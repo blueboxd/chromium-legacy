@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -523,10 +524,6 @@ URLLoader::URLLoader(
       custom_proxy_pre_cache_headers_(request.custom_proxy_pre_cache_headers),
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
       fetch_window_id_(request.fetch_window_id),
-      update_network_isolation_key_on_redirect_(
-          request.trusted_params
-              ? request.trusted_params->update_network_isolation_key_on_redirect
-              : mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate),
       origin_policy_manager_(nullptr),
       trust_token_helper_(std::move(trust_token_helper)),
       isolated_world_origin_(request.isolated_world_origin) {
@@ -561,13 +558,30 @@ URLLoader::URLLoader(
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
+  net::IsolationInfo::RedirectMode redirect_mode;
+  if (!request.trusted_params) {
+    redirect_mode = net::IsolationInfo::RedirectMode::kUpdateNothing;
+  } else {
+    switch (request.trusted_params->update_network_isolation_key_on_redirect) {
+      case mojom::UpdateNetworkIsolationKeyOnRedirect::
+          kUpdateTopFrameAndFrameOrigin:
+        redirect_mode = net::IsolationInfo::RedirectMode::kUpdateTopFrame;
+        break;
+      case mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin:
+        redirect_mode = net::IsolationInfo::RedirectMode::kUpdateFrameOnly;
+        break;
+      case mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate:
+        redirect_mode = net::IsolationInfo::RedirectMode::kUpdateNothing;
+        break;
+    }
+  }
   if (factory_params_->network_isolation_key) {
-    url_request_->set_network_isolation_key(
-        factory_params_->network_isolation_key.value());
+    url_request_->set_isolation_info(net::IsolationInfo::CreatePartial(
+        redirect_mode, factory_params_->network_isolation_key.value()));
   } else if (request.trusted_params &&
              !request.trusted_params->network_isolation_key.IsEmpty()) {
-    url_request_->set_network_isolation_key(
-        request.trusted_params->network_isolation_key);
+    url_request_->set_isolation_info(net::IsolationInfo::CreatePartial(
+        redirect_mode, request.trusted_params->network_isolation_key));
   }
 
   if (factory_params_->disable_secure_dns) {
@@ -892,28 +906,6 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
   if (!modified_headers.IsEmpty())
     LogConcerningRequestHeaders(modified_headers,
                                 true /* added_during_redirect */);
-
-  // See if network isolation key needs to be updated.
-  // TODO(crbug.com/979296): Consider changing this code to copy an origin
-  // instead of creating one from a URL which lacks opacity information
-  if (url_request_->network_isolation_key().IsFullyPopulated() &&
-      update_network_isolation_key_on_redirect_ !=
-          mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate) {
-    const GURL& url = new_url ? new_url.value() : *deferred_redirect_url_;
-    const url::Origin& new_origin = url::Origin::Create(url);
-
-    if (update_network_isolation_key_on_redirect_ ==
-        mojom::UpdateNetworkIsolationKeyOnRedirect::
-            kUpdateTopFrameAndFrameOrigin) {
-      url_request_->set_network_isolation_key(net::NetworkIsolationKey(
-          new_origin /* top frame origin */, new_origin /* frame origin */));
-    } else if (update_network_isolation_key_on_redirect_ ==
-               mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin) {
-      url_request_->set_network_isolation_key(
-          url_request_->network_isolation_key().CreateWithNewFrameOrigin(
-              new_origin));
-    }
-  }
 
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;

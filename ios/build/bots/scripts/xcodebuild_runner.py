@@ -14,6 +14,7 @@ import time
 
 import coverage_util
 import iossim_util
+import standard_json_util as sju
 import test_apps
 import test_runner
 import xcode_log_parser
@@ -387,7 +388,9 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self.logs['flaked tests'] = list(
         all_failures - set(self.logs['failed tests']))
 
-    # Gets not-started/interrupted tests
+    # Gets not-started/interrupted tests.
+    # all_tests_to_run takes into consideration that only a subset of tests may
+    # have run due to the test sharding logic in run.py.
     all_tests_to_run = set([
         test_name for launch_command in launch_commands
         for test_name in launch_command.egtests_app.get_all_tests()
@@ -403,35 +406,27 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         'FAIL': len(self.logs['failed tests'] + self.logs['aborted tests']),
         'PASS': len(self.logs['passed tests']),
     }
-    self.test_results['tests'] = collections.OrderedDict()
 
+    output = sju.StdJson()
     for shard_attempts in attempts_results:
       for attempt, attempt_results in enumerate(shard_attempts):
 
-        for test in attempt_results['failed'].keys() + self.logs[
-            'aborted tests']:
-          if attempt == len(shard_attempts) - 1:
-            test_result = 'FAIL'
-          else:
-            test_result = self.test_results['tests'].get(test, {}).get(
-                'actual', '') + ' FAIL'
-          self.test_results['tests'][test] = {
-              'expected': 'PASS',
-              'actual': test_result.strip()
-          }
+        for test in attempt_results['failed'].keys():
+          output.mark_failed(test)
+
+        # 'aborted tests' in logs is an array of strings, each string defined
+        # as "{TestCase}/{testMethod}"
+        for test in self.logs['aborted tests']:
+          output.mark_aborted(test)
 
         for test in attempt_results['passed']:
-          test_result = self.test_results['tests'].get(test, {}).get(
-              'actual', '') + ' PASS'
-          self.test_results['tests'][test] = {
-              'expected': 'PASS',
-              'actual': test_result.strip()
-          }
-          if 'FAIL' in test_result:
-            self.test_results['tests'][test]['is_flaky'] = True
+          output.mark_passed(test)
+
+    self.test_results['tests'] = output.tests
 
     # Test is failed if there are failures for the last run.
-    return not self.logs['failed tests']
+    # or if there are aborted tests.
+    return not self.logs['failed tests'] and not self.logs['aborted tests']
 
 
 class DeviceXcodeTestRunner(SimulatorParallelTestRunner,

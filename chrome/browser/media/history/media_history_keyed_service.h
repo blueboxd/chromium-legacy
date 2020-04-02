@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_KEYED_SERVICE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/media/history/media_history_store.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/media_player_watch_time.h"
+#include "services/media_session/public/cpp/media_metadata.h"
 
 class Profile;
 
@@ -102,6 +105,27 @@ class MediaHistoryKeyedService : public KeyedService,
 
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);
+
+  // Represents a Media Feed Item that needs to be checked against Safe Search.
+  // Contains the ID of the feed item and a set of URLs that should be checked.
+  struct PendingSafeSearchCheck {
+    explicit PendingSafeSearchCheck(int64_t id);
+    ~PendingSafeSearchCheck();
+    PendingSafeSearchCheck(const PendingSafeSearchCheck&) = delete;
+    PendingSafeSearchCheck& operator=(const PendingSafeSearchCheck&) = delete;
+
+    int64_t const id;
+    std::set<GURL> urls;
+  };
+  using PendingSafeSearchCheckList =
+      std::vector<std::unique_ptr<PendingSafeSearchCheck>>;
+  void GetPendingSafeSearchCheckMediaFeedItems(
+      base::OnceCallback<void(PendingSafeSearchCheckList)> callback);
+
+  // Store the Safe Search check results for multiple Media Feed Items. The
+  // map key is the ID of the feed item.
+  void StoreMediaFeedItemSafeSearchResults(
+      std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
 
   // Posts an empty task to the database thread. The callback will be called
   // on the calling thread when the empty task is completed. This can be used

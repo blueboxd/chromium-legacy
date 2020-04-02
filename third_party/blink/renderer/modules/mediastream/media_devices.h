@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_DEVICES_H_
 
 #include "base/callback.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
 namespace blink {
@@ -36,7 +36,6 @@ class MODULES_EXPORT MediaDevices final
       public mojom::blink::MediaDevicesListener {
   USING_GARBAGE_COLLECTED_MIXIN(MediaDevices);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(MediaDevices, Dispose);
 
  public:
   explicit MediaDevices(ExecutionContext*);
@@ -108,7 +107,6 @@ class MODULES_EXPORT MediaDevices final
   void DispatchScheduledEvents();
   void StartObserving();
   void StopObserving();
-  void Dispose();
   void DevicesEnumerated(ScriptPromiseResolver*,
                          const Vector<Vector<WebMediaDeviceInfo>>&,
                          Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>,
@@ -123,7 +121,7 @@ class MODULES_EXPORT MediaDevices final
   TaskHandle dispatch_scheduled_events_task_handle_;
   HeapVector<Member<Event>> scheduled_events_;
   mojo::Remote<mojom::blink::MediaDevicesDispatcherHost> dispatcher_host_;
-  mojo::Receiver<mojom::blink::MediaDevicesListener> receiver_{this};
+  HeapMojoReceiver<mojom::blink::MediaDevicesListener> receiver_;
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
 
   EnumerateDevicesTestCallback enumerate_devices_test_callback_;

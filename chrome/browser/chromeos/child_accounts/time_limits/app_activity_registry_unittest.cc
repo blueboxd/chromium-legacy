@@ -99,7 +99,7 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
   AppTimeNotificationDelegateMock& notification_delegate_mock() {
     return notification_delegate_mock_;
   }
-  Profile& profile() { return profile_; }
+  PrefService* prefs() { return profile_.GetPrefs(); }
 
   void CreateAppActivityForApp(const AppId& app_id,
                                base::TimeDelta activity_length);
@@ -154,7 +154,7 @@ void AppActivityRegistryTest::SetAppLimit(
 
 void AppActivityRegistryTest::ReInitializeRegistry() {
   registry_ = std::make_unique<AppActivityRegistry>(
-      &wrapper_, &notification_delegate_mock_, &profile_);
+      &wrapper_, &notification_delegate_mock_, prefs());
 
   registry_test_ =
       std::make_unique<AppActivityRegistry::TestApi>(registry_.get());
@@ -663,7 +663,7 @@ TEST_F(AppActivityRegistryTest, RestoredApplicationInformation) {
 
   // Now let's test that the app activity are stored appropriately.
   const base::Value* value =
-      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -705,7 +705,7 @@ TEST_F(AppActivityRegistryTest, RemoveUninstalledApplications) {
 
   // Now let's test that the app activity are stored appropriately.
   const base::Value* value =
-      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -722,7 +722,7 @@ TEST_F(AppActivityRegistryTest, RemoveUninstalledApplications) {
   registry().OnSuccessfullyReported(base::Time::Now());
 
   const base::Value* new_value =
-      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> final_app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -742,18 +742,18 @@ TEST_F(AppActivityRegistryTest, RemoveOldEntries) {
   CreateAppActivityForApp(kApp1, base::TimeDelta::FromHours(1));
   CreateAppActivityForApp(kApp2, base::TimeDelta::FromHours(1));
 
-  profile().GetPrefs()->SetInt64(
-      prefs::kPerAppTimeLimitsLastSuccessfulReportTime,
-      start_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  prefs()->SetInt64(prefs::kPerAppTimeLimitsLastSuccessfulReportTime,
+                    start_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromDays(30));
+  task_environment()->AdvanceClock(base::TimeDelta::FromDays(30));
+  task_environment()->RunUntilIdle();
 
   // Now let's recreate AppActivityRegistry. Its state should be restored.
   ReInitializeRegistry();
 
   // Now let's test that the app activity are stored appropriately.
   const base::Value* value =
-      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+      prefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
 
   const std::vector<PersistedAppInfo> app_infos =
       PersistedAppInfo::PersistedAppInfosFromList(
@@ -1033,6 +1033,70 @@ TEST_F(AppActivityRegistryTest, AppReinstallations) {
       .Times(1);
 
   registry().OnAppAvailable(kApp1);
+}
+
+TEST_F(AppActivityRegistryTest, LimitSetAfterActivity) {
+  AppStateObserverMock state_observer_mock;
+  registry().AddAppStateObserver(&state_observer_mock);
+
+  const AppId kApp3(apps::mojom::AppType::kWeb, "l");
+  registry().OnAppInstalled(kApp3);
+  registry().OnAppAvailable(kApp3);
+
+  CreateAppActivityForApp(kApp3, base::TimeDelta::FromHours(1));
+
+  registry().OnAppActive(kApp3, CreateWindowForApp(kApp3), base::Time::Now());
+
+  const AppLimit web_limit(AppRestriction::kTimeLimit,
+                           base::TimeDelta::FromMinutes(20), base::Time::Now());
+  EXPECT_CALL(
+      state_observer_mock,
+      OnAppLimitReached(GetChromeAppId(), web_limit.daily_limit().value(),
+                        /* was_active */ false))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp2, web_limit.daily_limit().value(),
+                                /* was_active */ false))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp3, web_limit.daily_limit().value(),
+                                /* was_active */ true))
+      .Times(1);
+  const std::map<AppId, AppLimit> limits{{GetChromeAppId(), web_limit}};
+  registry().UpdateAppLimits(limits);
+}
+
+TEST_F(AppActivityRegistryTest, WebAppInstalled) {
+  AppStateObserverMock state_observer_mock;
+  registry().AddAppStateObserver(&state_observer_mock);
+  const AppLimit web_limit(AppRestriction::kTimeLimit,
+                           base::TimeDelta::FromHours(2), base::Time::Now());
+  const std::map<AppId, AppLimit> limits{{GetChromeAppId(), web_limit}};
+  registry().UpdateAppLimits(limits);
+
+  registry().OnAppActive(kApp2, CreateWindowForApp(kApp2), base::Time::Now());
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(1));
+
+  // Now a new application is installed.
+  const AppId kApp3(apps::mojom::AppType::kWeb, "l");
+
+  registry().OnAppInstalled(kApp3);
+  registry().OnAppAvailable(kApp3);
+
+  EXPECT_CALL(
+      state_observer_mock,
+      OnAppLimitReached(GetChromeAppId(), web_limit.daily_limit().value(),
+                        /* was_active */ false))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp2, web_limit.daily_limit().value(),
+                                /* was_active */ true))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp3, web_limit.daily_limit().value(),
+                                /* was_active */ false))
+      .Times(1);
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(1));
 }
 
 }  // namespace app_time

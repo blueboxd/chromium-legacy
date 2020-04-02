@@ -80,14 +80,15 @@ void InputDeviceSettingsImplOzone::UpdateTouchpadSettings(
 }
 
 void InputDeviceSettingsImplOzone::SetTouchpadSensitivity(int value) {
-  DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
+  DCHECK_GE(value, static_cast<int>(PointerSensitivity::kLowest));
+  DCHECK_LE(value, static_cast<int>(PointerSensitivity::kHighest));
   current_touchpad_settings_.SetSensitivity(value);
   input_controller()->SetTouchpadSensitivity(value);
 }
 
 void InputDeviceSettingsImplOzone::SetTouchpadScrollSensitivity(int value) {
-  DCHECK_GE(value, kMinPointerSensitivity);
-  DCHECK_LE(value, kMaxPointerSensitivity);
+  DCHECK_GE(value, static_cast<int>(PointerSensitivity::kLowest));
+  DCHECK_LE(value, static_cast<int>(PointerSensitivity::kHighest));
   current_touchpad_settings_.SetScrollSensitivity(value);
   input_controller()->SetTouchpadScrollSensitivity(value);
 }
@@ -125,14 +126,15 @@ void InputDeviceSettingsImplOzone::UpdateMouseSettings(
 }
 
 void InputDeviceSettingsImplOzone::SetMouseSensitivity(int value) {
-  DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
+  DCHECK_GE(value, static_cast<int>(PointerSensitivity::kLowest));
+  DCHECK_LE(value, static_cast<int>(PointerSensitivity::kHighest));
   current_mouse_settings_.SetSensitivity(value);
   input_controller()->SetMouseSensitivity(value);
 }
 
 void InputDeviceSettingsImplOzone::SetMouseScrollSensitivity(int value) {
-  DCHECK_GE(value, kMinPointerSensitivity);
-  DCHECK_LE(value, kMaxPointerSensitivity);
+  DCHECK_GE(value, static_cast<int>(PointerSensitivity::kLowest));
+  DCHECK_LE(value, static_cast<int>(PointerSensitivity::kHighest));
   current_mouse_settings_.SetScrollSensitivity(value);
   input_controller()->SetMouseScrollSensitivity(value);
 }

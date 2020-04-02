@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chromecast/chromecast_buildflags.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "chromecast/external_mojo/external_service_support/crash_reporter_client.h"
@@ -35,6 +36,13 @@ void CommonProcessInitialization(int argc, char** argv) {
   settings.logging_dest =
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
+
+#if BUILDFLAG(IS_CAST_DESKTOP_BUILD)
+  logging::SetLogItems(true, true, true, false);
+#else
+  // Timestamp available through logcat -v time.
+  logging::SetLogItems(true, true, false, false);
+#endif  // BUILDFLAG(IS_CAST_DESKTOP_BUILD)
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FeatureList::InitializeInstance(

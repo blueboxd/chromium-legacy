@@ -37,12 +37,6 @@ bool CanDisplayInAppLauncher(const Extension* extension,
 bool ShouldDisplayInNewTabPage(const Extension* extension,
                                content::BrowserContext* context);
 
-// Returns true if the extension should be displayed in the extension
-// settings page (i.e. chrome://extensions). Checks whether the extension is
-// an ephemeral app.
-bool ShouldDisplayInExtensionSettings(const Extension* extension,
-                                      content::BrowserContext* context);
-
 // If |url| is an extension URL, returns the name of the associated extension,
 // with whitespace collapsed. Otherwise, returns empty string. |context| is used
 // to get at the extension registry.

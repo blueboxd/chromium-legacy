@@ -104,6 +104,13 @@ Polymer({
       computed: 'computeControlsDisabled_(state)',
     },
 
+    /** @private {number} */
+    sheetCount_: {
+      type: Number,
+      computed: 'computeSheetCount_(' +
+          'settings.pages.*, settings.duplex.*, settings.copies.*)',
+    },
+
     /** @private {boolean} */
     firstLoad_: {
       type: Boolean,
@@ -160,6 +167,18 @@ Polymer({
    */
   computeControlsDisabled_() {
     return this.state !== State.READY;
+  },
+
+  /**
+   * @return {number} The number of sheets that will be printed.
+   * @private
+   */
+  computeSheetCount_() {
+    let sheets = this.getSettingValue('pages').length;
+    if (this.getSettingValue('duplex')) {
+      sheets = Math.ceil(sheets / 2);
+    }
+    return sheets * /** @type {number} */ (this.getSettingValue('copies'));
   },
 
   /**

@@ -283,6 +283,9 @@ class CORE_EXPORT HTMLInputElement
   // is not truncated by ellipsis.
   // Return a null string for other types.
   String FileStatusText() const;
+  // Returns true if an ellipsis should be injected at the middle of the text.
+  // This function is called only if text-overflow:ellipsis is specified.
+  bool ShouldApplyMiddleEllipsis() const;
 
   unsigned height() const;
   unsigned width() const;

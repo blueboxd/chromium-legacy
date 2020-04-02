@@ -130,6 +130,7 @@ void QuickAnswersControllerImpl::OnQuickAnswerClick() {
 
 void QuickAnswersControllerImpl::UpdateQuickAnswersAnchorBounds(
     const gfx::Rect& anchor_bounds) {
+  anchor_bounds_ = anchor_bounds;
   quick_answers_ui_controller_->UpdateQuickAnswersBounds(anchor_bounds);
 }
 

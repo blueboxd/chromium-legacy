@@ -186,7 +186,7 @@ void UpdateGaiaProfileInfoIfNeeded(Profile* profile) {
       GAIAInfoUpdateServiceFactory::GetInstance()->GetForProfile(profile);
   // The service may be null, for example during unit tests.
   if (service)
-    service->Update();
+    service->UpdatePrimaryAccount();
 }
 
 bool SetActiveProfileToGuestIfLocked() {

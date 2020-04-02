@@ -174,7 +174,6 @@ crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsig
 crbug.com/angleproject/2291 [ win no-use-gl ] conformance2/rendering/framebuffer-texture-changing-base-level.html [ Failure ]
 crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
 crbug.com/angleproject/1465 [ win no-use-gl ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
-crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
 # Win / NVidia
 crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ RetryOnFailure ]
@@ -278,7 +277,6 @@ crbug.com/angleproject/3354 [ win amd-0x699f ] deqp/functional/gles3/fborender/s
 crbug.com/989050 [ d3d11 win7 amd ] conformance2/textures/misc/tex-unpack-params-imagedata.html [ RetryOnFailure ]
 
 # Passthrough command decoder
-crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
 
 # Passthrough command decoder / OpenGL / Windows
@@ -610,9 +608,6 @@ crbug.com/1059760 [ mac asan ] conformance2/textures/video/* [ RetryOnFailure ]
 ####################
 # Linux failures   #
 ####################
-
-# Intel failed issues
-crbug.com/950552 [ linux intel no-passthrough ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
 # Intel driver issues
 crbug.com/950552 [ linux intel mesa_lt_19.1.2 ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]

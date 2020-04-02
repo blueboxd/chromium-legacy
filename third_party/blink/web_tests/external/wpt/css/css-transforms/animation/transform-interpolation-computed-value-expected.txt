@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 87 tests; 34 PASS, 53 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 87 tests; 36 PASS, 51 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL Interpolation between translateX(0px) and translateX(50px) gives the correct computed value halfway according to computedStyleMap. assert_equals: The value at 50% progress is as expected expected "translateX(25px)" but got "translate(25px, 0px)"
 FAIL Interpolation between translateX(0px) and translateX(50px) gives the correct computed value halfway according to computedStyleMap with zoom active. assert_equals: The value at 50% progress is as expected expected "translateX(25px)" but got "translate(25px, 0px)"
 FAIL Interpolation between translateX(0px) and translateX(50px) gives the correct computed value halfway according to commitStyles. assert_equals: The value at 50% progress is as expected expected "translateX(25px)" but got "matrix(1, 0, 0, 1, 25, 0)"
@@ -13,10 +13,10 @@ PASS Interpolation between translateX(50px) and translateY(50px) gives the corre
 PASS Interpolation between translateX(50px) and translateY(50px) gives the correct computed value halfway according to computedStyleMap with zoom active.
 FAIL Interpolation between translateX(50px) and translateY(50px) gives the correct computed value halfway according to commitStyles. assert_equals: The value at 50% progress is as expected expected "translate(25px, 25px)" but got "matrix(1, 0, 0, 1, 25, 25)"
 PASS Interpolation between translateX(50px) and translateZ(50px) gives the correct computed value halfway according to computedStyleMap.
-FAIL Interpolation between translateX(50px) and translateZ(50px) gives the correct computed value halfway according to computedStyleMap with zoom active. assert_equals: The value at 50% progress is as expected expected "translate3d(25px, 0px, 25px)" but got "translate3d(25px, 0px, 31.25px)"
+PASS Interpolation between translateX(50px) and translateZ(50px) gives the correct computed value halfway according to computedStyleMap with zoom active.
 FAIL Interpolation between translateX(50px) and translateZ(50px) gives the correct computed value halfway according to commitStyles. assert_equals: The value at 50% progress is as expected expected "translate3d(25px, 0px, 25px)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 25, 0, 25, 1)"
 PASS Interpolation between translateZ(50px) and translateX(50px) gives the correct computed value halfway according to computedStyleMap.
-FAIL Interpolation between translateZ(50px) and translateX(50px) gives the correct computed value halfway according to computedStyleMap with zoom active. assert_equals: The value at 50% progress is as expected expected "translate3d(25px, 0px, 25px)" but got "translate3d(25px, 0px, 31.25px)"
+PASS Interpolation between translateZ(50px) and translateX(50px) gives the correct computed value halfway according to computedStyleMap with zoom active.
 FAIL Interpolation between translateZ(50px) and translateX(50px) gives the correct computed value halfway according to commitStyles. assert_equals: The value at 50% progress is as expected expected "translate3d(25px, 0px, 25px)" but got "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 25, 0, 25, 1)"
 FAIL Interpolation between translateZ(-50px) and translateZ(50px) gives the correct computed value halfway according to computedStyleMap. assert_equals: The value at 50% progress is as expected expected "translateZ(0px)" but got "translate3d(0px, 0px, 0px)"
 FAIL Interpolation between translateZ(-50px) and translateZ(50px) gives the correct computed value halfway according to computedStyleMap with zoom active. assert_equals: The value at 50% progress is as expected expected "translateZ(0px)" but got "translate3d(0px, 0px, 0px)"

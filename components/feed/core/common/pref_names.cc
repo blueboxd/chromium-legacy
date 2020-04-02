@@ -31,6 +31,11 @@ const char kUserClassifierLastTimeToUseSuggestions[] =
 const char kHostOverrideHost[] = "feed.host_override.host";
 const char kHostOverrideBlessNonce[] = "feed.host_override.bless_nonce";
 
+const char kThrottlerRequestCountListPrefName[] =
+    "feedv2.request_throttler.request_counts";
+const char kThrottlerLastRequestTime[] =
+    "feedv2.request_throttler.last_request_time";
+
 }  // namespace prefs
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -41,6 +46,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimePref(prefs::kLastFetchAttemptTime, base::Time());
   registry->RegisterTimeDeltaPref(prefs::kBackgroundRefreshPeriod,
                                   base::TimeDelta());
+  registry->RegisterListPref(feed::prefs::kThrottlerRequestCountListPrefName);
+  registry->RegisterTimePref(feed::prefs::kThrottlerLastRequestTime,
+                             base::Time());
   UserClassifier::RegisterProfilePrefs(registry);
 }
 

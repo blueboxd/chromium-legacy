@@ -478,6 +478,16 @@ This file contains the strings for ash.
         Your screen will go blank for longer than usual (up to a minute) during this update. Please don't press the power button while the update is in progress.
       </message>
 
+      <message name="IDS_ASH_STATUS_TRAY_MIC_GAIN" desc="The accessible text for the toggle mic muted button in the tray audio settings">
+        Toggle Mic. <ph name="STATE_TEXT">$1<ex>Mic is muted</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_MIC_STATE_ON" desc="The accessible text used when the mic gain button is in the on state.">
+        Mic is on, toggling will mute input.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_MIC_STATE_MUTED" desc="The accessible text used when the mic gain button is in the muted state.">
+        Mic is muted.
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the toggle volume muted button in the tray.">
         Toggle Volume. <ph name="STATE_TEXT">$1<ex>Volume is muted</ex></ph>
       </message>

@@ -41,10 +41,13 @@ constexpr SkColor kArrowColorAfterActivated = gfx::kGoogleGrey100;
 constexpr int kBackgroundRadius = 20;
 const SkColor kBackgroundColorBeforeActivated = SK_ColorWHITE;
 const SkColor kBackgroundColorAfterActivated = gfx::kGoogleBlue600;
-// Y offset of the background shadow.
-const int kBgShadowOffsetY = 2;
-const int kBgShadowBlurRadius = 8;
-const SkColor kBgShadowColor = SkColorSetA(SK_ColorBLACK, 0x4D);
+// The background shadow for the circle.
+constexpr int kBackNudgeShadowOffsetY1 = 1;
+constexpr int kBackNudgeShadowBlurRadius1 = 2;
+constexpr SkColor kBackNudgeShadowColor1 = SkColorSetA(SK_ColorBLACK, 0x4D);
+constexpr int kBackNudgeShadowOffsetY2 = 2;
+constexpr int kBackNudgeShadowBlurRadius2 = 6;
+constexpr SkColor kBackNudgeShadowColor2 = SkColorSetA(SK_ColorBLACK, 0x26);
 
 // Radius of the ripple while x-axis movement of the affordance achieves
 // |kDistanceForFullRadius|.
@@ -149,10 +152,14 @@ class AffordanceView : public views::View {
     cc::PaintFlags bg_flags;
     bg_flags.setAntiAlias(true);
     bg_flags.setStyle(cc::PaintFlags::kFill_Style);
-    gfx::ShadowValues shadow;
-    shadow.emplace_back(gfx::Vector2d(0, kBgShadowOffsetY), kBgShadowBlurRadius,
-                        kBgShadowColor);
-    bg_flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
+    gfx::ShadowValues shadows;
+    shadows.push_back(
+        gfx::ShadowValue(gfx::Vector2d(0, kBackNudgeShadowOffsetY1),
+                         kBackNudgeShadowBlurRadius1, kBackNudgeShadowColor1));
+    shadows.push_back(
+        gfx::ShadowValue(gfx::Vector2d(0, kBackNudgeShadowOffsetY2),
+                         kBackNudgeShadowBlurRadius2, kBackNudgeShadowColor2));
+    bg_flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
     bg_flags.setColor(is_activated ? kBackgroundColorAfterActivated
                                    : kBackgroundColorBeforeActivated);
     canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);

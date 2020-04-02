@@ -961,8 +961,7 @@ DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
 ExternalUseClient::ImageContext*
 DisplayResourceProvider::LockSetForExternalUse::LockResource(
     ResourceId id,
-    bool is_video_plane,
-    float sdr_scale_factor) {
+    bool is_video_plane) {
   auto it = resource_provider_->resources_.find(id);
   DCHECK(it != resource_provider_->resources_.end());
 
@@ -973,43 +972,17 @@ DisplayResourceProvider::LockSetForExternalUse::LockResource(
     DCHECK(!base::Contains(resources_, std::make_pair(id, &resource)));
     resources_.emplace_back(id, &resource);
 
-    // Ignore sdr_scale_factor for video planes, if the src color space
-    // is invalid, or if it's already HDR.
-    const gfx::ColorSpace& original_src = resource.transferable.color_space;
-    if (is_video_plane || !original_src.IsValid() || original_src.IsHDR()) {
-      sdr_scale_factor = 1.0f;
-    }
-
-    if (resource.image_context &&
-        resource.image_context->sdr_scale_factor() != sdr_scale_factor) {
-      // Must rebuild the image context with a new color space, which requires
-      // releasing the old image context on the GPU main thread.
-      std::vector<std::unique_ptr<ExternalUseClient::ImageContext>> to_release;
-      to_release.push_back(std::move(resource.image_context));
-      resource_provider_->external_use_client_->ReleaseImageContexts(
-          std::move(to_release));
-    }
-
     if (!resource.image_context) {
-      sk_sp<SkColorSpace> src_color_space;
-      if (!is_video_plane) {
-        if (sdr_scale_factor != 1.0f) {
-          src_color_space = original_src.GetScaledColorSpace(sdr_scale_factor)
-                                .ToSkColorSpace();
-        } else {
-          src_color_space = original_src.ToSkColorSpace();
-        }
-      }
-      // Else the resource |color_space| is handled externally in SkiaRenderer
-      // using a special color filter.
-
+      sk_sp<SkColorSpace> image_color_space;
+      // Video color conversion is handled externally in SkiaRenderer using a
+      // special color filter.
+      if (!is_video_plane)
+        image_color_space = resource.transferable.color_space.ToSkColorSpace();
       resource.image_context =
           resource_provider_->external_use_client_->CreateImageContext(
               resource.transferable.mailbox_holder, resource.transferable.size,
               resource.transferable.format, resource.transferable.ycbcr_info,
-              std::move(src_color_space));
-      // Save the SDR scale, in order to cache the scaled SkColorSpace
-      resource.image_context->set_sdr_scale_factor(sdr_scale_factor);
+              std::move(image_color_space));
     }
     resource.locked_for_external_use = true;
 

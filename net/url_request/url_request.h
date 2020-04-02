@@ -22,12 +22,12 @@
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
-#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -276,14 +276,17 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // This method may only be called before Start().
   void set_site_for_cookies(const SiteForCookies& site_for_cookies);
 
-  // This key is used to isolate requests from different contexts in accessing
-  // shared network resources like the cache.
-  const NetworkIsolationKey& network_isolation_key() const {
-    return network_isolation_key_;
+  // Sets IsolationInfo for the request, which affects whether SameSite cookies
+  // are sent, what NetworkIsolationKey is used for cached resources, and how
+  // that behavior changes when following redirects. This may only be changed
+  // before Start() is called.
+  //
+  // TODO(https://crbug.com/1060631): This isn't actually used yet for SameSite
+  // cookies. Update consumers and fix that.
+  void set_isolation_info(const IsolationInfo& isolation_info) {
+    isolation_info_ = isolation_info;
   }
-  void set_network_isolation_key(const NetworkIsolationKey& key) {
-    network_isolation_key_ = key;
-  }
+  const IsolationInfo& isolation_info() const { return isolation_info_; }
 
   // Indicate whether SameSite cookies should be attached even though the
   // request is cross-site.
@@ -842,7 +845,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   std::vector<GURL> url_chain_;
   SiteForCookies site_for_cookies_;
 
-  NetworkIsolationKey network_isolation_key_;
+  IsolationInfo isolation_info_;
 
   bool attach_same_site_cookies_;
   base::Optional<url::Origin> initiator_;

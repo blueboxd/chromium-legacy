@@ -33,7 +33,7 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
       web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibleURL(),
       web_contents->GetVisibility() == content::Visibility::VISIBLE,
-      web_contents->IsCurrentlyAudible());
+      web_contents->IsCurrentlyAudible(), web_contents->GetLastActiveTime());
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
       web_contents->GetAllFrames();

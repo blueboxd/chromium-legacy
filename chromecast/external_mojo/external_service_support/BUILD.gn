@@ -28,6 +28,7 @@ source_set("process_setup") {
   deps = [
     "//base",
     "//base:base_static",
+    "//chromecast:chromecast_buildflags",
   ]
 
   if (!is_fuchsia) {

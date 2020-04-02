@@ -123,12 +123,28 @@ def parse_property(prop, schema):
     return parsed_prop
 
 
-def get_template_vars(schema_file_path):
+def merge_with_schema(schema, overrides, thing):
+    indices = [
+        i for i, x in enumerate(schema['@graph']) if x['@id'] == thing['@id']
+    ]
+    for index in indices:
+        schema['@graph'][index] = thing
+    if not indices:
+        schema['@graph'].append(thing)
+
+
+def get_template_vars(schema_file_path, overrides_file_path):
     """Read the needed template variables from the schema file."""
     template_vars = {'entities': [], 'properties': [], 'enums': []}
 
     with open(schema_file_path) as schema_file:
         schema = json.loads(schema_file.read())
+
+    if overrides_file_path:
+        with open(overrides_file_path) as overrides_file:
+            overrides = json.loads(overrides_file.read())
+        for thing in overrides['@graph']:
+            merge_with_schema(schema, overrides, thing)
 
     for thing in schema['@graph']:
         if thing['@type'] == 'rdfs:Class':
@@ -164,14 +180,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--schema-file',
-        help='Schema.org schema file to use for code generation.')
+        help='Schema.org JSON-LD schema file to use for code generation.')
+    parser.add_argument(
+        '--overrides-file',
+        help='JSON-LD schema file with overrides to support changes not in the '
+        'latest schema.org version. Optional.')
     parser.add_argument(
         '--output-dir',
         help='Output directory in which to place generated code files.')
     parser.add_argument('--templates', nargs='+')
     args = parser.parse_args()
 
-    template_vars = get_template_vars(args.schema_file)
+    template_vars = get_template_vars(args.schema_file, args.overrides_file)
     for template_file in args.templates:
         generate_file(
             os.path.join(args.output_dir,

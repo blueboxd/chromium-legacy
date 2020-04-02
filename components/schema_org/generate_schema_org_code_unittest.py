@@ -40,7 +40,7 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
         with mock.patch('__builtin__.open',
                         mock.mock_open(read_data=file_content)) as m_open:
             self.assertEqual(
-                generate_schema_org_code.get_template_vars(m_open), {
+                generate_schema_org_code.get_template_vars(m_open, m_open), {
                     'entities': ['MediaObject'],
                     'properties': [{
                         'name': 'propertyName',

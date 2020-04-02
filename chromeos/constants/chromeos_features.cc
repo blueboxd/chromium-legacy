@@ -16,6 +16,11 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 
 }  // namespace
 
+// Shows settings for adjusting scroll acceleration/sensitivity for
+// mouse/touchpad.
+const base::Feature kAllowScrollSettings{"AllowScrollSettings",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable Ambient mode feature.
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -87,7 +92,7 @@ const base::Feature kCrostiniUsername{"CrostiniUsername",
 
 // Enables the option to share the mic with Crostini or not
 const base::Feature kCrostiniShowMicSetting{"CrostiniShowMicSetting",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Crostini GPU support.
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
@@ -287,7 +292,7 @@ const base::Feature kShowBluetoothDeviceBattery{
 
 // Shows the Play Store icon in Demo Mode.
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Shows the progress bar during Demo Mode setup.
 const base::Feature kShowProgressBarInDemoModeSetup{

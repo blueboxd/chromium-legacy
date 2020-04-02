@@ -389,20 +389,6 @@ int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
   return sessions::SessionTabHelper::IdForTab(web_contents).id();
 }
 
-std::string ExtensionTabUtil::GetTabStatusText(WebContents* web_contents) {
-  switch (GetLoadingStatus(web_contents)) {
-    case api::tabs::TAB_STATUS_UNLOADED:
-      return tabs_constants::kStatusValueUnloaded;
-    case api::tabs::TAB_STATUS_LOADING:
-      return tabs_constants::kStatusValueLoading;
-    case api::tabs::TAB_STATUS_COMPLETE:
-      return tabs_constants::kStatusValueComplete;
-    case api::tabs::TAB_STATUS_NONE:
-      NOTREACHED();
-  }
-  return std::string();
-}
-
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
   return sessions::SessionTabHelper::IdForWindowContainingTab(web_contents)
       .id();
@@ -434,8 +420,7 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   tab_object->id = std::make_unique<int>(GetTabIdForExtensions(contents));
   tab_object->index = tab_index;
   tab_object->window_id = GetWindowIdOfTab(contents);
-  tab_object->status =
-      std::make_unique<std::string>(GetTabStatusText(contents));
+  tab_object->status = GetLoadingStatus(contents);
   tab_object->active = tab_strip && tab_index == tab_strip->active_index();
   tab_object->selected = tab_strip && tab_index == tab_strip->active_index();
   tab_object->highlighted = tab_strip && tab_strip->IsTabSelected(tab_index);
@@ -461,7 +446,7 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   tab_object->discarded =
       tab_lifecycle_unit_external && tab_lifecycle_unit_external->IsDiscarded();
   DCHECK(!tab_object->discarded ||
-         *tab_object->status == tabs_constants::kStatusValueUnloaded);
+         tab_object->status == api::tabs::TAB_STATUS_UNLOADED);
   tab_object->auto_discardable =
       !tab_lifecycle_unit_external ||
       tab_lifecycle_unit_external->IsAutoDiscardable();

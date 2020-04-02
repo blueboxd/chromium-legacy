@@ -13,7 +13,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
@@ -26,7 +25,6 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -69,6 +67,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
     private final Profile mProfile;
     private final Tab mTab;
+    private final Runnable mShowHistoryManager;
 
     private FaviconHelper mFaviconHelper;
     private ForeignSessionHelper mForeignSessionHelper;
@@ -89,10 +88,13 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @param tab The Tab that is showing this recent tabs page.
      * @param profile Profile that is associated with the current session.
      * @param context the Android context this manager will work in.
+     * @param showHistoryManager Runnable showing history manager UI.
      */
-    public RecentTabsManager(Tab tab, Profile profile, Context context) {
+    public RecentTabsManager(
+            Tab tab, Profile profile, Context context, Runnable showHistoryManager) {
         mProfile = profile;
         mTab = tab;
+        mShowHistoryManager = showHistoryManager;
         mForeignSessionHelper = new ForeignSessionHelper(profile);
         mPrefs = new RecentTabsPagePrefs(profile);
         mFaviconHelper = new FaviconHelper();
@@ -223,7 +225,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void openHistoryPage() {
         if (mIsDestroyed) return;
-        HistoryManagerUtils.showHistoryManager(((TabImpl) mTab).getActivity(), mTab);
+        mShowHistoryManager.run();
     }
 
     /**

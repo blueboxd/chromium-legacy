@@ -32,7 +32,7 @@ class GAIAInfoUpdateService : public KeyedService,
   ~GAIAInfoUpdateService() override;
 
   // Updates the GAIA info for the profile associated with this instance.
-  virtual void Update();
+  virtual void UpdatePrimaryAccount();
 
   // Checks if downloading GAIA info for the given profile is allowed.
   static bool ShouldUseGAIAProfileInfo(Profile* profile);
@@ -41,16 +41,19 @@ class GAIAInfoUpdateService : public KeyedService,
   void Shutdown() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(GAIAInfoUpdateServiceTest, ScheduleUpdate);
-
   void ClearProfileEntry();
-  bool ShouldUpdate();
-  void Update(const AccountInfo& info);
+  bool ShouldUpdatePrimaryAccount();
+  void UpdatePrimaryAccount(const AccountInfo& info);
+
+  void UpdateAnyAccount(const AccountInfo& info);
 
   // Overridden from signin::IdentityManager::Observer:
   void OnUnconsentedPrimaryAccountChanged(
       const CoreAccountInfo& unconsented_primary_account_info) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+  void OnAccountsInCookieUpdated(
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
 
   signin::IdentityManager* identity_manager_;
   ProfileAttributesStorage* profile_attributes_storage_;

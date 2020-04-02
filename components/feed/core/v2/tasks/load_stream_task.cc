@@ -59,6 +59,12 @@ void LoadStreamTask::LoadFromStoreComplete(
     return;
   }
 
+  LoadStreamStatus final_status = stream_->ShouldMakeFeedQueryRequest();
+  if (final_status != LoadStreamStatus::kNoStatus) {
+    Done(final_status);
+    return;
+  }
+
   // TODO(harringtond): Add throttling.
   // TODO(harringtond): Request parameters here are all placeholder values.
   feedwire::Request request;

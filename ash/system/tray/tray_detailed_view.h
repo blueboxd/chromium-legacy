@@ -70,6 +70,9 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   HoverHighlightView* AddScrollListItem(const gfx::VectorIcon& icon,
                                         const base::string16& text);
 
+  // Add a child view to the scroll list.
+  void AddScrollListChild(std::unique_ptr<views::View> child);
+
   // Adds a targetable row to |scroll_content_| containing |icon|, |text|, and a
   // checkbox. |checked| determines whether the checkbox is checked or not.
   // |enterprise_managed| determines whether or not there will be an enterprise

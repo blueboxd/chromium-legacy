@@ -5,6 +5,7 @@
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds.pb.h"
 #include "chrome/browser/media/feeds/media_feeds_utils.h"
@@ -17,7 +18,9 @@ namespace media_history {
 namespace {
 
 // The maximum number of images to allow.
-const int kMaxImageCount = 5;
+constexpr int kMaxImageCount = 5;
+// The maximum number of genres to allow.
+constexpr int kMaxGenres = 3;
 
 media_feeds::InteractionCounter_Type Convert(
     const media_feeds::mojom::InteractionCounterType& type) {
@@ -106,7 +109,9 @@ void FillIdentifier(const media_feeds::mojom::IdentifierPtr& identifier,
 void FillAction(const media_feeds::mojom::ActionPtr& action,
                 media_feeds::Action* proto) {
   proto->set_url(action->url.spec());
-  proto->set_start_time_secs(action->start_time->InSeconds());
+
+  if (action->start_time.has_value())
+    proto->set_start_time_secs(action->start_time->InSeconds());
 }
 
 }  // namespace
@@ -139,7 +144,7 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
       "action BLOB, "
       "interaction_counters BLOB, "
       "content_rating BLOB, "
-      "genre TEXT,"
+      "genre BLOB,"
       "duration_s INTEGER,"
       "is_live INTEGER,"
       "live_start_time_s INTEGER,"
@@ -161,6 +166,12 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
     success = DB()->Execute(
         "CREATE INDEX IF NOT EXISTS mediaFeedItem_feed_id_index ON "
         "mediaFeedItem (feed_id)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeedItem_safe_search_result_index ON "
+        "mediaFeedItem (safe_search_result)");
   }
 
   if (!success) {
@@ -197,8 +208,16 @@ bool MediaHistoryFeedItemsTable::SaveItem(
   statement.BindBool(4, item->is_family_friendly);
   statement.BindInt64(5, static_cast<int>(item->action_status));
 
-  if (item->genre.has_value()) {
-    statement.BindString16(6, *item->genre);
+  if (!item->genre.empty()) {
+    media_feeds::GenreSet genres;
+
+    for (auto& entry : item->genre) {
+      genres.add_genre(entry);
+
+      if (genres.genre_size() >= kMaxGenres)
+        break;
+    }
+    BindProto(statement, 6, genres);
   } else {
     statement.BindNull(6);
   }
@@ -535,8 +554,23 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
         base::TimeDelta::FromSeconds(statement.ColumnInt64(2)));
     item->is_family_friendly = statement.ColumnBool(3);
 
-    if (statement.GetColumnType(5) == sql::ColumnType::kText)
-      item->genre = statement.ColumnString16(5);
+    if (statement.GetColumnType(5) == sql::ColumnType::kBlob) {
+      media_feeds::GenreSet genre_set;
+      if (!GetProto(statement, 5, genre_set)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadGenres);
+
+        continue;
+      }
+
+      for (auto& genre : genre_set.genre()) {
+        item->genre.push_back(genre);
+
+        if (item->genre.size() >= kMaxGenres)
+          break;
+      }
+    }
 
     if (statement.GetColumnType(6) == sql::ColumnType::kInteger)
       item->duration = base::TimeDelta::FromSeconds(statement.ColumnInt64(6));
@@ -563,6 +597,65 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
   DCHECK(statement.Succeeded());
   return items;
+}
+
+MediaHistoryKeyedService::PendingSafeSearchCheckList
+MediaHistoryFeedItemsTable::GetPendingSafeSearchCheckItems() {
+  MediaHistoryKeyedService::PendingSafeSearchCheckList items;
+
+  if (!CanAccessDatabase())
+    return items;
+
+  sql::Statement statement(
+      DB()->GetUniqueStatement("SELECT id, action, play_next_candidate FROM "
+                               "mediaFeedItem WHERE safe_search_result = ?"));
+
+  statement.BindInt64(
+      0, static_cast<int>(media_feeds::mojom::SafeSearchResult::kUnknown));
+
+  DCHECK(statement.is_valid());
+
+  while (statement.Step()) {
+    auto check =
+        std::make_unique<MediaHistoryKeyedService::PendingSafeSearchCheck>(
+            statement.ColumnInt64(0));
+
+    if (statement.GetColumnType(1) == sql::ColumnType::kBlob) {
+      media_feeds::Action action;
+      if (!GetProto(statement, 1, action))
+        continue;
+
+      GURL url(action.url());
+      if (url.is_valid())
+        check->urls.insert(url);
+    }
+
+    if (statement.GetColumnType(2) == sql::ColumnType::kBlob) {
+      media_feeds::PlayNextCandidate play_next_candidate;
+      if (!GetProto(statement, 2, play_next_candidate))
+        continue;
+
+      GURL url(play_next_candidate.action().url());
+      if (url.is_valid())
+        check->urls.insert(url);
+    }
+
+    if (!check->urls.empty())
+      items.push_back(std::move(check));
+  }
+
+  return items;
+}
+
+bool MediaHistoryFeedItemsTable::StoreSafeSearchResult(
+    int64_t feed_item_id,
+    media_feeds::mojom::SafeSearchResult result) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE mediaFeedItem SET safe_search_result = ? WHERE id = ?"));
+  statement.BindInt64(0, static_cast<int>(result));
+  statement.BindInt64(1, feed_item_id);
+  return statement.Run() && DB()->GetLastChangeCount() == 1;
 }
 
 }  // namespace media_history

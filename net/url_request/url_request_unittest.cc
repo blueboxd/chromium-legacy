@@ -57,6 +57,7 @@
 #include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/hash_value.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -2805,14 +2806,14 @@ class URLRequestTestHTTP : public URLRequestTest {
  public:
   const url::Origin origin1_;
   const url::Origin origin2_;
-  const NetworkIsolationKey network_isolation_key1_;
-  const NetworkIsolationKey network_isolation_key2_;
+  const IsolationInfo isolation_info1_;
+  const IsolationInfo isolation_info2_;
 
   URLRequestTestHTTP()
       : origin1_(url::Origin::Create(GURL("https://foo.test/"))),
         origin2_(url::Origin::Create(GURL("https://bar.test/"))),
-        network_isolation_key1_(NetworkIsolationKey(origin1_, origin1_)),
-        network_isolation_key2_(NetworkIsolationKey(origin2_, origin2_)),
+        isolation_info1_(IsolationInfo::CreateForInternalRequest(origin1_)),
+        isolation_info2_(IsolationInfo::CreateForInternalRequest(origin2_)),
         test_server_(base::FilePath(kTestFilePath)) {}
 
  protected:
@@ -5568,7 +5569,7 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_DontReportIfNetworkNotAccessed) {
   TestDelegate d;
   std::unique_ptr<URLRequest> request(context.CreateRequest(
       request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->set_network_isolation_key(network_isolation_key1_);
+  request->set_isolation_info(isolation_info1_);
   request->Start();
   d.RunUntilComplete();
 
@@ -5581,7 +5582,7 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_DontReportIfNetworkNotAccessed) {
 
   request = context.CreateRequest(request_url, DEFAULT_PRIORITY, &d,
                                   TRAFFIC_ANNOTATION_FOR_TESTS);
-  request->set_network_isolation_key(network_isolation_key1_);
+  request->set_isolation_info(isolation_info1_);
   request->Start();
   d.RunUntilComplete();
 
@@ -5749,7 +5750,7 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_304Response) {
     d.set_credentials(AuthCredentials(kUser, kSecret));
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
     d.RunUntilComplete();
   }
@@ -5774,7 +5775,7 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_304Response) {
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->SetLoadFlags(LOAD_VALIDATE_CACHE);
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
     d.RunUntilComplete();
 
@@ -5970,7 +5971,7 @@ TEST_F(URLRequestTestHTTP, CacheRedirect) {
     TestDelegate d;
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_network_isolation_key(network_isolation_key1_);
+    req->set_isolation_info(isolation_info1_);
     req->Start();
     d.RunUntilComplete();
     EXPECT_EQ(OK, d.request_status());
@@ -5982,7 +5983,7 @@ TEST_F(URLRequestTestHTTP, CacheRedirect) {
     TestDelegate d;
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_network_isolation_key(network_isolation_key1_);
+    req->set_isolation_info(isolation_info1_);
     req->Start();
     d.RunUntilRedirect();
 
@@ -6411,7 +6412,7 @@ TEST_F(URLRequestTestHTTP, VaryHeader) {
     HttpRequestHeaders headers;
     headers.SetHeader("foo", "1");
     req->SetExtraRequestHeaders(headers);
-    req->set_network_isolation_key(network_isolation_key1_);
+    req->set_isolation_info(isolation_info1_);
     req->Start();
     d.RunUntilComplete();
 
@@ -6429,7 +6430,7 @@ TEST_F(URLRequestTestHTTP, VaryHeader) {
     HttpRequestHeaders headers;
     headers.SetHeader("foo", "1");
     req->SetExtraRequestHeaders(headers);
-    req->set_network_isolation_key(network_isolation_key1_);
+    req->set_isolation_info(isolation_info1_);
     req->Start();
     d.RunUntilComplete();
 
@@ -6449,7 +6450,7 @@ TEST_F(URLRequestTestHTTP, VaryHeader) {
     HttpRequestHeaders headers;
     headers.SetHeader("foo", "2");
     req->SetExtraRequestHeaders(headers);
-    req->set_network_isolation_key(network_isolation_key1_);
+    req->set_isolation_info(isolation_info1_);
     req->Start();
     d.RunUntilComplete();
 
@@ -6472,7 +6473,7 @@ TEST_F(URLRequestTestHTTP, BasicAuth) {
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         http_test_server()->GetURL("/auth-basic"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
 
     d.RunUntilComplete();
@@ -6491,7 +6492,7 @@ TEST_F(URLRequestTestHTTP, BasicAuth) {
         http_test_server()->GetURL("/auth-basic"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     r->SetLoadFlags(LOAD_VALIDATE_CACHE);
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
 
     d.RunUntilComplete();
@@ -6609,6 +6610,97 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookiesCancelAuth) {
   EXPECT_EQ(1, network_delegate.set_cookie_count());
 }
 
+// Tests the IsolationInfo is updated approiately on redirect.
+TEST_F(URLRequestTestHTTP, IsolationInfoUpdatedOnRedirect) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
+
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL redirect_url =
+      http_test_server()->GetURL("redirected.test", "/cachetime");
+  GURL original_url = http_test_server()->GetURL(
+      "original.test", "/server-redirect?" + redirect_url.spec());
+
+  url::Origin original_origin = url::Origin::Create(original_url);
+  url::Origin redirect_origin = url::Origin::Create(redirect_url);
+
+  // Since transient IsolationInfos use opaque origins, need to create a single
+  // consistent transient origin one for be used as the original and updated
+  // info in the same test case.
+  IsolationInfo transient_isolation_info = IsolationInfo::CreateTransient();
+
+  const struct {
+    IsolationInfo info_before_redirect;
+    IsolationInfo expected_info_after_redirect;
+  } kTestCases[] = {
+      {IsolationInfo(), IsolationInfo()},
+      {IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateTopFrame,
+                             original_origin, original_origin,
+                             SiteForCookies()),
+       IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateTopFrame,
+                             redirect_origin, redirect_origin,
+                             SiteForCookies::FromOrigin(redirect_origin))},
+      {IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateFrameOnly,
+                             original_origin, original_origin,
+                             SiteForCookies::FromOrigin(original_origin)),
+       IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateFrameOnly,
+                             original_origin, redirect_origin,
+                             SiteForCookies::FromOrigin(original_origin))},
+      {IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateNothing,
+                             original_origin, original_origin,
+                             SiteForCookies()),
+       IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateNothing,
+                             original_origin, original_origin,
+                             SiteForCookies())},
+      {transient_isolation_info, transient_isolation_info},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    // Populate the cache, using the expected final IsolationInfo.
+    {
+      TestDelegate d;
+
+      std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+          redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+      r->set_isolation_info(test_case.expected_info_after_redirect);
+      r->Start();
+      d.RunUntilComplete();
+      EXPECT_THAT(d.request_status(), IsOk());
+    }
+
+    // Send a request using the initial IsolationInfo that should be redirected
+    // to the cached url, and should use the cached entry if the NIK was
+    // updated, except in the case the IsolationInfo's NIK was empty.
+    {
+      TestDelegate d;
+
+      std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+          original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+      r->set_isolation_info(test_case.info_before_redirect);
+      r->Start();
+      d.RunUntilComplete();
+      EXPECT_THAT(d.request_status(), IsOk());
+      EXPECT_EQ(redirect_url, r->url());
+
+      EXPECT_EQ(!test_case.expected_info_after_redirect.network_isolation_key()
+                     .IsTransient(),
+                r->was_cached());
+      EXPECT_EQ(test_case.expected_info_after_redirect.redirect_mode(),
+                r->isolation_info().redirect_mode());
+      EXPECT_EQ(test_case.expected_info_after_redirect.top_frame_origin(),
+                r->isolation_info().top_frame_origin());
+      EXPECT_EQ(test_case.expected_info_after_redirect.frame_origin(),
+                r->isolation_info().frame_origin());
+      EXPECT_EQ(test_case.expected_info_after_redirect.network_isolation_key(),
+                r->isolation_info().network_isolation_key());
+      EXPECT_TRUE(test_case.expected_info_after_redirect.site_for_cookies()
+                      .IsEquivalent(r->isolation_info().site_for_cookies()));
+    }
+  }
+}
+
 // Tests that |key_auth_cache_by_network_isolation_key| is respected.
 TEST_F(URLRequestTestHTTP, AuthWithNetworkIsolationKey) {
   ASSERT_TRUE(http_test_server()->Start());
@@ -6635,7 +6727,7 @@ TEST_F(URLRequestTestHTTP, AuthWithNetworkIsolationKey) {
       std::unique_ptr<URLRequest> r(url_request_context.CreateRequest(
           url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
       r->SetLoadFlags(LOAD_BYPASS_CACHE);
-      r->set_network_isolation_key(network_isolation_key1_);
+      r->set_isolation_info(isolation_info1_);
       r->Start();
 
       d.RunUntilComplete();
@@ -6655,7 +6747,7 @@ TEST_F(URLRequestTestHTTP, AuthWithNetworkIsolationKey) {
           http_test_server()->GetURL("/auth-basic"), DEFAULT_PRIORITY, &d,
           TRAFFIC_ANNOTATION_FOR_TESTS));
       r->SetLoadFlags(LOAD_BYPASS_CACHE);
-      r->set_network_isolation_key(network_isolation_key2_);
+      r->set_isolation_info(isolation_info2_);
       r->Start();
 
       d.RunUntilComplete();
@@ -7183,7 +7275,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         http_test_server()->GetURL("/auth-basic"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
     d.RunUntilAuthRequired();
 
@@ -7218,7 +7310,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
         http_test_server()->GetURL("/auth-basic"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     r->SetLoadFlags(LOAD_VALIDATE_CACHE);
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
 
     d.RunUntilComplete();
@@ -8002,7 +8094,7 @@ TEST_F(URLRequestTestHTTP, NetworkAccessedClearOnCachedResponse) {
   std::unique_ptr<URLRequest> req(default_context().CreateRequest(
       http_test_server()->GetURL("/cachetime"), DEFAULT_PRIORITY, &d,
       TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->set_network_isolation_key(network_isolation_key1_);
+  req->set_isolation_info(isolation_info1_);
   req->Start();
   d.RunUntilComplete();
 
@@ -8013,7 +8105,7 @@ TEST_F(URLRequestTestHTTP, NetworkAccessedClearOnCachedResponse) {
   req = default_context().CreateRequest(
       http_test_server()->GetURL("/cachetime"), DEFAULT_PRIORITY, &d,
       TRAFFIC_ANNOTATION_FOR_TESTS);
-  req->set_network_isolation_key(network_isolation_key1_);
+  req->set_isolation_info(isolation_info1_);
   req->Start();
   d.RunUntilComplete();
 
@@ -11332,7 +11424,7 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacks) {
         [](scoped_refptr<const HttpResponseHeaders>* left,
            scoped_refptr<const HttpResponseHeaders> right) { *left = right; },
         base::Unretained(&raw_resp_headers)));
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
     while (!delegate.response_started_count())
       base::RunLoop().RunUntilIdle();
@@ -11358,7 +11450,7 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacks) {
         base::Bind([](scoped_refptr<const HttpResponseHeaders>) {
           FAIL() << "Callback should not be called unless request is sent";
         }));
-    r->set_network_isolation_key(network_isolation_key1_);
+    r->set_isolation_info(isolation_info1_);
     r->Start();
     delegate.RunUntilComplete();
     EXPECT_TRUE(r->was_cached());
@@ -11466,7 +11558,7 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksAuthRetry) {
   r->SetExtraRequestHeaders(extra_headers);
   r->SetRequestHeadersCallback(req_headers_callback);
   r->SetResponseHeadersCallback(resp_headers_callback);
-  r->set_network_isolation_key(network_isolation_key1_);
+  r->set_isolation_info(isolation_info1_);
   r->Start();
   delegate.RunUntilComplete();
   EXPECT_FALSE(r->is_pending());
@@ -11490,7 +11582,7 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksAuthRetry) {
   r2->SetRequestHeadersCallback(req_headers_callback);
   r2->SetResponseHeadersCallback(resp_headers_callback);
   r2->SetLoadFlags(LOAD_VALIDATE_CACHE);
-  r2->set_network_isolation_key(network_isolation_key1_);
+  r2->set_isolation_info(isolation_info1_);
   r2->Start();
   delegate.RunUntilComplete();
   EXPECT_FALSE(r2->is_pending());

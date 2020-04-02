@@ -210,3 +210,8 @@ crbug.com/1028975 [ win ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
 
 # VP9 appears to not recover correctly after GPU process crashes on Windows.
 crbug.com/1033982 [ win nvidia ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
+
+# HDR rendering with PQ color space appears to be broken on Windows RS2.
+# TODO(sunnyps): Revert this temporary suppression after ensuring pixel tests
+# always run on Windows RS3 or above.
+crbug.com/1066979 [ win ] Pixel_Canvas2DRedBoxHdr10 [ Skip ]

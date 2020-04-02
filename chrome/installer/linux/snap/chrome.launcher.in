@@ -1,0 +1,105 @@
+#!/bin/sh
+
+# Initially copied from
+# https://git.launchpad.net/~chromium-team/chromium-browser/+git/snap-from-source/tree/launcher/chromium.launcher?h=stable
+
+REALHOME=$(getent passwd $(id -u) | cut -d ':' -f 6)
+
+# When running the snap for the first time, try and locate an existing
+# @@SNAPNAME@@ config in $HOME/.config/@@SNAPNAME@@, and import it if it was
+# created by an older version of @@SNAPNAME@@ (the profile data format is not
+# guaranteed to be forward-compatible). This requires the personal-files plug
+# to be connected.
+if [ ! -d "$HOME/.config/@@SNAPNAME@@" ]; then
+  CHROME_CONFIG="$REALHOME/.config/@@SNAPNAME@@"
+  if [ -d "$CHROME_CONFIG" ]; then
+    PREF_FILE="$CHROME_CONFIG/Default/Preferences"
+    if [ -r "$PREF_FILE" ]; then
+      VERSION=$(sed -e 's/.*"last_chrome_version":"\([0-9\.]\+\)".*/\1/' \
+        "$PREF_FILE")
+      if [ ! -z "$VERSION" ]; then
+        OLD=$(printf "$VERSION\n$SNAP_VERSION" | sort -V | head -1)
+        if [ "$OLD" = "$VERSION" ]; then
+          SIZE=$(du -sb $CHROME_CONFIG | cut -f 1)
+          AVAILABLE_BLOCKS=$(stat -f -c %a $HOME)
+          BLOCK_SIZE=$(stat -f -c %s $HOME)
+          AVAILABLE_SIZE=$(($AVAILABLE_BLOCKS*$BLOCK_SIZE))
+          if [ $AVAILABLE_SIZE -gt $SIZE ]; then
+            printf "Importing existing @@SNAPNAME@@ profile from "
+            printf "$CHROME_CONFIG (version $VERSION)\n"
+            TS1=$(date +%s.%3N)
+            cp -R "$CHROME_CONFIG" "$HOME/.config/"
+            TS2=$(date +%s.%3N)
+            T=$(printf "$TS1 $TS2" | awk '{printf "%.3f",$2-$1}')
+            printf "Import done in $T s\n"
+          else
+            printf "Not importing existing @@SNAPNAME@@ profile from "
+            printf "$CHROME_CONFIG (version $VERSION) because there is not "
+            printf "enough available space in $HOME (required: $SIZE bytes / "
+            printf "available: $AVAILABLE_SIZE bytes)\n"
+          fi
+        fi
+      fi
+    fi
+  fi
+fi
+
+# Specify that no encrypted password store (keyring) should be used when the
+# password-manager-service interface is not plugged, because @@SNAPNAME@@
+# won't fall back to the basic store (no encryption) if it fails to talk to
+# the default password store for the current desktop environment.
+# Ref: https://launchpad.net/bugs/1763829
+PASSWORD_STORE=basic
+dbus-send --session --dest=org.freedesktop.secrets /org/freedesktop/secrets \
+  --print-reply org.freedesktop.DBus.Properties.GetAll \
+  string:'org.freedesktop.Secret.Service' >/dev/null 2>&1
+if [ "$?" -eq "0" ]; then
+  # An empty string means detect the store based on the current DE
+  # (os_crypt::SelectBackend())
+  PASSWORD_STORE=
+else
+  dbus-send --session --dest=org.kde.kwalletd5 /modules/kwalletd5 \
+    --print-reply org.freedesktop.DBus.Properties.GetAll \
+    string:'org.kde.KWallet' >/dev/null 2>&1
+  if [ "$?" -eq "0" ]; then
+    # An empty string means detect the store based on the current DE
+    # (os_crypt::SelectBackend())
+    PASSWORD_STORE=
+  fi
+fi
+
+# Allow @@SNAPNAME@@ to look for the flash player plugin inside the snap's
+# confinement. That .so file has to be extracted from the upstream flash
+# distribution (https://get.adobe.com/flashplayer/) and copied there.
+# Ref: https://launchpad.net/bugs/1771162
+FLASHSO=$SNAP_USER_DATA/.local/lib/libpepflashplayer.so
+if [ -e $FLASHSO ]; then
+  FLASHVERSION=$(grep -a -z LNX $FLASHSO | cut -d ' ' -f 2 | sed -e "s/,/./g")
+  FLASH_OPTS="--ppapi-flash-path=$FLASHSO --ppapi-flash-version=$FLASHVERSION"
+fi
+
+WANT_TEMP_PROFILE=0
+for arg in "$@"; do
+  shift
+  if [ "$arg" = "--temp-profile" ]; then
+    WANT_TEMP_PROFILE=1
+    continue
+  fi
+  set -- "$@" "$arg"
+done
+
+if [ $WANT_TEMP_PROFILE -eq 0 ] ; then
+  exec "$SNAP/@@INSTALLDIR@@/@@PACKAGE@@" \
+    --password-store=$PASSWORD_STORE \
+    $FLASH_OPTS \
+    "$@"
+else
+  TEMP_PROFILE=$(mktemp -d)
+  trap "rm -rf $TEMP_PROFILE" EXIT
+  # we can't exec here as we need to clean-up the temporary profile
+  "$SNAP/@@INSTALLDIR@@/@@PACKAGE@@" \
+    --user-data-dir=$TEMP_PROFILE \
+    --password-store=$PASSWORD_STORE \
+    $FLASH_OPTS \
+    "$@"
+fi

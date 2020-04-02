@@ -25,6 +25,7 @@ class GtkUiDelegateWayland : public GtkUiDelegate {
   GdkWindow* GetGdkWindow(gfx::AcceleratedWidget window_id) override;
   bool SetGdkWindowTransientFor(GdkWindow* window,
                                 gfx::AcceleratedWidget parent) override;
+  void ShowGtkWindow(GtkWindow* window) override;
 
  private:
   WaylandConnection* const connection_;

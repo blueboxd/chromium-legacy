@@ -42,6 +42,10 @@ class ASH_PUBLIC_EXPORT QuickAnswersController {
   // user-consent view) currently shown.
   virtual void DismissQuickAnswers() = 0;
 
+  // Update the bounds of the anchor view.
+  virtual void UpdateQuickAnswersAnchorBounds(
+      const gfx::Rect& anchor_bounds) = 0;
+
   virtual chromeos::quick_answers::QuickAnswersDelegate*
   GetQuickAnswersDelegate() = 0;
 };

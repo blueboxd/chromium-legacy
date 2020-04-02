@@ -48,11 +48,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShow10_9ObsoleteInfobar;
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAppNotificationStatusMessaging;
-#endif  // defined(OS_ANDROID)
-
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceContextMenu;
@@ -98,8 +93,6 @@ extern const base::Feature kImmersiveFullscreen;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAllowDisableMouseAcceleration;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAllowScrollSettings;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrostini;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAdditionalEnterpriseReporting;

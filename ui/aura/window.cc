@@ -776,29 +776,34 @@ void Window::UpdateVisualState() {
     delegate_->UpdateVisualState();
 }
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
 std::string Window::GetDebugInfo() const {
+  std::string name = GetName();
+  if (name.empty())
+    name = "Unknown";
+  std::string layer_state = "NoLayer";
+  if (layer()) {
+    layer_state = base::StringPrintf(
+        "%s opacity=%.1f",
+        layer()->GetTargetVisibility() ? "LayerVisible" : "LayerHidden",
+        layer()->opacity());
+  }
   return base::StringPrintf(
-      "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f "
-      "occlusion_state=%s",
-      GetName().empty() ? "Unknown" : GetName().c_str(), id(), bounds().x(),
-      bounds().y(), bounds().width(), bounds().height(),
-      visible_ ? "WindowVisible" : "WindowHidden",
-      layer()
-          ? (layer()->GetTargetVisibility() ? "LayerVisible" : "LayerHidden")
-          : "NoLayer",
-      layer() ? layer()->opacity() : 1.0f,
-      OcclusionStateToString(occlusion_state_));
+      "%s<%d> bounds=%s %s %s occlusion_state=%s", name.c_str(), id(),
+      bounds().ToString().c_str(), visible_ ? "WindowVisible" : "WindowHidden",
+      layer_state.c_str(), OcclusionStateToString(occlusion_state_));
+}
+
+std::string Window::GetWindowHierarchy(int depth) const {
+  std::string hierarchy =
+      base::StringPrintf("%*s%s\n", depth * 2, "", GetDebugInfo().c_str());
+  for (Window* child : children_)
+    hierarchy += child->GetWindowHierarchy(depth + 1);
+  return hierarchy;
 }
 
 void Window::PrintWindowHierarchy(int depth) const {
-  VLOG(0) << base::StringPrintf(
-      "%*s%s", depth * 2, "", GetDebugInfo().c_str());
-  for (Windows::const_iterator it = children_.begin();
-       it != children_.end(); ++it) {
-    Window* child = *it;
-    child->PrintWindowHierarchy(depth + 1);
-  }
+  VLOG(0) << GetWindowHierarchy(depth);
 }
 #endif
 

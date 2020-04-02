@@ -33,9 +33,6 @@ namespace ash {
 
 namespace {
 
-// Threshold to ignore update on the slider value.
-const float kSliderIgnoreUpdateThreshold = 0.01;
-
 // References to the icons that correspond to different volume levels.
 const gfx::VectorIcon* const kVolumeLevelIcons[] = {
     &kUnifiedMenuVolumeLowIcon,     // Low volume.
@@ -183,9 +180,10 @@ void UnifiedVolumeView::Update(bool by_user) {
   // there will be a small discrepancy between slider's value and volume level
   // on audio side. To avoid the jittering in slider UI, use the slider's
   // current value.
-  if (std::abs(level - slider()->GetValue()) < kSliderIgnoreUpdateThreshold)
+  if (std::abs(level - slider()->GetValue()) <
+      kAudioSliderIgnoreUpdateThreshold) {
     level = slider()->GetValue();
-
+  }
   // Note: even if the value does not change, we still need to call this
   // function to enable accessibility events (crbug.com/1013251).
   SetSliderValue(level, by_user);

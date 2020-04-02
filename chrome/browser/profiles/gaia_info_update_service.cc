@@ -22,6 +22,7 @@
 #include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/storage_partition.h"
@@ -43,7 +44,7 @@ GAIAInfoUpdateService::GAIAInfoUpdateService(
       profile_prefs_(profile_prefs) {
   identity_manager_->AddObserver(this);
 
-  if (!ShouldUpdate()) {
+  if (!ShouldUpdatePrimaryAccount()) {
     ClearProfileEntry();
     return;
   }
@@ -58,8 +59,8 @@ GAIAInfoUpdateService::GAIAInfoUpdateService(
 
 GAIAInfoUpdateService::~GAIAInfoUpdateService() = default;
 
-void GAIAInfoUpdateService::Update() {
-  if (!ShouldUpdate())
+void GAIAInfoUpdateService::UpdatePrimaryAccount() {
+  if (!ShouldUpdatePrimaryAccount())
     return;
 
   auto unconsented_primary_account_info =
@@ -77,10 +78,10 @@ void GAIAInfoUpdateService::Update() {
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
               unconsented_primary_account_info.account_id);
   if (maybe_account_info.has_value())
-    Update(maybe_account_info.value());
+    UpdatePrimaryAccount(maybe_account_info.value());
 }
 
-void GAIAInfoUpdateService::Update(const AccountInfo& info) {
+void GAIAInfoUpdateService::UpdatePrimaryAccount(const AccountInfo& info) {
   if (!info.IsValid())
     return;
 
@@ -93,6 +94,7 @@ void GAIAInfoUpdateService::Update(const AccountInfo& info) {
   entry->SetGAIAGivenName(base::UTF8ToUTF16(info.given_name));
   entry->SetGAIAName(base::UTF8ToUTF16(info.full_name));
 
+  entry->SetHostedDomain(info.hosted_domain);
   const base::string16 hosted_domain = base::UTF8ToUTF16(info.hosted_domain);
   profile_prefs_->SetString(prefs::kGoogleServicesHostedDomain,
                             base::UTF16ToUTF8(hosted_domain));
@@ -115,6 +117,24 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
   return true;
 }
 
+void GAIAInfoUpdateService::UpdateAnyAccount(const AccountInfo& info) {
+  if (!info.IsValid())
+    return;
+
+  ProfileAttributesEntry* entry;
+  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
+                                                                 &entry)) {
+    return;
+  }
+
+  // These are idempotent, i.e. the second and any further call for the same
+  // account info has no further impact.
+  entry->AddAccountName(info.full_name);
+  entry->AddAccountCategory(info.hosted_domain == kNoHostedDomainFound
+                                ? AccountCategory::kConsumer
+                                : AccountCategory::kEnterprise);
+}
+
 void GAIAInfoUpdateService::ClearProfileEntry() {
   ProfileAttributesEntry* entry;
   if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
@@ -125,6 +145,7 @@ void GAIAInfoUpdateService::ClearProfileEntry() {
   entry->SetGAIAName(base::string16());
   entry->SetGAIAGivenName(base::string16());
   entry->SetGAIAPicture(std::string(), gfx::Image());
+  entry->SetHostedDomain(std::string());
   // Unset the cached URL.
   profile_prefs_->ClearPref(prefs::kGoogleServicesHostedDomain);
 }
@@ -138,13 +159,15 @@ void GAIAInfoUpdateService::OnUnconsentedPrimaryAccountChanged(
   if (unconsented_primary_account_info.gaia.empty()) {
     ClearProfileEntry();
   } else {
-    Update();
+    UpdatePrimaryAccount();
   }
 }
 
 void GAIAInfoUpdateService::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {
-  if (!ShouldUpdate())
+  UpdateAnyAccount(info);
+
+  if (!ShouldUpdatePrimaryAccount())
     return;
 
   CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
@@ -153,10 +176,41 @@ void GAIAInfoUpdateService::OnExtendedAccountInfoUpdated(
   if (info.account_id != account_info.account_id)
     return;
 
-  Update(info);
+  UpdatePrimaryAccount(info);
 }
 
-bool GAIAInfoUpdateService::ShouldUpdate() {
+void GAIAInfoUpdateService::OnAccountsInCookieUpdated(
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
+  ProfileAttributesEntry* entry;
+  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
+                                                                 &entry)) {
+    return;
+  }
+
+  // We can fully regenerate the info about all accounts only when there are no
+  // signed-out accounts. This means that for instance clearing cookies will
+  // reset the info.
+  if (accounts_in_cookie_jar_info.signed_out_accounts.empty()) {
+    entry->ClearAccountNames();
+    entry->ClearAccountCategories();
+
+    // Regenerate based on the info from signed-in accounts (if not available
+    // now, it will be regenerated soon via OnExtendedAccountInfoUpdated() once
+    // downloaded).
+    for (gaia::ListedAccount account :
+         accounts_in_cookie_jar_info.signed_in_accounts) {
+      auto maybe_account_info =
+          identity_manager_
+              ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+                  account.id);
+      if (maybe_account_info.has_value())
+        UpdateAnyAccount(*maybe_account_info);
+    }
+  }
+}
+
+bool GAIAInfoUpdateService::ShouldUpdatePrimaryAccount() {
   return identity_manager_->HasPrimaryAccount(
       signin::ConsentLevel::kNotRequired);
 }

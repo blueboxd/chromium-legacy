@@ -330,6 +330,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   static bool GetTransferFunction(TransferID, skcms_TransferFunction* fn);
   static size_t TransferParamCount(TransferID);
 
+  void GetPQTransferFunction(skcms_TransferFunction* fn) const;
+
   void SetCustomTransferFunction(const skcms_TransferFunction& fn);
   void SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50);
 

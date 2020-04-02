@@ -397,13 +397,17 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
           default_path.BaseName().value(), file_types, file_type_index,
           default_extension, show_android_picker_apps);
 
+  ExtensionDialog::InitParams dialog_params(kFileManagerWidth,
+                                            kFileManagerHeight);
+  dialog_params.is_modal = (owner_window != nullptr);
+  dialog_params.min_width = kFileManagerMinimumWidth;
+  dialog_params.min_height = kFileManagerMinimumHeight;
+  dialog_params.title = file_manager::util::GetSelectFileDialogTitle(type);
+
   ExtensionDialog* dialog = ExtensionDialog::Show(
       file_manager_url,
       base_window ? base_window->GetNativeWindow() : owner_window, profile_,
-      web_contents, (owner_window != nullptr) /* is_modal */, kFileManagerWidth,
-      kFileManagerHeight, kFileManagerMinimumWidth, kFileManagerMinimumHeight,
-      file_manager::util::GetSelectFileDialogTitle(type),
-      this /* ExtensionDialog::Observer */);
+      web_contents, this /* ExtensionDialog::Observer */, dialog_params);
   if (!dialog) {
     LOG(ERROR) << "Unable to create extension dialog";
     return;

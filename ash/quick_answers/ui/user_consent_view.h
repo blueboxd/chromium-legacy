@@ -40,6 +40,8 @@ class UserConsentView : public views::View, public views::ButtonListener {
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  void UpdateAnchorViewBounds(const gfx::Rect& anchor_view_bounds);
+
  private:
   void InitLayout();
   void InitContent();

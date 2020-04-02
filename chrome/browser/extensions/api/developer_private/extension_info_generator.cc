@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
@@ -41,6 +40,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/path_util.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/install_warning.h"
@@ -425,7 +425,7 @@ void ExtensionInfoGenerator::CreateExtensionInfo(
   else if ((ext = registry->terminated_extensions().GetByID(id)) != nullptr)
     state = developer::EXTENSION_STATE_TERMINATED;
 
-  if (ext && ui_util::ShouldDisplayInExtensionSettings(ext, browser_context_))
+  if (ext && ui_util::ShouldDisplayInExtensionSettings(*ext))
     CreateExtensionInfoHelper(*ext, state);
 
   if (pending_image_loads_ == 0) {
@@ -445,8 +445,7 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   auto add_to_list = [this](const ExtensionSet& extensions,
                             developer::ExtensionState state) {
     for (const scoped_refptr<const Extension>& extension : extensions) {
-      if (ui_util::ShouldDisplayInExtensionSettings(extension.get(),
-                                                    browser_context_)) {
+      if (ui_util::ShouldDisplayInExtensionSettings(*extension)) {
         CreateExtensionInfoHelper(*extension, state);
       }
     }

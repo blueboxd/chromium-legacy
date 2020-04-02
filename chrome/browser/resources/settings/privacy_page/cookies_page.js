@@ -124,6 +124,14 @@ Polymer({
       notify: true,
     },
 
+    /** @private */
+    improvedCookieControlsEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('improvedCookieControlsEnabled');
+      }
+    },
+
     /** @type {!Map<string, (string|Function)>} */
     focusConfig: {
       type: Object,
@@ -197,7 +205,7 @@ Polymer({
     } else if (blockThirdParty.value) {
       this.cookiesControlRadioSelected_ =
           this.cookiesControlEnum_.BLOCK_THIRD_PARTY;
-    } else if (
+    } else if (this.improvedCookieControlsEnabled_ &&
         controlMode.value === settings.CookieControlsMode.INCOGNITO_ONLY) {
       this.cookiesControlRadioSelected_ =
           this.cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO;

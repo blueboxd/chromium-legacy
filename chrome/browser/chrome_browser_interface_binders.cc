@@ -113,6 +113,7 @@
     defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "chrome/browser/ui/webui/discards/discards_ui.h"
+#include "chrome/browser/ui/webui/discards/site_data.mojom.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -537,6 +538,9 @@ void PopulateChromeWebUIFrameBinders(
                                          DiscardsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<discards::mojom::GraphDump,
+                                         DiscardsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<discards::mojom::SiteDataProvider,
                                          DiscardsUI>(map);
 #endif
 

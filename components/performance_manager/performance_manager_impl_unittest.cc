@@ -55,7 +55,8 @@ TEST_F(PerformanceManagerImplTest, InstantiateNodes) {
   EXPECT_NE(nullptr, process_node.get());
   std::unique_ptr<PageNodeImpl> page_node =
       PerformanceManagerImpl::CreatePageNode(WebContentsProxy(), std::string(),
-                                             GURL(), false, false);
+                                             GURL(), false, false,
+                                             base::TimeTicks::Now());
   EXPECT_NE(nullptr, page_node.get());
 
   // Create a node of each type.
@@ -77,7 +78,8 @@ TEST_F(PerformanceManagerImplTest, BatchDeleteNodes) {
       PerformanceManagerImpl::CreateProcessNode(RenderProcessHostProxy());
   std::unique_ptr<PageNodeImpl> page_node =
       PerformanceManagerImpl::CreatePageNode(WebContentsProxy(), std::string(),
-                                             GURL(), false, false);
+                                             GURL(), false, false,
+                                             base::TimeTicks::Now());
 
   std::unique_ptr<FrameNodeImpl> parent1_frame =
       PerformanceManagerImpl::CreateFrameNode(
@@ -121,7 +123,8 @@ TEST_F(PerformanceManagerImplTest, CallOnGraphImpl) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
       PerformanceManagerImpl::CreatePageNode(WebContentsProxy(), std::string(),
-                                             GURL(), false, false);
+                                             GURL(), false, false,
+                                             base::TimeTicks::Now());
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
   EXPECT_FALSE(PerformanceManagerImpl::OnPMTaskRunnerForTesting());
@@ -142,7 +145,8 @@ TEST_F(PerformanceManagerImplTest, CallOnGraphAndReplyWithResult) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
       PerformanceManagerImpl::CreatePageNode(WebContentsProxy(), std::string(),
-                                             GURL(), false, false);
+                                             GURL(), false, false,
+                                             base::TimeTicks::Now());
   base::RunLoop run_loop;
 
   EXPECT_FALSE(PerformanceManagerImpl::OnPMTaskRunnerForTesting());

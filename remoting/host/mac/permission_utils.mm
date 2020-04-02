@@ -149,14 +149,11 @@ bool CanRecordScreen() {
           layer_integer == CGWindowLevelForKey(kCGDockWindowLevelKey)) {
         return true;
       }
-      return false;
     }
-
-    // Screen capture is always allowed in older macOS versions.
-    return true;
+    return false;
   }
 
-  // Previous to 10.15, screen capture was always allowed.
+  // Screen capture is always allowed in older macOS versions.
   return true;
 }
 

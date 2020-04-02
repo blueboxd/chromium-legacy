@@ -19,6 +19,7 @@
 #include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/shell/toplevel_window.h"
 #include "ash/shell_init_params.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
@@ -27,7 +28,6 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -37,10 +37,13 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/views/test/views_test_helper_aura.h"
 #include "ui/wm/core/capture_controller.h"
@@ -50,7 +53,7 @@
 namespace ash {
 
 namespace {
-std::unique_ptr<views::TestViewsDelegate> MakeDelegate() {
+std::unique_ptr<views::TestViewsDelegate> MakeTestViewsDelegate() {
   return std::make_unique<AshTestViewsDelegate>();
 }
 }  // namespace
@@ -84,7 +87,7 @@ AshTestHelper::AshTestHelper(ConfigType config_type,
     : AuraTestHelper(context_factory, config_type == kUnitTest),
       config_type_(config_type) {
   views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
-      base::BindOnce(&MakeDelegate));
+      &MakeTestViewsDelegate);
 
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't overlap with the native mouse
@@ -111,6 +114,10 @@ AshTestHelper::AshTestHelper(ConfigType config_type,
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
   wm::CursorManager::ResetCursorVisibilityStateForTest();
+
+  // Clears the saved state so that test doesn't use on the wrong
+  // default state.
+  shell::ToplevelWindow::ClearSavedStateForTest();
 }
 
 AshTestHelper::~AshTestHelper() {
@@ -125,8 +132,7 @@ AshTestHelper::~AshTestHelper() {
   // This should never have a meaningful effect, since either there is no
   // ViewsTestHelperAura instance or the instance is currently in its
   // destructor.
-  views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
-      base::NullCallback());
+  views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(nullptr);
 }
 
 void AshTestHelper::SetUp() {
@@ -217,7 +223,7 @@ void AshTestHelper::SetUp(InitParams init_params) {
   if (!NewWindowDelegate::GetInstance())
     new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
   if (!views::ViewsDelegate::GetInstance())
-    test_views_delegate_ = MakeDelegate();
+    test_views_delegate_ = MakeTestViewsDelegate();
 
   ShellInitParams shell_init_params;
   shell_init_params.delegate = std::move(init_params.delegate);
@@ -246,6 +252,9 @@ void AshTestHelper::SetUp(InitParams init_params) {
 
   // Requires the AppListController the Shell creates.
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
+
+  Shell::GetPrimaryRootWindow()->Show();
+  Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
   if (config_type_ == kShell) {
     shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
@@ -280,6 +289,20 @@ void AshTestHelper::SetUp(InitParams init_params) {
 
   // Tests expect empty wallpaper.
   shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
+
+  // Move the mouse cursor to far away so that native events don't interfere
+  // with test expectations.
+  Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
+  Shell::Get()->cursor_manager()->EnableMouseEvents();
+
+  // Changing GestureConfiguration shouldn't make tests fail. These values
+  // prevent unexpected events from being generated during tests. Such as
+  // delayed events which create race conditions on slower tests.
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  gesture_config->set_max_touch_down_duration_for_click_in_ms(800);
+  gesture_config->set_long_press_time_in_ms(1000);
+  gesture_config->set_max_touch_move_in_pixels_for_click(5);
 }
 
 display::Display AshTestHelper::GetSecondaryDisplay() const {

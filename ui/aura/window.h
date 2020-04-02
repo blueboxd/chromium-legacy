@@ -15,6 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -400,9 +401,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   // These methods are useful when debugging.
   std::string GetDebugInfo() const;
+  std::string GetWindowHierarchy(int depth) const;
   void PrintWindowHierarchy(int depth) const;
 #endif
 

@@ -83,11 +83,8 @@ jumbo_component("gtk") {
   public_deps = [ "//chrome/browser:theme_properties" ]
 
   if (use_x11 || ozone_platform_x11) {
+    # select_file_dialog_impl_kde.cc still refers to XID
     configs += [ "//build/config/linux:x11" ]
-    deps += [
-      "//ui/events/platform/x11",
-      "//ui/gfx/x",
-    ]
   }
 
   if (use_ozone) {

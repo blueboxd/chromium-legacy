@@ -10,7 +10,7 @@ import './mojo_api.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {boolToString, durationToString, getOrCreateDetailsProvider, secondsToString} from './discards.js';
+import {boolToString, durationToString, getOrCreateSiteDataProvider, secondsToString} from './discards.js';
 import {SortedTableBehavior} from './sorted_table_behavior.js';
 
 /**
@@ -229,14 +229,14 @@ Polymer({
   /** @private {!Object} */
   requestedOrigins_: {},
 
-  /** @private {?discards.mojom.DetailsProviderRemote} */
-  discardsDetailsProvider_: null,
+  /** @private {?discards.mojom.SiteDataProviderRemote} */
+  siteDataProvider_: null,
 
   /** @override */
   ready() {
     this.setSortKey('origin');
     this.requestedOrigins_ = {};
-    this.discardsDetailsProvider_ = getOrCreateDetailsProvider();
+    this.siteDataProvider_ = getOrCreateSiteDataProvider();
 
     // Specifies the update interval of the table, in ms.
     const UPDATE_INTERVAL_MS = 1000;
@@ -269,7 +269,7 @@ Polymer({
    * @private
    */
   updateDbRows_() {
-    this.discardsDetailsProvider_
+    this.siteDataProvider_
         .getSiteCharacteristicsDatabase(Object.keys(this.requestedOrigins_))
         .then(response => {
           // Bail if the SiteCharacteristicsDatabase is turned off.
@@ -325,7 +325,7 @@ Polymer({
    * @private
    */
   updateDbSizes_() {
-    this.discardsDetailsProvider_.getSiteCharacteristicsDatabaseSize().then(
+    this.siteDataProvider_.getSiteCharacteristicsDatabaseSize().then(
         response => {
           // Bail if the SiteCharacteristicsDatabase is turned off.
           if (!response.dbSize) {

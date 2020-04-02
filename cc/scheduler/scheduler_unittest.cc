@@ -164,7 +164,7 @@ class FakeSchedulerClient : public SchedulerClient,
         draw_will_happen_ && swap_will_happen_if_draw_happens_;
     if (swap_will_happen) {
       last_begin_frame_ack_ = scheduler_->CurrentBeginFrameAckForActiveTree();
-      scheduler_->DidSubmitCompositorFrame(0, std::vector<EventMetrics>());
+      scheduler_->DidSubmitCompositorFrame(0, EventMetricsSet());
 
       if (automatic_ack_)
         scheduler_->DidReceiveCompositorFrameAck();

@@ -79,6 +79,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void Disarm();
   void InProgress();
   bool IsArmed();
+  base::subtle::Atomic32 ReadArmDisarmCounter();
   void OnWatchdogTimeout();
   bool WatchedThreadNeedsMoreThreadTime(bool no_gpu_hang_detected);
 #if defined(OS_WIN)

@@ -500,6 +500,15 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     }
 
     /**
+     * Called by native code to notify of a client completing a handshake.
+     */
+    @CalledByNative
+    public void onHandshake(long client) {
+        maybeStopAdvertising();
+        mAuthenticator.onHandshake(client);
+    }
+
+    /**
      * Called by native code to store a new state blob.
      */
     @CalledByNative

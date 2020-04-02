@@ -257,4 +257,11 @@ import java.util.Collection;
     public Dialog getDialogForTest() {
         return mDialog;
     }
+
+    /**
+     * Force the Dialog window to refresh its visual state.
+     */
+    /* package */ void refresh() {
+        mDialog.getWindow().setAttributes(mDialog.getWindow().getAttributes());
+    }
 }

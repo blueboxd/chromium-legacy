@@ -4,13 +4,15 @@
 
 #include "ui/views/test/views_test_helper_aura.h"
 
+#include "base/logging.h"
+#include "ui/aura/window.h"
 #include "ui/views/test/test_views_delegate.h"
 
 namespace views {
 
 namespace {
 
-ViewsTestHelperAura* g_instance = nullptr;
+ViewsTestHelperAura::TestViewsDelegateFactory g_delegate_factory = nullptr;
 
 }  // namespace
 
@@ -20,32 +22,38 @@ std::unique_ptr<ViewsTestHelper> ViewsTestHelper::Create() {
 }
 
 ViewsTestHelperAura::ViewsTestHelperAura() {
-  DCHECK(!g_instance);
-  g_instance = this;
-
   aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
 }
 
 ViewsTestHelperAura::~ViewsTestHelperAura() {
+  // Ensure all Widgets (and Windows) are closed in unit tests.
+  //
+  // Most tests do not try to create desktop Aura Widgets, and on most platforms
+  // will thus create Widgets that are owned by the RootWindow.  These will
+  // automatically be destroyed when the RootWindow is torn down (during
+  // destruction of the AuraTestHelper).  However, on Mac there are only desktop
+  // widgets, so any unclosed widgets will remain unowned, holding a Compositor,
+  // and will cause UAFs if closed (e.g. by the test freeing a
+  // unique_ptr<Widget> with WIDGET_OWNS_NATIVE_WIDGET) after the ContextFactory
+  // is destroyed by our owner.
+  //
+  // So, although it shouldn't matter for this helper, check for unclosed
+  // windows to complain about faulty tests early.
+#if DCHECK_IS_ON()
   gfx::NativeWindow root_window = GetContext();
   if (root_window) {
-    // Ensure all Widgets (and windows) are closed in unit tests. This is done
-    // automatically when the RootWindow is torn down, but is an error on
-    // platforms that must ensure no Compositors are alive when the
-    // ContextFactory is torn down.
-    // So, although it's optional, check the root window to detect failures
-    // before they hit the CQ on other platforms.
-    DCHECK(root_window->children().empty()) << "Not all windows were closed.";
+    DCHECK(root_window->children().empty())
+        << "Not all windows were closed:\n"
+        << root_window->GetWindowHierarchy(0);
   }
-
-  g_instance = nullptr;
+#endif
 }
 
 std::unique_ptr<TestViewsDelegate>
 ViewsTestHelperAura::GetFallbackTestViewsDelegate() {
   // The factory delegate takes priority over the parent default.
-  return factory_.is_null() ? ViewsTestHelper::GetFallbackTestViewsDelegate()
-                            : std::move(factory_).Run();
+  return g_delegate_factory ? (*g_delegate_factory)()
+                            : ViewsTestHelper::GetFallbackTestViewsDelegate();
 }
 
 void ViewsTestHelperAura::SetUp() {
@@ -59,10 +67,8 @@ gfx::NativeWindow ViewsTestHelperAura::GetContext() {
 // static
 void ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
     TestViewsDelegateFactory factory) {
-  if (g_instance) {
-    DCHECK(g_instance->factory_.is_null());
-    g_instance->factory_ = std::move(factory);
-  }
+  DCHECK_NE(g_delegate_factory == nullptr, factory == nullptr);
+  g_delegate_factory = factory;
 }
 
 }  // namespace views

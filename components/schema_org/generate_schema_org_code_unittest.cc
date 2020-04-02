@@ -85,4 +85,11 @@ TEST(GenerateSchemaOrgCodeTest, CheckValidEnumStringReturnsAbsent) {
           .has_value());
 }
 
+TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationUsesOverridesFile) {
+  EXPECT_TRUE(property::GetPropertyConfiguration(property::kTarget).url);
+  EXPECT_THAT(
+      property::GetPropertyConfiguration(property::kIdentifier).thing_types,
+      testing::UnorderedElementsAre("http://schema.org/PropertyValue"));
+}
+
 }  // namespace schema_org

@@ -106,7 +106,10 @@ class RenderViewContextMenuObserver {
   virtual void OnMenuClosed() {}
 
   virtual void OnContextMenuShown(const content::ContextMenuParams& params,
-                                  gfx::Rect bounds) {}
+                                  const gfx::Rect& bounds_in_screen) {}
+  //
+  virtual void OnContextMenuViewBoundsChanged(
+      const gfx::Rect& bounds_in_screen) {}
 };
 
 #endif  // COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_

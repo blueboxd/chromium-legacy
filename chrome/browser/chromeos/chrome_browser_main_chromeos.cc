@@ -85,6 +85,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/net/network_health.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
@@ -864,6 +865,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Initialize an observer to update NetworkHandler's pref based services.
   network_pref_state_observer_ = std::make_unique<NetworkPrefStateObserver>();
 
+  // Initialize the NetworkHealth aggregator.
+  network_health_ = std::make_unique<NetworkHealth>();
+
   // Initialize input methods.
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
@@ -1039,6 +1043,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   network_pref_state_observer_.reset();
+  network_health_.reset();
   power_metrics_reporter_.reset();
   renderer_freezer_.reset();
   wake_on_wifi_manager_.reset();

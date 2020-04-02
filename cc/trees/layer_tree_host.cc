@@ -361,7 +361,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     PushLayerTreeHostPropertiesTo(host_impl);
 
     sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
-    host_impl->AppendEventsMetrics(
+    host_impl->AppendEventsMetricsFromMainThread(
         events_metrics_manager_.TakeSavedEventsMetrics());
 
     sync_tree->set_ui_resource_request_queue(

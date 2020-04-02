@@ -60,6 +60,7 @@
         <include name="IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
         <include name="IDR_DISCARDS_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\discards.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
         <include name="IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_LITE_JS" file="${root_gen_dir}\mojo\public\mojom\base\process_id.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_SITE_DATA_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\site_data.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="is_win or is_macosx or (is_linux and not chromeos)">

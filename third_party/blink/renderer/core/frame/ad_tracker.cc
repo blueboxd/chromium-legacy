@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -79,11 +80,24 @@ void AdTracker::Shutdown() {
   local_root_ = nullptr;
 }
 
-String AdTracker::ScriptAtTopOfStack(ExecutionContext* execution_context) {
-  std::unique_ptr<blink::SourceLocation> current_stack_trace =
-      SourceLocation::Capture(execution_context);
-  // TODO(jkarlin): Url() sometimes returns String(), why?
-  return current_stack_trace ? current_stack_trace->Url() : "";
+String AdTracker::ScriptAtTopOfStack() {
+  // CurrentStackTrace is 10x faster than CaptureStackTrace if all that you need
+  // is the url of the script at the top of the stack. See crbug.com/1057211 for
+  // more detail.
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  DCHECK(isolate);
+
+  v8::Local<v8::StackTrace> stack_trace =
+      v8::StackTrace::CurrentStackTrace(isolate, /*frame_limit=*/1);
+  if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() < 1)
+    return String();
+
+  v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(isolate, 0);
+  v8::Local<v8::String> script_name = frame->GetScriptNameOrSourceURL();
+  if (script_name.IsEmpty() || !script_name->Length())
+    return String();
+
+  return ToCoreString(script_name);
 }
 
 ExecutionContext* AdTracker::GetCurrentExecutionContext() {
@@ -175,7 +189,7 @@ void AdTracker::DidCreateAsyncTask(probe::AsyncTaskId* task) {
   if (!async_stack_enabled_)
     return;
 
-  if (IsAdScriptInStack(StackType::kBottomOnly))
+  if (IsAdScriptInStack(StackType::kBottomAndTop))
     task->SetAdTask();
 }
 
@@ -217,7 +231,7 @@ bool AdTracker::IsAdScriptInStack(StackType stack_type) {
   // (e.g., when v8 is executed) but not the entire stack. For a small cost we
   // can also check the top of the stack (this is much cheaper than getting the
   // full stack from v8).
-  String top_script = ScriptAtTopOfStack(execution_context);
+  String top_script = ScriptAtTopOfStack();
 
   if (!top_script.IsEmpty() && IsKnownAdScript(execution_context, top_script))
     return true;

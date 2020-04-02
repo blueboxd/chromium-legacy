@@ -164,13 +164,13 @@ links {
 links {
   name: "Branch Consoles"
   links {
-    text: "beta"
-    url: "/p/chromium/g/main-beta/console"
+    text: "m81"
+    url: "/p/chromium/g/main-m81/console"
     alt: "Beta branch console"
   }
   links {
-    text: "stable"
-    url: "/p/chromium/g/main-stable/console"
+    text: "m80"
+    url: "/p/chromium/g/main-m80/console"
     alt: "Stable branch console"
   }
   links {

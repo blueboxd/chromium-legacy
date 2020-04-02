@@ -8,7 +8,7 @@ import android.content.Context;
 
 import androidx.core.app.NotificationManagerCompat;
 
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
 
 /**
  * Enables custom implementation for the notification site settings category, similar to
@@ -24,7 +24,8 @@ public class NotificationCategory extends SiteSettingsCategory {
 
     @Override
     protected boolean enabledForChrome(Context context) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)) {
+        if (!SiteSettingsFeatureList.isEnabled(
+                    SiteSettingsFeatureList.APP_NOTIFICATION_STATUS_MESSAGING)) {
             return super.enabledForChrome(context);
         }
         NotificationManagerCompat manager = NotificationManagerCompat.from(context);

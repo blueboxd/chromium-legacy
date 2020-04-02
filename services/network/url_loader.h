@@ -425,11 +425,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   std::unique_ptr<FileOpenerForUpload> file_opener_for_upload_;
 
-  // See detailed comment in
-  // mojom::network::URLRequest::update_network_isolation_key_on_redirect.
-  mojom::UpdateNetworkIsolationKeyOnRedirect
-      update_network_isolation_key_on_redirect_;
-
   // Will only be set for requests that have |obey_origin_policy| set.
   mojom::OriginPolicyManager* origin_policy_manager_;
 

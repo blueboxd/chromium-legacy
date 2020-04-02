@@ -33,7 +33,8 @@ class PageNodeImpl
                const std::string& browser_context_id,
                const GURL& visible_url,
                bool is_visible,
-               bool is_audible);
+               bool is_audible,
+               base::TimeTicks visibility_change_time);
   ~PageNodeImpl() override;
 
   // Returns the web contents associated with this page node. It is valid to

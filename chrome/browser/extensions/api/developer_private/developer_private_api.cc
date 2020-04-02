@@ -34,7 +34,6 @@
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -81,6 +80,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/process_manager_factory.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_service_factory.h"
 #include "extensions/browser/zipfile_installer.h"
@@ -211,7 +211,7 @@ void PerformVerificationCheck(content::BrowserContext* context) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
   bool should_do_verification_check = false;
   for (const scoped_refptr<const Extension>& extension : *extensions) {
-    if (ui_util::ShouldDisplayInExtensionSettings(extension.get(), context) &&
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension) &&
         prefs->HasDisableReason(extension->id(),
                                 disable_reason::DISABLE_NOT_VERIFIED)) {
       should_do_verification_check = true;

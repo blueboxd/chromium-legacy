@@ -249,6 +249,14 @@ Similarly, users may create bookmarks pointed at JavaScript URLs that will run
 on the currently-loaded page when the user clicks the bookmark; these are called
 [bookmarklets](https://en.wikipedia.org/wiki/Bookmarklet).
 
+<a name="TOC-Does-executing-JavaScript-in-a-PDF-file-mean-there-s-an-XSS-vulnerability-"></a>
+## Does executing JavaScript in a PDF file mean there's an XSS vulnerability?
+
+No. PDF files have the ability to run JavaScript, usually to facilitate field
+validation during form fill-out. Note that the set of bindings provided to
+the PDF are more limited than those provided by the DOM to HTML documents (e.g.
+no document.cookie).
+
 <a name="TOC-Is-Chrome-s-support-for-userinfo-in-HTTP-URLs-e.g.-http:-user:password-example.com-considered-a-vulnerability-"></a>
 ## Is Chrome's support for userinfo in HTTP URLs (e.g. http://user:password@example.com) considered a vulnerability?
 
@@ -676,6 +684,14 @@ Google's sync servers that causes an extension to be installed to a user's
 device, or if an attacker could entice a victim to visit a webpage that causes
 an extension to be installed on their device(s). Please report such bugs via
 https://bugs.chromium.org/p/chromium/issues/entry?template=Security+Bug.
+
+<a name="TOC-Are-PDF-files-static-content-in-Chromium-"></a>
+## Are PDF files static content in Chromium?
+
+No. PDF files have some powerful capabilities including invoking printing or
+posting form data. To mitigate abuse of these capabiliies, such as beaconing
+upon document open, we require interaction with the document (a "user gesture")
+before allowing their use.
 
 ## TODO
 

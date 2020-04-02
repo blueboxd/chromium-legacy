@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/views/test/views_test_helper.h"
 
@@ -15,8 +14,7 @@ namespace views {
 
 class ViewsTestHelperAura : public ViewsTestHelper {
  public:
-  using TestViewsDelegateFactory =
-      base::OnceCallback<std::unique_ptr<TestViewsDelegate>()>;
+  using TestViewsDelegateFactory = std::unique_ptr<TestViewsDelegate> (*)();
 
   ViewsTestHelperAura();
   ViewsTestHelperAura(const ViewsTestHelperAura&) = delete;
@@ -29,14 +27,12 @@ class ViewsTestHelperAura : public ViewsTestHelper {
   gfx::NativeWindow GetContext() override;
 
   // Provides a way for test helpers to customize what delegate will be used
-  // if one is not provided by the test/framework.  If no ViewsTestHelperAura
-  // has been created, this does nothing.
+  // if one is not provided by the test/framework.
   static void SetFallbackTestViewsDelegateFactory(
       TestViewsDelegateFactory factory);
 
  private:
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  TestViewsDelegateFactory factory_;
 };
 
 }  // namespace views

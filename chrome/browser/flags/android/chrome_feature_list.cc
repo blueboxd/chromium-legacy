@@ -76,7 +76,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &device::kWebAuthPhoneSupport,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kUseDownloadOfflineContentProvider,
-    &features::kAppNotificationStatusMessaging,
     &features::kClearOldBrowsingData,
     &features::kDownloadsLocationChange,
     &features::kGenericSensorExtraClasses,

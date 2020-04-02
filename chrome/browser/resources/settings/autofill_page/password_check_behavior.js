@@ -114,13 +114,22 @@
     const addedResults = Array.from(map.values());
     addedResults.sort((lhs, rhs) => {
       // Phished passwords are always shown above leaked passwords.
-      if (lhs.compromiseType !== rhs.compromiseType) {
-        return lhs.compromiseType ===
-                chrome.passwordsPrivate.CompromiseType.PHISHED ?
-            -1 :
-            1;
+      const isPhished = cred =>
+          cred.compromiseType !== chrome.passwordsPrivate.CompromiseType.LEAKED;
+      if (isPhished(lhs) != isPhished(rhs)) {
+        return isPhished(lhs) ? -1 : 1;
       }
-      return rhs.compromiseTime - lhs.compromiseTime;
+      // Get compromiseTime in minutes.
+      const rhsTime = Math.trunc(rhs.compromiseTime / 60000);
+      const lhsTime = Math.trunc(lhs.compromiseTime / 60000);
+
+      // Sort by time only if compromiseTimes in minutes are different.
+      if (rhsTime != lhsTime) {
+        return rhsTime - lhsTime;
+      }
+
+      // Otherwise sort by origin.
+      return lhs.formattedOrigin.localeCompare(rhs.formattedOrigin);
     });
     resultList.push(...addedResults);
     this.leakedPasswords = resultList;

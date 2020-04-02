@@ -229,7 +229,6 @@ HRESULT UpdaterImpl::Update(const base::char16* app_id) {
 // Called by the COM RPC runtime on one of its threads.
 HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
   using IUpdaterObserverPtr = Microsoft::WRL::ComPtr<IUpdaterObserver>;
-  using ICompleteStatusPtr = Microsoft::WRL::ComPtr<ICompleteStatus>;
 
   // Invoke the in-process |update_service| on the main sequence.
   auto com_server = ComServer::Instance();
@@ -250,11 +249,7 @@ HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
                       base::ThreadPool::PostTaskAndReplyWithResult(
                           FROM_HERE, {base::MayBlock()},
                           base::BindOnce(
-                              [](IUpdaterObserverPtr observer,
-                                 ICompleteStatusPtr status) {
-                                return observer->OnComplete(status.Get());
-                              },
-                              observer,
+                              &IUpdaterObserver::OnComplete, observer,
                               Microsoft::WRL::Make<CompleteStatusImpl>(
                                   static_cast<int>(result), L"Test")),
                           base::BindOnce([](HRESULT hr) {

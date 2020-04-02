@@ -29,7 +29,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "net/base/features.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -221,7 +221,8 @@ TEST_F(ThroughputAnalyzerTest, MaximumRequestsWithNetworkIsolationKey) {
           context.CreateRequest(kUrl, DEFAULT_PRIORITY, &test_delegate,
                                 TRAFFIC_ANNOTATION_FOR_TESTS));
       if (use_network_isolation_key)
-        request->set_network_isolation_key(kNetworkIsolationKey);
+        request->set_isolation_info(IsolationInfo::CreatePartial(
+            IsolationInfo::RedirectMode::kUpdateNothing, kNetworkIsolationKey));
       throughput_analyzer.NotifyStartTransaction(*(request.get()));
       requests.push_back(std::move(request));
     }

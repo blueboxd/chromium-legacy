@@ -279,7 +279,7 @@ base::Value URLRequest::GetStateAsValue() const {
 
   dict.SetStringKey("method", method_);
   dict.SetStringKey("network_isolation_key",
-                    network_isolation_key_.ToDebugString());
+                    isolation_info_.network_isolation_key().ToDebugString());
   dict.SetBoolKey("has_upload", has_upload());
   dict.SetBoolKey("is_pending", is_pending_);
 
@@ -622,8 +622,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
     return NetLogURLRequestStartParams(
-        url(), method_, load_flags_, privacy_mode_, network_isolation_key_,
-        site_for_cookies_, initiator_,
+        url(), method_, load_flags_, privacy_mode_,
+        isolation_info_.network_isolation_key(), site_for_cookies_, initiator_,
         upload_data_stream_ ? upload_data_stream_->identifier() : -1);
   });
 
@@ -922,6 +922,8 @@ void URLRequest::Redirect(
   referrer_ = redirect_info.new_referrer;
   referrer_policy_ = redirect_info.new_referrer_policy;
   site_for_cookies_ = redirect_info.new_site_for_cookies;
+  isolation_info_ = isolation_info_.CreateForRedirect(
+      url::Origin::Create(redirect_info.new_url));
 
   url_chain_.push_back(redirect_info.new_url);
   --redirect_limit_;
@@ -1030,7 +1032,7 @@ net::PrivacyMode URLRequest::DeterminePrivacyMode() const {
   bool enable_privacy_mode = !g_default_can_use_cookies;
   if (network_delegate_) {
     enable_privacy_mode = network_delegate_->ForcePrivacyMode(
-        url(), site_for_cookies_, network_isolation_key_.GetTopFrameOrigin());
+        url(), site_for_cookies_, isolation_info_.top_frame_origin());
   }
   return enable_privacy_mode ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
 }

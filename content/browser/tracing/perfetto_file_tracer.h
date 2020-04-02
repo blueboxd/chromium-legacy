@@ -39,15 +39,12 @@ class PerfettoFileTracer : public tracing::mojom::TracingSessionClient {
 
   bool is_finished_for_testing() const { return !background_drainer_; }
 
-  CONTENT_EXPORT void SetBackgroundTaskPriorityForTesting(base::TaskPriority);
-
  private:
   void OnNoMorePackets(bool queued_after_disable);
   void ReadBuffers();
 
   void OnTracingSessionEnded();
 
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   base::SequenceBound<BackgroundDrainer> background_drainer_;
   mojo::Receiver<tracing::mojom::TracingSessionClient> receiver_{this};
   mojo::Remote<tracing::mojom::TracingSessionHost> tracing_session_host_;

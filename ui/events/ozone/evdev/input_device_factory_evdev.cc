@@ -343,12 +343,12 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
   SetIntPropertyForOneType(DT_MOUSE, "Pointer Sensitivity",
                            input_device_settings_.mouse_sensitivity);
-  SetIntPropertyForOneType(DT_MOUSE, "Scroll Sensitivity",
+  SetIntPropertyForOneType(DT_MOUSE, "Mouse Scroll Sensitivity",
                            input_device_settings_.mouse_scroll_sensitivity);
   SetBoolPropertyForOneType(DT_MOUSE, "Pointer Acceleration",
                             input_device_settings_.mouse_acceleration_enabled);
   SetBoolPropertyForOneType(
-      DT_MOUSE, "Scroll Acceleration",
+      DT_MOUSE, "Mouse Scroll Acceleration",
       input_device_settings_.mouse_scroll_acceleration_enabled);
   SetBoolPropertyForOneType(
       DT_MOUSE, "Mouse Reverse Scrolling",

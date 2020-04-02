@@ -93,11 +93,6 @@ class TracingControllerImpl : public TracingController,
     return perfetto_file_tracer_.get();
   }
 
-  void set_startup_file_endpoint_priority_for_testing(
-      base::TaskPriority priority) {
-    startup_file_endpoint_priority_ = priority;
-  }
-
  private:
   friend std::default_delete<TracingControllerImpl>;
 
@@ -138,8 +133,6 @@ class TracingControllerImpl : public TracingController,
   base::FilePath startup_trace_file_;
   // This timer initiates trace file saving.
   base::OneShotTimer startup_trace_timer_;
-  base::TaskPriority startup_file_endpoint_priority_ =
-      base::TaskPriority::BEST_EFFORT;
 
 #if defined(OS_CHROMEOS)
   bool are_statistics_loaded_ = false;

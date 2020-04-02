@@ -10,6 +10,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
@@ -152,7 +153,7 @@ bool CanWithholdPermissionsFromExtension(const ExtensionId& extension_id,
   // withheld permissions couldn't be granted), extensions that are part of
   // chrome or corporate policy, and extensions that are whitelisted to script
   // everywhere must always have permission to run on a page.
-  return Extension::ShouldDisplayInExtensionSettings(type, location) &&
+  return ui_util::ShouldDisplayInExtensionSettings(type, location) &&
          !Manifest::IsPolicyLocation(location) &&
          !Manifest::IsComponentLocation(location) &&
          !PermissionsData::CanExecuteScriptEverywhere(extension_id, location);

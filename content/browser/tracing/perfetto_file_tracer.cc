@@ -93,11 +93,12 @@ bool PerfettoFileTracer::ShouldEnable() {
       switches::kPerfettoOutputFile);
 }
 
+// Use USER_VISIBLE priority for the drainer because BEST_EFFORT tasks are not
+// run at startup and we want the trace file to be written soon.
 PerfettoFileTracer::PerfettoFileTracer()
-    : background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      background_drainer_(background_task_runner_) {
+    : background_drainer_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   GetTracingService().BindConsumerHost(
       consumer_host_.BindNewPipeAndPassReceiver());
 
@@ -128,15 +129,6 @@ PerfettoFileTracer::PerfettoFileTracer()
 PerfettoFileTracer::~PerfettoFileTracer() = default;
 
 void PerfettoFileTracer::OnTracingEnabled() {}
-
-void PerfettoFileTracer::SetBackgroundTaskPriorityForTesting(
-    base::TaskPriority priority) {
-  background_drainer_.Reset();
-  background_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::MayBlock(), priority, base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  background_drainer_ =
-      base::SequenceBound<BackgroundDrainer>(background_task_runner_);
-}
 
 void PerfettoFileTracer::OnTracingDisabled() {
   has_been_disabled_ = true;

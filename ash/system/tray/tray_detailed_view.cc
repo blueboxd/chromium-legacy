@@ -318,6 +318,10 @@ void TrayDetailedView::CreateScrollableList() {
   box_layout_->SetFlexForView(scroller_, 1);
 }
 
+void TrayDetailedView::AddScrollListChild(std::unique_ptr<views::View> child) {
+  scroll_content_->AddChildView(std::move(child));
+}
+
 HoverHighlightView* TrayDetailedView::AddScrollListItem(
     const gfx::VectorIcon& icon,
     const base::string16& text) {

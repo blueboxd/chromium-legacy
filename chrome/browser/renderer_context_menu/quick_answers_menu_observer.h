@@ -36,7 +36,9 @@ class QuickAnswersMenuObserver
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
   void OnContextMenuShown(const content::ContextMenuParams& params,
-                          gfx::Rect bounds) override;
+                          const gfx::Rect& bounds_in_screen) override;
+  void OnContextMenuViewBoundsChanged(
+      const gfx::Rect& bounds_in_screen) override;
   void OnMenuClosed() override;
 
   // QuickAnswersDelegate implementation.

@@ -326,33 +326,6 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
                             url::kStandardSchemeSeparator, extension_id}));
 }
 
-// static
-bool Extension::ShouldDisplayInExtensionSettings(Manifest::Type type,
-                                                 Manifest::Location location) {
-  // Don't show for themes since the settings UI isn't really useful for them.
-  if (type == Manifest::TYPE_THEME)
-    return false;
-
-  // Hide component extensions because they are only extensions as an
-  // implementation detail of Chrome.
-  if (Manifest::IsComponentLocation(location) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowComponentExtensionOptions)) {
-    return false;
-  }
-
-  // Unless they are unpacked, never show hosted apps. Note: We intentionally
-  // show packaged apps and platform apps because there are some pieces of
-  // functionality that are only available in chrome://extensions/ but which
-  // are needed for packaged and platform apps. For example, inspecting
-  // background pages. See http://crbug.com/116134.
-  if (!Manifest::IsUnpackedLocation(location) &&
-      type == Manifest::TYPE_HOSTED_APP)
-    return false;
-
-  return true;
-}
-
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   if (url() == origin)
     return true;
@@ -385,10 +358,6 @@ bool Extension::ShouldDisplayInAppLauncher() const {
 bool Extension::ShouldDisplayInNewTabPage() const {
   // Only apps should be displayed on the NTP.
   return is_app() && display_in_new_tab_page_;
-}
-
-bool Extension::ShouldDisplayInExtensionSettings() const {
-  return Extension::ShouldDisplayInExtensionSettings(GetType(), location());
 }
 
 bool Extension::ShouldExposeViaManagementAPI() const {

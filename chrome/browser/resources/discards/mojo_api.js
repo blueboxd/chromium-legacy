@@ -8,3 +8,4 @@ import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import './mojo/public/mojom/base/process_id.mojom-lite.js';
 import './chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-lite.js';
 import './chrome/browser/ui/webui/discards/discards.mojom-lite.js';
+import './chrome/browser/ui/webui/discards/site_data.mojom-lite.js';

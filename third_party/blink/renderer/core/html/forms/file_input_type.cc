@@ -208,7 +208,7 @@ void FileInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
 }
 
 bool FileInputType::TypeShouldForceLegacyLayout() const {
-  return true;
+  return !RuntimeEnabledFeatures::LayoutNGForControlsEnabled();
 }
 
 LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle& style,

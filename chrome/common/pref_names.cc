@@ -514,14 +514,14 @@ const char kTouchpadScrollAcceleration[] =
 const char kMouseSensitivity[] = "settings.mouse.sensitivity2";
 
 // A integer pref for the touchpad scroll sensitivity, in the range
-// [kMinPointerSensitivity, kMaxPointerSensitivity].
+// [PointerSensitivity::kLowest, PointerSensitivity::kHighest].
 const char kMouseScrollSensitivity[] = "settings.mouse.scroll_sensitivity";
 
 // A integer pref for the touchpad sensitivity.
 const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 
 // A integer pref for the touchpad scroll sensitivity, in the range
-// [kMinPointerSensitivity, kMaxPointerSensitivity].
+// [PointerSensitivity::kLowest, PointerSensitivity::kHighest].
 const char kTouchpadScrollSensitivity[] =
     "settings.touchpad.scroll_sensitivity";
 

@@ -46,6 +46,13 @@ AutofillPaymentAppFactory::AutofillPaymentAppFactory()
 AutofillPaymentAppFactory::~AutofillPaymentAppFactory() = default;
 
 void AutofillPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
+  // No need to create autofill payment apps if native app creation is skipped
+  // because autofill payment apps are created completely by the Java factory.
+  if (delegate->SkipCreatingNativePaymentApps()) {
+    delegate->OnDoneCreatingPaymentApps();
+    return;
+  }
+
   const std::vector<autofill::CreditCard*>& cards =
       delegate->GetPaymentRequestDelegate()
           ->GetPersonalDataManager()

@@ -32,6 +32,7 @@ from xml.etree import ElementTree
 from util import build_utils
 from util import diff_utils
 from util import manifest_utils
+from util import md5_check
 from util import resource_utils
 
 # `Resources_pb2` module imports `descriptor`, which imports `six`.
@@ -1099,11 +1100,7 @@ def _WriteOutputs(options, build):
       shutil.move(temp, final)
 
 
-def main(args):
-  build_utils.InitLogging('RESOURCE_DEBUG')
-  args = build_utils.ExpandFileArgs(args)
-  options = _ParseArgs(args)
-
+def _OnStaleMd5(options):
   path = options.arsc_path or options.proto_path
   debug_temp_resources_dir = os.environ.get('TEMP_RESOURCES_DIR')
   if debug_temp_resources_dir:
@@ -1180,12 +1177,82 @@ def main(args):
     logging.debug('Copying outputs')
     _WriteOutputs(options, build)
 
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        options.srcjar_out,
-        inputs=options.dependencies_res_zips + options.extra_r_text_files,
-        add_pydeps=False)
+
+def main(args):
+  build_utils.InitLogging('RESOURCE_DEBUG')
+  args = build_utils.ExpandFileArgs(args)
+  options = _ParseArgs(args)
+
+  depfile_deps = (
+      options.dependencies_res_zips + options.extra_main_r_text_files +
+      options.extra_r_text_files + options.include_resources)
+
+  possible_input_paths = depfile_deps + [
+      options.aapt2_path,
+      options.android_manifest,
+      options.android_manifest_expected,
+      options.resources_config_path,
+      options.shared_resources_allowlist,
+      options.use_resource_ids_path,
+      options.webp_binary,
+  ]
+  input_paths = [p for p in possible_input_paths if p]
+  input_strings = [
+      options.android_manifest_expectations_failure_file,
+      options.app_as_shared_lib,
+      options.arsc_package_name,
+      options.debuggable,
+      options.extra_res_packages,
+      options.include_resources,
+      options.locale_allowlist,
+      options.manifest_package,
+      options.max_sdk_version,
+      options.min_sdk_version,
+      options.no_xml_namespaces,
+      options.package_id,
+      options.package_name,
+      options.png_to_webp,
+      options.rename_manifest_package,
+      options.resource_exclusion_exceptions,
+      options.resource_exclusion_regex,
+      options.r_java_root_package_name,
+      options.shared_resources,
+      options.shared_resources_allowlist_locales,
+      options.short_resource_paths,
+      options.strip_resource_names,
+      options.support_zh_hk,
+      options.target_sdk_version,
+      options.version_code,
+      options.version_name,
+      options.webp_cache_dir,
+  ]
+  output_paths = [options.srcjar_out]
+  possible_output_paths = [
+      options.android_manifest_normalized,
+      options.arsc_path,
+      options.emit_ids_out,
+      options.info_path,
+      options.optimized_arsc_path,
+      options.optimized_proto_path,
+      options.proguard_file,
+      options.proguard_file_main_dex,
+      options.proto_path,
+      options.resources_path_map_out_path,
+      options.r_text_out,
+  ]
+  output_paths += [p for p in possible_output_paths if p]
+
+  # Since we overspecify deps, this target depends on java deps that are not
+  # going to change its output. This target is also slow (6-12 seconds) and
+  # blocking the critical path. We want changes to java_library targets to not
+  # trigger re-compilation of resources, thus we need to use md5_check.
+  md5_check.CallAndWriteDepfileIfStale(
+      lambda: _OnStaleMd5(options),
+      options,
+      input_paths=input_paths,
+      input_strings=input_strings,
+      output_paths=output_paths,
+      depfile_deps=depfile_deps)
 
 
 if __name__ == '__main__':

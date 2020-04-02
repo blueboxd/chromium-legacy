@@ -33,6 +33,16 @@ std::ostream& operator<<(std::ostream& out, LoadStreamStatus value) {
       return out << "kDataInStoreIsStale";
     case LoadStreamStatus::kDataInStoreIsStaleTimestampInFuture:
       return out << "kDataInStoreIsStaleTimestampInFuture";
+    case LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete:
+      return out << "kCannotLoadFromNetworkSupressedForHistoryDelete";
+    case LoadStreamStatus::kCannotLoadFromNetworkOffline:
+      return out << "kCannotLoadFromNetworkOffline";
+    case LoadStreamStatus::kCannotLoadFromNetworkThrottled:
+      return out << "kCannotLoadFromNetworkThrottled";
+    case LoadStreamStatus::kLoadNotAllowedEulaNotAccepted:
+      return out << "kLoadNotAllowedEulaNotAccepted";
+    case LoadStreamStatus::kLoadNotAllowedArticlesListHidden:
+      return out << "kLoadNotAllowedArticlesListHidden";
   }
 #else
   return out << (static_cast<int>(value));

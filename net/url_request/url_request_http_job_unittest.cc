@@ -21,6 +21,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "net/base/auth.h"
+#include "net/base/isolation_info.h"
 #include "net/base/request_priority.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cookies/cookie_monster.h"
@@ -459,7 +460,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulHeadWithContent) {
 TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulCachedHeadRequest) {
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example.com"));
-  const NetworkIsolationKey kTestNetworkIsolationKey(kOrigin1, kOrigin1);
+  const IsolationInfo kTestIsolationInfo =
+      IsolationInfo::CreateForInternalRequest(kOrigin1);
 
   // Cache the response.
   {
@@ -476,7 +478,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulCachedHeadRequest) {
         GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate,
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    request->set_network_isolation_key(kTestNetworkIsolationKey);
+    request->set_isolation_info(kTestIsolationInfo);
     request->Start();
     ASSERT_TRUE(request->is_pending());
     delegate.RunUntilComplete();
@@ -505,7 +507,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulCachedHeadRequest) {
     // Use the cached version.
     request->SetLoadFlags(LOAD_SKIP_CACHE_VALIDATION);
     request->set_method("HEAD");
-    request->set_network_isolation_key(kTestNetworkIsolationKey);
+    request->set_isolation_info(kTestIsolationInfo);
     request->Start();
     ASSERT_TRUE(request->is_pending());
     delegate.RunUntilComplete();

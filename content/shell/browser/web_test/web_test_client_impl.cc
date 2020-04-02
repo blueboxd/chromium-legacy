@@ -24,7 +24,7 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
-#include "content/shell/test_runner/web_test_delegate.h"
+#include "content/shell/common/web_test/web_test_constants.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
@@ -63,8 +63,8 @@ void SetDatabaseQuotaOnIOThread(
     scoped_refptr<storage::QuotaManager> quota_manager,
     int32_t quota) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(quota >= 0 || quota == test_runner::kDefaultDatabaseQuota);
-  if (quota == test_runner::kDefaultDatabaseQuota) {
+  DCHECK(quota >= 0 || quota == kDefaultDatabaseQuota);
+  if (quota == kDefaultDatabaseQuota) {
     // Reset quota to settings with a zero refresh interval to force
     // QuotaManager to refresh settings immediately.
     storage::QuotaSettings default_settings;

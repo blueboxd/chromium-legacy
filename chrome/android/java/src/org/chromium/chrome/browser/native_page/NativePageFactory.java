@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
@@ -85,8 +86,9 @@ public class NativePageFactory {
         }
 
         protected NativePage buildRecentTabsPage(ChromeActivity activity, Tab tab) {
-            RecentTabsManager recentTabsManager = new RecentTabsManager(
-                    tab, Profile.fromWebContents(tab.getWebContents()), activity);
+            RecentTabsManager recentTabsManager =
+                    new RecentTabsManager(tab, Profile.fromWebContents(tab.getWebContents()),
+                            activity, () -> HistoryManagerUtils.showHistoryManager(activity, tab));
             return new RecentTabsPage(
                     activity, recentTabsManager, new TabShim(tab, activity.getFullscreenManager()));
         }

@@ -223,7 +223,6 @@ public abstract class ChromeFeatureList {
     public static final String ANDROID_PAY_INTEGRATION_V2 = "AndroidPayIntegrationV2";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
-    public static final String APP_NOTIFICATION_STATUS_MESSAGING = "AppNotificationStatusMessaging";
     public static final String AUTOFILL_ASSISTANT = "AutofillAssistant";
     public static final String AUTOFILL_ASSISTANT_CHROME_ENTRY = "AutofillAssistantChromeEntry";
     public static final String AUTOFILL_ASSISTANT_DIRECT_ACTIONS = "AutofillAssistantDirectActions";

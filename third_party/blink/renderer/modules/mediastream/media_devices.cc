@@ -60,7 +60,9 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 }  // namespace
 
 MediaDevices::MediaDevices(ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context), stopped_(false) {}
+    : ExecutionContextLifecycleObserver(context),
+      stopped_(false),
+      receiver_(this, context) {}
 
 MediaDevices::~MediaDevices() = default;
 
@@ -194,7 +196,6 @@ void MediaDevices::ContextDestroyed() {
     return;
 
   stopped_ = true;
-  StopObserving();
   requests_.clear();
   dispatcher_host_.reset();
 }
@@ -245,17 +246,15 @@ void MediaDevices::StartObserving() {
   GetDispatcherHost(document->GetFrame())
       ->AddMediaDevicesListener(true /* audio input */, true /* video input */,
                                 true /* audio output */,
-                                receiver_.BindNewPipeAndPassRemote());
+                                receiver_.BindNewPipeAndPassRemote(
+                                    GetExecutionContext()->GetTaskRunner(
+                                        TaskType::kMediaElementEvent)));
 }
 
 void MediaDevices::StopObserving() {
   if (!receiver_.is_bound())
     return;
   receiver_.reset();
-}
-
-void MediaDevices::Dispose() {
-  StopObserving();
 }
 
 void MediaDevices::DevicesEnumerated(
@@ -369,6 +368,7 @@ void MediaDevices::SetDispatcherHostForTesting(
 }
 
 void MediaDevices::Trace(Visitor* visitor) {
+  visitor->Trace(receiver_);
   visitor->Trace(scheduled_events_);
   visitor->Trace(requests_);
   EventTargetWithInlineData::Trace(visitor);

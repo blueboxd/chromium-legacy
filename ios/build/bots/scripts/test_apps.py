@@ -242,7 +242,9 @@ class GTestsApp(object):
         self.test_app_path, self.host_app_path, self.release):
       test_name = '%s/%s' % (test_class, test_method)
       if (test_name not in none_tests and
-          # Filter by self.included_tests if specified
+          # inlcuded_tests contains the tests to execute, which may be a subset
+          # of all tests b/c of the iOS test sharding logic in run.py. Filter by
+          # self.included_tests if specified
           (test_class in self.included_tests if self.included_tests else True)):
         all_tests.append(test_name)
     return all_tests

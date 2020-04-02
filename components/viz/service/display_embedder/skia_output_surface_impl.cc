@@ -313,8 +313,7 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
 
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     const std::vector<ImageContext*>& contexts,
-    SkYUVColorSpace yuv_color_space,
-    sk_sp<SkColorSpace> dst_color_space,
+    sk_sp<SkColorSpace> image_color_space,
     bool has_alpha) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_paint_);
@@ -348,10 +347,11 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     texture_contexts[i] = context;
   }
 
+  // Note: YUV to RGB conversion is handled by a color filter in SkiaRenderer.
   auto image = current_paint_->recorder()->makeYUVAPromiseTexture(
-      yuv_color_space, formats, yuva_sizes, indices, yuva_sizes[0].width(),
-      yuva_sizes[0].height(), kTopLeft_GrSurfaceOrigin, dst_color_space,
-      Fulfill, DoNothing, DoNothing, texture_contexts);
+      kIdentity_SkYUVColorSpace, formats, yuva_sizes, indices,
+      yuva_sizes[0].width(), yuva_sizes[0].height(), kTopLeft_GrSurfaceOrigin,
+      image_color_space, Fulfill, DoNothing, DoNothing, texture_contexts);
   DCHECK(image);
   return image;
 }

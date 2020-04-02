@@ -11,6 +11,11 @@
 
 namespace feed {
 
+enum NetworkRequestType : int {
+  kFeedQuery = 0,
+  kUploadActions = 1,
+};
+
 enum class LoadStreamStatus {
   // Loading was not attempted.
   kNoStatus = 0,
@@ -20,12 +25,17 @@ enum class LoadStreamStatus {
   kNoStreamDataInStore = 4,
   kModelAlreadyLoaded = 5,
   kNoResponseBody = 6,
-  // TODO(harringtond): Let's add more specific errors here.
+  // TODO(harringtond): Let's add more specific proto translation errors.
   kProtoTranslationFailed = 7,
   kDataInStoreIsStale = 8,
   // The timestamp for stored data is in the future, so we're treating stored
   // data as it it is stale.
   kDataInStoreIsStaleTimestampInFuture = 9,
+  kCannotLoadFromNetworkSupressedForHistoryDelete = 10,
+  kCannotLoadFromNetworkOffline = 11,
+  kCannotLoadFromNetworkThrottled = 12,
+  kLoadNotAllowedEulaNotAccepted = 13,
+  kLoadNotAllowedArticlesListHidden = 14,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

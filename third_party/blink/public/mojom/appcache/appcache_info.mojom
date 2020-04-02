@@ -27,6 +27,7 @@ struct AppCacheInfo {
   mojo_base.mojom.Time creation_time;
   mojo_base.mojom.Time last_update_time;
   mojo_base.mojom.Time last_access_time;
+  mojo_base.mojom.Time token_expires;
   int64 cache_id;
   int64 group_id;
   AppCacheStatus status;

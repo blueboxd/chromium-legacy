@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../metrics_browser_proxy.html">
 <link rel="import" href="../prefs/prefs.html">
@@ -72,29 +73,32 @@
             </div>
           </div>
         </settings-collapse-radio-button>
-        <settings-collapse-radio-button id="blockThirdPartyIncognito"
-            name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
-            label="$i18n{cookiePageBlockThirdIncognito}"
-            disabled="[[
-                cookieControlsManagedState_.blockThirdPartyIncognito.disabled]]"
-            policy-indicator-type="[[
-                cookieControlsManagedState_.blockThirdPartyIncognito.indicator
-                ]]">
-          <div slot="collapse">
-            <div class="bullet-line">
-              <iron-icon icon="settings:cookie"></iron-icon>
-              <div class="secondary">
-                    $i18n{cookiePageBlockThirdIncognitoBulOne}
+        <template is="dom-if" if="[[improvedCookieControlsEnabled_]]">
+          <settings-collapse-radio-button id="blockThirdPartyIncognito"
+              name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
+              label="$i18n{cookiePageBlockThirdIncognito}"
+              disabled="[[
+                  cookieControlsManagedState_.blockThirdPartyIncognito.disabled
+                  ]]"
+              policy-indicator-type="[[
+                  cookieControlsManagedState_.blockThirdPartyIncognito.indicator
+                  ]]">
+            <div slot="collapse">
+              <div class="bullet-line">
+                <iron-icon icon="settings:cookie"></iron-icon>
+                <div class="secondary">
+                      $i18n{cookiePageBlockThirdIncognitoBulOne}
+                </div>
+              </div>
+              <div class="bullet-line">
+                <iron-icon icon="settings:block"></iron-icon>
+                <div class="secondary">
+                      $i18n{cookiePageBlockThirdIncognitoBulTwo}
+                </div>
               </div>
             </div>
-            <div class="bullet-line">
-              <iron-icon icon="settings:block"></iron-icon>
-              <div class="secondary">
-                    $i18n{cookiePageBlockThirdIncognitoBulTwo}
-              </div>
-            </div>
-          </div>
-        </settings-collapse-radio-button>
+          </settings-collapse-radio-button>
+        </template>
         <settings-collapse-radio-button id="blockThirdParty"
             name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY]]"
             label="$i18n{cookiePageBlockThird}"

@@ -114,7 +114,7 @@ cr.define('autofill_test_util', function() {
   }
 
   /**
-   * Creates a new compromised credential.
+   * Creates a new compromised credential. createTime should be in minutes.
    * @param {string=} url
    * @param {string=} username
    * @param {string=} type
@@ -132,7 +132,8 @@ cr.define('autofill_test_util', function() {
       username: username,
       elapsedTimeSinceCompromise:
           (Math.floor(Math.random() * 60)).toString() + ' min ago',
-      compromiseTime: createTime,
+      // Converting minutes to milliseconds.
+      compromiseTime: createTime * 60000,
       compromiseType: type,
     };
   }

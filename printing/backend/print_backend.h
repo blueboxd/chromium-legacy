@@ -113,6 +113,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   };
   using Papers = std::vector<Paper>;
   Papers papers;
+  Papers user_defined_papers;
   Paper default_paper;
 
   std::vector<gfx::Size> dpis;

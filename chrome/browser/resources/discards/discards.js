@@ -16,6 +16,18 @@
     return discardsDetailsProvider;
   }
 
+  let siteDataProvider;
+
+  /**
+   * @return {!discards.mojom.SiteDataProviderRemote} Provides site data info.
+   */
+  export function getOrCreateSiteDataProvider() {
+    if (!siteDataProvider) {
+      siteDataProvider = discards.mojom.SiteDataProvider.getRemote();
+    }
+    return siteDataProvider;
+  }
+
   /**
    * Pluralizes a string according to the given count. Assumes that appending an
    * 's' is sufficient to make a string plural.

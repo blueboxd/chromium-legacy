@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -1033,6 +1034,9 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
 }
 
 void AXObjectCacheImpl::ProcessUpdates(Document& document) {
+  // None of the updates should alter the document lifecycle.
+  DocumentLifecycle::DisallowTransitionScope disallow(document.Lifecycle());
+
   TreeUpdateCallbackQueue old_tree_update_callback_queue;
   tree_update_callback_queue_.swap(old_tree_update_callback_queue);
   for (auto& tree_update : old_tree_update_callback_queue) {

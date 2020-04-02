@@ -57,6 +57,13 @@ class ServiceWorkerPaymentAppCreator {
       return;
     }
 
+    if (delegate_->SkipCreatingNativePaymentApps()) {
+      delegate_->OnCreatingNativePaymentAppsSkipped(
+          std::move(apps), std::move(installable_apps));
+      FinishAndCleanup();
+      return;
+    }
+
     for (auto& installed_app : apps) {
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
           delegate_->GetWebContents()->GetBrowserContext(),
@@ -141,8 +148,8 @@ void ServiceWorkerPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
   ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
       delegate->GetFrameSecurityOrigin(),
       delegate->GetInitiatorRenderFrameHost(), delegate->GetWebContents(),
-      delegate->GetPaymentRequestDelegate()->GetPaymentManifestWebDataService(),
-      Clone(delegate->GetSpec()->method_data()),
+      delegate->GetPaymentManifestWebDataService(),
+      Clone(delegate->GetMethodData()),
       delegate->MayCrawlForInstallablePaymentApps(),
       base::BindOnce(&ServiceWorkerPaymentAppCreator::CreatePaymentApps,
                      creator_raw_pointer->GetWeakPtr()),

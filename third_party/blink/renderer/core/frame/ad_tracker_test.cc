@@ -51,11 +51,12 @@ class TestAdTracker : public AdTracker {
     return is_ad_.at(url);
   }
 
- protected:
-  String ScriptAtTopOfStack(ExecutionContext* execution_context) override {
-    if (script_at_top_.IsEmpty())
-      return AdTracker::ScriptAtTopOfStack(execution_context);
+  void SetSimTest() { sim_test_ = true; }
 
+ protected:
+  String ScriptAtTopOfStack() override {
+    if (sim_test_)
+      return AdTracker::ScriptAtTopOfStack();
     return script_at_top_;
   }
 
@@ -87,6 +88,7 @@ class TestAdTracker : public AdTracker {
   String script_at_top_;
   Member<ExecutionContext> execution_context_;
   String ad_suffix_;
+  bool sim_test_ = false;
 };
 
 }  // namespace
@@ -327,6 +329,7 @@ class AdTrackerSimTest : public SimTest {
 
     LoadURL("https://example.com/test.html");
     ad_tracker_ = MakeGarbageCollected<TestAdTracker>(GetDocument().GetFrame());
+    ad_tracker_->SetSimTest();
     GetDocument().GetFrame()->SetAdTrackerForTesting(ad_tracker_);
   }
 

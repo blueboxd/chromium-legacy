@@ -2693,7 +2693,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "headless_content_unittests",
+        "name": "content_unittests_headless",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2711,11 +2711,11 @@
           "--no-xvfb",
           "--ozone-platform=headless"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "events_unittests_headless",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2737,6 +2737,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ozone_unittests_headless",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2758,6 +2759,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "services_unittests_headless",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2784,6 +2786,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "accessibility_unittests_wayland",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2806,6 +2809,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "aura_unittests_wayland",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2828,6 +2832,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "content_unittests_wayland",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2850,6 +2855,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "events_unittests_wayland",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2872,6 +2878,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gpu_unittests_wayland",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2894,6 +2901,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ui_touch_selection_unittests_wayland",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2908,16 +2916,16 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter",
           "--no-xvfb",
           "--use-weston",
-          "--ozone-platform=wayland"
+          "--ozone-platform=wayland",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "wayland_views_unittests",
+        "name": "views_unittests_wayland",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2942,6 +2950,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "accessibility_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2962,6 +2971,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "aura_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2982,6 +2992,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "content_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3002,6 +3013,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "events_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3022,6 +3034,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gpu_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3042,6 +3055,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ozone_x11_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3062,6 +3076,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ui_touch_selection_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3076,13 +3091,14 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter",
-          "--ozone-platform=x11"
+          "--ozone-platform=x11",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "views_unittests_x11",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

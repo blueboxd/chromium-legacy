@@ -19,11 +19,15 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_chip_result.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_result.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace app_list {
 namespace {
 
 constexpr int kMaxItems = 5;
+
+constexpr base::TimeDelta kInitialFetchDelay = base::TimeDelta::FromSeconds(10);
 
 // Error codes returned by the Drive QuickAccess API call. These values persist
 // to logs. Entries should not be renumbered and numeric values should never be
@@ -100,6 +104,21 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+
+  // Do an initial fetch of results from the Drive QuickAccess API. We cannot do
+  // this immediately, because the fetch requires that DriveFS is mounted, which
+  // takes a few seconds after login. So delay for |kInitialFetchDelay| seconds.
+  //
+  // TODO(crbug.com/1034842): Using a delay is not as robust as waiting on a
+  // signal that the Drive API is ready to use. We should change this once that
+  // signal available.
+  base::PostDelayedTask(
+      FROM_HERE,
+      {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&DriveQuickAccessProvider::GetQuickAccessItems,
+                     weak_factory_.GetWeakPtr()),
+      kInitialFetchDelay);
 }
 
 DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;

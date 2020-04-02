@@ -899,6 +899,7 @@ public class PaymentRequestImpl
                 SecurityStateModel.getSecurityLevelForWebContents(
                         mWebContents, ChromeSecurityStateModelDelegate.getInstance()),
                 new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler);
+        activity.getLifecycleDispatcher().register(mUI);
 
         // TODO(https://crbug.com/1048632): Use the current profile (i.e., regular profile or
         // incognito profile) instead of always using regular profile. It works correctly now, but
@@ -2991,6 +2992,10 @@ public class PaymentRequestImpl
                 mClient.onComplete();
             }
             closeClient();
+            ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+            if (activity != null) {
+                activity.getLifecycleDispatcher().unregister(mUI);
+            }
             mUI = null;
             mPaymentUisShowStateReconciler.onPaymentRequestUiClosed();
         }

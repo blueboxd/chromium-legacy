@@ -82,45 +82,6 @@ TEST_F(BackgroundTabLoadingPolicyTest, ScheduleLoadForRestoredTabs) {
   policy()->ScheduleLoadForRestoredTabs(raw_page_nodes);
 }
 
-TEST_F(BackgroundTabLoadingPolicyTest, AllLoadingSlotsUsed) {
-  // Create 4 PageNode to restore.
-  std::vector<
-      performance_manager::TestNodeWrapper<performance_manager::PageNodeImpl>>
-      page_nodes;
-  std::vector<PageNode*> raw_page_nodes;
-
-  // Create vector of PageNode to restore.
-  for (int i = 0; i < 4; i++) {
-    page_nodes.push_back(CreateNode<performance_manager::PageNodeImpl>());
-    raw_page_nodes.push_back(page_nodes.back().get());
-
-    // Set |is_tab| property as this is a requirement to pass the PageNode to
-    // ScheduleLoadForRestoredTabs().
-    TabPropertiesDecorator::SetIsTabForTesting(raw_page_nodes.back(), true);
-  }
-  PageNodeImpl* page_node_impl = page_nodes[0].get();
-
-  EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes[0]));
-  EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes[1]));
-
-  // Use 2 loading slots, which means only 2 of the PageNodes should immediately
-  // be scheduled to load.
-  policy()->SetMaxSimultaneousLoadsForTesting(2);
-
-  policy()->ScheduleLoadForRestoredTabs(raw_page_nodes);
-  testing::Mock::VerifyAndClear(loader());
-
-  // Simulate load start of a PageNode that initiated load.
-  page_node_impl->SetIsLoading(true);
-
-  // The policy should allow one more PageNode to load after a PageNode finishes
-  // loading.
-  EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes[2]));
-
-  // Simulate load finish of a PageNode.
-  page_node_impl->SetIsLoading(false);
-}
-
 }  // namespace policies
 
 }  // namespace performance_manager

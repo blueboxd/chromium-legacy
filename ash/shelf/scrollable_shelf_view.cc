@@ -866,6 +866,15 @@ void ScrollableShelfView::Layout() {
 
   // Layout |shelf_container_view_|.
   shelf_container_view_->SetBoundsRect(shelf_container_bounds);
+
+  // |visible_space_| is in local coordinates. It should be transformed into
+  // |shelf_container_view_|'s coordinates for layer clip.
+  gfx::RectF visible_space_in_shelf_container_coordinates(visible_space_);
+  views::View::ConvertRectToTarget(
+      this, shelf_container_view_,
+      &visible_space_in_shelf_container_coordinates);
+  shelf_container_view_->layer()->SetClipRect(
+      gfx::ToEnclosedRect(visible_space_in_shelf_container_coordinates));
 }
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
@@ -2221,15 +2230,7 @@ void ScrollableShelfView::UpdateScrollOffset(float target_offset) {
     InvalidateLayout();
   }
 
-  // |visible_space_| is in local coordinates. It should be transformed into
-  // |shelf_container_view_|'s coordinates for layer clip.
   visible_space_ = CalculateVisibleSpace(layout_strategy_);
-  gfx::RectF visible_space_in_shelf_container_coordinates(visible_space_);
-  views::View::ConvertRectToTarget(
-      this, shelf_container_view_,
-      &visible_space_in_shelf_container_coordinates);
-  shelf_container_view_->layer()->SetClipRect(
-      gfx::ToEnclosedRect(visible_space_in_shelf_container_coordinates));
 
   if (scroll_status_ != kAlongMainAxisScroll)
     UpdateTappableIconIndices();

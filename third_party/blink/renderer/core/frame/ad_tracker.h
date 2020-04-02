@@ -86,7 +86,7 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
 
  protected:
   // Protected for testing.
-  virtual String ScriptAtTopOfStack(ExecutionContext*);
+  virtual String ScriptAtTopOfStack();
   virtual ExecutionContext* GetCurrentExecutionContext();
 
  private:

@@ -180,27 +180,35 @@ std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
   return touching_display_infos;
 }
 
-gfx::DisplayColorSpaces GetSourceColorSpaces(
-    const Display& display,
-    ColorProfileReader* color_profile_reader,
-    bool hdr_enabled) {
-  if (Display::HasForceDisplayColorProfile())
-    return display.color_spaces();
-  if (hdr_enabled)
-    return gfx::DisplayColorSpaces();
-  return gfx::DisplayColorSpaces(
-      color_profile_reader->GetDisplayColorSpace(display.id()));
+// Default scRGB white level in nits.  This is used to determine the SDR scaling
+// factor with the user configured white level from the SDR brightness slider.
+constexpr float kDefaultScrgbWhiteLevel = 80.0f;
+
+// Helper function to create gfx::DisplayColorSpaces from given |color_space|
+// and |sdr_white_level| with default buffer formats for Windows.
+gfx::DisplayColorSpaces CreateDisplayColorSpaces(
+    const gfx::ColorSpace& color_space,
+    float sdr_white_level = kDefaultScrgbWhiteLevel) {
+  gfx::DisplayColorSpaces display_color_spaces(color_space);
+  // When alpha is not needed, specify BGRX_8888 to get
+  // DXGI_ALPHA_MODE_IGNORE. This saves significant power (see
+  // https://crbug.com/1057163).
+  display_color_spaces.SetOutputBufferFormats(gfx::BufferFormat::BGRX_8888,
+                                              gfx::BufferFormat::BGRA_8888);
+  display_color_spaces.SetSDRWhiteLevel(sdr_white_level);
+  return display_color_spaces;
 }
 
-void ConfigureColorSpacesForHdr(float sdr_white_level,
-                                gfx::DisplayColorSpaces* color_spaces) {
-  color_spaces->SetSDRWhiteLevel(sdr_white_level);
+// Updates |color_spaces| for HDR and WCG content usage with appropriate color
+// HDR spaces and given |sdr_white_level|.
+gfx::DisplayColorSpaces GetDisplayColorSpacesForHdr(float sdr_white_level) {
+  auto color_spaces =
+      CreateDisplayColorSpaces(gfx::ColorSpace::CreateSRGB(), sdr_white_level);
 
   // This will map to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709. In that space,
   // the brightness of (1,1,1) is 80 nits.
-  constexpr float kScrgbWhiteLevel = 80.0f;
-  const auto scrgb_linear =
-      gfx::ColorSpace::CreateSCRGBLinear(kScrgbWhiteLevel / sdr_white_level);
+  const auto scrgb_linear = gfx::ColorSpace::CreateSCRGBLinear(
+      kDefaultScrgbWhiteLevel / sdr_white_level);
 
   // This will map to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, with sRGB's
   // (1,1,1) mapping to the specified number of nits.
@@ -214,21 +222,44 @@ void ConfigureColorSpacesForHdr(float sdr_white_level,
     // Windows RS3, but RGB10A2 with HDR10 color space works fine (see
     // https://crbug.com/937108#c92).
     if (base::win::GetVersion() > base::win::Version::WIN10_RS3) {
-      color_spaces->SetOutputColorSpaceAndBufferFormat(
+      color_spaces.SetOutputColorSpaceAndBufferFormat(
           usage, !kNeedsAlpha, scrgb_linear, gfx::BufferFormat::RGBA_F16);
     } else {
-      color_spaces->SetOutputColorSpaceAndBufferFormat(
-          usage, !kNeedsAlpha, hdr10, gfx::BufferFormat::BGRA_1010102);
+      color_spaces.SetOutputColorSpaceAndBufferFormat(
+          usage, !kNeedsAlpha, hdr10, gfx::BufferFormat::RGBA_1010102);
     }
     // Use RGBA F16 backbuffers for HDR if alpha channel is required.
-    color_spaces->SetOutputColorSpaceAndBufferFormat(
+    color_spaces.SetOutputColorSpaceAndBufferFormat(
         usage, kNeedsAlpha, scrgb_linear, gfx::BufferFormat::RGBA_F16);
   }
+  return color_spaces;
 }
 
-Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
-                                     ColorProfileReader* color_profile_reader,
-                                     bool hdr_enabled) {
+// Sets SDR white level and buffer formats on |display_color_spaces| when using
+// a forced color profile.
+gfx::DisplayColorSpaces GetForcedDisplayColorSpaces() {
+  // Adjust white level to default for Windows if color space is PQ.  This is
+  // needed because the color space is created with the cross-platform default
+  // white level which is different (gfx::ColorSpace::kDefaultSDRWhiteLevel).
+  const auto& color_space =
+      Display::GetForcedDisplayColorProfile().GetWithPQSDRWhiteLevel(
+          kDefaultScrgbWhiteLevel);
+  auto display_color_spaces = CreateDisplayColorSpaces(color_space);
+  // Use the forced color profile's buffer format for all content usages.
+  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::SMPTEST2084) {
+    display_color_spaces.SetOutputBufferFormats(
+        gfx::BufferFormat::RGBA_1010102, gfx::BufferFormat::RGBA_1010102);
+  } else if (color_space.IsHDR()) {
+    display_color_spaces.SetOutputBufferFormats(gfx::BufferFormat::RGBA_F16,
+                                                gfx::BufferFormat::RGBA_F16);
+  }
+  return display_color_spaces;
+}
+
+Display CreateDisplayFromDisplayInfo(
+    const DisplayInfo& display_info,
+    const ColorProfileReader* color_profile_reader,
+    bool hdr_enabled) {
   const float scale_factor = display_info.device_scale_factor();
   const gfx::Rect bounds = gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                                                      1.0f / scale_factor);
@@ -239,22 +270,24 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_rotation(display_info.rotation());
   display.set_display_frequency(display_info.display_frequency());
 
-  // Compute the DisplayColorSpace for this configuration.
-  gfx::DisplayColorSpaces color_spaces =
-      GetSourceColorSpaces(display, color_profile_reader, hdr_enabled);
-  // When alpha is not needed, specify BGRX_8888 to get DXGI_ALPHA_MODE_IGNORE.
-  // This saves significant power (see https://crbug.com/1057163).
-  color_spaces.SetOutputBufferFormats(gfx::BufferFormat::BGRX_8888,
-                                      gfx::BufferFormat::BGRA_8888);
-  if (hdr_enabled && !Display::HasForceDisplayColorProfile()) {
-    ConfigureColorSpacesForHdr(display_info.sdr_white_level(), &color_spaces);
-
+  // DisplayColorSpaces is created using the forced color profile if present, or
+  // from the ICC profile provided by |color_profile_reader| for SDR content,
+  // and HDR10 or scRGB linear for HDR and WCG content if HDR is enabled.
+  gfx::DisplayColorSpaces color_spaces;
+  if (Display::HasForceDisplayColorProfile()) {
+    color_spaces = GetForcedDisplayColorSpaces();
+  } else if (hdr_enabled) {
+    color_spaces = GetDisplayColorSpacesForHdr(display_info.sdr_white_level());
+  } else {
+    color_spaces = CreateDisplayColorSpaces(
+        color_profile_reader->GetDisplayColorSpace(display.id()));
+  }
+  if (color_spaces.SupportsHDR()) {
     // These are (ab)used by pages via media query APIs to detect HDR support.
     display.set_color_depth(Display::kHDR10BitsPerPixel);
     display.set_depth_per_component(Display::kHDR10BitsPerComponent);
   }
   display.set_color_spaces(color_spaces);
-
   return display;
 }
 

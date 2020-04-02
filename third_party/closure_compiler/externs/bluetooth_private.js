@@ -109,8 +109,10 @@ chrome.bluetoothPrivate.DiscoveryFilter;
 
 /**
  * Changes the state of the Bluetooth adapter.
- * @param {!chrome.bluetoothPrivate.NewAdapterState} adapterState
- * @param {function():void=} callback
+ * @param {!chrome.bluetoothPrivate.NewAdapterState} adapterState The new state
+ *     of the adapter.
+ * @param {function():void=} callback Called when all the state changes have
+ *     been completed.
  */
 chrome.bluetoothPrivate.setAdapterState = function(adapterState, callback) {};
 
@@ -158,19 +160,19 @@ chrome.bluetoothPrivate.connect = function(deviceAddress, callback) {};
 chrome.bluetoothPrivate.pair = function(deviceAddress, callback) {};
 
 /**
- * Record that a pairing attempt finished. Do not record cancellations.
- * @param {boolean} success
+ * Record that a pairing attempt finished. Ignores cancellations.
  * @param {!chrome.bluetooth.Transport} transport
  * @param {number} pairingDurationMs
+ * @param {!chrome.bluetoothPrivate.ConnectResultType=} result
  */
-chrome.bluetoothPrivate.recordPairing = function(success, transport, pairingDurationMs) {};
+chrome.bluetoothPrivate.recordPairing = function(transport, pairingDurationMs, result) {};
 
 /**
  * Record that a user-initiated reconnection attempt to an already paired device
- * finished. Do not record cancellations.
- * @param {boolean} success
+ * finished. Ignores cancellations.
+ * @param {!chrome.bluetoothPrivate.ConnectResultType=} result
  */
-chrome.bluetoothPrivate.recordReconnection = function(success) {};
+chrome.bluetoothPrivate.recordReconnection = function(result) {};
 
 /**
  * Record that a user selected a device to connect to.

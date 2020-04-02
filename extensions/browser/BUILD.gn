@@ -336,6 +336,8 @@ jumbo_source_set("browser_sources") {
     "suggest_permission_util.h",
     "task_queue_util.cc",
     "task_queue_util.h",
+    "ui_util.cc",
+    "ui_util.h",
     "uninstall_ping_sender.cc",
     "uninstall_ping_sender.h",
     "uninstall_reason.h",

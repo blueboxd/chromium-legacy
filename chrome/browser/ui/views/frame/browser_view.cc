@@ -1454,9 +1454,8 @@ void BrowserView::RotatePaneFocus(bool forwards) {
     return;
 
   GetFocusManager()->RotatePaneFocus(
-      forwards ?
-          views::FocusManager::kForward : views::FocusManager::kBackward,
-      views::FocusManager::kWrap);
+      forwards ? views::FocusManager::kForward : views::FocusManager::kBackward,
+      views::FocusManager::FocusCycleWrapping::kEnabled);
 }
 
 bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {

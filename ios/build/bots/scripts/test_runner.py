@@ -22,6 +22,7 @@ import time
 import coverage_util
 import gtest_utils
 import iossim_util
+import standard_json_util as sju
 import test_apps
 import xctest_utils
 
@@ -615,6 +616,12 @@ class TestRunner(object):
         else:
           raise
 
+      # Instantiate this after crash retries so that all tests have a first
+      # pass before entering the retry block below.
+      # For each retry that passes, we want to mark it separately as passed
+      # (ie/ "FAIL PASS"), with is_flaky=True.
+      output = sju.StdJson(passed=passed, failed=failed, flaked=flaked)
+
       # Retry failed test cases.
       retry_results = {}
       test_app.excluded_tests = []
@@ -631,6 +638,7 @@ class TestRunner(object):
             # If the test passed on retry, consider it flake instead of failure.
             if test in retry_result.passed_tests:
               flaked[test] = failed.pop(test)
+              output.mark_passed(test, flaky=True)
             # Save the result of the latest run for each test.
             retry_results[test] = retry_result
 
@@ -643,14 +651,8 @@ class TestRunner(object):
         'FAIL': len(failed) + len(flaked),
         'PASS': len(passed),
       }
-      tests = collections.OrderedDict()
-      for test in passed:
-        tests[test] = { 'expected': 'PASS', 'actual': 'PASS' }
-      for test in failed:
-        tests[test] = { 'expected': 'PASS', 'actual': 'FAIL' }
-      for test in flaked:
-        tests[test] = { 'expected': 'PASS', 'actual': 'FAIL' }
-      self.test_results['tests'] = tests
+
+      self.test_results['tests'] = output.tests
 
       self.logs['passed tests'] = passed
       if flaked:

@@ -4,6 +4,8 @@
 
 #include <utility>
 
+#include "base/hash/hash.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -13,9 +15,12 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/profile_metrics/state.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -33,9 +38,26 @@ const char kPasswordTokenKey[] = "gaia_password_token";
 const char kIsAuthErrorKey[] = "is_auth_error";
 const char kMetricsBucketIndex[] = "metrics_bucket_index";
 const char kSigninRequiredKey[] = "signin_required";
+const char kHostedDomain[] = "hosted_domain";
+
+// Low-entropy accounts info, for metrics only.
+const char kFirstAccountNameHash[] = "first_account_name_hash";
+const char kHasMultipleAccountNames[] = "has_multiple_account_names";
+const char kAccountCategories[] = "account_categories";
 
 // Local state pref to keep track of the next available profile bucket.
 const char kNextMetricsBucketIndex[] = "profile.metrics.next_bucket_index";
+
+constexpr int kIntegerNotSet = -1;
+
+// Persisted in prefs.
+constexpr int kAccountCategoriesConsumerOnly = 0;
+constexpr int kAccountCategoriesEnterpriseOnly = 1;
+constexpr int kAccountCategoriesBoth = 2;
+
+// Number of distinct low-entropy hash values. Changing this value invalidates
+// existing persisted hashes.
+constexpr int kNumberOfLowEntropyHashValues = 1024;
 
 // Returns the next available metrics bucket index and increases the index
 // counter. I.e. two consecutive calls will return two consecutive numbers.
@@ -47,6 +69,10 @@ int NextAvailableMetricsBucketIndex() {
   local_prefs->SetInteger(kNextMetricsBucketIndex, next_index + 1);
 
   return next_index;
+}
+
+int GetLowEntropyHashValue(const std::string& value) {
+  return base::PersistentHash(value) % kNumberOfLowEntropyHashValues;
 }
 
 }  // namespace
@@ -361,11 +387,15 @@ size_t ProfileAttributesEntry::GetAvatarIconIndex() const {
 
 size_t ProfileAttributesEntry::GetMetricsBucketIndex() {
   int bucket_index = GetInteger(kMetricsBucketIndex);
-  if (bucket_index == -1) {
+  if (bucket_index == kIntegerNotSet) {
     bucket_index = NextAvailableMetricsBucketIndex();
     SetInteger(kMetricsBucketIndex, bucket_index);
   }
   return bucket_index;
+}
+
+std::string ProfileAttributesEntry::GetHostedDomain() const {
+  return GetString(kHostedDomain);
 }
 
 void ProfileAttributesEntry::SetLocalProfileName(const base::string16& name) {
@@ -447,6 +477,11 @@ void ProfileAttributesEntry::LockForceSigninProfile(bool is_lock) {
   profile_info_cache_->NotifyIsSigninRequiredChanged(GetPath());
 }
 
+void ProfileAttributesEntry::RecordAccountMetrics() const {
+  RecordAccountCategoriesMetric();
+  RecordAccountNamesMetric();
+}
+
 void ProfileAttributesEntry::SetIsEphemeral(bool value) {
   SetBool(kProfileIsEphemeral, value);
 }
@@ -493,6 +528,10 @@ void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
   profile_info_cache_->NotifyOnProfileAvatarChanged(profile_path);
 }
 
+void ProfileAttributesEntry::SetHostedDomain(std::string hosted_domain) {
+  SetString(kHostedDomain, hosted_domain);
+}
+
 void ProfileAttributesEntry::SetAuthInfo(const std::string& gaia_id,
                                          const base::string16& user_name,
                                          bool is_consented_primary_account) {
@@ -513,6 +552,43 @@ void ProfileAttributesEntry::SetAuthInfo(const std::string& gaia_id,
                       is_consented_primary_account);
   SetEntryData(std::move(new_data));
   profile_info_cache_->NotifyProfileAuthInfoChanged(profile_path_);
+}
+
+void ProfileAttributesEntry::AddAccountName(const std::string& name) {
+  int hash = GetLowEntropyHashValue(name);
+  int first_hash = GetInteger(kFirstAccountNameHash);
+  if (first_hash == kIntegerNotSet) {
+    SetInteger(kFirstAccountNameHash, hash);
+    return;
+  }
+
+  if (first_hash != hash) {
+    SetBool(kHasMultipleAccountNames, true);
+  }
+}
+
+void ProfileAttributesEntry::AddAccountCategory(AccountCategory category) {
+  int current_categories = GetInteger(kAccountCategories);
+  if (current_categories == kAccountCategoriesBoth)
+    return;
+
+  int new_category = category == AccountCategory::kConsumer
+                         ? kAccountCategoriesConsumerOnly
+                         : kAccountCategoriesEnterpriseOnly;
+  if (current_categories == kIntegerNotSet) {
+    SetInteger(kAccountCategories, new_category);
+  } else if (current_categories != new_category) {
+    SetInteger(kAccountCategories, kAccountCategoriesBoth);
+  }
+}
+
+void ProfileAttributesEntry::ClearAccountNames() {
+  ClearValue(kFirstAccountNameHash);
+  ClearValue(kHasMultipleAccountNames);
+}
+
+void ProfileAttributesEntry::ClearAccountCategories() {
+  ClearValue(kAccountCategories);
 }
 
 size_t ProfileAttributesEntry::profile_index() const {
@@ -537,6 +613,49 @@ const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
   return profile_info_cache_->LoadAvatarPictureFromPath(GetPath(), key,
                                                         image_path);
+}
+
+bool ProfileAttributesEntry::HasMultipleAccountNames() const {
+  // If the value is not set, GetBool() returns false.
+  return GetBool(kHasMultipleAccountNames);
+}
+
+bool ProfileAttributesEntry::HasBothAccountCategories() const {
+  // If the value is not set, GetInteger returns kIntegerNotSet which does not
+  // equal kAccountTypeBoth.
+  return GetInteger(kAccountCategories) == kAccountCategoriesBoth;
+}
+
+void ProfileAttributesEntry::RecordAccountCategoriesMetric() const {
+  if (HasBothAccountCategories()) {
+    if (IsAuthenticated()) {
+      bool consumer_syncing = GetHostedDomain() == kNoHostedDomainFound;
+      profile_metrics::LogProfileAllAccountsCategories(
+          consumer_syncing ? profile_metrics::AllAccountsCategories::
+                                 kBothConsumerAndEnterpriseSyncingConsumer
+                           : profile_metrics::AllAccountsCategories::
+                                 kBothConsumerAndEnterpriseSyncingEnterprise);
+    } else {
+      profile_metrics::LogProfileAllAccountsCategories(
+          profile_metrics::AllAccountsCategories::
+              kBothConsumerAndEnterpriseNoSync);
+    }
+  } else {
+    profile_metrics::LogProfileAllAccountsCategories(
+        profile_metrics::AllAccountsCategories::kSingleCategory);
+  }
+}
+
+void ProfileAttributesEntry::RecordAccountNamesMetric() const {
+  if (HasMultipleAccountNames()) {
+    profile_metrics::LogProfileAllAccountsNames(
+        IsAuthenticated()
+            ? profile_metrics::AllAccountsNames::kMultipleNamesWithSync
+            : profile_metrics::AllAccountsNames::kMultipleNamesWithoutSync);
+  } else {
+    profile_metrics::LogProfileAllAccountsNames(
+        profile_metrics::AllAccountsNames::kLikelySingleName);
+  }
 }
 
 const base::Value* ProfileAttributesEntry::GetEntryData() const {
@@ -587,7 +706,7 @@ bool ProfileAttributesEntry::GetBool(const char* key) const {
 int ProfileAttributesEntry::GetInteger(const char* key) const {
   const base::Value* value = GetValue(key);
   if (!value || !value->is_int())
-    return -1;
+    return kIntegerNotSet;
   return value->GetInt();
 }
 
@@ -672,6 +791,17 @@ bool ProfileAttributesEntry::SetInteger(const char* key, int value) {
   base::Value new_data = old_data ? GetEntryData()->Clone()
                                   : base::Value(base::Value::Type::DICTIONARY);
   new_data.SetKey(key, base::Value(value));
+  SetEntryData(std::move(new_data));
+  return true;
+}
+
+bool ProfileAttributesEntry::ClearValue(const char* key) {
+  const base::Value* old_data = GetEntryData();
+  if (!old_data || !old_data->FindKey(key))
+    return false;
+
+  base::Value new_data = GetEntryData()->Clone();
+  new_data.RemoveKey(key);
   SetEntryData(std::move(new_data));
   return true;
 }

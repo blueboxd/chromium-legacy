@@ -46,6 +46,9 @@ class ASH_EXPORT QuickAnswersControllerImpl
 
   void DismissQuickAnswers() override;
 
+  // Update the bounds of the anchor view.
+  void UpdateQuickAnswersAnchorBounds(const gfx::Rect& anchor_bounds) override;
+
   chromeos::quick_answers::QuickAnswersDelegate* GetQuickAnswersDelegate()
       override;
 
@@ -60,9 +63,6 @@ class ASH_EXPORT QuickAnswersControllerImpl
 
   // User clicks on the quick answer result.
   void OnQuickAnswerClick();
-
-  // Update the bounds of the anchor view.
-  void UpdateQuickAnswersAnchorBounds(const gfx::Rect& anchor_bounds);
 
   // Called by the UI Controller when user grants consent for the Quick Answers
   // feature.

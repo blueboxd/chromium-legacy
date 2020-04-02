@@ -365,6 +365,8 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       info.padding_sizes = cache_record.padding_size;
       info.last_access_time = group.last_access_time;
       info.last_update_time = cache_record.update_time;
+      // TODO(enne): should this be cache? group? both??
+      info.token_expires = group.token_expires;
       info.cache_id = cache_record.cache_id;
       info.group_id = group.group_id;
       info.is_complete = true;

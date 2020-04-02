@@ -6,7 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 if (is_win || is_mac || is_desktop_linux || is_chromeos) {
   mojom("mojo_bindings") {
-    sources = [ "discards.mojom" ]
+    sources = [
+      "discards.mojom",
+      "site_data.mojom",
+    ]
 
     public_deps = [
       "//chrome/browser/resource_coordinator:mojo_bindings",

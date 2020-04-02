@@ -42,6 +42,13 @@ extern const char kHostOverrideHost[];
 // The pref name for the feed host override auth token.
 extern const char kHostOverrideBlessNonce[];
 
+// The following prefs are used only by v2.
+
+// The pref name for the request throttler counts.
+extern const char kThrottlerRequestCountListPrefName[];
+// The pref name for the request throttler's last request time.
+extern const char kThrottlerLastRequestTime[];
+
 }  // namespace prefs
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);

@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -112,7 +111,8 @@ public class OfflinePageTabObserver
      * @param tab The tab we are adding an observer for.
      */
     public static void addObserverForTab(Tab tab) {
-        OfflinePageTabObserver observer = getObserverForActivity(((TabImpl) tab).getActivity());
+        OfflinePageTabObserver observer =
+                getObserverForActivity((ChromeActivity) tab.getWindowAndroid().getActivity().get());
         observer.startObservingTab(tab);
         observer.maybeShowReloadSnackbar(tab, false);
     }
@@ -295,7 +295,7 @@ public class OfflinePageTabObserver
     @VisibleForTesting
     void showReloadSnackbar(Tab tab) {
         OfflinePageUtils.showReloadSnackbar(
-                ((TabImpl) tab).getActivity(), mSnackbarManager, mSnackbarController, tab.getId());
+                tab.getContext(), mSnackbarManager, mSnackbarController, tab.getId());
     }
 
     @VisibleForTesting

@@ -49,6 +49,55 @@ void UpdateServiceInProcess::RegisterApp(
       FROM_HERE, base::BindOnce(std::move(callback), RegistrationResponse(0)));
 }
 
+namespace {
+
+std::vector<base::Optional<update_client::CrxComponent>> GetComponents(
+    scoped_refptr<PersistedData> persisted_data,
+    const std::vector<std::string>& ids) {
+  std::vector<base::Optional<update_client::CrxComponent>> components;
+  for (const auto& id : ids) {
+    components.push_back(base::MakeRefCounted<Installer>(id, persisted_data)
+                             ->MakeCrxComponent());
+  }
+  return components;
+}
+
+void UpdateStateCallbackRun(UpdateService::StateChangeCallback state_update,
+                            update_client::CrxUpdateItem crx_update_item) {
+  UpdateService::UpdateState update_state =
+      UpdateService::UpdateState::kUnknown;
+  switch (crx_update_item.state) {
+    case update_client::ComponentState::kNew:
+      update_state = UpdateService::UpdateState::kNotStarted;
+      break;
+    case update_client::ComponentState::kChecking:
+      update_state = UpdateService::UpdateState::kCheckingForUpdates;
+      break;
+    case update_client::ComponentState::kDownloading:
+    case update_client::ComponentState::kDownloadingDiff:
+      update_state = UpdateService::UpdateState::kDownloading;
+      break;
+    case update_client::ComponentState::kUpdating:
+    case update_client::ComponentState::kUpdatingDiff:
+      update_state = UpdateService::UpdateState::kInstalling;
+      break;
+    case update_client::ComponentState::kUpdated:
+      update_state = UpdateService::UpdateState::kUpdated;
+      break;
+    case update_client::ComponentState::kUpToDate:
+      update_state = UpdateService::UpdateState::kNoUpdate;
+      break;
+    case update_client::ComponentState::kUpdateError:
+      update_state = UpdateService::UpdateState::kUpdateError;
+      break;
+    default:
+      break;
+  }
+  state_update.Run(update_state);
+}
+
+}  // namespace
+
 void UpdateServiceInProcess::UpdateAll(StateChangeCallback state_update,
                                        Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -57,54 +106,9 @@ void UpdateServiceInProcess::UpdateAll(StateChangeCallback state_update,
   DCHECK(base::Contains(app_ids, kUpdaterAppId));
 
   update_client_->Update(
-      app_ids,
-      base::BindOnce(
-          [](scoped_refptr<PersistedData> persisted_data,
-             const std::vector<std::string>& ids) {
-            std::vector<base::Optional<update_client::CrxComponent>> components;
-            for (const auto& id : ids) {
-              components.push_back(
-                  base::MakeRefCounted<Installer>(id, persisted_data)
-                      ->MakeCrxComponent());
-            }
-            return components;
-          },
-          persisted_data_),
-      base::BindRepeating(
-          [](StateChangeCallback state_update,
-             update_client::CrxUpdateItem crx_update_item) {
-            UpdateState update_state = UpdateState::kUnknown;
-            switch (crx_update_item.state) {
-              case update_client::ComponentState::kNew:
-                update_state = UpdateState::kNotStarted;
-                break;
-              case update_client::ComponentState::kChecking:
-                update_state = UpdateState::kCheckingForUpdates;
-                break;
-              case update_client::ComponentState::kDownloading:
-              case update_client::ComponentState::kDownloadingDiff:
-                update_state = UpdateState::kDownloading;
-                break;
-              case update_client::ComponentState::kUpdating:
-              case update_client::ComponentState::kUpdatingDiff:
-                update_state = UpdateState::kInstalling;
-                break;
-              case update_client::ComponentState::kUpdated:
-                update_state = UpdateState::kUpdated;
-                break;
-              case update_client::ComponentState::kUpToDate:
-                update_state = UpdateState::kNoUpdate;
-                break;
-              case update_client::ComponentState::kUpdateError:
-                update_state = UpdateState::kUpdateError;
-                break;
-              default:
-                break;
-            }
-            state_update.Run(update_state);
-          },
-          state_update),
-      false, std::move(callback));
+      app_ids, base::BindOnce(&GetComponents, persisted_data_),
+      base::BindRepeating(&UpdateStateCallbackRun, state_update), false,
+      std::move(callback));
 }
 
 void UpdateServiceInProcess::Update(const std::string& app_id,
@@ -112,8 +116,11 @@ void UpdateServiceInProcess::Update(const std::string& app_id,
                                     StateChangeCallback state_update,
                                     Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/1059020): Implement.
-  NOTREACHED();
+
+  update_client_->Update(
+      {app_id}, base::BindOnce(&GetComponents, persisted_data_),
+      base::BindRepeating(&UpdateStateCallbackRun, state_update),
+      priority == Priority::kForeground, std::move(callback));
 }
 
 void UpdateServiceInProcess::Uninitialize() {

@@ -63,9 +63,6 @@ const char kShowStateValueMinimized[] = "minimized";
 const char kShowStateValueMaximized[] = "maximized";
 const char kShowStateValueFullscreen[] = "fullscreen";
 const char kShowStateValueLockedFullscreen[] = "locked-fullscreen";
-const char kStatusValueComplete[] = "complete";
-const char kStatusValueLoading[] = "loading";
-const char kStatusValueUnloaded[] = "unloaded";
 
 const char kWindowTypeValueNormal[] = "normal";
 const char kWindowTypeValuePopup[] = "popup";

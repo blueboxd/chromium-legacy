@@ -45,13 +45,6 @@ const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
-// Enables messaging in site permissions UI informing user when notifications
-// are disabled for the entire app.
-const base::Feature kAppNotificationStatusMessaging{
-    "AppNotificationStatusMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
-
 #if !defined(OS_ANDROID)
 // App Service related flags. See chrome/services/app_service/README.md.
 const base::Feature kAppServiceContextMenu{"AppServiceContextMenu",
@@ -142,11 +135,6 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
 // Shows a setting that allows disabling mouse acceleration.
 const base::Feature kAllowDisableMouseAcceleration{
     "AllowDisableMouseAcceleration", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Shows settings for adjusting scroll acceleration/sensitivity for
-// mouse/touchpad.
-const base::Feature kAllowScrollSettings{"AllowScrollSettings",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};

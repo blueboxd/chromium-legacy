@@ -18,8 +18,10 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
 import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 import androidx.test.filters.SmallTest;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +45,8 @@ public class ManagedPreferencesUtilsTest {
     @Rule
     public ActivityTestRule<SettingsActivity> mRule =
             new ActivityTestRule<>(SettingsActivity.class);
+
+    private Context mContext;
 
     public static final ManagedPreferenceDelegate UNMANAGED_DELEGATE =
             new ManagedPreferenceDelegate() {
@@ -118,10 +122,14 @@ public class ManagedPreferencesUtilsTest {
 
     @Before
     public void setUp() {
-        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
-                context, DummySettingsForTest.class.getName());
+                InstrumentationRegistry.getInstrumentation().getContext(),
+                DummySettingsForTest.class.getName());
         mRule.launchActivity(intent);
+
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) mRule.getActivity().getMainFragment();
+        mContext = fragment.getPreferenceScreen().getContext();
     }
 
     @Test
@@ -184,5 +192,31 @@ public class ManagedPreferencesUtilsTest {
         onView(withText(R.string.managed_settings_cannot_be_reset))
                 .inRoot(withDecorView(not(mRule.getActivity().getWindow().getDecorView())))
                 .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    public void testGetManagedIconIdNull() {
+        Preference pref = new Preference(mContext);
+        int actual = ManagedPreferencesUtils.getManagedIconResId(null, pref);
+        Assert.assertEquals(0, actual);
+    }
+
+    @Test
+    @SmallTest
+    public void testGetManagedIconIdPolicy() {
+        Preference pref = new Preference(mContext);
+        int expected = ManagedPreferencesUtils.getManagedByEnterpriseIconId();
+        int actual = ManagedPreferencesUtils.getManagedIconResId(POLICY_DELEGATE, pref);
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    @SmallTest
+    public void testGetManagedIconIdCustodian() {
+        Preference pref = new Preference(mContext);
+        int expected = ManagedPreferencesUtils.getManagedByCustodianIconId();
+        int actual = ManagedPreferencesUtils.getManagedIconResId(SINGLE_CUSTODIAN_DELEGATE, pref);
+        Assert.assertEquals(expected, actual);
     }
 }

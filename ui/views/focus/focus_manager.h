@@ -140,7 +140,7 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   // TODO(dmazzoni): use Direction in place of bool reverse throughout.
   enum Direction { kForward, kBackward };
 
-  enum FocusCycleWrappingBehavior { kWrap, kNoWrap };
+  enum class FocusCycleWrapping { kEnabled, kDisabled };
 
   FocusManager(Widget* widget, std::unique_ptr<FocusManagerDelegate> delegate);
   ~FocusManager() override;
@@ -269,7 +269,7 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   // order to trap keyboard focus within that pane. If |wrap| is kWrap,
   // it keeps cycling within this widget, otherwise it returns false after
   // reaching the last pane so that focus can cycle to another widget.
-  bool RotatePaneFocus(Direction direction, FocusCycleWrappingBehavior wrap);
+  bool RotatePaneFocus(Direction direction, FocusCycleWrapping wrapping);
 
   // Convenience method that returns true if the passed |key_event| should
   // trigger tab traversal (if it is a TAB key press with or without SHIFT

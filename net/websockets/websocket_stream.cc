@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -141,7 +142,8 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     url_request_->SetExtraRequestHeaders(headers);
     url_request_->set_initiator(origin);
     url_request_->set_site_for_cookies(site_for_cookies);
-    url_request_->set_network_isolation_key(network_isolation_key);
+    url_request_->set_isolation_info(IsolationInfo::CreatePartial(
+        IsolationInfo::RedirectMode::kUpdateNothing, network_isolation_key));
 
     auto create_helper = std::make_unique<WebSocketHandshakeStreamCreateHelper>(
         connect_delegate_.get(), requested_subprotocols, this);

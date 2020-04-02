@@ -10,6 +10,7 @@
 
 using GdkKeymap = struct _GdkKeymap;
 using GdkWindow = struct _GdkWindow;
+using GtkWindow = struct _GtkWindow;
 
 namespace ui {
 
@@ -49,6 +50,10 @@ class COMPONENT_EXPORT(UI_GTK) GtkUiDelegate {
   // function abstracts away such functionality.
   virtual bool SetGdkWindowTransientFor(GdkWindow* window,
                                         gfx::AcceleratedWidget parent) = 0;
+
+  // Presents |window|, doing all the necessary platform-specific operations
+  // needed, if any.
+  virtual void ShowGtkWindow(GtkWindow* window) = 0;
 };
 
 }  // namespace ui

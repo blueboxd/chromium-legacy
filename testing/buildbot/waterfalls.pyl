@@ -3915,37 +3915,27 @@
         ]
       },
       'Linux Ozone Tester (Headless)': {
-        'args': [
-          '--no-xvfb',
-          '--ozone-platform=headless'
-        ],
         'mixins': [
           'linux-xenial',
          ],
         'test_suites': {
-         'gtest_tests': 'ozone_linux_gtests_headless',
+         'gtest_tests': 'linux_ozone_headless_tests',
         },
       },
       'Linux Ozone Tester (Wayland)': {
-        'args': [
-          '--no-xvfb',
-          '--use-weston',
-          '--ozone-platform=wayland'
-        ],
         'mixins': [
           'linux-xenial',
          ],
         'test_suites': {
-         'gtest_tests': 'ozone_linux_gtests_wayland',
+         'gtest_tests': 'linux_ozone_wayland_tests',
         },
       },
       'Linux Ozone Tester (X11)': {
-        'args': [ '--ozone-platform=x11' ],
         'mixins': [
           'linux-xenial',
         ],
         'test_suites': {
-         'gtest_tests': 'ozone_linux_gtests_x11',
+         'gtest_tests': 'linux_ozone_x11_tests',
         },
       },
       'Linux Tests': {

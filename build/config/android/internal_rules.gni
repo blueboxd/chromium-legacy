@@ -2414,12 +2414,12 @@ if (enable_java_templates) {
           rebase_path(_normalized_output, root_build_dir),
         ]
         if (check_android_configuration) {
-          _manfiest_expectations_failure_filepath =
+          _manifest_expectations_failure_filepath =
               "$android_configuration_failure_dir/" +
               "${invoker.failed_manifest_expectation_file}"
           args += [
             "--android-manifest-expectations-failure-file",
-            rebase_path(_manfiest_expectations_failure_filepath,
+            rebase_path(_manifest_expectations_failure_filepath,
                         root_build_dir),
           ]
         }

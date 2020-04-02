@@ -964,11 +964,11 @@ cr.define('settings_passwords_check', function() {
         autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'PHISHED', 0, 0),
         autofill_test_util.makeCompromisedCredential(
-            'two.com', 'test3', 'LEAKED', 1, 2),
+            '2two.com', 'test3', 'LEAKED', 1, 2),
         autofill_test_util.makeCompromisedCredential(
-            'three.com', 'test2', 'LEAKED', 2, 2),
+            '3three.com', 'test2', 'LEAKED', 2, 2),
         autofill_test_util.makeCompromisedCredential(
-            'four.com', 'test2', 'LEAKED', 3, 2),
+            '4four.com', 'test2', 'LEAKED', 3, 2),
       ];
       const checkPasswordSection = createCheckPasswordSection();
       checkPasswordSection.updateCompromisedPasswordList(leakedPasswords);
@@ -978,8 +978,30 @@ cr.define('settings_passwords_check', function() {
       // remove 2nd and 3rd elements
       leakedPasswords.splice(1, 2);
       leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
-          'five.com', 'test2', 'LEAKED', 4, 3));
+          'five.com', 'test2', 'LEAKED', 4, 5));
 
+      checkPasswordSection.updateCompromisedPasswordList(
+          shuffleArray(leakedPasswords));
+      Polymer.dom.flush();
+      validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
+    });
+
+    // Test verifies sorting. Phished passwords always shown above leaked even
+    // if they are older
+    test('deleteComrpomisedCredemtials', function() {
+      const leakedPasswords = [
+        autofill_test_util.makeCompromisedCredential(
+            'one.com', 'test5', 'PHISHED', 0, 1),
+        autofill_test_util.makeCompromisedCredential(
+            'two.com', 'test4', 'PHISHED_AND_LEAKED', 1, 0),
+        autofill_test_util.makeCompromisedCredential(
+            'three.com', 'test3', 'LEAKED', 2, 4),
+        autofill_test_util.makeCompromisedCredential(
+            'four.com', 'test2', 'LEAKED', 3, 3),
+        autofill_test_util.makeCompromisedCredential(
+            'five.com', 'test1', 'LEAKED', 4, 2),
+      ];
+      const checkPasswordSection = createCheckPasswordSection();
       checkPasswordSection.updateCompromisedPasswordList(
           shuffleArray(leakedPasswords));
       Polymer.dom.flush();

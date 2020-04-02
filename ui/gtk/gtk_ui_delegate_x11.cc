@@ -5,8 +5,10 @@
 #include "ui/gtk/gtk_ui_delegate_x11.h"
 
 #include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gtk/gtk_event_loop_x11.h"
@@ -51,6 +53,14 @@ GdkDisplay* GtkUiDelegateX11::GetGdkDisplay() {
     display_ = !display ? gdk_display_get_default() : display;
   }
   return display_;
+}
+
+void GtkUiDelegateX11::ShowGtkWindow(GtkWindow* window) {
+  // We need to call gtk_window_present after making the widgets visible to make
+  // sure window gets correctly raised and gets focus.
+  DCHECK(X11EventSource::HasInstance());
+  gtk_window_present_with_time(window,
+                               X11EventSource::GetInstance()->GetTimestamp());
 }
 
 }  // namespace ui

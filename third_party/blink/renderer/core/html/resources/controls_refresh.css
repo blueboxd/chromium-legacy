@@ -100,7 +100,7 @@ meter::-webkit-meter-inner-element:-internal-shadow-host-has-appearance {
 }
 
 meter::-webkit-meter-bar {
-  background: #efefef;
+  background: -internal-light-dark-color(#efefef, #4a4a4a);
   border-width: thin;
   grid-row-start: line1;
   grid-row-end: line2;
@@ -112,15 +112,15 @@ meter::-webkit-meter-bar {
 }
 
 meter::-webkit-meter-optimum-value {
-  background: #107c10;
+  background: -internal-light-dark-color(#107c10, #74b374)
 }
 
 meter::-webkit-meter-suboptimum-value {
-  background: #ffb900;
+  background: -internal-light-dark-color(#ffb900, #f2c812)
 }
 
 meter::-webkit-meter-even-less-good-value {
-  background: #d83b01;
+  background: -internal-light-dark-color(#d83b01, #e98f6d)
 }
 
 input[type="date" i]::-webkit-calendar-picker-indicator,

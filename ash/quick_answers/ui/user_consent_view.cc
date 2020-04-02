@@ -190,6 +190,12 @@ void UserConsentView::ButtonPressed(views::Button* sender,
   }
 }
 
+void UserConsentView::UpdateAnchorViewBounds(
+    const gfx::Rect& anchor_view_bounds) {
+  anchor_view_bounds_ = anchor_view_bounds;
+  UpdateWidgetBounds();
+}
+
 void UserConsentView::InitLayout() {
   // Background.
   SetBackground(views::CreateSolidBackground(kMainViewBgColor));

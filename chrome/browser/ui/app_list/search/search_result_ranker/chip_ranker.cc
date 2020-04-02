@@ -114,10 +114,7 @@ void ChipRanker::Rank(Mixer::SortedResults* results) {
 
   // If this is the first initialization of the ranker, warm it up with some
   // default scores for apps and files.
-  // TODO(crbug.com/921444): Getting the ranks here just to check if they're
-  // empty is inefficient. We should add a size() method to RecurrenceRanker and
-  // update this.
-  if (type_ranker_->Rank().empty()) {
+  if (type_ranker_->empty()) {
     InitializeRanker(type_ranker_.get());
   }
 

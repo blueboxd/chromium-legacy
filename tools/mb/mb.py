@@ -383,7 +383,7 @@ class MetaBuildWrapper(object):
     return self.RunGNAnalyze(vals)
 
   def CmdExportBucket(self):
-    self.ReadConfigFile()
+    self.ReadConfigFile(self.args.config_file)
     obj = {}
     for bucket, builders in self.buckets.items():
       obj[bucket] = {}
@@ -418,7 +418,7 @@ class MetaBuildWrapper(object):
     if self.group_by_bucket:
       return self.CmdExportBucket()
 
-    self.ReadConfigFile()
+    self.ReadConfigFile(self.args.config_file)
     obj = {}
     for master, builders in self.masters.items():
       obj[master] = {}
@@ -795,11 +795,14 @@ class MetaBuildWrapper(object):
                                      self.buckets, FlattenConfig)
 
     if errs:
-      raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
-                  '\n  ' + '\n  '.join(errs))
+      raise MBErr(('mb config file %s has problems:' %
+                   (self.args.config_file if self.args.config_file else self.
+                    default_config_bucket)) + '\n  ' + '\n  '.join(errs))
 
     if print_ok:
-      self.Print('mb config file %s looks ok.' % self.args.config_file)
+      self.Print('mb config file %s looks ok.' %
+                 (self.args.config_file
+                  if self.args.config_file else self.default_config_bucket))
     return 0
 
   def CmdValidate(self, print_ok=True):
@@ -808,15 +811,20 @@ class MetaBuildWrapper(object):
     # Validate both bucket and master configs if
     # a specific one isn't specified
     if getattr(self.args, 'config_file', None) is None:
+      # Cross reference bucket and master configs
+      # Bucket configs should be a subset of master configs, but consistent for
+      # any builders present in both.
+      validation.CheckMasterBucketConsistency(
+          errs, self.ReadFile(self.default_config_master),
+          self.ReadFile(self.default_config_bucket))
+
       # Read the file to make sure it parses.
-      self.args.config_file = self.default_config_bucket
-      self.ReadConfigFile()
+      self.ReadConfigFile(self.default_config_bucket)
       self.CmdValidateBucket()
 
-      self.args.config_file = self.default_config_master
-      self.ReadConfigFile()
+      self.ReadConfigFile(self.default_config_master)
     else:
-      self.ReadConfigFile()
+      self.ReadConfigFile(self.args.config_file)
       if self.group_by_bucket:
         return self.CmdValidateBucket()
 
@@ -845,11 +853,14 @@ class MetaBuildWrapper(object):
                                      self.masters, FlattenConfig)
 
     if errs:
-      raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
-                    '\n  ' + '\n  '.join(errs))
+      raise MBErr(('mb config file %s has problems:' %
+                   (self.args.config_file if self.args.config_file else self.
+                    default_config_master)) + '\n  ' + '\n  '.join(errs))
 
     if print_ok:
-      self.Print('mb config file %s looks ok.' % self.args.config_file)
+      self.Print('mb config file %s looks ok.' %
+                 (self.args.config_file
+                  if self.args.config_file else self.default_config_master))
     return 0
 
   def GetConfig(self):
@@ -890,7 +901,7 @@ class MetaBuildWrapper(object):
     return ' '.join(gn_args)
 
   def Lookup(self):
-    self.ReadConfigFile()
+    self.ReadConfigFile(self.args.config_file)
     try:
       if self.group_by_bucket:
         config = self.ConfigFromArgsBucket()
@@ -946,15 +957,14 @@ class MetaBuildWrapper(object):
     vals['gn_args'] = gn_args
     return vals
 
-  def ReadConfigFile(self):
-    if not self.Exists(self.args.config_file):
-      raise MBErr('config file not found at %s' % self.args.config_file)
+  def ReadConfigFile(self, config_file):
+    if not self.Exists(config_file):
+      raise MBErr('config file not found at %s' % config_file)
 
     try:
-      contents = ast.literal_eval(self.ReadFile(self.args.config_file))
+      contents = ast.literal_eval(self.ReadFile(config_file))
     except SyntaxError as e:
-      raise MBErr('Failed to parse config file "%s": %s' %
-                 (self.args.config_file, e))
+      raise MBErr('Failed to parse config file "%s": %s' % (config_file, e))
 
     self.configs = contents['configs']
     self.mixins = contents['mixins']

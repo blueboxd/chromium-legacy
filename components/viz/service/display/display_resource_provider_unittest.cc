@@ -289,7 +289,7 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
                       Return(ByMove(std::move(owned_image_context)))));
 
   ExternalUseClient::ImageContext* locked_image_context =
-      lock_set.LockResource(parent_id);
+      lock_set.LockResource(parent_id, /*is_video_plane=*/false);
   EXPECT_EQ(image_context, locked_image_context);
   ASSERT_EQ(holder.mailbox, mailbox);
   ASSERT_TRUE(holder.sync_token.HasData());

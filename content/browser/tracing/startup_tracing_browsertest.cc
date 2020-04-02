@@ -53,14 +53,6 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
                                     temp_file_path_.AsUTF8Unsafe());
   }
 
-  void PreRunTestOnMainThread() override {
-    // Ensure that the file is written quickly for these tests.
-    TracingControllerImpl::GetInstance()
-        ->set_startup_file_endpoint_priority_for_testing(
-            base::TaskPriority::USER_BLOCKING);
-    ContentBrowserTest::PreRunTestOnMainThread();
-  }
-
  protected:
   base::FilePath temp_file_path_;
 
@@ -180,15 +172,6 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
     startup_config->startup_duration_in_seconds_ = 3;
     command_line->AppendSwitchASCII(switches::kPerfettoOutputFile,
                                     temp_file_path_.AsUTF8Unsafe());
-  }
-
-  void PreRunTestOnMainThread() override {
-    // Ensure that the file is written quickly for these tests.
-    TracingControllerImpl::GetInstance()
-        ->perfetto_file_tracer_for_testing()
-        ->SetBackgroundTaskPriorityForTesting(
-            base::TaskPriority::USER_BLOCKING);
-    ContentBrowserTest::PreRunTestOnMainThread();
   }
 
  protected:

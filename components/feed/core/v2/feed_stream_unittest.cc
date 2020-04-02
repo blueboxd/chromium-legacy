@@ -23,6 +23,7 @@
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
+#include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
@@ -198,6 +199,12 @@ class FakeRefreshTaskScheduler : public RefreshTaskScheduler {
 class TestEventObserver : public FeedStream::EventObserver {
  public:
   // FeedStreamUnittest::StreamEventObserver.
+  void OnLoadStream(LoadStreamStatus load_from_store_status,
+                    LoadStreamStatus final_status) override {
+    load_stream_status = final_status;
+    LOG(INFO) << "OnLoadStream: " << final_status
+              << " (store status: " << load_from_store_status << ")";
+  }
   void OnMaybeTriggerRefresh(TriggerType trigger,
                              bool clear_all_before_refresh) override {
     refresh_trigger_type = trigger;
@@ -208,6 +215,7 @@ class TestEventObserver : public FeedStream::EventObserver {
 
   // Test access.
 
+  base::Optional<LoadStreamStatus> load_stream_status;
   base::Optional<base::TimeDelta> time_since_last_clear;
   base::Optional<TriggerType> refresh_trigger_type;
 };
@@ -245,8 +253,8 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   }
 
   // FeedStream::Delegate.
-  bool IsEulaAccepted() override { return true; }
-  bool IsOffline() override { return false; }
+  bool IsEulaAccepted() override { return is_eula_accepted_; }
+  bool IsOffline() override { return is_offline_; }
 
   // For tests.
 
@@ -286,6 +294,8 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
           task_environment_.GetMainThreadTaskRunner()));
   FakeRefreshTaskScheduler refresh_scheduler_;
   std::unique_ptr<FeedStream> stream_;
+  bool is_eula_accepted_ = true;
+  bool is_offline_ = false;
 };
 
 TEST_F(FeedStreamTest, IsArticlesListVisibleByDefault) {
@@ -500,6 +510,84 @@ TEST_F(FeedStreamTest, LoadFromNetworkBecauseStoreIsStale) {
   EXPECT_TRUE(network_.query_request_sent);
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
   ASSERT_TRUE(surface.initial_state);
+}
+
+TEST_F(FeedStreamTest, LoadFromNetworkFailsDueToProtoTranslation) {
+  // No data in the store, so we should fetch from the network.
+  // The network will respond with an empty response, which should fail proto
+  // translation.
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(LoadStreamStatus::kProtoTranslationFailed,
+            event_observer_.load_stream_status);
+}
+
+TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
+  is_offline_ = true;
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+  // TODO(harringtond): Implement zero-state and check that it is triggered.
+  EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkOffline,
+            event_observer_.load_stream_status);
+  EXPECT_FALSE(network_.query_request_sent);
+}
+
+TEST_F(FeedStreamTest, DoNotLoadStreamWhenArticleListIsHidden) {
+  stream_->SetArticlesListVisible(false);
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+  // TODO(harringtond): Implement zero-state and check that it is triggered.
+  EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
+            event_observer_.load_stream_status);
+}
+
+TEST_F(FeedStreamTest, DoNotLoadStreamWhenEulaIsNotAccepted) {
+  is_eula_accepted_ = false;
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+  // TODO(harringtond): Implement zero-state and check that it is triggered.
+  EXPECT_FALSE(network_.query_request_sent);
+  EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedEulaNotAccepted,
+            event_observer_.load_stream_status);
+}
+
+TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
+  stream_->OnHistoryDeleted();
+  task_environment_.FastForwardBy(kSuppressRefreshDuration -
+                                  base::TimeDelta::FromSeconds(1));
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+
+  ASSERT_FALSE(surface.initial_state);
+  EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete,
+            event_observer_.load_stream_status);
+
+  stream_->DetachSurface(&surface);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  stream_->AttachSurface(&surface);
+  WaitForIdleTaskQueue();
+
+  ASSERT_TRUE(surface.initial_state);
+  ASSERT_EQ(2, surface.initial_state->updated_slices().size());
+}
+
+TEST_F(FeedStreamTest, ShouldMakeFeedQueryRequestConsumesQuota) {
+  LoadStreamStatus status = LoadStreamStatus::kNoStatus;
+  for (; status == LoadStreamStatus::kNoStatus;
+       status = stream_->ShouldMakeFeedQueryRequest()) {
+  }
+
+  ASSERT_EQ(LoadStreamStatus::kCannotLoadFromNetworkThrottled, status);
 }
 
 TEST_F(FeedStreamTest, LoadStreamFromStore) {

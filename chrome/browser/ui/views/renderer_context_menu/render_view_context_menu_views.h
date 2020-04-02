@@ -52,6 +52,8 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
                                   ui::Accelerator* accelerator) const override;
 
  private:
+  class SubmenuViewObserver;
+
   void AppendPlatformEditableItems() override;
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
@@ -62,8 +64,16 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   aura::Window* GetActiveNativeView();
   views::Widget* GetTopLevelWidget();
 
+  void OnSubmenuViewBoundsChanged(const gfx::Rect& new_bounds_in_screen);
+  void OnSubmenuClosed();
+
   // Model for the BiDi input submenu.
   ui::SimpleMenuModel bidi_submenu_model_;
+
+  // View observer of the submenu view and widget. SubmenuViewObserver is used
+  // to observe bounds changes.
+  std::unique_ptr<SubmenuViewObserver> submenu_view_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuViews);
 };
 

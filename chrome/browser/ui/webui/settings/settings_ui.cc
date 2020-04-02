@@ -66,6 +66,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -253,6 +254,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("signinAllowed", !profile->IsGuestSession() &&
                                                profile->GetPrefs()->GetBoolean(
                                                    prefs::kSigninAllowed));
+  html_source->AddBoolean(
+      "improvedCookieControlsEnabled",
+      base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls));
 
   html_source->AddBoolean(
       "privacySettingsRedesignEnabled",

@@ -376,7 +376,8 @@ bool Gav1VideoDecoder::EnqueueRequest(DecodeRequest request) {
 
   libgav1::StatusCode status = libgav1_decoder_->EnqueueFrame(
       buffer->data(), buffer->data_size(),
-      buffer->timestamp().InMicroseconds() /* user_private_data */);
+      buffer->timestamp().InMicroseconds() /* user_private_data */,
+      /* buffer_private_data = */ nullptr);
   if (status != kLibgav1StatusOk) {
     MEDIA_LOG(ERROR, media_log_)
         << "libgav1::Decoder::EnqueueFrame() failed, "

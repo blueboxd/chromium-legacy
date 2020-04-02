@@ -67,7 +67,7 @@ void FakeCompositorFrameReportingController::DidSubmitCompositorFrame(
     uint32_t frame_token,
     const viz::BeginFrameId& current_frame_id,
     const viz::BeginFrameId& last_activated_frame_id,
-    std::vector<EventMetrics> events_metrics) {
+    EventMetricsSet events_metrics) {
   CompositorFrameReportingController::DidSubmitCompositorFrame(
       frame_token, current_frame_id, last_activated_frame_id,
       std::move(events_metrics));
